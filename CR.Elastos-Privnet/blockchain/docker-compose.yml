@@ -3,7 +3,8 @@ services:
 
   privnet-mainchain-node:
     container_name: privnet-mainchain-node
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-node:/ela/elastos
       - ${PWD}/ela-mainchain/node_normal/mainchain-node/config.json:/ela/config.json
@@ -11,7 +12,7 @@ services:
     ports:
       - 10011-10017:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10012/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10014"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -21,7 +22,8 @@ services:
 
   privnet-mainchain-crc-1:
     container_name: privnet-mainchain-crc-1
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-1/config.json:/ela/config.json
@@ -29,7 +31,7 @@ services:
     ports:
       - 10111-10117:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10112/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10114"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -39,7 +41,8 @@ services:
 
   privnet-mainchain-crc-2:
     container_name: privnet-mainchain-crc-2
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-crc-2:/ela/elastos
       - ${PWD}/ela-mainchain/node_crc/mainchain-crc-2/config.json:/ela/config.json
@@ -47,7 +50,7 @@ services:
     ports:
       - 10211-10217:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10212/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10214"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -57,7 +60,8 @@ services:
 
   privnet-mainchain-dpos-1:
     container_name: privnet-mainchain-dpos-1
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-1:/ela/elastos
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-1/config.json:/ela/config.json
@@ -65,7 +69,7 @@ services:
     ports:
       - 10511-10517:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10512/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10514"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -75,7 +79,8 @@ services:
 
   privnet-mainchain-dpos-2:
     container_name: privnet-mainchain-dpos-2
-    image: cyberrepublic/elastos-mainchain-node:privnet-v0.4
+    image: cyberrepublic/elastos-mainchain-node:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mainchain-dpos-2:/ela/elastos
       - ${PWD}/ela-mainchain/node_dpos/mainchain-dpos-2/config.json:/ela/config.json
@@ -83,7 +88,7 @@ services:
     ports:
       - 10611-10617:20333-20339
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10612/api/v1/block/height"]
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:10614"]
       interval: 30s
       timeout: 120s
       retries: 5
@@ -93,7 +98,8 @@ services:
 
   privnet-arbitrator-crc-1:
     container_name: privnet-arbitrator-crc-1
-    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.5
+    user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-crc-1
     volumes:
@@ -108,7 +114,8 @@ services:
 
   privnet-arbitrator-crc-2:
     container_name: privnet-arbitrator-crc-2
-    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.5
+    user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-crc-2
     volumes:
@@ -123,7 +130,8 @@ services:
 
   privnet-arbitrator-origin-1:
     container_name: privnet-arbitrator-origin-1
-    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.5
+    user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-dpos-1
     volumes:
@@ -138,7 +146,8 @@ services:
 
   privnet-arbitrator-origin-2:
     container_name: privnet-arbitrator-origin-2
-    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.4
+    image: cyberrepublic/elastos-arbitrator-node:privnet-v0.5
+    user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-dpos-2
     volumes:
@@ -153,55 +162,76 @@ services:
 
   privnet-sidechain-did-node:
     container_name: privnet-sidechain-did-node
-    image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-did-node:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/did-node:/did/elastos_did
       - ${PWD}/ela-sidechain/did/did-node/config.json:/did/config.json
     ports:
       - 30111-30115:20604-20608
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:30113"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true 
 
   privnet-sidechain-token-node:
     container_name: privnet-sidechain-token-node
-    image: cyberrepublic/elastos-sidechain-token-node:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-token-node:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/token-node:/token/elastos_token
       - ${PWD}/ela-sidechain/token/token-node/config.json:/token/config.json
     ports:
       - 40111-40115:20614-20618
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:40113"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true 
 
   privnet-sidechain-eth-node:
     container_name: privnet-sidechain-eth-node
-    image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/eth-node:/eth/elastos_eth
       - ${PWD}/ela-sidechain/eth/eth-node/eth-accounts-pass.txt:/eth/eth-accounts-pass.txt
     ports:
-      - 60011:8545
-      - 60012:30303
+      - 60111:20636
+      - 60112:20638
+      - 60113:8080
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[], \"id\":1}'", "http://localhost:60111"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
     networks:
       - blockchain
     tty: true 
 
   privnet-sidechain-eth-oracle-node:
     container_name: privnet-sidechain-eth-oracle-node
-    image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-eth-oracle:privnet-v0.5
+    user: "${UID}:${GID}"
     depends_on:
       - privnet-sidechain-eth-node
     ports:
-      - 60113:16666
+      - 60114:20632
     networks:
       - blockchain
     tty: true 
 
   privnet-wallet-service:
     container_name: privnet-wallet-service
-    image: cyberrepublic/elastos-wallet-service:privnet-v0.4
+    image: cyberrepublic/elastos-wallet-service:privnet-v0.5
+    user: "${UID}:${GID}"
     depends_on:
       - privnet-mainchain-node
     ports:
@@ -217,7 +247,8 @@ services:
 
   privnet-sidechain-service:
     container_name: privnet-sidechain-service
-    image: cyberrepublic/elastos-sidechain-service:privnet-v0.4
+    image: cyberrepublic/elastos-sidechain-service:privnet-v0.5
+    user: "${UID}:${GID}"
     depends_on:
       - privnet-sidechain-did-node
     ports:
@@ -233,7 +264,8 @@ services:
 
   privnet-api-misc-mainchain:
     container_name: privnet-api-misc-mainchain
-    image: cyberrepublic/elastos-api-misc-service:privnet-v0.4
+    image: cyberrepublic/elastos-api-misc-service:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ${PWD}/restful-services/api-misc/mainchain/config.json:/home/elauser/config.json
       - ${PWD}/restful-services/api-misc/mainchain/deploy.sh:/home/elauser/deploy.sh
@@ -253,7 +285,8 @@ services:
 
   privnet-api-misc-sidechain-did:
     container_name: privnet-api-misc-sidechain-did
-    image: cyberrepublic/elastos-api-misc-service:privnet-v0.4
+    image: cyberrepublic/elastos-api-misc-service:privnet-v0.5
+    user: "${UID}:${GID}"
     volumes:
       - ${PWD}/restful-services/api-misc/sidechain/did/config.json:/home/elauser/config.json
       - ${PWD}/restful-services/api-misc/sidechain/did/deploy.sh:/home/elauser/deploy.sh
@@ -274,6 +307,7 @@ services:
   privnet-mysql:
     container_name: privnet-mysql
     image: mysql:5.7
+    user: "${UID}:${GID}"
     volumes:
       - ~/.volumes/elastos-privnet/mysql:/var/lib/mysql
     environment:
@@ -284,7 +318,7 @@ services:
     ports:
       - 3307:3306
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p12345678"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-P", "3307", "-u", "elastos", "-p12345678"]
       interval: 30s
       timeout: 120s
       retries: 5

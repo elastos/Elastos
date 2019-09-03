@@ -1,19 +1,44 @@
-## General Info
+## Table of Contents
+- [General Info](#general-info)
+- [Tools](#tools)
+- [Tests](#tests)
+- [Wallets](#wallets)
+- [Repos used to build](#repos-used-to-build)
+- [Containers that are run](#containers-that-are-run)
+  - [Mainchain nodes](#mainchain-nodes)
+  - [Sidechain nodes](#sidechain-nodes)
+  - [Arbitrator nodes](#arbitrator-nodes)
+  - [Restful services](#restful-services)
+  - [Database layer](#database-layer)
+- [How to Run](#how-to-run)
+- [DPoS Testing](#dpos-testing)
+  - [How to register a supernode](#how-to-register-a-supernode)
+  - [How to vote for a supernode](#how-to-vote-for-a-supernode)
+  - [Stop your supernode process](#stop-your-supernode-process)
+- [DID Sidechain Testing](#did-sidechain-testing)
+  - [Creating a DID and Dealing with Metadata](#creating-a-did-and-dealing-with-metadata)
+  - [Retrieving DID info](#retrieving-the-did-info)
+- [TOKEN Sidechain Testing](#token-sidechain-testing)
+  - [Transfer ELA from main chain to Token Sidechain](#transfer-ela-from-main-chain-to-token-sidechain)
+- [Ethereum Sidechain Testing](#ethereum-sidechain-testing)
+  - [Transfer some ELA from main chain to ETH Sidechain](#transfer-some-ela-from-main-chain-to-eth-sidechain)
+  - [Transfer some ETH ELA from ETH Sidechain to Mainchain](#transfer-some-eth-ela-from-eth-sidechain-to-mainchain)
+  - [Deploy a simple Ethereum smart contract](#deploy-a-simple-ethereum-smart-contract)
+- [NEO Sidechain Testing](#neo-sidechain-testing)
+- [Stop docker services](#stop-docker-services)
 
+## General Info
 - Prerequisite basic knowledge of docker is expected  
 - After starting, the miners will automatically start running and about 18 containers are created
 - Pre-mined 1000 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address, 100,000 ELA on Token sidechain address and 100,000 ELA on ETH sidechain address. For more, see [Wallets](#Wallets)
 - For the docker images that might be used for connecting to mainnet, testnet, regnet or private net, check out [https://cloud.docker.com/u/cyberrepublic/repository/list](https://cloud.docker.com/u/cyberrepublic/repository/list)
 
 ## Tools 
-
-- [build_dockerimages.sh](./tools/build_dockerimages.sh): This shell script automatically builds all the binaries for main chain, all the sidechains, services, etc and then packages them to be run inside docker images and if the flags "-p" and "-l" are set to "yes", the built docker images are automatically pushed to [Cyber Republic Docker Hub](https://cloud.docker.com/u/cyberrepublic/repository/list). Note that you need permission to push to the CR dockerhub but you can still build the images locally if you so choose
 - [staging_tools.md](./tools/staging_tools.md): This README file contains all the commands that are used in building the private net from scratch(if that's your cup of tea)
 - [copy_dockerdata_host.sh](./tools/copy_dockerdata_host.sh): This script automatically copies the appropriate data folders from the running docker container and saves them with the names "backup" in each corresponding nodes directories. This is a very handy tool when you're building your own private net from scratch and want to save the progress
 - [copy_freshdata_docker.sh](./tools/copy_freshdata_docker.sh): This script removes all the previous data from your previously ran docker containers and resets it to use the data that is committed to this github repository for each nodes. This is a very handy tool when you want to purge everything from your docker containers and want to reset the data back to the original data(with preloaded wallets and such)
 
 ## Tests
-
 - [action_storeinfoon_didchain.json](./test/action_storeinfoon_didchain.json): This file is used for DID sidechain testing 
 - [did_example.json](./test/did_example.json): This file contains info that is produced when you create a new DID. The DID sidechain test that's used later on uses this already created DID to make the process easier
 - [register_mainchain-dpos-1.lua](./test/register_mainchain-dpos-1.lua): This script is executed when registering for one of the dpos supernodes locally. Please do not use this on production environment
@@ -22,7 +47,6 @@
 - [register_mainchain-dpos-2.lua](./test/register_mainchain-dpos-2.lua): This script is executed when registering for one of the dpos supernodes locally. Please do not use this on production environment
 
 ## Wallets
-
 These are located in the `wallets` folder:
 
 - `foundation.json` - This is where the genesis block's 33 million ELA is created(Note some ELA have been taken out of this account to other addresses for testing purposes)
@@ -31,9 +55,8 @@ These are located in the `wallets` folder:
 - `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 100,000 DID ELA, 100,000 TOKEN ELA and 100,000 ETH ELA respectively
 
 ## Repos used to build 
-
-- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.4
-- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.1
+- [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.5
+- [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.2
 - [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): v0.1.2
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
 - [Elastos.ELA.SideChain.ETH](https://github.com/elastos/Elastos.ELA.SideChain.ETH): dev
@@ -44,7 +67,6 @@ These are located in the `wallets` folder:
 ## Containers that are run
 
 ### Mainchain nodes
-
 - Normal node: 10011-10017
 - CRC node 1: 10111-10117
 - CRC node 2: 10211-10217
@@ -52,45 +74,32 @@ These are located in the `wallets` folder:
 - Elected node 2: 10611-10617
 
 ### Sidechain nodes
-
 - DID sidechain node: 30111-30115
 - Token sidechain node: 40111-40115
-- ETH sidechain node: 60011-60012
-- ETH sidechain oracle node: 60113
+- ETH sidechain node: 60111-60113
+- ETH sidechain oracle node: 60114
 
 ### Arbitrator nodes
-
 - CRC node 1: 50114-50115
 - CRC node 2: 50214-50215
-- Origin node 1: 50514-50515
-- Origin node 2: 50614-50615
-
-### Arbitrator nodes
-
-- CRC node 1: 50114-50115
-- CRC node 2: 50214-50215
-- CRC node 3: 50314-50315
-- CRC node 4: 50414-50415
 - Origin node 1: 50514-50515
 - Origin node 2: 50614-50615
 
 ### Restful Services
-
 - Wallet Service REST API Portal: 8091
 - Sidechain Service REST API Portal: 8092
 - MISC Service Mainchain REST API Portal: 9091
 - MISC Service DID Sidechain REST API Portal: 9092
 
 ### Database Layer
-
 - MYSQL Database: 3307
 
 ## How to Run
-
 1. Just run with docker-compose from within the corresponding directory:
     
     If you would like to reset the entire environment with fresh data, do the following. This basically removes all the blockchain data that may have been saved previously and resets it back to block height 510
     ```
+    mkdir -p ~/.volumes;
     tools/copy_freshdata_docker.sh;
     docker-compose up --remove-orphans --build --force-recreate -d
     ```
@@ -319,18 +328,17 @@ These are located in the `wallets` folder:
 ## DPoS Testing
 
 ### How to register a supernode
-
 1. Create a directory to work off of:
 
-  This uses release v0.3.2 binary for ela program but if there's a newer version, make sure to grab that instead
+  This uses release v0.3.5 binary for ela program but if there's a newer version, make sure to grab that instead
   ```
   mkdir -p ~/node/ela;
   cd ~/node/ela;
-  wget https://download.elastos.org/elastos-ela/elastos-ela-0.3.4/elastos-ela-v0.3.4-linux-x86_64.tgz;
-  tar -xzvf elastos-ela-v0.3.4-linux-x86_64.tgz;
-  mv elastos-ela-v0.3.4/ela .;
-  mv elastos-ela-v0.3.4/ela-cli .;
-  rm -rf elastos-ela-v0.3.4-linux-x86_64.tgz elastos-ela-v0.3.4/
+  wget https://download.elastos.org/elastos-ela/elastos-ela-0.3.5/elastos-ela-v0.3.5-linux-x86_64.tgz;
+  tar -xzvf elastos-ela-v0.3.5-linux-x86_64.tgz;
+  mv elastos-ela-v0.3.5/ela .;
+  mv elastos-ela-v0.3.5/ela-cli .;
+  rm -rf elastos-ela-v0.3.5-linux-x86_64.tgz elastos-ela-v0.3.5/
   ```
 
 2. Let's create a new wallet that we will use to register for our supernode so we'll be both an owner and a node
@@ -486,7 +494,6 @@ These are located in the `wallets` folder:
   You should see your new supernode listed there
 
 ### How to vote for a supernode
-
 - Give 500 votes to Noderators supernode using the same wallet
   ```
   curl -X POST -H "Content-Type: application/json" -d '{
@@ -571,7 +578,6 @@ These are located in the `wallets` folder:
   As you can see, our newly created supernode has 500 votes now
 
 ### Stop your supernode process
-
   ```
   kill -9 $(ps aux | grep ela | grep -v "123" | grep -v grep | cut -d' ' -f2);
   cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain
@@ -579,8 +585,7 @@ These are located in the `wallets` folder:
 
 ## DID Sidechain Testing
 
-### Creating a DID, and Storing/Retrieving Metadata
-
+### Creating a DID and Dealing with Metadata
 Generally you will use the DID Service running on port `8092` for this - [https://didservice.readthedocs.io](https://didservice.readthedocs.io)
 
 See "Create DID" for how to create a DID, you will receive both a did and a private key, store this somewhere.
@@ -661,8 +666,7 @@ If you try to set the DID info before letting it be propagated to the block, you
 
 Don't be alarmed. Just wait a couple of minutes and try again.
 
-### Retrieving the DID info must be on the Misc.API DID Sidechain - port 9092
-
+### Retrieving the DID info
 Even if you use DID Sidechain Service to store DID property, you need to use Misc.API for DID sidechain to retrieve the DID property which should be running on port `9092`.
 
 The API call should be `http://localhost:9092/api/1/did/{did}/{key}`
@@ -693,7 +697,6 @@ Would return something like
 ## TOKEN Sidechain Testing
 
 ## Transfer ELA from main chain to Token Sidechain
-
 1. Change directory
   ```
   cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain/ela-mainchain
@@ -901,7 +904,7 @@ COMING SOON
 6. Check eth balance:
 
   ```
-  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60011
+  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60111
   ```
 
   Should return something like:
@@ -925,8 +928,7 @@ COMING SOON
 
 COMING SOON
 
-### Stop docker services
-
+## Stop docker services
   ```
   cd $GOPATH/src/github.com/cyber-republic/elastos-privnet/blockchain && docker-compose down
   ```
