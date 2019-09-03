@@ -1,4 +1,4 @@
-# Elastos Local PrivateNet - v0.4
+# Elastos Local PrivateNet - v0.5
 
 This version supports the entirety of AuxPoW+DPoS(2 CRC supernodes and 2 DPoS supernodes)
 
