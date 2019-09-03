@@ -38,7 +38,15 @@ type TxPool struct {
 	nodePublicKeys  map[string]struct{}
 	crDIDs          map[Uint168]struct{}
 	specialTxList   map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
-	txnListSize     int
+
+	tempInputUTXOList   map[string]*Transaction
+	tempSidechainTxList map[Uint256]*Transaction
+	tempOwnerPublicKeys map[string]struct{}
+	tempNodePublicKeys  map[string]struct{}
+	tempCrDIDs          map[Uint168]struct{}
+	tempSpecialTxList   map[Uint256]struct{}
+
+	txnListSize int
 }
 
 //append transaction to txnpool when check ok.
@@ -82,6 +90,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 	}
 	//verify transaction by pool with lock
 	if errCode := mp.verifyTransactionWithTxnPool(tx); errCode != Success {
+		mp.clearTemp()
 		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", tx.Hash())
 		return errCode
 	}
@@ -91,6 +100,10 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		log.Warn("TxPool check transactions size failed", tx.Hash())
 		return ErrTransactionPoolSize
 	}
+
+	mp.commitTemp()
+	mp.clearTemp()
+
 	// Add the transaction to mem pool
 	mp.txnList[txHash] = tx
 	mp.txnListSize += size
@@ -559,7 +572,7 @@ func (mp *TxPool) verifyDuplicateOwner(ownerPublicKey string) error {
 }
 
 func (mp *TxPool) addOwnerPublicKey(publicKey string) {
-	mp.ownerPublicKeys[publicKey] = struct{}{}
+	mp.tempOwnerPublicKeys[publicKey] = struct{}{}
 }
 
 func (mp *TxPool) delOwnerPublicKey(publicKey string) {
@@ -577,7 +590,7 @@ func (mp *TxPool) verifyDuplicateNode(nodePublicKey string) error {
 }
 
 func (mp *TxPool) addNodePublicKey(nodePublicKey string) {
-	mp.nodePublicKeys[nodePublicKey] = struct{}{}
+	mp.tempNodePublicKeys[nodePublicKey] = struct{}{}
 }
 
 func (mp *TxPool) delNodePublicKey(nodePublicKey string) {
@@ -624,7 +637,7 @@ func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte) error {
 }
 
 func (mp *TxPool) addCRDID(did Uint168) {
-	mp.crDIDs[did] = struct{}{}
+	mp.tempCrDIDs[did] = struct{}{}
 }
 
 func (mp *TxPool) delCRDID(did Uint168) {
@@ -644,7 +657,7 @@ func (mp *TxPool) delPublicKeyByCode(code []byte) {
 }
 
 func (mp *TxPool) addSpecialTx(hash *Uint256) {
-	mp.specialTxList[*hash] = struct{}{}
+	mp.tempSpecialTxList[*hash] = struct{}{}
 }
 
 func (mp *TxPool) delSpecialTx(hash *Uint256) {
@@ -754,7 +767,7 @@ func (mp *TxPool) getInputUTXOList(input *Input) *Transaction {
 
 func (mp *TxPool) addInputUTXOList(tx *Transaction, input *Input) {
 	id := input.ReferKey()
-	mp.inputUTXOList[id] = tx
+	mp.tempInputUTXOList[id] = tx
 }
 
 func (mp *TxPool) delInputUTXOList(input *Input) {
@@ -765,7 +778,7 @@ func (mp *TxPool) delInputUTXOList(input *Input) {
 func (mp *TxPool) addSidechainTx(txn *Transaction) {
 	witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 	for _, hash := range witPayload.SideChainTransactionHashes {
-		mp.sidechainTxList[hash] = txn
+		mp.tempSidechainTxList[hash] = txn
 	}
 }
 
@@ -807,15 +820,51 @@ func (mp *TxPool) doRemoveTransaction(hash Uint256, txSize int) {
 	mp.txnListSize -= txSize
 }
 
+func (mp *TxPool) clearTemp() {
+	mp.tempInputUTXOList = make(map[string]*Transaction)
+	mp.tempSidechainTxList = make(map[Uint256]*Transaction)
+	mp.tempOwnerPublicKeys = make(map[string]struct{})
+	mp.tempNodePublicKeys = make(map[string]struct{})
+	mp.tempSpecialTxList = make(map[Uint256]struct{})
+	mp.tempCrDIDs = make(map[Uint168]struct{})
+}
+
+func (mp *TxPool) commitTemp() {
+	for k, v := range mp.tempInputUTXOList {
+		mp.inputUTXOList[k] = v
+	}
+	for k, v := range mp.tempSidechainTxList {
+		mp.sidechainTxList[k] = v
+	}
+	for k, v := range mp.tempOwnerPublicKeys {
+		mp.ownerPublicKeys[k] = v
+	}
+	for k, v := range mp.tempNodePublicKeys {
+		mp.nodePublicKeys[k] = v
+	}
+	for k, v := range mp.tempCrDIDs {
+		mp.crDIDs[k] = v
+	}
+	for k, v := range mp.tempSpecialTxList {
+		mp.specialTxList[k] = v
+	}
+}
+
 func NewTxPool(params *config.Params) *TxPool {
 	return &TxPool{
-		chainParams:     params,
-		inputUTXOList:   make(map[string]*Transaction),
-		txnList:         make(map[Uint256]*Transaction),
-		sidechainTxList: make(map[Uint256]*Transaction),
-		ownerPublicKeys: make(map[string]struct{}),
-		nodePublicKeys:  make(map[string]struct{}),
-		specialTxList:   make(map[Uint256]struct{}),
-		crDIDs:          make(map[Uint168]struct{}),
+		chainParams:         params,
+		inputUTXOList:       make(map[string]*Transaction),
+		txnList:             make(map[Uint256]*Transaction),
+		sidechainTxList:     make(map[Uint256]*Transaction),
+		ownerPublicKeys:     make(map[string]struct{}),
+		nodePublicKeys:      make(map[string]struct{}),
+		specialTxList:       make(map[Uint256]struct{}),
+		crDIDs:              make(map[Uint168]struct{}),
+		tempInputUTXOList:   make(map[string]*Transaction),
+		tempSidechainTxList: make(map[Uint256]*Transaction),
+		tempOwnerPublicKeys: make(map[string]struct{}),
+		tempNodePublicKeys:  make(map[string]struct{}),
+		tempSpecialTxList:   make(map[Uint256]struct{}),
+		tempCrDIDs:          make(map[Uint168]struct{}),
 	}
 }

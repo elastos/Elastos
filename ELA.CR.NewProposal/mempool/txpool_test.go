@@ -106,6 +106,7 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 
 	// 2. Add sidechain Tx to pool
 	txPool.addSidechainTx(txn1)
+	txPool.commitTemp()
 
 	// 3. Generate a withdraw transaction with duplicate sidechain Tx which already in the pool
 	txn2 := new(types.Transaction)
@@ -256,6 +257,7 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	// 3. Verify CR related tx
 	errCode := txPool.verifyCRRelatedTx(tx3)
 	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
 
 	// 4. Verify duplicate CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx4)
@@ -268,6 +270,7 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	// 6. Verify duplicate producer related tx
 	errCode = txPool.verifyProducerRelatedTx(tx6)
 	assert.True(t, errCode == errors.ErrProducerProcessing)
+	txPool.clearTemp()
 
 	// 7. Clean CR related tx
 	txs := make([]*types.Transaction, 1)
@@ -277,14 +280,17 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	// 8. Verify duplicate producer related tx
 	errCode = txPool.verifyProducerRelatedTx(tx5)
 	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
 
 	// 9. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx3)
 	assert.True(t, errCode == errors.ErrCRProcessing)
+	txPool.clearTemp()
 
 	// 10. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx4)
 	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
 
 	// 11. Clean producer related tx
 	txs2 := make([]*types.Transaction, 2)
@@ -352,6 +358,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	// 2. Add to sidechain txs pool
 	for _, txn := range txns {
 		txPool.addSidechainTx(txn)
+		txPool.commitTemp()
 	}
 
 	// Verify sidechain tx pool state
@@ -441,6 +448,7 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 
 	// 2. Add sidechain Tx to pool
 	txPool.addSidechainTx(txn1)
+	txPool.commitTemp()
 
 	// 3. Run IsDuplicateSidechainTx
 	inPool := txPool.IsDuplicateSidechainTx(sideTx1)
