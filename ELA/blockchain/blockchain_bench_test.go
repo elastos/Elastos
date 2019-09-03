@@ -232,6 +232,8 @@ func benchBegin() *BlockChain {
 		return nil
 	}
 
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+
 	params := config.DefaultParams.RegNet()
 	store, _ := NewChainStore(test.DataPath, params.GenesisBlock)
 	blockChain, _ := New(store, params, nil, nil)
