@@ -4,6 +4,7 @@ import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import { Table, Row, Col, Button } from 'antd'
 import I18N from '@/I18N'
+import { logger } from '@/util'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import VoteStats from '../stats/Component'
 
@@ -254,8 +255,7 @@ export default class extends BaseComponent {
       const page = sessionStorage.getItem('proposalPage')
       this.setState({ list, page: page && parseInt(page) || 1 })
     } catch (error) {
-      // should use rollbar
-      console.log('refetch proposal err...', error)
+      logger.error(error)
     }
 
     this.ord_loading(false)
