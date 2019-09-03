@@ -1307,7 +1307,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	}}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	txn.Outputs = outPuts
-	s.EqualError(err, "producer deposit amount is insufficient")
+	s.EqualError(err, "CR deposit amount is insufficient")
 
 	// Multi deposit addresses
 	txn.Outputs = []*types.Output{

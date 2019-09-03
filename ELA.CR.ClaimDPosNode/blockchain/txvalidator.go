@@ -1417,7 +1417,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 					" match the code in payload")
 			}
 			if output.Value < MinDepositAmount {
-				return errors.New("producer deposit amount is insufficient")
+				return errors.New("CR deposit amount is insufficient")
 			}
 		}
 	}
