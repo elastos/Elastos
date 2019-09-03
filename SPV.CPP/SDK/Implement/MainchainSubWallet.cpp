@@ -901,7 +901,7 @@ namespace Elastos {
 
 						info["Confirms"] = allTxs[i]->GetConfirms(lastBlockHeight);
 
-						j["Status"] = "UnRegistered";
+						j["Status"] = "Canceled";
 						j["Info"] = info;
 					}
 				} else if (allTxs[i]->GetTransactionType() == Transaction::returnCRDepositCoin) {
