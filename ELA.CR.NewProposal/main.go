@@ -199,7 +199,7 @@ func startNode(c *cli.Context) {
 		printErrorAndExit(err)
 	}
 	if err := chain.InitFFLDBFromChainStore(interrupt.C, pgBar.Start,
-		pgBar.Increase); err != nil {
+		pgBar.Increase, true); err != nil {
 		printErrorAndExit(err)
 	}
 	pgBar.Stop()

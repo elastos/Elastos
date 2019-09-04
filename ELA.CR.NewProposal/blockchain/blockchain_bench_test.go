@@ -113,6 +113,8 @@ func BenchmarkBlockChain_FFLDBGetBlocks(b *testing.B) {
 			b.Error(err)
 		}
 	}
+	// Sleep one second to ensure that only one test is performed.
+	time.Sleep(time.Second)
 }
 
 func BenchmarkBlockChain_GetTransactions(b *testing.B) {
@@ -145,6 +147,8 @@ func BenchmarkBlockChain_ProcessBlock(b *testing.B) {
 	if err != nil {
 		b.Error(err)
 	}
+	// Sleep one second to ensure that only one test is performed.
+	time.Sleep(time.Second)
 }
 
 func BenchmarkBlockChain_HaveBlock(b *testing.B) {
@@ -237,6 +241,8 @@ func benchBegin() *BlockChain {
 	params := config.DefaultParams.RegNet()
 	store, _ := NewChainStore(test.DataPath, params.GenesisBlock)
 	blockChain, _ := New(store, params, nil, nil)
+	var interrupt = signal.NewInterrupt()
+	blockChain.InitFFLDBFromChainStore(interrupt.C, nil, nil, false)
 	rollbackTo(chainHeight, blockChain)
 	store.Close()
 
@@ -283,8 +289,6 @@ func benchBegin() *BlockChain {
 		Arbitrators: arbiters,
 	}
 
-	var interrupt = signal.NewInterrupt()
-	chain.InitFFLDBFromChainStore(interrupt.C, nil, nil)
 	chain.InitCheckpoint(interrupt.C, nil, nil)
 
 	return chain
