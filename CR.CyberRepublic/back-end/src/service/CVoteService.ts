@@ -94,7 +94,10 @@ export default class extends Base {
       const res = await db_cvote.save(doc)
       await db_suggestion.update(
         { _id: suggestionId },
-        { $addToSet: { reference: res._id } }
+        {
+          $addToSet: { reference: res._id },
+          $set: { tags: [] }
+        }
       )
       this.notifySubscribers(res)
       this.notifyCouncil(res)
