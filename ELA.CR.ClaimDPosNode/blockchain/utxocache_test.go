@@ -84,18 +84,15 @@ func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
 	utxoCache = NewUTXOCache(testUTXOCacheDB)
 
 	// get tx reference form db and cache it first time.
-	reference, err := utxoCache.GetTxReferenceInfo(spendTx)
+	reference, err := utxoCache.GetTxReference(spendTx)
 	assert.NoError(t, err)
-	for input, outputInfo := range reference {
+	for input, output := range reference {
 		assert.Equal(t, referTx.Hash(), input.Previous.TxID)
 		assert.Equal(t, uint16(0), input.Previous.Index)
 		assert.Equal(t, uint32(0), input.Sequence)
 
-		assert.Equal(t, common.Fixed64(100), outputInfo.output.Value)
-		assert.Equal(t, types.OTVote, outputInfo.output.Type)
-		assert.Equal(t, 1, outputInfo.inputsCount)
-		assert.Equal(t, uint32(5), outputInfo.locktime)
-		assert.Equal(t, types.TransferAsset, outputInfo.txtype)
+		assert.Equal(t, common.Fixed64(100), output.Value)
+		assert.Equal(t, types.OTVote, output.Type)
 	}
 
 	// ensure above reference have been cached.
@@ -104,35 +101,22 @@ func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
 	_, _, err = testUTXOCacheDB.GetTransaction(referTx.Hash())
 	assert.Equal(t, "leveldb: not found", err.Error())
 
-	reference, err = utxoCache.GetTxReferenceInfo(spendTx)
+	reference, err = utxoCache.GetTxReference(spendTx)
 	assert.NoError(t, err)
-	for input, outputInfo := range reference {
+	for input, output := range reference {
 		assert.Equal(t, referTx.Hash(), input.Previous.TxID)
 		assert.Equal(t, uint16(0), input.Previous.Index)
 		assert.Equal(t, uint32(0), input.Sequence)
 
-		assert.Equal(t, common.Fixed64(100), outputInfo.output.Value)
-		assert.Equal(t, types.OTVote, outputInfo.output.Type)
-		assert.Equal(t, 1, outputInfo.inputsCount)
-		assert.Equal(t, uint32(5), outputInfo.locktime)
-		assert.Equal(t, types.TransferAsset, outputInfo.txtype)
+		assert.Equal(t, common.Fixed64(100), output.Value)
+		assert.Equal(t, types.OTVote, output.Type)
 	}
 }
 
 func TestUTXOCache_CleanSpent(t *testing.T) {
-	block := &types.Block{
-		Header: types.Header{},
-		Transactions: []*types.Transaction{
-			{
-				Version: types.TxVersion09,
-				TxType:  types.CoinBase,
-			},
-			spendTx,
-		},
-	}
-	utxoCache.CleanSpent(block)
-	_, err := utxoCache.GetTxReferenceInfo(spendTx)
-	assert.Equal(t, "GetTxReferenceInfo failed, previous transaction not found", err.Error())
+	utxoCache.CleanTxCache()
+	_, err := utxoCache.GetTransaction(spendTx.Hash())
+	assert.Equal(t, "transaction not found", err.Error())
 }
 
 func TestUTXOCache_CleanCache(t *testing.T) {
@@ -140,18 +124,15 @@ func TestUTXOCache_CleanCache(t *testing.T) {
 	assert.NoError(t, err)
 	testUTXOCacheDB.BatchCommit()
 
-	reference, err := utxoCache.GetTxReferenceInfo(spendTx)
+	reference, err := utxoCache.GetTxReference(spendTx)
 	assert.NoError(t, err)
-	for input, outputInfo := range reference {
+	for input, output := range reference {
 		assert.Equal(t, referTx.Hash(), input.Previous.TxID)
 		assert.Equal(t, uint16(0), input.Previous.Index)
 		assert.Equal(t, uint32(0), input.Sequence)
 
-		assert.Equal(t, common.Fixed64(100), outputInfo.output.Value)
-		assert.Equal(t, types.OTVote, outputInfo.output.Type)
-		assert.Equal(t, 1, outputInfo.inputsCount)
-		assert.Equal(t, uint32(5), outputInfo.locktime)
-		assert.Equal(t, types.TransferAsset, outputInfo.txtype)
+		assert.Equal(t, common.Fixed64(100), output.Value)
+		assert.Equal(t, types.OTVote, output.Type)
 	}
 
 	err = deleteTestDBTx(referTx)
@@ -160,12 +141,13 @@ func TestUTXOCache_CleanCache(t *testing.T) {
 	assert.Equal(t, "leveldb: not found", err.Error())
 
 	utxoCache.CleanCache()
-	_, err = utxoCache.GetTxReferenceInfo(spendTx)
-	assert.Equal(t, "GetTxReferenceInfo failed, previous transaction not found", err.Error())
+	_, err = utxoCache.GetTxReference(spendTx)
+	assert.Equal(t, "GetTxReference failed, transaction not found", err.Error())
 }
 
 // Test for case that a map use pointer as a key
 func Test_PointerKeyForMap(t *testing.T) {
+	test.SkipShort(t)
 	i1 := types.Input{
 		Previous: types.OutPoint{
 			TxID:  common.EmptyHash,
@@ -184,6 +166,7 @@ func Test_PointerKeyForMap(t *testing.T) {
 	// ensure i1 and i2 have the same data
 	assert.Equal(t, i1, i2)
 
+	// pointer as a key
 	m1 := make(map[*types.Input]int)
 	m1[&i1] = 1
 	m1[&i2] = 2
@@ -192,6 +175,7 @@ func Test_PointerKeyForMap(t *testing.T) {
 	// NOTE: &i1 and &i2 are different keys in m1
 	// map[{TxID: 0000000000000000000000000000000000000000000000000000000000000000 Index: 15 Sequence: 10}:1 {TxID: 0000000000000000000000000000000000000000000000000000000000000000 Index: 15 Sequence: 10}:2]
 
+	// object as a key
 	m2 := make(map[types.Input]int)
 	m2[i1] = 1
 	m2[i2] = 2
@@ -199,6 +183,7 @@ func Test_PointerKeyForMap(t *testing.T) {
 	//fmt.Println(m2)
 	// map[{TxID: 0000000000000000000000000000000000000000000000000000000000000000 Index: 15 Sequence: 10}:2]
 
+	// pointer as a key
 	m4 := make(map[*int]int)
 	i3 := 0
 	i4 := 0

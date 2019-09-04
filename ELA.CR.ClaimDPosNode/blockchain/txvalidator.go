@@ -87,7 +87,7 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 
 // CheckTransactionContext verifies a transaction with history transaction in ledger
 func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
-	txn *Transaction, references map[*Input]*OutputInfo) ErrCode {
+	txn *Transaction, references map[*Input]*Output) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
@@ -256,7 +256,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		return ErrTransactionSignature
 	}
 
-	if err := b.checkInvalidUTXO(references); err != nil {
+	if err := b.checkInvalidUTXO(txn); err != nil {
 		log.Warn("[CheckTransactionCoinbaseLock]", err)
 		return ErrIneffectiveCoinbase
 	}
@@ -278,11 +278,11 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 	return Success
 }
 
-func checkVoteOutputs(outputs []*Output, references map[*Input]*OutputInfo,
+func checkVoteOutputs(outputs []*Output, references map[*Input]*Output,
 	pds map[string]struct{}, crs map[string]struct{}) error {
 	programHashes := make(map[common.Uint168]struct{})
-	for _, v := range references {
-		programHashes[v.output.ProgramHash] = struct{}{}
+	for _, output := range references {
+		programHashes[output.ProgramHash] = struct{}{}
 	}
 	for _, o := range outputs {
 		if o.Type != OTVote {
@@ -374,25 +374,28 @@ func getCRCodesMap(crs []*crstate.Candidate) map[string]struct{} {
 	return codes
 }
 
-func checkDestructionAddress(references map[*Input]*OutputInfo) error {
-	for _, refer := range references {
-		if refer.output.ProgramHash == config.DestructionAddress {
+func checkDestructionAddress(references map[*Input]*Output) error {
+	for _, output := range references {
+		if output.ProgramHash == config.DestructionAddress {
 			return errors.New("cannot use utxo from the destruction address")
 		}
 	}
 	return nil
 }
 
-func (b *BlockChain) checkInvalidUTXO(references map[*Input]*OutputInfo) error {
+func (b *BlockChain) checkInvalidUTXO(txn *Transaction) error {
 	currentHeight := DefaultLedger.Blockchain.GetHeight()
-	for _, refer := range references {
-		// check new sideChainPow
-		if refer.txtype == SideChainPow && refer.inputsCount == 0 {
-			return errors.New("cannot spend the utxo from a new sideChainPow tx")
+	for _, input := range txn.Inputs {
+		referTxn, err := b.UTXOCache.GetTransaction(input.Previous.TxID)
+		if err != nil {
+			return err
 		}
-
-		if refer.txtype == CoinBase && currentHeight-refer.locktime < b.chainParams.CoinbaseMaturity {
-			return errors.New("the utxo of coinbase is locking")
+		if referTxn.IsCoinBaseTx() {
+			if currentHeight-referTxn.LockTime < b.chainParams.CoinbaseMaturity {
+				return errors.New("the utxo of coinbase is locking")
+			}
+		} else if referTxn.IsNewSideChainPowTx() {
+			return errors.New("cannot spend the utxo from a new sideChainPow tx")
 		}
 	}
 
@@ -599,29 +602,29 @@ func checkOutputPayload(txType TxType, output *Output) error {
 	return output.Payload.Validate()
 }
 
-func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*OutputInfo) error {
+func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
 	if txn.IsCoinBaseTx() {
 		return nil
 	}
-	for input, refer := range references {
+	for input, output := range references {
 
-		if refer.output.OutputLock == 0 {
+		if output.OutputLock == 0 {
 			//check next utxo
 			continue
 		}
 		if input.Sequence != math.MaxUint32-1 {
 			return errors.New("Invalid input sequence")
 		}
-		if txn.LockTime < refer.output.OutputLock {
+		if txn.LockTime < output.OutputLock {
 			return errors.New("UTXO output locked")
 		}
 	}
 	return nil
 }
 
-func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*OutputInfo) error {
-	for _, refer := range references {
-		if contract.GetPrefixType(refer.output.ProgramHash) == contract.PrefixDeposit {
+func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output) error {
+	for _, output := range references {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
 			if !txn.IsReturnDepositCoin() && !txn.IsReturnCRDepositCoinTx() {
 				return errors.New("only the ReturnDepositCoin and " +
 					"ReturnCRDepositCoin transaction can use the deposit UTXO")
@@ -670,14 +673,14 @@ func checkAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
-func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]*OutputInfo) error {
+func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
 	for _, output := range tx.Outputs {
 		outputValue += output.Value
 	}
-	for _, reference := range references {
-		inputValue += reference.output.Value
+	for _, output := range references {
+		inputValue += output.Value
 	}
 	if inputValue < b.chainParams.MinTransactionFee+outputValue {
 		return fmt.Errorf("transaction fee not enough")
@@ -760,7 +763,7 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 	return nil
 }
 
-func checkTransactionSignature(tx *Transaction, references map[*Input]*OutputInfo) error {
+func checkTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
 	programHashes, err := GetTxProgramHashes(tx, references)
 	if err != nil {
 		return err
@@ -881,7 +884,7 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 	return nil
 }
 
-func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*OutputInfo) error {
+func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, references map[*Input]*Output) error {
 	witPayload, ok := txn.Payload.(*payload.WithdrawFromSideChain)
 	if !ok {
 		return errors.New("Invalid withdraw from side chain payload type")
@@ -892,8 +895,8 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 		}
 	}
 
-	for _, v := range references {
-		if bytes.Compare(v.output.ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
+	for _, output := range references {
+		if bytes.Compare(output.ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
 			return errors.New("Invalid transaction inputs address, without \"X\" at beginning")
 		}
 	}
@@ -948,7 +951,7 @@ func (b *BlockChain) checkCrossChainArbitrators(publicKeys [][]byte) error {
 	return nil
 }
 
-func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*OutputInfo) error {
+func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, references map[*Input]*Output) error {
 	payloadObj, ok := txn.Payload.(*payload.TransferCrossChainAsset)
 	if !ok {
 		return errors.New("Invalid transfer cross chain asset payload type")
@@ -994,8 +997,8 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 
 	//check transaction fee
 	var totalInput common.Fixed64
-	for _, v := range references {
-		totalInput += v.output.Value
+	for _, output := range references {
+		totalInput += output.Value
 	}
 
 	var totalOutput common.Fixed64
@@ -1537,15 +1540,15 @@ func (b *BlockChain) additionalProducerInfoCheck(
 }
 
 func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*OutputInfo, currentHeight uint32) error {
+	references map[*Input]*Output, currentHeight uint32) error {
 
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
 	for _, output := range txn.Outputs {
 		outputValue += output.Value
 	}
-	for _, reference := range references {
-		inputValue += reference.output.Value
+	for _, output := range references {
+		inputValue += output.Value
 	}
 
 	var penalty common.Fixed64
@@ -1571,7 +1574,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*OutputInfo, currentHeight uint32,
+	references map[*Input]*Output, currentHeight uint32,
 	isInVotingPeriod func(height uint32) bool) error {
 
 	var outputValue common.Fixed64
@@ -1579,8 +1582,8 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 	for _, output := range txn.Outputs {
 		outputValue += output.Value
 	}
-	for _, reference := range references {
-		inputValue += reference.output.Value
+	for _, output := range references {
+		inputValue += output.Value
 	}
 
 	var penalty common.Fixed64
