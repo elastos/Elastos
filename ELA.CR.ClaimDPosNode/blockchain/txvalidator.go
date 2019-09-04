@@ -86,7 +86,8 @@ func (b *BlockChain) CheckTransactionSanity(blockHeight uint32, txn *Transaction
 }
 
 // CheckTransactionContext verifies a transaction with history transaction in ledger
-func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transaction) ErrCode {
+func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
+	txn *Transaction, references map[*Input]*Output) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := b.db.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
@@ -200,12 +201,6 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 		return ErrDoubleSpend
 	}
 
-	references, err := DefaultLedger.Store.GetTxReference(txn)
-	if err != nil {
-		log.Warn("[CheckTransactionContext] get transaction reference failed")
-		return ErrUnknownReferredTx
-	}
-
 	if txn.IsWithdrawFromSideChainTx() {
 		if err := b.checkWithdrawFromSideChainTransaction(txn, references); err != nil {
 			log.Warn("[CheckWithdrawFromSideChainTransaction],", err)
@@ -222,7 +217,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 
 	if txn.IsReturnDepositCoin() {
 		if err := b.checkReturnDepositCoinTransaction(
-			txn, references, b.db.GetHeight()); err != nil {
+			txn, references, b.GetHeight()); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return ErrReturnDepositConsensus
 		}
@@ -230,7 +225,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 
 	if txn.IsReturnCRDepositCoinTx() {
 		if err := b.checkReturnCRDepositCoinTransaction(
-			txn, references, b.db.GetHeight(), b.crCommittee.IsInVotingPeriod); err != nil {
+			txn, references, b.GetHeight(), b.crCommittee.IsInVotingPeriod); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return ErrReturnDepositConsensus
 		}
@@ -286,8 +281,8 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32, txn *Transactio
 func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, references map[*Input]*Output,
 	pds map[string]struct{}, crs map[string]struct{}) error {
 	programHashes := make(map[common.Uint168]struct{})
-	for _, v := range references {
-		programHashes[v.ProgramHash] = struct{}{}
+	for _, output := range references {
+		programHashes[output.ProgramHash] = struct{}{}
 	}
 	for _, o := range outputs {
 		if o.Type != OTVote {
@@ -394,44 +389,21 @@ func checkDestructionAddress(references map[*Input]*Output) error {
 }
 
 func (b *BlockChain) checkInvalidUTXO(txn *Transaction) error {
-	type lockTxInfo struct {
-		isCoinbaseTx bool
-		locktime     uint32
-	}
-	transactionCache := make(map[common.Uint256]lockTxInfo)
 	currentHeight := DefaultLedger.Blockchain.GetHeight()
-	var referTxn *Transaction
 	for _, input := range txn.Inputs {
-		var lockHeight uint32
-		var isCoinbase bool
-		referHash := input.Previous.TxID
-		if _, ok := transactionCache[referHash]; ok {
-			lockHeight = transactionCache[referHash].locktime
-			isCoinbase = transactionCache[referHash].isCoinbaseTx
-		} else {
-			var err error
-			referTxn, _, err = DefaultLedger.Store.GetTransaction(referHash)
-			// TODO
-			// we have executed DefaultLedger.Store.GetTxReference(txn) before.
-			// So if we can't find referTxn here, there must be a data inconsistent problem,
-			// because we do not add lock correctly. This problem will be fixed later on.
-			if err != nil {
-				return errors.New("[checkInvalidUTXO] get tx reference failed:" + err.Error())
-			}
-			lockHeight = referTxn.LockTime
-			isCoinbase = referTxn.IsCoinBaseTx()
-			transactionCache[referHash] = lockTxInfo{isCoinbase, lockHeight}
-
-			// check new sideChainPow
-			if referTxn.IsNewSideChainPowTx() {
-				return errors.New("cannot spend the utxo from a new sideChainPow tx")
-			}
+		referTxn, err := b.UTXOCache.GetTransaction(input.Previous.TxID)
+		if err != nil {
+			return err
 		}
-
-		if isCoinbase && currentHeight-lockHeight < b.chainParams.CoinbaseMaturity {
-			return errors.New("the utxo of coinbase is locking")
+		if referTxn.IsCoinBaseTx() {
+			if currentHeight-referTxn.LockTime < b.chainParams.CoinbaseMaturity {
+				return errors.New("the utxo of coinbase is locking")
+			}
+		} else if referTxn.IsNewSideChainPowTx() {
+			return errors.New("cannot spend the utxo from a new sideChainPow tx")
 		}
 	}
+
 	return nil
 }
 
@@ -712,8 +684,8 @@ func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]
 	for _, output := range tx.Outputs {
 		outputValue += output.Value
 	}
-	for _, reference := range references {
-		inputValue += reference.Value
+	for _, output := range references {
+		inputValue += output.Value
 	}
 	if inputValue < b.chainParams.MinTransactionFee+outputValue {
 		return fmt.Errorf("transaction fee not enough")
@@ -928,8 +900,8 @@ func (b *BlockChain) checkWithdrawFromSideChainTransaction(txn *Transaction, ref
 		}
 	}
 
-	for _, v := range references {
-		if bytes.Compare(v.ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
+	for _, output := range references {
+		if bytes.Compare(output.ProgramHash[0:1], []byte{byte(contract.PrefixCrossChain)}) != 0 {
 			return errors.New("Invalid transaction inputs address, without \"X\" at beginning")
 		}
 	}
@@ -1030,8 +1002,8 @@ func (b *BlockChain) checkTransferCrossChainAssetTransaction(txn *Transaction, r
 
 	//check transaction fee
 	var totalInput common.Fixed64
-	for _, v := range references {
-		totalInput += v.Value
+	for _, output := range references {
+		totalInput += output.Value
 	}
 
 	var totalOutput common.Fixed64
@@ -1585,8 +1557,8 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 	for _, output := range txn.Outputs {
 		outputValue += output.Value
 	}
-	for _, reference := range references {
-		inputValue += reference.Value
+	for _, output := range references {
+		inputValue += output.Value
 	}
 
 	var penalty common.Fixed64
@@ -1620,8 +1592,8 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 	for _, output := range txn.Outputs {
 		outputValue += output.Value
 	}
-	for _, reference := range references {
-		inputValue += reference.Value
+	for _, output := range references {
+		inputValue += output.Value
 	}
 
 	var penalty common.Fixed64

@@ -706,6 +706,12 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	//}
 }
 
+func TestTxPool_End(t *testing.T) {
+	blockchain.DefaultLedger.Store.Close()
+	blockchain.DefaultLedger = initialLedger
+	initialLedger = nil
+}
+
 func isTransactionCleaned(pool *TxPool, tx *types.Transaction) error {
 	if tx := pool.txnList[tx.Hash()]; tx != nil {
 		return fmt.Errorf("has transaction in transaction pool" + tx.Hash().String())
