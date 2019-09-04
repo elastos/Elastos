@@ -119,7 +119,7 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 }
 
 func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
-	barStart func(total uint32), increase func()) (err error) {
+	barStart func(total uint32), increase func(), clear bool) (err error) {
 	endHeight := b.db.GetHeight()
 	startHeight := b.GetHeight() + 1
 	if endHeight < startHeight {
@@ -173,12 +173,13 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 				increase()
 			}
 
-			chain := b.db.(*ChainStore)
-			chain.NewBatch()
-			chain.RollbackTrimmedBlock(block)
-			chain.RollbackBlockHash(block)
-			chain.BatchCommit()
-
+			if clear {
+				chain := b.db.(*ChainStore)
+				chain.NewBatch()
+				chain.RollbackTrimmedBlock(block)
+				chain.RollbackBlockHash(block)
+				chain.BatchCommit()
+			}
 		}
 		done <- true
 	}()

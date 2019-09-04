@@ -486,13 +486,7 @@ func (b *BlockChain) initChainState() error {
 			i++
 		}
 
-		// Set the best chain view to the stored best state.
-		tip, ok := b.LookupNodeInIndex(&state.hash)
-		if !ok || tip == nil {
-			return fmt.Errorf("initChainState: cannot find "+
-				"chain tip %s in block index", state.hash)
-		}
-		b.BestChain = tip
+		b.BestChain = lastNode
 
 		// Load the raw block bytes for the best block.
 		blockBytes, err := dbTx.FetchBlock(&state.hash)
