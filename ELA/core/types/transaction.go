@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package types
 
@@ -118,7 +118,7 @@ const (
 )
 
 type Transaction struct {
-	Version        TransactionVersion // New field added in TxVersionC0
+	Version        TransactionVersion // New field added in TxVersion09
 	TxType         TxType
 	PayloadVersion byte
 	Payload        Payload
@@ -443,11 +443,10 @@ func (tx *Transaction) IsCoinBaseTx() bool {
 
 // SerializeSizeStripped returns the number of bytes it would take to serialize
 // the block, excluding any witness data (if any).
-func  (tx *Transaction) SerializeSizeStripped() int {
+func (tx *Transaction) SerializeSizeStripped() int {
 	// todo add cache for size according to btcd
 	return tx.GetSize()
 }
-
 
 // Payload define the func for loading the payload data
 // base on payload type which have different structure
