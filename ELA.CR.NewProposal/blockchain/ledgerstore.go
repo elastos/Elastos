@@ -1,19 +1,25 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
 import (
+	"time"
+
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/database"
 )
 
 // IChainStore provides func with store package.
 type IChainStore interface {
-	SaveBlock(b *Block, confirm *payload.Confirm) error
+	GetFFLDB() IFFLDBChainStore
+
+	SaveBlock(b *Block, node *BlockNode, confirm *payload.Confirm,
+		medianTimePast time.Time) error
 	GetBlock(hash Uint256) (*Block, error)
 	GetBlockHash(height uint32) (Uint256, error)
 	IsDoubleSpend(tx *Transaction) bool
@@ -22,7 +28,8 @@ type IChainStore interface {
 
 	GetHeader(hash Uint256) (*Header, error)
 
-	RollbackBlock(hash Uint256) error
+	RollbackBlock(b *Block, node *BlockNode,
+		confirm *payload.Confirm, medianTimePast time.Time) error
 
 	GetTransaction(txID Uint256) (*Transaction, uint32, error)
 	GetTxReference(tx *Transaction) (map[*Input]*Output, error)
@@ -47,4 +54,31 @@ type IChainStore interface {
 	IsBlockInStore(hash *Uint256) bool
 
 	Close()
+}
+
+// IChainStore provides func with store package.
+type IFFLDBChainStore interface {
+	database.DB
+
+	// SaveBlock will write block into file db.
+	SaveBlock(b *Block, node *BlockNode, confirm *payload.Confirm,
+		medianTimePast time.Time) error
+
+	// RollbackBlock only remove block state and block index.
+	RollbackBlock(b *Block, node *BlockNode,
+		confirm *payload.Confirm, medianTimePast time.Time) error
+
+	// Get block from file db.
+	GetBlock(hash Uint256) (*Block, error)
+
+	// Get block header from file db.
+	GetHeader(hash Uint256) (*Header, error)
+
+	// If already exist in main chain(exist in file db and exist block index),
+	// will return true.
+	BlockExists(hash *Uint256) (bool, error)
+
+	// If already exist in file db (rollback will not remove from file db), will
+	// return true.
+	IsBlockInStore(hash *Uint256) bool
 }

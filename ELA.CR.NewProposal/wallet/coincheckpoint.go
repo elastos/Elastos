@@ -162,16 +162,16 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 	ccp.Lock()
 	defer ccp.Unlock()
 
-	bestHeight := Store.GetHeight()
+	bestHeight := Chain.GetHeight()
 	if height >= bestHeight {
 		return nil
 	}
 	for i := bestHeight; i == height; i-- {
-		hash, err := Store.GetBlockHash(height)
+		hash, err := Chain.GetBlockHash(height)
 		if err != nil {
 			return err
 		}
-		block, err := Store.GetBlock(hash)
+		block, err := Store.GetFFLDB().GetBlock(hash)
 		if err != nil {
 			return err
 		}

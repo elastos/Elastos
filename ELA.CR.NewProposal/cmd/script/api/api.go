@@ -172,20 +172,24 @@ func initLedger(L *lua.LState) int {
 	log.NewDefault(test.NodeLogPath, logLevel, 0, 0)
 	dlog.Init(logLevel, 0, 0)
 
+	ledger := blockchain.Ledger{}
 	chainStore, err := blockchain.NewChainStore(test.DataPath, chainParams.GenesisBlock)
 	if err != nil {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
-	arbiters, err := state.NewArbitrators(chainParams,
-		chainStore.GetHeight,
+	arbiters, err := state.NewArbitrators(chainParams, nil)
+	if err != nil {
+		fmt.Printf("New arbitrators error: %s \n", err.Error())
+	}
+	arbiters.RegisterFunction(chainStore.GetHeight,
 		func(height uint32) (*types.Block, error) {
-			hash, err := chainStore.GetBlockHash(height)
+			hash, err := ledger.Blockchain.GetBlockHash(height)
 			if err != nil {
 				return nil, err
 			}
 			return chainStore.GetBlock(hash)
-		}, nil)
+		})
 
 	var interrupt = signal.NewInterrupt()
 	chain, err := blockchain.New(chainStore, chainParams,
@@ -193,8 +197,11 @@ func initLedger(L *lua.LState) int {
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
+	err = chain.InitFFLDBFromChainStore(interrupt.C, nil, nil, false)
+	if err != nil {
+		fmt.Printf("Init fflDB error: %s \n", err.Error())
+	}
 
-	ledger := blockchain.Ledger{}
 	blockchain.FoundationAddress = chainParams.Foundation
 	blockchain.DefaultLedger = &ledger // fixme
 	blockchain.DefaultLedger.Blockchain = chain
