@@ -85,7 +85,6 @@ public class NodeInformationFragment extends BaseFragment {
     LinearLayout llInfodetail;
     @BindView(R.id.tv_intro_detail)
     TextView tvIntroDetail;
-    Unbinder unbinder;
     private ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netlist;
 
     @Override

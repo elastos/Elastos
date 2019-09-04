@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
@@ -33,47 +32,6 @@
 
         <View style="@style/line1" />
 
-        <org.elastos.wallet.ela.utils.ClearEditText
-            android:id="@+id/et_publickey"
-            android:layout_width="match_parent"
-            android:layout_height="53dp"
-            android:background="@null"
-            android:hint="@string/inputdotpublickey"
-            android:inputType="text"
-            android:maxLines="1"
-            android:textColor="@color/wallet_textColor"
-            android:textColorHint="#80ffffff" />
-
-        <View style="@style/line1" />
-
-
-        <EditText
-            android:id="@+id/et_walletkey"
-            android:layout_width="match_parent"
-            android:layout_height="53dp"
-            android:background="@null"
-            android:hint="@string/walletkey"
-            android:inputType="text"
-            android:maxLines="1"
-            android:visibility="gone" />
-
-        <!--<View-->
-        <!--style="@style/line1"-->
-        <!--android:visibility="gone" />-->
-
-        <EditText
-            android:id="@+id/et_net"
-            android:layout_width="match_parent"
-            android:layout_height="53dp"
-            android:background="@null"
-            android:hint="@string/network_address"
-            android:inputType="text"
-            android:maxLines="1"
-            android:visibility="gone" />
-
-        <View
-            style="@style/line1"
-            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/ll_area"

@@ -33,7 +33,7 @@
     <string name="create_a_wallet_title">创建钱包（推荐）</string>
     <string name="import_the_wallet">导入钱包</string>
     <string name="please_enter_the_name_your_wallet">请输入钱包名称</string>
-    <string name="please_enter_wallet_password">请输入8至16位钱包密码</string>
+    <string name="please_enter_wallet_password">请输入钱包密码</string>
     <string name="please_enter_your_password_again_confirm">请再次输入确认密码</string>
     <string name="single_address_wallet">单地址钱包</string>
     <string name="backup_the_purse">备份钱包</string>
@@ -201,6 +201,10 @@
     <string name="transfertype11">更新参选信息交易</string>
     <string name="transfertype12">取回参选质押资产交易</string>
     <string name="transfertype13">未知交易类型</string>
+    <string name="transfertype21">注册CR参选交易</string>
+    <string name="transfertype22">取消CR参选交易</string>
+    <string name="transfertype23">更新CR参选信息交易</string>
+    <string name="transfertype24">取回CR参选质押资产交易</string>
     <string name="votetrade">投票交易</string>
     <string name="last_voting_record">上次投票记录</string>
     <string name="right_to_vote_ticket">表决票权：</string>
@@ -221,7 +225,6 @@
     <string name="deposit_was_retrieved_successfully">押金取回成功</string>
     <string name="prompt">是否确认注销候选资格？\n 候选资格一旦注销，所有投票清零且不可恢复。</string>
     <string name="please_select">请选择</string>
-    <string name="futuregenerations">全选(</string>
     <string name="votingrules_1">参与ELA超级节点投票，需锁仓ELA。投票不消耗ELA数量；</string>
     <string name="votingrules_2">每次投票最多可选择 36 个超级节点，撤销或更改再次投票生效有一定的延迟。</string>
     <string name="inputkeystorepwd">请输入Keystore密码</string>
@@ -417,5 +420,8 @@
     <string name="nodeintro">节点简介</string>
     <string name="selectlist">已选列表</string>
     <string name="unseletList">未选列表</string>
+    <string name="Listofcandidates">参选委员列表</string>
+    <string name="menberpk">委员公钥</string>
+    <string name="menberdid">委员DID</string>
 
 </resources>

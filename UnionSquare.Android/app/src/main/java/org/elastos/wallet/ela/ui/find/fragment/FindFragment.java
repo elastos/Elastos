@@ -11,6 +11,7 @@ import android.widget.Toast;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.find.FindListRecAdapter;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListFragment;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -49,7 +50,9 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         list = new ArrayList<>();
         if (sp.getLanguage() == 0) {
             list.add(R.mipmap.found_card_vote);
+            list.add(R.mipmap.found_card_vote);
         } else {
+            list.add(R.mipmap.eg_found_card_vote);
             list.add(R.mipmap.eg_found_card_vote);
         }
         //  list.add(R.mipmap.found_card_id);
@@ -80,11 +83,12 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
 
     @Override
     public void onRvItemClick(int position, Object o) {
-        ((BaseFragment) getParentFragment()).start(SuperNodeListFragment.class);
+        if (position == 0) {
+            ((BaseFragment) getParentFragment()).start(SuperNodeListFragment.class);
+        } else if (position == 1) {
+            ((BaseFragment) getParentFragment()).start(CRListFragment.class);
+        }
     }
-
-    private static final long WAIT_TIME = 2000L;
-    private long TOUCH_TIME = 0;
 
     /**
      * 处理回退事件

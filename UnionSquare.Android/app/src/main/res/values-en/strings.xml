@@ -23,7 +23,7 @@
     <string name="node_publickey">Node Public Key</string>
     <string name="vote_of">Voting Ratio</string>
     <string name="country_region">Country/Region</string>
-    <string name="candidate_list">Add to Candidate List</string>
+    <string name="candidate_list">Added to Candidate List</string>
     <string name="view_candidate_list">View Candidate List</string>
     <string name="the_declaration_of_the_node">Node Slogan</string>
     <string name="node_information">Node Information</string>
@@ -32,7 +32,7 @@
     <string name="create_a_wallet_title">Create Wallet（Recommended）</string>
     <string name="import_the_wallet">Import Wallet</string>
     <string name="please_enter_the_name_your_wallet">Enter wallet name</string>
-    <string name="please_enter_wallet_password">Enter your password(at least 8 characters long)</string>
+    <string name="please_enter_wallet_password">Enter your password</string>
     <string name="please_enter_your_password_again_confirm">Re-enter your password</string>
     <string name="single_address_wallet">Single-Address Wallet</string>
     <string name="backup_the_purse">Backup Wallet</string>
@@ -173,7 +173,7 @@
     <string name="future_generations">Select All</string>
     <string name="determine">Confirm</string>
     <string name="cancel">Cancel</string>
-    <string name="dialog_text2">Exceeding the voting selection limit, did you select the top 36?</string>
+    <string name="dialog_text2">do you want to select the top 36?</string>
     <string name="votingrules">Voting Rules</string>
     <string name="network_address">Enter network address (Required)</string>
     <string name="electoral_affairs">Manage Election</string>
@@ -199,6 +199,10 @@
     <string name="transfertype11">Node Update Transaction</string>
     <string name="transfertype12">Deposit Retrieve Transaction</string>
     <string name="transfertype13">Unknown Transaction </string>
+    <string name="transfertype21">注册CR参选交易</string>
+    <string name="transfertype22">取消CR参选交易</string>
+    <string name="transfertype23">更新CR参选信息交易</string>
+    <string name="transfertype24">取回CR参选质押资产交易</string>
     <string name="votetrade">Vote Transaction</string>
     <string name="last_voting_record">Last Voting Record</string>
     <string name="right_to_vote_ticket">Voting Power：</string>
@@ -219,7 +223,6 @@
     <string name="deposit_was_retrieved_successfully">Deposit retrieved sucessfully.</string>
     <string name="prompt">Are you confirming the cancellation? \n Once cancelled, all votes are cleared and unrecoverable.</string>
     <string name="please_select">Please select</string>
-    <string name="futuregenerations">Future generations(</string>
     <string name="votingrules_1">When you participate in ELA supernode voting, the ELA in your wallet address are locked in a sense. Voting does not consume ELA other than a small voting transaction fee associated with each time you initiate a new voting transaction. Each vote can be cast to a maximum of 36 supernodes. If you cancel or change your votes, the actual result will take time to propagate.</string>
     <string name="votingrules_2">Up to 36 supernodes can be selected for each vote, and there is a certain delay in revocation or change of the vote。</string>
     <string name="inputkeystorepwd">Enter the Keystore password</string>
@@ -412,4 +415,7 @@
     <string name="nodeintro">节点简介</string>
     <string name="selectlist">已选列表</string>
     <string name="unseletList">未选列表</string>
+    <string name="Listofcandidates">参选委员列表</string>
+    <string name="menberpk">委员公钥</string>
+    <string name="menberdid">委员DID</string>
 </resources>

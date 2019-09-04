@@ -35,7 +35,7 @@ public class MyApplication extends MultiDexApplication {
         super.onCreate();
         new WebView(this).destroy();
         myApplication = this;
-        serverList.add("http://54.223.158.189");
+        serverList.add("https://unionsquare01.elastos.com.cn");
         serverList.add("https://unionsquare.elastos.org/");
         serverList = new SPUtil(this.getApplicationContext()).getDefaultServerList(serverList);
         REQUEST_BASE_URL = new SPUtil(this.getApplicationContext()).getDefaultServer(serverList.iterator().next());

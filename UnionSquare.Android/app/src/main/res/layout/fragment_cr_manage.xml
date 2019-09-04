@@ -17,7 +17,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="400dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:background="@drawable/black_50_white"
@@ -30,7 +30,6 @@
                 android:layout_height="60dp"
                 android:layout_marginTop="26dp"
                 android:src="@mipmap/found_vote_initial_circle" />
-
 
             <TextView
                 android:id="@+id/tv_name"
@@ -108,7 +107,7 @@
             <LinearLayout
                 android:id="@+id/ll_infodetail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="220dp"
                 android:layout_marginTop="22dp"
                 android:orientation="vertical">
 
@@ -123,19 +122,18 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="15dp"
                         android:layout_weight="1"
-                        android:text="@string/node_publickey"
+                        android:text="@string/menberpk"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
 
                     <TextView
-                        android:id="@+id/tv_node"
+                        android:id="@+id/tv_publickey"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="40dp"
                         android:layout_marginRight="15dp"
-                        android:layout_weight="1"
+                        android:layout_weight="3"
                         android:gravity="right"
-                        android:maxLines="2"
-                        android:text=""
                         android:textColor="@color/qmui_config_color_white"
                         android:textSize="13sp" />
 
@@ -185,7 +183,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="15dp"
                         android:layout_weight="1"
-                        android:text="@string/vote_qwtpzb"
+                        android:text="@string/vote_of"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
 
@@ -230,7 +228,6 @@
 
 
                 <LinearLayout
-                    android:layout_marginBottom="25dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"

@@ -152,7 +152,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         initDate();
         // 绑定listView的监听器
         if (list != null && list.size() != 0) {
-            tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");//全选
+            tv_num.setText(getString(R.string.future_generations)+"(" + list.size() + ")");//全选
             setRecyclerView(mAdapter, list);
         }
         //这里list已经排序
@@ -265,7 +265,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                     ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
                     is = false;
                     llTab.setVisibility(View.GONE);
-                    tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");//全选
+                    tv_num.setText(getString(R.string.future_generations)+"(" + list.size() + ")");//全选
                     setRecyclerView(mAdapter, list);
                 }
                 break;
@@ -337,7 +337,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         Collections.sort(list);
         curentAdapter.setList(list);
         curentAdapter.notifyDataSetChanged();
-        tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");
+        tv_num.setText(getString(R.string.future_generations)+"(" + list.size() + ")");
         tv_yxz.setText("0" + getString(R.string.has_been_selected));
         CacheUtil.setProducerList(list);
 
@@ -357,7 +357,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         curentAdapter.setList(unSelectlist);
         curentAdapter.notifyDataSetChanged();
         tv_yxz.setText("0" + getString(R.string.has_been_selected));
-        tv_num.setText(getString(R.string.futuregenerations) + unSelectlist.size() + ")");
+        tv_num.setText(getString(R.string.future_generations)+"(" + unSelectlist.size() + ")");
         CacheUtil.setProducerList(list);
     }
 
@@ -376,7 +376,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         lineUnselect.setVisibility(View.VISIBLE);
         tvSelect.setTextColor(getResources().getColor(R.color.whiter50));
         tvUnselect.setTextColor(getResources().getColor(R.color.whiter));
-        tv_num.setText(getString(R.string.futuregenerations) + unSelectlist.size() + ")");//全选
+        tv_num.setText(getString(R.string.future_generations)+"(" + unSelectlist.size() + ")");//全选
         setRecyclerView(unSelectAdapter, unSelectlist);
     }
 
@@ -387,7 +387,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         lineUnselect.setVisibility(View.GONE);
         tvSelect.setTextColor(getResources().getColor(R.color.whiter));
         tvUnselect.setTextColor(getResources().getColor(R.color.whiter50));
-        tv_num.setText(getString(R.string.futuregenerations) + list.size() + ")");//全选
+        tv_num.setText(getString(R.string.future_generations)+"(" + list.size() + ")");//全选
         setRecyclerView(selectAdapter, list);
     }
 
