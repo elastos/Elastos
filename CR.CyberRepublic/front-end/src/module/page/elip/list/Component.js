@@ -199,7 +199,7 @@ export default class extends BaseComponent {
           type="flex"
           align="middle"
           justify="end"
-          style={{ marginTop: 20 }}
+          style={{ marginTop: 20, marginBottom: 20 }}
         >
           {searchInput}
           {isLogin && filterBtns}

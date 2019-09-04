@@ -39,7 +39,7 @@ export const StyledSearch = styled(Search)`
   }
 `
 export const Filter = styled.div`
-  margin: 20px 0 20px 64px;
+  margin-left: 64px;
   @media only screen and (max-width: ${breakPoint.mobile}) {
     margin-left: 0;
   }
