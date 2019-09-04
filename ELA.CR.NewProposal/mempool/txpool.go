@@ -73,7 +73,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash())
 		return errCode
 	}
-	references, err := chain.UTXOCache.GetTxReferenceInfo(tx)
+	references, err := chain.UTXOCache.GetTxReference(tx)
 	if err != nil {
 		log.Warn("[CheckTransactionContext] get transaction reference failed")
 		return ErrUnknownReferredTx
@@ -174,7 +174,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			continue
 		}
 
-		inputUtxos, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReferenceInfo(blockTx)
+		inputUtxos, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference(blockTx)
 		if err != nil {
 			log.Infof("Transaction=%s not exist when deleting, %s.",
 				blockTx.Hash(), err)
@@ -482,7 +482,7 @@ func (mp *TxPool) removeTransaction(tx *Transaction) {
 	}
 
 	//2.remove from UTXO list map
-	reference, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReferenceInfo(tx)
+	reference, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference(tx)
 	if err != nil {
 		log.Infof("Transaction=%s not exist when deleting, %s",
 			tx.Hash(), err)
@@ -495,7 +495,7 @@ func (mp *TxPool) removeTransaction(tx *Transaction) {
 
 //check and add to utxo list pool
 func (mp *TxPool) verifyDoubleSpend(txn *Transaction) error {
-	reference, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReferenceInfo(txn)
+	reference, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference(txn)
 	if err != nil {
 		return err
 	}

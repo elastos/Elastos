@@ -276,7 +276,7 @@ func CalculateTxsFee(block *Block) {
 		if tx.IsCoinBaseTx() {
 			continue
 		}
-		references, err := DefaultLedger.Blockchain.UTXOCache.GetTxReferenceInfo(tx)
+		references, err := DefaultLedger.Blockchain.UTXOCache.GetTxReference(tx)
 		if err != nil {
 			log.Error("get transaction reference failed")
 			return
@@ -286,8 +286,8 @@ func CalculateTxsFee(block *Block) {
 		for _, output := range tx.Outputs {
 			outputValue += output.Value
 		}
-		for _, outputInfo := range references {
-			inputValue += outputInfo.output.Value
+		for _, output := range references {
+			inputValue += output.Value
 		}
 		// set Fee and FeePerKB if check has passed
 		tx.Fee = inputValue - outputValue
