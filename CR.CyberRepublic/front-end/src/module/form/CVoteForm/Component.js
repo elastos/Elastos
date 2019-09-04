@@ -281,9 +281,9 @@ class C extends BaseComponent {
 
   validateAbstract = (rule, value, cb) => {
     const { language } = this.props
-    let count = value.length
-    if (language === 'en') {
-      count = value.split(' ').length
+    let count = 0
+    if (value) {
+      count = language === 'en' ? value.split(' ').length : value.length
     }
     return count > WORD_LIMIT ? cb(true) : cb()
   }
@@ -456,9 +456,9 @@ class C extends BaseComponent {
     const { form, language } = this.props
     const formValue = form.getFieldValue('abstract')
     const value = transform(formValue)
-    let count = value.length
-    if (language === 'en') {
-      count = value.split(' ').length
+    let count = 0
+    if (value) {
+      count = language === 'en' ? value.split(' ').length : value.length
     }
     return (
       <CirContainer>
