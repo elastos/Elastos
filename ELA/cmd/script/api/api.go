@@ -197,7 +197,7 @@ func initLedger(L *lua.LState) int {
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
-	err = chain.InitFFLDBFromChainStore(interrupt.C, nil, nil)
+	err = chain.InitFFLDBFromChainStore(interrupt.C, nil, nil, false)
 	if err != nil {
 		fmt.Printf("Init fflDB error: %s \n", err.Error())
 	}
