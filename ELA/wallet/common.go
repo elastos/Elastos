@@ -14,6 +14,7 @@ import (
 
 var (
 	Store      blockchain.IChainStore
+	Chain      *blockchain.BlockChain
 	ChainParam *config.Params
 
 	addressBook = make(map[string]*AddressInfo, 0)

@@ -89,6 +89,12 @@ func (a *arbitrators) Start() {
 	a.mtx.Unlock()
 }
 
+func (a *arbitrators) RegisterFunction(bestHeight func() uint32,
+	getBlockByHeight func(uint32) (*types.Block, error)) {
+	a.bestHeight = bestHeight
+	a.getBlockByHeight = getBlockByHeight
+}
+
 func (a *arbitrators) RecoverFromCheckPoints(point *CheckPoint) {
 	a.mtx.Lock()
 	a.dutyIndex = point.DutyIndex
@@ -1052,14 +1058,10 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 }
 
 func NewArbitrators(chainParams *config.Params,
-	bestHeight func() uint32,
-	getBlockByHeight func(uint32) (*types.Block, error),
 	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
 		error)) (*arbitrators, error) {
 	a := &arbitrators{
 		chainParams:                chainParams,
-		bestHeight:                 bestHeight,
-		getBlockByHeight:           getBlockByHeight,
 		nextCandidates:             make([][]byte, 0),
 		accumulativeReward:         common.Fixed64(0),
 		finalRoundChange:           common.Fixed64(0),

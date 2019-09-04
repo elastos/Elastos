@@ -1,13 +1,14 @@
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package pow
 
 import (
 	"fmt"
 	"math"
+	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
@@ -31,7 +32,8 @@ func TestService_Init(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	params := &config.DefaultParams
-	chainStore, err := blockchain.NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(filepath.Join(
+		test.DataPath, "service"), config.DefaultParams.GenesisBlock)
 	if err != nil {
 		t.Error(err)
 	}

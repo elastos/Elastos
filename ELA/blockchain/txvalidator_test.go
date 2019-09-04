@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 	mrand "math/rand"
+	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -48,7 +49,8 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = params.Foundation
 	s.foundationAddress = params.Foundation
 
-	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
+	chainStore, err := NewChainStore(
+		filepath.Join(test.DataPath, "txvalidator"), params.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
@@ -62,16 +64,18 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	s.OriginalLedger = DefaultLedger
 
 	arbiters, err := state.NewArbitrators(params,
-		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
+		nil)
+	if err != nil {
+		s.Fail("initialize arbitrator failed")
+	}
+	arbiters.RegisterFunction(chainStore.GetHeight,
+		func(height uint32) (*types.Block, error) {
 			hash, err := chainStore.GetBlockHash(height)
 			if err != nil {
 				return nil, err
 			}
 			return chainStore.GetBlock(hash)
-		}, nil)
-	if err != nil {
-		s.Fail("initialize arbitrator failed")
-	}
+		})
 	DefaultLedger = &Ledger{Arbitrators: arbiters}
 }
 
@@ -480,12 +484,16 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	}
 
 	references := map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1},
+		&types.Input{}: {
+			Value: outputValue1,
+		},
 	}
 	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + s.Chain.chainParams.MinTransactionFee},
+		&types.Input{}: {
+			Value: outputValue1 + s.Chain.chainParams.MinTransactionFee,
+		},
 	}
 	s.NoError(s.Chain.checkTransactionFee(tx, references))
 
@@ -499,12 +507,16 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	}
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + outputValue2},
+		&types.Input{}: {
+			Value: outputValue1 + outputValue2,
+		},
 	}
 	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + outputValue2 + s.Chain.chainParams.MinTransactionFee},
+		&types.Input{}: {
+			Value: outputValue1 + outputValue2 + s.Chain.chainParams.MinTransactionFee,
+		},
 	}
 	s.NoError(s.Chain.checkTransactionFee(tx, references))
 }
@@ -549,7 +561,9 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 	txID, _ := common.Uint256FromHexString("7e8863a503e90e6464529feb1c25d98c903e01bec00ccfea2475db4e37d7328b")
 	programHash, _ := common.Uint168FromAddress(destructionAddress)
 	reference := map[*types.Input]*types.Output{
-		&types.Input{Previous: types.OutPoint{*txID, 1234}, Sequence: 123456}: &types.Output{ProgramHash: *programHash},
+		&types.Input{Previous: types.OutPoint{*txID, 1234}, Sequence: 123456}: {
+			ProgramHash: *programHash,
+		},
 	}
 
 	err := checkDestructionAddress(reference)
@@ -1745,6 +1759,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 		ProgramHash: *depositHash,
 	}
 	references[input] = depositOutput
+
 	txn.TxType = types.TransferAsset
 	err := checkTransactionDepositUTXO(&txn, references)
 	s.EqualError(err, "only the ReturnDepositCoin and "+
@@ -1950,6 +1965,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 		ProgramHash: *randomUint168(),
 		Value:       common.Fixed64(5000 * 100000000),
 	}
+
 	rdTx := &types.Transaction{
 		TxType:  types.ReturnCRDepositCoin,
 		Payload: &payload.ReturnDepositCoin{},
