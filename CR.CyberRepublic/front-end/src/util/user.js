@@ -12,4 +12,14 @@ export default {
 
     return [firstName, lastName].join(' ')
   },
+  getUserDisplayName(user) {
+    const firstName = _.get(user, 'profile.firstName', '')
+    const lastName = _.get(user, 'profile.lastName', '')
+    const username = _.get(user, 'username', '');
+    const email = _.get(user, 'email', '');
+
+    return _.trim(`${firstName} ${lastName}`) ||
+      _.trim(username) ||
+      _.trim(email)
+  }
 }

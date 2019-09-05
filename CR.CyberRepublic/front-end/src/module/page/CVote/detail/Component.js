@@ -754,7 +754,7 @@ class C extends StandardPage {
     } catch (e) {
       this.ord_loading(false)
       message.error(e.message)
-      logger.error(e) 
+      logger.error(e)
     }
   }
 
