@@ -78,7 +78,7 @@ type arbitrators struct {
 	arbitersRoundReward         map[common.Uint168]common.Fixed64
 	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
 
-	snapshots            map[uint32][]*KeyFrame
+	snapshots            map[uint32][]*CheckPoint
 	snapshotKeysDesc     []uint32
 	lastCheckPointHeight uint32
 }
@@ -97,6 +97,11 @@ func (a *arbitrators) RegisterFunction(bestHeight func() uint32,
 
 func (a *arbitrators) RecoverFromCheckPoints(point *CheckPoint) {
 	a.mtx.Lock()
+	a.recoverFromCheckPoints(point)
+	a.mtx.Unlock()
+}
+
+func (a *arbitrators) recoverFromCheckPoints(point *CheckPoint) {
 	a.dutyIndex = point.DutyIndex
 	a.CurrentArbitrators = point.CurrentArbitrators
 	a.currentCandidates = point.CurrentCandidates
@@ -105,7 +110,11 @@ func (a *arbitrators) RecoverFromCheckPoints(point *CheckPoint) {
 	a.CurrentReward = point.CurrentReward
 	a.NextReward = point.NextReward
 	a.StateKeyFrame = &point.StateKeyFrame
-	a.mtx.Unlock()
+	a.accumulativeReward = point.accumulativeReward
+	a.finalRoundChange = point.finalRoundChange
+	a.clearingHeight = point.clearingHeight
+	a.arbitersRoundReward = point.arbitersRoundReward
+	a.illegalBlocksPayloadHashes = point.illegalBlocksPayloadHashes
 }
 
 func (a *arbitrators) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
@@ -254,8 +263,6 @@ func (a *arbitrators) tryHandleError(height uint32, err error) error {
 }
 
 func (a *arbitrators) normalChange(height uint32) error {
-	a.snapshot(height)
-
 	if err := a.changeCurrentArbitrators(); err != nil {
 		log.Warn("[NormalChange] change current arbiters error: ", err)
 		return err
@@ -273,6 +280,10 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	var notify = true
 
 	a.mtx.Lock()
+
+	if block.Height > a.bestHeight()-MaxSnapshotLength {
+		a.snapshot(block.Height)
+	}
 
 	changeType, versionHeight := a.getChangeType(block.Height + 1)
 	switch changeType {
@@ -402,18 +413,19 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 }
 
 func (a *arbitrators) DecreaseChainHeight(height uint32) error {
+	a.mtx.Lock()
 	a.degradation.RollbackTo(height)
 
-	heightOffset := int(a.history.Height() - height)
-	if a.dutyIndex == 0 || a.dutyIndex < heightOffset {
-		if err := a.ForceChange(height); err != nil {
-			return err
+	checkpoints := a.getSnapshot(height + 1)
+	if checkpoints != nil {
+		for _, v := range checkpoints {
+			a.recoverFromCheckPoints(v)
+			// since we don't support force change at now, length of checkpoints
+			// should be 1, so we break the loop here
+			break
 		}
-
-		a.dutyIndex = a.GetArbitersCount() - heightOffset + a.dutyIndex
-	} else {
-		a.dutyIndex = a.dutyIndex - heightOffset
 	}
+	a.mtx.Unlock()
 
 	return nil
 }
@@ -920,8 +932,43 @@ func (a *arbitrators) getBlockDPOSReward(block *types.Block) common.Fixed64 {
 		a.chainParams.RewardPerBlock) * 0.35))
 }
 
+func (a *arbitrators) newCheckPoint(height uint32) *CheckPoint {
+	point := &CheckPoint{
+		Height:                     height,
+		DutyIndex:                  a.dutyIndex,
+		CurrentCandidates:          make([][]byte, 0),
+		NextArbitrators:            make([][]byte, 0),
+		NextCandidates:             make([][]byte, 0),
+		CurrentReward:              *NewRewardData(),
+		NextReward:                 *NewRewardData(),
+		accumulativeReward:         a.accumulativeReward,
+		finalRoundChange:           a.finalRoundChange,
+		clearingHeight:             a.clearingHeight,
+		arbitersRoundReward:        make(map[common.Uint168]common.Fixed64),
+		illegalBlocksPayloadHashes: make(map[common.Uint256]interface{}),
+		KeyFrame: KeyFrame{
+			CurrentArbitrators: a.CurrentArbitrators,
+		},
+		StateKeyFrame: *a.State.snapshot(),
+	}
+	point.CurrentArbitrators = copyByteList(a.CurrentArbitrators)
+	point.CurrentCandidates = copyByteList(a.currentCandidates)
+	point.NextArbitrators = copyByteList(a.nextArbitrators)
+	point.NextCandidates = copyByteList(a.nextCandidates)
+	point.CurrentReward = *copyReward(&a.CurrentReward)
+	point.NextReward = *copyReward(&a.NextReward)
+	for k, v := range a.arbitersRoundReward {
+		point.arbitersRoundReward[k] = v
+	}
+	for k := range a.illegalBlocksPayloadHashes {
+		point.illegalBlocksPayloadHashes[k] = nil
+	}
+
+	return point
+}
+
 func (a *arbitrators) snapshot(height uint32) {
-	var frames []*KeyFrame
+	var frames []*CheckPoint
 	if v, ok := a.snapshots[height]; ok {
 		frames = v
 	} else {
@@ -938,9 +985,8 @@ func (a *arbitrators) snapshot(height uint32) {
 			return a.snapshotKeysDesc[i] > a.snapshotKeysDesc[j]
 		})
 	}
-	f := &KeyFrame{CurrentArbitrators: make([][]byte, 0)}
-	f.CurrentArbitrators = copyByteList(a.CurrentArbitrators)
-	frames = append(frames, f)
+	checkpoint := a.newCheckPoint(height)
+	frames = append(frames, checkpoint)
 	a.snapshots[height] = frames
 }
 
@@ -950,6 +996,20 @@ func (a *arbitrators) GetSnapshot(height uint32) (result []*KeyFrame) {
 		// if height is larger than first snapshot then return current key frame
 		result = append(result, a.KeyFrame)
 	} else if height >= a.snapshotKeysDesc[len(a.snapshotKeysDesc)-1] {
+		checkpoints := a.getSnapshot(height)
+		result = make([]*KeyFrame, 0, len(checkpoints))
+		for _, v := range checkpoints {
+			result = append(result, &v.KeyFrame)
+		}
+	}
+	a.mtx.Unlock()
+
+	return result
+}
+
+func (a *arbitrators) getSnapshot(height uint32) []*CheckPoint {
+	result := make([]*CheckPoint, 0)
+	if height >= a.snapshotKeysDesc[len(a.snapshotKeysDesc)-1] {
 		// if height is in range of snapshotKeysDesc, get the key with the same
 		// election as height
 		key := a.snapshotKeysDesc[0]
@@ -960,10 +1020,8 @@ func (a *arbitrators) GetSnapshot(height uint32) (result []*KeyFrame) {
 			}
 		}
 
-		result = a.snapshots[key]
+		return a.snapshots[key]
 	}
-	a.mtx.Unlock()
-
 	return result
 }
 
@@ -1067,7 +1125,7 @@ func NewArbitrators(chainParams *config.Params,
 		finalRoundChange:           common.Fixed64(0),
 		arbitersRoundReward:        nil,
 		illegalBlocksPayloadHashes: make(map[common.Uint256]interface{}),
-		snapshots:                  make(map[uint32][]*KeyFrame),
+		snapshots:                  make(map[uint32][]*CheckPoint),
 		snapshotKeysDesc:           make([]uint32, 0),
 		degradation: &degradation{
 			inactiveTxs:       make(map[common.Uint256]interface{}),

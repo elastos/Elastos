@@ -67,6 +67,7 @@ type Configuration struct {
 	EnableActivateIllegalHeight uint32            `json:"EnableActivateIllegalHeight"`
 	CRVotingStartHeight         uint32            `json:"CRVotingStartHeight"`
 	CRCommitteeStartHeight      uint32            `json:"CRCommitteeStartHeight"`
+	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
 	MaxBlockSize                uint32            `json"MaxBlockSize"`
 	EnableHistory               bool              `json:"EnableHistory"`
