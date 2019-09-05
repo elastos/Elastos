@@ -5,6 +5,7 @@ import release from './en/release'
 import proposal from './en/proposal'
 import suggestion from './en/suggestion'
 import getting_started from './en/getting_started'
+import whitepaper from './en/whitepaper'
 import elip from './en/elip'
 
 const en = {
@@ -15,6 +16,7 @@ const en = {
   suggestion,
   getting_started,
   elip,
+  whitepaper,
   // Header
   '0000': 'ALPHA',
   '0001': 'Bounty Programs',

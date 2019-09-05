@@ -5,6 +5,7 @@ import release from './zh/release'
 import proposal from './zh/proposal'
 import suggestion from './zh/suggestion'
 import getting_started from './en/getting_started'
+import whitepaper from './zh/whitepaper'
 import elip from './zh/elip'
 
 const zh = {
@@ -14,6 +15,7 @@ const zh = {
   proposal,
   suggestion,
   getting_started,
+  whitepaper,
   elip,
   // Header
   '0000': 'ALPHA版本',
