@@ -21,6 +21,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
+	"github.com/elastos/Elastos.ELA/database"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -44,6 +45,7 @@ type BlockChain struct {
 	db          IChainStore
 	state       *state.State
 	crCommittee *crstate.Committee
+	UTXOCache   *UTXOCache
 	GenesisHash Uint256
 
 	// The following fields are calculated based upon the provided chain
@@ -56,7 +58,9 @@ type BlockChain struct {
 
 	BestChain *BlockNode
 	Root      *BlockNode
+	Nodes     []*BlockNode
 	Index     map[Uint256]*BlockNode
+	dirty     map[*Header]struct{}
 	IndexLock sync.RWMutex
 	DepNodes  map[Uint256][]*BlockNode
 
@@ -84,13 +88,16 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 		db:                  db,
 		state:               state,
 		crCommittee:         committee,
+		UTXOCache:           NewUTXOCache(db),
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
 		maxRetargetTimespan: targetTimespan * adjustmentFactor,
 		blocksPerRetarget:   uint32(targetTimespan / targetTimePerBlock),
 		Root:                nil,
 		BestChain:           nil,
+		Nodes:               make([]*BlockNode, 0),
 		Index:               make(map[Uint256]*BlockNode),
+		dirty:               map[*Header]struct{}{},
 		DepNodes:            make(map[Uint256][]*BlockNode),
 		oldestOrphan:        nil,
 		orphans:             make(map[Uint256]*OrphanBlock),
@@ -101,38 +108,101 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 		TimeSource:          NewMedianTime(),
 	}
 
-	endHeight := chain.db.GetHeight()
-	startHeight := uint32(0)
-	if endHeight > minMemoryNodes {
-		startHeight = endHeight - minMemoryNodes
-	}
-
-	for start := startHeight; start <= endHeight; start++ {
-		hash, err := chain.db.GetBlockHash(start)
-		if err != nil {
-			return nil, err
-		}
-		header, err := chain.db.GetHeader(hash)
-		if err != nil {
-			return nil, err
-		}
-		node, err := chain.LoadBlockNode(header, &hash)
-		if err != nil {
-			return nil, err
-		}
-
-		// This node is now the end of the best chain.
-		chain.BestChain = node
+	// Initialize the chain state from the passed database.  When the db
+	// does not yet contain any chain state, both it and the chain state
+	// will be initialized to contain only the genesis block.
+	if err := chain.initChainState(); err != nil {
+		return nil, err
 	}
 
 	return &chain, nil
 }
 
+func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
+	barStart func(total uint32), increase func(), clear bool) (err error) {
+	endHeight := b.db.GetHeight()
+	startHeight := b.GetHeight() + 1
+	if endHeight < startHeight {
+		return nil
+	}
+
+	done := make(chan bool)
+
+	go func() {
+		log.Info("[InitFFLDBFromChainStore] start height: ", startHeight, "end height:", endHeight)
+		if barStart != nil {
+			barStart(endHeight - startHeight)
+		}
+
+		for start := startHeight; start <= endHeight; start++ {
+
+			hash, err := b.db.GetBlockHash(start)
+			if err != nil {
+				done <- false
+				break
+			}
+			block, err := b.db.GetBlock(hash)
+			if err != nil {
+				done <- false
+				break
+			}
+			confirm, _ := b.db.GetConfirm(hash)
+			node, err := b.LoadBlockNode(&block.Header, &hash)
+			if err != nil {
+				done <- false
+				break
+			}
+			b.AddNodeToNodes(node)
+
+			b.dirty[&block.Header] = struct{}{}
+			err = b.flushToDB()
+			if err != nil {
+				done <- false
+				break
+			}
+
+			err = b.db.GetFFLDB().SaveBlock(block, node, confirm, CalcPastMedianTime(node))
+			if err != nil {
+				done <- false
+				break
+			}
+			// This node is now the end of the best chain.
+			b.BestChain = node
+			// Notify process increase.
+			if increase != nil {
+				increase()
+			}
+
+			if clear {
+				chain := b.db.(*ChainStore)
+				chain.NewBatch()
+				chain.RollbackTrimmedBlock(block)
+				chain.RollbackBlockHash(block)
+				chain.BatchCommit()
+			}
+		}
+		done <- true
+	}()
+	var result error
+	select {
+	case ok := <-done:
+		if ok {
+			log.Info("process block finished.")
+		} else {
+			result = errors.New("process block failed")
+		}
+
+	case <-interrupt:
+		result = errors.New("process block interrupted")
+	}
+	return result
+}
+
 // InitCheckpoint go through all blocks since the genesis block
 // to initialize all checkpoint.
 func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
-	start func(total uint32), increase func()) (err error) {
-	bestHeight := b.db.GetHeight()
+	barStart func(total uint32), increase func()) (err error) {
+	bestHeight := b.GetHeight()
 	log.Info("current block height ->", bestHeight)
 	arbiters := DefaultLedger.Arbitrators
 	ckpManager := b.chainParams.CkpManager
@@ -151,16 +221,16 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 		}
 
 		log.Info("[RecoverFromCheckPoints] recover start height: ", startHeight)
-		if start != nil && bestHeight >= startHeight {
-			start(bestHeight - startHeight)
+		if barStart != nil && bestHeight >= startHeight {
+			barStart(bestHeight - startHeight)
 		}
 		for i := startHeight; i <= bestHeight; i++ {
-			hash, e := b.db.GetBlockHash(i)
+			hash, e := b.GetBlockHash(i)
 			if e != nil {
 				err = e
 				break
 			}
-			block, e := b.db.GetBlock(hash)
+			block, e := b.db.GetFFLDB().GetBlock(hash)
 			if e != nil {
 				err = e
 				break
@@ -207,7 +277,7 @@ func CalculateTxsFee(block *Block) {
 		if tx.IsCoinBaseTx() {
 			continue
 		}
-		references, err := DefaultLedger.Store.GetTxReference(tx)
+		references, err := DefaultLedger.Blockchain.UTXOCache.GetTxReference(tx)
 		if err != nil {
 			log.Error("get transaction reference failed")
 			return
@@ -217,8 +287,8 @@ func CalculateTxsFee(block *Block) {
 		for _, output := range tx.Outputs {
 			outputValue += output.Value
 		}
-		for _, reference := range references {
-			inputValue += reference.Value
+		for _, output := range references {
+			inputValue += output.Value
 		}
 		// set Fee and FeePerKB if check has passed
 		tx.Fee = inputValue - outputValue
@@ -238,7 +308,10 @@ func (b *BlockChain) GetCRCommittee() *crstate.Committee {
 }
 
 func (b *BlockChain) GetHeight() uint32 {
-	return b.db.GetHeight()
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	return uint32(len(b.Nodes) - 1)
 }
 
 func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool, bool, error) {
@@ -249,7 +322,7 @@ func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool,
 }
 
 func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
-	header, err := b.db.GetHeader(hash)
+	header, err := b.db.GetFFLDB().GetHeader(hash)
 	if err != nil {
 		return nil, errors.New("[BlockChain], GetHeader failed.")
 	}
@@ -258,12 +331,34 @@ func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 
 // Get block with block hash.
 func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
-	return b.db.GetBlock(hash)
+	return b.db.GetFFLDB().GetBlock(hash)
+}
+
+// Get block with block hash.
+func (b *BlockChain) GetBlockHash(height uint32) (Uint256, error) {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	if height >= uint32(len(b.Nodes)) {
+		return EmptyHash, errors.New("not found block")
+	}
+	return *b.Nodes[height].Hash, nil
+}
+
+// Get block with block hash.
+func (b *BlockChain) GetBlockNode(height uint32) *BlockNode {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	if height >= uint32(len(b.Nodes)) {
+		return nil
+	}
+	return b.Nodes[height]
 }
 
 // Get DPOS block with block hash.
 func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
-	if block, _ := b.db.GetBlock(hash); block != nil {
+	if block, _ := b.db.GetFFLDB().GetBlock(hash); block != nil {
 		confirm, _ := b.db.GetConfirm(hash)
 		return &DposBlock{
 			Block:       block,
@@ -296,8 +391,11 @@ func (b *BlockChain) ContainsTransaction(hash Uint256) bool {
 	return true
 }
 
-func (b *BlockChain) CurrentBlockHash() Uint256 {
-	return b.db.GetCurrentBlockHash()
+func (b *BlockChain) GetCurrentBlockHash() Uint256 {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	return *b.Nodes[len(b.Nodes)-1].Hash
 }
 
 func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
@@ -719,7 +817,7 @@ func (b *BlockChain) getPrevNodeFromBlock(block *Block) (*BlockNode, error) {
 		return bn, nil
 	}
 
-	header, err := b.GetHeader(prevHash)
+	header, err := b.db.GetFFLDB().GetHeader(prevHash)
 	if err != nil {
 		return nil, err
 	}
@@ -748,7 +846,7 @@ func (b *BlockChain) getPrevNodeFromNode(node *BlockNode) (*BlockNode, error) {
 		return nil, nil
 	}
 
-	header, err := b.GetHeader(*node.ParentHash)
+	header, err := b.db.GetFFLDB().GetHeader(*node.ParentHash)
 	if err != nil {
 		return nil, err
 	}
@@ -814,6 +912,9 @@ func (b *BlockChain) getReorganizeNodes(node *BlockNode) (*list.List, *list.List
 // the end of the chain) and nodes the are being attached must be in forwards
 // order (think pushing them onto the end of the chain).
 func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error {
+	// Clean the UTXO cache
+	b.UTXOCache.CleanCache()
+
 	// Ensure all of the needed side chain blocks are in the cache.
 	for e := attachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
@@ -826,7 +927,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
-		block, err := b.db.GetBlock(*n.Hash)
+		block, err := b.db.GetFFLDB().GetBlock(*n.Hash)
 		if err != nil {
 			return err
 		}
@@ -887,12 +988,23 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	}
 
 	// Remove the block from the database which houses the main chain.
-	_, err := b.getPrevNodeFromNode(node)
+	prevNode, err := b.getPrevNodeFromNode(node)
 	if err != nil {
 		return err
 	}
 
-	err = b.db.RollbackBlock(*node.Hash)
+	err = b.db.GetFFLDB().Update(func(dbTx database.Tx) error {
+		err := dbRemoveBlockNode(dbTx, node.Hash, node.Height)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	err = b.db.RollbackBlock(block, node, confirm, CalcPastMedianTime(prevNode))
 	if err != nil {
 		return err
 	}
@@ -910,6 +1022,9 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	node.InMainChain = false
 	b.blockCache[*node.Hash] = block
 	b.confirmCache[*node.Hash] = confirm
+
+	// Remove block node from Nodes
+	b.RemoveNodeFromNodes(node)
 
 	//// This node's parent is now the end of the best chain.
 	b.BestChain = node.Parent
@@ -951,8 +1066,14 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 			"that extends the main chain")
 	}
 
+	b.dirty[&block.Header] = struct{}{}
+	if err := b.flushToDB(); err != nil {
+		return err
+	}
+
+	medianTime := CalcPastMedianTime(b.BestChain)
 	// Insert the block into the database which houses the main chain.
-	if err := b.db.SaveBlock(block, confirm); err != nil {
+	if err := b.db.SaveBlock(block, node, confirm, medianTime); err != nil {
 		return err
 	}
 
@@ -960,12 +1081,13 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	// lookups.
 	node.InMainChain = true
 	//b.Index[*node.Hash] = node
+	b.AddNodeToNodes(node)
 	b.AddNodeToIndex(node)
 	b.DepNodes[*prevHash] = append(b.DepNodes[*prevHash], node)
 
 	// This node is now the end of the best chain.
 	b.BestChain = node
-	b.MedianTimePast = CalcPastMedianTime(b.BestChain)
+	b.MedianTimePast = medianTime
 
 	// Notify the caller that the block was connected to the main chain.
 	// The caller would typically want to react with actions such as
@@ -987,7 +1109,34 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return b.db.IsBlockInStore(hash)
+	exist, _ := b.db.GetFFLDB().BlockExists(hash)
+
+	return exist
+}
+
+// flushToDB writes all dirty block nodes to the database. If all writes
+// succeed, this clears the dirty set.
+func (b *BlockChain) flushToDB() error {
+	if len(b.dirty) == 0 {
+		return nil
+	}
+
+	err := b.db.GetFFLDB().Update(func(dbTx database.Tx) error {
+		for header := range b.dirty {
+			err := dbStoreBlockNode(dbTx, header)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	// If write was successful, clear the dirty set.
+	if err == nil {
+		b.dirty = make(map[*Header]struct{})
+	}
+
+	return err
 }
 
 func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (bool, error) {
@@ -1261,7 +1410,7 @@ func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
 		// database.
 
 		// Get Current Block
-		blockHash := b.db.GetCurrentBlockHash()
+		blockHash := b.GetCurrentBlockHash()
 		return b.BlockLocatorFromHash(&blockHash), nil
 	}
 
@@ -1271,15 +1420,26 @@ func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
 
 func (b *BlockChain) AddNodeToIndex(node *BlockNode) {
 	b.IndexLock.Lock()
-	defer b.IndexLock.Unlock()
-
 	b.Index[*node.Hash] = node
+	b.IndexLock.Unlock()
+}
+
+func (b *BlockChain) AddNodeToNodes(node *BlockNode) {
+	b.IndexLock.Lock()
+	b.Nodes = append(b.Nodes, node)
+	b.IndexLock.Unlock()
 }
 
 func (b *BlockChain) RemoveNodeFromIndex(node *BlockNode) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
 	delete(b.Index, *node.Hash)
+}
+
+func (b *BlockChain) RemoveNodeFromNodes(node *BlockNode) {
+	b.IndexLock.Lock()
+	b.Nodes = b.Nodes[0:node.Height]
+	b.IndexLock.Unlock()
 }
 
 func (b *BlockChain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
@@ -1314,7 +1474,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
 
-		block, err := b.db.GetBlock(hash)
+		block, err := b.db.GetFFLDB().GetBlock(hash)
 		if err != nil {
 			return locator
 		}
@@ -1341,7 +1501,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// The desired block height is in the main chain, so look it up
 		// from the main chain database.
 
-		h, err := b.db.GetBlockHash(uint32(blockHeight))
+		h, err := b.GetBlockHash(uint32(blockHeight))
 		if err != nil {
 			log.Debugf("Lookup of known valid height failed %v", blockHeight)
 			continue
@@ -1359,7 +1519,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 func (b *BlockChain) locateStartBlock(locator []*Uint256) *Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
-		_, err := b.db.GetBlock(*hash)
+		_, err := b.db.GetFFLDB().GetBlock(*hash)
 		if err == nil {
 			startHash = *hash
 			break
@@ -1372,7 +1532,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 	var count = uint32(0)
 	var startHeight uint32
 	var stopHeight uint32
-	curHeight := b.db.GetHeight()
+	curHeight := b.GetHeight()
 	if stopHash.IsEqual(EmptyHash) {
 		if startHash.IsEqual(EmptyHash) {
 			if curHeight > maxBlockHashes {
@@ -1381,7 +1541,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 				count = curHeight
 			}
 		} else {
-			startHeader, err := b.db.GetHeader(*startHash)
+			startHeader, err := b.db.GetFFLDB().GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1392,13 +1552,13 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 			}
 		}
 	} else {
-		stopHeader, err := b.db.GetHeader(*stopHash)
+		stopHeader, err := b.db.GetFFLDB().GetHeader(*stopHash)
 		if err != nil {
 			return nil, err
 		}
 		stopHeight = stopHeader.Height
 		if !startHash.IsEqual(EmptyHash) {
-			startHeader, err := b.db.GetHeader(*startHash)
+			startHeader, err := b.db.GetFFLDB().GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1424,7 +1584,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 
 	hashes := make([]*Uint256, 0)
 	for i := uint32(1); i <= count; i++ {
-		hash, err := b.db.GetBlockHash(startHeight + i)
+		hash, err := b.GetBlockHash(startHeight + i)
 		if err != nil {
 			return nil, err
 		}
