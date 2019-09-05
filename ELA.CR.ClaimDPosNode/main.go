@@ -78,6 +78,13 @@ func setupNode() *cli.App {
 		cmdcom.ConfigFileFlag,
 		cmdcom.DataDirFlag,
 		cmdcom.AccountPasswordFlag,
+		cmdcom.TestNetFlag,
+		cmdcom.RegTestFlag,
+		cmdcom.InfoPortFlag,
+		cmdcom.RestPortFlag,
+		cmdcom.WsPortFlag,
+		cmdcom.InstantBlockFlag,
+		cmdcom.RPCPortFlag,
 	}
 	app.Flags = append(app.Flags, appSettings.Flags()...)
 	app.Action = func(c *cli.Context) {
