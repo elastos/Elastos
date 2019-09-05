@@ -9,7 +9,8 @@ WORKDIR $GOPATH/src/github.com/elastos
 # Clone elastos source code
 RUN git clone -b ${CODE_VERSION} --depth 10 https://github.com/elastos/Elastos.ELA.git
 # Install glide and build Elastos.ELA Node
-RUN curl https://glide.sh/get | sh && cd $GOPATH/src/github.com/elastos/Elastos.ELA && glide update && glide install && make all && mv ela ela-cli /
+RUN curl https://glide.sh/get | sh && cd $GOPATH/src/github.com/elastos/Elastos.ELA && \
+  glide update && glide install && make all && mv ela ela-cli /
 # Building ela image
 FROM alpine:3.10.2
 # Copy ela binary
