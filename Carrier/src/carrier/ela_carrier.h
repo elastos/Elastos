@@ -269,7 +269,7 @@ typedef struct HiveBootstrapNode {
     /**
      * \~English
      * The ip port.
-     * The default value is 9094.
+     * The default value is 9095
      */
     const char *port;
 } HiveBootstrapNode;

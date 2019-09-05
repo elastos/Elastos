@@ -34,6 +34,9 @@
 
 #include "dstore_wrapper.h"
 
+#define DHT_BOOTSTRAP_DEFAULT_PORT 33445
+#define HIVE_BOOTSTRAP_DEFAULT_PORT 9095
+
 #define MAX_IPV4_ADDRESS_LEN (15)
 #define MAX_IPV6_ADDRESS_LEN (47)
 
