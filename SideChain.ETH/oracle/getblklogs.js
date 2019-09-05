@@ -2,31 +2,38 @@
 
 const common = require("./common");
 
-module.exports = async function(json_data, res) {
+module.exports = async function (json_data, res) {
     try {
         console.log("Getting Sidechain Logs At Block Height: ");
         let blkheight = json_data["params"]["height"];
         console.log(blkheight);
         console.log("============================================================");
-        let logs=null;
-        if (parseInt(blkheight)>7){
-            logs = await common.contract.getPastEvents(common.payloadReceived.name, {fromBlock: parseInt(blkheight)-6, toBlock: parseInt(blkheight)-6});
+        let logs = null;
+        if (parseInt(blkheight) > 7) {
+            logs = await common.contract.getPastEvents(common.payloadReceived.name, {
+                fromBlock: parseInt(blkheight) - 6,
+                toBlock: parseInt(blkheight) - 6
+            });
         }
         let result = new Array();
         let txhash = null;
         let txlog = null;
-        let outputindex = 0;
         let txreceipt;
-        if (logs!=null) {
+        if (logs != null) {
+            console.log(logs);
             for (const log of logs) {
+
+                if (log.address !== common.contract.options.address) {
+                    continue;
+                }
                 if (txhash === null || txhash != log["transactionHash"]) {
                     txhash = log["transactionHash"];
                     txlog = {"txid": txhash.slice(2)};
-                    result.push(txlog);
                     txreceipt = await common.web3.eth.getTransactionReceipt(txhash)
-                    console.log(txreceipt);
+                    console.log(txhash, txreceipt.status);
                     if (txreceipt.status) {
                         txlog["crosschainassets"] = new Array();
+                        result.push(txlog);
                     }
                 }
 
@@ -38,10 +45,10 @@ module.exports = async function(json_data, res) {
                         "crosschainamount": crosschainamount,
                         "outputamount": outputamount
                     });
-                    outputindex++;
                 }
             }
         }
+        console.log("result", result);
         res.json({"result": result, "id": null, "error": null, "jsonrpc": "2.0"});
         return;
     } catch (err) {
