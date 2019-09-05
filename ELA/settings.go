@@ -56,7 +56,7 @@ type settingItem struct {
 	ConfigPath   string
 	ParamName    string
 	ConfigSetter func(string, *config.Params, *config.Configuration) error
-	CliSetter    func(interface{}, *config.Params) error
+	CliSetter    func(interface{}, *config.Params, *config.Configuration) error
 }
 
 func (s *settingItem) TryInitValue(params *config.Params,
@@ -68,7 +68,7 @@ func (s *settingItem) TryInitValue(params *config.Params,
 		}
 
 		if s.CliSetter != nil {
-			return s.CliSetter(value, params)
+			return s.CliSetter(value, params, conf)
 		} else {
 			return gpath.Set(params, value, s.ParamName)
 		}
@@ -134,14 +134,20 @@ func (s *settingItem) getCliValue(c *cli.Context) (interface{}, error) {
 	case []string:
 		return strings.Split(value, cmdValueSplitter), nil
 	default:
-		return nil, errors.New("known value type")
+		return nil, errors.New("unknown value type")
 	}
 }
 
 func (s *settingItem) notDefault(conf *config.Configuration) (bool, error) {
+	if len(s.ConfigPath) == 0 {
+		return false, nil
+	}
 	value, err := gpath.At(conf, s.ConfigPath)
 	if err != nil {
 		return false, err
+	}
+	if value == nil {
+		return false, nil
 	}
 	return !gpath.Equal(s.DefaultValue, value), nil
 }
@@ -209,31 +215,65 @@ func (s *settings) Add(item *settingItem) {
 	s.items = append(s.items, *item)
 }
 
-func (s *settings) initNetSetting() error {
+func (s *settings) initNetSetting() (err error) {
+	var testNet, regTest bool
 	switch strings.ToLower(s.conf.ActiveNet) {
 	case "testnet", "test":
-		testNetDefault(s.conf)
-		s.params = config.DefaultParams.TestNet()
-
+		testNet = true
 	case "regnet", "reg":
-		regNetDefault(s.conf)
+		regTest = true
+	default:
+		testNet = false
+		regTest = false
+	}
+
+	if s.context.IsSet(cmdcom.TestNetFlag.Name) {
+		if testNet, err = strconv.ParseBool(s.context.String(
+			cmdcom.TestNetFlag.Name)); err != nil {
+			return
+		}
+	} else if s.context.IsSet(cmdcom.RegTestFlag.Name) {
+		if regTest, err = strconv.ParseBool(s.context.String(
+			cmdcom.RegTestFlag.Name)); err != nil {
+			return
+		}
+	}
+
+	if testNet {
+		if err := s.testNetDefault(s.conf); err != nil {
+			return err
+		}
+		s.params = config.DefaultParams.TestNet()
+	} else if regTest {
+		if err := s.regNetDefault(s.conf); err != nil {
+			return err
+		}
 		s.params = config.DefaultParams.RegNet()
 		pact.MaxBlockSize = 2000000
-
-	default:
-		mainNetDefault(s.conf)
+	} else {
+		if err := s.mainNetDefault(s.conf); err != nil {
+			return err
+		}
 		s.params = &config.DefaultParams
 		pact.MaxBlockSize = 2000000
 	}
+
 	if s.conf.MaxBlockSize > 0 {
 		pact.MaxBlockSize = s.conf.MaxBlockSize
 	}
 
 	config.Parameters = s.conf
-	if s.conf.PowConfiguration.InstantBlock {
+	instantBlock := s.conf.PowConfiguration.InstantBlock
+	if s.context.IsSet(cmdcom.InstantBlockFlag.Name) {
+		if instantBlock, err = strconv.ParseBool(s.context.String(
+			cmdcom.InstantBlockFlag.Name)); err != nil {
+			return
+		}
+	}
+	if instantBlock {
 		s.params = s.params.InstantBlock()
 	}
-	return nil
+	return
 }
 
 func newSettings() *settings {
@@ -274,7 +314,8 @@ func newSettings() *settings {
 			params.DNSSeeds = nil
 			return nil
 		},
-		CliSetter: func(value interface{}, params *config.Params) error {
+		CliSetter: func(value interface{}, params *config.Params,
+			conf *config.Configuration) error {
 			disable, ok := value.(bool)
 			if !ok {
 				return errors.New("invalid dns seeds switch setting")
@@ -285,9 +326,7 @@ func newSettings() *settings {
 			return nil
 		},
 		ParamName: ""})
-
-	result.Add(&settingItem{
-		Flag:         cmdcom.MinTxFeeFlag,
+	result.Add(&settingItem{Flag: cmdcom.MinTxFeeFlag,
 		DefaultValue: common.Fixed64(0),
 		ConfigPath:   "MinCrossChainTxFee",
 		ParamName:    "MinCrossChainTxFee"})
@@ -379,6 +418,7 @@ func newSettings() *settings {
 		ConfigSetter: ckpManagerSetter,
 		ConfigPath:   "EnableHistory",
 		ParamName:    ""})
+
 	result.Add(&settingItem{
 		Flag:         nil,
 		DefaultValue: uint32(0),
@@ -391,6 +431,108 @@ func newSettings() *settings {
 		DefaultValue: false,
 		ConfigPath:   "EnableUtxoDB",
 		ParamName:    "EnableUtxoDB"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.AutoMiningFlag,
+		DefaultValue: false,
+		ConfigSetter: func(string, *config.Params,
+			*config.Configuration) error {
+			return nil
+		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			mining, ok := i.(bool)
+			if !ok {
+				return errors.New("invalid auto mining value")
+			}
+			conf.PowConfiguration.AutoMining = mining
+			return nil
+		}})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.PayToAddrFlag,
+		DefaultValue: "",
+		ConfigSetter: func(string, *config.Params,
+			*config.Configuration) error {
+			return nil
+		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			addr, ok := i.(string)
+			if !ok {
+				return errors.New("invalid pay to address value")
+			}
+			conf.PowConfiguration.PayToAddr = addr
+			return nil
+		}})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.EnableRPCFlag,
+		DefaultValue: true,
+		ConfigSetter: func(string, *config.Params,
+			*config.Configuration) error {
+			return nil
+		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			enable, ok := i.(bool)
+			if !ok {
+				return errors.New("invalid enable rpc value")
+			}
+			conf.EnableRPC = enable
+			return nil
+		}})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.RPCUserFlag,
+		DefaultValue: "",
+		ConfigSetter: func(string, *config.Params,
+			*config.Configuration) error {
+			return nil
+		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			user, ok := i.(string)
+			if !ok {
+				return errors.New("invalid rpc user value")
+			}
+			conf.RpcConfiguration.User = user
+			return nil
+		}})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.RPCPasswordFlag,
+		DefaultValue: "",
+		ConfigSetter: func(string, *config.Params,
+			*config.Configuration) error {
+			return nil
+		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			pass, ok := i.(string)
+			if !ok {
+				return errors.New("invalid rpc password value")
+			}
+			conf.RpcConfiguration.Pass = pass
+			return nil
+		}})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.RPCAllowedIPsFlag,
+		DefaultValue: []string{},
+		ConfigSetter: func(string, *config.Params,
+			*config.Configuration) error {
+			return nil
+		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			ipStr, ok := i.([]string)
+			if !ok {
+				return errors.New("invalid ip list")
+			}
+			conf.RpcConfiguration.WhiteIPList = ipStr
+			return nil
+		}})
 
 	// DPoS configurations
 
@@ -481,7 +623,7 @@ func newSettings() *settings {
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.CRMemberCountFlag,
-		DefaultValue: common.Fixed64(0),
+		DefaultValue: uint32(0),
 		ConfigPath:   "CRConfiguration.MemberCount",
 		ParamName:    "CRMemberCount"})
 
@@ -563,49 +705,85 @@ func checkHost(host string) error {
 }
 
 // mainNetDefault set the default parameters for main net usage.
-func mainNetDefault(cfg *config.Configuration) {
-	if cfg.HttpInfoPort == 0 {
-		cfg.HttpInfoPort = 20333
+func (s *settings) mainNetDefault(cfg *config.Configuration) error {
+	if err := s.trySetUintPortValue(cmdcom.InfoPortFlag.Name, &cfg.HttpInfoPort,
+		20333); err != nil {
+		return err
 	}
-	if cfg.HttpRestPort == 0 {
-		cfg.HttpRestPort = 20334
+	if err := s.trySetPortValue(cmdcom.RestPortFlag.Name, &cfg.HttpRestPort,
+		20334); err != nil {
+		return err
 	}
-	if cfg.HttpWsPort == 0 {
-		cfg.HttpWsPort = 20335
+	if err := s.trySetPortValue(cmdcom.WsPortFlag.Name, &cfg.HttpWsPort,
+		20335); err != nil {
+		return err
 	}
-	if cfg.HttpJsonPort == 0 {
-		cfg.HttpJsonPort = 20336
-	}
+	return s.trySetPortValue(cmdcom.RPCPortFlag.Name,
+		&cfg.HttpJsonPort, 20336)
 }
 
 // testNetDefault set the default parameters for test net usage.
-func testNetDefault(cfg *config.Configuration) {
-	if cfg.HttpInfoPort == 0 {
-		cfg.HttpInfoPort = 21333
+func (s *settings) testNetDefault(cfg *config.Configuration) error {
+	if err := s.trySetUintPortValue(cmdcom.InfoPortFlag.Name, &cfg.HttpInfoPort,
+		21333); err != nil {
+		return err
 	}
-	if cfg.HttpRestPort == 0 {
-		cfg.HttpRestPort = 21334
+	if err := s.trySetPortValue(cmdcom.RestPortFlag.Name, &cfg.HttpRestPort,
+		21334); err != nil {
+		return err
 	}
-	if cfg.HttpWsPort == 0 {
-		cfg.HttpWsPort = 21335
+	if err := s.trySetPortValue(cmdcom.WsPortFlag.Name, &cfg.HttpWsPort,
+		21335); err != nil {
+		return err
 	}
-	if cfg.HttpJsonPort == 0 {
-		cfg.HttpJsonPort = 21336
-	}
+	return s.trySetPortValue(cmdcom.RPCPortFlag.Name,
+		&cfg.HttpJsonPort, 21336)
 }
 
 // regNetDefault set the default parameters for reg net usage.
-func regNetDefault(cfg *config.Configuration) {
-	if cfg.HttpInfoPort == 0 {
-		cfg.HttpInfoPort = 22333
+func (s *settings) regNetDefault(cfg *config.Configuration) error {
+	if err := s.trySetUintPortValue(cmdcom.InfoPortFlag.Name, &cfg.HttpInfoPort,
+		22333); err != nil {
+		return err
 	}
-	if cfg.HttpRestPort == 0 {
-		cfg.HttpRestPort = 22334
+	if err := s.trySetPortValue(cmdcom.RestPortFlag.Name, &cfg.HttpRestPort,
+		22334); err != nil {
+		return err
 	}
-	if cfg.HttpWsPort == 0 {
-		cfg.HttpWsPort = 22335
+	if err := s.trySetPortValue(cmdcom.WsPortFlag.Name, &cfg.HttpWsPort,
+		22335); err != nil {
+		return err
 	}
-	if cfg.HttpJsonPort == 0 {
-		cfg.HttpJsonPort = 22336
+	return s.trySetPortValue(cmdcom.RPCPortFlag.Name,
+		&cfg.HttpJsonPort, 22336)
+}
+
+func (s *settings) trySetPortValue(cliFlag string, value *int,
+	defaultValue int) error {
+	if s.context.IsSet(cliFlag) {
+		info, err := strconv.ParseInt(s.context.String(
+			cliFlag), 10, 32)
+		if err != nil {
+			return err
+		}
+		*value = int(info)
+	} else if *value == 0 {
+		*value = defaultValue
 	}
+	return nil
+}
+
+func (s *settings) trySetUintPortValue(cliFlag string, value *uint16,
+	defaultValue uint16) error {
+	if s.context.IsSet(cliFlag) {
+		info, err := strconv.ParseUint(s.context.String(
+			cliFlag), 10, 16)
+		if err != nil {
+			return err
+		}
+		*value = uint16(info)
+	} else if *value == 0 {
+		*value = defaultValue
+	}
+	return nil
 }

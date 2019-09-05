@@ -381,11 +381,11 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	log.Info("<================Discrete Mining==============>\n")
 	for {
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
-		log.Info("Generate block, " + msgBlock.Hash().String())
 		if err != nil {
 			log.Warn("Generate block failed, ", err.Error())
 			continue
 		}
+		log.Info("Generate block, " + msgBlock.Hash().String())
 
 		if pow.SolveBlock(msgBlock, nil) {
 			if msgBlock.Header.Height == pow.chain.GetHeight()+1 {
