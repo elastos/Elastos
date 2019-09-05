@@ -10,7 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
-// Ensure GetBlock implement p2p.Message interface.
+// Ensure GetBlockByHash implement p2p.Message interface.
 var _ p2p.Message = (*GetBlock)(nil)
 
 type GetBlock struct {

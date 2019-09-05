@@ -46,7 +46,7 @@ func getNetworkHashPS(tipNode *BlockNode) *big.Int {
 
 // GetNetworkHashPS return average network hashes per second based on the last 'lookup' blocks.
 func (b *BlockChain) GetNetworkHashPS() *big.Int {
-	tipHash := b.CurrentBlockHash()
+	tipHash := b.GetCurrentBlockHash()
 	tipNode, exist := b.LookupNodeInIndex(&tipHash)
 	if !exist {
 		return new(big.Int)
