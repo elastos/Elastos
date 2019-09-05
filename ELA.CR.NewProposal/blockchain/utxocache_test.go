@@ -63,6 +63,17 @@ var (
 	}
 )
 
+func deleteTestDBTx(tx *types.Transaction) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(DATATransaction))
+	hash := referTx.Hash()
+	err := hash.Serialize(key)
+	if err != nil {
+		return err
+	}
+	return testUTXOCacheDB.Delete(key.Bytes())
+}
+
 func TestUTXOCache_Init(t *testing.T) {
 	db, err := NewLevelDB(filepath.Join(test.DataPath, "test_utxo_cache_chain"))
 	assert.NoError(t, err)
@@ -194,13 +205,38 @@ func Test_PointerKeyForMap(t *testing.T) {
 	// map[0xc0000b43d8:3 0xc0000b4400:4]
 }
 
-func deleteTestDBTx(tx *types.Transaction) error {
-	key := new(bytes.Buffer)
-	key.WriteByte(byte(DATATransaction))
-	hash := referTx.Hash()
-	err := hash.Serialize(key)
-	if err != nil {
-		return err
+func TestUTXOCache_InsertReference(t *testing.T) {
+	// init reference
+	for i := uint32(0); i < maxReferenceSize; i++ {
+		input := &types.Input{
+			Sequence: i,
+		}
+		output := &types.Output{
+			OutputLock: i,
+		}
+		utxoCache.insertReference(input, output)
 	}
-	return testUTXOCacheDB.Delete(key.Bytes())
+	assert.Equal(t, maxReferenceSize, len(utxoCache.reference))
+	assert.Equal(t, maxReferenceSize, utxoCache.inputs.Len())
+	assert.Equal(t, uint32(0), utxoCache.inputs.Front().Value.(*types.Input).Sequence)
+	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.inputs.Back().Value.(*types.Input).Sequence)
+	assert.Equal(t, uint32(0), utxoCache.reference[utxoCache.inputs.Front().Value.(*types.Input)].OutputLock)
+	assert.Equal(t, uint32(maxReferenceSize-1), utxoCache.reference[utxoCache.inputs.Back().Value.(*types.Input)].OutputLock)
+
+	for i := uint32(maxReferenceSize); i < maxReferenceSize+500; i++ {
+		input := &types.Input{
+			Sequence: i,
+		}
+		output := &types.Output{
+			OutputLock: i,
+		}
+		utxoCache.insertReference(input, output)
+	}
+	assert.Equal(t, maxReferenceSize, len(utxoCache.reference))
+	assert.Equal(t, maxReferenceSize, utxoCache.inputs.Len())
+	assert.Equal(t, uint32(500), utxoCache.inputs.Front().Value.(*types.Input).Sequence)
+	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.inputs.Back().Value.(*types.Input).Sequence)
+	assert.Equal(t, uint32(500), utxoCache.reference[utxoCache.inputs.Front().Value.(*types.Input)].OutputLock)
+	assert.Equal(t, uint32(maxReferenceSize+499), utxoCache.reference[utxoCache.inputs.Back().Value.(*types.Input)].
+		OutputLock)
 }
