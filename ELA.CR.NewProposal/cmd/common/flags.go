@@ -93,6 +93,14 @@ var (
 		Name:  "rpcport",
 		Usage: "JSON-RPC server listening port `<number>`",
 	}
+	EnableRPCFlag = cli.StringFlag{
+		Name:        "server",
+		Usage:       "decide if open JSON-RPC server or not",
+	}
+	RPCAllowedIPsFlag = cli.StringFlag{
+		Name:        "rpcips",
+		Usage:       "white IP list allowed to access RPC server",
+	}
 
 	// Info flags
 	InfoStartFlag = cli.IntFlag{
@@ -111,6 +119,16 @@ var (
 	}
 
 	// Config flags
+	TestNetFlag = cli.StringFlag{
+		Name:  "testnet",
+		Usage: "specify network type to test net",
+		Value: defaultConfigPath,
+	}
+	RegTestFlag = cli.StringFlag{
+		Name:  "regtest",
+		Usage: "specify network type to reg test net",
+		Value: defaultConfigPath,
+	}
 	ConfigFileFlag = cli.StringFlag{
 		Name:  "conf",
 		Usage: "config `<file>` path, ",
@@ -140,6 +158,30 @@ var (
 	PortFlag = cli.StringFlag{
 		Name:  "port",
 		Usage: "default peer-to-peer port for the network",
+	}
+	InfoPortFlag = cli.StringFlag{
+		Name:  "infoport",
+		Usage: "port for the http info server",
+	}
+	RestPortFlag = cli.StringFlag{
+		Name:  "restport",
+		Usage: "port for the http restful server",
+	}
+	WsPortFlag = cli.StringFlag{
+		Name:  "wsport",
+		Usage: "port for the http web socket server",
+	}
+	InstantBlockFlag = cli.StringFlag{
+		Name:  "instant",
+		Usage: "specify if need to generate instant block",
+	}
+	PayToAddrFlag = cli.StringFlag{
+		Name:  "paytoaddr",
+		Usage: "specify the miner reward address",
+	}
+	AutoMiningFlag = cli.StringFlag{
+		Name:  "automining",
+		Usage: "specify if should open auto mining",
 	}
 	MinTxFeeFlag = cli.StringFlag{
 		Name:  "mintxfee",
