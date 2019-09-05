@@ -106,7 +106,6 @@ public class CRMyVoteFragment extends BaseFragment implements CommmonStringWithM
     @OnClick(R.id.ll_bgtp)
     public void onViewClicked() {
         Bundle bundle = new Bundle();
-        bundle.putString("type", "2");
         bundle.putString("zb", zb);
         bundle.putSerializable("netList", (Serializable) netList);
         start(NodeCartFragment.class, bundle);

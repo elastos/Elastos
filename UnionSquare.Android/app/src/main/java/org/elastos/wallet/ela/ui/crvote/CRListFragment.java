@@ -33,9 +33,9 @@ import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter1;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRManageFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRMyVoteFragment;
+import org.elastos.wallet.ela.ui.crvote.fragment.CRNodeCartFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRSignUpForFragment;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
-import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.NodeInformation.NodeInformationFragment;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
@@ -128,7 +128,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 bundle = new Bundle();
                 bundle.putString("zb", zb);
                 bundle.putSerializable("netList", netList);
-                start(NodeCartFragment.class, bundle);
+                start(CRNodeCartFragment.class, bundle);
                 break;
             case R.id.tv_signupfor:
                 if (tv_signupfor.getText().equals(getString(R.string.sign_up_for))) {

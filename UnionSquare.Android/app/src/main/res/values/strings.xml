@@ -423,5 +423,12 @@
     <string name="Listofcandidates">参选委员列表</string>
     <string name="menberpk">委员公钥</string>
     <string name="menberdid">委员DID</string>
+    <string name="maxvote">最大表决权约：</string>
+    <string name="equaldivision">平均分配</string>
+    <string name="currentrank">当前排名：</string>
+    <string name="ticketnum">得票总数：</string>
+    <string name="plzinputpercent">请输入百分比</string>
+    <string name="totle">合计：</string>
+    <string name="available">可用：</string>
 
 </resources>

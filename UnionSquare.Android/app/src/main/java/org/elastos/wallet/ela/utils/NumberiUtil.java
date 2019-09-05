@@ -15,7 +15,12 @@ public class NumberiUtil {
      */
     public static String numberFormat(String number, int wei) {
         BigDecimal b = new BigDecimal(number);
-        return b.setScale(wei, BigDecimal.ROUND_DOWN).toString();
+        return b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString();
+    }
+
+    public static String numberFormat(Object number, int wei) {
+        BigDecimal b = new BigDecimal(number.toString());
+        return b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString();
     }
 
     /* public static BigDecimal setScal(String f, int newScale) {
@@ -44,7 +49,7 @@ public class NumberiUtil {
         while ((number.endsWith("0") || number.endsWith(".")) && number.contains(".")) {
             number = number.substring(0, number.length() - 1);
         }
-        if (number.contains(".")) {
+        if (number.split("\\.").length > 1) {
             String part1 = (number.split("\\."))[0];//整数部分
             String part2 = number.split("\\.")[1];//小数部分
 
