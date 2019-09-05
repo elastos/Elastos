@@ -171,7 +171,7 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <Row className="top-section" type="flex" justify="center" gutter={32}>
+        {/* <Row className="top-section" type="flex" justify="center" gutter={32}>
           <Col className={`box-wrap ${selectedBox === 0 ? 'selected-box' : ''}`} xs={24} sm={24} md={24} lg={8} onClick={this.switchToBox.bind(this, 0)}>
             <div className="box box-hover">
               <TriColTitle>
@@ -206,8 +206,24 @@ export default class extends StandardPage {
             </div>
             <img className={`arrow${selectedBox === 2 ? '' : ' arrow-hidden'}`} src="/assets/images/emp35/down_arrow.png"/>
           </Col>
-        </Row>
-        {selectedBox !== 2 ? (
+        </Row> */}
+        <div className="mid-section">
+          <div className="decoration-2">
+            <img className="upper-left" src="/assets/images/training_green_slashed_box.png"/>
+          </div>
+          <div className="inner-box">
+            <div className="decoration-3">
+              <img className="upper-left" src="/assets/images/training_green_slashed_box.png"/>
+            </div>
+            <h3>{title}</h3>
+            <p className="synthese">{I18N.get('home.crc.explanation')}</p>
+            <p className="synthese">{description2}</p>
+          </div>
+          <div className="rectangle-1" />
+          <div className="rectangle-2" />
+          <div className="rectangle-3" />
+        </div>
+        {/* {selectedBox !== 2 ? (
           <div className="mid-section">
             <div className="decoration-2">
               <img className="upper-left" src="/assets/images/training_green_slashed_box.png"/>
@@ -264,7 +280,7 @@ export default class extends StandardPage {
             <div className="rectangle-2" />
             <div className="rectangle-3" />
           </div>
-        )}
+        )} */}
         <div className="stay-updated">
           <div className="form-wrap footer-email">
             <p>{I18N.get('landing.footer.note')}</p>
