@@ -231,6 +231,7 @@ const zh = {
   'suggestion.owner': '提议人',
   'suggestion.new': '最新',
   'suggestion.postedBy': '发布者',
+  'suggestion.viaCouncilMember': '由委员会成员',
   'suggestion.follow': '关注',
   'suggestion.reportAbuse': '举报',
   'suggestion.translate': '翻译为: ',

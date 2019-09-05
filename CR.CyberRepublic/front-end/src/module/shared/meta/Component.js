@@ -7,12 +7,17 @@ import './style.scss'
 
 export default ({ data, hideAuthor, postedByText }) => {
   const { displayId, createdAt, proposedAt } = data
-  const author = data.author || `${_.get(data, 'createdBy.profile.firstName', '')} ${_.get(data, 'createdBy.profile.lastName', '')}` || data.username
+  const author = data.author ||
+    `${_.get(data, 'createdBy.profile.firstName', '')} ${_.get(data, 'createdBy.profile.lastName', '')}` ||
+    data.username ||
+    data.email
+
   const authorNode = hideAuthor ? '' : (
     <span>
       {postedByText || I18N.get('suggestion.postedBy')}
       {' '}
       {author}
+      {` (${I18N.get('suggestion.viaCouncilMember')} <${data.proposedBy}>)`}
     </span>
   )
 

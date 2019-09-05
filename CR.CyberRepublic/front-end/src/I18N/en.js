@@ -233,6 +233,7 @@ const en = {
   'suggestion.owner': 'Owner',
   'suggestion.new': 'New',
   'suggestion.postedBy': 'Posted By',
+  'suggestion.viaCouncilMember': 'via Council member',
   'suggestion.follow': 'Follow',
   'suggestion.reportAbuse': 'Report Abuse',
   'suggestion.translate': 'Translate in: ',
