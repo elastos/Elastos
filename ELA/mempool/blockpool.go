@@ -190,7 +190,7 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 		}
 
 		if !inMainChain && !isOrphan {
-			if err := bm.CheckConfirmedBlockOnFork(bm.Store.GetHeight(), block); err != nil {
+			if err := bm.CheckConfirmedBlockOnFork(bm.Chain.GetHeight(), block); err != nil {
 				return inMainChain, isOrphan, err
 			}
 		}

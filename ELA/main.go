@@ -158,18 +158,7 @@ func startNode(c *cli.Context, st *settings) {
 	blockchain.DefaultLedger = &ledger // fixme
 
 	arbiters, err := state.NewArbitrators(st.Params(),
-		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
-			hash, err := chainStore.GetBlockHash(height)
-			if err != nil {
-				return nil, err
-			}
-			block, err := chainStore.GetBlock(hash)
-			if err != nil {
-				return nil, err
-			}
-			blockchain.CalculateTxsFee(block)
-			return block, nil
-		}, func(programHash common.Uint168) (common.Fixed64,
+		func(programHash common.Uint168) (common.Fixed64,
 			error) {
 			amount := common.Fixed64(0)
 			utxos, err := blockchain.DefaultLedger.Store.
@@ -195,8 +184,26 @@ func startNode(c *cli.Context, st *settings) {
 	if err != nil {
 		printErrorAndExit(err)
 	}
+	if err := chain.InitFFLDBFromChainStore(interrupt.C, pgBar.Start,
+		pgBar.Increase, true); err != nil {
+		printErrorAndExit(err)
+	}
+	pgBar.Stop()
 	ledger.Blockchain = chain // fixme
 	blockMemPool.Chain = chain
+	arbiters.RegisterFunction(chain.GetHeight,
+		func(height uint32) (*types.Block, error) {
+			hash, err := chain.GetBlockHash(height)
+			if err != nil {
+				return nil, err
+			}
+			block, err := chainStore.GetFFLDB().GetBlock(hash)
+			if err != nil {
+				return nil, err
+			}
+			blockchain.CalculateTxsFee(block)
+			return block, nil
+		})
 
 	routesCfg := &routes.Config{TimeSource: chain.TimeSource}
 	if act != nil {
@@ -253,6 +260,7 @@ func startNode(c *cli.Context, st *settings) {
 	wal := wallet.NewWallet()
 	wallet.Store = chainStore
 	wallet.ChainParam = st.Params()
+	wallet.Chain = chain
 
 	st.Params().CkpManager.Register(wal)
 
@@ -304,7 +312,7 @@ func startNode(c *cli.Context, st *settings) {
 		go httpnodeinfo.StartServer()
 	}
 
-	go printSyncState(chainStore, server)
+	go printSyncState(chain, server)
 
 	waitForSyncFinish(server, interrupt.C)
 	if interrupt.Interrupted() {
@@ -342,7 +350,7 @@ out:
 	}
 }
 
-func printSyncState(db blockchain.IChainStore, server elanet.Server) {
+func printSyncState(bc *blockchain.BlockChain, server elanet.Server) {
 	statlog := elalog.NewBackend(logger.Writer()).Logger("STAT",
 		elalog.LevelInfo)
 
@@ -352,7 +360,7 @@ func printSyncState(db blockchain.IChainStore, server elanet.Server) {
 	for range ticker.C {
 		var buf bytes.Buffer
 		buf.WriteString("-> ")
-		buf.WriteString(strconv.FormatUint(uint64(db.GetHeight()), 10))
+		buf.WriteString(strconv.FormatUint(uint64(bc.GetHeight()), 10))
 		peers := server.ConnectedPeers()
 		buf.WriteString(" [")
 		for i, p := range peers {
