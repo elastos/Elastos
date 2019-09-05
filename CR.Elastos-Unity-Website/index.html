@@ -20,16 +20,16 @@
     }
 
     h1 {
-      font-size: 50px;
+      font-size: 30pt;
     }
 
     h2 {
-      font-size: 18px
+      font-size: 16pt
     }
 
     .bg {
       width: 100%;
-      height: 1050px;
+      height: 40%;
       /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#375270+0,273e57+50,273e57+51,00131e+100 */
       background: #375270;
       /* Old browsers */
@@ -62,61 +62,65 @@
 </head>
 
 <body style="font-family: BioSans">
+  
   <div class="bg">
+    <div class="container">      
+      <div class="col" style="height:5%">
+        <img src="resources/elastoslogo.png" class="img-fluid" alt="Responsive image" style="width:250px;margin-top:20px">
+      </div>
 
-    <div class="col" style="height:5%">
-      <img src="resources/elastoslogo.png" class="img-fluid" alt="Responsive image" style="width:250px;margin-top:20px">
-    </div>
+      <div class="row" style="height:400px;">
 
-    <div class="col" style="height:40%">
-      <div style="width: 60%; height:60%; margin:auto; padding-top:100px">
-        <div style="float: left; font-size: 50px">
-          <font color="white">
-            Build better <br>
-            Elastos mobile Dapps <br>
+        <div class="col-lg" style="align-self: center; align-items: center;">
+          <font color="white" style="font-size: 35pt;">
+            Build better
+            Elastos mobile Dapps
             using React Native
-          </font>
-        </div>
-        <div style="float:right; font-size: 24px">
+          </font><br>
           <a href="https://github.com/cyber-republic/elastos-unity">
-            <font color="white" style="text-decoration:none;">
+            <font color="white" style="text-decoration:none; font-size:24px;">
               [Learn more]
             </font>
           </a>
         </div>
+        <div class="col-lg justify-content-end" style="font-size: 24px; align-self: center; ">
+        </div>
       </div>
-    </div>
 
-    <div class="col" style="height: 50%;">
-      <div style=" width: 100%; align-content: center; align-content: center">
-        <center>
-          <img src="resources/codeexample.png" class="img-fluid" alt="Responsive image"
-            style="width:1000px; margin-bottom: 50px; "><br>
-          <a href="https://github.com/cyber-republic/elastos-unity">
-            <img src="resources/github_blue.png" class="img-fluid" alt="Responsive image" style="width:300px;">
-          </a>
-        </center>
+      <div class="row">
+        <div class="col" >
+          <div style=" width: 100%; align-content: center; align-content: center; padding-bottom: 20px;">
+            <center>
+              <img src="resources/codeexample.png" class="img-fluid" alt="Responsive image"
+                style="width:1000px; margin-bottom: 50px; "><br>
+              <a href="https://github.com/cyber-republic/elastos-unity">
+                <img src="resources/github_blue.png" class="img-fluid" alt="Responsive image" style="width:300px;">
+              </a>
+            </center>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 
   <div class="container">
-    <div class="row" style="width:100%; height:400px;align-self: center; align-content: center; align-items: center;">
-      <div class="col" style="font-size: 50px; ">
-        Elastos Unity allows third-party <br>
-        developers to easily create <br>
-        mobile Elastos Dapps using the <br>
+    <div class="row" style=" align-self: center; align-content: center; align-items: center; padding-top:30px;">
+      <div class="col-md-8" style="font-size: 30pt; ">
+        Elastos Unity allows third-party 
+        developers to easily create 
+        mobile Elastos Dapps using the 
         JavaScript language.
       </div>
     </div>
 
-    <div class="row" style="width:100%; height:400px;align-self: center; align-content: center; align-items: center;">
-      <div class="col">
+    <div class="row" style="padding:30px;align-self: center; align-content: center; align-items: center;">
+      <div class="col-md-6">
         <center>
           <img src="resources/wallet.png" class="img-fluid" alt="Responsive image" style="width:300px;">
         </center>
       </div>
-      <div class="col">
+      <div class="col-md-6">
         <h1>Wallet</h1>
         <p>
           <h2>
@@ -134,39 +138,39 @@
     </div>
 
 
-
-    <div class="row" style="width:100%; height:400px;align-self: center; align-content: center; align-items: center;">
-      <div class="col">
-        <h1>Carrier</h1>
-        <p>
-          <h2>
-            The Elastos Unity Carrier Wallet module adds Carrier library bindings to your React Native app and therefore
-            allows you to implement all the Elastos Carrier p2p networking functionnalities in your app.
-          </h2>
-          <a href="https://github.com/cyber-republic/elastos-unity-carrier">
-            <h3 style="float: left; margin-right:10px;color:#375270;">[GitHub]</h3>
-          </a>
-          <a href="http://elastosunity.com/docs/carrier">
-            <h3 style="color:#375270; text-decoration: none;">[Docs]</h3>
-          </a>
-        </p>
+    <div class="row" style="padding:30px;align-self: center; align-content: center; align-items: center;">
+      <div class="col-md-6 order-md-12">
+          <center>
+              <img src="resources/carrier.png" class="img-fluid" alt="Responsive image" style="width:300px;">
+            </center>        
       </div>
 
-      <div class="col">
-        <center>
-          <img src="resources/carrier.png" class="img-fluid" alt="Responsive image" style="width:300px;">
-        </center>
+      <div class="col-md-6 order-md-1">
+          <h1>Carrier</h1>
+          <p>
+            <h2>
+              The Elastos Unity Carrier Wallet module adds Carrier library bindings to your React Native app and therefore
+              allows you to implement all the Elastos Carrier p2p networking functionnalities in your app.
+            </h2>
+            <a href="https://github.com/cyber-republic/elastos-unity-carrier">
+              <h3 style="float: left; margin-right:10px;color:#375270;">[GitHub]</h3>
+            </a>
+            <a href="http://elastosunity.com/docs/carrier">
+              <h3 style="color:#375270; text-decoration: none;">[Docs]</h3>
+            </a>
+          </p>
+
       </div>
     </div>
 
 
-    <div class="row" style="width:100%; height:400px;align-self: center; align-content: center; align-items: center;">
-      <div class="col">
+    <div class="row" style="padding:30px;align-self: center; align-content: center; align-items: center;">
+      <div class="col-lg">
         <center>
           <img src="resources/did.png" class="img-fluid" alt="Responsive image" style="width:300px;">
         </center>
       </div>
-      <div class="col">
+      <div class="col-lg">
         <h1>DID (not implemented)</h1>
         <p>
           <h2>
@@ -178,22 +182,21 @@
     </div>
 
 
-
-    <div class="row" style="width:100%; height:400px;align-self: center; align-content: center; align-items: center;">
-      <div class="col">
-        <h1>HIVE (not implemented)</h1>
-        <p>
-          <h2>
-            The Elastos Unity HIVE module will bring all the Elasots HIVE (Distributed storage solution)
-            functionnalities to your React Native app.
-          </h2>
-        </p>
+    <div class="row" style="padding:30px;align-self: center; align-content: center; align-items: center;">
+        <div class="col-md-6 order-md-12">
+            <center>
+                <img src="resources/hive.png" class="img-fluid" alt="Responsive image" style="width:300px;">
+              </center>
       </div>
 
-      <div class="col">
-        <center>
-          <img src="resources/hive.png" class="img-fluid" alt="Responsive image" style="width:300px;">
-        </center>
+      <div class="col-md-6 order-md-1">
+          <h1>HIVE (not implemented)</h1>
+          <p>
+            <h2>
+              The Elastos Unity HIVE module will bring all the Elasots HIVE (Distributed storage solution)
+              functionnalities to your React Native app.
+            </h2>
+          </p>
       </div>
     </div>
 
