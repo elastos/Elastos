@@ -28,11 +28,11 @@ type UTXOCache struct {
 }
 
 func (up *UTXOCache) insertReference(input *types.Input, output *types.Output) {
-	if up.inputs.Len() > maxReferenceSize {
+	if up.inputs.Len() >= maxReferenceSize {
 		for e := up.inputs.Front(); e != nil; e = e.Next() {
 			up.inputs.Remove(e)
 			delete(up.reference, e.Value.(*types.Input))
-			if up.inputs.Len() <= maxReferenceSize {
+			if up.inputs.Len() < maxReferenceSize {
 				break
 			}
 		}
