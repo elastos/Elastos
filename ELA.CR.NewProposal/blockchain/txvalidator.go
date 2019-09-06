@@ -1497,7 +1497,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	}
 
 	if b.crCommittee.IsInVotingPeriod(blockHeight) {
-		return errors.New("should create tx during tenure period")
+		return errors.New("should create proposal during tenure period")
 	}
 
 	if proposal.ProposalType.Name() == "Unknown" {
@@ -1531,7 +1531,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 
 	// Check signature of CR sponsor.
 	if err = common.WriteVarBytes(signedBuf, proposal.Sign); err != nil {
-		return errors.New("invalid sign")
+		return errors.New("invalid CR signature")
 	}
 	if err = checkCRTransactionSignature(proposal.CRSign, proposal.CRSponsor,
 		signedBuf.Bytes()); err != nil {
