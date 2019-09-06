@@ -43,7 +43,7 @@ namespace Elastos {
 
 			void ClearUsedAddresses();
 
-			bytes_ptr OwnerPubKey() const;
+			bytes_t OwnerPubKey() const;
 
 			bytes_t DIDPubKey() const;
 

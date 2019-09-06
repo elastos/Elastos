@@ -23,25 +23,25 @@ namespace Elastos {
 
 			~ElaNewWalletJson();
 
-			void AddCoinInfo(const CoinInfoPtr &info) { _coinInfoList.push_back(info); }
+			void AddCoinInfo(const CoinInfoPtr &info);
 
-			void ClearCoinInfo() { _coinInfoList.clear(); }
+			void ClearCoinInfo();
 
-			const std::vector<CoinInfoPtr> &GetCoinInfoList() const { return _coinInfoList; }
+			const std::vector<CoinInfoPtr> &GetCoinInfoList() const;
 
-			void SetCoinInfoList(const std::vector<CoinInfoPtr> &list) { _coinInfoList = list; }
+			void SetCoinInfoList(const std::vector<CoinInfoPtr> &list);
 
-			const std::string &PassPhrase() const { return _passphrase; }
+			bool SingleAddress() const;
 
-			void SetPassPhrase(const std::string &passphrase) { _passphrase = passphrase; }
+			void SetSingleAddress(bool value);
 
-			bool SingleAddress() const { return _singleAddress; }
+			const std::string &OwnerPubKey() const;
 
-			void SetSingleAddress(bool value) { _singleAddress = value; }
+			void SetOwnerPubKey(const std::string &pubkey);
 
-			const std::string &OwnerPubKey() const { return _ownerPubKey; }
+			const std::string &xPubKeyHDPM() const;
 
-			void SetOwnerPubKey(const std::string &pubkey) { _ownerPubKey = pubkey; }
+			void SetxPubKeyHDPM(const std::string &xpub);
 
 			virtual nlohmann::json ToJson(bool withPrivKey) const;
 
@@ -58,9 +58,8 @@ namespace Elastos {
 
 		private:
 			std::vector<CoinInfoPtr> _coinInfoList;
-//			std::string _passphrase __attribute((deprecated));
-			std::string _passphrase;
 			std::string _ownerPubKey;
+			std::string _xPubKeyHDPM;
 			bool _singleAddress;
 		};
 	}

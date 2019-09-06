@@ -33,13 +33,6 @@ namespace Elastos {
 
 		class GroupedAsset {
 		public:
-			enum BalanceType {
-				Default,
-				Voted,
-				Total,
-			};
-
-		public:
 			GroupedAsset();
 
 			GroupedAsset(Wallet *parent, const AssetPtr &asset);
@@ -54,7 +47,7 @@ namespace Elastos {
 
 			const UTXOArray &GetCoinBaseUTXOs() const;
 
-			BigInt GetBalance(BalanceType type = Total) const;
+			BigInt GetBalance() const;
 
 			nlohmann::json GetBalanceInfo();
 
@@ -62,15 +55,14 @@ namespace Elastos {
 												   const Address &fromAddress,
 												   const std::string &memo);
 
-			TransactionPtr Consolidate(const std::string &memo, bool useVotedUTXO);
+			TransactionPtr Consolidate(const std::string &memo);
 
 			TransactionPtr CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
 											  const Address &fromAddress,
 											  const std::string &memo,
-											  bool useVotedUTXO,
 											  bool autoReduceOutputAmount);
 
-			void AddFeeForTx(TransactionPtr &tx, bool useVotedUTXO);
+			void AddFeeForTx(TransactionPtr &tx);
 
 			const AssetPtr &GetAsset() const;
 

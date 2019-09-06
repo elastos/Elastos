@@ -61,9 +61,9 @@ namespace Elastos {
 				return existedId;
 			}
 
-			HDKeychain mpk = _parentWallet->_account->MasterPubKey();
+			HDKeychainPtr mpk = _parentWallet->_account->MasterPubKey();
 
-			bytes_t pubKey = mpk.getChild(purpose).getChild(index).pubkey();
+			bytes_t pubKey = mpk->getChild(purpose).getChild(index).pubkey();
 			Address address(PrefixIDChain, pubKey);
 			item.PublicKey = pubKey;
 			_info.IDs[address.String()] = item;
@@ -96,9 +96,9 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(_info.IDs.find(id) == _info.IDs.end(), Error::IDNotFound, std::string("Unknown ID ") + id);
 			IDItem item = _info.IDs[id];
 
-			HDKeychain rootKey = _parentWallet->_account->RootKey(password);
+			HDKeychainPtr rootKey = _parentWallet->_account->RootKey(password);
 
-			HDKeychain key = rootKey.getChild("44'/0'/0'").getChild(item.Purpose).getChild(item.Index);
+			HDKeychain key = rootKey->getChild("44'/0'/0'").getChild(item.Purpose).getChild(item.Index);
 
 			return KeyPtr(new Key(key));
 		}
@@ -117,8 +117,8 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(_info.IDs.find(id) == _info.IDs.end(), Error::IDNotFound, std::string("Unknown ID ") + id);
 			IDItem item = _info.IDs[id];
 
-			HDKeychain mpk = _parentWallet->_account->MasterPubKey();
-			bytes_t pubkey = mpk.getChild(item.Purpose).getChild(item.Index).pubkey();
+			HDKeychainPtr mpk = _parentWallet->_account->MasterPubKey();
+			bytes_t pubkey = mpk->getChild(item.Purpose).getChild(item.Index).pubkey();
 			return Address(PrefixIDChain, pubkey).RedeemScript().getHex();
 		}
 

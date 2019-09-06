@@ -27,9 +27,6 @@ namespace Elastos {
 			 * @param amount           The amount that will be deposit to the side chain.
 			 * @param sideChainAddress Receive address of side chain.
 			 * @memo                   Remarks string. Can be empty string.
-			 * @useVotedUTXO           If true, all voted UTXO will be picked. Otherwise,
-			 *                         any voted UTXO will not be picked.
-			 *
 			 * @return                 The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateDepositTransaction(
@@ -37,8 +34,7 @@ namespace Elastos {
 					const std::string &lockedAddress,
 					const std::string &amount,
 					const std::string &sideChainAddress,
-					const std::string &memo,
-					bool useVotedUTXO = false) = 0;
+					const std::string &memo) = 0;
 
 			/**
 			 * Generate payload for registering or updating producer.
@@ -84,16 +80,13 @@ namespace Elastos {
 			 * @param payload      Generate by GenerateProducerPayload().
 			 * @param amount       Amount must lager than 500,000,000,000 sela
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
-			 *
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRegisterProducerTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
 				const std::string &amount,
-				const std::string &memo,
-				bool useVotedUTXO = false) = 0;
+				const std::string &memo) = 0;
 
 			/**
 			 * Create update producer transaction.
@@ -102,15 +95,13 @@ namespace Elastos {
 			 *                     Otherwise, pick UTXO from the specific address.
 			 * @param payload      Generate by GenerateProducerPayload().
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 *
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateUpdateProducerTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
-				const std::string &memo,
-				bool useVotedUTXO = false) = 0;
+				const std::string &memo) = 0;
 
 			/**
 			 * Create cancel producer transaction.
@@ -119,15 +110,12 @@ namespace Elastos {
 			 *                     Otherwise, pick UTXO from the specific address.
 			 * @param payload      Generate by GenerateCancelProducerPayload().
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
-			 *
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateCancelProducerTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
-				const std::string &memo,
-				bool useVotedUTXO = false) = 0;
+				const std::string &memo) = 0;
 
 			/**
 			 * Create retrieve deposit transaction.
@@ -162,16 +150,13 @@ namespace Elastos {
 			 * @param stake        Vote amount in sela.
 			 * @param publicKeys   Public keys array in JSON format.
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
-			 *
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateVoteProducerTransaction(
 					const std::string &fromAddress,
 					const std::string &stake,
 					const nlohmann::json &pubicKeys,
-					const std::string &memo,
-					bool useVotedUTXO = false) = 0;
+					const std::string &memo) = 0;
 
 			/**
 			 * Get vote information of current wallet.
@@ -263,16 +248,13 @@ namespace Elastos {
 			 * @param payload      Generate by GenerateCRInfoPayload().
 			 * @param amount       Amount must lager than 500,000,000,000 sela
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
-			 *
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRegisterCRTransaction(
 					const std::string &fromAddress,
 					const nlohmann::json &payload,
 					const std::string &amount,
-					const std::string &memo,
-					bool useVotedUTXO = false) = 0;
+					const std::string &memo) = 0;
 
 			/**
 			 * Create update cr transaction.
@@ -281,15 +263,12 @@ namespace Elastos {
 			 *                     Otherwise, pick UTXO from the specific address.
 			 * @param payload      Generate by GenerateCRInfoPayload().
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
-			 *
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateUpdateCRTransaction(
 					const std::string &fromAddress,
 					const nlohmann::json &payload,
-					const std::string &memo,
-					bool useVotedUTXO = false) = 0;
+					const std::string &memo) = 0;
 
 			/**
 			 * Create unregister cr transaction.
@@ -298,22 +277,18 @@ namespace Elastos {
 			 *                     Otherwise, pick UTXO from the specific address.
 			 * @param payload      Generate by GenerateUnregisterCRPayload().
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
-			 *
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateUnregisterCRTransaction(
 					const std::string &fromAddress,
 					const nlohmann::json &payload,
-					const std::string &memo,
-					bool useVotedUTXO = false) = 0;
+					const std::string &memo) = 0;
 
 			/**
 			 * Create retrieve deposit cr transaction.
 			 *
 			 * @param amount     The available amount to be retrieved back.
 			 * @param memo       Remarks string. Can be empty string.
-			 *
 			 * @return           The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRetrieveCRDepositTransaction(
@@ -327,15 +302,12 @@ namespace Elastos {
 			 *                     Otherwise, pick UTXO from the specific address.
 			 * @param votes        Candidate publicKeys and votes array in JSON format.such as: {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": 1, "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": 2}
 			 * @param memo         Remarks string. Can be empty string.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
-			 *
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateVoteCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &votes,
-				const std::string &memo,
-				bool useVotedUTXO = false) = 0;
+				const std::string &memo) = 0;
 
 			/**
 			 * Get CR vote information of current wallet.

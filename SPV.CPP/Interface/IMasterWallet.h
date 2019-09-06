@@ -25,9 +25,9 @@ namespace Elastos {
 			virtual std::string GetID() const = 0;
 
 			/**
-			 * Here is a example of standard wallet basic info:
-			 * {"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"}
-			 * @return basic information of current master wallet.
+			 * Get basic info of master wallet
+			 * @return basic information. Such as:
+			 * {"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard", "HasPassPhrase": false}
 			 */
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
@@ -40,12 +40,32 @@ namespace Elastos {
 			/**
 			 * Create a sub wallet by specifying wallet type.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param feePerKb specify fee per kb to calculate fee by size of transaction. Fee per key default set to zero so that sub wallet will calculate by default "fee rate".
 			 * @return If success will return a pointer of sub wallet interface.
 			 */
-			virtual ISubWallet *CreateSubWallet(
-					const std::string &chainID,
-					uint64_t feePerKB) = 0;
+			virtual ISubWallet *CreateSubWallet(const std::string &chainID) = 0;
+
+			/**
+			 * Verify private key whether same as current wallet
+			 * @param mnemonic
+			 * @param passphrase
+			 * @return
+			 */
+			virtual bool VerifyPrivateKey(const std::string &mnemonic, const std::string &passphrase) const = 0;
+
+			/**
+			 *
+			 * @param passphrase
+			 * @param payPasswd
+			 * @return
+			 */
+			virtual bool VerifyPassPhrase(const std::string &passphrase, const std::string &payPasswd) const = 0;
+
+			/**
+			 *
+			 * @param payPasswd
+			 * @return
+			 */
+			virtual bool VerifyPayPassword(const std::string &payPasswd) const = 0;
 
 			/**
 			 * Destroy a sub wallet created by the master wallet.
@@ -54,40 +74,10 @@ namespace Elastos {
 			virtual void DestroyWallet(ISubWallet *wallet) = 0;
 
 			/**
-			 * Get public key ring of current wallet
-			 * {"xPubKey":"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg","requestPubKey":"03ec571bba042036f93c17c2507f6b03f82d5b364e525715c40f16f723d4e5fac1"}
-			 * @return PublicKeyRing of json format
+			 * Get public key info
+			 * @return public key info
 			 */
-			virtual nlohmann::json GetOwnerPublicKeyRing() const = 0;
-
-			/**
-			 * Get all public key ring of current wallet
-			 * [{"xPubKey":"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg","requestPubKey":"03ec571bba042036f93c17c2507f6b03f82d5b364e525715c40f16f723d4e5fac1"}]
-			 * @return PublicKeyRing of json format
-			 */
-			virtual nlohmann::json GetPublicKeyRing() const = 0;
-
-			/**
-			 * Sign message through root private key of the master wallet.
-			 * @param message need to signed, it should not be empty.
-			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @return signed data of the message.
-			 */
-			virtual std::string Sign(
-					const std::string &message,
-					const std::string &payPassword) = 0;
-
-			/**
-			 * Verify signature by public key and raw message. This method can check signatures signed by any private keys not just the root private key of the master wallet.
-			 * @param publicKey belong to the private key signed the signature.
-			 * @param message raw data.
-			 * @param signature signed data by a private key that correspond to the public key.
-			 * @return true or false.
-			 */
-			virtual bool CheckSign(
-					const std::string &publicKey,
-					const std::string &message,
-					const std::string &signature) = 0;
+			virtual nlohmann::json GetPubKeyInfo() const = 0;
 
 			/**
 			 * Verify an address which can be normal, multi-sign, cross chain, or id address.

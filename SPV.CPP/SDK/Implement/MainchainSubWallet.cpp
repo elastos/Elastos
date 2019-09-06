@@ -44,15 +44,13 @@ namespace Elastos {
 																	const std::string &lockedAddress,
 																	const std::string &amount,
 																	const std::string &sideChainAddress,
-																	const std::string &memo,
-																	bool useVotedUTXO) {
+																	const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("lockedAddr: {}", lockedAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("sideChainAddr: {}", sideChainAddress);
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 			BigInt value;
 			value.setDec(amount);
 
@@ -70,7 +68,7 @@ namespace Elastos {
 			Address receiveAddr(lockedAddress);
 			outputs.emplace_back(OutputPtr(new TransactionOutput(value + _config->MinFee(), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::transferCrossChainAsset, payload);
 
@@ -161,15 +159,13 @@ namespace Elastos {
 			const std::string &fromAddress,
 			const nlohmann::json &payloadJson,
 			const std::string &amount,
-			const std::string &memo,
-			bool useVotedUTXO) {
+			const std::string &memo) {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJson.dump());
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			BigInt bgAmount, minAmount(DEPOSIT_MIN_ELA);
 			bgAmount.setDec(amount);
@@ -194,7 +190,7 @@ namespace Elastos {
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::registerProducer, payload);
 
@@ -208,14 +204,12 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateUpdateProducerTransaction(
 			const std::string &fromAddress,
 			const nlohmann::json &payloadJson,
-			const std::string &memo,
-			bool useVotedUTXO) {
+			const std::string &memo) {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJson.dump());
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			PayloadPtr payload = PayloadPtr(new ProducerInfo());
 			try {
@@ -229,7 +223,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::updateProducer, payload);
 
@@ -248,14 +242,12 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateCancelProducerTransaction(
 			const std::string &fromAddress,
 			const nlohmann::json &payloadJson,
-			const std::string &memo,
-			bool useVotedUTXO) {
+			const std::string &memo) {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJson.dump());
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			PayloadPtr payload = PayloadPtr(new CancelProducer());
 			try {
@@ -269,7 +261,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::cancelProducer, payload);
 
@@ -320,7 +312,7 @@ namespace Elastos {
 
 		std::string MainchainSubWallet::GetOwnerPublicKey() const {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
-			std::string publicKey = _walletManager->getWallet()->GetOwnerPublilcKey()->getHex();
+			std::string publicKey = _walletManager->getWallet()->GetOwnerPublilcKey().getHex();
 			ArgInfo("r => {}", publicKey);
 			return publicKey;
 		}
@@ -335,20 +327,17 @@ namespace Elastos {
 			return address;
 		}
 
-		nlohmann::json
-		MainchainSubWallet::CreateVoteProducerTransaction(
+		nlohmann::json MainchainSubWallet::CreateVoteProducerTransaction(
 			const std::string &fromAddress,
 			const std::string &stake,
 			const nlohmann::json &publicKeys,
-			const std::string &memo,
-			bool useVotedUTXO) {
+			const std::string &memo) {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("stake: {}", stake);
 			ArgInfo("pubkeys: {}", publicKeys.dump());
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			BigInt bgStake;
 			bgStake.setDec(stake);
@@ -371,7 +360,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outs.push_back(OutputPtr(new TransactionOutput(bgStake, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outs, memo);
 
 			const std::vector<InputPtr> &inputs = tx->GetInputs();
 
@@ -597,15 +586,13 @@ namespace Elastos {
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
 				const std::string &amount,
-				const std::string &memo,
-				bool useVotedUTXO) {
+				const std::string &memo) {
 
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payload.dump());
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			BigInt bgAmount, minAmount(DEPOSIT_MIN_ELA);
 			bgAmount.setDec(amount);
@@ -630,7 +617,7 @@ namespace Elastos {
 			std::vector<OutputPtr> outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::registerCR, payloadPtr);
 
@@ -644,13 +631,11 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateUpdateCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
-				const std::string &memo,
-				bool useVotedUTXO) {
+				const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payload.dump());
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			PayloadPtr payloadPtr = PayloadPtr(new CRInfo());
 			try {
@@ -664,7 +649,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::updateCR, payloadPtr);
 
@@ -684,13 +669,11 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateUnregisterCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &payload,
-				const std::string &memo,
-				bool useVotedUTXO) {
+				const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payload.dump());
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			PayloadPtr payloadPtr = PayloadPtr(new UnregisterCR());
 			try {
@@ -704,7 +687,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
 
 			tx->SetTransactionType(Transaction::unregisterCR, payloadPtr);
 
@@ -754,13 +737,11 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateVoteCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &votes,
-				const std::string &memo,
-				bool useVotedUTXO) {
+				const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("votes: {}", votes.dump());
 			ArgInfo("memo: {}", memo);
-			ArgInfo("useVotedUTXO: {}", useVotedUTXO);
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
 
@@ -784,7 +765,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outs.push_back(OutputPtr(new TransactionOutput(bgStake, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outs, memo, useVotedUTXO);
+			TransactionPtr tx = CreateTx(fromAddress, outs, memo);
 
 			const std::vector<InputPtr> &inputs = tx->GetInputs();
 

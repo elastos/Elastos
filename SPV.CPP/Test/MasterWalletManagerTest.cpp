@@ -55,9 +55,6 @@ TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]
 		MasterWallet *masterWallet1 = dynamic_cast<MasterWallet *>(masterWallet);
 		REQUIRE(masterWallet1 != nullptr);
 
-		CHECK_NOTHROW(masterWallet->GetPublicKeyRing());
-		CHECK_NOTHROW(masterWallet->GetOwnerPublicKeyRing());
-
 		masterWalletManager->DestroyWallet(masterWallet->GetID());
 	}
 	SECTION("Master id should not be empty") {
@@ -130,24 +127,7 @@ TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress));
 		REQUIRE(masterWallet != nullptr);
 
-		REQUIRE_FALSE(masterWallet->GetOwnerPublicKeyRing().empty());
-
 		masterWalletManager->DestroyWallet(masterWalletId);
-	}
-
-	SECTION("Verify multi sign public key") {
-		std::string mnemonic = "令 厘 选 健 爱 轨 烯 距 握 译 控 礼";
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId + "1", mnemonic, "", payPassword, false);
-
-		REQUIRE(masterWallet != nullptr);
-
-		REQUIRE("023deb010c9318a46175e79d7b6c385f6c3ca525b7ba6a277b1d69dbead6a09664" == masterWalletManager->GetMultiSignPubKey(mnemonic, ""));
-
-		nlohmann::json publicKeyRing = masterWallet->GetOwnerPublicKeyRing();
-		REQUIRE(!publicKeyRing.empty());
-		REQUIRE(publicKeyRing["requestPubKey"].get<std::string>() == "023deb010c9318a46175e79d7b6c385f6c3ca525b7ba6a277b1d69dbead6a09664");
-
-		masterWalletManager->DestroyWallet(masterWalletId + "1");
 	}
 }
 
@@ -170,7 +150,6 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(mnemonic.length() > 0);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::vector<IMasterWallet *> loMasterWalletVec;
 		loMasterWalletVec = masterWalletManager->GetAllMasterWallets();
@@ -189,7 +168,6 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 		REQUIRE(mnemonic.length() > 0);
 
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string masterWalletId2 = "masterWalletId2";
 		mnemonic2 = MasterWallet::GenerateMnemonic("english", "Data");
@@ -198,7 +176,6 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 		REQUIRE(masterWallet2 != nullptr);
 		REQUIRE(mnemonic2.length() > 0);
 
-		REQUIRE(!masterWallet2->GetOwnerPublicKeyRing().empty());
 		REQUIRE_FALSE(masterWallet2 == masterWallet);
 
 		std::vector<IMasterWallet *> loMasterWalletVec;
@@ -233,8 +210,7 @@ TEST_CASE("test p2p net stop error use", "[MasterWalletManager]") {
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(masterWalletId, mnemonic,
 				phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
-		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 		sleep(1);
 		masterWallet->DestroyWallet(subWallet);
@@ -255,7 +231,6 @@ TEST_CASE("WalletFactoryInner::importWalletInternal Test ", "[WalletFactoryInner
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			"MasterWalletId", mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE_FALSE(masterWallet->GetOwnerPublicKeyRing().empty());
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet("MasterWalletId"));
 	}
 	SECTION("function para invalid  MasterWalletId empty str ") {
@@ -287,7 +262,6 @@ TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") 
 																			   payPassword, "french");
 
 		REQUIRE(masterWallet1 != nullptr);
-		REQUIRE(!masterWallet1->GetOwnerPublicKeyRing().empty());
 
 		IMasterWallet *masterWallet2 = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
 																			   payPassword, "french");
@@ -306,7 +280,6 @@ TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") 
 																				phrasePassword, payPassword, "french");
 
 		REQUIRE(masterWallet1 != nullptr);
-		REQUIRE(!masterWallet1->GetOwnerPublicKeyRing().empty());
 
 		mnemonic2 = MasterWallet::GenerateMnemonic("french", "Data");
 		REQUIRE(mnemonic2.length() > 0);
@@ -314,7 +287,6 @@ TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") 
 																				phrasePassword, payPassword, "french");
 
 		REQUIRE(masterWallet2 != nullptr);
-		REQUIRE(!masterWallet2->GetOwnerPublicKeyRing().empty());
 
 		//REQUIRE(masterWallet1 == masterWallet2);
 		REQUIRE_NOTHROW(masterWalletManager1->DestroyWallet(masterWalletId));
@@ -334,16 +306,14 @@ TEST_CASE("Wallet factory export & import  WithKeystore mnemonic", "[MasterWalle
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "masterWalletId";
 	bool singleAddress = false;
-	uint64_t feePerKB = 10000;
 
 	SECTION("export & import  WithKeystore mnemonic spanish ") {
 		std::string mnemonic = "separar sopa resto fraude tinta ánimo diseño misa nube sardina tóxico turbina";
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 
 
 		std::string backupPassword = "backupPassword";
@@ -353,12 +323,8 @@ TEST_CASE("Wallet factory export & import  WithKeystore mnemonic", "[MasterWalle
 		IMasterWallet *masterWallet2 = masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent,
 																					 backupPassword, payPassword);
 		REQUIRE(masterWallet2 != nullptr);
-		REQUIRE(!masterWallet2->GetOwnerPublicKeyRing().empty());
-
-		REQUIRE(masterWallet->GetOwnerPublicKeyRing().dump() == masterWallet2->GetOwnerPublicKeyRing().dump());
 
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
-
 	}
 }
 
@@ -370,7 +336,6 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Master
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	bool singleAddress = false;
-	uint64_t feePerKB = 10000;
 
 	SECTION("Import Export  WalletWithMnemonic mnemonic english ") {
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
@@ -378,9 +343,8 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Master
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
 		std::string mnemonicExport = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
@@ -401,7 +365,6 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 	std::string backupPassword = "backupPassword";
 	std::string masterWalletId = "masterWalletId";
 	bool singleAddress = false;
-	uint64_t feePerKB = 10000;
 
 	SECTION("ImportWalletWithKeystore MasterWalletId twice str ") {
 
@@ -409,9 +372,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA", feePerKB));
+		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
 		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
@@ -433,7 +395,6 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			"MasterWalletId", mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string backupPassword = "backupPassword";
 		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
@@ -448,9 +409,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			"MasterWalletId", mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA", feePerKB));
+		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
 		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
@@ -464,9 +424,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			"MasterWalletId", mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA", feePerKB));
+		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
 
@@ -483,9 +442,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA", feePerKB));
+		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
 		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
@@ -500,10 +458,10 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
-		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<MainchainSubWallet *>(subWallet) != nullptr);
-		subWallet = masterWallet->CreateSubWallet("IDChain", feePerKB);
+		subWallet = masterWallet->CreateSubWallet("IDChain");
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<IDChainSubWallet *>(subWallet) != nullptr);
 
@@ -556,7 +514,6 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string backupPassword = "backupPassword";
 
@@ -571,7 +528,6 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string backupPassword = "backupPassword";
 		payPassword = "";
@@ -584,7 +540,6 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 			masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string backupPassword = "";
 
@@ -727,8 +682,6 @@ TEST_CASE("Master wallet manager test", "[CreateMasterWallet]") {
 		MasterWallet *masterWallet1 = dynamic_cast<MasterWallet *>(masterWallet);
 		REQUIRE(masterWallet1 != nullptr);
 
-		CHECK_NOTHROW(masterWallet->GetOwnerPublicKeyRing());
-
 		masterWalletManager->DestroyWallet(masterWallet->GetID());
 	}
 	SECTION("Master id should not be empty") {
@@ -767,42 +720,6 @@ TEST_CASE("Master wallet manager test", "[CreateMasterWallet]") {
 	}
 }
 
-TEST_CASE("Wallet factory basic test", "[MasterWalletManager]") {
-
-	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string masterWalletId = "masterWalletId";
-	bool singleAddress = true;
-
-	SECTION("Create master wallet") {
-		std::string mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
-		IMasterWallet *masterWallet(masterWalletManager->CreateMasterWallet(
-				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress));
-		REQUIRE(masterWallet != nullptr);
-
-		REQUIRE_FALSE(masterWallet->GetOwnerPublicKeyRing().empty());
-
-		masterWalletManager->DestroyWallet(masterWalletId);
-	}
-
-	SECTION("Verify multi sign public key") {
-		std::string mnemonic = "令 厘 选 健 爱 轨 烯 距 握 译 控 礼";
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId + "1", mnemonic, "", payPassword, false);
-
-		REQUIRE(masterWallet != nullptr);
-
-		REQUIRE("023deb010c9318a46175e79d7b6c385f6c3ca525b7ba6a277b1d69dbead6a09664" == masterWalletManager->GetMultiSignPubKey(mnemonic, ""));
-
-		nlohmann::json pubkeyRing = masterWallet->GetOwnerPublicKeyRing();
-		REQUIRE(!pubkeyRing.empty());
-		REQUIRE(pubkeyRing["requestPubKey"].get<std::string>() == "023deb010c9318a46175e79d7b6c385f6c3ca525b7ba6a277b1d69dbead6a09664");
-
-		masterWalletManager->DestroyWallet(masterWalletId + "1");
-	}
-}
-
 TEST_CASE("GetAllMasterWallets test", "[MasterWalletManager]") {
 	Log::registerMultiLogger();
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
@@ -822,7 +739,6 @@ TEST_CASE("GetAllMasterWallets test", "[MasterWalletManager]") {
 				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(mnemonic.length() > 0);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::vector<IMasterWallet *> loMasterWalletVec;
 		loMasterWalletVec = masterWalletManager->GetAllMasterWallets();
@@ -841,7 +757,6 @@ TEST_CASE("GetAllMasterWallets test", "[MasterWalletManager]") {
 		REQUIRE(mnemonic.length() > 0);
 
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string masterWalletId2 = "masterWalletId2";
 		mnemonic2 = MasterWallet::GenerateMnemonic("english", "Data");
@@ -850,7 +765,6 @@ TEST_CASE("GetAllMasterWallets test", "[MasterWalletManager]") {
 		REQUIRE(masterWallet2 != nullptr);
 		REQUIRE(mnemonic2.length() > 0);
 
-		REQUIRE(!masterWallet2->GetOwnerPublicKeyRing().empty());
 		REQUIRE_FALSE(masterWallet2 == masterWallet);
 
 		std::vector<IMasterWallet *> loMasterWalletVec;
@@ -880,7 +794,6 @@ TEST_CASE("p2p net stop error use test", "[MasterWalletManager]") {
 	std::string mnemonic = "drink false ribbon equal reward happy olive later silly track business sail";
 	std::string masterWalletId = "masterWalletId";
 	bool singleAddress = false;
-	uint64_t feePerKB = 10000;
 
 	SECTION("Create master wallet mnemonic english") {
 		int i = 1;
@@ -889,9 +802,8 @@ TEST_CASE("p2p net stop error use test", "[MasterWalletManager]") {
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(masterWalletId, mnemonic,
 		                                                                            phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 		sleep(1);
 		masterWallet->DestroyWallet(subWallet);
@@ -914,7 +826,6 @@ TEST_CASE("Test WalletFactoryInner::importWalletInternal", "[WalletFactoryInner]
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				"MasterWalletId", mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE_FALSE(masterWallet->GetOwnerPublicKeyRing().empty());
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet("MasterWalletId"));
 	}
 	SECTION("function para invalid  MasterWalletId empty str ") {
@@ -946,7 +857,6 @@ TEST_CASE("MasterWalletManager create destroy wallet test", "[MasterWalletManage
 		                                                                       payPassword, "french");
 
 		REQUIRE(masterWallet1 != nullptr);
-		REQUIRE(!masterWallet1->GetOwnerPublicKeyRing().empty());
 
 		IMasterWallet *masterWallet2 = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
 		                                                                       payPassword, "french");
@@ -965,7 +875,6 @@ TEST_CASE("MasterWalletManager create destroy wallet test", "[MasterWalletManage
 		                                                                        phrasePassword, payPassword, "french");
 
 		REQUIRE(masterWallet1 != nullptr);
-		REQUIRE(!masterWallet1->GetOwnerPublicKeyRing().empty());
 
 		mnemonic2 = MasterWallet::GenerateMnemonic("french", "Data");
 		REQUIRE(mnemonic2.length() > 0);
@@ -973,7 +882,6 @@ TEST_CASE("MasterWalletManager create destroy wallet test", "[MasterWalletManage
 		                                                                        phrasePassword, payPassword, "french");
 
 		REQUIRE(masterWallet2 != nullptr);
-		REQUIRE(!masterWallet2->GetOwnerPublicKeyRing().empty());
 
 		//REQUIRE(masterWallet1 == masterWallet2);
 		REQUIRE_NOTHROW(masterWalletManager1->DestroyWallet(masterWalletId));
@@ -985,51 +893,13 @@ TEST_CASE("MasterWalletManager create destroy wallet test", "[MasterWalletManage
 	}
 }
 
-
-TEST_CASE("Wallet factory export & import WithKeystore mnemonic", "[MasterWalletManager]") {
-
-	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string masterWalletId = "masterWalletId";
-	bool singleAddress = false;
-	uint64_t feePerKB = 10000;
-
-	SECTION("export & import  WithKeystore mnemonic spanish ") {
-		std::string mnemonic = "separar sopa resto fraude tinta ánimo diseño misa nube sardina tóxico turbina";
-		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
-				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
-		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
-
-		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
-
-
-		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-		                                                                               payPassword);
-
-		IMasterWallet *masterWallet2 = masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent,
-		                                                                             backupPassword, payPassword);
-		REQUIRE(masterWallet2 != nullptr);
-		REQUIRE(!masterWallet2->GetOwnerPublicKeyRing().empty());
-
-		REQUIRE(masterWallet->GetOwnerPublicKeyRing() == masterWallet2->GetOwnerPublicKeyRing());
-
-		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
-
-	}
-}
-
-
-TEST_CASE("Wallet factory Import Export WalletWithMnemonic mnemonic", "[MasterWalletManager]") {
+TEST_CASE("Wallet factory import & export with mnemonic", "[MasterWalletManager]") {
 
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string masterWalletId = "masterWalletId";
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	bool singleAddress = false;
-	uint64_t feePerKB = 10000;
 
 	SECTION("Import Export  WalletWithMnemonic mnemonic english ") {
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
@@ -1037,9 +907,8 @@ TEST_CASE("Wallet factory Import Export WalletWithMnemonic mnemonic", "[MasterWa
 				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
 		std::string mnemonicExport = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
@@ -1052,15 +921,12 @@ TEST_CASE("Wallet factory Import Export WalletWithMnemonic mnemonic", "[MasterWa
 
 
 TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeystore]") {
-
-
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string backupPassword = "backupPassword";
 	std::string masterWalletId = "masterWalletId";
 	bool singleAddress = false;
-	uint64_t feePerKB = 10000;
 
 	SECTION("ImportWalletWithKeystore MasterWalletId twice str ") {
 
@@ -1068,9 +934,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA", feePerKB));
+		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
 		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
@@ -1093,7 +958,6 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				"MasterWalletId", mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string backupPassword = "backupPassword";
 		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
@@ -1109,9 +973,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				"MasterWalletId", mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA", feePerKB));
+		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
 		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
@@ -1126,9 +989,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				"MasterWalletId", mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA", feePerKB));
+		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
 
@@ -1145,9 +1007,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
-		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA", feePerKB));
+		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
 		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
@@ -1163,10 +1024,10 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
-		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", feePerKB);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<MainchainSubWallet *>(subWallet) != nullptr);
-		subWallet = masterWallet->CreateSubWallet("IDChain", feePerKB);
+		subWallet = masterWallet->CreateSubWallet("IDChain");
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<IDChainSubWallet *>(subWallet) != nullptr);
 
@@ -1219,7 +1080,6 @@ TEST_CASE("Wallet ExportWalletWithKeystore method test", "[ExportWalletWithKeyst
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string backupPassword = "backupPassword";
 
@@ -1234,7 +1094,6 @@ TEST_CASE("Wallet ExportWalletWithKeystore method test", "[ExportWalletWithKeyst
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string backupPassword = "backupPassword";
 		payPassword = "";
@@ -1247,7 +1106,6 @@ TEST_CASE("Wallet ExportWalletWithKeystore method test", "[ExportWalletWithKeyst
 		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(
 				masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetOwnerPublicKeyRing().empty());
 
 		std::string backupPassword = "";
 
@@ -1544,14 +1402,8 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		REQUIRE(subWallets.size() == 1);
 		ISubWallet *subWallet = subWallets[0];
 
-		std::string balance = subWallet->GetBalance(BalanceType::Total);
+		std::string balance = subWallet->GetBalance();
 		REQUIRE(balance == "1990");
-
-		balance = subWallet->GetBalance(BalanceType::Default);
-		REQUIRE(balance == "1990");
-
-		balance = subWallet->GetBalance(BalanceType::Voted);
-		REQUIRE(balance == "0");
 
 		nlohmann::json balanceInfo = subWallet->GetBalanceInfo();
 		REQUIRE(balanceInfo.size() == 1);

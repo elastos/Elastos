@@ -184,8 +184,9 @@ namespace Elastos {
 											 "Signers should less than 205.");
 
 				std::vector<bytes_t> sortedSigners(pubkeys.begin(), pubkeys.end());
-				std::sort(sortedSigners.begin(), sortedSigners.end(),
-						  boost::bind(&Address::Compare, this, _1, _2));
+				std::sort(sortedSigners.begin(), sortedSigners.end(), [](const bytes_t &a, const bytes_t &b) {
+					return a.getHex() < b.getHex();
+				});
 
 				_code.push_back(uint8_t(OP_1 + m - 1));
 				for (size_t i = 0; i < sortedSigners.size(); i++) {

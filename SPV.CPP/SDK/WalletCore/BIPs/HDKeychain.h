@@ -140,6 +140,9 @@ namespace Elastos {
 				void updatePubkey();
 		};
 
+		typedef boost::shared_ptr<HDKeychain> HDKeychainPtr;
+		typedef std::vector<HDKeychainPtr> HDKeychainArray;
+
 	}
 }
 

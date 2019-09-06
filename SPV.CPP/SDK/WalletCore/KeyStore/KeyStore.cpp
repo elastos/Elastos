@@ -23,6 +23,11 @@ namespace Elastos {
 		KeyStore::KeyStore() {
 		}
 
+		KeyStore::KeyStore(const ElaNewWalletJson &walletjson) :
+			_walletJson(walletjson) {
+
+		}
+
 		KeyStore::~KeyStore() {
 		}
 

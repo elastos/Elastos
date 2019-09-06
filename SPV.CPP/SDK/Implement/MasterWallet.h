@@ -64,24 +64,17 @@ namespace Elastos {
 
 			virtual std::vector<ISubWallet *> GetAllSubWallets() const;
 
-			virtual ISubWallet *CreateSubWallet(
-					const std::string &chainID,
-					uint64_t feePerKB);
+			virtual ISubWallet *CreateSubWallet(const std::string &chainID);
+
+			virtual bool VerifyPrivateKey(const std::string &mnemonic, const std::string &passphrase) const;
+
+			virtual bool VerifyPassPhrase(const std::string &passphrase, const std::string &payPasswd) const;
+
+			virtual bool VerifyPayPassword(const std::string &payPasswd) const;
 
 			virtual void DestroyWallet(ISubWallet *wallet);
 
-			virtual nlohmann::json GetOwnerPublicKeyRing() const;
-
-			virtual nlohmann::json GetPublicKeyRing() const;
-
-			virtual std::string Sign(
-					const std::string &message,
-					const std::string &payPassword);
-
-			virtual bool CheckSign(
-					const std::string &publicKey,
-					const std::string &message,
-					const std::string &signature);
+			virtual nlohmann::json GetPubKeyInfo() const;
 
 			virtual bool IsAddressValid(const std::string &address) const;
 
@@ -137,7 +130,7 @@ namespace Elastos {
 					const std::string &id,
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
-					const std::string &payPassword,
+					const std::string &payPasswd,
 					bool singleAddress,
 					bool p2pEnable,
 					const std::string &rootPath,
@@ -165,45 +158,51 @@ namespace Elastos {
 
 			MasterWallet(
 					const std::string &id,
-					const std::vector<PublicKeyRing> &publicKeyRings,
+					const std::vector<PublicKeyRing> &pubKeyRings,
 					uint32_t m,
 					const std::string &rootPath,
 					const std::string &dataPath,
 					bool p2pEnable,
+					bool singleAddress,
+					bool compatible,
 					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
 
 			MasterWallet(
 					const std::string &id,
-					const std::string &privKey,
+					const std::string &xprv,
 					const std::string &payPassword,
-					const std::vector<PublicKeyRing> &publicKeyRings,
+					const std::vector<PublicKeyRing> &cosigners,
 					uint32_t m,
 					const std::string &rootPath,
 					const std::string &dataPath,
 					bool p2pEnable,
+					bool singleAddress,
+					bool compatible,
 					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
 
 			MasterWallet(
 					const std::string &id,
 					const std::string &mnemonic,
-					const std::string &phrasePassword,
-					const std::string &payPassword,
-					const std::vector<PublicKeyRing> &publicKeyRings,
+					const std::string &passphrase,
+					const std::string &payPasswd,
+					const std::vector<PublicKeyRing> &cosigners,
 					uint32_t m,
-					bool p2pEnable,
 					const std::string &rootPath,
 					const std::string &dataPath,
+					bool p2pEnable,
+					bool singleAddress,
+					bool compatible,
 					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
 
 			nlohmann::json ExportReadonlyKeyStore();
 
-			nlohmann::json exportKeyStore(const std::string &backupPassword,
+			nlohmann::json ExportKeyStore(const std::string &backupPassword,
 										  const std::string &payPassword);
 
-			std::string exportMnemonic(const std::string &payPassword);
+			std::string ExportMnemonic(const std::string &payPassword);
 
 			std::string ExportxPrivateKey(const std::string &payPasswd) const;
 
@@ -222,8 +221,6 @@ namespace Elastos {
 
 		protected:
 			WalletMap _createdWallets;
-
-			LocalStorePtr _localStore;
 
 			MasterWalletInitFrom _initFrom;
 

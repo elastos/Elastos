@@ -19,21 +19,17 @@ namespace Elastos {
 		public:
 			CoinInfo();
 
-			const std::string &GetChainID() const { return _chainID; }
+			const std::string &GetChainID() const;
 
-			void SetChainID(const std::string &id) { _chainID = id; }
+			void SetChainID(const std::string &id);
 
-			time_t GetEarliestPeerTime() const { return _earliestPeerTime; }
+			time_t GetEarliestPeerTime() const;
 
-			void SetEaliestPeerTime(time_t time) { _earliestPeerTime = time; }
+			void SetEaliestPeerTime(time_t time);
 
-			uint64_t GetFeePerKB() const { return _feePerKB; }
+			const std::vector<uint256> &GetVisibleAssets() const;
 
-			void SetFeePerKB(uint64_t fee) { _feePerKB = fee; }
-
-			const std::vector<uint256> &GetVisibleAssets() const { return _visibleAssets; }
-
-			void SetVisibleAssets(const std::vector<uint256> &assets) { _visibleAssets = assets; }
+			void SetVisibleAssets(const std::vector<uint256> &assets);
 
 			nlohmann::json VisibleAssetsToJson() const;
 
@@ -48,7 +44,6 @@ namespace Elastos {
 		private:
 			std::string _chainID;
 			time_t _earliestPeerTime;
-			uint64_t _feePerKB;
 			std::vector<uint256> _visibleAssets;
 		};
 

@@ -132,34 +132,36 @@ static IMasterWallet *ImportReadonlyWallet() {
 }
 
 static IMasterWallet *NewReadOnlyMultiSignWallet() {
-	nlohmann::json coSigners = nlohmann::json::parse(
-		"[{\"requestPubKey\":\"03FC8B9408A7C5AE6F8109BA97CE5429C1CD1F09C0655E4EC05FC0649754E4FB6C\",\"xPubKey\":\"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg\"},"
-		" {\"requestPubKey\":\"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5\",\"xPubKey\":\"xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc\"},"
-		" {\"requestPubKey\":\"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D\",\"xPubKey\":\"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg\"},"
-		" {\"requestPubKey\":\"03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA\",\"xPubKey\":\"xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc\"}]");
-	return manager->CreateMultiSignMasterWallet(gMasterWalletID, coSigners, 3);
+	nlohmann::json coSigners = R"(
+		["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg",
+		 "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc",
+		 "xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg",
+		 "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
+		)"_json;
+	return manager->CreateMultiSignMasterWallet(gMasterWalletID, coSigners, 3, true);
 }
 
 static IMasterWallet *NewMultiSignWalletWithMnemonic() {
 	const std::string mnemonic =
 		"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	const std::string phrasePassword = "";
-	nlohmann::json coSigners = nlohmann::json::parse(
-		"[{\"requestPubKey\":\"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5\",\"xPubKey\":\"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg\"},"
-		" {\"requestPubKey\":\"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D\",\"xPubKey\":\"xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc\"},"
-		" {\"requestPubKey\":\"03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA\",\"xPubKey\":\"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg\"}]");
-
-	return manager->CreateMultiSignMasterWallet(gMasterWalletID, mnemonic, phrasePassword, payPasswd, coSigners, 3);
+	const std::string passphrase = "";
+	nlohmann::json coSigners = R"(
+		["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg",
+		 "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc",
+		 "xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg"]
+		)"_json;
+	return manager->CreateMultiSignMasterWallet(gMasterWalletID, mnemonic, passphrase, payPasswd, coSigners, (uint32_t)3, false);
 }
 
 // deprecated
 static IMasterWallet *NewMultiSignWalletWithPrvKey() {
-	nlohmann::json coSigners = nlohmann::json::parse(
-			"[{\"requestPubKey\":\"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5\",\"xPubKey\":\"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg\"},"
-			" {\"requestPubKey\":\"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D\",\"xPubKey\":\"xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc\"},"
-			" {\"requestPubKey\":\"03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA\",\"xPubKey\":\"xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg\"}]");
+	nlohmann::json coSigners = R"(
+		["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg",
+		 "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc",
+		 "xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg"]
+		)"_json;
 	std::string privKey = "xprv9s21ZrQH143K3GJpoapnV8SFfukcVBSfeCficPSGfubmSFDxo1kuHnLisriDvSnRRuL2Qrg5ggqHKNVpxR86QEC8w35uxmGoggxtQTPvfUu";
-	return manager->CreateMultiSignMasterWallet(gMasterWalletID, privKey, payPasswd, coSigners, 3);
+	return manager->CreateMultiSignMasterWallet(gMasterWalletID, privKey, payPasswd, coSigners, (uint32_t)3, false);
 }
 
 static ISubWallet *GetSubWallet(const std::string &masterWalletID, const std::string &subWalletID) {
@@ -183,7 +185,7 @@ static void PublishTransaction(ISubWallet *subWallet, const nlohmann::json &tx) 
 	subWallet->PublishTransaction(signedTx);
 }
 
-static void CombineUTXO(const std::string &masterWalletID, const std::string &subWalletID,
+static void Consolidate(const std::string &masterWalletID, const std::string &subWalletID,
 						const std::string &assetID = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0") {
 	nlohmann::json tx;
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
@@ -192,7 +194,7 @@ static void CombineUTXO(const std::string &masterWalletID, const std::string &su
 
 	if (subWalletID == gTokenchainSubWalletID) {
 		ITokenchainSubWallet *tokenchainSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
-		tx = tokenchainSubWallet->CreateCombineUTXOTransaction(assetID, "memo combine utxo");
+		tx = tokenchainSubWallet->CreateConsolidateTransaction(assetID, "memo combine utxo");
 	} else {
 		tx = subWallet->CreateConsolidateTransaction("memo combine utxo");
 	}
@@ -212,7 +214,7 @@ static void Transafer(const std::string &masterWalletID, const std::string &subW
 		ITokenchainSubWallet *tokenSubWallet = dynamic_cast<ITokenchainSubWallet *>(subWallet);
 		tx = tokenSubWallet->CreateTransaction(from, to, std::to_string(amount), assetID, memo);
 	} else {
-		tx = subWallet->CreateTransaction(from, to, std::to_string(amount), memo, true);
+		tx = subWallet->CreateTransaction(from, to, std::to_string(amount), memo);
 	}
 
 	PublishTransaction(subWallet, tx);
@@ -313,7 +315,7 @@ static void Vote(const std::string &masterWalletID, const std::string &subWallet
 		return;
 	}
 
-	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", std::to_string(stake), publicKeys, memo, true);
+	nlohmann::json tx = mainchainSubWallet->CreateVoteProducerTransaction("", std::to_string(stake), publicKeys, memo);
 	logger->debug("tx = {}", tx.dump());
 
 	PublishTransaction(mainchainSubWallet, tx);
@@ -330,7 +332,7 @@ static void VoteCR(const std::string &masterWalletID, const std::string &subWall
 		return;
 	}
 
-	nlohmann::json tx = mainchainSubWallet->CreateVoteCRTransaction("", votes, memo, true);
+	nlohmann::json tx = mainchainSubWallet->CreateVoteCRTransaction("", votes, memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
 }
@@ -374,8 +376,7 @@ static void UpdateProducer(const std::string &masterWalletID, const std::string 
 	}
 
 	std::string pubKey = mainchainSubWallet->GetOwnerPublicKey();
-	nlohmann::json publicKeyRing = mainchainSubWallet->GetOwnerPublicKeyRing();
-	std::string nodePubkey =  publicKeyRing["requestPubKey"].get<std::string>();
+	std::string nodePubkey = "02b8a9c5ce14bb02c1752597f3711bb290c4a15f6db49c5fe7332e337dab0a10dd";
 	std::string nickName = "heropan";
 	std::string url = "heropan.com";
 	std::string ipAddress = "110.110.110.110";
@@ -572,7 +573,7 @@ static void CloseWallet(const std::string &masterWalletID, const std::string &su
 static void OpenWallet(const std::string &masterWalletID, const std::string &subWalletID) {
 	IMasterWallet *masterWalelt = manager->GetMasterWallet(masterWalletID);
 
-	masterWalelt->CreateSubWallet(subWalletID, 10000);
+	masterWalelt->CreateSubWallet(subWalletID);
 }
 
 static void InitWallets() {
@@ -588,9 +589,9 @@ static void InitWallets() {
 //			masterWallet = NewMultiSignWalletWithMnemonic();
 //			masterWallet = NewMultiSignWalletWithPrvKey();
 
-			masterWallet->CreateSubWallet(gMainchainSubWalletID, 10000);
-			masterWallet->CreateSubWallet(gIDchainSubWalletID, 10000);
-			masterWallet->CreateSubWallet(gTokenchainSubWalletID, 10000);
+			masterWallet->CreateSubWallet(gMainchainSubWalletID);
+			masterWallet->CreateSubWallet(gIDchainSubWalletID);
+			masterWallet->CreateSubWallet(gTokenchainSubWalletID);
 		}
 		masterWallets.push_back(masterWallet);
 	}
@@ -646,7 +647,7 @@ static std::string GetBalance(const std::string &masterWalletID, const std::stri
 		amount = tokenSubWallet->GetBalance(assetID);
 		tokenSubWallet->GetBalanceInfo(assetID);
 	} else {
-		amount = subWallet->GetBalance(BalanceType::Total);
+		amount = subWallet->GetBalance();
 		subWallet->GetBalanceInfo();
 	}
 
@@ -691,7 +692,7 @@ static void ELATest() {
 	GetRegisteredCrInfo(gMasterWalletID, gMainchainSubWalletID);
 
 	if (!combineUTXODone) {
-		CombineUTXO(gMasterWalletID, gMainchainSubWalletID);
+		Consolidate(gMasterWalletID, gMainchainSubWalletID);
 		combineUTXODone = true;
 	}
 

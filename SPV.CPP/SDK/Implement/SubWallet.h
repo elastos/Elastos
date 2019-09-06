@@ -56,9 +56,9 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBalanceInfo() const;
 
-			virtual std::string GetBalance(BalanceType type = Default) const;
+			virtual std::string GetBalance() const;
 
-			virtual std::string GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const;
+			virtual std::string GetBalanceWithAddress(const std::string &address) const;
 
 			virtual std::string CreateAddress();
 
@@ -73,14 +73,12 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					const std::string &amount,
-					const std::string &memo,
-					bool useVotedUTXO = false);
+					const std::string &memo);
 
 			virtual nlohmann::json GetAllUTXOs(uint32_t start, uint32_t count, const std::string &address) const;
 
 			virtual nlohmann::json CreateConsolidateTransaction(
-					const std::string &memo,
-					bool useVotedUTXO = false);
+					const std::string &memo);
 
 			virtual nlohmann::json SignTransaction(
 					const nlohmann::json &createdTx,
@@ -102,19 +100,8 @@ namespace Elastos {
 				uint32_t count,
 				const std::string &txID) const;
 
-			virtual std::string Sign(
-					const std::string &message,
-					const std::string &payPassword);
-
-			virtual bool CheckSign(
-					const std::string &publicKey,
-					const std::string &message,
-					const std::string &signature);
-
 			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const;
-
-			virtual nlohmann::json GetOwnerPublicKeyRing() const;
 
 			virtual void SyncStart();
 
@@ -180,8 +167,7 @@ namespace Elastos {
 			virtual TransactionPtr CreateTx(
 				const std::string &fromAddress,
 				const std::vector<OutputPtr> &outputs,
-				const std::string &memo,
-				bool useVotedUTXO = false) const;
+				const std::string &memo) const;
 
 			virtual void publishTransaction(const TransactionPtr &tx);
 
@@ -191,8 +177,6 @@ namespace Elastos {
 													  const nlohmann::json &desc, uint32_t confirms);
 
 			const CoinInfoPtr &GetCoinInfo() const;
-
-			std::string GetBalanceTypeString(BalanceType type) const;
 
 			void EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const;
 

@@ -36,7 +36,7 @@ namespace Elastos {
 				const std::string &assetID,
 				const std::string &memo);
 
-			virtual nlohmann::json CreateCombineUTXOTransaction(
+			virtual nlohmann::json CreateConsolidateTransaction(
 				const std::string &assetID,
 				const std::string &memo);
 

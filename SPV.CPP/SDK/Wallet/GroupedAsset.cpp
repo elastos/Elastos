@@ -89,13 +89,7 @@ namespace Elastos {
 			return _utxosCoinbase;
 		}
 
-		BigInt GroupedAsset::GetBalance(BalanceType type) const {
-			if (type == BalanceType::Default) {
-				return _balance - _balanceVote;
-			} else if (type == BalanceType::Voted) {
-				return _balanceVote;
-			}
-
+		BigInt GroupedAsset::GetBalance() const {
 			return _balance;
 		}
 
@@ -150,7 +144,7 @@ namespace Elastos {
 			return tx;
 		}
 
-		TransactionPtr GroupedAsset::Consolidate(const std::string &memo, bool useVotedUTXO) {
+		TransactionPtr GroupedAsset::Consolidate(const std::string &memo) {
 			TransactionPtr tx = TransactionPtr(new Transaction());
 			BigInt totalInputAmount(0);
 			uint64_t feeAmount = 0, txSize = 0;
@@ -166,33 +160,6 @@ namespace Elastos {
 			std::sort(_utxos.begin(), _utxos.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
 				return a->Output()->Amount() > b->Output()->Amount();
 			});
-
-			if (useVotedUTXO) {
-				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
-					if (txSize >= TX_MAX_SIZE - 1000)
-						break;
-
-					if (_parent->IsUTXOSpending(*u)) {
-						lastUTXOPending = true;
-						continue;
-					}
-
-					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
-						continue;
-
-					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-					bytes_t code;
-					std::string path;
-					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
-					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
-
-					totalInputAmount += (*u)->Output()->Amount();
-
-					txSize = tx->EstimateSize();
-					if (_asset->GetName() == "ELA")
-						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
-				}
-			}
 
 			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
 				if (txSize >= TX_MAX_SIZE - 1000 || tx->GetInputs().size() >= 500)
@@ -241,6 +208,33 @@ namespace Elastos {
 				if (_asset->GetName() == "ELA")
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
+
+#if 0
+			for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
+				if (txSize >= TX_MAX_SIZE - 1000)
+					break;
+
+				if (_parent->IsUTXOSpending(*u)) {
+					lastUTXOPending = true;
+					continue;
+				}
+
+				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
+					continue;
+
+				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+				bytes_t code;
+				std::string path;
+				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+
+				totalInputAmount += (*u)->Output()->Amount();
+
+				txSize = tx->EstimateSize();
+				if (_asset->GetName() == "ELA")
+					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+			}
+#endif
 
 			_parent->Unlock();
 
@@ -270,13 +264,14 @@ namespace Elastos {
 		TransactionPtr GroupedAsset::CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
 														const Address &fromAddress,
 														const std::string &memo,
-														bool useVotedUTXO,
 														bool autoReduceOutputAmount) {
 			ErrorChecker::CheckLogic(outputs.empty(), Error::InvalidArgument, "outputs should not be empty");
 
 			TransactionPtr txn = TransactionPtr(new Transaction);
 			BigInt totalOutputAmount(0), totalInputAmount(0);
 			uint64_t txSize = 0, feeAmount = 0;
+			bytes_t code;
+			std::string path;
 			bool lastUTXOPending = false;
 
 			std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
@@ -297,27 +292,6 @@ namespace Elastos {
 			if (_asset->GetName() == "ELA")
 				feeAmount = CalculateFee(_parent->_feePerKb, txn->EstimateSize());
 
-			if (useVotedUTXO) {
-				// voted utxo
-				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
-					if (_parent->IsUTXOSpending(*u)) {
-						lastUTXOPending = true;
-						continue;
-					}
-
-					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
-						continue;
-
-					txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-					bytes_t code;
-					std::string path;
-					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
-					txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
-
-					totalInputAmount += (*u)->Output()->Amount();
-				}
-			}
-
 			// normal utxo
 			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
 				if (totalInputAmount >= totalOutputAmount + feeAmount && txSize >= 2000)
@@ -335,8 +309,6 @@ namespace Elastos {
 				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
 					continue;
 				txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-				bytes_t code;
-				std::string path;
 				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 				txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
@@ -352,10 +324,10 @@ namespace Elastos {
 
 						newOutputs.back()->SetAmount(newAmount);
 
-						txn = CreateTxForOutputs(newOutputs, fromAddress, memo, useVotedUTXO, autoReduceOutputAmount);
+						txn = CreateTxForOutputs(newOutputs, fromAddress, memo, autoReduceOutputAmount);
 					} else if (autoReduceOutputAmount && outputs.size() > 1) {
 						std::vector<OutputPtr> newOutputs(outputs.begin(), outputs.begin() + outputs.size() - 1);
-						txn = CreateTxForOutputs(newOutputs, fromAddress, memo, useVotedUTXO, autoReduceOutputAmount);
+						txn = CreateTxForOutputs(newOutputs, fromAddress, memo, autoReduceOutputAmount);
 					} else {
 						BigInt maxAmount = totalInputAmount - feeAmount;
 						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
@@ -383,8 +355,6 @@ namespace Elastos {
 				if (fromAddress.Valid() && fromAddress.ProgramHash() == (*u)->Output()->ProgramHash())
 					continue;
 				txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-				bytes_t code;
-				std::string path;
 				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 				txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
@@ -400,10 +370,10 @@ namespace Elastos {
 
 						newOutputs.back()->SetAmount(newAmount);
 
-						txn = CreateTxForOutputs(newOutputs, fromAddress, memo, useVotedUTXO, autoReduceOutputAmount);
+						txn = CreateTxForOutputs(newOutputs, fromAddress, memo, autoReduceOutputAmount);
 					} else if (autoReduceOutputAmount && outputs.size() > 1) {
 						std::vector<OutputPtr> newOutputs(outputs.begin(), outputs.begin() + outputs.size() - 1);
-						txn = CreateTxForOutputs(newOutputs, fromAddress, memo, useVotedUTXO, autoReduceOutputAmount);
+						txn = CreateTxForOutputs(newOutputs, fromAddress, memo, autoReduceOutputAmount);
 					} else {
 						BigInt maxAmount = totalInputAmount - feeAmount;
 						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
@@ -418,13 +388,31 @@ namespace Elastos {
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
+			if (totalInputAmount < totalOutputAmount + feeAmount) {
+				// voted utxo
+				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
+					if (_parent->IsUTXOSpending(*u)) {
+						lastUTXOPending = true;
+						continue;
+					}
+
+					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
+						continue;
+
+					txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+					totalInputAmount += (*u)->Output()->Amount();
+
+					txSize = txn->EstimateSize();
+					if (_asset->GetName() == "ELA")
+						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+				}
+			}
+
 			_parent->Unlock();
 
 			if (txn) {
-//				if (txn->GetInputs().size() > 500) {
-//					ErrorChecker::ThrowLogicException(Error::TooMuchInputs, "Too much inputs, need to consolidate first");
-//				}
-
 				if (totalInputAmount < totalOutputAmount + feeAmount) {
 					BigInt maxAvailable(0);
 					if (totalInputAmount >= feeAmount)
@@ -452,10 +440,12 @@ namespace Elastos {
 			return txn;
 		}
 
-		void GroupedAsset::AddFeeForTx(TransactionPtr &tx, bool useVotedUTXO) {
+		void GroupedAsset::AddFeeForTx(TransactionPtr &tx) {
 			uint64_t feeAmount = 0, txSize = 0;
 			BigInt totalInputAmount(0);
 			bool lastUTXOPending = false;
+			bytes_t code;
+			std::string path;
 
 			if (tx == nullptr) {
 				Log::error("tx should not be null");
@@ -470,31 +460,47 @@ namespace Elastos {
 			}
 
 			_parent->Lock();
+
+			std::sort(_utxos.begin(), _utxos.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
+				return a->Output()->Amount() > b->Output()->Amount();
+			});
+
 			txSize = tx->EstimateSize();
 			feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 
-//			_utxos.SortBaseOnOutputAmount(feeAmount, _parent->_feePerKb);
-			if (useVotedUTXO) {
-				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
-					if (_parent->IsUTXOSpending(*u)) {
-						lastUTXOPending = true;
-						continue;
-					}
+			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
+				if (totalInputAmount >= feeAmount && txSize >= 2000)
+					break;
 
-					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
-						continue;
-
-					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-					totalInputAmount += (*u)->Output()->Amount();
-
-					txSize = tx->EstimateSize();
-					if (_asset->GetName() == "ELA")
-						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+				if (_parent->IsUTXOSpending(*u)) {
+					lastUTXOPending = true;
+					continue;
 				}
+
+				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
+					continue;
+				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+
+				txSize = tx->EstimateSize();
+				if (txSize > TX_MAX_SIZE) { // transaction size-in-bytes too large
+					_parent->Unlock();
+
+					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
+												 "Tx size too large, max available amount for fee: " +
+												 totalInputAmount.getDec() + " sela");
+					_parent->Lock();
+					break;
+				}
+
+				totalInputAmount += (*u)->Output()->Amount();
+				if (_asset->GetName() == "ELA")
+					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
 			for (UTXOArray::iterator u = _utxosCoinbase.begin(); u != _utxosCoinbase.end(); ++u) {
-				if (totalInputAmount >= feeAmount)
+				if (totalInputAmount >= feeAmount && txSize >= 2000)
 					break;
 
 				if (_parent->IsUTXOSpending(*u)) {
@@ -503,8 +509,6 @@ namespace Elastos {
 				}
 
 				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-				bytes_t code;
-				std::string path;
 				_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
 				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
@@ -523,35 +527,26 @@ namespace Elastos {
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
-			for (UTXOArray::iterator u = _utxos.begin(); u != _utxos.end(); ++u) {
-				if (totalInputAmount >= feeAmount)
-					break;
+			if (totalInputAmount < feeAmount) {
+				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
+					if (_parent->IsUTXOSpending(*u)) {
+						lastUTXOPending = true;
+						continue;
+					}
 
-				if (_parent->IsUTXOSpending(*u)) {
-					lastUTXOPending = true;
-					continue;
+					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
+						continue;
+
+					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+
+					totalInputAmount += (*u)->Output()->Amount();
+					txSize = tx->EstimateSize();
+					if (_asset->GetName() == "ELA")
+						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 				}
-
-				if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
-					continue;
-				tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
-
-				txSize = tx->EstimateSize();
-				if (txSize > TX_MAX_SIZE) { // transaction size-in-bytes too large
-					_parent->Unlock();
-
-					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
-												 "Tx size too large, max available amount for fee: " +
-												 totalInputAmount.getDec() + " sela");
-					_parent->Lock();
-					break;
-				}
-
-				totalInputAmount += (*u)->Output()->Amount();
-				if (_asset->GetName() == "ELA")
-					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
-
 			_parent->Unlock();
 
 			if (totalInputAmount < feeAmount) {

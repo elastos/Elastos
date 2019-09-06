@@ -9,6 +9,7 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
+#include <SDK/WalletCore/BIPs/Address.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
@@ -186,8 +187,7 @@ namespace Elastos {
 			return info;
 		}
 
-		BigInt Wallet::GetBalanceWithAddress(const uint256 &assetID, const std::string &addr,
-											 GroupedAsset::BalanceType type) const {
+		BigInt Wallet::GetBalanceWithAddress(const uint256 &assetID, const std::string &addr) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 
 			BigInt balance = 0;
@@ -197,9 +197,8 @@ namespace Elastos {
 				const TransactionPtr tx = _allTx.Get(utxos[i]->Hash());
 				if (tx) {
 					OutputPtr o = tx->OutputOfIndex(utxos[i]->Index());
-					if (o && ((type == GroupedAsset::Default && o->GetType() == TransactionOutput::Type::Default) ||
-							  (type == GroupedAsset::Voted && o->GetType() == TransactionOutput::Type::VoteOutput))) {
-						balance += tx->OutputOfIndex(utxos[i]->Index())->Amount();
+					if (o && o->Addr().String() == addr) {
+						balance += o->Amount();
 					}
 				}
 			}
@@ -207,12 +206,12 @@ namespace Elastos {
 			return balance;
 		}
 
-		BigInt Wallet::GetBalance(const uint256 &assetID, GroupedAsset::BalanceType type) const {
+		BigInt Wallet::GetBalance(const uint256 &assetID) const {
 			ErrorChecker::CheckParam(!ContainsAsset(assetID), Error::InvalidAsset, "asset not found");
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 
-			return _groupedAssets[assetID]->GetBalance(type);
+			return _groupedAssets[assetID]->GetBalance();
 		}
 
 		uint64_t Wallet::GetFeePerKb() const {
@@ -229,17 +228,17 @@ namespace Elastos {
 			return DEFAULT_FEE_PER_KB;
 		}
 
-		TransactionPtr Wallet::Consolidate(const std::string &memo, const uint256 &assetID, bool userVotedUTXO) {
+		TransactionPtr Wallet::Consolidate(const std::string &memo, const uint256 &assetID) {
 			Lock();
 			bool containAsset = ContainsAsset(assetID);
 			Unlock();
 
 			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
-			TransactionPtr tx = _groupedAssets[assetID]->Consolidate(memo, userVotedUTXO);
+			TransactionPtr tx = _groupedAssets[assetID]->Consolidate(memo);
 
 			if (assetID != Asset::GetELAAssetID())
-				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx, false);
+				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);
 
 			tx->FixIndex();
 
@@ -249,7 +248,7 @@ namespace Elastos {
 		TransactionPtr Wallet::CreateTransaction(const Address &fromAddress,
 												 const std::vector<OutputPtr> &outputs,
 												 const std::string &memo,
-												 bool useVotedUTXO, bool autoReduceOutputAmount) {
+												 bool autoReduceOutputAmount) {
 
 			ErrorChecker::CheckParam(!IsAssetUnique(outputs), Error::InvalidAsset, "asset is not unique in outputs");
 
@@ -265,11 +264,10 @@ namespace Elastos {
 			if (fromAddress.Valid() && (_subAccount->IsDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
 				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(outputs, fromAddress, memo);
 			else
-				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo, useVotedUTXO,
-																			autoReduceOutputAmount);
+				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo, autoReduceOutputAmount);
 
 			if (assetID != Asset::GetELAAssetID())
-				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx, useVotedUTXO);
+				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);
 
 			return tx;
 		}
@@ -656,7 +654,7 @@ namespace Elastos {
 
 		Address Wallet::GetOwnerDepositAddress() const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return Address(PrefixDeposit, *_subAccount->OwnerPubKey());
+			return Address(PrefixDeposit, _subAccount->OwnerPubKey());
 		}
 
 		Address Wallet::GetCROwnerDepositAddress() const {
@@ -666,23 +664,23 @@ namespace Elastos {
 
 		Address Wallet::GetOwnerAddress() const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return Address(PrefixStandard, *_subAccount->OwnerPubKey());
+			return Address(PrefixStandard, _subAccount->OwnerPubKey());
 		}
 
 		std::vector<Address> Wallet::GetAllSpecialAddresses() const {
 			std::vector<Address> result;
 			boost::mutex::scoped_lock scopedLock(lock);
 			// Owner address
-			result.push_back(Address(PrefixStandard, *_subAccount->OwnerPubKey()));
+			result.push_back(Address(PrefixStandard, _subAccount->OwnerPubKey()));
 			// Owner deposit address
-			result.push_back(Address(PrefixDeposit, *_subAccount->OwnerPubKey()));
+			result.push_back(Address(PrefixDeposit, _subAccount->OwnerPubKey()));
 			// CR Owner deposit address
-			result.push_back(Address(PrefixStandard, _subAccount->DIDPubKey()));
+			result.push_back(Address(PrefixDeposit, _subAccount->DIDPubKey()));
 
 			return result;
 		}
 
-		bytes_ptr Wallet::GetOwnerPublilcKey() const {
+		bytes_t Wallet::GetOwnerPublilcKey() const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->OwnerPubKey();
 		}

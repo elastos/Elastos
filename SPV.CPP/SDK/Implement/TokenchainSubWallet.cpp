@@ -118,22 +118,18 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json TokenchainSubWallet::CreateCombineUTXOTransaction(const std::string &assetID,
+		nlohmann::json TokenchainSubWallet::CreateConsolidateTransaction(const std::string &assetID,
 																		 const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("assetID: {}", assetID);
 			ArgInfo("memo: {}", memo);
 
-			std::string addr = CreateAddress();
+			std::string memoFormated = "type:text,msg:" + memo;
 
-			BigInt bnAmount = _walletManager->getWallet()->GetBalance(uint256(assetID), GroupedAsset::Total);
+			TransactionPtr tx = _walletManager->getWallet()->Consolidate(memoFormated, uint256(assetID));
 
-			uint256 asset = uint256(assetID);
-
-			std::vector<OutputPtr> outputs;
-			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, Address(addr), asset)));
-
-			TransactionPtr tx = CreateTx("", outputs, memo);
+			if (_info->GetChainID() == "ELA")
+				tx->SetVersion(Transaction::TxVersion::V09);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -156,7 +152,7 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("assetID: {}", assetID);
 
-			std::string balance = _walletManager->getWallet()->GetBalance(uint256(assetID), GroupedAsset::Total).getDec();
+			std::string balance = _walletManager->getWallet()->GetBalance(uint256(assetID)).getDec();
 
 			ArgInfo("r => {}", balance);
 			return balance;
@@ -167,8 +163,7 @@ namespace Elastos {
 			ArgInfo("assetID: {}", assetID);
 			ArgInfo("addr: {}", address);
 
-			std::string balance = _walletManager->getWallet()->GetBalanceWithAddress(uint256(assetID), address,
-					GroupedAsset::Total).getDec();
+			std::string balance = _walletManager->getWallet()->GetBalanceWithAddress(uint256(assetID), address).getDec();
 
 			ArgInfo("r => {}", balance);
 

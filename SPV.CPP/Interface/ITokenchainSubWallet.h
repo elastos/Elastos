@@ -72,10 +72,9 @@ namespace Elastos {
 			 * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
 			 * @param assetID specify asset ID
 			 * @param memo input memo attribute for describing.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 * @return If success return the content of transaction in json format.
 			 */
-			virtual nlohmann::json CreateCombineUTXOTransaction(
+			virtual nlohmann::json CreateConsolidateTransaction(
 				const std::string &assetID,
 				const std::string &memo) = 0;
 

@@ -16,6 +16,8 @@ namespace Elastos {
 		public:
 			KeyStore();
 
+			KeyStore(const ElaNewWalletJson &walletjson);
+
 			~KeyStore();
 
 			bool Open(const boost::filesystem::path &path, const std::string &password);

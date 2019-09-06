@@ -21,281 +21,10 @@ namespace Elastos {
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define LOCAL_STORE_FILE "LocalStore.json"
 
-		LocalStore::LocalStore(const nlohmann::json &store) {
-			from_json(store, *this);
-		}
-
-		LocalStore::LocalStore(const std::string &path) :
-			_path(path) {
-
-			fs::path filepath = _path;
-			filepath /= LOCAL_STORE_FILE;
-			if (!fs::exists(filepath)) {
-				filepath = _path;
-				filepath /= MASTER_WALLET_STORE_FILE;
-				if (!fs::exists(filepath)) {
-					ErrorChecker::ThrowLogicException(Error::MasterWalletNotExist, "master wallet " +
-						filepath.parent_path().filename().string() + " not exist");
-				}
-			}
-
-			std::ifstream is(filepath.string());
-			nlohmann::json j;
-			is >> j;
-
-			ErrorChecker::CheckLogic(j.is_null() || j.empty(), Error::InvalidLocalStore, "local store file is empty");
-
-			from_json(j, *this);
-		}
-
-		LocalStore::LocalStore(const std::string &path, const std::string &xprv, bool singleAddress,
-							   const std::string &payPasswd) :
-			_path(path),
-			_account(0),
-			_derivationStrategy("BIP44"),
-			_mnemonic(""),
-			_passphrase(""),
-			_mnemonicHasPassphrase(false),
-			_readonly(false),
-			_singleAddress(singleAddress) {
-
-			bytes_t payload;
-			ErrorChecker::CheckLogic(!Base58::CheckDecode(xprv, payload), Error::InvalidArgument, "Invalid xprv");
-
-			HDKeychain rootkey(payload);
-			_xPrivKey = AES::EncryptCCM(payload, payPasswd);
-			_xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
-
-			HDKeychain requestKey = rootkey.getChild("1'/0");
-			_requestPrivKey = AES::EncryptCCM(requestKey.privkey(), payPasswd);
-			_requestPubKey = requestKey.pubkey().getHex();
-
-			_publicKeyRing.emplace_back(_requestPubKey, _xPubKey);
-
-			_m = 1;
-			_n = 1;
-
-			_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
-		}
-
-		LocalStore::LocalStore(const std::string &path, const std::string &mnemonic, const std::string &passphrase,
-							   bool singleAddress, const std::string &payPasswd) :
-			_path(path),
-			_account(0),
-			_derivationStrategy("BIP44") {
-
-			HDSeed seed(BIP39::DeriveSeed(mnemonic, passphrase).bytes());
-			HDKeychain rootkey(seed.getExtendedKey(true));
-
-			_xPrivKey = AES::EncryptCCM(rootkey.extkey(), payPasswd);
-			_xPubKey = Base58::CheckEncode(rootkey.getChild("44'/0'/0'").getPublic().extkey());
-
-			HDKeychain requestKey = rootkey.getChild("1'/0");
-			_requestPrivKey = AES::EncryptCCM(requestKey.privkey(), payPasswd);
-			_requestPubKey = requestKey.pubkey().getHex();
-
-			_publicKeyRing.emplace_back(_requestPubKey, _xPubKey);
-
-			_m = 1;
-			_n = 1;
-
-			if (!passphrase.empty())
-				_mnemonicHasPassphrase = true;
-			else
-				_mnemonicHasPassphrase = false;
-
-			_mnemonic = AES::EncryptCCM(bytes_t(mnemonic.data(), mnemonic.size()), payPasswd);
-			_passphrase.clear();
-			_ownerPubKey = rootkey.getChild("44'/0'/1'/0/0").pubkey().getHex();
-			_singleAddress = singleAddress;
-			_readonly = false;
-		}
-
-		LocalStore::LocalStore(const std::string &path, const ElaNewWalletJson &json, const std::string &payPasswd) :
-			_path(path),
-			_account(0),
-			_derivationStrategy("BIP44") {
-
-			bytes_t bytes;
-			std::string str;
-			_readonly = true;
-			if (!json.xPrivKey().empty()) {
-				Base58::CheckDecode(json.xPrivKey(), bytes);
-				HDKeychain rootkey(bytes);
-				_ownerPubKey = json.OwnerPubKey();
-				_xPrivKey = AES::EncryptCCM(bytes, payPasswd);
-				_readonly = false;
-			}
-			if (!json.Mnemonic().empty()) {
-				_mnemonic = AES::EncryptCCM(bytes_t(json.Mnemonic().data(), json.Mnemonic().size()), payPasswd);
-				_readonly = false;
-			}
-			_xPubKey = json.xPubKey();
-			_requestPubKey = json.RequestPubKey();
-
-			if (!json.RequestPrivKey().empty()) {
-				bytes.setHex(json.RequestPrivKey());
-				_requestPrivKey = AES::EncryptCCM(bytes, payPasswd);
-			}
-
-			_publicKeyRing = json.GetPublicKeyRing();
-			_m = json.GetM();
-			_n = json.GetN();
-			_mnemonicHasPassphrase = json.HasPassPhrase();
-			_passphrase.clear();
-			_singleAddress = json.SingleAddress();
-			_subWalletsInfoList = json.GetCoinInfoList();
-		}
-
-		LocalStore::LocalStore(const std::string &path, const std::vector<PublicKeyRing> &pubkeyRings, int m) :
-			_path(path),
-			_account(0),
-			_derivationStrategy("BIP44"),
-			_m(m),
-			_singleAddress(true),
-			_readonly(true),
-			_mnemonicHasPassphrase(false),
-			_publicKeyRing(pubkeyRings) {
-
-			_n = _publicKeyRing.size();
-		}
-
-		LocalStore::~LocalStore() {
-
-		}
-
-		void LocalStore::GetReadOnlyWalletJson(ElaNewWalletJson &json) {
-			json.SetHasPassPhrase(_mnemonicHasPassphrase);
-			json.SetxPubKey(_xPubKey);
-			json.SetRequestPubKey(_requestPubKey);
-			json.SetPublicKeyRing(_publicKeyRing);
-			json.SetM(_m);
-			json.SetN(_n);
-			json.SetHasPassPhrase(_mnemonicHasPassphrase);
-			json.SetDerivationStrategy("BIP44");
-			json.SetAccount(0);
-			json.SetPassPhrase("");
-			json.SetSingleAddress(_singleAddress);
-			json.SetCoinInfoList(_subWalletsInfoList);
-			json.SetOwnerPubKey(_ownerPubKey);
-		}
-
-		void LocalStore::GetWalletJson(ElaNewWalletJson &json, const std::string &payPasswd) {
-			if (!_readonly && _xPrivKey.empty()) {
-				RegenerateKey(payPasswd);
-			}
-
-			bytes_t bytes = AES::DecryptCCM(_xPrivKey, payPasswd);
-			std::string str;
-			if (bytes.empty()) {
-				json.SetxPrivKey("");
-			} else {
-				json.SetxPrivKey(Base58::CheckEncode(bytes));
-			}
-
-			bytes = AES::DecryptCCM(_mnemonic, payPasswd);
-			json.SetMnemonic(std::string((char *)bytes.data(), bytes.size()));
-			if (bytes.empty()) {
-				json.SetHasPassPhrase(false);
-			}
-
-			bytes = AES::DecryptCCM(_requestPrivKey, payPasswd);
-			json.SetRequestPrivKey(bytes.getHex());
-
-			json.SetxPubKey(_xPubKey);
-			json.SetRequestPubKey(_requestPubKey);
-			json.SetPublicKeyRing(_publicKeyRing);
-			json.SetM(_m);
-			json.SetN(_n);
-			json.SetHasPassPhrase(_mnemonicHasPassphrase);
-			json.SetDerivationStrategy("BIP44");
-			json.SetAccount(0);
-			json.SetPassPhrase("");
-			json.SetSingleAddress(_singleAddress);
-			json.SetCoinInfoList(_subWalletsInfoList);
-		}
-
-		void LocalStore::RegenerateKey(const std::string &payPasswd) {
-			bytes_t bytes = AES::DecryptCCM(_mnemonic, payPasswd);
-			std::string mnemonic((char *)&bytes[0], bytes.size());
-
-			bytes = AES::DecryptCCM(_passphrase, payPasswd);
-			std::string passphrase((char *)&bytes[0], bytes.size());
-
-			if (passphrase == "") {
-				_mnemonicHasPassphrase = false;
-			} else {
-				_mnemonicHasPassphrase = true;
-			}
-
-			HDSeed seed(BIP39::DeriveSeed(mnemonic, passphrase).bytes());
-			HDKeychain rootkey(seed.getExtendedKey(true));
-
-			_passphrase.clear();
-
-			// encrypt private key
-			_xPrivKey = AES::EncryptCCM(rootkey.extkey(), payPasswd);
-
-			bytes = rootkey.getChild("1'/0").privkey();
-			_requestPrivKey = AES::EncryptCCM(bytes, payPasswd);
-
-			// master public key
-			bytes = rootkey.getChild("44'/0'/0'").getPublic().extkey();
-			_xPubKey = Base58::CheckEncode(bytes);
-
-			for (size_t i = 0; i < _publicKeyRing.size(); ++i) {
-				if (_publicKeyRing[i].GetRequestPubKey() == _requestPubKey) {
-					_publicKeyRing[i].SetxPubKey(_xPubKey);
-				}
-			}
-
-			// 44'/coinIndex'/account'/change/index
-			bytes = rootkey.getChild("44'/0'/1'/0/0").pubkey();
-			_ownerPubKey = bytes.getHex();
-
-			Save();
-		}
-
-		void LocalStore::ChangePasswd(const std::string &oldPasswd, const std::string &newPasswd) {
-			bytes_t bytes = AES::DecryptCCM(_mnemonic, oldPasswd);
-			_mnemonic = AES::EncryptCCM(bytes, newPasswd);
-
-			bytes = AES::DecryptCCM(_xPrivKey, oldPasswd);
-			_xPrivKey = AES::EncryptCCM(bytes, newPasswd);
-
-			bytes = AES::DecryptCCM(_requestPrivKey, oldPasswd);
-			_requestPrivKey = AES::EncryptCCM(bytes, newPasswd);
-
-			bytes.clean();
-
-			Save();
-		}
-
-		void LocalStore::Save() {
-
-			nlohmann::json j;
-			to_json(j, *this);
-
-			if (!j.is_null() && !j.empty() && !_path.empty()) {
-				boost::filesystem::path path = _path;
-				if (!boost::filesystem::exists(path))
-					boost::filesystem::create_directory(path);
-
-				path /= LOCAL_STORE_FILE;
-				std::ofstream o(path.string());
-				o << j;
-				o.flush();
-			}
-		}
-
-		void LocalStore::SaveTo(const std::string &path) {
-			_path = path;
-			Save();
-		}
-
 		void to_json(nlohmann::json &j, const LocalStore &p) {
 			j["xPrivKey"] = p._xPrivKey;
 			j["xPubKey"] = p._xPubKey;
+			j["xPubKeyHDPM"] = p._xPubKeyHDPM;
 			j["requestPrivKey"] = p._requestPrivKey;
 			j["requestPubKey"] = p._requestPubKey;
 			j["publicKeyRing"] = p._publicKeyRing;
@@ -337,6 +66,12 @@ namespace Elastos {
 					p._singleAddress = j["singleAddress"].get<bool>();
 					p._readonly = j["readonly"].get<bool>();
 
+					if (j.find("xPubKeyHDPM") != j.end()) {
+						p._xPubKeyHDPM = j["xPubKeyHDPM"].get<std::string>();
+					} else {
+						p._xPubKeyHDPM.clear();
+					}
+
 					p._subWalletsInfoList.clear();
 					nlohmann::json jCoinInfo = j["coinInfo"];
 					for (nlohmann::json::iterator it = jCoinInfo.begin(); it != jCoinInfo.end(); ++it) {
@@ -356,6 +91,7 @@ namespace Elastos {
 					p._requestPrivKey.clear();
 					p._ownerPubKey.clear();
 					p._xPubKey.clear();
+					p._xPubKeyHDPM.clear();
 
 					if (mpk.is_object()) {
 						bytes.setHex(mpk["ELA"]);
@@ -386,39 +122,7 @@ namespace Elastos {
 
 					if (jaccount.find("CoSigners") != jaccount.end()) {
 						// 1. multi sign
-						std::vector<std::string> coSigners = jaccount["CoSigners"];
-						p._publicKeyRing.clear();
-						for (size_t i = 0; i < coSigners.size(); ++i) {
-							p._publicKeyRing.emplace_back(coSigners[i]);
-						}
-						p._m = jaccount["RequiredSignCount"];
-
-						if (jaccount.find("InnerAccount") != jaccount.end()) {
-							nlohmann::json innerAccount = jaccount["InnerAccount"];
-							p._requestPubKey = innerAccount["PublicKey"].get<std::string>();
-							p._publicKeyRing.emplace_back(p._requestPubKey);
-
-							p._mnemonic = innerAccount["Mnemonic"].get<std::string>();
-							p._passphrase = innerAccount["PhrasePassword"].get<std::string>();
-
-							bytes_t bytes;
-							bytes.setBase64(p._passphrase);
-							if (bytes.size() <= 8) {
-								p._mnemonicHasPassphrase = false;
-								p._passphrase.clear();
-							} else {
-								p._mnemonicHasPassphrase = true;
-							}
-							p._readonly = false;
-						} else {
-							p._mnemonic.clear();
-							p._passphrase.clear();
-							p._mnemonicHasPassphrase = false;
-							p._readonly = true;
-						}
-						p._n = p._publicKeyRing.size();
-						p._singleAddress = true;
-
+						ErrorChecker::ThrowLogicException(Error::InvalidLocalStore, "Localstore too old, re-import please");
 					} else {
 						// 2. standard hd
 						p._readonly = false;
@@ -437,8 +141,6 @@ namespace Elastos {
 						p._requestPubKey = jaccount["PublicKey"].get<std::string>();
 						if (!p._xPubKey.empty())
 							p._publicKeyRing.emplace_back(p._requestPubKey, p._xPubKey);
-						else
-							p._publicKeyRing.emplace_back(p._requestPubKey);
 
 						nlohmann::json votePubkey = j["VotePublicKey"];
 						if (votePubkey.is_object() && votePubkey["ELA"].get<std::string>() != "") {
@@ -450,6 +152,78 @@ namespace Elastos {
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowLogicException(Error::InvalidLocalStore, "invalid localstore: " + std::string(e.what()));
 			}
+		}
+
+		LocalStore::LocalStore(const nlohmann::json &store) {
+			from_json(store, *this);
+		}
+
+		LocalStore::LocalStore(const std::string &path) :
+			_path(path),
+			_account(0) {
+
+		}
+
+		LocalStore::~LocalStore() {
+
+		}
+
+		void LocalStore::ChangePasswd(const std::string &oldPasswd, const std::string &newPasswd) {
+			bytes_t bytes = AES::DecryptCCM(_mnemonic, oldPasswd);
+			_mnemonic = AES::EncryptCCM(bytes, newPasswd);
+
+			bytes = AES::DecryptCCM(_xPrivKey, oldPasswd);
+			_xPrivKey = AES::EncryptCCM(bytes, newPasswd);
+
+			bytes = AES::DecryptCCM(_requestPrivKey, oldPasswd);
+			_requestPrivKey = AES::EncryptCCM(bytes, newPasswd);
+
+			bytes.clean();
+		}
+
+		bool LocalStore::Load() {
+			fs::path filepath = _path;
+			filepath /= LOCAL_STORE_FILE;
+			if (!fs::exists(filepath)) {
+				filepath = _path;
+				filepath /= MASTER_WALLET_STORE_FILE;
+				if (!fs::exists(filepath)) {
+					ErrorChecker::ThrowLogicException(Error::MasterWalletNotExist, "master wallet " +
+																				   filepath.parent_path().filename().string() + " not exist");
+				}
+			}
+
+			std::ifstream is(filepath.string());
+			nlohmann::json j;
+			is >> j;
+
+			ErrorChecker::CheckLogic(j.is_null() || j.empty(), Error::InvalidLocalStore, "local store file is empty");
+
+			from_json(j, *this);
+
+			return true;
+		}
+
+		void LocalStore::Save() {
+
+			nlohmann::json j;
+			to_json(j, *this);
+
+			if (!j.is_null() && !j.empty() && !_path.empty()) {
+				boost::filesystem::path path = _path;
+				if (!boost::filesystem::exists(path))
+					boost::filesystem::create_directory(path);
+
+				path /= LOCAL_STORE_FILE;
+				std::ofstream o(path.string());
+				o << j;
+				o.flush();
+			}
+		}
+
+		void LocalStore::SaveTo(const std::string &path) {
+			_path = path;
+			Save();
 		}
 
 		bool LocalStore::SingleAddress() const {
@@ -500,6 +274,14 @@ namespace Elastos {
 			_xPubKey = xpubkey;
 		}
 
+		const std::string &LocalStore::GetxPubKeyHDPM() const {
+			return _xPubKeyHDPM;
+		}
+
+		void LocalStore::SetxPubKeyHDPM(const std::string &xpub) {
+			_xPubKeyHDPM = xpub;
+		}
+
 		const std::string &LocalStore::GetRequestPubKey() const {
 			return _requestPubKey;
 		}
@@ -514,6 +296,14 @@ namespace Elastos {
 
 		void LocalStore::SetOwnerPubKey(const std::string &ownerPubKey) {
 			_ownerPubKey = ownerPubKey;
+		}
+
+		const std::string &LocalStore::DerivationStrategy() const {
+			return _derivationStrategy;
+		}
+
+		void LocalStore::SetDerivationStrategy(const std::string &strategy) {
+			_derivationStrategy = strategy;
 		}
 
 		const std::vector<PublicKeyRing> &LocalStore::GetPublicKeyRing() const {
@@ -558,6 +348,14 @@ namespace Elastos {
 
 		void LocalStore::SetReadonly(bool status) {
 			_readonly = status;
+		}
+
+		int LocalStore::Account() const {
+			return _account;
+		}
+
+		void LocalStore::SetAccount(int account) {
+			_account = account;
 		}
 
 		const std::vector<CoinInfoPtr> &LocalStore::GetSubWalletInfoList() const {

@@ -11,16 +11,38 @@ namespace Elastos {
 
 		CoinInfo::CoinInfo() :
 				_chainID(""),
-				_earliestPeerTime(0),
-				_feePerKB(0) {
+				_earliestPeerTime(0) {
 
+		}
+
+		const std::string &CoinInfo::GetChainID() const {
+			return _chainID;
+		}
+
+		void CoinInfo::SetChainID(const std::string &id) {
+			_chainID = id;
+		}
+
+		time_t CoinInfo::GetEarliestPeerTime() const {
+			return _earliestPeerTime;
+		}
+
+		void CoinInfo::SetEaliestPeerTime(time_t time) {
+			_earliestPeerTime = time;
+		}
+
+		const std::vector<uint256> &CoinInfo::GetVisibleAssets() const {
+			return _visibleAssets;
+		}
+
+		void CoinInfo::SetVisibleAssets(const std::vector<uint256> &assets) {
+			_visibleAssets = assets;
 		}
 
 		nlohmann::json CoinInfo::ToJson() const {
 			nlohmann::json j;
 			j["ChainID"] = _chainID;
 			j["EarliestPeerTime"] = _earliestPeerTime;
-			j["FeePerKB"] = _feePerKB;
 			j["VisibleAssets"] = VisibleAssetsToJson();
 
 			return j;
@@ -31,9 +53,6 @@ namespace Elastos {
 			if (_chainID == "IdChain")
 				_chainID = "IDChain";
 			_earliestPeerTime = j["EarliestPeerTime"].get<uint32_t>();
-
-			if (j.find("FeePerKB") != j.end())
-				_feePerKB = j["FeePerKB"].get<uint64_t>();
 
 			if (j.find("VisibleAssets") != j.end())
 				VisibleAssetsFromJson(j["VisibleAssets"]);

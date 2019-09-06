@@ -21,17 +21,14 @@ namespace Elastos {
 			_parent(parent),
 			_coinIndex(coinIndex) {
 
-			bytes_ptr ownerPubKey = _parent->OwnerPubKey();
-			if (!ownerPubKey->empty()) {
-				_depositAddress = Address(PrefixDeposit, *ownerPubKey);
-				_ownerAddress = Address(PrefixStandard, *ownerPubKey);
-			}
-
 			if (_parent->GetSignType() != Account::MultiSign) {
-				HDKeychain mpk = _parent->MasterPubKey();
-				_crDepositAddress = Address(PrefixDeposit, mpk.getChild(0).getChild(0).pubkey());
-			}
+				bytes_t ownerPubKey = _parent->OwnerPubKey();
+				_depositAddress = Address(PrefixDeposit, ownerPubKey);
+				_ownerAddress = Address(PrefixStandard, ownerPubKey);
 
+				HDKeychainPtr mpk = _parent->MasterPubKey();
+				_crDepositAddress = Address(PrefixDeposit, mpk->getChild(0).getChild(0).pubkey());
+			}
 		}
 
 		nlohmann::json SubAccount::GetBasicInfo() const {
@@ -88,10 +85,6 @@ namespace Elastos {
 
 		size_t SubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {
 			addr.clear();
-			if (_parent->GetSignType() == Account::MultiSign) {
-				addr.push_back(_parent->GetAddress());
-				return 1;
-			}
 
 			size_t maxCount = _externalChain.size() + (containInternal ? _internalChain.size() : 0);
 
@@ -115,16 +108,21 @@ namespace Elastos {
 
 		std::vector<Address> SubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
 			std::vector<Address> addrs;
-			if (_parent->SingleAddress()) {
-				if (_parent->GetSignType() == Account::MultiSign) {
-					addrs = {_parent->GetAddress()};
-					return addrs;
-				}
+			std::vector<bytes_t> pubkeys;
+			bytes_t pubkey;
 
+			if (_parent->SingleAddress()) {
 				if (_externalChain.empty()) {
-					bytes_t pubkey = _parent->MasterPubKey().getChild("0/0").pubkey();
-					_externalChain.push_back(Address(PrefixStandard, pubkey));
-					_allAddrs.insert(_externalChain[0]);
+					if (_parent->GetSignType() == Account::MultiSign) {
+						for (size_t i = 0; i < _parent->MultiSignCosigner().size(); ++i)
+							pubkeys.push_back(_parent->MultiSignCosigner()[i]->getChild("0/0").pubkey());
+						_externalChain.push_back(Address(PrefixMultiSign, pubkeys, _parent->GetM()));
+						_allAddrs.insert(_externalChain[0]);
+					} else {
+						pubkey = _parent->MasterPubKey()->getChild("0/0").pubkey();
+						_externalChain.push_back(Address(PrefixStandard, pubkey));
+						_allAddrs.insert(_externalChain[0]);
+					}
 				}
 				addrs = _externalChain;
 				return addrs;
@@ -141,12 +139,19 @@ namespace Elastos {
 			// keep only the trailing contiguous block of addresses with no transactions
 			while (i > 0 && _usedAddrs.find(addrChain[i - 1]) == _usedAddrs.end()) i--;
 
-			HDKeychain mpk = _parent->MasterPubKey();
 
 			while (i + gapLimit > count) { // generate new addresses up to gapLimit
-				bytes_t pubKey = mpk.getChild(chain).getChild(count).pubkey();
-
-				Address address(PrefixStandard, pubKey);
+				Address address;
+				if (_parent->GetSignType() == Account::MultiSign) {
+					pubkeys.clear();
+					for (size_t i = 0; i < _parent->MultiSignCosigner().size(); ++i)
+						pubkeys.push_back(_parent->MultiSignCosigner()[i]->getChild(chain).getChild(count).pubkey());
+					address = Address(PrefixMultiSign, pubkeys, _parent->GetM());
+				} else {
+					HDKeychainPtr mpk = _parent->MasterPubKey();
+					pubkey = mpk->getChild(chain).getChild(count).pubkey();
+					address = Address(PrefixStandard, pubkey);
+				}
 
 				if (!address.Valid()) break;
 
@@ -168,12 +173,12 @@ namespace Elastos {
 			return addrs;
 		}
 
-		bytes_ptr SubAccount::OwnerPubKey() const {
+		bytes_t SubAccount::OwnerPubKey() const {
 			return _parent->OwnerPubKey();
 		}
 
 		bytes_t SubAccount::DIDPubKey() const {
-			return _parent->MasterPubKey().getChild(0).getChild(0).pubkey();
+			return _parent->MasterPubKey()->getChild(0).getChild(0).pubkey();
 		}
 
 		void SubAccount::SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) {
@@ -182,27 +187,60 @@ namespace Elastos {
 			bytes_t signature;
 			ByteStream stream;
 
+			ErrorChecker::CheckParam(_parent->Readonly(), Error::Sign, "Readonly wallet can not sign tx");
 			ErrorChecker::CheckParam(tx->IsSigned(), Error::AlreadySigned, "Transaction signed");
 			ErrorChecker::CheckParam(tx->GetPrograms().empty(), Error::InvalidTransaction,
 			                         "Invalid transaction program");
 
 			uint256 md = tx->GetShaData();
 
+			HDKeychainPtr rootKey = _parent->RootKey(payPasswd);
+			std::vector<bytes_t> publicKeys;
 			const std::vector<ProgramPtr> &programs = tx->GetPrograms();
 			for (size_t i = 0; i < programs.size(); ++i) {
-				std::vector<bytes_t> publicKeys = programs[i]->DecodePublicKey();
-				ErrorChecker::CheckLogic(publicKeys.empty(), Error::InvalidRedeemScript, "Invalid redeem script");
+				publicKeys.clear();
+				SignType type = programs[i]->DecodePublicKey(publicKeys);
+				ErrorChecker::CheckLogic(type != SignTypeMultiSign && type != SignTypeStandard, Error::InvalidArgument,
+										 "Invalid redeem script");
 				ErrorChecker::CheckLogic(programs[i]->GetPath().empty(), Error::UnSupportOldTx, "Unsupport old tx");
 
-				HDKeychain rootKey = _parent->RootKey(payPasswd);
-				key = rootKey.getChild(programs[i]->GetPath());
 				bool found = false;
-				for (size_t k = 0; k < publicKeys.size(); ++k) {
-					if (publicKeys[k] == key.PubKey()) {
-						found = true;
-						break;
+				if (type == SignTypeStandard) {
+					key = rootKey->getChild(programs[i]->GetPath());
+					for (size_t k = 0; !found && k < publicKeys.size(); ++k) {
+						if (publicKeys[k] == key.PubKey()) {
+							found = true;
+						}
+					}
+				} else if (type == SignTypeMultiSign) {
+					if (_parent->GetSignType() == Account::MultiSign) {
+						if (_parent->DerivationStrategy() == "BIP44")
+							key = rootKey->getChild("44'/0'/0'").getChild(programs[i]->GetPath());
+						else
+							key = rootKey->getChild("45'").getChild((uint32_t) _parent->CosignerIndex()).getChild(programs[i]->GetPath());
+						for (size_t k = 0; !found && k < publicKeys.size(); ++k) {
+							if (publicKeys[k] == key.PubKey()) {
+								found = true;
+							}
+						}
+					} else {
+						key = rootKey->getChild("44'/0'/0'").getChild(programs[i]->GetPath());
+						for (size_t k = 0; !found && k < publicKeys.size(); ++k) {
+							if (publicKeys[k] == key.PubKey()) {
+								found = true;
+							}
+						}
+						for (uint32_t idx = 0; !found && idx < MAX_MULTISIGN_COSIGNERS; ++idx) {
+							key = rootKey->getChild("45'").getChild(idx).getChild(programs[i]->GetPath());
+							for (size_t k = 0; !found && k < publicKeys.size(); ++k) {
+								if (publicKeys[k] == key.PubKey()) {
+									found = true;
+								}
+							}
+						}
 					}
 				}
+
 				ErrorChecker::CheckLogic(!found, Error::PrivateKeyNotFound, "Private key not found");
 
 				stream.Reset();
@@ -222,15 +260,15 @@ namespace Elastos {
 
 		Key SubAccount::DeriveOwnerKey(const std::string &payPasswd) {
 			// 44'/coinIndex'/account'/change/index
-			return _parent->RootKey(payPasswd).getChild("44'/0'/1'/0/0");
+			return _parent->RootKey(payPasswd)->getChild("44'/0'/1'/0/0");
 		}
 
 		Key SubAccount::DeriveDIDKey(const std::string &payPasswd) {
-			return _parent->RootKey(payPasswd).getChild("44'/0'/0'/0/0");
+			return _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0/0");
 		}
 
 		bool SubAccount::FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) {
-			if (*_parent->OwnerPubKey() == pubKey) {
+			if (_parent->OwnerPubKey() == pubKey) {
 				key = DeriveOwnerKey(payPasswd);
 				return true;
 			}
@@ -269,9 +307,9 @@ namespace Elastos {
 			if (!found)
 				return false;
 
-			HDKeychain rootKey = _parent->RootKey(payPasswd);
+			HDKeychainPtr rootKey = _parent->RootKey(payPasswd);
 
-			HDKeychain masterKey = rootKey.getChild("44'/0'/0'");
+			HDKeychain masterKey = rootKey->getChild("44'/0'/0'");
 			key = masterKey.getChild(change).getChild(index - 1);
 
 			return true;
@@ -286,10 +324,6 @@ namespace Elastos {
 				return true;
 			}
 
-			if (_parent->GetSignType() == Account::MultiSign) {
-				return _parent->GetAddress() == address;
-			}
-
 			return _allAddrs.find(address) != _allAddrs.end();
 		}
 
@@ -300,6 +334,7 @@ namespace Elastos {
 		bool SubAccount::GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const {
 			uint32_t index;
 			bytes_t pubKey;
+
 			if (IsDepositAddress(addr)) {
 				code = _depositAddress.RedeemScript();
 				path = "44'/0'/1'/0/0";
@@ -318,55 +353,37 @@ namespace Elastos {
 				return true;
 			}
 
-			if (_parent->GetSignType() == Account::MultiSign) {
-				ErrorChecker::CheckLogic(_parent->GetAddress() != addr, Error::Address,
-										 "Can't generate code for addr " + addr.String());
-
-				code = _parent->GetAddress().RedeemScript();
-				path = "1'/0";
-				return true;
-			}
-
-			HDKeychain mpk = _parent->MasterPubKey();
-
-			path = "44'/0'/0'/";
-
 			for (index = _internalChain.size(); index > 0; index--) {
 				if (_internalChain[index - 1] == addr) {
-					pubKey = mpk.getChild(SEQUENCE_INTERNAL_CHAIN).getChild(index - 1).pubkey();
-
-					path = path + "1/" + std::to_string(index - 1);
-					break;
+					code = _internalChain[index - 1].RedeemScript();
+					if (_parent->GetSignType() == Account::MultiSign) {
+						path = "1/" + std::to_string(index - 1);
+					} else {
+						path = "44'/0'/0'/1/" + std::to_string(index - 1);
+					}
+					return true;
 				}
 			}
 
-			for (index = _externalChain.size(); index > 0 && pubKey.empty(); index--) {
+			for (index = _externalChain.size(); index > 0; index--) {
 				if (_externalChain[index - 1] == addr) {
-					pubKey = mpk.getChild(SEQUENCE_EXTERNAL_CHAIN).getChild(index - 1).pubkey();
-
-					path = path + "0/" + std::to_string(index - 1);
-					break;
+					code = _externalChain[index - 1].RedeemScript();
+					if (_parent->GetSignType() == Account::MultiSign) {
+						path = "0/" + std::to_string(index - 1);
+					} else {
+						path = "44'/0'/0'/0/" + std::to_string(index - 1);
+					}
+					return true;
 				}
 			}
 
-			if (pubKey.empty()) {
-				ErrorChecker::ThrowLogicException(Error::Address, "Can't found code and path for address " + addr.String());
-				return false;
-			}
+			ErrorChecker::ThrowLogicException(Error::Address, "Can't found code and path for address " + addr.String());
 
-			code = Address(PrefixStandard, pubKey).RedeemScript();
-
-			return true;
+			return false;
 		}
 
 		size_t SubAccount::InternalChainIndex(const TransactionPtr &tx) const {
 			const OutputArray &outputs = tx->GetOutputs();
-			if (_parent->GetSignType() == Account::MultiSign) {
-				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
-					if ((*o)->Addr() == _parent->GetAddress())
-						return 0;
-				}
-			}
 
 			for (size_t i = _internalChain.size(); i > 0; i--) {
 				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
@@ -380,12 +397,6 @@ namespace Elastos {
 
 		size_t SubAccount::ExternalChainIndex(const TransactionPtr &tx) const {
 			const OutputArray &outputs = tx->GetOutputs();
-			if (_parent->GetSignType() == Account::MultiSign) {
-				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
-					if ((*o)->Addr() == _parent->GetAddress())
-						return 0;
-				}
-			}
 
 			for (size_t i = _externalChain.size(); i > 0; i--) {
 				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {

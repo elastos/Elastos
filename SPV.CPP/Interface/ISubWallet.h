@@ -14,12 +14,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		enum BalanceType {
-			Default,
-			Voted,
-			Total,
-		};
-
 		class ISubWallet {
 		public:
 			/**
@@ -34,10 +28,13 @@ namespace Elastos {
 			virtual std::string GetChainID() const = 0;
 
 			/**
-			 * Here is a example of hd account wallet basic info:
+			 * basic info of sub wallet
+			 * @return basic information of current master wallet.
+			 *
+			 * Such as:
 			 * {
 			 *   "Info":{
-			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"},
+			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard", "HasPassPhrase": false},
 			 *     "CoinIndex":0
 			 *   },
 			 *   "ChainID":"ELA"
@@ -45,7 +42,7 @@ namespace Elastos {
 			 *
 			 * {
 			 *   "Info":{
-			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"},
+			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard", "HasPassPhrase": false},
 			 *     "CoinIndex":1
 			 *   },
 			 *   "ChainID":"IDChain"
@@ -53,13 +50,11 @@ namespace Elastos {
 			 *
 			 * {
 			 *   "Info":{
-			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard"},
+			 *     "Account":{"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard", "HasPassPhrase": false},
 			 *     "CoinIndex":2
 			 *   },
 			 *   "ChainID":"TokenChain"
 			 * }
-
-			 * @return basic information of current master wallet.
 			 */
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
@@ -73,14 +68,14 @@ namespace Elastos {
 			 * Get sum of balances of all addresses according to balance type.
 			 * @return sum of balances.
 			 */
-			virtual std::string GetBalance(BalanceType type = Default) const = 0;
+			virtual std::string GetBalance() const = 0;
 
 			/**
 			 * Get balance of only the specified address.
 			 * @param address is one of addresses created by current sub wallet.
 			 * @return balance of specified address.
 			 */
-			virtual std::string GetBalanceWithAddress(const std::string &address, BalanceType type = Default) const = 0;
+			virtual std::string GetBalanceWithAddress(const std::string &address) const = 0;
 
 			/**
 			 * Create a new address or return existing unused address. Note that if create the sub wallet by setting the singleAddress to true, will always return the single address.
@@ -116,15 +111,13 @@ namespace Elastos {
 			 * @param toAddress specify which address we want to send.
 			 * @param amount specify amount we want to send.
 			 * @param memo input memo attribute for describing.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					const std::string &amount,
-					const std::string &memo,
-					bool useVotedUTXO = false) = 0;
+					const std::string &memo) = 0;
 
 			/**
 			 * Get all UTXO list. Include locked and pending and deposit utxos.
@@ -141,12 +134,10 @@ namespace Elastos {
 			/**
 			 * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
 			 * @param memo input memo attribute for describing.
-			 * @param useVotedUTXO If true, all voted UTXO will be picked. Otherwise, any voted UTXO will not be picked.
 			 * @return If success return the content of transaction in json format.
 			 */
 			virtual nlohmann::json CreateConsolidateTransaction(
-					const std::string &memo,
-					bool useVotedUTXO = false) = 0;
+					const std::string &memo) = 0;
 
 			/**
 			 * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.
@@ -205,41 +196,12 @@ namespace Elastos {
 				const std::string &txID) const = 0;
 
 			/**
-			 * Sign message through root private key of the master wallet.
-			 * @param message need to signed, it should not be empty.
-			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @return signed data of the message.
-			 */
-			virtual std::string Sign(
-					const std::string &message,
-					const std::string &payPassword) = 0;
-
-			/**
-			 * Verify signature by public key and raw message. This method can check signatures signed by any private keys not just the root private key of the master wallet.
-			 * @param publicKey belong to the private key signed the signature.
-			 * @param message raw data.
-			 * @param signature signed data by a private key that correspond to the public key.
-			 * @return true or false.
-			 */
-			virtual bool CheckSign(
-					const std::string &publicKey,
-					const std::string &message,
-					const std::string &signature) = 0;
-
-			/**
 			 * Get an asset details by specified asset ID
 			 * @param assetID asset hex code from asset hash.
 			 * @return asset info in json format.
 			 */
 			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const = 0;
-
-			/**
-			 * Get public key ring of yourself publickey ring
-			 * {"xPubKey":***,"requestPubKey":***"}
-			 * @return PublicKeyRing of json format
-			 */
-			virtual nlohmann::json GetOwnerPublicKeyRing() const = 0;
 
 			/**
 			 * Start sync of P2P network

@@ -42,9 +42,10 @@ namespace Elastos {
 			Key key;
 			uint8_t signatureCount = 0;
 
-			std::vector<bytes_t> publicKeys = DecodePublicKey();
-			if (publicKeys.empty()) {
-				Log::error("Redeem script without public key");
+			std::vector<bytes_t> publicKeys;
+			SignType type = DecodePublicKey(publicKeys);
+			if (type == SignTypeInvalid) {
+				Log::error("Invalid Redeem script");
 				return false;
 			}
 
@@ -91,9 +92,12 @@ namespace Elastos {
 
 		nlohmann::json Program::GetSignedInfo(const uint256 &md) const {
 			nlohmann::json info;
-			std::vector<bytes_t> publicKeys = DecodePublicKey();
-			if (publicKeys.empty())
+			std::vector<bytes_t> publicKeys;
+			SignType type = DecodePublicKey(publicKeys);
+			if (type == SignTypeInvalid) {
+				Log::warn("Can not decode pubkey from program");
 				return info;
+			}
 
 			Key key;
 			ByteStream stream(_parameter);
@@ -124,10 +128,9 @@ namespace Elastos {
 			return info;
 		}
 
-		std::vector<bytes_t> Program::DecodePublicKey() const {
-			std::vector<bytes_t> publicKeys;
+		SignType Program::DecodePublicKey(std::vector<bytes_t> &pubkeys) const {
 			if (_code.size() < 33 + 2)
-				return publicKeys;
+				return SignTypeInvalid;
 
 			SignType signType = SignType(_code[_code.size() - 1]);
 			bytes_t pubKey;
@@ -138,14 +141,14 @@ namespace Elastos {
 				stream.Skip(1);
 			} else if (signType != SignTypeStandard) {
 				Log::error("unsupport sign type");
-				return publicKeys;
+				return SignTypeInvalid;
 			}
 
 			while (stream.ReadVarBytes(pubKey)) {
-				publicKeys.push_back(pubKey);
+				pubkeys.push_back(pubKey);
 			}
 
-			return publicKeys;
+			return signType;
 		}
 
 		const bytes_t &Program::GetCode() const {
