@@ -337,7 +337,7 @@ namespace Elastos {
 		}
 
 		HDKeychainPtr Account::MasterPubKey() const {
-			ErrorChecker::CheckLogic(!_xpub, Error::Key, "This account unsupport master public key");
+			ErrorChecker::CheckLogic(!_xpub, Error::Key, "Read-only wallet do not contain master public key");
 			return _xpub;
 		}
 
@@ -446,28 +446,30 @@ namespace Elastos {
 		}
 
 		nlohmann::json Account::GetPubKeyInfo() const {
-			nlohmann::json j, jmultisign, jCosigners;
+			nlohmann::json j, jCosigners;
 
-			j["M"] = _localstore->GetM();
-			j["N"] = _localstore->GetN();
-			j["DerivationStrategy"] = _localstore->DerivationStrategy();
+			j["m"] = _localstore->GetM();
+			j["n"] = _localstore->GetN();
+			j["derivationStrategy"] = _localstore->DerivationStrategy();
 
-			if (_localstore->DerivationStrategy() == "BIP44") {
-				jmultisign["Signer"] = _localstore->GetxPubKey();
+			if (_localstore->GetN() > 1 && _localstore->Readonly()) {
+				j["xPubKey"] = nlohmann::json();
+				j["xPubKeyHDPM"] = nlohmann::json();
 			} else {
-				jmultisign["Signer"] = _localstore->GetxPubKeyHDPM();
+				j["xPubKey"] = _localstore->GetxPubKey();
+				j["xPubKeyHDPM"] = _localstore->GetxPubKeyHDPM();
 			}
+
 			for (size_t i = 0; i < _localstore->GetPublicKeyRing().size(); ++i)
 				jCosigners.push_back(_localstore->GetPublicKeyRing()[i].GetxPubKey());
 
-			jmultisign["Cosigners"] = jCosigners;
-
-			j["MultiSign"] = jmultisign;
+			j["publicKeyRing"] = jCosigners;
 
 			return j;
 		}
 
 		HDKeychainPtr Account::MultiSignSigner() const {
+			ErrorChecker::CheckLogic(!_xpub, Error::Key, "Read-only wallet do not contain current multisigner");
 			return _curMultiSigner;
 		}
 
@@ -545,23 +547,35 @@ namespace Elastos {
 			stream.WriteUint32(_localstore->Account());
 			stream.WriteVarString(_localstore->DerivationStrategy());
 
-			tmp.setHex(_localstore->GetRequestPubKey());
-			stream.WriteVarBytes(tmp);
+			if (_localstore->GetN() > 1) {
+				tmp.clear();
+				// request pubkey
+				stream.WriteVarBytes(tmp);
+				// owner pubkey
+				stream.WriteVarBytes(tmp);
+				// xpub
+				stream.WriteVarBytes(tmp);
+				// xpub HDPM
+				stream.WriteVarBytes(tmp);
+			} else {
+				tmp.setHex(_localstore->GetRequestPubKey());
+				stream.WriteVarBytes(tmp);
 
-			tmp.setHex(_localstore->GetOwnerPubKey());
-			stream.WriteVarBytes(tmp);
+				tmp.setHex(_localstore->GetOwnerPubKey());
+				stream.WriteVarBytes(tmp);
 
-			if (!Base58::CheckDecode(_localstore->GetxPubKey(), tmp)) {
-				Log::error("Decode xpub fail when exoprt read-only wallet");
-				return j;
+				if (!Base58::CheckDecode(_localstore->GetxPubKey(), tmp)) {
+					Log::error("Decode xpub fail when exoprt read-only wallet");
+					return j;
+				}
+				stream.WriteVarBytes(tmp);
+
+				if (!Base58::CheckDecode(_localstore->GetxPubKeyHDPM(), tmp)) {
+					Log::error("Decode xpubHDPM fail when export read-only wallet");
+					return j;
+				}
+				stream.WriteVarBytes(tmp);
 			}
-			stream.WriteVarBytes(tmp);
-
-			if (!Base58::CheckDecode(_localstore->GetxPubKeyHDPM(), tmp)) {
-				Log::error("Decode xpubHDPM fail when export read-only wallet");
-				return j;
-			}
-			stream.WriteVarBytes(tmp);
 
 			const std::vector<PublicKeyRing> &pubkeyRing = _localstore->GetPublicKeyRing();
 			stream.WriteVarUint(pubkeyRing.size());
@@ -667,13 +681,19 @@ namespace Elastos {
 				Log::error("Import read-only wallet: xpub");
 				return false;
 			}
-			_localstore->SetxPubKey(Base58::CheckEncode(bytes));
+			if (bytes.empty())
+				_localstore->SetxPubKey("");
+			else
+				_localstore->SetxPubKey(Base58::CheckEncode(bytes));
 
 			if (!stream.ReadVarBytes(bytes)) {
 				Log::error("Import read-only wallet: xpubHDPM");
 				return false;
 			}
-			_localstore->SetxPubKeyHDPM(Base58::CheckEncode(bytes));
+			if (bytes.empty())
+				_localstore->SetxPubKey("");
+			else
+				_localstore->SetxPubKeyHDPM(Base58::CheckEncode(bytes));
 
 			uint64_t len;
 			if (!stream.ReadVarUint(len)) {
@@ -693,7 +713,10 @@ namespace Elastos {
 					return false;
 				}
 
-				_localstore->AddPublicKeyRing(PublicKeyRing(requestPub.getHex(), Base58::CheckEncode(xpub)));
+				if (xpub.empty())
+					_localstore->AddPublicKeyRing(PublicKeyRing(requestPub.getHex(), ""));
+				else
+					_localstore->AddPublicKeyRing(PublicKeyRing(requestPub.getHex(), Base58::CheckEncode(xpub)));
 			}
 
 			if (!stream.ReadVarUint(len)) {
@@ -744,6 +767,15 @@ namespace Elastos {
 		}
 
 		std::string Account::GetDecryptedMnemonic(const std::string &payPasswd) const {
+			if (_localstore->Readonly()) {
+				ErrorChecker::ThrowLogicException(Error::Key, "Readonly wallet do not contain mnemonic");
+			}
+
+			if (_localstore->GetxPrivKey().empty() || _localstore->GetxPubKeyHDPM().empty()) {
+				RegenerateKey(payPasswd);
+				Init();
+			}
+
 			std::string encryptedMnemonic = _localstore->GetMnemonic();
 			bytes_t bytes = AES::DecryptCCM(encryptedMnemonic, payPasswd);
 			return std::string((char *)bytes.data(), bytes.size());

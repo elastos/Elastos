@@ -137,8 +137,6 @@ namespace Elastos {
 
 			size_t EstimateSize() const;
 
-//			size_t GetSize();
-
 			nlohmann::json GetSignedInfo() const;
 
 			bool IsSigned() const;

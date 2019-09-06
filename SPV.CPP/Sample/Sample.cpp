@@ -597,6 +597,8 @@ static void InitWallets() {
 	}
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
+		manager->ExportReadonlyWallet(masterWallets[i]);
+		masterWallets[i]->GetPubKeyInfo();
 //		logger->debug("{} xprv -> {}", masterWallets[i]->GetID(), manager->ExportxPrivateKey(masterWallets[i], payPasswd));
 		manager->ExportMasterPublicKey(masterWallets[i]);
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();

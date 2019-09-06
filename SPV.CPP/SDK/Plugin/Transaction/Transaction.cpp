@@ -282,12 +282,6 @@ namespace Elastos {
 			return txSize;
 		}
 
-//		size_t Transaction::GetSize() {
-//			ByteStream ostream;
-//			Serialize(ostream);
-//			return ostream.GetBytes().size();
-//		}
-
 		nlohmann::json Transaction::GetSignedInfo() const {
 			nlohmann::json info;
 			uint256 md = GetShaData();

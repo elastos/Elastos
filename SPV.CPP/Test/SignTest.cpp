@@ -289,6 +289,8 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		ms2->Init({}, &lock);
 		std::vector<Address> addr2;
 		size_t count2 = ms2->GetAllAddresses(addr2, 0, 1, true);
+		REQUIRE_THROWS(account2->MasterPubKey() == nullptr);
+		REQUIRE_THROWS(account2->MultiSignSigner() == nullptr);
 		REQUIRE(count2 >= 1);
 		REQUIRE(addr2[0].String() == "8W6TRf4ZxyTaDZdJs4Gd8dwFkvb62dVN1r");
 
@@ -300,5 +302,32 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 		REQUIRE(!tx->IsSigned());
 		REQUIRE_NOTHROW(ms1->SignTransaction(tx, payPasswd));
+
+
+		nlohmann::json readonlyJSON = account1->ExportReadonlyWallet();
+
+		AccountPtr account3;
+		SubAccountPtr ms3;
+		REQUIRE_NOTHROW(account3 = AccountPtr(new Account("Data/ReadOnly", readonlyJSON)));
+		REQUIRE_NOTHROW(ms3 = SubAccountPtr(new SubAccount(account3, 0)));
+		ms3->Init({}, &lock);
+		REQUIRE(account3->GetM() == account1->GetM());
+		REQUIRE(account3->GetN() == account1->GetN());
+		REQUIRE(account3->GetSignType() == account1->GetSignType());
+		REQUIRE(account3->DerivationStrategy() == account1->DerivationStrategy());
+		REQUIRE(account3->SingleAddress() == account1->SingleAddress());
+		REQUIRE_THROWS(account3->GetDecryptedMnemonic(payPasswd));
+		REQUIRE(account3->SubWalletInfoList().size() == account1->SubWalletInfoList().size());
+		REQUIRE_THROWS(account3->RootKey(payPasswd));
+		REQUIRE(account3->RequestPubKey().empty());
+		REQUIRE_THROWS(account3->OwnerPubKey());
+		REQUIRE_THROWS(account3->MasterPubKey());
+		REQUIRE_THROWS(account3->MultiSignSigner());
+		REQUIRE(account3->CosignerIndex() == -1);
+		REQUIRE(account3->Readonly() == true);
+		std::vector<Address> addr3;
+		size_t count3 = ms3->GetAllAddresses(addr3, 0, 1, true);
+		REQUIRE(count3 == count2);
+		REQUIRE(addr3[0].String() == "8W6TRf4ZxyTaDZdJs4Gd8dwFkvb62dVN1r");
 	}
 }

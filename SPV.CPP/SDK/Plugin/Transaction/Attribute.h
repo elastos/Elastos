@@ -57,6 +57,7 @@ namespace Elastos {
 		};
 
 		typedef boost::shared_ptr<Attribute> AttributePtr;
+		typedef std::vector<AttributePtr> AttributeArray;
 
 	}
 }

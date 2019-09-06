@@ -62,6 +62,7 @@ namespace Elastos {
 		};
 
 		typedef boost::shared_ptr<Program> ProgramPtr;
+		typedef std::vector<ProgramPtr> ProgramArray;
 
 	}
 }
