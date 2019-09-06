@@ -53,6 +53,7 @@ const (
 	UnregisterCR        TxType = 0x22
 	UpdateCR            TxType = 0x23
 	ReturnCRDepositCoin TxType = 0x24
+	CRCProposal         TxType = 0x25
 )
 
 func (self TxType) Name() string {
@@ -105,6 +106,8 @@ func (self TxType) Name() string {
 		return "UpdateCR"
 	case ReturnCRDepositCoin:
 		return "ReturnCRDepositCoin"
+	case CRCProposal:
+		return "CRCProposal"
 	default:
 		return "Unknown"
 	}
@@ -346,6 +349,10 @@ func (tx *Transaction) Hash() common.Uint256 {
 
 func (tx *Transaction) IsUpdateCRTx() bool {
 	return tx.TxType == UpdateCR
+}
+
+func (tx *Transaction) IsCRCProposalTx() bool {
+	return tx.TxType == CRCProposal
 }
 
 func (tx *Transaction) IsReturnCRDepositCoinTx() bool {

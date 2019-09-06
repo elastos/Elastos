@@ -47,6 +47,17 @@ func (c *Committee) ExistCR(programCode []byte) bool {
 	return false
 }
 
+func (c *Committee) IsCRMember(programCode []byte) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	for _, v := range c.Members {
+		if bytes.Equal(programCode, v.Info.Code) {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *Committee) IsInVotingPeriod(height uint32) bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
