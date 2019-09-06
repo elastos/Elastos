@@ -23,8 +23,10 @@ export default class extends React.Component {
               {I18N.get('home.crc.title')}
             </CRCTitle>
             <CRCDesc>
-              <MainDesc>{I18N.get('home.crc.desc')}</MainDesc>
-              <Timeline>
+              <MainDesc>
+                <div dangerouslySetInnerHTML={{__html: I18N.get('home.crc.desc')}} />
+              </MainDesc>
+              {/* <Timeline>
                 <Timeline.Item>
                   <ItemTitle>{I18N.get('home.crc.list.1.date')}</ItemTitle>
                   <ItemDesc>{I18N.get('home.crc.list.1.text')}</ItemDesc>
@@ -58,7 +60,7 @@ export default class extends React.Component {
 .
                   </ItemDesc>
                 </Timeline.Item>
-              </Timeline>
+              </Timeline> */}
             </CRCDesc>
             <BottomImg src={images.StripLightImg} alt="StripLightImg" />
           </CRCIntroContainer>

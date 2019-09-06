@@ -4,6 +4,7 @@ import moment from 'moment/moment'
 import { Row, Col } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
+import userUtil from '@/util/user'
 
 import styled from 'styled-components'
 
@@ -14,7 +15,8 @@ const Component = ({
   proposer,
   type,
   status,
-  createdAt
+  createdAt,
+  createdBy
 }) => {
   // header
   const headerNode = (
@@ -77,7 +79,7 @@ const Component = ({
         </ItemTitle>
       </Col>
       <Col span={18}>
-        <ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}</ItemText>
+        <ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}{` (${I18N.get('suggestion.viaCouncilMember')} <${userUtil.getUserDisplayName(createdBy)}>)`}</ItemText>
       </Col>
     </Item>
   )

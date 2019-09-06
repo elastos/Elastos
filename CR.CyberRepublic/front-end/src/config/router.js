@@ -97,7 +97,7 @@ import ElipNewPage from '@/module/page/elip/new/Container'
 import ElipDetailPage from '@/module/page/elip/detail/Container'
 import ElipEditPage from '@/module/page/elip/edit/Container'
 
-import ConstitutionPage from '@/module/page/constitution/Container'
+import WhitepaperPage from '@/module/page/whitepaper/Component'
 
 import NotFound from '@/module/page/error/NotFound'
 
@@ -112,7 +112,7 @@ export default [
   },
   {
     path: '/whitepaper',
-    page: ConstitutionPage,
+    page: WhitepaperPage,
   },
   {
     path: '/sso/login',

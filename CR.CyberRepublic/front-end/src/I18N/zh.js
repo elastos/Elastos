@@ -5,6 +5,7 @@ import release from './zh/release'
 import proposal from './zh/proposal'
 import suggestion from './zh/suggestion'
 import getting_started from './en/getting_started'
+import whitepaper from './zh/whitepaper'
 import elip from './zh/elip'
 
 const zh = {
@@ -14,6 +15,7 @@ const zh = {
   proposal,
   suggestion,
   getting_started,
+  whitepaper,
   elip,
   // Header
   '0000': 'ALPHA版本',
@@ -229,6 +231,7 @@ const zh = {
   'suggestion.owner': '提议人',
   'suggestion.new': '最新',
   'suggestion.postedBy': '发布者',
+  'suggestion.viaCouncilMember': '由委员会成员',
   'suggestion.follow': '关注',
   'suggestion.reportAbuse': '举报',
   'suggestion.translate': '翻译为: ',

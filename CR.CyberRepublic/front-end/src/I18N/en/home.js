@@ -85,8 +85,12 @@ export default {
   crc: {
     title: 'Cyber Republic Consensus',
 
-    desc: 'Elastos has already made concrete steps towards a true Decentralized Autonomous Organization (DAO). The community has the power to elect and fund projects they deem beneficial to the Elastos ecosystem, to date we have already funded over 100k USD in projects. A new council will be elected by August 2019 and the Cyber Republic will be officially launched, any member of the community can be a candidate.',
-
+    desc: `
+      <p>The Cyber Republic Consensus is the third Elastos consensus mechanism after PoW and DPoS. The purpose of CRC is to provide a consensus-based community governance mechanism that will drive Elastos’ technological and ecosystem development, dispute resolution, and management of community assets, and establish incentives to foster community participation in the governance of and contribution to the Elastos community.</p>
+      <p>The CRC can be viewed as the CR community's top-level governance model, but it is not intended to become a closed off, tightly knit, or compulsory organizational structure for the community; openness, dispersion, and spontaneity are essential characteristics of the community. Rather, the purpose of the CRC is to guide the process of grassroots growth through the power of collective decision making, and to provide assistance when necessary.</p>
+      <p>Additionally, the CRC is the basic infrastructure for developing the Elastos DApp ecosystem, as it provides a general community governance mechanism for truly decentralized applications.</p>`,
+    explanation: `
+      Cyber Republic (CR) is the community that has naturally formed around Elastos. CR consists of ELA token holders, Elastos Foundation members, Elastos ecosystem partners, and any other teams and individuals that contribute to developing Elastos’ technologies and community.`,
     list: {
       1: {
         date: 'August 2018',
