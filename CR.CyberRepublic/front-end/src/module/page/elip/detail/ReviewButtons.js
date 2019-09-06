@@ -62,7 +62,7 @@ class ReviewButtons extends React.Component {
           visible={this.state.visible}
           onOk={this.handleOk}
           onCancel={this.handleCancel}
-          okText={I18N.get('elip.modal.confirm')}
+          okText={I18N.get('elip.button.reject')}
           cancelText={I18N.get('elip.modal.cancel')}
           okButtonProps={{ style: { color: '#fff', background: '#be1313', borderColor: '#be1313'} }}
       >
