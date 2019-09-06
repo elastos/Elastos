@@ -193,6 +193,12 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			log.Warn("[checkUnRegisterCRTransaction],", err)
 			return ErrTransactionPayload
 		}
+
+	case CRCProposal:
+		if err := b.checkCRCProposalTransaction(txn, blockHeight); err != nil {
+			log.Warn("[checkCRCProposalTransaction],", err)
+			return ErrTransactionPayload
+		}
 	}
 
 	// check double spent transaction
@@ -814,7 +820,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.InactiveArbitrators:
 	case *payload.CRInfo:
 	case *payload.UnregisterCR:
-
+	case *payload.CRCProposal:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1483,6 +1489,58 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 	return checkCRTransactionSignature(info.Signature, info.Code, signedBuf.Bytes())
 }
 
+func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
+	blockHeight uint32) error {
+	proposal, ok := txn.Payload.(*payload.CRCProposal)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	if b.crCommittee.IsInVotingPeriod(blockHeight) {
+		return errors.New("should create tx during tenure period")
+	}
+
+	if proposal.ProposalType.Name() == "Unknown" {
+		return errors.New("type of proposal should be known")
+	}
+
+	// todo check duplicated origin proposal hash.
+
+	if !b.crCommittee.IsCRMember(proposal.CRSponsor) {
+		return errors.New("CR sponsor should be one of the CR members")
+	}
+
+	// Check signature of sponsor.
+	publicKey, err := crypto.DecodePoint(proposal.Sponsor)
+	if err != nil {
+		return errors.New("invalid sponsor")
+	}
+	contract, err := contract.CreateStandardContract(publicKey)
+	if err != nil {
+		return errors.New("invalid sponsor")
+	}
+	signedBuf := new(bytes.Buffer)
+	err = proposal.SerializeUnsigned(signedBuf, payload.CRCProposalVersion)
+	if err != nil {
+		return err
+	}
+	if err := checkCRTransactionSignature(proposal.Sign, contract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("sponsor signature check failed")
+	}
+
+	// Check signature of CR sponsor.
+	if err = common.WriteVarBytes(signedBuf, proposal.Sign); err != nil {
+		return errors.New("invalid sign")
+	}
+	if err = checkCRTransactionSignature(proposal.CRSign, proposal.CRSponsor,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("CR sponsor signature check failed")
+	}
+
+	return nil
+}
+
 func getParameterBySignature(signature []byte) []byte {
 	buf := new(bytes.Buffer)
 	buf.WriteByte(byte(len(signature)))
@@ -1518,7 +1576,6 @@ func checkCRTransactionSignature(signature []byte, code []byte, data []byte) err
 	}
 
 	return nil
-
 }
 
 func (b *BlockChain) crInfoSanityCheck(info *payload.CRInfo) error {
