@@ -189,7 +189,14 @@ class C extends StandardPage {
     const { reviews, elip } = this.state
     const { isSecretary } = this.props
     if (this.isAuthor(elip) || isSecretary) {
-      return <ReviewHistory reviews={reviews} />
+      return (
+        <Row>
+          <LabelCol span={3} />
+          <Col span={17} style={{position: 'relative'}}>
+            <ReviewHistory reviews={reviews} />
+          </Col>
+        </Row>
+      )
     }
   }
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import moment from 'moment/moment'
-import { Collapse, Row, Col } from 'antd'
+import { Collapse } from 'antd'
 import I18N from '@/I18N'
 import { breakPoint } from '@/constants/breakPoint'
 import { ELIP_STATUS, DATE_FORMAT } from '@/constant'
@@ -21,25 +21,20 @@ const ReviewHistory = ({ reviews }) => {
             : ''
           return (
             <StyledRow key={el._id}>
-              <LabelCol span={3} />
-              <WrapperCol span={17} status={el.status}>
-                <div style={{ padding: 20 }}>
-                  <Comment>
-                    {el.status === ELIP_STATUS.REJECTED
-                      ? el.comment
-                      : 'APPROVED'}
-                  </Comment>
-                  <Meta>
-                    {commenterName}
-                    {moment(el.createdAt).format(DATE_FORMAT)}
-                  </Meta>
-                </div>
-              </WrapperCol>
-              <StatusCol span={2}>
-                <Status status={el.status}>
-                  {I18N.get(`elip.text.${el.status.toLowerCase()}`)}
-                </Status>
-              </StatusCol>
+              <Content status={el.status} style={{ padding: 20 }}>
+                <Comment>
+                  {el.status === ELIP_STATUS.REJECTED
+                    ? el.comment
+                    : 'APPROVED'}
+                </Comment>
+                <Meta>
+                  {commenterName}
+                  {moment(el.createdAt).format(DATE_FORMAT)}
+                </Meta>
+              </Content>
+              <Status status={el.status}>
+                {I18N.get(`elip.text.${el.status.toLowerCase()}`)}
+              </Status>
             </StyledRow>
           )
         })}
@@ -63,7 +58,7 @@ export const StyledCollapse = styled(Collapse)`
     border: none !important;
   }
   .ant-collapse-header {
-    margin-top: 38px;
+    margin-top: 16px;
     text-align: center;
     padding-left: 0 !important;
     color: #008d85 !important;
@@ -79,21 +74,12 @@ export const StyledCollapse = styled(Collapse)`
     border-bottom: none !important;
   }
 `
-const StyledRow = styled(Row)`
+const StyledRow = styled.div`
   margin-bottom: 24px;
   display: flex;
   align-items: center;
 `
-const LabelCol = styled(Col)`
-  min-width: 120px;
-  text-align: right;
-  font-size: 18px;
-  margin-right: 20px;
-  @media only screen and (max-width: ${breakPoint.mobile}) {
-    display: none !important;
-  }
-`
-const WrapperCol = styled(Col)`
+const Content = styled.div`
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-left: ${props => {
     return props.status === ELIP_STATUS.REJECTED
@@ -105,26 +91,23 @@ const WrapperCol = styled(Col)`
       ? 'rgba(252, 192, 192, 0.2)'
       : 'rgba(29, 233, 182, 0.1)'
   }};
-  @media only screen and (max-width: ${breakPoint.mobile}) {
-    width: 100% !important;
-  }
-`
-const StatusCol = styled(Col)`
-  @media only screen and (max-width: ${breakPoint.mobile}) {
-    display: none !important;
-  }
+  width: 100%;
 `
 const Status = styled.div`
-  width: 63px;
+  position: absolute;
+  right: -88px;
+  width: 64px;
   text-align: center;
   height: 16px;
-  margin-left: 20px;
   font-size: 8px;
   line-height: 16px;
   color: #fff;
   background: ${props => {
     return props.status === ELIP_STATUS.REJECTED ? '#be1313' : '#008d85'
   }};
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    display: none !important;
+  }
 `
 const Comment = styled.div`
   font-size: 14px;
