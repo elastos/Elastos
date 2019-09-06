@@ -18,7 +18,7 @@ public class CommonGetBalancePresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().getBalance(walletId, chainID, SubWallet.BalanceType.Total);
+                return baseFragment.getMyWallet().getBalance(walletId, chainID);
             }
         });
         subscriberObservable(observer, observable);

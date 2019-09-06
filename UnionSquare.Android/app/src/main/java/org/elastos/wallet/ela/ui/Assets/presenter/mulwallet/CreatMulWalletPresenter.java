@@ -25,12 +25,12 @@ public class CreatMulWalletPresenter extends PresenterAbstract {
 
     }
 
-    public void createMultiSignMasterWalletReadOnly(String masterWalletID, String coSigners, int requiredSignCount, long timestamp, BaseFragment baseFragment) {
+    public void createMultiSignMasterWalletReadOnly(String masterWalletID, String coSigners, int requiredSignCount, boolean singleAddress, boolean compatible, long timestamp, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createMultiSignMasterWallet(masterWalletID, coSigners, requiredSignCount, timestamp);
+                return baseFragment.getMyWallet().createMultiSignMasterWallet(masterWalletID, coSigners, requiredSignCount, singleAddress, compatible, timestamp);
             }
         });
         subscriberObservable(observer, observable, baseFragment);
@@ -39,13 +39,13 @@ public class CreatMulWalletPresenter extends PresenterAbstract {
 
 
     public void createMultiSignMasterWalletByPrivKey(String masterWalletID, String privKey, String payPassword,
-                                            String coSigners, int requiredSignCount, long timestamp, BaseFragment baseFragment) {
+                                            String coSigners, int requiredSignCount, boolean singleAddress, boolean compatible, long timestamp, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseFragment.getMyWallet().createMultiSignMasterWallet(masterWalletID, privKey, payPassword,
-                        coSigners, requiredSignCount, timestamp);
+                        coSigners, requiredSignCount, singleAddress, compatible, timestamp);
             }
         });
         subscriberObservable(observer, observable, baseFragment);
@@ -53,13 +53,13 @@ public class CreatMulWalletPresenter extends PresenterAbstract {
     }
 
     public void createMultiSignMasterWalletByMnemonic(String masterWalletId, String mnemonic, String phrasePassword, String payPassword,
-                                            String coSigners, int requiredSignCount, long timestamp, BaseFragment baseFragment) {
+                                            String coSigners, int requiredSignCount, boolean singleAddress, boolean compatible, long timestamp, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseFragment.getMyWallet().createMultiSignMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-                        coSigners, requiredSignCount, timestamp);
+                        coSigners, requiredSignCount, singleAddress, compatible, timestamp);
             }
         });
         subscriberObservable(observer, observable, baseFragment);

@@ -8,15 +8,14 @@
 
 using namespace Elastos::ElaWallet;
 
-#define JNI_CreateDepositTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateDepositTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlong instance,
                                                 jstring jfromAddress,
                                                 jstring jlockedAddress,
                                                 jstring jamount,
                                                 jstring jsideChainAddress,
-                                                jstring jmemo,
-                                                jboolean useVotedUTXO) {
+                                                jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
@@ -31,8 +30,7 @@ static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlon
 
     try {
         nlohmann::json txJson = wallet->CreateDepositTransaction(fromAddress, lockedAddress, amount,
-                                                                 sideChainAddress, memo,
-                                                                 useVotedUTXO);
+                                                                 sideChainAddress, memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -129,14 +127,13 @@ static jstring JNICALL GenerateCancelProducerPayload(JNIEnv *env, jobject clazz,
     return payload;
 }
 
-#define JNI_CreateRegisterProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateRegisterProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateRegisterProducerTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                          jstring jFromAddress,
                                                          jstring jPayloadJson,
                                                          jstring jamount,
-                                                         jstring jMemo,
-                                                         jboolean useVotedUTXO) {
+                                                         jstring jMemo) {
     bool exception = false;
     std::string msgException;
     jstring tx = NULL;
@@ -150,8 +147,7 @@ static jstring JNICALL CreateRegisterProducerTransaction(JNIEnv *env, jobject cl
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json payload = nlohmann::json::parse(payloadJson);
         nlohmann::json txJson = wallet->CreateRegisterProducerTransaction(fromAddress, payload,
-                                                                          amount, memo,
-                                                                          useVotedUTXO);
+                                                                          amount, memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -170,13 +166,12 @@ static jstring JNICALL CreateRegisterProducerTransaction(JNIEnv *env, jobject cl
     return tx;
 }
 
-#define JNI_CreateUpdateProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateUpdateProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateUpdateProducerTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                        jstring jFromAddress,
                                                        jstring jPayloadJson,
-                                                       jstring jMemo,
-                                                       jboolean useVotedUTXO) {
+                                                       jstring jMemo) {
     bool exception = false;
     std::string msgException;
     jstring tx = NULL;
@@ -188,8 +183,7 @@ static jstring JNICALL CreateUpdateProducerTransaction(JNIEnv *env, jobject claz
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json payload = nlohmann::json::parse(payloadJson);
-        nlohmann::json txJson = wallet->CreateUpdateProducerTransaction(fromAddress, payload, memo,
-                                                                        useVotedUTXO);
+        nlohmann::json txJson = wallet->CreateUpdateProducerTransaction(fromAddress, payload, memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -207,13 +201,12 @@ static jstring JNICALL CreateUpdateProducerTransaction(JNIEnv *env, jobject claz
     return tx;
 }
 
-#define JNI_CreateCancelProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateCancelProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateCancelProducerTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                        jstring jFromAddress,
                                                        jstring jPayloadJson,
-                                                       jstring jMemo,
-                                                       jboolean useVotedUTXO) {
+                                                       jstring jMemo) {
     bool exception = false;
     std::string msgException;
     jstring tx = NULL;
@@ -225,8 +218,7 @@ static jstring JNICALL CreateCancelProducerTransaction(JNIEnv *env, jobject claz
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json payload = nlohmann::json::parse(payloadJson);
-        nlohmann::json txJson = wallet->CreateCancelProducerTransaction(fromAddress, payload, memo,
-                                                                        useVotedUTXO);
+        nlohmann::json txJson = wallet->CreateCancelProducerTransaction(fromAddress, payload, memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -298,14 +290,13 @@ static jstring JNICALL GetOwnerPublicKey(JNIEnv *env, jobject clazz, jlong jProx
     return publicKey;
 }
 
-#define JNI_CreateVoteProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateVoteProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                      jstring jfromAddress,
                                                      jstring jstake,
                                                      jstring jPublicKeys,
-                                                     jstring jMemo,
-                                                     jboolean useVotedUTXO) {
+                                                     jstring jMemo) {
 
     bool exception = false;
     std::string msgException;
@@ -321,8 +312,7 @@ static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz,
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json txJson = wallet->CreateVoteProducerTransaction(fromAddress, stake,
                                                                       nlohmann::json::parse(
-                                                                              publicKeys), memo,
-                                                                      useVotedUTXO);
+                                                                              publicKeys), memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -529,14 +519,13 @@ static jstring JNICALL GetCROwnerPublicKey(JNIEnv *env, jobject clazz, jlong jPr
     return publicKey;
 }
 
-#define JNI_CreateRegisterCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateRegisterCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateRegisterCRTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                    jstring jfromAddress,
                                                    jstring jpayload,
                                                    jstring jamount,
-                                                   jstring jmemo,
-                                                   bool useVotedUTXO) {
+                                                   jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
@@ -551,7 +540,7 @@ static jstring JNICALL CreateRegisterCRTransaction(JNIEnv *env, jobject clazz, j
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json txJson = wallet->CreateRegisterCRTransaction(fromAddress,
                                                                     nlohmann::json::parse(payload),
-                                                                    amount, memo, useVotedUTXO);
+                                                                    amount, memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -570,13 +559,12 @@ static jstring JNICALL CreateRegisterCRTransaction(JNIEnv *env, jobject clazz, j
     return tx;
 }
 
-#define JNI_CreateUpdateCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateUpdateCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateUpdateCRTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                  jstring jfromAddress,
                                                  jstring jpayload,
-                                                 jstring jmemo,
-                                                 bool useVotedUTXO) {
+                                                 jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
@@ -590,7 +578,7 @@ static jstring JNICALL CreateUpdateCRTransaction(JNIEnv *env, jobject clazz, jlo
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json txJson = wallet->CreateUpdateCRTransaction(fromAddress,
                                                                   nlohmann::json::parse(payload),
-                                                                  memo, useVotedUTXO);
+                                                                  memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -608,13 +596,12 @@ static jstring JNICALL CreateUpdateCRTransaction(JNIEnv *env, jobject clazz, jlo
     return tx;
 }
 
-#define JNI_CreateUnregisterCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateUnregisterCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateUnregisterCRTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                      jstring jfromAddress,
                                                      jstring jpayload,
-                                                     jstring jmemo,
-                                                     bool useVotedUTXO) {
+                                                     jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
@@ -629,7 +616,7 @@ static jstring JNICALL CreateUnregisterCRTransaction(JNIEnv *env, jobject clazz,
         nlohmann::json txJson = wallet->CreateUnregisterCRTransaction(fromAddress,
                                                                       nlohmann::json::parse(
                                                                               payload),
-                                                                      memo, useVotedUTXO);
+                                                                      memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -679,13 +666,12 @@ static jstring JNICALL CreateRetrieveCRDepositTransaction(JNIEnv *env, jobject c
     return tx;
 }
 
-#define JNI_CreateVoteCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;"
+#define JNI_CreateVoteCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateVoteCRTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                jstring jfromAddress,
                                                jstring jvotes,
-                                               jstring jmemo,
-                                               jboolean useVotedUTXO) {
+                                               jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
@@ -698,8 +684,7 @@ static jstring JNICALL CreateVoteCRTransaction(JNIEnv *env, jobject clazz, jlong
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json txJson = wallet->CreateVoteCRTransaction(fromAddress,
-                                                                nlohmann::json::parse(votes), memo,
-                                                                useVotedUTXO);
+                                                                nlohmann::json::parse(votes), memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;

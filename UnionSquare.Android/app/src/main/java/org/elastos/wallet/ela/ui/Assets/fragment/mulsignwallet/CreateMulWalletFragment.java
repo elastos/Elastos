@@ -171,7 +171,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
                 return;
             }
             creatMulWalletPresenter.createMultiSignMasterWalletReadOnly(masterWalletID, jsonArray.toString()
-                    , needItem, 0, this);
+                    , needItem, false,false, 0, this);
 
         } else {
             if (integer == -1) {
@@ -190,12 +190,12 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
                 //非只读添加根私钥额回调 导入助记词回调
                 creatMulWalletPresenter.createMultiSignMasterWalletByMnemonic(masterWalletID, createWalletBean.getMnemonic(),
                         createWalletBean.getPhrasePassword(), createWalletBean.getPayPassword(), jsonArray.toString()
-                        , needItem, 0, this);
+                        , needItem, false,false, 0, this);
 
             } else if (integer == RxEnum.SELECTRIVATEKEY.ordinal()) {
                 //选择已有钱包回调
                 creatMulWalletPresenter.createMultiSignMasterWalletByPrivKey(masterWalletID, createWalletBean.getPrivateKey()
-                        , createWalletBean.getPayPassword(), jsonArray.toString(), needItem, 0, this);
+                        , createWalletBean.getPayPassword(), jsonArray.toString(), needItem, false,false,0, this);
             }
 
         }
