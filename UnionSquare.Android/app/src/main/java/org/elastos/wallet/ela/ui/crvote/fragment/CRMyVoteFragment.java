@@ -24,8 +24,8 @@ import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
-import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.ui.vote.myVote.MyVotePresenter;
 import org.elastos.wallet.ela.utils.Arith;
 import org.json.JSONException;
@@ -73,7 +73,7 @@ public class CRMyVoteFragment extends BaseFragment implements CommmonStringWithM
     private Wallet wallet = realmUtil.queryDefauleWallet();
     @BindView(R.id.ll_bgtp)
     LinearLayout ll_bgtp;
-    ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList = new ArrayList();
+    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> netList = new ArrayList();
 
     String zb;
 
@@ -99,7 +99,7 @@ public class CRMyVoteFragment extends BaseFragment implements CommmonStringWithM
     protected void setExtraData(Bundle data) {
         zb = data.getString("zb");
         super.setExtraData(data);
-        netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
+        netList = (ArrayList<CRListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
     }
 
     //变更投票

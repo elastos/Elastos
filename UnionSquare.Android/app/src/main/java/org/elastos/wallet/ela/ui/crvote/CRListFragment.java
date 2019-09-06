@@ -31,13 +31,13 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter1;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.crvote.fragment.CRInformationFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRManageFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRMyVoteFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRNodeCartFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRSignUpForFragment;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
-import org.elastos.wallet.ela.ui.vote.NodeInformation.NodeInformationFragment;
-import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.SPUtil;
 
@@ -58,7 +58,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     Toolbar toolbar;
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
-    ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
+    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> netList;
     @BindView(R.id.iv_swichlist)
     ImageView ivSwichlist;
     @BindView(R.id.recyclerview1)
@@ -73,7 +73,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     CRlistPresenter presenter;
     private CRListAdapter1 adapter1;
     private CRListAdapter adapter;
-    private VoteListBean.DataBean.ResultBean.ProducersBean curentNode;
+    private CRListBean.DataBean.ResultBean.ProducersBean curentNode;
 
     @Override
     protected int getLayoutId() {
@@ -169,7 +169,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         bundle.putString("zb", zb);
         bundle.putSerializable("bean", netList.get(position));
         bundle.putSerializable("netList", netList);
-        start(NodeInformationFragment.class, bundle);
+        start(CRInformationFragment.class, bundle);
     }
 
     String zb;//占有率
@@ -204,7 +204,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     String publicKey;
 
 
-    public void onGetVoteList(VoteListBean dataResponse) {
+    public void onGetVoteList(CRListBean dataResponse) {
         if (netList == null) {
             netList = new ArrayList<>();
         } else {
@@ -248,7 +248,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         if (publicKey == null) {
             presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
         } else {
-            presenter.getCrlist("1", this);
+            presenter.getCRlist("1", this);
         }
 
     }
@@ -260,10 +260,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             case "getCROwnerPublicKey":
 
                 publicKey = ((CommmonStringEntity) baseEntity).getData();
-                presenter.getCrlist("1", this);
+                presenter.getCRlist("1", this);
                 break;
-            case "getCrlist":
-                onGetVoteList((VoteListBean) baseEntity);
+            case "getCRlist":
+                onGetVoteList((CRListBean) baseEntity);
                 break;
             case "getRegisteredCRInfo":
 

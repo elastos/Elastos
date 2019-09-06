@@ -39,11 +39,11 @@ public class CRlistPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void getCrlist(String moreInfo, BaseFragment baseFragment) {
+    public void getCRlist(String moreInfo, BaseFragment baseFragment) {
         Map<String, String> map = new HashMap();
         map.put("moreInfo", moreInfo);
-        Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).votelistbean(map);
-        Observer observer = createObserver(baseFragment, "getCrlist");
+        Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).getCRlist(map);
+        Observer observer = createObserver(baseFragment, "getCRlist");
         subscriberObservable(observer, observable, baseFragment);
     }
 }

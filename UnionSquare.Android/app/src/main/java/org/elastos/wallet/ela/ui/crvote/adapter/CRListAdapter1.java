@@ -10,10 +10,10 @@ import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
-import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CRListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBean.ResultBean.ProducersBean, BaseViewHolder> {
+public class CRListAdapter1 extends BaseQuickAdapter<CRListBean.DataBean.ResultBean.ProducersBean, BaseViewHolder> {
 
     private final GlideRequest<Bitmap> glideRequest;
     private BaseFragment context;
@@ -33,7 +33,7 @@ public class CRListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBean.Resul
     private int pos;
     // private boolean is;
 
-    public CRListAdapter1(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
+    public CRListAdapter1(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
         super(R.layout.item_super_node_list1, data);
         this.context = context;
         this.pos = pos;
@@ -48,7 +48,7 @@ public class CRListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBean.Resul
     }
 
     @Override
-    protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
+    protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.ProducersBean bean) {
 
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
         if (pos == helper.getLayoutPosition()) {

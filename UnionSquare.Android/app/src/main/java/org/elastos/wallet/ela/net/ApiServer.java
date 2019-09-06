@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.net;
 
 import org.elastos.wallet.ela.bean.GetdePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.main.entity.ServerListEntity;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
@@ -34,6 +35,11 @@ public interface ApiServer {
 
     @GET(Constant.SERVERLIST)
     Observable<ServerListEntity> getServerList();//不同baseurl用@Url
+
+    @FormUrlEncoded
+    @POST("api/dposnoderpc/check/listproducer")
+    @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")
+    Observable<CRListBean> getCRlist(@FieldMap Map<String, String> map);
     @FormUrlEncoded
     @POST("api/dposnoderpc/check/getdepositcoin")
     @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")

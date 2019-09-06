@@ -425,4 +425,5 @@
     <string name="plzinputpercent">请输入百分比</string>
     <string name="totle">合计：</string>
     <string name="available">可用：</string>
+    <string name="crcvote">CRC委员选举</string>
 </resources>

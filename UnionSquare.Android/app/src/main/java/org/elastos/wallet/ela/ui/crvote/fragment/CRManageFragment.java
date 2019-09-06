@@ -26,12 +26,12 @@ import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRManagePresenter;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
-import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
@@ -105,7 +105,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     String status;
     private String ownerPublicKey;
     private String info;
-    private VoteListBean.DataBean.ResultBean.ProducersBean curentNode;
+    private CRListBean.DataBean.ResultBean.ProducersBean curentNode;
 
     @Override
     protected int getLayoutId() {
@@ -128,7 +128,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     protected void setExtraData(Bundle data) {
         status = data.getString("status", "Canceled");
         info = data.getString("info", "");
-        curentNode = (VoteListBean.DataBean.ResultBean.ProducersBean) data.getSerializable("curentNode");
+        curentNode = (CRListBean.DataBean.ResultBean.ProducersBean) data.getSerializable("curentNode");
         if (curentNode != null) {
             tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
             tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(curentNode.getVoterate()) * 100 + "", 5) + "%");

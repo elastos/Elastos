@@ -31,10 +31,10 @@ import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
-import org.elastos.wallet.ela.ui.crvote.adapter.NodeCartAdapter;
+import org.elastos.wallet.ela.ui.crvote.adapter.CRNodeCartAdapter;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
-import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -55,7 +55,7 @@ import butterknife.OnClick;
 /**
  * 节点购车车
  */
-public class CRNodeCartFragment extends BaseFragment implements CommonBalanceViewData, WarmPromptListener, CommmonStringWithMethNameViewData, NodeCartAdapter.OnViewClickListener {
+public class CRNodeCartFragment extends BaseFragment implements CommonBalanceViewData, WarmPromptListener, CommmonStringWithMethNameViewData, CRNodeCartAdapter.OnViewClickListener, CRNodeCartAdapter.OnTextChangedListener {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -73,13 +73,13 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     RecyclerView recyclerView;
 
 
-    private NodeCartAdapter mAdapter;
+    private CRNodeCartAdapter mAdapter;
     @BindView(R.id.cb_equal)
     CheckBox cbEqual;
 
     @BindView(R.id.tv_amount)
     AppCompatTextView tvAmount;
-    List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
+    List<CRListBean.DataBean.ResultBean.ProducersBean> list;
     DialogUtil dialogUtil = new DialogUtil();
     @BindView(R.id.ll_blank)
     LinearLayout ll_blank;
@@ -91,7 +91,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
     NodeCartPresenter presenter = new NodeCartPresenter();
     PwdPresenter pwdpresenter = new PwdPresenter();
-    ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
+    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> netList;
     private BigDecimal balance;
 
 
@@ -108,14 +108,14 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
+        netList = (ArrayList<CRListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
     }
 
     @Override
     protected void initView(View view) {
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
-        tvTitle.setText(mContext.getString(R.string.my_list_candidates));
+        tvTitle.setText(getString(R.string.crcvote));
         if (netList == null || netList.size() == 0) {
             //没有来自接口的节点列表数据
             return;
@@ -132,12 +132,12 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
     // 初始化数据
     private void initDate() {
-        list = CacheUtil.getProducerList();
+        list = CacheUtil.getCRProducerList();
         if (list == null || list.size() == 0) {
             return;
         }
-        ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> newlist = new ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>();
-        for (VoteListBean.DataBean.ResultBean.ProducersBean bean : netList) {
+        ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> newlist = new ArrayList<CRListBean.DataBean.ResultBean.ProducersBean>();
+        for (CRListBean.DataBean.ResultBean.ProducersBean bean : netList) {
             if (list.contains(bean)) {
                 newlist.add(bean);
             }
@@ -145,11 +145,11 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         Collections.sort(newlist);
         list.clear();
         list.addAll(newlist);
-        CacheUtil.setProducerList(list);
+        CacheUtil.setCRProducerList(list);
     }
 
 
-    public void setRecyclerView(List<VoteListBean.DataBean.ResultBean.ProducersBean> list) {
+    public void setRecyclerView(List<CRListBean.DataBean.ResultBean.ProducersBean> list) {
 
         if (list == null || list.size() == 0) {
             ll_blank.setVisibility(View.VISIBLE);
@@ -160,29 +160,15 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         }
         if (mAdapter == null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-            mAdapter = new NodeCartAdapter(list, this);
+            mAdapter = new CRNodeCartAdapter(list, this);
             recyclerView.setAdapter(mAdapter);
             mAdapter.setOnViewClickListener(this);
+            mAdapter.setOnTextChangedListener(this);
         } else {
             mAdapter.notifyDataSetChanged();
         }
     }
 
-    private void setCheckBox(List list) {
-        List selectlist = new ArrayList();
-        for (int i = 0; i < list.size(); i++) {
-            if (mAdapter.getDataMap().get(i)) {
-                selectlist.add(i);
-            }
-        }
-        if (list.size() == selectlist.size()) {
-            cbEqual.setChecked(true);
-            cbSelectall.setChecked(true);
-        } else {
-            cbEqual.setChecked(false);
-            cbSelectall.setChecked(false);
-        }
-    }
 
     // 刷新listview和TextView的显示 点击全选或者全不选
     private void dataChanged(int size, boolean statue) {
@@ -193,7 +179,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
     private void setSelectStatus(int size, boolean statue) {
         for (int i = 0; i < size; i++) {
-            mAdapter.getDataMap().put(i, statue);
+            //  mAdapter.getDataMap().put(i, statue);
         }
     }
 
@@ -232,15 +218,15 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                 if (list == null || list.size() == 0) {
                     return;
                 }
-                List<VoteListBean.DataBean.ResultBean.ProducersBean> deleteList = new ArrayList();
-                for (int i = 0; i < list.size(); i++) {
+                List<CRListBean.DataBean.ResultBean.ProducersBean> deleteList = new ArrayList();
+               /* for (int i = 0; i < list.size(); i++) {
                     if (mAdapter.getDataMap().get(i)) {
                         deleteList.add(list.get(i));
                     }
-                }
+                }*/
                 list.removeAll(deleteList);
                 dataChanged(list.size(), false);
-                CacheUtil.setProducerList(list);
+                CacheUtil.setCRProducerList(list);
                 break;
 
             case R.id.tv_vote:
@@ -249,9 +235,9 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                 }
                 nodelist.clear();
                 for (int i = 0; i < list.size(); i++) {
-                    if (mAdapter.getDataMap().get(i)) {
+                   /* if (mAdapter.getDataMap().get(i)) {
                         nodelist.add(list.get(i).getOwnerpublickey());
-                    }
+                    }*/
                 }
                 if (nodelist.size() > 36) {
                     showToast(getString(R.string.max36dot));
@@ -337,8 +323,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         mAdapter.initDateStaus(cbEqual.isChecked());
         mAdapter.equalDataMapELA();
         mAdapter.notifyDataSetChanged();
-        tvAmount.setText(getString(R.string.totle) + mAdapter.getCountEla().toPlainString() + " ELA");
-        tvAvaliable.setText(getString(R.string.available) + balance.subtract(mAdapter.getCountEla()).toPlainString() + " ELA");
+        setOtherUI();
     }
 
     private void onClickSelectAll() {
@@ -349,10 +334,19 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     }
 
     @Override
-    public void onItemViewClick(NodeCartAdapter adapter, View clickView, int position) {
+    public void onItemViewClick(CRNodeCartAdapter adapter, View clickView, int position) {
         setSelectAllStatus();
+        setOtherUI();
+    }
+
+    private void setOtherUI() {
         tvAmount.setText(getString(R.string.totle) + mAdapter.getCountEla().toPlainString() + " ELA");
-        tvAvaliable.setText(getString(R.string.available) + balance.subtract(mAdapter.getCountEla()).toPlainString() + " ELA");
+        BigDecimal countEla = mAdapter.getCountEla();
+        if (balance.compareTo(countEla) <= 0) {
+            tvAvaliable.setText(getString(R.string.available) + "0 ELA");
+        } else {
+            tvAvaliable.setText(getString(R.string.available) + balance.subtract(countEla).toPlainString() + " ELA");
+        }
     }
 
     /**
@@ -370,5 +364,11 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             cbSelectall.setChecked(false);
 
         }
+    }
+
+    @Override
+    public void onTextChanged(CRNodeCartAdapter adapter, View clickView, int position) {
+        setOtherUI();
+
     }
 }
