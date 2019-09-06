@@ -18,8 +18,14 @@ import getCouncilMembers from './getCouncilMembers'
 import comment from './comment'
 import subscribe from './subscribe'
 import unsubscribe from './unsubscribe'
+import logout from './logout';
 
 export default Base.setRouter([
+    {
+        path: '/logout',
+        router: logout,
+        method: 'get'
+    },
     {
         path : '/login',
         router : login,

@@ -209,7 +209,7 @@ export default class extends BaseService {
   async logout() {
     const userRedux = this.store.getRedux('user')
     const tasksRedux = this.store.getRedux('task')
-
+    await api_request({ path: '/api/user/logout' })
     return new Promise((resolve) => {
       this.dispatch(userRedux.actions.is_login_update(false))
       this.dispatch(userRedux.actions.profile_reset())
