@@ -12,6 +12,17 @@ import (
 	"strings"
 )
 
+func IsNil(value interface{}) bool {
+	valueType := reflect.TypeOf(value).Kind()
+	switch valueType {
+	case reflect.Ptr, reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
+		return reflect.DeepEqual(value,
+			reflect.Zero(reflect.TypeOf(value)).Interface())
+	default:
+		return false
+	}
+}
+
 func Equal(a, b interface{}) bool {
 	return reflect.DeepEqual(a, b)
 }

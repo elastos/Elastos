@@ -146,7 +146,8 @@ func (s *settingItem) notDefault(conf *config.Configuration) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if value == nil {
+
+	if gpath.IsNil(value) {
 		return false, nil
 	}
 	return !gpath.Equal(s.DefaultValue, value), nil
