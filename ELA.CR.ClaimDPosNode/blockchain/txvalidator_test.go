@@ -1208,11 +1208,11 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 
 	votingHeight := config.DefaultParams.CRVotingStartHeight
 
-	// all ok
+	// All ok
 	err := s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.NoError(err)
 
-	//invalid payload
+	// Invalid payload
 	txnUpdateCr := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
 	err = s.Chain.checkRegisterCRTransaction(txnUpdateCr, votingHeight)
 	s.EqualError(err, "invalid payload")
@@ -1242,16 +1242,16 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "Field Url has invalid string length.")
 
-	//not in vote Period lower
+	// Not in vote Period lower
 	txn.Payload.(*payload.CRInfo).Url = url
 	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRVotingStartHeight-1)
 	s.EqualError(err, "should create tx during voting period")
 
-	//not in vote Period lower upper c.params.CRCommitteeStartHeight
+	// Not in vote Period upper c.params.CRCommitteeStartHeight
 	err = s.Chain.checkRegisterCRTransaction(txn, config.DefaultParams.CRCommitteeStartHeight+1)
 	s.EqualError(err, "should create tx during voting period")
 
-	//nickname already in use
+	// Nickname already in use
 	s.Chain.crCommittee.GetState().Nicknames[nickName1] = struct{}{}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "nick name nickname 1 already inuse")
@@ -1263,7 +1263,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	err = s.Chain.checkRegisterCRTransaction(txn, 0)
 	s.EqualError(err, "should create tx during voting period")
 
-	//did aready exist
+	// DID already exist
 	s.Chain.crCommittee.GetState().CodeDIDMap[codeStr1] = *did1
 	s.Chain.crCommittee.GetState().ActivityCandidates[*did1] = &crstate.Candidate{}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
@@ -1375,6 +1375,34 @@ func getDepositAddress(publicKeyStr string) (*common.Uint168, error) {
 func getDid(code []byte) *common.Uint168 {
 	ct1, _ := contract.CreateCRDIDContractByCode(code)
 	return ct1.ToProgramHash()
+}
+
+func (s *txValidatorTestSuite) getCRMember(publicKeyStr, privateKeyStr, nickName string) *crstate.CRMember {
+	publicKeyStr1 := publicKeyStr
+	privateKeyStr1 := privateKeyStr
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+	code1 := getCode(publicKeyStr1)
+	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	did1 := ct1.ToProgramHash()
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterCR
+	txn.Version = types.TxVersion09
+	crInfoPayload := payload.CRInfo{
+		Code:     code1,
+		DID:      *did1,
+		NickName: nickName,
+		Url:      "http://www.elastos_test.com",
+		Location: 1,
+	}
+	signBuf := new(bytes.Buffer)
+	crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
+	rcSig1, _ := crypto.Sign(privateKey1, signBuf.Bytes())
+	crInfoPayload.Signature = rcSig1
+
+	return &crstate.CRMember{
+		Info: crInfoPayload,
+	}
 }
 
 func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
@@ -1535,6 +1563,44 @@ func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr str
 
 	txn.Programs = []*program.Program{&program.Program{
 		Code:      getCode(publicKeyStr1),
+		Parameter: nil,
+	}}
+	return txn
+}
+
+func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
+	crPublicKeyStr, crPrivateKeyStr string) *types.Transaction {
+
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr)
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr)
+
+	privateKey2, _ := common.HexStringToBytes(crPrivateKeyStr)
+	code2 := getCode(crPublicKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposal
+	txn.Version = types.TxVersion09
+	crcProposalPayload := &payload.CRCProposal{
+		ProposalType: payload.Normal,
+		Sponsor:      publicKey1,
+		CRSponsor:    code2,
+		OriginHash:   common.Uint256{1, 2, 3},
+		Budgets:      []common.Fixed64{1, 1, 1},
+	}
+
+	signBuf := new(bytes.Buffer)
+	crcProposalPayload.SerializeUnsigned(signBuf, payload.CRCProposalVersion)
+	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
+	crcProposalPayload.Sign = sig
+
+	// Check signature of CR sponsor.
+	common.WriteVarBytes(signBuf, sig)
+	crSig, _ := crypto.Sign(privateKey2, signBuf.Bytes())
+	crcProposalPayload.CRSign = crSig
+
+	txn.Payload = crcProposalPayload
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(publicKeyStr),
 		Parameter: nil,
 	}}
 	return txn
@@ -1705,7 +1771,7 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 	votingHeight := config.DefaultParams.CRVotingStartHeight
 	nickName1 := "nickname 1"
 
-	//registe an cr to unregister
+	//register a cr to unregister
 	registerCRTxn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
 	block := &types.Block{
 		Transactions: []*types.Transaction{
@@ -1740,6 +1806,66 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 	txn.Payload.(*payload.UnregisterCR).Signature = randomSignature()
 	err = s.Chain.checkUnRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "[Validation], Verify failed.")
+}
+
+func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
+
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+
+	votingHeight := config.DefaultParams.CRVotingStartHeight
+	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
+	nickName1 := "nickname 1"
+
+	member1 := s.getCRMember(publicKeyStr1, privateKeyStr1, nickName1)
+	s.Chain.crCommittee.Members = []*crstate.CRMember{member1}
+
+	// ok
+	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.NoError(err)
+
+	// invalid payload
+	txn.Payload = &payload.CRInfo{}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "invalid payload")
+
+	// create proposal during voting period
+	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	err = s.Chain.checkCRCProposalTransaction(txn, votingHeight)
+	s.EqualError(err, "should create proposal during tenure period")
+
+	// invalid proposal type
+	txn.Payload.(*payload.CRCProposal).ProposalType = 0x10
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "type of proposal should be known")
+
+	// CRSign is not signed by CR member
+	txn = s.getCRCProposalTx(publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "CR sponsor should be one of the CR members")
+
+	// invalid sponsor
+	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	txn.Payload.(*payload.CRCProposal).Sponsor = []byte{}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "invalid sponsor")
+
+	// invalid sponsor signature
+	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	txn.Payload.(*payload.CRCProposal).Sponsor = publicKey1
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "sponsor signature check failed")
+
+	// invalid CR sponsor signature
+	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	txn.Payload.(*payload.CRCProposal).CRSign = []byte{}
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "CR sponsor signature check failed")
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {
