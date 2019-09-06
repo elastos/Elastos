@@ -57,17 +57,20 @@ func (pt CRCProposalType) Name() string {
 const CRCProposalVersion byte = 0x00
 
 type CRCProposal struct {
-	proposalType CRCProposalType
+	// The type of current proposal.
+	ProposalType CRCProposalType
 	// Public key of sponsor.
 	Sponsor []byte
 	// Code of CR sponsor.
-	CRSponsor  []byte
+	CRSponsor []byte
+	// The hash of origin proposal.
 	OriginHash common.Uint256
-	Budgets    []common.Fixed64
-
-	Sign   []byte
+	// The budget of different stages.
+	Budgets []common.Fixed64
+	// The signature of sponsor.
+	Sign []byte
+	// The signature of CR sponsor, check data include signature of sponsor.
 	CRSign []byte
-	hash   *common.Uint256
 }
 
 func (p *CRCProposal) Data(version byte) []byte {
@@ -80,7 +83,7 @@ func (p *CRCProposal) Data(version byte) []byte {
 }
 
 func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
-	if _, err := w.Write([]byte{byte(p.proposalType)}); err != nil {
+	if _, err := w.Write([]byte{byte(p.ProposalType)}); err != nil {
 		return err
 	}
 	if err := common.WriteVarBytes(w, p.Sponsor); err != nil {
@@ -119,7 +122,7 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 	if err != nil {
 		return err
 	}
-	p.proposalType = CRCProposalType(pType[0])
+	p.ProposalType = CRCProposalType(pType[0])
 	sponsor, err := common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "sponsor")
 	if err != nil {
 		return err
