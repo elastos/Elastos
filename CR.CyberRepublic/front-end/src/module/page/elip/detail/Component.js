@@ -109,7 +109,8 @@ class C extends StandardPage {
               </Dec>
             </WrapperCol>
           </Row>
-          {this.renderActionButtons()}
+          {this.renderEditButton()}
+          {this.renderReviewButtons()}
           {this.renderReviewHistory()}
           {elip.status === ELIP_STATUS.APPROVED && (
             <Row style={{ marginTop: 24 }}>
@@ -131,32 +132,38 @@ class C extends StandardPage {
     )
   }
 
-  isAuthor() {
-    const { elip } = this.state
+  isAuthor(elip) {
     const { currentUserId } = this.props
     return elip.createdBy && elip.createdBy._id === currentUserId
   }
 
-  renderEditBtn() {
+  renderEditButton() {
     const { elip } = this.state
-    const isEditable = this.isAuthor() && elip.status === ELIP_STATUS.REJECTED
+    const isEditable = this.isAuthor(elip) && elip.status === ELIP_STATUS.REJECTED
     if (isEditable) {
       return (
-        <Button
-          onClick={() => this.props.history.push(`/elips/${elip._id}/edit`)}
-          className="cr-btn cr-btn-primary"
-        >
-          {I18N.get('elip.button.edit')}
-        </Button>
+        <Row>
+          <LabelCol span={3} />
+          <Col span={17}>
+            <Actions>
+              <Button
+                onClick={() => this.props.history.push(`/elips/${elip._id}/edit`)}
+                className="cr-btn cr-btn-primary"
+              >
+                {I18N.get('elip.button.edit')}
+              </Button>
+            </Actions>
+          </Col>
+        </Row>
+
       )
     }
   }
 
-  renderActionButtons() {
+  renderReviewButtons() {
     const { elip } = this.state
     const { isSecretary, history } = this.props
-    const isVisible = (this.isAuthor() && elip.status === ELIP_STATUS.REJECTED) ||
-      (isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW)
+    const isVisible = isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW
     if (isVisible) {
       return (
         <Row>
@@ -170,10 +177,7 @@ class C extends StandardPage {
               >
                 {I18N.get('elip.button.cancel')}
               </Button>
-              {this.renderEditBtn()}
-              {isSecretary && elip.status === ELIP_STATUS.WAIT_FOR_REVIEW && (
-                <ReviewButtons onSubmit={this.handleSubmit} />
-              )}
+              <ReviewButtons onSubmit={this.handleSubmit} />
             </Actions>
           </Col>
         </Row>
@@ -182,9 +186,9 @@ class C extends StandardPage {
   }
 
   renderReviewHistory() {
-    const { reviews } = this.state
+    const { reviews, elip } = this.state
     const { isSecretary } = this.props
-    if (this.isAuthor() || isSecretary) {
+    if (this.isAuthor(elip) || isSecretary) {
       return <ReviewHistory reviews={reviews} />
     }
   }
