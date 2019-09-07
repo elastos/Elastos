@@ -899,5 +899,13 @@ namespace Elastos {
 			_localstore->Save();
 		}
 
+		void Account::Remove() {
+			_localstore->Remove();
+		}
+
+		const std::string &Account::GetDataPath() const {
+			return _localstore->GetDataPath();
+		}
+
 	}
 }

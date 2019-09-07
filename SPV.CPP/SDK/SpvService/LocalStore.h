@@ -33,6 +33,10 @@ namespace Elastos {
 
 			void Save();
 
+			void Remove();
+
+			const std::string &GetDataPath() const;
+
 			void SaveTo(const std::string &path);
 
 			bool SingleAddress() const;

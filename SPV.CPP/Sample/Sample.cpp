@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <stdio.h>
+#include <string>
 #include <iostream>
 #include <sqlite3.h>
 #include <boost/filesystem/operations.hpp>
@@ -99,6 +100,14 @@ static IMasterWallet *ImportWalletWithMnemonic() {
 	return manager->ImportWalletWithMnemonic(gMasterWalletID, mnemonic, phrasePassword, payPasswd, false);
 }
 
+static IMasterWallet *ImportWebWalletMultiSignKeystore() {
+	const std::string backupPasswd = "11111111";
+	nlohmann::json keystore = R"(
+		{"iv":"hm0lwrO1A8F7rel/0B0rWQ==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"dDXsCNh45Yw=","ct":"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"}
+	)"_json;
+	return manager->ImportWalletWithKeystore(gMasterWalletID, keystore, backupPasswd, payPasswd);
+}
+
 static IMasterWallet *ImportWalletWithKeystore() {
 	const std::string backupPasswd = "heropoon";
 	nlohmann::json keystore = nlohmann::json::parse(
@@ -126,7 +135,9 @@ static IMasterWallet *ImportWalletWithKeystore() {
 }
 
 static IMasterWallet *ImportReadonlyWallet() {
-	nlohmann::json readonlyJson = nlohmann::json::parse("{\"CoinInfoList\":[{\"ChainID\":\"ELA\",\"EarliestPeerTime\":1560855281,\"FeePerKB\":10000,\"VisibleAssets\":[\"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0\"]}],\"OwnerPubKey\":\"03d916c2072fd8fb57224e9747e0f1e36a2c117689cedf39e0132f3cb4f8ee673d\",\"SingleAddress\":false,\"m\":1,\"mnemonicHasPassphrase\":false,\"n\":1,\"network\":\"\",\"publicKeyRing\":[{\"requestPubKey\":\"0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280\",\"xPubKey\":\"xpub661MyMwAqRbcGc2nX69vU4AYzdqa2ExrdGskPQaGHN3oF5A22q2u4r7TVxamqHqH3zVyCd8rhjCpMMp94SjgRoTcUJ9GgRQ4yuYCDNrwRUc\"}],\"requestPubKey\":\"0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280\",\"xPubKey\":\"xpub661MyMwAqRbcGc2nX69vU4AYzdqa2ExrdGskPQaGHN3oF5A22q2u4r7TVxamqHqH3zVyCd8rhjCpMMp94SjgRoTcUJ9GgRQ4yuYCDNrwRUc\"}");
+	nlohmann::json readonlyJson = R"(
+		{"Algorithm":"base64","Data":"AAABAAAAAQAAAAAAAAAFQklQNDQhA3CneiV6qB9GYphl6488qcsFL8/YdOhkjPvqH78HGwKAIQPZFsIHL9j7VyJOl0fg8eNqLBF2ic7fOeATLzy0+O5nPU4EiLIeA8Lfuo+AAAAAzxzvoN4uRUku2jeAJVYFthp1yAqwWT+wmZmd8ADTec4CZxQL2ehZLEskJ6WAh562nmyurHH1HicJS9Fk27R5nj9OBIiyHgFHjmpvgAAALZ3aydgHewoRsqEstxlmyYMTTDdKbe4NGOpzyKkSUM4xA+BPNFgR5PjYNXJ5vEFLmyAVc2aPX6+sC8s6SUSmddXGASEDcKd6JXqoH0ZimGXrjzypywUvz9h06GSM++ofvwcbAoBOBIiyHgFHjmpvgAAALZ3aydgHewoRsqEstxlmyYMTTDdKbe4NGOpzyKkSUM4xA+BPNFgR5PjYNXJ5vEFLmyAVc2aPX6+sC8s6SUSmddXGAqDXPFoAAAAAA0VMQQGwN9uWSiMUWNLW/9XqGJRMT5DmPVR8XTuYdN9mpOrQo8BwN1sAAAAAB0lEQ2hhaW4BsDfblkojFFjS1v/V6hiUTE+Q5j1UfF07mHTfZqTq0KM="}
+	)"_json;
 
 	return manager->ImportReadonlyWallet(gMasterWalletID, readonlyJson);
 }
@@ -580,7 +591,8 @@ static void InitWallets() {
 	std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
 	if (masterWallets.size() == 0) {
 		IMasterWallet *masterWallet = nullptr;
-		masterWallet = ImportWalletWithKeystore();
+//		masterWallet = ImportWebWalletMultiSignKeystore();
+//		masterWallet = ImportWalletWithKeystore();
 //		masterWallet = ImportReadonlyWallet();
 		if (masterWallet == nullptr) {
 			masterWallet = ImportWalletWithMnemonic();
@@ -591,7 +603,7 @@ static void InitWallets() {
 
 			masterWallet->CreateSubWallet(gMainchainSubWalletID);
 			masterWallet->CreateSubWallet(gIDchainSubWalletID);
-			masterWallet->CreateSubWallet(gTokenchainSubWalletID);
+//			masterWallet->CreateSubWallet(gTokenchainSubWalletID);
 		}
 		masterWallets.push_back(masterWallet);
 	}
@@ -608,6 +620,13 @@ static void InitWallets() {
 			subWallets[j]->GetBasicInfo();
 			subWallets[j]->GetAllAddress(0, 500);
 		}
+	}
+}
+
+static void DestroyWallets() {
+	std::vector<IMasterWallet *>masterWallets = manager->GetAllMasterWallets();
+	if (!masterWallets.empty()) {
+		manager->DestroyWallet(masterWallets[0]->GetID());
 	}
 }
 
@@ -832,7 +851,7 @@ static void DIDTest() {
 }
 
 int main(int argc, char *argv[]) {
-	char c = ' ';
+	std::string line;
 	logger->set_level(spdlog::level::level_enum::debug);
 	logger->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
 
@@ -844,34 +863,35 @@ int main(int argc, char *argv[]) {
 
 	InitWallets();
 
-	while(c != 'q' && c != 'Q') {
-		c = getchar();
+	while(line != "quit") {
+		std::cin >> line;
+		logger->info(">>> {} <<<", line);
 
-		if (c == 't') {
+		if (line == "test" || line == "t") {
 			ELATest();
 			TokenTest();
 			DIDTest();
-		} else if (c == 'c') {
+		} else if (line == "connect" || line == "c") {
 			// trigger p2p connect now
 			SyncStart(gMasterWalletID, gMainchainSubWalletID);
 			SyncStart(gMasterWalletID, gIDchainSubWalletID);
-		} else if (c == 's') {
+		} else if (line == "stop" || line == "s") {
 			SyncStop(gMasterWalletID, gMainchainSubWalletID);
 			SyncStop(gMasterWalletID, gIDchainSubWalletID);
-		} else if (c == 'e') {
+		} else if (line == "close") {
 			CloseWallet(gMasterWalletID, gMainchainSubWalletID);
-		} else if (c == 'o') {
-			CloseWallet(gMasterWalletID, gTokenchainSubWalletID);
-		} else if (c == 'i') {
 			CloseWallet(gMasterWalletID, gIDchainSubWalletID);
-		} else if (c == 'E') {
+			//CloseWallet(gMasterWalletID, gTokenchainSubWalletID);
+		} else if (line == "open") {
 			OpenWallet(gMasterWalletID, gMainchainSubWalletID);
-		} else if (c == 'O') {
-			OpenWallet(gMasterWalletID, gTokenchainSubWalletID);
-		} else if (c == 'I') {
 			OpenWallet(gMasterWalletID, gIDchainSubWalletID);
+			//OpenWallet(gMasterWalletID, gTokenchainSubWalletID);
+		} else if (line == "quit" || line == "q") {
+			break;
 		}
 	}
+
+	DestroyWallets();
 
 	return 0;
 }

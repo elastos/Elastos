@@ -122,6 +122,10 @@ namespace Elastos {
 
 			void Save();
 
+			void Remove();
+
+			const std::string &GetDataPath() const;
+
 			void RegenerateKey(const std::string &payPasswd) const;
 		private:
 			void Init() const;

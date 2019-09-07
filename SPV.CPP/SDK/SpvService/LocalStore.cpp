@@ -221,6 +221,16 @@ namespace Elastos {
 			}
 		}
 
+		void LocalStore::Remove() {
+			boost::filesystem::path path(_path);
+			if (boost::filesystem::exists(path))
+				boost::filesystem::remove_all(path);
+		}
+
+		const std::string &LocalStore::GetDataPath() const {
+			return _path;
+		}
+
 		void LocalStore::SaveTo(const std::string &path) {
 			_path = path;
 			Save();

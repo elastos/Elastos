@@ -36,14 +36,12 @@ namespace Elastos {
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 				_id(id),
-				_rootPath(rootPath),
-				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
 				_earliestPeerTime(0) {
 
-			_config = ConfigPtr(new Config(_rootPath));
-			_account = AccountPtr(new Account(_dataPath + "/" + _id));
+			_config = ConfigPtr(new Config(rootPath));
+			_account = AccountPtr(new Account(dataPath + "/" + _id));
 
 			if (_account->GetSignType() == Account::MultiSign)
 				_idAgentImpl = nullptr;
@@ -62,17 +60,15 @@ namespace Elastos {
 								   time_t earliestPeerTime,
 								   MasterWalletInitFrom from) :
 				_id(id),
-				_rootPath(rootPath),
-				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_earliestPeerTime(earliestPeerTime),
 				_initFrom(from) {
 
-			Mnemonic m(_rootPath);
+			Mnemonic m(rootPath);
 			ErrorChecker::CheckLogic(!m.Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
 
-			_config = ConfigPtr(new Config(_rootPath));
-			_account = AccountPtr(new Account(_dataPath + "/" + _id, mnemonic, passphrase, payPasswd, singleAddress));
+			_config = ConfigPtr(new Config(rootPath));
+			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, singleAddress));
 			_account->Save();
 
 			_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
@@ -87,8 +83,6 @@ namespace Elastos {
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 				_id(id),
-				_rootPath(rootPath),
-				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_earliestPeerTime(0),
 				_initFrom(from) {
@@ -96,9 +90,9 @@ namespace Elastos {
 			KeyStore keystore;
 			keystore.Import(keystoreContent, backupPassword);
 
-			_config = ConfigPtr(new Config(_rootPath));
+			_config = ConfigPtr(new Config(rootPath));
 
-			_account = AccountPtr(new Account(_dataPath + "/" + _id, keystore, payPasswd));
+			_account = AccountPtr(new Account(dataPath + "/" + _id, keystore, payPasswd));
 			_account->Save();
 
 			if (_account->GetSignType() == Account::MultiSign) {
@@ -115,14 +109,12 @@ namespace Elastos {
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 			_id(id),
-			_rootPath(rootPath),
-			_dataPath(dataPath),
 			_p2pEnable(p2pEnable),
 			_initFrom(from),
 			_earliestPeerTime(0) {
 
-			_config = ConfigPtr(new Config(_rootPath));
-			_account = AccountPtr(new Account(_dataPath + "/" + _id, readonlyWalletJson));
+			_config = ConfigPtr(new Config(rootPath));
+			_account = AccountPtr(new Account(dataPath + "/" + _id, readonlyWalletJson));
 			_account->Save();
 
 			if (_account->GetSignType() == Account::MultiSign) {
@@ -143,16 +135,14 @@ namespace Elastos {
 								   time_t earliestPeerTime,
 								   MasterWalletInitFrom from) :
 				_id(id),
-				_rootPath(rootPath),
-				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
 				_earliestPeerTime(earliestPeerTime),
 				_idAgentImpl(nullptr) {
 			ErrorChecker::CheckParam(pubKeyRings.size() < m, Error::InvalidArgument, "Invalid M");
 
-			_config = ConfigPtr(new Config(_rootPath));
-			_account = AccountPtr(new Account(_dataPath + "/" + _id, pubKeyRings, m, singleAddress, compatible));
+			_config = ConfigPtr(new Config(rootPath));
+			_account = AccountPtr(new Account(dataPath + "/" + _id, pubKeyRings, m, singleAddress, compatible));
 			_account->Save();
 		}
 
@@ -169,8 +159,6 @@ namespace Elastos {
 								   time_t earliestPeerTime,
 								   MasterWalletInitFrom from) :
 				_id(id),
-				_rootPath(rootPath),
-				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
 				_earliestPeerTime(earliestPeerTime),
@@ -178,8 +166,8 @@ namespace Elastos {
 
 			ErrorChecker::CheckParam(cosigners.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
-			_config = ConfigPtr(new Config(_rootPath));
-			_account = AccountPtr(new Account(_dataPath + "/" + _id, xprv, payPassword, cosigners, m, singleAddress, compatible));
+			_config = ConfigPtr(new Config(rootPath));
+			_account = AccountPtr(new Account(dataPath + "/" + _id, xprv, payPassword, cosigners, m, singleAddress, compatible));
 			_account->Save();
 		}
 
@@ -197,8 +185,6 @@ namespace Elastos {
 								   time_t earliestPeerTime,
 								   MasterWalletInitFrom from) :
 				_id(id),
-				_rootPath(rootPath),
-				_dataPath(dataPath),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
 				_earliestPeerTime(earliestPeerTime),
@@ -206,8 +192,8 @@ namespace Elastos {
 
 			ErrorChecker::CheckParam(cosigners.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
-			_config = ConfigPtr(new Config(_rootPath));
-			_account = AccountPtr(new Account(_dataPath + "/" + _id, mnemonic, passphrase, payPasswd, cosigners, m, singleAddress, compatible));
+			_config = ConfigPtr(new Config(rootPath));
+			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, cosigners, m, singleAddress, compatible));
 			_account->Save();
 		}
 
@@ -221,10 +207,7 @@ namespace Elastos {
 		}
 
 		void MasterWallet::RemoveLocalStore() {
-			boost::filesystem::path path = _rootPath;
-			path /= GetID();
-			if (boost::filesystem::exists(path))
-				boost::filesystem::remove_all(path);
+			_account->Remove();
 		}
 
 		std::string MasterWallet::GetID() const {
@@ -315,13 +298,13 @@ namespace Elastos {
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ) {
 				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
 				std::string id = _id + ":" + subWallet->GetChainID();
-				Log::info("closing subWallet ({})...", id);
+				Log::info("{} closing...", id);
 				stopPeerManager(subWallet);
 
 				it = _createdWallets.erase(it);
 
 				delete subWallet;
-				Log::info("closed subWalelt ({})", id);
+				Log::info("{} closed", id);
 			}
 		}
 
@@ -534,6 +517,10 @@ namespace Elastos {
 
 			ArgInfo("r => {}", pubkey);
 			return pubkey;
+		}
+
+		const std::string &MasterWallet::GetDataPath() const {
+			return _account->GetDataPath();
 		}
 
 		void MasterWallet::startPeerManager(SubWallet *wallet) {
