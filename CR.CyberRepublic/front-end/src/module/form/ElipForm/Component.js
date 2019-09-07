@@ -46,10 +46,10 @@ const formatValue = value => {
 class C extends BaseComponent {
   constructor(p) {
     super(p)
+    this.state = { count: 0, submit: false }
   }
 
-  handleSubmit = e => {
-    e.preventDefault()
+  saveElip = () => {
     const { history, create, form, data, update } = this.props
     form.validateFields(async (err, values) => {
       if (err) {
@@ -73,13 +73,49 @@ class C extends BaseComponent {
     })
   }
 
-  validateDesc = (rule, value, cb) => {
+  handleSubmit = e => {
+    e.preventDefault()
+    const { count } = this.state
+    if (count === 0) {
+      this.setState({ submit: true }, () => {
+        this.saveElip()
+      })
+    } else {
+      this.saveElip()
+    }
+  }
+
+  isDescTooLong = (rule, value, cb) => {
     const { language } = this.props
     let count = value.length
     if (language === 'en') {
       count = value.split(' ').length
     }
     return count > WORD_LIMIT ? cb(true) : cb()
+  }
+
+  isDescEmpty = (rule, value, cb) => {
+    const { count, submit } = this.state
+    const { data } = this.props
+    // edit a rejected elip
+    if (data && data.description && count === 0 && !value) {
+      return cb(true)
+    }
+    // submit the elip form without trigger the desc input box
+    // when add a new elip
+    if (count === 0 && submit === true) {
+      return cb(true)
+    }
+    if (count > 0 && !value) {
+      return cb(true)
+    }
+    return cb()
+  }
+
+  onChange = (editorState) => {
+    if (editorState.getCurrentContent().hasText() === false) {
+      this.setState({count: this.state.count + 1})
+    }
   }
 
   ord_render() {
@@ -123,12 +159,13 @@ class C extends BaseComponent {
                 {
                   required: true,
                   transform,
-                  message: I18N.get('elip.form.error.required')
+                  message: I18N.get('elip.form.error.required'),
+                  validator: this.isDescEmpty
                 },
                 {
                   transform,
                   message: I18N.get(`elip.form.error.limit${WORD_LIMIT}`),
-                  validator: this.validateDesc
+                  validator: this.isDescTooLong
                 }
               ],
               initialValue: data && data.description ? data.description : ''
@@ -136,6 +173,7 @@ class C extends BaseComponent {
               <DraftEditor
                 contentType={CONTENT_TYPE.MARKDOWN}
                 autoFocus={false}
+                onChange={this.onChange}
               />
             )}
           </FormItem>
