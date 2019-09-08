@@ -16,6 +16,7 @@ import { CVOTE_STATUS, SUGGESTION_TAG_TYPE, CONTENT_TYPE } from '@/constant'
 import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from '@/util/html'
 import { getHTML } from '@/util/editor'
+import { logger } from '@/util'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
@@ -597,7 +598,7 @@ export default class extends StandardPage {
       this.refetch()
       message.success(I18N.get('suggestion.msg.consideration'))
     } catch (error) {
-      // console.log(error)
+      logger.error(error)
     }
   }
 
@@ -613,7 +614,7 @@ export default class extends StandardPage {
       // this.showAddTagModal()
       this.refetch()
     } catch (error) {
-      // console.log(error)
+      logger.error(error)
     }
   }
 
@@ -637,7 +638,7 @@ export default class extends StandardPage {
       this.showEditForm()
       this.refetch()
     } catch (error) {
-      // console.log(error)
+      logger.error(error)
     }
   }
 
@@ -710,6 +711,7 @@ export default class extends StandardPage {
       this.props.history.push(`/proposals/${res._id}`)
     } catch (error) {
       this.setState({ proposeLoading: false })
+      logger.error(error)
     }
   }
 }
