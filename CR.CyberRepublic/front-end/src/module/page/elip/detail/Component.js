@@ -155,7 +155,6 @@ class C extends StandardPage {
             </Actions>
           </Col>
         </Row>
-
       )
     }
   }
@@ -192,7 +191,7 @@ class C extends StandardPage {
       return (
         <Row>
           <LabelCol span={3} />
-          <Col span={17} style={{position: 'relative'}}>
+          <Col span={17} style={{ position: 'relative' }}>
             <ReviewHistory reviews={reviews} />
           </Col>
         </Row>
@@ -285,10 +284,9 @@ const WrapperCol = styled(Col)`
 `
 
 const Title = styled.div`
-  padding: 0 20px;
+  padding: 8px 20px;
   color: #000;
-  height: 42px;
-  line-height: 42px;
+  line-height: 1.8;
 `
 
 const Dec = styled.div`
