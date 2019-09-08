@@ -39,6 +39,7 @@ namespace Elastos {
 		class Asset;
 		class IPayload;
 		class UTXO;
+		class IOutputPayload;
 		typedef boost::shared_ptr<Asset> AssetPtr;
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 		typedef boost::shared_ptr<IPayload> PayloadPtr;
@@ -46,6 +47,7 @@ namespace Elastos {
 		typedef std::vector<UTXOPtr> UTXOArray;
 		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
 		typedef boost::shared_ptr<TransactionInput> InputPtr;
+		typedef boost::shared_ptr<IOutputPayload> OutputPayloadPtr;
 
 		class Wallet : public Lockable {
 		public:
@@ -127,10 +129,12 @@ namespace Elastos {
 
 			uint64_t GetDefaultFeePerKb();
 
+			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo);
+
 			TransactionPtr Consolidate(const std::string &memo, const uint256 &asset);
 
 			TransactionPtr CreateTransaction(const Address &fromAddress, const std::vector<OutputPtr> &outputs,
-											 const std::string &memo, bool autoReduceOutputAmount);
+											 const std::string &memo);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);
 

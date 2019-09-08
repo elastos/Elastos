@@ -124,12 +124,7 @@ namespace Elastos {
 			ArgInfo("assetID: {}", assetID);
 			ArgInfo("memo: {}", memo);
 
-			std::string memoFormated = "type:text,msg:" + memo;
-
-			TransactionPtr tx = _walletManager->getWallet()->Consolidate(memoFormated, uint256(assetID));
-
-			if (_info->GetChainID() == "ELA")
-				tx->SetVersion(Transaction::TxVersion::V09);
+			TransactionPtr tx = CreateConsolidateTx(memo, uint256(assetID));
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

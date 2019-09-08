@@ -23,6 +23,7 @@ namespace Elastos {
 		class TransactionOutput;
 		class TransactionInput;
 		class UTXO;
+		class VoteContent;
 		typedef boost::shared_ptr<Asset> AssetPtr;
 		typedef boost::shared_ptr<UTXO> UTXOPtr;
 		typedef std::vector<UTXOPtr> UTXOArray;
@@ -30,6 +31,7 @@ namespace Elastos {
 		typedef std::vector<OutputPtr> OutputArray;
 		typedef boost::shared_ptr<TransactionInput> InputPtr;
 		typedef std::vector<InputPtr> InputArray;
+		typedef std::vector<VoteContent> VoteContentArray;
 
 		class GroupedAsset {
 		public:
@@ -55,12 +57,13 @@ namespace Elastos {
 												   const Address &fromAddress,
 												   const std::string &memo);
 
+			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo);
+
 			TransactionPtr Consolidate(const std::string &memo);
 
 			TransactionPtr CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
 											  const Address &fromAddress,
-											  const std::string &memo,
-											  bool autoReduceOutputAmount);
+											  const std::string &memo);
 
 			void AddFeeForTx(TransactionPtr &tx);
 
@@ -83,7 +86,7 @@ namespace Elastos {
 			bool ContainUTXO(const UTXOPtr &o) const;
 
 		private:
-			uint64_t CalculateFee(uint64_t feePerKB, size_t size);
+			uint64_t CalculateFee(uint64_t feePerKB, size_t size) const;
 
 		private:
 			BigInt _balance, _balanceVote, _balanceDeposit, _balanceLocked;

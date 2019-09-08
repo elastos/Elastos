@@ -11,6 +11,9 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class IOutputPayload;
+		typedef boost::shared_ptr<IOutputPayload> OutputPayloadPtr;
+
 		class MainchainSubWallet : public IMainchainSubWallet, public SubWallet {
 		public:
 			~MainchainSubWallet();
@@ -348,6 +351,7 @@ namespace Elastos {
 							   const ChainConfigPtr &config,
 							   MasterWallet *parent);
 
+			TransactionPtr CreateVoteTx(const VoteContent &voteContent, const std::string &memo);
 		};
 
 	}

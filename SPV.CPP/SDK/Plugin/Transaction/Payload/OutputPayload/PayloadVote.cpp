@@ -30,6 +30,10 @@ namespace Elastos {
 			return _votes;
 		}
 
+		void CandidateVotes::SetVotes(uint64_t votes) {
+			_votes = votes;
+		}
+
 		void CandidateVotes::Serialize(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteVarBytes(_candidate);
 
@@ -70,6 +74,10 @@ namespace Elastos {
 
 		}
 
+		VoteContent::VoteContent(Type t) :
+			_type(t) {
+		}
+
 		VoteContent::VoteContent(Type t, const std::vector<CandidateVotes> &c) : _type(t), _candidates(c) {
 
 		}
@@ -86,8 +94,33 @@ namespace Elastos {
 			return _type;
 		}
 
-		const std::vector<CandidateVotes> &VoteContent::GetCandidates() const {
+		const std::vector<CandidateVotes> &VoteContent::GetCandidateVotes() const {
 			return _candidates;
+		}
+
+		void VoteContent::SetAllCandidateVotes(uint64_t votes) {
+			for (size_t i = 0; i < _candidates.size(); ++i) {
+				_candidates[i].SetVotes(votes);
+			}
+		}
+
+		uint64_t VoteContent::GetMaxVoteAmount() const {
+			uint64_t max = 0;
+
+			for (std::vector<CandidateVotes>::const_iterator it = _candidates.cbegin(); it != _candidates.cend(); ++it)
+				if (max < (*it).GetVotes())
+					max = (*it).GetVotes();
+
+			return max;
+		}
+
+		uint64_t VoteContent::GetTotalVoteAmount() const {
+			uint64_t total = 0;
+
+			for (std::vector<CandidateVotes>::const_iterator it = _candidates.cbegin(); it != _candidates.cend(); ++it)
+				total += (*it).GetVotes();
+
+			return total;
 		}
 
 		void VoteContent::Serialize(ByteStream &ostream, uint8_t version) const {
@@ -173,6 +206,10 @@ namespace Elastos {
 			return _content;
 		}
 
+		uint8_t PayloadVote::Version() const {
+			return _version;
+		}
+
 		size_t PayloadVote::EstimateSize() const {
 			ByteStream stream;
 			size_t size = 0;
@@ -181,13 +218,13 @@ namespace Elastos {
 			size += stream.WriteVarUint(_content.size());
 			for (size_t i = 0; i < _content.size(); ++i) {
 				size += 1;
-				size += stream.WriteVarUint(_content[i].GetCandidates().size());
-				for (size_t j = 0; j < _content[i].GetCandidates().size(); ++j) {
-					size += stream.WriteVarUint(_content[i].GetCandidates()[j].GetCandidate().size());
-					size += _content[i].GetCandidates()[j].GetCandidate().size();
+				size += stream.WriteVarUint(_content[i].GetCandidateVotes().size());
+				for (size_t j = 0; j < _content[i].GetCandidateVotes().size(); ++j) {
+					size += stream.WriteVarUint(_content[i].GetCandidateVotes()[j].GetCandidate().size());
+					size += _content[i].GetCandidateVotes()[j].GetCandidate().size();
 
 					if (_version >= VOTE_PRODUCER_CR_VERSION) {
-						size += stream.WriteVarUint(_content[i].GetCandidates()[j].GetVotes());
+						size += stream.WriteVarUint(_content[i].GetCandidateVotes()[j].GetVotes());
 					}
 				}
 			}

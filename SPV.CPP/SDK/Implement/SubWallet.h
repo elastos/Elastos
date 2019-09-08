@@ -164,10 +164,14 @@ namespace Elastos {
 					  const ChainConfigPtr &config,
 					  MasterWallet *parent);
 
-			virtual TransactionPtr CreateTx(
+			TransactionPtr CreateTx(
 				const std::string &fromAddress,
 				const std::vector<OutputPtr> &outputs,
 				const std::string &memo) const;
+
+			TransactionPtr CreateConsolidateTx(
+				const std::string &memo,
+				const uint256 &asset) const;
 
 			virtual void publishTransaction(const TransactionPtr &tx);
 

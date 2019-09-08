@@ -149,9 +149,6 @@ namespace Elastos {
 
 		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::vector<OutputPtr> &outputs,
 		                                   const std::string &memo) const {
-
-			const WalletPtr &wallet = _walletManager->getWallet();
-
 			for (const OutputPtr &output : outputs) {
 				ErrorChecker::CheckParam(!output->Addr().Valid(), Error::CreateTransaction,
 				                         "invalid receiver address " + output->Addr().String());
@@ -160,13 +157,31 @@ namespace Elastos {
 				                         "output amount should big than zero");
 			}
 
-			std::string memoFormated = "type:text,msg:" + memo;
+			std::string m;
 
-			TransactionPtr tx = wallet->CreateTransaction(fromAddress, outputs, memoFormated, false);
+			if (!memo.empty())
+				m = "type:text,msg:" + memo;
 
-			if (_info->GetChainID() == "ELA") {
+			TransactionPtr tx = _walletManager->getWallet()->CreateTransaction(fromAddress, outputs, m);
+
+			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
-			}
+
+			tx->FixIndex();
+
+			return tx;
+		}
+
+		TransactionPtr SubWallet::CreateConsolidateTx(const std::string &memo, const uint256 &asset) const {
+			std::string m;
+
+			if (!memo.empty())
+				m = "type:text,msg:" + memo;
+
+			TransactionPtr tx = _walletManager->getWallet()->Consolidate(m, asset);
+
+			if (_info->GetChainID() == "ELA")
+				tx->SetVersion(Transaction::TxVersion::V09);
 
 			tx->FixIndex();
 
@@ -319,12 +334,7 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
 			ArgInfo("memo: {}", memo);
 
-			std::string memoFormated = "type:text,msg:" + memo;
-
-			TransactionPtr tx = _walletManager->getWallet()->Consolidate(memoFormated, Asset::GetELAAssetID());
-
-			if (_info->GetChainID() == "ELA")
-				tx->SetVersion(Transaction::TxVersion::V09);
+			TransactionPtr tx = CreateConsolidateTx(memo, Asset::GetELAAssetID());
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

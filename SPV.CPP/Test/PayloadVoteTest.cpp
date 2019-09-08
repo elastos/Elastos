@@ -35,10 +35,10 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
 			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
-			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
-			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
-				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
-				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
+			REQUIRE((vc1[i].GetCandidateVotes().size() == vc2[i].GetCandidateVotes().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidateVotes().size(); c++) {
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetCandidate() == vc2[i].GetCandidateVotes()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetVotes() == vc2[i].GetCandidateVotes()[c].GetVotes()));
 			}
 		}
 	}
@@ -62,10 +62,10 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
 			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
-			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
-			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
-				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
-				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
+			REQUIRE((vc1[i].GetCandidateVotes().size() == vc2[i].GetCandidateVotes().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidateVotes().size(); c++) {
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetCandidate() == vc2[i].GetCandidateVotes()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetVotes() == vc2[i].GetCandidateVotes()[c].GetVotes()));
 			}
 		}
 	}
@@ -88,10 +88,10 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
 			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
-			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
-			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
-				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
-				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
+			REQUIRE((vc1[i].GetCandidateVotes().size() == vc2[i].GetCandidateVotes().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidateVotes().size(); c++) {
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetCandidate() == vc2[i].GetCandidateVotes()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetVotes() == vc2[i].GetCandidateVotes()[c].GetVotes()));
 			}
 		}
 	}
@@ -114,10 +114,10 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		REQUIRE(vc1.size() == vc2.size());
 		for (size_t i = 0; i < vc1.size(); ++i) {
 			REQUIRE(vc1[i].GetType() == vc2[i].GetType());
-			REQUIRE((vc1[i].GetCandidates().size() == vc2[i].GetCandidates().size()));
-			for (size_t c = 0; c < vc1[i].GetCandidates().size(); c++) {
-				REQUIRE((vc1[i].GetCandidates()[c].GetCandidate() == vc2[i].GetCandidates()[c].GetCandidate()));
-				REQUIRE((vc1[i].GetCandidates()[c].GetVotes() == vc2[i].GetCandidates()[c].GetVotes()));
+			REQUIRE((vc1[i].GetCandidateVotes().size() == vc2[i].GetCandidateVotes().size()));
+			for (size_t c = 0; c < vc1[i].GetCandidateVotes().size(); c++) {
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetCandidate() == vc2[i].GetCandidateVotes()[c].GetCandidate()));
+				REQUIRE((vc1[i].GetCandidateVotes()[c].GetVotes() == vc2[i].GetCandidateVotes()[c].GetVotes()));
 			}
 		}
 	}

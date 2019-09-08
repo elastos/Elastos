@@ -22,7 +22,7 @@ namespace Elastos {
 				_fixedIndex(0),
 				_outputLock(0),
 				_outputType(Type::Default) {
-			_amount.setWord(0);
+			_amount.setUint64(0);
 			_payload = GeneratePayload(_outputType);
 		}
 
@@ -278,7 +278,7 @@ namespace Elastos {
 		void TransactionOutput::FromJson(const nlohmann::json &j, uint8_t txVersion) {
 			_fixedIndex = j["FixedIndex"].get<uint16_t>();
 			if (j["Amount"].is_number()) {
-				_amount.setWord(j["Amount"].get<uint64_t>());
+				_amount.setUint64(j["Amount"].get<uint64_t>());
 			} else if (j["Amount"].is_string()) {
 				_amount.setDec(j["Amount"].get<std::string>());
 			}

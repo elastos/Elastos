@@ -228,6 +228,11 @@ namespace Elastos {
 			return DEFAULT_FEE_PER_KB;
 		}
 
+		// only support asset of ELA
+		TransactionPtr Wallet::Vote(const VoteContent &voteContent, const std::string &memo) {
+			return _groupedAssets[Asset::GetELAAssetID()]->Vote(voteContent, memo);
+		}
+
 		TransactionPtr Wallet::Consolidate(const std::string &memo, const uint256 &assetID) {
 			Lock();
 			bool containAsset = ContainsAsset(assetID);
@@ -240,15 +245,12 @@ namespace Elastos {
 			if (assetID != Asset::GetELAAssetID())
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);
 
-			tx->FixIndex();
-
 			return tx;
 		}
 
 		TransactionPtr Wallet::CreateTransaction(const Address &fromAddress,
 												 const std::vector<OutputPtr> &outputs,
-												 const std::string &memo,
-												 bool autoReduceOutputAmount) {
+												 const std::string &memo) {
 
 			ErrorChecker::CheckParam(!IsAssetUnique(outputs), Error::InvalidAsset, "asset is not unique in outputs");
 
@@ -264,7 +266,7 @@ namespace Elastos {
 			if (fromAddress.Valid() && (_subAccount->IsDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
 				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(outputs, fromAddress, memo);
 			else
-				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo, autoReduceOutputAmount);
+				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo);
 
 			if (assetID != Asset::GetELAAssetID())
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);

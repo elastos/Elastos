@@ -24,6 +24,8 @@ namespace Elastos {
 
 			uint64_t GetVotes() const;
 
+			void SetVotes(uint64_t votes);
+
 			void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			bool Deserialize(const ByteStream &istream, uint8_t version);
@@ -46,6 +48,8 @@ namespace Elastos {
 
 			VoteContent();
 
+			VoteContent(Type t);
+
 			VoteContent(Type t, const std::vector<CandidateVotes> &c);
 
 			~VoteContent();
@@ -54,7 +58,13 @@ namespace Elastos {
 
 			const Type &GetType() const;
 
-			const std::vector<CandidateVotes> &GetCandidates() const;
+			const std::vector<CandidateVotes> &GetCandidateVotes() const;
+
+			void SetAllCandidateVotes(uint64_t votes);
+
+			uint64_t GetMaxVoteAmount() const;
+
+			uint64_t GetTotalVoteAmount() const;
 
 			void Serialize(ByteStream &ostream, uint8_t version) const;
 
@@ -67,6 +77,8 @@ namespace Elastos {
 			Type _type;
 			std::vector<CandidateVotes> _candidates;
 		};
+
+		typedef std::vector<VoteContent> VoteContentArray;
 
 		class PayloadVote : public IOutputPayload {
 		public:
@@ -81,6 +93,8 @@ namespace Elastos {
 			void SetVoteContent(const std::vector<VoteContent> &voteContent);
 
 			const std::vector<VoteContent> &GetVoteContent() const;
+
+			uint8_t Version() const;
 
 			virtual size_t EstimateSize() const;
 

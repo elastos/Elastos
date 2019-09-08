@@ -54,7 +54,7 @@ namespace Elastos {
 
 		static BigInt getRandBigInt() {
 			BigInt bg;
-			bg.setWord(rand());
+			bg.setUint64(rand());
 			return bg;
 		}
 
@@ -208,8 +208,8 @@ namespace Elastos {
 
 					for (size_t j = 0; j < vc1.size(); ++j) {
 						REQUIRE(vc1[j].GetType() == vc2[j].GetType());
-						const std::vector<CandidateVotes> &cand1 = vc1[j].GetCandidates();
-						const std::vector<CandidateVotes> &cand2 = vc2[j].GetCandidates();
+						const std::vector<CandidateVotes> &cand1 = vc1[j].GetCandidateVotes();
+						const std::vector<CandidateVotes> &cand2 = vc2[j].GetCandidateVotes();
 
 						REQUIRE(cand1.size() == cand2.size());
 						for (size_t k = 0; k < cand1.size(); ++k) {

@@ -79,6 +79,22 @@ namespace Elastos {
 			return result;
 		}
 
+		TransactionPtr MainchainSubWallet::CreateVoteTx(const VoteContent &voteContent, const std::string &memo) {
+			std::string m;
+
+			if (!memo.empty())
+				m = "type:text,msg:" + memo;
+
+			TransactionPtr tx = _walletManager->getWallet()->Vote(voteContent, m);
+
+			if (_info->GetChainID() == "ELA")
+				tx->SetVersion(Transaction::TxVersion::V09);
+
+			tx->FixIndex();
+
+			return tx;
+		}
+
 		nlohmann::json MainchainSubWallet::GenerateProducerPayload(
 			const std::string &ownerPublicKey,
 			const std::string &nodePublicKey,
@@ -345,43 +361,20 @@ namespace Elastos {
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
 			ErrorChecker::CheckParam(bgStake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
-			VoteContent voteContent;
+			VoteContent voteContent(VoteContent::Delegate);
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
 				if (!(*it).is_string()) {
 					ErrorChecker::ThrowParamException(Error::Code::JsonFormatError,
 													  "Vote produce public keys is not string");
 				}
-				voteContent.AddCandidate(CandidateVotes((*it).get<std::string>()));
+				// Check public key is valid later
+				voteContent.AddCandidate(CandidateVotes((*it).get<std::string>(), bgStake.getUint64()));
 			}
 
-			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}));
+			ErrorChecker::CheckParam(voteContent.GetCandidateVotes().empty(), Error::InvalidArgument,
+									 "Candidate vote list should not be empty");
 
-			std::vector<OutputPtr> outs;
-			Address receiveAddr(CreateAddress());
-			outs.push_back(OutputPtr(new TransactionOutput(bgStake, receiveAddr)));
-
-			TransactionPtr tx = CreateTx(fromAddress, outs, memo);
-
-			const std::vector<InputPtr> &inputs = tx->GetInputs();
-
-			uint168 inputProgramHash;
-			TransactionPtr txInput = _walletManager->getWallet()->TransactionForHash(inputs[0]->TxHash());
-
-			if (txInput == nullptr) {
-				UTXOPtr cb = _walletManager->getWallet()->CoinBaseTxForHash(inputs[0]->TxHash());
-				ErrorChecker::CheckLogic(cb == nullptr, Error::GetTransactionInput, "Get tx input error");
-				inputProgramHash = cb->Output()->ProgramHash();
-			} else {
-				ErrorChecker::CheckLogic(txInput->OutputOfIndex(inputs[0]->Index()) == nullptr, Error::GetTransactionInput,
-				                         "Input index larger than output size.");
-				inputProgramHash = txInput->OutputOfIndex(inputs[0]->Index())->ProgramHash();
-			}
-
-			tx->SetTransactionType(Transaction::transferAsset);
-			const std::vector<OutputPtr> &outputs = tx->GetOutputs();
-			outputs.front()->SetType(TransactionOutput::Type::VoteOutput);
-			outputs.front()->SetPayload(payload);
-			outputs.front()->SetProgramHash(inputProgramHash);
+			TransactionPtr tx = CreateVoteTx(voteContent, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -414,7 +407,7 @@ namespace Elastos {
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
 				              [&votedList, &stake](const VoteContent &vc) {
 					              if (vc.GetType() == VoteContent::Type::Delegate) {
-						              std::for_each(vc.GetCandidates().cbegin(), vc.GetCandidates().cend(),
+						              std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
 						                            [&votedList, &stake](const CandidateVotes &candidate) {
 							                            std::string c = candidate.GetCandidate().getHex();
 							                            if (votedList.find(c) != votedList.end()) {
@@ -747,47 +740,17 @@ namespace Elastos {
 
 			BigInt bgStake = 0;
 
+			VoteContent voteContent(VoteContent::CRC);
 			std::vector<CandidateVotes> candidates;
 			for (nlohmann::json::const_iterator it = votes.cbegin(); it != votes.cend(); ++it) {
 				std::string pubkey = it.key();
 				uint64_t value = it.value().get<std::uint64_t>();
 
 				Address address(PrefixStandard, pubkey);
-				candidates.push_back(CandidateVotes(address.RedeemScript(), value));
-				bgStake += value;
+				voteContent.AddCandidate(CandidateVotes(address.RedeemScript(), value));
 			}
 
-			VoteContent voteContent(VoteContent::Type::CRC, candidates);
-
-			OutputPayloadPtr payload = OutputPayloadPtr(new PayloadVote({voteContent}, VOTE_PRODUCER_CR_VERSION));
-
-			std::vector<OutputPtr> outs;
-			Address receiveAddr(CreateAddress());
-			outs.push_back(OutputPtr(new TransactionOutput(bgStake, receiveAddr)));
-
-			TransactionPtr tx = CreateTx(fromAddress, outs, memo);
-
-			const std::vector<InputPtr> &inputs = tx->GetInputs();
-
-			uint168 inputProgramHash;
-			TransactionPtr txInput = _walletManager->getWallet()->TransactionForHash(inputs[0]->TxHash());
-
-			if (txInput == nullptr) {
-				UTXOPtr cb = _walletManager->getWallet()->CoinBaseTxForHash(inputs[0]->TxHash());
-				ErrorChecker::CheckLogic(cb == nullptr, Error::GetTransactionInput, "Get tx input error");
-				inputProgramHash = cb->Output()->ProgramHash();
-			} else {
-				ErrorChecker::CheckLogic(txInput->OutputOfIndex(inputs[0]->Index()) == nullptr, Error::GetTransactionInput,
-				                         "Input index larger than output size.");
-				inputProgramHash = txInput->OutputOfIndex(inputs[0]->Index())->ProgramHash();
-			}
-
-			tx->SetTransactionType(Transaction::transferAsset);
-
-			const std::vector<OutputPtr> &outputs = tx->GetOutputs();
-			outputs[0]->SetType(TransactionOutput::Type::VoteOutput);
-			outputs[0]->SetPayload(payload);
-			outputs[0]->SetProgramHash(inputProgramHash);
+			TransactionPtr tx = CreateVoteTx(voteContent, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -821,7 +784,7 @@ namespace Elastos {
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
 				              [&votedList, &stake](const VoteContent &vc) {
 					              if (vc.GetType() == VoteContent::Type::CRC) {
-						              std::for_each(vc.GetCandidates().cbegin(), vc.GetCandidates().cend(),
+						              std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
 						                            [&votedList, &stake](const CandidateVotes &candidate) {
 							                            std::string c = candidate.GetCandidate().getHex();
 							                            if (votedList.find(c) != votedList.end()) {
