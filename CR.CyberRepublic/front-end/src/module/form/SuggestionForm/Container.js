@@ -5,8 +5,7 @@ import Component from './Component'
 import SuggestionService from '@/service/SuggestionService'
 
 const mapState = state => ({
-  loading: state.suggestion.loading,
-  language: state.language.language
+  loading: state.suggestion.loading
 })
 
 const mapDispatch = () => {

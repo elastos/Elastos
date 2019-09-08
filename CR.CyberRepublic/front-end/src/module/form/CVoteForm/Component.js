@@ -280,10 +280,10 @@ class C extends BaseComponent {
   }
 
   validateAbstract = (rule, value, cb) => {
-    const { language } = this.props
+    const { lang } = this.props
     let count = 0
     if (value) {
-      count = language === 'en' ? value.split(' ').length : value.length
+      count = lang === 'en' ? value.split(' ').length : value.length
     }
     return count > WORD_LIMIT ? cb(true) : cb()
   }
@@ -453,12 +453,12 @@ class C extends BaseComponent {
   }
 
   renderWordLimit() {
-    const { form, language } = this.props
+    const { form, lang } = this.props
     const formValue = form.getFieldValue('abstract')
     const value = transform(formValue)
     let count = 0
     if (value) {
-      count = language === 'en' ? value.split(' ').length : value.length
+      count = lang === 'en' ? value.split(' ').length : value.length
     }
     return (
       <CirContainer>

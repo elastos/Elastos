@@ -5,8 +5,7 @@ import ElipService from '@/service/ElipService'
 const mapState = state => ({
   user: state.user,
   isLogin: state.user.is_login,
-  isSecretary: state.user.is_secretary,
-  language: state.language.language
+  isSecretary: state.user.is_secretary
 })
 
 const mapDispatch = () => {

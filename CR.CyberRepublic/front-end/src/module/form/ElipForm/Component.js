@@ -86,10 +86,10 @@ class C extends BaseComponent {
   }
 
   isDescTooLong = (rule, value, cb) => {
-    const { language } = this.props
-    let count = value.length
-    if (language === 'en') {
-      count = value.split(' ').length
+    const { lang } = this.props
+    let count = 0
+    if (value) {
+      count = lang === 'en' ? value.split(' ').length : value.length
     }
     return count > WORD_LIMIT ? cb(true) : cb()
   }
