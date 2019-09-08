@@ -13,3 +13,7 @@ would be far too difficult because you'd need to ask the test miners for tokens.
 You can get tokens from [ELA ETH Faucet site](https://faucet.elaeth.io). After passing google's reCAPTCHA verification, enter your ETH compatible address and click `REQUEST 0.1 ETH ELA` button, you will get 0.1 ELA ETH.
 
 ![Successfully get the test token](assets/faucet_success.png)
+
+Add RPC to your metamask setting, then you should be able to see the token requested:
+
+![Metamask RPC setting](assets/metamask_rpc_setting.png)
