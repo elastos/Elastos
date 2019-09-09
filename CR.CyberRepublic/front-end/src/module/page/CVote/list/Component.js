@@ -7,6 +7,7 @@ import I18N from '@/I18N'
 import { logger } from '@/util'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import VoteStats from '../stats/Component'
+import userUtil from '@/util/user'
 
 // style
 import { Container, List, Item, ItemUndecided, StyledButton, StyledSearch, VoteFilter } from './style'
@@ -71,6 +72,7 @@ export default class extends BaseComponent {
       {
         title: I18N.get('council.voting.author'),
         dataIndex: 'proposedBy',
+        // render: (type, item) => _.trim(item.proposerUser)|| _.trim(item.proposedBy)
       },
       {
         title: I18N.get('council.voting.votingEndsIn'),
@@ -212,7 +214,7 @@ export default class extends BaseComponent {
     sessionStorage.removeItem('proposalPage')
     sessionStorage.removeItem('voteResult')
     sessionStorage.removeItem('proposalSearch')
-    
+
     const { _id, profile } = this.props.user
     const fullName = `${profile.firstName} ${profile.lastName}`
     const {createDraft } = this.props

@@ -14,7 +14,7 @@ export default ({ data, hideAuthor, postedByText }) => {
       {postedByText || I18N.get('suggestion.postedBy')}
       {' '}
       {userUtil.getUserDisplayName(data.proposer)}
-      {` (${I18N.get('suggestion.viaCouncilMember')} <${userUtil.getUserDisplayName(data.createdBy)}>)`}
+      {` (${I18N.get('suggestion.viaCouncilMember')} ${userUtil.getUserDisplayName(data.createdBy)})`}
     </span>
   )
 

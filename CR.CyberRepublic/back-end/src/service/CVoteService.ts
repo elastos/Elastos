@@ -479,6 +479,10 @@ export default class extends Base {
         const u = await db_user.findOne({ _id: item.createdBy })
         if (!_.isEmpty) item.createdBy = u.username
       }
+      if (item.proposer) {
+        const u = await db_user.findOne({ _id: item.proposer })
+        item.proposerUser = u
+      }
     }
 
     return list

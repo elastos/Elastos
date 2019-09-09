@@ -79,7 +79,7 @@ const Component = ({
         </ItemTitle>
       </Col>
       <Col span={18}>
-        <ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}{` (${I18N.get('suggestion.viaCouncilMember')} <${userUtil.getUserDisplayName(createdBy)}>)`}</ItemText>
+        <ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}{` (${I18N.get('suggestion.viaCouncilMember')} ${userUtil.getUserDisplayName(createdBy)})`}</ItemText>
       </Col>
     </Item>
   )
