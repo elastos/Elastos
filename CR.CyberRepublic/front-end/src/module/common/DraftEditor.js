@@ -15,6 +15,7 @@ import {
 import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
 import { CONTENT_TYPE } from '@/constant'
+import { logger } from '@/util'
 import ImageSideButton from './ImageSideButton'
 
 // if using webpack
@@ -55,16 +56,26 @@ class Component extends BaseComponent {
     } else if (contentType === CONTENT_TYPE.MARKDOWN) {
       try {
         editorState = createEditorState(JSON.parse(value))
-      } catch (err) {}
+      } catch (err) {
+        logger.error(err)
+      }
     }
 
     if (!editorState) {
-      const blocksFromHTML = convertFromHTML(value)
-      const state = ContentState.createFromBlockArray(
-        blocksFromHTML.contentBlocks,
-        blocksFromHTML.entityMap
-      )
-      editorState = EditorState.createWithContent(state)
+      try {
+        const blocksFromHTML = convertFromHTML(value)
+        if (!blocksFromHTML.contentBlocks) {
+          editorState = createEditorState()
+        } else {
+          const state = ContentState.createFromBlockArray(
+            blocksFromHTML.contentBlocks,
+            blocksFromHTML.entityMap
+          )
+          editorState = EditorState.createWithContent(state)
+        }
+      } catch (err) {
+        logger.error(err)
+      }
     }
 
     return editorState
