@@ -1,0 +1,14 @@
+.DS_Store
+/DerivedData
+/Build
+xcuserdata
+/Docs
+/Pods
+
+/Podfile.lock
+/Products
+/Elastos.DID.Swift.SDK.xcworkspace
+
+/node_modules
+/package-lock.json
+
