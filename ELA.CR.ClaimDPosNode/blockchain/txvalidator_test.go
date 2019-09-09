@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -1377,34 +1377,6 @@ func getDid(code []byte) *common.Uint168 {
 	return ct1.ToProgramHash()
 }
 
-func (s *txValidatorTestSuite) getCRMember(publicKeyStr, privateKeyStr, nickName string) *crstate.CRMember {
-	publicKeyStr1 := publicKeyStr
-	privateKeyStr1 := privateKeyStr
-	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
-	code1 := getCode(publicKeyStr1)
-	ct1, _ := contract.CreateCRDIDContractByCode(code1)
-	did1 := ct1.ToProgramHash()
-
-	txn := new(types.Transaction)
-	txn.TxType = types.RegisterCR
-	txn.Version = types.TxVersion09
-	crInfoPayload := payload.CRInfo{
-		Code:     code1,
-		DID:      *did1,
-		NickName: nickName,
-		Url:      "http://www.elastos_test.com",
-		Location: 1,
-	}
-	signBuf := new(bytes.Buffer)
-	crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
-	rcSig1, _ := crypto.Sign(privateKey1, signBuf.Bytes())
-	crInfoPayload.Signature = rcSig1
-
-	return &crstate.CRMember{
-		Info: crInfoPayload,
-	}
-}
-
 func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nickName string) *types.Transaction {
 
 	publicKeyStr1 := publicKeyStr
@@ -1566,6 +1538,34 @@ func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr str
 		Parameter: nil,
 	}}
 	return txn
+}
+
+func (s *txValidatorTestSuite) getCRMember(publicKeyStr, privateKeyStr, nickName string) *crstate.CRMember {
+	publicKeyStr1 := publicKeyStr
+	privateKeyStr1 := privateKeyStr
+	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
+	code1 := getCode(publicKeyStr1)
+	ct1, _ := contract.CreateCRDIDContractByCode(code1)
+	did1 := ct1.ToProgramHash()
+
+	txn := new(types.Transaction)
+	txn.TxType = types.RegisterCR
+	txn.Version = types.TxVersion09
+	crInfoPayload := payload.CRInfo{
+		Code:     code1,
+		DID:      *did1,
+		NickName: nickName,
+		Url:      "http://www.elastos_test.com",
+		Location: 1,
+	}
+	signBuf := new(bytes.Buffer)
+	crInfoPayload.SerializeUnsigned(signBuf, payload.CRInfoVersion)
+	rcSig1, _ := crypto.Sign(privateKey1, signBuf.Bytes())
+	crInfoPayload.Signature = rcSig1
+
+	return &crstate.CRMember{
+		Info: crInfoPayload,
+	}
 }
 
 func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
@@ -1816,7 +1816,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
 
-	votingHeight := config.DefaultParams.CRVotingStartHeight
 	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
 	nickName1 := "nickname 1"
 
@@ -1833,12 +1832,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "invalid payload")
 
-	// create proposal during voting period
-	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	err = s.Chain.checkCRCProposalTransaction(txn, votingHeight)
-	s.EqualError(err, "should create proposal during tenure period")
-
 	// invalid proposal type
+	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x10
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "type of proposal should be known")
