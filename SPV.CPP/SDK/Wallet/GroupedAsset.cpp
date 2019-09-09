@@ -254,6 +254,10 @@ namespace Elastos {
 
 				totalInputAmount += (*u)->Output()->Amount();
 				feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+
+				if (firstInput == nullptr) {
+					firstInput = *u;
+				}
 			}
 
 			_parent->Unlock();
