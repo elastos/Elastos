@@ -577,17 +577,19 @@ namespace Elastos {
 				stream.WriteVarBytes(tmp);
 			}
 
-			const std::vector<PublicKeyRing> &pubkeyRing = _localstore->GetPublicKeyRing();
-			stream.WriteVarUint(pubkeyRing.size());
-			for (size_t i = 0; i < pubkeyRing.size(); ++i) {
-				tmp.setHex(pubkeyRing[i].GetRequestPubKey());
-				stream.WriteVarBytes(tmp);
+			if (_localstore->GetN() > 1) {
+				const std::vector<PublicKeyRing> &pubkeyRing = _localstore->GetPublicKeyRing();
+				stream.WriteVarUint(pubkeyRing.size());
+				for (size_t i = 0; i < pubkeyRing.size(); ++i) {
+					tmp.setHex(pubkeyRing[i].GetRequestPubKey());
+					stream.WriteVarBytes(tmp);
 
-				if (!Base58::CheckDecode(pubkeyRing[i].GetxPubKey(), tmp)) {
-					Log::error("Decode pubkey ring xpub fail when export read-only wallet");
-					return j;
+					if (!Base58::CheckDecode(pubkeyRing[i].GetxPubKey(), tmp)) {
+						Log::error("Decode pubkey ring xpub fail when export read-only wallet");
+						return j;
+					}
+					stream.WriteVarBytes(tmp);
 				}
-				stream.WriteVarBytes(tmp);
 			}
 
 			const std::vector<CoinInfoPtr> &info = _localstore->GetSubWalletInfoList();
@@ -595,30 +597,18 @@ namespace Elastos {
 			for(size_t i = 0; i < info.size(); ++i) {
 				stream.WriteUint64((uint64_t)info[i]->GetEarliestPeerTime());
 				stream.WriteVarString(info[i]->GetChainID());
-
-				const std::vector<uint256> &visibleAsset = info[i]->GetVisibleAssets();
-				stream.WriteVarUint(visibleAsset.size());
-				for (std::vector<uint256>::const_iterator it = visibleAsset.cbegin(); it != visibleAsset.cend(); ++it) {
-					stream.WriteBytes(*it);
-				}
 			}
 
 			const bytes_t &bytes = stream.GetBytes();
 
 			j["Data"] = bytes.getBase64();
-			j["Algorithm"] = "base64";
 
 			return j;
 		}
 
 		bool Account::ImportReadonlyWallet(const nlohmann::json &walletJSON) {
-			if (walletJSON.find("Data") == walletJSON.end() || walletJSON.find("Algorithm") == walletJSON.end()) {
+			if (walletJSON.find("Data") == walletJSON.end()) {
 				Log::error("Import read-only wallet: json format error");
-				return false;
-			}
-
-			if (walletJSON["Algorithm"] != "base64") {
-				Log::error("Import read-only wallet: Unsupport Algorithm");
 				return false;
 			}
 
@@ -696,27 +686,31 @@ namespace Elastos {
 				_localstore->SetxPubKeyHDPM(Base58::CheckEncode(bytes));
 
 			uint64_t len;
-			if (!stream.ReadVarUint(len)) {
-				Log::error("Import read-only wallet: pubkeyRing size");
-				return false;
-			}
-
-			bytes_t requestPub, xpub;
-			for (size_t i = 0; i < len; ++i) {
-				if (!stream.ReadVarBytes(requestPub)) {
-					Log::error("Import read-only wallet: pubkey ring request pubkey");
+			if (_localstore->GetN() > 1) {
+				if (!stream.ReadVarUint(len)) {
+					Log::error("Import read-only wallet: pubkeyRing size");
 					return false;
 				}
 
-				if (!stream.ReadVarBytes(xpub)) {
-					Log::error("Import read-only wallet: pubkey ring xpub");
-					return false;
-				}
+				bytes_t requestPub, xpub;
+				for (size_t i = 0; i < len; ++i) {
+					if (!stream.ReadVarBytes(requestPub)) {
+						Log::error("Import read-only wallet: pubkey ring request pubkey");
+						return false;
+					}
 
-				if (xpub.empty())
-					_localstore->AddPublicKeyRing(PublicKeyRing(requestPub.getHex(), ""));
-				else
-					_localstore->AddPublicKeyRing(PublicKeyRing(requestPub.getHex(), Base58::CheckEncode(xpub)));
+					if (!stream.ReadVarBytes(xpub)) {
+						Log::error("Import read-only wallet: pubkey ring xpub");
+						return false;
+					}
+
+					if (xpub.empty())
+						_localstore->AddPublicKeyRing(PublicKeyRing(requestPub.getHex(), ""));
+					else
+						_localstore->AddPublicKeyRing(PublicKeyRing(requestPub.getHex(), Base58::CheckEncode(xpub)));
+				}
+			} else {
+				_localstore->AddPublicKeyRing(PublicKeyRing(_localstore->GetRequestPubKey(), _localstore->GetxPubKeyHDPM()));
 			}
 
 			if (!stream.ReadVarUint(len)) {
@@ -738,25 +732,9 @@ namespace Elastos {
 					return false;
 				}
 
-				std::vector<uint256> visibleAsset;
-				uint64_t size;
-				if (!stream.ReadVarUint(size)) {
-					Log::error("Import read-only wallet: visible asset size");
-					return false;
-				}
-
-				uint256 asset;
-				for (size_t j = 0; j < size; ++j) {
-					if (!stream.ReadBytes(asset)) {
-						Log::error("Import read-only wallet: asset");
-						return false;
-					}
-					visibleAsset.push_back(asset);
-				}
 				CoinInfoPtr info(new CoinInfo());
 				info->SetEaliestPeerTime(t);
 				info->SetChainID(chainID);
-				info->SetVisibleAssets(visibleAsset);
 
 				infoList.push_back(info);
 			}
