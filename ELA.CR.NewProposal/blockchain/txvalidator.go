@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -1494,10 +1494,6 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	proposal, ok := txn.Payload.(*payload.CRCProposal)
 	if !ok {
 		return errors.New("invalid payload")
-	}
-
-	if b.crCommittee.IsInVotingPeriod(blockHeight) {
-		return errors.New("should create proposal during tenure period")
 	}
 
 	if proposal.ProposalType.Name() == "Unknown" {

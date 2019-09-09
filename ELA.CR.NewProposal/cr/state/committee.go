@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -37,14 +37,7 @@ func (c *Committee) ExistCR(programCode []byte) bool {
 		return true
 	}
 
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
-	for _, v := range c.Members {
-		if bytes.Equal(programCode, v.Info.Code) {
-			return true
-		}
-	}
-	return false
+	return c.IsCRMember(programCode)
 }
 
 func (c *Committee) IsCRMember(programCode []byte) bool {
