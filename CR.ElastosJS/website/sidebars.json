@@ -10,11 +10,6 @@
     "Elastos Fundamentals": [
       "getting-started/ecosystem",
       "getting-started/types-of-apps"
-    ],
-    "Decentralized Apps": [
-      "getting-started/why-decentralize",
-      "getting-started/decentralized-identity",
-      "getting-started/digital-assets"
     ]
   },
   "tutorials": {
@@ -25,6 +20,12 @@
     "Demos": [
       "demo/lottery-game",
       "demo/crowd-funding"
+    ]
+  },
+  "bounty": {
+    "Funding": [
+      "bounty/index",
+      "bounty/funding"
     ]
   },
   "advanced": {

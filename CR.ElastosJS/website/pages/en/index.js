@@ -65,8 +65,8 @@ class HomeSplash extends React.Component {
           <ProjectTitle siteConfig={siteConfig} />
           <PromoSection>
             <Button href={docUrl('getting-started/intro.html')}>Get Started</Button>
-            <Button href="/port-your-app"><b>Bounty:</b> Port Your ETH DApp</Button>
-            <Button href={docUrl('doc2.html')}>Get Funded By Cyber Republic</Button>
+            <Button href={docUrl('bounty/index.html')}><b>Calling Developers:</b> Port Your ETH DApp</Button>
+            <Button href={docUrl('bounty/funding.html')}>Get Funded By Cyber Republic</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -144,15 +144,13 @@ class Index extends React.Component {
           title: 'A familiar stack for Ethereum Developers',
           content: `<span class="normal" style="font-size: 13px;">Elastos is building equivalent versions of your favorite tools</span>
 
-<span class="normal">MetaMask</span> &#x27A1; Elastos Chainlink developed by <a href="https://trade.gaex.com" target="_blank">GAEX</a>
+<span class="normal">Block Explorer</span> &#x27A1; use our testnet block explorer at <a href="https://explorer.elaeth.io" target="_blank">https://explorer.elaeth.io</a>
 
-<span class="normal">Remix</span> &#x27A1; Under Development by Elastos
+<span class="normal">MetaMask</span> &#x27A1; directly works on our new RPC port at <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>
 
-<span class="normal">Myetherwallet</span> &#x27A1; Under Development by Elastos
+<span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port 
 
-<span class="normal">Truffle</span> &#x27A1; In Progress by our ETH Team
-
-<span class="normal">ENS</span> &#x27A1; In Progress by our ETH Team
+<span class="normal">Myetherwallet</span> &#x27A1; accessible at <a href="https://wallet.elaeth.io" target="_blank">https://wallet.elaeth.io</a>
 
 <a class="button" href=${docUrl('advanced.html')}>View Our Advanced Tutorial for Ethereum Developers</a>`,
           image: `${baseUrl}img/metamask-logo-eyes.png`,
