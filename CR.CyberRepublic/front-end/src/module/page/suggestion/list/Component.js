@@ -7,7 +7,7 @@ import {
 } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
-import { loginRedirectWithQuery } from '@/util'
+import { loginRedirectWithQuery, logger } from '@/util'
 import StandardPage from '../../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import MySuggestion from '../my_list/Container'
@@ -21,7 +21,6 @@ import { SUGGESTION_STATUS, CONTENT_TYPE, SUGGESTION_TAG_TYPE } from '@/constant
 import { breakPoint } from '@/constants/breakPoint'
 import { text, bg } from '@/constants/color'
 import DraftEditor from '@/module/common/DraftEditor'
-
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
 
@@ -147,17 +146,17 @@ export default class extends StandardPage {
   onFormSubmit = async (param) => {
     try {
       await this.props.create(param)
-      this.showCreateForm()
+      this.setState({ showForm: false })
       this.refetch()
     } catch (error) {
-      // console.log(error)
+      logger.error(error)
     }
   }
 
   renderCreateForm = () => {
     const props = {
-      onFormCancel: this.showCreateForm,
-      onFormSubmit: this.onFormSubmit,
+      onCancel: this.hideCreateForm,
+      onSubmit: this.onFormSubmit
     }
 
     return (
@@ -165,8 +164,7 @@ export default class extends StandardPage {
         className="project-detail-nobar"
         maskClosable={false}
         visible={this.state.showForm}
-        onOk={this.showCreateForm}
-        onCancel={this.showCreateForm}
+        onCancel={this.hideCreateForm}
         footer={null}
         width="70%"
       >
@@ -179,7 +177,6 @@ export default class extends StandardPage {
 
   showCreateForm = () => {
     const { isLogin, history } = this.props
-    const { showForm } = this.state
     if (!isLogin) {
       const query = { create: true }
       loginRedirectWithQuery({ query })
@@ -187,9 +184,10 @@ export default class extends StandardPage {
       return
     }
     this.props.history.push('/suggestion/create')
-    // this.setState({
-    //   showForm: !showForm,
-    // })
+  }
+
+  hideCreateForm = () => {
+    this.setState({ showForm: false })
   }
 
   toggleArchivedList = async () => {

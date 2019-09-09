@@ -1,47 +1,18 @@
 import React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import { Helmet } from 'react-helmet'
 import _ from 'lodash'
-import { Row, Col, Spin, Divider, Modal, Input, Button } from 'antd'
-import { Link } from 'react-router-dom'
+import { Spin } from 'antd'
 import MediaQuery from 'react-responsive'
-import moment from 'moment/moment'
-import Comments from '@/module/common/comments/Container'
 import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
-import Translation from '@/module/common/Translation/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Component'
-import ProposalForm from '@/module/page/CVote/create/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
-import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
-import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from '@/util/html'
-import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
-import ActionsContainer from '../common/actions/Container'
-import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
 
-import {
-  Container,
-  Title,
-  CoverImg,
-  ShortDesc,
-  DescLabel,
-  Label,
-  LabelPointer,
-  Desc,
-  BtnGroup,
-  StyledButton,
-  DescBody,
-  CouncilComments,
-  IconWrap
-} from './style'
+import { Container } from './style'
 
 import './style.scss'
-
-const { TextArea } = Input
 
 export default class extends StandardPage {
   constructor(props) {
@@ -112,6 +83,7 @@ export default class extends StandardPage {
               {I18N.get('suggestion.title.edit')}
             </h2>
             <SuggestionForm
+              lang={this.props.lang}
               initialValues={this.state.data}
               onSubmit={this.onSubmit}
               onCancel={this.historyBack}

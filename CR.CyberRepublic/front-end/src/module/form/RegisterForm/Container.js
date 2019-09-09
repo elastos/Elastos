@@ -2,6 +2,7 @@ import {createContainer, goPath} from '@/util'
 import Component from './Component'
 import UserService from '@/service/UserService'
 import {message} from 'antd'
+import { logger } from '@/util'
 
 message.config({
   top: 100
@@ -34,8 +35,8 @@ export default createContainer(Component, (state) => {
 
         }
       } catch (err) {
-        console.error(err)
         message.error(err && err.message ? err.message : 'Registration Failed - Please Contact Our Support')
+        logger.error(err)
       }
     },
 

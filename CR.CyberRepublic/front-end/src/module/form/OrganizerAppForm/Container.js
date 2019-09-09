@@ -4,6 +4,7 @@ import SubmissionService from '@/service/SubmissionService'
 import CommunityService from '@/service/CommunityService'
 import {message} from 'antd'
 import _ from 'lodash'
+import { logger } from '@/util'
 
 import {SUBMISSION_TYPE, SUBMISSION_CAMPAIGN} from '@/constant'
 
@@ -57,8 +58,8 @@ export default createContainer(Component, (state) => {
           submissionService.path.push('/profile/submissions')
         }
       } catch (err) {
-        console.error(err)
-        message.error(err.message) // TODO: add rollbar?
+        message.error(err.message)
+        logger.error(err)
       }
     },
 

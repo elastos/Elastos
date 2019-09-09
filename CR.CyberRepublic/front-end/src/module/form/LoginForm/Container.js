@@ -3,6 +3,7 @@ import Component from './Component'
 import UserService from '@/service/UserService'
 import { message } from 'antd'
 import I18N from '@/I18N'
+import { logger } from '@/util'
 
 message.config({
   top: 100,
@@ -24,7 +25,6 @@ export default createContainer(Component, state => ({
 
           const loginRedirect = sessionStorage.getItem('loginRedirect')
           if (loginRedirect) {
-            console.log('login redirect')
             this.history.push(loginRedirect)
             sessionStorage.setItem('loggedIn', '1')
             sessionStorage.setItem('loginRedirect', null)
@@ -35,6 +35,7 @@ export default createContainer(Component, state => ({
         }
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
         return false
       }
     },

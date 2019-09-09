@@ -1,13 +1,12 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import {
-  Form, Input, Button, Row, message, Modal,
-} from 'antd'
+import { Form, Button, Row, message } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CONTENT_TYPE } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
+import { logger } from '@/util'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
@@ -76,6 +75,7 @@ class C extends BaseComponent {
       } catch (error) {
         message.error(error.message)
         this.ord_loading(false)
+        logger.error(error)
       }
     })
   }

@@ -9,7 +9,7 @@ import ModalAddOrganizer from '../../shared/ModalAddOrganizer/Component'
 import Navigator from '../../../shared/HomeNavigator/Container'
 import config from '@/config'
 import { COMMUNITY_TYPE, USER_GENDER, DEFAULT_IMAGE } from '@/constant'
-
+import { logger } from '@/util'
 import '../style.scss'
 
 export default class extends AdminPage {
@@ -75,8 +75,8 @@ export default class extends AdminPage {
           message.success('Add new organizer successfully')
           this.loadCommunityDetail()
         }).catch((err) => {
-          console.error(err)
           message.error('Error while add organizer')
+          logger.error(err)
         })
       })
     }
@@ -385,8 +385,9 @@ export default class extends AdminPage {
       }).then(() => {
         message.success('Add new sub community successfully')
         this.loadSubCommunities()
-      }).catch(() => {
+      }).catch((err) => {
         message.error('Error while adding new sub community')
+        logger.error(err)
       })
     }
 

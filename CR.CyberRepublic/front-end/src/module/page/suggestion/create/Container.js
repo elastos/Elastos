@@ -3,7 +3,6 @@ import {
 } from '@/util'
 import Component from './Component'
 import SuggestionService from '@/service/SuggestionService'
-import CommentService from '@/service/CommentService'
 
 export default createContainer(Component, (state) => {
   return {

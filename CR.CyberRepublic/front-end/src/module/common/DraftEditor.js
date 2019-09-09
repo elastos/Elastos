@@ -38,6 +38,10 @@ class Component extends BaseComponent {
   }
 
   componentDidMount() {
+    const { autoFocus } = this.props
+    if (autoFocus === false) {
+      return
+    }
     this.refsEditor.current && this.refsEditor.current.focus()
   }
 

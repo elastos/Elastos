@@ -365,13 +365,19 @@ class C extends BaseComponent {
     if (commentItems) {
       commentItems.reverse()
     }
-
+    const emptyText = (
+      <div>
+        {I18N.get('comments.noComments')}
+        <a href="/login">{I18N.get('comments.signIn')}</a>
+        {I18N.get('comments.firstToPost')}
+      </div>
+    )
     return (
       <List
         size="large"
         itemLayout="horizontal"
         locale={{
-          emptyText: I18N.get('comments.noComments'),
+          emptyText
         }}
         dataSource={commentItems}
         header={footer}

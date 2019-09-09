@@ -2,14 +2,12 @@ import React from 'react'
 import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
-import {
-  Table, Row, Col, Button, Input,
-} from 'antd'
+import { Table, Row, Col, Button } from 'antd'
 import I18N from '@/I18N'
-import { Link } from 'react-router-dom'
+import { logger } from '@/util'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
 import VoteStats from '../stats/Component'
-import CreateForm from '../create/Container'
+import userUtil from '@/util/user'
 
 // style
 import { Container, List, Item, ItemUndecided, StyledButton, StyledSearch, VoteFilter } from './style'
@@ -24,10 +22,11 @@ export default class extends BaseComponent {
     super(p)
 
     this.state = {
-      list: null,
+      list: [],
       loading: true,
-      voteResult: FILTERS.ALL,
-      search: ''
+      voteResult: sessionStorage.getItem('voteResult') || FILTERS.ALL,
+      search: sessionStorage.getItem('proposalSearch') || '',
+      page: 1
     }
 
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
@@ -73,6 +72,7 @@ export default class extends BaseComponent {
       {
         title: I18N.get('council.voting.author'),
         dataIndex: 'proposedBy',
+        // render: (type, item) => _.trim(item.proposerUser)|| _.trim(item.proposedBy)
       },
       {
         title: I18N.get('council.voting.votingEndsIn'),
@@ -82,8 +82,12 @@ export default class extends BaseComponent {
           if (item.status === CVOTE_STATUS.DRAFT) return null
           // only show when status is PROPOSED
           const endsInFloat = moment.duration(moment(proposedAt || item.createdAt).add(7, 'd').diff(moment())).as('days')
-          if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) return I18N.get('council.voting.votingEndsIn.ended')
-          if (endsInFloat > 0 && endsInFloat <= 1) return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
+          if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) {
+            return I18N.get('council.voting.votingEndsIn.ended')
+          }
+          if (endsInFloat > 0 && endsInFloat <= 1) {
+            return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
+          }
           return `${Math.ceil(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
         },
       },
@@ -126,7 +130,6 @@ export default class extends BaseComponent {
       <Row type="flex" align="middle" justify="end">
         <Col lg={8} md={12} sm={24} xs={24} style={{ textAlign: 'right' }}>
           <StyledButton onClick={this.createAndRedirect} className="cr-btn cr-btn-primary">
-            {/* <Link to="/proposals/new" style={{ color: 'white' }}>{I18N.get('from.CVoteForm.button.add')}</Link> */}
             {I18N.get('from.CVoteForm.button.add')}
           </StyledButton>
         </Col>
@@ -176,6 +179,7 @@ export default class extends BaseComponent {
         )}
       </Col>
     )
+    const { list, loading, page } = this.state
     return (
       <Container>
         {createBtn}
@@ -186,16 +190,31 @@ export default class extends BaseComponent {
         </Row>
         <Table
           columns={columns}
-          loading={this.state.loading}
-          dataSource={this.state.list}
+          loading={loading}
+          dataSource={list}
           rowKey={record => record._id}
+          pagination={{
+            current: page,
+            pageSize: 10,
+            total: list && list.length,
+            onChange: this.onPageChange,
+          }}
         />
         {createBtn}
       </Container>
     )
   }
 
+  onPageChange = (page, pageSize) => {
+    this.setState({ page: parseInt(page) })
+    sessionStorage.setItem('proposalPage', page)
+  }
+
   createAndRedirect = async () => {
+    sessionStorage.removeItem('proposalPage')
+    sessionStorage.removeItem('voteResult')
+    sessionStorage.removeItem('proposalSearch')
+
     const { _id, profile } = this.props.user
     const fullName = `${profile.firstName} ${profile.lastName}`
     const {createDraft } = this.props
@@ -219,12 +238,11 @@ export default class extends BaseComponent {
 
   getQuery = () => {
     const query = {}
-    if (this.state.voteResult === FILTERS.UNVOTED) {
-      query.voteResult = FILTERS.UNVOTED
-    }
-
-    if (!_.isEmpty(this.state.search)) {
-      query.search = this.state.search
+    const voteResult = sessionStorage.getItem('voteResult') || this.state.voteResult
+    query.voteResult = voteResult
+    const searchStr = this.state.search || sessionStorage.getItem('proposalSearch')
+    if (searchStr) {
+      query.search = searchStr
     }
 
     return query
@@ -236,19 +254,19 @@ export default class extends BaseComponent {
     const param = this.getQuery()
     try {
       const list = await listData(param, canManage)
-      this.setState({ list })
+      const page = sessionStorage.getItem('proposalPage')
+      this.setState({ list, page: page && parseInt(page) || 1 })
     } catch (error) {
-      // do sth
+      logger.error(error)
     }
 
     this.ord_loading(false)
   }
 
   searchChangedHandler = (search) => {
-    this.setState({
-      search,
-      page: 1
-    }, this.debouncedRefetch)
+    sessionStorage.removeItem('proposalPage')
+    sessionStorage.setItem('proposalSearch', search)
+    this.setState({ search }, this.debouncedRefetch)
   }
 
   onFilterChanged = (value) => {
@@ -266,10 +284,14 @@ export default class extends BaseComponent {
   }
 
   clearFilters = () => {
+    sessionStorage.removeItem('proposalPage')
+    sessionStorage.setItem('voteResult', FILTERS.ALL)
     this.setState({ voteResult: FILTERS.ALL }, this.refetch)
   }
 
   setFilter = (voteResult) => {
+    sessionStorage.removeItem('proposalPage')
+    sessionStorage.setItem('voteResult', voteResult)
     this.setState({ voteResult }, this.refetch)
   }
 

@@ -3,14 +3,14 @@ import PropTypes from 'prop-types'
 import _ from 'lodash'
 import Translation from '@/module/common/Translation/Container'
 
-import { Container, ResultRow, Reason, Label, List, Item, Avatar } from './style'
+import { Container, ResultRow, Reason, Label, List, Item, Avatar, StyledAvatarIcon } from './style'
 
 const Component = ({ label, type, dataList }) => {
   const votesNode = _.map(dataList, (data, key) => {
     // const isReject = type === CVOTE_RESULT.REJECT
     const userNode = (
       <Item key={key}>
-        <Avatar src={data.avatar} alt="voter avatar" />
+        {data.avatar ? <Avatar src={data.avatar} alt="voter avatar" /> : <StyledAvatarIcon />}
         <div>{data.name}</div>
       </Item>
     )
@@ -33,6 +33,7 @@ const Component = ({ label, type, dataList }) => {
       </ResultRow>
     )
   })
+
   return (
     <Container>
       <Label>{label}</Label>
@@ -48,6 +49,5 @@ const propTypes = {
 }
 
 Component.propTypes = propTypes
-
 
 export default Component

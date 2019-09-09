@@ -3,6 +3,7 @@ import { message } from 'antd'
 import { createContainer } from '@/util'
 import Component from './Component'
 import UserService from '@/service/UserService'
+import { logger } from '@/util'
 
 export default createContainer(Component, (state, ownProps) => ({
   is_admin: state.user.is_admin,
@@ -22,6 +23,7 @@ export default createContainer(Component, (state, ownProps) => ({
         }
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 

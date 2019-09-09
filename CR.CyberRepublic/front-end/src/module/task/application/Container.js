@@ -3,7 +3,7 @@ import Component from './Component'
 import TaskService from '@/service/TaskService'
 import TeamService from '@/service/TeamService'
 import { message } from 'antd/lib/index'
-
+import { logger } from '@/util'
 
 export default createContainer(Component, (state) => {
   return {
@@ -25,8 +25,8 @@ export default createContainer(Component, (state) => {
 
         return result
       } catch (err) {
-        console.error(err)
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -51,8 +51,8 @@ export default createContainer(Component, (state) => {
         const result = await taskService.pullCandidate(taskId, taskCandidateId)
         return result
       } catch (err) {
-        console.error(err)
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -61,8 +61,8 @@ export default createContainer(Component, (state) => {
         const result = await taskService.acceptCandidate(taskCandidateId)
         return result
       } catch (err) {
-        console.error(err)
         message.error(err.message)
+        logger.error(err)
       }
     }
   }

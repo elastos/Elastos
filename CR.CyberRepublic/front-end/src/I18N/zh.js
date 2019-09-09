@@ -3,16 +3,20 @@ import council from './zh/council'
 import home from './zh/home'
 import release from './zh/release'
 import proposal from './zh/proposal'
-import getting_started from './en/getting_started'
 import suggestion from './zh/suggestion'
+import getting_started from './en/getting_started'
+import whitepaper from './zh/whitepaper'
+import elip from './zh/elip'
 
 const zh = {
   council,
   home,
   release,
   proposal,
-  getting_started,
   suggestion,
+  getting_started,
+  whitepaper,
+  elip,
   // Header
   '0000': 'ALPHA版本',
   '0001': '奖励计划',
@@ -42,6 +46,7 @@ const zh = {
     council: '委员会',
     constitution: '白皮书',
     suggestion: '建议',
+    elip: 'ELIP',
     proposal: '提案',
     whatsNew: '版本更新',
     resources: {
@@ -112,24 +117,21 @@ const zh = {
   comments: '评论',
   'comments.posts': '动态',
   'comments.post': '发言',
-  'comments.noComments': '还没有评论，抢沙发！',
+  'comments.noComments': '还没有评论，',
+  'comments.signIn': '注册',
+  'comments.firstToPost': '抢沙发！',
   'comments.commentsOrUpdates': '评论或更新',
   // Admin tasks
   'admin.tasks.status': '状态',
 
   // Pop-up Announcement
   'popup.changes.title': 'Cyber Republic的重要公告',
-  'popup.changes.2018-12-26.1':
-    '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好地体现Cyber Republic 公开、透明和社区自治的理念。\n',
-  'popup.changes.2018-12-26.2':
-    '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来的几周我们会给出具体的处理方案。',
-  'popup.changes.2018-12-26.3':
-    '新的CR论坛将于2018年12月31日开始启用，希望大家在新的网站平台上提出问题并表达你们的想法。由于因为中国社区无法访问Discord，我们将邀请Discord的所有用户也使用该论坛。',
+  'popup.changes.2018-12-26.1': '经Cyber Republic理事会和亦来云团队成员们的深入讨论，我们近期将对CR网站进行改版，以更好地体现Cyber Republic 公开、透明和社区自治的理念。\n',
+  'popup.changes.2018-12-26.2': '改版期间CR 网站上的CR100/CRcle/大使计划等会暂停服务（即停止接受新的提案和申请）。针对已经进行中的社区活动和CR100项目，在接下来的几周我们会给出具体的处理方案。',
+  'popup.changes.2018-12-26.3': '新的CR论坛将于2018年12月31日开始启用，希望大家在新的网站平台上提出问题并表达你们的想法。由于因为中国社区无法访问Discord，我们将邀请Discord的所有用户也使用该论坛。',
   'popup.changes.2018-12-26.4': '您还可以通过右上角的链接自动登录论坛：',
-  'popup.changes.2018-12-26.5':
-    '更新后的CR网站将于2019年1月15日重新上线，更多信息请参考：',
-  'popup.changes.2018-12-26.blog_link':
-    'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
+  'popup.changes.2018-12-26.5': '更新后的CR网站将于2019年1月15日重新上线，更多信息请参考：',
+  'popup.changes.2018-12-26.blog_link': 'https://blog.cyberrepublic.org/zh/2018/12/26/cyber-republic%E7%9A%84%E9%87%8D%E8%A6%81%E5%85%AC%E5%91%8A',
 
   // LoginForm
   'login.label_username': '请输入用户名或邮箱',
@@ -154,8 +156,7 @@ const zh = {
   // RegisterFrom
   'register.title': '成为贡献者',
   'register.description_1': '仅仅需要花费您几秒钟',
-  'register.description_2':
-    '作为会员，您可以在Cyber Republic上申领任务来获取奖励',
+  'register.description_2': '作为会员，您可以在Cyber Republic上申领任务来获取奖励',
   'register.required': '必填项',
   'register.error.code': '您输入的验证码不匹配',
   'register.error.passwords': '您两次输入的密码不一致',
@@ -230,6 +231,7 @@ const zh = {
   'suggestion.owner': '提议人',
   'suggestion.new': '最新',
   'suggestion.postedBy': '发布者',
+  'suggestion.viaCouncilMember': '由委员会成员',
   'suggestion.follow': '关注',
   'suggestion.reportAbuse': '举报',
   'suggestion.translate': '翻译为: ',

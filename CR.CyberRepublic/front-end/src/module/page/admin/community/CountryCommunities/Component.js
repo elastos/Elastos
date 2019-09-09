@@ -7,7 +7,7 @@ import ModalAddCountry from '../../shared/ModalAddCountry/Component'
 import config from '@/config'
 import { USER_GENDER } from '@/constant'
 import Navigator from '../../../shared/HomeNavigator/Container'
-
+import { logger } from '@/util'
 import '../style.scss'
 
 export default class extends AdminPage {
@@ -52,11 +52,10 @@ export default class extends AdminPage {
           leaderIds: values.leader || '',
         }).then(() => {
           message.success('Add new country successfully')
-
           this.loadCommunities()
         }).catch((err) => {
-          console.error(err)
           message.error('Error while add country')
+          logger.error(err)
         })
       })
     }

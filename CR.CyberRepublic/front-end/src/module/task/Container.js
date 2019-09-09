@@ -3,6 +3,7 @@ import Component from './Component'
 import TaskService from '@/service/TaskService'
 import {message} from 'antd'
 import {TASK_STATUS} from '@/constant'
+import { logger } from '@/util'
 
 export default createContainer(Component, (state) => {
 
@@ -41,6 +42,7 @@ export default createContainer(Component, (state) => {
         message.success('Task approved successfully')
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -54,6 +56,7 @@ export default createContainer(Component, (state) => {
         message.success('Task approved and assigned successfully')
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -67,6 +70,7 @@ export default createContainer(Component, (state) => {
         message.success('Task marked as complete')
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -80,6 +84,7 @@ export default createContainer(Component, (state) => {
         message.success('Task marked as ELA disbursed')
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -94,6 +99,7 @@ export default createContainer(Component, (state) => {
         message.success('Task completion accepted')
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -107,6 +113,7 @@ export default createContainer(Component, (state) => {
         window.history.back()
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     },
 
@@ -120,6 +127,7 @@ export default createContainer(Component, (state) => {
         message.success('Task marked as assigned')
       } catch (err) {
         message.error(err.message)
+        logger.error(err)
       }
     }
   }

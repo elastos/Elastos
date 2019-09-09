@@ -2,6 +2,7 @@ import React from 'react'
 import AdminPage from '../BaseAdmin'
 import moment from 'moment'
 import _ from 'lodash'
+import { logger } from '@/util'
 import '../admin.scss'
 import './style.scss'
 
@@ -194,10 +195,9 @@ export default class extends AdminPage {
     try {
       await this.props.archiveSubmission(submissionId, this.state.showArchived)
       message.success('Item archived successfully')
-
     } catch (err) {
-      console.error(err)
       message.error('There was a problem archiving this item')
+      logger.error(err)
     }
   }
 

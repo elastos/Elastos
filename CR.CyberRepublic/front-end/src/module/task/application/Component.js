@@ -1,8 +1,7 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import moment from 'moment'
 import ModalAcceptApplicant from '../ModalAcceptApplicant/Component'
-
+import { logger } from '@/util'
 import _ from 'lodash'
 
 import { Col, Row, Button, Spin, Divider, message, List, Icon, Tooltip, Popconfirm } from 'antd'
@@ -10,7 +9,6 @@ import { Col, Row, Button, Spin, Divider, message, List, Icon, Tooltip, Popconfi
 import {TASK_CATEGORY, TASK_TYPE, TASK_STATUS, TASK_CANDIDATE_TYPE, TASK_CANDIDATE_STATUS} from '@/constant'
 import Comments from '@/module/common/comments/Container'
 
-const dateTimeFormat = 'MMM D, YYYY - h:mma (Z [GMT])'
 
 export default class extends BaseComponent {
   ord_states() {
@@ -323,6 +321,7 @@ export default class extends BaseComponent {
 
       }).catch((err) => {
         message.error(err.message, 10)
+        logger.error(err)
       })
     }
 }

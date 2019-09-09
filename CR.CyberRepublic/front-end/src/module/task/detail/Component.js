@@ -13,7 +13,7 @@ import {TASK_EVENT_DATE_TYPE} from '../../../constant'
 
 import I18N from '@/I18N'
 import { getSafeUrl } from '@/util/url'
-
+import { logger } from '@/util'
 const dateTimeFormat = 'MMM D, YYYY - h:mma (Z [GMT])'
 
 /*
@@ -701,6 +701,7 @@ export default class extends BaseComponent {
     }).catch((err) => {
       // never entered
       message.error(err.message, 10)
+      logger.error(err)
     })
 
   }
@@ -746,6 +747,7 @@ export default class extends BaseComponent {
 
     }).catch((err) => {
       message.error(err.message, 10)
+      logger.error(err)
     })
   }
 

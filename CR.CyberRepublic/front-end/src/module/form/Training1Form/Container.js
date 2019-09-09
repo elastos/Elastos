@@ -3,7 +3,7 @@ import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
 import {message} from 'antd'
 import _ from 'lodash'
-
+import { logger } from '@/util'
 import {SUBMISSION_TYPE} from '@/constant'
 
 message.config({
@@ -50,8 +50,8 @@ export default createContainer(Component, (state) => {
           submissionService.path.push('/')
         }
       } catch (err) {
-        console.error(err)
-        message.error(err.message) // TODO: add rollbar?
+        message.error(err.message)
+        logger.error(err)
       }
     }
   }

@@ -94,7 +94,10 @@ export default class extends Base {
       const res = await db_cvote.save(doc)
       await db_suggestion.update(
         { _id: suggestionId },
-        { $addToSet: { reference: res._id } }
+        {
+          $addToSet: { reference: res._id },
+          $set: { tags: [] }
+        }
       )
       this.notifySubscribers(res)
       this.notifyCouncil(res)
@@ -476,6 +479,10 @@ export default class extends Base {
         const u = await db_user.findOne({ _id: item.createdBy })
         if (!_.isEmpty) item.createdBy = u.username
       }
+      if (item.proposer) {
+        const u = await db_user.findOne({ _id: item.proposer })
+        item.proposerUser = u
+      }
     }
 
     return list
@@ -629,6 +636,7 @@ export default class extends Base {
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
       )
       .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
     return rs
   }

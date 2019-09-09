@@ -5,6 +5,8 @@ const create = (list) => {
 }
 
 export const DATE_FORMAT = 'MMM D, YYYY'
+export const ABSTRACT_MAX_WORDS = 200
+export const ELIP_DESC_MAX_WORDS = 3000
 
 export const CR_LINKS = {
   FACEBOOK: 'https://www.facebook.com/ElastosCyberRepublic',
@@ -295,3 +297,7 @@ export const SUGGESTION_STATUS = create(['ACTIVE', 'ABUSED', 'ARCHIVED'])
 export const SUGGESTION_ABUSED_STATUS = create(['REPORTED', 'HANDLED'])
 
 export const SUGGESTION_TAG_TYPE = create(['UNDER_CONSIDERATION', 'INFO_NEEDED'])
+
+// elip
+export const ELIP_STATUS = create(['WAIT_FOR_REVIEW', 'APPROVED', 'REJECTED'])
+export const ELIP_FILTER = create(['ALL', 'APPROVED', 'SUBMITTED_BY_ME', 'WAIT_FOR_REVIEW'])

@@ -2,13 +2,12 @@ import { createContainer } from '@/util'
 import Component from './Component'
 import CVoteService from '@/service/CVoteService'
 
-
 const mapState = state => ({
   user: state.user,
   isLogin: state.user.is_login,
   isSecretary: state.user.is_secretary,
   isCouncil: state.user.is_council,
-  canManage: state.user.is_secretary || state.user.is_council,
+  canManage: state.user.is_secretary || state.user.is_council
 })
 
 const mapDispatch = () => {
@@ -31,7 +30,7 @@ const mapDispatch = () => {
     },
     async updateNotes(param) {
       return service.updateNotes(param)
-    },
+    }
   }
 }
 

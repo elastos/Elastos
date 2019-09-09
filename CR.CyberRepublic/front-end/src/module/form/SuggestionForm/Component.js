@@ -3,7 +3,7 @@ import BaseComponent from '@/model/BaseComponent'
 import { Form, Input, Button, Row, Tabs, Radio } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { CONTENT_TYPE } from '@/constant'
+import { CONTENT_TYPE, ABSTRACT_MAX_WORDS } from '@/constant'
 import { convertToRaw } from 'draft-js'
 import DraftEditor from '@/module/common/DraftEditor'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
@@ -20,7 +20,7 @@ import {
 const FormItem = Form.Item
 const { TabPane } = Tabs
 
-const WORD_LIMIT = 200
+const WORD_LIMIT = ABSTRACT_MAX_WORDS
 const TAB_KEYS = ['type', 'abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
 const editorTransform = value => {
   // string or object
@@ -171,6 +171,15 @@ class C extends BaseComponent {
     }
   }
 
+  validateAbstract = (rule, value, cb) => {
+    const { lang } = this.props
+    let count = 0
+    if (value) {
+      count = lang === 'en' ? value.split(' ').length : value.length
+    }
+    return count > WORD_LIMIT ? cb(true) : cb()
+  }
+
   getTextarea(id) {
     const { initialValues = {} } = this.props
     const { getFieldDecorator } = this.props.form
@@ -182,9 +191,9 @@ class C extends BaseComponent {
     }];
     if (id === 'abstract') {
       rules.push({
-        max: 200,
         transform: editorTransform,
-        message: I18N.get('proposal.form.error.limit200')
+        message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
+        validator: this.validateAbstract
       })
     }
 
@@ -204,11 +213,13 @@ class C extends BaseComponent {
   }
 
   renderWordLimit() {
-    const { form } = this.props
+    const { form, lang } = this.props
     const formValue = form.getFieldValue('abstract')
     const value = editorTransform(formValue)
-    const count = _.get(value, 'length', 0)
-
+    let count = 0
+    if (value) {
+      count = lang === 'en' ? value.split(' ').length : value.length
+    }
     return (
       <CirContainer>
         <CircularProgressbar count={count} />
