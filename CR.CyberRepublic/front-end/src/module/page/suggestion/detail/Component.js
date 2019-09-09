@@ -306,7 +306,7 @@ export default class extends StandardPage {
           <div key={_id} style={{ display: 'inline' }}>
             <LabelPointer
               type={type}
-              data-desc={desc.replace(/(['"])/g, '\\$1')}
+              data-desc={desc && desc.replace(/(['"])/g, '\\$1')}
               onClick={() => this.setState({ needsInfoVisible: true })}
             >
               {I18N.get(`suggestion.tag.type.${type}`)}
