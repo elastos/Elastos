@@ -4,10 +4,12 @@ sidebar_label: Funding for DApps
 ---
 
 Our DAO named **Cyber Republic (CR)** is always looking for new DApps that would benefit the Elastos ecosystem, there is no 
-requirement to be exclusive to Elastos. The only real requirement is to prove to the community that your DApp will
-bring a positive benefit to our ecosystem. 
+requirement to be exclusive to Elastos. **The only real requirement is to prove to the community that your DApp will
+bring a positive benefit to our ecosystem.** 
 
 ## Getting Funding
+
+![CR Suggestion](assets/cr_suggestion.png)
 
 
 #### 1. Reach out to the ETH Task Force Team advisor at clarence@elastos.org and discuss your idea
@@ -25,13 +27,23 @@ CR Council** and must clearly define the Goals, Motivation, Implementation Plan 
 Therefore we hope you reach out to us first and discuss your project, so we can help you craft the best **Suggestion** 
 possible to pitch your project to the community.
 
-*Therefore we hope you reach out to us first and discuss your idea so we can guide you on the process.*  
-
 
 #### 3. Wait for feedback or contact a CR Council member listed at [www.cyberrepublic.org/council](https://www.cyberrepublic.org/council)
 
 After creating your Suggestion the interim council gauges the community feedback via the likes and dislikes received by
 your Suggestion. If your Suggestion is viewed positively by the community or the council member thinks your project
 stands out they will convert your Suggestion into a **[Proposal](https://www.cyberrepublic.org/proposals)**.
+
+
+#### 4. Wait 7 days for your proposal to be voted on by the council
+
+![CR Proposal](assets/cr_proposal.png)
+
+Once your Suggestion has been converted into a **Proposal** all the members of the council will vote on it. If the 
+majority approves the Proposal, after the 7 day period is over the CR Secretariat Team will contact you to discuss
+the next steps, sign an agreement (non-legally binding) and arrange funding.
+
+If your Proposal is rejected do not be dismayed, discuss with the council members on why they voted the way they did
+and re-submit your Suggestion again with the improvements.
 
 
