@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -26,10 +26,10 @@ const (
 	// ChangeSponsor indicates the change proposal sponsor types of proposals.
 	ChangeSponsor CRCProposalType = 0x03
 
-	// Close indicates the close proposal types of proposals.
-	Close CRCProposalType = 0x04
+	// CloseProposal indicates the close proposal types of proposals.
+	CloseProposal CRCProposalType = 0x04
 
-	// SecretaryGeneral indicates the
+	// SecretaryGeneral indicates the vote secretary general types of proposals.
 	SecretaryGeneral CRCProposalType = 0x05
 )
 
@@ -45,8 +45,8 @@ func (pt CRCProposalType) Name() string {
 		return "SideChain"
 	case ChangeSponsor:
 		return "ChangeSponsor"
-	case Close:
-		return "Close"
+	case CloseProposal:
+		return "CloseProposal"
 	case SecretaryGeneral:
 		return "SecretaryGeneral"
 	default:
