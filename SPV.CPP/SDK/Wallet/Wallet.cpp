@@ -672,12 +672,14 @@ namespace Elastos {
 		std::vector<Address> Wallet::GetAllSpecialAddresses() const {
 			std::vector<Address> result;
 			boost::mutex::scoped_lock scopedLock(lock);
-			// Owner address
-			result.push_back(Address(PrefixStandard, _subAccount->OwnerPubKey()));
-			// Owner deposit address
-			result.push_back(Address(PrefixDeposit, _subAccount->OwnerPubKey()));
-			// CR Owner deposit address
-			result.push_back(Address(PrefixDeposit, _subAccount->DIDPubKey()));
+			if (_subAccount->Parent()->GetSignType() != Account::MultiSign) {
+				// Owner address
+				result.push_back(Address(PrefixStandard, _subAccount->OwnerPubKey()));
+				// Owner deposit address
+				result.push_back(Address(PrefixDeposit, _subAccount->OwnerPubKey()));
+				// CR Owner deposit address
+				result.push_back(Address(PrefixDeposit, _subAccount->DIDPubKey()));
+			}
 
 			return result;
 		}

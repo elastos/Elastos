@@ -782,6 +782,7 @@ namespace Elastos {
 		}
 
 		void Account::RegenerateKey(const std::string &payPasswd) const {
+			Log::info("Doing regenerate pubkey...");
 			std::vector<PublicKeyRing> pubkeyRing = _localstore->GetPublicKeyRing();
 
 			HDKeychain rootkey;
