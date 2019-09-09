@@ -22,16 +22,16 @@ function Help(props) {
   const supportLinks = [
     {
       content: `Learn more using the [documentation on this site.](${docUrl(
-        'doc1.html',
+        'docs',
       )})`,
       title: 'Browse Docs',
     },
     {
-      content: 'Ask questions about the documentation and project',
+      content: 'Ask questions in our developers chat on Telegram at <a target="_blank" href="https://t.me/elastosdev">https://t.me/elastosdev</a>',
       title: 'Join the community',
     },
     {
-      content: "Find out what's new with this project",
+      content: 'Find out what\'s new with Cyber Republic at <a target="_blank" href="https://cyberrepublic.press">https://cyberrepublic.press</a>',
       title: 'Stay up to date',
     },
   ];
@@ -43,7 +43,8 @@ function Help(props) {
           <header className="postHeader">
             <h1>Need help?</h1>
           </header>
-          <p>This project is maintained by a dedicated group of people.</p>
+          <p>This project is maintained by the <b>CR ETH Task Force.</b></p>
+          <p>We will have more here soon, for now you can reach us at <a target="_blank" href="mailto:contact@cyberrepublic.org">contact@cyberrepublic.org</a></p>
           <GridBlock contents={supportLinks} layout="threeColumn" />
         </div>
       </Container>

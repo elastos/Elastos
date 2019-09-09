@@ -42,7 +42,8 @@ const siteConfig = {
   headerLinks: [
     {doc: 'getting-started/intro', label: 'Getting Started'},
     {doc: 'tutorial/index', label: 'Tutorials'},
-    {doc: 'advanced/intro', label: 'Ethereum Developers'},
+    {doc: 'bounty/index', label: 'Funding'},
+    // {doc: 'advanced/intro', label: 'Ethereum Developers'},
     {doc: 'docs/index', label: 'Reference Docs'},
     {page: 'help', label: 'Community'},
     {blog: true, label: 'Updates'},

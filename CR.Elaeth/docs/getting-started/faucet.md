@@ -10,7 +10,8 @@ would be far too difficult because you'd need to ask the test miners for tokens.
 
 ![Faucet home page](assets/faucet_home.png)
 
-You can get tokens from [ELA ETH Faucet site](https://faucet.elaeth.io). After passing google's reCAPTCHA verification, enter your ETH compatible address and click `REQUEST 0.1 ETH ELA` button, you will get 0.1 ELA ETH.
+You can get tokens from [ELA ETH Faucet site](https://faucet.elaeth.io). After passing google's reCAPTCHA verification, 
+enter your ETH compatible address and click the `REQUEST 0.1 ETH ELA` button, you will get 0.1 ELA ETH.
 
 ![Successfully get the test token](assets/faucet_success.png)
 
