@@ -19,13 +19,12 @@
     line-height: 28px;
     .ant-collapse-arrow {
       transition: transform 500ms;
-      transform: rotate(-180deg);
     }
   }
   .ant-collapse .ant-collapse-item-active .ant-collapse-header {
     color: #000;
     .ant-collapse-arrow {
-      transform: rotate(0);
+      transform: rotate(180deg);
     }
   }
 
