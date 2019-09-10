@@ -32,7 +32,7 @@ What the contract code does is very simple, it has a variable `storedData` and 2
 
 ![remix_compile](assets/remix_compile.png)
 
-Switch to compile tab to compile the code, make sure the compiler version is the same as the version in the code, which is **0..5.1** in our code.
+Switch to compile tab to compile the code, make sure the compiler version is the same as the version in the code, which is **0.5.1** in our code.
 
 Click **Compile SimpleStorage.sol** button to start compile, it should be successful in seconds.
 
