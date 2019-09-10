@@ -191,9 +191,16 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			return ErrTransactionPayload
 		}
 
+
 	case CRCProposal:
 		if err := b.checkCRCProposalTransaction(txn, blockHeight); err != nil {
 			log.Warn("[checkCRCProposalTransaction],", err)
+			return ErrTransactionPayload
+
+	case CRCProposalReview:
+		if err := b.checkCrcProposalReviewTransaction(txn,
+			blockHeight); err != nil {
+			log.Warn("[checkCrcProposalReviewTransaction],", err)
 			return ErrTransactionPayload
 		}
 	}
@@ -933,7 +940,7 @@ func checkDuplicateSidechainTx(txn *Transaction) error {
 // validate the type of transaction is allowed or not at current height.
 func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) error {
 	switch txn.TxType {
-	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin:
+	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin, CRCProposalReview:
 		if blockHeight < b.chainParams.CRVotingStartHeight {
 			return errors.New("not support before CRVotingStartHeight")
 		}
@@ -1548,6 +1555,29 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 	}
 
 	return nil
+}
+
+func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
+	blockHeight uint32) error {
+	crcProposalReview, ok := txn.Payload.(*payload.CRCProposalReview)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	//todo check ProposalHash must exist
+
+	//todo check code -> sponsor
+	//if !b.crCommittee.IsCRMember(crcProposalReview.Code) {
+	//	return errors.New("CR sponsor should be one of the CR members")
+	//}
+
+	signedBuf := new(bytes.Buffer)
+	err := crcProposalReview.SerializeUnsigned(signedBuf, payload.CRCProposalReviewVersion)
+	if err != nil {
+		return err
+	}
+	return checkCRTransactionSignature(crcProposalReview.Sign, crcProposalReview.Code,
+		signedBuf.Bytes())
 }
 
 func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
