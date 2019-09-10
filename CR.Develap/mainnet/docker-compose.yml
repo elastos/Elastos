@@ -1,0 +1,141 @@
+version : "3"
+
+services:
+  mainnet-mainchain-node:
+    container_name: mainnet-mainchain-node
+    image: cyberrepublic/elastos-mainchain-node:v0.3.7
+    user: "${UID}:${GID}"
+    volumes:
+      - ~/.data/docker/volumes/development-services/mainnet/mainchain-data:/ela/elastos
+      - ${PWD}/mainchain/config.json:/ela/config.json
+      - ${PWD}/mainchain/keystore.dat:/ela/keystore.dat
+    ports:
+      - 20333-20339:20333-20339
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:20336"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  mainnet-sidechain-did-node:
+    container_name: mainnet-sidechain-did-node
+    image: cyberrepublic/elastos-sidechain-did-node:v0.1.2
+    user: "${UID}:${GID}"
+    depends_on:
+      - mainnet-mainchain-node
+    volumes:
+      - ~/.data/docker/volumes/development-services/mainnet/sidechain-did-data:/did/elastos_did
+      - ${PWD}/sidechain/did/config.json:/did/config.json
+    ports:
+      - 20604-20608:20604-20608
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:20606"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  mainnet-sidechain-token-node:
+    container_name: mainnet-sidechain-token-node
+    image: cyberrepublic/elastos-sidechain-token-node:v0.1.2
+    user: "${UID}:${GID}"
+    depends_on:
+      - mainnet-mainchain-node
+    volumes:
+      - ~/.data/docker/volumes/development-services/mainnet/sidechain-token-data:/did/elastos_token
+      - ${PWD}/sidechain/token/config.json:/token/config.json
+    ports:
+      - 20614-20618:20614-20618
+    healthcheck:
+      test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"method\":\"getbestblockhash\"}'", "http://localhost:20616"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  mainnet-api-misc-mainchain:
+    container_name: mainnet-api-misc-mainchain
+    image: cyberrepublic/elastos-api-misc-service:latest
+    user: "${UID}:${GID}"
+    volumes:
+      - ${PWD}/restful-services/api-misc/mainchain/config.json:/home/elauser/config.json
+      - ${PWD}/restful-services/api-misc/mainchain/deploy.sh:/home/elauser/deploy.sh
+      - ${PWD}/restful-services/api-misc/sql:/home/elauser/sql
+    depends_on:
+      - mainnet-mysql
+      - mainnet-mainchain-node
+    ports:
+      - 20801:8080
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:20801/api/1/history/checking/sync"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  mainnet-api-misc-sidechain-did:
+    container_name: mainnet-api-misc-sidechain-did
+    image: cyberrepublic/elastos-api-misc-service:latest
+    user: "${UID}:${GID}"
+    volumes:
+      - ${PWD}/restful-services/api-misc/sidechain/did/config.json:/home/elauser/config.json
+      - ${PWD}/restful-services/api-misc/sidechain/did/deploy.sh:/home/elauser/deploy.sh
+      - ${PWD}/restful-services/api-misc/sql:/home/elauser/sql
+    depends_on:
+      - mainnet-mysql
+      - mainnet-sidechain-did-node
+    ports:
+      - 20802:8080
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:20802/api/1/history/checking/sync"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+  mainnet-mysql:
+    container_name: mainnet-mysql
+    restart: always
+    image: mysql:5.7
+    user: "${UID}:${GID}"
+    command: ['--character-set-client-handshake=FALSE', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes:
+      - ~/.data/docker/volumes/development-services/mainnet/mysql:/var/lib/mysql
+    ports:
+      - 20901:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+      - MYSQL_ROOT_HOST
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-P", "20901", "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true
+
+networks:
+  blockchain:

@@ -1,0 +1,18 @@
+{
+  "Configuration": {
+    "ActiveNet": "testnet",
+    "DPoSConfiguration": {
+      "EnableArbiter": false,
+      "IPAddress": "127.0.0.1"
+    },
+    "HttpRestStart": true,
+    "EnableRPC": true,
+    "RpcConfiguration": {
+      "User": "",
+      "Pass": "",
+      "WhiteIPList": [
+        "0.0.0.0"
+      ]
+    }
+  }
+}
