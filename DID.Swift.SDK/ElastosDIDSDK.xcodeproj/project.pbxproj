@@ -28,7 +28,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		11F262AA23260CF40009C103 /* Elastos_DID_Swift_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Elastos_DID_Swift_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Elastos_DID_Swift_SDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		11F262B723260D720009C103 /* Issuer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Issuer.swift; sourceTree = "<group>"; };
@@ -64,7 +64,7 @@
 		11F262A023260CF30009C103 = {
 			isa = PBXGroup;
 			children = (
-				11F262AC23260CF40009C103 /* Elastos.DID.Swift.SDK */,
+				11F262AC23260CF40009C103 /* ElastosDIDSDK */,
 				11F262AB23260CF40009C103 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -72,20 +72,20 @@
 		11F262AB23260CF40009C103 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				11F262AA23260CF40009C103 /* Elastos_DID_Swift_SDK.framework */,
+				11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		11F262AC23260CF40009C103 /* Elastos.DID.Swift.SDK */ = {
+		11F262AC23260CF40009C103 /* ElastosDIDSDK */ = {
 			isa = PBXGroup;
 			children = (
 				11F262B523260D550009C103 /* Credential */,
-				11F262B623260D550009C103 /* Did */,
+				11F262B623260D550009C103 /* DID */,
 				11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */,
 				11F262AE23260CF40009C103 /* Info.plist */,
 			);
-			path = Elastos.DID.Swift.SDK;
+			path = ElastosDIDSDK;
 			sourceTree = "<group>";
 		};
 		11F262B523260D550009C103 /* Credential */ = {
@@ -97,7 +97,7 @@
 			path = Credential;
 			sourceTree = SOURCE_ROOT;
 		};
-		11F262B623260D550009C103 /* Did */ = {
+		11F262B623260D550009C103 /* DID */ = {
 			isa = PBXGroup;
 			children = (
 				11F262BB23260DFD0009C103 /* Backend */,
@@ -118,7 +118,7 @@
 				11F262D723260F020009C103 /* MalformedDIDURLError.swift */,
 				11F262D923260F250009C103 /* MalformedDocumentError.swift */,
 			);
-			path = Did;
+			path = DID;
 			sourceTree = SOURCE_ROOT;
 		};
 		11F262BB23260DFD0009C103 /* Backend */ = {
@@ -149,9 +149,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		11F262A923260CF40009C103 /* Elastos.DID.Swift.SDK */ = {
+		11F262A923260CF40009C103 /* ElastosDIDSDK */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "Elastos.DID.Swift.SDK" */;
+			buildConfigurationList = 11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "ElastosDIDSDK" */;
 			buildPhases = (
 				11F262A523260CF40009C103 /* Headers */,
 				11F262A623260CF40009C103 /* Sources */,
@@ -162,9 +162,9 @@
 			);
 			dependencies = (
 			);
-			name = Elastos.DID.Swift.SDK;
-			productName = Elastos.DID.Swift.SDK;
-			productReference = 11F262AA23260CF40009C103 /* Elastos_DID_Swift_SDK.framework */;
+			name = ElastosDIDSDK;
+			productName = ElastosDIDSDK;
+			productReference = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -182,7 +182,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 11F262A423260CF40009C103 /* Build configuration list for PBXProject "Elastos.DID.Swift.SDK" */;
+			buildConfigurationList = 11F262A423260CF40009C103 /* Build configuration list for PBXProject "ElastosDIDSDK" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -194,7 +194,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				11F262A923260CF40009C103 /* Elastos.DID.Swift.SDK */,
+				11F262A923260CF40009C103 /* ElastosDIDSDK */,
 			);
 		};
 /* End PBXProject section */
@@ -370,7 +370,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Elastos.DID.Swift.SDK/Info.plist;
+				INFOPLIST_FILE = ElastosDIDSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -397,7 +397,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Elastos.DID.Swift.SDK/Info.plist;
+				INFOPLIST_FILE = ElastosDIDSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -415,7 +415,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		11F262A423260CF40009C103 /* Build configuration list for PBXProject "Elastos.DID.Swift.SDK" */ = {
+		11F262A423260CF40009C103 /* Build configuration list for PBXProject "ElastosDIDSDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11F262B023260CF40009C103 /* Debug */,
@@ -424,7 +424,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "Elastos.DID.Swift.SDK" */ = {
+		11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "ElastosDIDSDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11F262B323260CF40009C103 /* Debug */,

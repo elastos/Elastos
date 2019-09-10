@@ -5,6 +5,7 @@
 //! Project version number for Elastos_DID_Swift_SDK.
 FOUNDATION_EXPORT double Elastos_DID_Swift_SDKVersionNumber;
 
+
 //! Project version string for Elastos_DID_Swift_SDK.
 FOUNDATION_EXPORT const unsigned char Elastos_DID_Swift_SDKVersionString[];
 

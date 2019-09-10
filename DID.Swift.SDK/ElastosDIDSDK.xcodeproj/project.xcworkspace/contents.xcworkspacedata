@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:Elastos.DID.Swift.SDK.xcodeproj">
+      location = "self:/Users/liaihong/Documents/Git/DIDSDK/ElastosDIDSDK.xcodeproj">
    </FileRef>
 </Workspace>
