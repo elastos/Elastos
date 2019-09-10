@@ -44,9 +44,9 @@ const zh = {
   '0110': '博客',
   navigation: {
     council: '委员会',
-    constitution: '白皮书',
+    whitepaper: '白皮书',
     suggestion: '建议',
-    elip: 'ELIP',
+    elips: 'ELIPs',
     proposal: '提案',
     whatsNew: '版本更新',
     resources: {

@@ -288,7 +288,7 @@ export default class extends BaseComponent {
             </Menu.Item>
 
             <Menu.Item className="c_MenuItem link" key="whitepaper">
-              {I18N.get('navigation.constitution')}
+              {I18N.get('navigation.whitepaper')}
             </Menu.Item>
 
             <Menu.Item className="c_MenuItem link" key="suggestion">
@@ -296,7 +296,7 @@ export default class extends BaseComponent {
             </Menu.Item>
 
             <Menu.Item className="c_MenuItem link" key="elips">
-              {I18N.get('navigation.elip')}
+              {I18N.get('navigation.elips')}
             </Menu.Item>
 
             <Menu.Item className="c_MenuItem link" key="proposals">

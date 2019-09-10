@@ -141,7 +141,7 @@ export default class extends BaseComponent {
               </Menu.Item>
 
               <Menu.Item key="whitepaper">
-                {I18N.get('navigation.constitution')}
+                {I18N.get('navigation.whitepaper')}
               </Menu.Item>
 
               <Menu.Item key="suggestion">
@@ -149,7 +149,7 @@ export default class extends BaseComponent {
               </Menu.Item>
 
               <Menu.Item key="elips">
-                {I18N.get('navigation.elip')}
+                {I18N.get('navigation.elips')}
               </Menu.Item>
 
               <Menu.Item key="proposals">
@@ -158,9 +158,6 @@ export default class extends BaseComponent {
               <Menu.Item key="what-is-new">
                 {I18N.get('navigation.whatsNew')}
               </Menu.Item>
-              {/* <Menu.Item key="constitution/1">
-                  {I18N.get('navigation.constitution')}
-              </Menu.Item> */}
               <Menu.Item key="forum">
                 {I18N.get('navigation.resources.submenu.forum')}
               </Menu.Item>

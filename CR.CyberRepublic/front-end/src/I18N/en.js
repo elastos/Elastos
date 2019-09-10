@@ -44,9 +44,9 @@ const en = {
   '0110': 'Blog',
   navigation: {
     council: 'Council',
-    constitution: 'WhitePaper',
+    whitepaper: 'Whitepaper',
     suggestion: 'Suggestions',
-    elip: 'ELIP',
+    elips: 'ELIPs',
     proposal: 'Proposals',
     whatsNew: "What's New",
     resources: {
