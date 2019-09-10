@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package script
 
@@ -17,6 +17,8 @@ import (
 )
 
 func registerParams(c *cli.Context, L *lua.LState) {
+	wallet := c.String("wallet")
+	password := c.String("password")
 	code := c.String("code")
 	publicKey := c.String("publickey")
 	depositAddr := c.String("depositaddr")
@@ -34,6 +36,14 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	candidates := c.StringSlice("candidates")
 	candidateVotes := c.StringSlice("candidateVotes")
 
+	getWallet := func(L *lua.LState) int {
+		L.Push(lua.LString(wallet))
+		return 1
+	}
+	getPassword := func(L *lua.LState) int {
+		L.Push(lua.LString(password))
+		return 1
+	}
 	getDepositAddr := func(L *lua.LState) int {
 		L.Push(lua.LString(depositAddr))
 		return 1
@@ -108,6 +118,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(table)
 		return 1
 	}
+	L.Register("getWallet", getWallet)
+	L.Register("getPassword", getPassword)
 	L.Register("getDepositAddr", getDepositAddr)
 	L.Register("getPublicKey", getPublicKey)
 	L.Register("getCode", getCode)
@@ -174,6 +186,8 @@ func NewCommand() *cli.Command {
 		Description: "With ela-cli test, you could test blockchain.",
 		ArgsUsage:   "[args]",
 		Flags: []cli.Flag{
+			common.AccountWalletFlag,
+			common.AccountPasswordFlag,
 			cli.StringFlag{
 				Name:  "file, f",
 				Usage: "test file",
