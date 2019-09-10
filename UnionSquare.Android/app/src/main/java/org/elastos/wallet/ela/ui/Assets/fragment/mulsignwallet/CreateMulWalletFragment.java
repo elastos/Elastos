@@ -61,8 +61,8 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
     ClearEditText etWalletname;
     @BindView(R.id.tv_signnum)
     TextView tvSignnum;
-    @BindView(R.id.cb)
-    CheckBox cb;
+    @BindView(R.id.cb_readonly)
+    CheckBox cbReadonly;
     @BindView(R.id.rv)
     RecyclerView rv;
     @BindView(R.id.iv_status)
@@ -101,7 +101,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.createmulwalllet));
-        cb.setOnCheckedChangeListener(this);
+        cbReadonly.setOnCheckedChangeListener(this);
         registReceiver();
         setRecycleView();
         //使得iv充满且不能滑动
@@ -136,7 +136,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
             case R.id.iv_add:
                 count++;
                 setRecycleView();
-                if ((cb.isChecked() && count == 6) || (!cb.isChecked() && count == 5)) {
+                if ((cbReadonly.isChecked() && count == 6) || (!cbReadonly.isChecked() && count == 5)) {
                     ivAdd.setVisibility(View.GONE);
                 }
                 break;
@@ -164,7 +164,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
             jsonArray.add(value);
         }
         masterWalletID = AppUtlis.getStringRandom(8);
-        if (cb.isChecked()) {
+        if (cbReadonly.isChecked()) {
             //只读
             if (publicKey.size() < needItem) {
                 showToast(getString(R.string.publickeyneedmore));
@@ -220,7 +220,7 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int code = result.getCode();
-        if (code == RxEnum.CREATEPRIVATEKEY.ordinal() //添加根私钥额回调
+        if (code == RxEnum.CREATEPRIVATEKEY.ordinal() //添加私钥额回调
                 || integer == RxEnum.IMPORTRIVATEKEY.ordinal()//导入助记词回调 //选择已有钱包回调
                 || integer == RxEnum.SELECTRIVATEKEY.ordinal()//选择已有钱包回调
         ) {

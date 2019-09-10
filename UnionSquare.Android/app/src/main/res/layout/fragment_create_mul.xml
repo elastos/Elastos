@@ -78,14 +78,34 @@
                         android:text="@string/readonly" />
 
                     <CheckBox
-                        android:id="@+id/cb"
+                        android:id="@+id/cb_readonly"
                         android:layout_width="30dp"
                         android:layout_height="15dp"
                         android:background="@drawable/selector_rb"
                         android:button="@null" />
                 </LinearLayout>
 
+                <View style="@style/line_margin15" />
 
+                <LinearLayout
+                    style="@style/settingItem_margin15"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:text="@string/single_address_wallet" />
+
+                    <CheckBox
+                        android:id="@+id/cb_single"
+                        android:layout_width="30dp"
+                        android:layout_height="15dp"
+                        android:background="@drawable/selector_rb"
+                        android:button="@null" />
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
