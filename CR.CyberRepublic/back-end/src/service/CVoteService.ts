@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { permissions } from '../utility'
 import * as moment from 'moment'
-import { mail, user as userUtil } from '../utility'
+import { mail, user as userUtil, logger } from '../utility'
 
 let tm = undefined
 
@@ -32,8 +32,7 @@ export default class extends Base {
       proposer: proposer ? proposer : this.currentUser._id,
       createdBy: this.currentUser._id
     }
-    const suggestion =
-      suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }
@@ -43,7 +42,7 @@ export default class extends Base {
     try {
       return await db_cvote.save(doc)
     } catch (error) {
-      console.log(error)
+      logger.error(error)
       return
     }
   }
@@ -103,7 +102,7 @@ export default class extends Base {
       this.notifyCouncil(res)
       return res
     } catch (error) {
-      console.log('proposeSuggestion error...', error)
+      logger.error(error)
       return
     }
   }
@@ -158,7 +157,7 @@ export default class extends Base {
       const res = await this.getById(_id)
       return res
     } catch (error) {
-      console.log('error happened: ', error)
+      logger.error(error)
       return
     }
   }
@@ -177,7 +176,7 @@ export default class extends Base {
       }
       return await db_cvote.remove({ _id })
     } catch (error) {
-      console.log('delete draft proposal err...', error)
+      logger.error(error)
     }
   }
 
@@ -261,7 +260,7 @@ export default class extends Base {
 
       return res
     } catch (error) {
-      console.log('error happened: ', error)
+      logger.error(error)
       return
     }
   }
@@ -566,7 +565,7 @@ export default class extends Base {
       }
       return res
     } catch (error) {
-      console.log('error happened: ', error)
+      logger.error(error)
       return
     }
   }
