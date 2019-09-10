@@ -186,6 +186,25 @@ After building with success, the output distribution package named **org.elastos
 ```
 app/build/outputs/aar
 ```
+## Usage
+
+In your project with gradle management, add following statements in module's build.gradle to import Carrier SDK:
+
+```markdown
+dependencies {
+    implementation 'org.elastos:carrier:5.3.2'
+}
+```
+
+While in project with maven management, add the following statements as it's dependency:
+```markdown
+<dependency>
+  <groupId>org.elastos</groupId>
+  <artifactId>carrier</artifactId>
+  <version>5.3.2</version>
+  <type>pom</type>
+</dependency>
+```
 
 ## Basic Tests
 
@@ -205,4 +224,5 @@ We welcome contributions to the Elastos Carrier Android SDK Project.
 A sincere thank you to all teams and projects that we rely on directly or indirectly.
 
 ## License
-This project is licensed under the terms of the [GPLv3 license](https://github.com/elastos/Elastos.NET.Carrier.Android.SDK/blob/master/LICENSE).
+This project is licensed under the terms of the [GPLv3 license](https://github.com/elastos/Elastos.NET.Carrier.Android.SDK/blob/master/LICENSE)
+
