@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -26,19 +26,22 @@ type CRMember struct {
 
 // StateKeyFrame holds necessary state about CR committee.
 type KeyFrame struct {
-	Members             []*CRMember
-	LastCommitteeHeight uint32
+	Members               map[common.Uint168]*CRMember
+	LastCommitteeHeight   uint32
+	LastVotingStartHeight uint32
+	InElectionPeriod      bool
 }
 
 // StateKeyFrame holds necessary state about CR state.
 type StateKeyFrame struct {
-	CodeDIDMap         map[string]common.Uint168
-	PendingCandidates  map[common.Uint168]*Candidate
-	ActivityCandidates map[common.Uint168]*Candidate
-	CanceledCandidates map[common.Uint168]*Candidate
-	Nicknames          map[string]struct{}
-	Votes              map[string]*types.Output
-	DepositOutputs     map[string]*types.Output
+	CodeDIDMap          map[string]common.Uint168
+	PendingCandidates   map[common.Uint168]*Candidate
+	ActivityCandidates  map[common.Uint168]*Candidate
+	CanceledCandidates  map[common.Uint168]*Candidate
+	ImpeachedCandidates map[common.Uint168]*Candidate
+	Nicknames           map[string]struct{}
+	Votes               map[string]*types.Output
+	DepositOutputs      map[string]*types.Output
 }
 
 // ProposalState defines necessary state about an CR proposals.
@@ -105,48 +108,74 @@ func (c *CRMember) Deserialize(r io.Reader) (err error) {
 }
 
 func (k *KeyFrame) Serialize(w io.Writer) (err error) {
-	if err = common.WriteVarUint(w, uint64(len(k.Members))); err != nil {
+	if err = k.serializeMembersMap(w, k.Members); err != nil {
 		return
 	}
 
-	for _, v := range k.Members {
+	return common.WriteElements(w, k.LastCommitteeHeight,
+		k.LastVotingStartHeight, k.InElectionPeriod)
+}
+
+func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
+	if k.Members, err = k.deserializeMembersMap(r); err != nil {
+		return
+	}
+
+	err = common.ReadElements(r, &k.LastCommitteeHeight,
+		&k.LastVotingStartHeight, &k.InElectionPeriod)
+	return
+}
+
+func (k *KeyFrame) serializeMembersMap(w io.Writer,
+	mmap map[common.Uint168]*CRMember) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(mmap))); err != nil {
+		return
+	}
+	for k, v := range mmap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+
 		if err = v.Serialize(w); err != nil {
 			return
 		}
 	}
-
-	return common.WriteUint32(w, k.LastCommitteeHeight)
+	return
 }
 
-func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
-	var memLen uint64
-	if memLen, err = common.ReadVarUint(r, 0); err != nil {
+func (k *KeyFrame) deserializeMembersMap(
+	r io.Reader) (mmap map[common.Uint168]*CRMember, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return
 	}
-
-	k.Members = make([]*CRMember, 0, memLen)
-	for i := uint64(0); i < memLen; i++ {
-		member := &CRMember{}
-		if err = member.Deserialize(r); err != nil {
+	mmap = make(map[common.Uint168]*CRMember)
+	for i := uint64(0); i < count; i++ {
+		var k common.Uint168
+		if err = k.Deserialize(r); err != nil {
 			return
 		}
-		k.Members = append(k.Members, member)
+		candidate := &CRMember{}
+		if err = candidate.Deserialize(r); err != nil {
+			return
+		}
+		mmap[k] = candidate
 	}
-
-	k.LastCommitteeHeight, err = common.ReadUint32(r)
 	return
 }
 
 func (k *KeyFrame) Snapshot() *KeyFrame {
 	frame := NewKeyFrame()
 	frame.LastCommitteeHeight = k.LastCommitteeHeight
-	frame.Members = copyCRMembers(k.Members)
+	frame.LastVotingStartHeight = k.LastVotingStartHeight
+	frame.InElectionPeriod = k.InElectionPeriod
+	frame.Members = copyMembersMap(k.Members)
 	return frame
 }
 
 func NewKeyFrame() *KeyFrame {
 	return &KeyFrame{
-		Members:             make([]*CRMember, 0),
+		Members:             make(map[common.Uint168]*CRMember, 0),
 		LastCommitteeHeight: 0,
 	}
 }
@@ -501,13 +530,14 @@ func NewProposalKeyFrame() *ProposalKeyFrame {
 
 func NewStateKeyFrame() *StateKeyFrame {
 	return &StateKeyFrame{
-		CodeDIDMap:         make(map[string]common.Uint168),
-		PendingCandidates:  make(map[common.Uint168]*Candidate),
-		ActivityCandidates: make(map[common.Uint168]*Candidate),
-		CanceledCandidates: make(map[common.Uint168]*Candidate),
-		Nicknames:          make(map[string]struct{}),
-		Votes:              make(map[string]*types.Output),
-		DepositOutputs:     make(map[string]*types.Output),
+		CodeDIDMap:          make(map[string]common.Uint168),
+		PendingCandidates:   make(map[common.Uint168]*Candidate),
+		ActivityCandidates:  make(map[common.Uint168]*Candidate),
+		CanceledCandidates:  make(map[common.Uint168]*Candidate),
+		ImpeachedCandidates: make(map[common.Uint168]*Candidate),
+		Nicknames:           make(map[string]struct{}),
+		Votes:               make(map[string]*types.Output),
+		DepositOutputs:      make(map[string]*types.Output),
 	}
 }
 
@@ -545,11 +575,22 @@ func copyOutputsMap(src map[string]*types.Output) (dst map[string]*types.Output)
 	return
 }
 
-func copyCRMembers(src []*CRMember) []*CRMember {
+func getCRMembers(src map[common.Uint168]*CRMember) []*CRMember {
 	dst := make([]*CRMember, 0, len(src))
 	for _, v := range src {
 		m := *v
 		dst = append(dst, &m)
 	}
 	return dst
+}
+
+// copyMembersMap copy the CR members map's key and value, and return the dst map.
+func copyMembersMap(src map[common.Uint168]*CRMember) (
+	dst map[common.Uint168]*CRMember) {
+	dst = map[common.Uint168]*CRMember{}
+	for k, v := range src {
+		p := *v
+		dst[k] = &p
+	}
+	return
 }

@@ -18,6 +18,9 @@ import (
 )
 
 const (
+	// MinDepositAmount is the minimum deposit as a producer.
+	MinDepositAmount = 5000 * 100000000
+
 	// maxHistoryCapacity indicates the maximum capacity of change history.
 	maxHistoryCapacity = 10
 
@@ -30,17 +33,24 @@ const (
 // to update votes and any other changes about candidates.
 type State struct {
 	StateKeyFrame
-	manager *ProposalManager
+	manager            *ProposalManager
 	processImpeachment func([]*CRMember, common.Fixed64, []byte)
 
 	mtx     sync.RWMutex
 	params  *config.Params
 	history *utils.History
+
+	updateMembers func(height uint32)
 }
 
-// SetManager set current proposal manager that holds state of proposals
+// SetManager set current proposal manager that holds state of proposals.
 func (s *State) SetManager(manager *ProposalManager) {
 	s.manager = manager
+}
+
+// SetUpdateMembers set the function to update CRC members.
+func (s *State) SetUpdateMembers(updateMembers func(height uint32)) {
+	s.updateMembers = updateMembers
 }
 
 // GetCandidate returns candidate with specified program code, it will return
@@ -68,6 +78,7 @@ func (s *State) GetAllCandidates() []*Candidate {
 	result = append(result, s.getCandidates(Active)...)
 	result = append(result, s.getCandidates(Canceled)...)
 	result = append(result, s.getCandidates(Returned)...)
+	result = append(result, s.getCandidates(Impeached)...)
 	return result
 }
 
@@ -163,22 +174,50 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	defer s.mtx.Unlock()
 
 	s.processTransactions(block.Transactions, block.Height)
+	if s.updateMembers != nil {
+		s.updateMembers(block.Height)
+	}
+
 	s.history.Commit(block.Height)
 }
 
-// ProcessBlock takes a block and it's confirm to update CR state and
-// votes accordingly.
-func (s *State) ProcessReturnDepositTxs(block *types.Block) {
+// ProcessElectionBlock takes a block and it's confirm to update CR member state
+// and proposals accordingly, only in election period and not in voting period.
+func (s *State) ProcessElectionBlock(block *types.Block) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
 	for _, tx := range block.Transactions {
-		switch tx.TxType {
-		case types.ReturnCRDepositCoin:
-			s.returnDeposit(tx, block.Height)
+		s.processElectionTransaction(tx, block.Height)
+	}
+	if s.manager != nil {
+		s.manager.updateProposals(block.Height, s.history)
+	}
+	if s.updateMembers != nil {
+		s.updateMembers(block.Height)
+	}
+
+	s.history.Commit(block.Height)
+}
+
+// processElectionTransaction take a transaction and the height it has been
+// packed into a block, then update CR members state and proposals according to
+// the transaction content.
+func (s *State) processElectionTransaction(tx *types.Transaction, height uint32) {
+	switch tx.TxType {
+	case types.TransferAsset:
+		s.processVotes(tx, height)
+
+	case types.ReturnCRDepositCoin:
+		s.returnDeposit(tx, height)
+
+	case types.CRCProposal:
+		if s.manager != nil {
+			s.manager.registerProposal(tx, height, s.history)
 		}
 	}
-	s.history.Commit(block.Height)
+
+	s.processCancelVotes(tx, height)
 }
 
 // RollbackTo restores the database state to the given height, if no enough
@@ -387,9 +426,13 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			if p.Version < outputpayload.VoteProducerAndCRVersion {
 				continue
 			}
+
+			// process CRC content
 			var exist bool
 			for _, content := range p.Contents {
-				if content.VoteType == outputpayload.CRC {
+				if content.VoteType == outputpayload.CRC ||
+					content.VoteType == outputpayload.CRCProposal ||
+					content.VoteType == outputpayload.CRCImpeachment {
 					exist = true
 					break
 				}
@@ -476,23 +519,28 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 	p := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
-			candidate := s.getCandidate(cv.Candidate)
-			if candidate == nil {
-				continue
-			}
-
 			switch vote.VoteType {
 			case outputpayload.CRC:
+				candidate := s.getCandidate(cv.Candidate)
+				if candidate == nil {
+					continue
+				}
 				v := cv.Votes
 				s.history.Append(height, func() {
 					candidate.votes += v
 				}, func() {
 					candidate.votes -= v
 				})
-			case outputpayload.CRCImpeachment:
-				// todo
-				//s.processImpeachment()
 
+			case outputpayload.CRCProposal:
+				proposalHash, _ := common.Uint256FromBytes(cv.Candidate)
+				proposalState := s.manager.GetProposal(*proposalHash)
+				v := cv.Votes
+				s.history.Append(height, func() {
+					proposalState.VotersRejectAmount += v
+				}, func() {
+					proposalState.VotersRejectAmount -= v
+				})
 			}
 		}
 	}
@@ -528,6 +576,21 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 					producer.votes -= v
 				}, func() {
 					producer.votes += v
+				})
+
+			case outputpayload.CRCProposal:
+				proposalHash, _ := common.Uint256FromBytes(cv.Candidate)
+				proposalState := s.manager.GetProposal(*proposalHash)
+				v := cv.Votes
+				s.history.Append(height, func() {
+					proposalState.VotersRejectAmount -= v
+					//// todo get current circulation by calculation
+					//circulation := common.Fixed64(3300 * 10000 * 100000000)
+					//if proposalState.VotersRejectAmount > circulation/10 {
+					//	proposalState.Status = VoterCanceled
+					//}
+				}, func() {
+					proposalState.VotersRejectAmount += v
 				})
 			}
 		}
@@ -580,6 +643,8 @@ func (s *State) getCandidates(state CandidateState) []*Candidate {
 			func(candidate *Candidate) bool {
 				return candidate.state == Returned
 			})
+	case Impeached:
+		return s.getCandidateFromMap(s.ImpeachedCandidates, nil)
 	default:
 		return []*Candidate{}
 	}

@@ -80,7 +80,7 @@ func StartRPCServer() {
 	mainMux["getmininginfo"] = GetMiningInfo
 	mainMux["togglemining"] = ToggleMining
 	mainMux["discretemining"] = DiscreteMining
-	//cr interfaces
+	// cr interfaces
 	mainMux["listcrcandidates"] = ListCRCandidates
 	mainMux["listcurrentcrs"] = ListCurrentCRs
 	// vote interfaces
