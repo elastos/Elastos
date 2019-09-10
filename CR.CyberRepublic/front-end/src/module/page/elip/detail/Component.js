@@ -321,15 +321,22 @@ export const StyledRichContent = styled.div`
   .md-RichEditor-root {
     background: none;
     padding: 0;
-    .public-DraftEditor-content {
-      padding: 0;
-      margin: 0;
+    .md-RichEditor-editor {
+      .md-RichEditor-blockquote {
+        border-left: 5px solid #ccc;
+        background-color: unset;
+        font-size: 1.1em;
+      }
+      .public-DraftEditor-content {
+        padding: 0;
+        margin: 0;
+      }
     }
     figure.md-block-image {
       background: none;
-    }
-    figure.md-block-image figcaption .public-DraftStyleDefault-block {
-      text-align: left;
+      figcaption .public-DraftStyleDefault-block {
+        text-align: left;
+      }
     }
   }
 `

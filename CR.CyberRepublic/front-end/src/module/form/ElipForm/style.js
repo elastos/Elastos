@@ -48,6 +48,11 @@ export const Container = styled.div`
         margin: 0;
         padding: 0;
       }
+      .md-RichEditor-blockquote {
+        border-left: 5px solid #ccc;
+        background-color: unset;
+        font-size: 1.1em;
+      }
     }
     .md-side-toolbar {
       background: #fff;
