@@ -55,7 +55,12 @@ namespace Elastos {
 					p._xPubKey = j["xPubKey"].get<std::string>();
 					p._requestPrivKey = j["requestPrivKey"].get<std::string>();
 					p._requestPubKey = j["requestPubKey"].get<std::string>();
-					p._publicKeyRing = j["publicKeyRing"].get<std::vector<PublicKeyRing>>();
+					nlohmann::json jpubkeyRing = j["publicKeyRing"];
+					for (nlohmann::json::iterator it = jpubkeyRing.begin(); it != jpubkeyRing.end(); ++it) {
+						PublicKeyRing pubkeyRing;
+						pubkeyRing.FromJson(*it);
+						p._publicKeyRing.push_back(pubkeyRing);
+					}
 					p._m = j["m"].get<int>();
 					p._n = j["n"].get<int>();
 					p._mnemonicHasPassphrase = j["mnemonicHasPassphrase"].get<bool>();

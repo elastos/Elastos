@@ -112,10 +112,9 @@ namespace Elastos {
 
 			j["BlockHeight"] = _blockHeight;
 			j["GenesisBlockAddress"] = _genesisBlockAddress;
-			std::vector<std::string> hashes;
-			for (size_t i = 0; i < _sideChainTransactionHash.size(); ++i) {
+			nlohmann::json hashes;
+			for (size_t i = 0; i < _sideChainTransactionHash.size(); ++i)
 				hashes.push_back(_sideChainTransactionHash[i].GetHex());
-			}
 			j["SideChainTransactionHash"] = hashes;
 
 			return j;
@@ -125,11 +124,9 @@ namespace Elastos {
 			_blockHeight = j["BlockHeight"].get<uint32_t>();
 			_genesisBlockAddress = j["GenesisBlockAddress"].get<std::string>();
 
-			std::vector<std::string> hashes = j["SideChainTransactionHash"].get<std::vector<std::string>>();
-			_sideChainTransactionHash.resize(hashes.size());
-			for (size_t i = 0; i < hashes.size(); ++i) {
-				_sideChainTransactionHash[i].SetHex(hashes[i]);
-			}
+			nlohmann::json hashes = j["SideChainTransactionHash"];
+			for (nlohmann::json::iterator it = hashes.begin(); it != hashes.end(); ++it)
+				_sideChainTransactionHash.emplace_back((*it).get<std::string>());
 		}
 
 		IPayload &WithdrawFromSideChain::operator=(const IPayload &payload) {

@@ -68,10 +68,11 @@ namespace Elastos {
 
 		void CoinInfo::VisibleAssetsFromJson(const nlohmann::json &j) {
 			_visibleAssets.clear();
-			std::vector<std::string> assets = j.get<std::vector<std::string>>();
-			std::for_each(assets.begin(), assets.end(), [this](const std::string &assetStr) {
-				_visibleAssets.emplace_back(assetStr);
-			});
+			uint256 asset;
+			for (nlohmann::json::const_iterator it = j.begin(); it != j.end(); ++it) {
+				asset.SetHex((*it).get<std::string>());
+				_visibleAssets.push_back(asset);
+			}
 		}
 
 		void CoinInfo::SetVisibleAsset(const uint256 &assetID) {
