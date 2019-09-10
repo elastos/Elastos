@@ -30,9 +30,6 @@ import (
 )
 
 const (
-	// MinDepositAmount is the minimum deposit as a producer.
-	MinDepositAmount = 5000 * 100000000
-
 	// DepositLockupBlocks indicates how many blocks need to wait when cancel
 	// producer or CRC was triggered, and can submit return deposit coin request.
 	DepositLockupBlocks = 2160
@@ -321,6 +318,12 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 				if err != nil {
 					return err
 				}
+			case outputpayload.CRCProposal:
+				err := b.checkVoteCRCProposalContent(blockHeight,
+					content, payload.Version, o.Value)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -369,10 +372,40 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 	}
 	for _, cv := range content.CandidateVotes {
 		if _, ok := crs[common.BytesToHexString(cv.Candidate)]; !ok {
-			return fmt.Errorf("invalid vote output payload "+
-				"candidate: %s", common.BytesToHexString(cv.Candidate))
+			return fmt.Errorf("invalid vote output payload CR candidate: %s",
+				common.BytesToHexString(cv.Candidate))
 		}
 	}
+	var totalVotes common.Fixed64
+	for _, cv := range content.CandidateVotes {
+		totalVotes += cv.Votes
+	}
+	if totalVotes > amount {
+		return errors.New("total votes larger than output amount")
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkVoteCRCProposalContent(blockHeight uint32,
+	content outputpayload.VoteContent, payloadVersion byte,
+	amount common.Fixed64) error {
+
+	if payloadVersion < outputpayload.VoteProducerAndCRVersion {
+		return errors.New("payload VoteProducerVersion not support vote CRCProposal")
+	}
+
+	for _, cv := range content.CandidateVotes {
+		proposalHash, err := common.Uint256FromBytes(cv.Candidate)
+		if err != nil {
+			return err
+		}
+		if !b.crCommittee.GetProposalManager().ExistProposal(*proposalHash) {
+			return fmt.Errorf("invalid CRCProposal: %s",
+				common.BytesToHexString(cv.Candidate))
+		}
+	}
+
 	var totalVotes common.Fixed64
 	for _, cv := range content.CandidateVotes {
 		totalVotes += cv.Votes
@@ -1133,7 +1166,7 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 			if !output.ProgramHash.IsEqual(*hash) {
 				return errors.New("deposit address does not match the public key in payload")
 			}
-			if output.Value < MinDepositAmount {
+			if output.Value < crstate.MinDepositAmount {
 				return errors.New("producer deposit amount is insufficient")
 			}
 		}
@@ -1262,7 +1295,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 		depositAmount = producer.DepositAmount()
 	}
 
-	if depositAmount-producer.Penalty() < MinDepositAmount {
+	if depositAmount-producer.Penalty() < crstate.MinDepositAmount {
 		return errors.New("insufficient deposit amount")
 	}
 
@@ -1417,7 +1450,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 				return errors.New("deposit address does not" +
 					" match the code in payload")
 			}
-			if output.Value < MinDepositAmount {
+			if output.Value < crstate.MinDepositAmount {
 				return errors.New("CR deposit amount is insufficient")
 			}
 		}
@@ -1523,7 +1556,9 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("type of proposal should be known")
 	}
 
-	// todo check duplicated origin proposal hash.
+	if b.crCommittee.GetProposalManager().ExistDraft(proposal.DraftHash) {
+		return errors.New("duplicated draft proposal hash")
+	}
 
 	if !b.crCommittee.IsCRMember(proposal.CRSponsorCode) {
 		return errors.New("CR sponsor should be one of the CR members")
@@ -1864,8 +1899,8 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount) *
-		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator) + 1
+	minSignCount := int(float64(crcArbitratorsCount)*
+		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
 		fmt.Printf("m:%d n:%d minSignCount:%d crc:  %d", m, n, minSignCount, crcArbitratorsCount)
 		return errors.New("invalid multi sign script code")

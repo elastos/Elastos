@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package servers
 
@@ -1608,6 +1608,8 @@ func ListCRCandidates(param Params) map[string]interface{} {
 		candidates = crState.GetCandidates(crstate.Canceled)
 	case "returned":
 		candidates = crState.GetCandidates(crstate.Returned)
+	case "impeached":
+		candidates = crState.GetCandidates(crstate.Impeached)
 	default:
 		candidates = crState.GetCandidates(crstate.Pending)
 		candidates = append(candidates, crState.GetCandidates(crstate.Active)...)

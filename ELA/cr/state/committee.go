@@ -32,7 +32,7 @@ func (c *Committee) GetState() *State {
 	return c.state
 }
 
-func (c *Committee) Proposals() *ProposalManager {
+func (c *Committee) GetProposalManager() *ProposalManager {
 	return c.manager
 }
 
@@ -62,6 +62,12 @@ func (c *Committee) IsInVotingPeriod(height uint32) bool {
 	return c.isInVotingPeriod(height)
 }
 
+func (c *Committee) IsInElectionPeriod() bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.InElectionPeriod
+}
+
 func (c *Committee) GetMembersDIDs() []common.Uint168 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -78,7 +84,7 @@ func (c *Committee) GetAllMembers() []*CRMember {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	return copyCRMembers(c.Members)
+	return getCRMembers(c.Members)
 }
 
 func (c *Committee) GetMembersCodes() [][]byte {
@@ -95,15 +101,25 @@ func (c *Committee) GetMembersCodes() [][]byte {
 func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
-	isVoting := c.isInVotingPeriod(block.Height)
 
+	if block.Height < c.params.CRVotingStartHeight {
+		return
+	}
+
+	// If reached the voting start height, record the last voting start
+	// height.
+	c.recordLastVotingStartHeight(block.Height)
+
+	// If in election period and not in voting period, deal with TransferAsset
+	// ReturnCRDepositCoin CRCProposal type of transaction only.
+	isVoting := c.isInVotingPeriod(block.Height)
 	if isVoting {
 		c.state.ProcessBlock(block, confirm)
 	} else {
-		c.state.ProcessReturnDepositTxs(block)
+		c.state.ProcessElectionBlock(block)
 	}
 
-	if c.shouldChange(block) {
+	if c.shouldChange(block.Height) {
 		committeeDIDs, err := c.changeCommitteeMembers(block.Height)
 		if err != nil {
 			log.Error("[ProcessBlock] change committee members error: ", err)
@@ -114,6 +130,52 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 			KeyFrame: c.KeyFrame,
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
+	}
+}
+
+func (c *Committee) recordLastVotingStartHeight(height uint32) {
+	// Update last voting start height one block ahead.
+	if height == c.LastCommitteeHeight+c.params.CRDutyPeriod-
+		c.params.CRVotingPeriod-1 {
+		lastVotingStartHeight := c.LastVotingStartHeight
+		c.state.history.Append(height, func() {
+			c.LastVotingStartHeight = height + 1
+		}, func() {
+			c.LastVotingStartHeight = lastVotingStartHeight
+		})
+	}
+}
+
+func (c *Committee) updateMembers(height uint32) {
+	if !c.InElectionPeriod {
+		return
+	}
+
+	// Check vote of CRCImpeachment and change the member if in election period.
+	// todo get current circulation by calculation
+	circulation := common.Fixed64(3300 * 10000 * 100000000)
+	changeMembers := make(map[common.Uint168]*CRMember)
+	for k, v := range c.Members {
+		if v.ImpeachmentVotes >= circulation/10 {
+			changeMembers[k] = v
+		}
+	}
+
+	if uint32(len(changeMembers)) < c.params.CRAgreementCount {
+		changeMembers = c.Members
+		lastVotingStartHeight := c.LastVotingStartHeight
+
+		c.state.history.Append(height, func() {
+			c.InElectionPeriod = false
+			c.LastVotingStartHeight = height
+		}, func() {
+			c.InElectionPeriod = true
+			c.LastVotingStartHeight = lastVotingStartHeight
+		})
+	}
+
+	for _, v := range changeMembers {
+		c.changeToCandidate(height, v)
 	}
 }
 
@@ -149,10 +211,12 @@ func (c *Committee) Recover(checkpoint *Checkpoint) {
 	c.KeyFrame = checkpoint.KeyFrame
 }
 
-func (c *Committee) shouldChange(block *types.Block) bool {
-	//todo judge by change cr committee tx later
-	return block.Height >= c.params.CRCommitteeStartHeight &&
-		block.Height >= c.LastCommitteeHeight+c.params.CRDutyPeriod
+func (c *Committee) shouldChange(height uint32) bool {
+	if height == c.params.CRCommitteeStartHeight {
+		return true
+	}
+
+	return height == c.LastVotingStartHeight+c.params.CRVotingPeriod
 }
 
 func (c *Committee) isInVotingPeriod(height uint32) bool {
@@ -166,6 +230,9 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 		return height >= c.params.CRVotingStartHeight &&
 			height < c.params.CRCommitteeStartHeight
 	} else {
+		if !c.InElectionPeriod {
+			return height < c.LastVotingStartHeight+c.params.CRVotingPeriod
+		}
 		return inVotingPeriod(c.LastCommitteeHeight + c.params.CRDutyPeriod)
 	}
 }
@@ -174,16 +241,19 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 	[]common.Uint168, error) {
 	candidates, err := c.getActiveCRCandidatesDesc()
 	if err != nil {
+		c.InElectionPeriod = false
+		c.LastVotingStartHeight = height
 		return nil, err
 	}
 
 	result := make([]common.Uint168, 0, c.params.CRMemberCount)
-	c.Members = make([]*CRMember, 0, c.params.CRMemberCount)
+	c.Members = make(map[common.Uint168]*CRMember, c.params.CRMemberCount)
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
-		c.Members = append(c.Members, c.generateMember(candidates[i]))
+		c.Members[candidates[i].info.DID] = c.generateMember(candidates[i])
 		result = append(result, candidates[i].info.DID)
 	}
 
+	c.InElectionPeriod = true
 	c.LastCommitteeHeight = height
 	return result, nil
 }
@@ -195,6 +265,48 @@ func (c *Committee) generateMember(candidate *Candidate) *CRMember {
 		DepositHash:      candidate.depositHash,
 		DepositAmount:    candidate.depositAmount,
 		Penalty:          candidate.penalty,
+	}
+}
+
+func (c *Committee) changeToCandidate(height uint32, member *CRMember) {
+	// Calculate penalty by election block count.
+	electionCount := height - c.LastCommitteeHeight
+	electionRate := float64(electionCount) / float64(c.params.CRDutyPeriod)
+	notElectionPenalty := MinDepositAmount * common.Fixed64(1-electionRate)
+
+	// Calculate penalty by vote proposal count.
+	// todo change penalty of member according to vote proposal count
+	notVoteProposalPenalty := common.Fixed64(0)
+
+	// Calculate the final penalty.
+	penalty := member.Penalty
+	finalPenalty := penalty + notElectionPenalty + notVoteProposalPenalty
+
+	c.state.history.Append(height, func() {
+		// Add candidate to impeached candidates map.
+		candidate := c.generateCandidate(height, member)
+		candidate.penalty = finalPenalty
+		c.state.ImpeachedCandidates[member.Info.DID] = candidate
+
+		// Remove member from members map.
+		delete(c.Members, member.Info.DID)
+	}, func() {
+		// Add member into members map.
+		c.Members[member.Info.DID] = member
+
+		// Remove candidate from impeached candidates map.
+		delete(c.state.ImpeachedCandidates, member.Info.DID)
+	})
+}
+
+func (c *Committee) generateCandidate(height uint32, member *CRMember) *Candidate {
+	return &Candidate{
+		info:          member.Info,
+		state:         Canceled,
+		cancelHeight:  height,
+		depositAmount: member.DepositAmount,
+		depositHash:   member.DepositHash,
+		penalty:       member.Penalty,
 	}
 }
 
@@ -223,6 +335,7 @@ func NewCommittee(params *config.Params) *Committee {
 		manager:  NewProposalManager(params),
 	}
 	committee.state.SetManager(committee.manager)
+	committee.state.SetUpdateMembers(committee.updateMembers)
 	params.CkpManager.Register(NewCheckpoint(committee))
 	return committee
 }
