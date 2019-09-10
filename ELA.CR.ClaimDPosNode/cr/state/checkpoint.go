@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -51,6 +51,7 @@ func (c *Checkpoint) OnRollbackTo(height uint32) error {
 		}
 		c.initFromCommittee(committee)
 		c.committee.Recover(c)
+		c.committee.state.SetUpdateMembers(committee.updateMembers)
 		return nil
 	}
 	return c.committee.RollbackTo(height)

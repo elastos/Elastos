@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -125,6 +125,7 @@ func TestCommittee_IsInVotingPeriod(t *testing.T) {
 	committee.LastCommitteeHeight = config.DefaultParams.CRCommitteeStartHeight
 
 	// < CRCommitteeStartHeight + CRDutyPeriod - CRVotingPeriod
+	committee.InElectionPeriod = true
 	assert.False(t, committee.IsInVotingPeriod(
 		config.DefaultParams.CRCommitteeStartHeight+
 			config.DefaultParams.CRDutyPeriod-config.DefaultParams.

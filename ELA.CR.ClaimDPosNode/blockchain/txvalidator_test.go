@@ -1820,7 +1820,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	nickName1 := "nickname 1"
 
 	member1 := s.getCRMember(publicKeyStr1, privateKeyStr1, nickName1)
-	s.Chain.crCommittee.Members = []*crstate.CRMember{member1}
+	memebers := make(map[common.Uint168]*crstate.CRMember)
+	memebers[member1.Info.DID] = member1
+	s.Chain.crCommittee.Members = memebers
 
 	// ok
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
@@ -2424,7 +2426,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		},
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs6, references, producersMap, crsMap),
-		"invalid vote output payload candidate: "+
+		"invalid vote output payload CR candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
 	// Check vote output of v0 with invalid candidate
@@ -2578,6 +2580,53 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs12, references, producersMap,
 		crsMap))
+
+	// Check vote output v1 with correct votes
+	proposalHashStr1 := "5df40cc0a4c6791acb5ebe89a96dd4f3fe21c94275589a65357406216a27ae36"
+	proposalHash1, _ := common.Uint256FromHexString(proposalHashStr1)
+	outputs13 := []*types.Output{{Type: types.OTNone}}
+	outputs13 = append(outputs13, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRCProposal,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{proposalHash1.Bytes(), 10},
+					},
+				},
+			},
+		},
+	})
+	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash1] =
+		&crstate.ProposalState{Status: 0}
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs13, references, producersMap, crsMap))
+
+	// Check vote output of v1 with wrong votes
+	proposalHashStr2 := "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0"
+	proposalHash2, _ := common.Uint256FromHexString(proposalHashStr2)
+	outputs14 := []*types.Output{{Type: types.OTNone}}
+	outputs14 = append(outputs14, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRCProposal,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{proposalHash2.Bytes(), 10},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs14, references, producersMap, crsMap),
+		"invalid CRCProposal: 9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0")
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {

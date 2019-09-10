@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -138,11 +138,12 @@ func keyframeEqual(first *KeyFrame, second *KeyFrame) bool {
 		return false
 	}
 
-	for i := 0; i < len(first.Members); i++ {
-		if !crMemberEqual(first.Members[i], second.Members[i]) {
+	for k, v := range first.Members {
+		if !crMemberEqual(v, second.Members[k]) {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -151,9 +152,10 @@ func randomKeyFrame(size int, commitHeight uint32) *KeyFrame {
 		LastCommitteeHeight: commitHeight,
 	}
 
-	frame.Members = make([]*CRMember, 0, size)
+	frame.Members = make(map[common.Uint168]*CRMember, size)
 	for i := 0; i < size; i++ {
-		frame.Members = append(frame.Members, randomCRMember())
+		m := randomCRMember()
+		frame.Members[m.Info.DID] = m
 	}
 
 	return frame

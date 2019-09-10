@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -30,12 +30,15 @@ const (
 
 	// Returned indicates the CR has canceled and deposit returned.
 	Returned
+
+	// Impeached indicates the CR has been Impeached.
+	Impeached
 )
 
 // candidateStateStrings is a array of CR states back to their constant
 // names for pretty printing.
 var candidateStateStrings = []string{"Pending", "Active", "Canceled",
-	"Returned"}
+	"Returned", "Impeached"}
 
 func (ps CandidateState) String() string {
 	if int(ps) < len(candidateStateStrings) {
