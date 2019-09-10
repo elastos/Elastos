@@ -38,17 +38,18 @@ type TxPool struct {
 	crDIDs            map[Uint168]struct{}
 	specialTxList     map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
 	crcProposals      map[Uint256]struct{}
+	crcProposalReview map[string]struct{}
 	producerNicknames map[string]struct{}
 	crNicknames       map[string]struct{}
 
-	tempInputUTXOList   map[string]*Transaction
-	tempSidechainTxList map[Uint256]*Transaction
-	tempOwnerPublicKeys map[string]struct{}
-	tempNodePublicKeys  map[string]struct{}
-	tempCrDIDs          map[Uint168]struct{}
-	tempSpecialTxList   map[Uint256]struct{}
-	tempCRCProposals    map[Uint256]struct{}
-
+	tempInputUTXOList     map[string]*Transaction
+	tempSidechainTxList   map[Uint256]*Transaction
+	tempOwnerPublicKeys   map[string]struct{}
+	tempNodePublicKeys    map[string]struct{}
+	tempCrDIDs            map[Uint168]struct{}
+	tempSpecialTxList     map[Uint256]struct{}
+	tempCRCProposals      map[Uint256]struct{}
+	tempCrcProposalReview map[string]struct{}
 	tempProducerNicknames map[string]struct{}
 	tempCrNicknames       map[string]struct{}
 	txnListSize           int
@@ -293,6 +294,14 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delCRCProposal(cpPayload.DraftHash)
+				case CRCProposalReview:
+					crcProposalReview, ok := tx.Payload.(*payload.CRCProposalReview)
+					if !ok {
+						log.Error("CRCProposalReview payload cast failed, tx:", tx.Hash())
+						continue
+					}
+					key := mp.getCrcProposalReviewKey(crcProposalReview)
+					mp.delCrcProposalReview(key)
 				}
 
 				deleteCount++
@@ -302,6 +311,10 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 	log.Debug(fmt.Sprintf("[cleanTransactionList],transaction %d in block, %d in transaction pool before, %d deleted,"+
 		" Remains %d in TxPool",
 		len(blockTxs), txsInPool, deleteCount, len(mp.txnList)))
+}
+
+func (mp *TxPool) getCrcProposalReviewKey(proposalReview *payload.CRCProposalReview) string {
+	return string(proposalReview.Code) + proposalReview.ProposalHash.String()
 }
 
 func (mp *TxPool) cleanCanceledProducerAndCR(txs []*Transaction) error {
@@ -429,6 +442,10 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 	}
 
 	if errCode := mp.verifyProducerRelatedTx(txn); errCode != Success {
+		return errCode
+	}
+
+	if errCode := mp.verifyDuplicateCrcProposalReview(txn); errCode != Success {
 		return errCode
 	}
 
@@ -700,6 +717,20 @@ func (mp *TxPool) verifyDuplicateCRCProposal(originProposalHash Uint256) error {
 
 	return nil
 }
+func (mp *TxPool) verifyDuplicateCrcProposalReview(txn *Transaction) ErrCode {
+	crcProposalReview, ok := txn.Payload.(*payload.CRCProposalReview)
+	if !ok {
+		return Success
+	}
+	key := mp.getCrcProposalReviewKey(crcProposalReview)
+	_, ok = mp.crcProposalReview[key]
+	if ok {
+		return ErrCRProcessing
+	}
+	mp.addCrcProposalReview(key)
+
+	return Success
+}
 
 func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte, crNickname string) error {
 	_, ok := mp.crDIDs[did]
@@ -768,6 +799,13 @@ func (mp *TxPool) delCrNickname(key string) {
 	delete(mp.crNicknames, key)
 }
 
+func (mp *TxPool) addCrcProposalReview(key string) {
+	mp.tempCrcProposalReview[key] = struct{}{}
+}
+
+func (mp *TxPool) delCrcProposalReview(key string) {
+	delete(mp.crcProposalReview, key)
+}
 func (mp *TxPool) delPublicKeyByCode(code []byte) {
 	signType, err := crypto.GetScriptType(code)
 	if err != nil {
@@ -981,6 +1019,9 @@ func (mp *TxPool) commitTemp() {
 	}
 	for k, v := range mp.tempCrNicknames {
 		mp.crNicknames[k] = v
+	}
+	for k, v := range mp.tempCrcProposalReview {
+		mp.crcProposalReview[k] = v
 	}
 }
 
