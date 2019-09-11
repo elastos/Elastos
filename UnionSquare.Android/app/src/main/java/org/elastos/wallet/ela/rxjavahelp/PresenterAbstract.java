@@ -21,10 +21,10 @@ import io.reactivex.schedulers.Schedulers;
 
 
 public class PresenterAbstract implements DialogInterface.OnCancelListener {
-    private String TAG = getClass().getSimpleName();
-    private Disposable mDisposable;
-    private boolean isShowDialog = true;
-    private Context context;
+    protected String TAG = getClass().getSimpleName();
+    protected Disposable mDisposable;
+    protected boolean isShowDialog = true;
+    protected Context context;
 
     @Deprecated
     protected void subscriberObservable(Observer subscriber,
@@ -233,7 +233,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     }
 
 
-    private void dismissProgessDialog() {
+    protected void dismissProgessDialog() {
         if (DialogUtil.getHttpialog() != null && DialogUtil.getHttpialog().isShowing()) {
             DialogUtil.getHttpialog().dismiss();
             DialogUtil.setHttpialogNull();
@@ -258,19 +258,19 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
         }
     }
 
-    private void finish() {
+    protected void finish() {
         if (context instanceof BaseActivity) {
             BaseActivity b = (BaseActivity) context;
             b.onError();
         }
     }
 
-    public static int getResourceId(Context context, String resourceName, String resourceType) {
+    protected static int getResourceId(Context context, String resourceName, String resourceType) {
         return context.getResources().getIdentifier(resourceName, resourceType,
                 context.getPackageName());
     }
 
-    private void showTips(BaseEntity entity) {
+    protected void showTips(BaseEntity entity) {
         String msg;
         try {
             int id = getResourceId(context, "error_" + entity.getCode(), "string");

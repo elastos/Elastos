@@ -32,6 +32,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.github.xudaojie.qrcodelib.BuildConfig;
 
 /**
  * 验证助记词
@@ -118,7 +119,7 @@ public class VerifyMnemonicWordsFragment extends BaseFragment implements Creater
 
     @OnClick(R.id.sb_create_wallet)
     public void onViewClicked() {
-        if (putList.toString().equals(readList.toString())) {
+        if (BuildConfig.DEBUG || putList.toString().equals(readList.toString())) {
             if (openType == RxEnum.MANAGER.ordinal()) {
                 //钱包管理的导出助记词
                 popTo(WallletManageFragment.class, false);

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/wallet_bg"
@@ -61,10 +59,39 @@
                 android:textColor="@color/qmui_config_color_white"
                 android:textSize="11sp" />
 
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/ll_pwd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/common_margin"
+                android:layout_marginTop="26dp"
+                android:layout_marginRight="@dimen/common_margin"
+                android:background="@color/mainitembg"
+                android:orientation="vertical"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp">
+
+                <EditText
+                    android:id="@+id/et_pwd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:background="@null"
+                    android:hint="@string/please_enter_your_mnemonic_password"
+                    android:inputType="textPassword"
+                    android:textSize="14sp" />
+
+                <View
+                    style="@style/line1"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="15dp" />
+            </LinearLayout>
+
             <com.allen.library.SuperButton
                 android:id="@+id/sb"
                 style="@style/PublicButton"
-                android:layout_marginTop="@dimen/px200"
+                android:layout_marginTop="@dimen/px80"
                 android:text="@string/sureoutport" />
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>

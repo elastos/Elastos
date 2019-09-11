@@ -431,5 +431,7 @@
     <string name="totle">合计：</string>
     <string name="available">可用：</string>
     <string name="crcvote">CRC委员选举</string>
+    <string name="deleteanywal">直接删除</string>
+    <string name="verifymneminicpwd">验证助记词密码</string>
 
 </resources>

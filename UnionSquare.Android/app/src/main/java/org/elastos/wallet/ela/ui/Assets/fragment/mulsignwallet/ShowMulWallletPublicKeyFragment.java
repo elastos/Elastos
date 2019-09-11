@@ -15,16 +15,17 @@ import com.google.gson.JsonParser;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.adapter.PublicKeyRecAdapter;
 import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.ScreenUtil;
 
 import butterknife.BindView;
-import butterknife.Unbinder;
 
-public class ShowMulWallletPublicKeyFragment extends BaseFragment implements CommmonStringWithMethNameViewData {
+public class ShowMulWallletPublicKeyFragment extends BaseFragment implements NewBaseViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.tv_signnum)
@@ -54,31 +55,9 @@ public class ShowMulWallletPublicKeyFragment extends BaseFragment implements Com
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.pklist));
-        new WallletManagePresenter().exportReadonlyWallet(wallet.getWalletId(), this);
+        new WallletManagePresenter().getPubKeyInfo(wallet.getWalletId(), this);
     }
 
-
-    @Override
-    public void onGetCommonData(String methodname, String data) {
-        //{"CoinInfoList":[{"ChainID":"ELA","EarliestPeerTime":1561716528,"FeePerKB":10000,"VisibleAssets":["a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0"]}],"OwnerPubKey":"03d916c2072fd8fb57224e9747e0f1e36a2c117689cedf39e0132f3cb4f8ee673d","SingleAddress":false,"m":1,"mnemonicHasPassphrase":false,"n":1,"network":"","publicKeyRing":[{"requestPubKey":"0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280","xPubKey":"xpub6D5r16bFTY3FfNht7kobqQzkAHsUxzfKingYXXYUoTfNDSqCW2yjhHdt9yWRwtxx4zWoJ1m3pEo6hzQTswEA2UeEB16jEnYiHoDFwGH9c9z"}],"requestPubKey":"0370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280","xPubKey":"xpub6D5r16bFTY3FfNht7kobqQzkAHsUxzfKingYXXYUoTfNDSqCW2yjhHdt9yWRwtxx4zWoJ1m3pEo6hzQTswEA2UeEB16jEnYiHoDFwGH9c9z"}
-        try {
-            JsonObject jsonData = new JsonParser().parse(data).getAsJsonObject();
-            String requestPubKey = jsonData.get("requestPubKey").getAsString();
-            if (!TextUtils.isEmpty(requestPubKey)) {
-                llCurrentpk.setVisibility(View.VISIBLE);
-                tvCurrentpk.setText(requestPubKey);
-            }
-            String n = jsonData.get("n").getAsString();
-            tvPknum.setText(n);
-            String m = jsonData.get("m").getAsString();
-            tvSignnum.setText(m);
-            JsonArray publicKeyRing = jsonData.get("publicKeyRing").getAsJsonArray();
-            setRecycleView(publicKeyRing);
-        } catch (Exception e) {
-            showToast(getString(R.string.error_30000));
-        }
-
-    }
 
     private void setRecycleView(JsonArray publicKeyRing) {
         rv.setNestedScrollingEnabled(false);
@@ -91,5 +70,43 @@ public class ShowMulWallletPublicKeyFragment extends BaseFragment implements Com
     }
 
 
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        //{
+        //	"derivationStrategy":"BIP44",
+        //	"m":1,
+        //	"n":1,
+        //	"publicKeyRing":[
+        // "xpub68R18fSmxfwBJ9dEm9SokS1hx5ZTd1nRtbioJ8qrgMJLai9nPpFucvf5Fq5DS1w7qZZs5UKtZDJCDAH3She2vbgpPbdoPrMMmSBFNeDrEPK"],
+        //"xPubKey":"xpub6D5r16bFTY3FfNht7kobqQzkAHsUxzfKingYXXYUoTfNDSqCW2yjhHdt9yWRwtxx4zWoJ1m3pEo6hzQTswEA2UeEB16jEnYiHoDFwGH9c9z",
+        //"xPubKeyHDPM":"xpub68R18fSmxfwBJ9dEm9SokS1hx5ZTd1nRtbioJ8qrgMJLai9nPpFucvf5Fq5DS1w7qZZs5UKtZDJCDAH3She2vbgpPbdoPrMMmSBFNeDrEPK"
+        //}
+        String data = ((CommmonStringEntity) baseEntity).getData();
+        try {
+            JsonObject jsonData = new JsonParser().parse(data).getAsJsonObject();
+            String derivationStrategy = jsonData.get("derivationStrategy").getAsString();
+            int n = jsonData.get("n").getAsInt();
+            tvPknum.setText(n + "");
+            String m = jsonData.get("m").getAsString();
+            tvSignnum.setText(m);
+            String requestPubKey;
+            if ("BIP44".equals(derivationStrategy) && n > 1) {
+                requestPubKey = jsonData.get("xPubKey").getAsString();
+
+            } else {
+                requestPubKey = jsonData.get("xPubKeyHDPM").getAsString();
+            }
+            if (!TextUtils.isEmpty(requestPubKey)) {
+                llCurrentpk.setVisibility(View.VISIBLE);
+                tvCurrentpk.setText(requestPubKey);
+            }
+
+
+            JsonArray publicKeyRing = jsonData.get("publicKeyRing").getAsJsonArray();
+            setRecycleView(publicKeyRing);
+        } catch (Exception e) {
+            showToast(getString(R.string.error_30000));
+        }
+    }
 }
 

@@ -30,6 +30,7 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener2;
 import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
 
 import java.lang.reflect.Field;
@@ -231,7 +232,36 @@ public class DialogUtil {
         return dialog;
     }
 
+    public Dialog showWarmPromptInput3(BaseActivity activity, String title, String hint, WarmPromptListener2 listener) {
+        dialog = getDialogs(activity, R.layout.dialog_input3);
 
+        TextView tvTitle = dialog.findViewById(R.id.tv_title);
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        EditText etContent = dialog.findViewById(R.id.et_content);
+        TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextView tvnoSure = dialog.findViewById(R.id.tv_nosure);
+
+        if (title != null) {
+            tvTitle.setText(Html.fromHtml(title));
+        }
+        if (hint != null) {
+            etContent.setHint(Html.fromHtml(hint));
+        }
+
+        tvnoSure.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.noAffireBtnClick(v);
+        });
+        ivCancel.setOnClickListener(v -> dialogDismiss(dialog));
+        tvCancel.setOnClickListener(v -> dialogDismiss(dialog));
+
+        tvSure.setOnClickListener(v -> {
+            listener.affireBtnClick(etContent);
+        });
+        dialog.show();
+        return dialog;
+    }
     public void showTransferSucess(BaseActivity activity) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
         dialog.setContentView(R.layout.dialog_transfersuccess);

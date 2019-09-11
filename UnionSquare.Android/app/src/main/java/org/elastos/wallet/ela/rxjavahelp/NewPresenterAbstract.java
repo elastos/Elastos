@@ -1,58 +1,17 @@
 package org.elastos.wallet.ela.rxjavahelp;
 
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.base.BaseFragment;
-import org.elastos.wallet.ela.utils.DialogUtil;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 
 
-public class NewPresenterAbstract implements DialogInterface.OnCancelListener {
-    private String TAG = getClass().getSimpleName();
-    private Disposable mDisposable;
-    private boolean isShowDialog = true;
-    private Context context;
-
-
-    protected void subscriberObservable(Observer subscriber,
-                                        Observable observable, BaseFragment baseFragment) {
-        observable.compose(baseFragment.bindToLife()).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .unsubscribeOn(Schedulers.io())
-                .subscribe(subscriber);
-    }
-
-    protected void subscriberObservable(Observer subscriber,
-                                        Observable observable, BaseActivity baseActivity) {
-        observable.compose(baseActivity.bindToLife()).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .unsubscribeOn(Schedulers.io())
-                .subscribe(subscriber);
-    }
-
-    protected Observable createObservable(ObservableListener listener) {
-
-        return Observable.create(new ObservableOnSubscribe<BaseEntity>() {
-            @Override
-            public void subscribe(ObservableEmitter<BaseEntity> emitter) throws Exception {
-                emitter.onNext(listener.subscribe());
-                emitter.onComplete();
-            }
-        });
-    }
+public class NewPresenterAbstract extends PresenterAbstract {
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName) {
         //初始化参数
@@ -184,56 +143,5 @@ public class NewPresenterAbstract implements DialogInterface.OnCancelListener {
         };
 
 
-    }
-
-
-    private void dismissProgessDialog() {
-        if (DialogUtil.getHttpialog() != null && DialogUtil.getHttpialog().isShowing()) {
-            DialogUtil.getHttpialog().dismiss();
-            DialogUtil.setHttpialogNull();
-        }
-    }
-
-    protected void initProgressDialog(Context context) {
-        Dialog dialog = new DialogUtil().getHttpDialog(context, "loading...");
-        dialog.setOnCancelListener(this);
-        dialog.dismiss();
-        if (!dialog.isShowing()) {
-            dialog.show();
-        }
-    }
-
-    @Override
-    public void onCancel(DialogInterface dialog) {
-        //解除观察者和被观察者的绑定
-        finish();
-        if (mDisposable != null && !mDisposable.isDisposed()) {
-            mDisposable.dispose();
-        }
-    }
-
-    private void finish() {
-        if (context instanceof BaseActivity) {
-            BaseActivity b = (BaseActivity) context;
-            b.onError();
-        }
-    }
-
-    public static int getResourceId(Context context, String resourceName, String resourceType) {
-        return context.getResources().getIdentifier(resourceName, resourceType,
-                context.getPackageName());
-    }
-
-    private void showTips(BaseEntity entity) {
-        String msg;
-        try {
-            int id = getResourceId(context, "error_" + entity.getCode(), "string");
-            msg = context.getString(id);
-        } catch (Exception e) {
-            msg = entity.getMsg();
-        }
-
-
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
 }

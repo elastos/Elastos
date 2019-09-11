@@ -221,8 +221,6 @@ public class MyWallet {
                 return errorProcess(errCodeCreateSubWallet + "", "Create " + formatWalletName(masterWalletID, chainID));
 
             }
-
-            //basicInfo = subWallet.GetBasicInfo();
             return new CommmonStringEntity(SUCCESSCODE, subWallet.GetBasicInfo());
         } catch (WalletException e) {
             return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID));
@@ -804,6 +802,65 @@ public class MyWallet {
         }
     }
 
+
+    public BaseEntity getPubKeyInfo(String masterWalletID) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+
+            String pubKeyInfo = masterWallet.GetPubKeyInfo();
+            return new CommmonStringEntity(SUCCESSCODE, pubKeyInfo);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "getPubKeyInfo " + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity verifyPrivateKey(String masterWalletID, String mnemonic, String passphrase) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+
+            boolean result = masterWallet.VerifyPrivateKey(mnemonic, passphrase);
+            return new CommmonBooleanEntity(SUCCESSCODE, result);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "verifyPrivateKey " + formatWalletName(masterWalletID));
+        }
+    }
+
+    public BaseEntity verifyPayPassword(String masterWalletID, String payPasswd) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+
+            boolean result = masterWallet.VerifyPayPassword(payPasswd);
+            return new CommmonBooleanEntity(SUCCESSCODE, result);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "verifyPayPassword " + formatWalletName(masterWalletID));
+        }
+    } public BaseEntity verifyPassPhrase(String masterWalletID,String passphrase, String payPasswd) {
+        try {
+            MasterWallet masterWallet = getMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
+
+            }
+
+            boolean result = masterWallet.VerifyPassPhrase(passphrase,payPasswd);
+            return new CommmonBooleanEntity(SUCCESSCODE, result);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "verifyPassPhrase " + formatWalletName(masterWalletID));
+        }
+    }
+
     /*****************************************投票相关**************************************/
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -1127,7 +1184,7 @@ public class MyWallet {
     // args[1]: String chainID
     // args[2]: String crPublickey
     // args[3]: String payPasswd
-    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crPublickey, String payPasswd)  {
+    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crPublickey, String payPasswd) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
