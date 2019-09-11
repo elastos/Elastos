@@ -59,7 +59,7 @@ export default class extends BaseService {
       this.dispatch(this.selfRedux.actions.all_suggestions_total_update(result.total))
       this.dispatch(this.selfRedux.actions.all_suggestions_update(_.values(result.list)))
     } catch (e) {
-      // Do nothing
+      logger.error(e)
     }
 
     return result

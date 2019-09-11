@@ -516,6 +516,7 @@ export default class extends StandardPage {
       await this.props.loadMore(query)
     } catch (e) {
       // Do not update page in state if the call fails
+      logger.error(e)
     }
 
     this.setState({ loadingMore: false })
