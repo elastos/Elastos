@@ -267,7 +267,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
         String currentBelongId = data.get(0).getBelongId();
         List<SubWallet> assetList = listMap.get(currentBelongId);//原来的数据
-
+        listMap.put(currentBelongId, data);
         for (SubWallet newSubWallet : data) {
 
             First:
@@ -297,7 +297,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
         }
 
-        listMap.put(currentBelongId, data);
+
         if (wallet.getWalletId().equals(currentBelongId)) {
             setRecycleView();
         }
