@@ -1,6 +1,7 @@
 {
   "Configuration": {
     "ActiveNet": "testnet",
+    "Magic": 2018111,
     "DPoSConfiguration": {
       "EnableArbiter": false,
       "IPAddress": "127.0.0.1"

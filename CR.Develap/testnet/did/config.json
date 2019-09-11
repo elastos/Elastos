@@ -1,5 +1,6 @@
 {
   "ActiveNet": "testnet",
+  "Magic": 2018112,
   "SPVDisableDNS": false,
   "EnableREST": true,
   "EnableRPC": true,
