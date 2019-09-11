@@ -661,7 +661,7 @@ namespace Elastos {
 			if (ContainUTXO(o))
 				return false;
 
-			if (_parent->_subAccount->IsDepositAddress(o->Output()->Addr()) || _parent->_subAccount->IsCRDepositAddress(o->Output()->Addr())) {
+			if (_parent->_subAccount->IsProducerDepositAddress(o->Output()->Addr()) || _parent->_subAccount->IsCRDepositAddress(o->Output()->Addr())) {
 				_balanceDeposit += o->Output()->Amount();
 				_utxosDeposit.push_back(o);
 				//SPVLOG_DEBUG("{} add deposit utxo {} n {} addr {} amount +{} = deposit {}", \

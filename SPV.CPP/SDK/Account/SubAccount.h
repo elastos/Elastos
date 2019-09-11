@@ -27,7 +27,7 @@ namespace Elastos {
 
 			bool IsSingleAddress() const;
 
-			bool IsDepositAddress(const Address &address) const;
+			bool IsProducerDepositAddress(const Address &address) const;
 
 			bool IsOwnerAddress(const Address &address) const;
 

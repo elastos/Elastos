@@ -55,7 +55,7 @@ namespace Elastos {
 			return _parent->SingleAddress();
 		}
 
-		bool SubAccount::IsDepositAddress(const Address &address) const {
+		bool SubAccount::IsProducerDepositAddress(const Address &address) const {
 			if (!_depositAddress.Valid()) {
 				return false;
 			}
@@ -316,7 +316,7 @@ namespace Elastos {
 		}
 
 		bool SubAccount::ContainsAddress(const Address &address) const {
-			if (IsDepositAddress(address) || IsCRDepositAddress(address)) {
+			if (IsProducerDepositAddress(address) || IsCRDepositAddress(address)) {
 				return true;
 			}
 
@@ -335,7 +335,7 @@ namespace Elastos {
 			uint32_t index;
 			bytes_t pubKey;
 
-			if (IsDepositAddress(addr)) {
+			if (IsProducerDepositAddress(addr)) {
 				code = _depositAddress.RedeemScript();
 				path = "44'/0'/1'/0/0";
 				return true;

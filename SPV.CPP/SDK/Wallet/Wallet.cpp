@@ -263,7 +263,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
 			TransactionPtr tx;
-			if (fromAddress.Valid() && (_subAccount->IsDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
+			if (fromAddress.Valid() && (_subAccount->IsProducerDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
 				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(outputs, fromAddress, memo);
 			else
 				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo);
@@ -689,9 +689,15 @@ namespace Elastos {
 			return _subAccount->OwnerPubKey();
 		}
 
-		bool Wallet::IsVoteDepositAddress(const Address &addr) const {
+		bool Wallet::IsDepositAddress(const Address &addr) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->IsDepositAddress(addr);
+
+			if (_subAccount->IsProducerDepositAddress(addr))
+				return true;
+			if (_subAccount->IsCRDepositAddress(addr))
+				return true;
+
+			return false;
 		}
 
 		bool Wallet::ContainsAddress(const Address &address) {

@@ -250,7 +250,7 @@ static void RegisterCr(const std::string &masterWalletID, const std::string &sub
 	nlohmann::json payload = mainchainSubWallet->GenerateCRInfoPayload(pubKey, nickName, url, location, payPasswd);
 
 	nlohmann::json tx = mainchainSubWallet->CreateRegisterCRTransaction("", payload, std::to_string(500000000000 + 10000),
-	                                                                          memo);
+																		memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
 }

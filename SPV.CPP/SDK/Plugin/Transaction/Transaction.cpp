@@ -701,7 +701,7 @@ namespace Elastos {
 				TransactionPtr tx = wallet->TransactionForHash((*in)->TxHash());
 				if (tx) {
 					const OutputPtr o = tx->OutputOfIndex((*in)->Index());
-					if (o && wallet->ContainsAddress(o->Addr()) && !wallet->IsVoteDepositAddress(o->Addr())) {
+					if (o && wallet->ContainsAddress(o->Addr()) && !wallet->IsDepositAddress(o->Addr())) {
 						const BigInt &spentAmount = o->Amount();
 						addr = o->Addr().String();
 
@@ -757,7 +757,7 @@ namespace Elastos {
 				}
 
 				containAddress = wallet->ContainsAddress((*o)->Addr());
-				if (containAddress && !wallet->IsVoteDepositAddress((*o)->Addr())) {
+				if (containAddress && !wallet->IsDepositAddress((*o)->Addr())) {
 					changeAmount += oAmount;
 				} else {
 					outputAmount += oAmount;
