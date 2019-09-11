@@ -16,10 +16,12 @@ steps:
   image: golang:1.12
   environment:
     GOPATH: /drone
+    GOROOT: /usr/local/go
+    GO111MODULE: on
   commands:
-  - mkdir -p $GOBIN
-  - curl https://glide.sh/get | sh
-  - glide update && glide install
+  #- mkdir -p $GOBIN
+  #- curl https://glide.sh/get | sh
+  #- glide update && glide install
   - curl -o /bin/addlicense http://172.16.0.120/addlicense
   - curl -o /bin/revive http://172.16.120/revive
   - curl -o /bin/checkcoverage http://172.16.120/checkcoverage
