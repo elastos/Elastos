@@ -276,5 +276,6 @@ func RegisterDataType(L *lua.LState) int {
 	RegisterRegisterCRType(L)
 	RegisterUpdateCRType(L)
 	RegisterUnregisterCRType(L)
+	RegisterCRCProposalType(L)
 	return 0
 }

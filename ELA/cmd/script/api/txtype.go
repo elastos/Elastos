@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package api
 
@@ -87,6 +87,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.CRInfo)
 	case *payload.UnregisterCR:
 		pload, _ = ud.Value.(*payload.UnregisterCR)
+	case *payload.CRCProposal:
+		pload, _ = ud.Value.(*payload.CRCProposal)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)

@@ -516,6 +516,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.UnregisterCR)
 	case ReturnCRDepositCoin:
 		p = new(payload.ReturnDepositCoin)
+	case CRCProposal:
+		p = new(payload.CRCProposal)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

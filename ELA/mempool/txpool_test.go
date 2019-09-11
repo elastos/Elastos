@@ -247,7 +247,7 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	tx7.TxType = types.CRCProposal
 	tx7.Version = types.TxVersion09
 	tx7.Payload = &payload.CRCProposal{
-		OriginHash: common.Uint256{1, 2, 3},
+		DraftHash: common.Uint256{1, 2, 3},
 	}
 
 	// 2. Add tx1 and tx2 into store and input UTXO list
