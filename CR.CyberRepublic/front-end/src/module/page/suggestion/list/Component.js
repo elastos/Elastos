@@ -19,10 +19,9 @@ import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { SUGGESTION_STATUS, CONTENT_TYPE, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
-import { text, bg } from '@/constants/color'
 import DraftEditor from '@/module/common/DraftEditor'
 import MediaQuery from 'react-responsive'
-import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
+import { LG_WIDTH } from '@/config/constant'
 
 import './style.scss'
 
@@ -33,9 +32,6 @@ const SORT_BY = {
   viewsNum: 'viewsNum'
 }
 const DEFAULT_SORT = SORT_BY.createdAt
-
-// this is used by the CSS too - TODO: move everything to styled-components
-const SIDE_PADDING = '108px'
 
 /**
  * This uses new features such as infinite scroll and pagination, therefore
