@@ -862,11 +862,7 @@ namespace Elastos {
 					Init();
 				}
 
-				try {
-					AES::DecryptCCM(_localstore->GetRequestPrivKey(), payPasswd);
-				} catch (const std::exception &e) {
-					return false;
-				}
+				AES::DecryptCCM(_localstore->GetRequestPrivKey(), payPasswd);
 
 				return true;
 			}
