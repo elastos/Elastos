@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -144,7 +144,7 @@ func (mp *TxPool) CleanSubmittedTransactions(block *Block) {
 	mp.cleanTransactions(block.Transactions)
 	mp.cleanSidechainTx(block.Transactions)
 	mp.cleanSideChainPowTx()
-	mp.cleanCanceledProducer(block.Transactions)
+	mp.cleanCanceledProducerAndCR(block.Transactions)
 	mp.Unlock()
 }
 
@@ -294,7 +294,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 		len(blockTxs), txsInPool, deleteCount, len(mp.txnList)))
 }
 
-func (mp *TxPool) cleanCanceledProducer(txs []*Transaction) error {
+func (mp *TxPool) cleanCanceledProducerAndCR(txs []*Transaction) error {
 	for _, txn := range txs {
 		if txn.TxType == CancelProducer {
 			cpPayload, ok := txn.Payload.(*payload.ProcessProducer)
@@ -302,6 +302,15 @@ func (mp *TxPool) cleanCanceledProducer(txs []*Transaction) error {
 				return errors.New("invalid cancel producer payload")
 			}
 			if err := mp.cleanVoteAndUpdateProducer(cpPayload.OwnerPublicKey); err != nil {
+				log.Error(err)
+			}
+		}
+		if txn.TxType == UnregisterCR {
+			crPayload, ok := txn.Payload.(*payload.UnregisterCR)
+			if !ok {
+				return errors.New("invalid cancel producer payload")
+			}
+			if err := mp.cleanVoteAndUpdateCR(crPayload.Code); err != nil {
 				log.Error(err)
 			}
 		}
@@ -339,6 +348,41 @@ func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
 				mp.removeTransaction(txn)
 				mp.delOwnerPublicKey(BytesToHexString(upPayload.OwnerPublicKey))
 				mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
+			}
+		}
+	}
+
+	return nil
+}
+
+func (mp *TxPool) cleanVoteAndUpdateCR(code []byte) error {
+	for _, txn := range mp.txnList {
+		if txn.TxType == TransferAsset {
+			for _, output := range txn.Outputs {
+				if output.Type == OTVote {
+					opPayload, ok := output.Payload.(*outputpayload.VoteOutput)
+					if !ok {
+						return errors.New("invalid vote output payload")
+					}
+					for _, content := range opPayload.Contents {
+						if content.VoteType == outputpayload.CRC {
+							for _, cv := range content.CandidateVotes {
+								if bytes.Equal(code, cv.Candidate) {
+									mp.removeTransaction(txn)
+								}
+							}
+						}
+					}
+				}
+			}
+		} else if txn.TxType == UpdateCR {
+			crPayload, ok := txn.Payload.(*payload.CRInfo)
+			if !ok {
+				return errors.New("invalid update CR payload")
+			}
+			if bytes.Equal(code, crPayload.Code) {
+				mp.removeTransaction(txn)
+				mp.delCRDID(crPayload.DID)
 			}
 		}
 	}
