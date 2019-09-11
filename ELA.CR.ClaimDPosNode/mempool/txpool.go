@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -38,6 +38,7 @@ type TxPool struct {
 	nodePublicKeys  map[string]struct{}
 	crDIDs          map[Uint168]struct{}
 	specialTxList   map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
+	crcProposals    map[Uint256]struct{}
 
 	tempInputUTXOList   map[string]*Transaction
 	tempSidechainTxList map[Uint256]*Transaction
@@ -45,6 +46,7 @@ type TxPool struct {
 	tempNodePublicKeys  map[string]struct{}
 	tempCrDIDs          map[Uint168]struct{}
 	tempSpecialTxList   map[Uint256]struct{}
+	tempCRCProposals    map[Uint256]struct{}
 
 	txnListSize int
 }
@@ -283,6 +285,13 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					did := ct.ToProgramHash()
 					mp.delCRDID(*did)
+				case CRCProposal:
+					cpPayload, ok := tx.Payload.(*payload.CRCProposal)
+					if !ok {
+						log.Error("CRC proposal payload cast failed, tx:", tx.Hash())
+						continue
+					}
+					mp.delCRCProposal(cpPayload.OriginHash)
 				}
 
 				deleteCount++
@@ -324,12 +333,14 @@ func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
 							for _, cv := range content.CandidateVotes {
 								if bytes.Equal(ownerPublicKey, cv.Candidate) {
 									mp.removeTransaction(txn)
+									goto end
 								}
 							}
 						}
 					}
 				}
 			}
+		end:
 		} else if txn.TxType == UpdateProducer {
 			upPayload, ok := txn.Payload.(*payload.ProducerInfo)
 			if !ok {
@@ -457,7 +468,7 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 	case UpdateCR:
 		p, ok := txn.Payload.(*payload.CRInfo)
 		if !ok {
-			log.Error("update producer payload cast failed, tx:", txn.Hash())
+			log.Error("update CR payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
 		if err := mp.verifyDuplicateCR(p.DID); err != nil {
@@ -467,7 +478,7 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 	case UnregisterCR:
 		p, ok := txn.Payload.(*payload.UnregisterCR)
 		if !ok {
-			log.Error("update producer payload cast failed, tx:", txn.Hash())
+			log.Error("unregister CR payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
 		ct, err := contract.CreateCRDIDContractByCode(p.Code)
@@ -477,6 +488,16 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 		}
 		did := ct.ToProgramHash()
 		if err := mp.verifyDuplicateCR(*did); err != nil {
+			log.Warn(err)
+			return ErrCRProcessing
+		}
+	case CRCProposal:
+		p, ok := txn.Payload.(*payload.CRCProposal)
+		if !ok {
+			log.Error("CRC proposal payload cast failed, tx:", txn.Hash())
+			return ErrCRProcessing
+		}
+		if err := mp.verifyDuplicateCRCProposal(p.OriginHash); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
@@ -612,6 +633,16 @@ func (mp *TxPool) verifyDuplicateCR(did Uint168) error {
 	return nil
 }
 
+func (mp *TxPool) verifyDuplicateCRCProposal(originProposalHash Uint256) error {
+	_, ok := mp.crcProposals[originProposalHash]
+	if ok {
+		return errors.New("this origin CRC proposal in being processed")
+	}
+	mp.addCRCProposal(originProposalHash)
+
+	return nil
+}
+
 func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte) error {
 	_, ok := mp.crDIDs[did]
 	if ok {
@@ -647,6 +678,14 @@ func (mp *TxPool) addCRDID(did Uint168) {
 
 func (mp *TxPool) delCRDID(did Uint168) {
 	delete(mp.crDIDs, did)
+}
+
+func (mp *TxPool) addCRCProposal(originProposalHash Uint256) {
+	mp.tempCRCProposals[originProposalHash] = struct{}{}
+}
+
+func (mp *TxPool) delCRCProposal(originProposalHash Uint256) {
+	delete(mp.crcProposals, originProposalHash)
 }
 
 func (mp *TxPool) delPublicKeyByCode(code []byte) {
@@ -832,6 +871,7 @@ func (mp *TxPool) clearTemp() {
 	mp.tempNodePublicKeys = make(map[string]struct{})
 	mp.tempSpecialTxList = make(map[Uint256]struct{})
 	mp.tempCrDIDs = make(map[Uint168]struct{})
+	mp.tempCRCProposals = make(map[Uint256]struct{})
 }
 
 func (mp *TxPool) commitTemp() {
@@ -853,6 +893,9 @@ func (mp *TxPool) commitTemp() {
 	for k, v := range mp.tempSpecialTxList {
 		mp.specialTxList[k] = v
 	}
+	for k, v := range mp.tempCRCProposals {
+		mp.crcProposals[k] = v
+	}
 }
 
 func NewTxPool(params *config.Params) *TxPool {
@@ -865,11 +908,13 @@ func NewTxPool(params *config.Params) *TxPool {
 		nodePublicKeys:      make(map[string]struct{}),
 		specialTxList:       make(map[Uint256]struct{}),
 		crDIDs:              make(map[Uint168]struct{}),
+		crcProposals:        make(map[Uint256]struct{}),
 		tempInputUTXOList:   make(map[string]*Transaction),
 		tempSidechainTxList: make(map[Uint256]*Transaction),
 		tempOwnerPublicKeys: make(map[string]struct{}),
 		tempNodePublicKeys:  make(map[string]struct{}),
 		tempSpecialTxList:   make(map[Uint256]struct{}),
 		tempCrDIDs:          make(map[Uint168]struct{}),
+		tempCRCProposals:    make(map[Uint256]struct{}),
 	}
 }
