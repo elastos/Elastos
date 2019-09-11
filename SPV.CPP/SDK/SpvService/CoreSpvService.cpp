@@ -56,11 +56,11 @@ namespace Elastos {
 			}
 		}
 
-		const WalletPtr &CoreSpvService::getWallet() {
+		const WalletPtr &CoreSpvService::GetWallet() const {
 			return _wallet;
 		}
 
-		const PeerManagerPtr &CoreSpvService::getPeerManager() {
+		const PeerManagerPtr &CoreSpvService::GetPeerManager() const {
 			return _peerManager;
 		}
 

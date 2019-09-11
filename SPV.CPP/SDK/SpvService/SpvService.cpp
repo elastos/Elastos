@@ -60,19 +60,15 @@ namespace Elastos {
 		}
 
 		void SpvService::PublishTransaction(const TransactionPtr &tx) {
-			if (getPeerManager()->GetConnectStatus() != Peer::Connected) {
-				getPeerManager()->ConnectLaster(0);
+			if (GetPeerManager()->GetConnectStatus() != Peer::Connected) {
+				GetPeerManager()->ConnectLaster(0);
 			}
 
-			getPeerManager()->PublishTransaction(tx);
+			GetPeerManager()->PublishTransaction(tx);
 		}
 
 		void SpvService::DatabaseFlush() {
 			_databaseManager.flush();
-		}
-
-		const WalletPtr &SpvService::getWallet() {
-			return CoreSpvService::getWallet();
 		}
 
 		//override Wallet listener

@@ -34,9 +34,9 @@ namespace Elastos {
 					  time_t earliestPeerTime,
 					  uint32_t reconnectSeconds);
 
-			virtual const WalletPtr &getWallet();
+			virtual const WalletPtr &GetWallet() const;
 
-			virtual const PeerManagerPtr &getPeerManager();
+			virtual const PeerManagerPtr &GetPeerManager() const;
 
 		public: //override from Wallet
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);

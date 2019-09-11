@@ -36,7 +36,7 @@ namespace Elastos {
 				uint8_t precision,
 				const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("name: {}", name);
 			ArgInfo("desc: {}", description);
 			ArgInfo("registerToAddr: {}", registerToAddress);
@@ -47,7 +47,7 @@ namespace Elastos {
 			BigInt assetAmount;
 			assetAmount.setDec(registerAmount);
 
-			ErrorChecker::CheckParam(_walletManager->getWallet()->AssetNameExist(name), Error::InvalidArgument,
+			ErrorChecker::CheckParam(_walletManager->GetWallet()->AssetNameExist(name), Error::InvalidArgument,
 									 "asset name already registered");
 			Address address(registerToAddress);
 			ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid address");
@@ -82,7 +82,7 @@ namespace Elastos {
 											   const std::string &amount, const std::string &assetID,
 											   const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("toAddr: {}", toAddress);
 			ArgInfo("amount: {}", amount);
@@ -91,7 +91,7 @@ namespace Elastos {
 
 			uint256 asset = uint256(assetID);
 
-			AssetPtr assetInfo = _walletManager->getWallet()->GetAsset(asset);
+			AssetPtr assetInfo = _walletManager->GetWallet()->GetAsset(asset);
 			ErrorChecker::CheckParam(assetInfo == nullptr, Error::InvalidArgument, "asset not found: " + assetID);
 
 			uint8_t invalidPrecision = Asset::MaxPrecision - assetInfo->GetPrecision();
@@ -120,7 +120,7 @@ namespace Elastos {
 
 		nlohmann::json TokenchainSubWallet::CreateConsolidateTransaction(const std::string &assetID,
 																		 const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("assetID: {}", assetID);
 			ArgInfo("memo: {}", memo);
 
@@ -134,31 +134,31 @@ namespace Elastos {
 		}
 
 		nlohmann::json TokenchainSubWallet::GetBalanceInfo(const std::string &assetID) const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("assetID: {}", assetID);
 
-			nlohmann::json balanceInfo = _walletManager->getWallet()->GetBalanceInfo();
+			nlohmann::json balanceInfo = _walletManager->GetWallet()->GetBalanceInfo();
 
 			ArgInfo("r => {}", balanceInfo.dump());
 			return  balanceInfo;
 		}
 
 		std::string TokenchainSubWallet::GetBalance(const std::string &assetID) const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("assetID: {}", assetID);
 
-			std::string balance = _walletManager->getWallet()->GetBalance(uint256(assetID)).getDec();
+			std::string balance = _walletManager->GetWallet()->GetBalance(uint256(assetID)).getDec();
 
 			ArgInfo("r => {}", balance);
 			return balance;
 		}
 
 		std::string TokenchainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("assetID: {}", assetID);
 			ArgInfo("addr: {}", address);
 
-			std::string balance = _walletManager->getWallet()->GetBalanceWithAddress(uint256(assetID), address).getDec();
+			std::string balance = _walletManager->GetWallet()->GetBalanceWithAddress(uint256(assetID), address).getDec();
 
 			ArgInfo("r => {}", balance);
 
@@ -166,9 +166,9 @@ namespace Elastos {
 		}
 
 		nlohmann::json TokenchainSubWallet::GetAllAssets() const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 
-			nlohmann::json jsonData = _walletManager->getWallet()->GetAllAssets();
+			nlohmann::json jsonData = _walletManager->GetWallet()->GetAllAssets();
 
 			ArgInfo("r => {}", jsonData.dump());
 

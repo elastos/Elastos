@@ -36,7 +36,7 @@ namespace Elastos {
 			const std::string &mainChainAddress,
 			const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("mainChainAddr: {}", mainChainAddress);
@@ -70,7 +70,7 @@ namespace Elastos {
 		}
 
 		std::string SidechainSubWallet::GetGenesisAddress() const {
-			ArgInfo("{} {}", _walletManager->getWallet()->GetWalletID(), GetFunName());
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 
 			std::string address = _config->GenesisAddress();
 

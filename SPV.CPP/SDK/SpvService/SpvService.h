@@ -54,8 +54,6 @@ namespace Elastos {
 
 			void DatabaseFlush();
 
-			virtual const WalletPtr &getWallet();
-
 		public:
 			virtual void balanceChanged(const uint256 &asset, const BigInt &balance);
 
