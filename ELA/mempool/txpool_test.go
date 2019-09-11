@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -243,6 +243,13 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	}
 	tx6.Inputs = []*types.Input{input4}
 
+	tx7 := new(types.Transaction)
+	tx7.TxType = types.CRCProposal
+	tx7.Version = types.TxVersion09
+	tx7.Payload = &payload.CRCProposal{
+		OriginHash: common.Uint256{1, 2, 3},
+	}
+
 	// 2. Add tx1 and tx2 into store and input UTXO list
 	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).NewBatch()
 	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).PersistTransactions(
@@ -302,6 +309,14 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	errCode = txPool.verifyCRRelatedTx(tx3)
 	assert.True(t, errCode == errors.Success)
 
+	// 13. Verify CR related tx
+	errCode = txPool.verifyCRRelatedTx(tx7)
+	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
+
+	// 14. Verify CR related tx
+	errCode = txPool.verifyCRRelatedTx(tx7)
+	assert.True(t, errCode == errors.ErrCRProcessing)
 }
 
 func TestTxPool_CleanSidechainTx(t *testing.T) {
