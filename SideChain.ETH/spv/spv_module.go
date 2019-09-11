@@ -254,7 +254,7 @@ func (l *listener) Type() core.TxType {
 }
 
 func (l *listener) Flags() uint64 {
-	return spv.FlagNotifyInSyncing
+	return spv.FlagNotifyInSyncing | spv.FlagNotifyConfirmed
 }
 
 func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Transaction) {
