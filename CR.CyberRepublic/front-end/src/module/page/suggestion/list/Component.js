@@ -73,10 +73,8 @@ export default class extends StandardPage {
     const viewArchivedButtonNode = this.renderArchivedButton()
     const actionsNode = this.renderHeaderActions()
     const filterNode = this.renderFilters()
-    // const mySuggestionNode = this.renderMySuggestion()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
-    const archivedNode = this.renderArchivedList()
 
     return (
       <div>
@@ -90,7 +88,6 @@ export default class extends StandardPage {
                 <Col>
                   {addButtonNode}
                   {viewArchivedButtonNode}
-                  {/* mySuggestionNode */}
                 </Col>
               </Row>
             ) :
@@ -108,8 +105,6 @@ export default class extends StandardPage {
                 {listNode}
               </Col>
             </Row>
-            {' '}
-:
             <Row/>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
@@ -129,7 +124,6 @@ export default class extends StandardPage {
               <Col span={24}>
                 {listNode}
               </Col>
-              {/* <Col span={8}>{mySuggestionNode}</Col> */}
             </Row>
           </MediaQuery>
           {createForm}
@@ -222,14 +216,18 @@ export default class extends StandardPage {
             <br/>
             {I18N.get('suggestion.intro.3')}
             {localStorage.getItem('lang') === 'en' ? (
-              <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
-                 target="_blank">
-https://www.cyberrepublic.org/docs/#/guide/suggestions
+              <a
+                href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
+                target="_blank"
+              >
+                https://www.cyberrepublic.org/docs/#/guide/suggestions
               </a>
             ) : (
-              <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
-                 target="_blank">
-https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
+              <a
+                href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
+                target="_blank"
+              >
+                https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
               </a>
             )}
           </HeaderDesc>
@@ -258,8 +256,7 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
           </h2>
         </div>
         <MediaQuery maxWidth={LG_WIDTH}>
-          {I18N.get('suggestion.sort')}
-: &nbsp;
+          {I18N.get('suggestion.sort')}: &nbsp;
           <Select
             name="type"
             style={{width: 200}}
@@ -274,8 +271,7 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
           </Select>
         </MediaQuery>
         <MediaQuery minWidth={LG_WIDTH + 1}>
-          {I18N.get('suggestion.sort')}
-: &nbsp;
+          {I18N.get('suggestion.sort')}: &nbsp;
           <Button.Group className="filter-group">
             {_.map(SORT_BY, value => (
               <Button
@@ -328,8 +324,7 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
       <Row>
         <Col sm={24} md={3}>
           <span>
-            {I18N.get('suggestion.tag.show')}
-:
+            {I18N.get('suggestion.tag.show')}:
           </span>
         </Col>
         <Col sm={24} md={7}>
@@ -400,10 +395,6 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
     )
   }
 
-  renderArchivedList() {
-
-  }
-
   renderItem = (data) => {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data, this.refetch)
@@ -416,7 +407,6 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
         {title}
         {tagsNode}
         <ShortDesc>
-          {/* {data.shortDesc} */}
           <DraftEditor value={data.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
           {_.isArray(data.link) && (data.link.map((link) => {
             return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
