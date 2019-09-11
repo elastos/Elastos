@@ -31,9 +31,9 @@ steps:
   - go test $(go list ./... | grep -v /vendor/) -v -short -coverprofile .coverage
   - go tool cover -func .coverage
   - checkcoverage
-  - make all
+  - make dev
   - make dns
-  - mkdir bin && cp ela ela-cli bin
+  - cp bin/ela bin/ela-cli .
   - bin/ela -v
   - ./util.sh test
   when:
