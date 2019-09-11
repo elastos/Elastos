@@ -5,8 +5,7 @@
     - [Install Docker Engine for Windows](https://docs.docker.com/docker-for-windows/install/)
     - For other platforms, check out [https://docs.docker.com/install/](https://docs.docker.com/install/)
 - Start docker after installation
-- Download the zipped file named "develop-binaries.zip" from the latest release at [https://github.com/kpachhai/develap/releases](https://github.com/kpachhai/develap/releases)
-When you unzip this file, you will see 3 folders that contains binaries for 3 supported platforms: darwin(Mac), Linux and Windows. Select the one appropriately
+- Download the latest release specific to your platform from [https://github.com/cyber-republic/develap/releases](https://github.com/cyber-republic/develap/releases)
 
 ## Available nodes to be setup
 1. Mainchain node
