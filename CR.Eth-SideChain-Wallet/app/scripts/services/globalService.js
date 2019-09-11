@@ -98,7 +98,14 @@ var globalService = function($http, $httpParamSerializerJQLike) {
     url: "bulk-generate",
     mew: false,
     cx: false
-  }
+  },
+  mainnet: {
+    id: 13,
+    name: "ELA_mainnet",
+    url: "mainnet",
+    mew: true,
+    cx: true
+  },
   }
 
   var currentTab = 0
