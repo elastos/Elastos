@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package api
 
@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
@@ -31,6 +32,7 @@ const (
 	luaRegisterCRName        = "registercr"
 	luaUpdateCRName          = "updatecr"
 	luaUnregisterCRName      = "unregistercr"
+	luaCRCProposalName       = "crcproposal"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -652,6 +654,10 @@ func newRegisterCR(L *lua.LState) int {
 			os.Exit(1)
 		}
 		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		acc := client.GetAccountByCodeHash(*codeHash)
 		if acc == nil {
 			fmt.Println("no available account in wallet")
@@ -758,6 +764,10 @@ func newUpdateCR(L *lua.LState) int {
 			os.Exit(1)
 		}
 		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		acc := client.GetAccountByCodeHash(*codeHash)
 		if acc == nil {
 			fmt.Println("no available account in wallet")
@@ -848,6 +858,10 @@ func newUnregisterCR(L *lua.LState) int {
 			os.Exit(1)
 		}
 		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		acc := client.GetAccountByCodeHash(*codeHash)
 		if acc == nil {
 			fmt.Println("no available account in wallet")
@@ -887,6 +901,132 @@ var unregisterCRMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func unregisterCRGet(L *lua.LState) int {
 	p := checkUnregisterCR(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func RegisterCRCProposalType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCRCProposalName)
+	L.SetGlobal("crcproposal", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newCRCProposal))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalMethods))
+}
+
+// Constructor
+func newCRCProposal(L *lua.LState) int {
+	publicKeyStr := L.ToString(1)
+	proposalType := L.ToInt64(2)
+	draftHashStr := L.ToString(3)
+	budgetsTable := L.ToTable(4)
+	needSign := true
+	client, err := checkClient(L, 5)
+	if err != nil {
+		needSign = false
+	}
+	draftHash, err := common.Uint256FromHexString(draftHashStr)
+	if err != nil {
+		fmt.Println("wrong draft proposal hash")
+		os.Exit(1)
+	}
+
+	budgets := make([]common.Fixed64, 0)
+	budgetsTable.ForEach(func(i, value lua.LValue) {
+		budgetStr := lua.LVAsString(value)
+		budgetStr = strings.Replace(budgetStr, "{", "", 1)
+		budgetStr = strings.Replace(budgetStr, "}", "", 1)
+		vote, _ := common.StringToFixed64(budgetStr)
+		budgets = append(budgets, *vote)
+	})
+
+	publicKey, err := common.HexStringToBytes(publicKeyStr)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	pk, err := crypto.DecodePoint(publicKey)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+
+	ct, err := contract.CreateStandardContract(pk)
+	if err != nil {
+		fmt.Println("wrong cr public key")
+		os.Exit(1)
+	}
+	crcProposal := &payload.CRCProposal{
+		ProposalType:     payload.CRCProposalType(proposalType),
+		SponsorPublicKey: publicKey,
+		CRSponsorCode:    ct.Code,
+		DraftHash:        *draftHash,
+		Budgets:          budgets,
+	}
+
+	if needSign {
+		signBuf := new(bytes.Buffer)
+		err = crcProposal.SerializeUnsigned(signBuf, payload.CRCProposalVersion)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		codeHash, err := contract.PublicKeyToStandardCodeHash(publicKey)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		acc := client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			fmt.Println("no available account in wallet")
+			os.Exit(1)
+		}
+		sig, err := crypto.Sign(acc.PrivKey(), signBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.Sign = sig
+		if err = common.WriteVarBytes(signBuf, sig); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crSig, err := crypto.Sign(acc.PrivKey(), signBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposal.CRSign = crSig
+	}
+
+	ud := L.NewUserData()
+	ud.Value = crcProposal
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCProposalName))
+	L.Push(ud)
+
+	return 1
+}
+
+// Checks whether the first lua argument is a *LUserData with *CRInfo and
+// returns this *CRInfo.
+func checkCRCProposal(L *lua.LState, idx int) *payload.CRCProposal {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.CRCProposal); ok {
+		return v
+	}
+	L.ArgError(1, "CRCProposal expected")
+	return nil
+}
+
+var crcProposalMethods = map[string]lua.LGFunction{
+	"get": crcProposalGet,
+}
+
+// Getter and setter for the Person#Name
+func crcProposalGet(L *lua.LState) int {
+	p := checkCRCProposal(L, 1)
 	fmt.Println(p)
 
 	return 0
