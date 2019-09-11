@@ -291,7 +291,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						log.Error("CRC proposal payload cast failed, tx:", tx.Hash())
 						continue
 					}
-					mp.delCRCProposal(cpPayload.OriginHash)
+					mp.delCRCProposal(cpPayload.DraftHash)
 				}
 
 				deleteCount++
@@ -322,6 +322,7 @@ func (mp *TxPool) cleanCanceledProducer(txs []*Transaction) error {
 func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
 	for _, txn := range mp.txnList {
 		if txn.TxType == TransferAsset {
+		end:
 			for _, output := range txn.Outputs {
 				if output.Type == OTVote {
 					opPayload, ok := output.Payload.(*outputpayload.VoteOutput)
@@ -333,14 +334,13 @@ func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
 							for _, cv := range content.CandidateVotes {
 								if bytes.Equal(ownerPublicKey, cv.Candidate) {
 									mp.removeTransaction(txn)
-									goto end
+									break end
 								}
 							}
 						}
 					}
 				}
 			}
-		end:
 		} else if txn.TxType == UpdateProducer {
 			upPayload, ok := txn.Payload.(*payload.ProducerInfo)
 			if !ok {
@@ -497,7 +497,7 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 			log.Error("CRC proposal payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCRCProposal(p.OriginHash); err != nil {
+		if err := mp.verifyDuplicateCRCProposal(p.DraftHash); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
