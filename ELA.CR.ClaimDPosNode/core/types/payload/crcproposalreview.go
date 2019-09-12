@@ -14,20 +14,20 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 )
 
-type VoteContentType byte
+type VoteResult byte
 
 const (
-	Agree   VoteContentType = 0x00
-	Against VoteContentType = 0x01
-	GiveUp  VoteContentType = 0x02
+	Approve VoteResult = 0x00
+	Reject  VoteResult = 0x01
+	Abstain VoteResult = 0x02
 )
 const CRCProposalReviewVersion byte = 0x00
 
 type CRCProposalReview struct {
-	ProposalHash    common.Uint256
-	VoteContentType VoteContentType
-	Code            []byte
-	Sign            []byte
+	ProposalHash common.Uint256
+	VoteResult   VoteResult
+	Code         []byte
+	Sign         []byte
 }
 
 func (a *CRCProposalReview) Data(version byte) []byte {
@@ -56,8 +56,8 @@ func (a *CRCProposalReview) SerializeUnsigned(w io.Writer, version byte) error {
 	if err := a.ProposalHash.Serialize(w); err != nil {
 		return err
 	}
-	if err := common.WriteUint8(w, byte(a.VoteContentType)); err != nil {
-		return errors.New("CRCProposalReview VoteContentType serialization error.")
+	if err := common.WriteUint8(w, byte(a.VoteResult)); err != nil {
+		return errors.New("CRCProposalReview VoteResult serialization error.")
 	}
 	if err := common.WriteVarBytes(w, a.Code); err != nil {
 		return errors.New("CRCProposalReview Code serialization error.")
@@ -86,9 +86,9 @@ func (a *CRCProposalReview) DeserializeUnsigned(r io.Reader, version byte) error
 	}
 	val, err := common.ReadBytes(r, 1)
 	if err != nil {
-		return errors.New("[CRCProposalReview] VoteContentType deserialization error.")
+		return errors.New("[CRCProposalReview] VoteResult deserialization error.")
 	}
-	a.VoteContentType = VoteContentType(val[0])
+	a.VoteResult = VoteResult(val[0])
 
 	a.Code, err = common.ReadVarBytes(r, crypto.MaxMultiSignCodeLength, "code")
 	if err != nil {

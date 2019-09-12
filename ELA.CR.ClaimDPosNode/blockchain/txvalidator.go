@@ -1565,9 +1565,9 @@ func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
 		return errors.New("invalid payload")
 	}
 
-	if crcProposalReview.VoteContentType < payload.Agree ||
-		(crcProposalReview.VoteContentType > payload.GiveUp) {
-		return errors.New("VoteContentType should be known")
+	if crcProposalReview.VoteResult < payload.Approve ||
+		(crcProposalReview.VoteResult > payload.Abstain) {
+		return errors.New("VoteResult should be known")
 	}
 
 	//todo check ProposalHash must exist
