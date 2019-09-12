@@ -43,15 +43,6 @@ const (
 	Aborted ProposalStatus = 0x06
 )
 
-// todo replace me with the enum defined in the vote output later
-type VoteResult uint8
-
-const (
-	Approve VoteResult = 0x00
-	Reject  VoteResult = 0x01
-	Abstain VoteResult = 0x02
-)
-
 // ProposalManager used to manage all proposals existing in block chain.
 type ProposalManager struct {
 	ProposalKeyFrame
@@ -123,7 +114,7 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 	height uint32, history *utils.History) {
 	agreedCount := uint32(0)
 	for _, v := range proposal.CRVotes {
-		if v == Approve {
+		if v == payload.Approve {
 			agreedCount++
 		}
 	}
@@ -148,8 +139,8 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 	height uint32, history *utils.History) {
 	// todo get current circulation by calculation
 	circulation := common.Fixed64(3300 * 10000 * 100000000)
-	if proposal.VotersRejectAmount >= common.Fixed64(float64(circulation) *
-		p.params.VoterRejectPercentage / 100.0) {
+	if proposal.VotersRejectAmount >= common.Fixed64(float64(circulation)*
+		p.params.VoterRejectPercentage/100.0) {
 		history.Append(height, func() {
 			proposal.Status = VoterAgreed
 		}, func() {
@@ -198,7 +189,7 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		Proposal:           *proposal,
 		TxHash:             tx.Hash(),
 		RegisterHeight:     height,
-		CRVotes:            map[common.Uint168]VoteResult{},
+		CRVotes:            map[common.Uint168]payload.VoteResult{},
 		VotersRejectAmount: common.Fixed64(0),
 	}
 

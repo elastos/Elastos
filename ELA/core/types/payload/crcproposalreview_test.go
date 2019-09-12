@@ -30,7 +30,7 @@ func TestCRCProposalReview_Deserialize(t *testing.T) {
 func crcProposalReviewPayloadEqual(payload1 *CRCProposalReview,
 	payload2 *CRCProposalReview) bool {
 	if !payload1.ProposalHash.IsEqual(payload2.ProposalHash) ||
-		payload1.VoteContentType != payload2.VoteContentType ||
+		payload1.VoteResult != payload2.VoteResult ||
 		!bytes.Equal(payload1.Code, payload2.Code) ||
 		!bytes.Equal(payload1.Sign, payload2.Sign) {
 		return false
@@ -41,10 +41,10 @@ func crcProposalReviewPayloadEqual(payload1 *CRCProposalReview,
 
 func randomCrcProposalReviewPayload() *CRCProposalReview {
 	return &CRCProposalReview{
-		ProposalHash:    *randomUint256(),
-		VoteContentType: VoteContentType(mathRand.Int() % (int(GiveUp) + 1)),
-		Code:            randomBytes(34),
-		Sign:            randomBytes(65),
+		ProposalHash: *randomUint256(),
+		VoteResult:   VoteResult(mathRand.Int() % (int(Abstain) + 1)),
+		Code:         randomBytes(34),
+		Sign:         randomBytes(65),
 	}
 }
 

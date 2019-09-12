@@ -1825,9 +1825,9 @@ func (s *txValidatorTestSuite) getCrcProposalReviewTx(crPublicKeyStr,
 	txn.TxType = types.CRCProposalReview
 	txn.Version = types.TxVersion09
 	crcProposalReviewPayload := &payload.CRCProposalReview{
-		ProposalHash:    *randomUint256(),
-		VoteContentType: payload.Agree,
-		Code:            code,
+		ProposalHash: *randomUint256(),
+		VoteResult:   payload.Approve,
+		Code:         code,
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -1865,9 +1865,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 
 	// invalid content type
 	txn = s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
-	txn.Payload.(*payload.CRCProposalReview).VoteContentType = 0x10
+	txn.Payload.(*payload.CRCProposalReview).VoteResult = 0x10
 	err = s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
-	s.EqualError(err, "VoteContentType should be known")
+	s.EqualError(err, "VoteResult should be known")
 
 	// proposal reviewer is not CR member
 	// todo needs other pr function

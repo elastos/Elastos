@@ -69,7 +69,7 @@ type ProposalState struct {
 	Proposal payload.CRCProposal
 	TxHash   common.Uint256
 
-	CRVotes            map[common.Uint168]VoteResult
+	CRVotes            map[common.Uint168]payload.VoteResult
 	VotersRejectAmount common.Fixed64
 	RegisterHeight     uint32
 	VoteStartHeight    uint32
@@ -523,7 +523,7 @@ func (p *ProposalState) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	p.CRVotes = make(map[common.Uint168]VoteResult, count)
+	p.CRVotes = make(map[common.Uint168]payload.VoteResult, count)
 	for i := uint64(0); i < count; i++ {
 		var key common.Uint168
 		if err = key.Deserialize(r); err != nil {
@@ -534,7 +534,7 @@ func (p *ProposalState) Deserialize(r io.Reader) (err error) {
 		if value, err = common.ReadUint8(r); err != nil {
 			return
 		}
-		p.CRVotes[key] = VoteResult(value)
+		p.CRVotes[key] = payload.VoteResult(value)
 	}
 
 	return p.TxHash.Deserialize(r)
