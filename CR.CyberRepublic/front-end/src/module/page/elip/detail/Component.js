@@ -55,7 +55,12 @@ class C extends StandardPage {
           elip: { ...elip, status: data.status },
           reviews: [...this.state.reviews, comment]
         })
-        message.info(I18N.get(`elip.msg.${data.status.toLowerCase()}`))
+
+        if (data.status === ELIP_STATUS.DRAFT) {
+          message.info(I18N.get(`elip.msg.approved`))
+        } else {
+          message.info(I18N.get(`elip.msg.rejected`))
+        }
       }
     } catch (err) {
       logger.error(err)
@@ -112,7 +117,7 @@ class C extends StandardPage {
           {this.renderEditButton()}
           {this.renderReviewButtons()}
           {this.renderReviewHistory()}
-          {elip.status === ELIP_STATUS.APPROVED && (
+          {elip.status === ELIP_STATUS.DRAFT && (
             <Row style={{ marginTop: 24 }}>
               <LabelCol span={3} />
               <Col span={17}>
@@ -252,7 +257,7 @@ const Status = styled.div`
     switch (props.status) {
       case ELIP_STATUS.REJECTED:
         return '#be1313'
-      case ELIP_STATUS.APPROVED:
+      case ELIP_STATUS.DRAFT:
         return '#008d85'
       default:
         return '#f2f6fb'
@@ -299,7 +304,7 @@ const Dec = styled.div`
     switch (props.status) {
       case ELIP_STATUS.REJECTED:
         return 'rgba(252, 192, 192, 0.2)'
-      case ELIP_STATUS.APPROVED:
+      case ELIP_STATUS.DRAFT:
         return 'rgba(29, 233, 182, 0.1)'
       default:
         return 'background: rgba(204, 204, 204, 0.2)'

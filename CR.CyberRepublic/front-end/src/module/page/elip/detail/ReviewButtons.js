@@ -30,7 +30,7 @@ class ReviewButtons extends React.Component {
 
   handleConfirm = async () => {
     const { onSubmit } = this.props
-    await onSubmit({ reason: '', status: ELIP_STATUS.APPROVED })
+    await onSubmit({ reason: '', status: ELIP_STATUS.DRAFT })
   }
 
   handleChange = e => {

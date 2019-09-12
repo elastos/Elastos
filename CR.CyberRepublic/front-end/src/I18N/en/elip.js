@@ -9,7 +9,7 @@ export default {
   fields: {
     number: 'Number',
     title: 'Title',
-    author: 'Ahthor',
+    author: 'Author',
     status: 'Status',
     createdAt: 'Created',
     description: 'Description'
@@ -17,12 +17,12 @@ export default {
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: 'WAIT FOR REVIEW',
     [ELIP_STATUS.REJECTED]: 'REJECTED',
-    [ELIP_STATUS.APPROVED]: 'APPROVED'
+    [ELIP_STATUS.DRAFT]: 'DRAFT'
   },
   show: 'Show',
   filter: {
     [ELIP_FILTER.ALL]: 'All',
-    [ELIP_FILTER.APPROVED]: 'Approved',
+    [ELIP_FILTER.DRAFT]: 'Draft',
     [ELIP_FILTER.WAIT_FOR_REVIEW]: 'Wait for review',
     [ELIP_FILTER.SUBMITTED_BY_ME]: 'Submitted by me'
   },

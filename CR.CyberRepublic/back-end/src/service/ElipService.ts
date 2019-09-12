@@ -123,7 +123,7 @@ export default class extends Base {
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
 
-    const isVisible = rs.status === constant.ELIP_STATUS.APPROVED ||
+    const isVisible = rs.status === constant.ELIP_STATUS.DRAFT ||
       rs.createdBy._id.equals(currentUserId) ||
       userRole === constant.USER_ROLE.SECRETARY
 
@@ -151,11 +151,11 @@ export default class extends Base {
     const query: any = {}
 
     if (!this.isLoggedIn()) {
-      query.status = constant.ELIP_STATUS.APPROVED
+      query.status = constant.ELIP_STATUS.DRAFT
     }
 
-    if (param.filter === constant.ELIP_FILTER.APPROVED) {
-      query.status = constant.ELIP_STATUS.APPROVED
+    if (param.filter === constant.ELIP_FILTER.DRAFT) {
+      query.status = constant.ELIP_STATUS.DRAFT
     }
 
     if (param.filter === constant.ELIP_FILTER.SUBMITTED_BY_ME) {
@@ -175,7 +175,7 @@ export default class extends Base {
         { createdBy: currentUserId, 
           status: { $in: [constant.ELIP_STATUS.REJECTED, constant.ELIP_STATUS.WAIT_FOR_REVIEW] }
         },
-        { status: constant.ELIP_STATUS.APPROVED },
+        { status: constant.ELIP_STATUS.DRAFT },
       ]
     }
 
