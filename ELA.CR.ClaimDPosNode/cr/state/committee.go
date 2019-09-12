@@ -20,15 +20,20 @@ import (
 
 type Committee struct {
 	KeyFrame
-	mtx    sync.RWMutex
-	state  *State
-	params *config.Params
+	mtx     sync.RWMutex
+	state   *State
+	params  *config.Params
+	manager *ProposalManager
 
 	getCheckpoint func(height uint32) *Checkpoint
 }
 
 func (c *Committee) GetState() *State {
 	return c.state
+}
+
+func (c *Committee) Proposals() *ProposalManager {
+	return c.manager
 }
 
 func (c *Committee) ExistCR(programCode []byte) bool {
@@ -215,7 +220,9 @@ func NewCommittee(params *config.Params) *Committee {
 		state:    NewState(params),
 		params:   params,
 		KeyFrame: *NewKeyFrame(),
+		manager:  NewProposalManager(params),
 	}
+	committee.state.SetManager(committee.manager)
 	params.CkpManager.Register(NewCheckpoint(committee))
 	return committee
 }

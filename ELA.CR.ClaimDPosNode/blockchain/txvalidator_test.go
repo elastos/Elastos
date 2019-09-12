@@ -1581,11 +1581,11 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	txn.TxType = types.CRCProposal
 	txn.Version = types.TxVersion09
 	crcProposalPayload := &payload.CRCProposal{
-		ProposalType: payload.Normal,
-		Sponsor:      publicKey1,
-		CRSponsor:    code2,
-		OriginHash:   common.Uint256{1, 2, 3},
-		Budgets:      []common.Fixed64{1, 1, 1},
+		ProposalType:     payload.Normal,
+		SponsorPublicKey: publicKey1,
+		CRSponsorCode:    code2,
+		DraftHash:        common.Uint256{1, 2, 3},
+		Budgets:          []common.Fixed64{1, 1, 1},
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -1845,14 +1845,14 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 
 	// invalid sponsor
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	txn.Payload.(*payload.CRCProposal).Sponsor = []byte{}
+	txn.Payload.(*payload.CRCProposal).SponsorPublicKey = []byte{}
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "invalid sponsor")
 
 	// invalid sponsor signature
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	txn.Payload.(*payload.CRCProposal).Sponsor = publicKey1
+	txn.Payload.(*payload.CRCProposal).SponsorPublicKey = publicKey1
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "sponsor signature check failed")
 
