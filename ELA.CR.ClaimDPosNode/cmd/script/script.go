@@ -38,6 +38,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	proposalType := c.Int64("proposaltype")
 	draftHash := c.String("drafthash")
 	budgets := c.StringSlice("budgets")
+	proposalhash := c.String("proposalhash")
+	votecontenttype := c.Int("votecontenttype")
 
 	getWallet := func(L *lua.LState) int {
 		L.Push(lua.LString(wallet))
@@ -103,6 +105,14 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(host))
 		return 1
 	}
+	getProposalHash := func(L *lua.LState) int {
+		L.Push(lua.LString(proposalhash))
+		return 1
+	}
+	getVoteContentType := func(L *lua.LState) int {
+		L.Push(lua.LNumber(votecontenttype))
+		return 1
+	}
 	getCandidates := func(L *lua.LState) int {
 		table := L.NewTable()
 		L.SetMetatable(table, L.GetTypeMetatable("candidates"))
@@ -159,6 +169,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getProposalType", getProposalType)
 	L.Register("getDraftHash", getDraftHash)
 	L.Register("getBudgets", getBudgets)
+	L.Register("getProposalHash", getProposalHash)
+	L.Register("getVoteContentType", getVoteContentType)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -298,12 +310,20 @@ func NewCommand() *cli.Command {
 			cli.StringSliceFlag{
 				Name:  "budgets",
 				Usage: "set the budgets",
+				cli.StringFlag{
+					Name:  "proposalhash, prophash",
+					Usage: "set the owner public key",
+				},
+				cli.StringFlag{
+					Name:  "votecontenttype, votconttype",
+					Usage: "set the owner public key",
+				},
 			},
-		},
-		Action: scriptAction,
-		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
-			common.PrintError(c, err, "script")
-			return cli.NewExitError("", 1)
-		},
+			Action: scriptAction,
+			OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
+				common.PrintError(c, err, "script")
+				return cli.NewExitError("", 1)
+			},
+		}
 	}
 }

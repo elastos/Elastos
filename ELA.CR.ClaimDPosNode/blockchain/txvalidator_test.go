@@ -713,6 +713,13 @@ func getCode(publicKey string) []byte {
 	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
 	return redeemScript
 }
+func getCodeHexStr(publicKey string) string {
+	pkBytes, _ := common.HexStringToBytes(publicKey)
+	pk, _ := crypto.DecodePoint(pkBytes)
+	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
+	codeHexStr := common.BytesToHexString(redeemScript)
+	return codeHexStr
+}
 
 func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 	// 1. Generate a vote output v0
@@ -1809,8 +1816,73 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 	s.EqualError(err, "[Validation], Verify failed.")
 }
 
-func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
+func (s *txValidatorTestSuite) getCrcProposalReviewTx(crPublicKeyStr,
+	crPrivateKeyStr string) *types.Transaction {
 
+	privateKey1, _ := common.HexStringToBytes(crPrivateKeyStr)
+	code := getCode(crPublicKeyStr)
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposalReview
+	txn.Version = types.TxVersion09
+	crcProposalReviewPayload := &payload.CRCProposalReview{
+		ProposalHash:    *randomUint256(),
+		VoteContentType: payload.Agree,
+		Code:            code,
+	}
+
+	signBuf := new(bytes.Buffer)
+	crcProposalReviewPayload.SerializeUnsigned(signBuf, payload.CRCProposalReviewVersion)
+	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
+	crcProposalReviewPayload.Sign = sig
+
+	txn.Payload = crcProposalReviewPayload
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(crPublicKeyStr),
+		Parameter: nil,
+	}}
+	return txn
+}
+
+func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
+	nickName1 := "nickname 1"
+
+	member1 := s.getCRMember(publicKeyStr1, privateKeyStr1, nickName1)
+	s.Chain.crCommittee.Members = []*crstate.CRMember{member1}
+
+	// ok
+	txn := s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
+	err := s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
+
+	// invalid payload
+	txn.Payload = &payload.CRInfo{}
+	err = s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
+	s.EqualError(err, "invalid payload")
+
+	// invalid content type
+	txn = s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
+	txn.Payload.(*payload.CRCProposalReview).VoteContentType = 0x10
+	err = s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
+	s.EqualError(err, "VoteContentType should be known")
+
+	// proposal reviewer is not CR member
+	// todo needs other pr function
+	txn = s.getCrcProposalReviewTx(publicKeyStr2, privateKeyStr2)
+	err = s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
+	s.EqualError(err, "CR proposal reviewer should be one of the CR members")
+
+	// invalid CR proposal reviewer signature
+	txn = s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
+	txn.Payload.(*payload.CRCProposalReview).Sign = []byte{}
+	err = s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
+	s.EqualError(err, "invalid signature length")
+}
+
+func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
 
@@ -1826,12 +1898,15 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.Members = memebers
 
 	// ok
+
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+
 	s.NoError(err)
 
 	// invalid payload
 	txn.Payload = &payload.CRInfo{}
+
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "invalid payload")
 
@@ -1864,6 +1939,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	txn.Payload.(*payload.CRCProposal).CRSign = []byte{}
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "CR sponsor signature check failed")
+
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {

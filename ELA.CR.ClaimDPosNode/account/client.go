@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package account
 
@@ -65,7 +65,6 @@ func createClient(path string, password []byte,
 	if err != nil {
 		return nil, err
 	}
-
 	client.mainAccount = account.ProgramHash.ToCodeHash()
 
 	return client, nil
