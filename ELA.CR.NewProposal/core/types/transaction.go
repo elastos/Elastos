@@ -55,7 +55,6 @@ const (
 	ReturnCRDepositCoin TxType = 0x24
 
 	CRCProposal       TxType = 0x25
-	ReviewCRCProposal TxType = 0x26
 	CRCProposalReview TxType = 0x26
 )
 
@@ -113,8 +112,6 @@ func (self TxType) Name() string {
 		return "ReturnCRDepositCoin"
 	case CRCProposal:
 		return "CRCProposal"
-	case ReviewCRCProposal:
-		return "ReviewCRCProposal"
 	default:
 		return "Unknown"
 	}

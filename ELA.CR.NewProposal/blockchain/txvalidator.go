@@ -191,11 +191,11 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			return ErrTransactionPayload
 		}
 
-
 	case CRCProposal:
 		if err := b.checkCRCProposalTransaction(txn, blockHeight); err != nil {
 			log.Warn("[checkCRCProposalTransaction],", err)
 			return ErrTransactionPayload
+		}
 
 	case CRCProposalReview:
 		if err := b.checkCrcProposalReviewTransaction(txn,
@@ -916,6 +916,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.CRInfo:
 	case *payload.UnregisterCR:
 	case *payload.CRCProposal:
+	case *payload.CRCProposalReview:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1564,12 +1565,17 @@ func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
 		return errors.New("invalid payload")
 	}
 
+	if crcProposalReview.VoteContentType < payload.Agree ||
+		(crcProposalReview.VoteContentType > payload.GiveUp) {
+		return errors.New("VoteContentType should be known")
+	}
+
 	//todo check ProposalHash must exist
 
 	//todo check code -> sponsor
-	//if !b.crCommittee.IsCRMember(crcProposalReview.Code) {
-	//	return errors.New("CR sponsor should be one of the CR members")
-	//}
+	if !b.crCommittee.IsCRMember(crcProposalReview.Code) {
+		return errors.New("CR proposal reviewer should be one of the CR members")
+	}
 
 	signedBuf := new(bytes.Buffer)
 	err := crcProposalReview.SerializeUnsigned(signedBuf, payload.CRCProposalReviewVersion)

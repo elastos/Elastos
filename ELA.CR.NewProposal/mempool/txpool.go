@@ -1038,6 +1038,7 @@ func NewTxPool(params *config.Params) *TxPool {
 		crcProposals:          make(map[Uint256]struct{}),
 		producerNicknames:     make(map[string]struct{}),
 		crNicknames:           make(map[string]struct{}),
+		crcProposalReview:     make(map[string]struct{}),
 		tempInputUTXOList:     make(map[string]*Transaction),
 		tempSidechainTxList:   make(map[Uint256]*Transaction),
 		tempOwnerPublicKeys:   make(map[string]struct{}),
@@ -1047,5 +1048,6 @@ func NewTxPool(params *config.Params) *TxPool {
 		tempCRCProposals:      make(map[Uint256]struct{}),
 		tempProducerNicknames: make(map[string]struct{}),
 		tempCrNicknames:       make(map[string]struct{}),
+		tempCrcProposalReview: make(map[string]struct{}),
 	}
 }
