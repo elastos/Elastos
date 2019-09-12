@@ -3,6 +3,8 @@ import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
 import { mail, logger, user as userUtil } from '../utility'
+import reject from 'src/router/cvote_summary/reject';
+import { promises } from 'fs';
 
 export default class extends Base {
   public async update(param: any): Promise<Document> {
@@ -196,14 +198,26 @@ export default class extends Base {
 
     const fields = 'vid title createdBy createdAt status'
     const list = await db_elip.list(query, {vid: -1}, 100, fields)
+    const promises = []
     for (const item of list) {
       if (item.createdBy) {
-        const user = await db_user.getDBInstance()
-          .findOne({ _id: item.createdBy })
-          .select(constant.DB_SELECTED_FIELDS.USER.NAME)
-        if (!_.isEmpty(user)) item.createdBy = user
+        const promise = new Promise((resolve, reject) => {
+          db_user.getDBInstance().findOne(
+            { _id: item.createdBy },
+            constant.DB_SELECTED_FIELDS.USER.NAME,
+            (err: any, user: object) => {
+              if (err) {
+                reject(err)
+              }
+              item.createdBy = user
+              resolve(true)
+            }
+          )
+        })
+        promises.push(promise)
       }
     }
+    await Promise.all(promises)
     return list
   }
 }
