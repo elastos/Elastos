@@ -39,10 +39,10 @@ export default class extends StandardPage {
     if (!loading && !Object.keys(elip).length) {
       return history.push('/elips')
     }
-    const isVisible =
-      !loading &&
-      elip.status === ELIP_STATUS.REJECTED &&
-      elip.createdBy._id === currentUserId
+
+    const isVisible = !loading && elip.createdBy._id === currentUserId &&
+      [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(elip.status)
+    
     if (!isVisible) {
       return history.push(`/elips/${elip._id}`)
     }

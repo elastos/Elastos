@@ -144,7 +144,9 @@ class C extends StandardPage {
 
   renderEditButton() {
     const { elip } = this.state
-    const isEditable = this.isAuthor(elip) && elip.status === ELIP_STATUS.REJECTED
+    const isEditable = this.isAuthor(elip) &&
+      [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(elip.status)
+
     if (isEditable) {
       return (
         <Row>
