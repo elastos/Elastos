@@ -280,12 +280,12 @@ func randomProposalState() *ProposalState {
 		RegisterHeight:     rand.Uint32(),
 		VoteStartHeight:    rand.Uint32(),
 		VotersRejectAmount: common.Fixed64(rand.Int63()),
-		CRVotes: map[common.Uint168]VoteResult{
-			*randomUint168(): VoteResult(rand.Int31n(3)),
-			*randomUint168(): VoteResult(rand.Int31n(3)),
-			*randomUint168(): VoteResult(rand.Int31n(3)),
-			*randomUint168(): VoteResult(rand.Int31n(3)),
-			*randomUint168(): VoteResult(rand.Int31n(3)),
+		CRVotes: map[common.Uint168]payload.VoteResult{
+			*randomUint168(): payload.VoteResult(rand.Int31n(3)),
+			*randomUint168(): payload.VoteResult(rand.Int31n(3)),
+			*randomUint168(): payload.VoteResult(rand.Int31n(3)),
+			*randomUint168(): payload.VoteResult(rand.Int31n(3)),
+			*randomUint168(): payload.VoteResult(rand.Int31n(3)),
 		},
 	}
 }

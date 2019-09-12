@@ -1061,7 +1061,7 @@ func newCrcProposalReview(L *lua.LState) int {
 	fmt.Println("newCrcProposalReview begin")
 
 	proposalHashString := L.ToString(1)
-	voteContentType := L.ToInt(2)
+	voteResult := L.ToInt(2)
 	code := L.ToString(3)
 
 	needSign := true
@@ -1073,9 +1073,9 @@ func newCrcProposalReview(L *lua.LState) int {
 	codeByte, _ := common.HexStringToBytes(code)
 
 	crcProposalReview := &payload.CRCProposalReview{
-		ProposalHash:    *proposalHash,
-		VoteContentType: payload.VoteContentType(voteContentType),
-		Code:            codeByte,
+		ProposalHash: *proposalHash,
+		VoteResult:   payload.VoteResult(voteResult),
+		Code:         codeByte,
 	}
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)
