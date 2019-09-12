@@ -6,6 +6,7 @@
 package state
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -38,6 +39,23 @@ type StateKeyFrame struct {
 	Nicknames          map[string]struct{}
 	Votes              map[string]*types.Output
 	DepositOutputs     map[string]*types.Output
+}
+
+// ProposalState defines necessary state about an CR proposals.
+type ProposalState struct {
+	Status   ProposalStatus
+	Proposal payload.CRCProposal
+	TxHash   common.Uint256
+
+	CRVotes            map[common.Uint168]VoteResult
+	VotersRejectAmount common.Fixed64
+	RegisterHeight     uint32
+	VoteStartHeight    uint32
+}
+
+// ProposalKeyFrame holds all runtime state about CR proposals.
+type ProposalKeyFrame struct {
+	Proposals map[common.Uint256]*ProposalState
 }
 
 func (c *CRMember) Serialize(w io.Writer) (err error) {
@@ -339,6 +357,146 @@ func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state.DepositOutputs = copyOutputsMap(k.DepositOutputs)
 
 	return state
+}
+
+func (p *ProposalState) Serialize(w io.Writer) (err error) {
+	if err = p.Proposal.Serialize(w, payload.CRCProposalVersion); err != nil {
+		return
+	}
+
+	if err = common.WriteUint8(w, uint8(p.Status)); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, p.RegisterHeight); err != nil {
+		return
+	}
+
+	if err = common.WriteUint32(w, p.VoteStartHeight); err != nil {
+		return
+	}
+
+	if err = common.WriteUint64(w, uint64(p.VotersRejectAmount)); err != nil {
+		return
+	}
+
+	if err = common.WriteVarUint(w, uint64(len(p.CRVotes))); err != nil {
+		return
+	}
+
+	for k, v := range p.CRVotes {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+
+		if err = common.WriteUint8(w, uint8(v)); err != nil {
+			return
+		}
+	}
+
+	return p.TxHash.Serialize(w)
+}
+
+func (p *ProposalState) Deserialize(r io.Reader) (err error) {
+	if err = p.Proposal.Deserialize(r, payload.CRCProposalVersion); err != nil {
+		return
+	}
+
+	var status uint8
+	if status, err = common.ReadUint8(r); err != nil {
+		return
+	}
+	p.Status = ProposalStatus(status)
+
+	if p.RegisterHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	if p.VoteStartHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+
+	var amount uint64
+	if amount, err = common.ReadUint64(r); err != nil {
+		return
+	}
+	p.VotersRejectAmount = common.Fixed64(amount)
+
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+
+	p.CRVotes = make(map[common.Uint168]VoteResult, count)
+	for i := uint64(0); i < count; i++ {
+		var key common.Uint168
+		if err = key.Deserialize(r); err != nil {
+			return
+		}
+
+		var value uint8
+		if value, err = common.ReadUint8(r); err != nil {
+			return
+		}
+		p.CRVotes[key] = VoteResult(value)
+	}
+
+	return p.TxHash.Deserialize(r)
+}
+
+func (p *ProposalKeyFrame) Serialize(w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(p.Proposals))); err != nil {
+		return
+	}
+
+	for k, v := range p.Proposals {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (p *ProposalKeyFrame) Deserialize(r io.Reader) (err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+
+	p.Proposals = make(map[common.Uint256]*ProposalState, count)
+	for i := uint64(0); i < count; i++ {
+		var k common.Uint256
+		if err = k.Deserialize(r); err != nil {
+			return
+		}
+
+		var v ProposalState
+		if err = v.Deserialize(r); err != nil {
+			return
+		}
+		p.Proposals[k] = &v
+	}
+	return
+}
+
+// Snapshot will create a new ProposalKeyFrame object and deep copy all related data.
+func (p *ProposalKeyFrame) Snapshot() *ProposalKeyFrame {
+	buf := new(bytes.Buffer)
+	p.Serialize(buf)
+
+	state := NewProposalKeyFrame()
+	state.Deserialize(buf)
+	return state
+}
+
+func NewProposalKeyFrame() *ProposalKeyFrame {
+	return &ProposalKeyFrame{
+		Proposals: make(map[common.Uint256]*ProposalState),
+	}
 }
 
 func NewStateKeyFrame() *StateKeyFrame {

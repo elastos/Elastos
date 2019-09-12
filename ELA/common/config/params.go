@@ -171,6 +171,10 @@ var DefaultParams = Params{
 	CRMemberCount:               12,
 	CRVotingPeriod:              30 * 720,
 	CRDutyPeriod:                365 * 720,
+	ProposalCRVotingPeriod:      7 * 720,
+	ProposalPublicVotingPeriod:  7 * 720,
+	CRAgreementCount:            8,
+	VoterRejectPercentage:       10,
 	EnableUtxoDB:                true,
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
 		EnableHistory:      false,
@@ -427,6 +431,20 @@ type Params struct {
 	// CRDutyPeriod defines the duration of a normal duty period which
 	// measured by block height
 	CRDutyPeriod uint32
+
+	// ProposalCRVotingPeriod defines the duration of CR voting about a proposal
+	ProposalCRVotingPeriod uint32
+
+	// ProposalPublicVotingPeriod defines the duration of all voters send
+	// reject vote about a proposal
+	ProposalPublicVotingPeriod uint32
+
+	// CRAgreementCount defines minimum count to let a registered proposal
+	// transfer to CRAgreed state.
+	CRAgreementCount uint32
+
+	// VoterRejectPercentage defines percentage about voters reject a proposal.
+	VoterRejectPercentage float64
 
 	// CkpManager holds checkpoints save automatically.
 	CkpManager *checkpoint.Manager

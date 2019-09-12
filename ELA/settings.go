@@ -640,6 +640,30 @@ func newSettings() *settings {
 		ConfigPath:   "CRConfiguration.VotingPeriod",
 		ParamName:    "CRVotingPeriod"})
 
+	result.Add(&settingItem{
+		Flag:         cmdcom.ProposalCRVotingPeriodFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.ProposalCRVotingPeriod",
+		ParamName:    "ProposalCRVotingPeriod"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.ProposalPublicVotingPeriodFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.ProposalPublicVotingPeriod",
+		ParamName:    "ProposalPublicVotingPeriod"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.CRAgreementCountFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.CRAgreementCount",
+		ParamName:    "CRAgreementCount"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.VoterRejectPercentageFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.VoterRejectPercentage",
+		ParamName:    "VoterRejectPercentage"})
+
 	return result
 }
 
