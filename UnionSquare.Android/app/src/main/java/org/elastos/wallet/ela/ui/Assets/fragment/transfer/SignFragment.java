@@ -76,7 +76,11 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         super.setExtraData(data);
         wallet = data.getParcelable("wallet");
         signData = data.getString("attributes");
-        setQr(signData);
+        boolean signStatus = data.getBoolean("signStatus");
+        if (signStatus) {
+            showUI = true;
+        }
+
         try {
             JsonObject JsonAttribute = new JsonParser().parse(signData).getAsJsonObject();
             chainID = JsonAttribute.get("ChainID").getAsString();
@@ -84,6 +88,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
             presenter = new PwdPresenter();
             presenter.getTransactionSignedInfo(wallet.getWalletId(), chainID, signData, this);
         } catch (Exception e) {
+            setQr(signData);
             e.printStackTrace();
         }
 
@@ -170,10 +175,10 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
                 } else if (wallet.getType() == 1 || wallet.getType() == 3) {
                     //0 普通单签 1单签只读 2普通多签 3多签只读
                     setQr(signData);
-                    showToast(getString(R.string.nopermiss));
+                    //showToast(getString(R.string.nopermiss));
                     return;
                 }
-                //去签名情况
+                //去签名
                 Intent intent = new Intent(getBaseActivity(), PwdActivity.class);
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", chainID);
@@ -195,9 +200,10 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
             String signData = (String) result.getObj();
             //再次判断签名状态 用于直接绘制ui
+            showUI = true;
             presenter.getTransactionSignedInfo(wallet.getWalletId(), chainID, signData, this);
             this.signData = signData;
-            showUI = true;
+
         }
     }
 
@@ -229,7 +235,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         SignViewPagetAdapter signViewPagetAdapter = new SignViewPagetAdapter(images, getContext());
         viewpage.setAdapter(signViewPagetAdapter);
         viewpage.setPageTransformer(true, new ScaleTransformer());
-        viewpage.setPageMargin(10);
+        viewpage.setPageMargin(30);
         tvVptitle.setText(1 + "/" + images.size());
         viewpage.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override

@@ -95,7 +95,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     protected void initView(View view) {
-        onErrorRefreshLayout(srl);
+
         srl.setOnRefreshListener(this);
         assetsPresenter = new AssetsPresenter();
         commonGetBalancePresenter = new CommonGetBalancePresenter();
@@ -456,6 +456,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(wallet.getWalletId());
         for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
             commonGetBalancePresenter.getBalance(wallet.getWalletId(), assetsItemEntity.getChainId(), 2, this);

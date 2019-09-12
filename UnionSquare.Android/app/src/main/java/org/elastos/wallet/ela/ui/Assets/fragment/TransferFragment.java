@@ -10,8 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -22,7 +20,6 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
-import org.elastos.wallet.ela.ui.Assets.fragment.transfer.ToSignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
@@ -168,12 +165,21 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             });
 
         }
-        if (integer == RxEnum.TOSIGN.ordinal()) {
+        if ( integer == RxEnum.TOSIGN.ordinal()) {
             //生成待签名交易
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            start(SignFragment.class, bundle);
+
+        } if ( integer == RxEnum.SIGNSUCCESS.ordinal()) {
+            //签名成功
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            bundle.putBoolean("signStatus", true);
             start(SignFragment.class, bundle);
 
         }
@@ -194,7 +200,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
                 address = result;
                 try {
                     QrBean qrBean = JSON.parseObject(result, QrBean.class);
-                    int type =qrBean.getExtra().getType();
+                    int type = qrBean.getExtra().getType();
                     if (type == Constant.TRANSFER) {
                         address = qrBean.getData();
                     }

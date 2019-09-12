@@ -127,7 +127,6 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     @Override
     protected void initView(View view) {
         assetDetailPresenter = new AssetDetailPresenter();
-        onErrorRefreshLayout(srl);
         if (chainId.equals(MyWallet.ELA)) {
             tvChain.setText(getString(R.string.side_chain_top_up));
             viewLine.setVisibility(View.VISIBLE);
@@ -289,6 +288,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (rbEarnRecorder.isChecked()) {
             startCount1 = 0;
             assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
@@ -300,6 +300,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     @Override
     public void onLoadMore(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (rbEarnRecorder.isChecked()) {
             assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
         } else {

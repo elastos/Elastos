@@ -3,7 +3,6 @@ package org.elastos.wallet.ela.ui.Assets.activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -60,7 +59,7 @@ public class TransferActivity extends BaseActivity {
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         //一定要在setContentView之后调用，否则无效
         getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
+        registReceiver();
     }
 
     @Override
@@ -106,29 +105,22 @@ public class TransferActivity extends BaseActivity {
         switch (view.getId()) {
             case R.id.tv_next:
                 //转账密码
+                Intent intent;
                 switch (wallet.getType()) {
                     //0 普通单签 1单签只读 2普通多签 3多签只读
                     case 0:
-                        registReceiver();
-                        Intent intent = new Intent(this, PwdActivity.class);
+                    case 2:
+                        intent = new Intent(this, PwdActivity.class);
                         intent.putExtra("wallet", wallet);
                         intent.putExtra("chainId", chainId);
                         intent.putExtra("attributes", attributes);
                         startActivity(intent);
                         break;
                     case 1:
-                        post(RxEnum.TOSIGN.ordinal(), "", attributes);
-                        finish();
-                        break;
-                    case 2:
-                        post(RxEnum.TOSIGN.ordinal(), "", attributes);
-                        finish();
-                        break;
                     case 3:
                         post(RxEnum.TOSIGN.ordinal(), "", attributes);
                         finish();
                         break;
-
                 }
 
                 break;
@@ -141,6 +133,9 @@ public class TransferActivity extends BaseActivity {
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            finish();
+
+        }if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
             finish();
 
         }

@@ -97,13 +97,17 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election), getString(R.string.voting_rules));
-        //获取选举状态
-        new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), MyWallet.ELA, this);
+
         //获取公钥
         signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
         //presenter.getVotedProducerList(wallet.getWalletId(), MyWallet.ELA, this);
-        onErrorRefreshLayout(srl);
         srl.setOnRefreshListener(this);
+        if (wallet.getType() != 0) {
+            tv_signupfor.setVisibility(View.GONE);
+        } else {
+            //获取选举状态
+            new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), MyWallet.ELA, this);
+        }
 
     }
 
@@ -290,6 +294,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (publicKey == null) {
             signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
         } else {

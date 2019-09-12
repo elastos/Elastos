@@ -92,7 +92,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         presenter = new CRlistPresenter();
         presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
         //presenter.getVotedProducerList(wallet.getWalletId(), MyWallet.ELA, this);
-        onErrorRefreshLayout(srl);
         srl.setOnRefreshListener(this);
         if (wallet.getType() != 0) {
             tv_signupfor.setVisibility(View.GONE);
@@ -245,6 +244,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (publicKey == null) {
             presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
         } else {

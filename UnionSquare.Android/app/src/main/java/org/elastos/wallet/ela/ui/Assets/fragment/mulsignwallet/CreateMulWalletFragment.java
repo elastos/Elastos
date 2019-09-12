@@ -223,8 +223,8 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
     public void Event(BusEvent result) {
         int code = result.getCode();
         if (code == RxEnum.CREATEPRIVATEKEY.ordinal() //添加私钥额回调
-                || integer == RxEnum.IMPORTRIVATEKEY.ordinal()//导入助记词回调 //选择已有钱包回调
-                || integer == RxEnum.SELECTRIVATEKEY.ordinal()//选择已有钱包回调
+                || code == RxEnum.IMPORTRIVATEKEY.ordinal()//导入助记词回调 //选择已有钱包回调
+                || code == RxEnum.SELECTRIVATEKEY.ordinal()//选择已有钱包回调
         ) {
             integer = code;
             setMainPrivaKeyStatus();

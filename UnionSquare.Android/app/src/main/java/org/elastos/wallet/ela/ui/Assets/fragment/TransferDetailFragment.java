@@ -165,7 +165,6 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
 
     @Override
     protected void initView(View view) {
-        onErrorRefreshLayout(srl);
         tvTitle.setText(getString(R.string.exchangedetail));
         // String direction = transactionsBean.getDirection();//direction有3种, Moved ,Received,Sent
 
@@ -393,6 +392,7 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (recordType == 0) {
             presenter.getAllTransaction(wallet.getWalletId(), chainId, 0, 20, txHash, this);
         } else {

@@ -40,7 +40,7 @@ public class PublicKeyRecAdapter extends RecyclerView.Adapter<PublicKeyRecAdapte
     public void onBindViewHolder(MyViewHolder holder, final int position) {
         String data;
         try {
-            data = datas.get(position).getAsJsonObject().get("requestPubKey").getAsString();
+            data = datas.get(position).getAsString();
             ((TextView) (holder.itemView)).setText(data);
         } catch (Exception e) {
             e.printStackTrace();
