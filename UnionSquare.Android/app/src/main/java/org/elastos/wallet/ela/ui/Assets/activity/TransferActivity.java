@@ -38,6 +38,8 @@ public class TransferActivity extends BaseActivity {
     TextView tvCharge;
     @BindView(R.id.ll_rate)
     LinearLayout llRate;
+    @BindView(R.id.ll_address)
+    LinearLayout llAddress;
     private Wallet wallet;
     private String chainId;
     private String amount;
@@ -97,6 +99,11 @@ public class TransferActivity extends BaseActivity {
                 //转账
                 llRate.setVisibility(View.GONE);
                 break;
+            case Constant.SUPERNODEVOTE:
+                //转账
+                llRate.setVisibility(View.GONE);
+                llAddress.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -135,7 +142,8 @@ public class TransferActivity extends BaseActivity {
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
             finish();
 
-        }if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
             finish();
 
         }

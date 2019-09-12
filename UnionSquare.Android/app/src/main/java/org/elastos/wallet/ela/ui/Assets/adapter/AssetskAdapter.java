@@ -60,15 +60,34 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
         viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat(Arith.div(assetsItemEntity.getBalance(), MyWallet.RATE_S), 12));
         switch (assetsItemEntity.getFiled1()) {
             case "Connecting":
-            case "Disconnected":
                 viewHolder.tvTime.setVisibility(View.GONE);
                 viewHolder.tvStatus.setText(context.getString(R.string.connecting));
                 viewHolder.tvProgress.setVisibility(View.GONE);
                 viewHolder.ivSync.setVisibility(View.GONE);
                 break;
+            case "Disconnected":
+
+                if (assetsItemEntity.getProgress() == 100) {
+
+                    viewHolder.tvTime.setVisibility(View.VISIBLE);
+                    viewHolder.tvTime.setText(DateUtil.time(assetsItemEntity.getSyncTime(), context));
+                    viewHolder.tvStatus.setText(context.getString(R.string.syncprogress));
+                    viewHolder.tvProgress.setVisibility(View.VISIBLE);
+                    viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");
+                    viewHolder.tvStatus.setText(context.getString(R.string.lastsynctime));
+                    viewHolder.ivSync.clearAnimation();
+                    viewHolder.ivSync.setVisibility(View.GONE);
+
+                } else {
+                    viewHolder.tvTime.setVisibility(View.GONE);
+                    viewHolder.tvStatus.setText(context.getString(R.string.connecting));
+                    viewHolder.tvProgress.setVisibility(View.GONE);
+                    viewHolder.ivSync.setVisibility(View.GONE);
+                }
+                break;
             case "Connected":
                 viewHolder.tvTime.setVisibility(View.VISIBLE);
-                viewHolder.tvTime.setText(DateUtil.time(assetsItemEntity.getSyncTime(),context));
+                viewHolder.tvTime.setText(DateUtil.time(assetsItemEntity.getSyncTime(), context));
                 viewHolder.tvStatus.setText(context.getString(R.string.syncprogress));
                 viewHolder.tvProgress.setVisibility(View.VISIBLE);
                 viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");

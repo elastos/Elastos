@@ -79,8 +79,7 @@
                 android:background="@drawable/sc_stroke"
                 android:gravity="center"
                 android:text="MAX"
-                android:textColor="@color/white"
-                android:visibility="gone" />
+                android:textColor="@color/white" />
 
         </LinearLayout>
 

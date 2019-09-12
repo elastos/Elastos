@@ -5,11 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.AppCompatTextView;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -18,7 +16,6 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.wallet.R;
@@ -27,16 +24,18 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -57,7 +56,7 @@ import butterknife.Unbinder;
 /**
  * 节点购车车
  */
-public class NodeCartFragment extends BaseFragment implements CommonBalanceViewData, WarmPromptListener, CommmonStringWithMethNameViewData, AdapterView.OnItemClickListener {
+public class NodeCartFragment extends BaseFragment implements CommonBalanceViewData, CommmonStringWithMethNameViewData, AdapterView.OnItemClickListener {
 
 
     @BindView(R.id.iv_title_left)
@@ -88,7 +87,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     LinearLayout llTab;
     @BindView(R.id.ll_rate)
     RelativeLayout llRate;
-    Unbinder unbinder;
     private int checkNum = 0; // 记录选中的条目数量
 
     private MyAdapter mAdapter;
@@ -115,9 +113,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     private Wallet wallet = realmUtil.queryDefauleWallet();
 
     NodeCartPresenter presenter = new NodeCartPresenter();
-    PwdPresenter pwdpresenter = new PwdPresenter();
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
     int curentPage = 0;//0 首页 1已选择 2未选择
+
 
     @Override
     protected int getLayoutId() {
@@ -152,7 +150,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         initDate();
         // 绑定listView的监听器
         if (list != null && list.size() != 0) {
-            tv_num.setText(getString(R.string.future_generations)+"(" + list.size() + ")");//全选
+            tv_num.setText(getString(R.string.future_generations) + "(" + list.size() + ")");//全选
             setRecyclerView(mAdapter, list);
         }
         //这里list已经排序
@@ -265,7 +263,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                     ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
                     is = false;
                     llTab.setVisibility(View.GONE);
-                    tv_num.setText(getString(R.string.future_generations)+"(" + list.size() + ")");//全选
+                    tv_num.setText(getString(R.string.future_generations) + "(" + list.size() + ")");//全选
                     setRecyclerView(mAdapter, list);
                 }
                 break;
@@ -337,7 +335,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         Collections.sort(list);
         curentAdapter.setList(list);
         curentAdapter.notifyDataSetChanged();
-        tv_num.setText(getString(R.string.future_generations)+"(" + list.size() + ")");
+        tv_num.setText(getString(R.string.future_generations) + "(" + list.size() + ")");
         tv_yxz.setText("0" + getString(R.string.has_been_selected));
         CacheUtil.setProducerList(list);
 
@@ -357,7 +355,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         curentAdapter.setList(unSelectlist);
         curentAdapter.notifyDataSetChanged();
         tv_yxz.setText("0" + getString(R.string.has_been_selected));
-        tv_num.setText(getString(R.string.future_generations)+"(" + unSelectlist.size() + ")");
+        tv_num.setText(getString(R.string.future_generations) + "(" + unSelectlist.size() + ")");
         CacheUtil.setProducerList(list);
     }
 
@@ -376,7 +374,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         lineUnselect.setVisibility(View.VISIBLE);
         tvSelect.setTextColor(getResources().getColor(R.color.whiter50));
         tvUnselect.setTextColor(getResources().getColor(R.color.whiter));
-        tv_num.setText(getString(R.string.future_generations)+"(" + unSelectlist.size() + ")");//全选
+        tv_num.setText(getString(R.string.future_generations) + "(" + unSelectlist.size() + ")");//全选
         setRecyclerView(unSelectAdapter, unSelectlist);
     }
 
@@ -387,7 +385,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         lineUnselect.setVisibility(View.GONE);
         tvSelect.setTextColor(getResources().getColor(R.color.whiter));
         tvUnselect.setTextColor(getResources().getColor(R.color.whiter50));
-        tv_num.setText(getString(R.string.future_generations)+"(" + list.size() + ")");//全选
+        tv_num.setText(getString(R.string.future_generations) + "(" + list.size() + ")");//全选
         setRecyclerView(selectAdapter, list);
     }
 
@@ -407,22 +405,40 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
-            dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
-            KeyboardUtils.showSoftInput(getBaseActivity());
             num = result.getName();
-        }
-    }
+            //  KeyboardUtils.showSoftInput(getBaseActivity());
+            presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
+                    Arith.mul(num, MyWallet.RATE_S).toPlainString(), String.valueOf(JSONArray.parseArray(JSON.toJSONString(nodelist))), "", true, this);
 
-    String pwd;
-
-    @Override
-    public void affireBtnClick(View view) {
-        pwd = ((EditText) view).getText().toString().trim();
-        if (TextUtils.isEmpty(pwd)) {
-            showToastMessage(getString(R.string.pwdnoempty));
-            return;
         }
-        new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    popBackFragment();
+                }
+            });
+
+        }
+        if (integer == RxEnum.TOSIGN.ordinal()) {
+            //生成待签名交易
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            start(SignFragment.class, bundle);
+
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
+            //签名成功
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            bundle.putBoolean("signStatus", true);
+            start(SignFragment.class, bundle);
+
+        }
     }
 
 
@@ -430,26 +446,19 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     public void onGetCommonData(String methodname, String data) {
         //  Double sl = Double.parseDouble(num) * MyWallet.RATE_;
         switch (methodname) {
-            //验证密码
-            case "exportWalletWithMnemonic":
-                //创建投票
-                presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
-                        Arith.mul(num, MyWallet.RATE_S).toPlainString(), String.valueOf(JSONArray.parseArray(JSON.toJSONString(nodelist))), "", true, this);
-                break;
+
             //创建投票交易
             case "createVoteProducerTransaction":
-                KLog.a("createVoteProducerTransaction" + data);
-                //计算手续费
-                pwdpresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
+                Intent intent = new Intent(getActivity(), TransferActivity.class);
+                intent.putExtra("amount", num);
+                intent.putExtra("toAddress", "");
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("attributes", data);
+                intent.putExtra("type", Constant.SUPERNODEVOTE);
+                startActivity(intent);
                 break;
-            case "signTransaction":
-                pwdpresenter.publishTransaction(wallet.getWalletId(), MyWallet.ELA, data, this);
-                break;
-            case "publishTransaction":
-                KLog.a(data);
-                dialogUtil.dialogDismiss();
-                ToastUtils.showShort(getString(R.string.vote_success));
-                break;
+
         }
     }
 

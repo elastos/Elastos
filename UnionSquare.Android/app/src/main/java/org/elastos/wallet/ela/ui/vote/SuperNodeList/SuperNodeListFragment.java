@@ -83,6 +83,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     public String type = "1";//1.正常投票 2. 复投
     SignUpPresenter signUpPresenter = new SignUpPresenter();
     private SuperNodeListAdapter1 adapter1;
+    private String publicKey;
 
     @Override
     protected int getLayoutId() {
@@ -98,10 +99,10 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election), getString(R.string.voting_rules));
 
-        //获取公钥
-        signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
         //presenter.getVotedProducerList(wallet.getWalletId(), MyWallet.ELA, this);
         srl.setOnRefreshListener(this);
+        new VoteListPresenter().votelistbean("1", this);
+
         if (wallet.getType() != 0) {
             tv_signupfor.setVisibility(View.GONE);
         } else {
@@ -182,16 +183,15 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     }
 
     String zb;//占有率
-    int pos = -1;//自已的投票排第几
     boolean is = false;//是否有自已的选举
 
 
-    private void setRecyclerview(int pos, boolean is) {
+    private void setRecyclerview(boolean is) {
         if (adapter == null) {
             recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 3));
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
             recyclerview.addItemDecoration(decoration);
-            adapter = new SuperNodeListAdapter(this, netList, pos, is);
+            adapter = new SuperNodeListAdapter(this, netList, is);
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
         } else {
@@ -199,10 +199,10 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
-    private void setRecyclerview1(int pos, boolean is) {
+    private void setRecyclerview1(boolean is) {
         if (adapter1 == null) {
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
-            adapter1 = new SuperNodeListAdapter1(this, netList, pos, is);
+            adapter1 = new SuperNodeListAdapter1(this, netList, is);
             adapter1.setOnItemClickListener(this);
             recyclerview1.setAdapter(adapter1);
         } else {
@@ -210,7 +210,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
-    String publicKey;
 
     //判断是否投过票
     @Override
@@ -220,7 +219,21 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             //获取钱包公钥
             case "getPublicKeyForVote":
                 publicKey = data;
-                new VoteListPresenter().votelistbean("1", this);
+                //有自已的投票就排第一
+                if (netList != null) {
+
+                    for (int i = 0; i < netList.size(); i++) {
+                        if (netList.get(i).getOwnerpublickey().equals(data)) {
+                            VoteListBean.DataBean.ResultBean.ProducersBean temp = netList.get(i);
+                            netList.remove(i);
+                            netList.add(0, temp);
+                            is = true;
+                        }
+                    }
+
+                }
+                setRecyclerview(is);
+                setRecyclerview1(is);
                 break;
         }
     }
@@ -234,25 +247,22 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
         netList.addAll(dataResponse.getData().getResult().getProducers());
         tvNodenum.setText(netList.size() + "");
-        //有自已的投票就排第一
-        if (publicKey != null && netList != null) {
-            for (int i = 0; i < netList.size(); i++) {
-                if (netList.get(i).getOwnerpublickey().equals(publicKey)) {
-                    //VoteListBean.DataBean.ResultBean.ProducersBean temp = list.get(i);
-                    // list.remove(i);
-                    //list.add(0, temp);
-                    //pos = i + 1;
-                    pos = i;
-                    is = true;
-                }
-            }
-        }
-        setRecyclerview(pos, is);
-        setRecyclerview1(pos, is);
         zb = dataResponse.getData().getResult().getTotalvoterate();
-        Double zb1 = Double.parseDouble(dataResponse.getData().getResult().getTotalvoterate()) * 100;
-        tv_zb.setText(NumberiUtil.numberFormat(zb1 + "", 2) + "%");
+        tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(zb) * 100 + "", 2) + "%");
         tv_num.setText(dataResponse.getData().getResult().getTotalvotes().split("\\.")[0]);//totalvotes": "
+
+        //0 普通单签 1单签只读 2普通多签 3多签只读
+        if (wallet.getType() == 0 || wallet.getType() == 1) {
+            //获取公钥
+            if (TextUtils.isEmpty(publicKey))
+                signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
+
+        } else {
+            setRecyclerview(is);
+            setRecyclerview1(is);
+        }
+
+
     }
 
     private String status;
@@ -295,11 +305,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
         onErrorRefreshLayout(srl);
-        if (publicKey == null) {
-            signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
-        } else {
-            new VoteListPresenter().votelistbean("1", this);
-        }
+        new VoteListPresenter().votelistbean("1", this);
 
     }
 }
