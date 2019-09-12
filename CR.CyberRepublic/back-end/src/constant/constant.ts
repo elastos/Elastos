@@ -302,6 +302,7 @@ export const ELIP_STATUS = create([
   'WAIT_FOR_REVIEW',
   'DRAFT',
   'REJECTED',
+  'SUBMITTED'
 ])
 
 export const ELIP_FILTER = create([

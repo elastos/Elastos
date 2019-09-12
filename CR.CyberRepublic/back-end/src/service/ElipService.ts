@@ -154,7 +154,7 @@ export default class extends Base {
     const query: any = {}
 
     if (!this.isLoggedIn()) {
-      query.status = constant.ELIP_STATUS.DRAFT
+      query.status = { $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED] }
     }
 
     if (param.filter === constant.ELIP_FILTER.DRAFT) {
@@ -163,6 +163,7 @@ export default class extends Base {
 
     if (param.filter === constant.ELIP_FILTER.SUBMITTED_BY_ME) {
       query.createdBy = currentUserId
+      query.status = constant.ELIP_STATUS.SUBMITTED
     }
 
     if (param.filter === constant.ELIP_FILTER.WAIT_FOR_REVIEW) {
@@ -178,7 +179,7 @@ export default class extends Base {
         { createdBy: currentUserId, 
           status: { $in: [constant.ELIP_STATUS.REJECTED, constant.ELIP_STATUS.WAIT_FOR_REVIEW] }
         },
-        { status: constant.ELIP_STATUS.DRAFT },
+        { status: { $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED] } }
       ]
     }
 
