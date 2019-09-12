@@ -19,6 +19,9 @@ const mapDispatch = () => {
     },
     async review(param) {
       return reviewService.create(param)
+    },
+    async updateStatus(param) {
+      return service.update(param)
     }
   }
 }

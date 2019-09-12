@@ -8,7 +8,7 @@ export default class extends Base {
   public async update(param: any): Promise<Document> {
     try {
       const db_elip = this.getDBModel('Elip')
-      const { title, description, _id, status } = param
+      const { _id, status } = param
       const elip = await db_elip
         .getDBInstance()
         .findOne({ _id })
@@ -19,10 +19,13 @@ export default class extends Base {
       if (!elip.createdBy._id.equals(this.currentUser._id)) {
         throw 'ElipService.update - current user is not the author of elip'
       }
-      const doc: any = {
-        title,
-        description,
-        status
+      const { title, description } = param
+      const doc: any = { status }
+      if (title) {
+        doc.title = title
+      }
+      if (description) {
+        doc.description = description
       }
       const rs = await db_elip.update({ _id }, doc)
       this.notifySecretaries(elip)

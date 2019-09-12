@@ -1,5 +1,5 @@
 import React from 'react'
-import { Row, Col, Spin, Button, message } from 'antd'
+import { Row, Col, Spin, Button, message, Popconfirm } from 'antd'
 import styled from 'styled-components'
 import DraftEditor from '@/module/common/DraftEditor'
 import I18N from '@/I18N'
@@ -93,6 +93,7 @@ class C extends StandardPage {
           <Status status={elip.status}>
             {elip.status.split('_').join(' ')}
           </Status>
+          {this.renderUpdateStatusButton()}
           <Row>
             <LabelCol span={3}>{I18N.get('elip.fields.title')}</LabelCol>
             <WrapperCol span={17}>
@@ -140,6 +141,41 @@ class C extends StandardPage {
   isAuthor(elip) {
     const { currentUserId } = this.props
     return elip.createdBy && elip.createdBy._id === currentUserId
+  }
+
+  updateStatus = async () => {
+    try {
+      const { updateStatus } = this.props
+      const { elip } = this.state
+      const rs = await updateStatus({ _id: elip._id, status: ELIP_STATUS.SUBMITTED })
+      if (rs && rs.ok === 1 && rs.n === 1) {
+        this.setState({
+          elip: { ...elip, status: ELIP_STATUS.SUBMITTED }
+        })
+        message.info(I18N.get('elip.msg.marked'))
+      }
+    } catch (error) {
+      logger.error(error)
+    }
+  }
+
+  renderUpdateStatusButton() {
+    const { elip } = this.state
+    const isEditable = this.isAuthor(elip) && elip.status === ELIP_STATUS.DRAFT
+    if (isEditable) {
+      return (
+        <Popconfirm
+          title={I18N.get('elip.modal.markAsSubmitted')}
+          onConfirm={this.updateStatus}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
+          <Button style={{ marginLeft: 16}}>
+            {I18N.get('elip.button.markAsSubmitted')}
+          </Button>
+        </Popconfirm>
+      )
+    }
   }
 
   renderEditButton() {
@@ -261,6 +297,8 @@ const Status = styled.div`
         return '#be1313'
       case ELIP_STATUS.DRAFT:
         return '#008d85'
+      case ELIP_STATUS.SUBMITTED:
+        return '#1de9b6'
       default:
         return '#f2f6fb'
     }
