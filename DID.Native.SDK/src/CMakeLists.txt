@@ -1,4 +1,4 @@
-project(eladid C)
+project(ela-did C)
 
 include(ProjectDefaults)
 include(CheckIncludeFile)
@@ -23,13 +23,32 @@ if(HAVE_IO_H)
     add_definitions(-DHAVE_IO_H=1)
 endif()
 
+check_include_file(glob.h HAVE_GLOB_H)
+if(HAVE_GLOB_H)
+    add_definitions(-DHAVE_GLOB_H=1)
+endif()
+
+check_include_file(dirent.h HAVE_DIRENT_H)
+if(HAVE_DIRENT_H)
+    add_definitions(-DHAVE_DIRENT_H=1)
+endif()
+
 check_include_file(sys/time.h HAVE_SYS_TIME_H)
 if(HAVE_SYS_TIME_H)
     add_definitions(-DHAVE_SYS_TIME_H=1)
 endif()
 
+file( GLOB BR-SOURCES "BR/*.c" )
+file( GLOB utility-SOURCES "utility/*.c")
+
 set(SRC
-    did.c)
+    did.c
+    diddocument.c
+    credential.c
+    didstore.c
+    didrequest.c
+    ${BR-SOURCES}
+    ${utility-SOURCES})
 
 set(HEADERS
     ela_did.h)
@@ -42,11 +61,22 @@ endif()
 
 include_directories(
     BEFORE
+    utility
     .
+    BR
+    secp256k1
     ${PROJECT_INT_DIST_DIR}/include)
 
 link_directories(
     ${PROJECT_INT_DIST_DIR}/lib)
+
+#add_definitions(
+#    -DHAVE___INT128=1
+#    -DUSE_NUM_NONE=1
+#    -DUSE_FIELD_5X52=1
+#    -DUSE_FIELD_INV_BUILTIN=1
+#    -DUSE_SCALAR_4X64=1
+#    -DUSE_SCALAR_INV_BUILTIN=1)
 
 if(WIN32)
     add_definitions(
@@ -59,6 +89,7 @@ if(WIN32)
 endif()
 
 set(LIBS
+    crystal
     crypto
     cjson)
 
@@ -73,9 +104,9 @@ endif()
 
 add_definitions(-DDID_BUILD)
 
-add_custom_target(eladid)
+add_custom_target(ela-did)
 
-set(ELADID_DEPENDS libressl cJSON)
+set(ELADID_DEPENDS libressl libcrystal cJSON)
 
 if(ENABLE_STATIC)
     add_library(eladid-static STATIC ${SRC})
@@ -87,7 +118,7 @@ if(ENABLE_STATIC)
         set_target_properties(eladid-static PROPERTIES LINK_FLAGS /FORCE:MULTIPLE)
     endif()
 
-    add_dependencies(eladid eladid-static)
+    add_dependencies(ela-did eladid-static)
 
     install(TARGETS eladid-static
         RUNTIME DESTINATION "bin"
@@ -115,7 +146,7 @@ if(ENABLE_SHARED)
     endif()
     target_link_libraries(eladid-shared ${LIBS} ${SYSTEM_LIBS})
 
-    add_dependencies(eladid eladid-shared)
+    add_dependencies(ela-did eladid-shared)
 
     install(TARGETS eladid-shared
         RUNTIME DESTINATION "bin"

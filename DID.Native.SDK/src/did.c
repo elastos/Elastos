@@ -1,158 +1,291 @@
-#include <stdio.h>
-#include <openssl/opensslv.h>
-#include <cjson/cJSON.h>
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-#include "ela_did.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 
-#define DID_MAX_LEN   512
-static const char* did_scheme = "did";
-static const char* did_method = "elastos";
-static const char* did_publickey_type = "ECDSAsecp256r1";
+#include "did.h"
 
-//todo: to get pk and sk
-static char* pk;
-static char* sk;
+static const char did_scheme[] = "did";
+static const char did_method[] = "elastos";
+static const char elastos_did_prefix[] = "did:elastos:";
 
-enum Fragment_Type{
-    Fragement_NULL,
-    Fragement_Default,
-    Fragement_Master,
-    Fragement_Second_Key,
-    Fragement_Third_Key
-};
-
-static char* fragment_str[] =
+// idstring has three informats:
+// 1. did:elastos:xxxxxxx
+// 2. did:elastos:xxxxxxx#xxxxx
+// 3. #xxxxxxx
+static int parse_id_string(char *id, char *fragment, const char *idstring, DID *ref)
 {
-    "",
-    "#default",
-    "#master-keys",
-    "#key-2",
-    "#key-3",
-};
+    const char *s, *e;
+    size_t len;
 
-static char* get_did_scheme_method()
-{
-    static char scheme_method_string[DID_MAX_LEN];
-    strcpy(scheme_method_string, did_scheme);
-    strcat(scheme_method_string, ":");
-    strcat(scheme_method_string, did_method);
-    strcat(scheme_method_string, ":");
+    if(!id || !idstring)
+        return -1;
 
-    return scheme_method_string;
+    // Fragment only, need ref DID object
+    if (*idstring == '#') {
+        if (!ref || !fragment)
+            return -1;
+
+        len = strlen(++idstring);
+        if (len == 0 || len >= MAX_FRAGMENT)
+            return -1;
+
+        strcpy(id, ref->idstring);
+        strcpy(fragment, idstring);
+        return 0;
+    }
+
+    if (strncmp(idstring, elastos_did_prefix, sizeof(elastos_did_prefix) - 1) != 0)
+        return -1;
+
+    s = idstring + sizeof(elastos_did_prefix) - 1;
+    for (e = s; *e != '#' && *e != '?' && *e != '/' && *e != '\x0'; e++);
+    len = e - s;
+    if (len >= MAX_ID_SPECIFIC_STRING)
+        return -1;
+
+    strncpy(id, s, len);
+    id[len] = 0;
+
+    if (!fragment)
+        return 0;
+
+    for (; *e != '#' && *e != '\x0'; e++);
+    if (*e != '#')
+        return -1;
+
+    len = strlen(++e);
+    if (len == 0 || len >= MAX_FRAGMENT)
+        return -1;
+
+    strcpy(fragment, e);
+    return 0;
 }
 
-//to remember free(output)
-//default: if 1, need to write idstring; if 0, can't write idstring
-static char* get_did_descriper(DID *did, int fragment_type, int is_default)
+int parse_did(DID *did, const char *idstring)
 {
-  staitc char did_descriper[DID_MAX_LEN] = "";
-
-  if(is_default && !did)
-    return NULL;
-
-  if(is_default) {
-    strcpy(did_descriper, get_did_scheme_method());
-    strcat(did_descriper, did.sepecific_idstring);
-  }
-
-  if(fragment_type)
-    strcat(did_descriper, fragment_str[fragment_type]);
-
-  return did_descriper;
+    return parse_id_string(did->idstring, NULL, idstring, NULL);
 }
 
-DID_API DID* DID_From_String(const char* idstring)
+int parse_didurl(DIDURL *id, const char *idstring, DID *ref)
 {
-    static DID* did;
+    return parse_id_string(id->did.idstring, id->fragment, idstring, ref);
+}
 
-    if(!idstring)
+DID *DID_FromString(const char *idstring)
+{
+    DID *did;
+
+    if (!idstring)
         return NULL;
 
-    did = malloc(sizeof(DID));
-    if(!did)
+    did = (DID *)malloc(sizeof(DID));
+    if (!did)
         return NULL;
 
-    did->sepecific_idstring = malloc(strlen(idstring) + 1);
-    if(!did->sepecific_idstring)
+    if (parse_did(did, idstring) < 0) {
+        free(did);
         return NULL;
-
-    strcpy(did->sepecific_idstring, idstring);
-    did->id_fragment = NULL;
-
-    did->document.did = did;
-    did->pubulic_keys = malloc(sizeof(PublicKey));
-    if(!did->pubulic_keys)
-        return NULL;
-
-    did->document.pubulic_keys.did = did;
-    //todo: type is default?
-    did->document.pubulic_keys.type = did_publickey_type;
-    did->document.pubulic_keys.controller = get_did_descriper(did, Fragement_Master, 0);
-
-    //todo: ECDAsecp256r1 makes pk and sk
-
-    did->pubulic_keys.PublicKeyBase = pk;
-
-    //todo: store sk
-    did->authorization = NULL;
-    did->credential = NULL;
-    did->service = NULL;
-    did->extime = NULL;
+    }
 
     return did;
 }
 
-DID_API DID* DID_From_Json(cJSon *json);
-
-DID_API DIDDocument* DID_Resolve(DID *did, in update);
-
-DID_API const char* DID_Get_Method(DID* did)
+DID *DID_New(const char *method_specific_string)
 {
-    if(!did)
+    DID *did;
+
+    if (!method_specific_string || strlen(method_specific_string) >= MAX_ID_SPECIFIC_STRING)
+        return NULL;
+
+    did = (DID *)malloc(sizeof(DID));
+    if (!did)
+        return NULL;
+
+    strcpy(did->idstring, method_specific_string);
+
+    return did;
+}
+
+const char *DID_GetMethod(DID *did)
+{
+    if (!did)
         return NULL;
 
     return did_method;
 }
 
-DID_API const char* DID_Get_SpecificId(DID* did)
+const char *DID_GetMethodSpecificString(DID *did)
 {
-    if(!did)
+    if (!did)
         return NULL;
 
-    return did->sepecific_idstring;
+    return did->idstring;
 }
 
-DID_API const char* DID_Get_DidString(DID* did)
+char *DID_ToString(DID *did, char *idstring, size_t len)
 {
-    if(!id)
+    if (!did)
         return NULL;
 
-    int len = strlen(get_did_scheme_method()) + strlen(did->sepecific_idstring) + 1；
+    if (strlen(did->idstring) + sizeof(elastos_did_prefix) > len)
+        return NULL;
 
-    static char did_string[len];
-    strcpy(did_string, get_did_scheme_method());
-    strcat(did_string, did->sepecific_idstring);
+    snprintf(idstring, len, "%s%s", elastos_did_prefix, did->idstring);
 
-    return did_string;
+    return idstring;
 }
 
-DID_API void DID_Close(DID* did)
+int DID_Copy(DID *new, DID *old)
 {
-    if(!did)
+    if (!new || !old)
+        return -1;
+
+    strcpy((char*)new->idstring, old->idstring);
+    return 0;
+}
+
+bool DID_Equals(DID *did1, DID *did2)
+{
+    if (!did1 || !did2)
+        return false;
+
+    return strcmp(did1->idstring, did2->idstring) == 0;
+}
+
+void DID_Destroy(DID *did)
+{
+    if (!did)
         return;
 
-    if(did->sepecific_idstring) {
-        free(did->sepecific_idstring);
-        did->sepecific_idstring = NULL;
-    }
-
-    if(did->document.pubulic_keys) {
-        free(did->document.pubulic_keys);
-        did->document.pubulic_keys = NULL;
-    }
-
     free(did);
-    did = NULL;
+}
 
-    return;
+DIDURL *DIDURL_FromString(const char *idstring)
+{
+    DIDURL *id;
+
+    if (!idstring)
+        return NULL;
+
+    id = (DIDURL *)malloc(sizeof(DIDURL));
+    if (!id)
+        return NULL;
+
+    if (parse_didurl(id, idstring, NULL) < 0) {
+        free(id);
+        return NULL;
+    }
+
+    return id;
+}
+
+DIDURL *DIDURL_New(const char *method_specific_string, const char *fragment)
+{
+    DIDURL *id;
+
+    if (!method_specific_string || !fragment)
+        return NULL;
+
+    if (strlen(method_specific_string) >= MAX_ID_SPECIFIC_STRING ||
+            strlen(fragment) >= MAX_FRAGMENT)
+        return NULL;
+
+    id = (DIDURL *)malloc(sizeof(DIDURL));
+    if (!id)
+        return NULL;
+
+    strcpy((char*)id->did.idstring, method_specific_string);
+    strcpy((char*)id->fragment, fragment);
+
+    return id;
+}
+
+DID *DIDURL_GetDid(DIDURL *id)
+{
+    if (!id)
+        return NULL;
+
+    return &id->did;
+}
+
+const char *DIDURL_GetFragment(DIDURL *id)
+{
+    if (!id)
+        return NULL;
+
+    return (const char*)(id->fragment);
+}
+
+char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact)
+{
+    size_t expect_len;
+
+    if (!id)
+        return NULL;
+
+    if (compact)
+        expect_len = strlen(id->fragment) + 2;
+    else
+        expect_len = strlen(id->did.idstring) + sizeof(elastos_did_prefix) +
+                strlen(id->fragment) + 1;
+
+    if (expect_len > len)
+        return NULL;
+
+    if (compact)
+        snprintf(idstring, len, "#%s", id->fragment);
+    else
+        snprintf(idstring, len, "%s%s#%s", elastos_did_prefix,
+                id->did.idstring, id->fragment);
+
+    return idstring;
+}
+
+bool DIDURL_Equals(DIDURL *id1, DIDURL *id2)
+{
+    if (!id1 || !id2)
+        return false;
+
+    return (strcmp(id1->did.idstring, id2->did.idstring) == 0 &&
+            strcmp(id1->fragment, id2->fragment) == 0);
+}
+
+int DIDURL_Copy(DIDURL *new, DIDURL *old)
+{
+    if (!new || !old || strlen(old->fragment) == 0)
+        return -1;
+
+    strcpy((char*)new->did.idstring, old->did.idstring);
+    strcpy((char*)new->fragment, old->fragment);
+    return 0;
+}
+
+void DIDURL_Destroy(DIDURL *id)
+{
+    if (!id)
+        return;
+
+    free(id);
 }

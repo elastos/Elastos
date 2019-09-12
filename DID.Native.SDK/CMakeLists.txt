@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
-cmake_policy(VERSION 3.10)
+#cmake_policy(VERSION 3.10)
+cmake_policy(VERSION 3.5)
 project(Elastos-DID VERSION 1.0.0 LANGUAGES C)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -28,10 +29,7 @@ set(ENABLE_DOCS FALSE CACHE BOOL "Build APIs documentation")
 
 add_subdirectory(deps)
 add_subdirectory(src)
-
-if(ENABLE_TESTS)
-    add_subdirectory(tests)
-endif()
+add_subdirectory(tests)
 
 # Alias target for package. But it fix issue about making package
 # inrelevant to udpatation of cmake scripts.

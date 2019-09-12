@@ -1,0 +1,20 @@
+{
+   "id":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#crdential-1",
+   "type":[
+      "SelfProclaimedCredential",
+      "BasicProfileCredential"
+      ],
+   "issuer":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+   "issuanceDate":"2019-01-01T19:20:18Z",
+   "credentialSubject":{
+      "id":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
+      "nickname":"woohah",
+      "nation":"Singapore",
+      "language":"English"
+   },
+   "proof":{
+      "type":"ECDSAsecp256r1",
+      "verificationMethod":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#master-key",
+      "signature":"pYw8XNi1..Cky6Ed="
+   }
+}
