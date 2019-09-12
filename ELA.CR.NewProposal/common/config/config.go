@@ -93,7 +93,11 @@ type DPoSConfiguration struct {
 }
 
 type CRConfiguration struct {
-	MemberCount  uint32 `json:"MemberCount"`
-	VotingPeriod uint32 `json:"VotingPeriod"`
-	DutyPeriod   uint32 `json:"DutyPeriod"`
+	MemberCount                uint32  `json:"MemberCount"`
+	VotingPeriod               uint32  `json:"VotingPeriod"`
+	DutyPeriod                 uint32  `json:"DutyPeriod"`
+	ProposalCRVotingPeriod     uint32  `json:"ProposalCRVotingPeriod"`
+	ProposalPublicVotingPeriod uint32  `json:"ProposalPublicVotingPeriod"`
+	CRAgreementCount           uint32  `json:"CRAgreementCount"`
+	VoterRejectPercentage      float64 `json:"VoterRejectPercentage"`
 }

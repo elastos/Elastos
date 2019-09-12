@@ -94,12 +94,12 @@ var (
 		Usage: "JSON-RPC server listening port `<number>`",
 	}
 	EnableRPCFlag = cli.StringFlag{
-		Name:        "server",
-		Usage:       "decide if open JSON-RPC server or not",
+		Name:  "server",
+		Usage: "decide if open JSON-RPC server or not",
 	}
 	RPCAllowedIPsFlag = cli.StringFlag{
-		Name:        "rpcips",
-		Usage:       "white IP list allowed to access RPC server",
+		Name:  "rpcips",
+		Usage: "white IP list allowed to access RPC server",
 	}
 
 	// Info flags
@@ -256,6 +256,24 @@ var (
 		Name: "crvotingperiod",
 		Usage: "defines the duration of voting period which measured by " +
 			"block height",
+	}
+	ProposalCRVotingPeriodFlag = cli.StringFlag{
+		Name:  "proposalcrvotingperiod",
+		Usage: "defines the duration of CR voting about a proposal",
+	}
+	ProposalPublicVotingPeriodFlag = cli.StringFlag{
+		Name: "proposalpublicvotingperiod",
+		Usage: "defines the duration of all voters send reject vote about " +
+			"a proposal",
+	}
+	CRAgreementCountFlag = cli.StringFlag{
+		Name: "cragreementcount",
+		Usage: "defines minimum count to let a registered proposal transfer " +
+			"to CRAgreed state",
+	}
+	VoterRejectPercentageFlag = cli.StringFlag{
+		Name:  "voterrejectpercentage",
+		Usage: "defines percentage about voters reject a proposal",
 	}
 )
 

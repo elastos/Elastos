@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -51,6 +52,24 @@ func TestStateKeyFrame_Snapshot(t *testing.T) {
 	frame := randomStateKeyFrame(5, true)
 	frame2 := frame.Snapshot()
 	assert.True(t, stateKeyframeEqual(frame, frame2))
+}
+
+func TestProposalKeyFrame_Deserialize(t *testing.T) {
+	frame := randomProposalKeyframe()
+
+	buf := new(bytes.Buffer)
+	frame.Serialize(buf)
+
+	frame2 := &ProposalKeyFrame{}
+	frame2.Deserialize(buf)
+
+	assert.True(t, proposalKeyFrameEqual(frame, frame2))
+}
+
+func TestProposalKeyFrame_Snapshot(t *testing.T) {
+	frame := randomProposalKeyframe()
+	frame2 := frame.Snapshot()
+	assert.True(t, proposalKeyFrameEqual(frame, frame2))
 }
 
 func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
@@ -203,6 +222,95 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 		frame.Votes[randomString()] = randomOutputs()
 	}
 	return frame
+}
+
+func proposalKeyFrameEqual(first, second *ProposalKeyFrame) bool {
+	for k, v := range first.Proposals {
+		proposalState, exist := second.Proposals[k]
+		if !exist {
+			return false
+		}
+
+		if !v.TxHash.IsEqual(proposalState.TxHash) ||
+			v.Status != proposalState.Status ||
+			v.VotersRejectAmount != proposalState.VotersRejectAmount ||
+			v.VoteStartHeight != proposalState.VoteStartHeight ||
+			v.RegisterHeight != proposalState.RegisterHeight {
+			return false
+		}
+
+		for k, v := range v.CRVotes {
+			vote, ok := proposalState.CRVotes[k]
+			if !ok {
+				return false
+			}
+			return vote == v
+		}
+
+		if !v.Proposal.DraftHash.IsEqual(proposalState.Proposal.DraftHash) ||
+			v.Proposal.ProposalType != proposalState.Proposal.ProposalType ||
+			!bytes.Equal(v.Proposal.CRSign, proposalState.Proposal.CRSign) ||
+			!bytes.Equal(v.Proposal.Sign, proposalState.Proposal.Sign) ||
+			!bytes.Equal(v.Proposal.SponsorPublicKey,
+				proposalState.Proposal.SponsorPublicKey) ||
+			!bytes.Equal(v.Proposal.CRSponsorCode,
+				proposalState.Proposal.CRSponsorCode) {
+			return false
+		}
+
+		for i := range v.Proposal.Budgets {
+			if v.Proposal.Budgets[i] != proposalState.Proposal.Budgets[i] {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func randomProposalKeyframe() *ProposalKeyFrame {
+	return &ProposalKeyFrame{Proposals: map[common.Uint256]*ProposalState{
+		*randomUint256(): randomProposalState(),
+		*randomUint256(): randomProposalState(),
+		*randomUint256(): randomProposalState(),
+		*randomUint256(): randomProposalState(),
+		*randomUint256(): randomProposalState(),
+	}}
+}
+
+func randomProposalState() *ProposalState {
+	return &ProposalState{
+		Status:             ProposalStatus(rand.Int31n(7)),
+		Proposal:           *randomCRCProposal(),
+		TxHash:             *randomUint256(),
+		RegisterHeight:     rand.Uint32(),
+		VoteStartHeight:    rand.Uint32(),
+		VotersRejectAmount: common.Fixed64(rand.Int63()),
+		CRVotes: map[common.Uint168]VoteResult{
+			*randomUint168(): VoteResult(rand.Int31n(3)),
+			*randomUint168(): VoteResult(rand.Int31n(3)),
+			*randomUint168(): VoteResult(rand.Int31n(3)),
+			*randomUint168(): VoteResult(rand.Int31n(3)),
+			*randomUint168(): VoteResult(rand.Int31n(3)),
+		},
+	}
+}
+
+func randomCRCProposal() *payload.CRCProposal {
+	return &payload.CRCProposal{
+		ProposalType:     payload.CRCProposalType(rand.Int31n(6)),
+		SponsorPublicKey: randomBytes(33),
+		CRSponsorCode:    randomBytes(34),
+		DraftHash:        *randomUint256(),
+		Budgets: []common.Fixed64{
+			common.Fixed64(rand.Int63()),
+			common.Fixed64(rand.Int63()),
+			common.Fixed64(rand.Int63()),
+			common.Fixed64(rand.Int63()),
+			common.Fixed64(rand.Int63()),
+		},
+		Sign:   randomBytes(64),
+		CRSign: randomBytes(64),
+	}
 }
 
 func randomOutputs() *types.Output {

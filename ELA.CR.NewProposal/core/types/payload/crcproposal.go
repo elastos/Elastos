@@ -60,17 +60,19 @@ type CRCProposal struct {
 	// The type of current proposal.
 	ProposalType CRCProposalType
 	// Public key of sponsor.
-	Sponsor []byte
+	SponsorPublicKey []byte
 	// Code of CR sponsor.
-	CRSponsor []byte
-	// The hash of origin proposal.
-	OriginHash common.Uint256
+	CRSponsorCode []byte
+	// The hash of draft proposal.
+	DraftHash common.Uint256
 	// The budget of different stages.
 	Budgets []common.Fixed64
 	// The signature of sponsor.
 	Sign []byte
 	// The signature of CR sponsor, check data include signature of sponsor.
 	CRSign []byte
+
+	hash *common.Uint256
 }
 
 func (p *CRCProposal) Data(version byte) []byte {
@@ -86,13 +88,13 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 	if _, err := w.Write([]byte{byte(p.ProposalType)}); err != nil {
 		return err
 	}
-	if err := common.WriteVarBytes(w, p.Sponsor); err != nil {
+	if err := common.WriteVarBytes(w, p.SponsorPublicKey); err != nil {
 		return err
 	}
-	if err := common.WriteVarBytes(w, p.CRSponsor); err != nil {
+	if err := common.WriteVarBytes(w, p.CRSponsorCode); err != nil {
 		return err
 	}
-	if err := p.OriginHash.Serialize(w); err != nil {
+	if err := p.DraftHash.Serialize(w); err != nil {
 		return err
 	}
 	if err := common.WriteVarUint(w, uint64(len(p.Budgets))); err != nil {
@@ -127,13 +129,13 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 	if err != nil {
 		return err
 	}
-	p.Sponsor = sponsor
+	p.SponsorPublicKey = sponsor
 	crSponsor, err := common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "CR sponsor")
 	if err != nil {
 		return err
 	}
-	p.CRSponsor = crSponsor
-	if err := p.OriginHash.Deserialize(r); err != nil {
+	p.CRSponsorCode = crSponsor
+	if err := p.DraftHash.Deserialize(r); err != nil {
 		return err
 	}
 	var count uint64
@@ -166,4 +168,14 @@ func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
 	}
 	p.CRSign = crSign
 	return nil
+}
+
+func (p *CRCProposal) Hash() common.Uint256 {
+	if p.hash == nil {
+		buf := new(bytes.Buffer)
+		p.Serialize(buf, CRCProposalVersion)
+		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		p.hash = &hash
+	}
+	return *p.hash
 }

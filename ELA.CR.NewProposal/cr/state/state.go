@@ -30,10 +30,16 @@ const (
 // to update votes and any other changes about candidates.
 type State struct {
 	StateKeyFrame
+	manager *ProposalManager
 
 	mtx     sync.RWMutex
 	params  *config.Params
 	history *utils.History
+}
+
+// SetManager set current proposal manager that holds state of proposals
+func (s *State) SetManager(manager *ProposalManager) {
+	s.manager = manager
 }
 
 // GetCandidate returns candidate with specified program code, it will return
@@ -250,8 +256,16 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnCRDepositCoin:
 		s.returnDeposit(tx, height)
+
+	case types.CRCProposal:
+		if s.manager != nil {
+			s.manager.registerProposal(tx, height, s.history)
+		}
 	}
 
+	if s.manager != nil {
+		s.manager.updateProposals(height, s.history)
+	}
 	s.processCancelVotes(tx, height)
 }
 

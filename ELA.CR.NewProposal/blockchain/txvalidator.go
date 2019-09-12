@@ -1502,12 +1502,12 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 
 	// todo check duplicated origin proposal hash.
 
-	if !b.crCommittee.IsCRMember(proposal.CRSponsor) {
+	if !b.crCommittee.IsCRMember(proposal.CRSponsorCode) {
 		return errors.New("CR sponsor should be one of the CR members")
 	}
 
 	// Check signature of sponsor.
-	publicKey, err := crypto.DecodePoint(proposal.Sponsor)
+	publicKey, err := crypto.DecodePoint(proposal.SponsorPublicKey)
 	if err != nil {
 		return errors.New("invalid sponsor")
 	}
@@ -1529,7 +1529,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if err = common.WriteVarBytes(signedBuf, proposal.Sign); err != nil {
 		return errors.New("invalid CR signature")
 	}
-	if err = checkCRTransactionSignature(proposal.CRSign, proposal.CRSponsor,
+	if err = checkCRTransactionSignature(proposal.CRSign, proposal.CRSponsorCode,
 		signedBuf.Bytes()); err != nil {
 		return errors.New("CR sponsor signature check failed")
 	}
@@ -1841,8 +1841,8 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 
 	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
 	crcArbitratorsCount := len(crcArbitrators)
-	minSignCount := int(float64(crcArbitratorsCount)*
-		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
+	minSignCount := int(float64(crcArbitratorsCount) *
+		state.MajoritySignRatioNumerator / state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
 		fmt.Printf("m:%d n:%d minSignCount:%d crc:  %d", m, n, minSignCount, crcArbitratorsCount)
 		return errors.New("invalid multi sign script code")
