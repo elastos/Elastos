@@ -1,5 +1,5 @@
 import BaseService from '../model/BaseService'
-import { api_request } from '@/util'
+import { api_request, logger } from '@/util'
 
 export default class extends BaseService {
   constructor() {
@@ -18,7 +18,7 @@ export default class extends BaseService {
         data: param,
       })
     } catch (error) {
-      // do nothing
+      logger.error(error)
     }
     return rs
   }
@@ -33,7 +33,7 @@ export default class extends BaseService {
         data: param,
       })
     } catch (error) {
-      // do nothing
+      logger.error(error)
     }
     return rs
   }
@@ -48,7 +48,7 @@ export default class extends BaseService {
         data: param,
       })
     } catch (error) {
-      // do nothing
+      logger.error(error)
     }
     return rs
   }
@@ -63,7 +63,7 @@ export default class extends BaseService {
         data: param,
       })
     } catch (error) {
-      // do nothing
+      logger.error(error)
     }
     return rs
   }
@@ -91,7 +91,7 @@ export default class extends BaseService {
       }
       this.dispatch(this.selfRedux.actions.loading_update(false))
     } catch (error) {
-      // Do nothing
+      logger.error(error)
     }
 
     return result

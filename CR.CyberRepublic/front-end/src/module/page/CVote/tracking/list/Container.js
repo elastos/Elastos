@@ -9,7 +9,6 @@ const mapState = state => ({
   isSecretary: state.user.is_secretary,
   isCouncil: state.user.is_council,
   canManage: state.user.is_secretary || state.user.is_council,
-  publicList: state.cvoteTracking.all_public,
   privateList: state.cvoteTracking.all_private,
 })
 
@@ -25,8 +24,8 @@ const mapDispatch = () => {
     async approve(param) {
       return service.approve(param)
     },
-    async listData(param, isAuthorized = false) {
-      return service.listData(param, isAuthorized)
+    async listData(param) {
+      return service.listData(param)
     },
   }
 }

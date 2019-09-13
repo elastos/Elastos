@@ -145,6 +145,7 @@ export default class extends Base {
     if (!proposalId) {
       throw 'CVoteSummaryService.list - must specify a proposal id'
     }
+
     const query: any = {
       proposalId,
       status: constant.CVOTE_SUMMARY_STATUS.PUBLISHED,
