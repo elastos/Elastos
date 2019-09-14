@@ -7,9 +7,7 @@ import {
   message,
   Modal,
   Anchor,
-  Popconfirm,
-  Row,
-  Col
+  Popconfirm
 } from 'antd'
 import { Link } from 'react-router-dom'
 import I18N from '@/I18N'

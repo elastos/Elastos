@@ -12,6 +12,7 @@ export default {
       proposal: 'CRC提案号',
       title: '标题',
       proposer: '提案人',
+      referee: '推荐委员',
       status: '状态',
       created: '创建日期'
     },
