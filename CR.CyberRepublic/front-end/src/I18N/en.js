@@ -117,8 +117,8 @@ const en = {
   comments: 'Comments',
   'comments.posts': 'Posts',
   'comments.post': 'Post',
-  'comments.noComments': `No comments yet,`,
-  'comments.signIn': ' sign in ',
+  'comments.noComments': `No comments yet, `,
+  'comments.signIn': 'sign in ',
   'comments.firstToPost': 'to be the first to post!',
   'comments.commentsOrUpdates': 'Comments or updates',
   // Admin tasks

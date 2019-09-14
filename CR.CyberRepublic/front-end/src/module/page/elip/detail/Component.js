@@ -20,7 +20,7 @@ class C extends StandardPage {
     super(p)
     this.state = {
       elip: {},
-      loading: false,
+      loading: true,
       reviews: []
     }
   }
@@ -77,7 +77,7 @@ class C extends StandardPage {
       )
     }
     if (!loading && !Object.keys(elip).length) {
-      return null
+      return this.props.history.push('/elips')
     }
 
     return (
@@ -118,7 +118,7 @@ class C extends StandardPage {
           {this.renderEditButton()}
           {this.renderReviewButtons()}
           {this.renderReviewHistory()}
-          {elip.status === ELIP_STATUS.DRAFT && (
+          {[ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED].includes(elip.status) && (
             <Row style={{ marginTop: 24 }}>
               <LabelCol span={3} />
               <Col span={17}>
