@@ -128,7 +128,7 @@ export default class extends Base {
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
 
-    const isVisible = rs.status === constant.ELIP_STATUS.DRAFT ||
+    const isVisible = [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED].includes(rs.status) ||
       rs.createdBy._id.equals(currentUserId) ||
       userRole === constant.USER_ROLE.SECRETARY
 
