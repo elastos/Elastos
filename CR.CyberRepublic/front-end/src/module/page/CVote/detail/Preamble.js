@@ -125,7 +125,7 @@ const Component = ({
       {idNode}
       {titleNode}
       {proposerNode}
-      {proposer._id !== createdBy._id ? refereeNode : null}
+      {proposer && createdBy && proposer._id !== createdBy._id ? refereeNode : null}
       {typeNode}
       {statusNode}
       {createdNode}
