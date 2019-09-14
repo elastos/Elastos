@@ -68,27 +68,17 @@ export default class extends BaseService {
     return rs
   }
 
-  async listData(param, isAuthorized) {
+  async listData(param) {
     this.dispatch(this.selfRedux.actions.loading_update(true))
     let result
     try {
-      if (isAuthorized) {
-        result = await api_request({
-          path: `${this.prefixPath}/list`,
-          method: 'get',
-          data: param,
-        })
-        this.dispatch(this.selfRedux.actions.all_private_total_update(result.total))
-        this.dispatch(this.selfRedux.actions.all_private_update(result.list))
-      } else {
-        result = await api_request({
-          path: `${this.prefixPath}/list_public`,
-          method: 'get',
-          data: param,
-        })
-        this.dispatch(this.selfRedux.actions.all_public_total_update(result.total))
-        this.dispatch(this.selfRedux.actions.all_public_update(result.list))
-      }
+      result = await api_request({
+        path: `${this.prefixPath}/list`,
+        method: 'get',
+        data: param,
+      })
+      this.dispatch(this.selfRedux.actions.all_private_total_update(result.total))
+      this.dispatch(this.selfRedux.actions.all_private_update(result.list))
       this.dispatch(this.selfRedux.actions.loading_update(false))
     } catch (error) {
       logger.error(error)

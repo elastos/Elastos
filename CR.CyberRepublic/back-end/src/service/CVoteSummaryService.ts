@@ -101,22 +101,11 @@ export default class extends Base {
    * @returns {Promise<Object>}
    */
   public async list(param: any): Promise<Object> {
-    const currentUserId = _.get(this.currentUser, '_id', '').toString()
     const { proposalId } = param
     const proposal = await this.getProposalById(proposalId)
     if (!proposalId || !proposal) {
       throw 'CVoteSummaryService.list - invalid proposal'
     }
-    const proposerId = _.get(proposal, 'proposer', '').toString()
-    const canViewPrivate = (currentUserId === proposerId) || permissions.isSecretary(_.get(this.currentUser, 'role'))
-
-    if (!canViewPrivate) {
-      return {
-        list: [],
-        total: 0
-      }
-    }
-
     const query: any = {
       proposalId,
     }
@@ -131,7 +120,7 @@ export default class extends Base {
 
     return {
       list,
-      total,
+      total
     }
   }
 
