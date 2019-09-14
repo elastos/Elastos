@@ -97,13 +97,13 @@ class C extends BaseComponent {
   isDescEmpty = (rule, value, cb) => {
     const { count, submit } = this.state
     const { data } = this.props
-    // edit a rejected elip
+    // edit a elip
     if (data && data.description && count === 0 && !value) {
       return cb(true)
     }
     // submit the elip form without trigger the desc input box
     // when add a new elip
-    if (count === 0 && submit === true) {
+    if (count === 0 && submit === true && !value) {
       return cb(true)
     }
     if (count > 0 && !value) {
