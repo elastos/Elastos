@@ -52,7 +52,7 @@ class C extends StandardPage {
       const comment = await review(param)
       if (comment && comment.elipId === elip._id) {
         this.setState({
-          elip: { ...elip, status: data.status },
+          elip: { ...elip, status: comment.elipStatus },
           reviews: [...this.state.reviews, comment]
         })
 

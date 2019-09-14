@@ -2,7 +2,7 @@ import React from 'react'
 import { Button, Modal, Input, Popconfirm } from 'antd'
 import I18N from '@/I18N'
 const { TextArea } = Input
-import { ELIP_STATUS } from '@/constant'
+import { ELIP_REVIEW_STATUS } from '@/constant'
 
 class ReviewButtons extends React.Component {
   constructor(p) {
@@ -24,13 +24,13 @@ class ReviewButtons extends React.Component {
   handleOk = async () => {
     const { onSubmit } = this.props
     const { reason } = this.state
-    await onSubmit({ reason, status: ELIP_STATUS.REJECTED })
+    await onSubmit({ reason, status: ELIP_REVIEW_STATUS.REJECTED })
     this.setState({ reason: '', visible: false })
   }
 
   handleConfirm = async () => {
     const { onSubmit } = this.props
-    await onSubmit({ reason: '', status: ELIP_STATUS.DRAFT })
+    await onSubmit({ reason: '', status: ELIP_REVIEW_STATUS.APPROVED })
   }
 
   handleChange = e => {
