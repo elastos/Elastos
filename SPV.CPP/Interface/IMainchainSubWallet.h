@@ -147,7 +147,7 @@ namespace Elastos {
 			 *
 			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
 			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param stake        Vote amount in sela.
+			 * @param stake        Vote amount in sela. "-1" means max.
 			 * @param publicKeys   Public keys array in JSON format.
 			 * @param memo         Remarks string. Can be empty string.
 			 * @return             The transaction in JSON format to be signed and published.
@@ -163,9 +163,9 @@ namespace Elastos {
 			 *
 			 * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
 			 * {
-			 * 	 {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": 10000000},
-			 * 	 {"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": 200000000},
-			 * 	 {"03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": 5000000000}
+			 * 	 "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": 10000000,
+			 * 	 "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": 200000000,
+			 * 	 "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": 5000000000
 			 * }
 			 */
 			virtual	nlohmann::json GetVotedProducerList() const = 0;
@@ -314,9 +314,9 @@ namespace Elastos {
 			 *
 			 * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
 			 * {
-			 * 	 {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": 10000000},
-			 * 	 {"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": 200000000},
-			 * 	 {"03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": 5000000000}
+			 * 	 "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": 10000000,
+			 * 	 "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": 200000000,
+			 * 	 "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": 5000000000
 			 * }
 			 */
 			virtual	nlohmann::json GetVotedCRList() const = 0;
@@ -343,6 +343,20 @@ namespace Elastos {
 			 * { "Status": "ReturnDeposit", "Info": null }
 			 */
 			virtual nlohmann::json GetRegisteredCRInfo() const = 0;
+
+			/**
+			 * Get summary or details of all types of votes
+			 * @type if the type is empty, a summary of all types of votes will return. Otherwise, the details of the specified type will return.
+			 * @return vote info in JSON format. Such as:
+			 *
+			 * summary:
+			 * [{"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null},
+			 *  {"Type": "CRC", "Amount": "56789", "Timestamp": 1560888482, "Expiry": 1561888000}]
+			 *
+			 * details:
+			 * [{"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null, "Votes": {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": 10000000,"02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": 200000000}}]
+			 */
+			virtual nlohmann::json GetVoteInfo(const std::string &type) const = 0;
 
 		};
 

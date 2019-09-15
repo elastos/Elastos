@@ -129,12 +129,12 @@ namespace Elastos {
 
 			uint64_t GetDefaultFeePerKb();
 
-			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo);
+			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo, bool max);
 
 			TransactionPtr Consolidate(const std::string &memo, const uint256 &asset);
 
 			TransactionPtr CreateTransaction(const Address &fromAddress, const std::vector<OutputPtr> &outputs,
-											 const std::string &memo);
+											 const std::string &memo, bool max);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);
 

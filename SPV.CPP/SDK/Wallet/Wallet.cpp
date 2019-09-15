@@ -159,7 +159,7 @@ namespace Elastos {
 			return result;
 		}
 
-		std::vector<UTXOPtr> Wallet::GetVoteUTXO() const {
+		UTXOArray Wallet::GetVoteUTXO() const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			UTXOArray result;
 
@@ -229,8 +229,8 @@ namespace Elastos {
 		}
 
 		// only support asset of ELA
-		TransactionPtr Wallet::Vote(const VoteContent &voteContent, const std::string &memo) {
-			return _groupedAssets[Asset::GetELAAssetID()]->Vote(voteContent, memo);
+		TransactionPtr Wallet::Vote(const VoteContent &voteContent, const std::string &memo, bool max) {
+			return _groupedAssets[Asset::GetELAAssetID()]->Vote(voteContent, memo, max);
 		}
 
 		TransactionPtr Wallet::Consolidate(const std::string &memo, const uint256 &assetID) {
@@ -250,7 +250,8 @@ namespace Elastos {
 
 		TransactionPtr Wallet::CreateTransaction(const Address &fromAddress,
 												 const std::vector<OutputPtr> &outputs,
-												 const std::string &memo) {
+												 const std::string &memo,
+												 bool max) {
 
 			ErrorChecker::CheckParam(!IsAssetUnique(outputs), Error::InvalidAsset, "asset is not unique in outputs");
 
@@ -266,7 +267,7 @@ namespace Elastos {
 			if (fromAddress.Valid() && (_subAccount->IsProducerDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
 				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(outputs, fromAddress, memo);
 			else
-				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo);
+				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo, max);
 
 			if (assetID != Asset::GetELAAssetID())
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);

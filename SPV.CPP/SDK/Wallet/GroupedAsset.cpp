@@ -145,7 +145,7 @@ namespace Elastos {
 			return tx;
 		}
 
-		TransactionPtr GroupedAsset::Vote(const VoteContent &voteContent, const std::string &memo) {
+		TransactionPtr GroupedAsset::Vote(const VoteContent &voteContent, const std::string &memo, bool max) {
 			bytes_t code;
 			std::string path;
 			uint64_t txSize = 0, feeAmount = 0;
@@ -153,6 +153,9 @@ namespace Elastos {
 			BigInt totalInputAmount;
 			bool lastUTXOPending = false;
 			UTXOPtr firstInput;
+
+			ErrorChecker::CheckCondition(max && voteContent.GetType() == VoteContent::CRC, Error::InvalidArgument,
+										 "Unsupport max for CRC vote");
 
 			TransactionPtr tx = TransactionPtr(new Transaction());
 
@@ -228,7 +231,7 @@ namespace Elastos {
 			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
 
 			for (UTXOArray::const_iterator u = utxo2Pick.cbegin(); u != utxo2Pick.cend(); ++u) {
-				if (totalInputAmount >= newVoteMaxAmount + feeAmount)
+				if (!max && totalInputAmount >= newVoteMaxAmount + feeAmount)
 					break;
 
 				if (_parent->IsUTXOSpending(*u)) {
@@ -243,24 +246,37 @@ namespace Elastos {
 				tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 
 				txSize = tx->EstimateSize();
-				if (txSize >= TX_MAX_SIZE - 1000) { // transaction size-in-bytes too large
-					_parent->Unlock();
-
-					BigInt maxAmount = totalInputAmount - feeAmount;
-					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
-												 "Tx size too large, max available amount: " + maxAmount.getDec() + " sela");
-					return nullptr;
-				}
 
 				totalInputAmount += (*u)->Output()->Amount();
 				feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 
-				if (firstInput == nullptr) {
+				if (firstInput == nullptr)
 					firstInput = *u;
+
+				if (txSize >= TX_MAX_SIZE - 1000) { // transaction size-in-bytes too large
+					if (!max) {
+						_parent->Unlock();
+
+						BigInt maxAmount = totalInputAmount - feeAmount;
+						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
+													 "Tx size too large, max available amount: " + maxAmount.getDec() +
+													 " sela");
+						return nullptr;
+					}
+
+					break;
 				}
 			}
 
 			_parent->Unlock();
+
+			VoteContentArray newVoteContent;
+			newVoteContent.push_back(voteContent);
+
+			if (max) {
+				newVoteMaxAmount = totalInputAmount - feeAmount;
+				newVoteContent.back().SetAllCandidateVotes(newVoteMaxAmount.getUint64());
+			}
 
 			if (totalInputAmount < newVoteMaxAmount + feeAmount) {
 				BigInt maxAvailable(0);
@@ -279,16 +295,14 @@ namespace Elastos {
 				return nullptr;
 			}
 
-			BigInt maxOutputAmount = newVoteMaxAmount;
-			VoteContentArray newVoteContent;
-			newVoteContent.push_back(voteContent);
+			BigInt totalOutputAmount = newVoteMaxAmount;
 
 			assert(oldVoteAmount.size() == oldVoteContent.size());
 			for (size_t i = 0; i < oldVoteAmount.size(); ++i) {
 				if (totalInputAmount >= oldVoteAmount[i] + feeAmount) {
 					newVoteContent.push_back(oldVoteContent[i]);
-					if (maxOutputAmount < oldVoteAmount[i])
-						maxOutputAmount = oldVoteAmount[i];
+					if (totalOutputAmount < oldVoteAmount[i])
+						totalOutputAmount = oldVoteAmount[i];
 				} else {
 					Log::warn("drop old vote content type: {} amount: {}", oldVoteContent[i].GetType(), oldVoteAmount[i].getDec());
 				}
@@ -296,13 +310,13 @@ namespace Elastos {
 
 			OutputPayloadPtr outputPayload = OutputPayloadPtr(new PayloadVote(newVoteContent, VOTE_PRODUCER_CR_VERSION));
 
-			tx->AddOutput(OutputPtr(new TransactionOutput(maxOutputAmount, firstInput->Output()->Addr(),
+			tx->AddOutput(OutputPtr(new TransactionOutput(totalOutputAmount, firstInput->Output()->Addr(),
 														  Asset::GetELAAssetID(),
 														  TransactionOutput::Type::VoteOutput, outputPayload)));
-			if (totalInputAmount > maxOutputAmount + feeAmount) {
+			if (totalInputAmount > totalOutputAmount + feeAmount) {
 				// change
 				Address changeAddress = _parent->UnusedAddresses(1, 1)[0];
-				BigInt changeAmount = totalInputAmount - maxOutputAmount - feeAmount;
+				BigInt changeAmount = totalInputAmount - totalOutputAmount - feeAmount;
 				OutputPtr changeOutput(new TransactionOutput(changeAmount, changeAddress));
 				tx->AddOutput(changeOutput);
 			}
@@ -431,8 +445,11 @@ namespace Elastos {
 
 		TransactionPtr GroupedAsset::CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
 														const Address &fromAddress,
-														const std::string &memo) {
+														const std::string &memo,
+														bool max) {
 			ErrorChecker::CheckLogic(outputs.empty(), Error::InvalidArgument, "outputs should not be empty");
+			ErrorChecker::CheckParam(max && outputs.size() > 1, Error::InvalidArgument,
+									 "Unsupport max for multi outputs");
 
 			TransactionPtr txn = TransactionPtr(new Transaction);
 			BigInt totalOutputAmount(0), totalInputAmount(0);
@@ -463,7 +480,7 @@ namespace Elastos {
 			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
 
 			for (UTXOArray::iterator u = utxo2Pick.begin(); u != utxo2Pick.end(); ++u) {
-				if (totalInputAmount >= totalOutputAmount + feeAmount && txSize >= 2000)
+				if (!max && totalInputAmount >= totalOutputAmount + feeAmount && txSize >= 2000)
 					break;
 
 				if (_parent->IsUTXOSpending(*u)) {
@@ -496,7 +513,7 @@ namespace Elastos {
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
-			if (totalInputAmount < totalOutputAmount + feeAmount) {
+			if (max || totalInputAmount < totalOutputAmount + feeAmount) {
 				// voted utxo
 				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
 					if (_parent->IsUTXOSpending(*u)) {
@@ -519,6 +536,11 @@ namespace Elastos {
 			}
 
 			_parent->Unlock();
+
+			if (max) {
+				totalOutputAmount = totalInputAmount - feeAmount;
+				txn->GetOutputs().front()->SetAmount(totalOutputAmount);
+			}
 
 			if (txn) {
 				if (totalInputAmount < totalOutputAmount + feeAmount) {

@@ -57,13 +57,14 @@ namespace Elastos {
 												   const Address &fromAddress,
 												   const std::string &memo);
 
-			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo);
+			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo, bool max);
 
 			TransactionPtr Consolidate(const std::string &memo);
 
 			TransactionPtr CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
 											  const Address &fromAddress,
-											  const std::string &memo);
+											  const std::string &memo,
+											  bool max);
 
 			void AddFeeForTx(TransactionPtr &tx);
 

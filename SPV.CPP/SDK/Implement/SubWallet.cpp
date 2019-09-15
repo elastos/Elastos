@@ -157,7 +157,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::vector<OutputPtr> &outputs,
-		                                   const std::string &memo) const {
+		                                   const std::string &memo, bool max) const {
 			for (const OutputPtr &output : outputs) {
 				ErrorChecker::CheckParam(!output->Addr().Valid(), Error::CreateTransaction,
 				                         "invalid receiver address " + output->Addr().String());
@@ -171,7 +171,7 @@ namespace Elastos {
 			if (!memo.empty())
 				m = "type:text,msg:" + memo;
 
-			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(fromAddress, outputs, m);
+			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(fromAddress, outputs, m, max);
 
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
@@ -258,14 +258,19 @@ namespace Elastos {
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
+			bool max = false;
 			BigInt bnAmount;
 			bnAmount.setDec(amount);
+			if (bnAmount == -1) {
+				max = true;
+				bnAmount = 0;
+			}
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
+			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, max);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

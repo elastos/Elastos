@@ -167,7 +167,8 @@ namespace Elastos {
 			TransactionPtr CreateTx(
 				const std::string &fromAddress,
 				const std::vector<OutputPtr> &outputs,
-				const std::string &memo) const;
+				const std::string &memo,
+				bool max = false) const;
 
 			TransactionPtr CreateConsolidateTx(
 				const std::string &memo,

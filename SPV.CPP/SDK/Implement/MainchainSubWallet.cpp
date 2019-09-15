@@ -79,13 +79,13 @@ namespace Elastos {
 			return result;
 		}
 
-		TransactionPtr MainchainSubWallet::CreateVoteTx(const VoteContent &voteContent, const std::string &memo) {
+		TransactionPtr MainchainSubWallet::CreateVoteTx(const VoteContent &voteContent, const std::string &memo, bool max) {
 			std::string m;
 
 			if (!memo.empty())
 				m = "type:text,msg:" + memo;
 
-			TransactionPtr tx = _walletManager->GetWallet()->Vote(voteContent, m);
+			TransactionPtr tx = _walletManager->GetWallet()->Vote(voteContent, m, max);
 
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
@@ -355,11 +355,17 @@ namespace Elastos {
 			ArgInfo("pubkeys: {}", publicKeys.dump());
 			ArgInfo("memo: {}", memo);
 
+			bool max = false;
 			BigInt bgStake;
 			bgStake.setDec(stake);
 
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
-			ErrorChecker::CheckParam(bgStake == 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
+			// -1 means max
+			ErrorChecker::CheckParam(bgStake <= 0 && bgStake != -1, Error::Code::VoteStakeError, "Vote stake should not be zero");
+			if (bgStake == -1) {
+				max = true;
+				bgStake = 0;
+			}
 
 			VoteContent voteContent(VoteContent::Delegate);
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
@@ -374,7 +380,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(voteContent.GetCandidateVotes().empty(), Error::InvalidArgument,
 									 "Candidate vote list should not be empty");
 
-			TransactionPtr tx = CreateVoteTx(voteContent, memo);
+			TransactionPtr tx = CreateVoteTx(voteContent, memo, max);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -403,21 +409,29 @@ namespace Elastos {
 				}
 
 				uint64_t stake = output->Amount().getUint64();
+				uint8_t version = pv->Version();
 				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
-				              [&votedList, &stake](const VoteContent &vc) {
-					              if (vc.GetType() == VoteContent::Type::Delegate) {
-						              std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
-						                            [&votedList, &stake](const CandidateVotes &candidate) {
-							                            std::string c = candidate.GetCandidate().getHex();
-							                            if (votedList.find(c) != votedList.end()) {
-								                            votedList[c] += stake;
-							                            } else {
-								                            votedList[c] = stake;
-							                            }
-						                            });
-					              }
-				              });
+							  [&votedList, &stake, &version](const VoteContent &vc) {
+								  if (vc.GetType() == VoteContent::Type::Delegate) {
+									  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
+													[&votedList, &stake, &version](const CandidateVotes &cvs) {
+														std::string c = cvs.GetCandidate().getHex();
+														uint64_t votes;
+
+														if (version == VOTE_PRODUCER_CR_VERSION)
+															votes = cvs.GetVotes();
+														else
+															votes = stake;
+
+														if (votedList.find(c) != votedList.end()) {
+															votedList[c] += votes;
+														} else {
+															votedList[c] = votes;
+														}
+													});
+								  }
+							  });
 
 			}
 
@@ -750,7 +764,7 @@ namespace Elastos {
 				voteContent.AddCandidate(CandidateVotes(address.RedeemScript(), value));
 			}
 
-			TransactionPtr tx = CreateVoteTx(voteContent, memo);
+			TransactionPtr tx = CreateVoteTx(voteContent, memo, false);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -856,6 +870,63 @@ namespace Elastos {
 
 			ArgInfo("r => {}", j.dump());
 			return j;
+		}
+
+		nlohmann::json MainchainSubWallet::GetVoteInfo(const std::string &type) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+
+			WalletPtr wallet = _walletManager->GetWallet();
+			UTXOArray utxos = wallet->GetVoteUTXO();
+			nlohmann::json jinfo;
+			time_t timestamp;
+
+			std::map<std::string, uint64_t> votedList;
+
+			for (UTXOArray::iterator u = utxos.begin(); u != utxos.end(); ++u) {
+				const OutputPtr &output = (*u)->Output();
+				if (output->GetType() != TransactionOutput::VoteOutput) {
+					continue;
+				}
+
+				TransactionPtr tx = wallet->TransactionForHash((*u)->Hash());
+				assert(tx != nullptr);
+				timestamp = tx->GetTimestamp();
+
+				const PayloadVote *pv = dynamic_cast<const PayloadVote *>(output->GetPayload().get());
+				if (pv == nullptr) {
+					continue;
+				}
+
+				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
+				std::for_each(voteContents.cbegin(), voteContents.cend(),
+							  [&jinfo, &type, &timestamp](const VoteContent &vc) {
+								  nlohmann::json j;
+								  if (type.empty() || type == vc.GetTypeString()) {
+									  if (vc.GetType() == VoteContent::CRC)
+										  j["Amount"] = vc.GetTotalVoteAmount();
+									  else if (vc.GetType() == VoteContent::Delegate)
+										  j["Amount"] = vc.GetMaxVoteAmount();
+									  j["Type"] = vc.GetTypeString();
+									  j["Timestamp"] = timestamp;
+									  j["Expiry"] = nlohmann::json();
+									  if (!type.empty()) {
+										  nlohmann::json candidateVotes;
+										  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
+														[&candidateVotes](const CandidateVotes &cv) {
+															std::string c = cv.GetCandidate().getHex();
+															candidateVotes[c] = cv.GetVotes();
+														});
+										  j["Votes"] = candidateVotes;
+									  }
+									  jinfo.push_back(j);
+								  }
+							  });
+
+			}
+
+			ArgInfo("r => {}", jinfo.dump());
+
+			return jinfo;
 		}
 
 	}

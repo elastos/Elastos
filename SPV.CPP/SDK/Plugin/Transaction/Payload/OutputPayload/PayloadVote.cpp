@@ -94,6 +94,16 @@ namespace Elastos {
 			return _type;
 		}
 
+		std::string VoteContent::GetTypeString() const {
+			if (_type == VoteContent::CRC) {
+				return "CRC";
+			} else if (_type == VoteContent::Delegate) {
+				return "Delegate";
+			}
+
+			return "Unknow";
+		}
+
 		const std::vector<CandidateVotes> &VoteContent::GetCandidateVotes() const {
 			return _candidates;
 		}
