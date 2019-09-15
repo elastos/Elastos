@@ -6,6 +6,6 @@ target 'ElastosDIDSDK' do
   use_frameworks!
 
   # Pods for ElastosDIDSDK
-	pod 'Antlr4.zip', :git => "https://github.com/ahl0107/testsdk/releases/download/release-v0.1.0/Antlr4.zip"
+	pod 'Antlr4', :git => "https://github.com/ahl0107/testsdk.git"
 
 end

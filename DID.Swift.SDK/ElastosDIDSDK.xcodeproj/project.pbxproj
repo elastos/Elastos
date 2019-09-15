@@ -18,6 +18,13 @@
 		1109D0812327591900A03D56 /* DIDURLBaseListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D0762327591900A03D56 /* DIDURLBaseListener.swift */; };
 		1109D0822327591900A03D56 /* DIDURLListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D0772327591900A03D56 /* DIDURLListener.swift */; };
 		1109D0832327591900A03D56 /* DIDURLLexerATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D0782327591900A03D56 /* DIDURLLexerATN.swift */; };
+		1109D08923275DE000A03D56 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1109D08423275CFE00A03D56 /* Antlr4.framework */; };
+		1109D08B23275E7B00A03D56 /* ParserHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D08A23275E7B00A03D56 /* ParserHelper.swift */; };
+		1109D08D232DD23B00A03D56 /* CredentialSubject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D08C232DD23B00A03D56 /* CredentialSubject.swift */; };
+		1109D08F232DD26E00A03D56 /* Proof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D08E232DD26E00A03D56 /* Proof.swift */; };
+		1109D091232DD29300A03D56 /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D090232DD29300A03D56 /* EmbeddedCredential.swift */; };
+		1109D093232DDCB200A03D56 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D092232DDCB200A03D56 /* HDKey.swift */; };
+		1109D095232DFFA500A03D56 /* JsonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D094232DFFA500A03D56 /* JsonHelper.swift */; };
 		11F262AF23260CF40009C103 /* Elastos_DID_Swift_SDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		11F262B823260D720009C103 /* Issuer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262B723260D720009C103 /* Issuer.swift */; };
 		11F262BA23260D940009C103 /* VerifiableCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262B923260D940009C103 /* VerifiableCredential.swift */; };
@@ -50,6 +57,13 @@
 		1109D0762327591900A03D56 /* DIDURLBaseListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLBaseListener.swift; sourceTree = "<group>"; };
 		1109D0772327591900A03D56 /* DIDURLListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLListener.swift; sourceTree = "<group>"; };
 		1109D0782327591900A03D56 /* DIDURLLexerATN.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLLexerATN.swift; sourceTree = "<group>"; };
+		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
+		1109D08A23275E7B00A03D56 /* ParserHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParserHelper.swift; sourceTree = "<group>"; };
+		1109D08C232DD23B00A03D56 /* CredentialSubject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSubject.swift; sourceTree = "<group>"; };
+		1109D08E232DD26E00A03D56 /* Proof.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Proof.swift; sourceTree = "<group>"; };
+		1109D090232DD29300A03D56 /* EmbeddedCredential.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedCredential.swift; sourceTree = "<group>"; };
+		1109D092232DDCB200A03D56 /* HDKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDKey.swift; sourceTree = "<group>"; };
+		1109D094232DFFA500A03D56 /* JsonHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonHelper.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Elastos_DID_Swift_SDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -77,6 +91,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1109D08923275DE000A03D56 /* Antlr4.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,15 +112,32 @@
 				1109D0772327591900A03D56 /* DIDURLListener.swift */,
 				1109D06E2327591800A03D56 /* DIDURLParser.swift */,
 				1109D0752327591900A03D56 /* DIDURLParserATN.swift */,
+				1109D08A23275E7B00A03D56 /* ParserHelper.swift */,
 			);
 			path = Parser;
+			sourceTree = "<group>";
+		};
+		1109D08623275D2700A03D56 /* Framework */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Framework;
+			sourceTree = SOURCE_ROOT;
+		};
+		1109D08723275DC600A03D56 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		11F262A023260CF30009C103 = {
 			isa = PBXGroup;
 			children = (
+				1109D08423275CFE00A03D56 /* Antlr4.framework */,
 				11F262AC23260CF40009C103 /* ElastosDIDSDK */,
 				11F262AB23260CF40009C103 /* Products */,
+				1109D08723275DC600A03D56 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -120,6 +152,7 @@
 		11F262AC23260CF40009C103 /* ElastosDIDSDK */ = {
 			isa = PBXGroup;
 			children = (
+				1109D08623275D2700A03D56 /* Framework */,
 				11F262B523260D550009C103 /* Credential */,
 				11F262B623260D550009C103 /* DID */,
 				11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */,
@@ -133,6 +166,9 @@
 			children = (
 				11F262B723260D720009C103 /* Issuer.swift */,
 				11F262B923260D940009C103 /* VerifiableCredential.swift */,
+				1109D090232DD29300A03D56 /* EmbeddedCredential.swift */,
+				1109D08C232DD23B00A03D56 /* CredentialSubject.swift */,
+				1109D08E232DD26E00A03D56 /* Proof.swift */,
 			);
 			path = Credential;
 			sourceTree = SOURCE_ROOT;
@@ -172,6 +208,8 @@
 		11F262BC23260DFD0009C103 /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				1109D092232DDCB200A03D56 /* HDKey.swift */,
+				1109D094232DFFA500A03D56 /* JsonHelper.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -262,12 +300,17 @@
 			files = (
 				11F262D223260EBB0009C103 /* DIDStoreError.swift in Sources */,
 				11F262CC23260E7E0009C103 /* PublicKey.swift in Sources */,
+				1109D08B23275E7B00A03D56 /* ParserHelper.swift in Sources */,
 				11F262B823260D720009C103 /* Issuer.swift in Sources */,
 				11F262C023260E1F0009C103 /* DID.swift in Sources */,
 				11F262BA23260D940009C103 /* VerifiableCredential.swift in Sources */,
 				11F262D623260EED0009C103 /* MalformedDIDError.swift in Sources */,
 				11F262D023260EAC0009C103 /* DIDError.swift in Sources */,
+				1109D08F232DD26E00A03D56 /* Proof.swift in Sources */,
+				1109D095232DFFA500A03D56 /* JsonHelper.swift in Sources */,
 				11F262C823260E5E0009C103 /* DIDURL.swift in Sources */,
+				1109D08D232DD23B00A03D56 /* CredentialSubject.swift in Sources */,
+				1109D093232DDCB200A03D56 /* HDKey.swift in Sources */,
 				11F262C223260E2A0009C103 /* DIDDocument.swift in Sources */,
 				11F262C423260E3F0009C103 /* DIDObject.swift in Sources */,
 				11F262D823260F020009C103 /* MalformedDIDURLError.swift in Sources */,
@@ -282,6 +325,7 @@
 				11F262CE23260E900009C103 /* Service.swift in Sources */,
 				1109D0832327591900A03D56 /* DIDURLLexerATN.swift in Sources */,
 				11F262C623260E530009C103 /* DIDStore.swift in Sources */,
+				1109D091232DD29300A03D56 /* EmbeddedCredential.swift in Sources */,
 				11F262CA23260E6F0009C103 /* FileSystemStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -422,8 +466,13 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = ElastosDIDSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -433,7 +482,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -449,8 +498,13 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = ElastosDIDSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -459,7 +513,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "elastos.Elastos-DID-Swift-SDK";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
