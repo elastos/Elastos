@@ -1,7 +1,7 @@
 import Base from './Base'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { validate, mail, user as userUtil, permissions } from '../utility'
+import { validate, mail, user as userUtil, permissions, logger } from '../utility'
 
 const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
 const emptyDoc = {
@@ -320,7 +320,7 @@ export default class extends Base {
 
       mail.send(mailObj)
     } catch(error) {
-      console.log('suggestion service notifySubscribers error...', error)
+      logger.error(error)
     }
   }
 
@@ -365,7 +365,7 @@ export default class extends Base {
 
       mail.send(mailObj)
     } catch (error) {
-      console.log('suggestion service notifyOwner error...', error)
+      logger.error(error)
     }
   }
 
@@ -397,7 +397,7 @@ export default class extends Base {
       }
       return this.model.findById(_id)
     } catch(error) {
-      console.log('suggestion service addTag error...', error)
+      logger.error(error)
     }
   }
 
