@@ -26,12 +26,12 @@ import { LG_WIDTH } from '@/config/constant'
 import './style.scss'
 
 const SORT_BY = {
-  updatedAt: 'updatedAt',
+  createdAt: 'createdAt',
   likesNum: 'likesNum',
   activeness: 'activeness',
   viewsNum: 'viewsNum'
 }
-const DEFAULT_SORT = SORT_BY.updatedAt
+const DEFAULT_SORT = SORT_BY.createdAt
 
 /**
  * This uses new features such as infinite scroll and pagination, therefore
@@ -239,7 +239,7 @@ export default class extends StandardPage {
   // list header
   renderHeaderActions() {
     const SORT_BY_TEXT = {
-      updatedAt: I18N.get('suggestion.new'),
+      createdAt: I18N.get('suggestion.new'),
       likesNum: I18N.get('suggestion.likes'),
       viewsNum: I18N.get('suggestion.mostViews'),
       activeness: I18N.get('suggestion.activeness'),
