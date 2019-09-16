@@ -1018,6 +1018,20 @@ func newCRCProposal(L *lua.LState) int {
 	return 1
 }
 
+func getCode(publicKey string) []byte {
+	pkBytes, _ := common.HexStringToBytes(publicKey)
+	pk, _ := crypto.DecodePoint(pkBytes)
+	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
+	return redeemScript
+}
+func getCodeHexStr(publicKey string) string {
+	pkBytes, _ := common.HexStringToBytes(publicKey)
+	pk, _ := crypto.DecodePoint(pkBytes)
+	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
+	codeHexStr := common.BytesToHexString(redeemScript)
+	return codeHexStr
+}
+
 // Checks whether the first lua argument is a *LUserData with *CRInfo and
 // returns this *CRInfo.
 func checkCRCProposal(L *lua.LState, idx int) *payload.CRCProposal {
@@ -1036,6 +1050,8 @@ var crcProposalMethods = map[string]lua.LGFunction{
 // Getter and setter for the Person#Name
 func crcProposalGet(L *lua.LState) int {
 	p := checkCRCProposal(L, 1)
+	fmt.Println(p)
+	return 0
 }
 
 func checkCrcProposalReview(L *lua.LState, idx int) *payload.CRCProposalReview {
@@ -1080,7 +1096,6 @@ func newCrcProposalReview(L *lua.LState) int {
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)
 		err = crcProposalReview.SerializeUnsigned(rpSignBuf, payload.CRCProposalReviewVersion)
-
 		codeHash := common.ToCodeHash(codeByte)
 		fmt.Println("newCrcProposalReview codeHash", common.BytesToHexString(codeHash.Bytes()))
 		acc := client.GetAccountByCodeHash(*codeHash)
@@ -1101,6 +1116,7 @@ func newCrcProposalReview(L *lua.LState) int {
 	L.SetMetatable(ud, L.GetTypeMetatable(luaCrcProposalReviewName))
 	L.Push(ud)
 	fmt.Println("newCrcProposalReview end")
+	return 1
 }
 
 var crcProposalReviewMethods = map[string]lua.LGFunction{

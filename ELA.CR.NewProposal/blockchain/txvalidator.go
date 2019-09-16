@@ -1571,8 +1571,6 @@ func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
 	}
 
 	//todo check ProposalHash must exist
-
-	//todo check code -> sponsor
 	if !b.crCommittee.IsCRMember(crcProposalReview.Code) {
 		return errors.New("CR proposal reviewer should be one of the CR members")
 	}
@@ -1619,7 +1617,6 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if !ok {
 		return errors.New("invalid payload")
 	}
-
 	if proposal.ProposalType.Name() == "Unknown" {
 		return errors.New("type of proposal should be known")
 	}

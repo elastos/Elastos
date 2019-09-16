@@ -230,6 +230,7 @@ func (p *Params) TestNet() *Params {
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	copy.CheckRewardHeight = 100               //todo correct me later
 	copy.EnableUtxoDB = true
+	copy.VoterRejectPercentage = 10
 	return &copy
 }
 
@@ -281,6 +282,7 @@ func (p *Params) RegNet() *Params {
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	copy.CheckRewardHeight = 280000
 	copy.EnableUtxoDB = true
+	copy.VoterRejectPercentage = 10
 	return &copy
 }
 
