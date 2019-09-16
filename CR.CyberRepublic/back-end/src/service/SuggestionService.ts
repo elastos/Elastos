@@ -142,21 +142,14 @@ export default class extends Base {
     if (_.isEmpty(query.$or)) delete query.$or
     delete query['tags.type']
 
-    const notSelectfields = {
-      editHistory: 0,
-      comments: 0,
-      goal: 0,
-      motivation: 0,
-      relevance: 0,
-      budget: 0,
-      plan: 0,
-      subscribers: 0,
-      likes: 0,
-      dislikes: 0
-    }
+    const excludedFields = [
+      '-editHistory', '-comments', '-goal',
+      '-motivation', '-relevance', '-budget', '-plan',
+      '-subscribers', '-likes', '-dislikes', 'updatedAt'
+    ]
 
     const cursor = this.model.getDBInstance()
-      .find(query, notSelectfields)
+      .find(query, excludedFields.join(' '))
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     const totalCursor = this.model.getDBInstance().find(query).count()
@@ -181,7 +174,6 @@ export default class extends Base {
 
     const list = await cursor
     const total = await totalCursor
-
     return {
       list,
       total,
