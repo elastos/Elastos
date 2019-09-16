@@ -10,6 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/utils"
@@ -34,7 +35,7 @@ const (
 	// CRCanceled means the proposal canceled by CRC voting.
 	CRCanceled ProposalStatus = 0x04
 
-	// CRCanceled means the proposal canceled by voters' reject voting.
+	// VoterCanceled means the proposal canceled by voters' reject voting.
 	VoterCanceled ProposalStatus = 0x05
 
 	// Aborted means proposal had been approved by both CR and voters,
@@ -142,15 +143,15 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 	if proposal.VotersRejectAmount >= common.Fixed64(float64(circulation)*
 		p.params.VoterRejectPercentage/100.0) {
 		history.Append(height, func() {
-			proposal.Status = VoterAgreed
+			proposal.Status = VoterCanceled
 		}, func() {
 			proposal.Status = CRAgreed
 		})
 	} else {
 		history.Append(height, func() {
-			proposal.Status = CRAgreed
+			proposal.Status = VoterAgreed
 		}, func() {
-			proposal.Status = VoterCanceled
+			proposal.Status = CRAgreed
 		})
 	}
 }
@@ -163,8 +164,7 @@ func (p *ProposalManager) shouldEndCRCVote(hash common.Uint256,
 	if proposal == nil {
 		return false
 	}
-
-	return proposal.RegisterHeight+p.params.ProposalCRVotingPeriod > height
+	return proposal.RegisterHeight+p.params.ProposalCRVotingPeriod <= height
 }
 
 // shouldEndPublicVote returns if current height should end public vote
@@ -175,8 +175,7 @@ func (p *ProposalManager) shouldEndPublicVote(hash common.Uint256,
 	if proposal == nil {
 		return false
 	}
-
-	return proposal.VoteStartHeight+p.params.ProposalPublicVotingPeriod >
+	return proposal.VoteStartHeight+p.params.ProposalPublicVotingPeriod <=
 		height
 }
 
@@ -184,6 +183,7 @@ func (p *ProposalManager) shouldEndPublicVote(hash common.Uint256,
 func (p *ProposalManager) registerProposal(tx *types.Transaction,
 	height uint32, history *utils.History) {
 	proposal := tx.Payload.(*payload.CRCProposal)
+
 	proposalState := &ProposalState{
 		Status:             Registered,
 		Proposal:           *proposal,
@@ -197,6 +197,33 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		p.Proposals[proposal.Hash()] = proposalState
 	}, func() {
 		delete(p.Proposals, proposal.Hash())
+	})
+}
+
+func getDIDByCode(code []byte) (*common.Uint168, error) {
+	ct1, error := contract.CreateCRDIDContractByCode(code)
+	if error != nil {
+		return nil, error
+	}
+	return ct1.ToProgramHash(), error
+}
+
+// registerProposal will register proposal state in proposal manager
+func (p *ProposalManager) proposalReview(tx *types.Transaction,
+	height uint32, history *utils.History) {
+	proposalReview := tx.Payload.(*payload.CRCProposalReview)
+	proposalState := p.getProposal(proposalReview.ProposalHash)
+	if proposalState == nil {
+		return
+	}
+	did, err := getDIDByCode(proposalReview.Code)
+	if err != nil {
+		return
+	}
+	history.Append(height, func() {
+		proposalState.CRVotes[*did] = proposalReview.VoteResult
+	}, func() {
+		delete(proposalState.CRVotes, *did)
 	})
 }
 
