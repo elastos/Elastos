@@ -13,7 +13,8 @@ export default {
       title: 'Title',
       creator: 'Creator',
       status: 'Status',
-      created: 'Created'
+      created: 'Created',
+      updated: 'Updated',
     },
     abstract: 'Abstract',
     goal: 'Goal',

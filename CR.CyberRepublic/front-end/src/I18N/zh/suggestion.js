@@ -13,7 +13,8 @@ export default {
       title: '标题',
       creator: '创建人',
       status: '状态',
-      created: '创建日期'
+      created: '创建日期',
+      updated: '更新日期',
     },
     abstract: '摘要',
     goal: '目标',
