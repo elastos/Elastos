@@ -445,10 +445,6 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		return errCode
 	}
 
-	if errCode := mp.verifyDuplicateCrcProposalReview(txn); errCode != Success {
-		return errCode
-	}
-
 	return mp.verifyCRRelatedTx(txn)
 }
 
@@ -554,6 +550,16 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 			return ErrCRProcessing
 		}
 		if err := mp.verifyDuplicateCRCProposal(p.DraftHash); err != nil {
+			log.Warn(err)
+			return ErrCRProcessing
+		}
+	case CRCProposalReview:
+		crcProposalReview, ok := txn.Payload.(*payload.CRCProposalReview)
+		if !ok {
+			log.Error("crcProposalReview  payload cast failed, tx:", txn.Hash())
+			return ErrCRProcessing
+		}
+		if err := mp.verifyDuplicateCrcProposalReview(crcProposalReview); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
@@ -717,19 +723,16 @@ func (mp *TxPool) verifyDuplicateCRCProposal(originProposalHash Uint256) error {
 
 	return nil
 }
-func (mp *TxPool) verifyDuplicateCrcProposalReview(txn *Transaction) ErrCode {
-	crcProposalReview, ok := txn.Payload.(*payload.CRCProposalReview)
-	if !ok {
-		return Success
-	}
+func (mp *TxPool) verifyDuplicateCrcProposalReview(crcProposalReview *payload.CRCProposalReview) error {
+
 	key := mp.getCrcProposalReviewKey(crcProposalReview)
-	_, ok = mp.crcProposalReview[key]
+	_, ok := mp.crcProposalReview[key]
 	if ok {
-		return ErrCRProcessing
+		return errors.New("this origin crcProposalReview in being processed")
 	}
 	mp.addCrcProposalReview(key)
 
-	return Success
+	return nil
 }
 
 func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte, crNickname string) error {

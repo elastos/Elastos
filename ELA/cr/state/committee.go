@@ -355,7 +355,7 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	var voteCount int
 	for _, v := range c.manager.Proposals {
 		for did, _ := range v.CRVotes {
-			if member.Info.DID == did {
+			if member.Info.DID.IsEqual(did) {
 				voteCount++
 				break
 			}

@@ -1851,9 +1851,10 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
 	nickName1 := "nickname 1"
 
-	member1 := s.getCRMember(publicKeyStr1, privateKeyStr1, nickName1)
-	s.Chain.crCommittee.Members = []*crstate.CRMember{member1}
+	fmt.Println("getcode ", getCodeHexStr("02e23f70b9b967af35571c32b1442d787c180753bbed5cd6e7d5a5cfe75c7fc1ff"))
 
+	member1 := s.getCRMember(publicKeyStr1, privateKeyStr1, nickName1)
+	s.Chain.crCommittee.Members[member1.Info.DID] = member1
 	// ok
 	txn := s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
 	err := s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)

@@ -703,7 +703,7 @@ func newSettings() *settings {
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.VoterRejectPercentageFlag,
-		DefaultValue: uint32(0),
+		DefaultValue: float64(0),
 		ConfigPath:   "CRConfiguration.VoterRejectPercentage",
 		ParamName:    "VoterRejectPercentage"})
 

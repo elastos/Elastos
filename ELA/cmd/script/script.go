@@ -306,7 +306,6 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "drafthash",
 				Usage: "set the draft proposal hash",
-
 			},
 			cli.StringFlag{
 				Name:  "voteresult, votres",
@@ -315,20 +314,20 @@ func NewCommand() *cli.Command {
 			cli.StringSliceFlag{
 				Name:  "budgets",
 				Usage: "set the budgets",
-				cli.StringFlag{
-					Name:  "proposalhash, prophash",
-					Usage: "set the owner public key",
-				},
-				cli.StringFlag{
-					Name:  "votecontenttype, votconttype",
-					Usage: "set the owner public key",
-				},
 			},
-			Action: scriptAction,
-			OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
-				common.PrintError(c, err, "script")
-				return cli.NewExitError("", 1)
+			cli.StringFlag{
+				Name:  "proposalhash, prophash",
+				Usage: "set the owner public key",
 			},
-		}
+			cli.StringFlag{
+				Name:  "votecontenttype, votconttype",
+				Usage: "set the owner public key",
+			},
+		},
+		Action: scriptAction,
+		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
+			common.PrintError(c, err, "script")
+			return cli.NewExitError("", 1)
+		},
 	}
 }

@@ -5,8 +5,21 @@
 
 local m = require("api")
 
+--local tx_util = dofile("common.lua")
+--local wallet = tx_util.wallet
+local keystore = getWallet()
+local password = getPassword()
+
+if keystore == "" then
+    keystore = "keystore.dat"
+end
+if password == "" then
+    password = "123"
+end
+
+local wallet = client.new(keystore, password, false)
 -- client: path, password, if create
-local wallet = client.new("keystore.dat", "123", false)
+--local wallet = client.new("keystore.dat", "123", false)
 
 -- account
 local addr = wallet:get_address()
