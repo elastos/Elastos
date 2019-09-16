@@ -145,7 +145,7 @@ export default class extends Base {
     const excludedFields = [
       '-editHistory', '-comments', '-goal',
       '-motivation', '-relevance', '-budget', '-plan',
-      '-subscribers', '-likes', '-dislikes', 'updatedAt'
+      '-subscribers', '-likes', '-dislikes', '-updatedAt'
     ]
 
     const cursor = this.model.getDBInstance()
