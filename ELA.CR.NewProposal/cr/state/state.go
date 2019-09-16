@@ -31,6 +31,7 @@ const (
 type State struct {
 	StateKeyFrame
 	manager *ProposalManager
+	processImpeachment func([]*CRMember, common.Fixed64, []byte)
 
 	mtx     sync.RWMutex
 	params  *config.Params
@@ -488,6 +489,10 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 				}, func() {
 					candidate.votes -= v
 				})
+			case outputpayload.CRCImpeachment:
+				// todo
+				//s.processImpeachment()
+
 			}
 		}
 	}

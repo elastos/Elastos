@@ -298,21 +298,26 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 			return errors.New("the output address of vote tx " +
 				"should exist in its input")
 		}
-		payload, ok := o.Payload.(*outputpayload.VoteOutput)
+		votePayload, ok := o.Payload.(*outputpayload.VoteOutput)
 		if !ok {
 			return errors.New("invalid vote output payload")
 		}
-		for _, content := range payload.Contents {
+		for _, content := range votePayload.Contents {
 			switch content.VoteType {
 			case outputpayload.Delegate:
 				err := b.checkVoteProducerContent(
-					content, pds, payload.Version, o.Value)
+					content, pds, votePayload.Version, o.Value)
 				if err != nil {
 					return err
 				}
 			case outputpayload.CRC:
 				err := b.checkVoteCRContent(blockHeight,
-					content, crs, payload.Version, o.Value)
+					content, crs, votePayload.Version, o.Value)
+				if err != nil {
+					return err
+				}
+			case outputpayload.CRCImpeachment:
+				err := b.checkCRImpeachmentContent(blockHeight, content)
 				if err != nil {
 					return err
 				}
@@ -320,6 +325,19 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 		}
 	}
 
+	return nil
+}
+
+func (b *BlockChain) checkCRImpeachmentContent(blockHeight uint32, content outputpayload.VoteContent) error {
+	if b.crCommittee.IsInVotingPeriod(blockHeight) {
+		return errors.New("members cannot be impeached during the voting period")
+	}
+	crMembersMap := getCRMembersMap(b.crCommittee.GetAllMembers())
+	for _, cv := range content.CandidateVotes {
+		if _, ok := crMembersMap[common.BytesToHexString(cv.Candidate)]; !ok {
+			return errors.New("CR sponsor should be one of the CR members")
+		}
+	}
 	return nil
 }
 
@@ -383,6 +401,14 @@ func getCRCodesMap(crs []*crstate.Candidate) map[string]struct{} {
 		codes[common.BytesToHexString(c.Info().Code)] = struct{}{}
 	}
 	return codes
+}
+
+func getCRMembersMap(members []*crstate.CRMember) map[string]struct{} {
+	crMaps := make(map[string]struct{})
+	for _, c := range members {
+		crMaps[common.BytesToHexString(c.Info.Code)] = struct{}{}
+	}
+	return crMaps
 }
 
 func checkDestructionAddress(references map[*Input]*Output) error {
