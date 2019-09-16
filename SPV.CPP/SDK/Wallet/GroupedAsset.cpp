@@ -278,7 +278,7 @@ namespace Elastos {
 				newVoteContent.back().SetAllCandidateVotes(newVoteMaxAmount.getUint64());
 			}
 
-			if (totalInputAmount < newVoteMaxAmount + feeAmount) {
+			if (totalInputAmount < feeAmount || totalInputAmount - feeAmount < newVoteMaxAmount) {
 				BigInt maxAvailable(0);
 				if (totalInputAmount >= feeAmount)
 					maxAvailable = totalInputAmount - feeAmount;
@@ -299,10 +299,8 @@ namespace Elastos {
 
 			assert(oldVoteAmount.size() == oldVoteContent.size());
 			for (size_t i = 0; i < oldVoteAmount.size(); ++i) {
-				if (totalInputAmount >= oldVoteAmount[i] + feeAmount) {
+				if (oldVoteAmount[i] <= newVoteMaxAmount) {
 					newVoteContent.push_back(oldVoteContent[i]);
-					if (totalOutputAmount < oldVoteAmount[i])
-						totalOutputAmount = oldVoteAmount[i];
 				} else {
 					Log::warn("drop old vote content type: {} amount: {}", oldVoteContent[i].GetType(), oldVoteAmount[i].getDec());
 				}
@@ -543,7 +541,7 @@ namespace Elastos {
 			}
 
 			if (txn) {
-				if (totalInputAmount < totalOutputAmount + feeAmount) {
+				if (totalInputAmount < feeAmount || totalInputAmount - feeAmount < totalOutputAmount) {
 					BigInt maxAvailable(0);
 					if (totalInputAmount >= feeAmount)
 						maxAvailable = totalInputAmount - feeAmount;

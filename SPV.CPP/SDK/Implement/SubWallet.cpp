@@ -260,10 +260,11 @@ namespace Elastos {
 
 			bool max = false;
 			BigInt bnAmount;
-			bnAmount.setDec(amount);
-			if (bnAmount == -1) {
+			if (amount == "-1") {
 				max = true;
 				bnAmount = 0;
+			} else {
+				bnAmount.setDec(amount);
 			}
 
 			std::vector<OutputPtr> outputs;

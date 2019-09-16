@@ -357,15 +357,16 @@ namespace Elastos {
 
 			bool max = false;
 			BigInt bgStake;
-			bgStake.setDec(stake);
+			if (stake == "-1") {
+				max = true;
+				bgStake = 0;
+			} else {
+				bgStake.setDec(stake);
+			}
 
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
 			// -1 means max
-			ErrorChecker::CheckParam(bgStake <= 0 && bgStake != -1, Error::Code::VoteStakeError, "Vote stake should not be zero");
-			if (bgStake == -1) {
-				max = true;
-				bgStake = 0;
-			}
+			ErrorChecker::CheckParam(bgStake <= 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
 			VoteContent voteContent(VoteContent::Delegate);
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
