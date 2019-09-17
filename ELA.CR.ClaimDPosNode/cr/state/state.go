@@ -39,6 +39,7 @@ type State struct {
 	tryStartVotingPeriod func(height uint32)
 	processImpeachment   func(height uint32, member []byte, votes common.Fixed64,
 		history *utils.History)
+	getHistoryMember func(code []byte) *CRMember
 
 	mtx     sync.RWMutex
 	params  *config.Params
@@ -53,9 +54,11 @@ func (s *State) SetManager(manager *ProposalManager) {
 // RegisterFunction set the tryStartVotingPeriod and processImpeachment function
 // to change member state.
 func (s *State) RegisterFunction(tryStartVotingPeriod func(height uint32),
-	processImpeachment func(uint32, []byte, common.Fixed64, *utils.History)) {
+	processImpeachment func(uint32, []byte, common.Fixed64, *utils.History),
+	getHistoryMember func(code []byte) *CRMember) {
 	s.tryStartVotingPeriod = tryStartVotingPeriod
 	s.processImpeachment = processImpeachment
+	s.getHistoryMember = getHistoryMember
 }
 
 // GetCandidate returns candidate with specified program code, it will return
@@ -469,7 +472,7 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		inputValue += s.DepositOutputs[input.ReferKey()].Value
 	}
 
-	returnAction := func(candidate *Candidate, originState CandidateState) {
+	returnCandidateAction := func(candidate *Candidate, originState CandidateState) {
 		s.history.Append(height, func() {
 			candidate.depositAmount -= inputValue
 			candidate.state = Returned
@@ -481,9 +484,22 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		})
 	}
 
+	returnMemberAction := func(member *CRMember, originState MemberState) {
+		s.history.Append(height, func() {
+			member.DepositAmount -= inputValue
+			member.MemberState = MemberReturned
+		}, func() {
+			member.DepositAmount += inputValue
+			member.MemberState = originState
+		})
+	}
+
 	for _, program := range tx.Programs {
 		if candidate := s.getCandidate(program.Code); candidate != nil {
-			returnAction(candidate, candidate.state)
+			returnCandidateAction(candidate, candidate.state)
+		}
+		if member := s.getHistoryMember(program.Code); member != nil {
+			returnMemberAction(member, member.MemberState)
 		}
 	}
 }

@@ -15,6 +15,23 @@ import (
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
+// MemberState defines states during a CR member lifetime
+type MemberState byte
+
+const (
+	// Pending indicates the producer is just registered and didn't get 6
+	// confirmations yet.
+
+	// MemberElected indicates the CR member is Elected.
+	MemberElected MemberState = iota
+
+	// MemberImpeached indicates the CR member was impeached.
+	MemberImpeached
+
+	// MemberReturned indicates the CR member has deposit returned.
+	MemberReturned
+)
+
 // CRMember defines CR committee member related info.
 type CRMember struct {
 	Info             payload.CRInfo
@@ -22,12 +39,13 @@ type CRMember struct {
 	DepositAmount    common.Fixed64
 	DepositHash      common.Uint168
 	Penalty          common.Fixed64
-	Impeached        bool
+	MemberState      MemberState
 }
 
 // StateKeyFrame holds necessary state about CR committee.
 type KeyFrame struct {
 	Members               map[common.Uint168]*CRMember
+	HistoryMembers        map[common.Uint168]*CRMember
 	LastCommitteeHeight   uint32
 	LastVotingStartHeight uint32
 	InElectionPeriod      bool
@@ -35,13 +53,13 @@ type KeyFrame struct {
 
 // StateKeyFrame holds necessary state about CR state.
 type StateKeyFrame struct {
-	CodeDIDMap          map[string]common.Uint168
-	PendingCandidates   map[common.Uint168]*Candidate
-	ActivityCandidates  map[common.Uint168]*Candidate
-	CanceledCandidates  map[common.Uint168]*Candidate
-	Nicknames           map[string]struct{}
-	Votes               map[string]*types.Output
-	DepositOutputs      map[string]*types.Output
+	CodeDIDMap         map[string]common.Uint168
+	PendingCandidates  map[common.Uint168]*Candidate
+	ActivityCandidates map[common.Uint168]*Candidate
+	CanceledCandidates map[common.Uint168]*Candidate
+	Nicknames          map[string]struct{}
+	Votes              map[string]*types.Output
+	DepositOutputs     map[string]*types.Output
 }
 
 // ProposalState defines necessary state about an CR proposals.
@@ -112,12 +130,20 @@ func (k *KeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
+	if err = k.serializeMembersMap(w, k.HistoryMembers); err != nil {
+		return
+	}
+
 	return common.WriteElements(w, k.LastCommitteeHeight,
 		k.LastVotingStartHeight, k.InElectionPeriod)
 }
 
 func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
 	if k.Members, err = k.deserializeMembersMap(r); err != nil {
+		return
+	}
+
+	if k.HistoryMembers, err = k.deserializeMembersMap(r); err != nil {
 		return
 	}
 
@@ -176,6 +202,7 @@ func (k *KeyFrame) Snapshot() *KeyFrame {
 func NewKeyFrame() *KeyFrame {
 	return &KeyFrame{
 		Members:             make(map[common.Uint168]*CRMember, 0),
+		HistoryMembers:      make(map[common.Uint168]*CRMember, 0),
 		LastCommitteeHeight: 0,
 	}
 }
@@ -530,13 +557,13 @@ func NewProposalKeyFrame() *ProposalKeyFrame {
 
 func NewStateKeyFrame() *StateKeyFrame {
 	return &StateKeyFrame{
-		CodeDIDMap:          make(map[string]common.Uint168),
-		PendingCandidates:   make(map[common.Uint168]*Candidate),
-		ActivityCandidates:  make(map[common.Uint168]*Candidate),
-		CanceledCandidates:  make(map[common.Uint168]*Candidate),
-		Nicknames:           make(map[string]struct{}),
-		Votes:               make(map[string]*types.Output),
-		DepositOutputs:      make(map[string]*types.Output),
+		CodeDIDMap:         make(map[string]common.Uint168),
+		PendingCandidates:  make(map[common.Uint168]*Candidate),
+		ActivityCandidates: make(map[common.Uint168]*Candidate),
+		CanceledCandidates: make(map[common.Uint168]*Candidate),
+		Nicknames:          make(map[string]struct{}),
+		Votes:              make(map[string]*types.Output),
+		DepositOutputs:     make(map[string]*types.Output),
 	}
 }
 
