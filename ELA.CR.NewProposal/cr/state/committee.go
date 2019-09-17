@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/utils"
 	"sort"
 	"sync"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/utils"
 )
 
 type Committee struct {
@@ -147,47 +147,56 @@ func (c *Committee) recordLastVotingStartHeight(height uint32) {
 	}
 }
 
-func (c *Committee) updateMembers(height uint32) {
+func (c *Committee) tryStartVotingPeriod(height uint32) {
 	if !c.InElectionPeriod {
 		return
 	}
 
-	// Check vote of CRCImpeachment and change the member if in election period.
-	// todo get current circulation by calculation
-	circulation := common.Fixed64(3300 * 10000 * 100000000)
-	changeMembers := make(map[common.Uint168]*CRMember)
-	for k, v := range c.Members {
-		if v.ImpeachmentVotes >= circulation/10 {
-			changeMembers[k] = v
+	lastVotingStartHeight := c.LastVotingStartHeight
+	c.state.history.Append(height, func() {
+		var normalCount uint32
+		for _, m := range c.Members {
+			if !m.Impeached {
+				normalCount++
+			}
 		}
-	}
-
-	if uint32(len(changeMembers)) < c.params.CRAgreementCount {
-		changeMembers = c.Members
-		lastVotingStartHeight := c.LastVotingStartHeight
-
-		c.state.history.Append(height, func() {
+		if normalCount < c.params.CRAgreementCount {
 			c.InElectionPeriod = false
 			c.LastVotingStartHeight = height
-		}, func() {
+		}
+	}, func() {
+		var normalCount uint32
+		for _, m := range c.Members {
+			if !m.Impeached {
+				normalCount++
+			}
+		}
+		if normalCount >= c.params.CRAgreementCount {
 			c.InElectionPeriod = true
 			c.LastVotingStartHeight = lastVotingStartHeight
-		})
-	}
-
-	for _, v := range changeMembers {
-		c.changeToCandidate(height, v)
-	}
+		}
+	})
 }
 
 func (c *Committee) processImpeachment(height uint32, member []byte,
 	votes common.Fixed64, history *utils.History) {
+	// todo get current circulation by calculation
+	circulation := common.Fixed64(3300 * 10000 * 100000000)
 	for _, v := range c.Members {
 		if bytes.Equal(v.Info.Code, member) {
+			penalty := v.Penalty
 			history.Append(height, func() {
 				v.ImpeachmentVotes += votes
+				if v.ImpeachmentVotes >= circulation/10 {
+					v.Impeached = true
+					v.Penalty = c.getMemberPenalty(height, v)
+				}
 			}, func() {
 				v.ImpeachmentVotes -= votes
+				if v.ImpeachmentVotes < circulation/10 {
+					v.Impeached = false
+					v.Penalty = penalty
+				}
 			})
 			return
 		}
@@ -283,7 +292,7 @@ func (c *Committee) generateMember(candidate *Candidate) *CRMember {
 	}
 }
 
-func (c *Committee) changeToCandidate(height uint32, member *CRMember) {
+func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fixed64 {
 	// Calculate penalty by election block count.
 	electionCount := height - c.LastCommitteeHeight
 	electionRate := float64(electionCount) / float64(c.params.CRDutyPeriod)
@@ -294,24 +303,14 @@ func (c *Committee) changeToCandidate(height uint32, member *CRMember) {
 	notVoteProposalPenalty := common.Fixed64(0)
 
 	// Calculate the final penalty.
-	penalty := member.Penalty
-	finalPenalty := penalty + notElectionPenalty + notVoteProposalPenalty
+	finalPenalty := member.Penalty + notElectionPenalty + notVoteProposalPenalty
 
-	c.state.history.Append(height, func() {
-		// Add candidate to impeached candidates map.
-		candidate := c.generateCandidate(height, member)
-		candidate.penalty = finalPenalty
-		c.state.ImpeachedCandidates[member.Info.DID] = candidate
+	log.Infof("member %s impeached, not election penalty: %s,"+
+		"not vote proposal penalty: %s, old penalty: %s, final penalty: %s",
+		member.Info.DID, notElectionPenalty, notVoteProposalPenalty,
+		member.Penalty, finalPenalty)
 
-		// Remove member from members map.
-		delete(c.Members, member.Info.DID)
-	}, func() {
-		// Add member into members map.
-		c.Members[member.Info.DID] = member
-
-		// Remove candidate from impeached candidates map.
-		delete(c.state.ImpeachedCandidates, member.Info.DID)
-	})
+	return finalPenalty
 }
 
 func (c *Committee) generateCandidate(height uint32, member *CRMember) *Candidate {
@@ -350,7 +349,8 @@ func NewCommittee(params *config.Params) *Committee {
 		manager:  NewProposalManager(params),
 	}
 	committee.state.SetManager(committee.manager)
-	committee.state.SetUpdateMembers(committee.updateMembers)
+	committee.state.RegisterFunction(committee.tryStartVotingPeriod,
+		committee.processImpeachment)
 	params.CkpManager.Register(NewCheckpoint(committee))
 	return committee
 }

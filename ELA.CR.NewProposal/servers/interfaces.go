@@ -1608,8 +1608,6 @@ func ListCRCandidates(param Params) map[string]interface{} {
 		candidates = crState.GetCandidates(crstate.Canceled)
 	case "returned":
 		candidates = crState.GetCandidates(crstate.Returned)
-	case "impeached":
-		candidates = crState.GetCandidates(crstate.Impeached)
 	default:
 		candidates = crState.GetCandidates(crstate.Pending)
 		candidates = append(candidates, crState.GetCandidates(crstate.Active)...)
