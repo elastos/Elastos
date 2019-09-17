@@ -55,10 +55,10 @@ class C extends StandardPage {
           elip: { ...elip, status: comment.elipStatus },
           reviews: [...this.state.reviews, comment]
         })
-
-        if (data.status === ELIP_STATUS.DRAFT) {
+        if (comment.elipStatus === ELIP_STATUS.DRAFT) {
           message.info(I18N.get(`elip.msg.approved`))
-        } else {
+        }
+        if (comment.elipStatus === ELIP_STATUS.REJECTED) {
           message.info(I18N.get(`elip.msg.rejected`))
         }
       }
