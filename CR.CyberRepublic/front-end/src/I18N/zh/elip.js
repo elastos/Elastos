@@ -17,7 +17,8 @@ export default {
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
     [ELIP_STATUS.REJECTED]: '已拒绝',
-    [ELIP_STATUS.APPROVED]: '已批准'
+    [ELIP_STATUS.DRAFT]: '草案',
+    [ELIP_STATUS.SUBMITTED]: '已提交'
   },
   show: '展示',
   filter: {
