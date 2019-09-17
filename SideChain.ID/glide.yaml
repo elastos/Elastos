@@ -3,11 +3,11 @@ import:
 - package: github.com/golang/crypto
 - package: github.com/golang/sys
 - package: github.com/elastos/Elastos.ELA
-  version: dev
+  version: v0.3.2.1
 - package: github.com/elastos/Elastos.ELA.SPV
-  version: dev
+  version: v0.0.4.1
 - package: github.com/elastos/Elastos.ELA.SideChain
-  version: dev
+  version: v0.1.5
 - package: github.com/mattn/go-sqlite3
 - package: github.com/btcsuite/btcutil
   subpackages:

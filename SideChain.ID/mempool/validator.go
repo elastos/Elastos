@@ -28,6 +28,17 @@ const (
 	CheckRegisterDIDFuncName = "checkregisterdid"
 	CheckUpdateDIDFuncName   = "checkupdatedid"
 )
+const PrefixCRDID contract.PrefixType = 0x67
+
+func CreateCRDIDContractByCode(code []byte) (*contract.Contract, error) {
+	if len(code) == 0 {
+		return nil, errors.New("code is nil")
+	}
+	return &contract.Contract{
+		Code:   code,
+		Prefix: PrefixCRDID,
+	}, nil
+}
 
 type validator struct {
 	*mempool.Validator
@@ -239,7 +250,7 @@ func getDIDByPublicKey(publicKey []byte) (*common.Uint168, error) {
 }
 
 func getDIDHashByCode(code []byte) (*common.Uint168, error) {
-	ct1, error := contract.CreateCRDIDContractByCode(code)
+	ct1, error := CreateCRDIDContractByCode(code)
 	if error != nil {
 		return nil, error
 	}
