@@ -89,16 +89,13 @@ var didPayloadBytes = []byte(
 
 var didPayloadInfoBytes = []byte(
 	`{
-	"header": {
-		"specification": "elastos/did/1.0",
-		"operation": "create"
-	},
-	"payload": "eyJpZCI6ImRpZDplbGFzdG9zOmlkOVRxdzNmNlRHcnJzTWFaQU5SWTVaREtvWlI4MXF0b1IiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJmMkVDQWJVRXpzZGlkTHd0TlhKclRIczFkQXBVeGNnR1Y3N1lCWFlwQVV0dyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwiZXhwaXJlcyI6IjIwMjQtMTEtMThUMDc6MDA6MDBaIn0",
-	"proof": {
-		"verificationMethod": "#primary",
-		"signature": "8vrtfqfjU4ICEMVclG1KUEb4C1W4hhBnwKazYOYSDkwGF3F92Q6QkIvDjkmMwINqlYLPVXUC1hXsS6DxEDBDlw"
-	}
-	}
+		"header":{"operation":"create","specification":"elastos/did/1.0"},
+		"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmliRjdnTXo1c2FObzM5MlVkN3pTQVZSblFyc0E3cHgydEMiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJyb1FHRWVNdU1LZjdFeUFWa3loZjdxSnN5cmtGVXBUZ296WEQ4VkpoS2hpQyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwiZXhwaXJlcyI6IjIwMjQtMTEtMjVUMDI6MDA6MDBaIn0",
+		"proof":{
+			"signature":"nrbHEEysMLzBR1mMVRjan9yfQtNGmK6Rqy7v9rvUpsJNoIMsY5JtEUiJvW82jW4xNlvOOEDI-VpLK_GCgjoUdQ",
+			"verificationMethod":"#primary"
+			}
+	 }
 `)
 
 func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
@@ -135,7 +132,6 @@ func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 	tx.Payload = info
 	err = s.validator.checkRegisterDID(tx)
 	s.NoError(err)
-
 }
 
 func (s *txValidatorTestSuite) TestGetIDFromUri() {
@@ -168,7 +164,6 @@ func getPayloadCreateDID() *types.PayloadDIDInfo {
 	privateKey1, _ := common.HexStringToBytes(PayloadPrivateKey)
 	sign, _ := crypto.Sign(privateKey1, p.GetData())
 	p.Proof.Signature = base64url.EncodeToString(sign)
-
 	return p
 }
 
