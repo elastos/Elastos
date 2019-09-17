@@ -332,18 +332,29 @@ func newSettings() *settings {
 		ConfigPath:   "MinCrossChainTxFee",
 		ParamName:    "MinCrossChainTxFee"})
 
+	initFoundation := func(addr string, params *config.Params) error {
+		foundation, err := common.Uint168FromAddress(addr)
+		if err != nil {
+			return errors.New("invalid foundation address")
+		}
+		params.Foundation = *foundation
+		params.GenesisBlock = config.GenesisBlock(foundation)
+		return nil
+	}
 	result.Add(&settingItem{
-		Flag:         nil,
+		Flag:         cmdcom.FoundationAddrFlag,
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
-			foundation, err := common.Uint168FromAddress(conf.FoundationAddress)
-			if err != nil {
-				return errors.New("invalid foundation address")
+			return initFoundation(conf.FoundationAddress, params)
+		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			value, ok := i.(string)
+			if !ok {
+				return errors.New("unknown foundation address type")
 			}
-			params.Foundation = *foundation
-			params.GenesisBlock = config.GenesisBlock(foundation)
-			return nil
+			return initFoundation(value, params)
 		},
 		ConfigPath: "FoundationAddress",
 		ParamName:  "Foundation"})

@@ -175,6 +175,10 @@ var (
 		Name:  "instant",
 		Usage: "specify if need to generate instant block",
 	}
+	FoundationAddrFlag = cli.StringFlag{
+		Name:  "foundation",
+		Usage: "specify the foundation address",
+	}
 	PayToAddrFlag = cli.StringFlag{
 		Name:  "paytoaddr",
 		Usage: "specify the miner reward address",
