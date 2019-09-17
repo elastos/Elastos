@@ -129,6 +129,9 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	}
 
 	if c.shouldChange(block.Height) {
+		if c.shouldCleanHistory() {
+			c.HistoryMembers = make(map[common.Uint168]*CRMember)
+		}
 		committeeDIDs, err := c.changeCommitteeMembers(block.Height)
 		if err != nil {
 			log.Error("[ProcessBlock] change committee members error: ", err)
@@ -195,13 +198,15 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 			penalty := v.Penalty
 			history.Append(height, func() {
 				v.ImpeachmentVotes += votes
-				if v.ImpeachmentVotes >= circulation/10 {
+				if v.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
+					c.params.VoterRejectPercentage/100.0) {
 					v.MemberState = MemberImpeached
 					v.Penalty = c.getMemberPenalty(height, v)
 				}
 			}, func() {
 				v.ImpeachmentVotes -= votes
-				if v.ImpeachmentVotes < circulation/10 {
+				if v.ImpeachmentVotes < common.Fixed64(float64(circulation)*
+					c.params.VoterRejectPercentage/100.0) {
 					v.MemberState = MemberElected
 					v.Penalty = penalty
 				}
@@ -265,6 +270,11 @@ func (c *Committee) shouldChange(height uint32) bool {
 	}
 
 	return height == c.LastVotingStartHeight+c.params.CRVotingPeriod
+}
+
+func (c *Committee) shouldCleanHistory() bool {
+	return c.LastVotingStartHeight == c.LastCommitteeHeight+
+		c.params.CRDutyPeriod-c.params.CRVotingPeriod
 }
 
 func (c *Committee) isInVotingPeriod(height uint32) bool {

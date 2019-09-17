@@ -33,8 +33,7 @@ const (
 // to update votes and any other changes about candidates.
 type State struct {
 	StateKeyFrame
-	manager            *ProposalManager
-	processImpeachment func([]*CRMember, common.Fixed64, []byte)
+	manager *ProposalManager
 
 	tryStartVotingPeriod func(height uint32)
 	processImpeachment   func(height uint32, member []byte, votes common.Fixed64,
@@ -606,11 +605,6 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 				v := cv.Votes
 				s.history.Append(height, func() {
 					proposalState.VotersRejectAmount -= v
-					//// todo get current circulation by calculation
-					//circulation := common.Fixed64(3300 * 10000 * 100000000)
-					//if proposalState.VotersRejectAmount > circulation/10 {
-					//	proposalState.Status = VoterCanceled
-					//}
 				}, func() {
 					proposalState.VotersRejectAmount += v
 				})

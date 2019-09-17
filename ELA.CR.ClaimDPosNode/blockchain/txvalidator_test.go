@@ -2133,7 +2133,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	rdTx.Programs[0].Code = code2
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
-	s.EqualError(err, "signer must be CR candidate")
+	s.EqualError(err, "signer must be CR candidate or member")
 
 	// check a return cr deposit coin transaction when not reached the
 	// count of DepositLockupBlocks in voting period.

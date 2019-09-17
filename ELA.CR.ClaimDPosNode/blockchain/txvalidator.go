@@ -320,7 +320,7 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 				}
 			case outputpayload.CRCProposal:
 				err := b.checkVoteCRCProposalContent(blockHeight,
-					content, payload.Version, o.Value)
+					content, votePayload.Version, o.Value)
 				if err != nil {
 					return err
 				}
