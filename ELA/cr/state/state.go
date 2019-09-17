@@ -36,11 +36,13 @@ type State struct {
 	manager            *ProposalManager
 	processImpeachment func([]*CRMember, common.Fixed64, []byte)
 
+	updateMembers      func(height uint32)
+	processImpeachment func(height uint32, member []byte, votes common.Fixed64,
+		history *utils.History)
+
 	mtx     sync.RWMutex
 	params  *config.Params
 	history *utils.History
-
-	updateMembers func(height uint32)
 }
 
 // SetManager set current proposal manager that holds state of proposals.
@@ -51,6 +53,12 @@ func (s *State) SetManager(manager *ProposalManager) {
 // SetUpdateMembers set the function to update CRC members.
 func (s *State) SetUpdateMembers(updateMembers func(height uint32)) {
 	s.updateMembers = updateMembers
+}
+
+// SetProcessImpeachment set the function to process vote CRC impeachment.
+func (s *State) SetProcessImpeachment(
+	processImpeachment func(uint32, []byte, common.Fixed64, *utils.History)) {
+	s.processImpeachment = processImpeachment
 }
 
 // GetCandidate returns candidate with specified program code, it will return
@@ -541,6 +549,8 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 				}, func() {
 					proposalState.VotersRejectAmount -= v
 				})
+			case outputpayload.CRCImpeachment:
+				s.processImpeachment(height, cv.Candidate, cv.Votes, s.history)
 			}
 		}
 	}

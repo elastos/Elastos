@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/utils"
 	"sort"
 	"sync"
 
@@ -176,6 +177,20 @@ func (c *Committee) updateMembers(height uint32) {
 
 	for _, v := range changeMembers {
 		c.changeToCandidate(height, v)
+	}
+}
+
+func (c *Committee) processImpeachment(height uint32, member []byte,
+	votes common.Fixed64, history *utils.History) {
+	for _, v := range c.Members {
+		if bytes.Equal(v.Info.Code, member) {
+			history.Append(height, func() {
+				v.ImpeachmentVotes += votes
+			}, func() {
+				v.ImpeachmentVotes -= votes
+			})
+			return
+		}
 	}
 }
 
