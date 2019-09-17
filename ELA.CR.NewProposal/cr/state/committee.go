@@ -88,6 +88,14 @@ func (c *Committee) GetAllMembers() []*CRMember {
 	return getCRMembers(c.Members)
 }
 
+//get all history CRMembers
+func (c *Committee) GetAllHistoryMembers() []*CRMember {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return getCRMembers(c.HistoryMembers)
+}
+
 func (c *Committee) GetMembersCodes() [][]byte {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -156,7 +164,7 @@ func (c *Committee) tryStartVotingPeriod(height uint32) {
 	c.state.history.Append(height, func() {
 		var normalCount uint32
 		for _, m := range c.Members {
-			if !m.Impeached {
+			if m.MemberState != MemberElected {
 				normalCount++
 			}
 		}
@@ -167,7 +175,7 @@ func (c *Committee) tryStartVotingPeriod(height uint32) {
 	}, func() {
 		var normalCount uint32
 		for _, m := range c.Members {
-			if !m.Impeached {
+			if m.MemberState != MemberElected {
 				normalCount++
 			}
 		}
@@ -188,19 +196,35 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 			history.Append(height, func() {
 				v.ImpeachmentVotes += votes
 				if v.ImpeachmentVotes >= circulation/10 {
-					v.Impeached = true
+					v.MemberState = MemberImpeached
 					v.Penalty = c.getMemberPenalty(height, v)
 				}
 			}, func() {
 				v.ImpeachmentVotes -= votes
 				if v.ImpeachmentVotes < circulation/10 {
-					v.Impeached = false
+					v.MemberState = MemberElected
 					v.Penalty = penalty
 				}
 			})
 			return
 		}
 	}
+}
+
+func (c *Committee) GetHistoryMember(code []byte) *CRMember {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return c.getHistoryMember(code)
+}
+
+func (c *Committee) getHistoryMember(code []byte) *CRMember {
+	for _, m := range c.HistoryMembers {
+		if bytes.Equal(m.Info.Code, code) {
+			return m
+		}
+	}
+	return nil
 }
 
 func (c *Committee) RollbackTo(height uint32) error {
@@ -268,6 +292,12 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 		c.InElectionPeriod = false
 		c.LastVotingStartHeight = height
 		return nil, err
+	}
+
+	// Record history members.
+	for _, m := range c.Members {
+		m.Penalty = c.getMemberPenalty(height, m)
+		c.HistoryMembers[m.Info.DID] = m
 	}
 
 	result := make([]common.Uint168, 0, c.params.CRMemberCount)
@@ -349,8 +379,10 @@ func NewCommittee(params *config.Params) *Committee {
 		manager:  NewProposalManager(params),
 	}
 	committee.state.SetManager(committee.manager)
-	committee.state.RegisterFunction(committee.tryStartVotingPeriod,
-		committee.processImpeachment)
+	committee.state.RegisterFunction(
+		committee.tryStartVotingPeriod,
+		committee.processImpeachment,
+		committee.getHistoryMember)
 	params.CkpManager.Register(NewCheckpoint(committee))
 	return committee
 }
