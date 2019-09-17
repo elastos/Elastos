@@ -36,8 +36,8 @@ type State struct {
 	manager            *ProposalManager
 	processImpeachment func([]*CRMember, common.Fixed64, []byte)
 
-	updateMembers      func(height uint32)
-	processImpeachment func(height uint32, member []byte, votes common.Fixed64,
+	tryStartVotingPeriod func(height uint32)
+	processImpeachment   func(height uint32, member []byte, votes common.Fixed64,
 		history *utils.History)
 
 	mtx     sync.RWMutex
@@ -50,14 +50,11 @@ func (s *State) SetManager(manager *ProposalManager) {
 	s.manager = manager
 }
 
-// SetUpdateMembers set the function to update CRC members.
-func (s *State) SetUpdateMembers(updateMembers func(height uint32)) {
-	s.updateMembers = updateMembers
-}
-
-// SetProcessImpeachment set the function to process vote CRC impeachment.
-func (s *State) SetProcessImpeachment(
+// RegisterFunction set the tryStartVotingPeriod and processImpeachment function
+// to change member state.
+func (s *State) RegisterFunction(tryStartVotingPeriod func(height uint32),
 	processImpeachment func(uint32, []byte, common.Fixed64, *utils.History)) {
+	s.tryStartVotingPeriod = tryStartVotingPeriod
 	s.processImpeachment = processImpeachment
 }
 
@@ -86,7 +83,6 @@ func (s *State) GetAllCandidates() []*Candidate {
 	result = append(result, s.getCandidates(Active)...)
 	result = append(result, s.getCandidates(Canceled)...)
 	result = append(result, s.getCandidates(Returned)...)
-	result = append(result, s.getCandidates(Impeached)...)
 	return result
 }
 
@@ -182,8 +178,8 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	defer s.mtx.Unlock()
 
 	s.processTransactions(block.Transactions, block.Height)
-	if s.updateMembers != nil {
-		s.updateMembers(block.Height)
+	if s.tryStartVotingPeriod != nil {
+		s.tryStartVotingPeriod(block.Height)
 	}
 
 	s.history.Commit(block.Height)
@@ -201,8 +197,8 @@ func (s *State) ProcessElectionBlock(block *types.Block) {
 	if s.manager != nil {
 		s.manager.updateProposals(block.Height, s.history)
 	}
-	if s.updateMembers != nil {
-		s.updateMembers(block.Height)
+	if s.tryStartVotingPeriod != nil {
+		s.tryStartVotingPeriod(block.Height)
 	}
 
 	s.history.Commit(block.Height)
@@ -653,8 +649,6 @@ func (s *State) getCandidates(state CandidateState) []*Candidate {
 			func(candidate *Candidate) bool {
 				return candidate.state == Returned
 			})
-	case Impeached:
-		return s.getCandidateFromMap(s.ImpeachedCandidates, nil)
 	default:
 		return []*Candidate{}
 	}

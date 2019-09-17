@@ -22,6 +22,7 @@ type CRMember struct {
 	DepositAmount    common.Fixed64
 	DepositHash      common.Uint168
 	Penalty          common.Fixed64
+	Impeached        bool
 }
 
 // StateKeyFrame holds necessary state about CR committee.
@@ -38,7 +39,6 @@ type StateKeyFrame struct {
 	PendingCandidates   map[common.Uint168]*Candidate
 	ActivityCandidates  map[common.Uint168]*Candidate
 	CanceledCandidates  map[common.Uint168]*Candidate
-	ImpeachedCandidates map[common.Uint168]*Candidate
 	Nicknames           map[string]struct{}
 	Votes               map[string]*types.Output
 	DepositOutputs      map[string]*types.Output
@@ -534,7 +534,6 @@ func NewStateKeyFrame() *StateKeyFrame {
 		PendingCandidates:   make(map[common.Uint168]*Candidate),
 		ActivityCandidates:  make(map[common.Uint168]*Candidate),
 		CanceledCandidates:  make(map[common.Uint168]*Candidate),
-		ImpeachedCandidates: make(map[common.Uint168]*Candidate),
 		Nicknames:           make(map[string]struct{}),
 		Votes:               make(map[string]*types.Output),
 		DepositOutputs:      make(map[string]*types.Output),

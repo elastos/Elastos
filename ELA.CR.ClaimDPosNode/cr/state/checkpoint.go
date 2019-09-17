@@ -51,8 +51,8 @@ func (c *Checkpoint) OnRollbackTo(height uint32) error {
 		}
 		c.initFromCommittee(committee)
 		c.committee.Recover(c)
-		c.committee.state.SetUpdateMembers(committee.updateMembers)
-		c.committee.state.SetProcessImpeachment(committee.processImpeachment)
+		c.committee.state.RegisterFunction(committee.tryStartVotingPeriod,
+			committee.processImpeachment)
 		return nil
 	}
 	return c.committee.RollbackTo(height)
