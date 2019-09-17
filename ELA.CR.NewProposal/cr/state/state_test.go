@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -338,6 +338,8 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 
 func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	state := NewState(nil)
+	state.RegisterFunction(nil, nil,
+		func(code []byte) *CRMember { return nil })
 	height := uint32(1)
 
 	_, pk, _ := crypto.GenerateKeyPair()
