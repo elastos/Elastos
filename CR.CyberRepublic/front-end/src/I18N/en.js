@@ -1158,7 +1158,7 @@ const en = {
     'Cyber Republic Council Members Proposal Form',
   'from.CVoteForm.proposal.content':
     'Cyber Republic Council members can use this form to propose motion. All Cyber Republic citizen can view and share their own idea (offline). All proposals will be discussed in regular council meetings. All results will be disclosed to the public.',
-  'from.CVoteForm.label.voteStatus': 'Vote Status',
+  'from.CVoteForm.label.voteStatus': 'Status',
   'from.CVoteForm.label.publish': 'Publish',
   'from.CVoteForm.label.title': 'Title',
   'from.CVoteForm.label.type': 'Type',
