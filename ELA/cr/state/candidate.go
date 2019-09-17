@@ -30,9 +30,6 @@ const (
 
 	// Returned indicates the CR has canceled and deposit returned.
 	Returned
-
-	// Impeached indicates the CR has been Impeached.
-	Impeached
 )
 
 // candidateStateStrings is a array of CR states back to their constant
