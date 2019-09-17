@@ -1718,7 +1718,17 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 		// todo get candidate from not voting period state.
 		c := b.crCommittee.GetState().GetCandidateByDID(*programHash)
 		if c == nil {
-			return errors.New("signer must be CR candidate")
+			member := b.crCommittee.GetHistoryMember(program.Code)
+			if member == nil {
+				return errors.New("signer must be CR candidate or member")
+			}
+
+			if member.MemberState == crstate.MemberReturned {
+				return errors.New("member is returned before")
+			}
+
+			penalty += member.Penalty
+			continue
 		}
 
 		if isInVotingPeriod(currentHeight) {
