@@ -329,9 +329,6 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 }
 
 func (b *BlockChain) checkCRImpeachmentContent(blockHeight uint32, content outputpayload.VoteContent) error {
-	if b.crCommittee.IsInVotingPeriod(blockHeight) {
-		return errors.New("members cannot be impeached during the voting period")
-	}
 	crMembersMap := getCRMembersMap(b.crCommittee.GetAllMembers())
 	for _, cv := range content.CandidateVotes {
 		if _, ok := crMembersMap[common.BytesToHexString(cv.Candidate)]; !ok {
