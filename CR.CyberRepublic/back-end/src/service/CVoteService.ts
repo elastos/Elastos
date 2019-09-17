@@ -67,7 +67,7 @@ export default class extends Base {
       status: constant.CVOTE_STATUS.PROPOSED,
       published: true,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
-      proposedBy: `${_.get(creator, 'profile.firstName')} ${_.get(creator, 'profile.lastName')}`,
+      proposedBy: userUtil.formatUsername(creator),
       proposer: suggestion.createdBy,
       createdBy: this.currentUser._id,
       reference: suggestionId
