@@ -298,7 +298,7 @@ const Status = styled.div`
       case ELIP_STATUS.DRAFT:
         return '#008d85'
       case ELIP_STATUS.SUBMITTED:
-        return '#1de9b6'
+        return '#008d85'
       default:
         return '#f2f6fb'
     }
