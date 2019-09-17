@@ -123,13 +123,11 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<Object> {
-
     const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded', 'referenceStatus'])
     const { sortBy, sortOrder, tagsIncluded, referenceStatus } = param
     let qryTagsType: any
 
     query.$or = []
-
     if (!_.isEmpty(tagsIncluded)) {
       qryTagsType = { $in: tagsIncluded.split(',') }
       query.$or.push({'tags.type': qryTagsType})
@@ -148,22 +146,25 @@ export default class extends Base {
       '-subscribers', '-likes', '-dislikes', '-updatedAt'
     ]
 
-    const cursor = this.model.getDBInstance()
-      .find(query, excludedFields.join(' '))
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
-      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-    const totalCursor = this.model.getDBInstance().find(query).count()
-
+    const sortObject = {}
+    let cursor: any
     if (sortBy) {
-      const sortObject = {}
-
       // hack to prioritize descUpdatedAt if it's createdAt
       if (sortBy === 'createdAt') {
         sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
       }
-
       sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
-      cursor.sort(sortObject)
+
+      cursor = this.model.getDBInstance()
+        .find(query, excludedFields.join(' '))
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .sort(sortObject)
+    } else {
+      cursor = this.model.getDBInstance()
+        .find(query)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
     if (param.results) {
@@ -172,11 +173,14 @@ export default class extends Base {
       cursor.skip(results * (page - 1)).limit(results)
     }
 
-    const list = await cursor
-    const total = await totalCursor
+    const rs = await Promise.all([
+      cursor,
+      this.model.getDBInstance().find(query).count()
+    ])
+
     return {
-      list,
-      total,
+      list: rs[0],
+      total: rs[1]
     }
   }
 
