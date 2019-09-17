@@ -40,11 +40,28 @@ type Client struct {
 }
 
 func Create(path string, password []byte) (*Client, error) {
+	return createClient(path, password, func(cl *Client) (*Account, error) {
+		return cl.CreateAccount()
+	})
+}
+
+func CreateFromAccount(path string, password []byte,
+	account *Account) (*Client, error) {
+	return createClient(path, password, func(cl *Client) (*Account, error) {
+		if err := cl.SaveAccount(account); err != nil {
+			return nil, err
+		}
+		return account, nil
+	})
+}
+
+func createClient(path string, password []byte,
+	accountOp func(*Client) (*Account, error)) (*Client, error) {
 	client := NewClient(path, password, true)
 	if client == nil {
 		return nil, errors.New("create account failed")
 	}
-	account, err := client.CreateAccount()
+	account, err := accountOp(client)
 	if err != nil {
 		return nil, err
 	}
