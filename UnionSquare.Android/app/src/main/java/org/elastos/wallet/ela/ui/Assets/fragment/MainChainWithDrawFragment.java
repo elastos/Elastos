@@ -10,8 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -26,7 +24,6 @@ import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.SideChainPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
@@ -42,11 +39,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.math.BigDecimal;
-
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class MainChainWithDrawFragment extends BaseFragment implements CommonBalanceViewData, CommmonBooleanViewData, CommmonStringWithMethNameViewData {
     @BindView(R.id.tv_title)
@@ -133,7 +127,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             });
 
         }
-        if ( integer == RxEnum.TOSIGN.ordinal()) {
+        if (integer == RxEnum.TOSIGN.ordinal()) {
             //生成待签名交易
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
@@ -141,7 +135,8 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             bundle.putParcelable("wallet", wallet);
             start(SignFragment.class, bundle);
 
-        } if ( integer == RxEnum.SIGNSUCCESS.ordinal()) {
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
             //签名成功
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
@@ -170,7 +165,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
                     QrBean qrBean = JSON.parseObject(result, QrBean.class);
                     int type = qrBean.getExtra().getType();
                     if (type == Constant.TRANSFER) {
-                        address =qrBean.getData();
+                        address = qrBean.getData();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

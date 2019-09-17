@@ -1,6 +1,5 @@
 package org.elastos.wallet.ela.ui.Assets.presenter;
 
-import org.elastos.wallet.core.SubWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;

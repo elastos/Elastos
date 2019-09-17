@@ -47,33 +47,8 @@
         <View style="@style/line1" />
 
 
-        <EditText
-            android:id="@+id/et_walletkey"
-            android:layout_width="match_parent"
-            android:layout_height="53dp"
-            android:background="@null"
-            android:hint="@string/walletkey"
-            android:inputType="text"
-            android:maxLines="1"
-            android:visibility="gone" />
 
-        <!--<View-->
-        <!--style="@style/line1"-->
-        <!--android:visibility="gone" />-->
 
-        <EditText
-            android:id="@+id/et_net"
-            android:layout_width="match_parent"
-            android:layout_height="53dp"
-            android:background="@null"
-            android:hint="@string/network_address"
-            android:inputType="text"
-            android:maxLines="1"
-            android:visibility="gone" />
-
-        <View
-            style="@style/line1"
-            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/ll_area"

@@ -45,6 +45,7 @@ import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -115,6 +116,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     NodeCartPresenter presenter = new NodeCartPresenter();
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
     int curentPage = 0;//0 首页 1已选择 2未选择
+    private String maxBalance = "0";
 
 
     @Override
@@ -394,8 +396,8 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     @Override
     public void onBalance(BalanceEntity data) {
         Intent intent = new Intent(getContext(), VoteActivity.class);
-        KLog.a(data.getBalance());
-        intent.putExtra("fee", data.getBalance());
+        maxBalance = data.getBalance();
+        intent.putExtra("maxBalance", data.getBalance());
         startActivity(intent);
     }
 
@@ -406,9 +408,14 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         int integer = result.getCode();
         if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
             num = result.getName();
-            //  KeyboardUtils.showSoftInput(getBaseActivity());
+            String amount ;
+            if ("MAX".equals(num)) {
+                amount = "-1";
+            }else {
+                amount=Arith.mul(num, MyWallet.RATE_S).toPlainString();
+            }
             presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
-                    Arith.mul(num, MyWallet.RATE_S).toPlainString(), String.valueOf(JSONArray.parseArray(JSON.toJSONString(nodelist))), "", true, this);
+                    amount, String.valueOf(JSONArray.parseArray(JSON.toJSONString(nodelist))), "", true, this);
 
         }
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
@@ -451,6 +458,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             case "createVoteProducerTransaction":
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("amount", num);
+                intent.putExtra("maxBalance", maxBalance);
                 intent.putExtra("toAddress", "");
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.ELA);

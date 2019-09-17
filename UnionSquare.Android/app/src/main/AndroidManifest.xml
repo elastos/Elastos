@@ -86,6 +86,8 @@
 
         <activity
             android:name="org.elastos.wallet.ela.ui.vote.activity.VoteActivity"
+            android:theme="@style/App" />  <activity
+            android:name="org.elastos.wallet.ela.ui.vote.activity.OtherPwdActivity"
             android:theme="@style/App" />
 
        <!-- <provider

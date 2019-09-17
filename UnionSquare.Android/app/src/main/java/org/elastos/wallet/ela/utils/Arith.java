@@ -38,6 +38,10 @@ public class Arith {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
         return b1.subtract(b2);
+    }public static BigDecimal sub(String v1, long v2) {
+        BigDecimal b1 = new BigDecimal(v1);
+        BigDecimal b2 = new BigDecimal(v2);
+        return b1.subtract(b2);
     }
 
     public static BigDecimal sub(BigDecimal b1, String v2) {

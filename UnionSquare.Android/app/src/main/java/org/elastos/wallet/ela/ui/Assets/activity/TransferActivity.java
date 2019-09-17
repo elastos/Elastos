@@ -23,6 +23,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 
@@ -68,7 +70,8 @@ public class TransferActivity extends BaseActivity {
     protected void setExtraData(Intent data) {
 
         chainId = data.getStringExtra("chainId");
-        amount = data.getStringExtra("amount");
+
+
         toAddress = data.getStringExtra("toAddress");
         attributes = data.getStringExtra("attributes");
 
@@ -82,6 +85,11 @@ public class TransferActivity extends BaseActivity {
         } catch (JSONException e) {
             e.printStackTrace();
             fee = MyWallet.feePerKb;
+        }
+        amount = data.getStringExtra("amount");
+        if ("MAX".equals(amount)) {
+            String maxBalance = data.getStringExtra("maxBalance");
+            amount = NumberiUtil.maxNumberFormat(Arith.sub(maxBalance, fee).divide(new BigDecimal(MyWallet.RATE_S)), 12);
         }
         wallet = data.getParcelableExtra("wallet");
         tvAddress.setText(toAddress);

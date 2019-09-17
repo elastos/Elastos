@@ -74,4 +74,29 @@ public class PwdPresenter extends PresenterAbstract {
     }
 
 
+    //验证交易
+    public void generateProducerPayload(String masterWalletID, String chainID, String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd
+            , BaseActivity baseActivity) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class,baseActivity);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getWallet().generateProducerPayload(masterWalletID, chainID, publicKey, nodePublicKey, nickName, url, IPAddress, location, payPasswd);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+    //创建交易
+    public void createRegisterProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO
+            , BaseActivity baseActivity) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class,baseActivity);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getWallet().createRegisterProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson, amount, memo, useVotedUTXO);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
 }
