@@ -1,4 +1,4 @@
-package org.elastos.wallet.ela.ui.vote.SuperNodeList;
+package org.elastos.wallet.ela.ui.vote;
 
 
 import android.content.Intent;
@@ -35,6 +35,8 @@ import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VotelistViewData;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.NodeInformation.NodeInformationFragment;
+import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListAdapter;
+import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListAdapter1;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.ui.vote.myVote.MyVoteFragment;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpForFragment;
@@ -165,13 +167,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
-    public static SuperNodeListFragment newInstance() {
-        Bundle args = new Bundle();
-        SuperNodeListFragment fragment = new SuperNodeListFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
         Bundle bundle = new Bundle();
@@ -186,12 +181,12 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     boolean is = false;//是否有自已的选举
 
 
-    private void setRecyclerview(boolean is) {
+    private void setRecyclerview(boolean is, int pos) {
         if (adapter == null) {
             recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 3));
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
             recyclerview.addItemDecoration(decoration);
-            adapter = new SuperNodeListAdapter(this, netList, is);
+            adapter = new SuperNodeListAdapter(this, netList, is, pos);
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
         } else {
@@ -199,10 +194,10 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
-    private void setRecyclerview1(boolean is) {
+    private void setRecyclerview1(boolean is, int pos) {
         if (adapter1 == null) {
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
-            adapter1 = new SuperNodeListAdapter1(this, netList, is);
+            adapter1 = new SuperNodeListAdapter1(this, netList, is, pos);
             adapter1.setOnItemClickListener(this);
             recyclerview1.setAdapter(adapter1);
         } else {
@@ -220,22 +215,28 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             case "getPublicKeyForVote":
                 publicKey = data;
                 //有自已的投票就排第一
-                if (netList != null) {
-
-                    for (int i = 0; i < netList.size(); i++) {
-                        if (netList.get(i).getOwnerpublickey().equals(data)) {
-                            VoteListBean.DataBean.ResultBean.ProducersBean temp = netList.get(i);
-                            netList.remove(i);
-                            netList.add(0, temp);
-                            is = true;
-                        }
-                    }
-
-                }
-                setRecyclerview(is);
-                setRecyclerview1(is);
+                onGetPk(data);
                 break;
         }
+    }
+
+    private void onGetPk(String data) {
+        int pos = -1;
+        if (netList != null) {
+
+            for (int i = 0; i < netList.size(); i++) {
+                if (netList.get(i).getOwnerpublickey().equals(data)) {
+                    VoteListBean.DataBean.ResultBean.ProducersBean temp = netList.get(i);
+                    netList.remove(i);
+                    pos = i;
+                    netList.add(0, temp);
+                    is = true;
+                }
+            }
+
+        }
+        setRecyclerview(is, pos);
+        setRecyclerview1(is, pos);
     }
 
     @Override
@@ -254,12 +255,14 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         //0 普通单签 1单签只读 2普通多签 3多签只读
         if (wallet.getType() == 0 || wallet.getType() == 1) {
             //获取公钥
-            if (TextUtils.isEmpty(publicKey))
+            if (TextUtils.isEmpty(publicKey)) {
                 signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
-
+            } else {
+                onGetPk(publicKey);
+            }
         } else {
-            setRecyclerview(is);
-            setRecyclerview1(is);
+            setRecyclerview(is, -1);
+            setRecyclerview1(is, -1);
         }
 
 

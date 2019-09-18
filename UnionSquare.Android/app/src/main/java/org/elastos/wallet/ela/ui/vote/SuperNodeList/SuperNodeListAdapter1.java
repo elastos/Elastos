@@ -28,12 +28,14 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
     private Map<String, String> map;
 
     private boolean is;
+    private int pos;
 
-    public SuperNodeListAdapter1(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, boolean is) {
+    public SuperNodeListAdapter1(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, boolean is, int pos) {
         super(R.layout.item_super_node_list1, data);
         this.context = context;
 
         this.is = is;
+        this.pos = pos;
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle)
                 .placeholder(R.mipmap.found_vote_initial_circle).circleCrop();
         if (map == null) {
@@ -47,10 +49,20 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
 
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
-        if (is&&0 == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll, Color.parseColor("#307CA2"));
+        if (is) {
+            if (0 == helper.getLayoutPosition()) {
+                helper.setBackgroundColor(R.id.ll, Color.parseColor("#307CA2"));
+                helper.setText(R.id.tv_rank, "" + (pos + 1));
+            } else if (helper.getLayoutPosition() <= pos) {
+                helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition()));
+            } else {
+                helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition() + 1));
+            }
+        } else {
+            helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition() + 1));
         }
-        helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition() + 1));
+
+
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
         helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");

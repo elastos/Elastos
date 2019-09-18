@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--<string name="app_name" translatable="false">Elastos</string>-->
     <!-- 状态视图  -->
-    <item name="error_tag_empty" type="id"/>
+    <item name="error_tag_empty" type="id" />
     <string name="loading" translatable="false">加载中...</string>
     <string name="text_empty" translatable="false">还没有数据呢！</string>
     <string name="text_nonet" translatable="false">网络异常！</string>
@@ -433,5 +433,6 @@
     <string name="crcvote">CRC委员选举</string>
     <string name="deleteanywal">直接删除</string>
     <string name="verifymneminicpwd">验证助记词密码</string>
+    <string name="mine">我的</string>
 
 </resources>

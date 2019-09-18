@@ -428,4 +428,5 @@
     <string name="crcvote">CRC委员选举</string>
     <string name="deleteanywal">直接删除</string>
     <string name="verifymneminicpwd">验证助记词密码</string>
+    <string name="mine">我的</string>
 </resources>

@@ -6,14 +6,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.find.FindListRecAdapter;
-import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListFragment;
+import org.elastos.wallet.ela.ui.vote.SuperNodeListFragment;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
