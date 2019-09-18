@@ -23,9 +23,9 @@ export default {
   show: '展示',
   filter: {
     [ELIP_FILTER.ALL]: '全部',
-    [ELIP_FILTER.APPROVED]: '已批准',
+    [ELIP_FILTER.DRAFT]: '草案',
     [ELIP_FILTER.WAIT_FOR_REVIEW]: '等待审核',
-    [ELIP_FILTER.SUBMITTED_BY_ME]: '已提交的'
+    [ELIP_FILTER.SUBMITTED_BY_ME]: '我提交的'
   },
   button: {
     add: '添加 ELIP',

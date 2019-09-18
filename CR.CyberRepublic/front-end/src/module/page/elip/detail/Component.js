@@ -89,9 +89,9 @@ class C extends StandardPage {
         <BackLink link="/elips" />
         <Container>
           <h2 className="komu-a cr-title-with-icon">ELIP #{elip.vid}</h2>
-          <Label>Status</Label>
+          <Label>{I18N.get('elip.fields.status')}</Label>
           <Status status={elip.status}>
-            {elip.status.split('_').join(' ')}
+            {I18N.get(`elip.status.${elip.status}`)}
           </Status>
           {this.renderUpdateStatusButton()}
           <Row>
