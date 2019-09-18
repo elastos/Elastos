@@ -82,3 +82,16 @@ ExternalProject_Add(
 if(ENABLE_STATIC)
     export_static_library(curl)
 endif()
+
+set(CURL_DEPS
+    curl
+    z)
+if(WIN32)
+    set(CURL_DEPS ${CURL_DEPS} Ws2_32 Iphlpapi)
+endif()
+
+add_library(libcurl INTERFACE)
+target_link_libraries(libcurl INTERFACE ${CURL_DEPS})
+if(WIN32)
+    target_compile_definitions(libcurl INTERFACE CURL_STATICLIB)
+endif()

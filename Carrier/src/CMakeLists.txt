@@ -3,7 +3,8 @@ set(ELACARRIER_DEPENDS
     toxcore0
     libsodium
     flatcc
-    Elastos.NET.Hive.Native.SDK)
+    cJSON
+    curl)
 
 set(ELASESSION_DEPENDS
     libcrystal

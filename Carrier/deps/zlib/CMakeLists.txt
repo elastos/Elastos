@@ -21,12 +21,15 @@ ExternalProject_Add(
         ${CMAKE_ARGS_INIT}
 )
 
-if(ENABLE_STATIC)
-    if(WIN32)
-        set(_LIBNAME zlib1)
-    else()
-        set(_LIBNAME z)
-    endif()
+if(WIN32)
+    ExternalProject_Add_Step(
+        zlib post-install
+        DEPENDEES install
+        WORKING_DIRECTORY "${CARRIER_INT_DIST_DIR}/lib"
+        COMMAND ${CMAKE_COMMAND} -E rename zlib1.lib z.lib
+    )
+endif()
 
-    export_static_library(${_LIBNAME})
+if(ENABLE_STATIC)
+    export_static_library(z)
 endif()

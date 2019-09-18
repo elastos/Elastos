@@ -49,12 +49,19 @@ if(HAVE_SYS_TIME_H)
     add_definitions(-DHAVE_SYS_TIME_H=1)
 endif()
 
+check_include_file(sys/param.h HAVE_SYS_PARAM_H)
+if(HAVE_SYS_PARAM_H)
+    add_definitions(-DHAVE_SYS_PARAM_H=1)
+endif()
+
 configure_file(
     version.h.in
     version.h
     "@ONLY")
 
 set(SRC
+    dstore/dstore.c
+    dstore/http_client.c
     dht/dht.c
     elacp.c
     ela_carrier.c
@@ -83,6 +90,7 @@ endif()
 include_directories(
     .
     dht
+    dstore
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CARRIER_INT_DIST_DIR}/include)
 
@@ -100,7 +108,8 @@ if(WIN32)
 endif()
 
 set(LIBS
-    hive
+    cjson
+    libcurl
     crystal
     toxcore
     flatccrt)

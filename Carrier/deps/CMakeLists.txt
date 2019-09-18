@@ -13,12 +13,12 @@ add_submodule(pjsip
     DEPENDS platform-specific)
 add_submodule(CUnit
     DEPENDS platform-specific)
-add_submodule(zlib 
+add_submodule(zlib
     DEPENDS platform-specific)
 add_submodule(curl
     DEPENDS platform-specific zlib)
-add_submodule(Elastos.NET.Hive.Native.SDK
-    DEPENDS platform-specific curl)
+add_submodule(cJSON
+    DEPENDS platform-specific)
 
 if(WIN32)
     add_submodule(PDCurses
