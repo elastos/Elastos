@@ -270,7 +270,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
 			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
 		if err != nil {
-			log.Warn("[checkVoteOutputs]", err)
+			log.Warn("[CheckVoteOutputs]", err)
 			return ErrInvalidOutput
 		}
 	}
