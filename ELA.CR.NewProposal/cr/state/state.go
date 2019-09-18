@@ -180,10 +180,12 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	defer s.mtx.Unlock()
 
 	s.processTransactions(block.Transactions, block.Height)
+	if s.manager != nil {
+		s.manager.updateProposals(block.Height, s.history)
+	}
 	if s.tryStartVotingPeriod != nil {
 		s.tryStartVotingPeriod(block.Height)
 	}
-
 	s.history.Commit(block.Height)
 }
 
@@ -309,9 +311,6 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 		}
 	}
 
-	if s.manager != nil {
-		s.manager.updateProposals(height, s.history)
-	}
 	s.processCancelVotes(tx, height)
 }
 
