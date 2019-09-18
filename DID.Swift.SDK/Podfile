@@ -5,7 +5,8 @@ target 'ElastosDIDSDK' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
 
-  # Pods for ElastosDIDSDK
-	pod 'Antlr4', :git => "https://github.com/ahl0107/testsdk.git"
+pod 'CryptoSwift'
+pod 'BitcoinKit'
+
 
 end

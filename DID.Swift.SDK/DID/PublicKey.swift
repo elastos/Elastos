@@ -18,4 +18,5 @@ public class PublicKey: DIDObject {
         let keyBase58: String = try JsonHelper.getString(dic, Constants.publicKeyBase58, false, nil, "publicKeyBase58")
         return PublicKey(id, type, controller, keyBase58)
     }
+    
 }

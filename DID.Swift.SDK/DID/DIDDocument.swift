@@ -3,7 +3,7 @@
 import Foundation
 
 public class DIDDocument: NSObject {
-    private var subject: DID?
+    public var subject: DID?
     private var publicKeys: Dictionary<DIDURL, PublicKey> = [: ]
     private var authentications: Dictionary<DIDURL, PublicKey> = [: ]
     private var authorizations: Dictionary<DIDURL, PublicKey> = [: ]
@@ -130,6 +130,14 @@ public class DIDDocument: NSObject {
         if readonly { return false }
         let pk = try getPublicKey(id)
         return addAuthenticationKey(pk)
+    }
+
+    func addAuthenticationKey(_ pk: PublicKey) -> Bool {
+        if readonly { return false }
+        // Check the controller is current DID subject
+        if !((pk.controller?.isEqual(subject))!) { return false }
+        authentications[pk.id] = pk
+        return true
     }
 
     public func getAuthorizationKeyCount() -> Int {
@@ -371,18 +379,6 @@ public class DIDDocument: NSObject {
         guard pk.controller != nil else { return false }
         if (pk.controller?.isEqual(subject))! { return false }
         authorizations[pk.id] = pk
-        return true
-    }
-
-    private func addAuthenticationKey(_ pk: PublicKey) -> Bool {
-        if readonly { return false }
-        // Check the controller is current DID subject
-        if !(pk.controller?.isEqual(subject))! {
-            return false
-        }
-
-        // TODO: DIDURLComparator
-        authentications[pk.id] = pk
         return true
     }
 

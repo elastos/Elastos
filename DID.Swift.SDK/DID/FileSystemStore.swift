@@ -136,7 +136,7 @@ class FileSystemStore: DIDStore {
 
     }
 
-    override public func storeDid(_ doc: DIDDocument ,_ hint: String ) throws {
+    override public func storeDid(_ doc: DIDDocument ,_ hint: String?) throws {
 
     }
 
@@ -165,21 +165,17 @@ class FileSystemStore: DIDStore {
     }
 
 
-    override public func storeCredential(_ credential: VerifiableCredential , _ hint: String) throws {
+    override public func storeCredential(_ credential: VerifiableCredential , _ hint: String?) throws {
 
     }
 
     // TODO: override loadCredential
 
-    override func containsCredentials(_ did: String) throws -> Bool {
+    override func containsCredentials(_ did: DID) throws -> Bool {
         return false
     }
 
     override func containsCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
-        return false
-    }
-
-    override func containsCredential(_ did: String, _ id: String) throws -> Bool {
         return false
     }
 

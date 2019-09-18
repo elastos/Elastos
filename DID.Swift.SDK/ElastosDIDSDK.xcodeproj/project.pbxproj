@@ -25,6 +25,9 @@
 		1109D091232DD29300A03D56 /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D090232DD29300A03D56 /* EmbeddedCredential.swift */; };
 		1109D093232DDCB200A03D56 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D092232DDCB200A03D56 /* HDKey.swift */; };
 		1109D095232DFFA500A03D56 /* JsonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1109D094232DFFA500A03D56 /* JsonHelper.swift */; };
+		112CC0E92331DB3F0018F76C /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112CC0E82331DB3F0018F76C /* DerivedKey.swift */; };
+		112CC0EB233218580018F76C /* DIDBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112CC0EA233218580018F76C /* DIDBackend.swift */; };
+		112CC0ED233218DB0018F76C /* IDChainRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112CC0EC233218DB0018F76C /* IDChainRequest.swift */; };
 		11F262AF23260CF40009C103 /* Elastos_DID_Swift_SDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		11F262B823260D720009C103 /* Issuer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262B723260D720009C103 /* Issuer.swift */; };
 		11F262BA23260D940009C103 /* VerifiableCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262B923260D940009C103 /* VerifiableCredential.swift */; };
@@ -43,6 +46,8 @@
 		11F262D623260EED0009C103 /* MalformedDIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262D523260EED0009C103 /* MalformedDIDError.swift */; };
 		11F262D823260F020009C103 /* MalformedDIDURLError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262D723260F020009C103 /* MalformedDIDURLError.swift */; };
 		11F262DA23260F250009C103 /* MalformedDocumentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262D923260F250009C103 /* MalformedDocumentError.swift */; };
+		11F4BA5A232FDAA3002B3789 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F4BA59232FDAA3002B3789 /* File.swift */; };
+		482E9CB38CF9CA94CA9835D9 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA66B79A5B85BAAA6125A591 /* Pods_ElastosDIDSDK.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +69,9 @@
 		1109D090232DD29300A03D56 /* EmbeddedCredential.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedCredential.swift; sourceTree = "<group>"; };
 		1109D092232DDCB200A03D56 /* HDKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDKey.swift; sourceTree = "<group>"; };
 		1109D094232DFFA500A03D56 /* JsonHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonHelper.swift; sourceTree = "<group>"; };
+		112CC0E82331DB3F0018F76C /* DerivedKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
+		112CC0EA233218580018F76C /* DIDBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDBackend.swift; sourceTree = "<group>"; };
+		112CC0EC233218DB0018F76C /* IDChainRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDChainRequest.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Elastos_DID_Swift_SDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -84,6 +92,10 @@
 		11F262D523260EED0009C103 /* MalformedDIDError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MalformedDIDError.swift; sourceTree = "<group>"; };
 		11F262D723260F020009C103 /* MalformedDIDURLError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MalformedDIDURLError.swift; sourceTree = "<group>"; };
 		11F262D923260F250009C103 /* MalformedDocumentError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MalformedDocumentError.swift; sourceTree = "<group>"; };
+		11F4BA59232FDAA3002B3789 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		6C87FA92C32DB051F702DF46 /* Pods-ElastosDIDSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.release.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.release.xcconfig"; sourceTree = "<group>"; };
+		95AE00C67F97E91E9B8763C0 /* Pods-ElastosDIDSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.debug.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.debug.xcconfig"; sourceTree = "<group>"; };
+		CA66B79A5B85BAAA6125A591 /* Pods_ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +104,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1109D08923275DE000A03D56 /* Antlr4.framework in Frameworks */,
+				482E9CB38CF9CA94CA9835D9 /* Pods_ElastosDIDSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,16 +130,10 @@
 			path = Parser;
 			sourceTree = "<group>";
 		};
-		1109D08623275D2700A03D56 /* Framework */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Framework;
-			sourceTree = SOURCE_ROOT;
-		};
 		1109D08723275DC600A03D56 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CA66B79A5B85BAAA6125A591 /* Pods_ElastosDIDSDK.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -138,6 +145,7 @@
 				11F262AC23260CF40009C103 /* ElastosDIDSDK */,
 				11F262AB23260CF40009C103 /* Products */,
 				1109D08723275DC600A03D56 /* Frameworks */,
+				FD074BC0D415E85B37CD7DAB /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -152,10 +160,10 @@
 		11F262AC23260CF40009C103 /* ElastosDIDSDK */ = {
 			isa = PBXGroup;
 			children = (
-				1109D08623275D2700A03D56 /* Framework */,
 				11F262B523260D550009C103 /* Credential */,
 				11F262B623260D550009C103 /* DID */,
 				11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */,
+				11F4BA59232FDAA3002B3789 /* File.swift */,
 				11F262AE23260CF40009C103 /* Info.plist */,
 			);
 			path = ElastosDIDSDK;
@@ -201,6 +209,8 @@
 		11F262BB23260DFD0009C103 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				112CC0EA233218580018F76C /* DIDBackend.swift */,
+				112CC0EC233218DB0018F76C /* IDChainRequest.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -209,9 +219,19 @@
 			isa = PBXGroup;
 			children = (
 				1109D092232DDCB200A03D56 /* HDKey.swift */,
+				112CC0E82331DB3F0018F76C /* DerivedKey.swift */,
 				1109D094232DFFA500A03D56 /* JsonHelper.swift */,
 			);
 			path = Util;
+			sourceTree = "<group>";
+		};
+		FD074BC0D415E85B37CD7DAB /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				95AE00C67F97E91E9B8763C0 /* Pods-ElastosDIDSDK.debug.xcconfig */,
+				6C87FA92C32DB051F702DF46 /* Pods-ElastosDIDSDK.release.xcconfig */,
+			);
+			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -232,6 +252,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "ElastosDIDSDK" */;
 			buildPhases = (
+				FAD629132AAF3019496EDED5 /* [CP] Check Pods Manifest.lock */,
 				11F262A523260CF40009C103 /* Headers */,
 				11F262A623260CF40009C103 /* Sources */,
 				11F262A723260CF40009C103 /* Frameworks */,
@@ -293,6 +314,31 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		FAD629132AAF3019496EDED5 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ElastosDIDSDK-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		11F262A623260CF40009C103 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -302,6 +348,8 @@
 				11F262CC23260E7E0009C103 /* PublicKey.swift in Sources */,
 				1109D08B23275E7B00A03D56 /* ParserHelper.swift in Sources */,
 				11F262B823260D720009C103 /* Issuer.swift in Sources */,
+				112CC0ED233218DB0018F76C /* IDChainRequest.swift in Sources */,
+				112CC0EB233218580018F76C /* DIDBackend.swift in Sources */,
 				11F262C023260E1F0009C103 /* DID.swift in Sources */,
 				11F262BA23260D940009C103 /* VerifiableCredential.swift in Sources */,
 				11F262D623260EED0009C103 /* MalformedDIDError.swift in Sources */,
@@ -313,6 +361,7 @@
 				1109D093232DDCB200A03D56 /* HDKey.swift in Sources */,
 				11F262C223260E2A0009C103 /* DIDDocument.swift in Sources */,
 				11F262C423260E3F0009C103 /* DIDObject.swift in Sources */,
+				112CC0E92331DB3F0018F76C /* DerivedKey.swift in Sources */,
 				11F262D823260F020009C103 /* MalformedDIDURLError.swift in Sources */,
 				1109D0822327591900A03D56 /* DIDURLListener.swift in Sources */,
 				11F262D423260EDB0009C103 /* MalformedCredentialError.swift in Sources */,
@@ -323,6 +372,7 @@
 				1109D0792327591900A03D56 /* DIDURLParser.swift in Sources */,
 				1109D07A2327591900A03D56 /* DIDURLLexer.swift in Sources */,
 				11F262CE23260E900009C103 /* Service.swift in Sources */,
+				11F4BA5A232FDAA3002B3789 /* File.swift in Sources */,
 				1109D0832327591900A03D56 /* DIDURLLexerATN.swift in Sources */,
 				11F262C623260E530009C103 /* DIDStore.swift in Sources */,
 				1109D091232DD29300A03D56 /* EmbeddedCredential.swift in Sources */,
@@ -457,6 +507,7 @@
 		};
 		11F262B323260CF40009C103 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 95AE00C67F97E91E9B8763C0 /* Pods-ElastosDIDSDK.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -489,6 +540,7 @@
 		};
 		11F262B423260CF40009C103 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C87FA92C32DB051F702DF46 /* Pods-ElastosDIDSDK.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";

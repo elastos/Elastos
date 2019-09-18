@@ -1,5 +1,3 @@
-
-
 import Foundation
 
 public class DID: NSObject {
@@ -33,7 +31,6 @@ public class DID: NSObject {
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        // TODO
         return true
     }
 
@@ -44,7 +41,6 @@ public class DID: NSObject {
         } catch {
             throw error
         }
-        // TODO empty judgement
         return document!
     }
 }
