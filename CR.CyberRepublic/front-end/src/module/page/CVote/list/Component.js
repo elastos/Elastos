@@ -215,14 +215,14 @@ export default class extends BaseComponent {
     sessionStorage.removeItem('voteResult')
     sessionStorage.removeItem('proposalSearch')
 
-    const { _id, profile } = this.props.user
-    const fullName = `${profile.firstName} ${profile.lastName}`
-    const {createDraft } = this.props
+    const { user } = this.props
+    const fullName = userUtil.formatUsername(user)
+    const { createDraft } = this.props
 
     const param = {
       title: 'New Proposal',
       proposedBy: fullName,
-      proposer: _id,
+      proposer: user._id,
     }
 
     this.ord_loading(true)
