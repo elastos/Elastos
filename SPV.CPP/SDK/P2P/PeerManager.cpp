@@ -1596,7 +1596,7 @@ namespace Elastos {
 				for (size_t i = _publishedTx.size(); i > 0; i--) {
 					if (_publishedTx[i - 1].GetTransaction()->GetHash() == txHash) {
 						pubTx = _publishedTx[i - 1];
-//						_publishedTx[i - 1].ResetCallback();
+						_publishedTx[i - 1].ResetCallback();
 					} else if (_publishedTx[i - 1].HasCallback())
 						hasPendingCallbacks = 1;
 				}
@@ -1606,7 +1606,7 @@ namespace Elastos {
 					peer->ScheduleDisconnect(-1); // cancel publish tx timeout
 				}
 
-				//AddPeerToList(peer, txHash, _txRelays);
+				AddPeerToList(peer, txHash, _txRelays);
 				if (pubTx.GetTransaction() != nullptr)
 					_wallet->RegisterTransaction(pubTx.GetTransaction());
 				if (pubTx.GetTransaction() != nullptr && !_wallet->TransactionIsValid(pubTx.GetTransaction()))

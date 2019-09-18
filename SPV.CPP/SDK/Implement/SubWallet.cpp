@@ -479,10 +479,6 @@ namespace Elastos {
 		}
 
 		void SubWallet::publishTransaction(const TransactionPtr &tx) {
-			if (!_walletManager->GetWallet()->ContainsTransaction(tx)) {
-				ErrorChecker::ThrowLogicException(Error::WalletNotContainTx, "tx do not belong to the current wallet");
-			}
-
 			_walletManager->PublishTransaction(tx);
 		}
 
