@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -2261,7 +2261,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs4, references, producersMap,
 		crsMap),
-		"invalid vote output payload candidate: "+
+		"invalid vote output payload producer candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
 	// Check vote output of v0 with crc type and invalid candidate
@@ -2303,7 +2303,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		},
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs6, references, producersMap, crsMap),
-		"invalid vote output payload candidate: "+
+		"invalid vote output payload CR candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
 	// Check vote output of v0 with invalid candidate
@@ -2330,7 +2330,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		},
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs7, references, producersMap, crsMap),
-		"invalid vote output payload candidate: "+
+		"invalid vote output payload producer candidate: "+
 			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
 
 	crsMap[publicKey2] = struct{}{}
