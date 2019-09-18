@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -270,7 +270,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
 			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
 		if err != nil {
-			log.Warn("[CheckVoteProducerOutputs]", err)
+			log.Warn("[checkVoteOutputs]", err)
 			return ErrInvalidOutput
 		}
 	}
@@ -322,7 +322,7 @@ func (b *BlockChain) checkVoteProducerContent(content outputpayload.VoteContent,
 	for _, cv := range content.CandidateVotes {
 		if _, ok := pds[common.BytesToHexString(cv.Candidate)]; !ok {
 			return fmt.Errorf("invalid vote output payload "+
-				"candidate: %s", common.BytesToHexString(cv.Candidate))
+				"producer candidate: %s", common.BytesToHexString(cv.Candidate))
 		}
 	}
 	if payloadVersion >= outputpayload.VoteProducerAndCRVersion {
@@ -349,7 +349,7 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 	for _, cv := range content.CandidateVotes {
 		if _, ok := crs[common.BytesToHexString(cv.Candidate)]; !ok {
 			return fmt.Errorf("invalid vote output payload "+
-				"candidate: %s", common.BytesToHexString(cv.Candidate))
+				"CR candidate: %s", common.BytesToHexString(cv.Candidate))
 		}
 	}
 	var totalVotes common.Fixed64
