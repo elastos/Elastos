@@ -312,6 +312,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 
 	result := make([]common.Uint168, 0, c.params.CRMemberCount)
 	c.Members = make(map[common.Uint168]*CRMember, c.params.CRMemberCount)
+	c.manager.Proposals = make(map[common.Uint256]*ProposalState)
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
 		c.Members[candidates[i].info.DID] = c.generateMember(candidates[i])
 		result = append(result, candidates[i].info.DID)
@@ -339,8 +340,18 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	notElectionPenalty := MinDepositAmount * common.Fixed64(1-electionRate)
 
 	// Calculate penalty by vote proposal count.
-	// todo change penalty of member according to vote proposal count
-	notVoteProposalPenalty := common.Fixed64(0)
+	var voteCount int
+	for _, v := range c.manager.Proposals {
+		for did, _ := range v.CRVotes {
+			if member.Info.DID == did {
+				voteCount++
+				break
+			}
+		}
+	}
+	proposalsCount := len(c.manager.Proposals)
+	voteRate := float64(voteCount) / float64(proposalsCount)
+	notVoteProposalPenalty := MinDepositAmount * common.Fixed64(1-voteRate)
 
 	// Calculate the final penalty.
 	finalPenalty := member.Penalty + notElectionPenalty + notVoteProposalPenalty
