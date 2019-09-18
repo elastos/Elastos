@@ -216,8 +216,8 @@ func startNode(c *cli.Context, st *settings) {
 	if act != nil {
 		routesCfg.PID = act.PublicKeyBytes()
 		routesCfg.Addr = fmt.Sprintf("%s:%d",
-			st.Config().DPoSConfiguration.IPAddress,
-			st.Config().DPoSConfiguration.DPoSPort)
+			st.params.DPoSIPAddress,
+			st.params.DPoSDefaultPort)
 		routesCfg.Sign = act.Sign
 	}
 
@@ -243,7 +243,6 @@ func startNode(c *cli.Context, st *settings) {
 		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,
-			Localhost:         st.Config().DPoSConfiguration.IPAddress,
 			ChainParams:       st.Params(),
 			Arbitrators:       arbiters,
 			Store:             dposStore,

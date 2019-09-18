@@ -390,6 +390,9 @@ type Params struct {
 	// DPoSMagic defines the magic number used in the DPoS network.
 	DPoSMagic uint32
 
+	// DPoSIPAddress defines the IP address for the DPoS network.
+	DPoSIPAddress string
+
 	// DPoSDefaultPort defines the default port for the DPoS network.
 	DPoSDefaultPort uint16
 
