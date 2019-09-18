@@ -518,7 +518,7 @@ class C extends StandardPage {
   renderAdminActions() {
     const { isSecretary, isCouncil, currentUserId } = this.props
     const { status, createdBy } = this.props.data
-    const isSelf = currentUserId === createdBy
+    const isSelf = currentUserId === createdBy._id
     const isCompleted = _.includes(
       [CVOTE_STATUS.FINAL, CVOTE_STATUS.INCOMPLETED],
       status
