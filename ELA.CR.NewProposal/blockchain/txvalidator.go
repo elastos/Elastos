@@ -1070,7 +1070,7 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 	nodeCode = append(nodeCode, vm.CHECKSIG)
 	if b.crCommittee.ExistCR(nodeCode) {
 		return fmt.Errorf("node public key %s already exist in cr list",
-			common.BytesToHexString(info.OwnerPublicKey))
+			common.BytesToHexString(info.NodePublicKey))
 	}
 
 	if err := b.additionalProducerInfoCheck(info); err != nil {
