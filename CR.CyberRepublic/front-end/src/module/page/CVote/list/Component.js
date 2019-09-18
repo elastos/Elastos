@@ -72,7 +72,6 @@ export default class extends BaseComponent {
       {
         title: I18N.get('council.voting.author'),
         dataIndex: 'proposedBy',
-        // render: (type, item) => _.trim(item.proposerUser)|| _.trim(item.proposedBy)
       },
       {
         title: I18N.get('council.voting.votingEndsIn'),

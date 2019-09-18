@@ -436,7 +436,6 @@ export default class extends Base {
    */
   public async list(param): Promise<Document> {
     const db_cvote = this.getDBModel('CVote')
-    const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
     const query: any = {}
@@ -463,27 +462,8 @@ export default class extends Base {
     }
 
     if (param.$or) query.$or = param.$or
-
-    const list = await db_cvote.list(
-      query,
-      {
-        vid: -1
-        // createdAt: -1
-      },
-      100
-    )
-
-    for (const item of list) {
-      if (item.createdBy) {
-        const u = await db_user.findOne({ _id: item.createdBy })
-        if (!_.isEmpty) item.createdBy = u.username
-      }
-      if (item.proposer) {
-        const u = await db_user.findOne({ _id: item.proposer })
-        item.proposerUser = u
-      }
-    }
-
+    const fields = 'vid title type proposedBy status published proposedAt createdAt voteResult vote_map'
+    const list = await db_cvote.list(query, {vid: -1}, 100, fields)
     return list
   }
 
