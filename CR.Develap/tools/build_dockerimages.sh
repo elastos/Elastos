@@ -86,8 +86,8 @@ build_binary_and_docker "v0.3.7" "Elastos.ELA" "ela" \
 build_binary_and_docker "v0.1.2" "Elastos.ELA.Arbiter" "arbitrator" \
     "cyberrepublic/elastos-arbitrator-node" "yes" "v0.1.2" "yes"
 
-build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.ID" "sidechain.did" \
-    "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.2" "yes"
+build_binary_and_docker "release_v0.1.3" "Elastos.ELA.SideChain.ID" "sidechain.did" \
+    "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.3" "yes"
 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "sidechain.token" \
     "cyberrepublic/elastos-sidechain-token-node" "yes" "v0.1.2" "yes"
