@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package common
 
@@ -94,12 +94,12 @@ var (
 		Usage: "JSON-RPC server listening port `<number>`",
 	}
 	EnableRPCFlag = cli.StringFlag{
-		Name:        "server",
-		Usage:       "decide if open JSON-RPC server or not",
+		Name:  "server",
+		Usage: "decide if open JSON-RPC server or not",
 	}
 	RPCAllowedIPsFlag = cli.StringFlag{
-		Name:        "rpcips",
-		Usage:       "white IP list allowed to access RPC server",
+		Name:  "rpcips",
+		Usage: "white IP list allowed to access RPC server",
 	}
 
 	// Info flags
@@ -222,6 +222,10 @@ var (
 	DPoSMagicFlag = cli.StringFlag{
 		Name:  "dposmagic",
 		Usage: "defines the magic number used in the DPoS network",
+	}
+	DPoSIPAddressFlag = cli.StringFlag{
+		Name:  "dposipaddress",
+		Usage: "defines the default IP address for the DPoS network",
 	}
 	DPoSPortFlag = cli.StringFlag{
 		Name:  "dposport",

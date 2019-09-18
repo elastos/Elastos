@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package main
 
@@ -292,7 +292,14 @@ func newSettings() *settings {
 		Flag:         cmdcom.PortFlag,
 		DefaultValue: uint16(0),
 		ConfigPath:   "NodePort",
-		ParamName:    "DefaultPort"})
+		ConfigSetter: func(path string, params *config.Params,
+			conf *config.Configuration) error {
+			if conf.NodePort > 0 {
+				params.DefaultPort = conf.NodePort
+			}
+			return nil
+		},
+		ParamName: "DefaultPort"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.PeersFlag,
@@ -553,6 +560,12 @@ func newSettings() *settings {
 		DefaultValue: uint32(0),
 		ConfigPath:   "DPoSConfiguration.Magic",
 		ParamName:    "DPoSMagic"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.DPoSIPAddressFlag,
+		DefaultValue: "",
+		ConfigPath:   "DPoSConfiguration.IPAddress",
+		ParamName:    "DPoSIPAddress"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.DPoSPortFlag,
