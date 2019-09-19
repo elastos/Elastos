@@ -47,7 +47,7 @@
 		11F262D823260F020009C103 /* MalformedDIDURLError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262D723260F020009C103 /* MalformedDIDURLError.swift */; };
 		11F262DA23260F250009C103 /* MalformedDocumentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262D923260F250009C103 /* MalformedDocumentError.swift */; };
 		11F4BA5A232FDAA3002B3789 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F4BA59232FDAA3002B3789 /* File.swift */; };
-		482E9CB38CF9CA94CA9835D9 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA66B79A5B85BAAA6125A591 /* Pods_ElastosDIDSDK.framework */; };
+		94B137B2C485261F5B00CD58 /* Pods_Elastos_DID_Swift_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_Elastos_DID_Swift_SDK.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,7 +72,7 @@
 		112CC0E82331DB3F0018F76C /* DerivedKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
 		112CC0EA233218580018F76C /* DIDBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDBackend.swift; sourceTree = "<group>"; };
 		112CC0EC233218DB0018F76C /* IDChainRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDChainRequest.swift; sourceTree = "<group>"; };
-		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		11F262AA23260CF40009C103 /* Elastos_DID_Swift_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Elastos_DID_Swift_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Elastos_DID_Swift_SDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		11F262B723260D720009C103 /* Issuer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Issuer.swift; sourceTree = "<group>"; };
@@ -93,9 +93,9 @@
 		11F262D723260F020009C103 /* MalformedDIDURLError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MalformedDIDURLError.swift; sourceTree = "<group>"; };
 		11F262D923260F250009C103 /* MalformedDocumentError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MalformedDocumentError.swift; sourceTree = "<group>"; };
 		11F4BA59232FDAA3002B3789 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
-		6C87FA92C32DB051F702DF46 /* Pods-ElastosDIDSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.release.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.release.xcconfig"; sourceTree = "<group>"; };
-		95AE00C67F97E91E9B8763C0 /* Pods-ElastosDIDSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.debug.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.debug.xcconfig"; sourceTree = "<group>"; };
-		CA66B79A5B85BAAA6125A591 /* Pods_ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C87FA92C32DB051F702DF46 /* Pods-Elastos.DID.Swift.SDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Elastos.DID.Swift.SDK.release.xcconfig"; path = "Target Support Files/Pods-Elastos.DID.Swift.SDK/Pods-Elastos.DID.Swift.SDK.release.xcconfig"; sourceTree = "<group>"; };
+		95AE00C67F97E91E9B8763C0 /* Pods-Elastos.DID.Swift.SDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Elastos.DID.Swift.SDK.debug.xcconfig"; path = "Target Support Files/Pods-Elastos.DID.Swift.SDK/Pods-Elastos.DID.Swift.SDK.debug.xcconfig"; sourceTree = "<group>"; };
+		9F12C0F4949EF44A9C5673A8 /* Pods_Elastos_DID_Swift_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Elastos_DID_Swift_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,7 +104,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1109D08923275DE000A03D56 /* Antlr4.framework in Frameworks */,
-				482E9CB38CF9CA94CA9835D9 /* Pods_ElastosDIDSDK.framework in Frameworks */,
+				94B137B2C485261F5B00CD58 /* Pods_Elastos_DID_Swift_SDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,7 +133,7 @@
 		1109D08723275DC600A03D56 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				CA66B79A5B85BAAA6125A591 /* Pods_ElastosDIDSDK.framework */,
+				9F12C0F4949EF44A9C5673A8 /* Pods_Elastos_DID_Swift_SDK.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -142,7 +142,7 @@
 			isa = PBXGroup;
 			children = (
 				1109D08423275CFE00A03D56 /* Antlr4.framework */,
-				11F262AC23260CF40009C103 /* ElastosDIDSDK */,
+				11F262AC23260CF40009C103 /* Elastos.DID.Swift.SDK */,
 				11F262AB23260CF40009C103 /* Products */,
 				1109D08723275DC600A03D56 /* Frameworks */,
 				FD074BC0D415E85B37CD7DAB /* Pods */,
@@ -152,12 +152,12 @@
 		11F262AB23260CF40009C103 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */,
+				11F262AA23260CF40009C103 /* Elastos_DID_Swift_SDK.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		11F262AC23260CF40009C103 /* ElastosDIDSDK */ = {
+		11F262AC23260CF40009C103 /* Elastos.DID.Swift.SDK */ = {
 			isa = PBXGroup;
 			children = (
 				11F262B523260D550009C103 /* Credential */,
@@ -166,7 +166,7 @@
 				11F4BA59232FDAA3002B3789 /* File.swift */,
 				11F262AE23260CF40009C103 /* Info.plist */,
 			);
-			path = ElastosDIDSDK;
+			path = Elastos.DID.Swift.SDK;
 			sourceTree = "<group>";
 		};
 		11F262B523260D550009C103 /* Credential */ = {
@@ -228,8 +228,8 @@
 		FD074BC0D415E85B37CD7DAB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				95AE00C67F97E91E9B8763C0 /* Pods-ElastosDIDSDK.debug.xcconfig */,
-				6C87FA92C32DB051F702DF46 /* Pods-ElastosDIDSDK.release.xcconfig */,
+				95AE00C67F97E91E9B8763C0 /* Pods-Elastos.DID.Swift.SDK.debug.xcconfig */,
+				6C87FA92C32DB051F702DF46 /* Pods-Elastos.DID.Swift.SDK.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -248,9 +248,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		11F262A923260CF40009C103 /* ElastosDIDSDK */ = {
+		11F262A923260CF40009C103 /* Elastos.DID.Swift.SDK */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "ElastosDIDSDK" */;
+			buildConfigurationList = 11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "Elastos.DID.Swift.SDK" */;
 			buildPhases = (
 				FAD629132AAF3019496EDED5 /* [CP] Check Pods Manifest.lock */,
 				11F262A523260CF40009C103 /* Headers */,
@@ -262,9 +262,9 @@
 			);
 			dependencies = (
 			);
-			name = ElastosDIDSDK;
-			productName = ElastosDIDSDK;
-			productReference = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */;
+			name = Elastos.DID.Swift.SDK;
+			productName = Elastos.DID.Swift.SDK;
+			productReference = 11F262AA23260CF40009C103 /* Elastos_DID_Swift_SDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -282,7 +282,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 11F262A423260CF40009C103 /* Build configuration list for PBXProject "ElastosDIDSDK" */;
+			buildConfigurationList = 11F262A423260CF40009C103 /* Build configuration list for PBXProject "Elastos.DID.Swift.SDK" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -294,7 +294,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				11F262A923260CF40009C103 /* ElastosDIDSDK */,
+				11F262A923260CF40009C103 /* Elastos.DID.Swift.SDK */,
 			);
 		};
 /* End PBXProject section */
@@ -330,7 +330,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ElastosDIDSDK-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Elastos.DID.Swift.SDK-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -507,7 +507,7 @@
 		};
 		11F262B323260CF40009C103 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 95AE00C67F97E91E9B8763C0 /* Pods-ElastosDIDSDK.debug.xcconfig */;
+			baseConfigurationReference = 95AE00C67F97E91E9B8763C0 /* Pods-Elastos.DID.Swift.SDK.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -521,7 +521,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				INFOPLIST_FILE = ElastosDIDSDK/Info.plist;
+				INFOPLIST_FILE = Elastos.DID.Swift.SDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -540,7 +540,7 @@
 		};
 		11F262B423260CF40009C103 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6C87FA92C32DB051F702DF46 /* Pods-ElastosDIDSDK.release.xcconfig */;
+			baseConfigurationReference = 6C87FA92C32DB051F702DF46 /* Pods-Elastos.DID.Swift.SDK.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -554,7 +554,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				INFOPLIST_FILE = ElastosDIDSDK/Info.plist;
+				INFOPLIST_FILE = Elastos.DID.Swift.SDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -573,7 +573,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		11F262A423260CF40009C103 /* Build configuration list for PBXProject "ElastosDIDSDK" */ = {
+		11F262A423260CF40009C103 /* Build configuration list for PBXProject "Elastos.DID.Swift.SDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11F262B023260CF40009C103 /* Debug */,
@@ -582,7 +582,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "ElastosDIDSDK" */ = {
+		11F262B223260CF40009C103 /* Build configuration list for PBXNativeTarget "Elastos.DID.Swift.SDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11F262B323260CF40009C103 /* Debug */,

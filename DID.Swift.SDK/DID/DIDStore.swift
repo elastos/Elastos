@@ -2,7 +2,7 @@
 
 import Foundation
 import BitcoinKit
-import CryptoSwift
+//import CryptoSwift
 
 class DIDStore: NSObject {
 
