@@ -313,14 +313,14 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 				if err != nil {
 					return err
 				}
-			case outputpayload.CRCImpeachment:
-				err := b.checkCRImpeachmentContent(blockHeight, content)
-				if err != nil {
-					return err
-				}
 			case outputpayload.CRCProposal:
 				err := b.checkVoteCRCProposalContent(blockHeight,
 					content, votePayload.Version, o.Value)
+				if err != nil {
+					return err
+				}
+			case outputpayload.CRCImpeachment:
+				err := b.checkCRImpeachmentContent(blockHeight, content)
 				if err != nil {
 					return err
 				}
@@ -332,7 +332,7 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 }
 
 func (b *BlockChain) checkCRImpeachmentContent(blockHeight uint32, content outputpayload.VoteContent) error {
-	crMembersMap := getCRMembersMap(b.crCommittee.GetAllMembers())
+	crMembersMap := getCRMembersMap(b.crCommittee.GetElectedMembers())
 	for _, cv := range content.CandidateVotes {
 		if _, ok := crMembersMap[common.BytesToHexString(cv.Candidate)]; !ok {
 			return errors.New("CR sponsor should be one of the CR members")
