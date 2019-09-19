@@ -88,6 +88,14 @@ func (c *Committee) GetAllMembers() []*CRMember {
 	return getCRMembers(c.Members)
 }
 
+//get all elected CRMembers
+func (c *Committee) GetElectedMembers() []*CRMember {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return getElectedCRMembers(c.Members)
+}
+
 //get all history CRMembers
 func (c *Committee) GetAllHistoryMembers() []*CRMember {
 	c.mtx.RLock()
