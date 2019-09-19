@@ -38,7 +38,7 @@ export default class extends React.Component {
                     {' '}
 -
                     {' '}
-                    <a href="/constitution/1">{I18N.get('home.crc.list.2.link')}</a>
+                    <a href="/whitepaper">{I18N.get('home.crc.list.2.link')}</a>
 .
                   </ItemDesc>
                 </Timeline.Item>
