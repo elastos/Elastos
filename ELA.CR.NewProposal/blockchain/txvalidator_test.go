@@ -2276,9 +2276,11 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
 	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
 	publicKey3 := "039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
+	publicKey4 := "033279a88abf504192f36d0a8f06d66ab1fff80d2715cf3ecbd243b4db8ff2e77e"
 	candidate1, _ := common.HexStringToBytes(publicKey1)
 	candidate2, _ := common.HexStringToBytes(publicKey2)
 	candidate3, _ := common.HexStringToBytes(publicKey3)
+	candidate4, _ := common.HexStringToBytes(publicKey4)
 	producersMap := make(map[string]struct{})
 	producersMap[publicKey1] = struct{}{}
 	crsMap := make(map[string]struct{})
@@ -2627,6 +2629,81 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs14, references, producersMap, crsMap),
 		"invalid CRCProposal: 9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0")
+
+	// Check vote output v1 with correct votes
+	outputs15 := []*types.Output{{Type: types.OTNone}}
+	outputs15 = append(outputs15, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRCImpeachment,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{getCode(publicKey4), 10},
+					},
+				},
+			},
+		},
+	})
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs15, references, producersMap, crsMap),
+		"CR sponsor should be one of the CR members")
+
+	// Check vote output of v1 with wrong votes
+	outputs16 := []*types.Output{{Type: types.OTNone}}
+	outputs16 = append(outputs16, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRCImpeachment,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{getCode(publicKey4), 10},
+					},
+				},
+			},
+		},
+	})
+	s.Chain.crCommittee.Members[common.Uint168{1, 2, 3}] = &crstate.CRMember{
+		Info: payload.CRInfo{
+			Code: getCode(publicKey4),
+		},
+		MemberState: crstate.MemberElected,
+	}
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs16, references, producersMap, crsMap))
+
+	// Check vote output of v1 with wrong votes
+	outputs17 := []*types.Output{{Type: types.OTNone}}
+	outputs17 = append(outputs17, &types.Output{
+		Type:        types.OTVote,
+		ProgramHash: *hash,
+		Value:       common.Fixed64(10),
+		Payload: &outputpayload.VoteOutput{
+			Version: 1,
+			Contents: []outputpayload.VoteContent{
+				{
+					VoteType: outputpayload.CRCImpeachment,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{candidate4, 10},
+					},
+				},
+			},
+		},
+	})
+	s.Chain.crCommittee.Members[common.Uint168{1, 2, 3}] = &crstate.CRMember{
+		Info: payload.CRInfo{
+			Code: getCode(publicKey4),
+		},
+		MemberState: crstate.MemberImpeached,
+	}
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs15, references, producersMap, crsMap),
+		"CR sponsor should be one of the CR members")
+
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
