@@ -32,7 +32,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 节点信息
@@ -62,7 +61,6 @@ public class NodeInformationFragment extends BaseFragment {
     TextView tv_addrs;
     List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
     String zb;
-    public String type;
     @BindView(R.id.tv_node_publickey)
     TextView tvNodePublickey;
     @BindView(R.id.iv_icon)
@@ -211,7 +209,6 @@ public class NodeInformationFragment extends BaseFragment {
             case R.id.sb_ckhxlb:
                 Bundle bundle = new Bundle();
                 bundle.putString("zb", zb);
-                bundle.putString("type", type);
                 bundle.putSerializable("netList", (Serializable) netlist);
                 start(NodeCartFragment.class, bundle);
                 break;

@@ -33,8 +33,8 @@
         <android.support.v7.widget.AppCompatImageView
             android:id="@+id/iv_icon"
             android:layout_width="30dp"
-            android:src="@mipmap/found_vote_initial_circle"
-            android:layout_height="30dp" />
+            android:layout_height="30dp"
+            android:src="@mipmap/found_vote_initial_circle" />
 
 
         <com.qmuiteam.qmui.layout.QMUILinearLayout
@@ -52,6 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:maxLines="1"
                 android:textColor="@color/white"
                 android:textSize="13sp" />
 
@@ -94,7 +95,16 @@
                 android:textColor="@color/white"
                 android:textSize="11sp" />
 
-
+            <android.support.v7.widget.AppCompatCheckBox
+                android:id="@+id/checkbox"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_gravity="center"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:visibility="gone" />
         </com.qmuiteam.qmui.layout.QMUILinearLayout>
 
 

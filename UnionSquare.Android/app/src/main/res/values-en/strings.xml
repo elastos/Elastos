@@ -425,8 +425,9 @@
     <string name="plzinputpercent">请输入百分比</string>
     <string name="totle">合计：</string>
     <string name="available">可用：</string>
-    <string name="crcvote">CRC委员选举</string>
+    <string name="crcvote">CR委员会选举</string>
     <string name="deleteanywal">直接删除</string>
     <string name="verifymneminicpwd">验证助记词密码</string>
     <string name="mine">我的</string>
+    <string name="multiadd">批量加入候选列表</string>
 </resources>

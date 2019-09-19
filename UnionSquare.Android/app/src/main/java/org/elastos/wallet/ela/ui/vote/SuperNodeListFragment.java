@@ -82,7 +82,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     SmartRefreshLayout srl;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
-    public String type = "1";//1.正常投票 2. 复投
     SignUpPresenter signUpPresenter = new SignUpPresenter();
     private SuperNodeListAdapter1 adapter1;
     private String publicKey;
@@ -139,7 +138,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             case R.id.tv_going_to_vote:
                 bundle = new Bundle();
                 bundle.putString("zb", zb);
-                bundle.putString("type", type);
                 bundle.putSerializable("netList", netList);
                 start(NodeCartFragment.class, bundle);
                 break;
@@ -171,7 +169,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
         Bundle bundle = new Bundle();
         bundle.putString("zb", zb);
-        bundle.putString("type", type);
         bundle.putSerializable("bean", netList.get(position));
         bundle.putSerializable("netList", netList);
         start(NodeInformationFragment.class, bundle);

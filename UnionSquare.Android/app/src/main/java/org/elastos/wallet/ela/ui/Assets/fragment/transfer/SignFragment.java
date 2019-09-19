@@ -76,6 +76,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         super.setExtraData(data);
         wallet = data.getParcelable("wallet");
         signData = data.getString("attributes");
+        setQr(signData);
         boolean signStatus = data.getBoolean("signStatus");
         if (signStatus) {
             showUI = true;
@@ -88,7 +89,7 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
             presenter = new PwdPresenter();
             presenter.getTransactionSignedInfo(wallet.getWalletId(), chainID, signData, this);
         } catch (Exception e) {
-            setQr(signData);
+
             e.printStackTrace();
         }
 

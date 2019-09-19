@@ -49,20 +49,10 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
 
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
-        if (is) {
-            if (0 == helper.getLayoutPosition()) {
-                helper.setBackgroundColor(R.id.ll, Color.parseColor("#307CA2"));
-                helper.setText(R.id.tv_rank, "" + (pos + 1));
-            } else if (helper.getLayoutPosition() <= pos) {
-                helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition()));
-            } else {
-                helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition() + 1));
-            }
-        } else {
-            helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition() + 1));
+        if (is && 0 == helper.getLayoutPosition()) {
+            helper.setBackgroundColor(R.id.ll,  context.getResources().getColor(R.color.blue1));
         }
-
-
+        helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
         helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");

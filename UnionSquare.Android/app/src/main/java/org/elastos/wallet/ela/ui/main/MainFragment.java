@@ -55,7 +55,6 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
     @Override
     protected void initView(View view) {
-        bottombaritem.setBackgroundResource(R.color.qmui_config_color_25_white);
         SupportFragment homeFragment = findFragment(AssetskFragment.class);
         if (homeFragment == null) {
             mFragments[0] = AssetskFragment.newInstance();
@@ -87,19 +86,19 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
                 showHideFragment(mFragments[current], mFragments[before]);
                 switch (current) {
                     case 0:
-                        bottombaritem.setBackgroundResource(R.color.qmui_config_color_25_white);
-                        bottombaritem1.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
-                        bottombaritem2.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
+                        bottombaritem.setBackgroundResource(R.color.mainitembg);
+                        bottombaritem1.setBackgroundResource(R.color.black1);
+                        bottombaritem2.setBackgroundResource(R.color.black1);
                         break;
                     case 1:
-                        bottombaritem.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
-                        bottombaritem1.setBackgroundResource(R.color.qmui_config_color_25_white);
-                        bottombaritem2.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
+                        bottombaritem.setBackgroundResource(R.color.black1);
+                        bottombaritem1.setBackgroundResource(R.color.mainitembg);
+                        bottombaritem2.setBackgroundResource(R.color.black1);
                         break;
                     case 2:
-                        bottombaritem.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
-                        bottombaritem1.setBackgroundResource(R.color.qmui_config_color_25_pure_black);
-                        bottombaritem2.setBackgroundResource(R.color.qmui_config_color_25_white);
+                        bottombaritem.setBackgroundResource(R.color.black1);
+                        bottombaritem1.setBackgroundResource(R.color.black1);
+                        bottombaritem2.setBackgroundResource(R.color.mainitembg);
                         break;
                 }
             }

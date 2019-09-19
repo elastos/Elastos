@@ -18,7 +18,6 @@
         android:id="@+id/bottombar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/px118"
-        android:background="@color/qmui_config_color_transparent"
         android:orientation="horizontal">
 
         <com.chaychan.library.BottomBarItem
@@ -26,6 +25,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/mainitembg"
             android:gravity="center"
             android:touchscreenBlocksFocus="true"
             app:iconHeight="@dimen/px60"
@@ -43,6 +43,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/black1"
             android:gravity="center"
             app:iconHeight="@dimen/px60"
             app:iconNormal="@mipmap/tab_society_unselected"
@@ -58,6 +59,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/black1"
             android:gravity="center"
             app:iconHeight="@dimen/px60"
             app:iconNormal="@mipmap/tab_mine_unselected"

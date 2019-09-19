@@ -29,16 +29,15 @@ public class CRListAdapter extends BaseQuickAdapter<CRListBean.DataBean.ResultBe
     private final GlideRequest<Bitmap> glideRequest;
     private BaseFragment context;
     private Map<String, String> map;
-
-    private int pos;
-    // private boolean is;
+private boolean showCheckbox;
+    //private int pos;
+    private boolean is;
 
     public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
         super(R.layout.item_cr_list, data);
         this.context = context;
-        //this.mContext = context.getContext();
-        this.pos = pos;
-        //  this.is = is;
+       // this.pos = pos;
+        this.is = is;
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
         if (map == null) {
             map = new HashMap<>();
@@ -50,11 +49,14 @@ public class CRListAdapter extends BaseQuickAdapter<CRListBean.DataBean.ResultBe
 
     @Override
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.ProducersBean bean) {
-       // helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.transparent));
-        if (pos == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll, Color.parseColor("#307CA2"));
+
+        helper.setBackgroundColor(R.id.tv_rank, context.getResources().getColor(R.color.white));
+        helper.setTextColor(R.id.tv_rank, context.getResources().getColor(R.color.surebutton));
+        if (is && 0 == helper.getLayoutPosition()) {
+            helper.setBackgroundColor(R.id.tv_rank, context.getResources().getColor(R.color.blue1));
+            helper.setTextColor(R.id.tv_rank, context.getResources().getColor(R.color.white));
         }
-        helper.setText(R.id.tv_rank, "No." + (helper.getLayoutPosition() + 1));
+        helper.setText(R.id.tv_rank, "No." + (bean.getIndex() + 1));
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
         helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");

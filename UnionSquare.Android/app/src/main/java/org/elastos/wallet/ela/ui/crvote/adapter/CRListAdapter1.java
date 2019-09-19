@@ -31,13 +31,13 @@ public class CRListAdapter1 extends BaseQuickAdapter<CRListBean.DataBean.ResultB
     private Map<String, String> map;
 
     private int pos;
-    // private boolean is;
+    private boolean is;
 
     public CRListAdapter1(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
         super(R.layout.item_super_node_list1, data);
         this.context = context;
         this.pos = pos;
-        //  this.is = is;
+        this.is = is;
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle)
                 .placeholder(R.mipmap.found_vote_initial_circle).circleCrop();
         if (map == null) {
@@ -51,10 +51,12 @@ public class CRListAdapter1 extends BaseQuickAdapter<CRListBean.DataBean.ResultB
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.ProducersBean bean) {
 
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
-        if (pos == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll, Color.parseColor("#307CA2"));
+        if (is && 0 == helper.getLayoutPosition()) {
+            helper.setBackgroundColor(R.id.ll,  context.getResources().getColor(R.color.blue1));
+            helper.setText(R.id.tv_rank, "" + (pos + 1));
         }
-        helper.setText(R.id.tv_rank, "" + (helper.getLayoutPosition() + 1));
+        helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
+
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
         helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");

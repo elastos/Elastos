@@ -43,10 +43,11 @@
                 android:layout_weight="1" />
 
             <ImageView
+                android:id="@+id/iv_select"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:padding="15dp"
+                android:padding="7dp"
                 android:src="@mipmap/multi_import_btn" />
 
             <ImageView
@@ -54,7 +55,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:padding="15dp"
+                android:layout_marginRight="7dp"
+                android:padding="7dp"
                 android:src="@mipmap/vote_switch_list" />
 
         </LinearLayout>
@@ -99,6 +101,7 @@
     <View style="@style/line1" />
 
     <com.qmuiteam.qmui.layout.QMUILinearLayout
+        android:id="@+id/ll_bottom1"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:orientation="horizontal">
@@ -153,4 +156,59 @@
 
 
     </com.qmuiteam.qmui.layout.QMUILinearLayout>
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/ll_bottom2"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#4D000000"
+            android:gravity="center|left"
+            android:orientation="horizontal"
+            android:paddingLeft="8dp">
+
+            <CheckBox
+                android:id="@+id/cb_selectall"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/future_generations"
+                android:textColor="@color/white" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_add"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:background="@drawable/sc_26ffffff_2"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/multi_add" />
+
+            <android.support.v7.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="7dp"
+                android:gravity="center"
+                android:text="@string/multiadd"
+                android:textColor="#FEFEFF"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+
+    </LinearLayout>
 </com.qmuiteam.qmui.layout.QMUILinearLayout>

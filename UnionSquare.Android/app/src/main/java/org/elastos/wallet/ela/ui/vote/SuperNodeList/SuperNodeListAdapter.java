@@ -48,7 +48,7 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.transparent));
         if (is && helper.getLayoutPosition() == 0) {
-            helper.setBackgroundColor(R.id.ll, Color.parseColor("#307CA2"));
+            helper.setBackgroundColor(R.id.ll,  context.getResources().getColor(R.color.blue1));
         }
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
