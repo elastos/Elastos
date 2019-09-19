@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package servers
 
@@ -1742,10 +1742,6 @@ func VoteStatus(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	var total common.Fixed64
-	_, exist := wallet.GetWalletAccount(address)
-	if !exist {
-		total = common.Fixed64(-1)
-	}
 	var voting common.Fixed64
 	for _, unspent := range unspent[config.ELAAssetID] {
 		tx, _, err := Store.GetTransaction(unspent.TxID)
@@ -1755,9 +1751,7 @@ func VoteStatus(param Params) map[string]interface{} {
 		if tx.Outputs[unspent.Index].Type == OTVote {
 			voting += unspent.Value
 		}
-		if exist {
-			total += unspent.Value
-		}
+		total += unspent.Value
 	}
 
 	pending := false
