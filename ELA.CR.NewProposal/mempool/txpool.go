@@ -31,13 +31,15 @@ type TxPool struct {
 	chainParams *config.Params
 
 	sync.RWMutex
-	txnList         map[Uint256]*Transaction // transaction which have been verifyed will put into this map
-	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
-	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
-	ownerPublicKeys map[string]struct{}
-	nodePublicKeys  map[string]struct{}
-	crDIDs          map[Uint168]struct{}
-	specialTxList   map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
+	txnList           map[Uint256]*Transaction // transaction which have been verifyed will put into this map
+	inputUTXOList     map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
+	sidechainTxList   map[Uint256]*Transaction // sidechain tx pool
+	ownerPublicKeys   map[string]struct{}
+	nodePublicKeys    map[string]struct{}
+	crDIDs            map[Uint168]struct{}
+	specialTxList     map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
+	producerNicknames map[string]struct{}
+	crNicknames       map[string]struct{}
 
 	tempInputUTXOList   map[string]*Transaction
 	tempSidechainTxList map[Uint256]*Transaction
@@ -46,7 +48,9 @@ type TxPool struct {
 	tempCrDIDs          map[Uint168]struct{}
 	tempSpecialTxList   map[Uint256]struct{}
 
-	txnListSize int
+	tempProducerNicknames map[string]struct{}
+	tempCrNicknames       map[string]struct{}
+	txnListSize           int
 }
 
 //append transaction to txnpool when check ok.
@@ -240,6 +244,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					mp.delOwnerPublicKey(BytesToHexString(rpPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(rpPayload.NodePublicKey))
+					mp.delProducerNickname(rpPayload.NickName)
 				case UpdateProducer:
 					upPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
@@ -248,6 +253,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					mp.delOwnerPublicKey(BytesToHexString(upPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
+					mp.delProducerNickname(upPayload.NickName)
 				case CancelProducer:
 					cpPayload, ok := tx.Payload.(*payload.ProcessProducer)
 					if !ok {
@@ -263,6 +269,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					mp.delCRDID(rcPayload.DID)
 					mp.delPublicKeyByCode(rcPayload.Code)
+					mp.delCrNickname(rcPayload.NickName)
 				case UpdateCR:
 					rcPayload, ok := tx.Payload.(*payload.CRInfo)
 					if !ok {
@@ -270,6 +277,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delCRDID(rcPayload.DID)
+					mp.delCrNickname(rcPayload.NickName)
 				case UnregisterCR:
 					unrcPayload, ok := tx.Payload.(*payload.UnregisterCR)
 					if !ok {
@@ -432,8 +440,8 @@ func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateOwnerAndNode(BytesToHexString(p.OwnerPublicKey),
-			BytesToHexString(p.NodePublicKey)); err != nil {
+		if err := mp.verifyDuplicateProducer(BytesToHexString(p.OwnerPublicKey),
+			BytesToHexString(p.NodePublicKey), p.NickName); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
@@ -443,8 +451,8 @@ func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateOwnerAndNode(BytesToHexString(p.OwnerPublicKey),
-			BytesToHexString(p.NodePublicKey)); err != nil {
+		if err := mp.verifyDuplicateProducer(BytesToHexString(p.OwnerPublicKey),
+			BytesToHexString(p.NodePublicKey), p.NickName); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
@@ -494,17 +502,17 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 			log.Error("register CR payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCRAndProducer(p.DID, p.Code); err != nil {
+		if err := mp.verifyDuplicateCRAndProducer(p.DID, p.Code, p.NickName); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
 	case UpdateCR:
 		p, ok := txn.Payload.(*payload.CRInfo)
 		if !ok {
-			log.Error("update producer payload cast failed, tx:", txn.Hash())
+			log.Error("update CR payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCR(p.DID); err != nil {
+		if err := mp.verifyDuplicateCRAndNickname(p.DID, p.NickName); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
@@ -595,7 +603,8 @@ func (mp *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
-func (mp *TxPool) verifyDuplicateOwnerAndNode(ownerPublicKey string, nodePublicKey string) error {
+func (mp *TxPool) verifyDuplicateProducer(ownerPublicKey string,
+	nodePublicKey string, nickName string) error {
 	_, ok := mp.ownerPublicKeys[ownerPublicKey]
 	if ok {
 		return errors.New("this producer in being processed")
@@ -604,9 +613,13 @@ func (mp *TxPool) verifyDuplicateOwnerAndNode(ownerPublicKey string, nodePublicK
 	if ok {
 		return errors.New("this producer node in being processed")
 	}
+	_, ok = mp.producerNicknames[nickName]
+	if ok {
+		return errors.New("this producer nickName in being processed")
+	}
 	mp.addOwnerPublicKey(ownerPublicKey)
 	mp.addNodePublicKey(nodePublicKey)
-
+	mp.addProducerNickname(nickName)
 	return nil
 }
 
@@ -646,6 +659,20 @@ func (mp *TxPool) delNodePublicKey(nodePublicKey string) {
 	delete(mp.nodePublicKeys, nodePublicKey)
 }
 
+func (mp *TxPool) verifyDuplicateCRAndNickname(did Uint168,
+	nickname string) error {
+	err := mp.verifyDuplicateCR(did)
+	if err != nil {
+		return err
+	}
+	_, ok := mp.crNicknames[nickname]
+	if ok {
+		return errors.New("this CR nickname in being processed")
+	}
+	mp.addCrNickName(nickname)
+	return nil
+}
+
 func (mp *TxPool) verifyDuplicateCR(did Uint168) error {
 	_, ok := mp.crDIDs[did]
 	if ok {
@@ -656,10 +683,14 @@ func (mp *TxPool) verifyDuplicateCR(did Uint168) error {
 	return nil
 }
 
-func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte) error {
+func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte, crNickname string) error {
 	_, ok := mp.crDIDs[did]
 	if ok {
 		return errors.New("this CR in being processed")
+	}
+	_, ok = mp.crNicknames[crNickname]
+	if ok {
+		return errors.New("this CR crNickname in being processed")
 	}
 	signType, err := crypto.GetScriptType(code)
 	if err != nil {
@@ -682,6 +713,8 @@ func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte) error {
 	}
 
 	mp.addCRDID(did)
+	mp.addCrNickName(crNickname)
+
 	return nil
 }
 
@@ -691,6 +724,22 @@ func (mp *TxPool) addCRDID(did Uint168) {
 
 func (mp *TxPool) delCRDID(did Uint168) {
 	delete(mp.crDIDs, did)
+}
+
+func (mp *TxPool) addProducerNickname(key string) {
+	mp.tempProducerNicknames[key] = struct{}{}
+}
+
+func (mp *TxPool) delProducerNickname(key string) {
+	delete(mp.producerNicknames, key)
+}
+
+func (mp *TxPool) addCrNickName(key string) {
+	mp.tempCrNicknames[key] = struct{}{}
+}
+
+func (mp *TxPool) delCrNickname(key string) {
+	delete(mp.crNicknames, key)
 }
 
 func (mp *TxPool) delPublicKeyByCode(code []byte) {
@@ -897,23 +946,33 @@ func (mp *TxPool) commitTemp() {
 	for k, v := range mp.tempSpecialTxList {
 		mp.specialTxList[k] = v
 	}
+	for k, v := range mp.tempProducerNicknames {
+		mp.producerNicknames[k] = v
+	}
+	for k, v := range mp.tempCrNicknames {
+		mp.crNicknames[k] = v
+	}
 }
 
 func NewTxPool(params *config.Params) *TxPool {
 	return &TxPool{
-		chainParams:         params,
-		inputUTXOList:       make(map[string]*Transaction),
-		txnList:             make(map[Uint256]*Transaction),
-		sidechainTxList:     make(map[Uint256]*Transaction),
-		ownerPublicKeys:     make(map[string]struct{}),
-		nodePublicKeys:      make(map[string]struct{}),
-		specialTxList:       make(map[Uint256]struct{}),
-		crDIDs:              make(map[Uint168]struct{}),
-		tempInputUTXOList:   make(map[string]*Transaction),
-		tempSidechainTxList: make(map[Uint256]*Transaction),
-		tempOwnerPublicKeys: make(map[string]struct{}),
-		tempNodePublicKeys:  make(map[string]struct{}),
-		tempSpecialTxList:   make(map[Uint256]struct{}),
-		tempCrDIDs:          make(map[Uint168]struct{}),
+		chainParams:           params,
+		inputUTXOList:         make(map[string]*Transaction),
+		txnList:               make(map[Uint256]*Transaction),
+		sidechainTxList:       make(map[Uint256]*Transaction),
+		ownerPublicKeys:       make(map[string]struct{}),
+		nodePublicKeys:        make(map[string]struct{}),
+		specialTxList:         make(map[Uint256]struct{}),
+		crDIDs:                make(map[Uint168]struct{}),
+		producerNicknames:     make(map[string]struct{}),
+		crNicknames:           make(map[string]struct{}),
+		tempInputUTXOList:     make(map[string]*Transaction),
+		tempSidechainTxList:   make(map[Uint256]*Transaction),
+		tempOwnerPublicKeys:   make(map[string]struct{}),
+		tempNodePublicKeys:    make(map[string]struct{}),
+		tempSpecialTxList:     make(map[Uint256]struct{}),
+		tempCrDIDs:            make(map[Uint168]struct{}),
+		tempProducerNicknames: make(map[string]struct{}),
+		tempCrNicknames:       make(map[string]struct{}),
 	}
 }

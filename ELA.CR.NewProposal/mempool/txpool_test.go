@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -300,7 +300,7 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 
 	// 12. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == errors.Success)
+	assert.True(t, errCode == errors.ErrCRProcessing)
 
 }
 
