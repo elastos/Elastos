@@ -221,8 +221,7 @@ export default class extends Base {
       createdBy: this.currentUser._id
     }
 
-    const suggestion =
-      suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }

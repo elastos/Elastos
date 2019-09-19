@@ -16,7 +16,8 @@ const Component = ({
   type,
   status,
   createdAt,
-  createdBy
+  createdBy,
+  reference
 }) => {
   // header
   const headerNode = (
@@ -92,7 +93,7 @@ const Component = ({
         </ItemTitle>
       </Col>
       <Col span={18}>
-        <ItemText>{`${userUtil.getUserDisplayName(createdBy)} <${_.get(createdBy, 'email')}>`}</ItemText>
+        <ItemText>{`${userUtil.formatUsername(createdBy)} <${_.get(createdBy, 'email')}>`}</ItemText>
       </Col>
     </Item>
   )
@@ -125,7 +126,7 @@ const Component = ({
       {idNode}
       {titleNode}
       {proposerNode}
-      {proposer && createdBy && proposer._id !== createdBy._id ? refereeNode : null}
+      {reference && reference.displayId ? refereeNode : null}
       {typeNode}
       {statusNode}
       {createdNode}
