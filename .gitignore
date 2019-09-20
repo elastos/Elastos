@@ -11,4 +11,4 @@
 /captures
 .externalNativeBuild
 /app/native-dist/lib
-
+/doc

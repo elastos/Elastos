@@ -47,8 +47,7 @@ public enum ConnectionStatus {
 	 * @return
 	 * 		The ConnectionStatus object
 	 *
-	 * @throws
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
 	 */
 	public static ConnectionStatus valueOf(int status) {
 		switch (status) {

@@ -1,0 +1,3 @@
+#!/bin/sh
+javadoc -encoding utf-8 -charset utf-8 -d doc  app/src/main/java/org/elastos/carrier/Carrier.java app/src/main/java/org/elastos/carrier/CarrierHandler.java app/src/main/java/org/elastos/carrier/ConnectionStatus.java app/src/main/java/org/elastos/carrier/FriendInfo.java app/src/main/java/org/elastos/carrier/FriendInviteResponseHandler.java app/src/main/java/org/elastos/carrier/Group.java app/src/main/java/org/elastos/carrier/GroupHandler.java app/src/main/java/org/elastos/carrier/PresenceStatus.java app/src/main/java/org/elastos/carrier/UserInfo.java app/src/main/java/org/elastos/carrier/exceptions/CarrierException.java app/src/main/java/org/elastos/carrier/FriendsIterator.java app/src/main/java/org/elastos/carrier/GroupPeersIterator.java  
+

@@ -51,8 +51,7 @@ public enum PresenceStatus {
 	 * @return
 	 *      The Carrier node status object.
 	 *
-	 * @throws
-	 *      IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
 	 */
 	public static PresenceStatus valueOf(int status)  {
 		switch (status) {

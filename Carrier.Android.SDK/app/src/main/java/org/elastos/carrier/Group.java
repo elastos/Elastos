@@ -108,9 +108,8 @@ public class Group {
 	 * @param
 	 *	  friendId	The invited friendId
 	 *
-	 * @throws
-	 * 		CarrierException
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
+	 * @throws CarrierException  carrier exception.
 	 */
 	public void invite(String friendId) throws CarrierException {
 		if (friendId == null || friendId.length() == 0)
@@ -131,9 +130,8 @@ public class Group {
 	 * @param
 	 *	  message	 The message content defined by application
 	 *
-	 * @throws
-	 * 		CarrierException
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
+	 * @throws CarrierException  carrier exception.
 	 */
 	public void sendMessage(byte[] message) throws CarrierException {
 		if (message == null || message.length == 0 || message.length > MAX_APP_MESSAGE_LEN)
@@ -149,8 +147,7 @@ public class Group {
 	 * @return
 	 * 		The title of the specified group
 	 *
-	 * @throws
-	 * 		CarrierException
+	 * @throws CarrierException  carrier exception.
 	 */
 	public String getTitle() throws CarrierException {
 		String title = group_get_title(carrier, groupId);
@@ -166,9 +163,8 @@ public class Group {
 	 * @param
 	 *	  title	   The title name to set(should be no longer than MAX_GROUP_TITLE_LEN)
 	 *
-	 * @throws
-	 * 		CarrierException
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
+	 * @throws CarrierException  carrier exception.
 	 */
 	public void setTitle(String title) throws CarrierException {
 		if (title == null || title.length() == 0 || title.length() > MAX_GROUP_TITLE_LEN)
@@ -207,8 +203,7 @@ public class Group {
 	 * @return
 	 * 		A list of all peers in the specified group
 	 *
-	 * @throws
-	 * 		CarrierException
+	 * @throws CarrierException  carrier exception.
 	 */
 	public List<PeerInfo> getPeers() throws CarrierException {
 		List<PeerInfo> peers = new ArrayList<PeerInfo>();
@@ -237,9 +232,8 @@ public class Group {
 	 * @return
 	 * 		Information of the specified peer
 	 *
-	 * @throws
-	 * 		CarrierException
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
+	 * @throws CarrierException  carrier exception.
 	 */
 	public PeerInfo getPeer(String peerId) throws CarrierException {
 		if (peerId == null || peerId.length() == 0)

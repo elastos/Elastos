@@ -104,8 +104,7 @@ public class UserInfo {
 	 * @param
 	 * 		name		The nickname to set
 	 *
-	 * @throws
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
 	 */
 	public void setName(String name)  {
 		if (name == null || name.length() > MAX_USER_NAME_LEN)
@@ -133,8 +132,7 @@ public class UserInfo {
 	 * @param
 	 * 		description		the brief description to set
 	 *
-	 * @throws
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
 	 */
 	public void setDescription(String description) {
 		if (description == null || description.length() > MAX_USER_DESCRIPTION_LEN)
@@ -179,8 +177,7 @@ public class UserInfo {
 	 * @param
 	 * 		gender		The gender to set
 	 *
-	 * @throws
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
 	 */
 	public void setGender(String gender) {
 		if (gender == null || gender.length() > MAX_GENDER_LEN)
@@ -205,8 +202,7 @@ public class UserInfo {
 	 * @param
 	 * 		phone		The phone number to set
 	 *
-	 * @throws
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
 	 */
 	public void setPhone(String phone) {
 		if (phone == null || phone.length() > MAX_PHONE_LEN)
@@ -231,8 +227,7 @@ public class UserInfo {
 	 * @param
 	 * 		email		The email address to set
 	 *
-	 * @throws
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
 	 */
 	public void setEmail(String email) {
 		if (email == null || email.length() > MAX_EMAIL_LEN)
@@ -257,8 +252,7 @@ public class UserInfo {
 	 * @param
 	 * 		region		The region to set
 	 *
-	 * @throws
-	 * 		IllegalArgumentException
+	 * @throws IllegalArgumentException illegal exception.
 	 */
 	public void setRegion(String region) {
 		if (region == null || region.length() > MAX_REGION_LEN )
