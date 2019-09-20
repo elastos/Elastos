@@ -26,6 +26,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHolder> {
+    private final Animation hyperspaceJumpAnimation;
     private Context context;
 
     public void setData(List<SubWallet> data) {
@@ -39,6 +40,9 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
     public AssetskAdapter(Context context, List<org.elastos.wallet.ela.db.table.SubWallet> data) {
         this.context = context;
         this.data = data;
+        hyperspaceJumpAnimation = AnimationUtils.loadAnimation(
+                context, R.anim.load_animation);
+        hyperspaceJumpAnimation.setInterpolator(new LinearInterpolator());//匀速插值器
     }
 
 
@@ -58,12 +62,15 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
         org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity = data.get(i);
         viewHolder.tvName.setText(assetsItemEntity.getChainId());
         viewHolder.tvNum.setText(NumberiUtil.maxNumberFormat(Arith.div(assetsItemEntity.getBalance(), MyWallet.RATE_S), 12));
+
         switch (assetsItemEntity.getFiled1()) {
             case "Connecting":
                 viewHolder.tvTime.setVisibility(View.GONE);
                 viewHolder.tvStatus.setText(context.getString(R.string.connecting));
-                viewHolder.tvProgress.setVisibility(View.GONE);
-                viewHolder.ivSync.setVisibility(View.GONE);
+                viewHolder.tvProgress.setVisibility(View.VISIBLE);
+                viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");
+                viewHolder.ivSync.setVisibility(View.VISIBLE);
+                viewHolder.ivSync.startAnimation(hyperspaceJumpAnimation);
                 break;
             case "Disconnected":
 
@@ -81,8 +88,10 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
                 } else {
                     viewHolder.tvTime.setVisibility(View.GONE);
                     viewHolder.tvStatus.setText(context.getString(R.string.connecting));
-                    viewHolder.tvProgress.setVisibility(View.GONE);
-                    viewHolder.ivSync.setVisibility(View.GONE);
+                    viewHolder.tvProgress.setVisibility(View.VISIBLE);
+                    viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");
+                    viewHolder.ivSync.setVisibility(View.VISIBLE);
+                    viewHolder.ivSync.startAnimation(hyperspaceJumpAnimation);
                 }
                 break;
             case "Connected":
@@ -92,9 +101,7 @@ public class AssetskAdapter extends RecyclerView.Adapter<AssetskAdapter.ViewHold
                 viewHolder.tvProgress.setVisibility(View.VISIBLE);
                 viewHolder.tvProgress.setText(assetsItemEntity.getProgress() + "%");
                 viewHolder.ivSync.setVisibility(View.VISIBLE);
-                Animation hyperspaceJumpAnimation = AnimationUtils.loadAnimation(
-                        context, R.anim.load_animation);
-                hyperspaceJumpAnimation.setInterpolator(new LinearInterpolator());//匀速插值器
+
                 viewHolder.ivSync.startAnimation(hyperspaceJumpAnimation);
                 if (assetsItemEntity.getProgress() == 100) {
                     viewHolder.tvStatus.setText(context.getString(R.string.lastsynctime));

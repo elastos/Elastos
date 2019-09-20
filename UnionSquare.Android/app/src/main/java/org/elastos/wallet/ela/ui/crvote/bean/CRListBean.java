@@ -176,6 +176,7 @@ public class CRListBean extends BaseEntity implements Serializable {
                 }
                 private BigDecimal curentBalance;//为了购物车新增的输入控件字段
                 private boolean isChecked;//为了购物车新增的控件选中字段
+                private boolean isSelect;//为了列表容易展示   是否已经加入购物车
                 private String ownerpublickey;
                 private String nodepublickey;
                 private String nickname;
@@ -279,6 +280,14 @@ public class CRListBean extends BaseEntity implements Serializable {
 
                 public void setVoterate(String voterate) {
                     this.voterate = voterate;
+                }
+
+                public boolean isSelect() {
+                    return isSelect;
+                }
+
+                public void setSelect(boolean select) {
+                    isSelect = select;
                 }
 
                 @Override

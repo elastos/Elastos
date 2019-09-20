@@ -1,11 +1,9 @@
 package org.elastos.wallet.ela.ui.crvote.adapter;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.elastos.wallet.R;
@@ -20,35 +18,23 @@ import org.elastos.wallet.ela.utils.GlideRequest;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class CRListAdapter extends BaseQuickAdapter<CRListBean.DataBean.ResultBean.ProducersBean, BaseViewHolder> {
+public class CRListAdapter extends CRListAdapterFather {
 
     private final GlideRequest<Bitmap> glideRequest;
-    private BaseFragment context;
-    private Map<String, String> map;
-private boolean showCheckbox;
-    //private int pos;
-    private boolean is;
 
     public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
-        super(R.layout.item_cr_list, data);
-        this.context = context;
-       // this.pos = pos;
-        this.is = is;
+        super(R.layout.item_cr_list, context, data, is);
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
-        if (map == null) {
-            map = new HashMap<>();
-        } else {
-            map.clear();
-        }
+
 
     }
 
     @Override
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.ProducersBean bean) {
+        super.convert(helper, bean);
+        helper.setGone(R.id.view, !showCheckbox);
 
         helper.setBackgroundColor(R.id.tv_rank, context.getResources().getColor(R.color.white));
         helper.setTextColor(R.id.tv_rank, context.getResources().getColor(R.color.surebutton));
@@ -125,14 +111,5 @@ private boolean showCheckbox;
         });
     }
 
- /*   @Override
-    public void onViewRecycled(BaseViewHolder holder)//这个方法是Adapter里面的
-    {
-        if (holder != null) {
-            GlideApp.with(context).clear((ImageView) holder.getView(R.id.iv_icon));
-        }
-        super.onViewRecycled(holder);
-
-    }*/
 
 }

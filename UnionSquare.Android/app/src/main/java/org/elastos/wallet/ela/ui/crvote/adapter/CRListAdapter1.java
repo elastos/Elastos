@@ -1,11 +1,9 @@
 package org.elastos.wallet.ela.ui.crvote.adapter;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.elastos.wallet.R;
@@ -24,36 +22,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CRListAdapter1 extends BaseQuickAdapter<CRListBean.DataBean.ResultBean.ProducersBean, BaseViewHolder> {
+public class CRListAdapter1 extends CRListAdapterFather {
 
     private final GlideRequest<Bitmap> glideRequest;
-    private BaseFragment context;
-    private Map<String, String> map;
 
-    private int pos;
-    private boolean is;
 
     public CRListAdapter1(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
-        super(R.layout.item_super_node_list1, data);
-        this.context = context;
-        this.pos = pos;
-        this.is = is;
+        super(R.layout.item_super_node_list1, context, data, is);
+
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle)
                 .placeholder(R.mipmap.found_vote_initial_circle).circleCrop();
-        if (map == null) {
-            map = new HashMap<>();
-        } else {
-            map.clear();
-        }
     }
+
 
     @Override
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.ProducersBean bean) {
-
+        super.convert(helper, bean);
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
         if (is && 0 == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll,  context.getResources().getColor(R.color.blue1));
-            helper.setText(R.id.tv_rank, "" + (pos + 1));
+            helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.blue1));
         }
         helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
 
@@ -99,6 +86,15 @@ public class CRListAdapter1 extends BaseQuickAdapter<CRListBean.DataBean.ResultB
                 glideRequest.load(imgUrl).into(iv1);
             }
         });
+    }
+
+    public boolean isShowCheckbox() {
+        return showCheckbox;
+    }
+
+    public void setShowCheckbox(boolean showCheckbox) {
+        this.showCheckbox = showCheckbox;
+        notifyDataSetChanged();
     }
 }
 

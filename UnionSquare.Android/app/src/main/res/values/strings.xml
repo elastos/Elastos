@@ -407,7 +407,7 @@
     <string name="signedtreat">已签名交易</string>
     <string name="social">社区</string>
     <string name="nopermiss">当前钱包无权签名此交易</string>
-    <string name="onlyid">识别码 \n【 %1$s 】</string>
+    <string name="onlyid">识别码【 %1$s 】</string>
     <string name="signstatus">（已签名：%1$s，待签名：%2$s）</string>
     <string name="showwallletpk">查看钱包公钥</string>
     <string name="pknum">公钥数量</string>
@@ -435,5 +435,6 @@
     <string name="verifymneminicpwd">验证助记词密码</string>
     <string name="mine">我的</string>
     <string name="multiadd">批量加入候选列表</string>
-
+    <string name="currentpage">第 %1$s 张</string>
+    <string name="addsucess">加入成功</string>
 </resources>

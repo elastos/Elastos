@@ -10,9 +10,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,6 +34,7 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter1;
+import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapterFather;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRInformationFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRManageFragment;
@@ -42,15 +42,14 @@ import org.elastos.wallet.ela.ui.crvote.fragment.CRMyVoteFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRNodeCartFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRSignUpForFragment;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 超级节点选举
@@ -65,8 +64,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> netList;
     @BindView(R.id.iv_swichlist)
     ImageView ivSwichlist;
-    @BindView(R.id.iv_select)
-    ImageView ivSelect;
+    @BindView(R.id.iv_toselect)
+    ImageView ivToSelect;
     @BindView(R.id.recyclerview1)
     RecyclerView recyclerview1;
 
@@ -78,12 +77,12 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     QMUILinearLayout llBottom1;
     @BindView(R.id.ll_bottom2)
     LinearLayout llBottom2;
-    Unbinder unbinder;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     CRlistPresenter presenter;
     private CRListAdapter1 adapter1;
     private CRListAdapter adapter;
+    private CRListAdapterFather curentAdapter;
     private CRListBean.DataBean.ResultBean.ProducersBean curentNode;
     private String publicKey;
 
@@ -114,12 +113,36 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         }
     }
 
-    @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist, R.id.iv_select, R.id.ll_add})
+    @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist, R.id.iv_toselect, R.id.ll_add, R.id.cb_selectall})
     public void onViewClicked(View view) {
         Bundle bundle;
         switch (view.getId()) {
             case R.id.ll_add:
                 //批量加入
+                if (curentAdapter.getChecckPosition().size() > 0) {
+                    for (int i : curentAdapter.getChecckPosition()) {
+                        //存储选中的=原来的(isSelect)+getChecckPosition
+                        ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> list = CacheUtil.getCRProducerList();
+                        list.add(netList.get(i));
+                        CacheUtil.setCRProducerList(list);
+                    }
+                    showToast(getString(R.string.addsucess));
+                }
+                //关闭批量加入购物车状态
+                ivToSelect.setImageResource(R.mipmap.multi_import_btn);
+                ivSwichlist.setVisibility(View.VISIBLE);
+                llBottom2.setVisibility(View.GONE);
+                llBottom1.setVisibility(View.VISIBLE);
+                curentAdapter.setShowCheckbox(false);
+                break;
+            case R.id.cb_selectall:
+
+                //全选
+                if (((CheckBox) view).isChecked()) {
+                    curentAdapter.addAllPosition();
+                } else {
+                    curentAdapter.removeAllPosition();
+                }
 
                 break;
             case R.id.tv_myvote:
@@ -159,36 +182,46 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 }
                 break;
             case R.id.iv_swichlist:
+                //两种list切换展示
                 if (recyclerview.getVisibility() == View.VISIBLE) {
                     ivSwichlist.setImageResource(R.mipmap.vote_switch_squeral);
                     recyclerview.setVisibility(View.GONE);
                     recyclerview1.setVisibility(View.VISIBLE);
+                    curentAdapter = adapter1;
                 } else {
                     ivSwichlist.setImageResource(R.mipmap.vote_switch_list);
                     recyclerview1.setVisibility(View.GONE);
                     recyclerview.setVisibility(View.VISIBLE);
+                    curentAdapter = adapter;
                 }
                 break;
-            case R.id.iv_select:
+            case R.id.iv_toselect:
+                //批量加入购物车 当展示这种页面ivSwichlist会隐藏
                 if (ivSwichlist.getVisibility() == View.VISIBLE) {
-                    ivSelect.setImageResource(R.mipmap.found_vote_finish);
+                    ivToSelect.setImageResource(R.mipmap.found_vote_finish);
                     ivSwichlist.setVisibility(View.GONE);
                     llBottom2.setVisibility(View.VISIBLE);
                     llBottom1.setVisibility(View.GONE);
+                    //同步已经加入购物车的数据setSelect
+                    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> list = CacheUtil.getCRProducerList();
+                    if (list != null && list.size() > 0) {
+                        for (CRListBean.DataBean.ResultBean.ProducersBean bean : netList) {
+                            if (list.contains(bean)) {
+                                bean.setSelect(true);
+                            }
+                        }
+                    }
+                    curentAdapter.setShowCheckbox(true);
+
                 } else {
-                    ivSelect.setImageResource(R.mipmap.multi_import_btn);
+                    ivToSelect.setImageResource(R.mipmap.multi_import_btn);
                     ivSwichlist.setVisibility(View.VISIBLE);
                     llBottom2.setVisibility(View.GONE);
                     llBottom1.setVisibility(View.VISIBLE);
+                    curentAdapter.setShowCheckbox(false);
                 }
 
 
-                if (recyclerview.getVisibility() == View.VISIBLE) {
-
-
-                } else {
-
-                }
                 break;
         }
     }
@@ -196,6 +229,20 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
     @Override
     public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+        if (((CRListAdapterFather) adapter).isShowCheckbox()) {
+            CheckBox cb = view.findViewById(R.id.checkbox);
+            // netList.get(position).setChecked(!netList.get(position).isChecked());
+            (cb).toggle();
+            if (cb.isChecked()) {
+                ((CRListAdapterFather) adapter).getChecckPosition().add(position);
+            } else {
+                ((CRListAdapterFather) adapter).getChecckPosition().remove(position);
+            }
+
+            //adapter.notifyDataSetChanged();优化内存  不用这个
+            return;
+        }
+
         Bundle bundle = new Bundle();
         bundle.putString("zb", zb);
         bundle.putSerializable("bean", netList.get(position));
@@ -215,9 +262,12 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             adapter = new CRListAdapter(this, netList, pos, is);
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
+            if (curentAdapter == null)
+                curentAdapter = adapter;
         } else {
             adapter.notifyDataSetChanged();
         }
+
     }
 
     private void setRecyclerview1(boolean is, int pos) {
@@ -336,17 +386,5 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }

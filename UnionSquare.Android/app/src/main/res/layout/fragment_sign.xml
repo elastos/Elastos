@@ -18,15 +18,30 @@
         android:padding="10dp"
         android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/tv_onlycode"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="260dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/px70"
-        android:gravity="center"
-        android:lineSpacingMultiplier="1.2"
-        android:textColor="#ffffffff"
-        android:textSize="11sp" />
+        android:orientation="horizontal">
+
+        <TextView
+
+            android:id="@+id/tv_onlycode"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#ffffffff"
+            android:textSize="11sp" />
+
+        <TextView
+
+            android:id="@+id/tv_vptitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="#ffffffff"
+            android:textSize="11sp" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/ll_vp"
@@ -46,14 +61,6 @@
             android:paddingRight="35dp" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tv_vptitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/px30"
-        android:gravity="center"
-        android:textColor="#ffffffff"
-        android:textSize="13sp" />
 
     <TextView
         android:layout_width="match_parent"
@@ -65,14 +72,14 @@
         android:textSize="11sp" />
 
     <TextView
-        android:visibility="gone"
         android:id="@+id/tv_signstatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/signstatus"
         android:textColor="#ffffffff"
-        android:textSize="11sp" />
+        android:textSize="11sp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tv_multip"

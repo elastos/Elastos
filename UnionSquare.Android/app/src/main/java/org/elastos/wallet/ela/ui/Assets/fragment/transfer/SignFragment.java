@@ -237,12 +237,14 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
         viewpage.setAdapter(signViewPagetAdapter);
         viewpage.setPageTransformer(true, new ScaleTransformer());
         viewpage.setPageMargin(30);
-        tvVptitle.setText(1 + "/" + images.size());
+        String msg = String.format(getString(R.string.currentpage), 1 + "/" + images.size());
+        tvVptitle.setText(msg);
         viewpage.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                tvVptitle.setText((position + 1) + "/" + images.size());
+                String msg = String.format(getString(R.string.currentpage), (position + 1) + "/" + images.size());
+                tvVptitle.setText(msg);
             }
         });
     }

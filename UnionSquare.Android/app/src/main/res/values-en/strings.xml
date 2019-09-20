@@ -430,4 +430,6 @@
     <string name="verifymneminicpwd">Verify Mnemonic Password</string>
     <string name="mine">Mine</string>
     <string name="multiadd">Add to Candidate List in Batches</string>
+    <string name="currentpage">第 %1$s 张</string>
+    <string name="addsucess">加入成功</string>
 </resources>
