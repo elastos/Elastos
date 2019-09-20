@@ -402,7 +402,7 @@
     <string name="signedtreat">Signed Transaction</string>
     <string name="social">Community</string>
     <string name="nopermiss">Current wallet does not have the right to sign this transaction</string>
-    <string name="onlyid">ID \n【 %1$s 】</string>
+    <string name="onlyid">ID【 %1$s 】</string>
     <string name="signstatus">（Signed：%1$s，to be Signed：%2$s）</string>
     <string name="showwallletpk">Extended Public Keys</string>
     <string name="pknum">Number of Public Keys</string>
