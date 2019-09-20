@@ -5,19 +5,6 @@
 
 local tx_util = {}
 
-local keystore = getWallet()
-local password = getPassword()
-
-if keystore == "" then
-    keystore = "keystore.dat"
-end
-if password == "" then
-    password = "123"
-end
-
-local wallet = client.new(keystore, password, false)
-tx_util.wallet = wallet
-
 function tx_util.common_test()
     print('common_test invoked.')
 end
