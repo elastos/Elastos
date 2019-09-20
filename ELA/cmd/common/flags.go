@@ -200,6 +200,10 @@ var (
 		Name:  "checkaddressheight",
 		Usage: "defines the height begin to check output hash",
 	}
+	EnableArbiterFlag = cli.StringFlag{
+		Name: "arbiter",
+		Usage: "indicates where or not to enable DPoS arbiter switch",
+	}
 	CRCOnlyDPOSHeightFlag = cli.StringFlag{
 		Name: "crconlydposheight",
 		Usage: "(H1) indicates the height of DPOS consensus begins with only " +

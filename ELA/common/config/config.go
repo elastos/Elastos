@@ -73,6 +73,7 @@ type Configuration struct {
 	EnableHistory               bool              `json:"EnableHistory"`
 	HistoryStartHeight          uint32            `json:"HistoryStartHeight"`
 	EnableUtxoDB                bool              `json:"EnableUtxoDB"`
+	WalletPath                  string            `json:"WalletPath"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.

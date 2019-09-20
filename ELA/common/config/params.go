@@ -176,6 +176,7 @@ var DefaultParams = Params{
 	CRAgreementCount:            8,
 	VoterRejectPercentage:       10,
 	EnableUtxoDB:                true,
+	WalletPath:                  "keystore.dat",
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
 		EnableHistory:      false,
 		HistoryStartHeight: uint32(0),
@@ -451,6 +452,9 @@ type Params struct {
 
 	// EnableUtxoDB indicate whether to enable utxo database.
 	EnableUtxoDB bool
+
+	// WalletPath defines the wallet path used by DPoS arbiters and CR members.
+	WalletPath string
 }
 
 // rewardPerBlock calculates the reward for each block by a specified time
