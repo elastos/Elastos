@@ -684,7 +684,7 @@ namespace Elastos {
 			if (_parent->_subAccount->IsProducerDepositAddress(o->Output()->Addr()) || _parent->_subAccount->IsCRDepositAddress(o->Output()->Addr())) {
 				_balanceDeposit += o->Output()->Amount();
 				_utxosDeposit.push_back(o);
-				//SPVLOG_DEBUG("{} add deposit utxo {} n {} addr {} amount +{} = deposit {}", \
+				SPVLOG_DEBUG("{} +++ deposit utxo {}:{}:{}:{} -> deposit {}", \
 							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
 							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balanceDeposit.getDec());
 			} else {
@@ -692,13 +692,13 @@ namespace Elastos {
 				if (o->Output()->GetType() == TransactionOutput::Type::VoteOutput) {
 					_balanceVote += o->Output()->Amount();
 					_utxosVote.push_back(o);
-					//SPVLOG_DEBUG("{} add vote utxo {} n {} addr {} amount +{} = vote {} balance {}", \
+					SPVLOG_DEBUG("{} +++ vote utxo {}:{}:{}:{} -> vote {} balance {}", \
 								 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
 								 o->Output()->Addr().String(), o->Output()->Amount().getDec(), \
 								 _balanceVote.getDec(), _balance.getDec());
 				} else {
 					_utxos.push_back(o);
-					//SPVLOG_DEBUG("{} add utxo {} n {} addr {} amount +{} = balance {}", \
+					SPVLOG_DEBUG("{} +++ utxo {}:{}:{}:{} -> balance {}", \
 								 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
 								 o->Output()->Addr().String(), o->Output()->Amount().getDec(), \
 								 _balance.getDec());
@@ -715,13 +715,13 @@ namespace Elastos {
 			if (o->GetConfirms(_parent->_blockHeight) <= 100) {
 				_balanceLocked += o->Output()->Amount();
 				_utxosLocked.push_back(o);
-				//SPVLOG_DEBUG("{} add coinbase locked utxo {} n {} addr {} amount +{} = locked {}", \
+				SPVLOG_DEBUG("{} +++ coinbase locked utxo {}:{}:{}:{} -> locked {}", \
 							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
 							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balanceLocked.getDec());
 			} else {
 				_balance += o->Output()->Amount();
 				_utxosCoinbase.push_back(o);
-				//SPVLOG_DEBUG("{} add coinbase utxo {} n {} addr {} amount +{} = balance {}", \
+				SPVLOG_DEBUG("{} +++ coinbase utxo {}:{}:{}:{} -> balance {}", \
 							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
 							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balance.getDec());
 			}
@@ -750,7 +750,7 @@ namespace Elastos {
 					assert(_balance >= (*it)->Output()->Amount());
 					(*it)->SetSpent(true);
 					_balance -= (*it)->Output()->Amount();
-					//SPVLOG_DEBUG("{} remove coinbase utxo {} n {} addr {} amount -{} = balance {}", \
+					SPVLOG_DEBUG("{} --- coinbase utxo {}:{}:{}:{} -> balance {}", \
 								 _parent->_walletID, hash.GetHex(), n, (*it)->Output()->Addr().String(), \
 								 (*it)->Output()->Amount().getDec(), _balance.getDec());
 					_utxosCoinbase.erase(it);
@@ -764,7 +764,7 @@ namespace Elastos {
 					assert(_balance >= (*it)->Output()->Amount());
 					_balanceVote -= (*it)->Output()->Amount();
 					_balance -= (*it)->Output()->Amount();
-					//SPVLOG_DEBUG("{} remove vote utxo {} n {} addr {} amount -{} = vote balance {} balance {}", \
+					SPVLOG_DEBUG("{} --- vote utxo {}:{}:{}:{} -> vote balance {} balance {}", \
 								 _parent->_walletID, hash.GetHex(), n, (*it)->Output()->Addr().String(), \
 								 (*it)->Output()->Amount().getDec(), _balanceVote.getDec(), _balance.getDec());
 					_utxosVote.erase(it);
@@ -776,7 +776,7 @@ namespace Elastos {
 				if ((*it)->Equal(hash, n)) {
 					assert(_balance >= (*it)->Output()->Amount());
 					_balance -= (*it)->Output()->Amount();
-					//SPVLOG_DEBUG("{} remove utxo {} n {} addr {} amount -{} = balance {}", \
+					SPVLOG_DEBUG("{} --- utxo {}:{}:{}:{} -> balance {}", \
 								 _parent->_walletID, hash.GetHex(), n, (*it)->Output()->Addr().String(), \
 								 (*it)->Output()->Amount().getDec(), _balance.getDec());
 					_utxos.erase(it);
@@ -788,7 +788,7 @@ namespace Elastos {
 				if ((*it)->Equal(hash, n)) {
 					assert(_balanceDeposit >= (*it)->Output()->Amount());
 					_balanceDeposit -= (*it)->Output()->Amount();
-					//SPVLOG_DEBUG("{} remove deposit utxo {} n {} addr {} amount -{} = deposit balance {}", \
+					SPVLOG_DEBUG("{} --- deposit utxo {}:{}:{}:{} -> deposit balance {}", \
 								 _parent->_walletID, hash.GetHex(), n, (*it)->Output()->Addr().String(), \
 								 (*it)->Output()->Amount().getDec(), _balanceDeposit.getDec());
 					_utxosDeposit.erase(it);
@@ -826,7 +826,7 @@ namespace Elastos {
 					_balanceLocked -= (*locked)->Output()->Amount();
 					_balance += (*locked)->Output()->Amount();
 					_utxosCoinbase.push_back(*locked);
-					//SPVLOG_DEBUG("{} move locked utxo {} n {} amount {} locked balance {} balance {}", \
+					SPVLOG_DEBUG("{} move locked utxo {}:{}:{} -> locked balance {} balance {}", \
 								 _parent->_walletID, (*locked)->Hash().GetHex(), (*locked)->Index(), \
 								 (*locked)->Output()->Amount().getDec(), _balanceLocked.getDec(), _balance.getDec());
 					locked = _utxosLocked.erase(locked);

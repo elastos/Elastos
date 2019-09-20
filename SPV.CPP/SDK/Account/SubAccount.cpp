@@ -85,6 +85,14 @@ namespace Elastos {
 
 		size_t SubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {
 			addr.clear();
+#ifdef SPDLOG_DEBUG_ON
+			nlohmann::json j;
+			for (Address address : _externalChain)
+				j.push_back(address.String());
+			for (Address address : _internalChain)
+				j.push_back(address.String());
+			SPVLOG_DEBUG("all addr -> {}", j.dump());
+#endif
 
 			size_t maxCount = _externalChain.size() + (containInternal ? _internalChain.size() : 0);
 

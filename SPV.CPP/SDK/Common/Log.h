@@ -41,7 +41,7 @@ namespace Elastos {
 				std::string filepath = SPV_FILE_NAME;
 				if (path != "") {
 					filepath = path + "/" + SPV_FILE_NAME;
-					auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, 1024*1024*2, 1);
+					auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, 1024*1024*50, 1);
 					file_sink->set_level(spdlog::level::debug);
 					sinks.push_back(file_sink);
 				}
@@ -50,7 +50,7 @@ namespace Elastos {
 				spdlog::register_logger(logger);
 
 				spdlog::get(SPV_DEFAULT_LOG)->set_pattern("%m-%d %T.%e %P %t %^%L%$ %n %v");
-				spdlog::get(SPV_DEFAULT_LOG)->flush_on(spdlog::level::warn);
+				spdlog::get(SPV_DEFAULT_LOG)->flush_on(spdlog::level::debug);
 			}
 
 			template<typename Arg1, typename... Args>

@@ -71,7 +71,7 @@ namespace Elastos {
 				} else {
 					txns[i]->IsRegistered() = true;
 					if (StripTransaction(txns[i])) {
-						SPVLOG_DEBUG("{} lstrip tx: {}, h: {}, t: {}",
+						SPVLOG_DEBUG("{} strip tx: {}, h: {}, t: {}",
 									 _walletID,
 									 txns[i]->GetHash().GetHex(),
 									 txns[i]->GetBlockHeight(),
