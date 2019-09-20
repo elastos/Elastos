@@ -7,7 +7,7 @@ xcuserdata
 
 /Podfile.lock
 /Products
-/Elastos.DID.Swift.SDK.xcworkspace
+/ElastosDIDSDK.xcworkspace
 
 /node_modules
 /package-lock.json
