@@ -22,7 +22,7 @@
 
 package org.elastos.carrier;
 
-interface GroupHandler {
+public interface GroupHandler {
 	/**
 	 * The callback function that process event of being connected to group.
 	 *
