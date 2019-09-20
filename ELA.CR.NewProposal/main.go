@@ -127,7 +127,7 @@ func startNode(c *cli.Context, st *settings) {
 		if err != nil {
 			printErrorAndExit(err)
 		}
-		act, err = account.Open(password)
+		act, err = account.Open(password, st.params.WalletPath)
 		if err != nil {
 			printErrorAndExit(err)
 		}
