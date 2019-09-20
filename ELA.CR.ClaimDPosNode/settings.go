@@ -41,6 +41,10 @@ const (
 	// cmdValueSplitter defines the splitter to split raw string into a
 	// string array
 	cmdValueSplitter = ","
+
+	// cmdNameSplitter defines the splitter to split raw string into a
+	// string array
+	commandNameSplitter = ","
 )
 
 var (
@@ -61,7 +65,7 @@ type settingItem struct {
 
 func (s *settingItem) TryInitValue(params *config.Params,
 	conf *config.Configuration, c *cli.Context) error {
-	if s.Flag != nil && c.IsSet(s.Flag.GetName()) {
+	if s.Flag != nil && c.IsSet(GetFullCommandName(s.Flag)) {
 		value, err := s.getCliValue(c)
 		if err != nil {
 			return err
@@ -85,7 +89,7 @@ func (s *settingItem) TryInitValue(params *config.Params,
 }
 
 func (s *settingItem) getCliValue(c *cli.Context) (interface{}, error) {
-	value := c.String(s.Flag.GetName())
+	value := c.String(GetFullCommandName(s.Flag))
 	switch s.DefaultValue.(type) {
 	case common.Fixed64:
 		v, err := strconv.ParseInt(value, 10, 64)
@@ -228,14 +232,14 @@ func (s *settings) initNetSetting() (err error) {
 		regTest = false
 	}
 
-	if s.context.IsSet(cmdcom.TestNetFlag.Name) {
+	if s.context.IsSet(GetFullCommandName(cmdcom.TestNetFlag)) {
 		if testNet, err = strconv.ParseBool(s.context.String(
-			cmdcom.TestNetFlag.Name)); err != nil {
+			GetFullCommandName(cmdcom.TestNetFlag))); err != nil {
 			return
 		}
-	} else if s.context.IsSet(cmdcom.RegTestFlag.Name) {
+	} else if s.context.IsSet(GetFullCommandName(cmdcom.RegTestFlag)) {
 		if regTest, err = strconv.ParseBool(s.context.String(
-			cmdcom.RegTestFlag.Name)); err != nil {
+			GetFullCommandName(cmdcom.RegTestFlag))); err != nil {
 			return
 		}
 	}
@@ -265,9 +269,9 @@ func (s *settings) initNetSetting() (err error) {
 
 	config.Parameters = s.conf
 	instantBlock := s.conf.PowConfiguration.InstantBlock
-	if s.context.IsSet(cmdcom.InstantBlockFlag.Name) {
+	if s.context.IsSet(GetFullCommandName(cmdcom.InstantBlockFlag)) {
 		if instantBlock, err = strconv.ParseBool(s.context.String(
-			cmdcom.InstantBlockFlag.Name)); err != nil {
+			GetFullCommandName(cmdcom.InstantBlockFlag))); err != nil {
 			return
 		}
 	}
@@ -305,6 +309,12 @@ func newSettings() *settings {
 		DefaultValue: []string{},
 		ConfigPath:   "DNSSeeds",
 		ParamName:    "DNSSeeds"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.AccountWalletFlag,
+		DefaultValue: "",
+		ConfigPath:   "WalletPath",
+		ParamName:    "WalletPath"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.EnableDnsFlag,
@@ -549,15 +559,24 @@ func newSettings() *settings {
 	// DPoS configurations
 
 	result.Add(&settingItem{
-		Flag:         nil,
+		Flag:         cmdcom.EnableArbiterFlag,
 		DefaultValue: false,
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
 			// When arbiter service enabled, IP address must be set.
 			return checkHost(conf.DPoSConfiguration.IPAddress)
 		},
-		ConfigPath: "DPoSConfiguration.EnableArbiter",
-		ParamName:  ""})
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			enable, ok := i.(bool)
+			if !ok {
+				return errors.New("invalid enable arbiter value")
+			}
+			conf.DPoSConfiguration.EnableArbiter = enable
+			// When arbiter service enabled, IP address must be set.
+			return checkHost(conf.DPoSConfiguration.IPAddress)
+		},
+		ParamName: ""})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.DPoSMagicFlag,
@@ -822,4 +841,9 @@ func (s *settings) trySetUintPortValue(cliFlag string, value *uint16,
 		*value = defaultValue
 	}
 	return nil
+}
+
+func GetFullCommandName(flag cli.Flag) string {
+	result := strings.Split(flag.GetName(), commandNameSplitter)[0]
+	return strings.TrimSpace(result)
 }
