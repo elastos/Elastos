@@ -33,8 +33,9 @@ import Foundation
 class FileSystemStore: DIDStore {
 
     private static let TAG_FILE: String = ".DIDStore"
-    private static let TAG_MAGIC: Data = "013113".data(using: .utf8)!
-    private static let TAG_VERSION: Data = "0001".data(using: .utf8)!
+    private static let TAG_MAGIC: [UInt8] =  [0x00, 0x0D, 0x01, 0x0D]
+    private static let TAG_VERSION: [UInt8] = [0x00, 0x00, 0x00, 0x01]
+    private static let TAG_SIZE = 8
     private static let PRIVATE_DIR: String = "private"
     private static let HDKEY_FILE: String = "key"
     private static let INDEX_FILE: String = "index"
@@ -49,7 +50,6 @@ class FileSystemStore: DIDStore {
 
     private var storeRoot: String!
 
-    //  file path  NSHomeDirectory() + "/Documents/DIDStore/DIDStore.json"
     init(_ dir: String) throws {
         super.init()
         storeRoot = dir
@@ -70,7 +70,12 @@ class FileSystemStore: DIDStore {
         try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
         let filePath = "\(dir)/\(FileSystemStore.TAG_FILE)"
         fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
-        // TODO: write data
+        let data1 = Data(bytes: FileSystemStore.TAG_MAGIC)
+        let data2 = Data(bytes: FileSystemStore.TAG_VERSION)
+        let writeHandle = FileHandle(forWritingAtPath: filePath)
+        writeHandle?.write(data1)
+        writeHandle?.seekToEndOfFile()
+        writeHandle?.write(data2)
     }
 
     private func checkStore(_ dir: String) throws {
@@ -84,16 +89,17 @@ class FileSystemStore: DIDStore {
         let fileManager = FileManager.default
         let auttributes = try fileManager.attributesOfItem(atPath: filePath)
         let fileSize = auttributes[FileAttributeKey.size] as! Int
-        guard fileSize == 10 else {
+        guard fileSize == FileSystemStore.TAG_SIZE  else {
             // Throws error
             return
         }
-
-        let magig = readHandler?.readData(ofLength: 6)
+        let data1 = Data(bytes: FileSystemStore.TAG_MAGIC)
+        let data2 = Data(bytes: FileSystemStore.TAG_VERSION)
+        let magig = readHandler?.readData(ofLength: 4)
         let seek = UInt64(magig!.count)
         readHandler?.seek(toFileOffset: seek)
         let version = readHandler?.readDataToEndOfFile()
-        guard (magig?.count == 6) && (version?.count == 4 ) && magig == FileSystemStore.TAG_MAGIC && version == FileSystemStore.TAG_VERSION else  {
+        guard (magig?.count == 4) && (version?.count == 4 ) && magig == data1 && version == data2 else  {
             // TODO: throws error
             return
         }
