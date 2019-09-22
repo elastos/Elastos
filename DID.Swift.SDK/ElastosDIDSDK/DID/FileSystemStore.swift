@@ -1,4 +1,3 @@
-
 import Foundation
 
 /*
@@ -316,7 +315,6 @@ class FileSystemStore: DIDStore {
         return true
     }
 }
-
 
 public class Entry<K, V> {
     var key: K!

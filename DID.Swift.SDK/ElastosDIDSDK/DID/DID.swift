@@ -44,4 +44,3 @@ public class DID: NSObject {
         return document!
     }
 }
-

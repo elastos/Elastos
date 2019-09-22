@@ -1,5 +1,3 @@
-
-
 import Foundation
 
 public enum DIDError: Error {
@@ -7,7 +5,6 @@ public enum DIDError: Error {
 }
 
 extension DIDError {
-
     static func des(_ error: DIDError) -> String {
         switch error {
         case .failue(let err):

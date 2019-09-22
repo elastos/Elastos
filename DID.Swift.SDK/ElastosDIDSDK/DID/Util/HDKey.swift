@@ -1,5 +1,3 @@
-
-
 import Foundation
 import BitcoinKit
 
@@ -32,5 +30,4 @@ public class HDKey: NSObject {
        childPrivatedKey = try rootPrivateKey.derived(at: UInt32(index))
         return childPrivatedKey
     }
-
 }

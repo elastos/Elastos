@@ -1,4 +1,2 @@
-
-
 import Foundation
 import BitcoinKit

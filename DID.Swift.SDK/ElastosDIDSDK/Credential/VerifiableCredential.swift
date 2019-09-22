@@ -1,9 +1,6 @@
-
-
 import Foundation
 
 public class VerifiableCredential: DIDObject {
-
     private var types: Array<String>!
     private var issuer: DID!
     private var issuanceDate: Date!
@@ -21,6 +18,4 @@ public class VerifiableCredential: DIDObject {
         self.subject = vc.subject
         self.proof = vc.proof
     }
-    
 }
-

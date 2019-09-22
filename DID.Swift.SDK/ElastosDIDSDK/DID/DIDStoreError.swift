@@ -1,7 +1,4 @@
-
-
 import Foundation
-
 
 public enum DIDStoreError: Error {
     case failue(_ des: String?)

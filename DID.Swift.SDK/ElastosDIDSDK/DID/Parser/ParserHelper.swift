@@ -8,5 +8,4 @@ class ParserHelper: NSObject {
 //        let lexer: DIDURLLexer = DIDURLLexer(input)
 
     }
-
 }

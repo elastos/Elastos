@@ -1,9 +1,6 @@
-
-
 import Foundation
 
 public class Service: DIDObject {
-
     private var endpoint: String!
 
     init(_ id: DIDURL, _ type: String, _ endpoint: String) {
@@ -23,5 +20,4 @@ public class Service: DIDObject {
     }
 
     // TODO: toString from json
-    
 }

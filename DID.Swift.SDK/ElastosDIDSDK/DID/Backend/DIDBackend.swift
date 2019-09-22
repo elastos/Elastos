@@ -1,11 +1,8 @@
-
-
 import Foundation
 
 class DIDBackend: NSObject {
 
     public class func create(_ doc: DIDDocument, _ signKey: DIDURL, _ passphrase: String) throws -> Bool {
-
         // TODO:
         return false
     }
@@ -24,6 +21,4 @@ class DIDBackend: NSObject {
         // TODO:
         return nil
     }
-
 }
-

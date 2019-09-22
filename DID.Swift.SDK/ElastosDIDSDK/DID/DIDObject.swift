@@ -1,9 +1,6 @@
-
-
 import Foundation
 
 public class DIDObject: NSObject {
-
      var id: DIDURL!
      var type: String!
 
