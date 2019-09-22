@@ -28,6 +28,7 @@
 		112CC0E92331DB3F0018F76C /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112CC0E82331DB3F0018F76C /* DerivedKey.swift */; };
 		112CC0EB233218580018F76C /* DIDBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112CC0EA233218580018F76C /* DIDBackend.swift */; };
 		112CC0ED233218DB0018F76C /* IDChainRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112CC0EC233218DB0018F76C /* IDChainRequest.swift */; };
+		112CC0EF23331DE20018F76C /* PathExtracter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112CC0EE23331DE20018F76C /* PathExtracter.swift */; };
 		11F262AF23260CF40009C103 /* Elastos_DID_Swift_SDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		11F262B823260D720009C103 /* Issuer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262B723260D720009C103 /* Issuer.swift */; };
 		11F262BA23260D940009C103 /* VerifiableCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F262B923260D940009C103 /* VerifiableCredential.swift */; };
@@ -72,6 +73,7 @@
 		112CC0E82331DB3F0018F76C /* DerivedKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
 		112CC0EA233218580018F76C /* DIDBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDBackend.swift; sourceTree = "<group>"; };
 		112CC0EC233218DB0018F76C /* IDChainRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDChainRequest.swift; sourceTree = "<group>"; };
+		112CC0EE23331DE20018F76C /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathExtracter.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* Elastos_DID_Swift_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Elastos_DID_Swift_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* Elastos_DID_Swift_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Elastos_DID_Swift_SDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 		11F262BC23260DFD0009C103 /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				112CC0EE23331DE20018F76C /* PathExtracter.swift */,
 				1109D092232DDCB200A03D56 /* HDKey.swift */,
 				112CC0E82331DB3F0018F76C /* DerivedKey.swift */,
 				1109D094232DFFA500A03D56 /* JsonHelper.swift */,
@@ -375,6 +378,7 @@
 				11F4BA5A232FDAA3002B3789 /* File.swift in Sources */,
 				1109D0832327591900A03D56 /* DIDURLLexerATN.swift in Sources */,
 				11F262C623260E530009C103 /* DIDStore.swift in Sources */,
+				112CC0EF23331DE20018F76C /* PathExtracter.swift in Sources */,
 				1109D091232DD29300A03D56 /* EmbeddedCredential.swift in Sources */,
 				11F262CA23260E6F0009C103 /* FileSystemStore.swift in Sources */,
 			);
