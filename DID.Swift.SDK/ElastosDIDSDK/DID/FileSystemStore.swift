@@ -33,7 +33,8 @@ import Foundation
 class FileSystemStore: DIDStore {
 
     private static let TAG_FILE: String = ".DIDStore"
-
+    private static let TAG_MAGIC: Data = "013113".data(using: .utf8)!
+    private static let TAG_VERSION: Data = "0001".data(using: .utf8)!
     private static let PRIVATE_DIR: String = "private"
     private static let HDKEY_FILE: String = "key"
     private static let INDEX_FILE: String = "index"
@@ -48,43 +49,65 @@ class FileSystemStore: DIDStore {
 
     private var storeRoot: String!
 
+    //  file path  NSHomeDirectory() + "/Documents/DIDStore/DIDStore.json"
     init(_ dir: String) throws {
         super.init()
-        if dir.isEmpty {
-            // TODO ERROR
+        storeRoot = dir
+        guard !(dir.isEmpty) else {
+            // Throws error
+            return
+        }
+        if try exists(dir) {
+           try checkStore(dir)
+        }
+        else {
+           try creatStore(dir)
+        }
+    }
+
+    private func creatStore(_ dir: String) throws {
+        let fileManager = FileManager.default
+        try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+        let filePath = "\(dir)/\(FileSystemStore.TAG_FILE)"
+        fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
+        // TODO: write data
+    }
+
+    private func checkStore(_ dir: String) throws {
+        let filePath = "\(dir)/\(FileSystemStore.TAG_FILE)"
+        guard try exists(filePath) else {
+            // Throws error
+            return
         }
 
+        let readHandler = FileHandle(forReadingAtPath: filePath)
         let fileManager = FileManager.default
+        let auttributes = try fileManager.attributesOfItem(atPath: filePath)
+        let fileSize = auttributes[FileAttributeKey.size] as! Int
+        guard fileSize == 10 else {
+            // Throws error
+            return
+        }
+
+        let magig = readHandler?.readData(ofLength: 6)
+        let seek = UInt64(magig!.count)
+        readHandler?.seek(toFileOffset: seek)
+        let version = readHandler?.readDataToEndOfFile()
+        guard (magig?.count == 6) && (version?.count == 4 ) && magig == FileSystemStore.TAG_MAGIC && version == FileSystemStore.TAG_VERSION else  {
+            // TODO: throws error
+            return
+        }
+    }
+
+    private func exists(_ dir: String) throws -> Bool {
+        let fileManager = FileManager.default
+        try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
         let exist: Bool = fileManager.fileExists(atPath: dir)
-
-        if exist {
-            try checkStore(dir)
-        } else {
-            try createStore(dir)
-        }
+        return exist
     }
 
-    private func createStore(_ dir: String) throws {
-
-        let fileManager = FileManager.default
-        do {
-            try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
-        }
-        catch{
-            // TODO:
-        }
-        //        let cachePath: String = "\(dir)/\(path)"
-
-    }
-
-    private func checkStore(_ filePath: String) throws {
-        // TODO
-    }
-
-    override public func hasPrivateIdentity() -> Bool {
-
-        let fileManager = FileManager.default
-        return fileManager.fileExists(atPath: getHDPrivateKeyFile())
+    override public func hasPrivateIdentity() throws -> Bool {
+        return try getHDPrivateKeyFile(FileSystemStore.PRIVATE_DIR, FileSystemStore.HDKEY_FILE, false)
     }
 
     override public func storePrivateIdentity(_ key: String) throws {
@@ -272,11 +295,20 @@ class FileSystemStore: DIDStore {
         return try getFile(create, path)
     }
 
-    private func getHDPrivateKeyFile() -> String {
-        // TODO
-        return ""
+    private func getHDPrivateKeyFile(_ dir: String, _ hdKey: String, _ create: Bool) throws -> Bool {
+        let keyPath = "\(dir)/\(hdKey)/key"
+        guard try exists(keyPath) else {
+            // TODO: THROWS error
+            return false
+        }
+        let readHandler = FileHandle(forReadingAtPath: keyPath)
+        let key = readHandler?.readDataToEndOfFile() ?? Data()
+        guard key.count != 0 else {
+            // TODO: throws error
+            return false
+        }
+        return true
     }
-
 }
 
 
