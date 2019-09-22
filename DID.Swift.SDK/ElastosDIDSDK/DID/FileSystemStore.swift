@@ -111,6 +111,51 @@ class FileSystemStore: DIDStore {
         return exist
     }
 
+    private func getFile(_ create: Bool, _ path: String) throws -> String {
+        var relPath = storeRoot
+        let fileManager = FileManager.default
+        let paths = path.split{$0 == "/"}.map(String.init)
+
+        for (index, path) in paths.enumerated() {
+            if index == paths.endIndex - 1 {
+
+                relPath?.append("/")
+                relPath?.append(path)
+
+                if create {
+                    var isDirectory = ObjCBool.init(false)
+                    let fileExists = FileManager.default.fileExists(atPath: relPath!, isDirectory: &isDirectory)
+                    if !isDirectory.boolValue && fileExists {
+                       try deleteFile(relPath!)
+                    }
+                }
+            }
+        }
+
+        if create {
+            fileManager.createFile(atPath: relPath!, contents: nil, attributes: nil)
+        }
+
+        return relPath!
+    }
+
+    private func deleteFile(_ path: String) throws {
+
+        let fileManager = FileManager.default
+        var isDir = ObjCBool.init(false)
+        let fileExists = fileManager.fileExists(atPath: path, isDirectory: &isDir)
+        // If path is a folder, traverse the subfiles under the folder and delete them
+        if fileExists && isDir.boolValue {
+            if let dirContents = fileManager.enumerator(atPath: path) {
+
+                for case let url as URL in dirContents {
+                   try deleteFile(url.absoluteString)
+                }
+            }
+        }
+        try fileManager.removeItem(atPath: path)
+    }
+
     override public func hasPrivateIdentity() throws -> Bool {
         return try getHDPrivateKeyFile(FileSystemStore.PRIVATE_DIR, FileSystemStore.HDKEY_FILE, false)
     }
@@ -270,14 +315,6 @@ class FileSystemStore: DIDStore {
         catch{
             return nil
         }
-    }
-
-    private func getFile(_ create: Bool, _ path: String) throws -> String {
-
-        let store: String = "\(NSHomeDirectory())/Library/Caches/temp"
-
-        // TODO
-        return ""
     }
 
     private func getDir(_ path: String) throws -> String {
