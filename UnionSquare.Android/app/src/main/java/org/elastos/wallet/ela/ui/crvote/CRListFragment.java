@@ -77,6 +77,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     QMUILinearLayout llBottom1;
     @BindView(R.id.ll_bottom2)
     LinearLayout llBottom2;
+    @BindView(R.id.cb_selectall)
+    CheckBox cbSelectall;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     CRlistPresenter presenter;
@@ -119,29 +121,30 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         switch (view.getId()) {
             case R.id.ll_add:
                 //批量加入
-                if (curentAdapter.getChecckPosition().size() > 0) {
-                    for (int i : curentAdapter.getChecckPosition()) {
-                        //存储选中的=原来的(isSelect)+getChecckPosition
-                        ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> list = CacheUtil.getCRProducerList();
-                        list.add(netList.get(i));
-                        CacheUtil.setCRProducerList(list);
+                boolean tag = false;
+                ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> list = CacheUtil.getCRProducerList();
+                for (CRListBean.DataBean.ResultBean.ProducersBean bean : netList) {
+                    //存储选中的=原来的(isSelect)+getChecckPosition
+                    if (bean.isChecked()) {
+                        tag = true;
+                        list.add(bean);
                     }
+                }
+                if (tag) {
+                    CacheUtil.setCRProducerList(list);
                     showToast(getString(R.string.addsucess));
                 }
+
                 //关闭批量加入购物车状态
-                ivToSelect.setImageResource(R.mipmap.multi_import_btn);
-                ivSwichlist.setVisibility(View.VISIBLE);
-                llBottom2.setVisibility(View.GONE);
-                llBottom1.setVisibility(View.VISIBLE);
-                curentAdapter.setShowCheckbox(false);
+                closeAdd();
                 break;
             case R.id.cb_selectall:
 
                 //全选
                 if (((CheckBox) view).isChecked()) {
-                    curentAdapter.addAllPosition();
+                    curentAdapter.addAllPositionAndNotify();
                 } else {
-                    curentAdapter.removeAllPosition();
+                    curentAdapter.removeAllPositionAndNotify();
                 }
 
                 break;
@@ -203,10 +206,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     llBottom2.setVisibility(View.VISIBLE);
                     llBottom1.setVisibility(View.GONE);
                     //同步已经加入购物车的数据setSelect
-                    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> list = CacheUtil.getCRProducerList();
-                    if (list != null && list.size() > 0) {
+                    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> list1 = CacheUtil.getCRProducerList();
+                    if (list1 != null && list1.size() > 0) {
                         for (CRListBean.DataBean.ResultBean.ProducersBean bean : netList) {
-                            if (list.contains(bean)) {
+                            if (list1.contains(bean)) {
                                 bean.setSelect(true);
                             }
                         }
@@ -214,11 +217,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     curentAdapter.setShowCheckbox(true);
 
                 } else {
-                    ivToSelect.setImageResource(R.mipmap.multi_import_btn);
-                    ivSwichlist.setVisibility(View.VISIBLE);
-                    llBottom2.setVisibility(View.GONE);
-                    llBottom1.setVisibility(View.VISIBLE);
-                    curentAdapter.setShowCheckbox(false);
+                    closeAdd();
                 }
 
 
@@ -226,18 +225,31 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         }
     }
 
+    private void closeAdd() {
+        ivToSelect.setImageResource(R.mipmap.multi_import_btn);
+        ivSwichlist.setVisibility(View.VISIBLE);
+        llBottom2.setVisibility(View.GONE);
+        llBottom1.setVisibility(View.VISIBLE);
+        curentAdapter.setShowCheckbox(false);
+        curentAdapter.removeAllPosition();
+        if (cbSelectall.isChecked()) {
+            cbSelectall.setChecked(false);
+        }
+
+    }
+
 
     @Override
     public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
         if (((CRListAdapterFather) adapter).isShowCheckbox()) {
             CheckBox cb = view.findViewById(R.id.checkbox);
-            // netList.get(position).setChecked(!netList.get(position).isChecked());
             (cb).toggle();
-            if (cb.isChecked()) {
+            netList.get(position).setChecked(cb.isChecked());
+            /*if (cb.isChecked()) {
                 ((CRListAdapterFather) adapter).getChecckPosition().add(position);
             } else {
                 ((CRListAdapterFather) adapter).getChecckPosition().remove(position);
-            }
+            }*/
 
             //adapter.notifyDataSetChanged();优化内存  不用这个
             return;
@@ -385,6 +397,5 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 break;
         }
     }
-
 
 }
