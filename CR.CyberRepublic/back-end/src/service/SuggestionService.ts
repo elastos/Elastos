@@ -1,7 +1,7 @@
 import Base from './Base'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { validate, mail, user as userUtil, permissions } from '../utility'
+import { validate, mail, user as userUtil, permissions, logger } from '../utility'
 
 const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
 const emptyDoc = {
@@ -116,19 +116,18 @@ export default class extends Base {
     }
 
     const doc = _.pick(param, BASE_FIELDS);
+    doc.descUpdatedAt = new Date()
     await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
 
     return this.show({ id })
   }
 
   public async list(param: any): Promise<Object> {
-
     const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded', 'referenceStatus'])
     const { sortBy, sortOrder, tagsIncluded, referenceStatus } = param
     let qryTagsType: any
 
     query.$or = []
-
     if (!_.isEmpty(tagsIncluded)) {
       qryTagsType = { $in: tagsIncluded.split(',') }
       query.$or.push({'tags.type': qryTagsType})
@@ -141,22 +140,31 @@ export default class extends Base {
     if (_.isEmpty(query.$or)) delete query.$or
     delete query['tags.type']
 
-    const cursor = this.model.getDBInstance()
-      .find(query)
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
-      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-    const totalCursor = this.model.getDBInstance().find(query).count()
+    const excludedFields = [
+      '-editHistory', '-comments', '-goal',
+      '-motivation', '-relevance', '-budget', '-plan',
+      '-subscribers', '-likes', '-dislikes', '-updatedAt'
+    ]
 
+    const sortObject = {}
+    let cursor: any
     if (sortBy) {
-      const sortObject = {}
-
       // hack to prioritize descUpdatedAt if it's createdAt
       if (sortBy === 'createdAt') {
         sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
       }
-
       sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
-      cursor.sort(sortObject)
+
+      cursor = this.model.getDBInstance()
+        .find(query, excludedFields.join(' '))
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .sort(sortObject)
+    } else {
+      cursor = this.model.getDBInstance()
+        .find(query)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
     if (param.results) {
@@ -165,17 +173,18 @@ export default class extends Base {
       cursor.skip(results * (page - 1)).limit(results)
     }
 
-    const list = await cursor
-    const total = await totalCursor
+    const rs = await Promise.all([
+      cursor,
+      this.model.getDBInstance().find(query).count()
+    ])
 
     return {
-      list,
-      total,
+      list: rs[0],
+      total: rs[1]
     }
   }
 
   public async show(param: any): Promise<Document> {
-
     const { id: _id, incViewsNum } = param
     if (incViewsNum === 'true') {
       await this.model.findOneAndUpdate({ _id }, {
@@ -308,7 +317,7 @@ export default class extends Base {
 
       mail.send(mailObj)
     } catch(error) {
-      console.log('suggestion service notifySubscribers error...', error)
+      logger.error(error)
     }
   }
 
@@ -353,7 +362,7 @@ export default class extends Base {
 
       mail.send(mailObj)
     } catch (error) {
-      console.log('suggestion service notifyOwner error...', error)
+      logger.error(error)
     }
   }
 
@@ -385,7 +394,7 @@ export default class extends Base {
       }
       return this.model.findById(_id)
     } catch(error) {
-      console.log('suggestion service addTag error...', error)
+      logger.error(error)
     }
   }
 

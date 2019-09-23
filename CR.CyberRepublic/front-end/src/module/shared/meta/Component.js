@@ -1,6 +1,5 @@
 import React from 'react'
 import moment from 'moment/moment'
-import _ from 'lodash'
 import I18N from '@/I18N'
 import userUtil from '@/util/user'
 
@@ -14,7 +13,6 @@ export default ({ data, hideAuthor, postedByText }) => {
       {postedByText || I18N.get('suggestion.postedBy')}
       {' '}
       {userUtil.getUserDisplayName(data.proposer)}
-      {` (${I18N.get('suggestion.viaCouncilMember')} ${userUtil.getUserDisplayName(data.createdBy)})`}
     </span>
   )
 

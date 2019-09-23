@@ -300,13 +300,14 @@ export const DB_SELECTED_FIELDS = {
 // elip
 export const ELIP_STATUS = create([
   'WAIT_FOR_REVIEW',
-  'APPROVED',
+  'DRAFT',
   'REJECTED',
+  'SUBMITTED'
 ])
 
 export const ELIP_FILTER = create([
   'ALL',
-  'APPROVED',
+  'DRAFT',
   'SUBMITTED_BY_ME',
   'WAIT_FOR_REVIEW'
 ])

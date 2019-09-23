@@ -1,5 +1,5 @@
 import BaseService from '../model/BaseService'
-import { api_request } from '@/util'
+import { api_request, logger } from '@/util'
 
 export default class extends BaseService {
   constructor() {
@@ -18,7 +18,7 @@ export default class extends BaseService {
         data: param,
       })
     } catch (error) {
-      // do nothing
+      logger.error(error)
     }
     return rs
   }
@@ -33,7 +33,7 @@ export default class extends BaseService {
         data: param,
       })
     } catch (error) {
-      // do nothing
+      logger.error(error)
     }
     return rs
   }
@@ -48,7 +48,7 @@ export default class extends BaseService {
         data: param,
       })
     } catch (error) {
-      // do nothing
+      logger.error(error)
     }
     return rs
   }
@@ -63,35 +63,25 @@ export default class extends BaseService {
         data: param,
       })
     } catch (error) {
-      // do nothing
+      logger.error(error)
     }
     return rs
   }
 
-  async listData(param, isAuthorized) {
+  async listData(param) {
     this.dispatch(this.selfRedux.actions.loading_update(true))
     let result
     try {
-      if (isAuthorized) {
-        result = await api_request({
-          path: `${this.prefixPath}/list`,
-          method: 'get',
-          data: param,
-        })
-        this.dispatch(this.selfRedux.actions.all_private_total_update(result.total))
-        this.dispatch(this.selfRedux.actions.all_private_update(result.list))
-      } else {
-        result = await api_request({
-          path: `${this.prefixPath}/list_public`,
-          method: 'get',
-          data: param,
-        })
-        this.dispatch(this.selfRedux.actions.all_public_total_update(result.total))
-        this.dispatch(this.selfRedux.actions.all_public_update(result.list))
-      }
+      result = await api_request({
+        path: `${this.prefixPath}/list`,
+        method: 'get',
+        data: param,
+      })
+      this.dispatch(this.selfRedux.actions.all_private_total_update(result.total))
+      this.dispatch(this.selfRedux.actions.all_private_update(result.list))
       this.dispatch(this.selfRedux.actions.loading_update(false))
     } catch (error) {
-      // Do nothing
+      logger.error(error)
     }
 
     return result

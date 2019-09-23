@@ -17,14 +17,15 @@ export default {
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
     [ELIP_STATUS.REJECTED]: '已拒绝',
-    [ELIP_STATUS.APPROVED]: '已批准'
+    [ELIP_STATUS.DRAFT]: '草案',
+    [ELIP_STATUS.SUBMITTED]: '已提交'
   },
   show: '展示',
   filter: {
     [ELIP_FILTER.ALL]: '全部',
-    [ELIP_FILTER.APPROVED]: '已批准',
+    [ELIP_FILTER.DRAFT]: '草案',
     [ELIP_FILTER.WAIT_FOR_REVIEW]: '等待审核',
-    [ELIP_FILTER.SUBMITTED_BY_ME]: '已提交的'
+    [ELIP_FILTER.SUBMITTED_BY_ME]: '我提交的'
   },
   button: {
     add: '添加 ELIP',
@@ -32,13 +33,15 @@ export default {
     submit: '提交',
     reject: '拒绝',
     approve: '批准',
-    edit: '编辑'
+    edit: '编辑',
+    markAsSubmitted: '标记为提交状态'
   },
   msg: {
     updated: '更新成功',
     submitted: '提交成功',
     rejected: '已驳回',
-    approved: '已批准'
+    approved: '已批准',
+    marked: '已标记'
   },
   form: {
     error: {
@@ -52,7 +55,8 @@ export default {
     confirm: '提交',
     cancel: '取消',
     reason: '理由',
-    approve: '您确定要批准该 ELIP 吗？'
+    approve: '您确定要批准该 ELIP 吗？',
+    markAsSubmitted: '您确定要把该 ELIP 标记为提交状态吗？'
   },
   note: '是一种设计文档，它用于向亦来云社区提供信息、描述流程、介绍新特性或者环境等。同时，ELIP应该提供目标特性的简明技术规范和基本原理。',
   text: {

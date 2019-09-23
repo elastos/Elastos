@@ -8,7 +8,9 @@ export default class extends Base {
   protected getName() {
     return 'elip'
   }
-  protected rejectFields() {
-    return {}
+  protected buildSchema() {
+    const schema = super.buildSchema()
+    schema.index({ status: -1, vid: -1 })
+    return schema
   }
 }

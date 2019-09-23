@@ -10,12 +10,15 @@ import {
   HANDLED,
   NOT_HANDLED,
   resetBlockWithType,
-  getCurrentBlock
+  getCurrentBlock,
+  rendererFn
 } from 'medium-draft'
 import { convertFromHTML, ContentState, EditorState } from 'draft-js'
 import { MEDIUM_DRAFT_TOOLBAR_OPTIONS } from '@/config/constant'
 import { CONTENT_TYPE } from '@/constant'
+import { logger } from '@/util'
 import ImageSideButton from './ImageSideButton'
+import SeparatorSideButton from './SeparatorSideButton'
 
 // if using webpack
 import 'medium-draft/lib/index.css'
@@ -29,6 +32,26 @@ const newTypeMap = {
   '###### ': Block.H6
 }
 delete newTypeMap['##']
+
+const AtomicBlock = props => {
+  const { blockProps, block, contentState } = props
+  const entity = contentState.getEntity(block.getEntityAt(0))
+  const data = entity.getData()
+  const type = entity.getType()
+  if (blockProps.components[type]) {
+    const AtComponent = blockProps.components[type]
+    return (
+      <div className={`md-block-atomic-wrapper md-block-atomic-wrapper-${type}`}>
+        <AtComponent data={data} />
+      </div>
+    )
+  }
+  return null
+}
+
+const AtomicSeparatorComponent = props => (
+  <hr style={{ height: 1, background: '#ddd' }} />
+)
 
 class Component extends BaseComponent {
   constructor(props) {
@@ -45,6 +68,29 @@ class Component extends BaseComponent {
     this.refsEditor.current && this.refsEditor.current.focus()
   }
 
+  rendererFn = (setEditorState, getEditorState) => {
+    const atomicRenderers = {
+      separator: AtomicSeparatorComponent
+    }
+    const rFnOld = rendererFn(setEditorState, getEditorState)
+    const rFnNew = contentBlock => {
+      const type = contentBlock.getType()
+      switch (type) {
+        case Block.ATOMIC:
+          return {
+            component: AtomicBlock,
+            editable: false,
+            props: {
+              components: atomicRenderers
+            }
+          }
+        default:
+          return rFnOld(contentBlock)
+      }
+    }
+    return rFnNew
+  }
+
   generateEditorState = () => {
     const { value, contentType } = this.props
     let editorState = null
@@ -55,16 +101,26 @@ class Component extends BaseComponent {
     } else if (contentType === CONTENT_TYPE.MARKDOWN) {
       try {
         editorState = createEditorState(JSON.parse(value))
-      } catch (err) {}
+      } catch (err) {
+        logger.error(err)
+      }
     }
 
     if (!editorState) {
-      const blocksFromHTML = convertFromHTML(value)
-      const state = ContentState.createFromBlockArray(
-        blocksFromHTML.contentBlocks,
-        blocksFromHTML.entityMap
-      )
-      editorState = EditorState.createWithContent(state)
+      try {
+        const blocksFromHTML = convertFromHTML(value)
+        if (!blocksFromHTML.contentBlocks) {
+          editorState = createEditorState()
+        } else {
+          const state = ContentState.createFromBlockArray(
+            blocksFromHTML.contentBlocks,
+            blocksFromHTML.entityMap
+          )
+          editorState = EditorState.createWithContent(state)
+        }
+      } catch (err) {
+        logger.error(err)
+      }
     }
 
     return editorState
@@ -138,6 +194,10 @@ class Component extends BaseComponent {
           {
             title: 'Image',
             component: ImageSideButton
+          },
+          {
+            title: 'Separator',
+            component: SeparatorSideButton
           }
         ]}
         blockButtons={MEDIUM_DRAFT_TOOLBAR_OPTIONS.BLOCK_BUTTONS}
@@ -145,6 +205,7 @@ class Component extends BaseComponent {
         editorState={this.generateEditorState()}
         onChange={this.onChange}
         beforeInput={this.handleBeforeInput}
+        rendererFn={this.rendererFn}
       />
     )
   }

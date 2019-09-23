@@ -157,10 +157,10 @@ export default class extends BaseComponent {
           {I18N.get('elip.filter.ALL')}
         </StyledButton>
         <StyledButton
-          className={(this.state.filter === ELIP_FILTER.APPROVED && 'selected') || ''}
-          onClick={() => this.setFilter(ELIP_FILTER.APPROVED)}
+          className={(this.state.filter === ELIP_FILTER.DRAFT && 'selected') || ''}
+          onClick={() => this.setFilter(ELIP_FILTER.DRAFT)}
         >
-          {I18N.get('elip.filter.APPROVED')}
+          {I18N.get('elip.filter.DRAFT')}
         </StyledButton>
         {isLogin && (
           <StyledButton

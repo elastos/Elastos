@@ -368,7 +368,7 @@ class C extends BaseComponent {
     const emptyText = (
       <div>
         {I18N.get('comments.noComments')}
-        <a href="/login">{I18N.get('comments.signIn')}</a>
+        {this.props.currentUserId ? null : <a href="/login">{I18N.get('comments.signIn')}</a>}
         {I18N.get('comments.firstToPost')}
       </div>
     )

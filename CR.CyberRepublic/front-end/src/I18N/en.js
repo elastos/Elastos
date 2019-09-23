@@ -44,9 +44,9 @@ const en = {
   '0110': 'Blog',
   navigation: {
     council: 'Council',
-    constitution: 'WhitePaper',
+    whitepaper: 'Whitepaper',
     suggestion: 'Suggestions',
-    elip: 'ELIP',
+    elips: 'ELIPs',
     proposal: 'Proposals',
     whatsNew: "What's New",
     resources: {
@@ -117,8 +117,8 @@ const en = {
   comments: 'Comments',
   'comments.posts': 'Posts',
   'comments.post': 'Post',
-  'comments.noComments': `No comments yet,`,
-  'comments.signIn': ' sign in ',
+  'comments.noComments': `No comments yet, `,
+  'comments.signIn': 'sign in ',
   'comments.firstToPost': 'to be the first to post!',
   'comments.commentsOrUpdates': 'Comments or updates',
   // Admin tasks
@@ -1158,7 +1158,7 @@ const en = {
     'Cyber Republic Council Members Proposal Form',
   'from.CVoteForm.proposal.content':
     'Cyber Republic Council members can use this form to propose motion. All Cyber Republic citizen can view and share their own idea (offline). All proposals will be discussed in regular council meetings. All results will be disclosed to the public.',
-  'from.CVoteForm.label.voteStatus': 'Vote Status',
+  'from.CVoteForm.label.voteStatus': 'Status',
   'from.CVoteForm.label.publish': 'Publish',
   'from.CVoteForm.label.title': 'Title',
   'from.CVoteForm.label.type': 'Type',

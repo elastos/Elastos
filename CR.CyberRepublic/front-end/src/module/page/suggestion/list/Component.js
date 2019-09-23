@@ -19,10 +19,9 @@ import suggestionImg from '@/assets/images/SuggestionToProposal.png'
 import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { SUGGESTION_STATUS, CONTENT_TYPE, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
-import { text, bg } from '@/constants/color'
 import DraftEditor from '@/module/common/DraftEditor'
 import MediaQuery from 'react-responsive'
-import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, LG_WIDTH } from '@/config/constant'
+import { LG_WIDTH } from '@/config/constant'
 
 import './style.scss'
 
@@ -33,9 +32,6 @@ const SORT_BY = {
   viewsNum: 'viewsNum'
 }
 const DEFAULT_SORT = SORT_BY.createdAt
-
-// this is used by the CSS too - TODO: move everything to styled-components
-const SIDE_PADDING = '108px'
 
 /**
  * This uses new features such as infinite scroll and pagination, therefore
@@ -77,10 +73,8 @@ export default class extends StandardPage {
     const viewArchivedButtonNode = this.renderArchivedButton()
     const actionsNode = this.renderHeaderActions()
     const filterNode = this.renderFilters()
-    // const mySuggestionNode = this.renderMySuggestion()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
-    const archivedNode = this.renderArchivedList()
 
     return (
       <div>
@@ -94,7 +88,6 @@ export default class extends StandardPage {
                 <Col>
                   {addButtonNode}
                   {viewArchivedButtonNode}
-                  {/* mySuggestionNode */}
                 </Col>
               </Row>
             ) :
@@ -112,8 +105,6 @@ export default class extends StandardPage {
                 {listNode}
               </Col>
             </Row>
-            {' '}
-:
             <Row/>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
@@ -133,7 +124,6 @@ export default class extends StandardPage {
               <Col span={24}>
                 {listNode}
               </Col>
-              {/* <Col span={8}>{mySuggestionNode}</Col> */}
             </Row>
           </MediaQuery>
           {createForm}
@@ -226,14 +216,18 @@ export default class extends StandardPage {
             <br/>
             {I18N.get('suggestion.intro.3')}
             {localStorage.getItem('lang') === 'en' ? (
-              <a href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
-                 target="_blank">
-https://www.cyberrepublic.org/docs/#/guide/suggestions
+              <a
+                href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
+                target="_blank"
+              >
+                https://www.cyberrepublic.org/docs/#/guide/suggestions
               </a>
             ) : (
-              <a href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
-                 target="_blank">
-https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
+              <a
+                href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
+                target="_blank"
+              >
+                https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
               </a>
             )}
           </HeaderDesc>
@@ -262,8 +256,7 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
           </h2>
         </div>
         <MediaQuery maxWidth={LG_WIDTH}>
-          {I18N.get('suggestion.sort')}
-: &nbsp;
+          {I18N.get('suggestion.sort')}: &nbsp;
           <Select
             name="type"
             style={{width: 200}}
@@ -278,8 +271,7 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
           </Select>
         </MediaQuery>
         <MediaQuery minWidth={LG_WIDTH + 1}>
-          {I18N.get('suggestion.sort')}
-: &nbsp;
+          {I18N.get('suggestion.sort')}: &nbsp;
           <Button.Group className="filter-group">
             {_.map(SORT_BY, value => (
               <Button
@@ -332,8 +324,7 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
       <Row>
         <Col sm={24} md={3}>
           <span>
-            {I18N.get('suggestion.tag.show')}
-:
+            {I18N.get('suggestion.tag.show')}:
           </span>
         </Col>
         <Col sm={24} md={7}>
@@ -404,10 +395,6 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
     )
   }
 
-  renderArchivedList() {
-
-  }
-
   renderItem = (data) => {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data, this.refetch)
@@ -420,7 +407,6 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
         {title}
         {tagsNode}
         <ShortDesc>
-          {/* {data.shortDesc} */}
           <DraftEditor value={data.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
           {_.isArray(data.link) && (data.link.map((link) => {
             return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
@@ -530,6 +516,7 @@ https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
       await this.props.loadMore(query)
     } catch (e) {
       // Do not update page in state if the call fails
+      logger.error(e)
     }
 
     this.setState({ loadingMore: false })

@@ -9,7 +9,7 @@ export default class extends Base {
     try {
       const db_elip_review = this.getDBModel('Elip_Review')
       const db_elip = this.getDBModel('Elip')
-      const { comment, status, elipId } = param
+      const { elipId } = param
       const elip = await db_elip
         .getDBInstance()
         .findById({ _id: elipId })
@@ -18,6 +18,7 @@ export default class extends Base {
         throw 'ElipReviewService.create - invalid elip id'
       }
       const user = this.currentUser
+      const { comment, status } = param
       const doc: any = {
         comment,
         status,
@@ -25,7 +26,11 @@ export default class extends Base {
         elipId
       }
       const review = await db_elip_review.save(doc)
-      await db_elip.update({ _id: elipId }, { status })
+      const elipStatus = status === constant.ELIP_REVIEW_STATUS.REJECTED ? constant.ELIP_STATUS.REJECTED : constant.ELIP_STATUS.DRAFT
+      await db_elip.update(
+        { _id: elipId },
+        { status: elipStatus }
+      )
       this.notifyElipCreator(review, elip, status)
     
       const createdBy = {
@@ -33,7 +38,7 @@ export default class extends Base {
         profile: { firstName: user.firstName, lastName: user.lastName},
         username: user.username
       }
-      return { ...review._doc, createdBy }
+      return { ...review._doc, createdBy, elipStatus }
     } catch (error) {
       logger.error(error)
       return

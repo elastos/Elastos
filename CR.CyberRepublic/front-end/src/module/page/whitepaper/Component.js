@@ -12,7 +12,7 @@ export default class extends StandardPage {
     return (
       <div>
         <div className="whitepaper">
-          <div class="title komu-a cr-title-with-icon">{I18N.get('navigation.constitution')}</div>
+          <div class="title komu-a cr-title-with-icon">{I18N.get('navigation.whitepaper')}</div>
           <Collapse defaultActiveKey={['abstract']} bordered={false} expandIconPosition="right" expandIcon={() => (
             <img src="/assets/images/whitepaper-arrow.svg" className="arrow" width="26" height="15" />
           )}>

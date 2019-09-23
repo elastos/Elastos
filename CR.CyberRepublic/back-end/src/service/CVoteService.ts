@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { permissions } from '../utility'
 import * as moment from 'moment'
-import { mail, user as userUtil } from '../utility'
+import { mail, user as userUtil, logger } from '../utility'
 
 let tm = undefined
 
@@ -32,8 +32,7 @@ export default class extends Base {
       proposer: proposer ? proposer : this.currentUser._id,
       createdBy: this.currentUser._id
     }
-    const suggestion =
-      suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }
@@ -43,7 +42,7 @@ export default class extends Base {
     try {
       return await db_cvote.save(doc)
     } catch (error) {
-      console.log(error)
+      logger.error(error)
       return
     }
   }
@@ -68,7 +67,7 @@ export default class extends Base {
       status: constant.CVOTE_STATUS.PROPOSED,
       published: true,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
-      proposedBy: `${_.get(creator, 'profile.firstName')} ${_.get(creator, 'profile.lastName')}`,
+      proposedBy: userUtil.formatUsername(creator),
       proposer: suggestion.createdBy,
       createdBy: this.currentUser._id,
       reference: suggestionId
@@ -103,7 +102,7 @@ export default class extends Base {
       this.notifyCouncil(res)
       return res
     } catch (error) {
-      console.log('proposeSuggestion error...', error)
+      logger.error(error)
       return
     }
   }
@@ -158,7 +157,7 @@ export default class extends Base {
       const res = await this.getById(_id)
       return res
     } catch (error) {
-      console.log('error happened: ', error)
+      logger.error(error)
       return
     }
   }
@@ -177,7 +176,7 @@ export default class extends Base {
       }
       return await db_cvote.remove({ _id })
     } catch (error) {
-      console.log('delete draft proposal err...', error)
+      logger.error(error)
     }
   }
 
@@ -222,8 +221,7 @@ export default class extends Base {
       createdBy: this.currentUser._id
     }
 
-    const suggestion =
-      suggestionId && (await db_suggestion.findById(suggestionId))
+    const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
       doc.reference = suggestionId
     }
@@ -261,7 +259,7 @@ export default class extends Base {
 
       return res
     } catch (error) {
-      console.log('error happened: ', error)
+      logger.error(error)
       return
     }
   }
@@ -437,7 +435,6 @@ export default class extends Base {
    */
   public async list(param): Promise<Document> {
     const db_cvote = this.getDBModel('CVote')
-    const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
     const query: any = {}
@@ -464,27 +461,8 @@ export default class extends Base {
     }
 
     if (param.$or) query.$or = param.$or
-
-    const list = await db_cvote.list(
-      query,
-      {
-        vid: -1
-        // createdAt: -1
-      },
-      100
-    )
-
-    for (const item of list) {
-      if (item.createdBy) {
-        const u = await db_user.findOne({ _id: item.createdBy })
-        if (!_.isEmpty) item.createdBy = u.username
-      }
-      if (item.proposer) {
-        const u = await db_user.findOne({ _id: item.proposer })
-        item.proposerUser = u
-      }
-    }
-
+    const fields = 'vid title type proposedBy status published proposedAt createdAt voteResult vote_map'
+    const list = await db_cvote.list(query, {vid: -1}, 100, fields)
     return list
   }
 
@@ -566,7 +544,7 @@ export default class extends Base {
       }
       return res
     } catch (error) {
-      console.log('error happened: ', error)
+      logger.error(error)
       return
     }
   }

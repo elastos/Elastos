@@ -1,5 +1,5 @@
 import React from 'react'
-import { Row, Col, Spin, Button, message } from 'antd'
+import { Row, Col, Spin, Button, message, Popconfirm } from 'antd'
 import styled from 'styled-components'
 import DraftEditor from '@/module/common/DraftEditor'
 import I18N from '@/I18N'
@@ -20,7 +20,7 @@ class C extends StandardPage {
     super(p)
     this.state = {
       elip: {},
-      loading: false,
+      loading: true,
       reviews: []
     }
   }
@@ -52,10 +52,15 @@ class C extends StandardPage {
       const comment = await review(param)
       if (comment && comment.elipId === elip._id) {
         this.setState({
-          elip: { ...elip, status: data.status },
+          elip: { ...elip, status: comment.elipStatus },
           reviews: [...this.state.reviews, comment]
         })
-        message.info(I18N.get(`elip.msg.${data.status.toLowerCase()}`))
+        if (comment.elipStatus === ELIP_STATUS.DRAFT) {
+          message.info(I18N.get(`elip.msg.approved`))
+        }
+        if (comment.elipStatus === ELIP_STATUS.REJECTED) {
+          message.info(I18N.get(`elip.msg.rejected`))
+        }
       }
     } catch (err) {
       logger.error(err)
@@ -72,7 +77,7 @@ class C extends StandardPage {
       )
     }
     if (!loading && !Object.keys(elip).length) {
-      return null
+      return this.props.history.push('/elips')
     }
 
     return (
@@ -84,10 +89,11 @@ class C extends StandardPage {
         <BackLink link="/elips" />
         <Container>
           <h2 className="komu-a cr-title-with-icon">ELIP #{elip.vid}</h2>
-          <Label>Status</Label>
+          <Label>{I18N.get('elip.fields.status')}</Label>
           <Status status={elip.status}>
-            {elip.status.split('_').join(' ')}
+            {I18N.get(`elip.status.${elip.status}`)}
           </Status>
+          {this.renderUpdateStatusButton()}
           <Row>
             <LabelCol span={3}>{I18N.get('elip.fields.title')}</LabelCol>
             <WrapperCol span={17}>
@@ -112,7 +118,7 @@ class C extends StandardPage {
           {this.renderEditButton()}
           {this.renderReviewButtons()}
           {this.renderReviewHistory()}
-          {elip.status === ELIP_STATUS.APPROVED && (
+          {[ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED].includes(elip.status) && (
             <Row style={{ marginTop: 24 }}>
               <LabelCol span={3} />
               <Col span={17}>
@@ -137,9 +143,46 @@ class C extends StandardPage {
     return elip.createdBy && elip.createdBy._id === currentUserId
   }
 
+  updateStatus = async () => {
+    try {
+      const { updateStatus } = this.props
+      const { elip } = this.state
+      const rs = await updateStatus({ _id: elip._id, status: ELIP_STATUS.SUBMITTED })
+      if (rs && rs.ok === 1 && rs.n === 1) {
+        this.setState({
+          elip: { ...elip, status: ELIP_STATUS.SUBMITTED }
+        })
+        message.info(I18N.get('elip.msg.marked'))
+      }
+    } catch (error) {
+      logger.error(error)
+    }
+  }
+
+  renderUpdateStatusButton() {
+    const { elip } = this.state
+    const isEditable = this.isAuthor(elip) && elip.status === ELIP_STATUS.DRAFT
+    if (isEditable) {
+      return (
+        <Popconfirm
+          title={I18N.get('elip.modal.markAsSubmitted')}
+          onConfirm={this.updateStatus}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
+          <Button style={{ marginLeft: 16}}>
+            {I18N.get('elip.button.markAsSubmitted')}
+          </Button>
+        </Popconfirm>
+      )
+    }
+  }
+
   renderEditButton() {
     const { elip } = this.state
-    const isEditable = this.isAuthor(elip) && elip.status === ELIP_STATUS.REJECTED
+    const isEditable = this.isAuthor(elip) &&
+      [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(elip.status)
+
     if (isEditable) {
       return (
         <Row>
@@ -252,7 +295,9 @@ const Status = styled.div`
     switch (props.status) {
       case ELIP_STATUS.REJECTED:
         return '#be1313'
-      case ELIP_STATUS.APPROVED:
+      case ELIP_STATUS.DRAFT:
+        return '#008d85'
+      case ELIP_STATUS.SUBMITTED:
         return '#008d85'
       default:
         return '#f2f6fb'
@@ -299,7 +344,7 @@ const Dec = styled.div`
     switch (props.status) {
       case ELIP_STATUS.REJECTED:
         return 'rgba(252, 192, 192, 0.2)'
-      case ELIP_STATUS.APPROVED:
+      case ELIP_STATUS.DRAFT:
         return 'rgba(29, 233, 182, 0.1)'
       default:
         return 'background: rgba(204, 204, 204, 0.2)'
@@ -321,15 +366,22 @@ export const StyledRichContent = styled.div`
   .md-RichEditor-root {
     background: none;
     padding: 0;
-    .public-DraftEditor-content {
-      padding: 0;
-      margin: 0;
+    .md-RichEditor-editor {
+      .md-RichEditor-blockquote {
+        border-left: 5px solid #ccc;
+        background-color: unset;
+        font-size: 1.1em;
+      }
+      .public-DraftEditor-content {
+        padding: 0;
+        margin: 0;
+      }
     }
     figure.md-block-image {
       background: none;
-    }
-    figure.md-block-image figcaption .public-DraftStyleDefault-block {
-      text-align: left;
+      figcaption .public-DraftStyleDefault-block {
+        text-align: left;
+      }
     }
   }
 `

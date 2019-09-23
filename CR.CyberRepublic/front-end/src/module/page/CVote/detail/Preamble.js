@@ -16,7 +16,8 @@ const Component = ({
   type,
   status,
   createdAt,
-  createdBy
+  createdBy,
+  reference
 }) => {
   // header
   const headerNode = (
@@ -79,7 +80,20 @@ const Component = ({
         </ItemTitle>
       </Col>
       <Col span={18}>
-        <ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}{` (${I18N.get('suggestion.viaCouncilMember')} ${userUtil.getUserDisplayName(createdBy)})`}</ItemText>
+        <ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}</ItemText>
+      </Col>
+    </Item>
+  )
+  // referee
+  const refereeNode = (
+    <Item>
+      <Col span={6}>
+        <ItemTitle>
+          {I18N.get('proposal.fields.preambleSub.referee')}
+        </ItemTitle>
+      </Col>
+      <Col span={18}>
+        <ItemText>{`${userUtil.formatUsername(createdBy)} <${_.get(createdBy, 'email')}>`}</ItemText>
       </Col>
     </Item>
   )
@@ -112,6 +126,7 @@ const Component = ({
       {idNode}
       {titleNode}
       {proposerNode}
+      {reference && reference.displayId ? refereeNode : null}
       {typeNode}
       {statusNode}
       {createdNode}

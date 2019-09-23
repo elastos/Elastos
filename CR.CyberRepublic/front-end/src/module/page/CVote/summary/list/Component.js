@@ -27,12 +27,10 @@ export default class extends BaseComponent {
 
   ord_render() {
     const title = this.renderTitle()
-    const publicListNode = this.renderPublicList()
     const privateListNode = this.renderPrivateList()
     return (
       <Container>
         {title}
-        {publicListNode}
         {privateListNode}
       </Container>
     )
@@ -40,34 +38,6 @@ export default class extends BaseComponent {
 
   renderTitle() {
     return <ContentTitle id="summary">{I18N.get('proposal.fields.summary')}</ContentTitle>
-  }
-
-  renderPublicList() {
-    const { publicList } = this.props
-    if (!publicList || publicList.length === 0) return null
-    return (
-      <List
-        itemLayout="horizontal"
-        grid={{ column: 1 }}
-        dataSource={publicList}
-        renderItem={item => (
-          <StyledItem>
-            <Row>
-              <Col>
-                <StyledRichContent>
-                  <DraftEditor
-                    value={item.content}
-                    contentType={CONTENT_TYPE.MARKDOWN}
-                    editorEnabled={false}
-                  />
-                </StyledRichContent>
-                <StyledFooter>{moment(item.createdAt).format(DATE_FORMAT)}</StyledFooter>
-              </Col>
-            </Row>
-          </StyledItem>
-        )}
-      />
-    )
   }
 
   renderPrivateList() {
@@ -189,9 +159,7 @@ export default class extends BaseComponent {
   }
 
   renderActions(item) {
-    const { isSecretary, proposal } = this.props
-    if (proposal.status === CVOTE_STATUS.FINAL) return null
-
+    const { isSecretary } = this.props
     let body
     if (isSecretary && item.status === CVOTE_SUMMARY_STATUS.REVIEWING) {
       body = (
@@ -232,23 +200,13 @@ export default class extends BaseComponent {
 
   refetch = async () => {
     this.ord_loading(true)
-    const { listData, canManage, currentUserId, proposal } = this.props
+    const { listData, proposal } = this.props
     const param = this.getQuery()
-    const isAuthorized = canManage || currentUserId === _.get(proposal, 'proposer._id')
     const paramCVote = {
       id: proposal._id
     }
-
-    try {
-      await listData(param, false)
-      if (isAuthorized) {
-        await listData(param, isAuthorized)
-      }
-      await this.props.getCVoteData(paramCVote)
-    } catch (error) {
-      // do sth
-    }
-
+    await listData(param)
+    await this.props.getCVoteData(paramCVote)
     this.ord_loading(false)
   }
 }

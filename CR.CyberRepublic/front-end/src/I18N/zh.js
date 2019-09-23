@@ -44,9 +44,9 @@ const zh = {
   '0110': '博客',
   navigation: {
     council: '委员会',
-    constitution: '白皮书',
+    whitepaper: '白皮书',
     suggestion: '建议',
-    elip: 'ELIP',
+    elips: 'ELIPs',
     proposal: '提案',
     whatsNew: '版本更新',
     resources: {
@@ -1121,7 +1121,7 @@ const zh = {
   'from.CVoteForm.proposal.title': 'Cyber Republic共治委员会委员提案表格',
   'from.CVoteForm.proposal.content':
     'Cyber Republic共治委员会委员可以使用这个表格提交动议。Cyber Republic的所有公民都可以查阅，并在线下分享他们自己的想法。所有的提案都会在共治委员会例会上进行讨论。所有结果都会公开披露。这是Cyber Republic的网站有这个功能前的暂行方案。',
-  'from.CVoteForm.label.voteStatus': '投票状态',
+  'from.CVoteForm.label.voteStatus': '状态',
   'from.CVoteForm.label.publish': '发布',
   'from.CVoteForm.label.title': '标题',
   'from.CVoteForm.label.type': '类型',

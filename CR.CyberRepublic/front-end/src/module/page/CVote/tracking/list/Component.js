@@ -27,12 +27,10 @@ export default class extends BaseComponent {
 
   ord_render() {
     const title = this.renderTitle()
-    const publicListNode = this.renderPublicList()
     const privateListNode = this.renderPrivateList()
     return (
       <Container>
         {title}
-        {publicListNode}
         {privateListNode}
       </Container>
     )
@@ -40,34 +38,6 @@ export default class extends BaseComponent {
 
   renderTitle() {
     return <ContentTitle id="tracking">{I18N.get('proposal.fields.tracking')}</ContentTitle>
-  }
-
-  renderPublicList() {
-    const { publicList } = this.props
-    if (!publicList || publicList.length === 0) return null
-    return (
-      <List
-        itemLayout="horizontal"
-        grid={{ column: 1 }}
-        dataSource={publicList}
-        renderItem={item => (
-          <StyledItem>
-            <Row>
-              <Col>
-                <StyledRichContent>
-                  <DraftEditor
-                    value={item.content}
-                    contentType={CONTENT_TYPE.MARKDOWN}
-                    editorEnabled={false}
-                  />
-                </StyledRichContent>
-                <StyledFooter>{moment(item.createdAt).format(DATE_FORMAT)}</StyledFooter>
-              </Col>
-            </Row>
-          </StyledItem>
-        )}
-      />
-    )
   }
 
   renderPrivateList() {
@@ -231,18 +201,9 @@ export default class extends BaseComponent {
 
   refetch = async () => {
     this.ord_loading(true)
-    const { listData, canManage, currentUserId, proposal } = this.props
+    const { listData } = this.props
     const param = this.getQuery()
-    const isAuthorized = canManage || currentUserId === _.get(proposal, 'proposer._id')
-    try {
-      await listData(param, false)
-      if (isAuthorized) {
-        await listData(param, isAuthorized)
-      }
-    } catch (error) {
-      // do sth
-    }
-
+    await listData(param)
     this.ord_loading(false)
   }
 }

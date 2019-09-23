@@ -12,6 +12,7 @@ export default {
       proposal: 'CRC Proposal',
       title: 'Title',
       proposer: 'Proposer',
+      referee: 'Referee',
       status: 'Status',
       created: 'Created'
     },
