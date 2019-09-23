@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 // This benchmark is plan to profile blockchain related processing and
 // searching. The benchmark base on RegTest and chain height should higher than

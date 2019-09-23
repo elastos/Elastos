@@ -135,7 +135,6 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 		}
 
 		for start := startHeight; start <= endHeight; start++ {
-
 			hash, err := b.db.GetBlockHash(start)
 			if err != nil {
 				done <- false
@@ -152,7 +151,7 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 				done <- false
 				break
 			}
-			b.AddNodeToNodes(node)
+			b.SetTip(node)
 
 			b.dirty[&block.Header] = struct{}{}
 			err = b.flushToDB()
@@ -774,7 +773,7 @@ func (b *BlockChain) removeBlockNode(node *BlockNode) error {
 
 	// Remove the node from the node index.
 	//delete(b.Index, *node.Hash)
-	b.RemoveNodeFromIndex(node)
+	b.SetTip(node.Parent)
 
 	// Unlink all of the node's children.
 	for _, child := range node.Children {
@@ -1066,6 +1065,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 			"that extends the main chain")
 	}
 
+	// Write block node after save block succeed.
 	b.dirty[&block.Header] = struct{}{}
 	if err := b.flushToDB(); err != nil {
 		return err
@@ -1081,7 +1081,7 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	// lookups.
 	node.InMainChain = true
 	//b.Index[*node.Hash] = node
-	b.AddNodeToNodes(node)
+	b.SetTip(node)
 	b.AddNodeToIndex(node)
 	b.DepNodes[*prevHash] = append(b.DepNodes[*prevHash], node)
 
@@ -1424,16 +1424,55 @@ func (b *BlockChain) AddNodeToIndex(node *BlockNode) {
 	b.IndexLock.Unlock()
 }
 
-func (b *BlockChain) AddNodeToNodes(node *BlockNode) {
+// SetTip sets the block chain to use the provided block node as the current tip
+// and ensures the view is consistent by populating it with the nodes obtained
+// by walking backwards all the way to genesis block as necessary.  Further
+// calls will only perform the minimum work needed, so switching between chain
+// tips is efficient.
+//
+// This function is safe for concurrent access.
+func (b *BlockChain) SetTip(node *BlockNode) {
 	b.IndexLock.Lock()
-	b.Nodes = append(b.Nodes, node)
+	b.setTip(node)
 	b.IndexLock.Unlock()
 }
 
-func (b *BlockChain) RemoveNodeFromIndex(node *BlockNode) {
-	b.IndexLock.Lock()
-	defer b.IndexLock.Unlock()
-	delete(b.Index, *node.Hash)
+// This only differs from the exported version in that it is up to the caller
+// to ensure the lock is held.
+//
+// This function MUST be called with the block chain mutex locked (for writes).
+func (b *BlockChain) setTip(node *BlockNode) {
+	if node == nil {
+		// Keep the backing array around for potential future use.
+		b.Nodes = b.Nodes[:0]
+		return
+	}
+
+	// Create or resize the slice that will hold the block nodes to the
+	// provided tip height.  When creating the slice, it is created with
+	// some additional capacity for the underlying array as append would do
+	// in order to reduce overhead when extending the chain later.  As long
+	// as the underlying array already has enough capacity, simply expand or
+	// contract the slice accordingly.  The additional capacity is chosen
+	// such that the array should only have to be extended about once a
+	// week.
+	needed := node.Height + 1
+	if uint32(cap(b.Nodes)) < needed {
+		nodes := make([]*BlockNode, needed, needed+approxNodesPerWeek)
+		copy(nodes, b.Nodes)
+		b.Nodes = nodes
+	} else {
+		prevLen := uint32(len(b.Nodes))
+		b.Nodes = b.Nodes[0:needed]
+		for i := prevLen; i < needed; i++ {
+			b.Nodes[i] = nil
+		}
+	}
+
+	for node != nil && b.Nodes[node.Height] != node {
+		b.Nodes[node.Height] = node
+		node = node.Parent
+	}
 }
 
 func (b *BlockChain) RemoveNodeFromNodes(node *BlockNode) {
