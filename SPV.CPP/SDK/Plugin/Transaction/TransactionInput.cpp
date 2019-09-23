@@ -26,7 +26,7 @@ namespace Elastos {
 			return *this;
 		}
 
-		TransactionInput::TransactionInput(const uint256 &txHash, uint32_t index) :
+		TransactionInput::TransactionInput(const uint256 &txHash, uint16_t index) :
 				_txHash(txHash),
 				_index(index),
 				_sequence(0) {

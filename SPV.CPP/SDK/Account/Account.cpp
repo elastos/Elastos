@@ -520,6 +520,7 @@ namespace Elastos {
 			bytes = AES::DecryptCCM(_localstore->GetRequestPrivKey(), payPasswd);
 			json.SetRequestPrivKey(bytes.getHex());
 
+			json.SetOwnerPubKey(_localstore->GetOwnerPubKey());
 			json.SetxPubKey(_localstore->GetxPubKey());
 			json.SetxPubKeyHDPM(_localstore->GetxPubKeyHDPM());
 			json.SetRequestPubKey(_localstore->GetRequestPubKey());

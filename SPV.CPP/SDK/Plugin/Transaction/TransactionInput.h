@@ -23,7 +23,7 @@ namespace Elastos {
 
 			TransactionInput &operator=(const TransactionInput &tx);
 
-			TransactionInput(const uint256 &txHash, uint32_t index);
+			TransactionInput(const uint256 &txHash, uint16_t index);
 
 			~TransactionInput();
 

@@ -73,7 +73,7 @@ namespace Elastos {
 				uint8_t n = (uint8_t)(_code[_code.size() - 2] - OP_1 + 1);
 
 				if (signatureCount < m) {
-					Log::error("Signature not enough for multi sign");
+					Log::info("Signature not enough for multi sign tx");
 					return false;
 				}
 

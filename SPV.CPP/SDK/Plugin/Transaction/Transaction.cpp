@@ -488,11 +488,6 @@ namespace Elastos {
 				return false;
 			}
 
-			if (inCount > UINT16_MAX) {
-				Log::error("deserialize tx: too much inputs: {}", inCount);
-				return false;
-			}
-
 			_inputs.reserve(inCount);
 			for (size_t i = 0; i < inCount; i++) {
 				InputPtr input(new TransactionInput());
@@ -536,11 +531,6 @@ namespace Elastos {
 			uint64_t programLength = 0;
 			if (!istream.ReadVarUint(programLength)) {
 				Log::error("deserialize tx program length error");
-				return false;
-			}
-
-			if (programLength > UINT16_MAX) {
-				Log::error("deserialize tx: too much programs: {}", programLength);
 				return false;
 			}
 
@@ -719,7 +709,7 @@ namespace Elastos {
 					}
 				} else {
 					UTXOPtr cb = wallet->CoinBaseTxForHash((*in)->TxHash());
-					if (cb) {
+					if (cb && cb->Index() == (*in)->Index()) {
 						const BigInt &spentAmount = cb->Output()->Amount();
 						addr = Address(cb->Output()->ProgramHash()).String();
 

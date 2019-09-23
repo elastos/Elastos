@@ -193,7 +193,7 @@ namespace Elastos {
 
 			bool ContainsTx(const TransactionPtr &tx) const;
 
-			bool CoinBaseContains(const uint256 &txHash) const;
+			bool ContainsInput(const InputPtr &in) const;
 
 			UTXOPtr CoinBaseForHashInternal(const uint256 &txHash) const;
 

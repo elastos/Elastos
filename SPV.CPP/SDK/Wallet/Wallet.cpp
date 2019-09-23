@@ -54,7 +54,7 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::WalletNotContainTx, "Wallet do not contain tx = " + hash);
 			}
 
-			bool stripped = false, movedToCoinbase = false;
+			bool needUpdate = false, movedToCoinbase = false;
 			InputArray spentInputs;
 			for (size_t i = 0; i < txns.size(); ++i) {
 				if (txns[i]->IsCoinBase()) {
@@ -68,7 +68,7 @@ namespace Elastos {
 							break;
 						}
 					}
-				} else {
+				} else if (ContainsTx(txns[i])) {
 					txns[i]->IsRegistered() = true;
 					if (StripTransaction(txns[i])) {
 						SPVLOG_DEBUG("{} strip tx: {}, h: {}, t: {}",
@@ -76,7 +76,7 @@ namespace Elastos {
 									 txns[i]->GetHash().GetHex(),
 									 txns[i]->GetBlockHeight(),
 									 txns[i]->GetTimestamp());
-						stripped = true;
+						needUpdate = true;
 					}
 
 					if (/*!txns[i]->IsSigned() || */_allTx.Contains(txns[i]))
@@ -96,6 +96,8 @@ namespace Elastos {
 						SPVLOG_DEBUG("{} tx[{}]: {}, h: {}", _walletID, i,
 									 txns[i]->GetHash().GetHex(), txns[i]->GetBlockHeight());
 					}
+				} else {
+					needUpdate = true;
 				}
 			}
 
@@ -132,7 +134,7 @@ namespace Elastos {
 				coinBaseUpdatedAll(_coinBaseUTXOs);
 			}
 
-			if (stripped) {
+			if (needUpdate) {
 				SPVLOG_DEBUG("{} contain not striped tx, update all tx", _walletID);
 				txUpdatedAll(_transactions);
 			}
@@ -295,15 +297,16 @@ namespace Elastos {
 						//       (for now, replacements appear invalid until confirmation)
 						_allTx.Insert(tx);
 						InsertTx(tx);
-						changedBalance = BalanceAfterUpdatedTx(tx);
+						if (tx->GetBlockHeight() != TX_UNCONFIRMED)
+							changedBalance = BalanceAfterUpdatedTx(tx);
 						wasAdded = true;
 					} else { // keep track of unconfirmed non-wallet tx for invalid tx checks and child-pays-for-parent fees
 						// BUG: limit total non-wallet unconfirmed tx to avoid memory exhaustion attack
-						if (tx->GetBlockHeight() == TX_UNCONFIRMED) _allTx.Insert(tx);
+						// if (tx->GetBlockHeight() == TX_UNCONFIRMED) _allTx.Insert(tx);
 						r = false;
 						// BUG: XXX memory leak if tx is not added to wallet->_allTx, and we can't just free it
 					}
-				} else if (tx->IsCoinBase() && !CoinBaseContains(tx->GetHash())) {
+				} else if (tx->IsCoinBase() && nullptr == CoinBaseForHashInternal(tx->GetHash())) {
 					cb = RegisterCoinBaseTx(tx);
 				}
 				Unlock();
@@ -594,7 +597,7 @@ namespace Elastos {
 					if (o && _subAccount->ContainsAddress(o->Addr())) {
 						amount += o->Amount();
 					}
-				} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr) {
+				} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr && cb->Index() == (*in)->Index()) {
 					amount += cb->Output()->Amount();
 				}
 			}
@@ -606,14 +609,7 @@ namespace Elastos {
 			boost::mutex::scoped_lock scopedLock(lock);
 			bool status = true;
 			for (InputArray::iterator in = tx->GetInputs().begin(); in != tx->GetInputs().end(); ++in) {
-				TransactionPtr t = _allTx.Get((*in)->TxHash());
-				if (t) {
-					OutputPtr output = t->OutputOfIndex((*in)->Index());
-					if (output && _subAccount->ContainsAddress(output->Addr())) {
-						status = false;
-						break;
-					}
-				} else if (CoinBaseForHashInternal((*in)->TxHash()) != nullptr) {
+				if (ContainsInput(*in)) {
 					status = false;
 					break;
 				}
@@ -835,23 +831,34 @@ namespace Elastos {
 					r = true;
 			}
 
-			const InputArray &inputs = tx->GetInputs();
-			for (InputArray::const_iterator in = inputs.cbegin(); !r && in != inputs.cend(); ++in) {
-				const TransactionPtr t = _allTx.Get((*in)->TxHash());
-				if (t) {
-					OutputPtr output = t->OutputOfIndex((*in)->Index());
-					if (output && _subAccount->ContainsAddress(output->Addr()))
-						r = true;
-				} else if (CoinBaseContains((*in)->TxHash())) {
+			for (const InputPtr &input : tx->GetInputs()) {
+				if (ContainsInput(input)) {
 					r = true;
+					break;
 				}
 			}
 
 			return r;
 		}
 
-		bool Wallet::CoinBaseContains(const uint256 &txHash) const {
-			return nullptr != CoinBaseForHashInternal(txHash);
+		bool Wallet::ContainsInput(const InputPtr &in) const {
+			bool r = false;
+			UTXOPtr cb = nullptr;
+			OutputPtr output = nullptr;
+
+			const TransactionPtr tx = _allTx.Get(in->TxHash());
+			if (tx) {
+				output = tx->OutputOfIndex(in->Index());
+				if (output && _subAccount->ContainsAddress(output->Addr())) {
+					r = true;
+				}
+			} else if ((cb = CoinBaseForHashInternal(in->TxHash()))) {
+				if (cb->Index() == in->Index()) {
+					r = true;
+				}
+			}
+
+			return r;
 		}
 
 		UTXOPtr Wallet::CoinBaseForHashInternal(const uint256 &txHash) const {
@@ -993,7 +1000,7 @@ namespace Elastos {
 									changedBalance[o->AssetID()] = _groupedAssets[o->AssetID()]->GetBalance();
 							}
 						}
-					} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr) {
+					} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr && cb->Index() == (*in)->Index()) {
 						_spendingOutputs.push_back(UTXOPtr(new UTXO(*in)));
 						// TODO BUG update spent status to database
 						cb->SetSpent(false);
