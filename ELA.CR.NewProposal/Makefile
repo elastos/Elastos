@@ -11,8 +11,8 @@ all:
 	$(BUILD) -o ela-cli cmd/ela-cli.go
 
 dev:
-	$(DEV_BUILD) -o bin/ela log.go settings.go main.go
-	$(DEV_BUILD) -o bin/ela-cli cmd/ela-cli.go
+	$(DEV_BUILD) -o ela log.go settings.go main.go
+	$(DEV_BUILD) -o ela-cli cmd/ela-cli.go
 
 linux:
 	GOARCH=amd64 GOOS=linux $(BUILD) -o ela log.go settings.go main.go
