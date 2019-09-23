@@ -4,7 +4,7 @@ public class DID: NSObject {
 
     public static let METHOD: String = "elastos"
     var method: String!
-    private var methodSpecificId: String!
+    public var methodSpecificId: String!
     private var document: DIDDocument?
     private var reslved: Bool?
     private var resolveTimestamp: Date?

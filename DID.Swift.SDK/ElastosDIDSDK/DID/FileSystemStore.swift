@@ -260,15 +260,7 @@ class FileSystemStore: DIDStore {
         return [Entry]()
     }
 
-    override func listCredentials(_ did: String) throws -> Array<Entry<DIDURL, String>> {
-        return [Entry]()
-    }
-
     override func selectCredentials(_ did: DID, _ id: DIDURL, _ type: Array<Any>) throws -> Array<Entry<DIDURL, String>> {
-        return [Entry]()
-    }
-
-    override func selectCredentials(_ did: String, _ id: String, _ type: Array<Any>) throws -> Array<Entry<DIDURL, String>> {
         return [Entry]()
     }
 
@@ -277,38 +269,60 @@ class FileSystemStore: DIDStore {
         return false
     }
 
-    override func containsPrivateKeys(_ did: String) throws -> Bool {
-        return false
-    }
-
     override func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
-        return false
-    }
+        let dir: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR
+        let path: String = try getFile(dir)!
+        let fileManager: FileManager = FileManager.default
+        var isDir = ObjCBool.init(false)
+        let fileExists = fileManager.fileExists(atPath: path, isDirectory: &isDir)
+        if !isDir.boolValue {
+            return false
+        }
 
-    override func containsPrivateKey(_ did: String, _ id: String) throws -> Bool {
-        return false
+        var keys: [URL] = []
+        if let dirContents = fileManager.enumerator(atPath: path) {
+            // determine whether files are hidden or not
+            for case let url as URL in dirContents {
+                // Not hiding files
+                if url.absoluteString.first?.description != "." {
+                    keys.append(url)
+                }
+            }
+        }
+        return keys.count > 0
     }
 
     override func storePrivateKey(_ did: DID, _ id: DIDURL, _ privateKey: String) throws {
-        // TODO
+        let path: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + id.fragment
+        let privateKeyPath: String = try getFile(path) ?? ""
+
+        // Delete before storing , Java no
+        try deletePrivateKey(did, id)
+        let fileManager: FileManager = FileManager.default
+        fileManager.createFile(atPath: privateKeyPath, contents:nil, attributes:nil)
+        let handle = FileHandle(forWritingAtPath:privateKeyPath)
+        handle?.write(privateKey.data(using: String.Encoding.utf8)!)
     }
 
-    override func storePrivateKey(_ did: String, _ id: String, _ privateKey: String) throws {
-        // TODO
-    }
-
-    override func loadPrivateKey(_ did: DID, id: DIDURL) -> String {
-        return ""
+    override func loadPrivateKey(_ did: DID, id: DIDURL) throws -> String {
+        let path: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + id.fragment
+        let privateKeyPath = try getFile(path)
+        return try! String(contentsOfFile:privateKeyPath!, encoding: String.Encoding.utf8)
     }
 
     override func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
-        // TODO
+        let path: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + id.fragment
+        let privateKeyPath = try getFile(path)
+        let fileExists = FileManager.default.fileExists(atPath: privateKeyPath!, isDirectory: nil)
+
+        if fileExists {
+            try FileManager.default.removeItem(atPath: privateKeyPath!)
+            return true
+        }
         return false
     }
 
-
     private func getFile(_ path: String) throws -> String? {
-
         do {
             return try getFile(false, path)
         }
@@ -318,21 +332,35 @@ class FileSystemStore: DIDStore {
     }
 
     private func getDir(_ path: String) throws -> String {
-        // TODO
-        return ""
+        var dirPath = storeRoot
+        let fileManager = FileManager.default
+        let paths = path.split{$0 == "/"}.map(String.init)
+
+        for (index, path) in paths.enumerated() {
+            if index == paths.endIndex - 1 {
+                dirPath?.append("/")
+                dirPath?.append(path)
+            }
+        }
+        return dirPath!
     }
 
     private func writeTextToPath(_ path: String, _ text: String) throws {
-        // TODO
+        let writePath = try getFile(path)
+        let fileManager = FileManager.default
+        // Delete before writing
+        try deleteFile(writePath!)
+        fileManager.createFile(atPath: path, contents:nil, attributes:nil)
+        let handle = FileHandle(forWritingAtPath:path)
+        handle?.write(text.data(using: String.Encoding.utf8)!)
     }
 
     private func readTextFromPath(_ path: String) throws -> String {
-        // TODO
-        return ""
+        let readPath = try getFile(path)
+        return try! String(contentsOfFile:readPath!, encoding: String.Encoding.utf8)
     }
 
     private func getHDPrivateKeyFile(_ create: Bool) throws -> String{
-
         let path = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.HDKEY_FILE
         return try getFile(create, path)
     }

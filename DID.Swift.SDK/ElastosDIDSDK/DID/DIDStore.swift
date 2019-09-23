@@ -210,7 +210,7 @@ class DIDStore: NSObject {
        try storePrivateKey(DID(did), DIDURL(id), privateKey)
     }
 
-    func loadPrivateKey(_ did: DID, id: DIDURL) -> String { return "" }
+    func loadPrivateKey(_ did: DID, id: DIDURL) throws -> String { return "" }
 
     public func deletePrivateKey(_ did: DID,_ id: DIDURL) throws -> Bool { return false }
     public func deletePrivateKey(_ did: String,_ id: String) throws -> Bool {
