@@ -33,8 +33,7 @@ steps:
   - checkcoverage
   - make dev
   - make dns
-  - cp bin/ela bin/ela-cli .
-  - bin/ela -v
+  - ./ela -v
   - ./util.sh test
   when:
     event:
