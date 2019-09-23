@@ -122,10 +122,10 @@ namespace Elastos {
 			if (!json.xPrivKey().empty()) {
 				Base58::CheckDecode(json.xPrivKey(), bytes);
 				HDKeychain rootkey(bytes);
-				_ownerPubKey = json.OwnerPubKey();
 				_xPrivKey = AES::EncryptCCM(bytes, payPasswd);
 				_readonly = false;
 			}
+			_ownerPubKey = json.OwnerPubKey();
 			if (!json.Mnemonic().empty()) {
 				_mnemonic = AES::EncryptCCM(bytes_t(json.Mnemonic().data(), json.Mnemonic().size()), payPasswd);
 				_readonly = false;
