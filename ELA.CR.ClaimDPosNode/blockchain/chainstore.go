@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -76,14 +76,20 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 		blocksCache:      make(map[Uint256]*Block),
 	}
 
-	s.init(genesisBlock)
+	if err := s.init(genesisBlock); err != nil {
+		log.Error("chain store initialize failed")
+	}
 
 	return s, nil
 }
 
 func (c *ChainStore) Close() {
-	c.IStore.Close()
-	c.fflDB.Close()
+	if err := c.IStore.Close(); err != nil {
+		log.Info("IStore close failed:", err)
+	}
+	if err := c.fflDB.Close(); err != nil {
+		log.Info("fflDB close failed:", err)
+	}
 }
 
 func (c *ChainStore) init(genesisBlock *Block) error {

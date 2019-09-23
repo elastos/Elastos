@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 // Copyright (c) 2013-2016 The btcsuite developers
 // Copyright (c) 2017-2019 Elastos Foundation
@@ -39,6 +39,10 @@ const (
 	// journal bucket that is used to track all spent transactions for use
 	// in reorgs.
 	latestSpendJournalBucketVersion = 1
+
+	// approxNodesPerWeek is an approximation of the number of new blocks there
+	// are in a week on average.
+	approxNodesPerWeek = 30 * 24 * 7
 )
 
 // blockStatus is a bit field representing the validation state of the block.
@@ -491,8 +495,6 @@ func (b *BlockChain) initChainState() error {
 			i++
 		}
 
-		b.BestChain = lastNode
-
 		// Load the raw block bytes for the best block.
 		blockBytes, err := dbTx.FetchBlock(&state.hash)
 		if err != nil {
@@ -503,6 +505,20 @@ func (b *BlockChain) initChainState() error {
 		if err != nil {
 			return err
 		}
+
+		// As a final consistency check, we'll run through all the nodes which
+		// are ancestors of the current chain tip, and find the real tip.
+		for iterNode := lastNode; iterNode != nil; iterNode = iterNode.Parent {
+			// If this isn't already marked as valid in the index, then
+			// we'll mark it as valid now to ensure consistency once
+			// we're up and running.
+			hasBlock, err := dbTx.HasBlock(*iterNode.Hash)
+			if err == nil && hasBlock {
+				b.setTip(iterNode)
+				break
+			}
+		}
+		b.BestChain = b.Nodes[len(b.Nodes)-1]
 
 		return nil
 	})
@@ -535,7 +551,6 @@ func deserializeBlockRow(blockRow []byte) (*types.Header, error) {
 // This overwrites the current entry if there exists one.
 func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 	// Serialize block data to be stored.
-
 	w := bytes.NewBuffer(make([]byte, 0, blockHdrNoAuxSize))
 	err := header.SerializeNoAux(w)
 	if err != nil {
@@ -551,7 +566,6 @@ func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 }
 
 // dbRemoveBlockNode remove the block header to the block index bucket.
-// This overwrites the current entry if there exists one.
 func dbRemoveBlockNode(dbTx database.Tx, blockHash *common.Uint256,
 	height uint32) error {
 	// Write block header data to block index bucket.
