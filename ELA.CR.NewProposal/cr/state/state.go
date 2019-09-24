@@ -319,8 +319,11 @@ func (s *State) updateCR(info *payload.CRInfo, height uint32) {
 
 // unregisterCR handles the cancel producer transaction.
 func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
-	candidate := s.getCandidate(info.Code)
-	key := candidate.info.DID
+	candidate := s.getCandidateByDID(info.DID)
+	if candidate == nil {
+		return
+	}
+	key := info.DID
 	isPending := candidate.state == Pending
 	s.history.Append(height, func() {
 		candidate.state = Canceled
@@ -461,7 +464,11 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 	p := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
-			candidate := s.getCandidate(cv.Candidate)
+			did, err := common.Uint168FromBytes(cv.Candidate)
+			if err != nil {
+				continue
+			}
+			candidate := s.getCandidateByDID(*did)
 			if candidate == nil {
 				continue
 			}
@@ -498,17 +505,21 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	p := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
-			producer := s.getCandidate(cv.Candidate)
-			if producer == nil {
+			did, err := common.Uint168FromBytes(cv.Candidate)
+			if err != nil {
+				continue
+			}
+			candidate := s.getCandidateByDID(*did)
+			if candidate == nil {
 				continue
 			}
 			switch vote.VoteType {
 			case outputpayload.CRC:
 				v := cv.Votes
 				s.history.Append(height, func() {
-					producer.votes -= v
+					candidate.votes -= v
 				}, func() {
-					producer.votes += v
+					candidate.votes += v
 				})
 			}
 		}

@@ -1186,6 +1186,7 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 
 func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	// Generate a register CR transaction
+
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
@@ -1523,7 +1524,7 @@ func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr str
 	txn.TxType = types.UnregisterCR
 	txn.Version = types.TxVersion09
 	unregisterCRPayload := &payload.UnregisterCR{
-		Code: code1,
+		DID: *getDid(code1),
 	}
 	signBuf := new(bytes.Buffer)
 	err := unregisterCRPayload.SerializeUnsigned(signBuf, payload.UnregisterCRVersion)
@@ -1993,7 +1994,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 			{
 				TxType: types.UnregisterCR,
 				Payload: &payload.UnregisterCR{
-					Code: code,
+					DID: *getDid(code),
 				},
 			},
 		},
@@ -2150,16 +2151,41 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	outputs := []*types.Output{{Type: types.OTNone}}
 	s.NoError(s.Chain.checkVoteOutputs(0, outputs, references, nil, nil))
 
-	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
-	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
-	publicKey3 := "039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
+	publicKey1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	publicKey2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	publicKey3 := "031e12374bae471aa09ad479f66c2306f4bcc4ca5b754609a82a1839b94b4721b9"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	privateKeyStr3 := "94396a69462208b8fd96d83842855b867d3b0e663203cb31d0dfaec0362ec034"
+
+	registerCRTxn1 := s.getRegisterCRTx(publicKey1, privateKeyStr1, "nickName1")
+	registerCRTxn2 := s.getRegisterCRTx(publicKey2, privateKeyStr2, "nickName2")
+	registerCRTxn3 := s.getRegisterCRTx(publicKey3, privateKeyStr3, "nickName3")
+
+	block := &types.Block{
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+			registerCRTxn3,
+		},
+	}
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
+	code1 := getCode(publicKey1)
+	code2 := getCode(publicKey2)
+	code3 := getCode(publicKey3)
+
 	candidate1, _ := common.HexStringToBytes(publicKey1)
 	candidate2, _ := common.HexStringToBytes(publicKey2)
-	candidate3, _ := common.HexStringToBytes(publicKey3)
+	didCandidate1 := getDid(code1)
+	didCandidate2 := getDid(code2)
+	didCandidate3 := getDid(code3)
+
 	producersMap := make(map[string]struct{})
 	producersMap[publicKey1] = struct{}{}
 	crsMap := make(map[string]struct{})
 	crsMap[publicKey3] = struct{}{}
+	crsMap[common.BytesToHexString(code1)] = struct{}{}
+	crsMap[common.BytesToHexString(code3)] = struct{}{}
 
 	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
 	hashByte, _ := common.HexStringToBytes(hashStr)
@@ -2197,7 +2223,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 0},
+						{didCandidate3.Bytes(), 0},
 					},
 				},
 			},
@@ -2224,7 +2250,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 0},
+						{didCandidate3.Bytes(), 0},
 					},
 				},
 			},
@@ -2239,6 +2265,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	}
 	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight,
 		outputs1, references, producersMap, crsMap))
+
 	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs2, references, producersMap, crsMap))
 	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs3, references, producersMap, crsMap))
 
@@ -2261,8 +2288,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs4, references, producersMap,
 		crsMap),
-		"invalid vote output payload producer candidate: "+
-			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+		"invalid vote output payload producer candidate: "+publicKey2)
 
 	// Check vote output of v0 with crc type and invalid candidate
 	outputs5 := []*types.Output{{Type: types.OTNone}}
@@ -2275,7 +2301,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate2, 0},
+						{didCandidate2.Bytes(), 0},
 					},
 				},
 			},
@@ -2296,15 +2322,14 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate2, 0},
+						{didCandidate2.Bytes(), 0},
 					},
 				},
 			},
 		},
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs6, references, producersMap, crsMap),
-		"invalid vote output payload CR candidate: "+
-			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+		"invalid vote output payload CR candidate: "+didCandidate2.String()+" not in crs")
 
 	// Check vote output of v0 with invalid candidate
 	outputs7 := []*types.Output{{Type: types.OTNone}}
@@ -2323,15 +2348,14 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate2, 0},
+						{didCandidate2.Bytes(), 0},
 					},
 				},
 			},
 		},
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs7, references, producersMap, crsMap),
-		"invalid vote output payload producer candidate: "+
-			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+		"invalid vote output payload producer candidate: "+publicKey2)
 
 	crsMap[publicKey2] = struct{}{}
 
@@ -2368,8 +2392,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate2, 10},
-						{candidate3, 10},
+						{didCandidate1.Bytes(), 10},
+						{didCandidate3.Bytes(), 10},
 					},
 				},
 			},
@@ -2396,7 +2420,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 20},
+						{didCandidate3.Bytes(), 20},
 					},
 				},
 			},
@@ -2423,7 +2447,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 10},
+						{didCandidate3.Bytes(), 10},
 					},
 				},
 			},
@@ -2449,7 +2473,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 1},
+						{didCandidate3.Bytes(), 1},
 					},
 				},
 			},
