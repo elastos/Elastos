@@ -30,7 +30,6 @@ namespace Elastos {
 			SignTypeStandard   = 0xAC,
 			SignTypeMultiSign  = 0xAE,
 			SignTypeCrossChain = 0xAF,
-			SignTypeIDChain    = 0xAD,
 			SignTypeDestroy    = 0xAA,
 		};
 

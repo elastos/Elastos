@@ -89,6 +89,7 @@ namespace Elastos {
 			SignType type;
 
 			switch (prefix) {
+				case PrefixIDChain:
 				case PrefixStandard:
 				case PrefixDeposit:
 					type = SignTypeStandard;
@@ -98,9 +99,6 @@ namespace Elastos {
 					break;
 				case PrefixMultiSign:
 					type = SignTypeMultiSign;
-					break;
-				case PrefixIDChain:
-					type = SignTypeIDChain;
 					break;
 				case PrefixDestroy:
 					type = SignTypeDestroy;

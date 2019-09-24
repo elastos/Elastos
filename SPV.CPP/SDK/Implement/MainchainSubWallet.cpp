@@ -841,9 +841,10 @@ namespace Elastos {
 						ByteStream stream(pinfo->GetCode());
 						bytes_t pubKey;
 						stream.ReadVarBytes(pubKey);
+						Address did(pinfo->GetDID());
 
 						info["CROwnerPublicKey"] = pubKey.getHex();
-						info["CROwnerDID"] = pinfo->GetDID().GetHex();
+						info["CROwnerDID"] = did.String();
 						info["NickName"] = pinfo->GetNickName();
 						info["Url"] = pinfo->GetUrl();
 						info["Location"] = pinfo->GetLocation();
