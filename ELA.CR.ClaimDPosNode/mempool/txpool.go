@@ -16,7 +16,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -284,13 +283,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						log.Error("unregisterCR CR payload cast failed, tx:", tx.Hash())
 						continue
 					}
-					ct, err := contract.CreateCRDIDContractByCode(unrcPayload.Code)
-					if err != nil {
-						log.Error("invalid unregister CR code, tx:", tx.Hash())
-						continue
-					}
-					did := ct.ToProgramHash()
-					mp.delCRDID(*did)
+					mp.delCRDID(unrcPayload.DID)
 				}
 
 				deleteCount++
@@ -318,7 +311,7 @@ func (mp *TxPool) cleanCanceledProducerAndCR(txs []*Transaction) error {
 			if !ok {
 				return errors.New("invalid cancel producer payload")
 			}
-			if err := mp.cleanVoteAndUpdateCR(crPayload.Code); err != nil {
+			if err := mp.cleanVoteAndUpdateCR(crPayload.DID); err != nil {
 				log.Error(err)
 			}
 		}
@@ -363,7 +356,7 @@ func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
 	return nil
 }
 
-func (mp *TxPool) cleanVoteAndUpdateCR(code []byte) error {
+func (mp *TxPool) cleanVoteAndUpdateCR(did Uint168) error {
 	for _, txn := range mp.txnList {
 		if txn.TxType == TransferAsset {
 			for _, output := range txn.Outputs {
@@ -375,7 +368,7 @@ func (mp *TxPool) cleanVoteAndUpdateCR(code []byte) error {
 					for _, content := range opPayload.Contents {
 						if content.VoteType == outputpayload.CRC {
 							for _, cv := range content.CandidateVotes {
-								if bytes.Equal(code, cv.Candidate) {
+								if bytes.Equal(did.Bytes(), cv.Candidate) {
 									mp.removeTransaction(txn)
 								}
 							}
@@ -388,7 +381,7 @@ func (mp *TxPool) cleanVoteAndUpdateCR(code []byte) error {
 			if !ok {
 				return errors.New("invalid update CR payload")
 			}
-			if bytes.Equal(code, crPayload.Code) {
+			if did.IsEqual(crPayload.DID) {
 				mp.removeTransaction(txn)
 				mp.delCRDID(crPayload.DID)
 			}
@@ -522,13 +515,7 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		ct, err := contract.CreateCRDIDContractByCode(p.Code)
-		if err != nil {
-			log.Error("invalid unregister CR code, tx:", txn.Hash())
-			return ErrCRProcessing
-		}
-		did := ct.ToProgramHash()
-		if err := mp.verifyDuplicateCR(*did); err != nil {
+		if err := mp.verifyDuplicateCR(p.DID); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
