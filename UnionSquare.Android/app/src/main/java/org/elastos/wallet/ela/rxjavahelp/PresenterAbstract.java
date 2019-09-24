@@ -21,10 +21,10 @@ import io.reactivex.schedulers.Schedulers;
 
 
 public class PresenterAbstract implements DialogInterface.OnCancelListener {
-    private String TAG = getClass().getSimpleName();
-    private Disposable mDisposable;
-    private boolean isShowDialog = true;
-    private Context context;
+    protected String TAG = getClass().getSimpleName();
+    protected Disposable mDisposable;
+    protected boolean isShowDialog = true;
+    protected Context context;
 
     @Deprecated
     protected void subscriberObservable(Observer subscriber,
@@ -62,6 +62,11 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
         });
     }
 
+    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment, boolean isShowDialog, Object o) {
+        //初始化参数
+        this.isShowDialog = isShowDialog;
+        return createObserver(listener, baseFragment, o);
+    }
 
     protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment, boolean isShowDialog) {
         //初始化参数
@@ -124,7 +129,8 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
 
     }
-    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment,Object o) {
+
+    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment, Object o) {
         //初始化参数
         this.context = baseFragment.getBaseActivity();
         if (isShowDialog) {
@@ -174,6 +180,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
 
     }
+
     protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity) {
         //初始化参数
         this.context = baseActivity;
@@ -226,7 +233,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     }
 
 
-    private void dismissProgessDialog() {
+    protected void dismissProgessDialog() {
         if (DialogUtil.getHttpialog() != null && DialogUtil.getHttpialog().isShowing()) {
             DialogUtil.getHttpialog().dismiss();
             DialogUtil.setHttpialogNull();
@@ -251,19 +258,19 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
         }
     }
 
-    private void finish() {
+    protected void finish() {
         if (context instanceof BaseActivity) {
             BaseActivity b = (BaseActivity) context;
             b.onError();
         }
     }
 
-    public static int getResourceId(Context context, String resourceName, String resourceType) {
+    protected static int getResourceId(Context context, String resourceName, String resourceType) {
         return context.getResources().getIdentifier(resourceName, resourceType,
                 context.getPackageName());
     }
 
-    private void showTips(BaseEntity entity) {
+    protected void showTips(BaseEntity entity) {
         String msg;
         try {
             int id = getResourceId(context, "error_" + entity.getCode(), "string");

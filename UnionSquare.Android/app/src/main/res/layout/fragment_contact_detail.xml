@@ -40,6 +40,7 @@
             android:orientation="horizontal">
 
             <EditText
+                android:maxLength="100"
                 android:id="@+id/et_walletaddr"
                 android:layout_width="0dp"
                 android:layout_height="53dp"

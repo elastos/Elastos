@@ -3,14 +3,18 @@ package org.elastos.wallet.ela.utils;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -18,6 +22,7 @@ import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -25,6 +30,10 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener2;
+import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
+
+import java.lang.reflect.Field;
 
 import javax.inject.Inject;
 
@@ -187,6 +196,7 @@ public class DialogUtil {
         });
         dialog.show();
     }
+
     /*提示imageview*/
     public void showImage(BaseActivity activity, Bitmap mBitmap) {
         Dialog dialog = getDialogs1(activity, R.layout.dialog_image);
@@ -222,7 +232,36 @@ public class DialogUtil {
         return dialog;
     }
 
+    public Dialog showWarmPromptInput3(BaseActivity activity, String title, String hint, WarmPromptListener2 listener) {
+        dialog = getDialogs(activity, R.layout.dialog_input3);
 
+        TextView tvTitle = dialog.findViewById(R.id.tv_title);
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        EditText etContent = dialog.findViewById(R.id.et_content);
+        TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextView tvnoSure = dialog.findViewById(R.id.tv_nosure);
+
+        if (title != null) {
+            tvTitle.setText(Html.fromHtml(title));
+        }
+        if (hint != null) {
+            etContent.setHint(Html.fromHtml(hint));
+        }
+
+        tvnoSure.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.noAffireBtnClick(v);
+        });
+        ivCancel.setOnClickListener(v -> dialogDismiss(dialog));
+        tvCancel.setOnClickListener(v -> dialogDismiss(dialog));
+
+        tvSure.setOnClickListener(v -> {
+            listener.affireBtnClick(etContent);
+        });
+        dialog.show();
+        return dialog;
+    }
     public void showTransferSucess(BaseActivity activity) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
         dialog.setContentView(R.layout.dialog_transfersuccess);
@@ -237,6 +276,7 @@ public class DialogUtil {
         }, 2000);//3秒后执行Runnable中的run方法
         dialog.show();
     }
+
     public void showTransferSucess(BaseActivity activity, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
         dialog.setContentView(R.layout.dialog_transfersuccess);
@@ -253,4 +293,45 @@ public class DialogUtil {
         }, 2888);//3秒后执行Runnable中的run方法
         dialog.show();
     }
+
+    public void showSelectNum(BaseActivity activity, WarmPromptListener listener) {
+        Dialog dialog = new Dialog(activity);
+        dialog.setContentView(R.layout.dialog_numberpicker);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextConfigNumberPicker numberPicker = dialog.findViewById(R.id.np);
+        tvSure.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.affireBtnClick(numberPicker);
+        });
+
+        //设置需要显示的内容数组
+        // numberPicker.setDisplayedValues(numbers);
+        //设置最大最小值
+        numberPicker.setMinValue(2);
+        numberPicker.setMaxValue(6);
+        //设置默认的位置
+        numberPicker.setValue(2);
+        numberPicker.setWrapSelectorWheel(false);
+        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        numberPicker.setMInputStyle(16f);
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                picker.performClick();
+            }
+        });
+
+        WindowManager m = activity.getWindowManager();
+        Window window = dialog.getWindow();
+        window.getDecorView().setPadding(0, 0, 0, 0);
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(params);
+        window.getDecorView().setBackgroundResource(R.color.pickerbg);
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+        dialog.show();
+    }
+
 }

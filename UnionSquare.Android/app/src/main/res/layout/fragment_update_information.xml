@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
-    android:orientation="vertical"
-    tools:context=".ui.vote.UpdateInformation.UpdateInformationFragment">
+    android:orientation="vertical">
 
 
     <include layout="@layout/title_bar" />
@@ -30,12 +29,9 @@
             android:background="@null"
             android:hint="@string/inputdotname"
             android:inputType="text"
-            android:maxLines="1"
-            />
+            android:maxLines="1" />
 
-        <View
-            style="@style/line1"
-             />
+        <View style="@style/line1" />
 
         <org.elastos.wallet.ela.utils.ClearEditText
             android:id="@+id/et_publickey"
@@ -44,40 +40,15 @@
             android:background="@null"
             android:hint="@string/inputdotpublickey"
             android:inputType="text"
+            android:maxLines="1"
             android:textColor="@color/wallet_textColor"
-            android:textColorHint="#80ffffff"
-            android:maxLines="1" />
+            android:textColorHint="#80ffffff" />
 
         <View style="@style/line1" />
 
 
-        <EditText
-            android:id="@+id/et_walletkey"
-            android:layout_width="match_parent"
-            android:layout_height="53dp"
-            android:background="@null"
-            android:hint="@string/walletkey"
-            android:inputType="text"
-            android:maxLines="1"
-            android:visibility="gone" />
 
-        <!--<View-->
-        <!--style="@style/line1"-->
-        <!--android:visibility="gone" />-->
 
-        <EditText
-            android:visibility="gone"
-            android:id="@+id/et_net"
-            android:layout_width="match_parent"
-            android:layout_height="53dp"
-            android:background="@null"
-            android:hint="@string/network_address"
-            android:inputType="text"
-            android:maxLines="1" />
-
-        <View
-            android:visibility="gone"
-            style="@style/line1" />
 
         <LinearLayout
             android:id="@+id/ll_area"

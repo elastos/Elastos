@@ -33,8 +33,8 @@ public class TokenchainSubWallet extends SidechainSubWallet {
         return CreateTransaction(mInstance, fromAddr, toAddr, amount, assetID, memo);
     }
 
-    public String CreateCombineUTXOTransaction(String assetID, String memo) {
-        return CreateCombineUTXOTransaction(mInstance, assetID, memo);
+    public String CreateConsolidateTransaction(String assetID, String memo) {
+        return CreateConsolidateTransaction(mInstance, assetID, memo);
     }
 
     public String GetAllAssets() {
@@ -59,7 +59,7 @@ public class TokenchainSubWallet extends SidechainSubWallet {
     private native String CreateTransaction(long instance, String fromAddr, String toAddr,
                                             String amount, String assetID, String memo);
 
-    private native String CreateCombineUTXOTransaction(long instance, String assetID, String memo);
+    private native String CreateConsolidateTransaction(long instance, String assetID, String memo);
 
     private native String GetAllAssets(long instance);
 }

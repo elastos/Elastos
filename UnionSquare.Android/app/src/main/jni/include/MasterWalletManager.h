@@ -25,10 +25,6 @@ namespace Elastos {
 
 			virtual std::string GenerateMnemonic(const std::string &language, int wordCount = 12) const;
 
-			virtual std::string GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword) const;
-
-			virtual std::string GetMultiSignPubKey(const std::string &privKey) const;
-
 			virtual IMasterWallet *CreateMasterWallet(
 					const std::string &masterWalletId,
 					const std::string &mnemonic,
@@ -38,30 +34,36 @@ namespace Elastos {
 
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 					const std::string &masterWalletId,
-					const nlohmann::json &publicKeys,
+					const nlohmann::json &cosigners,
 					uint32_t m,
+					bool singleAddress,
+					bool compatible = false,
 					time_t timestamp = 0);
 
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 					const std::string &masterWalletId,
 					const std::string &xprv,
 					const std::string &payPassword,
-					const nlohmann::json &publicKeys,
+					const nlohmann::json &cosigners,
 					uint32_t m,
+					bool singleAddress,
+					bool compatible = false,
 					time_t timestamp = 0);
 
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 					const std::string &masterWalletId,
 					const std::string &mnemonic,
-					const std::string &phrasePassword,
+					const std::string &passphrase,
 					const std::string &payPassword,
-					const nlohmann::json &publicKeys,
+					const nlohmann::json &cosigners,
 					uint32_t m,
+					bool singleAddress,
+					bool compatible = false,
 					time_t timestamp = 0);
 
 			virtual std::vector<IMasterWallet *> GetAllMasterWallets() const;
 
-			virtual std::vector<std::string> GetAllMasterWalletIds() const;
+			virtual std::vector<std::string> GetAllMasterWalletID() const;
 
 			virtual IMasterWallet *GetMasterWallet(
 					const std::string &masterWalletId) const;

@@ -149,12 +149,14 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
             case VERTICAL_LIST:
                 childCount -= 1;
                 //水平布局右侧留Margin,如果是最后一列,就不要留Margin了
-                outRect.set(0, 0, (itemPosition != childCount) ? mDividerHeight : 0, 0);
+               // outRect.set(0, 0, (itemPosition != childCount) ? mDividerHeight : 0, 0);
+                outRect.set(0, 0,  mDividerHeight, 0);
                 break;
             case HORIZONTAL_LIST:
                 childCount -= 1;
                 //垂直布局底部留边，最后一行不留
-                outRect.set(0, 0, 0, (itemPosition != childCount) ? mDividerHeight : 0);
+               // outRect.set(0, 0, 0, (itemPosition != childCount) ? mDividerHeight : 0);
+                outRect.set(0, 0, 0,mDividerHeight);
                 break;
         }
     }

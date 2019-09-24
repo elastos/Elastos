@@ -33,7 +33,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:ellipsize="end"
-                android:hint="@string/inputmainchainreaddress"
+                android:hint="@string/inputsidechainrechargeaddress"
                 android:inputType="text"
                 android:maxLines="1" />
 

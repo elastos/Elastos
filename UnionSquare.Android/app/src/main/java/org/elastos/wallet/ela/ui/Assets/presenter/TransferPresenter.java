@@ -5,7 +5,6 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.common.listener.CommonBooleanListener;
-import org.elastos.wallet.ela.ui.common.listener.CommonLongListener;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringListner;
 
 import io.reactivex.Observable;
@@ -26,7 +25,7 @@ public class TransferPresenter extends PresenterAbstract {
     }
 
 
-    public void createTransaction(String walletId, String chainId, String s, String address, String amount, String memo, boolean useVotedUTXO,BaseFragment baseFragment) {
+    public void createTransaction(String walletId, String chainId, String s, String address, String amount, String memo, boolean useVotedUTXO, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringListner.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override

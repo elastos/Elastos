@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--<string name="app_name" translatable="false">Elastos</string>-->
     <!-- 状态视图  -->
-    <item name="error_tag_empty" type="id"/>
+    <item name="error_tag_empty" type="id" />
     <string name="loading" translatable="false">加载中...</string>
     <string name="text_empty" translatable="false">还没有数据呢！</string>
     <string name="text_nonet" translatable="false">网络异常！</string>
@@ -33,7 +33,7 @@
     <string name="create_a_wallet_title">创建钱包（推荐）</string>
     <string name="import_the_wallet">导入钱包</string>
     <string name="please_enter_the_name_your_wallet">请输入钱包名称</string>
-    <string name="please_enter_wallet_password">请输入8至16位钱包密码</string>
+    <string name="please_enter_wallet_password">请输入钱包密码</string>
     <string name="please_enter_your_password_again_confirm">请再次输入确认密码</string>
     <string name="single_address_wallet">单地址钱包</string>
     <string name="backup_the_purse">备份钱包</string>
@@ -152,7 +152,6 @@
     <string name="inputyourwallletpwd">请输入您的钱包密码</string>
     <string name="transfersucess">节点发送成功，\n 请耐心等待交易确认</string>
     <string name="inputsidechainrechargeaddress">请输入侧链充值地址</string>
-    <string name="inputmainchainreaddress">请输入主链提现地址</string>
     <string name="rate">汇率：</string>
     <string name="rate11">汇率：1:1</string>
     <string name="chargerto">充值到:</string>
@@ -202,6 +201,10 @@
     <string name="transfertype11">更新参选信息交易</string>
     <string name="transfertype12">取回参选质押资产交易</string>
     <string name="transfertype13">未知交易类型</string>
+    <string name="transfertype21">注册CR参选交易</string>
+    <string name="transfertype22">取消CR参选交易</string>
+    <string name="transfertype23">更新CR参选信息交易</string>
+    <string name="transfertype24">取回CR参选质押资产交易</string>
     <string name="votetrade">投票交易</string>
     <string name="last_voting_record">上次投票记录</string>
     <string name="right_to_vote_ticket">表决票权：</string>
@@ -222,7 +225,6 @@
     <string name="deposit_was_retrieved_successfully">押金取回成功</string>
     <string name="prompt">是否确认注销候选资格？\n 候选资格一旦注销，所有投票清零且不可恢复。</string>
     <string name="please_select">请选择</string>
-    <string name="futuregenerations">全选(</string>
     <string name="votingrules_1">参与ELA超级节点投票，需锁仓ELA。投票不消耗ELA数量；</string>
     <string name="votingrules_2">每次投票最多可选择 36 个超级节点，撤销或更改再次投票生效有一定的延迟。</string>
     <string name="inputkeystorepwd">请输入Keystore密码</string>
@@ -371,6 +373,68 @@
     <string name="splashword">区 块 链 驱 动 的 智 能 万 维 网</string>
     <string name="curentsdkversion">SPVSDK版本号&#160;</string>
     <string name="invalidnode">失效节点</string>
+    <string name="singlewallet">单签钱包</string>
+    <string name="mulwallet">多签钱包</string>
+    <string name="singlereadonlywallet">单签只读钱包</string>
+    <string name="createsinglewallet">创建单签钱包</string>
+    <string name="createsinglereadonlywallet">创建单签只读钱包</string>
+    <string name="surecreate">确认创建</string>
+    <string name="signnum">签名数量</string>
+    <string name="readonly">只读</string>
+    <string name="addmainkey">添加私钥</string>
+    <string name="createmulwalllet">创建多签钱包</string>
+    <string name="createprivatekey">新建私钥</string>
+    <string name="importmnemonic">导入助记词</string>
+    <string name="useexistwallet">使用已有钱包</string>
+    <string name="editmainprivatekey">编辑私钥</string>
+    <string name="selectsignnum">请选择签名数量</string>
+    <string name="plsiptmulsignpublickey">请输入多签公钥</string>
+    <string name="publickeyneedmore">公钥数量过少</string>
+    <string name="mainprivatekeynotnull">私钥不能为空</string>
+    <string name="publickeytoomany">公钥数量过多</string>
+    <string name="exportreadonly">导出只读钱包</string>
+    <string name="showmulpublickey">查看多签公钥</string>
+    <string name="connecting">连接中...</string>
+    <string name="syncprogress">已同步进度</string>
+    <string name="scantocreatereadonly">扫描二维码可创建单签只读钱包</string>
+    <string name="mulsignpiblickey">多签公钥</string>
+    <string name="scancreatemulwallet">扫描二维码可创建多签钱包</string>
+    <string name="copymulpublickey">复制多签公钥</string>
+    <string name="pleasesign">请使用含有私钥的钱包签名当前交易</string>
+    <string name="waitingsign">待签名交易</string>
+    <string name="scanprocess">交易已读取%1$s，请继续扫描后续信息</string>
+    <string name="publishnow">已完成签名，立即广播</string>
+    <string name="signedtreat">已签名交易</string>
     <string name="social">社区</string>
-
+    <string name="nopermiss">当前钱包无权签名此交易</string>
+    <string name="onlyid">识别码【 %1$s 】</string>
+    <string name="signstatus">（已签名：%1$s，待签名：%2$s）</string>
+    <string name="showwallletpk">查看钱包公钥</string>
+    <string name="pknum">公钥数量</string>
+    <string name="pklist">公钥列表</string>
+    <string name="joinedpk">参与公钥</string>
+    <string name="currentpk">本地公钥</string>
+    <string name="scanallqr">请连续扫描所有二维码</string>
+    <string name="backtostart">返回首页</string>
+    <string name="joininfo">参选信息</string>
+    <string name="nodeintro">节点简介</string>
+    <string name="selectlist">已选列表</string>
+    <string name="unseletList">未选列表</string>
+    <string name="Listofcandidates">参选委员列表</string>
+    <string name="menberpk">委员公钥</string>
+    <string name="menberdid">委员DID</string>
+    <string name="maxvote">最大表决权约：</string>
+    <string name="equaldivision">平均分配</string>
+    <string name="currentrank">当前排名：</string>
+    <string name="ticketnum">得票总数：</string>
+    <string name="plzinputpercent">请输入百分比</string>
+    <string name="totle">合计：</string>
+    <string name="available">可用：</string>
+    <string name="crcvote">CR委员会选举</string>
+    <string name="deleteanywal">直接删除</string>
+    <string name="verifymneminicpwd">验证助记词密码</string>
+    <string name="mine">我的</string>
+    <string name="multiadd">批量加入候选列表</string>
+    <string name="currentpage">第 %1$s 张</string>
+    <string name="addsucess">加入成功</string>
 </resources>

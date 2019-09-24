@@ -41,7 +41,7 @@ public class AssetDetailPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createCombineUTXOTransaction(walletId, chainId, memo, useVotedUTXO);
+                return baseFragment.getMyWallet().createCombineUTXOTransaction(walletId, chainId, memo);
             }
         });
         subscriberObservable(observer, observable, baseFragment);

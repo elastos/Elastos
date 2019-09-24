@@ -4,7 +4,9 @@ package org.elastos.wallet.ela.ui.vote.NodeInformation;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.allen.library.SuperButton;
@@ -22,6 +24,7 @@ import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,7 +32,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 节点信息
@@ -59,13 +61,28 @@ public class NodeInformationFragment extends BaseFragment {
     TextView tv_addrs;
     List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
     String zb;
-    public String type;
-    //获取SignUpPresenter presenter = new SignUpPresenter();
     @BindView(R.id.tv_node_publickey)
     TextView tvNodePublickey;
-    Unbinder unbinder;
     @BindView(R.id.iv_icon)
     AppCompatImageView ivIcon;
+    @BindView(R.id.line_info)
+    View lineInfo;
+    @BindView(R.id.tv_info)
+    TextView tvInfo;
+    @BindView(R.id.ll_info)
+    LinearLayout llInfo;
+    @BindView(R.id.line_intro)
+    View lineIntro;
+    @BindView(R.id.tv_intro)
+    TextView tvIntro;
+    @BindView(R.id.ll_intro)
+    LinearLayout llIntro;
+    @BindView(R.id.ll_tab)
+    LinearLayout llTab;
+    @BindView(R.id.ll_infodetail)
+    LinearLayout llInfodetail;
+    @BindView(R.id.tv_intro_detail)
+    TextView tvIntroDetail;
     private ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netlist;
 
     @Override
@@ -92,13 +109,25 @@ public class NodeInformationFragment extends BaseFragment {
         String url = bean.getUrl();
         new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
-            public void onGetNodeDotJsonData(NodeInfoBean t,String url) {
-                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null|| t.getOrg().getBranding().getLogo_256() == null) {
+            public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
+                //获取icon
+                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null || t.getOrg().getBranding().getLogo_256() == null) {
                     return;
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
                 GlideApp.with(NodeInformationFragment.this).load(imgUrl)
                         .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                //获取节点简介
+                NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
+                if (infoBean != null) {
+                    String info = new SPUtil(NodeInformationFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
+
+                    if (!TextUtils.isEmpty(info)) {
+                        llTab.setVisibility(View.VISIBLE);
+                        tvIntroDetail.setText(info);
+                    }
+                }
+
             }
         });
         tvName.setText(bean.getNickname());
@@ -127,9 +156,25 @@ public class NodeInformationFragment extends BaseFragment {
     }
 
 
-    @OnClick({R.id.tv_url, R.id.sb_jrhxlb, R.id.sb_ckhxlb})
+    @OnClick({R.id.tv_url, R.id.sb_jrhxlb, R.id.sb_ckhxlb, R.id.ll_info, R.id.ll_intro})
     public void onViewClicked(View view) {
         switch (view.getId()) {
+            case R.id.ll_info:
+                lineInfo.setVisibility(View.VISIBLE);
+                lineIntro.setVisibility(View.GONE);
+                tvInfo.setTextColor(getResources().getColor(R.color.whiter));
+                tvIntro.setTextColor(getResources().getColor(R.color.whiter50));
+                llInfodetail.setVisibility(View.VISIBLE);
+                tvIntroDetail.setVisibility(View.GONE);
+                break;
+            case R.id.ll_intro:
+                lineInfo.setVisibility(View.GONE);
+                lineIntro.setVisibility(View.VISIBLE);
+                tvInfo.setTextColor(getResources().getColor(R.color.whiter50));
+                tvIntro.setTextColor(getResources().getColor(R.color.whiter));
+                llInfodetail.setVisibility(View.GONE);
+                tvIntroDetail.setVisibility(View.VISIBLE);
+                break;
             case R.id.tv_url:
                 ClipboardUtil.copyClipboar(getBaseActivity(), tvUrl.getText().toString().trim());
                 break;
@@ -164,12 +209,10 @@ public class NodeInformationFragment extends BaseFragment {
             case R.id.sb_ckhxlb:
                 Bundle bundle = new Bundle();
                 bundle.putString("zb", zb);
-                bundle.putString("type", type);
                 bundle.putSerializable("netList", (Serializable) netlist);
                 start(NodeCartFragment.class, bundle);
                 break;
         }
     }
-
 
 }

@@ -41,6 +41,7 @@ import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
 import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -126,7 +127,6 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     @Override
     protected void initView(View view) {
         assetDetailPresenter = new AssetDetailPresenter();
-        onErrorRefreshLayout(srl);
         if (chainId.equals(MyWallet.ELA)) {
             tvChain.setText(getString(R.string.side_chain_top_up));
             viewLine.setVisibility(View.VISIBLE);
@@ -143,7 +143,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), chainId, 2, this);
         //String synctime = new RealmUtil().querySubWalletSyncTime(wallet.getWalletId(), chainId);
         if (subWallet != null) {
-            tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
+            tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime(), getContext()));
         }
 
         registReceiver();
@@ -159,7 +159,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 //转账
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
-                bundle.putString("ChainId", chainId);
+                bundle.putString("ChainID", chainId);
                 start(TransferFragment.class, bundle);
                 break;
             case R.id.tv_chain:
@@ -288,6 +288,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (rbEarnRecorder.isChecked()) {
             startCount1 = 0;
             assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
@@ -295,17 +296,17 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             startCount = 0;
             presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, pageCount, "", this);
         }
-        new AssetsPresenter().syncStart(wallet.getWalletId(), chainId, this);
-
     }
 
     @Override
     public void onLoadMore(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         if (rbEarnRecorder.isChecked()) {
             assetDetailPresenter.getAllCoinBaseTransaction(wallet.getWalletId(), chainId, startCount1, pageCount, "", this);
         } else {
             presenter.getAllTransaction(wallet.getWalletId(), chainId, startCount, startCount + pageCount, "", this);
         }
+        new AssetsPresenter().syncStart(wallet.getWalletId(), chainId, this);
     }
 
     @Override
@@ -330,8 +331,16 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             SubWallet subWallet = (SubWallet) result.getObj();
             if (subWallet != null && subWallet.getBelongId().equals(wallet.getWalletId()) &&
                     subWallet.getChainId().equals(chainId)) {
-                tvSynctime.setText(getString(R.string.lastsynctime) + subWallet.getSyncTime());
+                tvSynctime.setText(getString(R.string.lastsynctime) + DateUtil.time(subWallet.getSyncTime(), getContext()));
             }
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                }
+            });
+
         }
 
     }

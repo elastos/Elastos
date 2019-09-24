@@ -38,11 +38,17 @@ public class Arith {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
         return b1.subtract(b2);
+    }public static BigDecimal sub(String v1, long v2) {
+        BigDecimal b1 = new BigDecimal(v1);
+        BigDecimal b2 = new BigDecimal(v2);
+        return b1.subtract(b2);
     }
+
     public static BigDecimal sub(BigDecimal b1, String v2) {
         BigDecimal b2 = new BigDecimal(v2);
         return b1.subtract(b2);
     }
+
     /**
      * 提供精确的乘法运算。
      *
@@ -89,7 +95,21 @@ public class Arith {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
 
-        return b1.divide(b2, scale, BigDecimal.ROUND_HALF_DOWN);
+        return b1.divide(b2, scale, BigDecimal.ROUND_DOWN);
+    }
+
+    public static BigDecimal div(BigDecimal v1, int v2, int scale) {
+        if (scale < 0) {
+            return new BigDecimal("-1");
+            /*throw new IllegalArgumentException(
+                    "The scale must be a positive integer or zero");*/
+        }
+        if (0 == v2) {
+            return new BigDecimal("-1");
+        }
+        BigDecimal b2 = new BigDecimal(v2);
+
+        return v1.divide(b2, scale, BigDecimal.ROUND_DOWN);
     }
 
     /**

@@ -5,7 +5,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.text.TextUtils;
 
+import com.google.gson.JsonObject;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -37,18 +39,21 @@ public class QRCodeUtils {
     public interface QRCodeCreateListener {
         void onCreateSuccess(Bitmap bitmap);
     }
+
     public interface QRCodeDecodeListener {
         void onDecodeSuccess(String result);
     }
-   public interface ErrorListenner {
-       void errorSuccess(String str);
-   }
+
+    public interface ErrorListenner {
+        void errorSuccess(String str);
+    }
+
     // 生成QR图
     public static void createImage(String text, int w, int h, Bitmap logo, QRCodeCreateListener listener) {
         try {
-            Bitmap scaleLogo = getScaleLogo(logo,w,h);
-            int offsetX = (w - scaleLogo.getWidth())/2;
-            int offsetY = (h - scaleLogo.getHeight())/2;
+            Bitmap scaleLogo = getScaleLogo(logo, w, h);
+            int offsetX = (w - scaleLogo.getWidth()) / 2;
+            int offsetY = (h - scaleLogo.getHeight()) / 2;
             Hashtable<EncodeHintType, String> hints = new Hashtable<>();
             hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
             BitMatrix bitMatrix = new QRCodeWriter().encode(text,
@@ -56,17 +61,17 @@ public class QRCodeUtils {
             int[] pixels = new int[w * h];
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
-                    if(x >= offsetX && x < offsetX+scaleLogo.getWidth() && y>= offsetY && y < offsetY+scaleLogo.getHeight()){
-                        int pixel = scaleLogo.getPixel(x-offsetX,y-offsetY);
-                        if(pixel == 0){
-                            if(bitMatrix.get(x, y)){
+                    if (x >= offsetX && x < offsetX + scaleLogo.getWidth() && y >= offsetY && y < offsetY + scaleLogo.getHeight()) {
+                        int pixel = scaleLogo.getPixel(x - offsetX, y - offsetY);
+                        if (pixel == 0) {
+                            if (bitMatrix.get(x, y)) {
                                 pixel = 0xff000000;
-                            }else{
+                            } else {
                                 pixel = 0xffffffff;
                             }
                         }
                         pixels[y * w + x] = pixel;
-                    }else{
+                    } else {
                         if (bitMatrix.get(x, y)) {
                             pixels[y * w + x] = 0xff000000;
                         } else {
@@ -86,15 +91,14 @@ public class QRCodeUtils {
 //        return null;
     }
 
-    private static Bitmap getScaleLogo(Bitmap logo, int w, int h){
-        if(logo == null)return null;
+    private static Bitmap getScaleLogo(Bitmap logo, int w, int h) {
+        if (logo == null) return null;
         Matrix matrix = new Matrix();
-        float scaleFactor = Math.min(w * 1.0f / 5 / logo.getWidth(), h * 1.0f / 5 /logo.getHeight());
-        matrix.postScale(scaleFactor,scaleFactor);
-        Bitmap result = Bitmap.createBitmap(logo, 0, 0, logo.getWidth(),   logo.getHeight(), matrix, true);
+        float scaleFactor = Math.min(w * 1.0f / 5 / logo.getWidth(), h * 1.0f / 5 / logo.getHeight());
+        matrix.postScale(scaleFactor, scaleFactor);
+        Bitmap result = Bitmap.createBitmap(logo, 0, 0, logo.getWidth(), logo.getHeight(), matrix, true);
         return result;
     }
-
 
 
     public static final Map<DecodeHintType, Object> HINTS = new EnumMap<>(DecodeHintType.class);
@@ -130,7 +134,7 @@ public class QRCodeUtils {
      * @return 返回二维码图片里的内容 或 null
      */
     public static void DecodeQRCode(String picturePath, QRCodeDecodeListener listener, ErrorListenner errorListenner) {
-        DecodeQRCode(getDecodeAbleBitmap(picturePath),listener,errorListenner);
+        DecodeQRCode(getDecodeAbleBitmap(picturePath), listener, errorListenner);
     }
 
     /**
@@ -179,13 +183,13 @@ public class QRCodeUtils {
     }
 
 
-
     /**
-     *  生成二维码图片
-     * @param content   原始数据
-     * @param width    指定图片宽度
+     * 生成二维码图片
+     *
+     * @param content 原始数据
+     * @param width   指定图片宽度
      * @param height  指定图片高度
-     * @return  生成的二维码图片
+     * @return 生成的二维码图片
      */
     public static Bitmap createQrCodeBitmap(String content, int width, int height) {
         //核心类， 获取ZXing中的二维码生成类QRCodeWriter
@@ -195,34 +199,34 @@ public class QRCodeUtils {
         Hashtable<EncodeHintType, String> hints = new Hashtable<>();
         hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
 
-        try{
+        try {
             /**
              * 调用encode方法之后，会将字符串以二维码的形式显示在矩阵当中
              * 通过调用矩阵的get(x, y)来判断出当前点是否有像素
              */
-            BitMatrix bitMatrix = writer.encode(content,  BarcodeFormat.QR_CODE, width, height,hints);
-          //   bitMatrix = deleteWhite(bitMatrix);//删除白边
+            BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, width, height, hints);
+            //   bitMatrix = deleteWhite(bitMatrix);//删除白边
             //声明数组用来保存二维码所需要显示颜色值
             width = bitMatrix.getWidth();
             height = bitMatrix.getHeight();
             int[] pixels = new int[width * height];
 
             //循环遍历矩阵中所有的像素点，并分配黑白颜色值
-            for(int i = 0; i<height; i++){
-                for(int j = 0; j<width; j++){
-                    if(bitMatrix.get(j, i)){//说明当前点有像素
-                        pixels[width * i +j ] = Color.BLACK;
-                    }else{
-                        pixels[width * i +j] = Color.WHITE;
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    if (bitMatrix.get(j, i)) {//说明当前点有像素
+                        pixels[width * i + j] = Color.BLACK;
+                    } else {
+                        pixels[width * i + j] = Color.WHITE;
                     }
                 }
             }
 
             //根据填充好的颜色值数组，生成新的二维码Bitmap对象并返回
-            Bitmap bitmap = Bitmap.createBitmap( width,height, Bitmap.Config.RGB_565);
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
             bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
             return bitmap;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -230,8 +234,9 @@ public class QRCodeUtils {
 
     /**
      * 生成带Logo的二维码
+     *
      * @param qrBitmap   二维码图片
-     * @param logoBitmap  Logo图片
+     * @param logoBitmap Logo图片
      * @return
      */
     private Bitmap addLogo(Bitmap qrBitmap, Bitmap logoBitmap) {
@@ -242,7 +247,7 @@ public class QRCodeUtils {
         Bitmap blankBitmap = Bitmap.createBitmap(qrBitmapWidth, qrBitmapHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(blankBitmap);
         canvas.drawBitmap(qrBitmap, 0, 0, null);
-       // canvas.save(Canvas.ALL_SAVE_FLAG);
+        // canvas.save(Canvas.ALL_SAVE_FLAG);
         canvas.save();
         float scaleSize = 1.0f;
         while ((logoBitmapWidth / scaleSize) > (qrBitmapWidth / 5) || (logoBitmapHeight / scaleSize) > (qrBitmapHeight / 5)) {
@@ -256,10 +261,10 @@ public class QRCodeUtils {
     }
 
 
-//////////////////////////////////////
+    //////////////////////////////////////
     public static Result decodeImage(String path) {
         Bitmap bitmap = decodeSampledBitmapFromFile(path, 400, 400);
-        if(bitmap == null) {
+        if (bitmap == null) {
             return null;
         } else {
             int width = bitmap.getWidth();
@@ -280,6 +285,7 @@ public class QRCodeUtils {
             }
         }
     }
+
     public static Bitmap decodeSampledBitmapFromFile(String imgPath, int reqWidth, int reqHeight) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -294,25 +300,27 @@ public class QRCodeUtils {
         int height = options.outHeight;
         int width = options.outWidth;
         int inSampleSize = 1;
-        if(height > reqHeight || width > reqWidth) {
+        if (height > reqHeight || width > reqWidth) {
             int halfHeight = height / 2;
 
-            for(int halfWidth = width / 2; halfHeight / inSampleSize > reqHeight && halfWidth / inSampleSize > reqWidth; inSampleSize *= 2) {
+            for (int halfWidth = width / 2; halfHeight / inSampleSize > reqHeight && halfWidth / inSampleSize > reqWidth; inSampleSize *= 2) {
                 ;
             }
         }
 
         return inSampleSize;
     }
+
     private static byte[] yuvs;
+
     public static byte[] getYUV420sp(int inputWidth, int inputHeight, Bitmap scaled) {
         int[] argb = new int[inputWidth * inputHeight];
         scaled.getPixels(argb, 0, inputWidth, 0, 0, inputWidth, inputHeight);
-        int requiredWidth = inputWidth % 2 == 0?inputWidth:inputWidth + 1;
-        int requiredHeight = inputHeight % 2 == 0?inputHeight:inputHeight + 1;
+        int requiredWidth = inputWidth % 2 == 0 ? inputWidth : inputWidth + 1;
+        int requiredHeight = inputHeight % 2 == 0 ? inputHeight : inputHeight + 1;
         int byteLength = requiredWidth * requiredHeight * 3 / 2;
-        if(yuvs != null && yuvs.length >= byteLength) {
-            Arrays.fill(yuvs, (byte)0);
+        if (yuvs != null && yuvs.length >= byteLength) {
+            Arrays.fill(yuvs, (byte) 0);
         } else {
             yuvs = new byte[byteLength];
         }
@@ -328,8 +336,8 @@ public class QRCodeUtils {
         int uvIndex = frameSize;
         int argbIndex = 0;
 
-        for(int j = 0; j < height; ++j) {
-            for(int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+            for (int i = 0; i < width; ++i) {
                 int R = (argb[argbIndex] & 16711680) >> 16;
                 int G = (argb[argbIndex] & '\uff00') >> 8;
                 int B = argb[argbIndex] & 255;
@@ -340,10 +348,10 @@ public class QRCodeUtils {
                 Y = Math.max(0, Math.min(Y, 255));
                 U = Math.max(0, Math.min(U, 255));
                 V = Math.max(0, Math.min(V, 255));
-                yuv420sp[yIndex++] = (byte)Y;
-                if(j % 2 == 0 && i % 2 == 0) {
-                    yuv420sp[uvIndex++] = (byte)V;
-                    yuv420sp[uvIndex++] = (byte)U;
+                yuv420sp[yIndex++] = (byte) Y;
+                if (j % 2 == 0 && i % 2 == 0) {
+                    yuv420sp[uvIndex++] = (byte) V;
+                    yuv420sp[uvIndex++] = (byte) U;
                 }
             }
         }
@@ -366,5 +374,55 @@ public class QRCodeUtils {
         return resMatrix;
     }
 
+    /**
+     * 生成二维码图片
+     *
+     * @param content 原始数据
+     * @param width   指定图片宽度
+     * @param height  指定图片高度
+     * @param type    二维码的类型
+     * @return 生成的二维码图片
+     */
+    public static List<Bitmap> createMulQrCodeBitmap(String content, int width, int height,
+                                                     int type) {
+        List<Bitmap> bitmaps = new ArrayList<>();
+        int factor = 350;
+        int i = 0;
+        while (i < content.length()) {
+            int max = i + factor <= content.length() ? i + factor : content.length();
+            String tempContent = content.substring(i, max);
+            JsonObject jsonObject = getQrJson(0, "MultiQrContent", Math.ceil(content.length() / (factor * 1f))
+                    , Math.ceil(max / (factor * 1f)), tempContent, MD5Utils.md5Encode(content), type, "ELA");
+            Bitmap bitmap = createQrCodeBitmap(jsonObject.toString(), width, height);
+            bitmaps.add(bitmap);
+            i = max;
+        }
+        return bitmaps;
+    }
 
+    private static JsonObject getQrJson(int version, String name, double total, double index, String data, String md5, int type, String subWallet) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("version", version);
+        jsonObject.addProperty("name", name);
+        jsonObject.addProperty("total", total);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("data", data);
+        jsonObject.addProperty("md5", md5);
+        JsonObject extra = new JsonObject();
+        extra.addProperty("Type", type);
+        if (TextUtils.isEmpty(subWallet)) {
+            subWallet = "ELA";
+        }
+        extra.addProperty("SubWallet", subWallet);
+        jsonObject.add("extra", extra);
+        return jsonObject;
+
+    }
+
+
+    public static Bitmap createQrCodeBitmap(String content, int width, int height, int type, String chainID) {
+        JsonObject jsonObject = getQrJson(0, "MultiQrContent", 1
+                , 1, content, MD5Utils.md5Encode(content), type, chainID);
+        return createQrCodeBitmap(jsonObject.toString(), width, height);
+    }
 }

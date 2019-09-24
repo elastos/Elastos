@@ -9,6 +9,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -17,11 +19,11 @@ import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.SideChainPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonLongViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
@@ -29,13 +31,12 @@ import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.math.BigDecimal;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -128,7 +129,8 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
             etPayeeaddr.setText(contact.getWalletAddr());
 
 
-        } else if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
@@ -136,7 +138,8 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
                 }
             });
 
-        } else if (integer == RxEnum.CHOSESIDECHAIN.ordinal()) {
+        }
+        if (integer == RxEnum.CHOSESIDECHAIN.ordinal()) {
             String temp = (String) result.getObj();
             if (!chargeChain.equals(temp)) {
                 chargeChain = temp;
@@ -144,6 +147,25 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
                 presenter.getGenesisAddress(wallet.getWalletId(), chargeChain, this);
 
             }
+        }
+        if (integer == RxEnum.TOSIGN.ordinal()) {
+            //生成待签名交易
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            start(SignFragment.class, bundle);
+
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
+            //签名成功
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            bundle.putBoolean("signStatus", true);
+            start(SignFragment.class, bundle);
+
         }
     }
 
@@ -159,7 +181,17 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                etPayeeaddr.setText(result);
+                address = result;
+                try {
+                    QrBean qrBean = JSON.parseObject(result, QrBean.class);
+                    int type = qrBean.getExtra().getType();
+                    if (type == Constant.TRANSFER) {
+                        address = qrBean.getData();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                etPayeeaddr.setText(address);
             }
         }
 
@@ -176,6 +208,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("amount", amount);
                 intent.putExtra("toAddress", address);
+
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", chainId);
                 intent.putExtra("attributes", data);

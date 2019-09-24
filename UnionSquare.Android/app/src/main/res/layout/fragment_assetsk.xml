@@ -20,7 +20,7 @@
         android:orientation="vertical">
 
 
-        <include layout="@layout/title" />
+        <include layout="@layout/assettitle" />
 
 
         <android.support.v4.widget.NestedScrollView

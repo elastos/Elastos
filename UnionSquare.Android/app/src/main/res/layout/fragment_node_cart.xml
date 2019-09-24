@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.qmuiteam.qmui.layout.QMUILinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/found_bg"
@@ -7,7 +8,7 @@
     android:orientation="vertical">
 
 
-    <include layout="@layout/title"></include>
+    <include layout="@layout/title"/>
 
 
     <com.qmuiteam.qmui.layout.QMUILinearLayout
@@ -16,6 +17,7 @@
         android:orientation="vertical">
 
         <com.qmuiteam.qmui.layout.QMUIRelativeLayout
+            android:id="@+id/ll_rate"
             android:layout_width="match_parent"
             android:layout_height="38dp"
             android:orientation="vertical">
@@ -63,6 +65,62 @@
 
         </com.qmuiteam.qmui.layout.QMUIRelativeLayout>
 
+        <LinearLayout
+            android:id="@+id/ll_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/px40"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:weightSum="2">
+
+            <LinearLayout
+                android:id="@+id/ll_select"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/line_select"
+                    style="@style/line1"
+                    android:layout_width="77dp" />
+
+                <TextView
+                    android:id="@+id/tv_select"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px30"
+                    android:text="@string/selectlist" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_unselect"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/line_unselect"
+                    style="@style/line1"
+                    android:layout_width="77dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_unselect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/px30"
+                    android:text="@string/unseletList"
+                    android:textColor="@color/whiter50" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <ListView
             android:id="@+id/listview"
@@ -78,7 +136,7 @@
             android:footerDividersEnabled="false"
             android:headerDividersEnabled="false"
             android:scrollbars="none"
-            android:visibility="gone"></ListView>
+            android:visibility="gone" />
 
 
         <LinearLayout
@@ -101,12 +159,12 @@
         </LinearLayout>
 
 
-        <LinearLayout
+  <!--      <LinearLayout
             android:id="@+id/ll_bj"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal"
-            android:visibility="gone">
+            >
 
 
             <LinearLayout
@@ -115,7 +173,7 @@
                 android:layout_weight="1"
                 android:gravity="center|left"
                 android:orientation="horizontal"
-                android:paddingLeft="@dimen/px30">
+                android:paddingLeft="@dimen/px40">
 
                 <CheckBox
                     android:id="@+id/sc_checkbox"
@@ -148,11 +206,10 @@
                 android:textColor="#FEFEFF"
                 android:textSize="15sp" />
 
-        </LinearLayout>
+        </LinearLayout>-->
 
 
         <com.qmuiteam.qmui.layout.QMUILinearLayout
-            android:id="@+id/ll_tp"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal">
@@ -163,7 +220,7 @@
                 android:layout_weight="1"
                 android:gravity="center|left"
                 android:orientation="horizontal"
-                android:paddingLeft="@dimen/px30">
+                android:paddingLeft="@dimen/px40">
 
 
                 <CheckBox
@@ -177,7 +234,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text=""
+                    android:text="全选(0)"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
             </com.qmuiteam.qmui.layout.QMUILinearLayout>
@@ -187,7 +244,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
+                android:gravity="center|left"
                 android:text="@string/has_chosen"
                 android:textColor="@color/white"
                 android:textSize="12sp" />

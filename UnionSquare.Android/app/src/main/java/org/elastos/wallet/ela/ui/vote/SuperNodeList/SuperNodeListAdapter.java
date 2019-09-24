@@ -25,14 +25,16 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
     private BaseFragment context;
     private Map<String, String> map;
 
-    private int pos;
-    // private boolean is;
 
-    public SuperNodeListAdapter(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
+    private boolean is;
+    private int pos;
+
+    public SuperNodeListAdapter(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, boolean is, int pos) {
         super(R.layout.item_super_node_list, data);
         this.context = context;
+        //this.mContext = context.getContext();
+        this.is = is;
         this.pos = pos;
-        //  this.is = is;
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
         if (map == null) {
             map = new HashMap<>();
@@ -45,8 +47,8 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
     @Override
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.transparent));
-        if (pos == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll, Color.parseColor("#307CA2"));
+        if (is && helper.getLayoutPosition() == 0) {
+            helper.setBackgroundColor(R.id.ll,  context.getResources().getColor(R.color.blue1));
         }
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));

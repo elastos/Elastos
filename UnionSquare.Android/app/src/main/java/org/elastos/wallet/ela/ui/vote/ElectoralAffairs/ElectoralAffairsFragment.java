@@ -21,9 +21,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.GetdePositcoinBean;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.net.ApiServer;
-import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
+import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
@@ -37,21 +36,18 @@ import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
-import org.elastos.wallet.ela.utils.RxSchedulers;
+import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import butterknife.BindView;
 import butterknife.OnClick;
-import io.reactivex.functions.Consumer;
+import butterknife.Unbinder;
 
 /**
  * 选举管理  getRegisteredProducerInfo
  */
-public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, VotelistViewData {
+public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, VotelistViewData, CommmonObjectWithMethNameViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -80,6 +76,25 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
     SuperButton sb_up;
     @BindView(R.id.iv_icon)
     AppCompatImageView ivIcon;
+    @BindView(R.id.line_info)
+    View lineInfo;
+    @BindView(R.id.tv_info)
+    TextView tvInfo;
+    @BindView(R.id.ll_info)
+    LinearLayout llInfo;
+    @BindView(R.id.line_intro)
+    View lineIntro;
+    @BindView(R.id.tv_intro)
+    TextView tvIntro;
+    @BindView(R.id.ll_intro)
+    LinearLayout llIntro;
+    @BindView(R.id.ll_tab)
+    LinearLayout llTab;
+    @BindView(R.id.tv_intro_detail)
+    TextView tvIntroDetail;
+    @BindView(R.id.ll_infodetail)
+    LinearLayout llInfodetail;
+    Unbinder unbinder;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     ElectoralAffairsPresenter presenter = new ElectoralAffairsPresenter();
@@ -130,16 +145,30 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         super.setExtraData(data);
     }
 
-    @OnClick({R.id.tv_url, R.id.sb_keystore, R.id.sb_zx, R.id.sb_tq, R.id.sb_up})
+    @OnClick({R.id.tv_url, R.id.sb_zx, R.id.sb_tq, R.id.sb_up, R.id.ll_info, R.id.ll_intro})
     public void onViewClicked(View view) {
         switch (view.getId()) {
+            case R.id.ll_info:
+                lineInfo.setVisibility(View.VISIBLE);
+                lineIntro.setVisibility(View.GONE);
+                tvInfo.setTextColor(getResources().getColor(R.color.whiter));
+                tvIntro.setTextColor(getResources().getColor(R.color.whiter50));
+                llInfodetail.setVisibility(View.VISIBLE);
+                tvIntroDetail.setVisibility(View.GONE);
+                break;
+            case R.id.ll_intro:
+                lineInfo.setVisibility(View.GONE);
+                lineIntro.setVisibility(View.VISIBLE);
+                tvInfo.setTextColor(getResources().getColor(R.color.whiter50));
+                tvIntro.setTextColor(getResources().getColor(R.color.whiter));
+                llInfodetail.setVisibility(View.GONE);
+                tvIntroDetail.setVisibility(View.VISIBLE);
+                break;
             case R.id.tv_url:
                 //复制
                 ClipboardUtil.copyClipboar(getBaseActivity(), tvUrl.getText().toString());
                 break;
-            case R.id.sb_keystore:
-                // start(ImportNodeKeystoreFragment.class);
-                break;
+
             case R.id.sb_zx:
                 dialogUtil.showWarmPrompt2(getBaseActivity(), getString(R.string.prompt), new WarmPromptListener() {
                             @Override
@@ -166,11 +195,10 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         dialogUtil.showWarmPromptInput(getBaseActivity(), getString(R.string.securitycertificate), getString(R.string.inputWalletPwd), this);
     }
 
-    String pwd, data;
+    String pwd;
 
 
     private void onJustRegistered(String data) {
-        this.data = data;
         ElectoralAffairsBean bean = JSON.parseObject(data, ElectoralAffairsBean.class);
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
@@ -178,12 +206,24 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
-                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null) {
+                //获取icon
+                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null || t.getOrg().getBranding().getLogo_256() == null) {
                     return;
                 }
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
                 GlideApp.with(ElectoralAffairsFragment.this).load(imgUrl)
-                        .error(R.mipmap.found_vote_initial_circle).into(ivIcon);
+                        .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                //获取节点简介
+                NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
+                if (infoBean != null) {
+                    String info = new SPUtil(ElectoralAffairsFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
+
+                    if (!TextUtils.isEmpty(info)) {
+                        llTab.setVisibility(View.VISIBLE);
+                        tvIntroDetail.setText(info);
+                    }
+                }
+
             }
         });
         tvUrl.setText(url);
@@ -217,7 +257,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
                 if (status.equals("Canceled")) {
                     //提取按钮
                     presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            Arith.sub(Arith.mul(available, MyWallet.RATE_S),"10000").toPlainString(), "", this);
+                            Arith.sub(Arith.mul(available, MyWallet.RATE_S), "10000").toPlainString(), "", this);
                 } else {
                     //注销按钮
                     presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
@@ -246,35 +286,15 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
             //获取钱包owner公钥
             case "getPublicKeyForVote":
                 ownerPublicKey = data;
-                getdepositcoin();//获取赎回金额
+                //getdepositcoin();//获取赎回金额
+                presenter.getDepositcoin(ownerPublicKey, this);
                 break;
-
         }
     }
 
 
     String available;
 
-    public void getdepositcoin() {
-        Map<String, String> map = new HashMap();
-        map.put("ownerpublickey", ownerPublicKey);
-        RetrofitManager.create(ApiServer.class, getContext())
-                .getdepositcoin(map)
-                .compose(RxSchedulers.<GetdePositcoinBean>applySchedulers())
-                .subscribe(new Consumer<GetdePositcoinBean>() {
-                    @Override
-                    public void accept(GetdePositcoinBean dataResponse) {
-                        available = dataResponse.getData().getResult().getAvailable();
-                        //注销可提取
-                        sbtq.setVisibility(View.VISIBLE);
-                    }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) {
-
-                    }
-                });
-    }
 
     @Override
     public void onGetVoteList(VoteListBean dataResponse) {
@@ -296,5 +316,18 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
 
 
     }
+
+    @Override
+    public void onGetCommonData(String methodname, Object data) {
+        switch (methodname) {
+            case "getDepositcoin":
+                GetdePositcoinBean getdePositcoinBean = (GetdePositcoinBean) data;
+                available = getdePositcoinBean.getData().getResult().getAvailable();
+                //注销可提取
+                sbtq.setVisibility(View.VISIBLE);
+                break;
+        }
+    }
+
 
 }

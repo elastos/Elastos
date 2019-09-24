@@ -5,7 +5,6 @@ import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
-import org.json.JSONException;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -26,12 +25,12 @@ public class SignUpPresenter extends PresenterAbstract {
 
 
     //验证交易
-    public void getGenerateProducerPayload(String masterWalletID, String chainID, String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd
+    public void generateProducerPayload(String masterWalletID, String chainID, String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd
             , BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
-            public BaseEntity subscribe() throws JSONException {
+            public BaseEntity subscribe() {
                 return baseFragment.getMyWallet().generateProducerPayload(masterWalletID, chainID, publicKey, nodePublicKey, nickName, url, IPAddress, location, payPasswd);
             }
         });

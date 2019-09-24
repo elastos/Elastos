@@ -39,6 +39,7 @@
         <View style="@style/line1" />
 
         <LinearLayout
+            android:id="@+id/ll_address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"

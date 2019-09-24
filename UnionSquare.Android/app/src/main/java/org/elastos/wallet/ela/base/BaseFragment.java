@@ -12,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +35,6 @@ import org.elastos.wallet.ela.di.component.FragmentComponent;
 import org.elastos.wallet.ela.di.moudule.FragmentModule;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.EventBus;
 
@@ -397,21 +395,31 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         //popTo(MainFragment.class, false);
         Fragment mainFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
         if (mainFragment != null) {
-            // Log.d("+++++++", "1");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(MainFragment.class.getName(), 0);
         } else {
-            // Log.d("+++++++", "2");
             getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
             ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
         }
     }
 
     public void toHomeWalletFragment() {
-        getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
-        ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, HomeWalletFragment.newInstance());
-        //todo 优化  判断 MainFragment是否存在 存在退回到它并更新数据  不纯在执行下面的
-        //  popTo(MainFragment.class,false);
+        Fragment homeWalletFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(HomeWalletFragment.class.getName());
+        if (homeWalletFragment != null) {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(HomeWalletFragment.class.getName(), 0);
+        } else {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
+            ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, HomeWalletFragment.newInstance());
+        }
+    }
 
+    public void popToTagetFragment(Class<BaseFragment> aClass) {
+        Fragment fragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(aClass.getName());
+        if (fragment != null) {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(aClass.getName(), 0);
+        } else {
+            getBaseActivity().getSupportFragmentManager().popBackStackImmediate(null, 1);
+            ((BaseActivity) _mActivity).loadRootFragment(R.id.mhoneframeLayout, MainFragment.newInstance());
+        }
     }
 
     public void registReceiver() {
@@ -448,9 +456,19 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     private void onDestroyRefreshLayout() {
         getBaseActivity().onDestroyRefreshLayout();
     }
+
     private static final long WAIT_TIME = 2000L;
     private long TOUCH_TIME = 0;
+
     public boolean closeApp() {
+        if (smartRefreshLayout != null) {
+            if (smartRefreshLayout.isRefreshing()) {
+                smartRefreshLayout.finishRefresh();
+            }
+            if (smartRefreshLayout.isLoading()) {
+                smartRefreshLayout.finishLoadMore();
+            }
+        }
         if (System.currentTimeMillis() - TOUCH_TIME < WAIT_TIME) {
             _mActivity.finish();
         } else {

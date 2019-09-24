@@ -26,7 +26,7 @@ public class SubWallet extends RealmObject implements Parcelable ,Serializable{
     private String balance;
     private String syncTime;
     private int progress;
-    private String filed1;//
+    private String filed1="Connecting";//连接状态"Connecting", "Connected", "Disconnected"  不会在数据库里取这个字段 所有只启用备用字段字段了
     private String filed2="false";////是否已经同步半分百了  不会在数据库里取这个字段 所有只启用备用字段字段了
     private String filed3;//
 
@@ -213,5 +213,22 @@ public class SubWallet extends RealmObject implements Parcelable ,Serializable{
         return e.getBelongId().equals(belongId) && e.getChainId().equals(chainId);
 
 
+    }
+
+    @Override
+    public String toString() {
+        return "SubWallet{" +
+                "wallletId='" + wallletId + '\'' +
+                ", belongId='" + belongId + '\'' +
+                ", walletName='" + walletName + '\'' +
+                ", walletType='" + walletType + '\'' +
+                ", chainId='" + chainId + '\'' +
+                ", balance='" + balance + '\'' +
+                ", syncTime='" + syncTime + '\'' +
+                ", progress=" + progress +
+                ", filed1='" + filed1 + '\'' +
+                ", filed2='" + filed2 + '\'' +
+                ", filed3='" + filed3 + '\'' +
+                '}';
     }
 }

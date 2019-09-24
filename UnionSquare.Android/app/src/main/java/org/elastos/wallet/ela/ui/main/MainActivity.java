@@ -178,7 +178,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
 
         for (int i = 0; i < names1.size(); i++) {
             File file = new File(rootPath + "/" + names1.get(i));
-            /*if (file.exists()) {
+           /* if (file.exists()) {
                 continue;
             }*/
             InputStream is = context.getClass().getClassLoader().getResourceAsStream("assets/" + names.get(i));

@@ -112,6 +112,7 @@ public class AddressListFragment extends BaseFragment implements CommonRvListene
 
     @Override
     public void onLoadMore(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
         presenter.getAllAddress(wallet.getWalletId(), chainId, startCount, pageCount, this);
     }
 }

@@ -19,7 +19,6 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
@@ -60,18 +59,16 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
     TextView tvArea;
     @BindView(R.id.et_url)
     EditText etUrl;
-    @BindView(R.id.et_net)
-    EditText et_net;
+
     @BindView(R.id.sb_up)
     SuperButton sbUp;
-    @BindView(R.id.et_walletkey)
-    EditText et_walletkey;
+
     DialogUtil dialogUtil = new DialogUtil();
     SignUpPresenter presenter = new SignUpPresenter();
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
-    private TransferPresenter transferpresenter = new TransferPresenter();
     private PwdPresenter pwdPresenter = new PwdPresenter();
+    private String ownerPublicKey;
 
     @Override
     protected int getLayoutId() {
@@ -93,23 +90,20 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
         code = bean.getLocation();
         tvArea.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         etUrl.setText(bean.getURL());
-        et_walletkey.setText(bean.getOwnerPublicKey());
+        ownerPublicKey = bean.getOwnerPublicKey();
         etPublickey.setText(bean.getNodePublicKey());
-        et_net.setText(bean.getAddress());
         super.setExtraData(data);
 
     }
 
-    String name, publickey, walletkey, net, area, url, pwd;
+    String name, nodePublicKey, net, area, url, pwd;
 
     @OnClick({R.id.sb_up, R.id.ll_area})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.sb_up:
                 name = etDotname.getText().toString().trim();//节点名称
-                publickey = etPublickey.getText().toString().trim();//节点公钥
-                walletkey = et_walletkey.getText().toString().trim();//钱包公钥
-                net = et_net.getText().toString().trim();//网络地址
+                nodePublicKey = etPublickey.getText().toString().trim();//节点公钥
                 area = tvArea.getText().toString().trim();//国家地址
                 url = etUrl.getText().toString().trim();//官网
 
@@ -117,20 +111,11 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
                     ToastUtils.showShort(getString(R.string.inputdotname));
                     return;
                 }
-                if (TextUtils.isEmpty(publickey)) {
+                if (TextUtils.isEmpty(nodePublicKey)) {
                     ToastUtils.showShort(getString(R.string.inputdotpublickey));
                     return;
                 }
 
-                if (TextUtils.isEmpty(walletkey)) {
-                    ToastUtils.showShort(getString(R.string.walletkey));
-                    return;
-                }
-
-             /*   if (TextUtils.isEmpty(net)) {
-                    ToastUtils.showShort(getString(R.string.network_address));
-                    return;
-                }*/
                 if (TextUtils.isEmpty(area)) {
                     ToastUtils.showShort(getString(R.string.countryregion_cannot_be_empty));
                     return;
@@ -177,17 +162,14 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
     public void onGetCommonData(String methodname, String data) {
 
         switch (methodname) {
-            //获取钱包公钥
-            case "getPublicKeyForVote":
-                et_walletkey.setText(data);
-                break;
+
             //验证密码
             case "exportWalletWithMnemonic":
 
-                presenter.getGenerateProducerPayload(wallet.getWalletId(), MyWallet.ELA, walletkey, publickey, name, url, net, code, pwd, this);
+                presenter.generateProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, nodePublicKey, name, url, net, code, pwd, this);
                 break;
             //验证交易
-            case "payload":
+            case "generateProducerPayload":
                 KLog.a(data);
                 presenter.createUpdateProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
                 break;
