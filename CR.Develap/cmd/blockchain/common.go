@@ -35,7 +35,7 @@ var (
 		"mainchain": "cyberrepublic/elastos-mainchain-node:v0.3.7",
 		"did":       "cyberrepublic/elastos-sidechain-did-node:v0.1.2",
 		"token":     "cyberrepublic/elastos-sidechain-token-node:v0.1.2",
-		"eth":       "cyberrepublic/elastos-sidechain-eth-node:v0.0.1",
+		"eth":       "cyberrepublic/elastos-sidechain-eth-node:latest",
 	}
 	NodeDockerDataPathMap = map[string]string{
 		"mainchain": "/ela/elastos",
