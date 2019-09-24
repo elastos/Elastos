@@ -352,9 +352,20 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
 	for _, cv := range content.CandidateVotes {
-		if _, ok := crs[common.BytesToHexString(cv.Candidate)]; !ok {
+		did, err := common.Uint168FromBytes(cv.Candidate)
+		if err != nil {
+			return fmt.Errorf("invalid vote output payload " +
+				"Candidate can not change to proper did")
+		}
+		candidate := b.crCommittee.GetState().GetCandidateByDID(*did)
+		if candidate == nil {
 			return fmt.Errorf("invalid vote output payload "+
-				"CR candidate: %s", common.BytesToHexString(cv.Candidate))
+				"did : %s candidate not exists", did.String())
+		}
+		if _, ok := crs[common.BytesToHexString(candidate.Info().Code)]; !ok {
+			return fmt.Errorf("invalid vote output payload "+
+				"CR candidate: %s not in crs", common.BytesToHexString(cv.
+				Candidate))
 		}
 	}
 	var totalVotes common.Fixed64
@@ -1492,7 +1503,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetState().GetCandidate(info.Code)
+	cr := b.crCommittee.GetState().GetCandidateByDID(info.DID)
 	if cr == nil {
 		return errors.New("unregister unknown CR")
 	}
@@ -1505,7 +1516,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 	if err != nil {
 		return err
 	}
-	return checkCRTransactionSignature(info.Signature, info.Code, signedBuf.Bytes())
+	return checkCRTransactionSignature(info.Signature, cr.Info().Code, signedBuf.Bytes())
 }
 
 func getParameterBySignature(signature []byte) []byte {
