@@ -3,9 +3,28 @@ title: Funding for DApps
 sidebar_label: Funding for DApps
 ---
 
-Our DAO named **Cyber Republic (CR)** is always looking for new DApps that would benefit the Elastos ecosystem, there is no 
-requirement to be exclusive to Elastos. **The only real requirement is to prove to the community that your DApp will
-bring a positive benefit to our ecosystem.** 
+Our DAO named **Cyber Republic (CR)** is always looking for new DApps, blockchain projects and marketing initiatives that would 
+benefit the Elastos ecosystem, there is no requirement to be exclusive to Elastos. 
+
+**The only real requirement is to prove to the community that your DApp will bring a positive benefit to our ecosystem.** 
+
+Our Elastos Ethereum Sidechain is compatible with existing Ethereum DApps, but even if you don't have a DApp there are many ways
+we can collaborate.
+
+#### Cyber Republic will fund things like:
+
+- Marketing or joint-promotional initiatives
+
+- Pilot projects for traditional businesses to explore blockchain
+
+- Community building and public education of blockchain
+
+- Developer teams with startup project ideas
+
+- Existing startups that need funding for their DApps
+
+- **And anything else you think will benefit the blockchain community, especially Elastos**
+
 
 ## Getting Funding
 
