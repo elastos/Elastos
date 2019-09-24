@@ -2,7 +2,7 @@ version: "3"
 
 services:
   elanode:
-    image: ela:0.4.0
+    image: ela:latest
     restart: always
     environment:
       - PASSWORD=
