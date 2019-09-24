@@ -273,7 +273,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 		candidates := b.crCommittee.GetState().GetCandidates(crstate.Active)
 		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
-			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
+			getProducerPublicKeysMap(producers), getCRDIDsMap(candidates))
 		if err != nil {
 			log.Warn("[CheckVoteOutputs]", err)
 			return ErrInvalidOutput
@@ -284,7 +284,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 }
 
 func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, references map[*Input]*Output,
-	pds map[string]struct{}, crs map[string]struct{}) error {
+	pds map[string]struct{}, crs map[common.Uint168]struct{}) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, output := range references {
 		programHashes[output.ProgramHash] = struct{}{}
@@ -342,7 +342,7 @@ func (b *BlockChain) checkVoteProducerContent(content outputpayload.VoteContent,
 }
 
 func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayload.VoteContent,
-	crs map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
+	crs map[common.Uint168]struct{}, payloadVersion byte, amount common.Fixed64) error {
 
 	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
 		return errors.New("cr vote tx must during voting period")
@@ -357,15 +357,9 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 			return fmt.Errorf("invalid vote output payload " +
 				"Candidate can not change to proper did")
 		}
-		candidate := b.crCommittee.GetState().GetCandidateByDID(*did)
-		if candidate == nil {
+		if _, ok := crs[*did]; !ok {
 			return fmt.Errorf("invalid vote output payload "+
-				"did : %s candidate not exists", did.String())
-		}
-		if _, ok := crs[common.BytesToHexString(candidate.Info().Code)]; !ok {
-			return fmt.Errorf("invalid vote output payload "+
-				"CR candidate: %s not in crs", common.BytesToHexString(cv.
-				Candidate))
+				"CR candidate: %s not in crs", did.String())
 		}
 	}
 	var totalVotes common.Fixed64
@@ -387,10 +381,10 @@ func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
 	return pds
 }
 
-func getCRCodesMap(crs []*crstate.Candidate) map[string]struct{} {
-	codes := make(map[string]struct{})
+func getCRDIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
+	codes := make(map[common.Uint168]struct{})
 	for _, c := range crs {
-		codes[common.BytesToHexString(c.Info().Code)] = struct{}{}
+		codes[c.Info().DID] = struct{}{}
 	}
 	return codes
 }

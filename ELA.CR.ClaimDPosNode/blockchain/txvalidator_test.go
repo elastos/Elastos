@@ -2182,10 +2182,10 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 
 	producersMap := make(map[string]struct{})
 	producersMap[publicKey1] = struct{}{}
-	crsMap := make(map[string]struct{})
-	crsMap[publicKey3] = struct{}{}
-	crsMap[common.BytesToHexString(code1)] = struct{}{}
-	crsMap[common.BytesToHexString(code3)] = struct{}{}
+	crsMap := make(map[common.Uint168]struct{})
+
+	crsMap[*didCandidate1] = struct{}{}
+	crsMap[*didCandidate3] = struct{}{}
 
 	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
 	hashByte, _ := common.HexStringToBytes(hashStr)
@@ -2356,8 +2356,6 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs7, references, producersMap, crsMap),
 		"invalid vote output payload producer candidate: "+publicKey2)
-
-	crsMap[publicKey2] = struct{}{}
 
 	// Check vote output of v1 with delegate type and wrong votes
 	outputs8 := []*types.Output{{Type: types.OTNone}}
