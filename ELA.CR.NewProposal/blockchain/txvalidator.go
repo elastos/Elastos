@@ -251,6 +251,11 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		return ErrInvalidInput
 	}
 
+	if err := checkTransactionDepositOutpus(b, txn); err != nil {
+		log.Warn("[checkTransactionDepositOutpus],", err)
+		return ErrInvalidOutput
+	}
+
 	if err := checkTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
 		return ErrTransactionSignature
@@ -639,6 +644,26 @@ func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output
 				return errors.New("the ReturnDepositCoin and ReturnCRDepositCoin " +
 					"transaction can only use the deposit UTXO")
 			}
+		}
+	}
+
+	return nil
+}
+
+func checkTransactionDepositOutpus(bc *BlockChain, txn *Transaction) error {
+	for _, output := range txn.Outputs {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
+			if txn.IsRegisterProducerTx() || txn.IsRegisterCRTx() {
+				continue
+			}
+			if bc.state.ExistProducerByDID(output.ProgramHash) {
+				continue
+			}
+			if bc.crCommittee.GetState().ExistCandidateByDID(output.ProgramHash) {
+				continue
+			}
+			return errors.New("only the address that CR or Producer" +
+				" registered can have the deposit UTXO")
 		}
 	}
 

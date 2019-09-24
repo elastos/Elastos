@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -31,6 +31,7 @@ type StateKeyFrame struct {
 	Nicknames                map[string]struct{}
 	SpecialTxHashes          map[common.Uint256]struct{}
 	PreBlockArbiters         map[string]struct{}
+	ProducerDIDMap           map[common.Uint168]struct{}
 
 	EmergencyInactiveArbiters map[string]struct{}
 	VersionStartHeight        uint32
@@ -60,6 +61,7 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 		Nicknames:                make(map[string]struct{}),
 		SpecialTxHashes:          make(map[common.Uint256]struct{}),
 		PreBlockArbiters:         make(map[string]struct{}),
+		ProducerDIDMap:           make(map[common.Uint168]struct{}),
 	}
 	state.NodeOwnerKeys = copyStringMap(s.NodeOwnerKeys)
 	state.PendingProducers = copyProducerMap(s.PendingProducers)
@@ -73,7 +75,7 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 	state.Nicknames = copyStringSet(s.Nicknames)
 	state.SpecialTxHashes = copyHashSet(s.SpecialTxHashes)
 	state.PreBlockArbiters = copyStringSet(s.PreBlockArbiters)
-
+	state.ProducerDIDMap = copyDIDSet(s.ProducerDIDMap)
 	return &state
 }
 
@@ -127,6 +129,10 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
+	if err = s.SerializeDIDSet(s.ProducerDIDMap, w); err != nil {
+		return
+	}
+
 	if err = s.SerializeStringSet(s.EmergencyInactiveArbiters, w); err != nil {
 		return
 	}
@@ -163,8 +169,7 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if s.PendingCanceledProducers, err = s.DeserializeProducerMap(r);
-		err != nil {
+	if s.PendingCanceledProducers, err = s.DeserializeProducerMap(r); err != nil {
 		return
 	}
 
@@ -185,6 +190,10 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 	}
 
 	if s.PreBlockArbiters, err = s.DeserializeStringSet(r); err != nil {
+		return
+	}
+
+	if s.ProducerDIDMap, err = s.DeserializeDIDSet(r); err != nil {
 		return
 	}
 
@@ -255,6 +264,36 @@ func (s *StateKeyFrame) DeserializeStringSet(
 	for i := uint64(0); i < count; i++ {
 		var k string
 		if k, err = common.ReadVarString(r); err != nil {
+			return
+		}
+		vmap[k] = struct{}{}
+	}
+	return
+}
+
+func (s *StateKeyFrame) SerializeDIDSet(vmap map[common.Uint168]struct{},
+	w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
+		return
+	}
+	for k := range vmap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (s *StateKeyFrame) DeserializeDIDSet(
+	r io.Reader) (vmap map[common.Uint168]struct{}, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	vmap = make(map[common.Uint168]struct{})
+	for i := uint64(0); i < count; i++ {
+		k := common.Uint168{}
+		if err = k.Deserialize(r); err != nil {
 			return
 		}
 		vmap[k] = struct{}{}
@@ -411,6 +450,7 @@ func NewStateKeyFrame() *StateKeyFrame {
 		SpecialTxHashes:           make(map[common.Uint256]struct{}),
 		PreBlockArbiters:          make(map[string]struct{}),
 		EmergencyInactiveArbiters: make(map[string]struct{}),
+		ProducerDIDMap:            make(map[common.Uint168]struct{}),
 		VersionStartHeight:        0,
 		VersionEndHeight:          0,
 	}
@@ -437,8 +477,7 @@ func (d *RewardData) Serialize(w io.Writer) error {
 		}
 	}
 
-	if err := common.WriteUint64(w, uint64(d.TotalVotesInRound));
-		err != nil {
+	if err := common.WriteUint64(w, uint64(d.TotalVotesInRound)); err != nil {
 		return err
 	}
 
@@ -558,6 +597,15 @@ func copyStringSet(src map[string]struct{}) (dst map[string]struct{}) {
 func copyHashSet(src map[common.Uint256]struct{}) (
 	dst map[common.Uint256]struct{}) {
 	dst = map[common.Uint256]struct{}{}
+	for k := range src {
+		dst[k] = struct{}{}
+	}
+	return
+}
+
+func copyDIDSet(src map[common.Uint168]struct{}) (
+	dst map[common.Uint168]struct{}) {
+	dst = map[common.Uint168]struct{}{}
 	for k := range src {
 		dst[k] = struct{}{}
 	}
