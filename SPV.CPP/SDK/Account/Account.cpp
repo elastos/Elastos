@@ -26,6 +26,15 @@ namespace Elastos {
 
 			bytes_t bytes;
 
+			const std::vector<PublicKeyRing> &xpubRing = _localstore->GetPublicKeyRing();
+			for (int i = 0; i < _localstore->GetPublicKeyRing().size() - 1; ++i) {
+				for (int j = i + 1; j < _localstore->GetPublicKeyRing().size(); ++j) {
+					if (xpubRing[i].GetxPubKey() == xpubRing[j].GetxPubKey()) {
+						ErrorChecker::ThrowParamException(Error::PubKeyFormat, "Contain same xpub in PublicKeyRing");
+					}
+				}
+			}
+
 			if (!(_localstore->GetN() > 1 && _localstore->Readonly())) {
 				ErrorChecker::CheckParam(_localstore->GetxPubKey().empty(), Error::PubKeyFormat,
 										 "xpub should not be empty");

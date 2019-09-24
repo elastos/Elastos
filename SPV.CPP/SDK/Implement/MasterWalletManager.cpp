@@ -131,7 +131,13 @@ namespace Elastos {
 			bytes_t bytes;
 			for (nlohmann::json::const_iterator it = cosigners.begin(); it != cosigners.end(); ++it) {
 				ErrorChecker::CheckCondition(!(*it).is_string(), Error::Code::PubKeyFormat, "cosigners should be string");
-				pubKeyRing.emplace_back("", *it);
+				std::string xpub = (*it).get<std::string>();
+				for (int i = 0; i < pubKeyRing.size(); ++i) {
+					if (pubKeyRing[i].GetxPubKey() == xpub) {
+						ErrorChecker::ThrowParamException(Error::PubKeyFormat, "Contain same xpub");
+					}
+				}
+				pubKeyRing.emplace_back("", xpub);
 			}
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
@@ -181,7 +187,13 @@ namespace Elastos {
 			bytes_t bytes;
 			for (nlohmann::json::const_iterator it = cosigners.begin(); it != cosigners.end(); ++it) {
 				ErrorChecker::CheckCondition(!(*it).is_string(), Error::Code::PubKeyFormat, "cosigners should be string");
-				pubKeyRing.push_back(PublicKeyRing("", *it));
+				std::string xpub = (*it).get<std::string>();
+				for (int i = 0; i < pubKeyRing.size(); ++i) {
+					if (pubKeyRing[i].GetxPubKey() == xpub) {
+						ErrorChecker::ThrowParamException(Error::PubKeyFormat, "Contain same xpub");
+					}
+				}
+				pubKeyRing.emplace_back("", xpub);
 			}
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
@@ -240,7 +252,13 @@ namespace Elastos {
 			for (nlohmann::json::const_iterator it = cosigners.begin(); it != cosigners.end(); ++it) {
 				ErrorChecker::CheckCondition(!(*it).is_string() || !Base58::CheckDecode(*it, bytes),
 											 Error::Code::PubKeyFormat, "cosigners format error");
-				pubKeyRing.push_back(PublicKeyRing("", *it));
+				std::string xpub = (*it).get<std::string>();
+				for (int i = 0; i < pubKeyRing.size(); ++i) {
+					if (pubKeyRing[i].GetxPubKey() == xpub) {
+						ErrorChecker::ThrowParamException(Error::PubKeyFormat, "Contain same xpub");
+					}
+				}
+				pubKeyRing.emplace_back("", xpub);
 			}
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletID, mnemonic, passphrase, payPassword,
