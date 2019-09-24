@@ -1364,7 +1364,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 	}
 
 	cr := b.crCommittee.GetState().GetCandidate(info.Code)
-	if cr != nil && cr.State() != crstate.Returned {
+	if cr != nil {
 		return fmt.Errorf("did %s already exist", info.DID)
 	}
 
