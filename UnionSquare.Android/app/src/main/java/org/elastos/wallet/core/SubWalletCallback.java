@@ -67,24 +67,6 @@ public class SubWalletCallback {
     }
 
     /**
-     * Callback method fired when block begin synchronizing with a peer. This callback could be used to show progress.
-     */
-    public void OnBlockSyncStarted() {
-//        Log.i(TAG, GetWalletID() + "[OnBlockSyncStarted]");
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChainID", mSubWalletID);
-            jsonObject.put("Action", "OnBlockSyncStarted");
-
-            mListener.OnBlockSyncStarted(jsonObject);
-        } catch (JSONException e) {
-            e.printStackTrace();
-
-        }
-    }
-
-    /**
      * Callback method fired when best block chain height increased. This callback could be used to show progress.
      *
      * @param currentBlockHeight is the of current block when callback fired.
@@ -92,7 +74,7 @@ public class SubWalletCallback {
      * @param lastBlockTime      timestamp of the last block.
      */
     public void OnBlockSyncProgress(int currentBlockHeight, int estimatedHeight, long lastBlockTime) {
-        Log.i(TAG, GetWalletID() + "[OnBlockSyncProgress] (" + currentBlockHeight + "/" + estimatedHeight + ") t = " + lastBlockTime);
+//        Log.i(TAG, GetWalletID() + "[OnBlockSyncProgress] (" + currentBlockHeight + "/" + estimatedHeight + ") t = " + lastBlockTime);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("currentBlockHeight", currentBlockHeight);
@@ -106,23 +88,6 @@ public class SubWalletCallback {
         } catch (JSONException e) {
             e.printStackTrace();
 
-        }
-    }
-
-    /**
-     * Callback method fired when block end synchronizing with a peer. This callback could be used to show progress.
-     */
-    public void OnBlockSyncStopped() {
-//        Log.i(TAG, GetWalletID() + "[OnBlockSyncStopped]");
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChainID", mSubWalletID);
-            jsonObject.put("Action", "OnBlockSyncStopped");
-
-            mListener.OnBlockSyncStopped(jsonObject);
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 

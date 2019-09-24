@@ -48,16 +48,6 @@ namespace Elastos {
 //            Detach();
         }
 
-        void SubWalletCallback::OnBlockSyncStarted() {
-            JNIEnv *env = GetEnv();
-
-            jclass clazz = env->GetObjectClass(_obj);
-            jmethodID methodId = env->GetMethodID(clazz, "OnBlockSyncStarted", "()V");
-            env->CallVoidMethod(_obj, methodId);
-
-//            Detach();
-        }
-
         void SubWalletCallback::OnBlockSyncProgress(uint32_t currentBlockHeight,
                                                     uint32_t estimatedHeight,
                                                     time_t lastBlockTime) {
@@ -68,16 +58,6 @@ namespace Elastos {
             env->CallVoidMethod(_obj, methodId, currentBlockHeight, estimatedHeight, (jlong)lastBlockTime);
 
             env->DeleteLocalRef(clazz);
-//            Detach();
-        }
-
-        void SubWalletCallback::OnBlockSyncStopped() {
-            JNIEnv *env = GetEnv();
-
-            jclass clazz = env->GetObjectClass(_obj);
-            jmethodID methodId = env->GetMethodID(clazz, "OnBlockSyncStopped", "()V");
-            env->CallVoidMethod(_obj, methodId);
-
 //            Detach();
         }
 
