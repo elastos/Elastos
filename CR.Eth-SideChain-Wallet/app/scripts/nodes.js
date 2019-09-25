@@ -29,8 +29,20 @@ nodes.nodeList = {
         'eip155': true,
         'chainId': 3,
         'tokenList': require('./tokens/ethTokens.json'),
+        'abiList': require('./abiDefinitions/etscAbi.json'),
+        'service': 'ELA_Mainnet',
+        'lib': new nodes.customNode('https://mainrpc.elaeth.io', '')
+    },
+    'eth_myetherwallet': {
+        'name': 'ETH',
+        'blockExplorerTX': 'https://etherscan.io/tx/[[txHash]]',
+        'blockExplorerAddr': 'https://etherscan.io/address/[[address]]',
+        'type': nodes.nodeTypes.ETH,
+        'eip155': true,
+        'chainId': 3,
+        'tokenList': require('./tokens/ethTokens.json'),
         'abiList': require('./abiDefinitions/ethAbi.json'),
-        'service': 'ELA',
+        'service': 'ELA_Testnet',
         'lib': new nodes.customNode('https://rpc.elaeth.io', '')
     },
 };

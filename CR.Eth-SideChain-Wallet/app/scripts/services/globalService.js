@@ -101,7 +101,7 @@ var globalService = function($http, $httpParamSerializerJQLike) {
   },
   mainnet: {
     id: 13,
-    name: "ELA_mainnet",
+    name: "ELA Convert",
     url: "mainnet",
     mew: true,
     cx: true
