@@ -12,11 +12,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 )
 
-// KeyFrame holds necessary state about arbitrators
-type KeyFrame struct {
-	CurrentArbitrators [][]byte
-}
-
 // StateKeyFrame holds necessary state about State
 type StateKeyFrame struct {
 	NodeOwnerKeys            map[string]string // NodePublicKey as key, OwnerPublicKey as value

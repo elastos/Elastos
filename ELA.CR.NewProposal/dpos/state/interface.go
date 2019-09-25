@@ -53,7 +53,7 @@ type Arbitrators interface {
 	HasArbitersMajorityCount(num int) bool
 	HasArbitersMinorityCount(num int) bool
 
-	GetSnapshot(height uint32) []*KeyFrame
+	GetSnapshot(height uint32) []*CheckPoint
 	DumpInfo(height uint32)
 }
 
