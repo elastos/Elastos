@@ -91,7 +91,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			}
 
 			SECTION("Owner standard address sign test") {
-				std::string addr = Address(PrefixStandard, ownerPubKey1).String();
+				Address addr(PrefixStandard, ownerPubKey1);
 				bytes_t redeemScript;
 				std::string path;
 				REQUIRE(subAccount1->GetCodeAndPath(addr, redeemScript, path));
@@ -109,7 +109,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			}
 
 			SECTION("Owner deposit address sign test") {
-				std::string addr = Address(PrefixDeposit, ownerPubKey1).String();
+				Address addr(PrefixDeposit, ownerPubKey1);
 				bytes_t redeemScript;
 				std::string path;
 				REQUIRE(subAccount1->GetCodeAndPath(addr, redeemScript, path));

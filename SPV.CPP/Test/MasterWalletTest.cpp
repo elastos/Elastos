@@ -327,7 +327,7 @@ TEST_CASE("Master wallet DeriveIDAndKeyForPurpose method test", "[DeriveIDAndKey
 
 	SECTION("Normal derive") {
 		id = masterWallet->DeriveIDAndKeyForPurpose(1, 1);
-		REQUIRE(id == "ipjftQmHL17hY2XXkMWNzau1eifRwgXEbS");
+		REQUIRE(id == "ioTUk9mNMSc9ogVPLUPFMDRL99oAMcMEnG");
 		std::string id2 = masterWallet->DeriveIDAndKeyForPurpose(1, 2);
 		REQUIRE(id != id2);
 	}

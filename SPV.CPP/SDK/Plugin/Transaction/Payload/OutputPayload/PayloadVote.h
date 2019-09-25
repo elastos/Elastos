@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_OUTPUT_PAYLOADVOTE_H
 
 #include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
+#include <SDK/Common/BigInt.h>
 
 #define VOTE_PRODUCER_CR_VERSION  0x01
 
@@ -16,13 +17,13 @@ namespace Elastos {
 		public:
 			CandidateVotes();
 
-			CandidateVotes(const bytes_t &candidate, uint64_t votes = 0);
+			explicit CandidateVotes(const bytes_t &candidate, const BigInt &votes = 0);
 
 			~CandidateVotes();
 		public:
 			const bytes_t & GetCandidate() const;
 
-			uint64_t GetVotes() const;
+			const BigInt &GetVotes() const;
 
 			void SetVotes(uint64_t votes);
 
@@ -35,7 +36,7 @@ namespace Elastos {
 			void FromJson(const nlohmann::json &j, uint8_t version);
 		private:
 			bytes_t  _candidate;
-			uint64_t _votes;
+			BigInt _votes;
 		};
 
 		class VoteContent {
@@ -64,9 +65,9 @@ namespace Elastos {
 
 			void SetAllCandidateVotes(uint64_t votes);
 
-			uint64_t GetMaxVoteAmount() const;
+			BigInt GetMaxVoteAmount() const;
 
-			uint64_t GetTotalVoteAmount() const;
+			BigInt GetTotalVoteAmount() const;
 
 			void Serialize(ByteStream &ostream, uint8_t version) const;
 

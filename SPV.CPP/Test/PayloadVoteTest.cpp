@@ -19,7 +19,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		for (size_t i = 0; i < 10; ++i) {
 			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandBytes(33));
+				candidates.push_back(CandidateVotes(getRandBytes(33)));
 			}
 			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
@@ -48,7 +48,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		for (size_t i = 0; i < 10; ++i) {
 			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandBytes(33));
+				candidates.push_back(CandidateVotes(getRandBytes(33)));
 			}
 			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
@@ -75,7 +75,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		for (size_t i = 0; i < 10; ++i) {
 			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandBytes(33));
+				candidates.push_back(CandidateVotes(getRandBytes(33)));
 			}
 			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}
@@ -101,7 +101,7 @@ TEST_CASE("PayloadVote Test", "[PayloadVote]") {
 		for (size_t i = 0; i < 10; ++i) {
 			std::vector<CandidateVotes> candidates;
 			for (size_t c = 0; c < 10; c++) {
-				candidates.push_back(getRandBytes(33));
+				candidates.push_back(CandidateVotes(getRandBytes(33)));
 			}
 			voteContent.emplace_back(VoteContent::Type(i % VoteContent::Type::Max), candidates);
 		}

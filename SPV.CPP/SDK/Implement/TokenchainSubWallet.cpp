@@ -65,7 +65,7 @@ namespace Elastos {
 			tx->SetTransactionType(Transaction::registerAsset, payload);
 
 			assetAmount *= BigInt(TOKEN_ASSET_PRECISION, 10);
-			tx->AddOutput(OutputPtr(new TransactionOutput(assetAmount, address.ProgramHash(), asset->GetHash())));
+			tx->AddOutput(OutputPtr(new TransactionOutput(assetAmount, address, asset->GetHash())));
 
 			if (tx->GetOutputs().size() > 0)
 				tx->RemoveOutput(tx->GetOutputs().front());

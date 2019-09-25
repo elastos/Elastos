@@ -36,9 +36,6 @@ namespace Elastos {
 			TransactionOutput(const BigInt &amount, const Address &toAddress, const uint256 &assetID = Asset::GetELAAssetID(),
 							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
 
-//			TransactionOutput(const BigInt &amount, const uint168 &programHash, const uint256 &assetID = Asset::GetELAAssetID(),
-//							  Type type = Default, const OutputPayloadPtr &payload = nullptr);
-
 			~TransactionOutput();
 
 			size_t EstimateSize() const;

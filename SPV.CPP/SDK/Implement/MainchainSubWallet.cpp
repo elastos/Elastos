@@ -375,7 +375,7 @@ namespace Elastos {
 													  "Vote produce public keys is not string");
 				}
 				// Check public key is valid later
-				voteContent.AddCandidate(CandidateVotes((*it).get<std::string>(), bgStake.getUint64()));
+				voteContent.AddCandidate(CandidateVotes((*it).get<std::string>(), bgStake));
 			}
 
 			ErrorChecker::CheckParam(voteContent.GetCandidateVotes().empty(), Error::InvalidArgument,
@@ -396,7 +396,7 @@ namespace Elastos {
 			WalletPtr wallet = _walletManager->GetWallet();
 			UTXOArray utxos = wallet->GetVoteUTXO();
 			nlohmann::json j;
-			std::map<std::string, uint64_t> votedList;
+			std::map<std::string, BigInt> votedList;
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
 				const OutputPtr &output = utxos[i]->Output();
@@ -409,7 +409,7 @@ namespace Elastos {
 					continue;
 				}
 
-				uint64_t stake = output->Amount().getUint64();
+				BigInt stake = output->Amount();
 				uint8_t version = pv->Version();
 				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
@@ -418,7 +418,7 @@ namespace Elastos {
 									  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
 													[&votedList, &stake, &version](const CandidateVotes &cvs) {
 														std::string c = cvs.GetCandidate().getHex();
-														uint64_t votes;
+														BigInt votes;
 
 														if (version == VOTE_PRODUCER_CR_VERSION)
 															votes = cvs.GetVotes();
@@ -436,7 +436,8 @@ namespace Elastos {
 
 			}
 
-			j = votedList;
+			for (std::map<std::string, BigInt>::iterator it = votedList.begin(); it != votedList.end(); ++it)
+				j[(*it).first] = (*it).second.getDec();
 
 			ArgInfo("r => {}", j.dump());
 
@@ -757,12 +758,17 @@ namespace Elastos {
 
 			VoteContent voteContent(VoteContent::CRC);
 			std::vector<CandidateVotes> candidates;
+			bytes_t code;
+			BigInt value;
 			for (nlohmann::json::const_iterator it = votes.cbegin(); it != votes.cend(); ++it) {
-				std::string pubkey = it.key();
-				uint64_t value = it.value().get<std::uint64_t>();
+				ErrorChecker::CheckParam(!it.value().is_string(), Error::InvalidArgument, "stake value should be big int string");
 
-				Address address(PrefixStandard, pubkey);
-				voteContent.AddCandidate(CandidateVotes(address.RedeemScript(), value));
+				code.setHex(it.key());
+				value.setDec(it.value().get<std::string>());
+
+				ErrorChecker::CheckParam(value <= 0, Error::InvalidArgument, "stake value should larger than 0");
+
+				voteContent.AddCandidate(CandidateVotes(code, value));
 			}
 
 			TransactionPtr tx = CreateVoteTx(voteContent, memo, false);
@@ -781,7 +787,7 @@ namespace Elastos {
 			WalletPtr wallet = _walletManager->GetWallet();
 			UTXOArray utxos = wallet->GetVoteUTXO();
 			nlohmann::json j;
-			std::map<std::string, uint64_t> votedList;
+			std::map<std::string, BigInt> votedList;
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
 				const OutputPtr &output = utxos[i]->Output();
@@ -794,13 +800,12 @@ namespace Elastos {
 					continue;
 				}
 
-				uint64_t stake = output->Amount().getUint64();
 				const std::vector<VoteContent> &voteContents = pv->GetVoteContent();
 				std::for_each(voteContents.cbegin(), voteContents.cend(),
-				              [&votedList, &stake](const VoteContent &vc) {
+				              [&votedList](const VoteContent &vc) {
 					              if (vc.GetType() == VoteContent::Type::CRC) {
 						              std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
-						                            [&votedList, &stake](const CandidateVotes &candidate) {
+						                            [&votedList](const CandidateVotes &candidate) {
 							                            std::string c = candidate.GetCandidate().getHex();
 							                            if (votedList.find(c) != votedList.end()) {
 								                            votedList[c] += candidate.GetVotes();
@@ -813,7 +818,8 @@ namespace Elastos {
 
 			}
 
-			j = votedList;
+			for (std::map<std::string, BigInt>::iterator it = votedList.begin(); it != votedList.end(); ++it)
+				j[(*it).first] = (*it).second.getDec();
 
 			ArgInfo("r => {}", j.dump());
 
@@ -882,8 +888,6 @@ namespace Elastos {
 			nlohmann::json jinfo;
 			time_t timestamp;
 
-			std::map<std::string, uint64_t> votedList;
-
 			for (UTXOArray::iterator u = utxos.begin(); u != utxos.end(); ++u) {
 				const OutputPtr &output = (*u)->Output();
 				if (output->GetType() != TransactionOutput::VoteOutput) {
@@ -905,9 +909,9 @@ namespace Elastos {
 								  nlohmann::json j;
 								  if (type.empty() || type == vc.GetTypeString()) {
 									  if (vc.GetType() == VoteContent::CRC)
-										  j["Amount"] = vc.GetTotalVoteAmount();
+										  j["Amount"] = vc.GetTotalVoteAmount().getDec();
 									  else if (vc.GetType() == VoteContent::Delegate)
-										  j["Amount"] = vc.GetMaxVoteAmount();
+										  j["Amount"] = vc.GetMaxVoteAmount().getDec();
 									  j["Type"] = vc.GetTypeString();
 									  j["Timestamp"] = timestamp;
 									  j["Expiry"] = nlohmann::json();
@@ -916,7 +920,7 @@ namespace Elastos {
 										  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
 														[&candidateVotes](const CandidateVotes &cv) {
 															std::string c = cv.GetCandidate().getHex();
-															candidateVotes[c] = cv.GetVotes();
+															candidateVotes[c] = cv.GetVotes().getDec();
 														});
 										  j["Votes"] = candidateVotes;
 									  }

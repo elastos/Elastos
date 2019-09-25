@@ -58,7 +58,7 @@ namespace Elastos {
 			IDItem item(purpose, index);
 			std::string existedId;
 			if (findIDByPath(item, existedId)) {
-				return existedId;
+				return Address(existedId);
 			}
 
 			HDKeychainPtr mpk = _parentWallet->_account->MasterPubKey();

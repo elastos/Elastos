@@ -46,9 +46,9 @@ namespace Elastos {
 		public:
 			Address();
 
-			Address(const std::string &address);
+			explicit Address(const std::string &address);
 
-			Address(const uint168 &programHash);
+			explicit Address(const uint168 &programHash);
 
 			Address(Prefix prefix, const bytes_t &pubkey);
 

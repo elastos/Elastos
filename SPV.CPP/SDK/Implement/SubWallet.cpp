@@ -171,7 +171,7 @@ namespace Elastos {
 			if (!memo.empty())
 				m = "type:text,msg:" + memo;
 
-			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(fromAddress, outputs, m, max);
+			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(Address(fromAddress), outputs, m, max);
 
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
