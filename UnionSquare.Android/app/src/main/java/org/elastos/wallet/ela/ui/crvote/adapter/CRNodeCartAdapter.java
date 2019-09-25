@@ -14,15 +14,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -185,20 +186,20 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
     }
 
     // 初始化dataMap的数据
-    public List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> getCheckedData() {
-        List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> checkedData = new ArrayList<>();
+    public Map<String, String> getCheckedData() {
+        Map<String, String> checkedData = new HashMap();
         if (list != null) {
             for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : list) {
                 if (bean.isChecked() && bean.getCurentBalance() != null
-                        && TextUtils.isEmpty(bean.getCurentBalance().toPlainString())
-                        && bean.getCurentBalance().doubleValue() > 0) {
-                    checkedData.add(bean);
+                        && !TextUtils.isEmpty(bean.getCurentBalance().toPlainString())) {
+                    checkedData.put("\""+bean.getCode()+"\"", "\""+bean.getCurentBalance().multiply(new BigDecimal(MyWallet.RATE)).setScale(0, BigDecimal.ROUND_DOWN).toPlainString()+"\"");
                 }
 
             }
         }
         return checkedData;
     }
+
 
     private void addTextChangedListener(EditText editText, int position) {
 

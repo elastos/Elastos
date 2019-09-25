@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.crvote.adapter;
 
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
@@ -84,8 +85,10 @@ public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.Re
         }
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
-        String voterate = Arith.div(bean.getVotes(), totalvotes, 5).toPlainString();
-        bean.setVoterate(voterate);
+        if (TextUtils.isEmpty(bean.getVoterate())) {
+            String voterate = Arith.div(bean.getVotes(), totalvotes, 5).toPlainString();
+            bean.setVoterate(voterate);
+        }
         helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
         helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
     }

@@ -25,6 +25,9 @@ import org.elastos.wallet.ela.utils.RxEnum;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+/**
+ * 只为模拟交易获得手续费的情况准备
+ */
 public class OtherPwdActivity extends BaseActivity implements CommmonStringWithMethNameViewData, NewBaseViewData {
     @BindView(R.id.et_pwd)
     ClearEditText etPwd;

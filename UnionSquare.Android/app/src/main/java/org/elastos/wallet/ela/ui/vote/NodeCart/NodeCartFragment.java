@@ -455,7 +455,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("amount", num);
                 intent.putExtra("maxBalance", maxBalance);
-                intent.putExtra("toAddress", "");
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("attributes", data);

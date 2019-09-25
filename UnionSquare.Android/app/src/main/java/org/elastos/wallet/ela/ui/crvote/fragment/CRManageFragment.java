@@ -39,7 +39,6 @@ import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
-import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
 import butterknife.BindView;
@@ -208,7 +207,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     String pwd;
 
 
-    private void onJustRegistered(String data) {
+    private void  onJustRegistered(String data) {
 
         CRMenberInfoBean bean = JSON.parseObject(data, CRMenberInfoBean.class);
         tvName.setText(bean.getNickName());
@@ -218,27 +217,25 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
                 //获取icon
-                String imgUrl = "";
-                try {
-                    imgUrl = t.getOrg().getBranding().getLogo_256();
-                } catch (Exception e) {
-                }
-                if (!TextUtils.isEmpty(imgUrl)) {
 
+                try {
+                    String imgUrl = t.getOrg().getBranding().getLogo_256();
                     GlideApp.with(CRManageFragment.this).load(imgUrl)
                             .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                } catch (Exception e) {
                 }
-                //获取节点简介
-                NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
-                if (infoBean != null) {
-                    String info = new SPUtil(CRManageFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
+                try {
+                    //获取节点简介
+                    NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
 
+                    String info = new SPUtil(CRManageFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
                     if (!TextUtils.isEmpty(info)) {
                         llTab.setVisibility(View.VISIBLE);
                         tvIntroDetail.setText(info);
                     }
-                }
 
+                } catch (Exception e) {
+                }
             }
         });
         tvUrl.setText(url);

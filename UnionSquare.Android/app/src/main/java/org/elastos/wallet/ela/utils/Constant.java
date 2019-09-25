@@ -11,7 +11,8 @@ public class Constant {
     public static final String SIDEWITHDRAW = "sideWithdraw";//侧链充值
     public static final String TRANFER = "transfer";//普通充值
     public static final String SUPERNODEVOTE = "supernodevote";//超级节点参选
-    public static final String CRSIGNUP = "crsignup";//超级节点投票
+    public static final String CRSIGNUP = "crsignup";//cr注册
+    public static final String CRVOTE = "crvote";//cr注册
     public static final String Email = "wallet@elastos.org";
     public static final String UpdateLog = "https://download.elastos.org/app/release-notes/ela-wallet/index.html";
     public static final String FRAGMENTTAG = "commonwebview";

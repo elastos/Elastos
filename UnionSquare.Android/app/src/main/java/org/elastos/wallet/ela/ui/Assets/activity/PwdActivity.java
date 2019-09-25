@@ -98,7 +98,7 @@ public class PwdActivity extends BaseActivity implements CommmonStringWithMethNa
 
                 break;
             case "publishTransaction":
-                post(RxEnum.TRANSFERSUCESS.ordinal(), "转账成功", null);
+                post(RxEnum.TRANSFERSUCESS.ordinal(), "", null);
                 finish();
                 break;
         }

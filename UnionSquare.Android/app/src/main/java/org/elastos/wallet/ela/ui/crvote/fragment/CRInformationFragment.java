@@ -25,7 +25,6 @@ import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,22 +109,28 @@ public class CRInformationFragment extends BaseFragment {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
                 //获取icon
-                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null || t.getOrg().getBranding().getLogo_256() == null) {
-                    return;
-                }
-                String imgUrl = t.getOrg().getBranding().getLogo_256();
-                GlideApp.with(CRInformationFragment.this).load(imgUrl)
-                        .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
-                //获取节点简介
-                NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
-                if (infoBean != null) {
-                    String info = new SPUtil(CRInformationFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
 
+                try {
+                    String imgUrl = t.getOrg().getBranding().getLogo_256();
+
+
+                    GlideApp.with(CRInformationFragment.this).load(imgUrl)
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+
+                } catch (Exception e) {
+                }
+
+                //获取节点简介
+                try {
+                    NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
+                    String info = new SPUtil(CRInformationFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
                     if (!TextUtils.isEmpty(info)) {
                         llTab.setVisibility(View.VISIBLE);
                         tvIntroDetail.setText(info);
                     }
+                } catch (Exception e) {
                 }
+
 
             }
         });

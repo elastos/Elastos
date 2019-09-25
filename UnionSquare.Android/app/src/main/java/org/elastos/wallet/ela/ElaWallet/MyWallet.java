@@ -1377,7 +1377,7 @@ public class MyWallet {
     // args[1]: String chainID
     // args[2]: String amount
     // args[3]: String memo
-    public BaseEntity createVoteCRTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo, boolean useVotedUTXO) {
+    public BaseEntity createVoteCRTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {

@@ -21,7 +21,9 @@ import org.greenrobot.eventbus.ThreadMode;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-
+/**
+ * 只为模拟交易获得手续费的情况准备
+ */
 public class VoteTransferActivity extends BaseActivity {
 
 
