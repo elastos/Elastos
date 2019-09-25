@@ -34,10 +34,10 @@ const (
 
 // CheckPoint defines all variables need record in database
 type CheckPoint struct {
-	KeyFrame
 	StateKeyFrame
 	Height                     uint32
 	DutyIndex                  int
+	CurrentArbitrators         [][]byte
 	NextArbitrators            [][]byte
 	NextCandidates             [][]byte
 	CurrentCandidates          [][]byte
@@ -88,19 +88,17 @@ func (c *CheckPoint) OnInit() {
 
 func (c *CheckPoint) Snapshot() checkpoint.ICheckPoint {
 	point := &CheckPoint{
-		Height:            c.Height,
-		DutyIndex:         c.arbitrators.dutyIndex,
-		CurrentCandidates: make([][]byte, 0),
-		NextArbitrators:   make([][]byte, 0),
-		NextCandidates:    make([][]byte, 0),
-		CurrentReward:     *NewRewardData(),
-		NextReward:        *NewRewardData(),
-		KeyFrame: KeyFrame{
-			CurrentArbitrators: c.arbitrators.CurrentArbitrators,
-		},
-		StateKeyFrame: *c.arbitrators.StateKeyFrame.snapshot(),
+		Height:             c.Height,
+		DutyIndex:          c.arbitrators.dutyIndex,
+		CurrentCandidates:  make([][]byte, 0),
+		NextArbitrators:    make([][]byte, 0),
+		NextCandidates:     make([][]byte, 0),
+		CurrentReward:      *NewRewardData(),
+		NextReward:         *NewRewardData(),
+		CurrentArbitrators: c.arbitrators.currentArbitrators,
+		StateKeyFrame:      *c.arbitrators.StateKeyFrame.snapshot(),
 	}
-	point.CurrentArbitrators = copyByteList(c.arbitrators.CurrentArbitrators)
+	point.CurrentArbitrators = copyByteList(c.arbitrators.currentArbitrators)
 	point.CurrentCandidates = copyByteList(c.arbitrators.currentCandidates)
 	point.NextArbitrators = copyByteList(c.arbitrators.nextArbitrators)
 	point.NextCandidates = copyByteList(c.arbitrators.nextCandidates)
@@ -263,9 +261,7 @@ func (c *CheckPoint) initFromArbitrators(ar *arbitrators) {
 	c.NextCandidates = ar.nextCandidates
 	c.CurrentReward = ar.CurrentReward
 	c.NextReward = ar.NextReward
-	c.KeyFrame = KeyFrame{
-		CurrentArbitrators: ar.CurrentArbitrators,
-	}
+	c.CurrentArbitrators = ar.currentArbitrators
 	c.StateKeyFrame = *ar.State.StateKeyFrame
 }
 
