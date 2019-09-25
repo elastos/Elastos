@@ -12,15 +12,33 @@ let DB: any
 
 beforeAll(async () => {
   DB = await db.create()
-  await DB.getModel('User').remove({
-    username: global.DB.MEMBER_USER.username
+  await Promise.all([
+    DB.getModel('User').remove({
+      username: {
+        $in: [global.DB.MEMBER_USER.username, global.DB.SECRETARY_USER.username]
+      }
+    }),
+    DB.getModel('Elip').remove({})
+  ])
+
+  const userService = new UserService(DB, {})
+  const result = await Promise.all([
+    userService.registerNewUser(global.DB.MEMBER_USER),
+    userService.registerNewUser(global.DB.SECRETARY_USER),
+    userService.getDBModel('User').findOne({ role: constant.USER_ROLE.ADMIN })
+  ])
+  user.member = result[0]
+  user.secretary = result[1]
+  user.admin = result[2]
+
+  // add a SECRETARY role
+  const adminService = new UserService(DB, {
+    user: user.admin
   })
-  await DB.getModel('Elip').remove({})
-  // create a test user as MEMBER role
-  const userService = new UserService(DB, {
-    user: undefined
+  await adminService.updateRole({
+    userId: user.secretary._id,
+    role: constant.USER_ROLE.SECRETARY
   })
-  user.member = await userService.registerNewUser(global.DB.MEMBER_USER)
 })
 
 describe('Tests for ELIP', () => {
