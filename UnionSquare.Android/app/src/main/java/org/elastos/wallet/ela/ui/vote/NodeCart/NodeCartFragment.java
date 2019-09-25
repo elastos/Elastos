@@ -28,7 +28,6 @@ import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
@@ -39,20 +38,17 @@ import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 节点购车车
@@ -408,11 +404,11 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         int integer = result.getCode();
         if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
             num = result.getName();
-            String amount ;
+            String amount;
             if ("MAX".equals(num)) {
                 amount = "-1";
-            }else {
-                amount=Arith.mul(num, MyWallet.RATE_S).toPlainString();
+            } else {
+                amount = Arith.mul(num, MyWallet.RATE_S).toPlainString();
             }
             presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
                     amount, String.valueOf(JSONArray.parseArray(JSON.toJSONString(nodelist))), "", true, this);

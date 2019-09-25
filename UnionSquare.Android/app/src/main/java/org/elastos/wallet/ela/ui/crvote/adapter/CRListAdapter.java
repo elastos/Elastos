@@ -12,41 +12,29 @@ import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
-import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class CRListAdapter extends CRListAdapterFather {
 
     private final GlideRequest<Bitmap> glideRequest;
 
-    public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
-        super(R.layout.item_cr_list, context, data, is);
+    public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is, String totalvotes) {
+        super(R.layout.item_cr_list, context, data, is, totalvotes);
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
 
 
     }
 
     @Override
-    protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.ProducersBean bean) {
+    protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
         super.convert(helper, bean);
+        helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.a26ffffff));
         helper.setGone(R.id.view, !showCheckbox);
-
-        helper.setBackgroundColor(R.id.tv_rank, context.getResources().getColor(R.color.white));
-        helper.setTextColor(R.id.tv_rank, context.getResources().getColor(R.color.surebutton));
-        if (is && 0 == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.tv_rank, context.getResources().getColor(R.color.blue1));
-            helper.setTextColor(R.id.tv_rank, context.getResources().getColor(R.color.white));
-        }
         helper.setText(R.id.tv_rank, "No." + (bean.getIndex() + 1));
-        helper.setText(R.id.tv_name, bean.getNickname());
-        helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
-        helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
-        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
+
 
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial);

@@ -22,12 +22,12 @@ public class CRSignUpPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void getCROwnerDID(String masterWalletID, String chainID, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getCROwnerDID");
+    public void getCROwnerPublicKey(String walletId, String chainID, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "getCROwnerPublicKey");
         Observable observable = createObservable(new ObservableListener() {
             @Override
-            public BaseEntity subscribe() throws JSONException {
-                return baseFragment.getMyWallet().getCROwnerDID(masterWalletID, chainID);
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getCROwnerPublicKey(walletId, chainID);
             }
         });
         subscriberObservable(observer, observable, baseFragment);
@@ -39,7 +39,7 @@ public class CRSignUpPresenter extends NewPresenterAbstract {
         Observer observer = createObserver(baseFragment, "generateCRInfoPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
-            public BaseEntity subscribe() throws JSONException {
+            public BaseEntity subscribe()  {
                 return baseFragment.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location, payPasswd);
             }
         });
@@ -47,18 +47,7 @@ public class CRSignUpPresenter extends NewPresenterAbstract {
     }
 
 
-    //创建交易
-    public void createRegisterCRTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO
-            , BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "createRegisterCRTransaction");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createRegisterCRTransaction(masterWalletID, chainID, fromAddress, payloadJson, amount, memo, useVotedUTXO);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
+
 
 
     //更新信息

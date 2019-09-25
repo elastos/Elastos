@@ -73,7 +73,7 @@ public class CRMyVoteFragment extends BaseFragment implements CommmonStringWithM
     private Wallet wallet = realmUtil.queryDefauleWallet();
     @BindView(R.id.ll_bgtp)
     LinearLayout ll_bgtp;
-    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> netList = new ArrayList();
+    ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netList = new ArrayList();
 
     String zb;
 
@@ -99,7 +99,7 @@ public class CRMyVoteFragment extends BaseFragment implements CommmonStringWithM
     protected void setExtraData(Bundle data) {
         zb = data.getString("zb");
         super.setExtraData(data);
-        netList = (ArrayList<CRListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
+        netList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
     }
 
     //变更投票
@@ -188,7 +188,7 @@ public class CRMyVoteFragment extends BaseFragment implements CommmonStringWithM
     private Recorder getRecord(String publickey) {
         Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
-            if (netList.get(i).getOwnerpublickey().equals(publickey)) {
+            if (netList.get(i).getDid().equals(publickey)) {
                 recorder.no = (i + 1);
                 recorder.name = netList.get(i).getNickname();
                 return recorder;

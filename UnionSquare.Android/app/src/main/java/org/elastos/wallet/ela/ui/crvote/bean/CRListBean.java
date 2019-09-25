@@ -1,5 +1,7 @@
 package org.elastos.wallet.ela.ui.crvote.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -8,30 +10,18 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class CRListBean extends BaseEntity implements Serializable {
+public class CRListBean extends BaseEntity {
 
-    @Override
-    public String toString() {
-        return "VoteListBean{" +
-                "message='" + message + '\'' +
-                ", data=" + data +
-                ", exceptionMsg=" + exceptionMsg +
-                '}';
-    }
 
     /**
-     * code : 0
-     * message : 查询成功^_^
-     * data : {"error":null,"id":null,"jsonrpc":"2.0","result":{"producers":[{"ownerpublickey":"0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc","nodepublickey":"022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624","nickname":"arbiter-223","url":"ela_test.org","location":112211,"active":true,"votes":"1136.02815617","netaddress":"127.0.0.1","index":0,"voterate":"0.312349415480802"},{"ownerpublickey":"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d","nodepublickey":"0296e28b9bced49e175de2d2ae0e6a03724da9d00241213c988eeb65583a14f0c9","nickname":"arbiter-225","url":"ela_test.org","location":112211,"active":true,"votes":"1087.66022539","netaddress":"127.0.0.1","index":1,"voterate":"0.299050717886824"},{"ownerpublickey":"028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472","nodepublickey":"0385ddab890e035ceb8db18d23addeaf2634e967342589c71ace3f1d42aafe26d9","nickname":"arbiter-222","url":"ela_test.org","location":112211,"active":true,"votes":"700.70423291","netaddress":"127.0.0.1","index":2,"voterate":"0.192657687563168"},{"ownerpublickey":"02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b","nodepublickey":"028bb013ce8228a28823a27e93c87dd5d92df186a0c3b947e430ccf667f120310e","nickname":"arbiter-221","url":"ela_test.org","location":112211,"active":true,"votes":"644.05835174","netaddress":"127.0.0.1","index":3,"voterate":"0.177082978629461"},{"ownerpublickey":"02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03","nodepublickey":"03244fc761c06bb5e7d1590df24cb5f0dab634d85865b9c30d620e76f3218b77af","nickname":"arbiter-224","url":"ela_test.org","location":112211,"active":true,"votes":"66.59171697","netaddress":"127.0.0.1","index":4,"voterate":"0.018309303126401"},{"ownerpublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nodepublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nickname":"ssss","url":"https://www.baidu.com","location":1,"active":true,"votes":"2","netaddress":"ssssssd","index":5,"voterate":"0.000549897313345"}],"totalvotes":"3637.04268318","totalcounts":6,"totalvoterate":"0.000003576128237"}}
+     * message : Query successful ^_^
+     * data : {"error":null,"id":null,"jsonrpc":"2.0","result":{"crcandidatesinfo":[{"code":"2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac","did":"im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH","nickname":"raocr","url":"http://52.80.54.227:9000/","location":93,"state":"Active","votes":"0","index":0}],"totalvotes":"0","totalcounts":1}}
      * exceptionMsg : null
      */
-
 
     private String message;
     private DataBean data;
     private Object exceptionMsg;
-
-
 
     public String getMessage() {
         return message;
@@ -57,22 +47,12 @@ public class CRListBean extends BaseEntity implements Serializable {
         this.exceptionMsg = exceptionMsg;
     }
 
-    public static class DataBean implements Serializable {
-        @Override
-        public String toString() {
-            return "DataBean{" +
-                    "error=" + error +
-                    ", id=" + id +
-                    ", jsonrpc='" + jsonrpc + '\'' +
-                    ", result=" + result +
-                    '}';
-        }
-
+    public static class DataBean {
         /**
          * error : null
          * id : null
          * jsonrpc : 2.0
-         * result : {"producers":[{"ownerpublickey":"0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc","nodepublickey":"022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624","nickname":"arbiter-223","url":"ela_test.org","location":112211,"active":true,"votes":"1136.02815617","netaddress":"127.0.0.1","index":0,"voterate":"0.312349415480802"},{"ownerpublickey":"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d","nodepublickey":"0296e28b9bced49e175de2d2ae0e6a03724da9d00241213c988eeb65583a14f0c9","nickname":"arbiter-225","url":"ela_test.org","location":112211,"active":true,"votes":"1087.66022539","netaddress":"127.0.0.1","index":1,"voterate":"0.299050717886824"},{"ownerpublickey":"028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472","nodepublickey":"0385ddab890e035ceb8db18d23addeaf2634e967342589c71ace3f1d42aafe26d9","nickname":"arbiter-222","url":"ela_test.org","location":112211,"active":true,"votes":"700.70423291","netaddress":"127.0.0.1","index":2,"voterate":"0.192657687563168"},{"ownerpublickey":"02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b","nodepublickey":"028bb013ce8228a28823a27e93c87dd5d92df186a0c3b947e430ccf667f120310e","nickname":"arbiter-221","url":"ela_test.org","location":112211,"active":true,"votes":"644.05835174","netaddress":"127.0.0.1","index":3,"voterate":"0.177082978629461"},{"ownerpublickey":"02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03","nodepublickey":"03244fc761c06bb5e7d1590df24cb5f0dab634d85865b9c30d620e76f3218b77af","nickname":"arbiter-224","url":"ela_test.org","location":112211,"active":true,"votes":"66.59171697","netaddress":"127.0.0.1","index":4,"voterate":"0.018309303126401"},{"ownerpublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nodepublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nickname":"ssss","url":"https://www.baidu.com","location":1,"active":true,"votes":"2","netaddress":"ssssssd","index":5,"voterate":"0.000549897313345"}],"totalvotes":"3637.04268318","totalcounts":6,"totalvoterate":"0.000003576128237"}
+         * result : {"crcandidatesinfo":[{"code":"2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac","did":"im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH","nickname":"raocr","url":"http://52.80.54.227:9000/","location":93,"state":"Active","votes":"0","index":0}],"totalvotes":"0","totalcounts":1}
          */
 
         private Object error;
@@ -114,16 +94,14 @@ public class CRListBean extends BaseEntity implements Serializable {
 
         public static class ResultBean implements Serializable {
             /**
-             * producers : [{"ownerpublickey":"0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc","nodepublickey":"022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624","nickname":"arbiter-223","url":"ela_test.org","location":112211,"active":true,"votes":"1136.02815617","netaddress":"127.0.0.1","index":0,"voterate":"0.312349415480802"},{"ownerpublickey":"03b273e27a6820b55fe5a6b7a445814f7c1db300e961661aaed3a06cbdfd3dca5d","nodepublickey":"0296e28b9bced49e175de2d2ae0e6a03724da9d00241213c988eeb65583a14f0c9","nickname":"arbiter-225","url":"ela_test.org","location":112211,"active":true,"votes":"1087.66022539","netaddress":"127.0.0.1","index":1,"voterate":"0.299050717886824"},{"ownerpublickey":"028b6e4d5c85ce549cefb8987f61f3e50ae385737eadbefc3f90f70d6d1d530472","nodepublickey":"0385ddab890e035ceb8db18d23addeaf2634e967342589c71ace3f1d42aafe26d9","nickname":"arbiter-222","url":"ela_test.org","location":112211,"active":true,"votes":"700.70423291","netaddress":"127.0.0.1","index":2,"voterate":"0.192657687563168"},{"ownerpublickey":"02fe6d1f9e1e03ef7e41bf0cb65eea4f7c6e8f5faa902455b723b997a7e6ded40b","nodepublickey":"028bb013ce8228a28823a27e93c87dd5d92df186a0c3b947e430ccf667f120310e","nickname":"arbiter-221","url":"ela_test.org","location":112211,"active":true,"votes":"644.05835174","netaddress":"127.0.0.1","index":3,"voterate":"0.177082978629461"},{"ownerpublickey":"02dfd375f7f612e3a23e1a86cfb0d4d7de4ca1482bc36294a2d06d861201cb9f03","nodepublickey":"03244fc761c06bb5e7d1590df24cb5f0dab634d85865b9c30d620e76f3218b77af","nickname":"arbiter-224","url":"ela_test.org","location":112211,"active":true,"votes":"66.59171697","netaddress":"127.0.0.1","index":4,"voterate":"0.018309303126401"},{"ownerpublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nodepublickey":"039a1de7457157317cb1578cfafa72a13eb8332a198960bb1e5733f4bfd559b09e","nickname":"ssss","url":"https://www.baidu.com","location":1,"active":true,"votes":"2","netaddress":"ssssssd","index":5,"voterate":"0.000549897313345"}]
-             * totalvotes : 3637.04268318
-             * totalcounts : 6
-             * totalvoterate : 0.000003576128237
+             * crcandidatesinfo : [{"code":"2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac","did":"im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH","nickname":"raocr","url":"http://52.80.54.227:9000/","location":93,"state":"Active","votes":"0","index":0}]
+             * totalvotes : 0
+             * totalcounts : 1
              */
 
             private String totalvotes;
             private int totalcounts;
-            private String totalvoterate;
-            private List<ProducersBean> producers;
+            private List<CrcandidatesinfoBean> crcandidatesinfo;
 
             public String getTotalvotes() {
                 return totalvotes;
@@ -141,52 +119,49 @@ public class CRListBean extends BaseEntity implements Serializable {
                 this.totalcounts = totalcounts;
             }
 
-            public String getTotalvoterate() {
-                return totalvoterate;
+            public List<CrcandidatesinfoBean> getCrcandidatesinfo() {
+                return crcandidatesinfo;
             }
 
-            public void setTotalvoterate(String totalvoterate) {
-                this.totalvoterate = totalvoterate;
+            public void setCrcandidatesinfo(List<CrcandidatesinfoBean> crcandidatesinfo) {
+                this.crcandidatesinfo = crcandidatesinfo;
             }
 
-            public List<ProducersBean> getProducers() {
-                return producers;
-            }
-
-            public void setProducers(List<ProducersBean> producers) {
-                this.producers = producers;
-            }
-
-            public static class ProducersBean implements Serializable, Comparable<ProducersBean> {
+            public class CrcandidatesinfoBean implements Comparable<CrcandidatesinfoBean>, Parcelable, Serializable {
                 /**
-                 * ownerpublickey : 0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc
-                 * nodepublickey : 022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624
-                 * nickname : arbiter-223
-                 * url : ela_test.org
-                 * location : 112211
-                 * active : true
-                 * votes : 1136.02815617
-                 * netaddress : 127.0.0.1
+                 * code : 2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac
+                 * did : im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH
+                 * nickname : raocr
+                 * url : http://52.80.54.227:9000/
+                 * location : 93
+                 * state : Active
+                 * votes : 0
                  * index : 0
-                 * voterate : 0.312349415480802
                  */
                 @Override
-                public boolean equals(Object other) {
-                    return this.getOwnerpublickey().equals(((ProducersBean) other).getOwnerpublickey());
+                public int compareTo(@NonNull CrcandidatesinfoBean o) {
+                    return Double.compare(Double.parseDouble(o.getVotes()), Double.parseDouble(this.getVotes()));
+
                 }
+
+                @Override
+                public boolean equals(Object other) {
+                    return this.getDid().equals(((CrcandidatesinfoBean) other).getDid());
+                }
+
                 private BigDecimal curentBalance;//为了购物车新增的输入控件字段
                 private boolean isChecked;//为了购物车新增的控件选中字段
                 private boolean isSelect;//为了列表容易展示   是否已经加入购物车
-                private String ownerpublickey;
-                private String nodepublickey;
+                private String code;
+                private String did;
                 private String nickname;
                 private String url;
                 private int location;
-                private boolean active;
+                private String state;
                 private String votes;
-                private String netaddress;
                 private int index;
                 private String voterate;
+
                 public BigDecimal getCurentBalance() {
                     return curentBalance;
                 }
@@ -202,20 +177,37 @@ public class CRListBean extends BaseEntity implements Serializable {
                 public void setChecked(boolean checked) {
                     isChecked = checked;
                 }
-                public String getOwnerpublickey() {
-                    return ownerpublickey;
+
+                public boolean isSelect() {
+                    return isSelect;
                 }
 
-                public void setOwnerpublickey(String ownerpublickey) {
-                    this.ownerpublickey = ownerpublickey;
+                public void setSelect(boolean select) {
+                    isSelect = select;
                 }
 
-                public String getNodepublickey() {
-                    return nodepublickey;
+                public String getVoterate() {
+                    return voterate;
                 }
 
-                public void setNodepublickey(String nodepublickey) {
-                    this.nodepublickey = nodepublickey;
+                public void setVoterate(String voterate) {
+                    this.voterate = voterate;
+                }
+
+                public String getCode() {
+                    return code;
+                }
+
+                public void setCode(String code) {
+                    this.code = code;
+                }
+
+                public String getDid() {
+                    return did;
+                }
+
+                public void setDid(String did) {
+                    this.did = did;
                 }
 
                 public String getNickname() {
@@ -242,12 +234,12 @@ public class CRListBean extends BaseEntity implements Serializable {
                     this.location = location;
                 }
 
-                public boolean isActive() {
-                    return active;
+                public String getState() {
+                    return state;
                 }
 
-                public void setActive(boolean active) {
-                    this.active = active;
+                public void setState(String state) {
+                    this.state = state;
                 }
 
                 public String getVotes() {
@@ -258,14 +250,6 @@ public class CRListBean extends BaseEntity implements Serializable {
                     this.votes = votes;
                 }
 
-                public String getNetaddress() {
-                    return netaddress;
-                }
-
-                public void setNetaddress(String netaddress) {
-                    this.netaddress = netaddress;
-                }
-
                 public int getIndex() {
                     return index;
                 }
@@ -274,43 +258,56 @@ public class CRListBean extends BaseEntity implements Serializable {
                     this.index = index;
                 }
 
-                public String getVoterate() {
-                    return voterate;
-                }
-
-                public void setVoterate(String voterate) {
-                    this.voterate = voterate;
-                }
-
-                public boolean isSelect() {
-                    return isSelect;
-                }
-
-                public void setSelect(boolean select) {
-                    isSelect = select;
+                @Override
+                public int describeContents() {
+                    return 0;
                 }
 
                 @Override
-                public String toString() {
-                    return "ProducersBean{" +
-                            "ownerpublickey='" + ownerpublickey + '\'' +
-                            ", nodepublickey='" + nodepublickey + '\'' +
-                            ", nickname='" + nickname + '\'' +
-                            ", url='" + url + '\'' +
-                            ", location=" + location +
-                            ", active=" + active +
-                            ", votes='" + votes + '\'' +
-                            ", netaddress='" + netaddress + '\'' +
-                            ", index=" + index +
-                            ", voterate='" + voterate + '\'' +
-                            '}';
+                public void writeToParcel(Parcel dest, int flags) {
+                    dest.writeSerializable(this.curentBalance);
+                    dest.writeByte(this.isChecked ? (byte) 1 : (byte) 0);
+                    dest.writeByte(this.isSelect ? (byte) 1 : (byte) 0);
+                    dest.writeString(this.code);
+                    dest.writeString(this.did);
+                    dest.writeString(this.nickname);
+                    dest.writeString(this.url);
+                    dest.writeInt(this.location);
+                    dest.writeString(this.state);
+                    dest.writeString(this.votes);
+                    dest.writeInt(this.index);
+                    dest.writeString(this.voterate);
                 }
 
-                @Override
-                public int compareTo(@NonNull ProducersBean o) {
-                    return Double.compare(Double.parseDouble(o.getVoterate()), Double.parseDouble(this.getVoterate()));
-
+                public CrcandidatesinfoBean() {
                 }
+
+                protected CrcandidatesinfoBean(Parcel in) {
+                    this.curentBalance = (BigDecimal) in.readSerializable();
+                    this.isChecked = in.readByte() != 0;
+                    this.isSelect = in.readByte() != 0;
+                    this.code = in.readString();
+                    this.did = in.readString();
+                    this.nickname = in.readString();
+                    this.url = in.readString();
+                    this.location = in.readInt();
+                    this.state = in.readString();
+                    this.votes = in.readString();
+                    this.index = in.readInt();
+                    this.voterate = in.readString();
+                }
+
+                public final Parcelable.Creator<CrcandidatesinfoBean> CREATOR = new Parcelable.Creator<CrcandidatesinfoBean>() {
+                    @Override
+                    public CrcandidatesinfoBean createFromParcel(Parcel source) {
+                        return new CrcandidatesinfoBean(source);
+                    }
+
+                    @Override
+                    public CrcandidatesinfoBean[] newArray(int size) {
+                        return new CrcandidatesinfoBean[size];
+                    }
+                };
             }
         }
     }

@@ -22,6 +22,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.wallet.R;
@@ -47,6 +48,7 @@ import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -54,14 +56,14 @@ import butterknife.OnClick;
 /**
  * 超级节点选举
  */
-public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, OnRefreshListener, NewBaseViewData {
+public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, OnRefreshListener, NewBaseViewData, OnLoadMoreListener {
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
-    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> netList;
+    ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netList;
     @BindView(R.id.iv_swichlist)
     ImageView ivSwichlist;
     @BindView(R.id.iv_toselect)
@@ -85,8 +87,11 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     private CRListAdapter1 adapter1;
     private CRListAdapter adapter;
     private CRListAdapterFather curentAdapter;
-    private CRListBean.DataBean.ResultBean.ProducersBean curentNode;
-    private String publicKey;
+    private CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode;
+    private String did;
+    private int pageNum = 1;
+    private final int pageSize = 20;
+    private String totalvotes;
 
     @Override
     protected int getLayoutId() {
@@ -100,12 +105,13 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election), getString(R.string.voting_rules));
+        setToobar(toolbar, toolbarTitle, getString(R.string.crcvote), getString(R.string.voting_rules));
         //获取公钥
         presenter = new CRlistPresenter();
         //presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
         srl.setOnRefreshListener(this);
-        presenter.getCRlist("1", this);
+        srl.setOnLoadMoreListener(this);
+        presenter.getCRlist(pageNum, pageSize, "all", this);
 
         if (wallet.getType() != 0) {
             tv_signupfor.setVisibility(View.GONE);
@@ -122,8 +128,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             case R.id.ll_add:
                 //批量加入
                 boolean tag = false;
-                ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> list = CacheUtil.getCRProducerList();
-                for (CRListBean.DataBean.ResultBean.ProducersBean bean : netList) {
+                ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list = CacheUtil.getCRProducerList();
+                for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
                     //存储选中的=原来的(isSelect)+getChecckPosition
                     if (bean.isChecked()) {
                         tag = true;
@@ -150,7 +156,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 break;
             case R.id.tv_myvote:
                 bundle = new Bundle();
-                bundle.putString("zb", zb);
                 bundle.putSerializable("netList", netList);
                 start(CRMyVoteFragment.class, bundle);
                 break;
@@ -168,19 +173,19 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 break;
             case R.id.tv_going_to_vote:
                 bundle = new Bundle();
-                bundle.putString("zb", zb);
                 bundle.putSerializable("netList", netList);
                 start(CRNodeCartFragment.class, bundle);
                 break;
             case R.id.tv_signupfor:
+                bundle = new Bundle();
+                bundle.putString("did", did);
                 if (tv_signupfor.getText().equals(getString(R.string.sign_up_for))) {
-                    start(CRSignUpForFragment.class);
+                    start(CRSignUpForFragment.class, bundle);
                 } else {
-                    bundle = new Bundle();
                     bundle.putString("status", status);
                     bundle.putString("info", info);
-                    bundle.putSerializable("curentNode", curentNode);
-                    bundle.putString("ownerPublicKey", publicKey);
+                    bundle.putParcelable("curentNode", curentNode);
+
                     start(CRManageFragment.class, bundle);
                 }
                 break;
@@ -206,9 +211,9 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     llBottom2.setVisibility(View.VISIBLE);
                     llBottom1.setVisibility(View.GONE);
                     //同步已经加入购物车的数据setSelect
-                    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> list1 = CacheUtil.getCRProducerList();
+                    ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list1 = CacheUtil.getCRProducerList();
                     if (list1 != null && list1.size() > 0) {
-                        for (CRListBean.DataBean.ResultBean.ProducersBean bean : netList) {
+                        for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
                             if (list1.contains(bean)) {
                                 bean.setSelect(true);
                             }
@@ -256,22 +261,21 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         }
 
         Bundle bundle = new Bundle();
-        bundle.putString("zb", zb);
-        bundle.putSerializable("bean", netList.get(position));
+        bundle.putInt("postion", position);
         bundle.putSerializable("netList", netList);
         start(CRInformationFragment.class, bundle);
     }
 
-    String zb;//占有率
+
     boolean is = false;//是否有自已的选举
 
 
-    private void setRecyclerview(boolean is, int pos) {
+    private void setRecyclerview(boolean is) {
         if (adapter == null) {
             recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 2));
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
             recyclerview.addItemDecoration(decoration);
-            adapter = new CRListAdapter(this, netList, pos, is);
+            adapter = new CRListAdapter(this, netList, is, totalvotes);
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
             if (curentAdapter == null)
@@ -282,10 +286,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
     }
 
-    private void setRecyclerview1(boolean is, int pos) {
+    private void setRecyclerview1(boolean is) {
         if (adapter1 == null) {
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
-            adapter1 = new CRListAdapter1(this, netList, pos, is);
+            adapter1 = new CRListAdapter1(this, netList, is, totalvotes);
             adapter1.setOnItemClickListener(this);
             recyclerview1.setAdapter(adapter1);
         } else {
@@ -294,45 +298,51 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     }
 
 
-    public void onGetVoteList(CRListBean dataResponse) {
+    public void onGetVoteList(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data) {
         if (netList == null) {
             netList = new ArrayList<>();
-        } else {
-            netList.clear();
         }
-        netList.addAll(dataResponse.getData().getResult().getProducers());
+
+        if (pageNum == 1) {
+            netList.clear();
+        } else if (data == null || data.size() == 0) {
+            showToastMessage(getString(R.string.loadall));
+            return;
+        }
+
+        if (data != null && data.size() != 0) {
+            netList.addAll(data);
+        }
 
         //0 普通单签 1单签只读 2普通多签 3多签只读
         if (wallet.getType() == 0 || wallet.getType() == 1) {
             //获取公钥
-            if (TextUtils.isEmpty(publicKey)) {
-                presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
+            if (TextUtils.isEmpty(did)) {
+                presenter.getCROwnerDID(wallet.getWalletId(), MyWallet.ELA, this);
             } else {
-                onGetPk(publicKey);
+                onGetDid(did);
             }
         } else {
-            setRecyclerview(is, -1);
-            setRecyclerview1(is, -1);
+            setRecyclerview(is);
+            setRecyclerview1(is);
         }
+        pageNum++;
     }
 
-    private void onGetPk(String data) {
-        int pos = -1;
+    private void onGetDid(String data) {
         if (netList != null) {
-
             for (int i = 0; i < netList.size(); i++) {
-                if (netList.get(i).getOwnerpublickey().equals(data)) {
-                    CRListBean.DataBean.ResultBean.ProducersBean temp = netList.get(i);
+                if (netList.get(i).getDid().equals(data)) {
+                    curentNode = netList.get(i);
+                    netList.add(0, curentNode);
                     netList.remove(i);
-                    pos = i;
-                    netList.add(0, temp);
                     is = true;
                 }
             }
 
         }
-        setRecyclerview(is, pos);
-        setRecyclerview1(is, pos);
+        setRecyclerview(is);
+        setRecyclerview1(is);
     }
 
     private String status;
@@ -348,11 +358,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
         onErrorRefreshLayout(srl);
-        if (publicKey == null) {
-            presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
-        } else {
-            presenter.getCRlist("1", this);
-        }
+        pageNum = 1;
+        presenter.getCRlist(pageNum, pageSize, "all", this);
 
     }
 
@@ -360,13 +367,14 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
         switch (methodName) {
-            case "getCROwnerPublicKey":
-
-                publicKey = ((CommmonStringEntity) baseEntity).getData();
-                onGetPk(publicKey);
+            case "getCROwnerDID":
+                did = ((CommmonStringEntity) baseEntity).getData();
+                onGetDid(did);
                 break;
             case "getCRlist":
-                onGetVoteList((CRListBean) baseEntity);
+                totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
+
+                onGetVoteList(((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo());
                 break;
             case "getRegisteredCRInfo":
 
@@ -398,4 +406,9 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         }
     }
 
+    @Override
+    public void onLoadMore(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
+        presenter.getCRlist(pageNum, pageSize, "all", this);
+    }
 }

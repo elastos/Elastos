@@ -17,7 +17,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="400dp"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:background="@drawable/black_50_white"
@@ -99,7 +99,7 @@
             <TextView
                 android:id="@+id/tv_intro_detail"
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="240dp"
                 android:layout_marginTop="22dp"
                 android:padding="15dp"
                 android:visibility="gone" />
@@ -107,7 +107,7 @@
             <LinearLayout
                 android:id="@+id/ll_infodetail"
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
                 android:orientation="vertical">
 
@@ -122,12 +122,12 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="15dp"
                         android:layout_weight="1"
-                        android:text="@string/menberpk"
+                        android:text="@string/menberdid"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
 
                     <TextView
-                        android:id="@+id/tv_publickey"
+                        android:id="@+id/tv_did"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="40dp"
@@ -228,6 +228,7 @@
 
 
                 <LinearLayout
+                    android:layout_marginBottom="25dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
@@ -240,7 +241,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="15dp"
                         android:layout_weight="1"
-                        android:text="URL"
+                        android:text="@string/officeweb"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
 
@@ -279,7 +280,7 @@
                 style="@style/PublicButton"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:text="@string/edit"
+                android:text="@string/update_information"
                 app:sCornersRadius="0dp" />
 
             <com.allen.library.SuperButton
@@ -288,7 +289,7 @@
                 android:layout_width="0dp"
                 android:layout_marginLeft="15dp"
                 android:layout_weight="1"
-                android:text="@string/cancellation"
+                android:text="@string/quitcr"
                 app:sCornersRadius="0dp" />
 
         </LinearLayout>

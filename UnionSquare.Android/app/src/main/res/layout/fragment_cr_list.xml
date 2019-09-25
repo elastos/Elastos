@@ -95,6 +95,10 @@
                     android:layout_marginRight="@dimen/px10"
                     android:visibility="gone" />
             </RelativeLayout>
+            <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srlAccentColor="@color/whiter" />
         </com.scwang.smartrefresh.layout.SmartRefreshLayout>
     </com.qmuiteam.qmui.layout.QMUILinearLayout>
 

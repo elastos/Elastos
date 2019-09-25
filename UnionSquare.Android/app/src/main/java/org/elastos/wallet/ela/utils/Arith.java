@@ -90,7 +90,7 @@ public class Arith {
                     "The scale must be a positive integer or zero");*/
         }
         if ("0".equals(v2.trim())) {
-            return new BigDecimal("-1");
+            return new BigDecimal("0");
         }
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
@@ -105,7 +105,7 @@ public class Arith {
                     "The scale must be a positive integer or zero");*/
         }
         if (0 == v2) {
-            return new BigDecimal("-1");
+            return new BigDecimal("0");
         }
         BigDecimal b2 = new BigDecimal(v2);
 

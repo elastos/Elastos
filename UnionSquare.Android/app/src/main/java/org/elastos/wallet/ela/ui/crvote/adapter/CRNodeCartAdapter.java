@@ -21,13 +21,14 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.MyViewHolder> {
-    private List<CRListBean.DataBean.ResultBean.ProducersBean> list;
+    private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list;
     private Context context;
 
 
@@ -38,7 +39,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
     private BigDecimal balance;
 
     // 构造器
-    public CRNodeCartAdapter(List<CRListBean.DataBean.ResultBean.ProducersBean> list, BaseFragment context) {
+    public CRNodeCartAdapter(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list, BaseFragment context) {
         this.context = context.getContext();
         this.list = list;
         // dataMap = new HashMap<Integer, Boolean>();
@@ -56,7 +57,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        CRListBean.DataBean.ResultBean.ProducersBean producersBean = list.get(position);
+        CRListBean.DataBean.ResultBean.CrcandidatesinfoBean producersBean = list.get(position);
 
         holder.checkbox.setChecked(producersBean.isChecked());
 
@@ -64,7 +65,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         holder.tvName.setText(producersBean.getNickname());
         int id = producersBean.getIndex() + 1;
         holder.tvId.setText(context.getString(R.string.currentrank) + id);
-        holder.tvZb.setText(context.getString(R.string.vote_of) + "：" + NumberiUtil.numberFormat(Double.parseDouble(producersBean.getVoterate()) * 100 + "", 5) + "%");
+        // holder.tvZb.setText(context.getString(R.string.vote_of) + "：" + NumberiUtil.numberFormat(Double.parseDouble(producersBean.getVoterate()) * 100 + "", 5) + "%");
         holder.tvTicketnum.setText(context.getString(R.string.ticketnum) + producersBean.getVotes());
         holder.tvAddress.setText(AppUtlis.getLoc(context, producersBean.getLocation() + ""));
         holder.etTicketnum.setTag(false);
@@ -181,6 +182,22 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
                 list.get(i).setCurentBalance(curentbalance);
             }
         }
+    }
+
+    // 初始化dataMap的数据
+    public List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> getCheckedData() {
+        List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> checkedData = new ArrayList<>();
+        if (list != null) {
+            for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : list) {
+                if (bean.isChecked() && bean.getCurentBalance() != null
+                        && TextUtils.isEmpty(bean.getCurentBalance().toPlainString())
+                        && bean.getCurentBalance().doubleValue() > 0) {
+                    checkedData.add(bean);
+                }
+
+            }
+        }
+        return checkedData;
     }
 
     private void addTextChangedListener(EditText editText, int position) {

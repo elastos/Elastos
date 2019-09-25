@@ -3,14 +3,14 @@ package org.elastos.wallet.ela.ui.Assets.presenter;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
-import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
-public class PwdPresenter extends PresenterAbstract {
+public class PwdPresenter extends NewPresenterAbstract {
     //所有转账都要经历的方法  步骤1 2 activitry
 //步骤1
     public void signTransaction(String walletId, String chainId, String rawTransaction, String pwd, BaseActivity baseActivity) {
@@ -77,7 +77,7 @@ public class PwdPresenter extends PresenterAbstract {
     //验证交易
     public void generateProducerPayload(String masterWalletID, String chainID, String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd
             , BaseActivity baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class,baseActivity);
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -90,11 +90,53 @@ public class PwdPresenter extends PresenterAbstract {
     //创建交易
     public void createRegisterProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO
             , BaseActivity baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class,baseActivity);
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseActivity.getWallet().createRegisterProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson, amount, memo, useVotedUTXO);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+    /************************************CR**************************************/
+    //验证交易
+    public void generateCRInfoPayload(String masterWalletID, String chainID, String publicKey, String nickName, String url, long location, String payPasswd
+            , BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "generateCRInfoPayload");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location, payPasswd);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+
+    //创建交易
+    public void createRegisterCRTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO
+            , BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "createRegisterCRTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().createRegisterCRTransaction(masterWalletID, chainID, fromAddress, payloadJson, amount, memo, useVotedUTXO);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+
+    //更新信息
+    public void createUpdateCRTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO
+            , BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "createUpdateCRTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().createUpdateCRTransaction(masterWalletID, chainID, fromAddress, payloadJson, memo, useVotedUTXO);
             }
         });
         subscriberObservable(observer, observable, baseActivity);

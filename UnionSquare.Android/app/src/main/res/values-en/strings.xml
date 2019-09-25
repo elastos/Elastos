@@ -199,10 +199,10 @@
     <string name="transfertype11">Node Update Transaction</string>
     <string name="transfertype12">Deposit Retrieve Transaction</string>
     <string name="transfertype13">Unknown Transaction </string>
-    <string name="transfertype21">CR Registration Transaction</string>
-    <string name="transfertype22">CR Cancellation Transaction</string>
-    <string name="transfertype23">CR Update Transaction</string>
-    <string name="transfertype24">CR Deposit Retrieve Transaction</string>
+    <string name="transfertype33">CR Registration Transaction</string>
+    <string name="transfertype34">CR Cancellation Transaction</string>
+    <string name="transfertype35">CR Update Transaction</string>
+    <string name="transfertype36">CR Deposit Retrieve Transaction</string>
     <string name="votetrade">Vote Transaction</string>
     <string name="last_voting_record">Last Voting Record</string>
     <string name="right_to_vote_ticket">Voting Power：</string>
@@ -432,4 +432,7 @@
     <string name="multiadd">Add to Candidate List in Batches</string>
     <string name="currentpage">第 %1$s 张</string>
     <string name="addsucess">加入成功</string>
+    <string name="crinfor">委员信息</string>
+    <string name="quitcr">退出参选</string>
+    <string name="officeweb">官网网址</string>
 </resources>

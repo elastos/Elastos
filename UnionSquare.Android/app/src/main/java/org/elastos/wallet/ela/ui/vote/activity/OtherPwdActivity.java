@@ -11,17 +11,21 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class OtherPwdActivity extends BaseActivity implements CommmonStringWithMethNameViewData {
+public class OtherPwdActivity extends BaseActivity implements CommmonStringWithMethNameViewData, NewBaseViewData {
     @BindView(R.id.et_pwd)
     ClearEditText etPwd;
     private Wallet wallet;
@@ -75,7 +79,15 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                     return;
                 }
                 presenter = new PwdPresenter();
-                presenter.generateProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, nodePublicKey, name, url, "", code, pwd, this);
+                switch (type) {
+                    case Constant.SUPERNODEVOTE:
+                        presenter.generateProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, nodePublicKey, name, url, "", code, pwd, this);
+                        break;
+                    case Constant.CRSIGNUP:
+                        presenter.generateCRInfoPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, name, url, code, pwd, this);
+
+                        break;
+                }
                 break;
 
         }
@@ -100,6 +112,23 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 finish();
                 break;
 
+        }
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+
+        switch (methodName) {
+
+
+            //验证交易
+            case "generateCRInfoPayload":
+                presenter.createRegisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
+                break;
+            //创建交易
+            case "createRegisterCRTransaction":
+                presenter.signTransaction(wallet.getWalletId(), chainId, ((CommmonStringEntity) baseEntity).getData(), pwd, this);
+                break;
         }
     }
 }

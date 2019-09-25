@@ -59,8 +59,8 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     DialogUtil dialogUtil = new DialogUtil();
     @BindView(R.id.tv_name)
     TextView tvName;
-    @BindView(R.id.tv_publickey)
-    TextView tvPublickey;
+    @BindView(R.id.tv_did)
+    TextView tvDid;
     @BindView(R.id.tv_num)
     TextView tvNum;
     @BindView(R.id.tv_address)
@@ -103,9 +103,9 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     CRManagePresenter presenter;
     PwdPresenter pwdpresenter = new PwdPresenter();
     String status;
-    private String ownerPublicKey;
+    private String did;
     private String info;
-    private CRListBean.DataBean.ResultBean.ProducersBean curentNode;
+    private CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode;
 
     @Override
     protected int getLayoutId() {
@@ -128,15 +128,13 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     protected void setExtraData(Bundle data) {
         status = data.getString("status", "Canceled");
         info = data.getString("info", "");
-        curentNode = (CRListBean.DataBean.ResultBean.ProducersBean) data.getSerializable("curentNode");
+        curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
         if (curentNode != null) {
             tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
             tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(curentNode.getVoterate()) * 100 + "", 5) + "%");
         }
 
-        ownerPublicKey = data.getString("ownerPublicKey");
-        KLog.a(status);
-        KLog.a(info);
+        did = data.getString("did");
         //这里只会有 "Registered", "Canceled"分别代表, 已注册过, 已注销(不知道可不可提取)
         if (status.equals("Canceled")) {
             //已经注销了
@@ -148,10 +146,10 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
             presenter = new CRManagePresenter();
             if (height >= 2160) {
                 //获取赎回金额
-                presenter.getCRDepositcoin(ownerPublicKey, this);
+                presenter.getCRDepositcoin(did, this);
             }
         } else {
-            //未注销展示选举信息
+            //Registered 未注销展示选举信息
             onJustRegistered(info);
         }
         super.setExtraData(data);
@@ -216,16 +214,20 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         String url = bean.getURL();
-        new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getCRUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
                 //获取icon
-                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null || t.getOrg().getBranding().getLogo_256() == null) {
-                    return;
+                String imgUrl = "";
+                try {
+                    imgUrl = t.getOrg().getBranding().getLogo_256();
+                } catch (Exception e) {
                 }
-                String imgUrl = t.getOrg().getBranding().getLogo_256();
-                GlideApp.with(CRManageFragment.this).load(imgUrl)
-                        .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                if (!TextUtils.isEmpty(imgUrl)) {
+
+                    GlideApp.with(CRManageFragment.this).load(imgUrl)
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                }
                 //获取节点简介
                 NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
                 if (infoBean != null) {
@@ -240,7 +242,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
             }
         });
         tvUrl.setText(url);
-        tvPublickey.setText(bean.getCROwnerPublicKey());
+        tvDid.setText(bean.getCROwnerDID());
 
     }
 
@@ -253,7 +255,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
             showToastMessage(getString(R.string.pwdnoempty));
             return;
         }
-        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
+        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, did, pwd, this);
     }
 
 

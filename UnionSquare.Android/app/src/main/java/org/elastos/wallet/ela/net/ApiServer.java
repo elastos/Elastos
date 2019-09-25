@@ -37,9 +37,9 @@ public interface ApiServer {
     Observable<ServerListEntity> getServerList();//不同baseurl用@Url
 
     @FormUrlEncoded
-    @POST("api/dposnoderpc/check/listproducer")
+    @POST("api/dposnoderpc/check/listcrcandidates")
     @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")
-    Observable<CRListBean> getCRlist(@FieldMap Map<String, String> map);
+    Observable<CRListBean> getCRlist(@FieldMap Map<String, Object> map);
     @FormUrlEncoded
     @POST("api/dposnoderpc/check/getdepositcoin")
     @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")

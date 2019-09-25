@@ -27,8 +27,8 @@ public class CRListAdapter1 extends CRListAdapterFather {
     private final GlideRequest<Bitmap> glideRequest;
 
 
-    public CRListAdapter1(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
-        super(R.layout.item_super_node_list1, context, data, is);
+    public CRListAdapter1(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is,String totalvotes) {
+        super(R.layout.item_super_node_list1, context, data, is,totalvotes);
 
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle)
                 .placeholder(R.mipmap.found_vote_initial_circle).circleCrop();
@@ -36,18 +36,10 @@ public class CRListAdapter1 extends CRListAdapterFather {
 
 
     @Override
-    protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.ProducersBean bean) {
+    protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
         super.convert(helper, bean);
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
-        if (is && 0 == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.blue1));
-        }
         helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
-
-        helper.setText(R.id.tv_name, bean.getNickname());
-        helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
-        helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
-        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial_circle);
         String baseUrl = bean.getUrl();
