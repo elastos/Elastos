@@ -17,7 +17,7 @@ import (
 func NewArbitratorsMock(arbitersByte [][]byte, changeCount, majorityCount int) *ArbitratorsMock {
 	return &ArbitratorsMock{
 		CurrentArbitrators: arbitersByte,
-		Snapshot: []*KeyFrame{
+		Snapshot: []*CheckPoint{
 			{
 				CurrentArbitrators: arbitersByte,
 			},
@@ -60,7 +60,7 @@ type ArbitratorsMock struct {
 	FinalRoundChange            common.Fixed64
 	InactiveMode                bool
 	ActiveProducer              [][]byte
-	Snapshot                    []*KeyFrame
+	Snapshot                    []*CheckPoint
 	CurrentReward               RewardData
 	NextReward                  RewardData
 }
@@ -81,7 +81,7 @@ func (a *ArbitratorsMock) GetNextRewardData() RewardData {
 	return a.NextReward
 }
 
-func (a *ArbitratorsMock) GetSnapshot(height uint32) []*KeyFrame {
+func (a *ArbitratorsMock) GetSnapshot(height uint32) []*CheckPoint {
 	return a.Snapshot
 }
 
