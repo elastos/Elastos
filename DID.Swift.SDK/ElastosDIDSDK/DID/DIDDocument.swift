@@ -408,4 +408,10 @@ public class DIDDocument: NSObject {
         if publickeys.isEmpty { return false }
         return (self.publicKeys.removeValue(forKey: id) != nil)
     }
+    
+    public func toExternalForm(_ compact: Bool) -> String {
+        // todo
+        return ""
+    }
+
 }

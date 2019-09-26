@@ -7,6 +7,7 @@ xcuserdata
 
 /Podfile.lock
 /Products
+/Externals/
 /ElastosDIDSDK.xcworkspace
 
 /node_modules

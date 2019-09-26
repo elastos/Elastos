@@ -6,28 +6,31 @@ public class HDKey: NSObject {
     private var seed: Data!
     private var rootPrivateKey: HDPrivateKey!
     private var childPrivatedKey: HDPrivateKey!
-
+    
     init(_ seed: Data) {
         self.seed = seed
         rootPrivateKey = HDPrivateKey.init(seed: seed, network: .testnet)
     }
-
+    
     public static func fromMnemonic(_ mnemonic: String, _ passphrase: String) throws -> HDKey {
         // TODO: mnemonic conver to array string
         let seed = Mnemonic.seed(mnemonic: [], passphrase: passphrase)
         return HDKey(seed)
     }
-
+    
     public func getSeed() -> Data {
         return seed
     }
-
+    
     public class func fromSeed(_ seed: Data) -> HDKey {
         return HDKey(seed)
     }
-
-    public func derive(_ index: Int) throws -> HDPrivateKey {
-       childPrivatedKey = try rootPrivateKey.derived(at: UInt32(index))
-        return childPrivatedKey
+    
+    // DerivedKey 初步推断是bip44 对于BitcoinKit的HDKeychain
+    public func derive(_ index: UInt32) throws -> DerivedKey {
+        
+        let wallet: HDWallet = HDWallet(seed: seed, network: .mainnet)
+        let extendedPrivateKey = try wallet.extendedPrivateKey(index: index)
+        return DerivedKey(extendedPrivateKey, wallet)
     }
 }
