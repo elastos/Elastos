@@ -321,10 +321,10 @@ func (s *State) updateProducerInfo(origin *payload.ProducerInfo, update *payload
 	producer.info = *update
 }
 
-func (s *State) ExistProducerByDID(programHash common.Uint168) bool {
+func (s *State) ExistProducerByDepositHash(programHash common.Uint168) bool {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	_, ok := s.ProducerDIDMap[programHash]
+	_, ok := s.ProducerDepositMap[programHash]
 	return ok
 }
 
@@ -842,12 +842,12 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		s.Nicknames[nickname] = struct{}{}
 		s.NodeOwnerKeys[nodeKey] = ownerKey
 		s.PendingProducers[ownerKey] = &producer
-		s.ProducerDIDMap[*programHash] = struct{}{}
+		s.ProducerDepositMap[*programHash] = struct{}{}
 	}, func() {
 		delete(s.Nicknames, nickname)
 		delete(s.NodeOwnerKeys, nodeKey)
 		delete(s.PendingProducers, ownerKey)
-		delete(s.ProducerDIDMap, *programHash)
+		delete(s.ProducerDepositMap, *programHash)
 	})
 }
 
