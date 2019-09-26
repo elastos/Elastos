@@ -65,37 +65,13 @@ var ListCmd = &cobra.Command{
 						if port.IP == "0.0.0.0" {
 							portString := fmt.Sprintf("%v", port.PublicPort)
 							if strings.Contains(containerName, "mainchain") {
-								for _, dockerPorts := range NodeDockerPortMainChain {
-									if portString == dockerPorts.HostRESTPort {
-										ports[portString] = "REST"
-									} else if portString == dockerPorts.HostRPCPort {
-										ports[portString] = "RPC"
-									}
-								}
+								ports[portString] = getPortMapping(portString, NodeDockerPortMainChain)
 							} else if strings.Contains(containerName, "did") {
-								for _, dockerPorts := range NodeDockerPortSidechainDID {
-									if portString == dockerPorts.HostRESTPort {
-										ports[portString] = "REST"
-									} else if portString == dockerPorts.HostRPCPort {
-										ports[portString] = "RPC"
-									}
-								}
+								ports[portString] = getPortMapping(portString, NodeDockerPortSidechainDID)
 							} else if strings.Contains(containerName, "token") {
-								for _, dockerPorts := range NodeDockerPortSidechainToken {
-									if portString == dockerPorts.HostRESTPort {
-										ports[portString] = "REST"
-									} else if portString == dockerPorts.HostRPCPort {
-										ports[portString] = "RPC"
-									}
-								}
+								ports[portString] = getPortMapping(portString, NodeDockerPortSidechainToken)
 							} else if strings.Contains(containerName, "eth") {
-								for _, dockerPorts := range NodeDockerPortSidechainEth {
-									if portString == dockerPorts.HostRESTPort {
-										ports[portString] = "REST"
-									} else if portString == dockerPorts.HostRPCPort {
-										ports[portString] = "RPC"
-									}
-								}
+								ports[portString] = getPortMapping(portString, NodeDockerPortSidechainEth)
 							}
 						}
 					}
@@ -108,6 +84,18 @@ var ListCmd = &cobra.Command{
 
 		}
 	},
+}
+
+func getPortMapping(port string, nodeDockerPorts map[string]DockerPort) string {
+	var portType string
+	for _, dockerPorts := range nodeDockerPorts {
+		if port == dockerPorts.HostRESTPort {
+			portType = "REST"
+		} else if port == dockerPorts.HostRPCPort {
+			portType = "RPC"
+		}
+	}
+	return portType
 }
 
 func init() {

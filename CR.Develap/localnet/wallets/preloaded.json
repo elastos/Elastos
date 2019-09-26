@@ -1,0 +1,33 @@
+{
+    "main": {
+        "name": "Main chain Preloaded Wallet",
+        "description": "Pre-loaded transferred ELA: 33 million ELA",
+        "privateKey": "f384428447fd58fc0525494bd0f6f3df23fcb49098f4b5a50a9e97a71c6d2880",
+        "publicKey": "0359762e6e27e6119cf041ea0cb5046869c78f3a72549f4061d63dc48d91117957",
+        "address": "EVpUKLScc3BmTyJ9xnd6aGSv3o8eAtFKNw",
+        "passwordforkeystore": "coreservices-privnet"
+    },
+    "did": {
+        "name": "DID Sidechain Preloaded Wallet",
+        "description": "Pre-loaded transferred ELA: 1 million DID ELA",
+        "privateKey": "f384428447fd58fc0525494bd0f6f3df23fcb49098f4b5a50a9e97a71c6d2880",
+        "publicKey": "0359762e6e27e6119cf041ea0cb5046869c78f3a72549f4061d63dc48d91117957",
+        "address": "EVpUKLScc3BmTyJ9xnd6aGSv3o8eAtFKNw",
+        "passwordforkeystore": "coreservices-privnet"
+    },
+    "token": {
+        "name": "Token Sidechain Preloaded Wallet",
+        "description": "Pre-loaded transferred ELA: 1 million TOKEN ELA",
+        "privateKey": "f384428447fd58fc0525494bd0f6f3df23fcb49098f4b5a50a9e97a71c6d2880",
+        "publicKey": "0359762e6e27e6119cf041ea0cb5046869c78f3a72549f4061d63dc48d91117957",
+        "address": "EVpUKLScc3BmTyJ9xnd6aGSv3o8eAtFKNw",
+        "passwordforkeystore": "coreservices-privnet"
+    },
+    "eth": {
+        "name": "Eth Sidechain Pre-Loaded Wallet",
+        "description": "Pre-loaded transferred ELA: 1 million ETH ELA",
+        "keystore_file": "wallets/preloaded/keystore-preloaded-eth.dat",
+        "address": "0xd6ed1ab4df71cb402392ab1d52f9d3caa4e9df1c",
+        "passwordforkeystore": "coreservices-privnet"
+    }
+}

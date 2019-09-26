@@ -86,5 +86,5 @@ var KillCmd = &cobra.Command{
 }
 
 func init() {
-	KillCmd.Flags().StringVarP(&Nodes, "nodes", "n", "", "Nodes to use [mainchain,did,token]")
+	KillCmd.Flags().StringVarP(&Nodes, "nodes", "n", "", "Nodes to use [mainchain,did,token,eth]")
 }

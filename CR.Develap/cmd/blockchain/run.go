@@ -49,7 +49,7 @@ var RunCmd = &cobra.Command{
 
 		if !strings.EqualFold(Env, "mainnet") &&
 			!strings.EqualFold(Env, "testnet") &&
-			!strings.EqualFold(Env, "privatenet") {
+			!strings.EqualFold(Env, "localnet") {
 			log.Fatalf("%s not recognized as a valid net type\n", Env)
 		}
 
@@ -61,34 +61,31 @@ var RunCmd = &cobra.Command{
 
 		nodes := strings.Split(strings.Replace(Nodes, " ", "", -1), ",")
 		for _, node := range nodes {
-			switch node {
-			case "mainchain":
-				resp := runDockerContainer(ctx, cli, node)
-				fmt.Printf("Container ID: %v\n", resp.ID)
-			case "did":
-				resp := runDockerContainer(ctx, cli, node)
-				fmt.Printf("Container ID: %v\n", resp.ID)
-			case "token":
-				resp := runDockerContainer(ctx, cli, node)
-				fmt.Printf("Container ID: %v\n", resp.ID)
-			case "eth":
-				if strings.EqualFold(Env, "mainnet") {
-					log.Fatalf("%s not recognized as a valid net type for %s\n", Env, node)
+			if node == "eth" && strings.EqualFold(Env, "mainnet") {
+				log.Fatalf("%s not recognized as a valid net type for %s\n", Env, node)
+			}
+			if node == "mainchain" || node == "did" || node == "token" || node == "eth" {
+				if resp, err := runDockerContainer(ctx, cli, node); err != nil {
+					log.Print(err)
+				} else {
+					fmt.Printf("Container ID: %v\n", resp.ID)
 				}
-				resp := runDockerContainer(ctx, cli, node)
-				fmt.Printf("Container ID: %v\n", resp.ID)
-			default:
+			} else {
 				log.Fatalf("%s not recognized as a valid node type\n", node)
 			}
 		}
 	},
 }
 
-func runDockerContainer(ctx context.Context, cli *client.Client, node string) container.ContainerCreateCreatedBody {
+func runDockerContainer(ctx context.Context, cli *client.Client, node string) (container.ContainerCreateCreatedBody, error) {
+	var (
+		resp container.ContainerCreateCreatedBody
+		err  error
+	)
 	imageName := NodeDockerImageMap[node]
 	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
-		log.Fatal(err)
+		return resp, err
 	}
 	io.Copy(os.Stdout, out)
 
@@ -115,7 +112,7 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) co
 
 	currentDir, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		return resp, err
 	}
 	volumeData := filepath.FromSlash(fmt.Sprintf("%s/data/%s/%s", currentDir, Env, node))
 	os.MkdirAll(volumeData, os.ModePerm)
@@ -183,7 +180,7 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) co
 
 	containerName := fmt.Sprintf("develap-%s-%s-node", Env, node)
 
-	resp, err := cli.ContainerCreate(
+	resp, err = cli.ContainerCreate(
 		ctx,
 		containerConfig,
 		hostConfig,
@@ -191,12 +188,12 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) co
 		containerName,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return resp, err
 	}
 	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		log.Fatal(err)
+		return resp, err
 	}
-	return resp
+	return resp, nil
 }
 
 func init() {

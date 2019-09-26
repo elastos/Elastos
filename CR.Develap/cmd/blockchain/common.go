@@ -33,9 +33,9 @@ var (
 	Nodes              string
 	NodeDockerImageMap = map[string]string{
 		"mainchain": "cyberrepublic/elastos-mainchain-node:v0.3.7",
-		"did":       "cyberrepublic/elastos-sidechain-did-node:v0.1.2",
+		"did":       "cyberrepublic/elastos-sidechain-did-node:v0.1.3",
 		"token":     "cyberrepublic/elastos-sidechain-token-node:v0.1.2",
-		"eth":       "cyberrepublic/elastos-sidechain-eth-node:latest",
+		"eth":       "cyberrepublic/elastos-sidechain-eth-node:dev",
 	}
 	NodeDockerDataPathMap = map[string]string{
 		"mainchain": "/ela/elastos",
@@ -49,19 +49,23 @@ var (
 		"token":     "/token/config.json",
 	}
 	NodeDockerPortMainChain = map[string]DockerPort{
-		"mainnet": DockerPort{"20334", "20336", "20334", "20336"},
-		"testnet": DockerPort{"21334", "21336", "21334", "21336"},
+		"mainnet":  DockerPort{"20334", "20336", "20334", "20336"},
+		"testnet":  DockerPort{"21334", "21336", "21334", "21336"},
+		"localnet": DockerPort{"20334", "20336", "22334", "22336"},
 	}
 	NodeDockerPortSidechainDID = map[string]DockerPort{
-		"mainnet": DockerPort{"20604", "20606", "20604", "20606"},
-		"testnet": DockerPort{"21604", "21606", "21604", "21606"},
+		"mainnet":  DockerPort{"20604", "20606", "20604", "20606"},
+		"testnet":  DockerPort{"21604", "21606", "21604", "21606"},
+		"localnet": DockerPort{"20604", "20606", "22604", "22606"},
 	}
 	NodeDockerPortSidechainToken = map[string]DockerPort{
-		"mainnet": DockerPort{"20614", "20616", "20614", "20616"},
-		"testnet": DockerPort{"21614", "21616", "21614", "21616"},
+		"mainnet":  DockerPort{"20614", "20616", "20614", "20616"},
+		"testnet":  DockerPort{"21614", "21616", "21614", "21616"},
+		"localnet": DockerPort{"20614", "20616", "22614", "22616"},
 	}
 	NodeDockerPortSidechainEth = map[string]DockerPort{
-		"mainnet": DockerPort{ContainerRPCPort: "20636", HostRPCPort: "20636"},
-		"testnet": DockerPort{ContainerRPCPort: "20636", HostRPCPort: "21636"},
+		"mainnet":  DockerPort{ContainerRPCPort: "20636", HostRPCPort: "20636"},
+		"testnet":  DockerPort{ContainerRPCPort: "20636", HostRPCPort: "21636"},
+		"localnet": DockerPort{ContainerRPCPort: "20636", HostRPCPort: "22636"},
 	}
 )

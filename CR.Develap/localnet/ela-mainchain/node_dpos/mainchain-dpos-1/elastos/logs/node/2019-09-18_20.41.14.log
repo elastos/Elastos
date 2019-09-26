@@ -1,0 +1,42 @@
+2019/09/18 20:41:14.470985 [1;35m[INF][m GID 1, Node version: 
+2019/09/18 20:41:14.471194 [1;35m[INF][m GID 1, go version go1.12.9 linux/amd64
+2019/09/18 20:41:14.931447 [1;35m[INF][m GID 1, current block height -> 418
+2019/09/18 20:41:14.931524 [1;33m[WRN][m GID 67, recover form check points fail:  can't find dpos store object
+2019/09/18 20:41:14.931539 [1;35m[INF][m GID 67, [RecoverFromCheckPoints] recover start height:  100
+[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
+ 0 / 318    0.00% 319 / 318  100.31% 0s
+[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
+2019/09/18 20:41:15.001929 [1;35m[INF][m GID 1, Start the P2P networks
+2019/09/18 20:41:15.001953 [1;35m[INF][m GID 1, Start services
+2019/09/18 20:41:15.016703 [1;35m[INF][m GID 16, New valid peer 172.21.0.2:20338 (outbound)
+2019/09/18 20:41:15.020082 [1;35m[INF][m GID 16, New valid peer 172.21.0.3:20338 (outbound)
+2019/09/18 20:41:15.020362 [1;35m[INF][m GID 16, New valid peer 172.21.0.5:20338 (outbound)
+2019/09/18 20:41:15.022843 [1;35m[INF][m GID 16, New valid peer 172.21.0.8:20338 (outbound)
+2019/09/18 20:41:15.877062 [1;35m[INF][m GID 16, New valid peer 172.21.0.10:45560 (inbound)
+2019/09/18 20:41:17.118741 [1;35m[INF][m GID 16, New valid peer 172.21.0.8:45796 (inbound)
+2019/09/18 20:41:18.028164 [1;35m[INF][m GID 16, New valid peer 172.21.0.7:33888 (inbound)
+2019/09/18 20:41:20.002086 [1;35m[INF][m GID 1, Start consensus
+2019/09/18 20:41:20.002262 [1;35m[INF][m GID 1, Start POW Services
+2019/09/18 20:41:20.002439 [1;35m[INF][m GID 96, difficulty:  520095999
+2019/09/18 20:41:22.528464 [1;35m[INF][m GID 16, [ConfirmBlock] block hash: 3b822d0bf0a9f1198a6474342136fba54bd0ca5a9ed5e7cb392a7d3a588b9e9a
+2019/09/18 20:41:22.621794 [1;35m[INF][m GID 16, [ConfirmBlock] block hash: 3b822d0bf0a9f1198a6474342136fba54bd0ca5a9ed5e7cb392a7d3a588b9e9a
+2019/09/18 20:41:22.621927 [1;35m[INF][m GID 16, [ConfirmBlock] block height: 419
+2019/09/18 20:41:23.448686 [1;35m[INF][m GID 16, New valid peer 172.21.0.4:42702 (inbound)
+2019/09/18 20:41:23.578700 [1;35m[INF][m GID 16, New valid peer 172.21.0.2:50058 (inbound)
+2019/09/18 20:41:23.826143 [1;35m[INF][m GID 16, New valid peer 172.21.0.5:58184 (inbound)
+2019/09/18 20:41:24.641781 [1;35m[INF][m GID 16, New valid peer 172.21.0.3:41276 (inbound)
+2019/09/18 20:41:49.037530 [1;35m[INF][m GID 16, [ConfirmBlock] block hash: 58b069bf77890d601d409d914dca7faab88190ddbc5e8304956b4007a424e99c
+2019/09/18 20:41:49.164788 [1;35m[INF][m GID 16, [ConfirmBlock] block hash: 58b069bf77890d601d409d914dca7faab88190ddbc5e8304956b4007a424e99c
+2019/09/18 20:41:49.164869 [1;35m[INF][m GID 16, [ConfirmBlock] block height: 420
+2019/09/18 20:41:50.008419 [1;35m[INF][m GID 96, five second countdown ends. Re-generate block.
+2019/09/18 20:41:50.008633 [1;35m[INF][m GID 96, difficulty:  520095999
+2019/09/18 20:42:04.716881 [1;35m[INF][m GID 16, [ConfirmBlock] block hash: 32ec8a3b371252513951763fa8a100a62e80325d543d6ed21f50ec4f3efccb84
+2019/09/18 20:42:04.766527 [1;35m[INF][m GID 16, [ConfirmBlock] block hash: 32ec8a3b371252513951763fa8a100a62e80325d543d6ed21f50ec4f3efccb84
+2019/09/18 20:42:04.766622 [1;35m[INF][m GID 16, [ConfirmBlock] block height: 421
+2019/09/18 20:42:12.683503 [1;35m[INF][m GID 96, <================Solved Block==============>
+2019/09/18 20:42:12.683610 [1;35m[INF][m GID 96, difficulty:  520095999
+2019/09/18 20:42:14.635888 [1;35m[INF][m GID 16, Lost peer 172.21.0.7:33888 (inbound)
+2019/09/18 20:42:14.882793 [1;35m[INF][m GID 16, Lost peer 172.21.0.4:42702 (inbound)
+2019-09-18 20:42:15.013 [INF] STAT: -> 421 [420 172.21.0.2:50058 (inbound), 420 172.21.0.5:58184 (inbound), 420 172.21.0.3:41276 (inbound), 419 172.21.0.10:45560 (inbound), 419 172.21.0.8:45796 (inbound), 419 172.21.0.2:20338 (outbound), 419 172.21.0.3:20338 (outbound), 419 172.21.0.5:20338 (outbound), 419 172.21.0.8:20338 (outbound)]
+2019/09/18 20:42:15.689882 [1;35m[INF][m GID 16, Lost peer 172.21.0.8:20338 (outbound)
+2019/09/18 20:42:15.689968 [1;35m[INF][m GID 16, Lost peer 172.21.0.8:45796 (inbound)

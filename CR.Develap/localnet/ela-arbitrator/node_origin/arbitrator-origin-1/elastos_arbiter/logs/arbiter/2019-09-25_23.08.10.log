@@ -1,0 +1,38 @@
+2019/09/25 23:08:10.080014 [1;35m[INF][m GID 1, Init wallet.
+2019/09/25 23:08:10.113425 [1;35m[INF][m GID 1, Arbiter version:  
+2019/09/25 23:08:10.113495 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/09/25 23:08:10.145066 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/09/25 23:08:10.145582 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/09/25 23:08:10.146089 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/09/25 23:08:10.149629 [1;35m[INF][m GID 44, currentHeight: 206  chainHeight: 357
+2019/09/25 23:08:10.150769 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/09/25 23:08:10.159635 [1;35m[INF][m GID 45, currentHeight: 0  chainHeight: 102
+2019/09/25 23:08:10.207859 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG
+2019/09/25 23:08:10.207951 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/09/25 23:08:10.208031 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J
+2019/09/25 23:08:10.208082 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/09/25 23:08:10.208131 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XM1QpDod5HpqoacsgqT4Zeh7WiWPBuvwwE
+2019/09/25 23:08:10.208205 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/09/25 23:08:10.208224 [1;35m[INF][m GID 1, 7. Start servers.
+2019/09/25 23:08:10.208242 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/09/25 23:08:10.208256 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/09/25 23:08:10.209398 [1;33m[WRN][m GID 126, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:08:10.209472 [1;35m[INF][m GID 126, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:08:10.987659 [1;35m[INF][m GID 44,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  357
+2019/09/25 23:08:11.906311 [1;35m[INF][m GID 45,  [SyncSideChain] Side chain [ XM1QpDod5HpqoacsgqT4Zeh7WiWPBuvwwE ] height:  102
+2019/09/25 23:08:22.059348 [1;35m[INF][m GID 44, currentHeight: 357  chainHeight: 358
+2019/09/25 23:08:22.061709 [1;35m[INF][m GID 45, currentHeight: 102  chainHeight: 103
+2019/09/25 23:08:22.079552 [1;35m[INF][m GID 44,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  358
+2019/09/25 23:08:22.108283 [1;35m[INF][m GID 45,  [SyncSideChain] Side chain [ XM1QpDod5HpqoacsgqT4Zeh7WiWPBuvwwE ] height:  103
+2019/09/25 23:08:35.316649 [1;35m[INF][m GID 44, currentHeight: 358  chainHeight: 359
+2019/09/25 23:08:35.348375 [1;35m[INF][m GID 44,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  359
+2019/09/25 23:08:37.228161 [1;35m[INF][m GID 45, currentHeight: 103  chainHeight: 104
+2019/09/25 23:08:37.247595 [1;35m[INF][m GID 45,  [SyncSideChain] Side chain [ XM1QpDod5HpqoacsgqT4Zeh7WiWPBuvwwE ] height:  104
+2019/09/25 23:08:44.492114 [1;35m[INF][m GID 44, currentHeight: 359  chainHeight: 360
+2019/09/25 23:08:44.514664 [1;35m[INF][m GID 44,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  360
+2019/09/25 23:08:48.546796 [1;35m[INF][m GID 44, currentHeight: 360  chainHeight: 361
+2019/09/25 23:08:48.551479 [1;35m[INF][m GID 44,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  361
+2019/09/25 23:08:52.475290 [1;35m[INF][m GID 45, currentHeight: 104  chainHeight: 105
+2019/09/25 23:08:52.490436 [1;35m[INF][m GID 45,  [SyncSideChain] Side chain [ XM1QpDod5HpqoacsgqT4Zeh7WiWPBuvwwE ] height:  105
+2019/09/25 23:09:00.780815 [1;35m[INF][m GID 44, currentHeight: 361  chainHeight: 362
+2019/09/25 23:09:00.785024 [1;35m[INF][m GID 44,  [SyncSideChain] Side chain [ XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4 ] height:  362

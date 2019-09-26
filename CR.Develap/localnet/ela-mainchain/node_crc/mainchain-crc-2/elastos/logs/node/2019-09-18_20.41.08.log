@@ -1,0 +1,44 @@
+2019/09/18 20:41:08.768131 [1;35m[INF][m GID 1, Node version: 
+2019/09/18 20:41:08.768250 [1;35m[INF][m GID 1, go version go1.12.9 linux/amd64
+2019/09/18 20:41:08.915794 [1;35m[INF][m GID 1, current block height -> 418
+2019/09/18 20:41:08.923021 [1;33m[WRN][m GID 86, recover form check points fail:  can't find dpos store object
+2019/09/18 20:41:08.923111 [1;35m[INF][m GID 86, [RecoverFromCheckPoints] recover start height:  100
+[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
+ 0 / 318    0.00% 319 / 318  100.31% 0s
+[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
+2019/09/18 20:41:09.001388 [1;35m[INF][m GID 1, Start the P2P networks
+2019/09/18 20:41:09.017396 [1;35m[INF][m GID 1, Start services
+2019/09/18 20:41:09.027901 [1;35m[INF][m GID 103, New valid peer 172.21.0.5:20338 (outbound)
+2019/09/18 20:41:09.027973 [1;35m[INF][m GID 103, New valid peer 172.21.0.2:20338 (outbound)
+2019/09/18 20:41:09.028078 [1;35m[INF][m GID 103, New valid peer 172.21.0.3:20338 (outbound)
+2019/09/18 20:41:12.446403 [1;35m[INF][m GID 103, New valid peer 172.21.0.4:60698 (inbound)
+2019/09/18 20:41:13.566599 [1;35m[INF][m GID 103, New valid peer 172.21.0.2:45268 (inbound)
+2019/09/18 20:41:13.577549 [1;35m[INF][m GID 103, New valid peer 172.21.0.3:45636 (inbound)
+2019/09/18 20:41:13.794859 [1;35m[INF][m GID 103, New valid peer 172.21.0.5:58784 (inbound)
+2019/09/18 20:41:13.873293 [1;35m[INF][m GID 103, New valid peer 172.21.0.10:39056 (inbound)
+2019/09/18 20:41:14.017603 [1;35m[INF][m GID 1, Start consensus
+2019/09/18 20:41:14.017681 [1;35m[INF][m GID 1, Start POW Services
+2019/09/18 20:41:14.017754 [1;35m[INF][m GID 307, difficulty:  520095999
+2019/09/18 20:41:14.684867 [1;35m[INF][m GID 103, New valid peer 172.21.0.18:48950 (inbound)
+2019/09/18 20:41:15.020734 [1;35m[INF][m GID 103, New valid peer 172.21.0.6:38188 (inbound)
+2019/09/18 20:41:17.119389 [1;35m[INF][m GID 103, New valid peer 172.21.0.6:20338 (outbound)
+2019/09/18 20:41:22.522484 [1;35m[INF][m GID 103, [ConfirmBlock] block hash: 3b822d0bf0a9f1198a6474342136fba54bd0ca5a9ed5e7cb392a7d3a588b9e9a
+2019/09/18 20:41:22.588322 [1;35m[INF][m GID 385, [ConfirmBlock] block hash: 3b822d0bf0a9f1198a6474342136fba54bd0ca5a9ed5e7cb392a7d3a588b9e9a
+2019/09/18 20:41:22.588404 [1;35m[INF][m GID 385, [ConfirmBlock] block height: 419
+2019/09/18 20:41:44.021850 [1;35m[INF][m GID 307, five second countdown ends. Re-generate block.
+2019/09/18 20:41:44.021972 [1;35m[INF][m GID 307, difficulty:  520095999
+2019/09/18 20:41:49.097563 [1;35m[INF][m GID 103, [ConfirmBlock] block hash: 58b069bf77890d601d409d914dca7faab88190ddbc5e8304956b4007a424e99c
+2019/09/18 20:41:49.143104 [1;35m[INF][m GID 503, [ConfirmBlock] block hash: 58b069bf77890d601d409d914dca7faab88190ddbc5e8304956b4007a424e99c
+2019/09/18 20:41:49.143165 [1;35m[INF][m GID 503, [ConfirmBlock] block height: 420
+2019/09/18 20:41:54.038513 [1;35m[INF][m GID 103, Lost peer 172.21.0.5:20338 (outbound)
+2019/09/18 20:41:58.806670 [1;35m[INF][m GID 103, Lost peer 172.21.0.5:58784 (inbound)
+2019/09/18 20:41:59.039729 [1;35m[INF][m GID 103, New valid peer 172.21.0.5:20338 (outbound)
+2019/09/18 20:42:03.846741 [1;35m[INF][m GID 103, New valid peer 172.21.0.5:59334 (inbound)
+2019/09/18 20:42:04.686338 [1;35m[INF][m GID 103, [ConfirmBlock] block hash: 32ec8a3b371252513951763fa8a100a62e80325d543d6ed21f50ec4f3efccb84
+2019/09/18 20:42:04.768987 [1;35m[INF][m GID 103, [ConfirmBlock] block hash: 32ec8a3b371252513951763fa8a100a62e80325d543d6ed21f50ec4f3efccb84
+2019/09/18 20:42:04.769079 [1;35m[INF][m GID 103, [ConfirmBlock] block height: 421
+2019/09/18 20:42:05.685836 [1;35m[INF][m GID 307, <================Solved Block==============>
+2019/09/18 20:42:05.686059 [1;35m[INF][m GID 307, difficulty:  520095999
+2019-09-18 20:42:09.017 [INF] STAT: -> 421 [420 172.21.0.5:59334 (inbound), 419 172.21.0.10:39056 (inbound), 419 172.21.0.18:48950 (inbound), 419 172.21.0.6:38188 (inbound), 419 172.21.0.4:60698 (inbound), 419 172.21.0.2:45268 (inbound), 419 172.21.0.3:45636 (inbound), 420 172.21.0.5:20338 (outbound), 419 172.21.0.2:20338 (outbound), 419 172.21.0.3:20338 (outbound), 419 172.21.0.6:20338 (outbound)]
+2019/09/18 20:42:14.410138 [1;35m[INF][m GID 103, Lost peer 172.21.0.18:48950 (inbound)
+2019/09/18 20:42:14.894105 [1;35m[INF][m GID 103, Lost peer 172.21.0.4:60698 (inbound)

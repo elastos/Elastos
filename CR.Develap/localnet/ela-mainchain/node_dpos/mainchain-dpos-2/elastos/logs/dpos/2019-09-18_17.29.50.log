@@ -1,0 +1,10 @@
+2019/09/18 17:29:50.372094 [1;35m[INF][m GID 1, [UpdatePeers] peers: 0  height:  46
+2019/09/18 17:29:50.372176 [1;35m[INF][m GID 1, [UpdatePeers] i am not in peers
+2019/09/18 17:29:50.372201 [1;35m[INF][m GID 66, Loaded 0 addresses from file 'elastos/data/dpos/peers.json'
+2019/09/18 17:29:50.372275 [1;35m[INF][m GID 75, Server listening on [::]:20339
+2019/09/18 17:29:50.372335 [1;35m[INF][m GID 74, Server listening on 0.0.0.0:20339
+2019/09/18 17:30:20.373125 [1;35m[INF][m GID 67, [OnBadNetwork] found network bad
+2019/09/18 17:30:50.385738 [1;35m[INF][m GID 67, [OnBadNetwork] found network bad
+2019/09/18 17:31:20.413465 [1;35m[INF][m GID 67, [OnBadNetwork] found network bad
+2019/09/18 17:31:50.416289 [1;35m[INF][m GID 67, [OnBadNetwork] found network bad
+2019/09/18 17:32:20.415362 [1;35m[INF][m GID 67, [OnBadNetwork] found network bad
