@@ -7,7 +7,7 @@ package state
 
 import (
 	"bytes"
-	"crypto/rand"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -30,85 +30,98 @@ func TestArbitrators_GetSnapshot(t *testing.T) {
 	firstSnapshotPk := randomFakePK()
 	secondSnapshotHeight := uint32(20)
 	secondSnapshotPk := randomFakePK()
-	arbitrators.currentArbitrators = [][]byte{firstSnapshotPk}
+	ar, _ := NewOriginArbiter(Origin, firstSnapshotPk)
+	arbitrators.currentArbitrators = []ArbiterMember{ar}
 
 	// take the first snapshot
 	arbitrators.snapshot(firstSnapshotHeight)
-	arbitrators.currentArbitrators = [][]byte{secondSnapshotPk}
+	ar, _ = NewOriginArbiter(Origin, secondSnapshotPk)
+	arbitrators.currentArbitrators = []ArbiterMember{ar}
 
 	// height1
 	frames := arbitrators.GetSnapshot(firstSnapshotHeight)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(firstSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(firstSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// < height1
 	frames = arbitrators.GetSnapshot(firstSnapshotHeight - 1)
-	assert.Equal(t, []*KeyFrame(nil), frames)
+	assert.Equal(t, []*CheckPoint{}, frames)
 
 	// > height1
 	frames = arbitrators.GetSnapshot(firstSnapshotHeight + 1)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(firstSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(firstSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// height2
 	frames = arbitrators.GetSnapshot(secondSnapshotHeight)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(firstSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(firstSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// bestHeight
 	frames = arbitrators.GetSnapshot(bestHeight)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(firstSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(firstSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// bestHeight+1
 	frames = arbitrators.GetSnapshot(bestHeight + 1)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(secondSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(secondSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// > bestHeight
 	frames = arbitrators.GetSnapshot(bestHeight + 1)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(secondSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(secondSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// take the second snapshot
 	arbitrators.snapshot(secondSnapshotHeight)
-	arbitrators.currentArbitrators = [][]byte{randomFakePK()}
+	ar, _ = NewOriginArbiter(Origin, randomFakePK())
+	arbitrators.currentArbitrators = []ArbiterMember{ar}
 
 	// height1
 	frames = arbitrators.GetSnapshot(firstSnapshotHeight)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(firstSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(firstSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// < height1
 	frames = arbitrators.GetSnapshot(firstSnapshotHeight - 1)
-	assert.Equal(t, []*KeyFrame(nil), frames)
+	assert.Equal(t, []*CheckPoint{}, frames)
 
 	// > height1
 	frames = arbitrators.GetSnapshot(firstSnapshotHeight + 1)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(firstSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(firstSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// height2
 	frames = arbitrators.GetSnapshot(secondSnapshotHeight)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(secondSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(secondSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// > height2
 	frames = arbitrators.GetSnapshot(secondSnapshotHeight + 1)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(secondSnapshotPk, frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(secondSnapshotPk,
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// bestHeight
 	frames = arbitrators.GetSnapshot(bestHeight)
 	assert.Equal(t, 1, len(frames))
 	assert.True(t, bytes.Equal(secondSnapshotPk,
-		frames[0].CurrentArbitrators[0]))
+		frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// > bestHeight
 	frames = arbitrators.GetSnapshot(bestHeight + 1)
 	assert.Equal(t, 1, len(frames))
-	assert.True(t, bytes.Equal(arbitrators.KeyFrame.CurrentArbitrators[0],
-		frames[0].CurrentArbitrators[0]))
+	assert.True(t, bytes.Equal(arbitrators.currentArbitrators[0].
+		GetNodePublicKey(), frames[0].CurrentArbitrators[0].GetNodePublicKey()))
 
 	// take snapshot more than MaxSnapshotLength
 	loopSnapshotHeight := bestHeight
@@ -125,7 +138,7 @@ func TestArbitrators_GetSnapshot(t *testing.T) {
 }
 
 func randomFakePK() []byte {
-	pk := make([]byte, 33)
-	rand.Read(pk)
-	return pk
+	_, pub, _ := crypto.GenerateKeyPair()
+	result, _ := pub.EncodePoint(true)
+	return result
 }

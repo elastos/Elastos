@@ -66,7 +66,7 @@ func TestArbitrators_GetNormalArbitratorsDescV0(t *testing.T) {
 		0, 5, arbiters.State.GetActiveProducers())
 	assert.NoError(t, err)
 	for i := range producers {
-		assert.Equal(t, arbitrators[i], producers[i])
+		assert.Equal(t, arbitrators[i], producers[i].GetNodePublicKey())
 	}
 }
 
@@ -120,7 +120,9 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 	}
 
 	// main version
-	producers, err := arbiters.GetNormalArbitratorsDesc(arbiters.State.chainParams.PublicDPOSHeight, 10, arbiters.State.GetActiveProducers())
+	producers, err := arbiters.GetNormalArbitratorsDesc(
+		arbiters.State.chainParams.PublicDPOSHeight, 10,
+		arbiters.State.GetActiveProducers())
 	assert.Error(t, err, "arbitrators count does not match config value")
 
 	currentHeight += 1
@@ -156,7 +158,7 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 	for i := range producers {
 		found := false
 		for _, ar := range arbitratorList {
-			if bytes.Equal(ar, producers[i]) {
+			if bytes.Equal(ar, producers[i].GetNodePublicKey()) {
 				found = true
 				break
 			}
@@ -169,43 +171,43 @@ func TestArbitrators_GetNormalArbitratorsDesc(t *testing.T) {
 func TestArbitrators_GetNextOnDutyArbitratorV0(t *testing.T) {
 	currentArbitrator := arbiters.getNextOnDutyArbitratorV0(1, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[0],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(2, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[1],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(3, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[2],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(4, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[3],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(5, 0)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[4],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 1)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[0],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 2)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[1],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 3)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[2],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 4)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[3],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 
 	currentArbitrator = arbiters.getNextOnDutyArbitratorV0(0, 5)
 	assert.Equal(t, arbiters.State.chainParams.OriginArbiters[4],
-		common.BytesToHexString(currentArbitrator))
+		common.BytesToHexString(currentArbitrator.GetNodePublicKey()))
 }
 
 func TestArbitrators_GetNextOnDutyArbitrator(t *testing.T) {
