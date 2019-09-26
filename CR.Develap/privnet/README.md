@@ -1,1 +1,0 @@
-## If you would like to set up a private net locally, please visit [https://github.com/cyber-republic/elastos-privnet](https://github.com/cyber-republic/elastos-privnet)
