@@ -107,8 +107,8 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 		"02c8a87c076112a1b344633184673cfb0bb6bce1aca28c78986a7b1047d257a448",
 	}
 
-	arbitrators := make([][]byte, 0)
-	candidates := make([][]byte, 0)
+	arbitrators := make([]state.ArbiterMember, 0)
+	candidates := make([]state.ArbiterMember, 0)
 	arbitratorHashes := make([]*common.Uint168, 0)
 	candidateHashes := make([]*common.Uint168, 0)
 	ownerVotes := make(map[common.Uint168]common.Fixed64)
@@ -117,7 +117,8 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	for i, v := range arbitratorsStr {
 		vote := i + 10
 		a, _ := common.HexStringToBytes(v)
-		arbitrators = append(arbitrators, a)
+		ar, _ := state.NewOriginArbiter(state.Origin, a)
+		arbitrators = append(arbitrators, ar)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		arbitratorHashes = append(arbitratorHashes, hash)
 		ownerVotes[*hash] = common.Fixed64(vote)
@@ -127,7 +128,8 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	for i, v := range candidatesStr {
 		vote := i + 1
 		a, _ := common.HexStringToBytes(v)
-		candidates = append(candidates, a)
+		ar, _ := state.NewOriginArbiter(state.Origin, a)
+		arbitrators = append(arbitrators, ar)
 		hash, _ := contract.PublicKeyToStandardProgramHash(a)
 		candidateHashes = append(candidateHashes, hash)
 		ownerVotes[*hash] = common.Fixed64(vote)

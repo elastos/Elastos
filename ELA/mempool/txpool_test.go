@@ -57,12 +57,13 @@ func TestTxPoolInit(t *testing.T) {
 		"03e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd",
 		"0393e823c2087ed30871cbea9fa5121fa932550821e9f3b17acef0e581971efab0",
 	}
-	arbitersByte := make([][]byte, 0)
+	arbiters := make([]state.ArbiterMember, 0)
 	for _, arbiter := range arbitratorsPublicKeys {
 		arbiterByte, _ := common.HexStringToBytes(arbiter)
-		arbitersByte = append(arbitersByte, arbiterByte)
+		ar, _ := state.NewOriginArbiter(state.Origin, arbiterByte)
+		arbiters = append(arbiters, ar)
 	}
-	arbitrators := state.NewArbitratorsMock(arbitersByte, 0, 3)
+	arbitrators := state.NewArbitratorsMock(arbiters, 0, 3)
 
 	chain, err := blockchain.New(chainStore, params, state.NewState(params,
 		nil, nil), nil)

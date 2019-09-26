@@ -70,17 +70,6 @@ func checkPointsEqual(first *CheckPoint, second *CheckPoint) bool {
 		return false
 	}
 
-	if !hashesEqual(first.CurrentReward.OwnerProgramHashes,
-		second.CurrentReward.OwnerProgramHashes) ||
-		!hashesEqual(first.CurrentReward.CandidateOwnerProgramHashes,
-			second.CurrentReward.CandidateOwnerProgramHashes) ||
-		!hashesEqual(first.NextReward.OwnerProgramHashes,
-			second.NextReward.OwnerProgramHashes) ||
-		!hashesEqual(first.NextReward.CandidateOwnerProgramHashes,
-			second.NextReward.CandidateOwnerProgramHashes) {
-		return false
-	}
-
 	if !stateKeyFrameEqual(&first.StateKeyFrame, &second.StateKeyFrame) {
 		return false
 	}
@@ -93,41 +82,34 @@ func checkPointsEqual(first *CheckPoint, second *CheckPoint) bool {
 
 func generateCheckPoint(height uint32) *CheckPoint {
 	result := &CheckPoint{
-		Height:            height,
-		DutyIndex:         int(rand.Uint32()),
-		NextArbitrators:   [][]byte{},
-		NextCandidates:    [][]byte{},
-		CurrentCandidates: [][]byte{},
-		KeyFrame: KeyFrame{
-			CurrentArbitrators: [][]byte{},
-		},
-		CurrentReward: *NewRewardData(),
-		NextReward:    *NewRewardData(),
-		StateKeyFrame: *randomStateKeyFrame(),
+		Height:             height,
+		DutyIndex:          int(rand.Uint32()),
+		NextArbitrators:    []ArbiterMember{},
+		NextCandidates:     []ArbiterMember{},
+		CurrentCandidates:  []ArbiterMember{},
+		CurrentArbitrators: []ArbiterMember{},
+		CurrentReward:      *NewRewardData(),
+		NextReward:         *NewRewardData(),
+		StateKeyFrame:      *randomStateKeyFrame(),
 	}
 	result.CurrentReward.TotalVotesInRound = common.Fixed64(rand.Uint64())
 	result.NextReward.TotalVotesInRound = common.Fixed64(rand.Uint64())
 
 	for i := 0; i < 5; i++ {
-		result.CurrentArbitrators = append(result.CurrentArbitrators,
-			randomFakePK())
-		result.CurrentCandidates = append(result.CurrentCandidates, randomFakePK())
-		result.NextArbitrators = append(result.NextArbitrators, randomFakePK())
-		result.NextCandidates = append(result.NextCandidates, randomFakePK())
+		ar, _ := NewOriginArbiter(Origin, randomFakePK())
+		result.CurrentArbitrators = append(result.CurrentArbitrators, ar)
+		ar, _ = NewOriginArbiter(Origin, randomFakePK())
+		result.CurrentCandidates = append(result.CurrentCandidates, ar)
+		ar, _ = NewOriginArbiter(Origin, randomFakePK())
+		result.NextArbitrators = append(result.NextArbitrators, ar)
+		ar, _ = NewOriginArbiter(Origin, randomFakePK())
+		result.NextCandidates = append(result.NextCandidates, ar)
 
 		result.CurrentReward.OwnerVotesInRound[*randomProgramHash()] =
 			common.Fixed64(rand.Uint64())
-		result.CurrentReward.OwnerProgramHashes = append(
-			result.CurrentReward.OwnerProgramHashes, randomProgramHash())
-		result.CurrentReward.CandidateOwnerProgramHashes = append(
-			result.CurrentReward.CandidateOwnerProgramHashes, randomProgramHash())
 
 		result.NextReward.OwnerVotesInRound[*randomProgramHash()] =
 			common.Fixed64(rand.Uint64())
-		result.NextReward.OwnerProgramHashes = append(
-			result.NextReward.OwnerProgramHashes, randomProgramHash())
-		result.NextReward.CandidateOwnerProgramHashes = append(
-			result.NextReward.CandidateOwnerProgramHashes, randomProgramHash())
 	}
 
 	return result
@@ -323,12 +305,6 @@ func rewardEqual(first *RewardData, second *RewardData) bool {
 		return false
 	}
 
-	if !hashesEqual(first.OwnerProgramHashes, second.OwnerProgramHashes) ||
-		!hashesEqual(first.CandidateOwnerProgramHashes,
-			second.CandidateOwnerProgramHashes) {
-		return false
-	}
-
 	return votesMapEqual(first.OwnerVotesInRound, second.OwnerVotesInRound)
 }
 
@@ -336,11 +312,8 @@ func randomRewardData() *RewardData {
 	result := NewRewardData()
 
 	for i := 0; i < 5; i++ {
-		result.OwnerProgramHashes = append(result.OwnerProgramHashes,
-			randomProgramHash())
-		result.CandidateOwnerProgramHashes = append(
-			result.CandidateOwnerProgramHashes, randomProgramHash())
-		result.OwnerVotesInRound[*randomProgramHash()] = common.Fixed64(rand.Uint64())
+		result.OwnerVotesInRound[*randomProgramHash()] =
+			common.Fixed64(rand.Uint64())
 	}
 
 	return result
@@ -450,7 +423,7 @@ func votesMapEqual(first map[common.Uint168]common.Fixed64,
 	return true
 }
 
-func arrayEqual(first [][]byte, second [][]byte) bool {
+func arrayEqual(first []ArbiterMember, second []ArbiterMember) bool {
 	if len(first) != len(second) {
 		return false
 	}
@@ -458,7 +431,10 @@ func arrayEqual(first [][]byte, second [][]byte) bool {
 	for _, vf := range first {
 		found := false
 		for _, vs := range second {
-			if bytes.Equal(vf, vs) {
+			if bytes.Equal(vf.GetNodePublicKey(), vs.GetNodePublicKey()) &&
+				bytes.Equal(vf.GetOwnerPublicKey(), vs.GetOwnerPublicKey()) &&
+				vf.GetType() == vs.GetType() &&
+				vf.GetOwnerProgramHash().IsEqual(vs.GetOwnerProgramHash()) {
 				found = true
 				break
 			}

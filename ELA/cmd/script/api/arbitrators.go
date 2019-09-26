@@ -47,13 +47,14 @@ func RegisterArbitratorsType(L *lua.LState) {
 
 // Constructor
 func newArbitrators(L *lua.LState) int {
-	arbitersByte := make([][]byte, 0)
+	arbiters := make([]state.ArbiterMember, 0)
 	for _, arbiter := range arbitratorsPublicKeys {
 		arbiterByte, _ := common.HexStringToBytes(arbiter)
-		arbitersByte = append(arbitersByte, arbiterByte)
+		ar, _ := state.NewOriginArbiter(state.Origin, arbiterByte)
+		arbiters = append(arbiters, ar)
 	}
 
-	a := state.NewArbitratorsMock(arbitersByte, 0, MajorityCount)
+	a := state.NewArbitratorsMock(arbiters, 0, MajorityCount)
 
 	ud := L.NewUserData()
 	ud.Value = a

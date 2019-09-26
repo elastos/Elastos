@@ -35,10 +35,8 @@ type StateKeyFrame struct {
 
 // RewardData defines variables to calculate reward of a round
 type RewardData struct {
-	OwnerProgramHashes          []*common.Uint168
-	CandidateOwnerProgramHashes []*common.Uint168
-	OwnerVotesInRound           map[common.Uint168]common.Fixed64
-	TotalVotesInRound           common.Fixed64
+	OwnerVotesInRound map[common.Uint168]common.Fixed64
+	TotalVotesInRound common.Fixed64
 }
 
 // snapshot takes a snapshot of current state and returns the copy.
@@ -452,27 +450,8 @@ func NewStateKeyFrame() *StateKeyFrame {
 }
 
 func (d *RewardData) Serialize(w io.Writer) error {
-	if err := common.WriteVarUint(w,
-		uint64(len(d.OwnerProgramHashes))); err != nil {
-		return err
-	}
-	for _, v := range d.OwnerProgramHashes {
-		if err := v.Serialize(w); err != nil {
-			return err
-		}
-	}
-
-	if err := common.WriteVarUint(w,
-		uint64(len(d.CandidateOwnerProgramHashes))); err != nil {
-		return err
-	}
-	for _, v := range d.CandidateOwnerProgramHashes {
-		if err := v.Serialize(w); err != nil {
-			return err
-		}
-	}
-
-	if err := common.WriteUint64(w, uint64(d.TotalVotesInRound)); err != nil {
+	if err := common.WriteUint64(w, uint64(d.TotalVotesInRound));
+		err != nil {
 		return err
 	}
 
@@ -492,36 +471,13 @@ func (d *RewardData) Serialize(w io.Writer) error {
 }
 
 func (d *RewardData) Deserialize(r io.Reader) (err error) {
-	var count uint64
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	for i := uint64(0); i < count; i++ {
-		hash := &common.Uint168{}
-		if err = hash.Deserialize(r); err != nil {
-			return
-		}
-		d.OwnerProgramHashes = append(d.OwnerProgramHashes, hash)
-	}
-
-	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return
-	}
-	for i := uint64(0); i < count; i++ {
-		hash := &common.Uint168{}
-		if err = hash.Deserialize(r); err != nil {
-			return
-		}
-		d.CandidateOwnerProgramHashes = append(
-			d.CandidateOwnerProgramHashes, hash)
-	}
-
 	var votes uint64
 	if votes, err = common.ReadUint64(r); err != nil {
 		return
 	}
 	d.TotalVotesInRound = common.Fixed64(votes)
 
+	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return
 	}
@@ -542,8 +498,6 @@ func (d *RewardData) Deserialize(r io.Reader) (err error) {
 
 func NewRewardData() *RewardData {
 	return &RewardData{
-		OwnerProgramHashes:          make([]*common.Uint168, 0),
-		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
 		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
 		TotalVotesInRound:           0,
 	}
@@ -607,9 +561,9 @@ func copyDIDSet(src map[common.Uint168]struct{}) (
 	return
 }
 
-func copyByteList(src [][]byte) (dst [][]byte) {
+func copyByteList(src []ArbiterMember) (dst []ArbiterMember) {
 	for _, v := range src {
-		dst = append(dst, v)
+		dst = append(dst, v.Clone())
 	}
 	return
 }
@@ -619,17 +573,6 @@ func copyReward(src *RewardData) (dst *RewardData) {
 		OwnerVotesInRound: make(map[common.Uint168]common.Fixed64),
 	}
 	dst.TotalVotesInRound = src.TotalVotesInRound
-
-	for _, v := range src.OwnerProgramHashes {
-		p := *v
-		dst.OwnerProgramHashes = append(dst.OwnerProgramHashes, &p)
-	}
-
-	for _, v := range src.CandidateOwnerProgramHashes {
-		p := *v
-		dst.CandidateOwnerProgramHashes = append(
-			dst.CandidateOwnerProgramHashes, &p)
-	}
 
 	for k, v := range src.OwnerVotesInRound {
 		dst.OwnerVotesInRound[k] = v

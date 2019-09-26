@@ -6,7 +6,7 @@
 package store
 
 import (
-	"crypto/rand"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"testing"
 	"time"
 
@@ -159,8 +159,7 @@ func TestEventStore_Close(t *testing.T) {
 }
 
 func randomPkBytes() []byte {
-	pk := make([]byte, 33)
-	rand.Read(pk)
-
-	return pk
+	_, pub, _ := crypto.GenerateKeyPair()
+	result, _ := pub.EncodePoint(true)
+	return result
 }
