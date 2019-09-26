@@ -33,8 +33,6 @@ WORKDIR /go/src/github.com/elastos/Elastos.ELA.SideChain.ETH
 # in the future
 RUN printf 'ignore:\n- github.com/russross/blackfriday/v2\n' >> glide.yaml
 
-RUN rm -rf vendor glide.lock 
-RUN glide cc
 RUN glide update
 RUN glide install
 RUN make geth
@@ -56,6 +54,6 @@ RUN apk update \
     
 USER elauser
 
-EXPOSE 8080 20636 20638 20638/udp
+EXPOSE 20635 20636 20638 20638/udp
 
-ENTRYPOINT ["/bin/sh", "-c", "./geth --mine --datadir elastos_eth --ethash.dagdir elastos_ethash --syncmode 'full' --gcmode 'archive' --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcvhosts '*' --rpcport 20636 --rpcapi 'personal,db,eth,net,web3,txpool,miner' --unlock 0x961386e437294f9171040e2d56d4522c4f55187d --password ./eth-accounts-pass.txt"]
+ENTRYPOINT ["/bin/sh", "-c", "./geth --datadir elastos_eth --gcmode 'archive' --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcvhosts '*' --rpcport 20636 --rpcapi 'eth,net,web3' --ws --wsaddr 0.0.0.0 --wsorigins '*' --wsport 20635 --wsapi 'eth,net,web3'"]

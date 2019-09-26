@@ -60,10 +60,43 @@ var ListCmd = &cobra.Command{
 						log.Fatal(err)
 					}
 					created := time.Unix(i, 0)
-					ports := []uint16{}
+					ports := make(map[string]string, 0)
 					for _, port := range container.Ports {
 						if port.IP == "0.0.0.0" {
-							ports = append(ports, port.PublicPort)
+							portString := fmt.Sprintf("%v", port.PublicPort)
+							if strings.Contains(containerName, "mainchain") {
+								for _, dockerPorts := range NodeDockerPortMainChain {
+									if portString == dockerPorts.HostRESTPort {
+										ports[portString] = "REST"
+									} else if portString == dockerPorts.HostRPCPort {
+										ports[portString] = "RPC"
+									}
+								}
+							} else if strings.Contains(containerName, "did") {
+								for _, dockerPorts := range NodeDockerPortSidechainDID {
+									if portString == dockerPorts.HostRESTPort {
+										ports[portString] = "REST"
+									} else if portString == dockerPorts.HostRPCPort {
+										ports[portString] = "RPC"
+									}
+								}
+							} else if strings.Contains(containerName, "token") {
+								for _, dockerPorts := range NodeDockerPortSidechainToken {
+									if portString == dockerPorts.HostRESTPort {
+										ports[portString] = "REST"
+									} else if portString == dockerPorts.HostRPCPort {
+										ports[portString] = "RPC"
+									}
+								}
+							} else if strings.Contains(containerName, "eth") {
+								for _, dockerPorts := range NodeDockerPortSidechainEth {
+									if portString == dockerPorts.HostRESTPort {
+										ports[portString] = "REST"
+									} else if portString == dockerPorts.HostRPCPort {
+										ports[portString] = "RPC"
+									}
+								}
+							}
 						}
 					}
 					fmt.Printf("Name: %v\nID: %v\nImage: %v\nCmd: %v\nCreated: %v\nStatus: %v\nPorts: %v\n\n",

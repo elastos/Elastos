@@ -93,7 +93,7 @@ build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "sidechain.token"
     "cyberrepublic/elastos-sidechain-token-node" "yes" "v0.1.2" "yes"
 
 build_binary_and_docker "dev" "Elastos.ELA.SideChain.ETH" "sidechain.eth" \
-    "cyberrepublic/elastos-sidechain-eth-node" "yes" "" "yes"
+    "cyberrepublic/elastos-sidechain-eth-node" "no" "dev" "yes"
 
 build_docker "sidechain/eth/oracle" "sidechain.eth.oracle" \
     "cyberrepublic/elastos-sidechain-eth-oracle" "v0.0.1" "yes"

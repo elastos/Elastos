@@ -26,8 +26,6 @@ RUN curl https://glide.sh/get | sh
 # cwd
 WORKDIR /go/src/github.com/elastos/Elastos.ELA
 
-RUN rm -rf vendor glide.lock 
-RUN glide cc
 RUN glide update
 RUN glide install
 RUN make

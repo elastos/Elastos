@@ -61,7 +61,7 @@ var (
 		"testnet": DockerPort{"21614", "21616", "21614", "21616"},
 	}
 	NodeDockerPortSidechainEth = map[string]DockerPort{
-		"mainnet": DockerPort{"20634", "20636", "20634", "20636"},
-		"testnet": DockerPort{"20634", "20636", "21634", "21636"},
+		"mainnet": DockerPort{ContainerRPCPort: "20636", HostRPCPort: "20636"},
+		"testnet": DockerPort{ContainerRPCPort: "20636", HostRPCPort: "21636"},
 	}
 )

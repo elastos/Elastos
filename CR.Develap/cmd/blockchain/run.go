@@ -109,24 +109,8 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) co
 		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainToken[Env].HostRESTPort))
 		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainToken[Env].HostRPCPort))
 	} else if node == "eth" {
-		containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainEth[Env].ContainerRESTPort))
 		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainEth[Env].ContainerRPCPort))
-		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainEth[Env].HostRESTPort))
 		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainEth[Env].HostRPCPort))
-	}
-
-	containerConfig := &container.Config{
-		Image: imageName,
-		ExposedPorts: nat.PortSet{
-			containerRESTPort: struct{}{},
-			containerRPCPort:  struct{}{},
-		},
-	}
-	if node == "eth" && Env == "testnet" {
-		containerConfig.Entrypoint = strslice.StrSlice{"/bin/sh"}
-		containerConfig.Cmd = strslice.StrSlice{
-			"-c", "./geth --testnet --datadir elastos_eth --ethash.dagdir elastos_ethash --gcmode 'archive' --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcvhosts '*' --rpcport 20636 --rpcapi 'personal,db,eth,net,web3,txpool,miner'",
-		}
 	}
 
 	currentDir, err := os.Getwd()
@@ -142,27 +126,9 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) co
 			Target: NodeDockerDataPathMap[node],
 		},
 	}
-	switch node {
-	case "mainchain":
-		mounts = append(mounts,
-			mount.Mount{
-				Type:   mount.TypeBind,
-				Source: filepath.FromSlash(fmt.Sprintf("%s/%s/%s/config.json", currentDir, Env, node)),
-				Target: NodeDockerConfigPathMap[node],
-			},
-			mount.Mount{
-				Type:   mount.TypeBind,
-				Source: filepath.FromSlash(fmt.Sprintf("%s/%s/%s/keystore.dat", currentDir, Env, node)),
-				Target: "/ela/keystore.dat",
-			},
-		)
-	case "eth":
-	default:
-		mounts = append(mounts, mount.Mount{
-			Type:   mount.TypeBind,
-			Source: filepath.FromSlash(fmt.Sprintf("%s/%s/%s/config.json", currentDir, Env, node)),
-			Target: NodeDockerConfigPathMap[node],
-		})
+	containerConfig := &container.Config{
+		Image:        imageName,
+		ExposedPorts: nat.PortSet{},
 	}
 	hostConfig := &container.HostConfig{
 		PortBindings: nat.PortMap{
@@ -170,6 +136,49 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) co
 			containerRPCPort:  []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: hostRPCPort.Port()}},
 		},
 		Mounts: mounts,
+	}
+	if node == "eth" {
+		if Env == "testnet" {
+			containerConfig.Entrypoint = strslice.StrSlice{"/bin/sh"}
+			containerConfig.Cmd = strslice.StrSlice{
+				"-c", "./geth --testnet --datadir elastos_eth --gcmode 'archive' --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcvhosts '*' --rpcport 20636 --rpcapi 'eth,net,web3' --ws --wsaddr 0.0.0.0 --wsorigins '*' --wsport 20635 --wsapi 'eth,net,web3'",
+			}
+		}
+		containerConfig.ExposedPorts = nat.PortSet{
+			containerRPCPort: struct{}{},
+		}
+		hostConfig.PortBindings = nat.PortMap{
+			containerRPCPort: []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: hostRPCPort.Port()}},
+		}
+	} else {
+		if node == "mainchain" {
+			mounts = append(mounts,
+				mount.Mount{
+					Type:   mount.TypeBind,
+					Source: filepath.FromSlash(fmt.Sprintf("%s/%s/%s/config.json", currentDir, Env, node)),
+					Target: NodeDockerConfigPathMap[node],
+				},
+				mount.Mount{
+					Type:   mount.TypeBind,
+					Source: filepath.FromSlash(fmt.Sprintf("%s/%s/%s/keystore.dat", currentDir, Env, node)),
+					Target: "/ela/keystore.dat",
+				},
+			)
+		} else {
+			mounts = append(mounts, mount.Mount{
+				Type:   mount.TypeBind,
+				Source: filepath.FromSlash(fmt.Sprintf("%s/%s/%s/config.json", currentDir, Env, node)),
+				Target: NodeDockerConfigPathMap[node],
+			})
+		}
+		containerConfig.ExposedPorts = nat.PortSet{
+			containerRESTPort: struct{}{},
+			containerRPCPort:  struct{}{},
+		}
+		hostConfig.PortBindings = nat.PortMap{
+			containerRESTPort: []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: hostRESTPort.Port()}},
+			containerRPCPort:  []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: hostRPCPort.Port()}},
+		}
 	}
 
 	containerName := fmt.Sprintf("develap-%s-%s-node", Env, node)
