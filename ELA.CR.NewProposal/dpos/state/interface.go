@@ -32,9 +32,9 @@ type Arbitrators interface {
 	IsInactiveMode() bool
 	IsUnderstaffedMode() bool
 
+	GetConnectedProducer(publicKey []byte) ArbiterMember
 	GetCRCArbiters() [][]byte
-	GetCRCProducer(publicKey []byte) *Producer
-	GetCRCArbitrators() map[string]*Producer
+	CRCProducerCount() int
 	IsCRCArbitrator(pk []byte) bool
 	IsActiveProducer(pk []byte) bool
 	IsDisabledProducer(pk []byte) bool
