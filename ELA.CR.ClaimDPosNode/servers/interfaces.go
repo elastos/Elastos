@@ -338,18 +338,17 @@ func GetArbiterPeersInfo(params Params) map[string]interface{} {
 
 	result := make([]peerInfo, 0)
 	for _, p := range peers {
-		producer := Arbiters.GetCRCProducer(p.PID[:])
+		producer := Arbiters.GetConnectedProducer(p.PID[:])
 		if producer == nil {
-			if producer = blockchain.DefaultLedger.Blockchain.GetState().
-				GetProducer(p.PID[:]); producer == nil {
-				continue
-			}
+			continue
 		}
 		result = append(result, peerInfo{
-			OwnerPublicKey: common.BytesToHexString(producer.OwnerPublicKey()),
-			NodePublicKey:  common.BytesToHexString(producer.NodePublicKey()),
-			IP:             p.Addr,
-			ConnState:      p.State.String(),
+			OwnerPublicKey: common.BytesToHexString(
+				producer.GetOwnerPublicKey()),
+			NodePublicKey: common.BytesToHexString(
+				producer.GetNodePublicKey()),
+			IP:        p.Addr,
+			ConnState: p.State.String(),
 		})
 	}
 	return ResponsePack(Success, result)

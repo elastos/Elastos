@@ -10,7 +10,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 )
 
@@ -66,7 +65,11 @@ type ArbitratorsMock struct {
 	NextReward                  RewardData
 }
 
-func (a *ArbitratorsMock) SaveCheckPoint(height uint32) error {
+func (a *ArbitratorsMock) GetConnectedProducer(publicKey []byte) ArbiterMember {
+	panic("implement me")
+}
+
+func (a *ArbitratorsMock) CRCProducerCount() int {
 	panic("implement me")
 }
 
@@ -135,14 +138,6 @@ func (a *ArbitratorsMock) ProcessSpecialTxPayload(p types.Payload, height uint32
 	panic("implement me")
 }
 
-func (a *ArbitratorsMock) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
-	panic("implement me")
-}
-
-func (a *ArbitratorsMock) RollbackTo(height uint32) error {
-	panic("implement me")
-}
-
 func (a *ArbitratorsMock) GetNeedConnectArbiters() []peer.PID {
 	panic("implement me")
 }
@@ -163,22 +158,6 @@ func (a *ArbitratorsMock) IsCRCArbitrator(pk []byte) bool {
 		}
 	}
 	return false
-}
-
-func (a *ArbitratorsMock) GetLastConfirmedBlockTimeStamp() uint32 {
-	panic("implement me")
-}
-
-func (a *ArbitratorsMock) TryEnterEmergency(blockTime uint32) bool {
-	panic("implement me")
-}
-
-func (a *ArbitratorsMock) GetCRCProducer(publicKey []byte) *Producer {
-	panic("implement me")
-}
-
-func (a *ArbitratorsMock) GetCRCArbitrators() map[string]*Producer {
-	return a.CRCArbitratorsMap
 }
 
 func (a *ArbitratorsMock) GetArbitersCount() int {

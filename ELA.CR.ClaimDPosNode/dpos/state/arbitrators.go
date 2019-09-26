@@ -65,18 +65,16 @@ type arbitrators struct {
 	CurrentReward RewardData
 	NextReward    RewardData
 
-	currentArbitrators          []ArbiterMember
-	currentCandidates           []ArbiterMember
-	nextArbitrators             []ArbiterMember
-	nextCandidates              []ArbiterMember
-	crcArbiters                 [][]byte
-	crcArbitratorsProgramHashes map[common.Uint168]interface{}
-	crcArbitratorsNodePublicKey map[string]*Producer
-	accumulativeReward          common.Fixed64
-	finalRoundChange            common.Fixed64
-	clearingHeight              uint32
-	arbitersRoundReward         map[common.Uint168]common.Fixed64
-	illegalBlocksPayloadHashes  map[common.Uint256]interface{}
+	currentArbitrators         []ArbiterMember
+	currentCandidates          []ArbiterMember
+	nextArbitrators            []ArbiterMember
+	nextCandidates             []ArbiterMember
+	crcArbiters                map[common.Uint168]ArbiterMember
+	accumulativeReward         common.Fixed64
+	finalRoundChange           common.Fixed64
+	clearingHeight             uint32
+	arbitersRoundReward        map[common.Uint168]common.Fixed64
+	illegalBlocksPayloadHashes map[common.Uint256]interface{}
 
 	snapshots            map[uint32][]*CheckPoint
 	snapshotKeysDesc     []uint32
@@ -397,7 +395,7 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 		individualProducerReward := common.Fixed64(math.Floor(float64(
 			votes) * rewardPerVote))
 		r := individualBlockConfirmReward + individualProducerReward
-		if _, ok := a.crcArbitratorsProgramHashes[ownerHash]; ok {
+		if _, ok := a.crcArbiters[ownerHash]; ok {
 			r = individualBlockConfirmReward
 			a.arbitersRoundReward[a.chainParams.CRCAddress] += r
 		} else {
@@ -450,10 +448,10 @@ func (a *arbitrators) getNeedConnectArbiters() []peer.PID {
 	}
 
 	pids := make(map[string]peer.PID)
-	for k, p := range a.crcArbitratorsNodePublicKey {
+	for _, p := range a.crcArbiters {
 		var pid peer.PID
-		copy(pid[:], p.NodePublicKey())
-		pids[k] = pid
+		copy(pid[:], p.GetNodePublicKey())
+		pids[common.BytesToHexString(p.GetNodePublicKey())] = pid
 	}
 
 	for _, v := range a.currentArbitrators {
@@ -535,7 +533,10 @@ func (a *arbitrators) GetNextCandidates() [][]byte {
 
 func (a *arbitrators) GetCRCArbiters() [][]byte {
 	a.mtx.Lock()
-	result := a.crcArbiters
+	result := make([][]byte, 0, len(a.crcArbiters))
+	for _, v := range a.crcArbiters {
+		result = append(result, v.GetNodePublicKey())
+	}
 	a.mtx.Unlock()
 
 	return result
@@ -558,9 +559,14 @@ func (a *arbitrators) GetNextRewardData() RewardData {
 }
 
 func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
-	// there is no need to lock because crc related variable is read only and
-	// initialized at the very first
-	_, ok := a.crcArbitratorsNodePublicKey[hex.EncodeToString(pk)]
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+
+	hash, err := contract.PublicKeyToStandardProgramHash(pk)
+	if err != nil {
+		return false
+	}
+	_, ok := a.crcArbiters[*hash]
 	return ok
 }
 
@@ -572,19 +578,46 @@ func (a *arbitrators) IsDisabledProducer(pk []byte) bool {
 	return a.State.IsInactiveProducer(pk) || a.State.IsIllegalProducer(pk) || a.State.IsCanceledProducer(pk)
 }
 
-func (a *arbitrators) GetCRCProducer(publicKey []byte) *Producer {
+func (a *arbitrators) GetConnectedProducer(publicKey []byte) ArbiterMember {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	key := hex.EncodeToString(publicKey)
-	if producer, ok := a.crcArbitratorsNodePublicKey[key]; ok {
+	hash, err := contract.PublicKeyToStandardProgramHash(publicKey)
+	if err != nil {
+		return nil
+	}
+	if producer, ok := a.crcArbiters[*hash]; ok {
 		return producer
 	}
+
+	findByPk := func(arbiters []ArbiterMember) ArbiterMember {
+		for _, v := range arbiters {
+			if bytes.Equal(v.GetNodePublicKey(), publicKey) {
+				return v
+			}
+		}
+		return nil
+	}
+	if ar := findByPk(a.currentArbitrators); ar != nil {
+		return ar
+	}
+	if ar := findByPk(a.currentCandidates); ar != nil {
+		return ar
+	}
+	if ar := findByPk(a.nextArbitrators); ar != nil {
+		return ar
+	}
+	if ar := findByPk(a.nextCandidates); ar != nil {
+		return ar
+	}
+
 	return nil
 }
 
-func (a *arbitrators) GetCRCArbitrators() map[string]*Producer {
-	return a.crcArbitratorsNodePublicKey
+func (a *arbitrators) CRCProducerCount() int {
+	a.mtx.Lock()
+	defer a.mtx.Unlock()
+	return len(a.crcArbiters)
 }
 
 func (a *arbitrators) GetOnDutyArbitrator() []byte {
@@ -734,8 +767,8 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 	}
 
 	a.nextArbitrators = make([]ArbiterMember, 0)
-	for _, v := range a.crcArbitratorsNodePublicKey {
-		ar, err := NewOriginArbiter(CROrigin, v.info.NodePublicKey)
+	for _, v := range a.crcArbiters {
+		ar, err := NewOriginArbiter(CROrigin, v.GetNodePublicKey())
 		if err != nil {
 			return err
 		}
@@ -1050,34 +1083,29 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 		originArbiters[i] = ar
 	}
 
-	crcNodeMap := make(map[string]*Producer)
-	crcArbitratorsProgramHashes := make(map[common.Uint168]interface{})
-	crcArbiters := make([][]byte, 0, len(chainParams.CRCArbiters))
+	crcArbiters := make(map[common.Uint168]ArbiterMember)
 	for _, pk := range chainParams.CRCArbiters {
 		pubKey, err := hex.DecodeString(pk)
 		if err != nil {
 			return err
 		}
-		hash, err := contract.PublicKeyToStandardProgramHash(pubKey)
-		if err != nil {
-			return err
-		}
-		crcArbiters = append(crcArbiters, pubKey)
-		crcArbitratorsProgramHashes[*hash] = nil
-		crcNodeMap[pk] = &Producer{ // here need crc NODE public key
+		producer := &Producer{ // here need crc NODE public key
 			info: payload.ProducerInfo{
 				OwnerPublicKey: pubKey,
 				NodePublicKey:  pubKey,
 			},
 			activateRequestHeight: math.MaxUint32,
 		}
+		ar, err := NewDPoSArbiter(CROrigin, producer)
+		if err != nil {
+			return err
+		}
+		crcArbiters[ar.GetOwnerProgramHash()] = ar
 	}
 
 	a.currentArbitrators = originArbiters
 	a.nextArbitrators = originArbiters
 	a.crcArbiters = crcArbiters
-	a.crcArbitratorsNodePublicKey = crcNodeMap
-	a.crcArbitratorsProgramHashes = crcArbitratorsProgramHashes
 	a.CurrentReward = RewardData{
 		OwnerVotesInRound: make(map[common.Uint168]common.Fixed64),
 		TotalVotesInRound: 0,
