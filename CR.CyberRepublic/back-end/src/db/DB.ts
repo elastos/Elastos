@@ -17,6 +17,7 @@ import PermissionRole from './Permission_Role'
 import Release from './Release'
 import Elip from './Elip'
 import Elip_Review from './Elip_Review'
+import Suggestion_Edit_History from './Suggestion_Edit_History'
 
 import Log from './Log'
 
@@ -113,6 +114,7 @@ export default class {
         this.db.Release = new Release(db)
         this.db.Elip = new Elip(db)
         this.db.Elip_Review = new Elip_Review(db)
+        this.db.Suggestion_Edit_History = new Suggestion_Edit_History(db)
     }
 
     public getModel(name: string){

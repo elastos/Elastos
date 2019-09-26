@@ -117,8 +117,10 @@ export default class extends Base {
 
     const doc = _.pick(param, BASE_FIELDS);
     doc.descUpdatedAt = new Date()
-    await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
-
+    await Promise.all([
+      this.model.update({ _id: id }, { $set: doc }),
+      this.getDBModel('Suggestion_Edit_History').save({ ...doc, suggestion: id })
+    ])
     return this.show({ id })
   }
 

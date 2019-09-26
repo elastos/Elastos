@@ -55,7 +55,6 @@ const SuggestionCore = {
 
 export const SuggestionEditHistory = {
   ...SuggestionCore,
-  updatedAt: { type: Date },
   suggestion: {
     type: Schema.Types.ObjectId,
     ref: 'suggestion',
