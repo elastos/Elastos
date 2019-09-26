@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package config
 
@@ -273,7 +273,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
-	copy.CheckRewardHeight = 100               //todo correct me later
+	copy.CheckRewardHeight = 280000            //todo correct me later
 	return &copy
 }
 
