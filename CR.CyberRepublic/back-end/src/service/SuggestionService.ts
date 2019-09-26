@@ -103,7 +103,7 @@ export default class extends Base {
   }
 
   public async update(param: any): Promise<Document> {
-    const { id } = param
+    const { id, update } = param
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
 
@@ -117,10 +117,14 @@ export default class extends Base {
 
     const doc = _.pick(param, BASE_FIELDS);
     doc.descUpdatedAt = new Date()
-    await Promise.all([
-      this.model.update({ _id: id }, { $set: doc }),
-      this.getDBModel('Suggestion_Edit_History').save({ ...doc, suggestion: id })
-    ])
+    if (update) {
+      await Promise.all([
+        this.model.update({ _id: id }, { $set: doc }),
+        this.getDBModel('Suggestion_Edit_History').save({ ...doc, suggestion: id })
+      ])
+    } else {
+      await this.model.update({ _id: id }, { $set: doc })
+    }
     return this.show({ id })
   }
 
