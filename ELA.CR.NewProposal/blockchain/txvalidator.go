@@ -661,10 +661,11 @@ func checkTransactionDepositOutpus(bc *BlockChain, txn *Transaction) error {
 			if txn.IsRegisterProducerTx() || txn.IsRegisterCRTx() {
 				continue
 			}
-			if bc.state.ExistProducerByDID(output.ProgramHash) {
+			if bc.state.ExistProducerByDepositHash(output.ProgramHash) {
 				continue
 			}
-			if bc.crCommittee.GetState().ExistCandidateByDID(output.ProgramHash) {
+			if bc.crCommittee.GetState().ExistCandidateByDepositHash(
+				output.ProgramHash) {
 				continue
 			}
 			return errors.New("only the address that CR or Producer" +
