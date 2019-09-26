@@ -60,6 +60,14 @@ var RunCmd = &cobra.Command{
 		}
 
 		nodes := strings.Split(strings.Replace(Nodes, " ", "", -1), ",")
+		if strings.EqualFold(Env, "localnet") {
+			if err := setupLocalNetDockerContainers(ctx, cli); err != nil {
+				log.Print(err)
+			} else {
+				fmt.Println("Set up initial localnet successfully")
+			}
+		}
+
 		for _, node := range nodes {
 			if node == "eth" && strings.EqualFold(Env, "mainnet") {
 				log.Fatalf("%s not recognized as a valid net type for %s\n", Env, node)
@@ -75,6 +83,13 @@ var RunCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+// Placeholder for now
+func setupLocalNetDockerContainers(ctx context.Context, cli *client.Client) error {
+	var err error
+
+	return err
 }
 
 func runDockerContainer(ctx context.Context, cli *client.Client, node string) (container.ContainerCreateCreatedBody, error) {
