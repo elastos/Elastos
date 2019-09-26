@@ -1975,8 +1975,7 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
 
-	crcArbitrators := DefaultLedger.Arbitrators.GetCRCArbitrators()
-	crcArbitratorsCount := len(crcArbitrators)
+	crcArbitratorsCount := DefaultLedger.Arbitrators.GetCRCArbitersCount()
 	minSignCount := int(float64(crcArbitratorsCount)*
 		state.MajoritySignRatioNumerator/state.MajoritySignRatioDenominator) + 1
 	if m < 1 || m > n || n != crcArbitratorsCount || m < minSignCount {
@@ -1989,8 +1988,7 @@ func checkCRCArbitratorsSignatures(program *program.Program) error {
 	}
 
 	for _, pk := range publicKeys {
-		str := common.BytesToHexString(pk[1:])
-		if _, exists := crcArbitrators[str]; !exists {
+		if !DefaultLedger.Arbitrators.IsCRCArbitrator(pk[1:]) {
 			return errors.New("invalid multi sign public key")
 		}
 	}
