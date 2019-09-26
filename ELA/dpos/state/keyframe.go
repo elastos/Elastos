@@ -31,7 +31,7 @@ type StateKeyFrame struct {
 	Nicknames                map[string]struct{}
 	SpecialTxHashes          map[common.Uint256]struct{}
 	PreBlockArbiters         map[string]struct{}
-	ProducerDIDMap           map[common.Uint168]struct{}
+	ProducerDepositMap       map[common.Uint168]struct{}
 
 	EmergencyInactiveArbiters map[string]struct{}
 	VersionStartHeight        uint32
@@ -61,7 +61,7 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 		Nicknames:                make(map[string]struct{}),
 		SpecialTxHashes:          make(map[common.Uint256]struct{}),
 		PreBlockArbiters:         make(map[string]struct{}),
-		ProducerDIDMap:           make(map[common.Uint168]struct{}),
+		ProducerDepositMap:       make(map[common.Uint168]struct{}),
 	}
 	state.NodeOwnerKeys = copyStringMap(s.NodeOwnerKeys)
 	state.PendingProducers = copyProducerMap(s.PendingProducers)
@@ -75,7 +75,7 @@ func (s *StateKeyFrame) snapshot() *StateKeyFrame {
 	state.Nicknames = copyStringSet(s.Nicknames)
 	state.SpecialTxHashes = copyHashSet(s.SpecialTxHashes)
 	state.PreBlockArbiters = copyStringSet(s.PreBlockArbiters)
-	state.ProducerDIDMap = copyDIDSet(s.ProducerDIDMap)
+	state.ProducerDepositMap = copyDIDSet(s.ProducerDepositMap)
 	return &state
 }
 
@@ -129,7 +129,7 @@ func (s *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = s.SerializeDIDSet(s.ProducerDIDMap, w); err != nil {
+	if err = s.SerializeDIDSet(s.ProducerDepositMap, w); err != nil {
 		return
 	}
 
@@ -193,7 +193,7 @@ func (s *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if s.ProducerDIDMap, err = s.DeserializeDIDSet(r); err != nil {
+	if s.ProducerDepositMap, err = s.DeserializeDIDSet(r); err != nil {
 		return
 	}
 
@@ -450,7 +450,7 @@ func NewStateKeyFrame() *StateKeyFrame {
 		SpecialTxHashes:           make(map[common.Uint256]struct{}),
 		PreBlockArbiters:          make(map[string]struct{}),
 		EmergencyInactiveArbiters: make(map[string]struct{}),
-		ProducerDIDMap:            make(map[common.Uint168]struct{}),
+		ProducerDepositMap:        make(map[common.Uint168]struct{}),
 		VersionStartHeight:        0,
 		VersionEndHeight:          0,
 	}

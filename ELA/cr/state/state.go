@@ -98,6 +98,14 @@ func (s *State) ExistCandidateByDID(did common.Uint168) (ok bool) {
 	return
 }
 
+// ExistCandidateByDepositHash judges if there is a candidate with deposit hash.
+func (s *State) ExistCandidateByDepositHash(did common.Uint168) bool {
+	s.mtx.RLock()
+	_, ok := s.DepositHashMap[did]
+	s.mtx.RUnlock()
+	return ok
+}
+
 // ExistCandidateByNickname judges if there is a candidate with specified
 // nickname.
 func (s *State) ExistCandidateByNickname(nickname string) bool {
@@ -285,10 +293,12 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 		s.history.Append(height, func() {
 			s.Nicknames[nickname] = struct{}{}
 			s.CodeDIDMap[code] = info.DID
+			s.DepositHashMap[candidate.depositHash] = struct{}{}
 			s.PendingCandidates[info.DID] = &candidate
 		}, func() {
 			delete(s.Nicknames, nickname)
 			delete(s.CodeDIDMap, code)
+			delete(s.DepositHashMap, candidate.depositHash)
 			delete(s.PendingCandidates, info.DID)
 		})
 	} else {

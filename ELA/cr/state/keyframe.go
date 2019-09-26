@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -32,6 +32,7 @@ type KeyFrame struct {
 // StateKeyFrame holds necessary state about CR state.
 type StateKeyFrame struct {
 	CodeDIDMap         map[string]common.Uint168
+	DepositHashMap     map[common.Uint168]struct{}
 	PendingCandidates  map[common.Uint168]*Candidate
 	ActivityCandidates map[common.Uint168]*Candidate
 	CanceledCandidates map[common.Uint168]*Candidate
@@ -138,6 +139,10 @@ func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
+	if err = k.serializeDepositDIDMap(w, k.DepositHashMap); err != nil {
+		return
+	}
+
 	if err = k.serializeCandidateMap(w, k.PendingCandidates); err != nil {
 		return
 	}
@@ -163,6 +168,10 @@ func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 
 func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 	if k.CodeDIDMap, err = k.deserializeCodeAddressMap(r); err != nil {
+		return
+	}
+
+	if k.DepositHashMap, err = k.deserializeDepositDIDMap(r); err != nil {
 		return
 	}
 
@@ -227,6 +236,37 @@ func (k *StateKeyFrame) deserializeCodeAddressMap(r io.Reader) (
 			return
 		}
 		cmap[k] = v
+	}
+	return
+}
+
+func (k *StateKeyFrame) serializeDepositDIDMap(w io.Writer,
+	cmap map[common.Uint168]struct{}) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
+		return
+	}
+	for k, _ := range cmap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (k *StateKeyFrame) deserializeDepositDIDMap(r io.Reader) (
+	cmap map[common.Uint168]struct{}, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	cmap = make(map[common.Uint168]struct{})
+
+	for i := uint64(0); i < count; i++ {
+		var k common.Uint168
+		if err = k.Deserialize(r); err != nil {
+			return
+		}
+		cmap[k] = struct{}{}
 	}
 	return
 }
@@ -344,6 +384,7 @@ func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 func NewStateKeyFrame() *StateKeyFrame {
 	return &StateKeyFrame{
 		CodeDIDMap:         make(map[string]common.Uint168),
+		DepositHashMap:     make(map[common.Uint168]struct{}),
 		PendingCandidates:  make(map[common.Uint168]*Candidate),
 		ActivityCandidates: make(map[common.Uint168]*Candidate),
 		CanceledCandidates: make(map[common.Uint168]*Candidate),
