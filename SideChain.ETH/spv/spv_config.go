@@ -3,171 +3,154 @@ package spv
 import (
 	"bytes"
 	"encoding/json"
+	spv "github.com/elastos/Elastos.ELA.SPV/interface"
+	"github.com/elastos/Elastos.ELA.SideChain.ETH/log"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
 	"io/ioutil"
-	"log"
 	"math/big"
-	"os"
+	"reflect"
 	"time"
 )
 
 const (
-	DefaultConfigFilename = "./config.json"
+	DefaultConfigFilename = "./spvconfig.json"
+	Foundation            = "Foundation"
+	CRCAddress            = "CRCAddress"
+	GenesisBlock          = "GenesisBlock"
+	PowLimit              = "PowLimit"
 )
 
-var (
-	Parameters configParams
-	Version    string
-	mainNet    = &ChainParams{
-		Name:               "MainNet",
-		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
-		PowLimitBits:       0x1f0008ff,
-		TargetTimespan:     time.Second * 60 * 2 * 720,
-		TargetTimePerBlock: time.Second * 60 * 2,
-		AdjustmentFactor:   int64(4),
-		MaxOrphanBlocks:    10000,
-		MinMemoryNodes:     20160,
-		SpendCoinbaseSpan:  100,
-	}
-	testNet = &ChainParams{
-		Name:               "TestNet",
-		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
-		PowLimitBits:       0x1e1da5ff,
-		TargetTimespan:     time.Second * 10 * 10,
-		TargetTimePerBlock: time.Second * 10,
-		AdjustmentFactor:   int64(4),
-		MaxOrphanBlocks:    10000,
-		MinMemoryNodes:     20160,
-		SpendCoinbaseSpan:  100,
-	}
-	regNet = &ChainParams{
-		Name:               "RegNet",
-		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
-		PowLimitBits:       0x207fffff,
-		TargetTimespan:     time.Second * 1 * 10,
-		TargetTimePerBlock: time.Second * 1,
-		AdjustmentFactor:   int64(4),
-		MaxOrphanBlocks:    10000,
-		MinMemoryNodes:     20160,
-		SpendCoinbaseSpan:  100,
-	}
-)
-
-type PowConfiguration struct {
-	PayToAddr        string `json:"PayToAddr"`
-	MiningServerIP   string `josn:"MiningServerIP"`
-	MiningServerPort int    `josn:"MiningServerPort"`
-	MiningSelfPort   int    `josn:"MiningSelfPort"`
-	TestNet          bool   `json:"testnet"`
-	AutoMining       bool   `json:"AutoMining"`
-	MinerInfo        string `json:"MinerInfo"`
-	MinTxFee         int    `json:"MinTxFee"`
-	ActiveNet        string `json:"ActiveNet"`
-}
+var PreferConfig PreferParams
 
 type Configuration struct {
-	Magic                      uint32           `json:"Magic"`
-	SpvMagic                   uint32           `json:"SpvMagic"`
-	Version                    int              `json:"Version"`
-	SeedList                   []string         `json:"SeedList"`
-	SpvSeedList                []string         `json:"SpvSeedList"`
-	SpvMinOutbound             int              `json:"SpvMinOutbound"`
-	SpvMaxConnections          int              `json:"SpvMaxConnections"`
-	SpvPrintLevel              int              `json:"SpvPrintLevel"`
-	ExchangeRate               float64          `json:"ExchangeRate"`
-	MinCrossChainTxFee         int              `json:"MinCrossChainTxFee"`
-	HttpRestPort               int              `json:"HttpRestPort"`
-	RestCertPath               string           `json:"RestCertPath"`
-	RestKeyPath                string           `json:"RestKeyPath"`
-	HttpInfoPort               uint16           `json:"HttpInfoPort"`
-	HttpInfoStart              bool             `json:"HttpInfoStart"`
-	OpenService                bool             `json:"OpenService"`
-	HttpWsPort                 int              `json:"HttpWsPort"`
-	WsHeartbeatInterval        time.Duration    `json:"WsHeartbeatInterval"`
-	HttpJsonPort               int              `json:"HttpJsonPort"`
-	OauthServerUrl             string           `json:"OauthServerUrl"`
-	NoticeServerUrl            string           `json:"NoticeServerUrl"`
-	NodePort                   uint16           `json:"NodePort"`
-	WebSocketPort              int              `json:"WebSocketPort"`
-	PrintLevel                 int              `json:"PrintLevel"`
-	IsTLS                      bool             `json:"IsTLS"`
-	CertPath                   string           `json:"CertPath"`
-	KeyPath                    string           `json:"KeyPath"`
-	CAPath                     string           `json:"CAPath"`
-	MultiCoreNum               uint             `json:"MultiCoreNum"`
-	MaxLogsSize                int64            `json:"MaxLogsSize"`
-	MaxPerLogSize              int64            `json:"MaxPerLogSize"`
-	MaxTxInBlock               int              `json:"MaxTransactionInBlock"`
-	MaxBlockSize               int              `json:"MaxBlockSize"`
-	PowConfiguration           PowConfiguration `json:"PowConfiguration"`
-	FoundationAddress          string           `json:"FoundationAddress"`
-	MainChainFoundationAddress string           `json:"MainChainFoundationAddress"`
+	// Exegesis in file Elastos.ELA/common/config/params.go
+	Magic                    uint32         `json:"Magic"`
+	DefaultPort              uint16         `json:"DefaultPort"`
+	DNSSeeds                 []string       `json:"DNSSeeds"`
+	ListenAddrs              []string       `json:"ListenAddrs"`
+	Foundation               string         `json:"Foundation"`
+	CRCAddress               string         `json:"CRCAddress"`
+	PowLimit                 *big.Int       `json:"PowLimit"`
+	PowLimitBits             uint32         `json:"PowLimitBits"`
+	TargetTimespan           time.Duration  `json:"TargetTimespan"`
+	TargetTimePerBlock       time.Duration  `json:"TargetTimePerBlock"`
+	AdjustmentFactor         int64          `json:"AdjustmentFactor"`
+	RewardPerBlock           common.Fixed64 `json:"RewardPerBlock"`
+	CoinbaseMaturity         uint32         `json:"CoinbaseMaturity"`
+	DisableTxFilters         bool           `json:"DisableTxFilters"`
+	MinTransactionFee        common.Fixed64 `json:"MinTransactionFee"`
+	MinCrossChainTxFee       common.Fixed64 `json:"MinCrossChainTxFee"`
+	OriginArbiters           []string       `json:"OriginArbiters"`
+	CheckAddressHeight       uint32         `json:"CheckAddressHeight"`
+	VoteStartHeight          uint32         `json:"VoteStartHeight"`
+	CRCOnlyDPOSHeight        uint32         `json:"CRCOnlyDPOSHeight"`
+	PublicDPOSHeight         uint32         `json:"PublicDPOSHeight"`
+	CRCArbiters              []string       `json:"CRCArbiters"`
+	DPoSMagic                uint32         `json:"DPoSMagic"`
+	DPoSDefaultPort          uint16         `json:"DPoSDefaultPort"`
+	PreConnectOffset         uint32         `json:"PreConnectOffset"`
+	GeneralArbiters          int            `json:"GeneralArbiters"`
+	CandidateArbiters        int            `json:"CandidateArbiters"`
+	ToleranceDuration        time.Duration  `json:"ToleranceDuration"`
+	MaxInactiveRounds        uint32         `json:"MaxInactiveRounds"`
+	InactivePenalty          common.Fixed64 `json:"InactivePenalty"`
+	EmergencyInactivePenalty common.Fixed64 `json:"EmergencyInactivePenalty"`
+	MaxLogsSize              int64          `json:"MaxLogsSize"`
+	MaxPerLogSize            int64          `json:"MaxPerLogSize"`
+	SpvPrintLevel            uint32         `json:"SpvPrintLevel"`
+	PermanentPeers           []string       `json:"PermanentPeers"`
 }
 
-type ConfigFile struct {
-	ConfigFile Configuration `json:"Configuration"`
-}
-
-type ChainParams struct {
-	Name               string
-	PowLimit           *big.Int
-	PowLimitBits       uint32
-	TargetTimespan     time.Duration
-	TargetTimePerBlock time.Duration
-	AdjustmentFactor   int64
-	MaxOrphanBlocks    int
-	MinMemoryNodes     uint32
-	SpendCoinbaseSpan  uint32
-}
-
-type configParams struct {
-	*Configuration
-	ChainParam *ChainParams
+type PreferParams struct {
+	Config Configuration `json:"Configuration"`
 }
 
 func init() {
-	config := ConfigFile{}
-	file, e := ioutil.ReadFile(DefaultConfigFilename)
-	if e == nil {
-		// Remove the UTF-8 Byte Order Mark
-		file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
-
-		e = json.Unmarshal(file, &config)
-		if e != nil {
-			log.Fatalf("Unmarshal json file error %v", e)
-			os.Exit(1)
-		}
-	} else {
-		config.ConfigFile.Magic = 20181206
-		//config.ConfigFile.SpvMagic = 2018002
-		//config.ConfigFile.SpvSeedList = []string{
-		//	"node-regtest-102.eadd.co",
-		//	"node-regtest-103.eadd.co",
-		//	"node-regtest-104.eadd.co",
-		//	"node-regtest-105.eadd.co",
-		//	"node-regtest-106.eadd.co",
-		//	"node-regtest-107.eadd.co",
-		//}
-		//config.ConfigFile.NodePort = 22338
-		config.ConfigFile.Version = 23
-		config.ConfigFile.PowConfiguration.ActiveNet = "MainNet"
-		config.ConfigFile.PowConfiguration.PayToAddr = "ELVzVKcEYyV1B4YpdWDJFUcfiAYynD4Cpb"
-		config.ConfigFile.PowConfiguration.AutoMining = false
-		config.ConfigFile.PowConfiguration.MinerInfo = "Geth"
-		config.ConfigFile.PowConfiguration.MinTxFee = 100
-		config.ConfigFile.MinCrossChainTxFee = 10000
-		config.ConfigFile.ExchangeRate = 1.0
-		config.ConfigFile.SpvPrintLevel = 1
-		config.ConfigFile.MaxPerLogSize = 0
-		config.ConfigFile.MaxLogsSize = 0
-		config.ConfigFile.MainChainFoundationAddress = "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3"
+	PreferConfig = PreferParams{Config: Configuration{MaxLogsSize: 0, MaxPerLogSize: 0, SpvPrintLevel: 1}}
+	file, err := ioutil.ReadFile(DefaultConfigFilename)
+	if err != nil {
+		log.Warn("Read Spv_config file  error", "error", err)
+		return
 	}
-	//	Parameters = &(config.ConfigFile)
-	Parameters.Configuration = &(config.ConfigFile)
-	if Parameters.PowConfiguration.ActiveNet == "MainNet" {
-		Parameters.ChainParam = mainNet
-	} else if Parameters.PowConfiguration.ActiveNet == "TestNet" {
-		Parameters.ChainParam = testNet
-	} else if Parameters.PowConfiguration.ActiveNet == "RegNet" {
-		Parameters.ChainParam = regNet
+	// Remove the UTF-8 Byte Ord er Mark
+	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
+	err = json.Unmarshal(file, &PreferConfig)
+	if err != nil {
+		log.Warn("Unmarshal Spv_config file json error", "error", err)
 	}
 }
+
+func ResetConfigWithReflect(params *config.Params, spvConfig *spv.Config) {
+	paramsType := reflect.TypeOf(*params)
+	paramsValue := reflect.ValueOf(params).Elem()
+	configType := reflect.TypeOf(PreferConfig.Config)
+	configValue := reflect.ValueOf(PreferConfig.Config)
+	spvType := reflect.TypeOf(*spvConfig)
+	spvValue := reflect.ValueOf(spvConfig).Elem()
+	var destField reflect.Value
+	for i := 0; i < configType.NumField(); i++ {
+		name := configType.Field(i).Name
+		value := configValue.Field(i)
+		field := configType.Field(i)
+		if _, ok := paramsType.FieldByName(name); ok {
+			destField = paramsValue.FieldByName(name)
+		} else if _, ok := spvType.FieldByName(name); ok {
+			destField = spvValue.FieldByName(name)
+		} else {
+			continue
+		}
+		switch field.Type.Kind() {
+		case reflect.Bool:
+			destField.SetBool(value.Bool())
+		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			v := value.Int()
+			if v > 0 {
+				destField.SetInt(v)
+			}
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			v := value.Uint()
+			if v > 0 {
+				destField.SetUint(v)
+			}
+		case reflect.Float32, reflect.Float64:
+			v := value.Float()
+			if v > 0.0 {
+				destField.SetFloat(v)
+			}
+		case reflect.String:
+			v := value.String()
+			if len(v) == 0 {
+				break
+			}
+			if name == Foundation || name == CRCAddress {
+				t, err := common.Uint168FromAddress(v)
+				if err == nil {
+					arrayValue := reflect.ValueOf(t).Elem()
+					destField.Set(arrayValue)
+					if name == Foundation {
+						block := config.GenesisBlock(t)
+						if _, ok := paramsType.FieldByName(GenesisBlock); ok {
+							blockValue := reflect.ValueOf(block)
+							destField = paramsValue.FieldByName(GenesisBlock)
+							destField.Set(blockValue)
+						}
+					}
+
+				}
+				break
+			}
+			destField.Set(value)
+		case reflect.Slice:
+			if !value.IsNil() {
+				destField.Set(value)
+			}
+		case reflect.Ptr:
+			if !value.IsNil() {
+				destField.Set(value)
+			}
+		}
+
+	}
+}
+

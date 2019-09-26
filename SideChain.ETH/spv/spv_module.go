@@ -114,15 +114,17 @@ func NewService(cfg *Config, s *node.Node) (*Service, error) {
 		chainParams = &config.DefaultParams
 
 	}
-	spvCfg := spv.Config{
+	spvCfg := &spv.Config{
 		DataDir:     cfg.DataDir,
-		ChainParams: chainParams,
 		OnRollback:  nil, // Not implemented yet
 	}
+	//chainParams, spvCfg = ResetConfig(chainParams, spvCfg)
+	ResetConfigWithReflect(chainParams, spvCfg)
+	spvCfg.ChainParams = chainParams
 	dataDir = cfg.DataDir
 	initLog(cfg.DataDir)
 
-	service, err := spv.NewSPVService(&spvCfg)
+	service, err := spv.NewSPVService(spvCfg)
 	if err != nil {
 		log.Error("Spv New DPOS SPVService: ", "err", err)
 		return nil, err

@@ -28,10 +28,10 @@ func initLog(dataDir string) {
 	var (
 		fileWriter = elalog.NewFileWriter(
 			filepath.Join(dataDir, LogPath),
-			Parameters.MaxPerLogSize,
-			Parameters.MaxLogsSize,
+			PreferConfig.Config.MaxPerLogSize,
+			PreferConfig.Config.MaxLogsSize,
 		)
-		level   = elalog.Level(Parameters.SpvPrintLevel)
+		level   = elalog.Level(PreferConfig.Config.SpvPrintLevel)
 		backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
 			elalog.Llongfile)
 
