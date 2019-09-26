@@ -198,7 +198,7 @@ func ProposalContextCheckByHeight(proposal *payload.DPOSProposal,
 out:
 	for _, k := range keyFrames {
 		for _, a := range k.CurrentArbitrators {
-			if bytes.Equal(a, proposal.Sponsor) {
+			if bytes.Equal(a.GetNodePublicKey(), proposal.Sponsor) {
 				isArbiter = true
 				break out
 			}
@@ -272,7 +272,7 @@ func VoteContextCheckByHeight(vote *payload.DPOSProposalVote,
 out:
 	for _, k := range keyFrames {
 		for _, a := range k.CurrentArbitrators {
-			if bytes.Equal(a, vote.Signer) {
+			if bytes.Equal(a.GetNodePublicKey(), vote.Signer) {
 				isArbiter = true
 				break out
 			}

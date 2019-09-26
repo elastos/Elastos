@@ -34,13 +34,15 @@ func (s *confirmValidatorTestSuite) SetupSuite() {
 	}
 
 	s.arbitrators = &state.ArbitratorsMock{
-		CurrentArbitrators: make([][]byte, 0),
+		CurrentArbitrators: make([]state.ArbiterMember, 0),
 		MajorityCount:      3,
 	}
 	for _, v := range arbitratorsStr {
 		a, _ := common.HexStringToBytes(v)
-		s.arbitrators.CurrentArbitrators = append(s.arbitrators.CurrentArbitrators, a)
-		s.arbitrators.ActiveProducer = append(s.arbitrators.ActiveProducer, a)
+		ar, _ := state.NewOriginArbiter(state.Origin, a)
+		s.arbitrators.CurrentArbitrators = append(
+			s.arbitrators.CurrentArbitrators, ar)
+		s.arbitrators.ActiveProducer = append(s.arbitrators.ActiveProducer, ar)
 	}
 
 	s.originalLedger = DefaultLedger
@@ -80,7 +82,7 @@ func (s *confirmValidatorTestSuite) TestProposalContextCheck() {
 		"current arbitrators verify error")
 
 	for _, v := range s.arbitrators.CurrentArbitrators {
-		proposal.Sponsor = v
+		proposal.Sponsor = v.GetNodePublicKey()
 		s.NoError(ProposalContextCheck(proposal))
 	}
 }
@@ -114,7 +116,7 @@ func (s *confirmValidatorTestSuite) TestVoteContextCheck() {
 		"current arbitrators verify error")
 
 	for _, v := range s.arbitrators.CurrentArbitrators {
-		vote.Signer = v
+		vote.Signer = v.GetNodePublicKey()
 		s.NoError(VoteContextCheck(vote))
 	}
 }
@@ -179,7 +181,7 @@ func (s *confirmValidatorTestSuite) TestConfirmSanityCheck() {
 func (s *confirmValidatorTestSuite) TestConfirmContextCheck() {
 	confirm := &payload.Confirm{
 		Proposal: payload.DPOSProposal{
-			Sponsor:    s.arbitrators.CurrentArbitrators[0],
+			Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 			ViewOffset: rand.Uint32(),
 			BlockHash:  *randomUint256(),
 			Sign:       randomSignature(),
@@ -194,7 +196,7 @@ func (s *confirmValidatorTestSuite) TestConfirmContextCheck() {
 	for i := 0; i < 4; i++ {
 		confirm.Votes = append(confirm.Votes, payload.DPOSProposalVote{
 			ProposalHash: *randomUint256(),
-			Signer:       s.arbitrators.CurrentArbitrators[0],
+			Signer:       s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 			Accept:       true,
 			Sign:         randomSignature(),
 		})
@@ -204,13 +206,15 @@ func (s *confirmValidatorTestSuite) TestConfirmContextCheck() {
 
 	// repeat votes about normal signer
 	for i := 0; i < 4; i++ {
-		confirm.Votes[i].Signer = s.arbitrators.CurrentArbitrators[1]
+		confirm.Votes[i].Signer =
+			s.arbitrators.CurrentArbitrators[1].GetNodePublicKey()
 	}
 	s.EqualError(ConfirmContextCheck(confirm),
 		"[ConfirmContextCheck] signers less than majority count")
 
 	for i := 0; i < 4; i++ {
-		confirm.Votes[i].Signer = s.arbitrators.CurrentArbitrators[i]
+		confirm.Votes[i].Signer =
+			s.arbitrators.CurrentArbitrators[i].GetNodePublicKey()
 	}
 	s.NoError(ConfirmContextCheck(confirm))
 }
@@ -228,9 +232,9 @@ func randomUint256() *common.Uint256 {
 }
 
 func randomPublicKey() []byte {
-	randBytes := make([]byte, 33)
-	rand.Read(randBytes)
-	return randBytes
+	_, pub, _ := crypto.GenerateKeyPair()
+	result, _ := pub.EncodePoint(true)
+	return result
 }
 
 func randomSignature() []byte {

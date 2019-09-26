@@ -165,7 +165,7 @@ func mockInactiveArbitratorsTx(publicKey []byte) *types.Transaction {
 	}
 }
 
-func randomOwnerPublicKey() []byte {
+func randomPublicKey() []byte {
 	_, pub, _ := crypto.GenerateKeyPair()
 	result, _ := pub.EncodePoint(true)
 	return result
@@ -177,7 +177,7 @@ func TestState_ProcessTransaction(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
+			OwnerPublicKey: randomPublicKey(),
 			NodePublicKey:  make([]byte, 33),
 		}
 		rand.Read(p.NodePublicKey)
@@ -292,7 +292,7 @@ func TestState_ProcessBlock(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 100)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
+			OwnerPublicKey: randomPublicKey(),
 			NodePublicKey:  make([]byte, 33),
 		}
 		rand.Read(p.NodePublicKey)
@@ -396,7 +396,7 @@ func TestState_ProcessBlock(t *testing.T) {
 	// Mixed transactions 1 register, 2 cancel, 3 updates, 4 votes, 5 illegals.
 	txs = make([]*types.Transaction, 15)
 	info := &payload.ProducerInfo{
-		OwnerPublicKey: randomOwnerPublicKey(),
+		OwnerPublicKey: randomPublicKey(),
 		NodePublicKey:  make([]byte, 33),
 	}
 	rand.Read(info.NodePublicKey)
@@ -459,7 +459,7 @@ func TestState_ProcessIllegalBlockEvidence(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
+			OwnerPublicKey: randomPublicKey(),
 			NodePublicKey:  make([]byte, 33),
 		}
 		rand.Read(p.NodePublicKey)
@@ -512,7 +512,7 @@ func TestState_ProcessEmergencyInactiveArbitrators(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
+			OwnerPublicKey: randomPublicKey(),
 			NodePublicKey:  make([]byte, 33),
 		}
 		rand.Read(p.NodePublicKey)
@@ -568,7 +568,7 @@ func TestState_Rollback(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
+			OwnerPublicKey: randomPublicKey(),
 			NodePublicKey:  make([]byte, 33),
 		}
 		rand.Read(p.NodePublicKey)
@@ -616,7 +616,7 @@ func TestState_GetHistory(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
+			OwnerPublicKey: randomPublicKey(),
 			NodePublicKey:  make([]byte, 33),
 		}
 		rand.Read(p.NodePublicKey)
@@ -762,7 +762,7 @@ func TestState_NicknameExists(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
+			OwnerPublicKey: randomPublicKey(),
 			NodePublicKey:  make([]byte, 33),
 		}
 		rand.Read(p.NodePublicKey)
@@ -824,7 +824,7 @@ func TestState_ProducerExists(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
+			OwnerPublicKey: randomPublicKey(),
 			NodePublicKey:  make([]byte, 33),
 		}
 		rand.Read(p.NodePublicKey)
@@ -872,7 +872,7 @@ func TestState_IsDPOSTransaction(t *testing.T) {
 	state := NewState(&config.DefaultParams, nil, nil)
 
 	producer := &payload.ProducerInfo{
-		OwnerPublicKey: randomOwnerPublicKey(),
+		OwnerPublicKey: randomPublicKey(),
 		NodePublicKey:  make([]byte, 33),
 		NickName:       "Producer",
 	}
@@ -932,10 +932,9 @@ func TestState_InactiveProducer_Normal(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
-			NodePublicKey:  make([]byte, 33),
+			OwnerPublicKey: randomPublicKey(),
+			NodePublicKey:  randomPublicKey(),
 		}
-		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -958,12 +957,13 @@ func TestState_InactiveProducer_Normal(t *testing.T) {
 	}
 
 	// arbitrators should set inactive after continuous three blocks
-	arbitrators.CurrentArbitrators = [][]byte{
-		producers[0].NodePublicKey,
-		producers[1].NodePublicKey,
-		producers[2].NodePublicKey,
-		producers[3].NodePublicKey,
-		producers[4].NodePublicKey,
+	ar1, _ := NewOriginArbiter(Origin, producers[0].NodePublicKey)
+	ar2, _ := NewOriginArbiter(Origin, producers[1].NodePublicKey)
+	ar3, _ := NewOriginArbiter(Origin, producers[2].NodePublicKey)
+	ar4, _ := NewOriginArbiter(Origin, producers[3].NodePublicKey)
+	ar5, _ := NewOriginArbiter(Origin, producers[4].NodePublicKey)
+	arbitrators.CurrentArbitrators = []ArbiterMember{
+		ar1, ar2, ar3, ar4, ar5,
 	}
 
 	currentHeight := 11
@@ -1005,10 +1005,9 @@ func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
-			NodePublicKey:  make([]byte, 33),
+			OwnerPublicKey: randomPublicKey(),
+			NodePublicKey:  randomPublicKey(),
 		}
-		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -1031,12 +1030,13 @@ func TestState_InactiveProducer_FailNoContinuous(t *testing.T) {
 	}
 
 	// arbitrators should set inactive after continuous three blocks
-	arbitrators.CurrentArbitrators = [][]byte{
-		producers[0].NodePublicKey,
-		producers[1].NodePublicKey,
-		producers[2].NodePublicKey,
-		producers[3].NodePublicKey,
-		producers[4].NodePublicKey,
+	ar1, _ := NewOriginArbiter(Origin, producers[0].NodePublicKey)
+	ar2, _ := NewOriginArbiter(Origin, producers[1].NodePublicKey)
+	ar3, _ := NewOriginArbiter(Origin, producers[2].NodePublicKey)
+	ar4, _ := NewOriginArbiter(Origin, producers[3].NodePublicKey)
+	ar5, _ := NewOriginArbiter(Origin, producers[4].NodePublicKey)
+	arbitrators.CurrentArbitrators = []ArbiterMember{
+		ar1, ar2, ar3, ar4, ar5,
 	}
 
 	currentHeight := 11
@@ -1081,10 +1081,9 @@ func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
-			NodePublicKey:  make([]byte, 33),
+			OwnerPublicKey: randomPublicKey(),
+			NodePublicKey:  randomPublicKey(),
 		}
-		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -1107,12 +1106,13 @@ func TestState_InactiveProducer_RecoverFromInactiveState(t *testing.T) {
 	}
 
 	// arbitrators should set inactive after continuous three blocks
-	arbitrators.CurrentArbitrators = [][]byte{
-		producers[0].NodePublicKey,
-		producers[1].NodePublicKey,
-		producers[2].NodePublicKey,
-		producers[3].NodePublicKey,
-		producers[4].NodePublicKey,
+	ar1, _ := NewOriginArbiter(Origin, producers[0].NodePublicKey)
+	ar2, _ := NewOriginArbiter(Origin, producers[1].NodePublicKey)
+	ar3, _ := NewOriginArbiter(Origin, producers[2].NodePublicKey)
+	ar4, _ := NewOriginArbiter(Origin, producers[3].NodePublicKey)
+	ar5, _ := NewOriginArbiter(Origin, producers[4].NodePublicKey)
+	arbitrators.CurrentArbitrators = []ArbiterMember{
+		ar1, ar2, ar3, ar4, ar5,
 	}
 
 	currentHeight := 11
@@ -1173,10 +1173,9 @@ func TestState_InactiveProducer_DuringUpdateVersion(t *testing.T) {
 	producers := make([]*payload.ProducerInfo, 10)
 	for i, p := range producers {
 		p = &payload.ProducerInfo{
-			OwnerPublicKey: randomOwnerPublicKey(),
-			NodePublicKey:  make([]byte, 33),
+			OwnerPublicKey: randomPublicKey(),
+			NodePublicKey:  randomPublicKey(),
 		}
-		rand.Read(p.NodePublicKey)
 		p.NickName = fmt.Sprintf("Producer-%d", i+1)
 		producers[i] = p
 	}
@@ -1208,12 +1207,13 @@ func TestState_InactiveProducer_DuringUpdateVersion(t *testing.T) {
 	}), nil)
 
 	// arbitrators should set inactive after continuous three blocks
-	arbitrators.CurrentArbitrators = [][]byte{
-		producers[0].NodePublicKey,
-		producers[1].NodePublicKey,
-		producers[2].NodePublicKey,
-		producers[3].NodePublicKey,
-		producers[4].NodePublicKey,
+	ar1, _ := NewOriginArbiter(Origin, producers[0].NodePublicKey)
+	ar2, _ := NewOriginArbiter(Origin, producers[1].NodePublicKey)
+	ar3, _ := NewOriginArbiter(Origin, producers[2].NodePublicKey)
+	ar4, _ := NewOriginArbiter(Origin, producers[3].NodePublicKey)
+	ar5, _ := NewOriginArbiter(Origin, producers[4].NodePublicKey)
+	arbitrators.CurrentArbitrators = []ArbiterMember{
+		ar1, ar2, ar3, ar4, ar5,
 	}
 
 	currentHeight++

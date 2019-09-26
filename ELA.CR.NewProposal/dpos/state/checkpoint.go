@@ -13,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 const (
@@ -37,10 +36,10 @@ type CheckPoint struct {
 	StateKeyFrame
 	Height                     uint32
 	DutyIndex                  int
-	CurrentArbitrators         [][]byte
-	NextArbitrators            [][]byte
-	NextCandidates             [][]byte
-	CurrentCandidates          [][]byte
+	CurrentArbitrators         []ArbiterMember
+	NextArbitrators            []ArbiterMember
+	NextCandidates             []ArbiterMember
+	CurrentCandidates          []ArbiterMember
 	CurrentReward              RewardData
 	NextReward                 RewardData
 	accumulativeReward         common.Fixed64
@@ -90,9 +89,9 @@ func (c *CheckPoint) Snapshot() checkpoint.ICheckPoint {
 	point := &CheckPoint{
 		Height:             c.Height,
 		DutyIndex:          c.arbitrators.dutyIndex,
-		CurrentCandidates:  make([][]byte, 0),
-		NextArbitrators:    make([][]byte, 0),
-		NextCandidates:     make([][]byte, 0),
+		CurrentCandidates:  make([]ArbiterMember, 0),
+		NextArbitrators:    make([]ArbiterMember, 0),
+		NextCandidates:     make([]ArbiterMember, 0),
 		CurrentReward:      *NewRewardData(),
 		NextReward:         *NewRewardData(),
 		CurrentArbitrators: c.arbitrators.currentArbitrators,
@@ -159,19 +158,19 @@ func (c *CheckPoint) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = c.writeBytesArray(w, c.CurrentArbitrators); err != nil {
+	if err = c.writeArbiters(w, c.CurrentArbitrators); err != nil {
 		return
 	}
 
-	if err = c.writeBytesArray(w, c.CurrentCandidates); err != nil {
+	if err = c.writeArbiters(w, c.CurrentCandidates); err != nil {
 		return
 	}
 
-	if err = c.writeBytesArray(w, c.NextArbitrators); err != nil {
+	if err = c.writeArbiters(w, c.NextArbitrators); err != nil {
 		return
 	}
 
-	if err = c.writeBytesArray(w, c.NextCandidates); err != nil {
+	if err = c.writeArbiters(w, c.NextCandidates); err != nil {
 		return
 	}
 
@@ -198,19 +197,19 @@ func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 	}
 	c.DutyIndex = int(dutyIndex)
 
-	if c.CurrentArbitrators, err = c.readBytesArray(r); err != nil {
+	if c.CurrentArbitrators, err = c.readArbiters(r); err != nil {
 		return
 	}
 
-	if c.CurrentCandidates, err = c.readBytesArray(r); err != nil {
+	if c.CurrentCandidates, err = c.readArbiters(r); err != nil {
 		return
 	}
 
-	if c.NextArbitrators, err = c.readBytesArray(r); err != nil {
+	if c.NextArbitrators, err = c.readArbiters(r); err != nil {
 		return
 	}
 
-	if c.NextCandidates, err = c.readBytesArray(r); err != nil {
+	if c.NextCandidates, err = c.readArbiters(r); err != nil {
 		return
 	}
 
@@ -225,34 +224,35 @@ func (c *CheckPoint) Deserialize(r io.Reader) (err error) {
 	return c.StateKeyFrame.Deserialize(r)
 }
 
-func (c *CheckPoint) writeBytesArray(w io.Writer, bytesArray [][]byte) error {
-	if err := common.WriteVarUint(w, uint64(len(bytesArray))); err != nil {
+func (c *CheckPoint) writeArbiters(w io.Writer,
+	arbiters []ArbiterMember) error {
+	if err := common.WriteVarUint(w, uint64(len(arbiters))); err != nil {
 		return err
 	}
 
-	for _, b := range bytesArray {
-		if err := common.WriteVarBytes(w, b); err != nil {
+	for _, ar := range arbiters {
+		if err := SerializeArbiterMember(ar, w); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (c *CheckPoint) readBytesArray(r io.Reader) ([][]byte, error) {
+func (c *CheckPoint) readArbiters(r io.Reader) ([]ArbiterMember, error) {
 	count, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	bytesArray := make([][]byte, 0, count)
+	arbiters := make([]ArbiterMember, 0, count)
 	for i := uint64(0); i < count; i++ {
-		arbiter, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "arbiter")
+		arbiter, err := ArbiterMemberFromReader(r)
 		if err != nil {
 			return nil, err
 		}
-		bytesArray = append(bytesArray, arbiter)
+		arbiters = append(arbiters, arbiter)
 	}
-	return bytesArray, nil
+	return arbiters, nil
 }
 
 func (c *CheckPoint) initFromArbitrators(ar *arbitrators) {
