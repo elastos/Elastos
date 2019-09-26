@@ -80,15 +80,6 @@ export const Suggestion = {
     type: String,
     enum: _.values(constant.CONTENT_TYPE)
   },
-  editHistory: [
-    {
-      ...SuggestionCore,
-      updatedAt: {
-        type: Date,
-        default: Date.now
-      }
-    }
-  ],
   likes: {
     type: [Schema.Types.ObjectId],
     default: []
