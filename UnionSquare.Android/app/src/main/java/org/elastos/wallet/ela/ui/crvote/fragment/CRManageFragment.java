@@ -29,6 +29,7 @@ import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRManagePresenter;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
@@ -102,8 +103,8 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     CRManagePresenter presenter;
     PwdPresenter pwdpresenter = new PwdPresenter();
     String status;
-    private String did;
     private String info;
+    private String ownerPublicKey;
     private CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode;
 
     @Override
@@ -132,8 +133,8 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
             tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
             tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(curentNode.getVoterate()) * 100 + "", 5) + "%");
         }
+        presenter = new CRManagePresenter();
 
-        did = data.getString("did");
         //这里只会有 "Registered", "Canceled"分别代表, 已注册过, 已注销(不知道可不可提取)
         if (status.equals("Canceled")) {
             //已经注销了
@@ -142,10 +143,9 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
             ll_tq.setVisibility(View.VISIBLE);
             JSONObject jsonObject = JSON.parseObject(info);
             long height = jsonObject.getLong("Confirms");
-            presenter = new CRManagePresenter();
             if (height >= 2160) {
                 //获取赎回金额
-                presenter.getCRDepositcoin(did, this);
+                new CRSignUpPresenter().getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
             }
         } else {
             //Registered 未注销展示选举信息
@@ -179,7 +179,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
                 break;
 
             case R.id.sb_zx:
-                dialogUtil.showWarmPrompt2(getBaseActivity(), getString(R.string.prompt), new WarmPromptListener() {
+                dialogUtil.showWarmPrompt2(getBaseActivity(), getString(R.string.quitcrornot), new WarmPromptListener() {
                             @Override
                             public void affireBtnClick(View view) {
                                 showWarmPromptInput();
@@ -207,7 +207,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     String pwd;
 
 
-    private void  onJustRegistered(String data) {
+    private void onJustRegistered(String data) {
 
         CRMenberInfoBean bean = JSON.parseObject(data, CRMenberInfoBean.class);
         tvName.setText(bean.getNickName());
@@ -240,7 +240,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
         });
         tvUrl.setText(url);
         tvDid.setText(bean.getCROwnerDID());
-
+        ownerPublicKey = bean.getCROwnerPublicKey();
     }
 
 
@@ -252,7 +252,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
             showToastMessage(getString(R.string.pwdnoempty));
             return;
         }
-        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, did, pwd, this);
+        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
     }
 
 
@@ -311,7 +311,12 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
                 sbtq.setVisibility(View.VISIBLE);
                 break;
 
-
+            //获取钱包owner公钥
+            case "getCROwnerPublicKey":
+                ownerPublicKey = ((CommmonStringEntity) baseEntity).getData();
+                //getdepositcoin();//获取赎回金额
+                presenter.getCRDepositcoin(ownerPublicKey, this);
+                break;
         }
     }
 }

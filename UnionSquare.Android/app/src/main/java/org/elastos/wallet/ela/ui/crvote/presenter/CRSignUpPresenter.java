@@ -10,17 +10,7 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 
 public class CRSignUpPresenter extends NewPresenterAbstract {
-    //为了验证密码
-    public void exportWalletWithMnemonic(String walletId, String pwd, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "exportWalletWithMnemonic");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().exportWalletWithMnemonic(walletId, pwd);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
+
 
     public void getCROwnerPublicKey(String walletId, String chainID, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "getCROwnerPublicKey");

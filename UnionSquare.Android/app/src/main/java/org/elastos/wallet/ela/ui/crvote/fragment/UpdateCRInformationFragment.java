@@ -20,6 +20,8 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
+import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
@@ -139,7 +141,7 @@ public class UpdateCRInformationFragment extends BaseFragment implements WarmPro
             showToastMessage(getString(R.string.pwdnoempty));
             return;
         }
-        presenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
+        new WallletManagePresenter().verifyPayPassword(wallet.getWalletId(), pwd, this);
     }
 
 
@@ -187,19 +189,23 @@ public class UpdateCRInformationFragment extends BaseFragment implements WarmPro
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-        String data = ((CommmonStringEntity) baseEntity).getData();
+
         switch (methodName) {
             //验证密码
-            case "exportWalletWithMnemonic":
-
-                presenter.generateCRInfoPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, name, url, code, pwd, this);
+            case "verifyPayPassword":
+                boolean result = ((CommmonBooleanEntity) baseEntity).getData();
+                if (result) {
+                    presenter.generateCRInfoPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, name, url, code, pwd, this);
+                } else {
+                    showToastMessage(getString(R.string.error_20003));
+                }
                 break;
             case "generateCRInfoPayload":
-                presenter.createUpdateCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
+                presenter.createUpdateCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), "", false, this);
                 break;
             //创建交易
             case "createUpdateCRTransaction":
-                pwdPresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
+                pwdPresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), pwd, this);
                 dialogUtil.dialogDismiss();
                 break;
         }

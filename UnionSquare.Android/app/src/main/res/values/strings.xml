@@ -439,5 +439,9 @@
     <string name="addsucess">加入成功</string>
     <string name="crinfor">委员信息</string>
     <string name="quitcr">退出参选</string>
-    <string name="officeweb">官网网址</string>
+    <string name="officeweb">竞选网址</string>
+    <string name="quitcrornot">是否退出本届CR选举？\n一旦退出本届选举，所有投票清零且不可恢复。</string>
+    <string name="plzinputcrurl">请输入竞选网址</string>
+    <string name="invalidcr">候选节点已失效</string>
+    <string name="all">共&#160;</string>
 </resources>

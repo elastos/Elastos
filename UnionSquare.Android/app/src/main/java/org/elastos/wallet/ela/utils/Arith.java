@@ -60,6 +60,10 @@ public class Arith {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
         return b1.multiply(b2);
+    }public static BigDecimal mul(Object v1, Object v2) {
+        BigDecimal b1 = new BigDecimal(v1.toString());
+        BigDecimal b2 = new BigDecimal(v2.toString());
+        return b1.multiply(b2);
     }
 
     /**

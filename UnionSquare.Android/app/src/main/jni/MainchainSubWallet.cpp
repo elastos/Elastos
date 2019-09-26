@@ -456,7 +456,7 @@ static jstring JNICALL GenerateUnregisterCRPayload(JNIEnv *env, jobject clazz, j
 
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
-        nlohmann::json payloadJson = wallet->GenerateCancelProducerPayload(publicKey, payPasswd);
+        nlohmann::json payloadJson = wallet->GenerateUnregisterCRPayload(publicKey, payPasswd);
         payload = env->NewStringUTF(payloadJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
