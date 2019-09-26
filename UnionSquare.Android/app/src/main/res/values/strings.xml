@@ -444,4 +444,6 @@
     <string name="plzinputcrurl">请输入竞选网址</string>
     <string name="invalidcr">候选节点已失效</string>
     <string name="all">共&#160;</string>
+    <string name="cr_website_cannot_be_empty">竞选网址不能为空</string>
+    <string name="transactiondetail">交易详情</string>
 </resources>

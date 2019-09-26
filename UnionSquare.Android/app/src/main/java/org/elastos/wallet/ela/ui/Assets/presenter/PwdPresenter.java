@@ -86,7 +86,18 @@ public class PwdPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseActivity);
     }
-
+    //创建交易
+    public void createUpdateProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO
+            , BaseActivity baseActivity) {
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().createUpdateProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson, memo, useVotedUTXO);
+            }
+        });
+        subscriberObservable(observer, observable,baseActivity);
+    }
     //创建交易
     public void createRegisterProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO
             , BaseActivity baseActivity) {

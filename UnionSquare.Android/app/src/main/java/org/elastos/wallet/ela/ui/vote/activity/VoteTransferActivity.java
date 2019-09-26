@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
@@ -13,6 +14,7 @@ import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.utils.AndroidWorkaround;
 import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.greenrobot.eventbus.Subscribe;
@@ -33,6 +35,8 @@ public class VoteTransferActivity extends BaseActivity {
     TextView tvAmount;
     @BindView(R.id.tv_charge)
     TextView tvCharge;
+    @BindView(R.id.ll_amount)
+    LinearLayout llAmount;
     private String amount, chainId;
     private long fee;
 
@@ -62,7 +66,15 @@ public class VoteTransferActivity extends BaseActivity {
         chainId = data.getStringExtra("chainId");
         tvAmount.setText(amount + " " + chainId);
         tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + chainId);//0.0001
+        String type = data.getStringExtra("type");
+        switch (type) {
+            case Constant.CRUPDATE:
+            case Constant.UPDATENODEINFO:
+                llAmount.setVisibility(View.GONE);
 
+                break;
+
+        }
     }
 
     @OnClick({R.id.tv_next})

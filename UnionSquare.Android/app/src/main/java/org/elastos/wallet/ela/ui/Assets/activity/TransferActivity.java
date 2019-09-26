@@ -40,6 +40,8 @@ public class TransferActivity extends BaseActivity {
     TextView tvCharge;
     @BindView(R.id.ll_rate)
     LinearLayout llRate;
+    @BindView(R.id.ll_amount)
+    LinearLayout llAmount;
     @BindView(R.id.ll_address)
     LinearLayout llAddress;
     private Wallet wallet;
@@ -107,7 +109,7 @@ public class TransferActivity extends BaseActivity {
                 //转账
                 llRate.setVisibility(View.GONE);
                 break;
-            case Constant.SUPERNODEVOTE:
+            case Constant.SUPERNODESIGN:
             case Constant.CRVOTE:
                 //超级节点投票  cr投票
                 llRate.setVisibility(View.GONE);

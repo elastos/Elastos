@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.vote.UpdateInformation;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -18,19 +19,22 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
+import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpPresenter;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
-import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -42,7 +46,7 @@ import butterknife.OnClick;
 /**
  * 更新信息
  */
-public class UpdateInformationFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData {
+public class UpdateInformationFragment extends BaseFragment implements NewBaseViewData {
 
 
     @BindView(R.id.statusbarutil_fake_status_bar_view)
@@ -128,12 +132,8 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
                     ToastUtils.showShort(getString(R.string.please_enter_the_correct_url));
                     return;
                 }*/
-                dialogUtil.showWarmPrompt1(getBaseActivity(), getString(R.string.charge) + ":0.0001ELA", new WarmPromptListener() {
-                    @Override
-                    public void affireBtnClick(View view) {
-                        showWarmPromptInput();
-                    }
-                });
+                new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+
 
                 break;
             case R.id.ll_area:
@@ -143,50 +143,26 @@ public class UpdateInformationFragment extends BaseFragment implements WarmPromp
         }
     }
 
-    private void showWarmPromptInput() {
-        dialogUtil.showWarmPromptInput(getBaseActivity(), getString(R.string.securitycertificate), getString(R.string.inputWalletPwd), this);
-    }
 
     @Override
-    public void affireBtnClick(View view) {
-        pwd = ((EditText) view).getText().toString().trim();
-        if (TextUtils.isEmpty(pwd)) {
-            showToastMessage(getString(R.string.pwdnoempty));
-            return;
-        }
-        new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
-    }
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
-
-    @Override
-    public void onGetCommonData(String methodname, String data) {
-
-        switch (methodname) {
-
+        switch (methodName) {
             //验证密码
-            case "exportWalletWithMnemonic":
+            case "getFee":
+                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("type", Constant.UPDATENODEINFO);
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("ownerPublicKey", ownerPublicKey);
+                intent.putExtra("nodePublicKey", nodePublicKey);
+                intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                intent.putExtra("name", name);
+                intent.putExtra("url", url);
+                intent.putExtra("code", code);
+                startActivity(intent);
+                break;
 
-                presenter.generateProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, nodePublicKey, name, url, net, code, pwd, this);
-                break;
-            //验证交易
-            case "generateProducerPayload":
-                KLog.a(data);
-                presenter.createUpdateProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
-                break;
-            //创建交易
-            case "createUpdateProducerTransaction":
-                pwdPresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
-                dialogUtil.dialogDismiss();
-                break;
-
-            case "signTransaction":
-                pwdPresenter.publishTransaction(wallet.getWalletId(), MyWallet.ELA, data, this);
-                break;
-            case "publishTransaction":
-                ToastUtils.showShort(R.string.update_successful);
-                //post(RxEnum.TRANSFERSUCESS.ordinal(), getString(R.string.for_successful), null);
-                _mActivity.onBackPressed();
-                break;
         }
     }
 

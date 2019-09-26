@@ -13,6 +13,7 @@ import org.elastos.wallet.ela.rxjavahelp.CommonEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
 import org.elastos.wallet.ela.ui.common.bean.CommmonBooleanEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonObjectWithMethNameEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
@@ -576,6 +577,39 @@ public class MyWallet {
     // args[4]: long amount
     // args[5]: String memo
     // args[6]: Boolean useVotedUTXO
+    public BaseEntity getFee(String masterWalletID, String chainID, String fromAddress,
+                             String toAddress, String amount) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+            }
+
+            String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, "");
+            long fee = MyWallet.feePerKb;
+            try {
+                JSONObject jsonObject = new JSONObject(tx);
+
+                if (jsonObject.has("Fee")) {
+                    fee = jsonObject.getLong("Fee");
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return new CommmonLongEntity(SUCCESSCODE, fee);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID) + " tx");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String fromAddress
+    // args[3]: String toAddress
+    // args[4]: long amount
+    // args[5]: String memo
+    // args[6]: Boolean useVotedUTXO
     public BaseEntity createTransaction(String masterWalletID, String chainID, String fromAddress,
                                         String toAddress, String amount, String memo, boolean useVotedUTXO) {
         try {
@@ -591,7 +625,6 @@ public class MyWallet {
             return exceptionProcess(e, "Create " + formatWalletName(masterWalletID, chainID) + " tx");
         }
     }
-
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -846,7 +879,9 @@ public class MyWallet {
         } catch (WalletException e) {
             return exceptionProcess(e, "verifyPayPassword " + formatWalletName(masterWalletID));
         }
-    } public BaseEntity verifyPassPhrase(String masterWalletID,String passphrase, String payPasswd) {
+    }
+
+    public BaseEntity verifyPassPhrase(String masterWalletID, String passphrase, String payPasswd) {
         try {
             MasterWallet masterWallet = getMasterWallet(masterWalletID);
             if (masterWallet == null) {
@@ -854,7 +889,7 @@ public class MyWallet {
 
             }
 
-            boolean result = masterWallet.VerifyPassPhrase(passphrase,payPasswd);
+            boolean result = masterWallet.VerifyPassPhrase(passphrase, payPasswd);
             return new CommmonBooleanEntity(SUCCESSCODE, result);
         } catch (WalletException e) {
             return exceptionProcess(e, "verifyPassPhrase " + formatWalletName(masterWalletID));

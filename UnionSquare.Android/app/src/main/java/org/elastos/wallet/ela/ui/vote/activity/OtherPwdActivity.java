@@ -83,13 +83,15 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 }
                 presenter = new PwdPresenter();
                 switch (type) {
-                    case Constant.SUPERNODEVOTE:
+                    case Constant.SUPERNODESIGN:
+                    case Constant.UPDATENODEINFO:
                         presenter.generateProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, nodePublicKey, name, url, "", code, pwd, this);
                         break;
                     case Constant.CRSIGNUP:
+                    case Constant.CRUPDATE:
                         presenter.generateCRInfoPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, name, url, code, pwd, this);
-
                         break;
+
                 }
                 break;
 
@@ -101,10 +103,14 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
             case "generateProducerPayload":
-                presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), "", true, this);
-
+                if (type.equals(Constant.SUPERNODESIGN)) {
+                    presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), "", true, this);
+                } else if (type.equals(Constant.UPDATENODEINFO)) {
+                    presenter.createUpdateProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
+                }
                 break;
             case "createRegisterProducerTransaction":
+            case "createUpdateProducerTransaction":
                 presenter.signTransaction(wallet.getWalletId(), chainId, data, pwd, this);
                 break;
             case "signTransaction":
@@ -126,10 +132,15 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
 
             //验证交易
             case "generateCRInfoPayload":
-                presenter.createRegisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
+                if (type.equals(Constant.CRSIGNUP)) {
+                    presenter.createRegisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
+                } else if (type.equals(Constant.CRUPDATE)) {
+                    presenter.createUpdateCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), "", false, this);
+                }
                 break;
             //创建交易
             case "createRegisterCRTransaction":
+            case "createUpdateCRTransaction":
                 presenter.signTransaction(wallet.getWalletId(), chainId, ((CommmonStringEntity) baseEntity).getData(), pwd, this);
                 break;
         }
