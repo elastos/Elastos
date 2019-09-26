@@ -60,7 +60,6 @@ var KillCmd = &cobra.Command{
 						if err := cli.ContainerStop(ctx, container.ID, nil); err != nil {
 							log.Fatal(err)
 						}
-						fmt.Printf("Removing container '%v' with ID '%v'...\n", containerName[1:], container.ID[:10])
 						if err := cli.ContainerRemove(ctx, container.ID, types.ContainerRemoveOptions{Force: true}); err != nil {
 							log.Fatal(err)
 						}
@@ -71,7 +70,6 @@ var KillCmd = &cobra.Command{
 								if err := cli.ContainerStop(ctx, container.ID, nil); err != nil {
 									log.Fatal(err)
 								}
-								fmt.Printf("Removing container '%v' with ID '%v'...\n", containerName[1:], container.ID[:10])
 								if err := cli.ContainerRemove(ctx, container.ID, types.ContainerRemoveOptions{Force: true}); err != nil {
 									log.Fatal(err)
 								}

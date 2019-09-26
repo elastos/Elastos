@@ -21,6 +21,12 @@ THE SOFTWARE.
 */
 package blockchain
 
+import (
+	"os"
+
+	"github.com/docker/go-connections/nat"
+)
+
 type DockerPort struct {
 	ContainerRESTPort string
 	ContainerRPCPort  string
@@ -28,25 +34,50 @@ type DockerPort struct {
 	HostRPCPort       string
 }
 
+type DockerContainerDataDir struct {
+	HostCreate    bool
+	ContainerPath string
+}
+
+type DockerContainer struct {
+	ContainerName         string
+	ImageName             string
+	Volumes               map[string]DockerContainerDataDir
+	ContainerExposedPorts nat.PortSet
+	HostPortMappings      nat.PortMap
+	Networks              []string
+}
+
 var (
 	Env                string
 	Nodes              string
+	CurrentDir         = getCurrentDir()
 	NodeDockerImageMap = map[string]string{
-		"mainchain": "cyberrepublic/elastos-mainchain-node:v0.3.7",
-		"did":       "cyberrepublic/elastos-sidechain-did-node:v0.1.3",
-		"token":     "cyberrepublic/elastos-sidechain-token-node:v0.1.2",
-		"eth":       "cyberrepublic/elastos-sidechain-eth-node:dev",
+		"mainchain":         "cyberrepublic/elastos-mainchain-node:v0.3.7",
+		"did":               "cyberrepublic/elastos-sidechain-did-node:v0.1.3",
+		"token":             "cyberrepublic/elastos-sidechain-token-node:v0.1.2",
+		"eth":               "cyberrepublic/elastos-sidechain-eth-node:dev",
+		"eth.oracle":        "cyberrepublic/elastos-sidechain-eth-oracle:v0.0.1",
+		"arbitrator":        "cyberrepublic/elastos-arbitrator-node:v0.1.2",
+		"service.wallet":    "cyberrepublic/elastos-wallet-service:latest",
+		"service.sidechain": "cyberrepublic/elastos-sidechain-service:latest",
 	}
 	NodeDockerDataPathMap = map[string]string{
-		"mainchain": "/ela/elastos",
-		"did":       "/did/elastos_did",
-		"token":     "/token/elastos_token",
-		"eth":       "/eth/elastos_eth",
+		"mainchain":  "/ela/elastos",
+		"did":        "/did/elastos_did",
+		"token":      "/token/elastos_token",
+		"eth":        "/eth/elastos_eth",
+		"arbitrator": "/arbiter/elastos_arbiter",
+	}
+	NodeDockerKeystorePathMap = map[string]string{
+		"mainchain":  "/ela/keystore.dat",
+		"arbitrator": "/arbiter/elastos_arbiter",
 	}
 	NodeDockerConfigPathMap = map[string]string{
-		"mainchain": "/ela/config.json",
-		"did":       "/did/config.json",
-		"token":     "/token/config.json",
+		"mainchain":  "/ela/config.json",
+		"did":        "/did/config.json",
+		"token":      "/token/config.json",
+		"arbitrator": "/arbiter/config.json",
 	}
 	NodeDockerPortMainChain = map[string]DockerPort{
 		"mainnet":  DockerPort{"20334", "20336", "20334", "20336"},
@@ -69,3 +100,11 @@ var (
 		"localnet": DockerPort{ContainerRPCPort: "20636", HostRPCPort: "22636"},
 	}
 )
+
+func getCurrentDir() string {
+	var currentDir string
+	if pwd, err := os.Getwd(); err == nil {
+		currentDir = pwd
+	}
+	return currentDir
+}

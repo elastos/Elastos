@@ -3,11 +3,10 @@
         "Magic": 7630401,
         "DisableDNS": true,
         "PermanentPeers": [
-            "privnet-mainchain-node:20338",
-            "privnet-mainchain-crc-1:20338",
-            "privnet-mainchain-crc-2:20338",
-            "privnet-mainchain-dpos-1:20338",
-            "privnet-mainchain-dpos-2:20338"
+            "develap-localnet-mainchain-crc-1:20338",
+            "develap-localnet-mainchain-crc-2:20338",
+            "develap-localnet-mainchain-origin-1:20338",
+            "develap-localnet-mainchain-origin-2:20338"
         ],
         "HttpRestStart": true,
         "EnableRPC": true,
@@ -33,7 +32,7 @@
         "DPoSConfiguration": {
             "EnableArbiter": true,
             "Magic": 7630403,
-            "IPAddress": "privnet-mainchain-dpos-2",
+            "IPAddress": "develap-localnet-mainchain-origin-2",
             "PrintLevel": 1,
             "SignTolerance": 5,
             "MaxLogsSize": 0,

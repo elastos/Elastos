@@ -8,13 +8,13 @@
         "MaxPerLogSize": 0,
         "MainNode": {
             "Rpc": {
-                "IpAddress": "privnet-mainchain-crc-1",
+                "IpAddress": "develap-localnet-mainchain-crc-1",
                 "HttpJsonPort": 20336,
                 "User": "",
                 "Pass": ""
             },
             "SpvSeedList": [
-                "privnet-mainchain-crc-1:20338"
+                "develap-localnet-mainchain-crc-1:20338"
             ],
             "Magic": 7630401,
             "FoundationAddress": "Ee2LLZCw3JV4pH12LSkbQJZY5DNqevyQTa"
@@ -22,7 +22,7 @@
         "SideNodeList": [
             {
                 "Rpc": {
-                    "IpAddress": "privnet-sidechain-did-node",
+                    "IpAddress": "develap-localnet-did-node",
                     "HttpJsonPort": 20606,
                     "User": "",
                     "Pass": ""
@@ -35,7 +35,7 @@
             },
             {
                 "Rpc":{
-                    "IpAddress":"privnet-sidechain-token-node",
+                    "IpAddress":"develap-localnet-token-node",
                     "HttpJsonPort": 20616,
                     "Pass":"",
                     "User":""
@@ -48,7 +48,7 @@
             },
             {
                 "Rpc":{
-                    "IpAddress":"privnet-sidechain-eth-oracle-node",
+                    "IpAddress":"develap-localnet-eth-oracle-node",
                     "HttpJsonPort": 20632,
                     "Pass":"",
                     "User":""
@@ -68,7 +68,7 @@
             "0386206d1d442f5c8ddcc9ae45ab85d921b6ade3a184f43b7ccf6de02f3ca0b450",
             "0353197d11802fe0cd5409f064822b896ceaa675ea596287f1e5ce009be7684f08"
         ],
-        "DPoSNetAddress": "privnet-mainchain-crc-1:20339",
+        "DPoSNetAddress": "develap-localnet-mainchain-crc-1:20339",
         "CRCOnlyDPOSHeight": 200,
         "SyncInterval": 1000,
         "SideChainMonitorScanInterval": 1000,

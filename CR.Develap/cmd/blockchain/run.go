@@ -23,7 +23,6 @@ package blockchain
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -61,35 +60,128 @@ var RunCmd = &cobra.Command{
 
 		nodes := strings.Split(strings.Replace(Nodes, " ", "", -1), ",")
 		if strings.EqualFold(Env, "localnet") {
-			if err := setupLocalNetDockerContainers(ctx, cli); err != nil {
-				log.Print(err)
-			} else {
-				fmt.Println("Set up initial localnet successfully")
-			}
-		}
-
-		for _, node := range nodes {
-			if node == "eth" && strings.EqualFold(Env, "mainnet") {
-				log.Fatalf("%s not recognized as a valid net type for %s\n", Env, node)
-			}
-			if node == "mainchain" || node == "did" || node == "token" || node == "eth" {
-				if resp, err := runDockerContainer(ctx, cli, node); err != nil {
-					log.Print(err)
-				} else {
-					fmt.Printf("Container ID: %v\n", resp.ID)
+			setupLocalNetDockerContainers(ctx, cli)
+			fmt.Printf("\nSet up initial localnet successfully")
+		} else {
+			for _, node := range nodes {
+				if node == "eth" && strings.EqualFold(Env, "mainnet") {
+					log.Fatalf("%s not recognized as a valid net type for %s\n", Env, node)
 				}
-			} else {
-				log.Fatalf("%s not recognized as a valid node type\n", node)
+				if node == "mainchain" || node == "did" || node == "token" || node == "eth" {
+					if resp, err := runDockerContainer(ctx, cli, node); err != nil {
+						log.Print(err)
+					} else {
+						fmt.Printf("\nNetwork: %s\nContainer Type: %s\nContainer ID: %v\n", Env, node, resp.ID[:10])
+					}
+				} else {
+					log.Fatalf("%s not recognized as a valid node type\n", node)
+				}
 			}
 		}
 	},
 }
 
-// Placeholder for now
-func setupLocalNetDockerContainers(ctx context.Context, cli *client.Client) error {
-	var err error
+// Setup required nodes for Local Net
+func setupLocalNetDockerContainers(ctx context.Context, cli *client.Client) {
+	var (
+		resp container.ContainerCreateCreatedBody
+		err  error
+	)
 
-	return err
+	// Create a new network to be used for the localnet
+	networkResp, err := cli.NetworkCreate(ctx, "develap-localnet-blockchain-network", types.NetworkCreate{})
+	if err != nil {
+		log.Fatal("localnet could not be setup correctly: ", err)
+	}
+
+	// Setup mainchain nodes
+	if resp, err = setupLocalNetMainchainNode(ctx, cli, networkResp, "crc-1"); err != nil {
+		log.Fatal("localnet could not be setup correctly: ", err)
+	} else {
+		fmt.Printf("\nNetwork: localnet\nContainer Type: mainchain\nContainer Name: develap-localnet-mainchain-%s\nContainer ID: %v\n", "crc-1", resp.ID[:10])
+	}
+	if resp, err = setupLocalNetMainchainNode(ctx, cli, networkResp, "crc-2"); err != nil {
+		log.Fatal("localnet could not be setup correctly: ", err)
+	} else {
+		fmt.Printf("\nNetwork: localnet\nContainer Type: mainchain\nContainer Name: develap-localnet-mainchain-%s\nContainer ID: %v\n", "crc-2", resp.ID[:10])
+	}
+	if resp, err = setupLocalNetMainchainNode(ctx, cli, networkResp, "origin-1"); err != nil {
+		log.Fatal("localnet could not be setup correctly: ", err)
+	} else {
+		fmt.Printf("\nNetwork: localnet\nContainer Type: mainchain\nContainer Name: develap-localnet-mainchain-%s\nContainer ID: %v\n", "origin-1", resp.ID[:10])
+	}
+	if resp, err = setupLocalNetMainchainNode(ctx, cli, networkResp, "origin-2"); err != nil {
+		log.Fatal("localnet could not be setup correctly: ", err)
+	} else {
+		fmt.Printf("\nNetwork: localnet\nContainer Type: mainchain\nContainer Name: develap-localnet-mainchain-%s\nContainer ID: %v\n", "origin-2", resp.ID[:10])
+	}
+}
+
+func setupLocalNetMainchainNode(ctx context.Context, cli *client.Client, networkResp types.NetworkCreateResponse, name string) (container.ContainerCreateCreatedBody, error) {
+	var (
+		resp container.ContainerCreateCreatedBody
+		err  error
+	)
+
+	dockerContainer := DockerContainer{
+		ContainerName: fmt.Sprintf("develap-localnet-mainchain-%s", name),
+		ImageName:     NodeDockerImageMap["mainchain"],
+		Volumes: map[string]DockerContainerDataDir{
+			filepath.FromSlash(fmt.Sprintf("%s/data/localnet/mainchain/%s", CurrentDir, name)):         DockerContainerDataDir{true, NodeDockerDataPathMap["mainchain"]},
+			filepath.FromSlash(fmt.Sprintf("%s/localnet/mainchain/%s/config.json", CurrentDir, name)):  DockerContainerDataDir{false, NodeDockerConfigPathMap["mainchain"]},
+			filepath.FromSlash(fmt.Sprintf("%s/localnet/mainchain/%s/keystore.dat", CurrentDir, name)): DockerContainerDataDir{false, NodeDockerKeystorePathMap["mainchain"]},
+		},
+		ContainerExposedPorts: nat.PortSet{},
+		HostPortMappings:      nat.PortMap{},
+	}
+
+	// Pull the image from dockerhub
+	_, err = cli.ImagePull(ctx, dockerContainer.ImageName, types.ImagePullOptions{})
+	if err != nil {
+		return resp, err
+	}
+	// Create appropriate data directory that will be mounted between host and container
+	// Also, create the mount points in the process
+	var mounts = []mount.Mount{}
+	for hostPath, volume := range dockerContainer.Volumes {
+		if volume.HostCreate {
+			os.MkdirAll(hostPath, os.ModePerm)
+		}
+		// Create mountpoints
+		mounts = append(mounts, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: hostPath,
+			Target: volume.ContainerPath,
+		})
+	}
+	// Create the container
+	resp, err = cli.ContainerCreate(
+		ctx,
+		&container.Config{
+			Hostname:     dockerContainer.ContainerName,
+			Image:        dockerContainer.ImageName,
+			ExposedPorts: dockerContainer.ContainerExposedPorts,
+		},
+		&container.HostConfig{
+			PortBindings: dockerContainer.HostPortMappings,
+			Mounts:       mounts,
+		},
+		nil,
+		dockerContainer.ContainerName,
+	)
+	if err != nil {
+		return resp, err
+	}
+	// Start the container
+	if err = cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+		return resp, err
+	}
+	// Connect to the "blockchain" network
+	if err = cli.NetworkConnect(ctx, networkResp.ID, resp.ID, nil); err != nil {
+		return resp, err
+	}
+
+	return resp, nil
 }
 
 func runDockerContainer(ctx context.Context, cli *client.Client, node string) (container.ContainerCreateCreatedBody, error) {
@@ -98,11 +190,10 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) (c
 		err  error
 	)
 	imageName := NodeDockerImageMap[node]
-	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+	_, err = cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		return resp, err
 	}
-	io.Copy(os.Stdout, out)
 
 	var containerRESTPort, containerRPCPort, hostRESTPort, hostRPCPort nat.Port
 	if node == "mainchain" {
