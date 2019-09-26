@@ -2,7 +2,7 @@ package types
 
 import (
 	"bytes"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -201,7 +201,7 @@ func (p *PayloadDIDInfo) Deserialize(r io.Reader, version byte) error {
 	}
 
 	// get DIDPayloadInfo from payload data
-	pBytes, err := hex.DecodeString(p.Payload)
+	pBytes, err := base64.StdEncoding.DecodeString(p.Payload)
 	if err != nil {
 		return errors.New("[DIDInfo], payload decode failed")
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -180,7 +181,7 @@ func randomPayloadDID() *PayloadDIDInfo {
 			Specification: "elastos/did/1.0",
 			Operation:     getRandomOperation(),
 		},
-		Payload: hex.EncodeToString(didPayloadBytes),
+		Payload: base64.StdEncoding.EncodeToString(didPayloadBytes),
 		Proof: DIDProofInfo{
 			Type:               randomString(),
 			VerificationMethod: randomString(),
