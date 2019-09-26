@@ -1,6 +1,6 @@
 import Foundation
 import BitcoinKit
-//import CryptoSwift
+import CryptoSwift
 
 class DIDStore: NSObject {
 
@@ -42,8 +42,10 @@ class DIDStore: NSObject {
 
     func loadPrivateIdentityIndex() throws -> Int { return 0 }
 
-   private func encryptToBase64(_ passphrase: String ,_ input: Data) throws -> String{
-    // TODO:
+    private func encryptToBase64(_ passphrase: String ,_ input: String) throws -> String {
+        //       let encrypted: String = AES256CBC.encryptString(input, password: passphrase)!
+        //       return encrypted.toBase64()
+        // TODO:
         return ""
     }
 
@@ -62,7 +64,8 @@ class DIDStore: NSObject {
 
         // Save seed instead of root private key,
         // keep compatible with Native SDK
-        let encryptedIdentity = try encryptToBase64(passphrase, privateIdentity.getSeed())
+        let seedString = String(decoding: privateIdentity.getSeed(), as: UTF8.self)
+        let encryptedIdentity = try encryptToBase64(passphrase, seedString)
         try storePrivateIdentity(encryptedIdentity)
         try storePrivateIdentityIndex(lastIndex)
     }
@@ -216,18 +219,22 @@ class DIDStore: NSObject {
     public func deletePrivateKey(_ did: String,_ id: String) throws -> Bool {
         return try deletePrivateKey(DID(did), DIDURL(id))
     }
-
-//    public func sign(_ did: DID,_ id: DIDURL,_ passphrase: String,_ data: Array<Any>, _ nonce: Array<Any> ) throws -> String {
-//        return ""
-//    }
-//    public func sign(_ did: DID,_ id: DIDURL,_ passphrase: String,_ data: Array<Any>) throws -> String {
-//        return ""
-//    }
-//
-//    public func sign(did: String, _ id: String, _ passphrase: String, _ data: Array<Any>) throws -> String {
-//        return ""
-//    }
-
+    
+    public func sign(_ did: DID,_ id: DIDURL,_ passphrase: String,_ data: Array<Any>, _ nonce: Array<Any> ) throws -> String {
+        let privateKey: String = try loadPrivateKey(did, id: id)
+//        let binKey: String = try decryptFromBase64(passphrase, privateKey)
+        // todo
+        return ""
+    }
+    public func sign(_ did: DID,_ id: DIDURL,_ passphrase: String,_ data: Array<Any>) throws -> String {
+        return ""
+    }
+    
+    public func sign(did: String, _ id: String, _ passphrase: String, _ data: Array<Any>) throws -> String {
+        return ""
+    }
+    
+    
 }
 
 

@@ -161,44 +161,27 @@ class FileSystemStore: DIDStore {
     }
 
     override public func storePrivateIdentity(_ key: String) throws {
-
-        do {
-            let path = try getHDPrivateKeyFile(true)
-            try writeTextToPath(path, key)
-        }
-        catch{
-            // TODO throw error
-        }
+        let path = try getHDPrivateKeyFile(true)
+        try writeTextToPath(path, key)
     }
 
     override public func loadPrivateIdentity() throws -> String {
-
-        do {
-            let path = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
-
-            try readTextFromPath(path)
-        }
-        catch{
-            // TODO throw error
-        }
-        return ""
+        let path = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
+        return try readTextFromPath(path)
     }
 
     override public func storePrivateIdentityIndex(_ index: Int) throws {
-
-        do {
-            let targetPath = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
-            let path = try getFile(true, targetPath)
-            try writeTextToPath(path, String(index))
-            _ = try readTextFromPath(path)
-        }
-        catch{
-            // TODO throw error
-        }
+        let targetPath = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
+        let path = try getFile(true, targetPath)
+        try writeTextToPath(path, String(index))
+        _ = try readTextFromPath(path)
     }
 
     override func loadPrivateIdentityIndex() throws -> Int {
-        return 0
+        let targetPath = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
+        let path = try getFile(true, targetPath)
+        // TODO
+        return 0 
     }
 
     override public func setDidHint(_ did: DID,_ hint: String) throws {

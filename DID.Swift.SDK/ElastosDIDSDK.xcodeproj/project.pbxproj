@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1109D08923275DE000A03D56 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1109D08423275CFE00A03D56 /* Antlr4.framework */; };
+		11508520233CC64C00EF6A8D /* EcdsaSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */; };
+		11508522233CC65500EF6A8D /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508521233CC65400EF6A8D /* Base64.swift */; };
+		11508524233CC67B00EF6A8D /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508523233CC67B00EF6A8D /* DIDAdaptor.swift */; };
 		1189A4BF23386A9E0068EE41 /* PathExtracter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1189A4BE23386A9E0068EE41 /* PathExtracter.swift */; };
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94B137B2C485261F5B00CD58 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; };
@@ -51,6 +53,9 @@
 		067C25678EDA0C004955F401 /* Pods-ElastosDIDSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.debug.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.debug.xcconfig"; sourceTree = "<group>"; };
 		0CCD0722BB081BABCB596D2F /* Pods-ElastosDIDSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.release.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.release.xcconfig"; sourceTree = "<group>"; };
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
+		1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EcdsaSigner.swift; path = ElastosDIDSDK/DID/Util/EcdsaSigner.swift; sourceTree = SOURCE_ROOT; };
+		11508521233CC65400EF6A8D /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Base64.swift; path = ElastosDIDSDK/DID/Util/Base64.swift; sourceTree = SOURCE_ROOT; };
+		11508523233CC67B00EF6A8D /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/Backend/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		1189A4BE23386A9E0068EE41 /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PathExtracter.swift; path = ElastosDIDSDK/DID/Util/PathExtracter.swift; sourceTree = SOURCE_ROOT; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
@@ -100,7 +105,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1109D08923275DE000A03D56 /* Antlr4.framework in Frameworks */,
 				94B137B2C485261F5B00CD58 /* Pods_ElastosDIDSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -136,7 +140,6 @@
 		11F262A023260CF30009C103 = {
 			isa = PBXGroup;
 			children = (
-				A3E6D484233486050012CD77 /* Externals */,
 				11F262AC23260CF40009C103 /* ElastosDIDSDK */,
 				11F262AB23260CF40009C103 /* Products */,
 				1109D08723275DC600A03D56 /* Frameworks */,
@@ -204,6 +207,7 @@
 		11F262BB23260DFD0009C103 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				11508523233CC67B00EF6A8D /* DIDAdaptor.swift */,
 				A3E6D45D233485BB0012CD77 /* DIDBackend.swift */,
 				A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */,
 			);
@@ -213,19 +217,14 @@
 		11F262BC23260DFD0009C103 /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				11508521233CC65400EF6A8D /* Base64.swift */,
+				1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */,
 				1189A4BE23386A9E0068EE41 /* PathExtracter.swift */,
 				A3E6D461233485C90012CD77 /* DerivedKey.swift */,
 				A3E6D462233485C90012CD77 /* HDKey.swift */,
 				A3E6D460233485C90012CD77 /* JsonHelper.swift */,
 			);
 			path = Util;
-			sourceTree = "<group>";
-		};
-		A3E6D484233486050012CD77 /* Externals */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Externals;
 			sourceTree = "<group>";
 		};
 		FD074BC0D415E85B37CD7DAB /* Pods */ = {
@@ -350,6 +349,7 @@
 				A3E6D47D233485E00012CD77 /* DIDStoreError.swift in Sources */,
 				A3E6D482233485E00012CD77 /* DIDError.swift in Sources */,
 				A3E6D47F233485E00012CD77 /* Service.swift in Sources */,
+				11508522233CC65500EF6A8D /* Base64.swift in Sources */,
 				A3E6D465233485C90012CD77 /* HDKey.swift in Sources */,
 				A3E6D45A233485AD0012CD77 /* DIDURLParser.swift in Sources */,
 				A3E6D476233485DF0012CD77 /* MalformedCredentialError.swift in Sources */,
@@ -374,11 +374,13 @@
 				1189A4BF23386A9E0068EE41 /* PathExtracter.swift in Sources */,
 				A3E6D453233485AD0012CD77 /* DIDURLListener.swift in Sources */,
 				A3E6D45E233485BB0012CD77 /* IDChainRequest.swift in Sources */,
+				11508520233CC64C00EF6A8D /* EcdsaSigner.swift in Sources */,
 				A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */,
 				A3E6D457233485AD0012CD77 /* DIDURLLexerATN.swift in Sources */,
 				A3E6D47B233485E00012CD77 /* DID.swift in Sources */,
 				A3E6D478233485E00012CD77 /* DIDObject.swift in Sources */,
 				A3E6D449233485800012CD77 /* CredentialSubject.swift in Sources */,
+				11508524233CC67B00EF6A8D /* DIDAdaptor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
