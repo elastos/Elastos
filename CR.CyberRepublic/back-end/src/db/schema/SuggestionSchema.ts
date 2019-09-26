@@ -6,34 +6,28 @@ import * as _ from 'lodash'
 
 const SuggestionCore = {
   title: {
-    type: String,
-    // required: true,
-    // minlength: 1,
-    // maxLength: 150,
+    type: String
   },
+  descUpdatedAt: Date,
+
+  // old fields
   shortDesc: {
     type: String,
     maxLength: 255
   },
   desc: {
-    type: String,
-    // required: true,
-    // minlength: 1,
-    // maxLength: 10000,
+    type: String
   },
-  descUpdatedAt: Date,
   benefits: {
-    type: String,
-    // required: true,
+    type: String
   },
   funding: {
-    type: Number,
+    type: Number
   },
   timeline: {
-    type: Date,
+    type: Date
   },
   link: [String],
-
   coverImg: String,
 
   // new fields
@@ -58,7 +52,7 @@ const SuggestionCore = {
   },
   plan: {
     type: String
-  },
+  }
 }
 
 const tag = {
@@ -66,7 +60,7 @@ const tag = {
     type: String,
     enum: _.values(constant.SUGGESTION_TAG_TYPE),
     uppercase: true,
-    required: true,
+    required: true
   },
   desc: String,
   createdBy: {
@@ -76,38 +70,40 @@ const tag = {
   },
   createdAt: {
     type: Date,
-    default: Date.now,
-  },
+    default: Date.now
+  }
 }
 
 export const Suggestion = {
   ...SuggestionCore,
   contentType: {
     type: String,
-    enum: _.values(constant.CONTENT_TYPE),
+    enum: _.values(constant.CONTENT_TYPE)
   },
-  editHistory: [{
-    ...SuggestionCore,
-    updatedAt: {
-      type: Date,
-      default: Date.now,
+  editHistory: [
+    {
+      ...SuggestionCore,
+      updatedAt: {
+        type: Date,
+        default: Date.now
+      }
     }
-  }],
+  ],
   likes: {
     type: [Schema.Types.ObjectId],
-    default: [],
+    default: []
   },
   likesNum: {
     type: Number,
-    default: 0,
+    default: 0
   },
   dislikes: {
     type: [Schema.Types.ObjectId],
-    default: [],
+    default: []
   },
   dislikesNum: {
     type: Number,
-    default: 0,
+    default: 0
   },
   viewsNum: {
     type: Number,
@@ -120,7 +116,7 @@ export const Suggestion = {
   comments: [[CommentSchema]],
   commentsNum: {
     type: Number,
-    default: 0,
+    default: 0
   },
   createdBy: {
     type: Schema.Types.ObjectId,
@@ -132,7 +128,7 @@ export const Suggestion = {
     type: String,
     uppercase: true,
     enum: _.values(constant.SUGGESTION_STATUS),
-    default: constant.SUGGESTION_STATUS.ACTIVE,
+    default: constant.SUGGESTION_STATUS.ACTIVE
   },
   // constant.SUGGESTION_ABUSED_STATUS: REPORTED, HANDLED
   abusedStatus: {
@@ -141,16 +137,11 @@ export const Suggestion = {
     enum: _.values(constant.SUGGESTION_ABUSED_STATUS)
   },
   subscribers: [SubscriberSchema],
-  // subscribersNum: {
-  //     type: Number,
-  //     default: 0,
-  // },
-
   reference: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'cvote',
+      ref: 'cvote'
     }
   ],
-  tags: [tag],
+  tags: [tag]
 }
