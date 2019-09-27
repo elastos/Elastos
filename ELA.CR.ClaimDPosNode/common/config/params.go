@@ -224,6 +224,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	copy.CheckRewardHeight = 100               //todo correct me later
+	copy.EnableUtxoDB = true
 	return &copy
 }
 
@@ -274,6 +275,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	copy.CheckRewardHeight = 280000
+	copy.EnableUtxoDB = true
 	return &copy
 }
 
