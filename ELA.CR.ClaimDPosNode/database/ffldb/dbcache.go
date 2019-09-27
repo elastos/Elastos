@@ -26,7 +26,7 @@ import (
 
 const (
 	// defaultCacheSize is the default size for the database cache.
-	defaultCacheSize = 100 * 1024 * 1024 // 100 MB
+	defaultCacheSize = 20 * 1024 * 1024 // 20 MB
 
 	// defaultFlushSecs is the default number of seconds to use as a
 	// threshold in between database cache flushes when the cache size has

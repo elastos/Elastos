@@ -45,29 +45,6 @@ const (
 	approxNodesPerWeek = 30 * 24 * 7
 )
 
-// blockStatus is a bit field representing the validation state of the block.
-type blockStatus byte
-
-const (
-	// statusDataStored indicates that the block's payload is stored on disk.
-	statusDataStored blockStatus = 1 << iota
-
-	// statusValid indicates that the block has been fully validated.
-	statusValid
-
-	// statusValidateFailed indicates that the block has failed validation.
-	statusValidateFailed
-
-	// statusInvalidAncestor indicates that one of the block's ancestors has
-	// has failed validation, thus the block is also invalid.
-	statusInvalidAncestor
-
-	// statusNone indicates that the block has no validation state flags set.
-	//
-	// NOTE: This must be defined last in order to avoid influencing iota.
-	statusNone blockStatus = 0
-)
-
 var (
 	// blockIndexBucketName is the name of the db bucket used to house to the
 	// block headers and contextual information.
@@ -305,6 +282,7 @@ func (b *BlockChain) createChainState() error {
 	// Create the new block node for the block and set the work.
 	node := NewBlockNode(header, &hash)
 	node.InMainChain = true
+	node.Status = statusDataStored | statusValid
 
 	b.BestChain = node
 
@@ -360,7 +338,7 @@ func (b *BlockChain) createChainState() error {
 		}
 
 		// Save the genesis block to the block index database.
-		err = dbStoreBlockNode(dbTx, header)
+		err = DBStoreBlockNode(dbTx, header, node.Status)
 		if err != nil {
 			return err
 		}
@@ -445,53 +423,34 @@ func (b *BlockChain) initChainState() error {
 			blockCount++
 		}
 		log.Info("block count:", blockCount)
-		blockNodes := make([]BlockNode, blockCount)
 
 		var i int32
 		var lastNode *BlockNode
 		cursor = blockIndexBucket.Cursor()
 		for ok := cursor.First(); ok; ok = cursor.Next() {
-			header, err := deserializeBlockRow(cursor.Value())
+			header, status, err := DeserializeBlockRow(cursor.Value())
 			if err != nil {
 				return err
 			}
 
-			// Determine the parent block node. Since we iterate block headers
-			// in order of height, if the blocks are mostly linear there is a
-			// very good chance the previous header processed is the parent.
-			var parent *BlockNode
-			if lastNode == nil {
-				blockHash := header.Hash()
-				if !blockHash.IsEqual(b.chainParams.GenesisBlock.Hash()) {
-					return fmt.Errorf("initChainState: Expected "+
-						"first entry in block index to be genesis block, "+
-						"found %s", blockHash)
-				}
-			} else if lastNode.Hash.IsEqual(header.Previous) {
-				// Since we iterate block headers in order of height, if the
-				// blocks are mostly linear there is a very good chance the
-				// previous header processed is the parent.
-				parent = lastNode
-			} else {
-				parent, ok = b.LookupNodeInIndex(&header.Previous)
-				if !ok || parent == nil {
-					return fmt.Errorf("initChainState: Could "+
-						"not find parent for block %s", header.Hash())
-				}
+			curHash := header.Hash()
+			if lastNode == nil && !curHash.IsEqual(b.chainParams.GenesisBlock.Hash()) {
+				return fmt.Errorf("initChainState: Expected "+
+					"first entry in block index to be genesis block, "+
+					"found %s", curHash)
 			}
 
 			// Initialize the block node for the block, connect it,
 			// and add it to the block index.
-			curHash := header.Hash()
 			node, err := b.LoadBlockNode(header, &curHash)
 			if err != nil {
 				return fmt.Errorf("initChainState: Could "+
 					"not load block node for block %s", header.Hash())
 			}
-			blockNodes[i] = *node
-			b.Nodes = append(b.Nodes, &blockNodes[i])
+			node.Status = status
+			b.Nodes = append(b.Nodes, node)
 
-			lastNode = &blockNodes[i]
+			lastNode = node
 			i++
 		}
 
@@ -509,11 +468,7 @@ func (b *BlockChain) initChainState() error {
 		// As a final consistency check, we'll run through all the nodes which
 		// are ancestors of the current chain tip, and find the real tip.
 		for iterNode := lastNode; iterNode != nil; iterNode = iterNode.Parent {
-			// If this isn't already marked as valid in the index, then
-			// we'll mark it as valid now to ensure consistency once
-			// we're up and running.
-			hasBlock, err := dbTx.HasBlock(*iterNode.Hash)
-			if err == nil && hasBlock {
+			if iterNode.Status.KnownValid() {
 				b.setTip(iterNode)
 				break
 			}
@@ -533,26 +488,36 @@ func (b *BlockChain) initChainState() error {
 	return nil
 }
 
-// deserializeBlockRow parses a value in the block index bucket into a block
-// header and block status bitfield.
-func deserializeBlockRow(blockRow []byte) (*types.Header, error) {
+// DeserializeBlockRow parses a value in the block index bucket into a block
+// header and block Status bitfield.
+func DeserializeBlockRow(blockRow []byte) (*types.Header, blockStatus, error) {
 	buffer := bytes.NewReader(blockRow)
 
 	var header types.Header
 	err := header.DeserializeNoAux(buffer)
 	if err != nil {
-		return nil, err
+		return nil, statusNone, err
 	}
 
-	return &header, nil
+	statusByte, err := buffer.ReadByte()
+	if err != nil {
+		return nil, statusNone, err
+	}
+
+	return &header, blockStatus(statusByte), nil
 }
 
-// dbStoreBlockNode stores the block header to the block index bucket.
+// DBStoreBlockNode stores the block header to the block index bucket.
 // This overwrites the current entry if there exists one.
-func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
+func DBStoreBlockNode(dbTx database.Tx, header *types.Header,
+	status blockStatus) error {
 	// Serialize block data to be stored.
 	w := bytes.NewBuffer(make([]byte, 0, blockHdrNoAuxSize))
 	err := header.SerializeNoAux(w)
+	if err != nil {
+		return err
+	}
+	err = w.WriteByte(byte(status))
 	if err != nil {
 		return err
 	}
@@ -563,15 +528,6 @@ func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 	blockIndexBucket := dbTx.Metadata().Bucket(blockIndexBucketName)
 	key := blockIndexKey(&blockHash, header.Height)
 	return blockIndexBucket.Put(key, value)
-}
-
-// dbRemoveBlockNode remove the block header to the block index bucket.
-func dbRemoveBlockNode(dbTx database.Tx, blockHash *common.Uint256,
-	height uint32) error {
-	// Write block header data to block index bucket.
-	blockIndexBucket := dbTx.Metadata().Bucket(blockIndexBucketName)
-	key := blockIndexKey(blockHash, height)
-	return blockIndexBucket.Delete(key)
 }
 
 // blockIndexKey generates the binary key for an entry in the block index

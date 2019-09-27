@@ -142,7 +142,7 @@ func (c *ChainStoreFFLDB) SaveBlock(b *Block, node *BlockNode,
 		return err
 	}
 
-	//// Write any block status changes to DB before updating best state.
+	//// Write any block Status changes to DB before updating best state.
 	//err := b.index.flushToDB()
 	//if err != nil {
 	//	return err
