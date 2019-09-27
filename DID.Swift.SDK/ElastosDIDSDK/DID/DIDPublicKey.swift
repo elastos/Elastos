@@ -10,38 +10,44 @@ public class DIDPublicKey: DIDObject {
         super.init(id, type)
     }
     
-    class public func fromJson(_ dic: Dictionary<String, Any>, _ ref: DID) throws -> PublicKey{
+    class public func fromJson(_ dic: Dictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey{
         let id: DIDURL = try JsonHelper.getDidUrl(dic, Constants.id, ref, "publicKey' id")
         let type = try JsonHelper.getString(dic, Constants.type, true, Constants.defaultPublicKeyType, "publicKey' type")
         let controller: DID = try JsonHelper.getDid(dic, Constants.controller, true, ref, "publicKey' controller")
         let keyBase58: String = try JsonHelper.getString(dic, Constants.publicKeyBase58, false, nil, "publicKeyBase58")
-        return PublicKey(id, type, controller, keyBase58)
+        return DIDPublicKey(id, type, controller, keyBase58)
     }
     
     public func toJson(_ ref: DID, _ compact: Bool) -> Dictionary<String, Any> {
+        var dic: Dictionary<String, Any> = [: ]
+        var value: String
         
-        var json: [String: Any] = [:]
-        let isCompact = (ref != nil && compact)
-        if isCompact && (self.id.did.isEqual(ref)) {
-            json["id"] = "#" + id.fragment
-        } else {
-            json["id"] = id.toExternalForm()
+        // id
+        if compact && id.did.isEqual(ref){
+            value = "#" + id.fragment
+        }
+        else {
+            value = id.toExternalForm()
+        }
+        dic[Constants.id] = value
+        
+        // type
+        if !compact && (type != Constants.defaultPublicKeyType) {
+            dic[Constants.type] = type
         }
         
-        if !isCompact || type != Constants.defaultPublicKeyType {
-            json[Constants.type] = type
+        // controller
+        if !compact && !((controller?.isEqual(ref))!) {
+            dic[Constants.controller] = controller?.toExternalForm()
         }
         
-        if !isCompact || !controller!.isEqual(ref) {
-            json[Constants.controller] = controller?.toExternalForm()
-        }
-        json[Constants.publicKeyBase58] = keyBase58
-        
-        return json
+        // publicKeyBase58
+        dic[Constants.publicKeyBase58] = keyBase58
+        return dic
     }
     
     public func getPublicKeyBytes() -> [UInt8]{
-        return Base58.decode(keyBase58)
+        return [UInt8](Base58.decode(keyBase58!)!)
     }
     
 }

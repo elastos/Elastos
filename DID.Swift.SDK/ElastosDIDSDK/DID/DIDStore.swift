@@ -140,7 +140,7 @@ class DIDStore: NSObject {
 
     public func setDidHint(_ did: DID , _ hint:String ) throws {}
 
-    public func getDidHint(_ did: DID) throws -> String {}
+    public func getDidHint(_ did: DID) throws -> String { return "" }
 
     public func loadDid(_ did: DID) throws -> DIDDocument { return DIDDocument() }
 

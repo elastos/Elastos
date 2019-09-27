@@ -55,8 +55,9 @@ public class DerivedKey: NSObject {
         return binAddress
     }
     
-   class public func getAddress(_ pk: [UInt8]) {
-            return Base58.encode(pk)
+    class public func getAddress(_ pk: [UInt8]) -> String {
+        let pkData = Data.init(bytes: pk, count: pk.count)
+        return Base58.encode(pkData)
     }
 
 }

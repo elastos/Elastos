@@ -253,45 +253,22 @@ public class DIDDocument: NSObject {
         readonly = false
         return true
     }
-
-    public func toJson(_ compact: Bool) {
-        var dic = [: ]
+    
+    public func toJson(_ path: String, _ compact: Bool) throws {
+        var dic: Dictionary<String, Any> = [: ]
         // subject
         dic[Constants.id] = subject?.toExternalForm()
         
         // publicKey
-        var pks: Array = [Dictionary<String, String>]
+        var pks: Array<Dictionary<String, Any>> = []
         publicKeys.forEach { (didUrl, pk) in
-            var dic: Dictionary
-            var value: String
-            
-            // id
-            if compact && pk.id.did.isEqual(subject){
-                value = "#" + pk.id.fragment
-            }
-            else {
-                value = pk.id.toExternalForm()
-            }
-            dic[Constants.id] = value
-            
-            // type
-            if !compact && !(pk.type == Constants.defaultPublicKeyType) {
-                dic[Constants.type] = pk.type
-            }
-            
-            // controller
-            if !compact && !(pk.controller?.isEqual(subject)) {
-                dic[Constants.controller] = pk.controller?.toExternalForm()
-            }
-            
-            // publicKeyBase58
-            dic[Constants.publicKeyBase58] = pk.keyBase58
+            let dic = pk.toJson(subject!, compact)
             pks.append(dic)
         }
         dic[Constants.publicKey] = pks
         
         // authentication
-        var authenPKs: Array<String> = [String]
+        var authenPKs: Array<String> = []
         authentications.forEach { (didUrl, pk) in
             var value: String
             if compact && pk.id.did.isEqual(subject){
@@ -305,7 +282,7 @@ public class DIDDocument: NSObject {
         dic[Constants.authentication] = authenPKs
         
         // authorization
-        var authoriPks: Array = [String]
+        var authoriPks: Array<String> = []
         if !authorizations.isEmpty && authorizations.count != 0 {
             authorizations.forEach { (didUrl, pk) in
                 var value: String
@@ -321,55 +298,37 @@ public class DIDDocument: NSObject {
         
         // credential
         if !credentials.isEmpty && credentials.count != 0 {
-            var vcs: Array = [Dictionary<String, String>]
-            credentials.forEach { (didUrl, vc)
-                var dic: Dictionary<String, String>
-                var value: String
-                
-                // id
-                if compact && vc.id.isEqual(subject) {
-                    value = "#" + vc.id.fragment
-                }
-                else {
-                    value = vc.id.toExternalForm()
-                }
-                dic[Constants.id] = value
-                
-                // type
-                var strs: Array<String>
-                vc.types.forEach{ str in
-                    strs.append(str)
-                }
-                dic[Constants.type] = strs
-                
-                // issuer
-                if !compact && !(vc.issuer.isEqual(vc.subject.id)) {
-                    dic[Constants.issuer] = vc.issuer.toExternalForm()
-                }
-                
-                // issuanceDate
-                if vc.expiationDate {
-                    dic[Constants.expirationDate] = "TODO: change to time string"
-                }
-                
-                // credentialSubject
-                dic[Constants.credentialSubject] = " TODO: "
-                
-                // proof
-                // TODO: judge is sigin
-                dic[Constants.proof] = "TODO: "
-                
+            var vcs: Array<Dictionary<String, Any>> = []
+            credentials.forEach { (didUrl, vc) in
+                let dic = vc.toJson(subject!, compact)
                 vcs.append(dic)
             }
             dic[Constants.credential] = vcs
-            
-            // service
-            dic[Constants.service] = [] // TODO: change to
-            
-            // expires
-            dic[Constants.expires] = "TODO: expires change to time string"
-            // Change to jsonSting & Write to local
         }
+        
+        // service
+        if !services.isEmpty {
+            var ser_s: Array<Dictionary<String, Any>> = [ ]
+            services.forEach { (didUrl, service) in
+                let dic = service.toJson(subject!, compact)
+                ser_s.append(dic)
+            }
+            dic[Constants.service] = ser_s
+        }
+        
+        // expires
+        dic[Constants.EXPIRES] = JsonHelper.format(expires!)
+        
+        // Change to jsonSting
+        if (!JSONSerialization.isValidJSONObject(dic)) {
+            // TODO: throws error
+        }
+        let data: Data = try JSONSerialization.data(withJSONObject: dic, options: [])
+        //  let jsonString: String = String(data: data, encoding: .utf8) ?? ""
+        
+        // & Write to local
+        let writeHandle = FileHandle(forWritingAtPath: path)
+        writeHandle?.write(data)
     }
     
     public static func fromJson(url: URL) throws -> DIDDocument {

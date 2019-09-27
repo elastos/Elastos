@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11504CD3233E0B6F00AF0266 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11E3F79A233D127E00EF35C3 /* Antlr4.framework */; };
 		11508520233CC64C00EF6A8D /* EcdsaSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */; };
 		11508522233CC65500EF6A8D /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508521233CC65400EF6A8D /* Base64.swift */; };
 		11508524233CC67B00EF6A8D /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508523233CC67B00EF6A8D /* DIDAdaptor.swift */; };
@@ -123,6 +124,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11504CD3233E0B6F00AF0266 /* Antlr4.framework in Frameworks */,
 				94B137B2C485261F5B00CD58 /* Pods_ElastosDIDSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -229,12 +231,12 @@
 				A3E6D468233485DF0012CD77 /* DIDStore.swift */,
 				A3E6D46E233485DF0012CD77 /* DIDStoreError.swift */,
 				A3E6D46D233485DF0012CD77 /* DIDURL.swift */,
+				A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */,
 				A3E6D466233485DE0012CD77 /* FileSystemStore.swift */,
 				A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */,
 				A3E6D46B233485DF0012CD77 /* MalformedDIDError.swift */,
 				A3E6D46A233485DF0012CD77 /* MalformedDIDURLError.swift */,
 				A3E6D46F233485DF0012CD77 /* MalformedDocumentError.swift */,
-				A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */,
 				A3E6D470233485DF0012CD77 /* Service.swift */,
 			);
 			path = DID;

@@ -15,9 +15,24 @@ public class Service: DIDObject {
         return Service(id, type, endpoint)
     }
 
-    public func toJson(_ ref: DID) -> Dictionary<String, Any> {
-        return Dictionary()
+    public func toJson(_ ref: DID, _ compact: Bool) -> Dictionary<String, Any> {
+        var dic: Dictionary<String, Any> = [: ]
+        var value: String
+        
+        // id
+        if compact && id.did.isEqual(ref) {
+            value = "#" + id.fragment
+        }
+        else {
+            value = id.toExternalForm()
+        }
+        dic[Constants.id] = value
+        
+        // type
+        dic[Constants.type] = type
+        
+        // endpoint
+        dic[Constants.serviceEndpoint] = endpoint
+        return dic
     }
-
-    // TODO: toString from json
 }

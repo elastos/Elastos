@@ -186,28 +186,28 @@ class FileSystemStore: DIDStore {
         let path = FileSystemStore.DID_DIR + "." + did.methodSpecificId + FileSystemStore.META_EXT
         if hint.isEmpty {
             let fileManager = FileManager.default
-            fileManager.removeItem(atPath: path)
+            try fileManager.removeItem(atPath: path)
         }
         else {
             let writeHandle = FileHandle(forWritingAtPath: path)
-            writeHandle?.write(hint.data(using: .utf8))
+            writeHandle?.write(hint.data(using: .utf8)!)
         }
     }
 
     override public func getDidHint(_ did: DID) throws -> String {
         let path = FileSystemStore.DID_DIR + "." + did.methodSpecificId + FileSystemStore.META_EXT
         let readHandle = FileHandle(forReadingAtPath: path)
-        let hint = String(data: readHandle?.readDataToEndOfFile(), encoding: .utf8)
-        return hint
+        let hint = String(data: (readHandle?.readDataToEndOfFile())!, encoding: .utf8)
+        return hint!
     }
 
     override public func storeDid(_ doc: DIDDocument ,_ hint: String?) throws {
-        let path = FileSystemStore.DID_DIR + doc.subject.methodSpecificId + FileSystemStore.DOCUMENT_FILE
+        let path = FileSystemStore.DID_DIR + doc.subject!.methodSpecificId + FileSystemStore.DOCUMENT_FILE
         // 检测本地是否存在doc，有 是否删除？ java no
         
-        if !exists(path) || !hint?.isEmpty {
-            
-        }
+//        if !try exists(path) || (hint != nil && hint!.isEmpty) {
+//            
+//        }
         // TOOD: 如果存在呢，是否删除？java no
     }
 

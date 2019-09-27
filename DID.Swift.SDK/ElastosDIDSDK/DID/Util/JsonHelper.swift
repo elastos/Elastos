@@ -82,4 +82,13 @@ class JsonHelper {
         }
         return value
     }
+    
+    class func format(_ date: Date) -> String{
+        let formatter = DateFormatter()
+        formatter.locale = Locale.init(identifier: "zh_CN")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let date = formatter.string(from: date)
+        // TODO: change to utc
+        return date
+    }
 }
