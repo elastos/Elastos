@@ -96,12 +96,16 @@ func (c *Committee) GetMembersDIDs() []common.Uint168 {
 	return result
 }
 
-//get all CRMembers
+// get all CRMembers ordered by DID
 func (c *Committee) GetAllMembers() []*CRMember {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	return getCRMembers(c.Members)
+	result := getCRMembers(c.Members)
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Info.DID.Compare(result[j].Info.DID) <= 0
+	})
+	return result
 }
 
 //get all elected CRMembers

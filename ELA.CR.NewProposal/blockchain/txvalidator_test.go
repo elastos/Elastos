@@ -64,7 +64,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	s.OriginalLedger = DefaultLedger
 
 	arbiters, err := state.NewArbitrators(params,
-		nil)
+		nil, nil)
 	if err != nil {
 		s.Fail("initialize arbitrator failed")
 	}

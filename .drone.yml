@@ -43,15 +43,15 @@ steps:
   #- name: gopath
   #  path: /go
 
-- name: check
-  image: python:3.6-jessie
-  environment:
-    GOPATH: /drone
-  commands:
-    - curl -O http://172.16.0.120/testingwork-testing_work.tar.gz
-    - tar xf testingwork-testing_work.tar.gz
-    - python -V
-    - ./ela -v
-    - cd testingwork-testing_work
-    - python -m pip install -r requirements.txt
-    - python dpos_normal_test.py
+#- name: check
+  #image: python:3.6-jessie
+  #environment:
+    #GOPATH: /drone
+  #commands:
+    #- curl -O http://172.16.0.120/testingwork-testing_work.tar.gz
+    #- tar xf testingwork-testing_work.tar.gz
+    #- python -V
+    #- ./ela -v
+    #- cd testingwork-testing_work
+    #- python -m pip install -r requirements.txt
+    #- python dpos_normal_test.py
