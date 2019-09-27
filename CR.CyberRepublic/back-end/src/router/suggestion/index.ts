@@ -13,6 +13,7 @@ import comment from './comment'
 import abuse from './abuse'
 import archive from './archive'
 import del from './delete'
+import editHistories from './editHistories'
 
 export default Base.setRouter([
   {
@@ -85,4 +86,9 @@ export default Base.setRouter([
     router: del,
     method: 'post',
   },
+  {
+    path: '/:id/editHistories',
+    router: editHistories,
+    method: 'get',
+  }
 ])

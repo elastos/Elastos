@@ -39,7 +39,7 @@ export default class extends StandardPage {
 
   onSubmit = (model) => {
     const id = this.state.data._id
-    return this.props.updateSuggestion({ id, ...model })
+    return this.props.updateSuggestion({ id, ...model, update: true })
       .then(() => this.historyBack())
       .catch(err => this.setState({ error: err }))
   }

@@ -46,7 +46,6 @@ export default class extends Base {
         vid,
         description,
         status: constant.ELIP_STATUS.WAIT_FOR_REVIEW,
-        published: false,
         contentType: constant.CONTENT_TYPE.MARKDOWN,
         createdBy: this.currentUser._id
       }

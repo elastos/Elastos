@@ -32,23 +32,18 @@ export default class extends Base {
       ...param,
       createdBy: _.get(this.currentUser, '_id'),
       contentType: constant.CONTENT_TYPE.MARKDOWN,
-
       // this is a hack for now, we should really be using aggregate pipeline + projection
       // in the sort query
-      descUpdatedAt: new Date(),
-      editHistory: [emptyDoc, param],
+      descUpdatedAt: new Date()
     }
     // save the document
     const result = await this.model.save(doc)
-
-    // const mentions = desc.match(/@\<\/span\>\w+/g)
-    // if (mentions) {
-    //   this.sendMentionEmails(result, mentions)
-    // }
+    await this.getDBModel('Suggestion_Edit_History').save({ ...param, suggestion: result._id })
 
     return result
   }
 
+  // obsolete method
   public async sendMentionEmails(suggestion, mentions) {
     const db_user = this.getDBModel('User')
     const query = { role: constant.USER_ROLE.COUNCIL }
@@ -103,7 +98,7 @@ export default class extends Base {
   }
 
   public async update(param: any): Promise<Document> {
-    const { id } = param
+    const { id, update } = param
     const userId = _.get(this.currentUser, '_id')
     const currDoc = await this.model.getDBInstance().findById(id)
 
@@ -117,8 +112,14 @@ export default class extends Base {
 
     const doc = _.pick(param, BASE_FIELDS);
     doc.descUpdatedAt = new Date()
-    await this.model.update({_id: id}, {$set: doc, $push: { editHistory: doc }})
-
+    if (update) {
+      await Promise.all([
+        this.model.update({ _id: id }, { $set: doc }),
+        this.getDBModel('Suggestion_Edit_History').save({ ...doc, suggestion: id })
+      ])
+    } else {
+      await this.model.update({ _id: id }, { $set: doc })
+    }
     return this.show({ id })
   }
 
@@ -208,6 +209,10 @@ export default class extends Base {
     }
 
     return doc
+  }
+
+  public async editHistories(param: any): Promise<Document[]> {
+    return await this.getDBModel('Suggestion_Edit_History').find({suggestion: param.id})
   }
 
   // like or unlike

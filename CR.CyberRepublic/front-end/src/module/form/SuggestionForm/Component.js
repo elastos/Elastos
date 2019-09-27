@@ -312,15 +312,6 @@ class C extends BaseComponent {
             >
               {I18N.get('suggestion.form.button.cancel')}
             </Button>
-            {/* <Button
-              onClick={this.handleSaveDraft}
-              loading={this.state.loading}
-              className="cr-btn cr-btn-primary"
-              htmlType="button"
-              style={{ marginRight: 10 }}
-            >
-              {I18N.get('suggestion.form.button.saveDraft')}
-            </Button> */}
             <Button
               loading={this.state.loading}
               className="cr-btn cr-btn-primary"

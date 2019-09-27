@@ -9,19 +9,13 @@ import Diff from './Diff'
 
 import { Container, Header, Title, List, Item } from './style'
 
-const emptyDoc = {
-  title: '',
-  desc: '',
-  link: '',
-}
-
 export default class extends StandardPage {
   componentDidMount() {
     this.refetch()
   }
 
   componentWillUnmount() {
-    this.props.resetDetail()
+    this.props.resetEditHistory()
   }
 
   ord_renderContent() {
@@ -30,8 +24,8 @@ export default class extends StandardPage {
     let content
     if (loading) {
       content = <div className="center"><Spin size="large" /></div>
-    } else if (!_.isEmpty(detail) && _.isEmpty(dataList)) {
-      content = this.renderEmpty()
+    } else if (_.isEmpty(dataList)) {
+      content = null
     } else if (!_.isEmpty(dataList)) {
       content = this.renderList()
     }
@@ -63,20 +57,6 @@ export default class extends StandardPage {
     return <List>{result}</List>
   }
 
-  renderEmpty() {
-    const { detail: { _id, title, desc, updatedAt } } = this.props
-    const newData = {
-      _id,
-      title,
-      desc,
-      updatedAt,
-    }
-    const item = this.renderItem(emptyDoc, newData)
-    const result = [item]
-
-    return <List>{result}</List>
-  }
-
   renderItem = (dataOld, dataNew) => {
     const { _id, updatedAt } = dataNew
     const metaNode = (
@@ -90,16 +70,14 @@ export default class extends StandardPage {
         {metaNode}
         <Title><Diff inputA={dataOld.title} inputB={dataNew.title} type="words" /></Title>
         <Diff inputA={dataOld.desc} inputB={dataNew.desc} type="words" />
-        {/* <Desc dangerouslySetInnerHTML={{ __html: <Diff inputA={dataOld.desc} inputB={dataNew.desc} type="words" /> }} /> */}
       </Item>
     )
   }
 
   refetch = async () => {
-    const { match, resetDetail, getDetail } = this.props
+    const { match, resetEditHistory, getEditHistories } = this.props
     const id = _.get(match, 'params.id')
-    await resetDetail()
-    getDetail({ id, incViewsNum: false })
+    resetEditHistory()
+    getEditHistories({ id })
   }
-
 }

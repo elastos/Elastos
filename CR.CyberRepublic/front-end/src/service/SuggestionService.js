@@ -177,6 +177,22 @@ export default class extends BaseService {
     return result
   }
 
+  async editHistories({ id }) {
+    this.dispatch(this.selfRedux.actions.loading_update(true))
+    const path = `${this.prefixPath}/${id}/editHistories`
+    const res = await api_request({
+      path,
+      method: 'get',
+    })
+    this.dispatch(this.selfRedux.actions.loading_update(false))
+    this.dispatch(this.selfRedux.actions.edit_history_update(res))
+  }
+
+  resetEditHistory() {
+    this.dispatch(this.selfRedux.actions.edit_history_reset())
+  }
+
+
   async like(id) {
     const path = `${this.prefixPath}/${id}/like`
 
