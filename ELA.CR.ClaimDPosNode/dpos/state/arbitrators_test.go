@@ -19,7 +19,7 @@ func TestArbitrators_GetSnapshot(t *testing.T) {
 	var bestHeight uint32
 
 	arbitrators, _ := NewArbitrators(&config.DefaultParams,
-		nil)
+		nil, nil)
 	arbitrators.RegisterFunction(func() uint32 { return bestHeight },
 		nil)
 

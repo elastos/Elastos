@@ -254,7 +254,7 @@ func benchBegin() *BlockChain {
 	originAddress = FoundationAddress
 	FoundationAddress = params.Foundation
 
-	arbiters, _ := state.NewArbitrators(params,
+	arbiters, _ := state.NewArbitrators(params, nil,
 		func(programHash common.Uint168) (common.Fixed64,
 			error) {
 			amount := common.Fixed64(0)

@@ -6,6 +6,9 @@
 package state
 
 import (
+	"errors"
+	"math"
+
 	"github.com/elastos/Elastos.ELA/common"
 )
 
@@ -39,4 +42,50 @@ func (a *arbitrators) getNextOnDutyArbitratorV0(height,
 	index := (height - 1 + offset) % uint32(len(arbitrators))
 	arbiter := arbitrators[index]
 	return arbiter
+}
+
+func (a *arbitrators) distributeWithNormalArbitratorsV0(
+	reward common.Fixed64) (common.Fixed64, error) {
+	if len(a.currentArbitrators) == 0 {
+		return 0, errors.New("not found arbiters when distributeWithNormalArbitratorsV0")
+	}
+
+	totalBlockConfirmReward := float64(reward) * 0.25
+	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
+	individualBlockConfirmReward := common.Fixed64(
+		math.Floor(totalBlockConfirmReward / float64(len(a.currentArbitrators))))
+	totalVotesInRound := a.CurrentReward.TotalVotesInRound
+	if len(a.chainParams.CRCArbiters) == len(a.currentArbitrators) {
+		a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
+		return reward, nil
+	}
+	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
+
+	a.arbitersRoundReward[a.chainParams.CRCAddress] = 0
+	realDPOSReward := common.Fixed64(0)
+	for _, arbiter := range a.currentArbitrators {
+		ownerHash := arbiter.GetOwnerProgramHash()
+		votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
+		individualProducerReward := common.Fixed64(math.Floor(float64(
+			votes) * rewardPerVote))
+		r := individualBlockConfirmReward + individualProducerReward
+		if _, ok := a.crcArbiters[ownerHash]; ok {
+			r = individualBlockConfirmReward
+			a.arbitersRoundReward[a.chainParams.CRCAddress] += r
+		} else {
+			a.arbitersRoundReward[ownerHash] = r
+		}
+
+		realDPOSReward += r
+	}
+	for _, candiate := range a.currentCandidates {
+		ownerHash := candiate.GetOwnerProgramHash()
+		votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
+		individualProducerReward := common.Fixed64(math.Floor(float64(
+			votes) * rewardPerVote))
+		a.arbitersRoundReward[ownerHash] = individualProducerReward
+
+		realDPOSReward += individualProducerReward
+	}
+	return realDPOSReward, nil
 }
