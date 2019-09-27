@@ -395,17 +395,6 @@ func (b *BlockChain) initChainState() error {
 
 	// Attempt to load the chain state from the database.
 	err = b.db.GetFFLDB().View(func(dbTx database.Tx) error {
-		// Fetch the stored chain state from the database metadata.
-		// When it doesn't exist, it means the database hasn't been
-		// initialized for use with chain yet, so break out now to allow
-		// that to happen under a writable database transaction.
-		serializedData := dbTx.Metadata().Get(chainStateKeyName)
-		log.Debugf("Serialized chain state: %x", serializedData)
-		state, err := deserializeBestChainState(serializedData)
-		if err != nil {
-			return err
-		}
-
 		// Load all of the headers from the data for the known best
 		// chain and construct the block index accordingly.  Since the
 		// number of nodes are already known, perform a single alloc
@@ -452,17 +441,6 @@ func (b *BlockChain) initChainState() error {
 
 			lastNode = node
 			i++
-		}
-
-		// Load the raw block bytes for the best block.
-		blockBytes, err := dbTx.FetchBlock(&state.hash)
-		if err != nil {
-			return err
-		}
-		var block types.Block
-		err = block.Deserialize(bytes.NewReader(blockBytes))
-		if err != nil {
-			return err
 		}
 
 		// As a final consistency check, we'll run through all the nodes which
@@ -530,6 +508,16 @@ func DBStoreBlockNode(dbTx database.Tx, header *types.Header,
 	return blockIndexBucket.Put(key, value)
 }
 
+// DBRemoveBlockNode stores the block header to the block index bucket.
+// This overwrites the current entry if there exists one.
+func DBRemoveBlockNode(dbTx database.Tx, header *types.Header) error {
+	// Write block header data to block index bucket.
+	blockHash := header.Hash()
+	blockIndexBucket := dbTx.Metadata().Bucket(blockIndexBucketName)
+	key := blockIndexKey(&blockHash, header.Height)
+	return blockIndexBucket.Delete(key)
+}
+
 // blockIndexKey generates the binary key for an entry in the block index
 // bucket. The key is composed of the block height encoded as a big-endian
 // 32-bit unsigned int followed by the 32 byte block hash.
@@ -573,10 +561,10 @@ func dbFetchBlockByNode(dbTx database.Tx, node *BlockNode) (*types.Block, error)
 	return &block, nil
 }
 
-// dbRemoveBlockIndex uses an existing database transaction remove block index
+// DBRemoveBlockIndex uses an existing database transaction remove block index
 // entries from the hash to height and height to hash mappings for the provided
 // values.
-func dbRemoveBlockIndex(dbTx database.Tx, hash *common.Uint256, height uint32) error {
+func DBRemoveBlockIndex(dbTx database.Tx, hash *common.Uint256, height uint32) error {
 	// Remove the block hash to height mapping.
 	meta := dbTx.Metadata()
 	hashIndex := meta.Bucket(hashIndexBucketName)
