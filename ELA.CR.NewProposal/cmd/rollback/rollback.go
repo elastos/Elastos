@@ -97,10 +97,19 @@ func rollbackAction(c *cli.Context) error {
 
 func rollBackFFLDBBlock(fflDB blockchain.IFFLDBChainStore, header *types.Header) error {
 	err := fflDB.Update(func(dbTx database.Tx) error {
-		err := blockchain.DBStoreBlockNode(dbTx, header, 0)
+		err := blockchain.DBRemoveBlockNode(dbTx, header)
 		if err != nil {
 			return err
 		}
+
+		// Remove the block hash and height from the block index which
+		// tracks the main chain.
+		blockHash := header.Hash()
+		err = blockchain.DBRemoveBlockIndex(dbTx, &blockHash, header.Height)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 	return err

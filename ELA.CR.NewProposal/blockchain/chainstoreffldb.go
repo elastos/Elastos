@@ -222,7 +222,7 @@ func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
 
 		// Remove the block hash and height from the block index which
 		// tracks the main chain.
-		err = dbRemoveBlockIndex(dbTx, &blockHash, node.Height)
+		err = DBRemoveBlockIndex(dbTx, &blockHash, node.Height)
 		if err != nil {
 			return err
 		}
