@@ -211,6 +211,10 @@ export default class extends Base {
     return doc
   }
 
+  public async editHistories(param: any): Promise<Document[]> {
+    return await this.getDBModel('Suggestion_Edit_History').find({suggestion: param.id})
+  }
+
   // like or unlike
   public async like(param: any): Promise<Document> {
     const { id: _id } = param
