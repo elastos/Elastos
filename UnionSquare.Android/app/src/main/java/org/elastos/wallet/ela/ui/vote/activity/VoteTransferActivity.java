@@ -70,6 +70,8 @@ public class VoteTransferActivity extends BaseActivity {
         switch (type) {
             case Constant.CRUPDATE:
             case Constant.UPDATENODEINFO:
+            case Constant.UNREGISTERSUPRRNODE:
+            case Constant.UNREGISTERCR:
                 llAmount.setVisibility(View.GONE);
 
                 break;

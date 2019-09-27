@@ -28,14 +28,14 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
     private Map<String, String> map;
 
     private boolean is;
-    private int pos;
 
-    public SuperNodeListAdapter1(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, boolean is, int pos) {
+
+    public SuperNodeListAdapter1(BaseFragment context, @Nullable List<VoteListBean.DataBean.ResultBean.ProducersBean> data, boolean is) {
         super(R.layout.item_super_node_list1, data);
         this.context = context;
 
         this.is = is;
-        this.pos = pos;
+
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle)
                 .placeholder(R.mipmap.found_vote_initial_circle).circleCrop();
         if (map == null) {

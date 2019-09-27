@@ -6,9 +6,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.crvote.bean.FindListBean;
 
 import java.util.List;
 
@@ -27,11 +29,11 @@ public class FindListRecAdapter extends RecyclerView.Adapter<FindListRecAdapter.
     }
 
     private CommonRvListener commonRvListener;
-    private List<Integer> list;
+    private List<FindListBean> list;
 
     private Context context;
 
-    public FindListRecAdapter(Context context, List<Integer> list) {
+    public FindListRecAdapter(Context context, List<FindListBean> list) {
         this.list = list;
         this.context = context;
     }
@@ -46,8 +48,10 @@ public class FindListRecAdapter extends RecyclerView.Adapter<FindListRecAdapter.
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
-        int data = list.get(position);
-        holder.imageView.setBackgroundResource(list.get(position));
+        FindListBean data = list.get(position);
+        holder.imageView.setBackgroundResource(data.getResouceId());
+        holder.tvUp.setText(data.getUpText());
+        holder.tvDown.setText(data.getDownText());
         if (commonRvListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -68,6 +72,10 @@ public class FindListRecAdapter extends RecyclerView.Adapter<FindListRecAdapter.
 
         @BindView(R.id.imageView)
         ImageView imageView;
+        @BindView(R.id.tv_up)
+        TextView tvUp;
+        @BindView(R.id.tv_down)
+        TextView tvDown;
 
         ViewHolder(View view) {
             super(view);

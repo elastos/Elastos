@@ -1,5 +1,7 @@
 package org.elastos.wallet.ela.ui.vote.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -155,7 +157,7 @@ public class VoteListBean extends BaseEntity implements Serializable {
                 this.producers = producers;
             }
 
-            public static class ProducersBean implements Serializable, Comparable<ProducersBean> {
+            public static class ProducersBean implements Serializable, Comparable<ProducersBean>, Parcelable {
                 /**
                  * ownerpublickey : 0341315fe4e1f26ba09c5c56bf76e1e97aaee992f59407b33c4fc9d42e11634bdc
                  * nodepublickey : 022e2fce0641869a1a8af60f735279a45d2e28dc1d4c54ef7f9872b777d718b624
@@ -285,6 +287,53 @@ public class VoteListBean extends BaseEntity implements Serializable {
                     return Double.compare(Double.parseDouble(o.getVoterate()), Double.parseDouble(this.getVoterate()));
 
                 }
+
+                @Override
+                public int describeContents() {
+                    return 0;
+                }
+
+                @Override
+                public void writeToParcel(Parcel dest, int flags) {
+                    dest.writeString(this.ownerpublickey);
+                    dest.writeString(this.nodepublickey);
+                    dest.writeString(this.nickname);
+                    dest.writeString(this.url);
+                    dest.writeInt(this.location);
+                    dest.writeByte(this.active ? (byte) 1 : (byte) 0);
+                    dest.writeString(this.votes);
+                    dest.writeString(this.netaddress);
+                    dest.writeInt(this.index);
+                    dest.writeString(this.voterate);
+                }
+
+                public ProducersBean() {
+                }
+
+                protected ProducersBean(Parcel in) {
+                    this.ownerpublickey = in.readString();
+                    this.nodepublickey = in.readString();
+                    this.nickname = in.readString();
+                    this.url = in.readString();
+                    this.location = in.readInt();
+                    this.active = in.readByte() != 0;
+                    this.votes = in.readString();
+                    this.netaddress = in.readString();
+                    this.index = in.readInt();
+                    this.voterate = in.readString();
+                }
+
+                public static final Parcelable.Creator<ProducersBean> CREATOR = new Parcelable.Creator<ProducersBean>() {
+                    @Override
+                    public ProducersBean createFromParcel(Parcel source) {
+                        return new ProducersBean(source);
+                    }
+
+                    @Override
+                    public ProducersBean[] newArray(int size) {
+                        return new ProducersBean[size];
+                    }
+                };
             }
         }
     }

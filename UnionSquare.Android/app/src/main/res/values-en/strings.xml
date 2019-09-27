@@ -441,4 +441,9 @@
     <string name="all">共&#160;</string>
     <string name="cr_website_cannot_be_empty">竞选网址不能为空</string>
     <string name="transactiondetail">交易详情</string>
+    <string name="findlistdown1">参与亦来云生态体系建设 共享SmartWeb未来</string>
+    <string name="findlistup2">社区提案</string>
+    <string name="findlistdown2">参与社区运营共治</string>
+    <string name="hasquit">已退出</string>
+    <string name="cr_72">退出参选72小时后，方可提取质押金。</string>
 </resources>

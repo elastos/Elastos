@@ -77,7 +77,7 @@ public class PwdPresenter extends NewPresenterAbstract {
     //验证交易
     public void generateProducerPayload(String masterWalletID, String chainID, String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd
             , BaseActivity baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
+        Observer observer = createObserver(baseActivity, "generateProducerPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -86,22 +86,24 @@ public class PwdPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseActivity);
     }
+
     //创建交易
     public void createUpdateProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO
             , BaseActivity baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
+        Observer observer = createObserver(baseActivity, "createUpdateProducerTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
                 return baseActivity.getMyWallet().createUpdateProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson, memo, useVotedUTXO);
             }
         });
-        subscriberObservable(observer, observable,baseActivity);
+        subscriberObservable(observer, observable, baseActivity);
     }
+
     //创建交易
     public void createRegisterProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO
             , BaseActivity baseActivity) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
+        Observer observer = createObserver(baseActivity, "createRegisterProducerTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -148,6 +150,77 @@ public class PwdPresenter extends NewPresenterAbstract {
             @Override
             public BaseEntity subscribe() {
                 return baseActivity.getMyWallet().createUpdateCRTransaction(masterWalletID, chainID, fromAddress, payloadJson, memo, useVotedUTXO);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+    public void generateCancelProducerPayload(String masterWalletID, String chainID, String publicKey, String payPasswd, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "generateCancelProducerPayload");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().generateCancelProducerPayload(masterWalletID, chainID, publicKey, payPasswd);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+    //取回押金交易
+    public void createRetrieveDepositTransaction(String masterWalletID, String chainID, String amount, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "createRetrieveDepositTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().createRetrieveDepositTransaction(masterWalletID, chainID, amount);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+    //创建交易
+    public void createCancelProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "createCancelProducerTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().createCancelProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+    //cr
+    public void generateUnregisterCRPayload(String masterWalletID, String chainID, String publicKey, String payPasswd, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "generateUnregisterCRPayload");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().generateUnregisterCRPayload(masterWalletID, chainID, publicKey, payPasswd);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+    //取回押金交易
+    public void createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String amount, String memo, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "createRetrieveCRDepositTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().createRetrieveCRDepositTransaction(masterWalletID, chainID, amount, memo);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
+    //注销cr
+    public void createUnregisterCRTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "createUnregisterCRTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().createUnregisterCRTransaction(masterWalletID, chainID, fromAddress, payloadJson);
             }
         });
         subscriberObservable(observer, observable, baseActivity);

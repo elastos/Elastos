@@ -1,19 +1,18 @@
 package org.elastos.wallet.ela.ui.crvote.fragment;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.allen.library.SuperButton;
-import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -22,9 +21,8 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
+import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
@@ -33,9 +31,10 @@ import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
+import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.AppUtlis;
-import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -48,7 +47,7 @@ import butterknife.OnClick;
 /**
  * 选举管理  getRegisteredProducerInfo
  */
-public class CRManageFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, NewBaseViewData {
+public class CRManageFragment extends BaseFragment implements NewBaseViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -101,11 +100,10 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     CRManagePresenter presenter;
-    PwdPresenter pwdpresenter = new PwdPresenter();
     String status;
     private String info;
     private String ownerPublicKey;
-    private CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode;
+
 
     @Override
     protected int getLayoutId() {
@@ -128,11 +126,8 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     protected void setExtraData(Bundle data) {
         status = data.getString("status", "Canceled");
         info = data.getString("info", "");
-        curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
-        if (curentNode != null) {
-            tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
-            tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(curentNode.getVoterate()) * 100 + "", 5) + "%");
-        }
+        CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
+
         presenter = new CRManagePresenter();
 
         //这里只会有 "Registered", "Canceled"分别代表, 已注册过, 已注销(不知道可不可提取)
@@ -149,7 +144,7 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
             }
         } else {
             //Registered 未注销展示选举信息
-            onJustRegistered(info);
+            onJustRegistered(info, curentNode);
         }
         super.setExtraData(data);
     }
@@ -201,13 +196,15 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
 
 
     private void showWarmPromptInput() {
-        dialogUtil.showWarmPromptInput(getBaseActivity(), getString(R.string.securitycertificate), getString(R.string.inputWalletPwd), this);
+        new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+
+
     }
 
     String pwd;
 
 
-    private void onJustRegistered(String data) {
+    private void onJustRegistered(String data, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode) {
 
         CRMenberInfoBean bean = JSON.parseObject(data, CRMenberInfoBean.class);
         tvName.setText(bean.getNickName());
@@ -240,42 +237,11 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
         });
         tvUrl.setText(url);
         tvDid.setText(bean.getCROwnerDID());
+        if (curentNode != null) {
+            tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
+            tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(curentNode.getVoterate()) * 100 + "", 5) + "%");
+        }
         ownerPublicKey = bean.getCROwnerPublicKey();
-    }
-
-
-    //输入密码后
-    @Override
-    public void affireBtnClick(View view) {
-        pwd = ((EditText) view).getText().toString().trim();
-        if (TextUtils.isEmpty(pwd)) {
-            showToastMessage(getString(R.string.pwdnoempty));
-            return;
-        }
-        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
-    }
-
-
-    @Override
-    public void onGetCommonData(String methodname, String data) {
-
-        switch (methodname) {
-            case "signTransaction":
-                pwdpresenter.publishTransaction(wallet.getWalletId(), MyWallet.ELA, data, this);
-                break;
-            case "publishTransaction":
-                dialogUtil.dialogDismiss();
-                if (status.equals("Canceled")) {
-                    ToastUtils.showShort(R.string.deposit_was_retrieved_successfully);
-                    sbtq.setVisibility(View.GONE);
-                } else {
-                    ll_xggl.setVisibility(View.GONE);
-                    ll_tq.setVisibility(View.VISIBLE);
-                    ToastUtils.showShort(getString(R.string._72));
-                }
-                break;
-
-        }
     }
 
 
@@ -286,23 +252,23 @@ public class CRManageFragment extends BaseFragment implements WarmPromptListener
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
         switch (methodName) {
-
-            case "generateUnregisterCRPayload":
-
+            case "getFee":
+                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent.putExtra("wallet", wallet);
                 if (status.equals("Canceled")) {
                     //提取按钮
-                    presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            Arith.sub(Arith.mul(available, MyWallet.RATE_S), "10000").toPlainString(), "", this);
+                    intent.putExtra("type", Constant.WITHDRAWCR);
+                    intent.putExtra("amount", available);
                 } else {
                     //注销按钮
-                    presenter.createUnregisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), "", false, this);
+                    intent.putExtra("type", Constant.UNREGISTERCR);
                 }
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("ownerPublicKey", ownerPublicKey);
+                intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                startActivity(intent);
+                break;
 
-                break;
-            case "createRetrieveCRDepositTransaction":
-            case "createUnregisterCRTransaction":
-                pwdpresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, ((CommmonStringEntity) baseEntity).getData(), pwd, this);
-                break;
 
             case "getCRDepositcoin":
                 CRDePositcoinBean getdePositcoinBean = (CRDePositcoinBean) baseEntity;

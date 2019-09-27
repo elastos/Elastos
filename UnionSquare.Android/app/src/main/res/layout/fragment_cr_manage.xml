@@ -327,7 +327,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="@string/ela_cancelle"
+                android:text="@string/hasquit"
                 android:textColor="#ffffffff"
                 android:textSize="14sp" />
 
@@ -337,7 +337,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="88dp"
                 android:gravity="center"
-                android:text="@string/_72"
+                android:text="@string/cr_72"
                 android:textColor="#ffffffff"
                 android:textSize="14sp" />
 

@@ -15,6 +15,10 @@ public class Constant {
     public static final String CRVOTE = "crvote";//cr投票
     public static final String UPDATENODEINFO= "updatenodeinfo";//超级节点更新参选信息
     public static final String CRUPDATE= "crupdate";//cr更新参选信息
+    public static final String UNREGISTERSUPRRNODE= "unregistersupernode";//超级节点注销
+    public static final String UNREGISTERCR= "unregistercr";//cr注销
+    public static final String WITHDRAWSUPERNODE= "withdrawsupernode";//超级节点提取
+    public static final String WITHDRAWCR= "withdrawcr";//cr提取
     public static final String Email = "wallet@elastos.org";
     public static final String UpdateLog = "https://download.elastos.org/app/release-notes/ela-wallet/index.html";
     public static final String FRAGMENTTAG = "commonwebview";
