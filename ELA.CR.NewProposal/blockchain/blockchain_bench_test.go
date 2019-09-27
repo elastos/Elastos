@@ -28,7 +28,6 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
-	"github.com/elastos/Elastos.ELA/database"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/utils/signal"
@@ -331,18 +330,7 @@ func rollbackTo(targetHeight uint32, chain *BlockChain) {
 		store.RollbackConfirm(block)
 		store.fflDB.RollbackBlock(block, blockNode, confirm, chain.MedianTimePast)
 		store.BatchCommit()
-
-		// Rollback block node.
-		err := chain.db.GetFFLDB().Update(func(dbTx database.Tx) error {
-			err := dbRemoveBlockNode(dbTx, blockNode.Hash, blockNode.Height)
-			if err != nil {
-				return err
-			}
-			return nil
-		})
-		if err != nil {
-			fmt.Println(err)
-		}
+		chain.SetTip(blockNode.Parent)
 	}
 }
 
