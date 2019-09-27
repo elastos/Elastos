@@ -32,23 +32,18 @@ export default class extends Base {
       ...param,
       createdBy: _.get(this.currentUser, '_id'),
       contentType: constant.CONTENT_TYPE.MARKDOWN,
-
       // this is a hack for now, we should really be using aggregate pipeline + projection
       // in the sort query
-      descUpdatedAt: new Date(),
-      editHistory: [emptyDoc, param],
+      descUpdatedAt: new Date()
     }
     // save the document
     const result = await this.model.save(doc)
-
-    // const mentions = desc.match(/@\<\/span\>\w+/g)
-    // if (mentions) {
-    //   this.sendMentionEmails(result, mentions)
-    // }
+    await this.getDBModel('Suggestion_Edit_History').save({ ...param, suggestion: result._id })
 
     return result
   }
 
+  // obsolete method
   public async sendMentionEmails(suggestion, mentions) {
     const db_user = this.getDBModel('User')
     const query = { role: constant.USER_ROLE.COUNCIL }
