@@ -1,0 +1,125 @@
+2019/09/27 01:34:43.736301 [1;35m[INF][m GID 1, Node version: 
+2019/09/27 01:34:43.740922 [1;35m[INF][m GID 1, go version go1.12.9 linux/amd64
+2019/09/27 01:34:43.986357 [1;35m[INF][m GID 1, current block height -> 500
+2019/09/27 01:34:43.987207 [1;33m[WRN][m GID 70, recover form check points fail:  can't find dpos store object
+2019/09/27 01:34:43.988029 [1;35m[INF][m GID 70, [RecoverFromCheckPoints] recover start height:  100
+[ ========== BLOCKCHAIN INITIALIZE STARTED ========== ]
+ 0 / 400    0.00%2019/09/27 01:34:44.027129 [1;33m[WRN][m GID 70, found error:  producers count less than min arbitrators count , degrade to CRC only state
+ 401 / 400  100.25% 0s
+[ ========== BLOCKCHAIN INITIALIZE FINISHED ========== ]
+2019/09/27 01:34:44.031124 [1;35m[INF][m GID 1, Start the P2P networks
+2019/09/27 01:34:44.031543 [1;35m[INF][m GID 1, Start services
+2019/09/27 01:34:49.032824 [1;35m[INF][m GID 1, Start consensus
+2019/09/27 01:34:49.033646 [1;35m[INF][m GID 1, Start POW Services
+2019/09/27 01:34:49.034315 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:34:50.936845 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:34:50.938670 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 6bce7577b33502ff9ee7869517c0489d00d3b0a12075e0df1a67bc055485ed17
+2019/09/27 01:34:50.939325 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:34:51.694585 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:34:51.695313 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: fa3c686e8508cfc9469092913da63cad6d0e38b5f47a4bd0361a504cfb89fb61
+2019/09/27 01:34:51.695899 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:34:53.331481 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:34:53.332313 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 41115022e59e0fbe17a37f5b907b430fde8969329cdab6541baf3d330d512024
+2019/09/27 01:34:53.333428 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:34:53.618220 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:34:53.620040 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 2006f4fe551cb7c9d92861115ec8f68b78c3d51fb81a510207a780bb562b6b20
+2019/09/27 01:34:53.621226 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:34:55.083993 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:34:55.084728 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 9e30aa42eaabbcc0c3fa5e54e3a8c6e5e3e00ce320aee55da064757c13475513
+2019/09/27 01:34:55.085323 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:34:57.550586 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:34:57.555280 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: d082d1e142dcb685120da2ed3d6d54a40970f5976f537677ac9bf9d583a487fe
+2019/09/27 01:34:57.556204 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:00.097960 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:00.099195 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 1223b9095e954434b6d3a88338a65b07db333254d561911368a70c60af0b543d
+2019/09/27 01:35:00.100707 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:02.856157 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:02.857977 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: d30ca0ed41353b149f29b9417826b1af535ec14efcecd827aeee63ccfe5394d0
+2019/09/27 01:35:02.859244 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:08.853168 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:08.855839 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 6ca89f6a2074478dab5ef0b010be6003425cc5841933a4e96a5c5d04560c7975
+2019/09/27 01:35:08.856620 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:09.050602 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:09.051104 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: dc79906bc8c9b1df17f7d957f155d7785b81649008bcae6aaa42783307d2407a
+2019/09/27 01:35:09.051786 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:24.992938 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:24.997849 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 5379a0fe58c07ecd07efdf25374e2d225a8c76b5fe35ab022d6f807b296b20e4
+2019/09/27 01:35:24.998670 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:27.070981 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:27.072678 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: bba84e1905a12a3827b313a7873138f783a9cdb74d01e1cb0417cdaec35d0284
+2019/09/27 01:35:27.073115 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:31.650803 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:31.653280 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: b4d55c1b15ead0a5363a7066dcb9452d0150a70860cf4e7a82f47c18647a00f9
+2019/09/27 01:35:31.655096 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:37.595378 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:37.596587 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: a8a36e0814593806de501ce8aeff3e89792451ba963ee5c1a36ca4bd84691334
+2019/09/27 01:35:37.598010 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:35:38.853273 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:35:38.854095 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 0bc2b7bd295247c38f5456c141d8bd93d894019a24866315f6af48ef0c072610
+2019/09/27 01:35:38.854777 [1;35m[INF][m GID 151, difficulty:  520095999
+2019-09-27 01:35:43.965 [INF] STAT: -> 500 []
+2019/09/27 01:36:02.247929 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:02.252493 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 9150850f1279b3a049c1c7d5756e6f723c598991b82f8a81ee837916b8fb7853
+2019/09/27 01:36:02.253803 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:06.705515 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:06.707862 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: b8501155380447d263cf318913b3a87b3790a0317233c438999cdca73958bc81
+2019/09/27 01:36:06.708881 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:14.953109 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:14.954043 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 3f84679d9b2ab9c7d291472bca3496bd0bbf128131ec4e903fb4bb3e1b5c599e
+2019/09/27 01:36:14.954754 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:15.901489 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:15.902168 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 4905e76280b65467f3a477bf6e3e6341f401e12f29897bbfd6979717c00fd918
+2019/09/27 01:36:15.905461 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:23.525909 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:23.526779 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 84507d71897d961c326f02a0a4e3625da82e48b98a4359225d80c0c2f788193b
+2019/09/27 01:36:23.527625 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:24.395681 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:24.397673 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 4a2fedcdd200475a9f09c481ed90024e5426a2ffdb6368bd6bb516249adfaf87
+2019/09/27 01:36:24.402650 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:28.659088 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:28.668970 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: c003aa54440cf99ff9665c6be47e6db85414807d862050da5b7021f754117fef
+2019/09/27 01:36:28.670341 [1;35m[INF][m GID 151, difficulty:  520095999
+2019-09-27 01:36:43.897 [INF] STAT: -> 500 []
+2019/09/27 01:36:45.991284 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:45.995149 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 81eaa90dad4eb42e42d8049eb018b9959977a40727a31545b7a0153e93471ff9
+2019/09/27 01:36:45.995649 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:47.880357 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:47.882908 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 4e5566042117057b9fa761d7a0167b5f3503c527d5dae921b15c918fa7f2c7ce
+2019/09/27 01:36:47.883945 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:49.088608 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:49.091387 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 1ec867aecda8c808f7a9a2a19ce11e605db5849f1f92240e0874fb84f724d74e
+2019/09/27 01:36:49.091948 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:36:57.997647 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:36:58.014416 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: c51ac64c3f37038a0954456f95c83f2fb5647abd7b63c00730e359a12b0e2657
+2019/09/27 01:36:58.015234 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:37:15.995652 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:37:16.003283 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: f123c913af4405160a6bf3631ebce7b17d212f55e8f82f902b126019556851e1
+2019/09/27 01:37:16.006340 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:37:22.884928 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:37:22.886437 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: c00edb9c00d52242d8d52abf909d3f15584552cac1fbb2b4d6a1e8ab8e101b21
+2019/09/27 01:37:22.887351 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:37:33.611801 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:37:33.612485 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 1350f9e685b0effa2a158fa174e92b13dddd24067f6f5433de7b7cb2434fee31
+2019/09/27 01:37:33.613048 [1;35m[INF][m GID 151, difficulty:  520095999
+2019-09-27 01:37:43.829 [INF] STAT: -> 500 []
+2019/09/27 01:37:45.654915 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:37:45.656897 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: b6758a3373aa389658c91453f1227017cc78542d917673ac1435e1b515606e3a
+2019/09/27 01:37:45.664005 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:37:49.037898 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:37:49.039727 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 21055b0cb522b4a7d865d63dfcf312d1cc7017067a22f858824053bbc3c7f40d
+2019/09/27 01:37:49.040307 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:37:57.831889 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:37:57.834230 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 175bb4d879b5c753ace9b5038d1b094f61f39237cf5ac04c7b993949420713eb
+2019/09/27 01:37:57.834701 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:38:03.733882 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:38:03.734600 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 27e8c1992dc491399d65be7ab6e0d5b824df38888144e3097b1969a8bb7ab5ab
+2019/09/27 01:38:03.735057 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:38:06.542229 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:38:06.542782 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 0ae2ab86385bf7ba115e044fc9ba548c44ae2cfc6886a8a9d9460d76840cd5fe
+2019/09/27 01:38:06.543601 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:38:16.777685 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:38:16.778870 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: 5c74d01d9a08c6f4babb165890ada989e64a147a8c18a7f6377083b461bb93a4
+2019/09/27 01:38:16.780957 [1;35m[INF][m GID 151, difficulty:  520095999
+2019/09/27 01:38:19.141111 [1;35m[INF][m GID 151, <================Solved Block==============>
+2019/09/27 01:38:19.142196 [1;35m[INF][m GID 151, [ConfirmBlock] block hash: b5db9df3831883a28100125153119769b379f1e7e2fca5e6118dd83606745b6d
+2019/09/27 01:38:19.147781 [1;35m[INF][m GID 151, difficulty:  520095999

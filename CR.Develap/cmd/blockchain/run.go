@@ -23,6 +23,8 @@ package blockchain
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -34,6 +36,7 @@ import (
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 )
@@ -61,7 +64,7 @@ var RunCmd = &cobra.Command{
 		nodes := strings.Split(strings.Replace(Nodes, " ", "", -1), ",")
 		if strings.EqualFold(Env, "localnet") {
 			setupLocalNetDockerContainers(ctx, cli)
-			fmt.Printf("\nSet up initial localnet successfully")
+			fmt.Printf("\nSet up initial localnet successfully\n")
 		} else {
 			for _, node := range nodes {
 				if node == "eth" && strings.EqualFold(Env, "mainnet") {
@@ -127,7 +130,7 @@ func setupLocalNetMainchainNode(ctx context.Context, cli *client.Client, network
 		ContainerName: fmt.Sprintf("develap-localnet-mainchain-%s", name),
 		ImageName:     NodeDockerImageMap["mainchain"],
 		Volumes: map[string]DockerContainerDataDir{
-			filepath.FromSlash(fmt.Sprintf("%s/data/localnet/mainchain/%s", CurrentDir, name)):         DockerContainerDataDir{true, NodeDockerDataPathMap["mainchain"]},
+			filepath.FromSlash(fmt.Sprintf("%s/data/localnet/mainchain/%s/elastos", CurrentDir, name)): DockerContainerDataDir{true, NodeDockerDataPathMap["mainchain"]},
 			filepath.FromSlash(fmt.Sprintf("%s/localnet/mainchain/%s/config.json", CurrentDir, name)):  DockerContainerDataDir{false, NodeDockerConfigPathMap["mainchain"]},
 			filepath.FromSlash(fmt.Sprintf("%s/localnet/mainchain/%s/keystore.dat", CurrentDir, name)): DockerContainerDataDir{false, NodeDockerKeystorePathMap["mainchain"]},
 		},
@@ -136,16 +139,19 @@ func setupLocalNetMainchainNode(ctx context.Context, cli *client.Client, network
 	}
 
 	// Pull the image from dockerhub
-	_, err = cli.ImagePull(ctx, dockerContainer.ImageName, types.ImagePullOptions{})
+	out, err := cli.ImagePull(ctx, dockerContainer.ImageName, types.ImagePullOptions{})
 	if err != nil {
 		return resp, err
 	}
+	io.Copy(ioutil.Discard, out)
 	// Create appropriate data directory that will be mounted between host and container
 	// Also, create the mount points in the process
 	var mounts = []mount.Mount{}
 	for hostPath, volume := range dockerContainer.Volumes {
 		if volume.HostCreate {
-			os.MkdirAll(hostPath, os.ModePerm)
+			if err = copy.Copy(fmt.Sprintf("localnet/mainchain/%s/elastos", name), hostPath); err != nil {
+				return resp, err
+			}
 		}
 		// Create mountpoints
 		mounts = append(mounts, mount.Mount{
