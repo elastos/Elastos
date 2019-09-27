@@ -6,7 +6,7 @@ import Component from './Component'
 import SuggestionService from '@/service/SuggestionService'
 
 const mapState = state => ({
-  dataList: _.get(state.suggestion.detail, 'editHistory'),
+  dataList: state.suggestion.edit_history,
   loading: _.get(state.suggestion.detail, 'loading'),
   detail: state.suggestion.detail,
 })
@@ -15,17 +15,11 @@ const mapDispatch = () => {
   const service = new SuggestionService()
 
   return {
-    async getDetail({
-      id,
-      incViewsNum,
-    }) {
-      return service.getDetail({
-        id,
-        incViewsNum,
-      })
+    getEditHistories({ id }) {
+      return service.editHistories({ id })
     },
-    resetDetail() {
-      return service.resetDetail()
+    resetEditHistory() {
+      return service.resetEditHistory()
     },
   }
 }
