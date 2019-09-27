@@ -1,6 +1,8 @@
 import Foundation
+import BitcoinKit
 
-public class PublicKey: DIDObject {
+
+public class DIDPublicKey: DIDObject {
     var controller: DID?
     var keyBase58: String?
     
@@ -36,6 +38,10 @@ public class PublicKey: DIDObject {
         json[Constants.publicKeyBase58] = keyBase58
         
         return json
+    }
+    
+    public func getPublicKeyBytes() -> [UInt8]{
+        return Base58.decode(keyBase58)
     }
     
 }

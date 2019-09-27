@@ -54,5 +54,9 @@ public class DerivedKey: NSObject {
         binAddress[programHash.count...programHash.count + 3] = hash[0...3]
         return binAddress
     }
+    
+   class public func getAddress(_ pk: [UInt8]) {
+            return Base58.encode(pk)
+    }
 
 }

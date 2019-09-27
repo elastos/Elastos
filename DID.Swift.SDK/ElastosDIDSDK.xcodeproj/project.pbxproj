@@ -44,10 +44,27 @@
 		A3E6D47E233485E00012CD77 /* MalformedDocumentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D46F233485DF0012CD77 /* MalformedDocumentError.swift */; };
 		A3E6D47F233485E00012CD77 /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D470233485DF0012CD77 /* Service.swift */; };
 		A3E6D480233485E00012CD77 /* DIDDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D471233485DF0012CD77 /* DIDDocument.swift */; };
-		A3E6D481233485E00012CD77 /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D472233485DF0012CD77 /* PublicKey.swift */; };
+		A3E6D481233485E00012CD77 /* DIDPublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */; };
 		A3E6D482233485E00012CD77 /* DIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D473233485DF0012CD77 /* DIDError.swift */; };
 		A3E6D483233485E00012CD77 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D474233485DF0012CD77 /* Constants.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		11E3F799233D127E00EF35C3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 11E3F792233D127E00EF35C3 /* Antlr4.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = "Antlr4::Antlr4::Product";
+			remoteInfo = Antlr4;
+		};
+		11E3F79B233D127E00EF35C3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 11E3F792233D127E00EF35C3 /* Antlr4.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = "Antlr4::Antlr4Tests::Product";
+			remoteInfo = Antlr4Tests;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		067C25678EDA0C004955F401 /* Pods-ElastosDIDSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.debug.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.debug.xcconfig"; sourceTree = "<group>"; };
@@ -57,6 +74,7 @@
 		11508521233CC65400EF6A8D /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Base64.swift; path = ElastosDIDSDK/DID/Util/Base64.swift; sourceTree = SOURCE_ROOT; };
 		11508523233CC67B00EF6A8D /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/Backend/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		1189A4BE23386A9E0068EE41 /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PathExtracter.swift; path = ElastosDIDSDK/DID/Util/PathExtracter.swift; sourceTree = SOURCE_ROOT; };
+		11E3F792233D127E00EF35C3 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Antlr4.xcodeproj; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -95,7 +113,7 @@
 		A3E6D46F233485DF0012CD77 /* MalformedDocumentError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedDocumentError.swift; path = ElastosDIDSDK/DID/MalformedDocumentError.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D470233485DF0012CD77 /* Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Service.swift; path = ElastosDIDSDK/DID/Service.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D471233485DF0012CD77 /* DIDDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDDocument.swift; path = ElastosDIDSDK/DID/DIDDocument.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D472233485DF0012CD77 /* PublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PublicKey.swift; path = ElastosDIDSDK/DID/PublicKey.swift; sourceTree = SOURCE_ROOT; };
+		A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDPublicKey.swift; path = ElastosDIDSDK/DID/DIDPublicKey.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D473233485DF0012CD77 /* DIDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDError.swift; path = ElastosDIDSDK/DID/DIDError.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D474233485DF0012CD77 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Constants.swift; path = ElastosDIDSDK/DID/Constants.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -137,9 +155,27 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		11E3F791233D121900EF35C3 /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+				11E3F792233D127E00EF35C3 /* Antlr4.xcodeproj */,
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		11E3F793233D127E00EF35C3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				11E3F79A233D127E00EF35C3 /* Antlr4.framework */,
+				11E3F79C233D127E00EF35C3 /* Antlr4Tests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		11F262A023260CF30009C103 = {
 			isa = PBXGroup;
 			children = (
+				11E3F791233D121900EF35C3 /* Externals */,
 				11F262AC23260CF40009C103 /* ElastosDIDSDK */,
 				11F262AB23260CF40009C103 /* Products */,
 				1109D08723275DC600A03D56 /* Frameworks */,
@@ -198,7 +234,7 @@
 				A3E6D46B233485DF0012CD77 /* MalformedDIDError.swift */,
 				A3E6D46A233485DF0012CD77 /* MalformedDIDURLError.swift */,
 				A3E6D46F233485DF0012CD77 /* MalformedDocumentError.swift */,
-				A3E6D472233485DF0012CD77 /* PublicKey.swift */,
+				A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */,
 				A3E6D470233485DF0012CD77 /* Service.swift */,
 			);
 			path = DID;
@@ -296,12 +332,35 @@
 			mainGroup = 11F262A023260CF30009C103;
 			productRefGroup = 11F262AB23260CF40009C103 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 11E3F793233D127E00EF35C3 /* Products */;
+					ProjectRef = 11E3F792233D127E00EF35C3 /* Antlr4.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				11F262A923260CF40009C103 /* ElastosDIDSDK */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		11E3F79A233D127E00EF35C3 /* Antlr4.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Antlr4.framework;
+			remoteRef = 11E3F799233D127E00EF35C3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		11E3F79C233D127E00EF35C3 /* Antlr4Tests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = file;
+			path = Antlr4Tests.xctest;
+			remoteRef = 11E3F79B233D127E00EF35C3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		11F262A823260CF40009C103 /* Resources */ = {
@@ -358,7 +417,7 @@
 				A3E6D479233485E00012CD77 /* MalformedDIDURLError.swift in Sources */,
 				A3E6D47C233485E00012CD77 /* DIDURL.swift in Sources */,
 				A3E6D45B233485AD0012CD77 /* ParserHelper.swift in Sources */,
-				A3E6D481233485E00012CD77 /* PublicKey.swift in Sources */,
+				A3E6D481233485E00012CD77 /* DIDPublicKey.swift in Sources */,
 				A3E6D47E233485E00012CD77 /* MalformedDocumentError.swift in Sources */,
 				A3E6D456233485AD0012CD77 /* DIDURLLexer.swift in Sources */,
 				A3E6D458233485AD0012CD77 /* DIDURLParserATN.swift in Sources */,

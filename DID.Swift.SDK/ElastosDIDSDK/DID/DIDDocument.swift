@@ -2,9 +2,9 @@ import Foundation
 
 public class DIDDocument: NSObject {
     public var subject: DID?
-    private var publicKeys: Dictionary<DIDURL, PublicKey> = [: ]
-    private var authentications: Dictionary<DIDURL, PublicKey> = [: ]
-    private var authorizations: Dictionary<DIDURL, PublicKey> = [: ]
+    private var publicKeys: Dictionary<DIDURL, DIDPublicKey> = [: ]
+    private var authentications: Dictionary<DIDURL, DIDPublicKey> = [: ]
+    private var authorizations: Dictionary<DIDURL, DIDPublicKey> = [: ]
     private var credentials: Dictionary<DIDURL, VerifiableCredential> = [: ]
     private var services: Dictionary<DIDURL, Service> = [: ]
     public var expires: Date?
@@ -19,11 +19,11 @@ public class DIDDocument: NSObject {
         return publicKeys.count
     }
 
-    public func getPublicKeys() -> Array<PublicKey> {
+    public func getPublicKeys() -> Array<DIDPublicKey> {
         return getEntries(publicKeys)
     }
 
-    public func selectPublicKey(_ id: String, _ type: String) throws -> Array<PublicKey> {
+    public func selectPublicKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
         var didurl: DIDURL
         do {
             didurl = try DIDURL(id)
@@ -33,7 +33,7 @@ public class DIDDocument: NSObject {
         return try selectEntry(publicKeys, didurl, type)
     }
 
-    public func selectPublicKey(_ id: DIDURL, _ type: String) throws -> Array<PublicKey> {
+    public func selectPublicKey(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
         do {
             return try selectEntry(publicKeys, id, type)
         } catch {
@@ -41,7 +41,7 @@ public class DIDDocument: NSObject {
         }
     }
 
-    public func getPublicKey(_ id: String) throws -> PublicKey {
+    public func getPublicKey(_ id: String) throws -> DIDPublicKey {
         var didurl: DIDURL
         do {
             didurl = try DIDURL(id)
@@ -51,20 +51,20 @@ public class DIDDocument: NSObject {
         return getEntry(publicKeys, didurl)
     }
 
-    public func getPublicKey(_ id: DIDURL) throws -> PublicKey {
+    public func getPublicKey(_ id: DIDURL) throws -> DIDPublicKey {
         return getEntry(publicKeys, id)
     }
 
-    public func getDefaultPublicKey() -> PublicKey? {
+    public func getDefaultPublicKey() -> DIDPublicKey? {
         publicKeys.values.forEach{ pk in
             if (pk.controller?.isEqual(self.subject))! {
-                // TODO HDKey
+                let address = DerivedKey.getAddress(pk.getPublicKeyBytes())
             }
         }
         return nil
     }
 
-    public func addPublicKey(_ pk: PublicKey) -> Bool{
+    public func addPublicKey(_ pk: DIDPublicKey) -> Bool{
         if readonly { return false }
         publicKeys[pk.id] = pk
         return true
@@ -94,28 +94,28 @@ public class DIDDocument: NSObject {
         return authentications.count
     }
 
-    public func getAuthenticationKeys() -> Array<PublicKey> {
-        var list: Array<PublicKey> = []
+    public func getAuthenticationKeys() -> Array<DIDPublicKey> {
+        var list: Array<DIDPublicKey> = []
         authentications.forEach{ (key, value) in
             list.append(value)
         }
         return list
     }
 
-    public func selectAuthenticationKey(_ id: DIDURL, type: String) throws -> Array<PublicKey> {
+    public func selectAuthenticationKey(_ id: DIDURL, type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, id, type)
     }
 
-    public func selectAuthenticationKey(_ id: String, _ type: String) throws -> Array<PublicKey>{
+    public func selectAuthenticationKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey>{
         let didurl = try DIDURL(id)
         return try selectEntry(authentications, didurl, type)
     }
 
-    public func getAuthenticationKey(_ id: DIDURL) -> PublicKey {
+    public func getAuthenticationKey(_ id: DIDURL) -> DIDPublicKey {
         return getEntry(authentications, id)
     }
     // TODO error handle
-    public func getAuthenticationKey(_ id: String) throws -> PublicKey {
+    public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey {
         return try getEntry(authentications, DIDURL(id))
     }
 
@@ -130,7 +130,7 @@ public class DIDDocument: NSObject {
         return addAuthenticationKey(pk)
     }
 
-    func addAuthenticationKey(_ pk: PublicKey) -> Bool {
+    func addAuthenticationKey(_ pk: DIDPublicKey) -> Bool {
         if readonly { return false }
         // Check the controller is current DID subject
         if !((pk.controller?.isEqual(subject))!) { return false }
@@ -142,32 +142,32 @@ public class DIDDocument: NSObject {
         return authentications.count
     }
 
-    public func getAuthorizationKeys() -> Array<PublicKey> {
+    public func getAuthorizationKeys() -> Array<DIDPublicKey> {
         return getEntries(authentications)
     }
 
-    public func selectAuthorizationKey(_ id: DIDURL, _ type: String) throws -> Array<PublicKey> {
+    public func selectAuthorizationKey(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, id, type)
     }
 
-    public func selectAuthorizationKey(_ id: String, _ type: String) throws -> Array<PublicKey> {
+    public func selectAuthorizationKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, DIDURL(id), type)
     }
 
-    public func getAuthorizationKey(_ id: DIDURL) -> PublicKey {
+    public func getAuthorizationKey(_ id: DIDURL) -> DIDPublicKey {
         return getEntry(authentications, id)
     }
 
-    public func getAuthorizationKey(_ id: String) throws -> PublicKey {
+    public func getAuthorizationKey(_ id: String) throws -> DIDPublicKey {
         return try getEntry(authentications, DIDURL(id))
     }
 
     public func addAuthorizationKey(_ id: String, _ did: DID, _ key: DIDURL) throws -> Bool {
         if readonly { return false }
         let doc: DIDDocument = try DIDStore.shareInstance().resolveDid(did)
-        let refPk: PublicKey = try doc.getPublicKey(key)
+        let refPk: DIDPublicKey = try doc.getPublicKey(key)
         if !((refPk.controller?.isEqual(did))!) { return false }
-        let pk = try PublicKey(DIDURL(subject!, id), refPk.type, did, refPk.keyBase58!)
+        let pk = try DIDPublicKey(DIDURL(subject!, id), refPk.type, did, refPk.keyBase58!)
         _ = addPublicKey(pk)
         return addAuthorizationKey(pk)
     }
@@ -254,6 +254,124 @@ public class DIDDocument: NSObject {
         return true
     }
 
+    public func toJson(_ compact: Bool) {
+        var dic = [: ]
+        // subject
+        dic[Constants.id] = subject?.toExternalForm()
+        
+        // publicKey
+        var pks: Array = [Dictionary<String, String>]
+        publicKeys.forEach { (didUrl, pk) in
+            var dic: Dictionary
+            var value: String
+            
+            // id
+            if compact && pk.id.did.isEqual(subject){
+                value = "#" + pk.id.fragment
+            }
+            else {
+                value = pk.id.toExternalForm()
+            }
+            dic[Constants.id] = value
+            
+            // type
+            if !compact && !(pk.type == Constants.defaultPublicKeyType) {
+                dic[Constants.type] = pk.type
+            }
+            
+            // controller
+            if !compact && !(pk.controller?.isEqual(subject)) {
+                dic[Constants.controller] = pk.controller?.toExternalForm()
+            }
+            
+            // publicKeyBase58
+            dic[Constants.publicKeyBase58] = pk.keyBase58
+            pks.append(dic)
+        }
+        dic[Constants.publicKey] = pks
+        
+        // authentication
+        var authenPKs: Array<String> = [String]
+        authentications.forEach { (didUrl, pk) in
+            var value: String
+            if compact && pk.id.did.isEqual(subject){
+                value = "#" + pk.id.fragment
+            }
+            else {
+                value = pk.id.toExternalForm()
+            }
+            authenPKs.append(value)
+        }
+        dic[Constants.authentication] = authenPKs
+        
+        // authorization
+        var authoriPks: Array = [String]
+        if !authorizations.isEmpty && authorizations.count != 0 {
+            authorizations.forEach { (didUrl, pk) in
+                var value: String
+                if compact && pk.id.did.isEqual(subject) {
+                    value = "#" + pk.id.fragment
+                }else {
+                    value = pk.id.toExternalForm()
+                }
+                authoriPks.append(value)
+            }
+            dic[Constants.authorization] = authoriPks
+        }
+        
+        // credential
+        if !credentials.isEmpty && credentials.count != 0 {
+            var vcs: Array = [Dictionary<String, String>]
+            credentials.forEach { (didUrl, vc)
+                var dic: Dictionary<String, String>
+                var value: String
+                
+                // id
+                if compact && vc.id.isEqual(subject) {
+                    value = "#" + vc.id.fragment
+                }
+                else {
+                    value = vc.id.toExternalForm()
+                }
+                dic[Constants.id] = value
+                
+                // type
+                var strs: Array<String>
+                vc.types.forEach{ str in
+                    strs.append(str)
+                }
+                dic[Constants.type] = strs
+                
+                // issuer
+                if !compact && !(vc.issuer.isEqual(vc.subject.id)) {
+                    dic[Constants.issuer] = vc.issuer.toExternalForm()
+                }
+                
+                // issuanceDate
+                if vc.expiationDate {
+                    dic[Constants.expirationDate] = "TODO: change to time string"
+                }
+                
+                // credentialSubject
+                dic[Constants.credentialSubject] = " TODO: "
+                
+                // proof
+                // TODO: judge is sigin
+                dic[Constants.proof] = "TODO: "
+                
+                vcs.append(dic)
+            }
+            dic[Constants.credential] = vcs
+            
+            // service
+            dic[Constants.service] = [] // TODO: change to
+            
+            // expires
+            dic[Constants.expires] = "TODO: expires change to time string"
+            // Change to jsonSting & Write to local
+        }
+    }
+    
     public static func fromJson(url: URL) throws -> DIDDocument {
         // url of local path
         let doc: DIDDocument = DIDDocument()
@@ -321,7 +439,7 @@ public class DIDDocument: NSObject {
         }
 
        try arr.forEach { (obj) in
-            let pk: PublicKey = try PublicKey.fromJson(obj, subject!)
+            let pk: DIDPublicKey = try DIDPublicKey.fromJson(obj, subject!)
             _ = addPublicKey(pk)
         }
     }
@@ -337,7 +455,7 @@ public class DIDDocument: NSObject {
         }
 
         try arr.forEach { (obj) in
-            let pk: PublicKey = try PublicKey.fromJson(obj, subject!)
+            let pk: DIDPublicKey = try DIDPublicKey.fromJson(obj, subject!)
             _ = addAuthenticationKey(pk)
         }
     }
@@ -352,7 +470,7 @@ public class DIDDocument: NSObject {
         }
 
         try arr.forEach { (obj) in
-            let pk: PublicKey = try PublicKey.fromJson(obj, subject!)
+            let pk: DIDPublicKey = try DIDPublicKey.fromJson(obj, subject!)
             _ = addAuthorizationKey(pk)
         }
     }
@@ -370,7 +488,7 @@ public class DIDDocument: NSObject {
         services[svc.id] = svc
         return true
     }
-    private func addAuthorizationKey(_ pk: PublicKey) -> Bool {
+    private func addAuthorizationKey(_ pk: DIDPublicKey) -> Bool {
         if readonly { return false }
         // Cann' authorize to self
 

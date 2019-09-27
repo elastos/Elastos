@@ -88,7 +88,7 @@ class DIDStore: NSObject {
 
 //        let key: HDPrivateKey = try privateIdentity.derive(lastIndex++)
 //        let did: DID = DID(DID.METHOD, key)
-//        let pk: PublicKey = PublicKey(try DIDURL(did, "primary"), Constants.defaultPublicKeyType, did, key)
+//        let pk: DIDPublicKey = DIDPublicKey(try DIDURL(did, "primary"), Constants.defaultPublicKeyType, did, key)
 //        let doc: DIDDocument = DIDDocument()
 //        doc.subject = did
 //        doc.addPublicKey(pk)
@@ -140,7 +140,7 @@ class DIDStore: NSObject {
 
     public func setDidHint(_ did: DID , _ hint:String ) throws {}
 
-    public func getDidHint(_ did: DID) throws {}
+    public func getDidHint(_ did: DID) throws -> String {}
 
     public func loadDid(_ did: DID) throws -> DIDDocument { return DIDDocument() }
 

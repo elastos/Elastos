@@ -1,12 +1,12 @@
 import Foundation
 
 public class VerifiableCredential: DIDObject {
-    private var types: Array<String>!
-    private var issuer: DID!
-    private var issuanceDate: Date!
-    private var expiationDate: Date!
-    private var subject: CredentialSubject!
-    private var proof: Proof!
+    public var types: Array<String>!
+    public var issuer: DID!
+    public var issuanceDate: Date!
+    public var expiationDate: Date!
+    public var subject: CredentialSubject!
+    public var proof: Proof!
     
     init(_ vc: VerifiableCredential) {
         super.init(vc.id, vc.type)
