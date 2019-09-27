@@ -164,7 +164,10 @@ func startNode(c *cli.Context, st *settings) {
 
 	blockchain.DefaultLedger = &ledger // fixme
 
-	arbiters, err := state.NewArbitrators(st.Params(),
+	committee := crstate.NewCommittee(st.Params())
+	ledger.Committee = committee
+
+	arbiters, err := state.NewArbitrators(st.Params(), committee,
 		func(programHash common.Uint168) (common.Fixed64,
 			error) {
 			amount := common.Fixed64(0)
@@ -182,9 +185,6 @@ func startNode(c *cli.Context, st *settings) {
 		printErrorAndExit(err)
 	}
 	ledger.Arbitrators = arbiters // fixme
-
-	committee := crstate.NewCommittee(st.Params())
-	ledger.Committee = committee
 
 	chain, err := blockchain.New(chainStore, st.Params(), arbiters.State,
 		committee)

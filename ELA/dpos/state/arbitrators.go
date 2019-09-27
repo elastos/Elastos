@@ -20,6 +20,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -55,6 +56,7 @@ type arbitrators struct {
 	*State
 	*degradation
 	chainParams      *config.Params
+	crCommittee      *state.Committee
 	bestHeight       func() uint32
 	getBlockByHeight func(uint32) (*types.Block, error)
 
@@ -70,6 +72,7 @@ type arbitrators struct {
 	nextArbitrators            []ArbiterMember
 	nextCandidates             []ArbiterMember
 	crcArbiters                map[common.Uint168]ArbiterMember
+	crcChangedHeight           uint32
 	accumulativeReward         common.Fixed64
 	finalRoundChange           common.Fixed64
 	clearingHeight             uint32
@@ -343,7 +346,8 @@ func (a *arbitrators) clearingDPOSReward(block *types.Block,
 		dposReward = 0
 	}
 
-	if err := a.distributeDPOSReward(a.accumulativeReward); err != nil {
+	if err := a.distributeDPOSReward(block.Height,
+		a.accumulativeReward); err != nil {
 		return err
 	}
 	a.accumulativeReward = dposReward
@@ -352,11 +356,17 @@ func (a *arbitrators) clearingDPOSReward(block *types.Block,
 	return nil
 }
 
-func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) (err error) {
+func (a *arbitrators) distributeDPOSReward(height uint32,
+	reward common.Fixed64) (err error) {
 	a.arbitersRoundReward = map[common.Uint168]common.Fixed64{}
 
-	a.arbitersRoundReward[a.chainParams.CRCAddress] = 0
-	realDPOSReward, err := a.distributeWithNormalArbitrators(reward)
+	var realDPOSReward common.Fixed64
+	if height >= a.chainParams.CRCommitteeStartHeight &&
+		a.crcChangedHeight > 0 {
+		realDPOSReward, err = a.distributeWithNormalArbitratorsV(reward)
+	} else {
+		realDPOSReward, err = a.distributeWithNormalArbitratorsV0(reward)
+	}
 
 	if err != nil {
 		return err
@@ -371,10 +381,10 @@ func (a *arbitrators) distributeDPOSReward(reward common.Fixed64) (err error) {
 	return nil
 }
 
-func (a *arbitrators) distributeWithNormalArbitrators(
+func (a *arbitrators) distributeWithNormalArbitratorsV(
 	reward common.Fixed64) (common.Fixed64, error) {
 	if len(a.currentArbitrators) == 0 {
-		return 0, errors.New("not found arbiters when distributeWithNormalArbitrators")
+		return 0, errors.New("not found arbiters when distributeWithNormalArbitratorsV")
 	}
 
 	totalBlockConfirmReward := float64(reward) * 0.25
@@ -391,21 +401,20 @@ func (a *arbitrators) distributeWithNormalArbitrators(
 	realDPOSReward := common.Fixed64(0)
 	for _, arbiter := range a.currentArbitrators {
 		ownerHash := arbiter.GetOwnerProgramHash()
-		votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
-		individualProducerReward := common.Fixed64(math.Floor(float64(
-			votes) * rewardPerVote))
-		r := individualBlockConfirmReward + individualProducerReward
+		var r common.Fixed64
 		if _, ok := a.crcArbiters[ownerHash]; ok {
 			r = individualBlockConfirmReward
-			a.arbitersRoundReward[a.chainParams.CRCAddress] += r
 		} else {
-			a.arbitersRoundReward[ownerHash] = r
+			votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
+			individualProducerReward := common.Fixed64(math.Floor(float64(
+				votes) * rewardPerVote))
+			r = individualBlockConfirmReward + individualProducerReward
 		}
-
+		a.arbitersRoundReward[ownerHash] = r
 		realDPOSReward += r
 	}
-	for _, candiate := range a.currentCandidates {
-		ownerHash := candiate.GetOwnerProgramHash()
+	for _, candidate := range a.currentCandidates {
+		ownerHash := candidate.GetOwnerProgramHash()
 		votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
 		individualProducerReward := common.Fixed64(math.Floor(float64(
 			votes) * rewardPerVote))
@@ -562,12 +571,12 @@ func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	hash, err := contract.PublicKeyToStandardProgramHash(pk)
-	if err != nil {
-		return false
+	for _, v := range a.crcArbiters {
+		if bytes.Equal(v.GetNodePublicKey(), pk) {
+			return true
+		}
 	}
-	_, ok := a.crcArbiters[*hash]
-	return ok
+	return false
 }
 
 func (a *arbitrators) IsActiveProducer(pk []byte) bool {
@@ -582,12 +591,10 @@ func (a *arbitrators) GetConnectedProducer(publicKey []byte) ArbiterMember {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	hash, err := contract.PublicKeyToStandardProgramHash(publicKey)
-	if err != nil {
-		return nil
-	}
-	if producer, ok := a.crcArbiters[*hash]; ok {
-		return producer
+	for _, v := range a.crcArbiters {
+		if bytes.Equal(v.GetNodePublicKey(), publicKey) {
+			return v
+		}
 	}
 
 	findByPk := func(arbiters []ArbiterMember) ArbiterMember {
@@ -766,13 +773,9 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 		a.TryLeaveUnderStaffed(a.IsAbleToRecoverFromUnderstaffedState)
 	}
 
-	a.nextArbitrators = make([]ArbiterMember, 0)
-	for _, v := range a.crcArbiters {
-		ar, err := NewOriginArbiter(CROrigin, v.GetNodePublicKey())
-		if err != nil {
-			return err
-		}
-		a.nextArbitrators = append(a.nextArbitrators, ar)
+	err := a.resetNextArbiterByCRC(height)
+	if err != nil {
+		return err
 	}
 
 	if !a.IsInactiveMode() && !a.IsUnderstaffedMode() {
@@ -809,6 +812,39 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 
 	if err := a.snapshotVotesStates(); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (a *arbitrators) resetNextArbiterByCRC(height uint32) error {
+	a.nextArbitrators = make([]ArbiterMember, 0)
+
+	if height >= a.chainParams.CRCommitteeStartHeight {
+		if a.crCommittee.LastCommitteeHeight > a.crcChangedHeight {
+			crMembers := a.crCommittee.GetAllMembers()
+			if len(crMembers) != len(a.chainParams.CRCArbiters) {
+				return errors.New("CRC members count mismatch with CRC arbiters")
+			}
+
+			a.crcArbiters = map[common.Uint168]ArbiterMember{}
+			for i, v := range a.chainParams.CRCArbiters {
+				pk, err := common.HexStringToBytes(v)
+				if err != nil {
+					return err
+				}
+				ar, err := NewCRCArbiter(pk, crMembers[i])
+				if err != nil {
+					return err
+				}
+				a.crcArbiters[ar.GetOwnerProgramHash()] = ar
+			}
+			a.crcChangedHeight = a.crCommittee.LastCommitteeHeight
+		}
+	}
+
+	for _, v := range a.crcArbiters {
+		a.nextArbitrators = append(a.nextArbitrators, v)
 	}
 
 	return nil
@@ -1117,11 +1153,12 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 	return nil
 }
 
-func NewArbitrators(chainParams *config.Params,
+func NewArbitrators(chainParams *config.Params, committee *state.Committee,
 	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
 	error)) (*arbitrators, error) {
 	a := &arbitrators{
 		chainParams:                chainParams,
+		crCommittee:                committee,
 		nextCandidates:             make([]ArbiterMember, 0),
 		accumulativeReward:         common.Fixed64(0),
 		finalRoundChange:           common.Fixed64(0),
@@ -1129,6 +1166,7 @@ func NewArbitrators(chainParams *config.Params,
 		illegalBlocksPayloadHashes: make(map[common.Uint256]interface{}),
 		snapshots:                  make(map[uint32][]*CheckPoint),
 		snapshotKeysDesc:           make([]uint32, 0),
+		crcChangedHeight:           0,
 		degradation: &degradation{
 			inactiveTxs:       make(map[common.Uint256]interface{}),
 			inactivateHeight:  0,

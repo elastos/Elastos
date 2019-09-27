@@ -178,7 +178,8 @@ func initLedger(L *lua.LState) int {
 		fmt.Printf("Init chain store error: %s \n", err.Error())
 	}
 
-	arbiters, err := state.NewArbitrators(chainParams, nil)
+	arbiters, err := state.NewArbitrators(chainParams,
+		nil, nil)
 	if err != nil {
 		fmt.Printf("New arbitrators error: %s \n", err.Error())
 	}
