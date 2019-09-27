@@ -273,7 +273,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
-	copy.CheckRewardHeight = 280000            //todo correct me later
+	copy.CheckRewardHeight = 280000
 	return &copy
 }
 
