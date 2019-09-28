@@ -101,9 +101,7 @@ class Component extends BaseComponent {
     } else if (contentType === CONTENT_TYPE.MARKDOWN) {
       try {
         editorState = createEditorState(JSON.parse(value))
-      } catch (err) {
-        logger.error(err)
-      }
+      } catch (err) {}
     }
 
     if (!editorState) {
