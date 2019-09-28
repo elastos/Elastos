@@ -3,23 +3,7 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { validate, mail, user as userUtil, permissions, logger } from '../utility'
 
-const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
-const emptyDoc = {
-  title: '',
-  type: constant.SUGGESTION_TYPE.NEW_MOTION,
-  abstract: '',
-  goal: '',
-  motivation: '',
-  relevance: '',
-  budget: '',
-  plan: '',
-  link: [],
-}
-
-const listExlucdedFields = [
-  constant.SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION,
-  constant.SUGGESTION_TAG_TYPE.INFO_NEEDED
-]
+const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan']
 
 export default class extends Base {
   private model: any
