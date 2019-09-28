@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_CRINFO_H__
 #define __ELASTOS_SDK_CRINFO_H__
 
-#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include "IPayload.h"
 
 namespace Elastos {
 	namespace ElaWallet {

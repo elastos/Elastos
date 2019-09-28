@@ -537,12 +537,6 @@ static void RegisterID(const std::string &masterWalletID, const std::string &DID
 		return ;
 	}
 
-	IIDAgent *IDAgent = dynamic_cast<IIDAgent *>(masterWalelt);
-	if (IDAgent == nullptr) {
-		logger->error("[{}] is not instance of IIdAgent", masterWalletID);
-		return ;
-	}
-
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, DIDSubWalletID);
 	IIDChainSubWallet *DIDSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
 	if (DIDSubWallet == nullptr) {
@@ -550,20 +544,29 @@ static void RegisterID(const std::string &masterWalletID, const std::string &DID
 		return ;
 	}
 
-	std::string id = IDAgent->DeriveIDAndKeyForPurpose(1, 0);
+	nlohmann::json payload = R"(
+		{
+			"header": {"specification": "elastos/did/1.0", "operation": "create"},
+			"payload": "
+ICAiZG9jIjogewogICAgImlkIjogImRpZDplbGFzdG9zOmljSjR6MkRVTHJIRXpZU3ZqS05KcEt5aH
+FGRHh2WVY3cE4iLAogICAgInB1YmxpY0tleSI6IFt7CiAgICAgICJpZCI6ICIjbWFzdGVyLWtleSIsC
+iAgICAgICJwdWJsaWNLZXlCYXNlNTgiOiAiek54b1phWkxkYWNrWlFOTWFzN3NDa1BSSFpzSjNCdGRq
+RXZNMnk1Z052S0oiCiAgICB9LCB7CiAgICAgICJpZCI6ICIja2V5LTIiLAogICAgICAicHVibGljS2V
+5QmFzZTU4IjogIjI3M2o4ZlExWlpWTTZVNmQ1WEUzWDhTeVVMdUp3anlZWGJ4Tm9wWFZ1ZnRCZSIKIC
+AgIH0sIHsKICAgICAgImlkIjogIiNyZWNvdmVyeS1rZXkiLAogICAgICAiY29udHJvbGxlciI6ICJka
+WQ6ZWxhc3RvczppcDdudERvMm1ldEduVTh3R1A0Rm55S0NVZGJIbTRCUERoIiwKICAgICAgInB1Ymxp
+Y0tleUJhc2U1OCI6ICJ6cHB5MzNpMnIzdUMxTFQzUkZjTHFKSlBGcFl1WlBEdUtNZUtaNVRkQXNrTSI
+KICAgIH1dLAogICAgImF1dGhlbnRpY2F0aW9uIjogWwogICAgICAibWFzdGVyLWtleXMiLAogICAgIC
+AiI2tleS0yIiwKICAgIF0sCiAgICAuLi4KICB9LA",
+			"proof": {
+				"type": "ECDSAsecp256r1",
+				"verificationMethod": "#master-key",
+				"signature": "JCAlfEBh...I3NSwg="
+			}
+		}
+	)"_json;
 
-	nlohmann::json payload = nlohmann::json::parse(
-		"{\"Id\":\"ij8rfb6A4Ri7c5CRE1nDVdVCUMuUxkk2c6\",\"Contents\":[{\"Path\":\"kyc/person/identityCard\","
-		"\"Values\": [ { \"Proof\": \"\\\"signature\\\":\\\"30450220499a5de3f84e7e919c26b6a8543fd24129634c65"
-		"ee4d38fe2e3386ec8a5dae57022100b7679de8d181a454e2def8f55de423e9e15bebcde5c58e871d20aa0d91162ff6\\\","
-		"\\\"notary\\\":\\\"COOIX\\\"\", \"DataHash\": \"bd117820c4cf30b0ad9ce68fe92b0117ca41ac2b6a49235fabd"
-		"793fc3a9413c0\"}]}]}");
-	payload["ID"] = id;
-
-	payload["Sign"] = IDAgent->Sign(id, payload.dump(), payPasswd);;
-	nlohmann::json program = IDAgent->GenerateProgram(id, payload.dump(), payPasswd);
-
-	nlohmann::json tx = DIDSubWallet->CreateIDTransaction("", payload, program, memo);
+	nlohmann::json tx = DIDSubWallet->CreateIDTransaction(payload, memo);
 
 	logger->debug("[{}:{}] register id", masterWalletID, DIDSubWalletID);
 

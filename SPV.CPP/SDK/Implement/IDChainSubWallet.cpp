@@ -9,14 +9,15 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/Plugin/Transaction/Payload/RegisterIdentification.h>
+#include <SDK/Plugin/Transaction/Payload/DIDInfo.h>
 #include <SDK/Plugin/Transaction/Program.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 
 #include <set>
 #include <boost/scoped_ptr.hpp>
-
-#define ID_REGISTER_BUFFER_COUNT 100
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -42,36 +43,33 @@ namespace Elastos {
 		}
 
 		nlohmann::json
-		IDChainSubWallet::CreateIDTransaction(const std::string &fromAddress, const nlohmann::json &payloadJson,
-											  const nlohmann::json &programJson, const std::string &memo) {
+		IDChainSubWallet::CreateIDTransaction(const nlohmann::json &payloadJson, const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJson.dump());
-			ArgInfo("program: {}", programJson.dump());
 			ArgInfo("memo: {}", memo);
 
-			std::string toAddress;
-			ProgramPtr program(new Program());
+			Address receiveAddr;
 			PayloadPtr payload = nullptr;
 			try {
-				toAddress = payloadJson["ID"].get<std::string>();
-				program->FromJson(programJson);
-				payload = PayloadPtr(new RegisterIdentification());
+				payload = PayloadPtr(new DIDInfo());
 				payload->FromJson(payloadJson, 0);
+				std::string id = static_cast<DIDInfo *>(payload.get())->DIDPayload().ID();
+				std::vector<std::string> idSplited;
+				boost::algorithm::split(idSplited, id, boost::is_any_of(":"), boost::token_compress_on);
+				ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument, "invalid id format in payload JSON");
+				receiveAddr = Address(idSplited[2]);
+				ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::InvalidArgument, "invalid receive addr(id) in payload JSON");
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 												  "Create id tx param error: " + std::string(e.what()));
 			}
 
 			std::vector<OutputPtr> outputs;
-			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr, Asset::GetELAAssetID())));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
+			TransactionPtr tx = CreateTx("", outputs, memo);
 
 			tx->SetTransactionType(Transaction::registerIdentification, payload);
-
-			tx->AddProgram(program);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -79,45 +77,6 @@ namespace Elastos {
 			ArgInfo("r => {}", result.dump());
 
 			return result;
-		}
-
-		void IDChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
-			if (transaction != nullptr && transaction->GetTransactionType() == Transaction::registerIdentification) {
-				std::string txHash = transaction->GetHash().GetHex();
-				ArgInfo("{} onTxAdded Hash: {}", _walletManager->GetWallet()->GetWalletID(), txHash);
-
-				std::for_each(_callbacks.begin(), _callbacks.end(),
-							  [&transaction, &txHash](ISubWalletCallback *callback) {
-								  const RegisterIdentification *payload = static_cast<const RegisterIdentification *>(
-									  transaction->GetPayload());
-								  callback->OnTransactionStatusChanged(txHash, "Added", payload->ToJson(0), 0);
-							  });
-			} else {
-				SubWallet::onTxAdded(transaction);
-			}
-		}
-
-		void IDChainSubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
-			for (size_t i = 0; i < hashes.size(); ++i) {
-				TransactionPtr transaction = _walletManager->GetWallet()->TransactionForHash(hashes[i]);
-				if (transaction != nullptr &&
-					transaction->GetTransactionType() == Transaction::registerIdentification) {
-					uint32_t confirm = blockHeight >= transaction->GetBlockHeight() ? blockHeight -
-																					  transaction->GetBlockHeight() + 1
-																					: 0;
-
-					std::for_each(_callbacks.begin(), _callbacks.end(),
-								  [&i, &hashes, &confirm, &transaction, this](ISubWalletCallback *callback) {
-
-									  const RegisterIdentification *payload = static_cast<const RegisterIdentification *>(
-										  transaction->GetPayload());
-									  callback->OnTransactionStatusChanged(hashes[i].GetHex(), "Updated", payload->ToJson(0),
-																		   confirm);
-								  });
-				} else {
-					SubWallet::onTxUpdated(hashes, blockHeight, timeStamp);
-				}
-			}
 		}
 
 	}

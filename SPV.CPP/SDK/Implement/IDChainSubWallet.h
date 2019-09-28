@@ -16,10 +16,8 @@ namespace Elastos {
 			virtual ~IDChainSubWallet();
 
 			virtual nlohmann::json CreateIDTransaction(
-					const std::string &fromAddress,
 					const nlohmann::json &payloadJson,
-					const nlohmann::json &programJson,
-					const std::string &memo);
+					const std::string &memo = "");
 
 		protected:
 			friend class MasterWallet;
@@ -27,10 +25,6 @@ namespace Elastos {
 			IDChainSubWallet(const CoinInfoPtr &info,
 							 const ChainConfigPtr &config,
 							 MasterWallet *parent);
-
-			virtual void onTxAdded(const TransactionPtr &transaction);
-
-			virtual void onTxUpdated(const std::vector<uint256> &hash, uint32_t blockHeight, time_t timeStamp);
 
 		};
 
