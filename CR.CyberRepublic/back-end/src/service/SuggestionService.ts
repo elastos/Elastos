@@ -126,8 +126,8 @@ export default class extends Base {
     delete query['tags.type']
 
     const excludedFields = [
-      '-editHistory', '-comments', '-goal',
-      '-motivation', '-relevance', '-budget', '-plan',
+      '-comments', '-goal', '-motivation',
+      '-relevance', '-budget', '-plan',
       '-subscribers', '-likes', '-dislikes', '-updatedAt'
     ]
 
