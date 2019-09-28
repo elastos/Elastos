@@ -1,5 +1,4 @@
 import React from 'react'
-import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
 import { Row, Col, Spin, Modal, Input, Button, Anchor, Popconfirm, message } from 'antd'
 import { Link } from 'react-router-dom'
@@ -13,8 +12,6 @@ import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
 import { CVOTE_STATUS, SUGGESTION_TAG_TYPE, CONTENT_TYPE } from '@/constant'
-import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from '@/util/html'
 import { getHTML } from '@/util/editor'
 import { logger } from '@/util'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
@@ -28,15 +25,11 @@ import TagsContainer from '../common/tags/Container'
 import {
   Container,
   Title,
-  CoverImg,
-  ShortDesc,
   DescLabel,
   Label,
   LabelPointer,
-  Desc,
   BtnGroup,
   StyledButton,
-  DescBody,
   CouncilComments,
   IconWrap,
   Item,
@@ -118,7 +111,6 @@ export default class extends StandardPage {
     const ownerActionsNode = this.renderOwnerActionsNode()
     const councilActionsNode = this.renderCouncilActionsNode()
     const editForm = this.renderEditForm()
-    // const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
     const socialShareButtonsNode = this.renderSocialShareButtonsNode()
 
@@ -147,7 +139,6 @@ export default class extends StandardPage {
               {ownerActionsNode}
               {councilActionsNode}
             </div>
-            {/* <div>{mySuggestionNode}</div> */}
             <div style={{ marginTop: 60 }}>{commentNode}</div>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
@@ -163,7 +154,6 @@ export default class extends StandardPage {
                 {councilActionsNode}
                 <div style={{ marginTop: 60 }}>{commentNode}</div>
               </Col>
-              {/* <Col span={9}>{mySuggestionNode}</Col> */}
             </Row>
           </MediaQuery>
           {editForm}
@@ -192,15 +182,8 @@ export default class extends StandardPage {
 
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
-    const coverNode = this.renderCoverNode()
-    const shortDescNode = this.renderShortDescNode()
     const labelNode = this.renderLabelNode()
     const tagsNode = this.renderTagsNode()
-    const descNode = this.renderDescNode()
-    const benefitsNode = this.renderBenefitsNode()
-    const fundingNode = this.renderFundingNode()
-    const timelineNode = this.renderTimelineNode()
-    const linkNode = this.renderLinkNode()
 
     let status = I18N.get('suggestion.status.posted')
     if (_.get(detail, 'reference.0.vid')) {
@@ -238,15 +221,6 @@ export default class extends StandardPage {
             </div>
           ))
         }
-        {/* {coverNode} */}
-        {/* {shortDescNode} */}
-        {/* <Divider /> */}
-        {/* {descNode} */}
-        {/* <Divider /> */}
-        {/* {benefitsNode} */}
-        {/* {fundingNode} */}
-        {/* {timelineNode} */}
-        {/* {linkNode} */}
       </div>
     )
   }
@@ -268,16 +242,6 @@ export default class extends StandardPage {
   renderTitleNode() {
     const { detail } = this.props
     return <Title>{detail.title}</Title>
-  }
-
-  renderCoverNode() {
-    const { detail } = this.props
-    return detail.coverImg ? <CoverImg src={detail.coverImg} /> : ''
-  }
-
-  renderShortDescNode() {
-    const { detail } = this.props
-    return <ShortDesc>{detail.shortDesc}</ShortDesc>
   }
 
   renderLabelNode() {
@@ -353,83 +317,6 @@ export default class extends StandardPage {
     })
   }
 
-  renderDescNode() {
-    const { detail } = this.props
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.fullDesc')}</DescLabel>
-        <DescBody
-          className="ql-editor"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail.desc) }}
-        />
-      </Desc>
-    )
-  }
-
-  renderBenefitsNode() {
-    const { detail } = this.props
-    if (!detail.benefits) {
-      return null
-    }
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.benefits')}</DescLabel>
-        <DescBody>{detail.benefits}</DescBody>
-      </Desc>
-    )
-  }
-
-  renderFundingNode() {
-    const { detail } = this.props
-    if (!detail.funding) {
-      return null
-    }
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.funding')}</DescLabel>
-        <div>{detail.funding}</div>
-      </Desc>
-    )
-  }
-
-  renderTimelineNode() {
-    const { detail } = this.props
-    if (!detail.timeline) {
-      return null
-    }
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.timeline')}</DescLabel>
-        <div>{moment(detail.timeline).format('MMM D, YYYY')}</div>
-      </Desc>
-    )
-  }
-
-  renderLinkNode() {
-    const { link } = this.props.detail
-
-    if (_.isEmpty(link || _.isEmpty(_.get(link, '[0]')))) {
-      return null
-    }
-
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.links')}</DescLabel>
-        {_.map(link, href => (
-          <div key={href}>
-            <a
-              href={getSafeUrl(href)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {href}
-            </a>
-          </div>
-        ))}
-      </Desc>
-    )
-  }
-
   renderTranslationBtn() {
     const { detail } = this.props
     const text = `
@@ -483,45 +370,8 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    // const { isCouncil, match } = this.props
+    const { isCouncil, isAdmin } = this.props
 
-    // return isCouncil && (
-    //   <StyledButton
-    //     type="ebp"
-    //     className="cr-btn cr-btn-default"
-    //     onClick={this.}
-    //   >
-    //     {I18N.get('suggestion.btnText.edit')}
-    //   </StyledButton>
-    // )
-
-    const { isCouncil, isAdmin, detail } = this.props
-    const { _id, displayId, title } = detail
-    const descNode = this.renderDescNode()
-    const benefitsNode = this.renderBenefitsNode()
-    const fundingNode = this.renderFundingNode()
-    const timelineNode = this.renderTimelineNode()
-    const linkNode = this.renderLinkNode()
-
-    const proposalContent = `
-      ${ReactDOMServer.renderToString(descNode)}
-      ${ReactDOMServer.renderToString(benefitsNode)}
-      ${ReactDOMServer.renderToString(fundingNode)}
-      ${ReactDOMServer.renderToString(timelineNode)}
-      ${ReactDOMServer.renderToString(linkNode)}
-    `
-
-    const props = {
-      data: {
-        title,
-        content: proposalContent
-      },
-      suggestionDisplayId: displayId,
-      suggestionId: _id,
-      onCreated: this.onCreated,
-      btnText: I18N.get('suggestion.btnText.makeIntoProposal'),
-      btnStyle: { width: 200 }
-    }
     const considerBtn = (isCouncil || isAdmin) && (
       <Col xs={24} sm={8}>
         <Popconfirm
@@ -611,7 +461,6 @@ export default class extends StandardPage {
         type: SUGGESTION_TAG_TYPE.INFO_NEEDED,
         desc: comment
       })
-      // this.showAddTagModal()
       this.refetch()
     } catch (error) {
       logger.error(error)
@@ -670,9 +519,6 @@ export default class extends StandardPage {
   showEditForm = () => {
     const id = _.get(this.props, 'match.params.id')
     this.props.history.push(`/suggestion/${id}/edit`)
-    // this.setState({
-    //   showForm: !showForm
-    // })
   }
 
   showDropdownActions = () => {
