@@ -658,7 +658,8 @@ func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output
 func checkTransactionDepositOutpus(bc *BlockChain, txn *Transaction) error {
 	for _, output := range txn.Outputs {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
-			if txn.IsRegisterProducerTx() || txn.IsRegisterCRTx() {
+			if txn.IsRegisterProducerTx() || txn.IsRegisterCRTx() ||
+				txn.IsReturnDepositCoin() || txn.IsReturnCRDepositCoinTx() {
 				continue
 			}
 			if bc.state.ExistProducerByDepositHash(output.ProgramHash) {
