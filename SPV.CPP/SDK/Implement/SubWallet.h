@@ -165,6 +165,8 @@ namespace Elastos {
 					  MasterWallet *parent);
 
 			TransactionPtr CreateTx(
+				uint8_t type,
+				const PayloadPtr &payload,
 				const std::string &fromAddress,
 				const std::vector<OutputPtr> &outputs,
 				const std::string &memo,

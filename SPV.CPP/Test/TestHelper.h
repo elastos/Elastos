@@ -111,7 +111,6 @@ namespace Elastos {
 			tx.SetLockTime(getRandUInt32());
 			tx.SetBlockHeight(getRandUInt32());
 			tx.SetTimestamp(getRandUInt32());
-			tx.SetTransactionType(Transaction::transferAsset);
 			tx.SetPayloadVersion(getRandUInt8());
 			tx.SetFee(getRandUInt64());
 

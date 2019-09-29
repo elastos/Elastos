@@ -530,7 +530,7 @@ static void Withdraw(const std::string &fromMasterWalletID, const std::string &f
 	PublishTransaction(sidechainSubWallet, tx);
 }
 
-static void RegisterID(const std::string &masterWalletID, const std::string &DIDSubWalletID) {
+static void CreateIDTransaction(const std::string &masterWalletID, const std::string &DIDSubWalletID) {
 	IMasterWallet *masterWalelt = manager->GetMasterWallet(masterWalletID);
 	if (masterWalelt == nullptr) {
 		logger->error("[{}] master wallet not found", masterWalletID);
@@ -543,32 +543,13 @@ static void RegisterID(const std::string &masterWalletID, const std::string &DID
 		logger->error("[{}:{}] is not instance of IIdChainSubWallet", masterWalletID, DIDSubWalletID);
 		return ;
 	}
-
-	nlohmann::json payload = R"(
-		{
-			"header": {"specification": "elastos/did/1.0", "operation": "create"},
-			"payload": "
-ICAiZG9jIjogewogICAgImlkIjogImRpZDplbGFzdG9zOmljSjR6MkRVTHJIRXpZU3ZqS05KcEt5aH
-FGRHh2WVY3cE4iLAogICAgInB1YmxpY0tleSI6IFt7CiAgICAgICJpZCI6ICIjbWFzdGVyLWtleSIsC
-iAgICAgICJwdWJsaWNLZXlCYXNlNTgiOiAiek54b1phWkxkYWNrWlFOTWFzN3NDa1BSSFpzSjNCdGRq
-RXZNMnk1Z052S0oiCiAgICB9LCB7CiAgICAgICJpZCI6ICIja2V5LTIiLAogICAgICAicHVibGljS2V
-5QmFzZTU4IjogIjI3M2o4ZlExWlpWTTZVNmQ1WEUzWDhTeVVMdUp3anlZWGJ4Tm9wWFZ1ZnRCZSIKIC
-AgIH0sIHsKICAgICAgImlkIjogIiNyZWNvdmVyeS1rZXkiLAogICAgICAiY29udHJvbGxlciI6ICJka
-WQ6ZWxhc3RvczppcDdudERvMm1ldEduVTh3R1A0Rm55S0NVZGJIbTRCUERoIiwKICAgICAgInB1Ymxp
-Y0tleUJhc2U1OCI6ICJ6cHB5MzNpMnIzdUMxTFQzUkZjTHFKSlBGcFl1WlBEdUtNZUtaNVRkQXNrTSI
-KICAgIH1dLAogICAgImF1dGhlbnRpY2F0aW9uIjogWwogICAgICAibWFzdGVyLWtleXMiLAogICAgIC
-AiI2tleS0yIiwKICAgIF0sCiAgICAuLi4KICB9LA",
-			"proof": {
-				"type": "ECDSAsecp256r1",
-				"verificationMethod": "#master-key",
-				"signature": "JCAlfEBh...I3NSwg="
-			}
-		}
+	nlohmann::json didPayloadJSON = R"(
+		{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlpc0VlemtuMVB2cGZlU3h6WVNmMVFIcHU4YXZTeTl5OEgiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJreXQ3Z1diaUJUc2VHTmd1ZXMzRmljNThrVFVuenBqUE13cTZuQndEa1NDbSJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXX0","proof":{"verificationMethod":"#primary","signature":"ViEQUpyN4Wej1g5tdiD+/IZw7XrpwZhiNBWa4pV0JO6MmZOVMqSeeOY3NGYdpeN8mMg3KX/83tpz9vTqjKi2Dw=="}}
 	)"_json;
 
-	nlohmann::json tx = DIDSubWallet->CreateIDTransaction(payload, memo);
+	nlohmann::json tx = DIDSubWallet->CreateIDTransaction(didPayloadJSON, memo);
 
-	logger->debug("[{}:{}] register id", masterWalletID, DIDSubWalletID);
+	logger->debug("[{}:{}] create id tx", masterWalletID, DIDSubWalletID);
 
 	PublishTransaction(subWallet, tx);
 }
@@ -843,7 +824,7 @@ static void DIDTest() {
 	}
 
 	if (!registerID) {
-		RegisterID(gMasterWalletID, gIDchainSubWalletID);
+		CreateIDTransaction(gMasterWalletID, gIDchainSubWalletID);
 		registerID = true;
 	}
 	logger->debug("DID {}", separator);

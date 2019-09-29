@@ -250,7 +250,9 @@ namespace Elastos {
 			return tx;
 		}
 
-		TransactionPtr Wallet::CreateTransaction(const Address &fromAddress,
+		TransactionPtr Wallet::CreateTransaction(uint8_t type,
+												 const PayloadPtr &payload,
+												 const Address &fromAddress,
 												 const std::vector<OutputPtr> &outputs,
 												 const std::string &memo,
 												 bool max) {
@@ -267,9 +269,9 @@ namespace Elastos {
 
 			TransactionPtr tx;
 			if (fromAddress.Valid() && (_subAccount->IsProducerDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
-				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(outputs, fromAddress, memo);
+				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(type, payload, outputs, fromAddress, memo);
 			else
-				tx = _groupedAssets[assetID]->CreateTxForOutputs(outputs, fromAddress, memo, max);
+				tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max);
 
 			if (assetID != Asset::GetELAAssetID())
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);

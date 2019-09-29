@@ -10,6 +10,7 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <SDK/Plugin/Transaction/Payload/TransferAsset.h>
 #include <SDK/Account/SubAccount.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
@@ -156,7 +157,8 @@ namespace Elastos {
 			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
 		}
 
-		TransactionPtr SubWallet::CreateTx(const std::string &fromAddress, const std::vector<OutputPtr> &outputs,
+		TransactionPtr SubWallet::CreateTx(uint8_t type, const PayloadPtr &payload, const std::string &fromAddress,
+										   const std::vector<OutputPtr> &outputs,
 		                                   const std::string &memo, bool max) const {
 			for (const OutputPtr &output : outputs) {
 				ErrorChecker::CheckParam(!output->Addr().Valid(), Error::CreateTransaction,
@@ -171,7 +173,7 @@ namespace Elastos {
 			if (!memo.empty())
 				m = "type:text,msg:" + memo;
 
-			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(Address(fromAddress), outputs, m, max);
+			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(type, payload, Address(fromAddress), outputs, m, max);
 
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
@@ -271,7 +273,8 @@ namespace Elastos {
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo, max);
+			PayloadPtr payload = PayloadPtr(new TransferAsset());
+			TransactionPtr tx = CreateTx(Transaction::transferAsset, payload, fromAddress, outputs, memo, max);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

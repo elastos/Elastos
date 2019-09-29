@@ -215,9 +215,11 @@ namespace Elastos {
 			for (nlohmann::json::iterator it = jPubKey.begin(); it != jPubKey.end(); ++it) {
 				DIDPubKeyInfo pubKeyInfo;
 				pubKeyInfo.FromJson(*it, version);
+				_publickey.push_back(pubKeyInfo);
 			}
 
-			_expires = j["expires"].get<std::string>();
+			if (j.find("expires") != j.end())
+				_expires = j["expires"].get<std::string>();
 
 			if (j.find("authentication") != j.end())
 				_authentication = j["authentication"];
@@ -316,7 +318,10 @@ namespace Elastos {
 		}
 
 		void DIDProofInfo::FromJson(const nlohmann::json &j, uint8_t version) {
-			_type = j["type"].get<std::string>();
+			if (j.find("type") != j.end())
+				_type = j["type"].get<std::string>();
+			else
+				_type = DID_DEFAULT_TYPE;
 			_verificationMethod = j["verificationMethod"].get<std::string>();
 			_signature = j["signature"].get<std::string>();
 		}
@@ -377,7 +382,7 @@ namespace Elastos {
 				return false;
 			}
 
-			bytes_t bytes = Base64::Decode(_payload);
+			bytes_t bytes = Base64::DecodeURL(_payload);
 			std::string payloadString((char *)bytes.data(), bytes.size());
 			_payloadInfo.FromJson(nlohmann::json::parse(payloadString), version);
 
@@ -399,7 +404,7 @@ namespace Elastos {
 			_payload = j["payload"].get<std::string>();
 			_proof.FromJson(j["proof"], version);
 
-			bytes_t bytes = Base64::Decode(_payload);
+			bytes_t bytes = Base64::DecodeURL(_payload);
 			std::string payloadString((char *)bytes.data(), bytes.size());
 			_payloadInfo.FromJson(nlohmann::json::parse(payloadString), version);
 		}

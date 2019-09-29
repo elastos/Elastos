@@ -89,18 +89,18 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateRegisterCRTransaction(
 					const std::string &fromAddress,
-					const nlohmann::json &payload,
+					const nlohmann::json &payloadJSON,
 					const std::string &amount,
 					const std::string &memo);
 
 			virtual nlohmann::json CreateUpdateCRTransaction(
 					const std::string &fromAddress,
-					const nlohmann::json &payload,
+					const nlohmann::json &payloadJSON,
 					const std::string &memo);
 
 			virtual nlohmann::json CreateUnregisterCRTransaction(
 					const std::string &fromAddress,
-					const nlohmann::json &payload,
+					const nlohmann::json &payloadJSON,
 					const std::string &memo);
 
 			virtual nlohmann::json CreateRetrieveCRDepositTransaction(

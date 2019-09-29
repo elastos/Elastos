@@ -1269,7 +1269,6 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 			tx->SetLockTime(getRandUInt32());
 			tx->SetBlockHeight(i + 1);
 			tx->SetTimestamp(getRandUInt32());
-			tx->SetTransactionType(Transaction::transferAsset);
 			tx->SetPayloadVersion(getRandUInt8());
 			tx->SetFee(getRandUInt64());
 
@@ -1322,7 +1321,6 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		tx->SetLockTime(getRandUInt32());
 		tx->SetBlockHeight(getRandUInt32());
 		tx->SetTimestamp(getRandUInt32());
-		tx->SetTransactionType(Transaction::transferAsset);
 		tx->SetPayloadVersion(getRandUInt8());
 		tx->SetFee(getRandUInt64());
 

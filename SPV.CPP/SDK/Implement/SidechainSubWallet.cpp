@@ -55,12 +55,9 @@ namespace Elastos {
 			}
 
 			std::vector<OutputPtr> outputs;
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR), Asset::GetELAAssetID())));
+			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR))));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-			ErrorChecker::CheckLogic(tx == nullptr, Error::CreateTransaction, "Create withdraw tx");
-
-			tx->SetTransactionType(Transaction::transferCrossChainAsset, payload);
+			TransactionPtr tx = CreateTx(Transaction::transferCrossChainAsset, payload, fromAddress, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

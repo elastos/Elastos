@@ -7,6 +7,7 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
+#include <SDK/Plugin/Transaction/Payload/TransferAsset.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 
@@ -60,9 +61,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.emplace_back(OutputPtr(new TransactionOutput(BigInt(1000000000), receiveAddr, Asset::GetELAAssetID())));
 
-			TransactionPtr tx = CreateTx("", outputs, memo);
-
-			tx->SetTransactionType(Transaction::registerAsset, payload);
+			TransactionPtr tx = CreateTx(Transaction::registerAsset, payload, "", outputs, memo);
 
 			assetAmount *= BigInt(TOKEN_ASSET_PRECISION, 10);
 			tx->AddOutput(OutputPtr(new TransactionOutput(assetAmount, address, asset->GetHash())));
@@ -109,7 +108,8 @@ namespace Elastos {
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr, asset)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
+			PayloadPtr payload = PayloadPtr(new TransferAsset());
+			TransactionPtr tx = CreateTx(Transaction::transferAsset, payload, fromAddress, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

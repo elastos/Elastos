@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "Base64.h"
+#include "Log.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -52,6 +53,25 @@ namespace Elastos {
 			return buffer;
 		}
 
+		std::string Base64::EncodeURL(const bytes_t &input) {
+			std::string str = Encode(input);
+			str.erase(std::remove(str.begin(), str.end(), '='), str.end());
+			std::replace(str.begin(), str.end(), '+', '-');
+			std::replace(str.begin(), str.end(), '/', '_');
+			return str;
+		}
+
+		bytes_t Base64::DecodeURL(const std::string &input) {
+			std::string str = input;
+			std::replace(str.begin(), str.end(), '-', '+');
+			std::replace(str.begin(), str.end(), '_', '/');
+
+			long append = 4 - str.length() % 4;
+			if (append != 4)
+				str += std::string(append, '=');
+
+			return Decode(str);
+		}
 
 	}
 }

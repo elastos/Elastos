@@ -12,6 +12,7 @@
 #include <SDK/Plugin/Transaction/Payload/DIDInfo.h>
 #include <SDK/Plugin/Transaction/Program.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/IDTransaction.h>
 
 #include <set>
 #include <boost/scoped_ptr.hpp>
@@ -67,9 +68,7 @@ namespace Elastos {
 			std::vector<OutputPtr> outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr, Asset::GetELAAssetID())));
 
-			TransactionPtr tx = CreateTx("", outputs, memo);
-
-			tx->SetTransactionType(Transaction::registerIdentification, payload);
+			TransactionPtr tx = CreateTx(IDTransaction::didTransaction, payload, "", outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

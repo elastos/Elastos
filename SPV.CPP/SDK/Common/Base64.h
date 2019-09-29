@@ -22,6 +22,10 @@ namespace Elastos {
 
 			static bytes_t Decode(const std::string &input);
 
+			static std::string EncodeURL(const bytes_t &input);
+
+			static bytes_t DecodeURL(const std::string &input);
+
 		};
 	}
 }

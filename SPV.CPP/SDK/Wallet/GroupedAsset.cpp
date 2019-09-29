@@ -105,10 +105,12 @@ namespace Elastos {
 			return info;
 		}
 
-		TransactionPtr GroupedAsset::CreateRetrieveDepositTx(const OutputArray &outputs,
+		TransactionPtr GroupedAsset::CreateRetrieveDepositTx(uint8_t type,
+															 const PayloadPtr &payload,
+															 const OutputArray &outputs,
 															 const Address &fromAddress,
 															 const std::string &memo) {
-			TransactionPtr tx = TransactionPtr(new Transaction());
+			TransactionPtr tx = TransactionPtr(new Transaction(type, payload));
 
 			std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
 			tx->AddAttribute(AttributePtr(new Attribute(Attribute::Nonce, bytes_t(nonce.c_str(), nonce.size()))));
@@ -441,7 +443,9 @@ namespace Elastos {
 			return tx;
 		}
 
-		TransactionPtr GroupedAsset::CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
+		TransactionPtr GroupedAsset::CreateTxForOutputs(uint8_t type,
+														const PayloadPtr &payload,
+														const std::vector<OutputPtr> &outputs,
 														const Address &fromAddress,
 														const std::string &memo,
 														bool max) {
@@ -449,7 +453,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(max && outputs.size() > 1, Error::InvalidArgument,
 									 "Unsupport max for multi outputs");
 
-			TransactionPtr txn = TransactionPtr(new Transaction);
+			TransactionPtr txn = TransactionPtr(new Transaction(type, payload));
 			BigInt totalOutputAmount(0), totalInputAmount(0);
 			uint64_t txSize = 0, feeAmount = 0;
 			bytes_t code;

@@ -30,7 +30,7 @@ namespace Elastos {
 
 		class Transaction {
 		public:
-			enum Type {
+			enum {
 				coinBase                 = 0x00,
 				registerAsset            = 0x01,
 				transferAsset            = 0x02,
@@ -59,7 +59,6 @@ namespace Elastos {
 				updateCR                 = 0x23,
 				returnCRDepositCoin      = 0x24,
 
-				registerIdentification   = 0xFF, // will refactor later
 				TypeMaxCount
 			};
 
@@ -71,11 +70,13 @@ namespace Elastos {
 		public:
 			Transaction();
 
+			Transaction(uint8_t type, const PayloadPtr &payload);
+
 			Transaction(const Transaction &tx);
 
 			Transaction &operator=(const Transaction &tx);
 
-			~Transaction();
+			virtual ~Transaction();
 
 			void Serialize(ByteStream &ostream, bool extend = false) const;
 
@@ -119,9 +120,7 @@ namespace Elastos {
 
 			bool ContainInput(const uint256 &hash, uint32_t n) const;
 
-			void SetTransactionType(Type type, const PayloadPtr &payload = nullptr);
-
-			Type GetTransactionType() const;
+			uint8_t GetTransactionType() const;
 
 			uint32_t GetLockTime() const;
 
@@ -185,11 +184,12 @@ namespace Elastos {
 
 			void Cleanup();
 
-			void InitPayloadFromType(Type type);
-
 			bool IsEqual(const Transaction *tx) const;
 
 			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
+
+		public:
+			virtual PayloadPtr InitPayload(uint8_t type);
 
 		private:
 
@@ -199,13 +199,12 @@ namespace Elastos {
 		private:
 			bool _isRegistered;
 			mutable uint256 _txHash;
-			std::string _assetTableID;
 
 			TxVersion _version; // uint8_t
 			uint32_t _lockTime;
 			uint32_t _blockHeight;
 			time_t _timestamp; // time interval since unix epoch
-			Type _type; // uint8_t
+			uint8_t _type;
 			uint8_t _payloadVersion;
 			uint64_t _fee;
 			PayloadPtr _payload;

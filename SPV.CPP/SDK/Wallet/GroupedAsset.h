@@ -9,6 +9,7 @@
 #include <SDK/Common/Lockable.h>
 #include <SDK/Account/SubAccount.h>
 #include <SDK/Common/BigInt.h>
+#include <SDK/Plugin/Transaction/Payload/IPayload.h>
 
 #include <map>
 #include <boost/function.hpp>
@@ -53,7 +54,9 @@ namespace Elastos {
 
 			nlohmann::json GetBalanceInfo();
 
-			TransactionPtr CreateRetrieveDepositTx(const OutputArray &outputs,
+			TransactionPtr CreateRetrieveDepositTx(uint8_t type,
+												   const PayloadPtr &payload,
+												   const OutputArray &outputs,
 												   const Address &fromAddress,
 												   const std::string &memo);
 
@@ -61,7 +64,9 @@ namespace Elastos {
 
 			TransactionPtr Consolidate(const std::string &memo);
 
-			TransactionPtr CreateTxForOutputs(const std::vector<OutputPtr> &outputs,
+			TransactionPtr CreateTxForOutputs(uint8_t type,
+											  const PayloadPtr &payload,
+											  const std::vector<OutputPtr> &outputs,
 											  const Address &fromAddress,
 											  const std::string &memo,
 											  bool max);

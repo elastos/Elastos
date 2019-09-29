@@ -133,7 +133,8 @@ namespace Elastos {
 
 			TransactionPtr Consolidate(const std::string &memo, const uint256 &asset);
 
-			TransactionPtr CreateTransaction(const Address &fromAddress, const std::vector<OutputPtr> &outputs,
+			TransactionPtr CreateTransaction(uint8_t type, const PayloadPtr &payload,
+											 const Address &fromAddress, const std::vector<OutputPtr> &outputs,
 											 const std::string &memo, bool max);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);

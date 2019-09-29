@@ -7,6 +7,7 @@
 #include <SDK/P2P/Peer.h>
 #include <SDK/P2P/PeerManager.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/IDTransaction.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 
@@ -22,9 +23,15 @@ namespace Elastos {
 		}
 
 		bool TransactionMessage::Accept(const bytes_t &msg) {
-			ByteStream stream(msg);
-			TransactionPtr tx = TransactionPtr(new Transaction());
+			std::string pluginType = _peer->GetPeerManager()->GetPluginType();
 
+			ByteStream stream(msg);
+
+			TransactionPtr tx;
+			if (pluginType == "ELA")
+				tx = TransactionPtr(new Transaction());
+			else
+				tx = TransactionPtr(new IDTransaction());
 
 			if (!tx->Deserialize(stream)) {
 				_peer->error("malformed tx message with length: {}", msg.size());

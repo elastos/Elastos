@@ -19,6 +19,7 @@
 #include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/SpvService/Config.h>
+#include <SDK/Plugin/Transaction/Payload/ReturnDepositCoin.h>
 #include <CMakeConfig.h>
 
 #include <vector>
@@ -54,7 +55,6 @@ namespace Elastos {
 			BigInt value;
 			value.setDec(amount);
 
-
 			PayloadPtr payload = nullptr;
 			try {
 				TransferInfo info(sideChainAddress, 0, value);
@@ -68,9 +68,7 @@ namespace Elastos {
 			Address receiveAddr(lockedAddress);
 			outputs.emplace_back(OutputPtr(new TransactionOutput(value + _config->MinFee(), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-
-			tx->SetTransactionType(Transaction::transferCrossChainAsset, payload);
+			TransactionPtr tx = CreateTx(Transaction::transferCrossChainAsset, payload, fromAddress, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -206,9 +204,7 @@ namespace Elastos {
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-
-			tx->SetTransactionType(Transaction::registerProducer, payload);
+			TransactionPtr tx = CreateTx(Transaction::registerProducer, payload, fromAddress, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -239,9 +235,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-
-			tx->SetTransactionType(Transaction::updateProducer, payload);
+			TransactionPtr tx = CreateTx(Transaction::updateProducer, payload, fromAddress, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -277,9 +271,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-
-			tx->SetTransactionType(Transaction::cancelProducer, payload);
+			TransactionPtr tx = CreateTx(Transaction::cancelProducer, payload, fromAddress, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -310,9 +302,8 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-
-			tx->SetTransactionType(Transaction::returnDepositCoin);
+			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
+			TransactionPtr tx = CreateTx(Transaction::returnDepositCoin, payload, fromAddress, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().back());
@@ -593,13 +584,13 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateRegisterCRTransaction(
 				const std::string &fromAddress,
-				const nlohmann::json &payload,
+				const nlohmann::json &payloadJSON,
 				const std::string &amount,
 				const std::string &memo) {
 
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
-			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("payload: {}", payloadJSON.dump());
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
@@ -611,24 +602,22 @@ namespace Elastos {
 			ErrorChecker::CheckParam(bgAmount < minAmount, Error::DepositAmountInsufficient,
 			                         "cr deposit amount is insufficient");
 
-			PayloadPtr payloadPtr = PayloadPtr(new CRInfo());
+			PayloadPtr payload = PayloadPtr(new CRInfo());
 			try {
-				payloadPtr->FromJson(payload, 0);
+				payload->FromJson(payloadJSON, 0);
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 				                                  "Payload format err: " + std::string(e.what()));
 			}
 
-			bytes_t code = static_cast<CRInfo *>(payloadPtr.get())->GetCode();
+			bytes_t code = static_cast<CRInfo *>(payload.get())->GetCode();
 			Address receiveAddr;
 			receiveAddr.SetRedeemScript(PrefixDeposit, code);
 
 			std::vector<OutputPtr> outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-
-			tx->SetTransactionType(Transaction::registerCR, payloadPtr);
+			TransactionPtr tx = CreateTx(Transaction::registerCR, payload, fromAddress, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -639,16 +628,16 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateUpdateCRTransaction(
 				const std::string &fromAddress,
-				const nlohmann::json &payload,
+				const nlohmann::json &payloadJSON,
 				const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
-			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("payload: {}", payloadJSON.dump());
 			ArgInfo("memo: {}", memo);
 
-			PayloadPtr payloadPtr = PayloadPtr(new CRInfo());
+			PayloadPtr payload = PayloadPtr(new CRInfo());
 			try {
-				payloadPtr->FromJson(payload, 0);
+				payload->FromJson(payloadJSON, 0);
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 				                                  "Payload format err: " + std::string(e.what()));
@@ -658,9 +647,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-
-			tx->SetTransactionType(Transaction::updateCR, payloadPtr);
+			TransactionPtr tx = CreateTx(Transaction::updateCR, payload, fromAddress, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -677,16 +664,16 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateUnregisterCRTransaction(
 				const std::string &fromAddress,
-				const nlohmann::json &payload,
+				const nlohmann::json &payloadJSON,
 				const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
-			ArgInfo("payload: {}", payload.dump());
+			ArgInfo("payload: {}", payloadJSON.dump());
 			ArgInfo("memo: {}", memo);
 
-			PayloadPtr payloadPtr = PayloadPtr(new UnregisterCR());
+			PayloadPtr payload = PayloadPtr(new UnregisterCR());
 			try {
-				payloadPtr->FromJson(payload, 0);
+				payload->FromJson(payloadJSON, 0);
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 				                                  "Payload format err: " + std::string(e.what()));
@@ -696,9 +683,7 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress, outputs, memo);
-
-			tx->SetTransactionType(Transaction::unregisterCR, payloadPtr);
+			TransactionPtr tx = CreateTx(Transaction::unregisterCR, payload, fromAddress, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -728,9 +713,8 @@ namespace Elastos {
 			Address receiveAddr(CreateAddress());
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(fromAddress.String(), outputs, memo);
-
-			tx->SetTransactionType(Transaction::returnCRDepositCoin);
+			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
+			TransactionPtr tx = CreateTx(Transaction::returnCRDepositCoin, payload, fromAddress.String(), outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().back());
