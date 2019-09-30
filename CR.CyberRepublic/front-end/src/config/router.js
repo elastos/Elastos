@@ -77,6 +77,9 @@ import CouncilPage from '../module/page/council/Container'
 import CouncilListPage from '../module/page/council/list/Container'
 import CouncilDetailPage from '../module/page/council/detail/Container'
 
+// candidates
+import CandidatesPage from '../module/page/candidates/Container'
+
 // import CVoteCreatePage from '@/module/page/CVote/create/Container'
 import CVoteDetailPage from '@/module/page/CVote/detail/Container'
 import CVoteEditPage from '@/module/page/CVote/edit/Container'
@@ -510,6 +513,11 @@ export default [
     page: CouncilDetailPage,
   },
 
+  // candidates
+  {
+    path: '/candidates',
+    page: CandidatesPage,
+  },
 
   // Other
   {

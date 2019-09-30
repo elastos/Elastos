@@ -1,9 +1,7 @@
-
 export const primary = {
   default: '#43af92',
   light: '#64bebb',
   dark: '#031E28',
-
   danger: '#dc3545',
   warning: '#ffc107',
   success: '#28a745'
@@ -20,6 +18,7 @@ export const bg = {
   obsidian: '#0F2631',
   obsidianTransparent: 'rgba(15,38,49,0.27)',
   middleGreen: '#22384C',
+  darkNavy: '#172c3b'
 }
 export const text = {
   primary: primary.default,
@@ -34,6 +33,7 @@ export const text = {
   newGray: '#434D72',
   link: primary.default,
   linkHover: '#388582',
+  white: '#ffffff'
 }
 
 export const border = {
