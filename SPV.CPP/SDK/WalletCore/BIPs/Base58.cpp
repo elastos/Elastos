@@ -90,6 +90,18 @@ namespace Elastos {
 			return true;
 		}
 
+		std::string Base58::Encode(const bytes_t &payload) {
+			const char *pchars = DEFAULT_BASE58_CHARS;
+			BigInt bn(payload);
+			return bn.getInBase(58, pchars);
+		}
+
+		bytes_t Base58::Decode(const std::string &base58) {
+			const char *pchars = DEFAULT_BASE58_CHARS;
+			BigInt bn(base58, 58, pchars);
+			return bn.getBytes();
+		}
+
 		bool Base58::Valid(const std::string &base58check) {
 			const char *pchars = DEFAULT_BASE58_CHARS;
 			BigInt bn(base58check, 58, pchars);                                // convert from base58

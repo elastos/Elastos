@@ -27,6 +27,10 @@ namespace Elastos {
 
 			static bool CheckDecode(const std::string &base58check, bytes_t &payload);
 
+			static std::string Encode(const bytes_t &payload);
+
+			static bytes_t Decode(const std::string &base58);
+
 			static bool Valid(const std::string &base58check);
 
 		};

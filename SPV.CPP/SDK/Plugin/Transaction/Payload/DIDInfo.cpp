@@ -4,6 +4,8 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Base64.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 #include "DIDInfo.h"
 
 namespace Elastos {
@@ -218,8 +220,7 @@ namespace Elastos {
 				_publickey.push_back(pubKeyInfo);
 			}
 
-			if (j.find("expires") != j.end())
-				_expires = j["expires"].get<std::string>();
+			_expires = j["expires"].get<std::string>();
 
 			if (j.find("authentication") != j.end())
 				_authentication = j["authentication"];
@@ -410,7 +411,49 @@ namespace Elastos {
 		}
 
 		bool DIDInfo::IsValid() const {
-			return true;
+			bool verifiedSign = false;
+
+			if (_proof.Type() != DID_DEFAULT_TYPE) {
+				Log::error("unsupport did type");
+				return false;
+			}
+
+			std::string proofID = _proof.VerificationMethod();
+			if (proofID.empty()) {
+				Log::error("VerificationMethod of proof is empty");
+				return false;
+			}
+
+			if (proofID[0] == '#')
+				proofID = _payloadInfo.ID() + proofID;
+
+			std::string sourceData = _header.Specification() + _header.Operation() + _payload;
+			uint256 md = uint256(sha256(bytes_t(sourceData.data(), sourceData.size())));
+			const DIDPubKeyInfoArray &pubkeyInfoArray = _payloadInfo.PublicKeyInfo();
+			for (DIDPubKeyInfoArray::const_iterator it = pubkeyInfoArray.cbegin(); it != pubkeyInfoArray.cend(); ++it) {
+				std::string pubkeyID = (*it).ID();
+				if (pubkeyID[0] == '#')
+					pubkeyID = _payloadInfo.ID() + pubkeyID;
+
+				if (proofID == pubkeyID) {
+					bytes_t signature = Base64::Decode(_proof.Signature());
+					bytes_t pubkey = Base58::Decode((*it).PublicKeyBase58());
+					Key key;
+					key.SetPubKey(pubkey);
+
+					if (key.Verify(md, signature)) {
+						verifiedSign = true;
+					}
+
+					break;
+				}
+			}
+
+			if (!verifiedSign) {
+				Log::error("did payload verify signature fail");
+			}
+
+			return verifiedSign;
 		}
 
 		IPayload &DIDInfo::operator=(const IPayload &payload) {

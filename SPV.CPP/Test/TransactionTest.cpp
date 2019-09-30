@@ -188,7 +188,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 
 TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 		nlohmann::json didPayloadJSON = R"(
-{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlpc0VlemtuMVB2cGZlU3h6WVNmMVFIcHU4YXZTeTl5OEgiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJreXQ3Z1diaUJUc2VHTmd1ZXMzRmljNThrVFVuenBqUE13cTZuQndEa1NDbSJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXX0","proof":{"verificationMethod":"#primary","signature":"ViEQUpyN4Wej1g5tdiD+/IZw7XrpwZhiNBWa4pV0JO6MmZOVMqSeeOY3NGYdpeN8mMg3KX/83tpz9vTqjKi2Dw=="}}
+{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlmVVE1OXdGcEhVS2U1Tlo2Z2pmZng0OHNXRUJ0OVlnUUUiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJpSFVuRGZzWTh3RWY0ZnI4dm1mZ3NZN1dzOVJDTFJxd0paS0JWNVZCYzdqRyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwiZXhwaXJlcyI6IjIwMjQtMDktMzBUMDQ6MDA6MDBaIn0","proof":{"verificationMethod":"#primary","signature":"c1ux5u6ZHGC5UkPI97ZhwYWUhwFgrIAV9AMTDl9/s07BLhZ9tZn6zTh4+VdiDA6R98HjvwzAuSIkISWTxz5N/A=="}}
 )"_json;
 
 
@@ -207,13 +207,14 @@ TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 
 	DIDInfo *didInfo = dynamic_cast<DIDInfo *>(tx2->GetPayload());
 
+	REQUIRE(didInfo->IsValid());
 	const DIDHeaderInfo &header = didInfo->DIDHeader();
 	REQUIRE(header.Specification() == "elastos/did/1.0");
 	REQUIRE(header.Operation() == "create");
 
 	const DIDPayloadInfo &didPayloadInfo = didInfo->DIDPayload();
-	REQUIRE(didPayloadInfo.ID() == "did:elastos:iisEezkn1PvpfeSxzYSf1QHpu8avSy9y8H");
+	REQUIRE(didPayloadInfo.ID() == "did:elastos:ifUQ59wFpHUKe5NZ6gjffx48sWEBt9YgQE");
 	REQUIRE(didPayloadInfo.PublicKeyInfo().size() == 1);
 	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].ID() == "#primary");
-	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "kyt7gWbiBTseGNgues3Fic58kTUnzpjPMwq6nBwDkSCm");
+	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "iHUnDfsY8wEf4fr8vmfgsY7Ws9RCLRqwJZKBV5VBc7jG");
 }
