@@ -71,11 +71,11 @@ var RunCmd = &cobra.Command{
 			setupLocalNetDockerContainers(ctx, cli, networkResp)
 			fmt.Printf("\nSet up initial localnet successfully\n")
 			for _, node := range nodes {
-				if node == "mainchain" {
-					if resp, err := setupLocalNetNode(ctx, cli, networkResp, "mainchain", "node"); err != nil {
+				if node == "mainchain" || node == "did" {
+					if resp, err := setupLocalNetNode(ctx, cli, networkResp, node, "node"); err != nil {
 						log.Fatal("localnet could not be setup correctly: ", err)
 					} else {
-						fmt.Printf("\nNetwork: localnet\nContainer Type: mainchain\nContainer Name: develap-localnet-mainchain-%s\nContainer ID: %v\n", "node", resp.ID[:10])
+						fmt.Printf("\nNetwork: localnet\nContainer Type: %s\nContainer Name: develap-localnet-%s-node\nContainer ID: %v\n", node, node, resp.ID[:10])
 					}
 				}
 			}
@@ -147,6 +147,13 @@ func setupLocalNetDockerContainers(ctx context.Context, cli *client.Client, netw
 		log.Fatal("localnet could not be setup correctly: ", err)
 	} else {
 		fmt.Printf("\nNetwork: localnet\nContainer Type: infrastructure-arbitrator\nContainer Name: develap-localnet-arbitrator-%s\nContainer ID: %v\n", "origin-2", resp.ID[:10])
+	}
+
+	// Setup did sidechain bootstrap node
+	if resp, err = setupLocalNetNode(ctx, cli, networkResp, "did", "bootstrap"); err != nil {
+		log.Fatal("localnet could not be setup correctly: ", err)
+	} else {
+		fmt.Printf("\nNetwork: localnet\nContainer Type: infrastructure-did\nContainer Name: develap-localnet-did-%s\nContainer ID: %v\n", "bootstrap", resp.ID[:10])
 	}
 }
 
@@ -245,7 +252,10 @@ func getDockerContainer(name, chainType string) (DockerContainer, error) {
 		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/keystore.dat", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerKeystorePathMap[chainType]}
 		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/wait_for_mainchain.sh", CurrentDir, chainType))] = DockerContainerDataDir{false, "/arbiter/wait_for_mainchain.sh"}
 		dockerContainer.EntryPoint = strslice.StrSlice{"/bin/sh", "-c", fmt.Sprintf("./wait_for_mainchain.sh develap-localnet-mainchain-%s:%s -- ./arbiter -p 123", name, NodeDockerPortMainChain["localnet"].ContainerRPCPort)}
+	} else if chainType == "did" || chainType == "token" {
+		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerConfigPathMap[chainType]}
 	}
+
 	// Copy pre-existing blockchain data to the host path that will be mounted to the container
 	for hostPath, volume := range dockerContainer.Volumes {
 		if volume.HostCreate {
