@@ -80,6 +80,17 @@ var KillCmd = &cobra.Command{
 				}
 			}
 		}
+
+		networks, err := cli.NetworkList(ctx, types.NetworkListOptions{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, network := range networks {
+			if network.Name == NetworkName {
+				fmt.Printf("\nRemoving network '%v' with ID '%v'...\n", network.Name, network.ID)
+				_ = cli.NetworkRemove(ctx, network.ID)
+			}
+		}
 	},
 }
 

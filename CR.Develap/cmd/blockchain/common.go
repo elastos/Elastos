@@ -24,6 +24,7 @@ package blockchain
 import (
 	"os"
 
+	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/go-connections/nat"
 )
 
@@ -45,13 +46,15 @@ type DockerContainer struct {
 	Volumes               map[string]DockerContainerDataDir
 	ContainerExposedPorts nat.PortSet
 	HostPortMappings      nat.PortMap
-	Networks              []string
+	EntryPoint            strslice.StrSlice
+	Cmd                   strslice.StrSlice
 }
 
 var (
 	Env                string
 	Nodes              string
 	CurrentDir         = getCurrentDir()
+	NetworkName        = "develap_localnet_network"
 	NodeDockerImageMap = map[string]string{
 		"mainchain":         "cyberrepublic/elastos-mainchain-node:v0.3.7",
 		"did":               "cyberrepublic/elastos-sidechain-did-node:v0.1.3",
@@ -71,7 +74,7 @@ var (
 	}
 	NodeDockerKeystorePathMap = map[string]string{
 		"mainchain":  "/ela/keystore.dat",
-		"arbitrator": "/arbiter/elastos_arbiter",
+		"arbitrator": "/arbiter/keystore.dat",
 	}
 	NodeDockerConfigPathMap = map[string]string{
 		"mainchain":  "/ela/config.json",
