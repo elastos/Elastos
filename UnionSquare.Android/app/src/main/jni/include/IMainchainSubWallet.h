@@ -245,14 +245,14 @@ namespace Elastos {
 			 *
 			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
 			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payload      Generate by GenerateCRInfoPayload().
+			 * @param payloadJSON  Generate by GenerateCRInfoPayload().
 			 * @param amount       Amount must lager than 500,000,000,000 sela
 			 * @param memo         Remarks string. Can be empty string.
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRegisterCRTransaction(
 					const std::string &fromAddress,
-					const nlohmann::json &payload,
+					const nlohmann::json &payloadJSON,
 					const std::string &amount,
 					const std::string &memo) = 0;
 
@@ -261,13 +261,13 @@ namespace Elastos {
 			 *
 			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
 			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payload      Generate by GenerateCRInfoPayload().
+			 * @param payloadJSON  Generate by GenerateCRInfoPayload().
 			 * @param memo         Remarks string. Can be empty string.
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateUpdateCRTransaction(
 					const std::string &fromAddress,
-					const nlohmann::json &payload,
+					const nlohmann::json &payloadJSON,
 					const std::string &memo) = 0;
 
 			/**
@@ -275,13 +275,13 @@ namespace Elastos {
 			 *
 			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
 			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param payload      Generate by GenerateUnregisterCRPayload().
+			 * @param payloadJSON  Generate by GenerateUnregisterCRPayload().
 			 * @param memo         Remarks string. Can be empty string.
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateUnregisterCRTransaction(
 					const std::string &fromAddress,
-					const nlohmann::json &payload,
+					const nlohmann::json &payloadJSON,
 					const std::string &memo) = 0;
 
 			/**

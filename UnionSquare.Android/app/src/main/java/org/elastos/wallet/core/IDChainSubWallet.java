@@ -10,10 +10,8 @@ package org.elastos.wallet.core;
 public class IDChainSubWallet extends SidechainSubWallet {
     private long mInstance;
 
-    public String CreateIdTransaction(
-            String fromAddress, String payloadJson, String programJson, String memo)
-            throws WalletException {
-        return CreateIdTransaction(mInstance, fromAddress, payloadJson, programJson, memo);
+    public String CreateIDTransaction(String payloadJson, String memo) throws WalletException {
+        return CreateIDTransaction(mInstance, payloadJson, memo);
     }
 
     public IDChainSubWallet(long instance) {
@@ -21,6 +19,5 @@ public class IDChainSubWallet extends SidechainSubWallet {
         mInstance = instance;
     }
 
-    private native String CreateIdTransaction(
-            long instance, String fromAddress, String payloadJson, String programJson, String memo);
+    private native String CreateIDTransaction(long instance, String payloadJSON, String memo);
 }

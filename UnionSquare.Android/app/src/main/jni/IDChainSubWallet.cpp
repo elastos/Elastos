@@ -8,28 +8,22 @@
 
 using namespace Elastos::ElaWallet;
 
-#define JNI_CreateIdTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateIDTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
-static jstring JNICALL CreateIdTransaction(JNIEnv *env, jobject clazz, jlong instance,
-                                           jstring jfromAddress,
+static jstring JNICALL CreateIDTransaction(JNIEnv *env, jobject clazz, jlong instance,
                                            jstring jpayloadJson,
-                                           jstring jprogramJson,
                                            jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
-    const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
     const char *payloadJson = env->GetStringUTFChars(jpayloadJson, NULL);
-    const char *programJson = env->GetStringUTFChars(jprogramJson, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
 
     IIDChainSubWallet *wallet = (IIDChainSubWallet *) instance;
     jstring tx = NULL;
 
     try {
-        nlohmann::json txJson = wallet->CreateIDTransaction(fromAddress,
-                                                            nlohmann::json::parse(payloadJson),
-                                                            nlohmann::json::parse(programJson),
+        nlohmann::json txJson = wallet->CreateIDTransaction(nlohmann::json::parse(payloadJson),
                                                             memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
@@ -37,9 +31,7 @@ static jstring JNICALL CreateIdTransaction(JNIEnv *env, jobject clazz, jlong ins
         msgException = e.what();
     }
 
-    env->ReleaseStringUTFChars(jfromAddress, fromAddress);
     env->ReleaseStringUTFChars(jpayloadJson, payloadJson);
-    env->ReleaseStringUTFChars(jprogramJson, programJson);
     env->ReleaseStringUTFChars(jmemo, memo);
 
     if (exception) {
@@ -51,7 +43,7 @@ static jstring JNICALL CreateIdTransaction(JNIEnv *env, jobject clazz, jlong ins
 
 
 static const JNINativeMethod methods[] = {
-        REGISTER_METHOD(CreateIdTransaction),
+        REGISTER_METHOD(CreateIDTransaction),
 };
 
 jint RegisterIDChainSubWallet(JNIEnv *env, const std::string &path) {
