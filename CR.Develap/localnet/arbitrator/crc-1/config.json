@@ -22,7 +22,7 @@
         "SideNodeList": [
             {
                 "Rpc": {
-                    "IpAddress": "develap-localnet-did-bootstrap",
+                    "IpAddress": "develap-localnet-did-node",
                     "HttpJsonPort": 20606,
                     "User": "",
                     "Pass": ""
@@ -35,7 +35,7 @@
             },
             {
                 "Rpc":{
-                    "IpAddress":"develap-localnet-token-bootstrap",
+                    "IpAddress":"develap-localnet-token-node",
                     "HttpJsonPort": 20616,
                     "Pass":"",
                     "User":""
@@ -48,7 +48,7 @@
             },
             {
                 "Rpc":{
-                    "IpAddress":"develap-localnet-eth-oracle-bootstrap",
+                    "IpAddress":"develap-localnet-eth-oracle-node",
                     "HttpJsonPort": 20632,
                     "Pass":"",
                     "User":""

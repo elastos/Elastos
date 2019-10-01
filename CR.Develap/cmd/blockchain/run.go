@@ -148,13 +148,6 @@ func setupLocalNetDockerContainers(ctx context.Context, cli *client.Client, netw
 	} else {
 		fmt.Printf("\nNetwork: localnet\nContainer Type: infrastructure-arbitrator\nContainer Name: develap-localnet-arbitrator-%s\nContainer ID: %v\n", "origin-2", resp.ID[:10])
 	}
-
-	// Setup did sidechain bootstrap node
-	if resp, err = setupLocalNetNode(ctx, cli, networkResp, "did", "bootstrap"); err != nil {
-		log.Fatal("localnet could not be setup correctly: ", err)
-	} else {
-		fmt.Printf("\nNetwork: localnet\nContainer Type: infrastructure-did\nContainer Name: develap-localnet-did-%s\nContainer ID: %v\n", "bootstrap", resp.ID[:10])
-	}
 }
 
 func setupLocalNetNode(ctx context.Context, cli *client.Client, networkResp types.NetworkCreateResponse, chainType, name string) (container.ContainerCreateCreatedBody, error) {

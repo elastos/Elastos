@@ -4,7 +4,7 @@
         "SPVMagic": 7630401,
         "SPVDisableDNS": true,
         "PermanentPeers": [
-            "develap-localnet-token-bootstrap:20618"
+            "develap-localnet-token-node:20618"
         ],
         "SPVPermanentPeers": [
             "develap-localnet-mainchain-crc-1:20338",
