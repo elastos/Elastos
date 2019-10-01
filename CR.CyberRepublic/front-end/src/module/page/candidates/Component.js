@@ -48,8 +48,12 @@ export default class extends StandardPage {
         <Name>NICKNAME</Name>
         <Meta>
           <Location>Country, Region</Location>
-          <div>302 <span>votes</span></div>
-          <div>50% <span>of total votes</span></div>
+          <div>
+            302 <span>votes</span>
+          </div>
+          <div>
+            50% <span>of total votes</span>
+          </div>
         </Meta>
       </Info>
     </Card>
@@ -71,7 +75,7 @@ const StyledSquare = styled(Square)`
 const StyledCircle = styled(Circle)`
   position: absolute;
   left: 40px;
-  top: calc(100% / 2 - 48px)
+  top: calc(100% / 2 - 48px);
 `
 const Circles = styled.div`
   position: absolute;
@@ -116,13 +120,13 @@ const Rank = styled.div`
   top: 122px;
   right: 14px;
   color: #000000;
-  padding: 5px 14px 0 9px;
+  padding: 4px 16px 0 8px;
+  height: 36px;
 `
 
 const Number = styled.div`
   font-family: 'komu-a', sans-serif;
   font-size: 36px;
-  display: inline-block;
   line-height: 1;
 `
 const Suffix = styled.div`
@@ -130,8 +134,8 @@ const Suffix = styled.div`
   font-size: 14px;
   font-family: 'komu-a', sans-serif;
   text-transform: uppercase;
-  display: inline-block;
-  top: 4px;
+  top: 2px;
+  right: 8px;
 `
 const Info = styled.div`
   padding: 8px 16px 19px;
@@ -143,7 +147,7 @@ const Meta = styled.div`
   color: #f6f9fd;
   span {
     font-family: Synthese;
-    opacity: .7;
+    opacity: 0.7;
   }
 `
 const Name = styled.div`
@@ -154,6 +158,6 @@ const Name = styled.div`
 `
 const Location = styled.div`
   margin: 16px 0 32px;
-  opacity: .7;
+  opacity: 0.7;
   font-family: Synthese;
 `
