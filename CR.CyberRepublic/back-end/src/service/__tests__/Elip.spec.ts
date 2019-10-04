@@ -28,7 +28,7 @@ beforeAll(async () => {
     userService.getDBModel('User').findOne({ role: constant.USER_ROLE.ADMIN })
   ])
   user.member = result[0]
-  user.secretary = result[1]
+  user.member1 = result[1]
   user.admin = result[2]
 
   // add a SECRETARY role
@@ -36,9 +36,12 @@ beforeAll(async () => {
     user: user.admin
   })
   await adminService.updateRole({
-    userId: user.secretary._id,
+    userId: user.member1._id,
     role: constant.USER_ROLE.SECRETARY
   })
+  user.secretary = await userService
+    .getDBModel('User')
+    .findOne({ _id: user.member1._id })
 })
 
 describe('Tests for ELIP', () => {
@@ -93,5 +96,33 @@ describe('Tests for ELIP', () => {
       status: constant.ELIP_STATUS.SUBMITTED
     })
     expect(rs2.nModified).to.be.equal(1)
+  })
+
+  test('Users with different roles get an ELIP', async () => {
+    const elipService = new ElipService(DB, {
+      user: user.member
+    })
+    const elip_3: any = await elipService.create(global.DB.ELIP_3)
+
+    // The ELIP's author
+    const rs = await elipService.getById(elip_3._id)
+    expect(rs.elip._id.equals(elip_3._id)).to.be.equal(true)
+
+    // A secretary
+    const elipService1 = new ElipService(DB, { user: user.secretary })
+    const rs1 = await elipService1.getById(elip_3._id)
+    expect(rs1.elip._id.equals(elip_3._id)).to.be.equal(true)
+
+    // A guest
+    const elipService2 = new ElipService(DB, {})
+    const rs2 = await elipService2.getById(elip_3._id)
+    expect(Object.keys(rs2).length).to.be.equal(0)
+
+    await DB.getModel('Elip').update(
+      { _id: elip_3._id },
+      { status: constant.ELIP_STATUS.DRAFT }
+    )
+    const rs3 = await elipService2.getById(elip_3._id)
+    expect(rs3.elip._id.equals(elip_3._id)).to.be.equal(true)
   })
 })
