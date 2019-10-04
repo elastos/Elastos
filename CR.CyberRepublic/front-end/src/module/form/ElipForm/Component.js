@@ -65,7 +65,6 @@ class C extends BaseComponent {
         history.push(`/elips/${elip._id}`)
       } else {
         param._id = data._id
-        param.status = ELIP_STATUS.WAIT_FOR_REVIEW
         await update(param)
         message.info(I18N.get('elip.msg.updated'))
         history.push(`/elips/${data._id}`)

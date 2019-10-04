@@ -50,4 +50,48 @@ describe('Tests for ELIP', () => {
     expect(rs.createdBy.toString()).to.be.equal(user.member._id.toString())
     expect(rs.status).to.be.equal(constant.ELIP_STATUS.WAIT_FOR_REVIEW)
   })
+
+  test('An ELIP is updated by its author', async () => {
+    const elipService = new ElipService(DB, {
+      user: user.member
+    })
+    const elip_2: any = await elipService.create(global.DB.ELIP_2)
+
+    // An ELIP can not be updated If its status is WAIT_FOR_REVIEW.
+    try {
+      await elipService.update({
+        _id: elip_2._id,
+        title: 'update elip'
+      })
+    } catch (error) {
+      expect(error).to.be.equal(
+        `ElipService.update - cannot update a WAIT_FOR_REVIEW elip`
+      )
+    }
+
+    // An ELIP can not be updated If its status is REJECTED.
+    await DB.getModel('Elip').update(
+      { _id: elip_2._id },
+      { status: constant.ELIP_STATUS.REJECTED }
+    )
+    const rs: any = await elipService.update({
+      _id: elip_2._id,
+      title: 'update title',
+      description: 'update description'
+    })
+    expect(rs.nModified).to.be.equal(1)
+    const rs1 = await DB.getModel('Elip').findOne({ _id: elip_2._id })
+    expect(rs1.status).to.be.equal(constant.ELIP_STATUS.WAIT_FOR_REVIEW)
+
+    // The author of ELIP can change ELIP's status from DRAFT to SUBMITTED.
+    await DB.getModel('Elip').update(
+      { _id: elip_2._id },
+      { status: constant.ELIP_STATUS.DRAFT }
+    )
+    const rs2: any = await elipService.update({
+      _id: elip_2._id,
+      status: constant.ELIP_STATUS.SUBMITTED
+    })
+    expect(rs2.nModified).to.be.equal(1)
+  })
 })
