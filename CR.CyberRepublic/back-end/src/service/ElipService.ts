@@ -164,12 +164,16 @@ export default class extends Base {
     }
 
     for (const comment of rs.comments) {
+      let promises = []
       for (const thread of comment) {
-        await db_elip.getDBInstance().populate(thread, {
-          path: 'createdBy',
-          select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
-        })
+        promises.push(
+          db_elip.getDBInstance().populate(thread, {
+            path: 'createdBy',
+            select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
+          })
+        )
       }
+      await Promise.all(promises)
     }
 
     return isVisible ? { elip: rs, reviews } : {}
