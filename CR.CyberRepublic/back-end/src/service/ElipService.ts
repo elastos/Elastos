@@ -189,6 +189,7 @@ export default class extends Base {
       query.status = {
         $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED]
       }
+      param.filter = null
     }
 
     if (param.filter === constant.ELIP_FILTER.DRAFT) {
