@@ -4,6 +4,7 @@ import db from '../../db'
 import '../../config'
 import ElipService from '../ElipService'
 import UserService from '../UserService'
+import ElipReviewService from '../ElipReviewService'
 
 declare var global, describe, test, beforeAll
 
@@ -18,7 +19,8 @@ beforeAll(async () => {
         $in: [global.DB.MEMBER_USER.username, global.DB.SECRETARY_USER.username]
       }
     }),
-    DB.getModel('Elip').remove({})
+    DB.getModel('Elip').remove({}),
+    DB.getModel('Elip_Review').remove({})
   ])
 
   const userService = new UserService(DB, {})
@@ -153,5 +155,27 @@ describe('Tests for ELIP', () => {
     const rs2 = await elipService2.list({ $or: [{ vid: 2 }] })
     expect(rs2.length).to.be.equal(1)
     await DB.getModel('Elip').remove({})
+  })
+
+  test('A secretary review an ELIP', async () => {
+    const elipService = new ElipService(DB, {
+      user: user.member
+    })
+    const elip = await elipService.create({
+      title: 'title',
+      description: 'description'
+    })
+    const elipReviewService = new ElipReviewService(DB, {
+      user: user.secretary
+    })
+    await elipReviewService.create({
+      elipId: elip._id,
+      status: constant.ELIP_REVIEW_STATUS.REJECTED,
+      comment: 'need more info'
+    })
+    const rs = await DB.getModel('Elip_Review').find({})
+    expect(rs.length).to.be.equal(1)
+    const rs1 = await elipService.getById(elip._id)
+    expect(rs1.elip.status === constant.ELIP_STATUS.REJECTED).to.be.equal(true)
   })
 })
