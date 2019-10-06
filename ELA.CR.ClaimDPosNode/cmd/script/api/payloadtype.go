@@ -1072,6 +1072,11 @@ func RegisterCrcProposalReviewType(L *lua.LState) {
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalReviewMethods))
 }
 
+func getDid(code []byte) *common.Uint168 {
+	ct1, _ := contract.CreateCRDIDContractByCode(code)
+	return ct1.ToProgramHash()
+}
+
 // Constructor
 func newCrcProposalReview(L *lua.LState) int {
 	fmt.Println("newCrcProposalReview begin")
@@ -1091,7 +1096,7 @@ func newCrcProposalReview(L *lua.LState) int {
 	crcProposalReview := &payload.CRCProposalReview{
 		ProposalHash: *proposalHash,
 		VoteResult:   payload.VoteResult(voteResult),
-		Code:         codeByte,
+		DID:          *getDid(codeByte),
 	}
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)

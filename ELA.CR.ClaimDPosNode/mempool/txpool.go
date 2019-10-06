@@ -313,8 +313,9 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 		len(blockTxs), txsInPool, deleteCount, len(mp.txnList)))
 }
 
-func (mp *TxPool) getCrcProposalReviewKey(proposalReview *payload.CRCProposalReview) string {
-	return string(proposalReview.Code) + proposalReview.ProposalHash.String()
+func (mp *TxPool) getCrcProposalReviewKey(proposalReview *payload.
+	CRCProposalReview) string {
+	return proposalReview.DID.String() + proposalReview.ProposalHash.String()
 }
 
 func (mp *TxPool) cleanCanceledProducerAndCR(txs []*Transaction) error {

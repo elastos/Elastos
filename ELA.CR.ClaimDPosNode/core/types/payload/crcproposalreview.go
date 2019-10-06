@@ -26,7 +26,7 @@ const CRCProposalReviewVersion byte = 0x00
 type CRCProposalReview struct {
 	ProposalHash common.Uint256
 	VoteResult   VoteResult
-	Code         []byte
+	DID          common.Uint168
 	Sign         []byte
 }
 
@@ -57,10 +57,10 @@ func (a *CRCProposalReview) SerializeUnsigned(w io.Writer, version byte) error {
 		return err
 	}
 	if err := common.WriteUint8(w, byte(a.VoteResult)); err != nil {
-		return errors.New("CRCProposalReview VoteResult serialization error.")
+		return errors.New("[CRCProposalReview], VoteResult serialization error.")
 	}
-	if err := common.WriteVarBytes(w, a.Code); err != nil {
-		return errors.New("CRCProposalReview Code serialization error.")
+	if err := a.DID.Serialize(w); err != nil {
+		return errors.New("[CRCProposalReview], DID serialize failed")
 	}
 
 	return nil
@@ -90,9 +90,8 @@ func (a *CRCProposalReview) DeserializeUnsigned(r io.Reader, version byte) error
 	}
 	a.VoteResult = VoteResult(val[0])
 
-	a.Code, err = common.ReadVarBytes(r, crypto.MaxMultiSignCodeLength, "code")
-	if err != nil {
-		return errors.New("[CRCProposalReview], Code deserialize failed")
+	if err := a.DID.Deserialize(r); err != nil {
+		return errors.New("[CRCProposalReview], DID deserialize failed")
 	}
 	return nil
 }

@@ -31,7 +31,7 @@ func crcProposalReviewPayloadEqual(payload1 *CRCProposalReview,
 	payload2 *CRCProposalReview) bool {
 	if !payload1.ProposalHash.IsEqual(payload2.ProposalHash) ||
 		payload1.VoteResult != payload2.VoteResult ||
-		!bytes.Equal(payload1.Code, payload2.Code) ||
+		!payload1.DID.IsEqual(payload2.DID) ||
 		!bytes.Equal(payload1.Sign, payload2.Sign) {
 		return false
 	}
@@ -43,11 +43,17 @@ func randomCrcProposalReviewPayload() *CRCProposalReview {
 	return &CRCProposalReview{
 		ProposalHash: *randomUint256(),
 		VoteResult:   VoteResult(mathRand.Int() % (int(Abstain) + 1)),
-		Code:         randomBytes(34),
+		DID:          *randomUint168(),
 		Sign:         randomBytes(65),
 	}
 }
+func randomUint168() *common.Uint168 {
+	randBytes := make([]byte, 21)
+	rand.Read(randBytes)
+	result, _ := common.Uint168FromBytes(randBytes)
 
+	return result
+}
 func randomUint256() *common.Uint256 {
 	randBytes := make([]byte, 32)
 	rand.Read(randBytes)

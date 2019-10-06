@@ -572,9 +572,9 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 
 func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	// Generate a register producer transaction
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKeyStr1 := "02ca89a5fe6213da1b51046733529a84f0265abac59005f6c16f62330d20f02aeb"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKeyStr1 := "7a50d2b036d64fcb3d344cee429f61c4a3285a934c45582b26e8c9227bc1f33a"
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
@@ -1200,7 +1200,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
 	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
 	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
-	nickName1 := "nickname 1"
+	nickName1 := randomString()
 
 	hash1, _ := getDepositAddress(publicKeyStr1)
 	hash2, _ := getDepositAddress(publicKeyStr2)
@@ -1262,7 +1262,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	// Nickname already in use
 	s.Chain.crCommittee.GetState().Nicknames[nickName1] = struct{}{}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "nick name nickname 1 already inuse")
+	s.EqualError(err, "nick name "+nickName1+" already inuse")
 
 	delete(s.Chain.crCommittee.GetState().Nicknames, nickName1)
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
@@ -1827,7 +1827,7 @@ func (s *txValidatorTestSuite) getCrcProposalReviewTx(crPublicKeyStr,
 	crcProposalReviewPayload := &payload.CRCProposalReview{
 		ProposalHash: *randomUint256(),
 		VoteResult:   payload.Approve,
-		Code:         code,
+		DID:          *getDid(code),
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -1855,9 +1855,11 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 
 	member1 := s.getCRMember(publicKeyStr1, privateKeyStr1, nickName1)
 	s.Chain.crCommittee.Members[member1.Info.DID] = member1
+
 	// ok
 	txn := s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
 	err := s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
+	s.NoError(err)
 
 	// invalid payload
 	txn.Payload = &payload.CRInfo{}
@@ -1871,10 +1873,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 	s.EqualError(err, "VoteResult should be known")
 
 	// proposal reviewer is not CR member
-	// todo needs other pr function
 	txn = s.getCrcProposalReviewTx(publicKeyStr2, privateKeyStr2)
 	err = s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
-	s.EqualError(err, "CR proposal reviewer should be one of the CR members")
+	s.EqualError(err, "did correspond crMember not exists")
 
 	// invalid CR proposal reviewer signature
 	txn = s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
