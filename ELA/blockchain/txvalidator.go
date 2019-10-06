@@ -1569,18 +1569,18 @@ func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
 		(crcProposalReview.VoteResult > payload.Abstain) {
 		return errors.New("VoteResult should be known")
 	}
-
-	//todo check ProposalHash must exist
-	if !b.crCommittee.IsCRMember(crcProposalReview.Code) {
-		return errors.New("CR proposal reviewer should be one of the CR members")
+	crMember := b.crCommittee.GetMember(crcProposalReview.DID)
+	if crMember == nil {
+		return errors.New("did correspond crMember not exists")
 	}
+	//todo check ProposalHash must exist
 
 	signedBuf := new(bytes.Buffer)
 	err := crcProposalReview.SerializeUnsigned(signedBuf, payload.CRCProposalReviewVersion)
 	if err != nil {
 		return err
 	}
-	return checkCRTransactionSignature(crcProposalReview.Sign, crcProposalReview.Code,
+	return checkCRTransactionSignature(crcProposalReview.Sign, crMember.Info.Code,
 		signedBuf.Bytes())
 }
 

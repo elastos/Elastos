@@ -43,7 +43,12 @@ func (c *Committee) ExistCR(programCode []byte) bool {
 		return true
 	}
 
-	return c.IsCRMember(programCode)
+	did, err := getDIDByCode(programCode)
+	if err != nil {
+		return false
+	}
+
+	return c.IsCRMemberByDID(*did)
 }
 
 func (c *Committee) IsCRMember(programCode []byte) bool {
@@ -51,6 +56,17 @@ func (c *Committee) IsCRMember(programCode []byte) bool {
 	defer c.mtx.RUnlock()
 	for _, v := range c.Members {
 		if bytes.Equal(programCode, v.Info.Code) {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Committee) IsCRMemberByDID(did common.Uint168) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	for _, v := range c.Members {
+		if v.Info.DID.IsEqual(did) {
 			return true
 		}
 	}
@@ -113,6 +129,22 @@ func (c *Committee) GetMembersCodes() [][]byte {
 		result = append(result, v.Info.Code)
 	}
 	return result
+}
+
+func (c *Committee) GetMember(did common.Uint168) *CRMember {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return c.getMember(did)
+}
+
+func (c *Committee) getMember(did common.Uint168) *CRMember {
+	for _, m := range c.Members {
+		if m.Info.DID.IsEqual(did) {
+			return m
+		}
+	}
+	return nil
 }
 
 func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {

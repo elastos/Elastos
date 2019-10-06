@@ -216,14 +216,11 @@ func (p *ProposalManager) proposalReview(tx *types.Transaction,
 	if proposalState == nil {
 		return
 	}
-	did, err := getDIDByCode(proposalReview.Code)
-	if err != nil {
-		return
-	}
+	did := proposalReview.DID
 	history.Append(height, func() {
-		proposalState.CRVotes[*did] = proposalReview.VoteResult
+		proposalState.CRVotes[did] = proposalReview.VoteResult
 	}, func() {
-		delete(proposalState.CRVotes, *did)
+		delete(proposalState.CRVotes, did)
 	})
 }
 
