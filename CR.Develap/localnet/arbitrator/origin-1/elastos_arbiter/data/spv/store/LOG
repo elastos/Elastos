@@ -124,3 +124,30 @@
 23:57:37.271516 db@janitor F·6 G·1
 23:57:37.271526 db@janitor removing table-27
 23:57:37.271559 db@open done T·27.494277ms
+=============== Oct 1, 2019 (UTC) ===============
+01:38:40.292615 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+01:38:40.330083 version@stat F·[1 2] S·1KiB[163B 1KiB] Sc·[0.25 0.00]
+01:38:40.330105 db@open opening
+01:38:40.330164 journal@recovery F·1
+01:38:40.331656 journal@recovery recovering @31
+01:38:40.332191 version@stat F·[1 2] S·1KiB[163B 1KiB] Sc·[0.25 0.00]
+01:38:40.379021 db@janitor F·5 G·0
+01:38:40.379042 db@open done T·48.932218ms
+=============== Oct 1, 2019 (UTC) ===============
+01:39:17.912846 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+01:39:17.912997 version@stat F·[1 2] S·1KiB[163B 1KiB] Sc·[0.25 0.00]
+01:39:17.913019 db@open opening
+01:39:17.913068 journal@recovery F·1
+01:39:17.914384 journal@recovery recovering @33
+01:39:17.917292 version@stat F·[1 2] S·1KiB[163B 1KiB] Sc·[0.25 0.00]
+01:39:17.921844 db@janitor F·5 G·0
+01:39:17.921858 db@open done T·8.833621ms
+=============== Oct 1, 2019 (UTC) ===============
+23:42:43.743370 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+23:42:43.743592 version@stat F·[1 2] S·1KiB[163B 1KiB] Sc·[0.25 0.00]
+23:42:43.743620 db@open opening
+23:42:43.743713 journal@recovery F·1
+23:42:43.745052 journal@recovery recovering @35
+23:42:43.778455 version@stat F·[1 2] S·1KiB[163B 1KiB] Sc·[0.25 0.00]
+23:42:43.782792 db@janitor F·5 G·0
+23:42:43.782816 db@open done T·39.189714ms

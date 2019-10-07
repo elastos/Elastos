@@ -222,18 +222,18 @@ func getDockerContainer(name, chainType string) (DockerContainer, error) {
 
 	dockerContainer = DockerContainer{
 		ContainerName: fmt.Sprintf("develap-localnet-%s-%s", chainType, name),
-		ImageName:     NodeDockerImageMap[chainType],
+		ImageName:     NodeDockerPath[chainType].ImageName,
 		Volumes: map[string]DockerContainerDataDir{
-			filepath.FromSlash(fmt.Sprintf("%s/data/localnet/%s/%s/%s", CurrentDir, chainType, name, filepath.Base(NodeDockerDataPathMap[chainType]))): DockerContainerDataDir{true, NodeDockerDataPathMap[chainType]},
+			filepath.FromSlash(fmt.Sprintf("%s/data/localnet/%s/%s/%s", CurrentDir, chainType, name, filepath.Base(NodeDockerPath[chainType].DataPath))): DockerContainerDataDir{true, NodeDockerPath[chainType].DataPath},
 		},
 	}
+	containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[chainType].PortMapping[Env].ContainerRESTPort))
+	containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[chainType].PortMapping[Env].ContainerRPCPort))
+	hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[chainType].PortMapping[Env].HostRESTPort))
+	hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[chainType].PortMapping[Env].HostRPCPort))
 	if chainType == "mainchain" {
-		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerConfigPathMap[chainType]}
-		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/keystore.dat", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerKeystorePathMap[chainType]}
-		containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortMainChain[Env].ContainerRESTPort))
-		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortMainChain[Env].ContainerRPCPort))
-		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortMainChain[Env].HostRESTPort))
-		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortMainChain[Env].HostRPCPort))
+		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerPath[chainType].ConfigPath}
+		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/keystore.dat", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerPath[chainType].KeystorePath}
 		if name == "node" {
 			dockerContainer.HostPortMappings = nat.PortMap{
 				containerRESTPort: []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: hostRESTPort.Port()}},
@@ -241,18 +241,18 @@ func getDockerContainer(name, chainType string) (DockerContainer, error) {
 			}
 		}
 	} else if chainType == "arbitrator" {
-		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerConfigPathMap[chainType]}
-		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/keystore.dat", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerKeystorePathMap[chainType]}
+		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerPath[chainType].ConfigPath}
+		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/keystore.dat", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerPath[chainType].KeystorePath}
 		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/wait_for_mainchain.sh", CurrentDir, chainType))] = DockerContainerDataDir{false, "/arbiter/wait_for_mainchain.sh"}
-		dockerContainer.EntryPoint = strslice.StrSlice{"/bin/sh", "-c", fmt.Sprintf("./wait_for_mainchain.sh develap-localnet-mainchain-%s:%s -- ./arbiter -p 123", name, NodeDockerPortMainChain["localnet"].ContainerRPCPort)}
+		dockerContainer.EntryPoint = strslice.StrSlice{"/bin/sh", "-c", fmt.Sprintf("./wait_for_mainchain.sh develap-localnet-mainchain-%s:%s -- ./arbiter -p 123", name, NodeDockerPath[chainType].PortMapping[Env].ContainerRPCPort)}
 	} else if chainType == "did" || chainType == "token" {
-		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerConfigPathMap[chainType]}
+		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerPath[chainType].ConfigPath}
 	}
 
 	// Copy pre-existing blockchain data to the host path that will be mounted to the container
 	for hostPath, volume := range dockerContainer.Volumes {
 		if volume.HostCreate {
-			if err = copy.Copy(fmt.Sprintf("localnet/%s/%s/%s", chainType, name, filepath.Base(NodeDockerDataPathMap[chainType])), hostPath); err != nil {
+			if err = copy.Copy(fmt.Sprintf("localnet/%s/%s/%s", chainType, name, filepath.Base(NodeDockerPath[chainType].DataPath)), hostPath); err != nil {
 				return dockerContainer, err
 			}
 		}
@@ -266,7 +266,7 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) (c
 		resp container.ContainerCreateCreatedBody
 		err  error
 	)
-	imageName := NodeDockerImageMap[node]
+	imageName := NodeDockerPath[node].ImageName
 	_, err = cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		return resp, err
@@ -274,23 +274,23 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) (c
 
 	var containerRESTPort, containerRPCPort, hostRESTPort, hostRPCPort nat.Port
 	if node == "mainchain" {
-		containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortMainChain[Env].ContainerRESTPort))
-		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortMainChain[Env].ContainerRPCPort))
-		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortMainChain[Env].HostRESTPort))
-		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortMainChain[Env].HostRPCPort))
+		containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].ContainerRESTPort))
+		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].ContainerRPCPort))
+		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].HostRESTPort))
+		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].HostRPCPort))
 	} else if node == "did" {
-		containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainDID[Env].ContainerRESTPort))
-		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainDID[Env].ContainerRPCPort))
-		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainDID[Env].HostRESTPort))
-		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainDID[Env].HostRPCPort))
+		containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].ContainerRESTPort))
+		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].ContainerRPCPort))
+		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].HostRESTPort))
+		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].HostRPCPort))
 	} else if node == "token" {
-		containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainToken[Env].ContainerRESTPort))
-		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainToken[Env].ContainerRPCPort))
-		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainToken[Env].HostRESTPort))
-		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainToken[Env].HostRPCPort))
+		containerRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].ContainerRESTPort))
+		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].ContainerRPCPort))
+		hostRESTPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].HostRESTPort))
+		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].HostRPCPort))
 	} else if node == "eth" {
-		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainEth[Env].ContainerRPCPort))
-		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPortSidechainEth[Env].HostRPCPort))
+		containerRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].ContainerRPCPort))
+		hostRPCPort = nat.Port(fmt.Sprintf("%s/tcp", NodeDockerPath[node].PortMapping[Env].HostRPCPort))
 	}
 
 	currentDir, err := os.Getwd()
@@ -303,7 +303,7 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) (c
 		{
 			Type:   mount.TypeBind,
 			Source: volumeData,
-			Target: NodeDockerDataPathMap[node],
+			Target: NodeDockerPath[node].DataPath,
 		},
 	}
 	containerConfig := &container.Config{
@@ -336,7 +336,7 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) (c
 				mount.Mount{
 					Type:   mount.TypeBind,
 					Source: filepath.FromSlash(fmt.Sprintf("%s/%s/%s/config.json", currentDir, Env, node)),
-					Target: NodeDockerConfigPathMap[node],
+					Target: NodeDockerPath[node].ConfigPath,
 				},
 				mount.Mount{
 					Type:   mount.TypeBind,
@@ -348,7 +348,7 @@ func runDockerContainer(ctx context.Context, cli *client.Client, node string) (c
 			mounts = append(mounts, mount.Mount{
 				Type:   mount.TypeBind,
 				Source: filepath.FromSlash(fmt.Sprintf("%s/%s/%s/config.json", currentDir, Env, node)),
-				Target: NodeDockerConfigPathMap[node],
+				Target: NodeDockerPath[node].ConfigPath,
 			})
 		}
 		containerConfig.ExposedPorts = nat.PortSet{

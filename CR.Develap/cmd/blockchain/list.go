@@ -65,13 +65,13 @@ var ListCmd = &cobra.Command{
 						if port.IP == "0.0.0.0" {
 							portString := fmt.Sprintf("%v", port.PublicPort)
 							if strings.Contains(containerName, "mainchain") {
-								ports[portString] = getPortMapping(portString, NodeDockerPortMainChain)
+								ports[portString] = getPortMapping(portString, NodeDockerPath["mainchain"].PortMapping)
 							} else if strings.Contains(containerName, "did") {
-								ports[portString] = getPortMapping(portString, NodeDockerPortSidechainDID)
+								ports[portString] = getPortMapping(portString, NodeDockerPath["did"].PortMapping)
 							} else if strings.Contains(containerName, "token") {
-								ports[portString] = getPortMapping(portString, NodeDockerPortSidechainToken)
+								ports[portString] = getPortMapping(portString, NodeDockerPath["token"].PortMapping)
 							} else if strings.Contains(containerName, "eth") {
-								ports[portString] = getPortMapping(portString, NodeDockerPortSidechainEth)
+								ports[portString] = getPortMapping(portString, NodeDockerPath["eth"].PortMapping)
 							}
 						}
 					}

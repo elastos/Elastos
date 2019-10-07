@@ -1,0 +1,60 @@
+2019/09/25 23:40:07.809145 [1;35m[INF][m GID 1, Init wallet.
+2019/09/25 23:40:07.932367 [1;35m[INF][m GID 1, Arbiter version:  
+2019/09/25 23:40:07.961931 [1;35m[INF][m GID 1, 1. Init chain utxo cache.
+2019/09/25 23:40:07.973897 [1;35m[INF][m GID 1, 2. Init finished transaction cache.
+2019/09/25 23:40:07.975142 [1;35m[INF][m GID 1, 3. Start arbitrator P2P networks.
+2019/09/25 23:40:07.976045 [1;35m[INF][m GID 1, 4. Init configurations.
+2019/09/25 23:40:07.988573 [1;35m[INF][m GID 1, 5. Start arbitrator spv module.
+2019/09/25 23:40:08.092138 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG
+2019/09/25 23:40:08.092833 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
+2019/09/25 23:40:08.093910 [1;35m[INF][m GID 1, [StartSpvModule] register auxpow listener: EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J
+2019/09/25 23:40:08.095452 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4
+2019/09/25 23:40:08.096724 [1;35m[INF][m GID 1, [StartSpvModule] register dposit listener: XDUhwtY9e1qMsM7sei7kJf53KDE2J8MQEd
+2019/09/25 23:40:08.099836 [1;35m[INF][m GID 1, 6. Start arbitrator group monitor.
+2019/09/25 23:40:08.113462 [1;35m[INF][m GID 1, 7. Start servers.
+2019/09/25 23:40:08.114732 [1;35m[INF][m GID 1, 8. Start check and remove cross chain transactions from db.
+2019/09/25 23:40:08.114749 [1;35m[INF][m GID 1, 9. Start side chain account divide.
+2019/09/25 23:40:08.114901 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:40:08.114948 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:41:08.115529 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:41:08.116668 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:41:08.173063 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:42:08.118893 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:42:08.118965 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:42:08.177006 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:43:08.119582 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:43:08.119656 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:43:08.179414 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:44:08.120719 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:44:08.120972 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:44:08.295938 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:45:08.122946 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:45:08.123053 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:45:08.327585 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:46:08.123529 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:46:08.123786 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:46:08.355462 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:47:08.124402 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:47:08.126015 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:47:08.360630 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:48:08.126372 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:48:08.126477 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:48:08.409033 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:49:08.127408 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:49:08.127515 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:49:08.438357 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:50:08.127899 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:50:08.128011 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:50:08.441372 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:51:08.129616 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:51:08.129686 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:51:08.448646 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:52:08.139819 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:52:08.139941 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:52:08.473865 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:53:08.140361 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:53:08.140450 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:53:08.476854 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
+2019/09/25 23:54:08.140722 [1;33m[WRN][m GID 124, [CheckAndRemoveDepositTransactionsFromDB] Get chain from genesis addres failed.
+2019/09/25 23:54:08.141068 [1;35m[INF][m GID 124, Check and remove cross chain transactions from dbcache finished
+2019/09/25 23:54:08.498372 [1;35m[INF][m GID 125, Warning side chain mining account:  EUBKBP6K2QtWQAjZXf3d3ZoKE3chGJX1zG: 0 EMp6bGXzME9uQNfUcKDHRRMqyVNnsrRE8J: 0 EL1kPYcrF9E1gcms3Tvf7Myq6fWHfaLeBu: 0 
