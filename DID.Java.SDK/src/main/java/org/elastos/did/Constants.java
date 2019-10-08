@@ -54,4 +54,6 @@ public final class Constants {
 	public final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
 	public final static TimeZone UTC = TimeZone.getTimeZone("UTC");
+
+	public final static int MAX_VALID_YEARS = 5;
 }
