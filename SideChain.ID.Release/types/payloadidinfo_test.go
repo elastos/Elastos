@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -14,6 +13,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/elastos/Elastos.ELA.SideChain.ID/types/base64url"
 )
 
 var didPayloadBytes = []byte(
@@ -181,7 +182,7 @@ func randomPayloadDID() *PayloadDIDInfo {
 			Specification: "elastos/did/1.0",
 			Operation:     getRandomOperation(),
 		},
-		Payload: base64.StdEncoding.EncodeToString(didPayloadBytes),
+		Payload: base64url.EncodeToString(didPayloadBytes),
 		Proof: DIDProofInfo{
 			Type:               randomString(),
 			VerificationMethod: randomString(),
