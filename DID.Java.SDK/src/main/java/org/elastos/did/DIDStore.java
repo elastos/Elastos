@@ -98,13 +98,13 @@ public abstract class DIDStore {
 
 	}
 
-	public static void initialize(String type, String location, String passphrase)
+	public static void initialize(String type, String location, String storepass)
 			throws DIDStoreException {
 		if (!type.equals("filesystem"))
 			throw new IllegalArgumentException("Unsupported store type: " + type);
 
 		instance = new FileSystemStore(location);
-		instance.initPrivateIdentity(passphrase);
+		instance.initPrivateIdentity(storepass);
 	}
 
 	public static DIDStore getInstance() {
@@ -123,11 +123,11 @@ public abstract class DIDStore {
 
 	protected abstract int loadPrivateIdentityIndex() throws DIDStoreException;
 
-	private static String encryptToBase64(String passphrase, byte[] input)
+	private static String encryptToBase64(String passwd, byte[] input)
 			throws DIDStoreException {
 		byte[] cipher;
 		try {
-			cipher = Aes256cbc.encrypt(passphrase, input);
+			cipher = Aes256cbc.encrypt(passwd, input);
 		} catch (GeneralSecurityException e) {
 			throw new DIDStoreException("Encrypt key error.", e);
 		}
@@ -135,11 +135,11 @@ public abstract class DIDStore {
 		return Base64.encodeToString(cipher);
 	}
 
-	private static byte[] decryptFromBase64(String passphrase, String input)
+	private static byte[] decryptFromBase64(String passwd, String input)
 			throws DIDStoreException {
 		byte[] cipher = Base64.decode(input);
 		try {
-			return Aes256cbc.decrypt(passphrase, cipher);
+			return Aes256cbc.decrypt(passwd, cipher);
 		} catch (GeneralSecurityException e) {
 			throw new DIDStoreException("Decrypt key error.", e);
 		}
@@ -147,7 +147,7 @@ public abstract class DIDStore {
 
 	// Initialize & create new private identity and save it to DIDStore.
 	public void initPrivateIdentity(String mnemonic, String passphrase,
-			boolean force) throws DIDStoreException {
+			String storepass, boolean force) throws DIDStoreException {
 		if (hasPrivateIdentity() && !force)
 			throw new DIDStoreException("Already has private indentity.");
 
@@ -159,19 +159,19 @@ public abstract class DIDStore {
 
 		// Save seed instead of root private key,
 		// keep compatible with Native SDK
-		String encryptedIdentity = encryptToBase64(passphrase,
+		String encryptedIdentity = encryptToBase64(storepass,
 				privateIdentity.getSeed());
 		storePrivateIdentity(encryptedIdentity);
 		storePrivateIdentityIndex(lastIndex);
 	}
 
 	// initialized from saved private identity from DIDStore.
-	protected boolean initPrivateIdentity(String passphrase)
+	protected boolean initPrivateIdentity(String storepass)
 			throws DIDStoreException {
 		if (!hasPrivateIdentity())
 			return false;
 
-		byte[] seed = decryptFromBase64(passphrase, loadPrivateIdentity());
+		byte[] seed = decryptFromBase64(storepass, loadPrivateIdentity());
 		privateIdentity = HDKey.fromSeed(seed);
 
 		lastIndex = 0;
@@ -183,7 +183,7 @@ public abstract class DIDStore {
 		return true;
 	}
 
-	public DIDDocument newDid(String passphrase, String hint)
+	public DIDDocument newDid(String storepass, String hint)
 			throws DIDStoreException {
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
@@ -201,7 +201,7 @@ public abstract class DIDStore {
 
 		storeDid(doc, hint);
 
-		String encryptedKey = encryptToBase64(passphrase, key.serialize());
+		String encryptedKey = encryptToBase64(storepass, key.serialize());
 		storePrivateKey(did, pk.getId(), encryptedKey);
 
 		key.wipe();
@@ -209,29 +209,29 @@ public abstract class DIDStore {
 		return doc;
 	}
 
-	public DIDDocument newDid(String passphrase) throws DIDStoreException {
-		return newDid(passphrase, null);
+	public DIDDocument newDid(String storepass) throws DIDStoreException {
+		return newDid(storepass, null);
 	}
 
-	public boolean publishDid(DIDDocument doc, DIDURL signKey, String passphrase)
+	public boolean publishDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		storeDid(doc);
 
-		return DIDBackend.create(doc, signKey, passphrase);
+		return DIDBackend.create(doc, signKey, storepass);
 	}
 
-	public boolean updateDid(DIDDocument doc, DIDURL signKey, String passphrase)
+	public boolean updateDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		storeDid(doc);
 
-		return DIDBackend.update(doc, signKey, passphrase);
+		return DIDBackend.update(doc, signKey, storepass);
 	}
 
-	public boolean deactivateDid(DID did, DIDURL signKey, String passphrase)
+	public boolean deactivateDid(DID did, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		// TODO: how to handle locally?
 
-		return DIDBackend.deactivate(did, signKey, passphrase);
+		return DIDBackend.deactivate(did, signKey, storepass);
 	}
 
 	public DIDDocument resolveDid(DID did)
@@ -387,9 +387,9 @@ public abstract class DIDStore {
 		deletePrivateKey(new DID(did), new DIDURL(id));
 	}
 
-	public String sign(DID did, DIDURL id, String passphrase,
+	public String sign(DID did, DIDURL id, String storepass,
 			byte[][] data, byte[] nonce) throws DIDStoreException {
-		byte[] binKey = decryptFromBase64(passphrase, loadPrivateKey(did, id));
+		byte[] binKey = decryptFromBase64(storepass, loadPrivateKey(did, id));
 		HDKey.DerivedKey key = HDKey.DerivedKey.deserialize(binKey);
 
 		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), data, nonce);
@@ -399,19 +399,19 @@ public abstract class DIDStore {
 		return Base64.encodeToString(sig);
 	}
 
-	public String sign(DID did, DIDURL id, String passphrase,
+	public String sign(DID did, DIDURL id, String storepass,
 			byte[][] data) throws DIDStoreException {
-		return sign(did, id, passphrase, data, null);
+		return sign(did, id, storepass, data, null);
 	}
 
-	public String sign(DID did, DIDURL id, String passphrase,
+	public String sign(DID did, DIDURL id, String storepass,
 			byte[] data, byte[] nonce) throws DIDStoreException {
-		return sign(did, id, passphrase, new byte[][] { data }, nonce);
+		return sign(did, id, storepass, new byte[][] { data }, nonce);
 	}
 
-	public String sign(DID did, DIDURL id, String passphrase, byte[] data)
+	public String sign(DID did, DIDURL id, String storepass, byte[] data)
 			throws DIDStoreException {
-		return sign(did, id, passphrase, data, null);
+		return sign(did, id, storepass, data, null);
 	}
 
 	/*

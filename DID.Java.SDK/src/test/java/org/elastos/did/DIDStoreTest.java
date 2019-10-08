@@ -51,6 +51,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DIDStoreTest {
 	private static String storeRoot = "/Users/jingyu/Temp/DIDStore";
+	private static String storePass = "passwd";
 	private static String passphrase = "secret";
 	private static DIDStore store;
 
@@ -69,7 +70,7 @@ public class DIDStoreTest {
 
     	deleteFile(new File(tempStoreRoot));
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, passphrase);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -90,11 +91,11 @@ public class DIDStoreTest {
 	public void test00CreateEmptyStore1() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, passphrase);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
-    	tempStore.newDid(passphrase, "my first did");
+    	tempStore.newDid(storePass, "my first did");
 	}
 
 	@Test
@@ -103,14 +104,14 @@ public class DIDStoreTest {
 
     	deleteFile(new File(tempStoreRoot));
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, passphrase);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
     	assertFalse(tempStore.hasPrivateIdentity());
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	tempStore.initPrivateIdentity(mnemonic, passphrase, true);
+    	tempStore.initPrivateIdentity(mnemonic, passphrase, storePass, true);
 
     	File file = new File(tempStoreRoot + File.separator + "private"
     			+ File.separator + "key");
@@ -124,14 +125,14 @@ public class DIDStoreTest {
 
     	assertTrue(tempStore.hasPrivateIdentity());
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, passphrase);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
 
     	tempStore = DIDStore.getInstance();
 
     	assertTrue(tempStore.hasPrivateIdentity());
 	}
 
-	// Can not decrypt root private key because wrong passphrase
+	// Can not decrypt root private key because wrong storepass
 	@Test(expected = DIDStoreException.class)
 	public void test01InitPrivateIdentity1() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
@@ -147,12 +148,12 @@ public class DIDStoreTest {
     public void test02Setup() throws DIDStoreException {
     	deleteFile(new File(storeRoot));
 
-    	DIDStore.initialize("filesystem", storeRoot, passphrase);
+    	DIDStore.initialize("filesystem", storeRoot, storePass);
 
     	store = DIDStore.getInstance();
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	store.initPrivateIdentity(mnemonic, passphrase, true);
+    	store.initPrivateIdentity(mnemonic, passphrase, storePass, true);
 
     	ids = new LinkedHashMap<DID, String>(128);
     }
@@ -161,7 +162,7 @@ public class DIDStoreTest {
 	public void test03CreateDID1() throws DIDStoreException {
 		String hint = "my first did";
 
-    	DIDDocument doc = store.newDid(passphrase, hint);
+    	DIDDocument doc = store.newDid(storePass, hint);
     	primaryDid = doc.getSubject();
 
     	File file = new File(storeRoot + File.separator + "ids"
@@ -181,7 +182,7 @@ public class DIDStoreTest {
 
 	@Test
 	public void test03CreateDID2() throws DIDStoreException {
-    	DIDDocument doc = store.newDid(passphrase, null);
+    	DIDDocument doc = store.newDid(storePass, null);
 
     	File file = new File(storeRoot + File.separator + "ids"
     			+ File.separator + doc.getSubject().getMethodSpecificId()
@@ -201,7 +202,7 @@ public class DIDStoreTest {
 	public void test03CreateDID3() throws DIDStoreException {
     	for (int i = 0; i < 100; i++) {
     		String hint = "my did " + i;
-    		DIDDocument doc = store.newDid(passphrase, hint);
+    		DIDDocument doc = store.newDid(storePass, hint);
 
 	    	File file = new File(storeRoot + File.separator + "ids"
 	    			+ File.separator + doc.getSubject().getMethodSpecificId()
@@ -261,7 +262,7 @@ public class DIDStoreTest {
 				continue;
 
 			DIDDocument doc = store.loadDid(did);
-    		store.publishDid(doc, new DIDURL(did, "primary"), passphrase);
+    		store.publishDid(doc, new DIDURL(did, "primary"), storePass);
     	}
 	}
 
@@ -283,7 +284,7 @@ public class DIDStoreTest {
 				.type(new String[] {"SelfProclaimedCredential", "BasicProfileCredential" })
 				.expirationDate(expire)
 				.properties(props)
-				.sign(passphrase);
+				.sign(storePass);
 
 		DIDDocument doc = store.resolveDid(primaryDid);
 		doc.modify();
@@ -318,7 +319,7 @@ public class DIDStoreTest {
 					.type(new String[] { "BasicProfileCredential" })
 					.expirationDate(expire)
 					.properties(props)
-					.sign(passphrase);
+					.sign(storePass);
 
 			store.storeCredential(vc, "default");
 
@@ -333,7 +334,7 @@ public class DIDStoreTest {
 				.type(new String[] { "BasicProfileCredential" })
 				.expirationDate(expire)
 				.properties(props)
-				.sign(passphrase);
+				.sign(storePass);
 
 			store.storeCredential(vc);
 
