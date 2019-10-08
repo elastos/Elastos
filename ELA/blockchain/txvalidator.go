@@ -1476,7 +1476,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return errors.New("updating unknown CR")
 	}
 	if cr.State() != crstate.Pending && cr.State() != crstate.Active {
-		return errors.New("updating canceled CR")
+		return errors.New("updating canceled or returned CR")
 	}
 
 	// check nickname usage.
