@@ -26,8 +26,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "ela_did.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

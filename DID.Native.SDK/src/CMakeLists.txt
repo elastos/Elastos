@@ -1,5 +1,3 @@
-project(ela-did C)
-
 include(ProjectDefaults)
 include(CheckIncludeFile)
 
@@ -38,8 +36,7 @@ if(HAVE_SYS_TIME_H)
     add_definitions(-DHAVE_SYS_TIME_H=1)
 endif()
 
-file( GLOB BR-SOURCES "BR/*.c" )
-file( GLOB utility-SOURCES "utility/*.c")
+file(GLOB utility-SOURCES "utility/*.c")
 
 set(SRC
     did.c
@@ -47,7 +44,6 @@ set(SRC
     credential.c
     didstore.c
     didrequest.c
-    ${BR-SOURCES}
     ${utility-SOURCES})
 
 set(HEADERS
@@ -63,11 +59,11 @@ include_directories(
     BEFORE
     utility
     .
-    BR
-    secp256k1
+    ../hdkey
     ${PROJECT_INT_DIST_DIR}/include)
 
 link_directories(
+    ../hdkey
     ${PROJECT_INT_DIST_DIR}/lib)
 
 #add_definitions(
@@ -106,7 +102,7 @@ add_definitions(-DDID_BUILD)
 
 add_custom_target(ela-did)
 
-set(ELADID_DEPENDS libressl libcrystal cJSON)
+set(ELADID_DEPENDS libressl libcrystal cJSON hdkey)
 
 if(ENABLE_STATIC)
     add_library(eladid-static STATIC ${SRC})
@@ -144,7 +140,7 @@ if(ENABLE_SHARED)
         set_property(TARGET eladid-shared APPEND_STRING PROPERTY
             LINK_FLAGS " -Wl,-exported_symbols_list,\"${CMAKE_CURRENT_SOURCE_DIR}/export.symbols\"")
     endif()
-    target_link_libraries(eladid-shared ${LIBS} ${SYSTEM_LIBS})
+    target_link_libraries(eladid-shared hdkey-static ${LIBS} ${SYSTEM_LIBS})
 
     add_dependencies(ela-did eladid-shared)
 

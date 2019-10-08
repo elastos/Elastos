@@ -24,12 +24,19 @@ endif()
 
 set(ENABLE_SHARED ${ENABLE_SHARED_DEFAULT} CACHE BOOL "Build shared library")
 set(ENABLE_STATIC ${ENABLE_STATIC_DEFAULT} CACHE BOOL "Build static library")
+set(HDKEY_ONLY FALSE CACHE BOOL "Build HDKey only")
 set(ENABLE_TESTS ${ENABLE_TESTS_DEFAULT} CACHE BOOL "Build test cases")
 set(ENABLE_DOCS FALSE CACHE BOOL "Build APIs documentation")
 
 add_subdirectory(deps)
-add_subdirectory(src)
-add_subdirectory(tests)
+add_subdirectory(hdkey)
+
+if(NOT HDKEY_ONLY)
+    add_subdirectory(src)
+    if(ENABLE_TESTS)
+        add_subdirectory(tests)
+    endif()
+endif()
 
 # Alias target for package. But it fix issue about making package
 # inrelevant to udpatation of cmake scripts.
