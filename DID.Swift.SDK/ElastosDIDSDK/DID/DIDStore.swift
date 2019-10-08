@@ -14,21 +14,21 @@ class DIDStore: NSObject {
     override init() {
     }
 
-    private init(_ type: String, _ location: String, _ passphase: String) throws {
-        // TODO:
-    }
-
     public static func creatInstance(_ type: String, location: String, passphase: String) throws {
         guard type == "filesystem" else {
             throw DIDStoreError.failue("Unsupported store type:\(type)")
         }
         if instance == nil {
-            let store: DIDStore = try DIDStore(type, location, passphase)
-            instance = store
+            instance = try FileSystemStore(location)
+            _ = try instance.initPrivateIdentity(passphase)
         }
     }
 
-    public static func shareInstance() -> DIDStore {
+    public static func shareInstance() -> DIDStore? {
+        guard (instance != nil) else {
+            // TODO: throw error
+            return nil
+        }
         return instance
     }
 
@@ -42,11 +42,10 @@ class DIDStore: NSObject {
 
     func loadPrivateIdentityIndex() throws -> Int { return 0 }
 
-    private func encryptToBase64(_ passphrase: String ,_ input: String) throws -> String {
-        //       let encrypted: String = AES256CBC.encryptString(input, password: passphrase)!
-        //       return encrypted.toBase64()
-        // TODO:
-        return ""
+    private func encryptToBase64(_ passphrase: String ,_ input: [UInt8]) throws -> String {
+        let bytes = try Aes256cbc.encrypt(passphrase, input)
+        let bytesData = Data(bytes: bytes, count: bytes.count)
+        return bytesData.base64EncodedString()
     }
 
     private func decryptFromBase64(_ passphrase: String ,_ input: String) throws -> Data{
@@ -64,8 +63,8 @@ class DIDStore: NSObject {
 
         // Save seed instead of root private key,
         // keep compatible with Native SDK
-        let seedString = String(decoding: privateIdentity.getSeed(), as: UTF8.self)
-        let encryptedIdentity = try encryptToBase64(passphrase, seedString)
+        let seedData = privateIdentity.getSeed()
+        let encryptedIdentity = try encryptToBase64(passphrase, [UInt8](seedData))
         try storePrivateIdentity(encryptedIdentity)
         try storePrivateIdentityIndex(lastIndex)
     }
@@ -85,21 +84,18 @@ class DIDStore: NSObject {
         if privateIdentity == nil {
             // TODO: THROWS EROR
         }
-
-//        let key: HDPrivateKey = try privateIdentity.derive(lastIndex++)
-//        let did: DID = DID(DID.METHOD, key)
-//        let pk: DIDPublicKey = DIDPublicKey(try DIDURL(did, "primary"), Constants.defaultPublicKeyType, did, key)
-//        let doc: DIDDocument = DIDDocument()
-//        doc.subject = did
-//        doc.addPublicKey(pk)
-//        doc.addAuthenticationKey(pk)
-//        doc.readonly = true
-//
-//        try storeDid(doc, hint!)
-//        let encryptedKey: String = encryptToBase64(passphrase, key.)
-//
-
-
+        let key: DerivedKey = try privateIdentity.derive(UInt32(lastIndex++))
+        let did: DID = DID(DID.METHOD, try key.getAddress())
+        let pk: DIDPublicKey = DIDPublicKey(try DIDURL(did, "primary"), Constants.defaultPublicKeyType, did, try key.getPublicKeyBase58())
+        let doc: DIDDocument = DIDDocument()
+        doc.subject = did
+        _ = doc.addPublicKey(pk)
+        _ = doc.addAuthenticationKey(pk)
+        doc.readonly = true
+        try storeDid(doc, hint!)
+        let encryptedKey: String = try encryptToBase64(passphrase, key.serialize())
+        try storePrivateKey(did, pk.id, encryptedKey)
+        key.wipe()
         return DIDDocument()
     }
 
@@ -142,9 +138,9 @@ class DIDStore: NSObject {
 
     public func getDidHint(_ did: DID) throws -> String { return "" }
 
-    public func loadDid(_ did: DID) throws -> DIDDocument { return DIDDocument() }
+    public func loadDid(_ did: DID) throws -> DIDDocument? { return DIDDocument() }
 
-    public func loadDid(_ did: String) throws -> DIDDocument {
+    public func loadDid(_ did: String) throws -> DIDDocument? {
         return try loadDid(DID(did))
     }
 
@@ -237,28 +233,3 @@ class DIDStore: NSObject {
     
 }
 
-
-extension Int {
-
-    static prefix  func ++(num:inout Int) -> Int  {
-        num += 1
-        return num
-    }
-
-    static postfix  func ++(num:inout Int) -> Int  {
-        let temp = num
-        num += 1
-        return temp
-    }
-
-    static prefix  func --(num:inout Int) -> Int  {
-        num -= 1
-        return num
-    }
-
-    static postfix  func --(num:inout Int) -> Int  {
-        let temp = num
-        num -= 1
-        return temp
-    }
-}

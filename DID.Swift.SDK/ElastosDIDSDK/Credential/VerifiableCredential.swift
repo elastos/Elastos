@@ -19,7 +19,7 @@ public class VerifiableCredential: DIDObject {
         self.proof = vc.proof
     }
     
-    public func toJson(_ ref: DID, _ compact: Bool) -> Dictionary<String, Any> {
+    public func toJson(_ ref: DID, _ compact: Bool, _ forSign: Bool) -> Dictionary<String, Any> {
         var dic: Dictionary<String, Any> = [: ]
         var value: String
         
@@ -50,11 +50,12 @@ public class VerifiableCredential: DIDObject {
         }
         
         // credentialSubject
-        dic[Constants.credentialSubject] = " TODO: "
+        dic[Constants.credentialSubject] = subject.toJson(ref, compact)
         
         // proof
-        // TODO: judge is sigin
-        dic[Constants.proof] = "TODO: "
+        if !forSign {
+            dic[Constants.proof] = proof.toJson(ref, compact)
+        }
         return dic
     }
 }

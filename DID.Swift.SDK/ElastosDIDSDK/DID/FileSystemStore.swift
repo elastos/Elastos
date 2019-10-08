@@ -178,8 +178,8 @@ class FileSystemStore: DIDStore {
     override func loadPrivateIdentityIndex() throws -> Int {
         let targetPath = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
         let path = try getFile(true, targetPath)
-        // TODO
-        return 0 
+        let index = try readTextFromPath(path)
+        return Int(index)!
     }
 
     override public func setDidHint(_ did: DID,_ hint: String) throws {
@@ -203,27 +203,87 @@ class FileSystemStore: DIDStore {
 
     override public func storeDid(_ doc: DIDDocument ,_ hint: String?) throws {
         let path = FileSystemStore.DID_DIR + doc.subject!.methodSpecificId + FileSystemStore.DOCUMENT_FILE
-        // 检测本地是否存在doc，有 是否删除？ java no
-        
-//        if !try exists(path) || (hint != nil && hint!.isEmpty) {
-//            
-//        }
+        let exist = try exists(path)
         // TOOD: 如果存在呢，是否删除？java no
+        try doc.toJson(path, true)
+        if !exist || (hint != nil && hint!.isEmpty) {
+           try setDidHint(doc.subject!, hint!)
+        }
     }
 
-    override func loadDid(_ did: String) -> DIDDocument {
-        return DIDDocument()
+    override func loadDid(_ did: DID) throws -> DIDDocument? {
+        let path = FileSystemStore.DID_DIR + did.methodSpecificId + FileSystemStore.DOCUMENT_FILE
+        let exist = try exists(path)
+        if !exist {
+            return nil
+        }
+        return try DIDDocument.fromJson(path)
     }
 
     override public func containsDid(_ did: DID) throws -> Bool {
-        return false
+        let path = FileSystemStore.DID_DIR + did.methodSpecificId + FileSystemStore.DOCUMENT_FILE
+        return try exists(path)
     }
 
     override public func deleteDid(_ did: DID) throws -> Bool {
+        let path = FileSystemStore.DID_DIR + "." + did.methodSpecificId + FileSystemStore.META_EXT
+         try deleteFile(path)
         return false
     }
+//    
+//    @Override
+//    public List<Entry<DID, String>> listDids(int filter)
+//    throws DIDStoreException {
+//    File dir = getDir(DID_DIR);
+//    if (!dir.exists())
+//    return new ArrayList<Entry<DID, String>>(0);
+//    
+//    File[] children = dir.listFiles(new FileFilter() {
+//    @Override
+//    public boolean accept(File file) {
+//    if (!file.isDirectory())
+//    return false;
+//    
+//    boolean hasPrivateKey = false;
+//    try {
+//    hasPrivateKey = containsPrivateKeys(file);
+//    } catch (Exception ignore) {
+//    }
+//    
+//    if (filter == DID_HAS_PRIVATEKEY) {
+//    return hasPrivateKey;
+//    } else if (filter == DID_NO_PRIVATEKEY) {
+//    return !hasPrivateKey;
+//    } else if (filter == DID_ALL) {
+//    return true;
+//    }
+//    
+//    return false;
+//    }
+//    });
+//    
+//    int size = children != null ? children.length : 0;
+//    ArrayList<Entry<DID, String>> dids = new ArrayList<Entry<DID, String>>(size);
+//    
+//    for (File didRoot : children) {
+//    DID did = new DID(DID.METHOD, didRoot.getName());
+//    String hint = null;
+//    try {
+//    hint = getDidHint(did);
+//    } catch (DIDStoreException ignore) {
+//    }
+//    
+//    dids.add(new Entry<DID, String>(did, hint));
+//    }
+//    
+//    return dids;
+//    }
 
     override func listDids(_ filter: Int) throws -> Array<Entry<DID, String>> {
+        let path = try getDir(FileSystemStore.DID_DIR)
+        let exist = try exists(path)
+        if exist { return [Entry]() }
+        
         return [Entry]()
     }
 

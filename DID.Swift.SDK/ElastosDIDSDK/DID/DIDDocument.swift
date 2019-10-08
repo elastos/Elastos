@@ -164,7 +164,7 @@ public class DIDDocument: NSObject {
 
     public func addAuthorizationKey(_ id: String, _ did: DID, _ key: DIDURL) throws -> Bool {
         if readonly { return false }
-        let doc: DIDDocument = try DIDStore.shareInstance().resolveDid(did)
+        let doc: DIDDocument = try DIDStore.shareInstance()!.resolveDid(did)
         let refPk: DIDPublicKey = try doc.getPublicKey(key)
         if !((refPk.controller?.isEqual(did))!) { return false }
         let pk = try DIDPublicKey(DIDURL(subject!, id), refPk.type, did, refPk.keyBase58!)
@@ -300,7 +300,7 @@ public class DIDDocument: NSObject {
         if !credentials.isEmpty && credentials.count != 0 {
             var vcs: Array<Dictionary<String, Any>> = []
             credentials.forEach { (didUrl, vc) in
-                let dic = vc.toJson(subject!, compact)
+                let dic = vc.toJson(subject!, compact, false)
                 vcs.append(dic)
             }
             dic[Constants.credential] = vcs
@@ -331,10 +331,11 @@ public class DIDDocument: NSObject {
         writeHandle?.write(data)
     }
     
-    public static func fromJson(url: URL) throws -> DIDDocument {
+    public static func fromJson(_ path: String) throws -> DIDDocument {
         // url of local path
         let doc: DIDDocument = DIDDocument()
-        try doc.parse(url: url)
+        let urlPath = URL(string: path)
+        try doc.parse(url: urlPath)
         doc.readonly = true
         return doc
     }

@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11504CD3233E0B6F00AF0266 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11E3F79A233D127E00EF35C3 /* Antlr4.framework */; };
+		11049B072341A42800AC5FFB /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11049B062341A42800AC5FFB /* ExtensionInt.swift */; };
+		11138413234052D6004CA9C2 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11E3F79A233D127E00EF35C3 /* Antlr4.framework */; };
+		11138418234060B6004CA9C2 /* Aes256cbc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11138417234060B6004CA9C2 /* Aes256cbc.swift */; };
 		11508520233CC64C00EF6A8D /* EcdsaSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */; };
 		11508522233CC65500EF6A8D /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508521233CC65400EF6A8D /* Base64.swift */; };
 		11508524233CC67B00EF6A8D /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508523233CC67B00EF6A8D /* DIDAdaptor.swift */; };
@@ -70,7 +72,9 @@
 /* Begin PBXFileReference section */
 		067C25678EDA0C004955F401 /* Pods-ElastosDIDSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.debug.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.debug.xcconfig"; sourceTree = "<group>"; };
 		0CCD0722BB081BABCB596D2F /* Pods-ElastosDIDSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.release.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.release.xcconfig"; sourceTree = "<group>"; };
+		11049B062341A42800AC5FFB /* ExtensionInt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtensionInt.swift; path = ElastosDIDSDK/DID/Util/ExtensionInt.swift; sourceTree = SOURCE_ROOT; };
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
+		11138417234060B6004CA9C2 /* Aes256cbc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Aes256cbc.swift; path = ElastosDIDSDK/DID/Util/Aes256cbc.swift; sourceTree = SOURCE_ROOT; };
 		1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EcdsaSigner.swift; path = ElastosDIDSDK/DID/Util/EcdsaSigner.swift; sourceTree = SOURCE_ROOT; };
 		11508521233CC65400EF6A8D /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Base64.swift; path = ElastosDIDSDK/DID/Util/Base64.swift; sourceTree = SOURCE_ROOT; };
 		11508523233CC67B00EF6A8D /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/Backend/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
@@ -124,7 +128,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11504CD3233E0B6F00AF0266 /* Antlr4.framework in Frameworks */,
+				11138413234052D6004CA9C2 /* Antlr4.framework in Frameworks */,
 				94B137B2C485261F5B00CD58 /* Pods_ElastosDIDSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -261,6 +265,8 @@
 				A3E6D461233485C90012CD77 /* DerivedKey.swift */,
 				A3E6D462233485C90012CD77 /* HDKey.swift */,
 				A3E6D460233485C90012CD77 /* JsonHelper.swift */,
+				11138417234060B6004CA9C2 /* Aes256cbc.swift */,
+				11049B062341A42800AC5FFB /* ExtensionInt.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -414,6 +420,7 @@
 				A3E6D465233485C90012CD77 /* HDKey.swift in Sources */,
 				A3E6D45A233485AD0012CD77 /* DIDURLParser.swift in Sources */,
 				A3E6D476233485DF0012CD77 /* MalformedCredentialError.swift in Sources */,
+				11138418234060B6004CA9C2 /* Aes256cbc.swift in Sources */,
 				A3E6D483233485E00012CD77 /* Constants.swift in Sources */,
 				A3E6D447233485800012CD77 /* VerifiableCredential.swift in Sources */,
 				A3E6D479233485E00012CD77 /* MalformedDIDURLError.swift in Sources */,
@@ -426,6 +433,7 @@
 				A3E6D446233485800012CD77 /* Proof.swift in Sources */,
 				A3E6D459233485AD0012CD77 /* DIDURLBaseListener.swift in Sources */,
 				A3E6D475233485DF0012CD77 /* FileSystemStore.swift in Sources */,
+				11049B072341A42800AC5FFB /* ExtensionInt.swift in Sources */,
 				A3E6D464233485C90012CD77 /* DerivedKey.swift in Sources */,
 				A3E6D477233485E00012CD77 /* DIDStore.swift in Sources */,
 				A3E6D448233485800012CD77 /* Issuer.swift in Sources */,
@@ -578,7 +586,7 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = XGJ9J7DHP5;
+				DEVELOPMENT_TEAM = T4LVNDN76A;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -611,7 +619,7 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = XGJ9J7DHP5;
+				DEVELOPMENT_TEAM = T4LVNDN76A;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";

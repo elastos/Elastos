@@ -37,7 +37,7 @@ public class DID: NSObject {
     public func resolve() throws -> DIDDocument {
         if document != nil {return document!}
         do {
-            document = try DIDStore.shareInstance().resolveDid(self)
+            document = try DIDStore.shareInstance()!.resolveDid(self)
         } catch {
             throw error
         }

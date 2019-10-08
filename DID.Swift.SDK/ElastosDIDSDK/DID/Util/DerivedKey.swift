@@ -55,9 +55,37 @@ public class DerivedKey: NSObject {
         return binAddress
     }
     
-    class public func getAddress(_ pk: [UInt8]) -> String {
+   class public func getAddress(_ pk: [UInt8]) -> String {
         let pkData = Data.init(bytes: pk, count: pk.count)
         return Base58.encode(pkData)
     }
+    
+    public func getAddress() throws -> String {
+        let pks = try getPublicKeyBytes()
+        let binsddress = try getBinAddress(pks)
+        let data = Data(bytes: binsddress, count: binsddress.count)
+        return Base58.encode(data)
+    }
+    
+    public func getPublicKeyBase58() throws -> String {
+        let pks = try getPublicKeyBytes()
+        let data = Data(bytes: pks, count: pks.count)
+        return Base58.encode(data)
+    }
+    
+    public func serialize() -> [UInt8] {
+        // TODO:
+        return [UInt8]()
+    }
+    
+    public func wipe() {
+        // TODO:
+//        let bytes =
+    }
+    
+//    public void wipe() {
+//    byte[] keyBytes = privateKey.getKeyBytes();
+//    Arrays.fill(keyBytes, (byte)0);
+//    }
 
 }
