@@ -76,9 +76,7 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 		blocksCache:      make(map[Uint256]*Block),
 	}
 
-	if err := s.init(genesisBlock); err != nil {
-		log.Error("chain store initialize failed")
-	}
+	s.init(genesisBlock)
 
 	return s, nil
 }
