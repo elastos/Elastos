@@ -30,6 +30,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -88,6 +89,7 @@ public class DIDDocument {
 
 	DIDDocument() {
 		readonly = false;
+		setDefaultExpires();
 	}
 
 	private <K, V extends DIDObject> int getEntryCount(Map<K, V> entries) {
@@ -453,6 +455,36 @@ public class DIDDocument {
 			return false;
 
 		return removeEntry(services, id);
+	}
+
+	private Calendar getMaxExpires() {
+		Calendar cal = Calendar.getInstance(Constants.UTC);
+		cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal;
+	}
+
+	public void setDefaultExpires() {
+		expires = getMaxExpires().getTime();
+	}
+
+	public boolean setExpires(Date expires) {
+		if (readonly)
+			return false;
+
+		Calendar cal = Calendar.getInstance(Constants.UTC);
+		cal.setTime(expires);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		if (cal.after(getMaxExpires()))
+			return false;
+
+		this.expires = cal.getTime();
+		return true;
 	}
 
 	public Date getExpires() {
