@@ -2,12 +2,13 @@ package types
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+
+	"github.com/elastos/Elastos.ELA.SideChain.ID/types/base64url"
 )
 
 const DIDInfoVersion = 0x00
@@ -201,7 +202,7 @@ func (p *PayloadDIDInfo) Deserialize(r io.Reader, version byte) error {
 	}
 
 	// get DIDPayloadInfo from payload data
-	pBytes, err := base64.StdEncoding.DecodeString(p.Payload)
+	pBytes, err := base64url.DecodeString(p.Payload)
 	if err != nil {
 		return errors.New("[DIDInfo], payload decode failed")
 	}
