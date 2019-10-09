@@ -454,7 +454,7 @@ func (s *State) addCandidateAssert(output *types.Output, height uint32) bool {
 }
 
 // getCandidateByDepositHash will try to get candidate with specified program
-// hash, note the candidate state should be pending or active.
+// hash.
 func (s *State) getCandidateByDepositHash(hash common.Uint168) *Candidate {
 	for _, candidate := range s.PendingCandidates {
 		if candidate.depositHash.IsEqual(hash) {
@@ -462,6 +462,11 @@ func (s *State) getCandidateByDepositHash(hash common.Uint168) *Candidate {
 		}
 	}
 	for _, candidate := range s.ActivityCandidates {
+		if candidate.depositHash.IsEqual(hash) {
+			return candidate
+		}
+	}
+	for _, candidate := range s.CanceledCandidates {
 		if candidate.depositHash.IsEqual(hash) {
 			return candidate
 		}
