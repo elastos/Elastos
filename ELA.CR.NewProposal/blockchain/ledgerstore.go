@@ -82,4 +82,7 @@ type IFFLDBChainStore interface {
 	// If already exist in file db (rollback will not remove from file db), will
 	// return true.
 	IsBlockInStore(hash *Uint256) bool
+
+	// Get a transaction by transaction hash
+	GetTransaction(txID Uint256) (*Transaction, uint32, error)
 }

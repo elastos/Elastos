@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -80,7 +80,7 @@ func (up *UTXOCache) getTransaction(txID common.Uint256) (*types.Transaction, er
 		var err error
 		prevTx, _, err = up.db.GetTransaction(txID)
 		if err != nil {
-			return nil, errors.New("transaction not found")
+			return nil, errors.New("transaction not found, " + err.Error())
 		}
 		up.txCache[txID] = prevTx
 	}
