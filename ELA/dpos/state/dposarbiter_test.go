@@ -7,8 +7,9 @@ package state
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDposArbiter_Deserialize(t *testing.T) {

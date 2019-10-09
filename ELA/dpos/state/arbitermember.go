@@ -7,8 +7,9 @@ package state
 
 import (
 	"errors"
-	"github.com/elastos/Elastos.ELA/common"
 	"io"
+
+	"github.com/elastos/Elastos.ELA/common"
 )
 
 type ArbiterType uint8
