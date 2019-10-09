@@ -452,6 +452,9 @@ func (b *BlockChain) initChainState() error {
 			}
 		}
 		b.BestChain = b.Nodes[len(b.Nodes)-1]
+		if b.BestChain.Height > b.db.GetHeight() {
+			b.db.SetHeight(b.BestChain.Height)
+		}
 
 		return nil
 	})

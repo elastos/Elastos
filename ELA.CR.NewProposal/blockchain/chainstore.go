@@ -76,7 +76,9 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 		blocksCache:      make(map[Uint256]*Block),
 	}
 
-	s.init(genesisBlock)
+	if err := s.init(genesisBlock); err != nil {
+		log.Debug("chain store not contain genesis block")
+	}
 
 	return s, nil
 }
@@ -644,6 +646,10 @@ func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 
 func (c *ChainStore) GetHeight() uint32 {
 	return atomic.LoadUint32(&c.currentBlockHeight)
+}
+
+func (c *ChainStore) SetHeight(height uint32) {
+	atomic.StoreUint32(&c.currentBlockHeight, height)
 }
 
 func (c *ChainStore) IsBlockInStore(hash *Uint256) bool {
