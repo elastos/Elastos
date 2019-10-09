@@ -164,7 +164,7 @@ class DIDStore: NSObject {
     }
 
     public func setCredentialHint(_ did: DID, _ id: DIDURL, _ hint: String) throws {}
-    public func getCredentialHint(_ did: DID, _ id: DIDURL) throws {}
+    public func getCredentialHint(_ did: DID, _ id: DIDURL) throws -> String { return "" }
 
 //    public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential { return VerifiableCredential() }
 //    public func loadCredential(_ did:String, _ id: String) throws -> VerifiableCredential { return VerifiableCredential() }

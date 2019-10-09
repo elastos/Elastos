@@ -230,54 +230,6 @@ class FileSystemStore: DIDStore {
          try deleteFile(path)
         return false
     }
-//    
-//    @Override
-//    public List<Entry<DID, String>> listDids(int filter)
-//    throws DIDStoreException {
-//    File dir = getDir(DID_DIR);
-//    if (!dir.exists())
-//    return new ArrayList<Entry<DID, String>>(0);
-//    
-//    File[] children = dir.listFiles(new FileFilter() {
-//    @Override
-//    public boolean accept(File file) {
-//    if (!file.isDirectory())
-//    return false;
-//    
-//    boolean hasPrivateKey = false;
-//    try {
-//    hasPrivateKey = containsPrivateKeys(file);
-//    } catch (Exception ignore) {
-//    }
-//    
-//    if (filter == DID_HAS_PRIVATEKEY) {
-//    return hasPrivateKey;
-//    } else if (filter == DID_NO_PRIVATEKEY) {
-//    return !hasPrivateKey;
-//    } else if (filter == DID_ALL) {
-//    return true;
-//    }
-//    
-//    return false;
-//    }
-//    });
-//    
-//    int size = children != null ? children.length : 0;
-//    ArrayList<Entry<DID, String>> dids = new ArrayList<Entry<DID, String>>(size);
-//    
-//    for (File didRoot : children) {
-//    DID did = new DID(DID.METHOD, didRoot.getName());
-//    String hint = null;
-//    try {
-//    hint = getDidHint(did);
-//    } catch (DIDStoreException ignore) {
-//    }
-//    
-//    dids.add(new Entry<DID, String>(did, hint));
-//    }
-//    
-//    return dids;
-//    }
 
     override func listDids(_ filter: Int) throws -> Array<Entry<DID, String>> {
         let path = try getDir(FileSystemStore.DID_DIR)
@@ -288,29 +240,69 @@ class FileSystemStore: DIDStore {
     }
 
     override func setCredentialHint(_ did: DID, _ id: DIDURL, _ hint: String) throws {
-
+        let targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "." + "/" + id.fragment + "/" + FileSystemStore.META_EXT
+        let path: String = try getFile(true, targetPath)
+        if hint.isEmpty {
+            try deleteFile(path)
+        }
+        else {
+            try writeTextToPath(path, hint)
+        }
     }
 
-    override func getCredentialHint(_ did: DID, _ id: DIDURL) throws {
-
+    override func getCredentialHint(_ did: DID, _ id: DIDURL) throws -> String{
+        let targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "." + "/" + id.fragment + "/" + FileSystemStore.META_EXT
+        let path = try getFile(targetPath)
+        return try readTextFromPath(path!)
     }
-
 
     override public func storeCredential(_ credential: VerifiableCredential , _ hint: String?) throws {
-
+        let targetPath = FileSystemStore.DID_DIR + "/" + credential.subject.id.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + credential.id.fragment
+        let path = try getFile(true, targetPath)
+        let storeDic =  credential.toJson(credential.issuer, true, false)
+        let handle = FileHandle(forWritingAtPath:path)
+        let storeData: Data = try JSONSerialization.data(withJSONObject: storeDic, options: [])
+        handle?.write(storeData)
+        
+        if hint != nil && !hint!.isEmpty {
+            try setCredentialHint(credential.subject.id, credential.id, hint!)
+        }
     }
 
     // TODO: override loadCredential
-
     override func containsCredentials(_ did: DID) throws -> Bool {
-        return false
+        let targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR
+        let path = try getDir(targetPath)
+        let exit = try exists(path)
+        guard exit else {
+            return false
+        }
+        let arr = try listCredentials(did)
+        guard arr.count > 0 else {
+            return false
+        }
+        return true
     }
 
     override func containsCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
-        return false
+        let targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "/" + id.fragment
+        let path = try getFile(targetPath)
+        return try exists(path!)
     }
 
     override func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
+        var targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "." + id.fragment + "/" + FileSystemStore.META_EXT
+        var path = try getFile(targetPath)
+        if try exists(path!) {
+            try deleteFile(path!)
+        }
+        targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "/" + id.fragment
+        path = try getFile(targetPath)
+        
+        if try exists(path!) {
+           try deleteFile(path!)
+            return true
+        }
         return false
     }
 
@@ -323,20 +315,15 @@ class FileSystemStore: DIDStore {
     }
 
     override func containsPrivateKeys(_ did: DID) throws -> Bool  {
-        // TODO
-        return false
-    }
-
-    override func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
         let dir: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR
         let path: String = try getFile(dir)!
         let fileManager: FileManager = FileManager.default
         var isDir = ObjCBool.init(false)
-        let fileExists = fileManager.fileExists(atPath: path, isDirectory: &isDir)
+        _ = fileManager.fileExists(atPath: path, isDirectory: &isDir)
         if !isDir.boolValue {
             return false
         }
-
+        
         var keys: [URL] = []
         if let dirContents = fileManager.enumerator(atPath: path) {
             // determine whether files are hidden or not
@@ -350,12 +337,18 @@ class FileSystemStore: DIDStore {
         return keys.count > 0
     }
 
+    override func containsPrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
+        let dir: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + "/" + id.fragment
+        let path: String = try getFile(dir)!
+        return try exists(path)
+    }
+
     override func storePrivateKey(_ did: DID, _ id: DIDURL, _ privateKey: String) throws {
         let path: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + id.fragment
         let privateKeyPath: String = try getFile(path) ?? ""
 
         // Delete before storing , Java no
-        try deletePrivateKey(did, id)
+        try _ = deletePrivateKey(did, id)
         let fileManager: FileManager = FileManager.default
         fileManager.createFile(atPath: privateKeyPath, contents:nil, attributes:nil)
         let handle = FileHandle(forWritingAtPath:privateKeyPath)
@@ -391,7 +384,6 @@ class FileSystemStore: DIDStore {
 
     private func getDir(_ path: String) throws -> String {
         var dirPath = storeRoot
-        let fileManager = FileManager.default
         let paths = path.split{$0 == "/"}.map(String.init)
 
         for (index, path) in paths.enumerated() {
