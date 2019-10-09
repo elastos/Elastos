@@ -600,6 +600,7 @@ static void InitWallets() {
 			subWallets[j]->GetAllAddress(0, 500);
 			if (subWallets[j]->GetChainID() == "IDChain") {
 				dynamic_cast<IIDChainSubWallet *>(subWallets[j])->GetAllDID(0, 500);
+				dynamic_cast<IIDChainSubWallet *>(subWallets[j])->GetAllPublicKeys(0, 500);
 			}
 		}
 	}

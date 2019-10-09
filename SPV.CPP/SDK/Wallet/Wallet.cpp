@@ -659,6 +659,13 @@ namespace Elastos {
 			return _subAccount->GetAllDID(did, start, count);
 		}
 
+		size_t Wallet::GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+		                                bool containInternal) {
+			boost::mutex::scoped_lock scopedLock(lock);
+
+			return _subAccount->GetAllPublickeys(pubkeys, start, count, containInternal);
+		}
+
 		Address Wallet::GetOwnerDepositAddress() const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return Address(PrefixDeposit, _subAccount->OwnerPubKey());

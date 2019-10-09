@@ -119,6 +119,22 @@ namespace Elastos {
 			return j;
 		}
 
+		nlohmann::json SubWallet::GetAllPublicKeys(uint32_t start, uint32_t count) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("start: {}", start);
+			ArgInfo("count: {}", count);
+
+			nlohmann::json j;
+			std::vector<std::string> publicKeys;
+			size_t maxCount = _walletManager->GetWallet()->GetAllPublickeys(publicKeys, start, count, false);
+
+			j["PublicKeys"] = publicKeys;
+			j["MaxCount"] = maxCount;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
+		}
+
 		std::string SubWallet::GetBalanceWithAddress(const std::string &address) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("addr: {}", address);

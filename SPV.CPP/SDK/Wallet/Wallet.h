@@ -106,6 +106,8 @@ namespace Elastos {
 
 			size_t GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const;
 
+			size_t GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count, bool containInternal);
+
 			Address GetOwnerDepositAddress() const;
 
 			Address GetCROwnerDepositAddress() const;

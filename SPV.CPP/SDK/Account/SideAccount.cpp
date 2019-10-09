@@ -51,6 +51,11 @@ namespace Elastos {
 			return 0;
 		}
 
+		size_t SideAccount::GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+		                        bool containInternal) const {
+			return 0;
+		}
+
 		std::vector<Address> SideAccount::UnusedAddresses(uint32_t, bool) {
 			std::vector<Address> addrs;
 			addrs.push_back(side_address);

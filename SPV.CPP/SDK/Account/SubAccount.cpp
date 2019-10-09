@@ -362,6 +362,39 @@ namespace Elastos {
 			_usedAddrs.clear();
 		}
 
+		size_t SubAccount::GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+		                                    bool containInternal) const {
+			if (_parent->GetSignType() == Account::MultiSign) {
+				return 0;
+			}
+
+			size_t maxCount = _externalChain.size() + (containInternal ? _internalChain.size() : 0);
+
+			if ((!containInternal && start >= _externalChain.size()) ||
+			    (containInternal && start >= _externalChain.size() + _internalChain.size())) {
+				return maxCount;
+			}
+
+			pubkeys.clear();
+
+			for (size_t i = start; i < _externalChain.size() && pubkeys.size() < count; i++) {
+				ByteStream stream(_externalChain[i].RedeemScript());
+				bytes_t pubKey;
+				stream.ReadVarBytes(pubKey);
+				pubkeys.push_back(pubKey.getHex());
+			}
+
+			if (containInternal) {
+				for (size_t i = start + pubkeys.size(); pubkeys.size() < count && i < maxCount; ++i) {
+					ByteStream stream(_internalChain[i - _externalChain.size()].RedeemScript());
+					bytes_t pubKey;
+					stream.ReadVarBytes(pubKey);
+					pubkeys.push_back(pubKey.getHex());
+				}
+			}
+			return maxCount;
+		}
+
 		bool SubAccount::GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const {
 			uint32_t index;
 			bytes_t pubKey;

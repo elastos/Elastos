@@ -65,6 +65,8 @@ namespace Elastos {
 			virtual nlohmann::json GetAllAddress(uint32_t start,
 												 uint32_t count) const;
 
+			virtual nlohmann::json GetAllPublicKeys(uint32_t start, uint32_t count) const;
+
 			virtual void AddCallback(ISubWalletCallback *subCallback);
 
 			virtual void RemoveCallback(ISubWalletCallback *subCallback);

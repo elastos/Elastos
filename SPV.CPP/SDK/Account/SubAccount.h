@@ -48,6 +48,9 @@ namespace Elastos {
 
 			void ClearUsedAddresses();
 
+			size_t GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+			                        bool containInternal) const;
+
 			bytes_t OwnerPubKey() const;
 
 			bytes_t DIDPubKey() const;

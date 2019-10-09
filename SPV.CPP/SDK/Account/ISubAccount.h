@@ -36,6 +36,9 @@ namespace Elastos {
 
 			virtual size_t GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const = 0;
 
+			virtual size_t GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+			                                bool containInternal) const = 0;
+
 			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal) = 0;
 
 			virtual bool ContainsAddress(const Address &address) const = 0;
