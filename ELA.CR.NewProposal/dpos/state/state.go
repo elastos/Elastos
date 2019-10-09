@@ -1005,6 +1005,16 @@ func (s *State) getProducerByDepositHash(hash common.Uint168) *Producer {
 			return producer
 		}
 	}
+	for _, producer := range s.CanceledProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
+	for _, producer := range s.IllegalProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
 	return nil
 }
 
