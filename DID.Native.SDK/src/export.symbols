@@ -93,6 +93,7 @@ _Credential_Issue
 
 # DIDStore
 _DIDStore_Open
+_DIDStore_InitPrivateIdentity
 _DIDStore_NewDID
 _DIDStore_Sign
 _DIDStore_Resolve

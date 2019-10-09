@@ -19,9 +19,13 @@
 static void test_didstore_new_did(void)
 {
     DID *did;
+    int rc;
 
     const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
-    DIDDocument *document = DIDStore_NewDID("", "littlefish", mnemonic, 0);
+    rc = DIDStore_InitPrivateIdentity(mnemonic, "", 0);
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+
+    DIDDocument *document = DIDStore_NewDID("", "littlefish");
     CU_ASSERT_PTR_NOT_NULL(document);
 
     did = DIDDocument_GetSubject(document);
@@ -32,6 +36,7 @@ static void test_didstore_new_did(void)
 static int didstore_new_test_suite_init(void)
 {
     char current_path[PATH_MAX];
+    int rc;
 
     if(!getcwd(current_path, PATH_MAX)) {
         printf("\nCan't get current dir.");
@@ -39,7 +44,11 @@ static int didstore_new_test_suite_init(void)
     }
 
     strcat(current_path, "/newdid");
-    return DIDStore_Open(current_path);
+    rc = DIDStore_Open(current_path);
+    if (rc < 0)
+        return -1;
+
+    return 0;
 }
 
 static int didstore_new_test_suite_cleanup(void)

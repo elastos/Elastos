@@ -65,6 +65,8 @@ int parse_time(time_t *time, const char *string)
     if (!time || !string)
         return -1;
 
+    memset(&ptm, 0, sizeof(ptm));
+
     len = strlen(string);
     if (string[len - 1] != 'Z')
         return -1;

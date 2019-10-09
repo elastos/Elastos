@@ -94,6 +94,7 @@ static int free_subject(Credential *cred)
             free((char*)property->value);
         free(property);
     }
+    free(properties);
     return 0;
 }
 
@@ -113,8 +114,8 @@ void Credential_Destroy(Credential *cred)
         free((char*)type);
     }
 
+    free(cred->type.types);
     free_subject(cred);
-
     free(cred);
     return;
 }
@@ -512,6 +513,7 @@ Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
     ret = DIDStore_Sign(issuer, defaultSignKey, passphase, signed_data, 2, (uint8_t *)cred_data,
                  strlen(cred_data) + 1, NULL, 0);
     if (ret == -1) {
+        free((char*)cred_data);
         Credential_Destroy(cred);
         return NULL;
     }

@@ -27,6 +27,7 @@ int get_cred_hint(CredentialEntry *entry, void *context)
         return -1;
 
     printf("\n credential: %s#%s, hint: %s\n", entry->id.did.idstring, entry->id.fragment, entry->hint);
+    free(entry);
     return 0;
 }
 
@@ -57,7 +58,7 @@ static void test_didstore_load_cred(void)
     Credential *cred = DIDStore_LoadCredential(did, &(credential->id));
     CU_ASSERT_PTR_NOT_NULL(cred);
 
-    free(cred);
+    Credential_Destroy(cred);
 }
 
 static void test_didstore_delete_cred(void)
@@ -107,6 +108,7 @@ static int didstore_cred_op_test_suite_init(void)
 
 static int didstore_cred_op_test_suite_cleanup(void)
 {
+    Credential_Destroy(credential);
     DIDStore_DeleteDID(did);
     DID_Destroy(did);
     return 0;

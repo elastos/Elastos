@@ -173,7 +173,7 @@ ssize_t encrypt_to_base64(char *base64, const char *passwd,
 {
     unsigned char *cipher = (unsigned char *)alloca(len * 2);
     len = encrypt(cipher, passwd, input, len);
-    return EVP_EncodeBlock(base64, cipher, len);
+    return base64_url_encode(base64, cipher, len);
 }
 
 /* Caller should provide enough buffer for plain */
@@ -181,7 +181,7 @@ ssize_t decrypt_from_base64(uint8_t *plain, const char *passwd, const char *base
 {
     size_t len = strlen(base64);
     unsigned char *cipher = (unsigned char *)alloca(len);
-    len = EVP_DecodeBlock(cipher, base64, (int)len);
+    len = base64_url_decode(cipher, base64);
     return decrypt(plain, passwd, cipher, len);
 }
 
@@ -206,6 +206,7 @@ ssize_t base64_url_encode(char *base64, const uint8_t *input, size_t len)
 
     b64_len = bufferPtr->length;
     memcpy(base64, bufferPtr->data, b64_len);
+    base64[b64_len] = 0;
     BUF_MEM_free(bufferPtr);
 
     return b64_len; //success
@@ -302,6 +303,7 @@ static ssize_t sha256v(uint8_t *digest, int count, va_list inputs)
     rc = EVP_DigestFinal_ex(&ctx, digest, &digest_size);
     assert(digest_size == SHA256_BYTES);
 
+    EVP_MD_CTX_cleanup(&ctx);
     return rc == 1 ? SHA256_BYTES : -1;
 }
 
@@ -328,14 +330,12 @@ ssize_t sha256(uint8_t *digest, int count, ...)
     return len;
 }
 
-static ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey,
-        int count, va_list inputs)
+ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey, int count, va_list inputs)
 {
     uint8_t digest[SHA256_BYTES];
 
-    assert(sig);
-    assert(privatekey);
-    assert(count > 0);
+    if (!sig || !privatekey || count <= 0)
+        return -1;
 
     sha256v(digest, count, inputs);
 
@@ -346,6 +346,7 @@ ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, int count, ...)
 {
     va_list inputs;
     ssize_t len;
+
     if (!sig || !privatekey || count <= 0)
         return -1;
 
@@ -356,19 +357,30 @@ ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, int count, ...)
     return len;
 }
 
-//ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...)
-ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, va_list inputs)
+ssize_t ecdsa_sign_base64v(char *sig, uint8_t *privatekey, int count, va_list inputs)
 {
-    //va_list inputs;
     uint8_t binsig[SIGNATURE_BYTES];
     ssize_t len;
 
     if (!sig || !privatekey || count <= 0)
         return -1;
 
-    //va_start(inputs, count);
     len = ecdsa_signv(binsig, privatekey, count, inputs);
-    //va_end(inputs);
-
     return base64_encode(sig, binsig, len);
 }
+
+ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...)
+{
+    va_list inputs;
+    size_t len;
+
+    if (!sig || !privatekey || count <= 0)
+        return -1;
+
+    va_start(inputs, count);
+    len = ecdsa_sign_base64v(sig, privatekey, count, inputs);
+    va_end(inputs);
+
+    return len;
+}
+

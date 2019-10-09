@@ -66,17 +66,22 @@ static void test_didrequest_deactivatedid(void)
 static int didrequest_test_suite_init(void)
 {
     char current_path[PATH_MAX];
+    int rc;
 
     if(!getcwd(current_path, PATH_MAX)) {
         printf("\nCan't get current dir.");
         return -1;
     }
 
-    strcat(current_path, "/servet");
+    strcat(current_path, "/newdid");
     if (DIDStore_Open(current_path) == -1)
         return -1;
 
-    document = DIDStore_NewDID("", "littlefish", mnemonic, 0);
+    rc = DIDStore_InitPrivateIdentity(mnemonic, "", 0);
+    if (rc < 0)
+        return -1;
+
+    document = DIDStore_NewDID("", "littlefish");
     if(!document)
         return -1;
 

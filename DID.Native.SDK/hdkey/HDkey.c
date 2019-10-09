@@ -152,8 +152,10 @@ uint8_t *HDkey_GetSubPublicKey(MasterPublicKey* masterkey, int chain,
         return NULL;
 
     BRMasterPubKey brPublicKey;
+    memset(&brPublicKey, 0, sizeof(brPublicKey));
+
     brPublicKey.fingerPrint = masterkey->fingerPrint;
-    memcpy((uint8_t*)&brPublicKey.chainCode, masterkey->chainCode,
+    memcpy((uint8_t*)&brPublicKey.chainCode, &masterkey->chainCode,
             sizeof(brPublicKey.chainCode));
     memcpy(brPublicKey.pubKey, masterkey->publicKey, sizeof(brPublicKey.pubKey));
 

@@ -125,11 +125,13 @@ typedef struct Property         Property;
 /**
  * \~English
  * DID list callbacks, return hint about did.
+ * API need to free entry memory.
  */
 typedef int DIDStore_GetDIDHintCallback(DIDEntry *entry, void *context);
 /**
  * \~English
  * Credential list callbacks, return hint about credential.
+ * API need to free entry memory.
  */
 typedef int DIDStore_GetCredHintCallback(CredentialEntry *entry, void *context);
 
@@ -1334,26 +1336,36 @@ DID_API int DIDStore_Open(const char *root);
 
 /**
  * \~English
- * Create new DID Document and store in the DID Store.
+ * Store seed of keypair to initial user's identity.
  *
+ * @param
+ *      mnemonic               [in] Mnemonic for generate key.
  * @param
  *      passphrase             [in] The pass word of DID holder.
  * @param
- *      hint                   [in] The nickname of DID.
-  * @param
- *      mnemonic               [in] Mnemonic for generate key.
-  * @param
  *      language               [in] The language for DID.
  *                             0: English; 1: French; 2: Spanish;
  *                             3: Chinese_simplified;
  *                             4: Chinese_traditional;
  *                             5: Japanese.
  * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDStore_InitPrivateIdentity(const char *mnemonic,
+           const char *passphrase, const int language);
+/**
+ * \~English
+ * Create new DID Document and store in the DID Store.
+ *
+ * @param
+ *      passphrase             [in] The pass word of DID holder.
+ * @param
+ *      hint                   [in] The nickname of DID.
+ * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
  */
-DID_API DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint,
-         const char *mnemonic, const int language);
+DID_API DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint);
 
 /**
  * \~English

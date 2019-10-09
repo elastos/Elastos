@@ -162,7 +162,7 @@ int DID_Copy(DID *new, DID *old)
     if (!new || !old)
         return -1;
 
-    strcpy((char*)new->idstring, old->idstring);
+    strcpy((char*)(new->idstring), old->idstring);
     return 0;
 }
 
@@ -227,7 +227,7 @@ DID *DIDURL_GetDid(DIDURL *id)
     if (!id)
         return NULL;
 
-    return &id->did;
+    return &(id->did);
 }
 
 const char *DIDURL_GetFragment(DIDURL *id)

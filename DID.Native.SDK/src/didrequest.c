@@ -116,6 +116,7 @@ static int didrequest_operate(const char *op, DID *did, DIDURL *signkey, const c
     char id[MAX_DID];
     int ret;
     char signed_data[SIGNATURE_BYTES * 2 + 16];
+    const char *did_payload;
 
     if (!op || !strlen(op) || !did || !signkey || !data || !passphrase)
         return -1;
@@ -132,11 +133,15 @@ static int didrequest_operate(const char *op, DID *did, DIDURL *signkey, const c
     req.header.spec = spec;
     req.header.op = op;
     req.payload = base64_text;
-    req.proof.verificationMethod = DID_ToString(did, id, sizeof(id));
+    req.proof.verificationMethod = DIDURL_ToString(signkey, id, sizeof(id), 1);
     req.proof.signture = signed_data;
 
-    ret = createIdTransaction(didrequest_tojson(&req), NULL);
+    did_payload = didrequest_tojson(&req);
+    if (!did_payload)
+        return -1;
 
+    ret = createIdTransaction(did_payload, NULL);
+    free((char*)did_payload);
     return ret;
 }
 
@@ -185,11 +190,14 @@ int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey, const char *passphr
 int DIDREQ_DeactivateDID(DID *did, DIDURL *signKey, const char *passphrase)
 {
     char id[MAX_DID];
+    const char *string;
 
     if (!did || !signKey)
         return -1;
 
-    DID_ToString(did, id, sizeof(id));
+    string = DID_ToString(did, id, sizeof(id));
+    if (!string)
+        return -1;
 
-    return didrequest_operate("deactivate", did, signKey, id, passphrase);
+    return didrequest_operate("deactivate", did, signKey, string, passphrase);
 }

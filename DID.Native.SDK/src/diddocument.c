@@ -573,17 +573,29 @@ void DIDDocument_Destroy(DIDDocument *document)
     if (!document)
         return;
 
-    if (document->publickeys.pks)
+    if (document->publickeys.pks) {
         for (i = 0; i < document->publickeys.size; i++)
             Publickey_Destroy(document->publickeys.pks[i]);
+        free(document->publickeys.pks);
+    }
 
-    if (document->credentials.credentials)
+    if (document->authentication.pks)
+        free(document->authentication.pks);
+
+    if (document->authorization.pks)
+        free(document->authorization.pks);
+
+    if (document->credentials.credentials) {
         for (i = 0; i < document->credentials.size; i++)
             Credential_Destroy(document->credentials.credentials[i]);
+        free(document->credentials.credentials);
+    }
 
-    if (document->services.services)
+    if (document->services.services) {
         for (i = 0; i < document->services.size; i++)
             Service_Destroy(document->services.services[i]);
+        free(document->services.services);
+    }
 
     free(document);
     return;
@@ -617,7 +629,7 @@ int DIDDocument_SetSubject(DIDDocument *document, DID *subject)
     if (!document || !subject)
         return -1;
 
-    return DID_Copy(&(document->did), subject) == 1;
+    return DID_Copy(&(document->did), subject);
 }
 
 int DIDDocument_AddPublickey(DIDDocument *document, DIDURL *key, DID *controller,
@@ -1262,7 +1274,7 @@ DIDURL *PublicKey_GetId(PublicKey *publickey)
     if (!publickey)
         return NULL;
 
-    return &publickey->id;
+    return &(publickey->id);
 }
 
 DID *PublicKey_GetController(PublicKey *publickey)

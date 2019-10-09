@@ -9,13 +9,13 @@
 #include "credential.h"
 #include "diddocument.h"
 
-static Credential *credential;
 static DID *did;
 
 static void test_cred_fromjson(void)
 {
-    credential = Credential_FromJson(global_cred_string, did);
+    Credential *credential = Credential_FromJson(global_cred_string, did);
     CU_ASSERT_PTR_NOT_NULL_FATAL(credential);
+    Credential_Destroy(credential);
 }
 
 static int cred_fromjson_test_suite_init(void)
@@ -39,7 +39,6 @@ static int cred_fromjson_test_suite_init(void)
 
 static int cred_fromjson_test_suite_cleanup(void)
 {
-    Credential_Destroy(credential);
     DID_Destroy(did);
     return 0;
 }
