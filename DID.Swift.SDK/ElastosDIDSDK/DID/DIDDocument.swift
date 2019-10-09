@@ -383,7 +383,7 @@ public class DIDDocument: NSObject {
             // TODO: throw error
             return
         }
-        parseService(mode as Any)
+        try parseService(mode as Any)
 
         // TODO: ERROR
         expires = JsonHelper.getDate(dic, Constants.EXPIRES, true, nil, "expires")
@@ -437,39 +437,35 @@ public class DIDDocument: NSObject {
 
     // mode parse
     private func parseCredential(_ md: Any) {
-        
-//        for (int i = 0; i < node.size(); i++) {
-//            VerifiableCredential vc;
-//            try {
-//            vc = EmbeddedCredential.fromJson(node.get(i), getSubject());
-//            } catch (MalformedCredentialException e) {
-//            throw new MalformedDocumentException(e.getMessage(), e);
-//            }
-//            
-//            addCredential(vc);
-//        }
-//        
-//        if !(md is Array<Any>) {
-//            // TODO: Error
-//        }
-//        let arr = md as! Array<Dictionary<String, Any>>
-//        guard arr.count != 0 else {
-//            // TODO: throw error
-//            return
-//        }
-//        try arr.forEach{ obj in
-//            let vc: VerifiableCredential = EmbeddedCredential.
-//            
-//        }
-        
-        
-        
-        
-        
+        guard (md is Array<Any>) else {
+            // TODO: Error
+            return
+        }
+        let arr = md as! Array<Dictionary<String, Any>>
+        guard arr.count != 0 else {
+            // TODO: throw error
+            return
+        }
+        arr.forEach{ obj in
+            let vc: VerifiableCredential = VerifiableCredential.fromJson(obj, subject!)
+           _ = addCredential(vc)
+        }
     }
 
-    private func parseService(_ md: Any) {
-        // TODO:
+    private func parseService(_ md: Any) throws {
+        guard (md is Array<Any>) else {
+            // TODO: error
+            return
+        }
+        let arr = md as! Array<Dictionary<String, Any>>
+        guard arr.count != 0 else {
+            // throws error
+            return
+        }
+       try arr.forEach { obj in
+            let svc: Service = try Service.fromJson(obj, subject!)
+            _ = addService(svc)
+        }
     }
 
     private func addService(_ svc: Service) -> Bool {

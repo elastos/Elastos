@@ -4,7 +4,7 @@ public class VerifiableCredential: DIDObject {
     public var types: Array<String>!
     public var issuer: DID!
     public var issuanceDate: Date!
-    public var expiationDate: Date!
+    public var expirationDate: Date!
     public var subject: CredentialSubject!
     public var proof: Proof!
     
@@ -18,7 +18,7 @@ public class VerifiableCredential: DIDObject {
         self.types = vc.types
         self.issuer = vc.issuer
         self.issuanceDate = vc.issuanceDate
-        self.expiationDate = vc.expiationDate
+        self.expirationDate = vc.expirationDate
         self.subject = vc.subject
         self.proof = vc.proof
     }
@@ -49,7 +49,7 @@ public class VerifiableCredential: DIDObject {
         }
         
         // issuanceDate
-        if (expiationDate != nil) {
+        if (expirationDate != nil) {
             dic[Constants.expirationDate] = "TODO: change to time string"
         }
         
@@ -63,16 +63,69 @@ public class VerifiableCredential: DIDObject {
         return dic
     }
     
-//    class func fromJson(_ json: String) -> VerifiableCredential {
-//        let vc: VerifiableCredential = VerifiableCredential()
-//    }
-//
-//    class func fromJson(_ md: Any, _ ref: DID) -> VerifiableCredential {
-//
-//    }
-//
-//    class func fromJson(_ md: Any) -> VerifiableCredential {
-//
-//    }
+    class func fromJson(_ json: String) -> VerifiableCredential {
+        let vc: VerifiableCredential = VerifiableCredential()
+        
+        return vc
+    }
+
+    class func fromJson(_ md: Any, _ ref: DID) -> VerifiableCredential {
+        let vc: VerifiableCredential = VerifiableCredential()
+        return vc
+    }
+
+    class func fromJson(_ md: Any) -> VerifiableCredential {
+        let vc: VerifiableCredential = VerifiableCredential()
+        return vc
+    }
     
+    func parse(_ md: Dictionary<String, Any>, _ ref: DID?) throws {
+        // id
+        let id: DIDURL = try JsonHelper.getDidUrl(md, Constants.id, ref!, "crendential id")
+        self.id = id
+        
+        // type
+        var value = md[Constants.type]
+        guard !(value is Array<Any>) else {
+            // throws error
+            return
+        }
+        
+        let arr = value as! Array<Any>
+        guard arr.count != 0 else {
+            // throws error
+            return
+        }
+        
+        arr.forEach { obj in
+            let t: String = obj as! String
+            if !t.isEmpty { types.append(t) }
+        }
+        
+        // issuer
+        issuer = try JsonHelper.getDid(md, Constants.issuer, true, ref, "crendential issuer")
+        
+        // issuanceDate
+        issuanceDate = JsonHelper.getDate(md, Constants.issuanceDate, false, nil, "credential issuanceDate")
+        
+        // expirationDate
+        expirationDate = JsonHelper.getDate(md, Constants.expirationDate, true, nil, "credential expirationDate")
+        
+        // credentialSubject
+        value = md[Constants.credentialSubject]
+        subject = try CredentialSubject.fromJson(md, ref)
+        
+        // IMPORTANT: help resolve full method in proof
+        var re: DID
+        if ref == nil {
+            re = issuer
+        }
+        else {
+            re = ref!
+        }
+        
+        // proof
+        value = md[Constants.proof]
+        proof = try Proof.fromJson(md, re)
+    }
 }

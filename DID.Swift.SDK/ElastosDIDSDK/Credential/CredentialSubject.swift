@@ -40,4 +40,22 @@ public class CredentialSubject {
         }
         return dic
     }
+    
+    class func fromJson(_ md: Dictionary<String, Any>, _ ref: DID?) throws -> CredentialSubject {
+        // id
+        let op: Bool = ref != nil
+        let id: DID = try JsonHelper.getDid(md, Constants.id, op, ref, "crendentialSubject id")
+        let cs: CredentialSubject = CredentialSubject(id)
+        guard md.count > 1 else {
+            print("Empty credentialSubject.")
+            return cs
+        }
+        md.forEach { key, value in
+            if key == Constants.id {
+                cs.addProperty(key, value as! String)
+            }
+        }
+        return cs
+    }
 }
+
