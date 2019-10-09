@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.net;
 
 import org.elastos.wallet.ela.bean.GetdePositcoinBean;
+import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.main.entity.ServerListEntity;
@@ -40,8 +41,14 @@ public interface ApiServer {
     @POST("api/dposnoderpc/check/listcrcandidates")
     @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")
     Observable<CRListBean> getCRlist(@FieldMap Map<String, Object> map);
+
     @FormUrlEncoded
     @POST("api/dposnoderpc/check/getdepositcoin")
     @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")
     Observable<CRDePositcoinBean> getCRDepositcoin(@FieldMap Map<String, String> map);
+
+    @FormUrlEncoded
+    @POST("api/dposnoderpc/check/getimage")
+    @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")
+    Observable<ImageBean> getImageUrl(@FieldMap Map<String, String> map);
 }

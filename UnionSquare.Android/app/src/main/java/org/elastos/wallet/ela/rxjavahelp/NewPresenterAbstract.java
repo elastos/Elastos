@@ -15,39 +15,37 @@ public class NewPresenterAbstract extends PresenterAbstract {
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName) {
         //初始化参数
-        return createObserver(baseFragment, methodName, null);
+        return createObserver(baseFragment, methodName, true,null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName) {
         //初始化参数
-        return createObserver(baseActivity, methodName, null);
+        return createObserver(baseActivity, methodName, true,null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, boolean isShowDialog) {
         //初始化参数
-        this.isShowDialog = isShowDialog;
-        return createObserver(baseFragment, methodName, null);
+
+        return createObserver(baseFragment, methodName, isShowDialog,null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, boolean isShowDialog) {
         //初始化参数
-        this.isShowDialog = isShowDialog;
-        return createObserver(baseActivity, methodName, null);
-    }
-
-    protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, Object o, boolean isShowDialog) {
-        //初始化参数
-        this.isShowDialog = isShowDialog;
-        return createObserver(baseFragment, methodName, o);
-    }
-
-    protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, Object o, boolean isShowDialog) {
-        //初始化参数
-        this.isShowDialog = isShowDialog;
-        return createObserver(baseActivity, methodName, o);
+        return createObserver(baseActivity, methodName,isShowDialog, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, Object o) {
+        //初始化参数
+        return createObserver(baseFragment, methodName, true, o);
+    }
+
+    protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, Object o) {
+        //初始化参数
+
+        return createObserver(baseActivity, methodName, true, o);
+    }
+
+    protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, boolean isShowDialog, Object o) {
         //初始化参数
         this.context = baseFragment.getBaseActivity();
         if (isShowDialog) {
@@ -96,7 +94,7 @@ public class NewPresenterAbstract extends PresenterAbstract {
     }
 
 
-    protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, Object o) {
+    protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, boolean isShowDialog, Object o) {
         //初始化参数
         this.context = baseActivity;
         if (isShowDialog) {

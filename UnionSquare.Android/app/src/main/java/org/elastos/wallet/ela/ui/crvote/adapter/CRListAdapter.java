@@ -52,7 +52,7 @@ public class CRListAdapter extends CRListAdapterFather {
             return;
         }
 
-        new SuperNodeListPresenter().getUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getCRUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
             @Override
             public void onError(String url) {
                 map.put(url, "");
