@@ -372,9 +372,15 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 onGetDid(did);
                 break;
             case "getCRlist":
-                totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
+                try {
+                    totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
+                    onGetVoteList(((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo());
+                } catch (Exception e) {
+                    totalvotes = "0";
+                    onGetVoteList(null);
+                }
 
-                onGetVoteList(((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo());
+
                 break;
             case "getRegisteredCRInfo":
 
