@@ -174,6 +174,12 @@ func (bi *blockIndex) addNode(node *BlockNode) {
 	bi.index[*node.Hash] = node
 }
 
+func (bi *blockIndex) RemoveNode(node *BlockNode) {
+	bi.Lock()
+	delete(bi.index, *node.Hash)
+	bi.Unlock()
+}
+
 // NodeStatus provides concurrent-safe access to the Status field of a node.
 //
 // This function is safe for concurrent access.
