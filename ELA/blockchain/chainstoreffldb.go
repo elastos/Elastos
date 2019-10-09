@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
@@ -32,6 +33,8 @@ const (
 type ChainStoreFFLDB struct {
 	db database.DB
 
+	txIndex *indexers.TxIndex
+
 	mtx              sync.RWMutex
 	blockHashesCache []Uint256
 	blocksCache      map[Uint256]*Block
@@ -43,8 +46,17 @@ func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
 		return nil, err
 	}
 
+	txIndex := indexers.NewTxIndex(fflDB)
+	err = fflDB.Update(func(dbTx database.Tx) error {
+		return txIndex.Create(dbTx)
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	s := &ChainStoreFFLDB{
 		db:               fflDB,
+		txIndex:          txIndex,
 		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
 		blocksCache:      make(map[Uint256]*Block),
 	}
@@ -171,6 +183,11 @@ func (c *ChainStoreFFLDB) SaveBlock(b *Block, node *BlockNode,
 			return err
 		}
 
+		err = c.txIndex.ConnectBlock(dbTx, b)
+		if err != nil {
+			return err
+		}
+
 		//// Allow the index manager to call each of the currently active
 		//// optional indexes with the block being connected so they can
 		//// update themselves accordingly.
@@ -223,6 +240,11 @@ func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
 		// Remove the block hash and height from the block index which
 		// tracks the main chain.
 		err = DBRemoveBlockIndex(dbTx, &blockHash, node.Height)
+		if err != nil {
+			return err
+		}
+
+		err = c.txIndex.DisconnectBlock(dbTx, b)
 		if err != nil {
 			return err
 		}
@@ -359,4 +381,39 @@ func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, uint32, error) {
 		return err
 	})
 	return exists, height, err
+}
+
+func (c *ChainStoreFFLDB) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
+	// Look up the location of the transaction.
+	blockRegion, err := c.txIndex.TxBlockRegion(&txID)
+	if err != nil {
+		return nil, 0, errors.New("failed to retrieve transaction location")
+	}
+	if blockRegion == nil {
+		return nil, 0, errors.New("no block region found")
+	}
+
+	// Load the raw transaction bytes from the database.
+	var txBytes []byte
+	var height int32
+	err = c.db.View(func(dbTx database.Tx) error {
+		var err error
+		txBytes, err = dbTx.FetchBlockRegion(blockRegion)
+		if err != nil {
+			return err
+		}
+		height, err = dbFetchHeightByHash(dbTx, blockRegion.Hash)
+		return err
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	txBuf := bytes.NewBuffer(txBytes)
+	var txn Transaction
+	if err := txn.Deserialize(txBuf); err != nil {
+		return nil, 0, err
+	}
+
+	return &txn, uint32(height), nil
 }
