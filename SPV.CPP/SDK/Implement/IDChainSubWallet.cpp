@@ -113,5 +113,17 @@ namespace Elastos {
 			return false;
 		}
 
+		std::string IDChainSubWallet::GetDIDByPublicKey(std::string &pubkey) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("pubkey:{}", pubkey);
+
+			ErrorChecker::CheckParamNotEmpty(pubkey, "public key");
+
+			std::string did = Address(PrefixIDChain, pubkey).String();
+
+			ArgInfo("r => {}  {}", did);
+			return did;
+		}
+
 	}
 }

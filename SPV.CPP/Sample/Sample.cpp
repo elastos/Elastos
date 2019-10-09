@@ -566,6 +566,19 @@ static void OpenWallet(const std::string &masterWalletID, const std::string &sub
 	masterWalelt->CreateSubWallet(subWalletID);
 }
 
+static void TestIDSubWallet() {
+	ISubWallet *subWallet = GetSubWallet(gMasterWalletID, gIDchainSubWalletID);
+
+	nlohmann::json j = subWallet->GetAllPublicKeys(0, 500);
+	std::vector<std::string> pubkeys = j["PublicKeys"];
+	IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
+	for (size_t i = 0; i <  pubkeys.size(); ++i) {
+		iidChainSubWallet->GetDIDByPublicKey(pubkeys[i]);
+	}
+
+	iidChainSubWallet->GetAllDID(0, 500);
+}
+
 static void InitWallets() {
 	std::vector<IMasterWallet *> masterWallets = manager->GetAllMasterWallets();
 	if (masterWallets.size() == 0) {
@@ -598,9 +611,8 @@ static void InitWallets() {
 			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
 			subWallets[j]->GetBasicInfo();
 			subWallets[j]->GetAllAddress(0, 500);
-			if (subWallets[j]->GetChainID() == "IDChain") {
-				dynamic_cast<IIDChainSubWallet *>(subWallets[j])->GetAllDID(0, 500);
-				dynamic_cast<IIDChainSubWallet *>(subWallets[j])->GetAllPublicKeys(0, 500);
+			if (subWallets[j]->GetChainID() == gIDchainSubWalletID) {
+				TestIDSubWallet();
 			}
 		}
 	}

@@ -25,6 +25,8 @@ namespace Elastos {
 
 			virtual bool VerifySignature(const std::string &publicKey, const std::string &message, const std::string &signature);
 
+			virtual std::string GetDIDByPublicKey(std::string &pubkey) const;
+
 		protected:
 			friend class MasterWallet;
 
