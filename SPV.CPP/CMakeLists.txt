@@ -229,4 +229,3 @@ endif()
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Data DESTINATION .)
 install(FILES ${INSTALL_HEADER_FILES} DESTINATION include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Interface/nlohmann/json.hpp DESTINATION include/nlohmann)
-

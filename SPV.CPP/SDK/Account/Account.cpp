@@ -9,12 +9,9 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/ByteStream.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/BIPs/Address.h>
 #include <SDK/WalletCore/Crypto/AES.h>
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/WalletCore/BIPs/BIP39.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
-
 
 namespace Elastos {
 	namespace ElaWallet {

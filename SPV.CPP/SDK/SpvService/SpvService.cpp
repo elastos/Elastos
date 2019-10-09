@@ -5,14 +5,14 @@
 
 #include "SpvService.h"
 
-#include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Registry.h>
+#include <SDK/Common/Utils.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Wallet/UTXO.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Registry.h>
+#include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Wallet/UTXO.h>
 
 #include <Core/BRMerkleBlock.h>
 #include <Core/BRTransaction.h>
@@ -270,6 +270,10 @@ namespace Elastos {
 						  [&status](PeerManager::Listener *listener) {
 							  listener->connectStatusChanged(status);
 						  });
+		}
+
+		TransactionPtr SpvService::GetTransaction(const uint256 &hash) {
+			return _databaseManager.GetTransaction(hash);
 		}
 
 		size_t SpvService::GetAllTransactionsCount() {

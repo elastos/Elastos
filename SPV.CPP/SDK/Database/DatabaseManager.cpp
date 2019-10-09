@@ -14,18 +14,11 @@ namespace Elastos {
 			_coinbaseDataStore(&_sqlite),
 			_transactionDataStore(&_sqlite),
 			_assetDataStore(&_sqlite),
-			_merkleBlockDataSource(&_sqlite) {
+			_merkleBlockDataSource(&_sqlite) {}
 
-		}
+		DatabaseManager::DatabaseManager() : DatabaseManager("spv_wallet.db") {}
 
-		DatabaseManager::DatabaseManager() :
-			DatabaseManager("spv_wallet.db") {
-
-		}
-
-		DatabaseManager::~DatabaseManager() {
-
-		}
+		DatabaseManager::~DatabaseManager() {}
 
 		bool DatabaseManager::PutCoinBase(const std::vector<UTXOPtr> &entitys) {
 			return _coinbaseDataStore.Put(entitys);
@@ -76,6 +69,10 @@ namespace Elastos {
 			return _transactionDataStore.GetAllTransactionsCount();
 		}
 
+		TransactionPtr DatabaseManager::GetTransaction(const uint256 &hash) {
+			return _transactionDataStore.GetTransaction(hash);
+		}
+
 		std::vector<TransactionPtr> DatabaseManager::GetAllTransactions() const {
 			return _transactionDataStore.GetAllTransactions();
 		}
@@ -121,8 +118,7 @@ namespace Elastos {
 			return _merkleBlockDataSource.PutMerkleBlock(iso, blockPtr);
 		}
 
-		bool DatabaseManager::PutMerkleBlocks(const std::string &iso,
-											  const std::vector<MerkleBlockPtr> &blocks) {
+		bool DatabaseManager::PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockPtr> &blocks) {
 			return _merkleBlockDataSource.PutMerkleBlocks(iso, blocks);
 		}
 
@@ -134,7 +130,8 @@ namespace Elastos {
 			return _merkleBlockDataSource.DeleteAllBlocks(iso);
 		}
 
-		std::vector<MerkleBlockPtr> DatabaseManager::GetAllMerkleBlocks(const std::string &iso, const std::string &pluginType) const {
+		std::vector<MerkleBlockPtr> DatabaseManager::GetAllMerkleBlocks(const std::string &iso,
+																		const std::string &pluginType) const {
 			return _merkleBlockDataSource.GetAllMerkleBlocks(iso, pluginType);
 		}
 
@@ -170,5 +167,5 @@ namespace Elastos {
 			_assetDataStore.flush();
 		}
 
-	}
-}
+	} // namespace ElaWallet
+} // namespace Elastos

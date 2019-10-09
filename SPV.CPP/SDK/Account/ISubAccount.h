@@ -11,6 +11,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class Transaction;
+
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
 		class ISubAccount {

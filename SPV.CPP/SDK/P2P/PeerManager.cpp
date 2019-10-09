@@ -711,8 +711,9 @@ namespace Elastos {
 			size_t elementCount = specialAddresses.size() + addrs.size() + utxos.size() + transactions.size();
 			elementCount += _wallet->GetListeningAddrs().size();
 
-			BloomFilterPtr filter = BloomFilterPtr(new BloomFilter(_fpRate, elementCount + 100,
-																   (uint32_t) peer->GetPeerInfo().GetHash(),
+			bool is_side_wallet = addrs.size() == 1 && addrs[0].ProgramHash().prefix() == PrefixCrossChain;
+			uint32_t tweak = is_side_wallet ? UINT32_MAX : (uint32_t) peer->GetPeerInfo().GetHash();
+			BloomFilterPtr filter = BloomFilterPtr(new BloomFilter(_fpRate, elementCount + 100, tweak,
 																   BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
 
 			bytes_t hash;

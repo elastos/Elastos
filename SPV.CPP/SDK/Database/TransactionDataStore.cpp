@@ -4,21 +4,17 @@
 
 #include "TransactionDataStore.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/uint256.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 
 #include <string>
-#include <string>
-#include <sstream>
-#include <SDK/Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) :
-			TableBase(sqlite) {
+		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) : TableBase(sqlite) {
 			InitializeTable(TX_DATABASE_CREATE);
 		}
 
@@ -27,21 +23,19 @@ namespace Elastos {
 			InitializeTable(TX_DATABASE_CREATE);
 		}
 
-		TransactionDataStore::~TransactionDataStore() {
-		}
+		TransactionDataStore::~TransactionDataStore() {}
 
 		void TransactionDataStore::PutTransactionInternal(const std::string &iso, const TransactionPtr &tx) {
 			std::string sql, txHash;
 
-			sql = "INSERT INTO " + TX_TABLE_NAME + "("
-				  + TX_COLUMN_ID + ","
-				  + TX_BUFF + ","
-				  + TX_BLOCK_HEIGHT + ","
-				  + TX_TIME_STAMP + ","
-				  + TX_REMARK + ","
-				  + TX_ASSETID + ","
-				  + TX_ISO
-				  + ") VALUES (?, ?, ?, ?, ?, ?, ?);";
+			sql = "INSERT INTO " + TX_TABLE_NAME + "(" +
+				  TX_COLUMN_ID + "," +
+				  TX_BUFF + "," +
+				  TX_BLOCK_HEIGHT + "," +
+				  TX_TIME_STAMP + "," +
+				  TX_REMARK + "," +
+				  TX_ASSETID + "," +
+				  TX_ISO + ") VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
 			ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
@@ -72,9 +66,7 @@ namespace Elastos {
 			}
 #endif
 
-			return DoTransaction([&iso, &tx, this]() {
-				this->PutTransactionInternal(iso, tx);
-			});
+			return DoTransaction([&iso, &tx, this]() { this->PutTransactionInternal(iso, tx); });
 		}
 
 		bool TransactionDataStore::PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns) {
@@ -122,18 +114,22 @@ namespace Elastos {
 			return count;
 		}
 
+		TransactionPtr TransactionDataStore::GetTransaction(const uint256 &hash) {
+			return SelectTxByHash(hash.GetHex());
+		}
+
 		std::vector<TransactionPtr> TransactionDataStore::GetAllTransactions() const {
 			std::vector<TransactionPtr> txns;
 			DoTransaction([&txns, this]() {
 				std::string sql;
 
-				sql = "SELECT "
-					  + TX_COLUMN_ID + ","
-					  + TX_BUFF + ","
-					  + TX_BLOCK_HEIGHT + ","
-					  + TX_TIME_STAMP + ","
-					  + TX_ISO
-					  + " FROM " + TX_TABLE_NAME + ";";
+				sql = "SELECT " +
+					  TX_COLUMN_ID + "," +
+					  TX_BUFF + "," +
+					  TX_BLOCK_HEIGHT + "," +
+					  TX_TIME_STAMP + "," +
+					  TX_ISO +
+					  " FROM " + TX_TABLE_NAME + ";";
 
 				sqlite3_stmt *stmt;
 				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
@@ -177,17 +173,19 @@ namespace Elastos {
 				std::string sql;
 
 				for (size_t i = 0; i < hashes.size(); ++i) {
-					sql = "UPDATE " + TX_TABLE_NAME + " SET "
-						  + TX_BLOCK_HEIGHT + " = ?, "
-						  + TX_TIME_STAMP + " = ? "
-						  + " WHERE " + TX_COLUMN_ID + " = '" + hashes[i].GetHex() + "';";
+					sql = "UPDATE " + TX_TABLE_NAME + " SET " +
+						  TX_BLOCK_HEIGHT + " = ?, " +
+						  TX_TIME_STAMP + " = ? " +
+						  " WHERE " + TX_COLUMN_ID + " = '" + hashes[i].GetHex() + "';";
 
 					sqlite3_stmt *stmt;
 					ErrorChecker::CheckLogic(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
 											 "Prepare sql " + sql);
 
-					ErrorChecker::CheckLogic(!_sqlite->BindInt(stmt, 1, blockHeight), Error::SqliteError, "bindint");
-					ErrorChecker::CheckLogic(!_sqlite->BindInt64(stmt, 2, timestamp), Error::SqliteError, "bindint64");
+					ErrorChecker::CheckLogic(!_sqlite->BindInt(stmt, 1, blockHeight), Error::SqliteError,
+											 "bindint");
+					ErrorChecker::CheckLogic(!_sqlite->BindInt64(stmt, 2, timestamp), Error::SqliteError,
+											 "bindint64");
 
 					_sqlite->Step(stmt);
 
@@ -214,7 +212,9 @@ namespace Elastos {
 			return DoTransaction([&hashes, this]() {
 				std::string sql;
 				for (size_t i = 0; i < hashes.size(); ++i) {
-					sql = "DELETE FROM " + TX_TABLE_NAME + " WHERE " + TX_COLUMN_ID + " = '" + hashes[i].GetHex() + "';";
+					sql = "DELETE FROM " +
+						  TX_TABLE_NAME +
+						  " WHERE " + TX_COLUMN_ID + " = '" + hashes[i].GetHex() + "';";
 
 					ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr), Error::SqliteError,
 												 "Exec sql " + sql);
@@ -222,9 +222,7 @@ namespace Elastos {
 			});
 		}
 
-		void TransactionDataStore::flush() {
-			_sqlite->flush();
-		}
+		void TransactionDataStore::flush() { _sqlite->flush(); }
 
 		TransactionPtr TransactionDataStore::SelectTxByHash(const std::string &hash) const {
 			TransactionPtr tx = nullptr;
@@ -232,7 +230,12 @@ namespace Elastos {
 			DoTransaction([&hash, &tx, this]() {
 				std::string sql;
 
-				sql = "SELECT " + TX_COLUMN_ID + "," + TX_BUFF + "," + TX_BLOCK_HEIGHT + "," + TX_TIME_STAMP + "," + TX_ISO +
+				sql = "SELECT " +
+					  TX_COLUMN_ID + "," +
+					  TX_BUFF + "," +
+					  TX_BLOCK_HEIGHT + "," +
+					  TX_TIME_STAMP + "," +
+					  TX_ISO +
 					  " FROM " + TX_TABLE_NAME +
 					  " WHERE " + TX_COLUMN_ID + " = '" + hash + "';";
 
@@ -241,8 +244,7 @@ namespace Elastos {
 											 "Prepare sql " + sql);
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					TransactionPtr t(new Transaction());
-
+					tx = TransactionPtr(new Transaction());
 					uint256 txHash(_sqlite->ColumnText(stmt, 0));
 
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
@@ -254,21 +256,20 @@ namespace Elastos {
 					std::string iso = _sqlite->ColumnText(stmt, 4);
 
 					if (iso == "ela") {
-						t->Deserialize(stream);
+						tx->Deserialize(stream);
 						assert(txHash == tx->GetHash());
 					} else if (iso == "ela1") {
-						t->Deserialize(stream, true);
-						t->SetHash(txHash);
+						tx->Deserialize(stream, true);
+						tx->SetHash(txHash);
 					}
 
-					t->SetBlockHeight(blockHeight);
-					t->SetTimestamp(timeStamp);
-					tx = t;
+					tx->SetBlockHeight(blockHeight);
+					tx->SetTimestamp(timeStamp);
 				}
 			});
 
 			return tx;
 		}
 
-	}
-}
+	} // namespace ElaWallet
+} // namespace Elastos

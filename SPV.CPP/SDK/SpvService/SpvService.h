@@ -5,16 +5,16 @@
 #ifndef __ELASTOS_SDK_SPVSERVICE_H__
 #define __ELASTOS_SDK_SPVSERVICE_H__
 
-#include "CoreSpvService.h"
 #include "BackgroundExecutor.h"
+#include "CoreSpvService.h"
 
-#include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Database/DatabaseManager.h>
+#include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
 
-#include <nlohmann/json.hpp>
-#include <boost/function.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/function.hpp>
+#include <nlohmann/json.hpp>
 #include <vector>
 
 namespace Elastos {
@@ -43,6 +43,8 @@ namespace Elastos {
 			void SyncStop();
 
 			void ExecutorStop();
+
+			TransactionPtr GetTransaction(const uint256 &hash);
 
 			size_t GetAllTransactionsCount();
 
