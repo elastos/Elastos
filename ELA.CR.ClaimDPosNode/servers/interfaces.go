@@ -1674,8 +1674,8 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 	crMembers = Chain.GetCRCommittee().GetAllMembers()
 
 	sort.Slice(crMembers, func(i, j int) bool {
-		return crMembers[i].Info.GetCodeHash().Compare(crMembers[j].Info.GetCodeHash()) < 0
-
+		return crMembers[i].Info.GetCodeHash().Compare(
+			crMembers[j].Info.GetCodeHash()) < 0
 	})
 
 	var rsCRMemberInfoSlice []crMemberInfo

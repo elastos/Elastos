@@ -317,6 +317,10 @@ func (b *BlockChain) GetHeight() uint32 {
 	b.IndexLock.RLock()
 	defer b.IndexLock.RUnlock()
 
+	if len(b.Nodes) == 0 {
+		return 0
+	}
+
 	return uint32(len(b.Nodes) - 1)
 }
 
@@ -751,7 +755,7 @@ func (b *BlockChain) removeBlockNode(node *BlockNode) error {
 
 	// Remove the node from the node index.
 	//delete(b.Index, *node.Hash)
-	b.SetTip(node.Parent)
+	b.index.RemoveNode(node)
 
 	// Unlink all of the node's children.
 	for _, child := range node.Children {
@@ -988,9 +992,6 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	node.InMainChain = false
 	b.blockCache[*node.Hash] = block
 	b.confirmCache[*node.Hash] = confirm
-
-	// Remove block node from Nodes
-	b.RemoveNodeFromNodes(node)
 
 	//// This node's parent is now the end of the best chain.
 	b.SetTip(node.Parent)
@@ -1431,12 +1432,6 @@ func (b *BlockChain) setTip(node *BlockNode) {
 		b.Nodes[node.Height] = node
 		node = node.Parent
 	}
-}
-
-func (b *BlockChain) RemoveNodeFromNodes(node *BlockNode) {
-	b.IndexLock.Lock()
-	b.Nodes = b.Nodes[0:node.Height]
-	b.IndexLock.Unlock()
 }
 
 func (b *BlockChain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
