@@ -7,9 +7,11 @@ package state
 
 import (
 	"bytes"
-	"github.com/elastos/Elastos.ELA/crypto"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/elastos/Elastos.ELA/crypto"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestOriginArbiter_Deserialize(t *testing.T) {

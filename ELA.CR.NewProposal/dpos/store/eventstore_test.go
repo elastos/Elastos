@@ -6,7 +6,6 @@
 package store
 
 import (
-	"github.com/elastos/Elastos.ELA/crypto"
 	"testing"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/utils/test"
 )
