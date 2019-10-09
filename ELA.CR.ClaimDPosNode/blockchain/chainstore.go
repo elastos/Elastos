@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	TaskChanCap     = 4
 	BlocksCacheSize = 2
 )
 
@@ -31,19 +30,6 @@ type ProducerInfo struct {
 	Payload   *payload.ProducerInfo
 	RegHeight uint32
 	Vote      Fixed64
-}
-
-type persistTask interface{}
-
-type rollbackBlockTask struct {
-	blockHash Uint256
-	reply     chan error
-}
-
-type persistBlockTask struct {
-	block   *Block
-	confirm *payload.Confirm
-	reply   chan error
 }
 
 type ChainStore struct {
@@ -325,6 +311,10 @@ func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
 }
 
 func (c *ChainStore) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
+	return c.fflDB.GetTransaction(txID)
+}
+
+func (c *ChainStore) getTransaction(txID Uint256) (*Transaction, uint32, error) {
 	key := append([]byte{byte(DATATransaction)}, txID.Bytes()...)
 	value, err := c.Get(key)
 	if err != nil {
