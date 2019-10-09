@@ -560,10 +560,9 @@ namespace Elastos {
 			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
 			                         "Public key length should be 33 or 65 bytes");
 
-			Key pubKey;
-			pubKey.SetPubKey(bytes_t(crPublicKey));
+			bytes_t pubkey(crPublicKey);
 
-			Address address(PrefixStandard, pubKey.PubKey());
+			Address address(PrefixStandard, pubkey);
 
 			UnregisterCR unregisterCR;
 			unregisterCR.SetCode(address.RedeemScript());
@@ -742,17 +741,21 @@ namespace Elastos {
 
 			VoteContent voteContent(VoteContent::CRC);
 			std::vector<CandidateVotes> candidates;
-			bytes_t code;
+			std::string key;
+			bytes_t candidate;
 			BigInt value;
 			for (nlohmann::json::const_iterator it = votes.cbegin(); it != votes.cend(); ++it) {
 				ErrorChecker::CheckParam(!it.value().is_string(), Error::InvalidArgument, "stake value should be big int string");
 
-				code.setHex(it.key());
-				value.setDec(it.value().get<std::string>());
+				key = it.key();
+				Address didAddress(key);
+				ErrorChecker::CheckParam(!didAddress.Valid(), Error::InvalidArgument, "invalid candidate did");
+				candidate = didAddress.ProgramHash().bytes();
 
+				value.setDec(it.value().get<std::string>());
 				ErrorChecker::CheckParam(value <= 0, Error::InvalidArgument, "stake value should larger than 0");
 
-				voteContent.AddCandidate(CandidateVotes(code, value));
+				voteContent.AddCandidate(CandidateVotes(candidate, value));
 			}
 
 			TransactionPtr tx = CreateVoteTx(voteContent, memo, false);
@@ -789,12 +792,12 @@ namespace Elastos {
 				              [&votedList](const VoteContent &vc) {
 					              if (vc.GetType() == VoteContent::Type::CRC) {
 						              std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
-						                            [&votedList](const CandidateVotes &candidate) {
-							                            std::string c = candidate.GetCandidate().getHex();
-							                            if (votedList.find(c) != votedList.end()) {
-								                            votedList[c] += candidate.GetVotes();
+						                            [&votedList](const CandidateVotes &cv) {
+							                            std::string did = Address(uint168(cv.GetCandidate())).String();
+							                            if (votedList.find(did) != votedList.end()) {
+								                            votedList[did] += cv.GetVotes();
 							                            } else {
-								                            votedList[c] = candidate.GetVotes();
+								                            votedList[did] = cv.GetVotes();
 							                            }
 						                            });
 					              }
@@ -902,8 +905,13 @@ namespace Elastos {
 									  if (!type.empty()) {
 										  nlohmann::json candidateVotes;
 										  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
-														[&candidateVotes](const CandidateVotes &cv) {
-															std::string c = cv.GetCandidate().getHex();
+														[&vc, &candidateVotes](const CandidateVotes &cv) {
+															std::string c;
+															if (vc.GetType() == VoteContent::CRC) {
+																c = Address(uint168(cv.GetCandidate())).String();
+															} else {
+																c = cv.GetCandidate().getHex();
+															}
 															candidateVotes[c] = cv.GetVotes().getDec();
 														});
 										  j["Votes"] = candidateVotes;

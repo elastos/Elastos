@@ -8,7 +8,7 @@
 #include <SDK/Common/typedefs.h>
 
 #include <boost/filesystem.hpp>
-#include <boost/locale.hpp>
+//#include <boost/locale.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {
