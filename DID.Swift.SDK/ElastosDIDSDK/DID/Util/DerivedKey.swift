@@ -1,4 +1,5 @@
 import Foundation
+import CryptoSwift
 import BitcoinKit
 
 // bip44 对HDKeychain封装
@@ -27,7 +28,7 @@ public class DerivedKey: NSObject {
         // https://stackoverflow.com/questions/37200341/how-to-implement-java-arraycopy-in-swift
         script[1...33] = pk[0...32]
         script[34] = 0xAD
-        return script;
+        return script
     }
     
     public func sha256Ripemd160(_ input: [UInt8]) -> [UInt8] {

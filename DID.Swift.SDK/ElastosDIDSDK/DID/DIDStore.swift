@@ -1,5 +1,5 @@
 import Foundation
-import BitcoinKit
+//import BitcoinKit
 import CryptoSwift
 
 class DIDStore: NSObject {

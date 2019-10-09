@@ -14,7 +14,7 @@ public class DIDURL: NSObject {
     }
 
     public init(_ url: String) throws {
-        ParserHelper.parase(url, false, Listener())
+       try ParserHelper.parase(url, false, Listener())
     }
 
     public func getParameters() -> String {

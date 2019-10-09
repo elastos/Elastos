@@ -1,4 +1,5 @@
 import Foundation
+import CryptoSwift
 import BitcoinKit
 
 

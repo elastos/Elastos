@@ -15,7 +15,7 @@ public class DID: NSObject {
     }
 
     public init(_ did: String) throws {
-        ParserHelper.parase(did, true, Listener())
+       try ParserHelper.parase(did, true, Listener())
     }
 
     public func toExternalForm() -> String {

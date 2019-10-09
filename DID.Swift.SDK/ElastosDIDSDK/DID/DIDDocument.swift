@@ -335,7 +335,7 @@ public class DIDDocument: NSObject {
         // url of local path
         let doc: DIDDocument = DIDDocument()
         let urlPath = URL(string: path)
-        try doc.parse(url: urlPath)
+        try doc.parse(url: urlPath!)
         doc.readonly = true
         return doc
     }
@@ -429,14 +429,43 @@ public class DIDDocument: NSObject {
             // TODO: error
         }
 
-        try arr.forEach { (obj) in
+        try arr.forEach { obj in
             let pk: DIDPublicKey = try DIDPublicKey.fromJson(obj, subject!)
             _ = addAuthorizationKey(pk)
         }
     }
 
+    // mode parse
     private func parseCredential(_ md: Any) {
-        // TODO:
+        
+//        for (int i = 0; i < node.size(); i++) {
+//            VerifiableCredential vc;
+//            try {
+//            vc = EmbeddedCredential.fromJson(node.get(i), getSubject());
+//            } catch (MalformedCredentialException e) {
+//            throw new MalformedDocumentException(e.getMessage(), e);
+//            }
+//            
+//            addCredential(vc);
+//        }
+//        
+//        if !(md is Array<Any>) {
+//            // TODO: Error
+//        }
+//        let arr = md as! Array<Dictionary<String, Any>>
+//        guard arr.count != 0 else {
+//            // TODO: throw error
+//            return
+//        }
+//        try arr.forEach{ obj in
+//            let vc: VerifiableCredential = EmbeddedCredential.
+//            
+//        }
+        
+        
+        
+        
+        
     }
 
     private func parseService(_ md: Any) {

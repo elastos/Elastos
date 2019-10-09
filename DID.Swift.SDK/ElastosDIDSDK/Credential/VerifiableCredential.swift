@@ -8,6 +8,10 @@ public class VerifiableCredential: DIDObject {
     public var subject: CredentialSubject!
     public var proof: Proof!
     
+    override init() {
+        super.init()
+    }
+    
     init(_ vc: VerifiableCredential) {
         super.init(vc.id, vc.type)
         self.id = vc.id
@@ -58,4 +62,17 @@ public class VerifiableCredential: DIDObject {
         }
         return dic
     }
+    
+//    class func fromJson(_ json: String) -> VerifiableCredential {
+//        let vc: VerifiableCredential = VerifiableCredential()
+//    }
+//
+//    class func fromJson(_ md: Any, _ ref: DID) -> VerifiableCredential {
+//
+//    }
+//
+//    class func fromJson(_ md: Any) -> VerifiableCredential {
+//
+//    }
+    
 }
