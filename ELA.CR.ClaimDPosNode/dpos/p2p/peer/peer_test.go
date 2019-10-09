@@ -332,7 +332,7 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 	invalidVersionMsg := msg.NewVersion(peerCfg.PID, target, nonce, 8333)
 
 	err = p2p.WriteMessage(
-		remoteConn.Writer,
+		remoteConn,
 		peerCfg.Magic,
 		invalidVersionMsg,
 		func(m p2p.Message) (*types.DposBlock, bool) {
