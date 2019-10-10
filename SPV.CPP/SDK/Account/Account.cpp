@@ -87,6 +87,10 @@ namespace Elastos {
 			}
 		}
 
+		Account::~Account() {
+
+		}
+
 		Account::Account(const LocalStorePtr &store) :
 			_localstore(store) {
 			Init();
@@ -360,15 +364,15 @@ namespace Elastos {
 			return Base58::CheckEncode(bytes);
 		}
 
-		const std::string &Account::MasterPubKeyString() const {
+		std::string Account::MasterPubKeyString() const {
 			return _localstore->GetxPubKey();
 		}
 
-		const std::string &Account::MasterPubKeyHDPMString() const {
+		std::string Account::MasterPubKeyHDPMString() const {
 			return _localstore->GetxPubKeyHDPM();
 		}
 
-		const std::vector<PublicKeyRing> &Account::MasterPubKeyRing() const {
+		std::vector<PublicKeyRing> Account::MasterPubKeyRing() const {
 			return _localstore->GetPublicKeyRing();
 		}
 
@@ -423,23 +427,23 @@ namespace Elastos {
 			return _localstore->SingleAddress();
 		}
 
-		bool Account::Equal(const Account &account) const {
-			if (GetSignType() != account.GetSignType() || Readonly() != account.Readonly())
+		bool Account::Equal(const AccountPtr &account) const {
+			if (GetSignType() != account->GetSignType() || Readonly() != account->Readonly())
 				return false;
 
 			if (GetSignType() == MultiSign) {
-				if (_allMultiSigners.size() != account._allMultiSigners.size())
+				if (_allMultiSigners.size() != account->MultiSignCosigner().size())
 					return false;
 
 				for (size_t i = 0; i < _allMultiSigners.size(); ++i) {
-					if (*_allMultiSigners[i] != *account._allMultiSigners[i])
+					if (*_allMultiSigners[i] != *account->MultiSignCosigner()[i])
 						return false;
 				}
 
 				return true;
 			}
 
-			return *_xpub == *account._xpub;
+			return *_xpub == *account->MasterPubKey();
 		}
 
 		int Account::GetM() const {
@@ -450,7 +454,7 @@ namespace Elastos {
 			return _localstore->GetN();
 		}
 
-		const std::string &Account::DerivationStrategy() const {
+		std::string Account::DerivationStrategy() const {
 			return _localstore->DerivationStrategy();
 		}
 
@@ -490,7 +494,7 @@ namespace Elastos {
 			return _cosignerIndex;
 		}
 
-		const std::vector<CoinInfoPtr> &Account::SubWalletInfoList() const {
+		std::vector<CoinInfoPtr> Account::SubWalletInfoList() const {
 			return _localstore->GetSubWalletInfoList();
 		}
 
@@ -888,7 +892,7 @@ namespace Elastos {
 			_localstore->Remove();
 		}
 
-		const std::string &Account::GetDataPath() const {
+		std::string Account::GetDataPath() const {
 			return _localstore->GetDataPath();
 		}
 

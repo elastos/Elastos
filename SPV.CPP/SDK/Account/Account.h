@@ -5,6 +5,8 @@
 #ifndef __ELASTOS_SDK_ACCOUNT_H__
 #define __ELASTOS_SDK_ACCOUNT_H__
 
+#include "IAccount.h"
+
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/Common/Mstream.h>
 #include <SDK/WalletCore/BIPs/Address.h>
@@ -17,14 +19,10 @@ namespace Elastos {
 
 #define MAX_MULTISIGN_COSIGNERS 6
 
-		class Account {
+		class Account : public IAccount {
 		public:
-			enum SignType {
-				Standard,
-				MultiSign,
-			};
+			~Account();
 
-		public:
 			// for test
 			Account(const LocalStorePtr &store);
 
@@ -64,11 +62,11 @@ namespace Elastos {
 
 			std::string GetxPrvKeyString(const std::string &payPasswd) const;
 
-			const std::string &MasterPubKeyString() const;
+			std::string MasterPubKeyString() const;
 
-			const std::string &MasterPubKeyHDPMString() const;
+			std::string MasterPubKeyHDPMString() const;
 
-			const std::vector<PublicKeyRing> &MasterPubKeyRing() const;
+			std::vector<PublicKeyRing> MasterPubKeyRing() const;
 
 			bytes_t OwnerPubKey() const;
 
@@ -82,13 +80,13 @@ namespace Elastos {
 
 			bool SingleAddress() const;
 
-			bool Equal(const Account &account) const;
+			bool Equal(const AccountPtr &account) const;
 
 			int GetM() const;
 
 			int GetN() const;
 
-			const std::string &DerivationStrategy() const;
+			std::string DerivationStrategy() const;
 
 			nlohmann::json GetPubKeyInfo() const;
 
@@ -98,7 +96,7 @@ namespace Elastos {
 
 			int CosignerIndex() const;
 
-			const std::vector<CoinInfoPtr> &SubWalletInfoList() const;
+			std::vector<CoinInfoPtr> SubWalletInfoList() const;
 
 			void AddSubWalletInfoList(const CoinInfoPtr &info);
 
@@ -124,7 +122,7 @@ namespace Elastos {
 
 			void Remove();
 
-			const std::string &GetDataPath() const;
+			std::string GetDataPath() const;
 
 			void RegenerateKey(const std::string &payPasswd) const;
 		private:
@@ -138,8 +136,6 @@ namespace Elastos {
 			mutable HDKeychainArray _allMultiSigners; // including _multiSigner and sorted
 			mutable bytes_t _ownerPubKey, _requestPubKey;
 		};
-
-		typedef boost::shared_ptr<Account> AccountPtr;
 
 	}
 }

@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_SUBACCOUNT_H__
 
 #include "Account.h"
+#include "ISubAccount.h"
 
 #include <SDK/Common/Lockable.h>
 
@@ -17,7 +18,7 @@ namespace Elastos {
 		class Transaction;
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 
-		class SubAccount {
+		class SubAccount : public ISubAccount {
 		public:
 			SubAccount(const AccountPtr &parent, uint32_t coinIndex);
 
@@ -61,7 +62,7 @@ namespace Elastos {
 
 			size_t ExternalChainIndex(const TransactionPtr &tx) const;
 
-			const AccountPtr &Parent() const { return _parent; }
+			AccountPtr Parent() const;
 		private:
 			uint32_t _coinIndex;
 			std::vector<Address> _internalChain, _externalChain;
@@ -71,8 +72,6 @@ namespace Elastos {
 			AccountPtr _parent;
 			Lockable *_lock;
 		};
-
-		typedef boost::shared_ptr<SubAccount> SubAccountPtr;
 
 	}
 }

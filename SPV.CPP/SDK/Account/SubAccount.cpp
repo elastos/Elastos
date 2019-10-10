@@ -416,5 +416,9 @@ namespace Elastos {
 			return -1;
 		}
 
+		AccountPtr SubAccount::Parent() const {
+			return _parent;
+		}
+
 	}
 }

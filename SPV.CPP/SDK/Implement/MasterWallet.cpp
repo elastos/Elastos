@@ -519,7 +519,7 @@ namespace Elastos {
 			return pubkey;
 		}
 
-		const std::string &MasterWallet::GetDataPath() const {
+		std::string MasterWallet::GetDataPath() const {
 			return _account->GetDataPath();
 		}
 
@@ -586,7 +586,7 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::IsEqual(const MasterWallet &wallet) const {
-			return _account->Equal(*wallet._account);
+			return _account->Equal(wallet._account);
 		}
 
 		void MasterWallet::FlushData() {
