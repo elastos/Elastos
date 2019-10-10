@@ -95,12 +95,19 @@ func TestState_ExistCandidateRelated(t *testing.T) {
 	}
 }
 
+func getCode(publicKey string) []byte {
+	pkBytes, _ := common.HexStringToBytes(publicKey)
+	pk, _ := crypto.DecodePoint(pkBytes)
+	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
+	return redeemScript
+}
+
 func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 	state := NewState(nil)
-
-	code := randomBytes(34)
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	code := getCode(publicKeyStr1)
+	did := *getDid(code)
 	nickname := randomString()
-	did := *randomUint168()
 
 	assert.False(t, state.ExistCandidate(code))
 	assert.False(t, state.ExistCandidateByDID(did))
@@ -160,10 +167,10 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 	state := NewState(nil)
 	height := uint32(1)
-
-	code := randomBytes(34)
 	nickname := randomString()
-	did := *randomUint168()
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	code := getCode(publicKeyStr1)
+	did := *getDid(code)
 
 	assert.False(t, state.ExistCandidate(code))
 	assert.False(t, state.ExistCandidateByDID(did))
@@ -293,14 +300,14 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	}
 	height := uint32(1)
 
-	activeCodes := make([][]byte, 0, 5)
-	for _, v := range keyframe.ActivityCandidates {
+	activeDIDs := make([][]byte, 0, 5)
+	for k, v := range keyframe.ActivityCandidates {
 		v.votes = 0
-		activeCodes = append(activeCodes, v.info.Code)
+		activeDIDs = append(activeDIDs, k.Bytes())
 	}
 
 	// vote for the active candidates
-	voteTx := mockNewVoteTx(activeCodes)
+	voteTx := mockNewVoteTx(activeDIDs)
 	state.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: height,
@@ -309,8 +316,9 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	}, nil)
 	height++
 
-	for i, v := range activeCodes {
-		candidate := state.GetCandidate(v)
+	for i, v := range activeDIDs {
+		did, _ := common.Uint168FromBytes(v)
+		candidate := state.GetCandidateByDID(*did)
 		assert.Equal(t, common.Fixed64((i+1)*10), candidate.votes)
 	}
 
@@ -330,8 +338,9 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 		},
 	}, nil)
 
-	for _, v := range activeCodes {
-		candidate := state.GetCandidate(v)
+	for _, v := range activeDIDs {
+		did, _ := common.Uint168FromBytes(v)
+		candidate := state.GetCandidateByDID(*did)
 		assert.Equal(t, common.Fixed64(0), candidate.votes)
 	}
 }
@@ -352,7 +361,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		TxType: types.RegisterCR,
 		Payload: &payload.CRInfo{
 			Code:     code,
-			DID:      *randomUint168(),
+			DID:      *getDid(code),
 			NickName: randomString(),
 		},
 		Outputs: []*types.Output{
@@ -449,12 +458,13 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)
 }
 
-func mockNewVoteTx(programCodes [][]byte) *types.Transaction {
-	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(programCodes))
-	for i, pk := range programCodes {
+func mockNewVoteTx(dids [][]byte) *types.Transaction {
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(dids))
+	for i, did := range dids {
+		//code := getCode(common.BytesToHexString(pk))
 		candidateVotes = append(candidateVotes,
 			outputpayload.CandidateVotes{
-				Candidate: pk,
+				Candidate: did,
 				Votes:     common.Fixed64((i + 1) * 10)})
 	}
 	output := &types.Output{
@@ -503,9 +513,14 @@ func generateUnregisterCR(code []byte) *types.Transaction {
 	return &types.Transaction{
 		TxType: types.UnregisterCR,
 		Payload: &payload.UnregisterCR{
-			Code: code,
+			DID: *getDid(code),
 		},
 	}
+}
+
+func getDid(code []byte) *common.Uint168 {
+	ct1, _ := contract.CreateCRDIDContractByCode(code)
+	return ct1.ToProgramHash()
 }
 
 func generateReturnCRDeposit(code []byte) *types.Transaction {

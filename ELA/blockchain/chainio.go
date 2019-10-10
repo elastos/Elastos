@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 // Copyright (c) 2013-2016 The btcsuite developers
 // Copyright (c) 2017-2019 Elastos Foundation
@@ -39,29 +39,10 @@ const (
 	// journal bucket that is used to track all spent transactions for use
 	// in reorgs.
 	latestSpendJournalBucketVersion = 1
-)
 
-// blockStatus is a bit field representing the validation state of the block.
-type blockStatus byte
-
-const (
-	// statusDataStored indicates that the block's payload is stored on disk.
-	statusDataStored blockStatus = 1 << iota
-
-	// statusValid indicates that the block has been fully validated.
-	statusValid
-
-	// statusValidateFailed indicates that the block has failed validation.
-	statusValidateFailed
-
-	// statusInvalidAncestor indicates that one of the block's ancestors has
-	// has failed validation, thus the block is also invalid.
-	statusInvalidAncestor
-
-	// statusNone indicates that the block has no validation state flags set.
-	//
-	// NOTE: This must be defined last in order to avoid influencing iota.
-	statusNone blockStatus = 0
+	// approxNodesPerWeek is an approximation of the number of new blocks there
+	// are in a week on average.
+	approxNodesPerWeek = 30 * 24 * 7
 )
 
 var (
@@ -301,6 +282,7 @@ func (b *BlockChain) createChainState() error {
 	// Create the new block node for the block and set the work.
 	node := NewBlockNode(header, &hash)
 	node.InMainChain = true
+	node.Status = statusDataStored | statusValid
 
 	b.BestChain = node
 
@@ -356,7 +338,7 @@ func (b *BlockChain) createChainState() error {
 		}
 
 		// Save the genesis block to the block index database.
-		err = dbStoreBlockNode(dbTx, header)
+		err = DBStoreBlockNode(dbTx, header, node.Status)
 		if err != nil {
 			return err
 		}
@@ -413,17 +395,6 @@ func (b *BlockChain) initChainState() error {
 
 	// Attempt to load the chain state from the database.
 	err = b.db.GetFFLDB().View(func(dbTx database.Tx) error {
-		// Fetch the stored chain state from the database metadata.
-		// When it doesn't exist, it means the database hasn't been
-		// initialized for use with chain yet, so break out now to allow
-		// that to happen under a writable database transaction.
-		serializedData := dbTx.Metadata().Get(chainStateKeyName)
-		log.Debugf("Serialized chain state: %x", serializedData)
-		state, err := deserializeBestChainState(serializedData)
-		if err != nil {
-			return err
-		}
-
 		// Load all of the headers from the data for the known best
 		// chain and construct the block index accordingly.  Since the
 		// number of nodes are already known, perform a single alloc
@@ -441,67 +412,48 @@ func (b *BlockChain) initChainState() error {
 			blockCount++
 		}
 		log.Info("block count:", blockCount)
-		blockNodes := make([]BlockNode, blockCount)
 
 		var i int32
 		var lastNode *BlockNode
 		cursor = blockIndexBucket.Cursor()
 		for ok := cursor.First(); ok; ok = cursor.Next() {
-			header, err := deserializeBlockRow(cursor.Value())
+			header, status, err := DeserializeBlockRow(cursor.Value())
 			if err != nil {
 				return err
 			}
 
-			// Determine the parent block node. Since we iterate block headers
-			// in order of height, if the blocks are mostly linear there is a
-			// very good chance the previous header processed is the parent.
-			var parent *BlockNode
-			if lastNode == nil {
-				blockHash := header.Hash()
-				if !blockHash.IsEqual(b.chainParams.GenesisBlock.Hash()) {
-					return fmt.Errorf("initChainState: Expected "+
-						"first entry in block index to be genesis block, "+
-						"found %s", blockHash)
-				}
-			} else if lastNode.Hash.IsEqual(header.Previous) {
-				// Since we iterate block headers in order of height, if the
-				// blocks are mostly linear there is a very good chance the
-				// previous header processed is the parent.
-				parent = lastNode
-			} else {
-				parent, ok = b.LookupNodeInIndex(&header.Previous)
-				if !ok || parent == nil {
-					return fmt.Errorf("initChainState: Could "+
-						"not find parent for block %s", header.Hash())
-				}
+			curHash := header.Hash()
+			if lastNode == nil && !curHash.IsEqual(b.chainParams.GenesisBlock.Hash()) {
+				return fmt.Errorf("initChainState: Expected "+
+					"first entry in block index to be genesis block, "+
+					"found %s", curHash)
 			}
 
 			// Initialize the block node for the block, connect it,
 			// and add it to the block index.
-			curHash := header.Hash()
 			node, err := b.LoadBlockNode(header, &curHash)
 			if err != nil {
 				return fmt.Errorf("initChainState: Could "+
 					"not load block node for block %s", header.Hash())
 			}
-			blockNodes[i] = *node
-			b.Nodes = append(b.Nodes, &blockNodes[i])
+			node.Status = status
+			b.Nodes = append(b.Nodes, node)
 
-			lastNode = &blockNodes[i]
+			lastNode = node
 			i++
 		}
 
-		b.BestChain = lastNode
-
-		// Load the raw block bytes for the best block.
-		blockBytes, err := dbTx.FetchBlock(&state.hash)
-		if err != nil {
-			return err
+		// As a final consistency check, we'll run through all the nodes which
+		// are ancestors of the current chain tip, and find the real tip.
+		for iterNode := lastNode; iterNode != nil; iterNode = iterNode.Parent {
+			if iterNode.Status.KnownValid() {
+				b.setTip(iterNode)
+				break
+			}
 		}
-		var block types.Block
-		err = block.Deserialize(bytes.NewReader(blockBytes))
-		if err != nil {
-			return err
+		b.BestChain = b.Nodes[len(b.Nodes)-1]
+		if b.BestChain.Height > b.db.GetHeight() {
+			b.db.SetHeight(b.BestChain.Height)
 		}
 
 		return nil
@@ -517,27 +469,36 @@ func (b *BlockChain) initChainState() error {
 	return nil
 }
 
-// deserializeBlockRow parses a value in the block index bucket into a block
-// header and block status bitfield.
-func deserializeBlockRow(blockRow []byte) (*types.Header, error) {
+// DeserializeBlockRow parses a value in the block index bucket into a block
+// header and block Status bitfield.
+func DeserializeBlockRow(blockRow []byte) (*types.Header, blockStatus, error) {
 	buffer := bytes.NewReader(blockRow)
 
 	var header types.Header
 	err := header.DeserializeNoAux(buffer)
 	if err != nil {
-		return nil, err
+		return nil, statusNone, err
 	}
 
-	return &header, nil
+	statusByte, err := buffer.ReadByte()
+	if err != nil {
+		return nil, statusNone, err
+	}
+
+	return &header, blockStatus(statusByte), nil
 }
 
-// dbStoreBlockNode stores the block header to the block index bucket.
+// DBStoreBlockNode stores the block header to the block index bucket.
 // This overwrites the current entry if there exists one.
-func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
+func DBStoreBlockNode(dbTx database.Tx, header *types.Header,
+	status blockStatus) error {
 	// Serialize block data to be stored.
-
 	w := bytes.NewBuffer(make([]byte, 0, blockHdrNoAuxSize))
 	err := header.SerializeNoAux(w)
+	if err != nil {
+		return err
+	}
+	err = w.WriteByte(byte(status))
 	if err != nil {
 		return err
 	}
@@ -550,13 +511,13 @@ func dbStoreBlockNode(dbTx database.Tx, header *types.Header) error {
 	return blockIndexBucket.Put(key, value)
 }
 
-// dbRemoveBlockNode remove the block header to the block index bucket.
+// DBRemoveBlockNode stores the block header to the block index bucket.
 // This overwrites the current entry if there exists one.
-func dbRemoveBlockNode(dbTx database.Tx, blockHash *common.Uint256,
-	height uint32) error {
+func DBRemoveBlockNode(dbTx database.Tx, header *types.Header) error {
 	// Write block header data to block index bucket.
+	blockHash := header.Hash()
 	blockIndexBucket := dbTx.Metadata().Bucket(blockIndexBucketName)
-	key := blockIndexKey(blockHash, height)
+	key := blockIndexKey(&blockHash, header.Height)
 	return blockIndexBucket.Delete(key)
 }
 
@@ -603,10 +564,10 @@ func dbFetchBlockByNode(dbTx database.Tx, node *BlockNode) (*types.Block, error)
 	return &block, nil
 }
 
-// dbRemoveBlockIndex uses an existing database transaction remove block index
+// DBRemoveBlockIndex uses an existing database transaction remove block index
 // entries from the hash to height and height to hash mappings for the provided
 // values.
-func dbRemoveBlockIndex(dbTx database.Tx, hash *common.Uint256, height uint32) error {
+func DBRemoveBlockIndex(dbTx database.Tx, hash *common.Uint256, height uint32) error {
 	// Remove the block hash to height mapping.
 	meta := dbTx.Metadata()
 	hashIndex := meta.Bucket(hashIndexBucketName)

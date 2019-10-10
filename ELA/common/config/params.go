@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package config
 
@@ -229,6 +229,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	copy.CheckRewardHeight = 100               //todo correct me later
+	copy.EnableUtxoDB = true
 	return &copy
 }
 
@@ -278,7 +279,8 @@ func (p *Params) RegNet() *Params {
 	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
-	copy.CheckRewardHeight = 100               //todo correct me later
+	copy.CheckRewardHeight = 280000
+	copy.EnableUtxoDB = true
 	return &copy
 }
 
@@ -394,6 +396,9 @@ type Params struct {
 
 	// DPoSMagic defines the magic number used in the DPoS network.
 	DPoSMagic uint32
+
+	// DPoSIPAddress defines the IP address for the DPoS network.
+	DPoSIPAddress string
 
 	// DPoSDefaultPort defines the default port for the DPoS network.
 	DPoSDefaultPort uint16

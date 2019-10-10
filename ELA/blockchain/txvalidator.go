@@ -254,6 +254,11 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		return ErrInvalidInput
 	}
 
+	if err := checkTransactionDepositOutpus(b, txn); err != nil {
+		log.Warn("[checkTransactionDepositOutpus],", err)
+		return ErrInvalidOutput
+	}
+
 	if err := checkTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
 		return ErrTransactionSignature
@@ -271,9 +276,9 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 		candidates := b.crCommittee.GetState().GetCandidates(crstate.Active)
 		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
-			getProducerPublicKeysMap(producers), getCRCodesMap(candidates))
+			getProducerPublicKeysMap(producers), getCRDIDsMap(candidates))
 		if err != nil {
-			log.Warn("[CheckVoteProducerOutputs]", err)
+			log.Warn("[CheckVoteOutputs]", err)
 			return ErrInvalidOutput
 		}
 	}
@@ -282,7 +287,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 }
 
 func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, references map[*Input]*Output,
-	pds map[string]struct{}, crs map[string]struct{}) error {
+	pds map[string]struct{}, crs map[common.Uint168]struct{}) error {
 	programHashes := make(map[common.Uint168]struct{})
 	for _, output := range references {
 		programHashes[output.ProgramHash] = struct{}{}
@@ -346,7 +351,7 @@ func (b *BlockChain) checkVoteProducerContent(content outputpayload.VoteContent,
 	for _, cv := range content.CandidateVotes {
 		if _, ok := pds[common.BytesToHexString(cv.Candidate)]; !ok {
 			return fmt.Errorf("invalid vote output payload "+
-				"candidate: %s", common.BytesToHexString(cv.Candidate))
+				"producer candidate: %s", common.BytesToHexString(cv.Candidate))
 		}
 	}
 	if payloadVersion >= outputpayload.VoteProducerAndCRVersion {
@@ -361,7 +366,7 @@ func (b *BlockChain) checkVoteProducerContent(content outputpayload.VoteContent,
 }
 
 func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayload.VoteContent,
-	crs map[string]struct{}, payloadVersion byte, amount common.Fixed64) error {
+	crs map[common.Uint168]struct{}, payloadVersion byte, amount common.Fixed64) error {
 
 	if !b.crCommittee.IsInVotingPeriod(blockHeight) {
 		return errors.New("cr vote tx must during voting period")
@@ -371,9 +376,14 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 		return errors.New("payload VoteProducerVersion not support vote CR")
 	}
 	for _, cv := range content.CandidateVotes {
-		if _, ok := crs[common.BytesToHexString(cv.Candidate)]; !ok {
-			return fmt.Errorf("invalid vote output payload CR candidate: %s",
-				common.BytesToHexString(cv.Candidate))
+		did, err := common.Uint168FromBytes(cv.Candidate)
+		if err != nil {
+			return fmt.Errorf("invalid vote output payload " +
+				"Candidate can not change to proper did")
+		}
+		if _, ok := crs[*did]; !ok {
+			return fmt.Errorf("invalid vote output payload "+
+				"CR candidate: %s not in crs", did.String())
 		}
 	}
 	var totalVotes common.Fixed64
@@ -425,10 +435,10 @@ func getProducerPublicKeysMap(producers []*state.Producer) map[string]struct{} {
 	return pds
 }
 
-func getCRCodesMap(crs []*crstate.Candidate) map[string]struct{} {
-	codes := make(map[string]struct{})
+func getCRDIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
+	codes := make(map[common.Uint168]struct{})
 	for _, c := range crs {
-		codes[common.BytesToHexString(c.Info().Code)] = struct{}{}
+		codes[c.Info().DID] = struct{}{}
 	}
 	return codes
 }
@@ -701,6 +711,28 @@ func checkTransactionDepositUTXO(txn *Transaction, references map[*Input]*Output
 				return errors.New("the ReturnDepositCoin and ReturnCRDepositCoin " +
 					"transaction can only use the deposit UTXO")
 			}
+		}
+	}
+
+	return nil
+}
+
+func checkTransactionDepositOutpus(bc *BlockChain, txn *Transaction) error {
+	for _, output := range txn.Outputs {
+		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
+			if txn.IsRegisterProducerTx() || txn.IsRegisterCRTx() ||
+				txn.IsReturnDepositCoin() || txn.IsReturnCRDepositCoinTx() {
+				continue
+			}
+			if bc.state.ExistProducerByDepositHash(output.ProgramHash) {
+				continue
+			}
+			if bc.crCommittee.GetState().ExistCandidateByDepositHash(
+				output.ProgramHash) {
+				continue
+			}
+			return errors.New("only the address that CR or Producer" +
+				" registered can have the deposit UTXO")
 		}
 	}
 
@@ -1132,7 +1164,7 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 	nodeCode = append(nodeCode, vm.CHECKSIG)
 	if b.crCommittee.ExistCR(nodeCode) {
 		return fmt.Errorf("node public key %s already exist in cr list",
-			common.BytesToHexString(info.OwnerPublicKey))
+			common.BytesToHexString(info.NodePublicKey))
 	}
 
 	if err := b.additionalProducerInfoCheck(info); err != nil {
@@ -1401,7 +1433,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 	}
 
 	cr := b.crCommittee.GetState().GetCandidate(info.Code)
-	if cr != nil && cr.State() != crstate.Returned {
+	if cr != nil {
 		return fmt.Errorf("did %s already exist", info.DID)
 	}
 
@@ -1506,7 +1538,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return errors.New("updating unknown CR")
 	}
 	if cr.State() != crstate.Pending && cr.State() != crstate.Active {
-		return errors.New("updating canceled CR")
+		return errors.New("updating canceled or returned CR")
 	}
 
 	// check nickname usage.
@@ -1529,7 +1561,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetState().GetCandidate(info.Code)
+	cr := b.crCommittee.GetState().GetCandidateByDID(info.DID)
 	if cr == nil {
 		return errors.New("unregister unknown CR")
 	}
@@ -1542,7 +1574,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 	if err != nil {
 		return err
 	}
-	return checkCRTransactionSignature(info.Signature, info.Code, signedBuf.Bytes())
+	return checkCRTransactionSignature(info.Signature, cr.Info().Code, signedBuf.Bytes())
 }
 
 func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,

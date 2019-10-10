@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -225,16 +225,11 @@ func checkDuplicateTx(block *Block) error {
 			if !ok {
 				return errors.New("[PowCheckBlockSanity] invalid unregister CR payload")
 			}
-			didPointer, err := getDIDByCode(unregisterCR.Code)
-			if err != nil {
-				return errors.New("[PowCheckBlockSanity] invalid unregisterCR CR Code")
-
-			}
 			// Check for duplicate  CR in a block
-			if _, exists := existingCR[*didPointer]; exists {
+			if _, exists := existingCR[unregisterCR.DID]; exists {
 				return errors.New("[PowCheckBlockSanity] block contains duplicate CR")
 			}
-			existingCR[*didPointer] = struct{}{}
+			existingCR[unregisterCR.DID] = struct{}{}
 		}
 	}
 	return nil
