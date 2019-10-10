@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -41,6 +41,7 @@ type IChainStore interface {
 	GetSidechainTx(sidechainTxHash Uint256) (byte, error)
 
 	GetCurrentBlockHash() Uint256
+	SetHeight(height uint32)
 	GetHeight() uint32
 
 	GetUnspent(txID Uint256, index uint16) (*Output, error)

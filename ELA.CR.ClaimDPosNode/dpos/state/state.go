@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -319,6 +319,13 @@ func (s *State) updateProducerInfo(origin *payload.ProducerInfo, update *payload
 	}
 
 	producer.info = *update
+}
+
+func (s *State) ExistProducerByDepositHash(programHash common.Uint168) bool {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	_, ok := s.ProducerDepositMap[programHash]
+	return ok
 }
 
 // GetProducer returns a producer with the producer's node public key or it's
@@ -835,10 +842,12 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		s.Nicknames[nickname] = struct{}{}
 		s.NodeOwnerKeys[nodeKey] = ownerKey
 		s.PendingProducers[ownerKey] = &producer
+		s.ProducerDepositMap[*programHash] = struct{}{}
 	}, func() {
 		delete(s.Nicknames, nickname)
 		delete(s.NodeOwnerKeys, nodeKey)
 		delete(s.PendingProducers, ownerKey)
+		delete(s.ProducerDepositMap, *programHash)
 	})
 }
 
@@ -992,6 +1001,16 @@ func (s *State) getProducerByDepositHash(hash common.Uint168) *Producer {
 		}
 	}
 	for _, producer := range s.InactiveProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
+	for _, producer := range s.CanceledProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
+	for _, producer := range s.IllegalProducers {
 		if producer.depositHash.IsEqual(hash) {
 			return producer
 		}

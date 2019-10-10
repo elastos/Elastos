@@ -1674,8 +1674,8 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 	crMembers = Chain.GetCRCommittee().GetAllMembers()
 
 	sort.Slice(crMembers, func(i, j int) bool {
-		return crMembers[i].Info.GetCodeHash().Compare(crMembers[j].Info.GetCodeHash()) < 0
-
+		return crMembers[i].Info.GetCodeHash().Compare(
+			crMembers[j].Info.GetCodeHash()) < 0
 	})
 
 	var rsCRMemberInfoSlice []crMemberInfo
@@ -1742,10 +1742,6 @@ func VoteStatus(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	var total common.Fixed64
-	_, exist := wallet.GetWalletAccount(address)
-	if !exist {
-		total = common.Fixed64(-1)
-	}
 	var voting common.Fixed64
 	for _, unspent := range unspent[config.ELAAssetID] {
 		tx, _, err := Store.GetTransaction(unspent.TxID)
@@ -1755,9 +1751,7 @@ func VoteStatus(param Params) map[string]interface{} {
 		if tx.Outputs[unspent.Index].Type == OTVote {
 			voting += unspent.Value
 		}
-		if exist {
-			total += unspent.Value
-		}
+		total += unspent.Value
 	}
 
 	pending := false
@@ -1831,6 +1825,32 @@ func GetDepositCoin(param Params) map[string]interface{} {
 	return ResponsePack(Success, &depositCoin{
 		Available: balance.String(),
 		Deducted:  deducted.String(),
+	})
+}
+
+func GetCRDepositCoin(param Params) map[string]interface{} {
+	did, ok := param.String("did")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a param called did")
+	}
+	programHash, err := common.Uint168FromAddress(did)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid did to programHash")
+	}
+
+	crState := Chain.GetCRCommittee().GetState()
+	candidate := crState.GetCandidateByDID(*programHash)
+	if candidate == nil {
+		return ResponsePack(InvalidParams, "can not find CR candidate")
+	}
+
+	type depositCoin struct {
+		Available string `json:"available"`
+		Deducted  string `json:"deducted"`
+	}
+	return ResponsePack(Success, &depositCoin{
+		Available: candidate.DepositAmount().String(),
+		Deducted:  candidate.Penalty().String(),
 	})
 }
 
