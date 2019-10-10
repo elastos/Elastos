@@ -49,6 +49,9 @@ type MedianTimeSource interface {
 	// Offset returns the number of seconds to adjust the local clock based
 	// upon the median of the time samples added by AddTimeData.
 	Offset() time.Duration
+
+	// Reset the median time.
+	Reset()
 }
 
 // int64Sorter implements sort.Interface to allow a slice of 64-bit integers to
@@ -198,6 +201,16 @@ func (m *medianTime) Offset() time.Duration {
 	defer m.mtx.Unlock()
 
 	return time.Duration(m.offsetSecs) * time.Second
+}
+
+// Reset the median time.
+func (m *medianTime) Reset() {
+	m.mtx.Lock()
+	m.knownIDs = make(map[string]struct{})
+	m.offsets = make([]int64, 0, maxMedianTimeEntries)
+	m.offsetSecs = 0
+	m.invalidTimeChecked = false
+	m.mtx.Unlock()
 }
 
 // NewMedianTime returns a new instance of concurrency-safe implementation of

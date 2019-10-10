@@ -273,8 +273,12 @@ func (c *Committee) Recover(checkpoint *Checkpoint) {
 }
 
 func (c *Committee) shouldChange(height uint32) bool {
-	if height == c.params.CRCommitteeStartHeight {
-		return true
+	if c.LastCommitteeHeight == 0 {
+		if height < c.params.CRCommitteeStartHeight {
+			return false
+		} else if height == c.params.CRCommitteeStartHeight {
+			return true
+		}
 	}
 
 	return height == c.LastVotingStartHeight+c.params.CRVotingPeriod

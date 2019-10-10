@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package common
 
@@ -230,6 +230,10 @@ var (
 	DPoSMagicFlag = cli.StringFlag{
 		Name:  "dposmagic",
 		Usage: "defines the magic number used in the DPoS network",
+	}
+	DPoSIPAddressFlag = cli.StringFlag{
+		Name:  "dposipaddress",
+		Usage: "defines the default IP address for the DPoS network",
 	}
 	DPoSPortFlag = cli.StringFlag{
 		Name:  "dposport",

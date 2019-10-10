@@ -122,6 +122,14 @@ func (s *State) ExistCandidateByDID(did common.Uint168) (ok bool) {
 	return
 }
 
+// ExistCandidateByDepositHash judges if there is a candidate with deposit hash.
+func (s *State) ExistCandidateByDepositHash(did common.Uint168) bool {
+	s.mtx.RLock()
+	_, ok := s.DepositHashMap[did]
+	s.mtx.RUnlock()
+	return ok
+}
+
 // ExistCandidateByNickname judges if there is a candidate with specified
 // nickname.
 func (s *State) ExistCandidateByNickname(nickname string) bool {
@@ -344,10 +352,12 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 		s.history.Append(height, func() {
 			s.Nicknames[nickname] = struct{}{}
 			s.CodeDIDMap[code] = info.DID
+			s.DepositHashMap[candidate.depositHash] = struct{}{}
 			s.PendingCandidates[info.DID] = &candidate
 		}, func() {
 			delete(s.Nicknames, nickname)
 			delete(s.CodeDIDMap, code)
+			delete(s.DepositHashMap, candidate.depositHash)
 			delete(s.PendingCandidates, info.DID)
 		})
 	} else {
@@ -378,8 +388,11 @@ func (s *State) updateCR(info *payload.CRInfo, height uint32) {
 
 // unregisterCR handles the cancel producer transaction.
 func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
-	candidate := s.getCandidate(info.Code)
-	key := candidate.info.DID
+	candidate := s.getCandidateByDID(info.DID)
+	if candidate == nil {
+		return
+	}
+	key := info.DID
 	isPending := candidate.state == Pending
 	s.history.Append(height, func() {
 		candidate.state = Canceled
@@ -517,7 +530,7 @@ func (s *State) addCandidateAssert(output *types.Output, height uint32) bool {
 }
 
 // getCandidateByDepositHash will try to get candidate with specified program
-// hash, note the candidate state should be pending or active.
+// hash.
 func (s *State) getCandidateByDepositHash(hash common.Uint168) *Candidate {
 	for _, candidate := range s.PendingCandidates {
 		if candidate.depositHash.IsEqual(hash) {
@@ -525,6 +538,11 @@ func (s *State) getCandidateByDepositHash(hash common.Uint168) *Candidate {
 		}
 	}
 	for _, candidate := range s.ActivityCandidates {
+		if candidate.depositHash.IsEqual(hash) {
+			return candidate
+		}
+	}
+	for _, candidate := range s.CanceledCandidates {
 		if candidate.depositHash.IsEqual(hash) {
 			return candidate
 		}
@@ -539,7 +557,11 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 		for _, cv := range vote.CandidateVotes {
 			switch vote.VoteType {
 			case outputpayload.CRC:
-				candidate := s.getCandidate(cv.Candidate)
+				did, err := common.Uint168FromBytes(cv.Candidate)
+				if err != nil {
+					continue
+				}
+				candidate := s.getCandidateByDID(*did)
 				if candidate == nil {
 					continue
 				}
@@ -585,17 +607,21 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	p := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
-			producer := s.getCandidate(cv.Candidate)
-			if producer == nil {
+			did, err := common.Uint168FromBytes(cv.Candidate)
+			if err != nil {
+				continue
+			}
+			candidate := s.getCandidateByDID(*did)
+			if candidate == nil {
 				continue
 			}
 			switch vote.VoteType {
 			case outputpayload.CRC:
 				v := cv.Votes
 				s.history.Append(height, func() {
-					producer.votes -= v
+					candidate.votes -= v
 				}, func() {
-					producer.votes += v
+					candidate.votes += v
 				})
 
 			case outputpayload.CRCProposal:

@@ -307,7 +307,7 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 
 	// 12. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == errors.Success)
+	assert.True(t, errCode == errors.ErrCRProcessing)
 
 	// 13. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx7)
