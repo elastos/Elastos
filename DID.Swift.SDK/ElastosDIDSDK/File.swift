@@ -1,2 +1,4 @@
 import Foundation
-import BitcoinKit
+
+@_exported import BitcoinKit
+@_exported import CryptoSwift

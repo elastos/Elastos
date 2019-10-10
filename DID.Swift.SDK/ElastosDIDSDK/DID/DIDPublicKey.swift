@@ -1,7 +1,4 @@
 import Foundation
-import CryptoSwift
-import BitcoinKit
-
 
 public class DIDPublicKey: DIDObject {
     var controller: DID?
@@ -48,7 +45,7 @@ public class DIDPublicKey: DIDObject {
     }
     
     public func getPublicKeyBytes() -> [UInt8]{
-        return [UInt8](Base58.decode(keyBase58!)!)
+        return Base58.bytesFromBase58(keyBase58!)
     }
     
 }

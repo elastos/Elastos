@@ -1,5 +1,4 @@
 import Foundation
-import CryptoSwift
 import BitcoinKit
 
 // bip44 对HDKeychain封装
@@ -56,22 +55,22 @@ public class DerivedKey: NSObject {
         return binAddress
     }
     
-   class public func getAddress(_ pk: [UInt8]) -> String {
-        let pkData = Data.init(bytes: pk, count: pk.count)
-        return Base58.encode(pkData)
+    class public func getAddress(_ pk: [UInt8]) -> String {
+//        let pkData = Data.init(bytes: pk, count: pk.count)
+        return Base58.base58FromBytes(pk)
     }
     
     public func getAddress() throws -> String {
         let pks = try getPublicKeyBytes()
         let binsddress = try getBinAddress(pks)
-        let data = Data(bytes: binsddress, count: binsddress.count)
-        return Base58.encode(data)
+//        let data = Data(bytes: binsddress, count: binsddress.count)
+        return Base58.base58FromBytes(binsddress)
     }
     
     public func getPublicKeyBase58() throws -> String {
         let pks = try getPublicKeyBytes()
-        let data = Data(bytes: pks, count: pks.count)
-        return Base58.encode(data)
+//        let data = Data(bytes: pks, count: pks.count)
+        return Base58.base58FromBytes(pks)
     }
     
     public func serialize() -> [UInt8] {
