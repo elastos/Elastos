@@ -1,4 +1,4 @@
-# GMU SmartWeb Service
+# Elastos SmartWeb Service
 
 An API service that handles API calls between front-end and back-end operations using Flask. Allows both the CLI tool and the Elastos Console to use the API to retreive node properties and other information stored in the database.
 
@@ -31,7 +31,7 @@ Now let’s set up the app for development and start it:
 ```
 
 ```
-(venv) $ python master_api_service/app.py
+(venv) $ python smartweb_service/app.py
 ```
 
 ## PostgreSQL Setup
