@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package elanet
 
@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"sync/atomic"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -803,6 +804,10 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 // peers to and from the server, banning peers, and broadcasting messages to
 // peers.  It must be run in a goroutine.
 func (s *server) peerHandler() {
+
+	// Reset the TimeSource of BlockChain.
+	s.resetTimeSource()
+
 	// Start the address manager and sync manager, both of which are needed
 	// by peers.  This is done here since their lifecycle is closely tied
 	// to this handler and rather than adding more channels to sychronize
@@ -872,6 +877,15 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 		delete(peers, p.IPeer)
 		p.reply <- struct{}{}
 	}
+}
+
+// Reset TimeSource after one second to avoid accepting the wrong time
+// in version message.
+func (s *server) resetTimeSource() {
+	go func() {
+		time.Sleep(time.Second)
+		s.chain.TimeSource.Reset()
+	}()
 }
 
 // Services returns the service flags the server supports.

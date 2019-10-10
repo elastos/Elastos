@@ -1229,6 +1229,50 @@ Response:
 }
 ```
 
+### getcrdepositcoin
+
+Get deposit coin by owner public key.
+
+#### Parameter 
+
+| name           | type   | description                     |
+| -------------- | ------ | ------------------------------- |
+| did            | string | the did address of CR candidate |
+
+#### Result
+
+| name      | type   | description                                |
+| --------- | ------ | ------------------------------------------ |
+| available | string | the available deposit coin of CR candidate |
+| deducted  | string | the deducted deposit coin of CR candidate  |
+
+#### Example
+
+Request:
+
+```json
+{
+  "method": "getcrdepositcoin",
+  "params":{
+    "did": "iUzjmMPTYZq2afqtR46coY6B7h2qD1PQbyq"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "available": "3",
+    "deducted": "0"
+  }
+}
+```
+
 ### getarbiterpeersinfo
 
 Get dpos peers information.
