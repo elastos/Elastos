@@ -142,7 +142,7 @@ func (c *ChainStoreFFLDB) SaveBlock(b *Block, node *BlockNode,
 		return err
 	}
 
-	//// Write any block status changes to DB before updating best state.
+	//// Write any block Status changes to DB before updating best state.
 	//err := b.index.flushToDB()
 	//if err != nil {
 	//	return err
@@ -222,7 +222,7 @@ func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
 
 		// Remove the block hash and height from the block index which
 		// tracks the main chain.
-		err = dbRemoveBlockIndex(dbTx, &blockHash, node.Height)
+		err = DBRemoveBlockIndex(dbTx, &blockHash, node.Height)
 		if err != nil {
 			return err
 		}

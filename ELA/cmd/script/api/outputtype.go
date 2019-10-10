@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package api
 
@@ -246,8 +246,11 @@ func newVoteContent(L *lua.LState) int {
 
 	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(candidates))
 	for i := 0; i < len(candidates); i++ {
+
+		//get didUint168 from code
+		didUint168 := getDidProgramHash(candidates[i])
 		candidateVotes = append(candidateVotes, outputpayload.CandidateVotes{
-			Candidate: candidates[i],
+			Candidate: didUint168.Bytes(),
 			Votes:     votes[i],
 		})
 	}

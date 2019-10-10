@@ -582,7 +582,7 @@ func (s *transactionSuite) TestUnregisterCR_Deserialize() {
 }
 
 func unregisterCRPayloadEqual(payload1 *payload.UnregisterCR, payload2 *payload.UnregisterCR) bool {
-	if !bytes.Equal(payload1.Code, payload2.Code) ||
+	if !payload1.DID.IsEqual(payload2.DID) ||
 		!bytes.Equal(payload1.Signature, payload2.Signature) {
 		return false
 	}
@@ -757,7 +757,7 @@ func randomCRInfoPayload() *payload.CRInfo {
 
 func randomUnregisterCRPayload() *payload.UnregisterCR {
 	return &payload.UnregisterCR{
-		Code:      randomBytes(34),
+		DID:      *randomUint168(),
 		Signature: randomBytes(65),
 	}
 }
