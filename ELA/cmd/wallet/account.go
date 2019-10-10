@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package wallet
 
@@ -119,6 +119,12 @@ var accountCommand = []cli.Command{
 		Name:     "depositaddr",
 		Usage:    "Generate deposit address",
 		Action:   generateDepositAddress,
+	},
+	{
+		Category: "Account",
+		Name:     "didaddr",
+		Usage:    "Generate did address",
+		Action:   generateDIDAddress,
 	},
 	{
 		Category: "Account",
@@ -386,6 +392,58 @@ func generateDepositAddress(c *cli.Context) error {
 		return err
 	}
 	fmt.Println(address)
+
+	return nil
+}
+
+func getCode(publicKey string) []byte {
+	pkBytes, _ := common.HexStringToBytes(publicKey)
+	pk, _ := crypto.DecodePoint(pkBytes)
+	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
+	return redeemScript
+}
+
+func getDid(code []byte) *common.Uint168 {
+	ct1, _ := contract.CreateCRDIDContractByCode(code)
+	return ct1.ToProgramHash()
+}
+
+func generateDIDAddress(c *cli.Context) error {
+	if c.NArg() < 1 {
+		cmdcom.PrintErrorMsg("Missing argument. Standard public key expected.")
+		cli.ShowCommandHelpAndExit(c, "didaddress", 1)
+	}
+	publicKey := c.Args().First()
+
+	var programHash *common.Uint168
+	var err error
+	var code []byte
+
+	if publicKey == "" {
+		mainAccount, err := account.GetWalletMainAccountData(account.KeystoreFileName)
+		if err != nil {
+			return err
+		}
+		p, err := common.HexStringToBytes(mainAccount.ProgramHash)
+		if err != nil {
+			return err
+		}
+		programHash, err = common.Uint168FromBytes(p)
+		if err != nil {
+			return err
+		}
+		code = programHash.ToCodeHash().Bytes()
+
+	} else {
+		code = getCode(publicKey)
+	}
+
+	did := getDid(code)
+	didAddress, err := did.ToAddress()
+	if err != nil {
+		return err
+	}
+	fmt.Println(didAddress)
 
 	return nil
 }
