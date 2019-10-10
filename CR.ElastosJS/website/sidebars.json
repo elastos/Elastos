@@ -5,7 +5,8 @@
       "getting-started/create-wallet",
       "getting-started/faucet",
       "getting-started/smart-contract",
-      "getting-started/next-steps"
+      "getting-started/next-steps",
+      "getting-started/tools"
     ],
     "Elastos Fundamentals": [
       "getting-started/ecosystem",
