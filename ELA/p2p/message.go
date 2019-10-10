@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package p2p
 
@@ -89,7 +89,7 @@ type MakeEmptyMessage func(command string) (Message, error)
 // provided magic.
 func ReadMessage(r net.Conn, magic uint32, makeEmptyMessage MakeEmptyMessage) (Message, error) {
 	// Set read deadline
-	err := r.SetReadDeadline(time.Now().Add(WriteMessageTimeOut))
+	err := r.SetReadDeadline(time.Now().Add(ReadMessageTimeOut))
 	if err != nil {
 		return nil, fmt.Errorf("set read deadline failed %s", err.Error())
 	}
