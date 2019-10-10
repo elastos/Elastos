@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -76,14 +76,20 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 		blocksCache:      make(map[Uint256]*Block),
 	}
 
-	s.init(genesisBlock)
+	if err := s.init(genesisBlock); err != nil {
+		log.Debug("chain store not contain genesis block")
+	}
 
 	return s, nil
 }
 
 func (c *ChainStore) Close() {
-	c.IStore.Close()
-	c.fflDB.Close()
+	if err := c.IStore.Close(); err != nil {
+		log.Info("IStore close failed:", err)
+	}
+	if err := c.fflDB.Close(); err != nil {
+		log.Info("fflDB close failed:", err)
+	}
 }
 
 func (c *ChainStore) init(genesisBlock *Block) error {
@@ -640,6 +646,10 @@ func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 
 func (c *ChainStore) GetHeight() uint32 {
 	return atomic.LoadUint32(&c.currentBlockHeight)
+}
+
+func (c *ChainStore) SetHeight(height uint32) {
+	atomic.StoreUint32(&c.currentBlockHeight, height)
 }
 
 func (c *ChainStore) IsBlockInStore(hash *Uint256) bool {
