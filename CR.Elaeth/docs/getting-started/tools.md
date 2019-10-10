@@ -16,4 +16,4 @@ Myetherwallet ➡ accessible at <https://wallet.elaeth.io>
 RPC:
 
 - Testnet: <https://rpc.elaeth.io>
-- Mainnet: <https://rpc.elaeth.io>
+- Mainnet: <https://mainrpc.elaeth.io>
