@@ -121,7 +121,7 @@ namespace Elastos {
 
 			std::string did = Address(PrefixIDChain, pubkey).String();
 
-			ArgInfo("r => {}  {}", did);
+			ArgInfo("r => {}", did);
 			return did;
 		}
 

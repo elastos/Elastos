@@ -20,7 +20,7 @@ namespace Elastos {
 		}
 
 		DIDHeaderInfo::DIDHeaderInfo(const std::string &specification, const std::string &operation) :
-			_specification(specification), _operation(operation) {
+				_specification(specification), _operation(operation) {
 
 		}
 
@@ -92,8 +92,8 @@ namespace Elastos {
 		}
 
 		DIDPubKeyInfo::DIDPubKeyInfo(const std::string &id, const std::string &pubkeyBase58,
-									 const std::string &controller, const std::string &type) :
-			_id(id), _publicKeyBase58(pubkeyBase58), _controller(controller), _type(type) {
+		                             const std::string &controller, const std::string &type) :
+				_id(id), _publicKeyBase58(pubkeyBase58), _controller(controller), _type(type) {
 
 		}
 
@@ -141,8 +141,12 @@ namespace Elastos {
 		}
 
 		void DIDPubKeyInfo::FromJson(const nlohmann::json &j, uint8_t version) {
-			_id = j["id"].get<std::string>();
-			_publicKeyBase58 = j["publicKeyBase58"].get<std::string>();
+			if (j.is_structured()) {
+				_id = j["id"].get<std::string>();
+				_publicKeyBase58 = j["publicKeyBase58"].get<std::string>();
+			} else if (j.is_string()) {
+				_id = j.get<std::string>();
+			}
 
 			if (j.find("type") != j.end()) {
 				_type = j["type"].get<std::string>();
@@ -153,6 +157,678 @@ namespace Elastos {
 			if (j.find("controller") != j.end()) {
 				_controller = j["controller"].get<std::string>();
 			}
+		}
+
+		CredentialSubject::CredentialSubject() {
+			init();
+		}
+
+		CredentialSubject::~CredentialSubject() {
+
+		}
+
+		void CredentialSubject::init() {
+			_id = "";
+			_name = "";
+			_nickname = "";
+			_gender = "";
+			_birthday = "";
+			_avatar = "";
+			_email = "";
+			_phone = "";
+			_nation = "";
+
+			_descript = "";
+
+			_homePage = "";
+			_googleAccount = "";
+			_microsoftPassport = "";
+			_facebook = "";
+			_twitter = "";
+			_weibo = "";
+			_wechat = "";
+			_alipay = "";
+		}
+
+		void CredentialSubject::SetID(const std::string &id) {
+			_id = id;
+		}
+
+		const std::string &CredentialSubject::ID() const {
+			return _id;
+		}
+
+		void CredentialSubject::SetName(const std::string &name) {
+			_name = name;
+		}
+
+		const std::string &CredentialSubject::GetName() const {
+			return _name;
+		}
+
+		void CredentialSubject::SetNickName(const std::string &nickName) {
+			_nickname = nickName;
+		}
+
+		const std::string &CredentialSubject::GetNickName() const {
+			return _nickname;
+		}
+
+		void CredentialSubject::SetGender(const std::string &gender) {
+			_gender = gender;
+		}
+
+		const std::string &CredentialSubject::GetGender() const {
+			return _gender;
+		}
+
+		void CredentialSubject::SetBirthday(const std::string birthday) {
+			_birthday = birthday;
+		}
+
+		const std::string &CredentialSubject::GetBirthday() const {
+			return _birthday;
+		}
+
+		void CredentialSubject::SetAvatar(const std::string &avatar) {
+			_avatar = avatar;
+		}
+
+		const std::string &CredentialSubject::GetAvatar() const {
+			return _avatar;
+		}
+
+		void CredentialSubject::SetEmail(const std::string &email) {
+			_email = email;
+		}
+
+		const std::string &CredentialSubject::GetEmail() const {
+			return _email;
+		}
+
+		void CredentialSubject::SetPhone(const std::string &phone) {
+			_phone = phone;
+		}
+
+		const std::string CredentialSubject::GetPhone() const {
+			return _phone;
+		}
+
+		void CredentialSubject::SetNation(const std::string &nation) {
+			_nation = nation;
+		}
+
+		const std::string &CredentialSubject::GetNation() const {
+			return _nation;
+		}
+
+		void CredentialSubject::SetDescript(const std::string &descript) {
+			_descript = descript;
+		}
+
+		const std::string &CredentialSubject::GetDescript() const {
+			return _descript;
+		}
+
+		void CredentialSubject::SetHomePage(const std::string &homePage) {
+			_homePage = homePage;
+		}
+
+		const std::string &CredentialSubject::GetHomePage() const {
+			return _homePage;
+		}
+
+		void CredentialSubject::SetGoogleAccount(const std::string &googleAccount) {
+			_googleAccount = googleAccount;
+		}
+
+		const std::string &CredentialSubject::GetGoogleAccount() const {
+			return _googleAccount;
+		}
+
+		void CredentialSubject::SetMicrosoftPassport(const std::string &microsoftPassport) {
+			_microsoftPassport = microsoftPassport;
+		}
+
+		const std::string &CredentialSubject::GetMicrosoftPassport() const {
+			return _microsoftPassport;
+		}
+
+		void CredentialSubject::SetFacebook(const std::string &facebook) {
+			_facebook = facebook;
+		}
+
+		const std::string &CredentialSubject::GetFacebook() const {
+			return _facebook;
+		}
+
+		void CredentialSubject::SetTwitter(const std::string &twitter) {
+			_twitter = twitter;
+		}
+
+		const std::string &CredentialSubject::GetTwitter() const {
+			return _twitter;
+		}
+
+		void CredentialSubject::SetWeibo(const std::string &weibo) {
+			_weibo = weibo;
+		}
+
+		const std::string &CredentialSubject::GetWeibo() const {
+			return _weibo;
+		}
+
+		void CredentialSubject::SetWechat(const std::string &wechat) {
+			_wechat = wechat;
+		}
+
+		const std::string &CredentialSubject::GetWechat() const {
+			return _wechat;
+		}
+
+		void CredentialSubject::SetAlipay(const std::string &alipay) {
+			_alipay = alipay;
+		}
+
+		const std::string &CredentialSubject::GetAlipay() const {
+			return _alipay;
+		}
+
+		size_t CredentialSubject::EstimateSize(uint8_t version) const {
+			ByteStream stream;
+			size_t size = 0;
+
+			size += stream.WriteVarUint(_id.size());
+			size += _id.size();
+			size += stream.WriteVarUint(_name.size());
+			size += _name.size();
+			size += stream.WriteVarUint(_nickname.size());
+			size += _nickname.size();
+			size += stream.WriteVarUint(_gender.size());
+			size += _gender.size();
+			size += stream.WriteVarUint(_birthday.size());
+			size += _birthday.size();
+			size += stream.WriteVarUint(_avatar.size());
+			size += _avatar.size();
+			size += stream.WriteVarUint(_email.size());
+			size += _email.size();
+			size += stream.WriteVarUint(_phone.size());
+			size += _phone.size();
+			size += stream.WriteVarUint(_nation.size());
+			size += _nation.size();
+			size += stream.WriteVarUint(_descript.size());
+			size += _descript.size();
+			size += stream.WriteVarUint(_homePage.size());
+			size += _homePage.size();
+			size += stream.WriteVarUint(_googleAccount.size());
+			size += _googleAccount.size();
+			size += stream.WriteVarUint(_microsoftPassport.size());
+			size += _microsoftPassport.size();
+			size += stream.WriteVarUint(_facebook.size());
+			size += _facebook.size();
+			size += stream.WriteVarUint(_twitter.size());
+			size += _twitter.size();
+			size += stream.WriteVarUint(_weibo.size());
+			size += _weibo.size();
+			size += stream.WriteVarUint(_wechat.size());
+			size += _wechat.size();
+			size += stream.WriteVarUint(_alipay.size());
+			size += _alipay.size();
+
+			return size;
+		}
+
+		void CredentialSubject::Serialize(ByteStream &stream, uint8_t version) const {
+			stream.WriteVarString(_id);
+			stream.WriteVarString(_name);
+			stream.WriteVarString(_nickname);
+			stream.WriteVarString(_gender);
+			stream.WriteVarString(_birthday);
+			stream.WriteVarString(_avatar);
+			stream.WriteVarString(_email);
+			stream.WriteVarString(_phone);
+			stream.WriteVarString(_nation);
+			stream.WriteVarString(_descript);
+			stream.WriteVarString(_homePage);
+			stream.WriteVarString(_googleAccount);
+			stream.WriteVarString(_microsoftPassport);
+			stream.WriteVarString(_facebook);
+			stream.WriteVarString(_twitter);
+			stream.WriteVarString(_weibo);
+			stream.WriteVarString(_wechat);
+			stream.WriteVarString(_alipay);
+		}
+
+		bool CredentialSubject::Deserialize(const ByteStream &stream, uint8_t version) {
+			if (!stream.ReadVarString(_id)) {
+				Log::error("CredentialSubject deserialize: id");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_name)) {
+				Log::error("CredentialSubject deserialize name");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_nickname)) {
+				Log::error("CredentialSubject deserialize nickname");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_gender)) {
+				Log::error("CredentialSubject deserialize gender");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_birthday)) {
+				Log::error("CredentialSubject deserialize birthday");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_avatar)) {
+				Log::error("CredentialSubject deserialize avatar");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_email)) {
+				Log::error("CredentialSubject deserialize email");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_phone)) {
+				Log::error("CredentialSubject deserialize phone");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_nation)) {
+				Log::error("CredentialSubject deserialize nation");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_descript)) {
+				Log::error("CredentialSubject deserialize descript");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_homePage)) {
+				Log::error("CredentialSubject deserialize homePage");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_googleAccount)) {
+				Log::error("CredentialSubject deserialize googleAccount");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_microsoftPassport)) {
+				Log::error("CredentialSubject deserialize microsoftPassport");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_facebook)) {
+				Log::error("CredentialSubject deserialize facebook");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_twitter)) {
+				Log::error("CredentialSubject deserialize twitter");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_weibo)) {
+				Log::error("CredentialSubject deserialize weibo");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_wechat)) {
+				Log::error("CredentialSubject deserialize wechat");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_alipay)) {
+				Log::error("CredentialSubject deserialize alipay");
+				return false;
+			}
+
+			return true;
+		}
+
+		nlohmann::json CredentialSubject::ToJson(uint8_t version) const {
+			nlohmann::json j;
+
+			if (_id.size() > 0) {
+				j["id"] = _id;
+			}
+
+			if (_name.size() > 0) {
+				j["name"] = _name;
+			}
+
+			if (_name.size() > 0) {
+				j["name"] = _name;
+			}
+
+			if (_nickname.size() > 0) {
+				j["nickname"] = _nickname;
+			}
+
+			if (_gender.size() > 0) {
+				j["gender"] = _gender;
+			}
+
+			if (_birthday.size() > 0) {
+				j["birthday"] = _birthday;
+			}
+
+			if (_avatar.size() > 0) {
+				j["avatar"] = _avatar;
+			}
+
+			if (_email.size() > 0) {
+				j["email"] = _email;
+			}
+
+			if (_phone.size() > 0) {
+				j["phone"] = _phone;
+			}
+
+			if (_nation.size() > 0) {
+				j["nation"] = _nation;
+			}
+
+			if (_descript.size() > 0) {
+				j["descript"] = _descript;
+			}
+
+			if (_homePage.size() > 0) {
+				j["homePage"] = _homePage;
+			}
+
+			if (_googleAccount.size() > 0) {
+				j["googleAccount"] = _googleAccount;
+			}
+
+			if (_microsoftPassport.size() > 0) {
+				j["microsoftPassport"] = _microsoftPassport;
+			}
+
+			if (_facebook.size() > 0) {
+				j["facebook"] = _facebook;
+			}
+
+			if (_twitter.size() > 0) {
+				j["twitter"] = _twitter;
+			}
+
+			if (_weibo.size() > 0) {
+				j["weibo"] = _weibo;
+			}
+
+			if (_wechat.size() > 0) {
+				j["wechat"] = _wechat;
+			}
+
+			if (_alipay.size() > 0) {
+				j["alipay"] = _alipay;
+			}
+
+			return j;
+		}
+
+		void CredentialSubject::FromJson(const nlohmann::json &j, uint8_t version) {
+			if (j.find("id") != j.end())
+				_id = j["id"].get<std::string>();
+
+			if (j.find("name") != j.end())
+				_name = j["name"].get<std::string>();
+
+			if (j.find("nickname") != j.end())
+				_nickname = j["nickname"].get<std::string>();
+
+			if (j.find("gender") != j.end())
+				_gender = j["gender"].get<std::string>();
+
+			if (j.find("birthday") != j.end())
+				_birthday = j["birthday"].get<std::string>();
+
+			if (j.find("avatar") != j.end())
+				_avatar = j["avatar"].get<std::string>();
+
+			if (j.find("email") != j.end())
+				_email = j["email"].get<std::string>();
+
+			if (j.find("phone") != j.end())
+				_phone = j["phone"].get<std::string>();
+
+			if (j.find("nation") != j.end())
+				_nation = j["nation"].get<std::string>();
+
+			if (j.find("descript") != j.end())
+				_descript = j["descript"].get<std::string>();
+
+			if (j.find("homePage") != j.end())
+				_homePage = j["homePage"].get<std::string>();
+
+			if (j.find("googleAccount") != j.end())
+				_googleAccount = j["googleAccount"].get<std::string>();
+
+			if (j.find("microsoftPassport") != j.end())
+				_microsoftPassport = j["microsoftPassport"].get<std::string>();
+
+			if (j.find("facebook") != j.end())
+				_facebook = j["facebook"].get<std::string>();
+
+			if (j.find("twitter") != j.end())
+				_twitter = j["twitter"].get<std::string>();
+
+			if (j.find("weibo") != j.end())
+				_weibo = j["weibo"].get<std::string>();
+
+			if (j.find("wechat") != j.end())
+				_wechat = j["wechat"].get<std::string>();
+
+			if (j.find("alipay") != j.end())
+				_alipay = j["alipay"].get<std::string>();
+		}
+
+		ServiceEndpoint::ServiceEndpoint() : _id(""), _type(""), _serviceEndpoint("") {
+
+		}
+
+		ServiceEndpoint::ServiceEndpoint(const std::string &id, const std::string &type,
+		                                 const std::string &serviceEndpoint) : _id(id), _type(type),
+		                                                                       _serviceEndpoint(serviceEndpoint) {
+
+		}
+
+		ServiceEndpoint::~ServiceEndpoint() {
+
+		}
+
+		void ServiceEndpoint::SetID(const std::string &id) {
+			_id = id;
+		}
+
+		const std::string &ServiceEndpoint::ID() const {
+			return _id;
+		}
+
+		void ServiceEndpoint::SetType(const std::string &type) {
+			_type = type;
+		}
+
+		const std::string &ServiceEndpoint::Type() const {
+			return _type;
+		}
+
+		void ServiceEndpoint::SetService(const std::string &service) {
+			_serviceEndpoint = service;
+		}
+
+		const std::string &ServiceEndpoint::GetService() const {
+			return _serviceEndpoint;
+		}
+
+		nlohmann::json ServiceEndpoint::ToJson(uint8_t version) const {
+			nlohmann::json j;
+
+			j["id"] = _id;
+			j["type"] = _type;
+			j["serviceEndpoint"] = _serviceEndpoint;
+
+			return j;
+		}
+
+		void ServiceEndpoint::FromJson(const nlohmann::json &j, uint8_t version) {
+			if (j.find("id") != j.end())
+				_id = j["id"].get<std::string>();
+
+			if (j.find("type") != j.end())
+				_type = j["type"].get<std::string>();
+
+			if (j.find("serviceEndpoint") != j.end())
+				_serviceEndpoint = j["serviceEndpoint"].get<std::string>();
+		}
+
+		VerifiableCredential::VerifiableCredential() {
+
+		}
+
+		VerifiableCredential::~VerifiableCredential() {
+
+		}
+
+		void VerifiableCredential::SetID(const std::string &id) {
+			_id = id;
+		}
+
+		const std::string &VerifiableCredential::ID() {
+			return _id;
+		}
+
+		void VerifiableCredential::SetTypes(const std::vector<Type> &types) {
+			_types = types;
+		}
+
+		const std::vector<VerifiableCredential::Type> &VerifiableCredential::Types() const {
+			return _types;
+		}
+
+		void VerifiableCredential::SetIssuer(const std::string &issuer) {
+			_issuer = issuer;
+		}
+
+		const std::string &VerifiableCredential::GetIssuer() const {
+			return _issuer;
+		}
+
+		void VerifiableCredential::SetIssuerDate(const std::string &issuerDate) {
+			_issuanceDate = issuerDate;
+		}
+
+		const std::string &VerifiableCredential::GetIssuerDate() const {
+			return _issuanceDate;
+		}
+
+		void VerifiableCredential::SetCredentialSubject(const CredentialSubject &credentialSubject) {
+			_credentialSubject = credentialSubject;
+		}
+
+		const CredentialSubject &VerifiableCredential::GetCredentialSubject() const {
+			return _credentialSubject;
+		}
+
+		void VerifiableCredential::SetProof(const DIDProofInfo &proof) {
+			_proof = proof;
+		}
+
+		const DIDProofInfo &VerifiableCredential::Proof() const {
+			return _proof;
+		}
+
+		nlohmann::json VerifiableCredential::ToJson(uint8_t version) const {
+			nlohmann::json j;
+			j["id"] = _id;
+
+			std::vector<std::string> types;
+			for (int i = 0; i < _types.size(); ++i) {
+				types.push_back(GetTypeDesc(_types[i]));
+			}
+			j["types"] = types;
+
+			j["issuer"] = _issuer;
+			j["issuanceDate"] = _issuanceDate;
+			j["expirationDate"] = _expirationDate;
+			j["credentialSubject"] = _credentialSubject.ToJson(version);
+			j["proof"] = _proof.ToJson(version);
+
+			return j;
+		}
+
+		void VerifiableCredential::FromJson(const nlohmann::json &j, uint8_t version) {
+			_id = j["id"].get<std::string>();
+
+			if (j.find("types") != j.end()) {
+				_types.clear();
+				std::vector<std::string> types = j["types"];
+				for (int i = 0; i < types.size(); ++i) {
+					_types.push_back(GetTypeByDesc(types[i]));
+				}
+			}
+
+			if (j.find("issuer") != j.end()) {
+				_issuer = j["issuer"].get<std::string>();
+			}
+
+			if (j.find("issuanceDate") != j.end()) {
+				_issuanceDate = j["issuanceDate"].get<std::string>();
+			}
+
+			if (j.find("expirationDate") != j.end()) {
+				_expirationDate = j["expirationDate"].get<std::string>();
+			}
+
+			if (j.find("credentialSubject") != j.end()) {
+				_credentialSubject.FromJson(j["credentialSubject"], version);
+			}
+
+			if (j.find("proof") != j.end()) {
+				_proof.FromJson(j["proof"], version);
+			}
+
+		}
+
+		std::string VerifiableCredential::GetTypeDesc(VerifiableCredential::Type type) const {
+			switch (type) {
+				case SelfProclaimedCredential:
+					return "SelfProclaimedCredential";
+				case ElastosIDteriaCredential :
+					return "ElastosIDteriaCredential";
+				case BasicProfileCredential:
+					return "BasicProfileCredential";
+				case InternetAccountCredential:
+					return "InternetAccountCredential";
+				case PhoneCredential:
+					return "PhoneCredential";
+				case None:
+					return "None";
+			}
+			return "None";
+		}
+
+		VerifiableCredential::Type VerifiableCredential::GetTypeByDesc(const std::string &type) const {
+			if (type == "SelfProclaimedCredential") {
+				return SelfProclaimedCredential;
+			} else if(type == "ElastosIDteriaCredential") {
+				return ElastosIDteriaCredential;
+			} else if(type == "BasicProfileCredential") {
+				return BasicProfileCredential;
+			} else if(type == "InternetAccountCredential") {
+				return InternetAccountCredential;
+			} else if(type == "PhoneCredential") {
+				return PhoneCredential;
+			}
+			return None;
 		}
 
 		DIDPayloadInfo::DIDPayloadInfo() {
@@ -179,6 +855,38 @@ namespace Elastos {
 			_publickey = pubkey;
 		}
 
+		const DIDPubKeyInfoArray &DIDPayloadInfo::Authentication() const {
+			return _authentication;
+		}
+
+		void DIDPayloadInfo::SetAuthentication(const DIDPubKeyInfoArray &authentication) {
+				_authentication = authentication;
+		}
+
+		const DIDPubKeyInfoArray &DIDPayloadInfo::Authorization() const {
+			return _authorization;
+		}
+
+		void DIDPayloadInfo::SetAuthorization(const DIDPubKeyInfoArray &authorization) {
+			_authorization = authorization;
+		}
+
+		const VerifiableCredential &DIDPayloadInfo::GetVerifiableCredential() const {
+			return _verifiableCredential;
+		}
+
+		void DIDPayloadInfo::SetVerifiableCredential(const VerifiableCredential &verifiableCredential) {
+			_verifiableCredential = verifiableCredential;
+		}
+
+		const ServiceEndpoint &DIDPayloadInfo::GetServiceEndpoint() const {
+			return _service;
+		}
+
+		void DIDPayloadInfo::SetServiceEndpoint(const ServiceEndpoint &serviceEndpoint) {
+			_service = serviceEndpoint;
+		}
+
 		const std::string &DIDPayloadInfo::Expires() const {
 			return _expires;
 		}
@@ -196,16 +904,21 @@ namespace Elastos {
 				jPubKey.push_back((*it).ToJson(version));
 			j["publicKey"] = jPubKey;
 
+			nlohmann::json jAuthentication;
+			for (DIDPubKeyInfoArray::const_iterator it = _authentication.cbegin(); it != _authentication.cend(); ++it)
+				jAuthentication.push_back((*it).ToJson(version));
+			j["authentication"] = jAuthentication;
+
+			nlohmann::json jAuthorization;
+			for (DIDPubKeyInfoArray::const_iterator it = _authorization.cbegin(); it != _authorization.cend(); ++it)
+				jAuthorization.push_back((*it).ToJson(version));
+			j["authorization"] = jAuthorization;
+
+			j["verifiableCredential"] = _verifiableCredential.ToJson(version);
+
 			j["expires"] = _expires;
 
-			if (!_authentication.is_null())
-				j["authentication"] = _authentication;
-			if (!_authorization.is_null())
-				j["authorization"] = _authorization;
-			if (!_verifiableCredential.is_null())
-				j["verifiableCredential"] = _verifiableCredential;
-			if (!_service.is_null())
-				j["service"] = _service;
+			j["service"] = _service.ToJson(version);
 
 			return j;
 		}
@@ -220,16 +933,34 @@ namespace Elastos {
 				_publickey.push_back(pubKeyInfo);
 			}
 
+			if (j.find("authentication") != j.end()) {
+				nlohmann::json jAuthentication = j["authentication"];
+				for (nlohmann::json::iterator it = jAuthentication.begin(); it != jAuthentication.end(); ++it) {
+					DIDPubKeyInfo pubKeyInfo;
+					pubKeyInfo.FromJson(*it, version);
+					_authentication.push_back(pubKeyInfo);
+				}
+			}
+
+			if (j.find("authorization") != j.end()) {
+				nlohmann::json jAuthorization = j["authorization"];
+				for (nlohmann::json::iterator it = jAuthorization.begin(); it != jAuthorization.end(); ++it) {
+					DIDPubKeyInfo pubKeyInfo;
+					pubKeyInfo.FromJson(*it, version);
+					_authorization.push_back(pubKeyInfo);
+				}
+			}
+
 			_expires = j["expires"].get<std::string>();
 
-			if (j.find("authentication") != j.end())
-				_authentication = j["authentication"];
-			if (j.find("authorization") != j.end())
-				_authorization = j["authorization"];
-			if (j.find("verifiableCredential") != j.end())
-				_verifiableCredential = j["verifiableCredential"];
-			if (j.find("service") != j.end())
-				_service = j["service"];
+			if (j.find("verifiableCredential") != j.end()) {
+				_verifiableCredential.FromJson(j["verifiableCredential"], version);
+			}
+
+			if (j.find("service") != j.end()) {
+				_service.FromJson(j["service"], version);
+			}
+
 		}
 
 		DIDProofInfo::DIDProofInfo() {
@@ -241,7 +972,7 @@ namespace Elastos {
 		}
 
 		DIDProofInfo::DIDProofInfo(const std::string &method, const std::string &signature, const std::string &type) :
-			_verificationMethod(method), _signature(signature), _type(type) {
+				_verificationMethod(method), _signature(signature), _type(type) {
 
 		}
 
@@ -384,7 +1115,7 @@ namespace Elastos {
 			}
 
 			bytes_t bytes = Base64::DecodeURL(_payload);
-			std::string payloadString((char *)bytes.data(), bytes.size());
+			std::string payloadString((char *) bytes.data(), bytes.size());
 			_payloadInfo.FromJson(nlohmann::json::parse(payloadString), version);
 
 			return true;
@@ -406,7 +1137,7 @@ namespace Elastos {
 			_proof.FromJson(j["proof"], version);
 
 			bytes_t bytes = Base64::DecodeURL(_payload);
-			std::string payloadString((char *)bytes.data(), bytes.size());
+			std::string payloadString((char *) bytes.data(), bytes.size());
 			_payloadInfo.FromJson(nlohmann::json::parse(payloadString), version);
 		}
 

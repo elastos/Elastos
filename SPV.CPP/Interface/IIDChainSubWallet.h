@@ -68,6 +68,7 @@ namespace Elastos {
 				const std::string &signature) = 0;
 			/**
 			 * Get DID by public key
+			 * @param pubkey public key
 			 * @return did string
 			 */
 			virtual std::string GetDIDByPublicKey(std::string &pubkey) const = 0;
