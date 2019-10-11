@@ -196,7 +196,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 			generateRegisterCR(code, did, nickname),
 		},
 	}, nil)
-	candidate := committee.GetState().GetCandidate(code)
+	candidate := committee.GetState().GetCandidate(did)
 	assert.Equal(t, Pending, candidate.state)
 	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname))
 	height++

@@ -1440,7 +1440,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
-	cr := b.crCommittee.GetState().GetCandidate(info.Code)
+	cr := b.crCommittee.GetState().GetCandidate(info.DID)
 	if cr != nil {
 		return fmt.Errorf("did %s already exist", info.DID)
 	}
@@ -1541,7 +1541,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetState().GetCandidate(info.Code)
+	cr := b.crCommittee.GetState().GetCandidate(info.DID)
 	if cr == nil {
 		return errors.New("updating unknown CR")
 	}
@@ -1573,8 +1573,11 @@ func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
 	if crMember == nil {
 		return errors.New("did correspond crMember not exists")
 	}
-	//todo check ProposalHash must exist
-
+	exist := b.crCommittee.GetProposalManager().ExistProposal(crcProposalReview.
+		ProposalHash)
+	if !exist {
+		return errors.New("ProposalHash must exist")
+	}
 	signedBuf := new(bytes.Buffer)
 	err := crcProposalReview.SerializeUnsigned(signedBuf, payload.CRCProposalReviewVersion)
 	if err != nil {
@@ -1595,7 +1598,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetState().GetCandidateByDID(info.DID)
+	cr := b.crCommittee.GetState().GetCandidate(info.DID)
 	if cr == nil {
 		return errors.New("unregister unknown CR")
 	}
@@ -1624,8 +1627,8 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if b.crCommittee.GetProposalManager().ExistDraft(proposal.DraftHash) {
 		return errors.New("duplicated draft proposal hash")
 	}
-
-	if !b.crCommittee.IsCRMember(proposal.CRSponsorCode) {
+	crMember := b.crCommittee.GetMember(proposal.CRSponsorDID)
+	if crMember == nil {
 		return errors.New("CR sponsor should be one of the CR members")
 	}
 
@@ -1652,7 +1655,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if err = common.WriteVarBytes(signedBuf, proposal.Sign); err != nil {
 		return errors.New("invalid CR signature")
 	}
-	if err = checkCRTransactionSignature(proposal.CRSign, proposal.CRSponsorCode,
+	if err = checkCRTransactionSignature(proposal.CRSign, crMember.Info.Code,
 		signedBuf.Bytes()); err != nil {
 		return errors.New("CR sponsor signature check failed")
 	}
@@ -1781,7 +1784,7 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 		}
 		programHash := ct.ToProgramHash()
 		// todo get candidate from not voting period state.
-		c := b.crCommittee.GetState().GetCandidateByDID(*programHash)
+		c := b.crCommittee.GetState().GetCandidate(*programHash)
 		if c == nil {
 			member := b.crCommittee.GetHistoryMember(program.Code)
 			if member == nil {

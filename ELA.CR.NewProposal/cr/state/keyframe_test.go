@@ -246,10 +246,8 @@ func proposalKeyFrameEqual(first, second *ProposalKeyFrame) bool {
 			v.Proposal.ProposalType != proposalState.Proposal.ProposalType ||
 			!bytes.Equal(v.Proposal.CRSign, proposalState.Proposal.CRSign) ||
 			!bytes.Equal(v.Proposal.Sign, proposalState.Proposal.Sign) ||
-			!bytes.Equal(v.Proposal.SponsorPublicKey,
-				proposalState.Proposal.SponsorPublicKey) ||
-			!bytes.Equal(v.Proposal.CRSponsorCode,
-				proposalState.Proposal.CRSponsorCode) {
+			!bytes.Equal(v.Proposal.SponsorPublicKey, proposalState.Proposal.SponsorPublicKey) ||
+			!v.Proposal.CRSponsorDID.IsEqual(proposalState.Proposal.CRSponsorDID) {
 			return false
 		}
 
@@ -294,7 +292,7 @@ func randomCRCProposal() *payload.CRCProposal {
 	return &payload.CRCProposal{
 		ProposalType:     payload.CRCProposalType(rand.Int31n(6)),
 		SponsorPublicKey: randomBytes(33),
-		CRSponsorCode:    randomBytes(34),
+		CRSponsorDID:     *randomUint168(),
 		DraftHash:        *randomUint256(),
 		Budgets: []common.Fixed64{
 			common.Fixed64(rand.Int63()),

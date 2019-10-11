@@ -28,24 +28,24 @@ func TestState_GetCandidatesRelated(t *testing.T) {
 
 	// get single candidate
 	for k, v := range keyFrame.PendingCandidates {
-		v2 := state.GetCandidateByDID(k)
+		v2 := state.GetCandidate(k)
 		assert.True(t, candidateEqual(v, v2))
 
-		v3 := state.GetCandidate(v.info.Code)
+		v3 := state.GetCandidate(v.info.DID)
 		assert.True(t, candidateEqual(v, v3))
 	}
 	for k, v := range keyFrame.ActivityCandidates {
-		v2 := state.GetCandidateByDID(k)
+		v2 := state.GetCandidate(k)
 		assert.True(t, candidateEqual(v, v2))
 
-		v3 := state.GetCandidate(v.info.Code)
+		v3 := state.GetCandidate(v.info.DID)
 		assert.True(t, candidateEqual(v, v3))
 	}
 	for k, v := range keyFrame.CanceledCandidates {
-		v2 := state.GetCandidateByDID(k)
+		v2 := state.GetCandidate(k)
 		assert.True(t, candidateEqual(v, v2))
 
-		v3 := state.GetCandidate(v.info.Code)
+		v3 := state.GetCandidate(v.info.DID)
 		assert.True(t, candidateEqual(v, v3))
 	}
 
@@ -125,7 +125,7 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 	assert.True(t, state.ExistCandidate(code))
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.True(t, state.ExistCandidateByNickname(nickname))
-	candidate := state.GetCandidate(code)
+	candidate := state.GetCandidate(did)
 	assert.Equal(t, Pending, candidate.state)
 
 	// update pending CR
@@ -142,7 +142,7 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 	assert.True(t, state.ExistCandidateByNickname(nickname2))
-	candidate = state.GetCandidate(code)
+	candidate = state.GetCandidate(did)
 	assert.Equal(t, Pending, candidate.state)
 
 	//cancel pending CR
@@ -158,7 +158,7 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 	assert.False(t, state.ExistCandidateByNickname(nickname2))
-	candidate = state.GetCandidate(code)
+	candidate = state.GetCandidate(did)
 	assert.Equal(t, Canceled, candidate.state)
 	assert.Equal(t, 0, len(state.GetCandidates(Pending)))
 	assert.Equal(t, 1, len(state.GetCandidates(Canceled)))
@@ -189,7 +189,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 	assert.True(t, state.ExistCandidate(code))
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.True(t, state.ExistCandidateByNickname(nickname))
-	candidate := state.GetCandidate(code)
+	candidate := state.GetCandidate(did)
 	assert.Equal(t, Pending, candidate.state)
 
 	// register CR then after 6 block should be active state
@@ -202,7 +202,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 		}, nil)
 		height++
 	}
-	candidate = state.GetCandidate(code)
+	candidate = state.GetCandidate(did)
 	assert.Equal(t, Active, candidate.state)
 
 	// update active CR
@@ -220,7 +220,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 	assert.True(t, state.ExistCandidateByNickname(nickname2))
-	candidate = state.GetCandidate(code)
+	candidate = state.GetCandidate(did)
 	assert.Equal(t, Active, candidate.state)
 
 	// cancel active CR
@@ -236,7 +236,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 	assert.False(t, state.ExistCandidateByNickname(nickname2))
-	candidate = state.GetCandidate(code)
+	candidate = state.GetCandidate(did)
 	assert.Equal(t, Canceled, candidate.state)
 	assert.Equal(t, 0, len(state.GetCandidates(Pending)))
 	assert.Equal(t, 1, len(state.GetCandidates(Canceled)))
@@ -318,7 +318,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 
 	for i, v := range activeDIDs {
 		did, _ := common.Uint168FromBytes(v)
-		candidate := state.GetCandidateByDID(*did)
+		candidate := state.GetCandidate(*did)
 		assert.Equal(t, common.Fixed64((i+1)*10), candidate.votes)
 	}
 
@@ -340,7 +340,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 
 	for _, v := range activeDIDs {
 		did, _ := common.Uint168FromBytes(v)
-		candidate := state.GetCandidateByDID(*did)
+		candidate := state.GetCandidate(*did)
 		assert.Equal(t, common.Fixed64(0), candidate.votes)
 	}
 }
@@ -354,6 +354,8 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	_, pk, _ := crypto.GenerateKeyPair()
 	cont, _ := contract.CreateStandardContract(pk)
 	code := cont.Code
+	did := *getDid(code)
+
 	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
 
 	// register CR
@@ -378,7 +380,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Transactions: []*types.Transaction{registerCRTx},
 	}, nil)
 	height++
-	candidate := state.GetCandidate(code)
+	candidate := state.GetCandidate(did)
 	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
 
 	// deposit though normal tx

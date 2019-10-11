@@ -7,6 +7,7 @@ package payload
 
 import (
 	"bytes"
+	"errors"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -61,8 +62,8 @@ type CRCProposal struct {
 	ProposalType CRCProposalType
 	// Public key of sponsor.
 	SponsorPublicKey []byte
-	// Code of CR sponsor.
-	CRSponsorCode []byte
+	// DID of CR sponsor.
+	CRSponsorDID common.Uint168
 	// The hash of draft proposal.
 	DraftHash common.Uint256
 	// The budget of different stages.
@@ -91,8 +92,9 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 	if err := common.WriteVarBytes(w, p.SponsorPublicKey); err != nil {
 		return err
 	}
-	if err := common.WriteVarBytes(w, p.CRSponsorCode); err != nil {
-		return err
+
+	if err := p.CRSponsorDID.Serialize(w); err != nil {
+		return errors.New("[UnregisterCR], DID serialize failed")
 	}
 	if err := p.DraftHash.Serialize(w); err != nil {
 		return err
@@ -130,11 +132,10 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 		return err
 	}
 	p.SponsorPublicKey = sponsor
-	crSponsor, err := common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "CR sponsor")
-	if err != nil {
-		return err
+	if err := p.CRSponsorDID.Deserialize(r); err != nil {
+		return errors.New("[UnregisterCR], DID deserialize failed")
 	}
-	p.CRSponsorCode = crSponsor
+
 	if err := p.DraftHash.Deserialize(r); err != nil {
 		return err
 	}
