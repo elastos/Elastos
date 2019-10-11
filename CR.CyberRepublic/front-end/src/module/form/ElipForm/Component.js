@@ -1,15 +1,13 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import { Form, Input, Button, Popconfirm, message } from 'antd'
-import { convertToRaw } from 'draft-js'
 import I18N from '@/I18N'
-import DraftEditor from '@/module/common/DraftEditor'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import ElipNote from '@/module/page/elip/ElipNote'
-import { CONTENT_TYPE, ELIP_STATUS, ELIP_DESC_MAX_WORDS } from '@/constant'
+import { ELIP_STATUS } from '@/constant'
 import { Container, Title, Actions, Label, Status } from './style'
 
 const FormItem = Form.Item
-const WORD_LIMIT = ELIP_DESC_MAX_WORDS
 const formItemLayout = {
   labelCol: {
     span: 3
@@ -19,36 +17,8 @@ const formItemLayout = {
   },
   colon: false
 }
-const transform = value => {
-  // string or object
-  let result = value
-  if (_.isObject(value)) {
-    try {
-      result = value.getCurrentContent().getPlainText()
-    } catch (error) {
-      result = value
-    }
-  }
-  return result
-}
-const formatValue = value => {
-  let result
-  try {
-    result = _.isString(value)
-      ? value
-      : JSON.stringify(convertToRaw(value.getCurrentContent()))
-  } catch (error) {
-    result = _.toString(value)
-  }
-  return result
-}
 
 class C extends BaseComponent {
-  constructor(p) {
-    super(p)
-    this.state = { count: 0, submit: false }
-  }
-
   saveElip = () => {
     const { history, create, form, data, update } = this.props
     form.validateFields(async (err, values) => {
@@ -57,7 +27,7 @@ class C extends BaseComponent {
       }
       const param = {
         title: values.title,
-        description: formatValue(values.description)
+        description: values.description
       }
       if (!data) {
         const elip = await create(param)
@@ -74,47 +44,7 @@ class C extends BaseComponent {
 
   handleSubmit = e => {
     e.preventDefault()
-    const { count } = this.state
-    if (count === 0) {
-      this.setState({ submit: true }, () => {
-        this.saveElip()
-      })
-    } else {
-      this.saveElip()
-    }
-  }
-
-  isDescTooLong = (rule, value, cb) => {
-    const { lang } = this.props
-    let count = 0
-    if (value) {
-      count = lang === 'en' ? value.split(' ').length : value.length
-    }
-    return count > WORD_LIMIT ? cb(true) : cb()
-  }
-
-  isDescEmpty = (rule, value, cb) => {
-    const { count, submit } = this.state
-    const { data } = this.props
-    // edit a elip
-    if (data && data.description && count === 0 && !value) {
-      return cb(true)
-    }
-    // submit the elip form without trigger the desc input box
-    // when add a new elip
-    if (count === 0 && submit === true && !value) {
-      return cb(true)
-    }
-    if (count > 0 && !value) {
-      return cb(true)
-    }
-    return cb()
-  }
-
-  onChange = (editorState) => {
-    if (editorState.getCurrentContent().hasText() === false) {
-      this.setState({count: this.state.count + 1})
-    }
+    this.saveElip()
   }
 
   ord_render() {
@@ -157,22 +87,12 @@ class C extends BaseComponent {
               rules: [
                 {
                   required: true,
-                  transform,
-                  message: I18N.get('elip.form.error.required'),
-                  validator: this.isDescEmpty
-                },
-                {
-                  transform,
-                  message: I18N.get(`elip.form.error.limit${WORD_LIMIT}`),
-                  validator: this.isDescTooLong
+                  message: I18N.get('elip.form.error.required')
                 }
-              ],
-              initialValue: data && data.description ? data.description : ''
+              ]
             })(
-              <DraftEditor
-                contentType={CONTENT_TYPE.MARKDOWN}
-                autoFocus={false}
-                onChange={this.onChange}
+              <CodeMirrorEditor
+                content={data && data.description ? data.description : ''}
               />
             )}
           </FormItem>
