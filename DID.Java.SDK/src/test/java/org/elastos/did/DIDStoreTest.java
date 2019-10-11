@@ -99,7 +99,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test01InitPrivateIdentity0() throws DIDStoreException {
+	public void test10InitPrivateIdentity0() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
     	deleteFile(new File(tempStoreRoot));
@@ -134,7 +134,7 @@ public class DIDStoreTest {
 
 	// Can not decrypt root private key because wrong storepass
 	@Test(expected = DIDStoreException.class)
-	public void test01InitPrivateIdentity1() throws DIDStoreException {
+	public void test10InitPrivateIdentity1() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
 		DIDStore.initialize("filesystem", tempStoreRoot, "password");
@@ -145,7 +145,7 @@ public class DIDStoreTest {
 	}
 
     @Test
-    public void test02Setup() throws DIDStoreException {
+    public void test20Setup() throws DIDStoreException {
     	deleteFile(new File(storeRoot));
 
     	DIDStore.initialize("filesystem", storeRoot, storePass);
@@ -159,7 +159,7 @@ public class DIDStoreTest {
     }
 
 	@Test
-	public void test03CreateDID1() throws DIDStoreException {
+	public void test30CreateDID1() throws DIDStoreException {
 		String hint = "my first did";
 
     	DIDDocument doc = store.newDid(storePass, hint);
@@ -181,7 +181,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test03CreateDID2() throws DIDStoreException {
+	public void test30CreateDID2() throws DIDStoreException {
     	DIDDocument doc = store.newDid(storePass, null);
 
     	File file = new File(storeRoot + File.separator + "ids"
@@ -199,7 +199,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test03CreateDID3() throws DIDStoreException {
+	public void test30CreateDID3() throws DIDStoreException {
     	for (int i = 0; i < 100; i++) {
     		String hint = "my did " + i;
     		DIDDocument doc = store.newDid(storePass, hint);
@@ -221,7 +221,34 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test04DeleteDID1() throws DIDStoreException {
+	public void test31SignAndVerify() throws DIDException {
+		Iterator<DID> dids = ids.keySet().iterator();
+
+		while (dids.hasNext()) {
+			DID did = dids.next();
+
+			DIDDocument doc = DIDStore.getInstance().loadDid(did);
+			String json = doc.toExternalForm(false);
+			DIDURL pkid = new DIDURL(did, "primary");
+
+			String sig = doc.sign(pkid, storePass, json.getBytes());
+			boolean result = doc.verify(pkid, sig, json.getBytes());
+			assertTrue(result);
+
+			result = doc.verify(pkid, sig, json.substring(1).getBytes());
+			assertFalse(result);
+
+			sig = doc.sign(storePass, json.getBytes());
+			result = doc.verify(sig, json.getBytes());
+			assertTrue(result);
+
+			result = doc.verify(sig, json.substring(1).getBytes());
+			assertFalse(result);
+		}
+	}
+
+	@Test
+	public void test40DeleteDID1() throws DIDStoreException {
 		Iterator<DID> dids = ids.keySet().iterator();
 		int i = 0;
 
@@ -251,7 +278,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test04PublishDID() throws DIDStoreException, MalformedDocumentException {
+	public void test40PublishDID() throws DIDStoreException, MalformedDocumentException {
 		Iterator<DID> dids = ids.keySet().iterator();
 		int i = 0;
 
@@ -267,7 +294,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test05IssueSelfClaimCredential1() throws DIDException {
+	public void test50IssueSelfClaimCredential1() throws DIDException {
 		Issuer issuer = new Issuer(primaryDid);
 
 		Map<String, String> props = new HashMap<String, String>();
@@ -300,7 +327,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test05IssueSelfClaimCredential2() throws DIDException {
+	public void test50IssueSelfClaimCredential2() throws DIDException {
 		DID issuerDid = primaryDid;
 		Issuer issuer = new Issuer(issuerDid);
 
@@ -367,7 +394,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test06DeleteCredential1() throws DIDException {
+	public void test60DeleteCredential1() throws DIDException {
 		boolean deleted = store.deleteCredential(primaryDid, new DIDURL(primaryDid, "cred-1"));
 		assertTrue(deleted);
 
@@ -400,7 +427,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test06ListCredential1() throws DIDException {
+	public void test60ListCredential1() throws DIDException {
 		for (DID did : ids.keySet()) {
 			List<Entry<DIDURL, String>> creds = store.listCredentials(did);
 
@@ -421,7 +448,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test07LoadCredential1() throws DIDException {
+	public void test60LoadCredential1() throws DIDException {
 		for (DID did : ids.keySet()) {
 			if (did.equals(primaryDid))
 				continue;

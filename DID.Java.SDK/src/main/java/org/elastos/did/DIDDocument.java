@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.elastos.credential.VerifiableCredential;
+import org.elastos.did.util.Base64;
+import org.elastos.did.util.EcdsaSigner;
 import org.elastos.did.util.HDKey;
 import org.elastos.did.util.JsonHelper;
 
@@ -504,6 +506,32 @@ public class DIDDocument {
 
 		setReadonly(false);
 		return true;
+	}
+
+	public String sign(String storepass, byte[] ... data)
+			throws DIDStoreException {
+		PublicKey pk = getDefaultPublicKey();
+		return sign(pk.getId(), storepass, data);
+	}
+
+	public String sign(DIDURL id, String storepass, byte[] ... data)
+			throws DIDStoreException {
+		return DIDStore.getInstance().sign(getSubject(), id, storepass, data);
+	}
+
+	public boolean verify(String signature, byte[] ... data)
+			throws DIDStoreException {
+		PublicKey pk = getDefaultPublicKey();
+		return verify(pk.getId(), signature, data);
+	}
+
+	public boolean verify(DIDURL id, String signature, byte[] ... data)
+			throws DIDStoreException {
+		PublicKey pk = getPublicKey(id);
+		byte[] binkey = pk.getPublicKeyBytes();
+		byte[] sig = Base64.decode(signature);
+
+		return EcdsaSigner.verify(binkey, sig, data);
 	}
 
 	private void parse(Reader reader) throws MalformedDocumentException {

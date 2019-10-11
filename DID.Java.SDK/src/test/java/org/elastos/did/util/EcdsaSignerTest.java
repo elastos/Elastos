@@ -54,14 +54,14 @@ public class EcdsaSignerTest {
 
 	@Test
 	public void testVerify() {
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), plain.getBytes(), nonce.getBytes(), sig);
+		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), sig, plain.getBytes(), nonce.getBytes());
 
 		assertTrue(result);
 	}
 
 	@Test
 	public void testVerify1() {
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), (plain + ".").getBytes(), nonce.getBytes(), sig);
+		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), sig, (plain + ".").getBytes(), nonce.getBytes());
 
 		assertFalse(result);
 	}
@@ -71,7 +71,7 @@ public class EcdsaSignerTest {
 		byte[] modSig = Arrays.copyOf(sig, sig.length);
 		modSig[8] +=1;
 
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), plain.getBytes(), nonce.getBytes(), modSig);
+		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), modSig, plain.getBytes(), nonce.getBytes());
 
 		assertFalse(result);
 	}
@@ -81,7 +81,7 @@ public class EcdsaSignerTest {
 		byte[] modSig = Arrays.copyOf(sig, sig.length);
 		modSig[8] +=1;
 
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), plain.getBytes(), "testcase0".getBytes(), modSig);
+		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), modSig, plain.getBytes(), "testcase0".getBytes());
 
 		assertFalse(result);
 	}
@@ -91,7 +91,7 @@ public class EcdsaSignerTest {
 		byte[] modSig = Arrays.copyOf(sig, sig.length);
 		modSig[8] +=1;
 
-		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), plain.getBytes(), modSig);
+		boolean result = EcdsaSigner.verify(key.getPublicKeyBytes(), modSig, plain.getBytes());
 
 		assertFalse(result);
 	}

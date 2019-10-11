@@ -387,38 +387,15 @@ public abstract class DIDStore {
 		deletePrivateKey(new DID(did), new DIDURL(id));
 	}
 
-	public String sign(DID did, DIDURL id, String storepass,
-			byte[][] data, byte[] nonce) throws DIDStoreException {
+	public String sign(DID did, DIDURL id, String storepass, byte[] ... data)
+			throws DIDStoreException {
 		byte[] binKey = decryptFromBase64(storepass, loadPrivateKey(did, id));
 		HDKey.DerivedKey key = HDKey.DerivedKey.deserialize(binKey);
 
-		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), data, nonce);
+		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), data);
 
 		key.wipe();
 
 		return Base64.encodeToString(sig);
 	}
-
-	public String sign(DID did, DIDURL id, String storepass,
-			byte[][] data) throws DIDStoreException {
-		return sign(did, id, storepass, data, null);
-	}
-
-	public String sign(DID did, DIDURL id, String storepass,
-			byte[] data, byte[] nonce) throws DIDStoreException {
-		return sign(did, id, storepass, new byte[][] { data }, nonce);
-	}
-
-	public String sign(DID did, DIDURL id, String storepass, byte[] data)
-			throws DIDStoreException {
-		return sign(did, id, storepass, data, null);
-	}
-
-	/*
-	public abstract boolean verify(DID did, DIDURL id, byte[] data, byte[] nonce, byte[] signature) throws DIDStoreException;
-
-	public boolean verify(DID did, DIDURL id, byte[] data, byte[] signature) throws DIDStoreException {
-		return verify(did, id, data, null, signature);
-	}
-	*/
 }

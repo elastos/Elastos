@@ -33,7 +33,7 @@ import org.spongycastle.crypto.signers.ECDSASigner;
 import org.spongycastle.crypto.signers.HMacDSAKCalculator;
 
 public class EcdsaSigner {
-	public static byte[] sign(byte[] privateKey, byte[][] inputs, byte[] nonce) {
+	public static byte[] sign(byte[] privateKey, byte[] ... inputs) {
 		BigInteger keyInt = new BigInteger(1, privateKey);
 
 		// X9ECParameters curve = SECNamedCurves.getByName(CURVE_ALGORITHM);
@@ -44,7 +44,7 @@ public class EcdsaSigner {
 				new HMacDSAKCalculator(new SHA256Digest()));
 		signer.init(true, keyParams);
 
-		BigInteger[] rs = signer.generateSignature(sha256Digest(inputs, nonce));
+		BigInteger[] rs = signer.generateSignature(sha256Digest(inputs));
 
 		byte[] r = bigIntegerToBytes(rs[0], 32);
 		byte[] s = bigIntegerToBytes(rs[1], 32);
@@ -56,16 +56,7 @@ public class EcdsaSigner {
 		return sig;
 	}
 
-	public static byte[] sign(byte[] privateKey, byte[] input, byte[] nonce) {
-		return sign(privateKey, new byte[][] { input }, nonce);
-	}
-
-	public static byte[] sign(byte[] privateKey, byte[] input) {
-		return sign(privateKey, input, null);
-	}
-
-	public static boolean verify(byte[] publicKey, byte[][] inputs,
-			byte[] nonce,byte[] sig) {
+	public static boolean verify(byte[] publicKey, byte[] sig, byte[] ... inputs) {
 		if (sig.length != 64) {
 			return false;
 		}
@@ -85,28 +76,16 @@ public class EcdsaSigner {
 		BigInteger r = parseBigIntegerPositive(new BigInteger(rb), rb.length * 8);
 		BigInteger s = parseBigIntegerPositive(new BigInteger(sb), rb.length * 8);
 
-		return signer.verifySignature(sha256Digest(inputs, nonce), r, s);
+		return signer.verifySignature(sha256Digest(inputs), r, s);
 	}
 
-	public static boolean verify(byte[] publicKey, byte[] input,
-			byte[] nonce, byte[] sig) {
-		return verify(publicKey, new byte[][] { input }, nonce, sig);
-	}
-
-	public static boolean verify(byte[] publicKey, byte[] data, byte[] sig) {
-		return verify(publicKey, data, null, sig);
-	}
-
-	private static byte[] sha256Digest(byte[][] inputs, byte[] nonce) {
+	private static byte[] sha256Digest(byte[] ... inputs) {
 		byte digest[] = new byte[32];
 
 		SHA256Digest sha256 = new SHA256Digest();
 
 		for (byte[] input : inputs)
 			sha256.update(input, 0, input.length);
-
-		if (nonce != null && nonce.length > 0)
-			sha256.update(nonce, 0, nonce.length);
 
 		sha256.doFinal(digest, 0);
 
