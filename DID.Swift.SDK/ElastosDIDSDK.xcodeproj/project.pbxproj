@@ -20,6 +20,7 @@
 		1189A4BF23386A9E0068EE41 /* PathExtracter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1189A4BE23386A9E0068EE41 /* PathExtracter.swift */; };
 		11942D8523504E8500746B87 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11942D8323504E8500746B87 /* libcrypto.a */; };
 		11942E3C2350563200746B87 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11942E3B2350563100746B87 /* libhdkey.a */; };
+		11942E402350DBCA00746B87 /* Ccrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11942E3F2350DBCA00746B87 /* Ccrypto.swift */; };
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94B137B2C485261F5B00CD58 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; };
 		A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D440233485800012CD77 /* EmbeddedCredential.swift */; };
@@ -92,6 +93,7 @@
 		1189A4BE23386A9E0068EE41 /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PathExtracter.swift; path = ElastosDIDSDK/DID/Util/PathExtracter.swift; sourceTree = SOURCE_ROOT; };
 		11942D8323504E8500746B87 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto.a; sourceTree = "<group>"; };
 		11942E3B2350563100746B87 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libhdkey.a; sourceTree = "<group>"; };
+		11942E3F2350DBCA00746B87 /* Ccrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ccrypto.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -198,6 +200,7 @@
 				11942E3B2350563100746B87 /* libhdkey.a */,
 				11942D8323504E8500746B87 /* libcrypto.a */,
 				116C94F1234D827D00BA9777 /* crypto.h */,
+				11942E3F2350DBCA00746B87 /* Ccrypto.swift */,
 				116C94EF234D827100BA9777 /* HDkey.h */,
 				116C950B234E2B6200BA9777 /* CHDKey.swift */,
 			);
@@ -455,6 +458,7 @@
 				A3E6D482233485E00012CD77 /* DIDError.swift in Sources */,
 				A3E6D47F233485E00012CD77 /* Service.swift in Sources */,
 				11508522233CC65500EF6A8D /* Base64.swift in Sources */,
+				11942E402350DBCA00746B87 /* Ccrypto.swift in Sources */,
 				A3E6D465233485C90012CD77 /* HDKey.swift in Sources */,
 				A3E6D45A233485AD0012CD77 /* DIDURLParser.swift in Sources */,
 				A3E6D476233485DF0012CD77 /* MalformedCredentialError.swift in Sources */,
