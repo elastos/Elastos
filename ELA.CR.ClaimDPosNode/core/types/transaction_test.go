@@ -606,7 +606,7 @@ func (s *transactionSuite) TestCRCProposal_Deserialize() {
 func crpPayloadEqual(payload1 *payload.CRCProposal, payload2 *payload.CRCProposal) bool {
 	return payload1.ProposalType == payload2.ProposalType &&
 		bytes.Equal(payload1.SponsorPublicKey, payload2.SponsorPublicKey) &&
-		bytes.Equal(payload1.CRSponsorCode, payload2.CRSponsorCode) &&
+		payload1.CRSponsorDID.IsEqual(payload2.CRSponsorDID) &&
 		payload1.DraftHash.IsEqual(payload2.DraftHash) &&
 		budgetsEqual(payload1.Budgets, payload2.Budgets) &&
 		bytes.Equal(payload1.Sign, payload2.Sign) &&
@@ -757,7 +757,7 @@ func randomCRInfoPayload() *payload.CRInfo {
 
 func randomUnregisterCRPayload() *payload.UnregisterCR {
 	return &payload.UnregisterCR{
-		DID:      *randomUint168(),
+		DID:       *randomUint168(),
 		Signature: randomBytes(65),
 	}
 }
@@ -766,7 +766,7 @@ func randomCRCProposalPayload() *payload.CRCProposal {
 	return &payload.CRCProposal{
 		ProposalType:     payload.CRCProposalType(randomBytes(1)[0]),
 		SponsorPublicKey: randomBytes(33),
-		CRSponsorCode:    randomBytes(34),
+		CRSponsorDID:     *randomUint168(),
 		DraftHash:        *randomUint256(),
 		Budgets:          randomBudgets(),
 		Sign:             randomBytes(64),

@@ -60,20 +60,12 @@ func (s *State) RegisterFunction(tryStartVotingPeriod func(height uint32),
 	s.getHistoryMember = getHistoryMember
 }
 
-// GetCandidate returns candidate with specified program code, it will return
-// nil if not found.
-func (s *State) GetCandidate(programCode []byte) *Candidate {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-	return s.getCandidate(programCode)
-}
-
 // GetCandidateByDID returns candidate with specified did, it will return nil
 // nil if not found.
-func (s *State) GetCandidateByDID(did common.Uint168) *Candidate {
+func (s *State) GetCandidate(did common.Uint168) *Candidate {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	return s.getCandidateByDID(did)
+	return s.getCandidate(did)
 }
 
 // GetAllCandidates returns all candidates holding within state.
@@ -351,7 +343,7 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 	}
 	candidate.depositAmount = amount
 
-	c := s.getCandidateByDID(info.DID)
+	c := s.getCandidate(info.DID)
 	if c == nil {
 		s.history.Append(height, func() {
 			s.Nicknames[nickname] = struct{}{}
@@ -381,7 +373,7 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 
 // updateCR handles the update CR transaction.
 func (s *State) updateCR(info *payload.CRInfo, height uint32) {
-	candidate := s.getCandidateByDID(info.DID)
+	candidate := s.getCandidate(info.DID)
 	crInfo := candidate.info
 	s.history.Append(height, func() {
 		s.updateCandidateInfo(&crInfo, info)
@@ -392,7 +384,7 @@ func (s *State) updateCR(info *payload.CRInfo, height uint32) {
 
 // unregisterCR handles the cancel producer transaction.
 func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
-	candidate := s.getCandidateByDID(info.DID)
+	candidate := s.getCandidate(info.DID)
 	if candidate == nil {
 		return
 	}
@@ -425,7 +417,7 @@ func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
 // updateCandidateInfo updates the candidate's info with value compare,
 // any change will be updated.
 func (s *State) updateCandidateInfo(origin *payload.CRInfo, update *payload.CRInfo) {
-	candidate := s.getCandidateByDID(origin.DID)
+	candidate := s.getCandidate(origin.DID)
 
 	// compare and update node nickname.
 	if origin.NickName != update.NickName {
@@ -510,7 +502,8 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 	}
 
 	for _, program := range tx.Programs {
-		if candidate := s.getCandidate(program.Code); candidate != nil {
+		did, _ := getDIDByCode(program.Code)
+		if candidate := s.getCandidate(*did); candidate != nil {
 			returnCandidateAction(candidate, candidate.state)
 		}
 		if member := s.getHistoryMember(program.Code); member != nil {
@@ -565,7 +558,7 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 				if err != nil {
 					continue
 				}
-				candidate := s.getCandidateByDID(*did)
+				candidate := s.getCandidate(*did)
 				if candidate == nil {
 					continue
 				}
@@ -615,7 +608,7 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 			if err != nil {
 				continue
 			}
-			candidate := s.getCandidateByDID(*did)
+			candidate := s.getCandidate(*did)
 			if candidate == nil {
 				continue
 			}
@@ -642,7 +635,7 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	}
 }
 
-func (s *State) getCandidateByDID(did common.Uint168) *Candidate {
+func (s *State) getCandidate(did common.Uint168) *Candidate {
 	if c, ok := s.PendingCandidates[did]; ok {
 		return c
 	}
@@ -655,14 +648,6 @@ func (s *State) getCandidateByDID(did common.Uint168) *Candidate {
 		return c
 	}
 	return nil
-}
-
-func (s *State) getCandidate(programCode []byte) *Candidate {
-	did, ok := s.getDIDByCode(programCode)
-	if !ok {
-		return nil
-	}
-	return s.getCandidateByDID(did)
 }
 
 func (s *State) getDIDByCode(programCode []byte) (did common.Uint168,
