@@ -9,6 +9,9 @@ import sup from 'markdown-it-sup'
 import footnote from 'markdown-it-footnote'
 import abbr from 'markdown-it-abbr'
 import emoji from 'markdown-it-emoji'
+import mark from 'markdown-it-mark'
+import deflist from 'markdown-it-deflist'
+import ins from 'markdown-it-ins'
 
 const mdi = markdownIt({
   linkify: true, // Autoconvert URL-like text to links
@@ -21,6 +24,9 @@ const mdi = markdownIt({
   .use(sup)
   .use(abbr)
   .use(emoji)
+  .use(mark)
+  .use(ins)
+  .use(deflist)
 
 function MarkedPreview({ content }) {
   return (
