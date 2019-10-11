@@ -1,7 +1,7 @@
 import React from 'react'
 import { Row, Col, Spin, Button, message, Popconfirm } from 'antd'
 import styled from 'styled-components'
-import DraftEditor from '@/module/common/DraftEditor'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import I18N from '@/I18N'
 import StandardPage from '@/module/page/StandardPage'
 import Footer from '@/module/layout/Footer/Container'
@@ -106,11 +106,7 @@ class C extends StandardPage {
             <WrapperCol span={17}>
               <Dec status={elip.status}>
                 <StyledRichContent>
-                  <DraftEditor
-                    value={elip.description}
-                    contentType={elip.contentType}
-                    editorEnabled={false}
-                  />
+                  <MarkdownPreview content={elip.description} />
                 </StyledRichContent>
               </Dec>
             </WrapperCol>
@@ -147,7 +143,10 @@ class C extends StandardPage {
     try {
       const { updateStatus } = this.props
       const { elip } = this.state
-      const rs = await updateStatus({ _id: elip._id, status: ELIP_STATUS.SUBMITTED })
+      const rs = await updateStatus({
+        _id: elip._id,
+        status: ELIP_STATUS.SUBMITTED
+      })
       if (rs && rs.ok === 1 && rs.n === 1) {
         this.setState({
           elip: { ...elip, status: ELIP_STATUS.SUBMITTED }
@@ -170,7 +169,7 @@ class C extends StandardPage {
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
         >
-          <Button style={{ marginLeft: 16}}>
+          <Button style={{ marginLeft: 16 }}>
             {I18N.get('elip.button.markAsSubmitted')}
           </Button>
         </Popconfirm>
@@ -180,7 +179,8 @@ class C extends StandardPage {
 
   renderEditButton() {
     const { elip } = this.state
-    const isEditable = this.isAuthor(elip) &&
+    const isEditable =
+      this.isAuthor(elip) &&
       [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(elip.status)
 
     if (isEditable) {
@@ -190,7 +190,9 @@ class C extends StandardPage {
           <Col span={17}>
             <Actions>
               <Button
-                onClick={() => this.props.history.push(`/elips/${elip._id}/edit`)}
+                onClick={() =>
+                  this.props.history.push(`/elips/${elip._id}/edit`)
+                }
                 className="cr-btn cr-btn-primary"
               >
                 {I18N.get('elip.button.edit')}
