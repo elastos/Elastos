@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_LOCALSTORE_H__
 #define __ELASTOS_SDK_LOCALSTORE_H__
 
-#include <SDK/IDAgent/IDAgentImpl.h>
+#include <SDK/Common/Mstream.h>
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
 
 #include <boost/filesystem.hpp>

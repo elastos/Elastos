@@ -7,6 +7,7 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/Wallet/UTXO.h>
 #include <SDK/Plugin/Transaction/Asset.h>

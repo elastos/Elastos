@@ -21,6 +21,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/BIPs/BloomFilter.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
 #include <SDK/Wallet/Wallet.h>
 #include <SDK/Wallet/UTXO.h>
 #include <SDK/P2P/ChainParams.h>
@@ -701,15 +702,18 @@ namespace Elastos {
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
 			std::vector<Address> specialAddresses = _wallet->GetAllSpecialAddresses();
-			std::vector<Address> addrs;
-			_wallet->GetAllAddresses(addrs, 0, size_t(-1), true);
+
+			std::vector<Address> addrs, allDID;
+			_wallet->GetAllAddresses(addrs, 0, UINT32_MAX, true);
+			_wallet->GetAllDID(allDID, 0, UINT32_MAX);
+
 			std::vector<UTXOPtr> utxos = _wallet->GetAllUTXO("");
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
 
-			size_t elementCount = specialAddresses.size() + addrs.size() + utxos.size() + transactions.size();
-			elementCount += _wallet->GetListeningAddrs().size();
+			size_t elementCount = specialAddresses.size() + addrs.size() + allDID.size() +
+				utxos.size() + transactions.size();
 
 			bool is_side_wallet = addrs.size() == 1 && addrs[0].ProgramHash().prefix() == PrefixCrossChain;
 			uint32_t tweak = is_side_wallet ? UINT32_MAX : (uint32_t) peer->GetPeerInfo().GetHash();
@@ -734,8 +738,8 @@ namespace Elastos {
 				}
 			}
 
-			for (size_t i = 0; i < _wallet->GetListeningAddrs().size(); ++i) {
-				hash = Address(_wallet->GetListeningAddrs()[i]).ProgramHash().bytes();
+			for (size_t i = 0; i < allDID.size(); ++i) {
+				hash = allDID[i].ProgramHash().bytes();
 				if (!filter->ContainsData(hash)) {
 					filter->InsertData(hash);
 				}

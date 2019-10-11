@@ -20,6 +20,8 @@ namespace Elastos {
 
 			virtual void Init(const std::vector<TransactionPtr> &tx, Lockable *lock) = 0;
 
+			virtual void InitDID() = 0;
+
 			virtual bool IsSingleAddress() const = 0;
 
 			virtual bool IsProducerDepositAddress(const Address &address) const = 0;
@@ -32,6 +34,8 @@ namespace Elastos {
 
 			virtual size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool internal) const = 0;
 
+			virtual size_t GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const = 0;
+
 			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal) = 0;
 
 			virtual bool ContainsAddress(const Address &address) const = 0;
@@ -43,6 +47,8 @@ namespace Elastos {
 			virtual bytes_t DIDPubKey() const = 0;
 
 			virtual void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) = 0;
+
+			virtual std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) = 0;
 
 			virtual Key DeriveOwnerKey(const std::string &payPasswd) = 0;
 

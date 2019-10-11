@@ -72,6 +72,8 @@ namespace Elastos {
 
 			void SetRedeemScript(Prefix prefix, const bytes_t &code);
 
+			bool ChangePrefix(Prefix prefix);
+
 			bool operator<(const Address &address) const;
 
 			bool operator==(const Address &address) const;

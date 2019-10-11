@@ -10,6 +10,7 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/WalletCore/BIPs/Address.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
@@ -42,6 +43,10 @@ namespace Elastos {
 			_listener = boost::weak_ptr<Listener>(listener);
 
 			_subAccount->Init(txns, this);
+
+			// TODO: change to better way later
+			if (walletID.find("IDChain") != std::string::npos)
+				_subAccount->InitDID();
 
 			if (assetArray.empty()) {
 				InstallDefaultAsset();
@@ -142,11 +147,6 @@ namespace Elastos {
 		}
 
 		Wallet::~Wallet() {
-		}
-
-		void Wallet::InitListeningAddresses(const std::vector<std::string> &addrs) {
-			boost::mutex::scoped_lock scopedLock(lock);
-			_listeningAddrs = addrs;
 		}
 
 		std::vector<UTXOPtr> Wallet::GetAllUTXO(const std::string &address) const {
@@ -647,10 +647,16 @@ namespace Elastos {
 			return addr[0];
 		}
 
-		size_t Wallet::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) {
+		size_t Wallet::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count,
+									   bool containInternal) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 
 			return _subAccount->GetAllAddresses(addr, start, count, containInternal);
+		}
+
+		size_t Wallet::GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _subAccount->GetAllDID(did, start, count);
 		}
 
 		Address Wallet::GetOwnerDepositAddress() const {
@@ -719,7 +725,13 @@ namespace Elastos {
 		}
 
 		void Wallet::SignTransaction(const TransactionPtr &tx, const std::string &payPassword) {
+			boost::mutex::scoped_lock scopedLock(lock);
 			_subAccount->SignTransaction(tx, payPassword);
+		}
+
+		std::string Wallet::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _subAccount->SignWithDID(did, msg, payPasswd);
 		}
 
 		std::vector<TransactionPtr> Wallet::TxUnconfirmedBefore(uint32_t blockHeight) {
@@ -760,10 +772,6 @@ namespace Elastos {
 			Unlock();
 
 			if (count > 0) txUpdated(hashes, TX_UNCONFIRMED, 0);
-		}
-
-		const std::vector<std::string> &Wallet::GetListeningAddrs() const {
-			return _listeningAddrs;
 		}
 
 		std::vector<Address> Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
@@ -826,10 +834,6 @@ namespace Elastos {
 			const OutputArray &outputs = tx->GetOutputs();
 			for (OutputArray::const_iterator it = outputs.cbegin(); !r && it != outputs.cend(); ++it) {
 				if (_subAccount->ContainsAddress((*it)->Addr()))
-					r = true;
-
-				if (std::find(_listeningAddrs.begin(), _listeningAddrs.end(),
-							  (*it)->Addr().String()) != _listeningAddrs.end())
 					r = true;
 			}
 

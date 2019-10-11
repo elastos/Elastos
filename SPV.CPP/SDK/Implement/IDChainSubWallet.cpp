@@ -28,15 +28,6 @@ namespace Elastos {
 										   MasterWallet *parent) :
 				SidechainSubWallet(info, config, parent) {
 
-			std::vector<std::string> registeredIds = _parent->GetAllIDs();
-			if (registeredIds.size() != 1) {
-				if (_subAccount->Parent()->GetSignType() == Account::Standard) {
-					registeredIds.clear();
-					registeredIds.push_back(_parent->DeriveIDAndKeyForPurpose(0, 0));
-				}
-			}
-
-			_walletManager->GetWallet()->InitListeningAddresses(registeredIds);
 		}
 
 		IDChainSubWallet::~IDChainSubWallet() {
@@ -78,6 +69,48 @@ namespace Elastos {
 			ArgInfo("r => {}", result.dump());
 
 			return result;
+		}
+
+		nlohmann::json IDChainSubWallet::GetAllDID(uint32_t start, uint32_t count) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("start: {}", start);
+			ArgInfo("count: {}", count);
+
+			nlohmann::json j;
+			std::vector<Address> did;
+			size_t maxCount = _walletManager->GetWallet()->GetAllDID(did, start, count);
+
+			nlohmann::json didJson;
+			for (size_t i = 0; i < did.size(); ++i) {
+				didJson.push_back(did[i].String());
+			}
+
+			j["DID"] = didJson;
+			j["MaxCount"] = maxCount;
+
+			ArgInfo("r => {}", j.dump());
+			return j;
+		}
+
+		std::string IDChainSubWallet::Sign(const std::string &did, const std::string &message,
+										   const std::string &payPassword) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("did: {}", did);
+			ArgInfo("message: {}", message);
+			ArgInfo("payPasswd: *");
+
+			std::string signature = _walletManager->GetWallet()->SignWithDID(Address(did), message, payPassword);
+
+			ArgInfo("r => {}", signature);
+
+			return signature;
+		}
+
+		bool IDChainSubWallet::VerifySignature(const std::string &publicKey, const std::string &message,
+											   const std::string &signature) {
+
+			// TODO add later
+			return false;
 		}
 
 	}

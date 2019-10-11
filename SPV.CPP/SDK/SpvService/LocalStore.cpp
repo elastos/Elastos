@@ -11,6 +11,7 @@
 #include <SDK/WalletCore/BIPs/BIP39.h>
 #include <SDK/WalletCore/Crypto/AES.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
 
 #include <fstream>
 

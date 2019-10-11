@@ -119,6 +119,16 @@ namespace Elastos {
 			ErrorChecker::CheckCondition(!_isValid, Error::InvalidArgument, "redeemscript is invalid");
 		}
 
+		bool Address::ChangePrefix(Prefix prefix) {
+			ErrorChecker::CheckCondition(!_isValid, Error::Address, "can't change prefix with invalid addr");
+			SignType oldSignType = SignType(_code.back());
+			if (oldSignType == SignTypeMultiSign || PrefixToSignType(prefix) == SignTypeMultiSign)
+				ErrorChecker::ThrowLogicException(Error::Address, "can't change to or from multi-sign prefix");
+
+			GenerateProgramHash(prefix);
+			return true;
+		}
+
 		const bytes_t &Address::RedeemScript() const {
 			assert(!_code.empty());
 			return _code;
@@ -192,7 +202,7 @@ namespace Elastos {
 					_code += sortedSigners[i];
 				}
 				_code.push_back(uint8_t(OP_1 + sortedSigners.size() - 1));
-				_code.push_back(SignTypeMultiSign);
+				_code.push_back(PrefixToSignType(prefix));
 			}
 		}
 

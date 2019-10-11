@@ -29,6 +29,8 @@ namespace Elastos {
 
 		void SideAccount::Init(const std::vector<TransactionPtr> &, Lockable *) {}
 
+		void SideAccount::InitDID() {}
+
 		bool SideAccount::IsSingleAddress() const { return true; }
 
 		bool SideAccount::IsProducerDepositAddress(const Address &address) const { return false; }
@@ -45,6 +47,10 @@ namespace Elastos {
 			return addr.size();
 		}
 
+		size_t SideAccount::GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const {
+			return 0;
+		}
+
 		std::vector<Address> SideAccount::UnusedAddresses(uint32_t, bool) {
 			std::vector<Address> addrs;
 			addrs.push_back(side_address);
@@ -56,6 +62,10 @@ namespace Elastos {
 		bytes_t SideAccount::DIDPubKey() const { return bytes_t(); }
 
 		void SideAccount::SignTransaction(const TransactionPtr &, const std::string &) {}
+
+		std::string SideAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
+			return "";
+		}
 
 		Key SideAccount::DeriveOwnerKey(const std::string &) { return Key(); }
 

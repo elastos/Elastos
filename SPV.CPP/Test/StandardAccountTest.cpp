@@ -8,9 +8,8 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Account/Account.h>
-
-#include <Core/BRAddress.h>
 #include <SDK/Common/Log.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
 
 using namespace Elastos::ElaWallet;
 

@@ -12,6 +12,8 @@
 #include <SDK/Implement/IDChainSubWallet.h>
 #include <SDK/Implement/MasterWallet.h>
 #include <SDK/WalletCore/Crypto/AES.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 #include <SDK/Wallet/UTXO.h>
 
 #include <Interface/MasterWalletManager.h>

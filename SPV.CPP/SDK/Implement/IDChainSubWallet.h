@@ -19,6 +19,12 @@ namespace Elastos {
 					const nlohmann::json &payloadJson,
 					const std::string &memo = "");
 
+			virtual nlohmann::json GetAllDID(uint32_t start, uint32_t count) const;
+
+			virtual std::string Sign(const std::string &did, const std::string &message, const std::string &payPassword);
+
+			virtual bool VerifySignature(const std::string &publicKey, const std::string &message, const std::string &signature);
+
 		protected:
 			friend class MasterWallet;
 

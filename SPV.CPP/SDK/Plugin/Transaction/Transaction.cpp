@@ -22,11 +22,12 @@
 #include "SDK/Plugin/Transaction/Payload/CRInfo.h"
 #include "SDK/Plugin/Transaction/Payload/UnregisterCR.h"
 #include <SDK/Wallet/UTXO.h>
+#include <SDK/Wallet/Wallet.h>
 
 #include <SDK/Common/Utils.h>
-#include <SDK/Wallet/Wallet.h>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/Common/hash.h>
 
 #include <boost/make_shared.hpp>
 #include <cstring>

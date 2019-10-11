@@ -12,6 +12,7 @@
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Plugin/Transaction/Program.h>
 #include <SDK/Plugin/Transaction/Attribute.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -51,6 +52,13 @@ namespace Elastos {
 			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 		}
 
+		void SubAccount::InitDID() {
+			_allDID = _externalChain;
+			for (size_t i = 0; i < _allDID.size(); ++i) {
+				_allDID[i].ChangePrefix(PrefixIDChain);
+			}
+		}
+
 		bool SubAccount::IsSingleAddress() const {
 			return _parent->SingleAddress();
 		}
@@ -85,14 +93,6 @@ namespace Elastos {
 
 		size_t SubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {
 			addr.clear();
-#ifdef SPDLOG_DEBUG_ON
-			nlohmann::json j;
-			for (Address address : _externalChain)
-				j.push_back(address.String());
-			for (Address address : _internalChain)
-				j.push_back(address.String());
-			SPVLOG_DEBUG("all addr -> {}", j.dump());
-#endif
 
 			size_t maxCount = _externalChain.size() + (containInternal ? _internalChain.size() : 0);
 
@@ -112,6 +112,13 @@ namespace Elastos {
 			}
 
 			return maxCount;
+		}
+
+		size_t SubAccount::GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const {
+			for (size_t i = start; i < _allDID.size() && did.size() < count; ++i)
+				did.push_back(_allDID[i]);
+
+			return _allDID.size();
 		}
 
 		std::vector<Address> SubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
@@ -146,7 +153,6 @@ namespace Elastos {
 
 			// keep only the trailing contiguous block of addresses with no transactions
 			while (i > 0 && _usedAddrs.find(addrChain[i - 1]) == _usedAddrs.end()) i--;
-
 
 			while (i + gapLimit > count) { // generate new addresses up to gapLimit
 				Address address;
@@ -266,6 +272,19 @@ namespace Elastos {
 			}
 		}
 
+		std::string SubAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
+			for (size_t i = 0; i < _allDID.size(); ++i) {
+				if (did == _allDID[i]) {
+					Key key = _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
+					return key.Sign(msg).getHex();
+				}
+			}
+
+			ErrorChecker::ThrowLogicException(Error::PrivateKeyNotFound, "private key not found");
+
+			return "";
+		}
+
 		Key SubAccount::DeriveOwnerKey(const std::string &payPasswd) {
 			// 44'/coinIndex'/account'/change/index
 			return _parent->RootKey(payPasswd)->getChild("44'/0'/1'/0/0");
@@ -329,6 +348,10 @@ namespace Elastos {
 			}
 
 			if (IsOwnerAddress(address)) {
+				return true;
+			}
+
+			if (std::find(_allDID.begin(), _allDID.end(), address) != std::end(_allDID)) {
 				return true;
 			}
 

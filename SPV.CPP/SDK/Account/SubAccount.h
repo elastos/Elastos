@@ -26,6 +26,8 @@ namespace Elastos {
 
 			void Init(const std::vector<TransactionPtr> &tx, Lockable *lock);
 
+			void InitDID();
+
 			bool IsSingleAddress() const;
 
 			bool IsProducerDepositAddress(const Address &address) const;
@@ -38,6 +40,8 @@ namespace Elastos {
 
 			size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool internal) const;
 
+			size_t GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const;
+
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
 			bool ContainsAddress(const Address &address) const;
@@ -49,6 +53,8 @@ namespace Elastos {
 			bytes_t DIDPubKey() const;
 
 			void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd);
+
+			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd);
 
 			Key DeriveOwnerKey(const std::string &payPasswd);
 
@@ -66,6 +72,7 @@ namespace Elastos {
 		private:
 			uint32_t _coinIndex;
 			std::vector<Address> _internalChain, _externalChain;
+			std::vector<Address> _allDID;
 			std::set<Address> _usedAddrs, _allAddrs;
 			mutable Address _depositAddress, _ownerAddress, _crDepositAddress;
 

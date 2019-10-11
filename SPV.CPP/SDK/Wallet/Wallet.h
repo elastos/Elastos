@@ -89,8 +89,6 @@ namespace Elastos {
 
 			virtual ~Wallet();
 
-			void InitListeningAddresses(const std::vector<std::string> &addrs);
-
 			const std::string &GetWalletID() const;
 
 			void SetBlockHeight(uint32_t height);
@@ -104,7 +102,9 @@ namespace Elastos {
 			// returns the first unused external address
 			Address GetReceiveAddress() const;
 
-			size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal);
+			size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const;
+
+			size_t GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const;
 
 			Address GetOwnerDepositAddress() const;
 
@@ -169,6 +169,8 @@ namespace Elastos {
 
 			void SignTransaction(const TransactionPtr &tx, const std::string &payPassword);
 
+			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd);
+
 			void UpdateLockedBalance();
 
 			UTXOArray GetAllUTXO(const std::string &address) const;
@@ -178,8 +180,6 @@ namespace Elastos {
 			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 
 			void SetTxUnconfirmedAfter(uint32_t blockHeight);
-
-			const std::vector<std::string> &GetListeningAddrs() const;
 
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
@@ -251,8 +251,6 @@ namespace Elastos {
 			friend class GroupedAsset;
 
 			std::string _walletID;
-
-			std::vector<std::string> _listeningAddrs;
 
 			SubAccountPtr _subAccount;
 

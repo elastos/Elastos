@@ -11,6 +11,7 @@
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
 #include <SDK/WalletCore/BIPs/BIP39.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 

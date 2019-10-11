@@ -42,11 +42,6 @@ namespace Elastos {
 
 			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id));
-
-			if (_account->GetSignType() == Account::MultiSign)
-				_idAgentImpl = nullptr;
-			else
-				_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -70,8 +65,6 @@ namespace Elastos {
 			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, singleAddress));
 			_account->Save();
-
-			_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -94,12 +87,6 @@ namespace Elastos {
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, keystore, payPasswd));
 			_account->Save();
-
-			if (_account->GetSignType() == Account::MultiSign) {
-				_idAgentImpl = nullptr;
-			} else {
-				_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
-			}
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -116,12 +103,6 @@ namespace Elastos {
 			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id, readonlyWalletJson));
 			_account->Save();
-
-			if (_account->GetSignType() == Account::MultiSign) {
-				_idAgentImpl = nullptr;
-			} else {
-				_idAgentImpl = boost::shared_ptr<IDAgentImpl>(new IDAgentImpl(this));
-			}
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -137,8 +118,7 @@ namespace Elastos {
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime),
-				_idAgentImpl(nullptr) {
+				_earliestPeerTime(earliestPeerTime) {
 			ErrorChecker::CheckParam(pubKeyRings.size() < m, Error::InvalidArgument, "Invalid M");
 
 			_config = ConfigPtr(new Config(rootPath));
@@ -161,8 +141,7 @@ namespace Elastos {
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime),
-				_idAgentImpl(nullptr) {
+				_earliestPeerTime(earliestPeerTime) {
 
 			ErrorChecker::CheckParam(cosigners.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
@@ -187,8 +166,7 @@ namespace Elastos {
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime),
-				_idAgentImpl(nullptr) {
+				_earliestPeerTime(earliestPeerTime) {
 
 			ErrorChecker::CheckParam(cosigners.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
@@ -405,10 +383,6 @@ namespace Elastos {
 			}
 		}
 
-		bool MasterWallet::IsIDValid(const std::string &id) {
-			return Address(id).IsIDAddress();
-		}
-
 		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfoPtr &info, const ChainConfigPtr &config,
 														MasterWallet *parent) {
 
@@ -450,73 +424,6 @@ namespace Elastos {
 			}
 
 			return nullptr;
-		}
-
-		std::string
-		MasterWallet::DeriveIDAndKeyForPurpose(uint32_t purpose, uint32_t index) {
-
-			ErrorChecker::CheckLogic(_idAgentImpl == nullptr, Error::UnsupportOperation, "unsupport derive DID");
-			return _idAgentImpl->DeriveIDAndKeyForPurpose(purpose, index).String();
-		}
-
-		nlohmann::json
-		MasterWallet::GenerateProgram(const std::string &id, const std::string &message, const std::string &password) {
-			ArgInfo("{} {}", _id, GetFunName());
-			ArgInfo("id: {}", id);
-			ArgInfo("msg: {}", message);
-			ArgInfo("passwd: *");
-
-			RegisterIdentification payload;
-			nlohmann::json payLoadJson = nlohmann::json::parse(message);
-			payload.FromJson(payLoadJson, 0);
-
-			ByteStream ostream;
-			payload.Serialize(ostream, 0);
-
-			nlohmann::json j;
-			bytes_t signedData = _idAgentImpl->Sign(id, ostream.GetBytes(), password);
-
-			ostream.Reset();
-			ostream.WriteVarBytes(signedData);
-			j["Parameter"] = ostream.GetBytes().getHex();
-			j["Code"] = _idAgentImpl->GenerateRedeemScript(id, password);
-
-			ArgInfo("r => {}", j.dump());
-			return j;
-		}
-
-		std::string MasterWallet::Sign(const std::string &id, const std::string &message, const std::string &password) {
-			ArgInfo("{} {}", _id, GetFunName());
-			ArgInfo("id: {}", id);
-			ArgInfo("msg: {}", message);
-			ArgInfo("payPasswd: *");
-
-			ErrorChecker::CheckParamNotEmpty(id, "Master wallet id");
-			ErrorChecker::CheckParamNotEmpty(message, "Master wallet sign message");
-			ErrorChecker::CheckPassword(password, "Master wallet sign");
-
-			std::string data = _idAgentImpl->Sign(id, message, password);
-
-			ArgInfo("r => {}", data);
-
-			return data;
-		}
-
-		std::vector<std::string> MasterWallet::GetAllIDs() const {
-			if (_idAgentImpl == nullptr)
-				return std::vector<std::string>();
-
-			return _idAgentImpl->GetAllIDs();
-		}
-
-		std::string MasterWallet::GetPublicKey(const std::string &id) const {
-			ArgInfo("{} {}", _id, GetFunName());
-			ArgInfo("id: {}", id);
-
-			std::string pubkey = _idAgentImpl->GetPublicKey(id).getHex();
-
-			ArgInfo("r => {}", pubkey);
-			return pubkey;
 		}
 
 		std::string MasterWallet::GetDataPath() const {
@@ -567,13 +474,6 @@ namespace Elastos {
 			ArgInfo("new: *");
 
 			_account->ChangePassword(oldPassword, newPassword);
-		}
-
-		IIDAgent *MasterWallet::GetIIDAgent() {
-			ArgInfo("{} {}", _id, GetFunName());
-
-			ArgInfo("r => get iid agent");
-			return this;
 		}
 
 		nlohmann::json MasterWallet::GetBasicInfo() const {

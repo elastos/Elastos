@@ -8,13 +8,11 @@
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/WalletCore/KeyStore/KeyStore.h>
 #include <SDK/SpvService/LocalStore.h>
-#include <SDK/IDAgent/IDAgentImpl.h>
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
 #include <SDK/Account/Account.h>
 
 #include <Interface/IMasterWallet.h>
-#include <Interface/IIDAgent.h>
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -43,7 +41,7 @@ namespace Elastos {
 			ImportFromKeyStore,    // Select check point from key store
 		} MasterWalletInitFrom;
 
-		class MasterWallet : public IMasterWallet, public IIDAgent {
+		class MasterWallet : public IMasterWallet {
 		public:
 			virtual ~MasterWallet();
 
@@ -86,34 +84,9 @@ namespace Elastos {
 
 			std::string GetWalletID() const;
 
-			virtual IIDAgent *GetIIDAgent();
-
-		public: //override from IIDAgent
-			virtual std::string DeriveIDAndKeyForPurpose(
-					uint32_t purpose,
-					uint32_t index);
-
-			virtual bool IsIDValid(const std::string &id);
-
-			virtual nlohmann::json GenerateProgram(
-					const std::string &id,
-					const std::string &message,
-					const std::string &password);
-
-			virtual std::string Sign(
-					const std::string &id,
-					const std::string &message,
-					const std::string &password);
-
-			virtual std::vector<std::string> GetAllIDs() const;
-
-			virtual std::string GetPublicKey(const std::string &id) const;
-
 		protected:
 
 			friend class MasterWalletManager;
-
-			friend class IDAgentImpl;
 
 			friend class SubWallet;
 
@@ -231,7 +204,6 @@ namespace Elastos {
 			time_t _earliestPeerTime;
 
 			ConfigPtr _config;
-			boost::shared_ptr<IDAgentImpl> _idAgentImpl;
 			bool _p2pEnable;
 
 		};

@@ -27,6 +27,46 @@ namespace Elastos {
 			virtual nlohmann::json CreateIDTransaction(
 					const nlohmann::json &payloadJson,
 					const std::string &memo = "") = 0;
+
+			/**
+			 * Get all DID derived of current subwallet.
+			 * @param start specify start index of all DID list.
+			 * @param count specify count of DID we need.
+			 * @return If success return all DID in JSON format.
+			 *
+			 * example:
+			 * GetAllDID(0, 3) will return below
+			 * {
+			 *     "DID": ["iZDgaZZjRPGCE4x8id6YYJ158RxfTjTnCt", "iPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"],
+			 *     "MaxCount": 100
+			 * }
+			 */
+			virtual nlohmann::json GetAllDID(uint32_t start, uint32_t count) const = 0;
+
+			/**
+			 * Sign message with public key of did.
+			 * @param did will sign the message with public key of this did.
+			 * @param message to be signed.
+			 * @param payPassword pay password.
+			 * @return If success, signature will be returned.
+			 */
+			virtual std::string Sign(
+				const std::string &did,
+				const std::string &message,
+				const std::string &payPassword) = 0;
+
+			/**
+			 * Verify signature with specify public key
+			 * @param publicKey public key.
+			 * @param message message to be verified.
+			 * @param signature signature to be verified.
+			 * @return true or false.
+			 */
+			virtual bool VerifySignature(
+				const std::string &publicKey,
+				const std::string &message,
+				const std::string &signature) = 0;
+
 		};
 
 	}

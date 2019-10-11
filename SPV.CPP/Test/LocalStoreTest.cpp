@@ -8,6 +8,7 @@
 
 #include <SDK/SpvService/LocalStore.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
 #include <SDK/WalletCore/Crypto/AES.h>
 #include <SDK/Account/Account.h>
 #include <SDK/Common/Log.h>

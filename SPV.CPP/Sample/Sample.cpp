@@ -16,7 +16,6 @@
 #include <Interface/IIDChainSubWallet.h>
 #include <Interface/ISidechainSubWallet.h>
 #include <Interface/ITokenchainSubWallet.h>
-#include <Interface/IIDAgent.h>
 #include <spdlog/logger.h>
 #include <spdlog/spdlog.h>
 
@@ -599,6 +598,9 @@ static void InitWallets() {
 			subWallets[j]->AddCallback(new SubWalletCallback(walletID));
 			subWallets[j]->GetBasicInfo();
 			subWallets[j]->GetAllAddress(0, 500);
+			if (subWallets[j]->GetChainID() == "IDChain") {
+				dynamic_cast<IIDChainSubWallet *>(subWallets[j])->GetAllDID(0, 500);
+			}
 		}
 	}
 }

@@ -5,7 +5,6 @@ add_subdirectory(Common)
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES
 	"Account/*.cpp"
 	"Database/*.cpp"
-	"IDAgent/*.cpp"
 	"Implement/*.cpp"
 	"P2P/*.cpp"
 	"Plugin/*.cpp"
