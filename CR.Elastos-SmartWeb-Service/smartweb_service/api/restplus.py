@@ -2,7 +2,7 @@ import logging
 import traceback
 
 from flask_restplus import Api
-from master_api_service import settings
+from smartweb_service import settings
 from sqlalchemy.orm.exc import NoResultFound
 
 log = logging.getLogger(__name__)

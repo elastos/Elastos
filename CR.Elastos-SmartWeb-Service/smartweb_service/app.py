@@ -3,16 +3,16 @@ from flask_cors import CORS
 
 import os
 from flask import Flask, Blueprint
-from master_api_service import settings
-from master_api_service.api.common.endpoints.common import ns as nodes_user_namespace
-from master_api_service.api.mainchain.endpoints.mainchain import ns as nodes_user_namespace
-from master_api_service.api.sidechain.did.endpoints.sidechain import ns as nodes_user_namespace
-from master_api_service.api.service.mainchain.endpoints.wallet import ns as nodes_user_namespace
-from master_api_service.api.service.sidechain.did.endpoints.did import ns as nodes_user_namespace
-from master_api_service.api.console.endpoints.console import ns as nodes_user_namespace
-from master_api_service.api.hive.endpoints.hive import ns as nodes_user_namespace
-from master_api_service.api.restplus import api
-from master_api_service.database import db
+from smartweb_service import settings
+from smartweb_service.api.common.endpoints.common import ns as nodes_user_namespace
+from smartweb_service.api.mainchain.endpoints.mainchain import ns as nodes_user_namespace
+from smartweb_service.api.sidechain.did.endpoints.sidechain import ns as nodes_user_namespace
+from smartweb_service.api.service.mainchain.endpoints.wallet import ns as nodes_user_namespace
+from smartweb_service.api.service.sidechain.did.endpoints.did import ns as nodes_user_namespace
+from smartweb_service.api.console.endpoints.console import ns as nodes_user_namespace
+from smartweb_service.api.hive.endpoints.hive import ns as nodes_user_namespace
+from smartweb_service.api.restplus import api
+from smartweb_service.database import db
 
 app = Flask(__name__)
 CORS(app)

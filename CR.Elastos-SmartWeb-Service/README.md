@@ -45,7 +45,7 @@ Step 3: Start the PostgreSQL Server
 pg_ctl -D /usr/local/var/postgres start
 ```
 
-Step 4: Execute the create table scripts at master-api-service/scripts/elastos_console_create_scripts.sql
+Step 4: Execute the create table scripts at smartweb_service/scripts/elastos_console_create_scripts.sql
 
-Step 5: Execute the insert scripts at master-api-service/scripts/elastos_insert_script.sql
+Step 5: Execute the insert scripts at smartweb_service/scripts/elastos_insert_script.sql
 

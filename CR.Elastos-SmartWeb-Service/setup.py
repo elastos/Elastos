@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='master_api_service',
+    name='smartweb_service',
     version='1.0.0',
     description='RESTful API for  the Elastos NET',
-    url='https://github.com/cyber-republic/gmu-master-api-service',
+    url='https://github.com/cyber-republic/elastos-smartweb-service',
 
     keywords='rest restful api flask swagger openapi flask-restplus',
 

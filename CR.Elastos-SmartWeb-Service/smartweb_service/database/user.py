@@ -4,7 +4,7 @@
 
 from datetime import datetime
 
-from master_api_service.database import db
+from smartweb_service.database import db
 from sqlalchemy import ForeignKey
 
 """

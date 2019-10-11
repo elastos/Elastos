@@ -8,10 +8,10 @@ import json
 from flask import request
 from flask import Response
 from flask_restplus import Resource
-from master_api_service import settings
-from master_api_service.api.restplus import api
-from master_api_service.api.common.common_service import validate_api_key
-from master_api_service.api.common.common_service import getTime
+from smartweb_service import settings
+from smartweb_service.api.restplus import api
+from smartweb_service.api.common.common_service import validate_api_key
+from smartweb_service.api.common.common_service import getTime
 
 log = logging.getLogger(__name__)
 
