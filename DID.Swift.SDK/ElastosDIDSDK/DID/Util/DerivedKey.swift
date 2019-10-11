@@ -6,18 +6,25 @@ public class DerivedKey: NSObject {
     
     private var _privateKey: HDPrivateKey!
     private var _wallet: HDWallet!
+    private var seed: Data!
     
-    public init(_ pk: HDPrivateKey, _ wallet: HDWallet) {
-        _privateKey = pk
-        _wallet = wallet
+    public init(_ pk: HDPrivateKey, _ seed: Data) {
+        self.seed = seed
+//        _privateKey = pk
+//        _wallet = wallet
     }
     
     // 初步猜测是获取公钥bytes数组
     public func getPublicKeyBytes() throws -> [UInt8] {
-        
-        let publicKeyData = try _wallet.publicKey(index: 0).raw
-        let byteArray = [UInt8](publicKeyData)
-        return byteArray
+        return seed.withUnsafeMutableBytes { (seeds: UnsafeMutablePointer<Int8>) -> [UInt8] in
+            let pukey: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 66)
+            let cmasterKey: UnsafeMutablePointer<CMasterPublicKey> = UnsafeMutablePointer<CMasterPublicKey>.allocate(capacity: 66)
+            let masterKey: UnsafePointer<CMasterPublicKey> = HDkey_GetMasterPublicKey(seeds, 0, cmasterKey)
+            let pk: UnsafeMutablePointer<Int8> = HDkey_GetSubPublicKey(masterKey, 0, 0, pukey)
+            let pkpointToarry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: pk, count: 33)
+            let pkData: Data = Data(buffer: pkpointToarry)
+            return [UInt8](pkData)
+        }
     }
     
     public func getRedeemScript(_ pk: [UInt8]) throws -> [UInt8] {
@@ -56,20 +63,17 @@ public class DerivedKey: NSObject {
     }
     
     class public func getAddress(_ pk: [UInt8]) -> String {
-//        let pkData = Data.init(bytes: pk, count: pk.count)
         return Base58.base58FromBytes(pk)
     }
     
     public func getAddress() throws -> String {
         let pks = try getPublicKeyBytes()
         let binsddress = try getBinAddress(pks)
-//        let data = Data(bytes: binsddress, count: binsddress.count)
         return Base58.base58FromBytes(binsddress)
     }
     
     public func getPublicKeyBase58() throws -> String {
         let pks = try getPublicKeyBytes()
-//        let data = Data(bytes: pks, count: pks.count)
         return Base58.base58FromBytes(pks)
     }
     

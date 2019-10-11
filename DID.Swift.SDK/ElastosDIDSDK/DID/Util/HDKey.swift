@@ -9,13 +9,18 @@ public class HDKey: NSObject {
     
     init(_ seed: Data) {
         self.seed = seed
-        rootPrivateKey = HDPrivateKey.init(seed: seed, network: .testnet)
+//        rootPrivateKey = HDPrivateKey.init(seed: seed, network: .testnet)
     }
     
     public static func fromMnemonic(_ mnemonic: String, _ passphrase: String) throws -> HDKey {
-        // TODO: mnemonic conver to array string
-        let seed = Mnemonic.seed(mnemonic: [], passphrase: passphrase)
-        return HDKey(seed)
+        let mpointer: UnsafePointer<Int8> = mnemonic.toUnsafePointerInt8()!
+        let passphrasebase58Pointer = passphrase.toUnsafePointerInt8()
+        
+        var seed: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
+        seed = HDkey_GetSeedFromMnemonic(mpointer, passphrasebase58Pointer!, 0, seed)
+        let seedPointToArry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: seed, count: 64)
+        let seedData: Data = Data(buffer: seedPointToArry)
+        return HDKey(seedData)
     }
     
     public func getSeed() -> Data {
@@ -31,6 +36,6 @@ public class HDKey: NSObject {
         
         let wallet: HDWallet = HDWallet(seed: seed, network: .mainnet)
         let extendedPrivateKey = try wallet.extendedPrivateKey(index: index)
-        return DerivedKey(extendedPrivateKey, wallet)
+        return DerivedKey(extendedPrivateKey, seed)
     }
 }
