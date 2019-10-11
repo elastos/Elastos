@@ -35,6 +35,8 @@
 #include "crypto.h"
 #include "HDkey.h"
 
+#define MAX_EXPIRES              5
+
 static int PublicKey_ToJson(JsonGenerator *generator, PublicKey *publickey, int compact)
 {
     char id[MAX_DIDURL];
@@ -1267,6 +1269,35 @@ time_t DIDDocument_GetExpires(DIDDocument *document)
         return 0;
 
     return document->expires;
+}
+
+int DIDDocument_SetExpires(DIDDocument *document, time_t expires)
+{
+    time_t max_expires;
+    struct tm *tm = NULL;
+
+    max_expires = time(NULL);
+    tm = gmtime(&current_time);
+    tm->tm_min = 0;
+    tm->tm_sec = 0;
+    tm->tm_year += MAX_EXPIRES;
+    max_expires = mktime(tm);
+
+    if (expires == 0) {
+        document->expires = max_expires;
+        return 0;
+    }
+
+    tm = gmtime(&expires);
+    tm->tm_min = 0;
+    tm->tm_sec = 0;
+    expires = mktime(tm);
+
+    if (expires > max_expires)
+        return -1;
+
+    document->expires = expires;
+    return 0;
 }
 
 DIDURL *PublicKey_GetId(PublicKey *publickey)

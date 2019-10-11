@@ -852,6 +852,17 @@ DID_API time_t DIDDocument_GetExpires(DIDDocument *document);
 
 /**
  * \~English
+ * Set expire time about DID Document.
+ *
+ * @param
+ *      time             [in] time to expire.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_SetExpires(DIDDocument *document, time_t expires);
+
+/**
+ * \~English
  * Get identifier of public key.
  *
  * @param

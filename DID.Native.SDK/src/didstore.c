@@ -277,7 +277,7 @@ static int store_file(const char *path, const char *string)
     if (!path || !string)
         return -1;
 
-    fd = open(path, O_WRONLY|O_APPEND|O_CREAT);
+    fd = open(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1)
         return -1;
 
@@ -690,6 +690,7 @@ static DIDDocument *create_document(DID *did, const char *passphrase, const char
         return NULL;
     }
 
+    DIDDocument_SetExpires(document, 0);
     return document;
 }
 
@@ -1289,7 +1290,7 @@ int DIDStore_Sign(DID *did, DIDURL *key, const char *password, char *sig, int co
     return 0;
 }
 
-const char *DIDStore_Verify(DID *did, DIDURL *id, char *data, char *nonce, char *signture)
+const char *DIDStore_Verify(DID *did, DIDURL *key, char *signture, char *data)
 {
     //TODO:
     return NULL;

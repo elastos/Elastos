@@ -49,6 +49,7 @@ _DIDDocument_GetCredentials
 _DIDDocument_GetCredential
 _DIDDocument_SelectCredential
 _DIDDocument_GetExpires
+_DIDDocument_SetExpires
 _DIDDocument_GetService
 _DIDDocument_GetServices
 _DIDDocument_SelectService

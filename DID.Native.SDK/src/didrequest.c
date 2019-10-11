@@ -125,9 +125,9 @@ static int didrequest_operate(const char *op, DID *did, DIDURL *signkey, const c
     base64_text = (char *)alloca(len * 4 / 3 + 16);
     base64_url_encode(base64_text, (const uint8_t *)data, len);
 
-    ret = DIDStore_Sign(did, signkey, passphrase, signed_data, 3, (unsigned char*)spec, strlen(spec) + 1,
-            (unsigned char*)op, strlen(op) + 1, (unsigned char*)base64_text, strlen(base64_text) + 1);
-    if (ret == -1)
+    ret = DIDStore_Sign(did, signkey, passphrase, signed_data, 3, (unsigned char*)spec, strlen(spec),
+            (unsigned char*)op, strlen(op), (unsigned char*)base64_text, strlen(base64_text));
+    if (ret < 0)
         return -1;
 
     req.header.spec = spec;
