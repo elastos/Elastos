@@ -258,6 +258,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnCRDepositCoin:
 		s.returnDeposit(tx, height)
+		s.processDeposit(tx, height)
 	}
 
 	s.processCancelVotes(tx, height)
