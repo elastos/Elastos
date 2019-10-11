@@ -967,7 +967,7 @@ func newCRCProposal(L *lua.LState) int {
 	crcProposal := &payload.CRCProposal{
 		ProposalType:     payload.CRCProposalType(proposalType),
 		SponsorPublicKey: publicKey,
-		CRSponsorCode:    ct.Code,
+		CRSponsorDID:     *getDid(ct.Code),
 		DraftHash:        *draftHash,
 		Budgets:          budgets,
 	}

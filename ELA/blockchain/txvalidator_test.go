@@ -1271,16 +1271,16 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	err = s.Chain.checkRegisterCRTransaction(txn, 0)
 	s.EqualError(err, "should create tx during voting period")
 
+	delete(s.Chain.crCommittee.GetState().CodeDIDMap, codeStr1)
+	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
+	s.NoError(err)
+
 	// DID already exist
 	s.Chain.crCommittee.GetState().CodeDIDMap[codeStr1] = *did1
 	s.Chain.crCommittee.GetState().ActivityCandidates[*did1] = &crstate.Candidate{}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "did "+
-		"67ae53989e21c3212dd9bfed6daeb56874782502dd already exist")
-
-	delete(s.Chain.crCommittee.GetState().CodeDIDMap, codeStr1)
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.NoError(err)
+	s.EqualError(err, "did "+did1.String()+" already exist")
+	delete(s.Chain.crCommittee.GetState().ActivityCandidates, *did1)
 
 	// Give an invalid code in payload
 	txn.Payload.(*payload.CRInfo).Code = []byte{}
@@ -1591,7 +1591,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	crcProposalPayload := &payload.CRCProposal{
 		ProposalType:     payload.Normal,
 		SponsorPublicKey: publicKey1,
-		CRSponsorCode:    code2,
+		CRSponsorDID:     *getDid(code2),
 		DraftHash:        common.Uint256{1, 2, 3},
 		Budgets:          []common.Fixed64{1, 1, 1},
 	}
@@ -1858,6 +1858,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 
 	// ok
 	txn := s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
+	crcProposalReview, _ := txn.Payload.(*payload.CRCProposalReview)
+	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalReview.ProposalHash] = nil
 	err := s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
 	s.NoError(err)
 
@@ -1877,11 +1879,15 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 	err = s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
 	s.EqualError(err, "did correspond crMember not exists")
 
+	delete(s.Chain.crCommittee.GetProposalManager().Proposals, crcProposalReview.ProposalHash)
 	// invalid CR proposal reviewer signature
 	txn = s.getCrcProposalReviewTx(publicKeyStr1, privateKeyStr1)
 	txn.Payload.(*payload.CRCProposalReview).Sign = []byte{}
+	crcProposalReview, _ = txn.Payload.(*payload.CRCProposalReview)
+	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalReview.ProposalHash] = nil
 	err = s.Chain.checkCrcProposalReviewTransaction(txn, tenureHeight)
 	s.EqualError(err, "invalid signature length")
+	delete(s.Chain.crCommittee.GetProposalManager().Proposals, crcProposalReview.ProposalHash)
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
@@ -1900,10 +1906,8 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	s.Chain.crCommittee.Members = memebers
 
 	// ok
-
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	err := s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-
 	s.NoError(err)
 
 	// invalid payload
@@ -2141,7 +2145,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 		},
 	}, nil)
 	height++
-	candidate := s.Chain.crCommittee.GetState().GetCandidate(code)
+	candidate := s.Chain.crCommittee.GetState().GetCandidate(*did)
 	s.True(candidate.State() == crstate.Pending, "register CR failed")
 
 	for i := 0; i < 6; i++ {
