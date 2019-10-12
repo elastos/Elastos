@@ -297,7 +297,7 @@ func (b *BlockChain) CheckBlockContext(block *Block, prevNode *BlockNode) error 
 	// Ensure the timestamp for the block header is after the
 	// median time of the last several blocks (medianTimeBlocks).
 	medianTime := CalcPastMedianTime(prevNode)
-	tempTime := time.Unix(int64(header.Timestamp), 0)
+	tempTime := time.Unix(int64(header.Timestamp), 1)
 
 	if !tempTime.After(medianTime) {
 		return errors.New("block timestamp is not after expected")
