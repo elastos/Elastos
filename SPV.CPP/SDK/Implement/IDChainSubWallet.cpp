@@ -9,6 +9,7 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 #include <SDK/Plugin/Transaction/Payload/DIDInfo.h>
 #include <SDK/Plugin/Transaction/Program.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
@@ -108,9 +109,17 @@ namespace Elastos {
 
 		bool IDChainSubWallet::VerifySignature(const std::string &publicKey, const std::string &message,
 											   const std::string &signature) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("pubkey: {}", publicKey);
+			ArgInfo("message: {}", message);
+			ArgInfo("signature: {}", signature);
 
-			// TODO add later
-			return false;
+			bytes_t pubkey(publicKey), sign(signature);
+			Key key(pubkey);
+			bool r = key.Verify(message, sign);
+
+			ArgInfo("r => {}", r);
+			return r;
 		}
 
 		std::string IDChainSubWallet::GetDIDByPublicKey(std::string &pubkey) const {

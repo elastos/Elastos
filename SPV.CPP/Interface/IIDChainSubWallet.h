@@ -66,6 +66,7 @@ namespace Elastos {
 				const std::string &publicKey,
 				const std::string &message,
 				const std::string &signature) = 0;
+
 			/**
 			 * Get DID by public key
 			 * @param pubkey public key
