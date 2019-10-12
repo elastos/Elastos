@@ -118,18 +118,24 @@ add_subdirectory(Core)
 add_subdirectory(SDK)
 add_subdirectory(Interface)
 
-include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${ThirdParty_INC_DIRS}
-)
-
 set(SPVSDK_OBJECT_TARGET spvsdk_object)
 
 add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVSDK_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
+
+target_include_directories(${SPVSDK_OBJECT_TARGET} PUBLIC
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
+	${ThirdParty_BOOST_INC_DIR}
+	${ThirdParty_JSON_INC_DIR}
+	${ThirdParty_OPENSSL_INC_DIR}
+	${ThirdParty_SPDLOG_INC_DIR}
+	${ThirdParty_FRUIT_INC_DIR}
+	${ThirdParty_LIBCONFIG_INC_DIR}
+)
+
 add_dependencies(${SPVSDK_OBJECT_TARGET} ${SPV_Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++ common)
 set_target_properties(${SPVSDK_OBJECT_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

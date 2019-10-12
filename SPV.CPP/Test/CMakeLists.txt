@@ -15,6 +15,10 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} TEST_SOURCE_FILES)
 foreach(src ${TEST_SOURCE_FILES})
 	string(REGEX REPLACE ".*/\(.*\).cpp$" "\\1" TEST_TARGET_NAME ${src})
 	add_executable(${TEST_TARGET_NAME} ${src})
+	target_include_directories(${TEST_TARGET_NAME} PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/Catch2
+		${ThirdParty_FRUIT_INC_DIR}
+		${ThirdParty_LIBCONFIG_INC_DIR})
 	target_link_libraries(${TEST_TARGET_NAME} spvsdk)
 	target_link_libraries(${TEST_TARGET_NAME} dl)
 	add_dependencies(${TEST_TARGET_NAME} copy_test_data spvsdk)
