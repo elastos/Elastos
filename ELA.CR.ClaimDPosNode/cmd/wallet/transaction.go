@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package wallet
 
@@ -86,10 +86,6 @@ var buildTxCommand = []cli.Command{
 			cmdcom.AccountPasswordFlag,
 		},
 		Action: func(c *cli.Context) error {
-			if c.NumFlags() == 0 {
-				cli.ShowSubcommandHelp(c)
-				return nil
-			}
 			if err := CreateActivateProducerTransaction(c); err != nil {
 				fmt.Println("error:", err)
 				os.Exit(1)
