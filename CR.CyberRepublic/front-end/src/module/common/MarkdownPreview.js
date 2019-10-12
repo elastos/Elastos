@@ -14,6 +14,7 @@ import deflist from 'markdown-it-deflist'
 import ins from 'markdown-it-ins'
 
 const mdi = markdownIt({
+  breaks: true,
   linkify: true, // Autoconvert URL-like text to links
   typographer: true // Enable some language-neutral replacement + quotes beautification
 })
@@ -48,13 +49,14 @@ const Wrapper = styled.div`
   line-height: 1.67;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  tab-size: 4;
   p,
   blockquote,
   pre,
   ul,
   ol,
   dl {
-    margin: 1.2em 0;
+    margin: 1em 0;
     padding: 0;
   }
 
