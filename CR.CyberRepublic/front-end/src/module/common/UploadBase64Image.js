@@ -56,13 +56,12 @@ class UploadBase64Image extends BaseComponent {
     const image = new Image()
     image.src = blobURL
 
-    image.onload = () => {
+    image.onload = async () => {
       // send it to canvas to compress and convert format
-      const resized = resizeImage(image)
+      const base64 = resizeImage(image)
       // release the blob url
       URL.revokeObjectURL(blobURL)
-      // send base64 string to server and return image url
-      this.props.insertImage(blobURL)
+      this.props.insertImage(base64)
     }
   }
 

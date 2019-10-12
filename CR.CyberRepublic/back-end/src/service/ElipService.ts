@@ -111,7 +111,9 @@ export default class extends Base {
     const body = `
       <p>${update ? p : p1}</p>
       <br />
-      <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
+      <p>Click this link to view more details: <a href="${
+        process.env.SERVER_URL
+      }/elips/${elip._id}">${process.env.SERVER_URL}/elips/${elip._id}</a></p>
       <br />
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
@@ -157,7 +159,9 @@ export default class extends Base {
 
     const isVisible = rs.createdBy._id.equals(currentUserId) ||
       userRole === constant.USER_ROLE.SECRETARY ||
-      [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED].includes(rs.status)
+      [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED].includes(
+        rs.status
+      )
 
     if (_.isEmpty(rs.comments)) {
       return isVisible ? { elip: rs, reviews } : {}

@@ -23,10 +23,10 @@ class Component extends BaseComponent {
     this.setState({ value })
   }
 
-  insertImage = url => {
+  insertImage = base64 => {
     const doc = this.editor.getDoc()
     const cursor = doc.getCursor()
-    doc.replaceRange(`![minion](${url})`, cursor)
+    doc.replaceRange(`\n![image](${base64})\n`, cursor)
   }
 
   ord_render() {
@@ -69,5 +69,13 @@ const Wrapper = styled.div`
     overflow: auto !important;
     min-height: 450px;
     margin-right: 0;
+  }
+  .cm-s-base16-light span.cm-string {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 300px;
+    display: inline-block;
+    vertical-align: bottom;
   }
 `
