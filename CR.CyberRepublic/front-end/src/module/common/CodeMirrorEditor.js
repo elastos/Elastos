@@ -5,7 +5,8 @@ import 'codemirror/mode/gfm/gfm'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/base16-light.css'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
-import styles from 'styled-components'
+import styled from 'styled-components'
+import UploadBase64Image from '@/module/common/UploadBase64Image'
 
 class Component extends BaseComponent {
   constructor(props) {
@@ -34,7 +35,7 @@ class Component extends BaseComponent {
   ord_render() {
     return (
       <Wrapper>
-        <button onClick={this.onClick}>Insert Image</button>
+        <UploadBase64Image />
         <CodeMirror
           value={this.props.content}
           options={{
@@ -55,12 +56,12 @@ class Component extends BaseComponent {
 
 export default Component
 
-const Wrapper = styles.div`
+const Wrapper = styled.div`
+  position: relative;
   .CodeMirror {
     min-height: 450px;
     height: unset;
     border: 1px solid #d9d9d9;
-    background: #cccccc33;
   }
   .CodeMirror-wrap pre.CodeMirror-line,
   .CodeMirror-wrap pre.CodeMirror-line-like {
