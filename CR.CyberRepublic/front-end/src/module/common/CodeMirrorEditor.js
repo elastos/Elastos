@@ -13,6 +13,7 @@ class Component extends BaseComponent {
     this.state = {
       value: ''
     }
+    this.editor = null
   }
 
   onChange = (editor, data, value) => {
@@ -21,9 +22,19 @@ class Component extends BaseComponent {
     this.setState({ value })
   }
 
+  onClick = () => {
+    const doc = this.editor.getDoc()
+    const cursor = doc.getCursor()
+    doc.replaceRange(
+      '![minion](https://octodex.github.com/images/minion.png)',
+      cursor
+    )
+  }
+
   ord_render() {
     return (
       <Wrapper>
+        <button onClick={this.onClick}>Insert Image</button>
         <CodeMirror
           value={this.props.content}
           options={{
@@ -32,6 +43,9 @@ class Component extends BaseComponent {
             lineWrapping: true
           }}
           onChange={this.onChange}
+          editorDidMount={editor => {
+            this.editor = editor
+          }}
         />
         <MarkdownPreview content={this.state.value} />
       </Wrapper>
@@ -46,6 +60,7 @@ const Wrapper = styles.div`
     min-height: 450px;
     height: unset;
     border: 1px solid #d9d9d9;
+    background: #cccccc33;
   }
   .CodeMirror-wrap pre.CodeMirror-line,
   .CodeMirror-wrap pre.CodeMirror-line-like {
