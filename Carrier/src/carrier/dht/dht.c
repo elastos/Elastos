@@ -1403,7 +1403,7 @@ int dht_group_peer_count(DHT *dht, uint32_t group_number, uint32_t *peer_count)
     assert(peer_count);
 
     *peer_count = tox_conference_peer_count(tox, group_number, &error);
-    if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
+    if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
         vlogE("DHT: Get peer count of group %lu error (%d)", group_number, error);
         return __dht_group_peer_query_error(error);
     }
@@ -1424,8 +1424,7 @@ int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_numbe
     assert(name);
     assert(length > 0);
 
-    len = tox_conference_peer_get_name_size(tox, group_number, peer_number,
-                                            &error);
+    len = tox_conference_peer_get_name_size(tox, group_number, peer_number, &error);
     if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
         vlogE("DHT: Get peer %lu name size of group %lu error (%d)", peer_number,
               group_number, error);
@@ -1465,6 +1464,83 @@ int dht_group_get_peer_public_key(DHT *dht, uint32_t group_number,
     if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
         vlogE("DHT: Get peer %lu public key from group %lu error (%d)",
               group_number, peer_number, error);
+        return __dht_group_peer_query_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_get_offline_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_number,
+                                    char *name, size_t length)
+{
+    Tox *tox = dht->tox;
+    TOX_ERR_CONFERENCE_PEER_QUERY error;
+    size_t len;
+
+    assert(tox);
+    assert(group_number !=  UINT32_MAX);
+    assert(peer_number != UINT32_MAX);
+    assert(name);
+    assert(length > 0);
+
+    len = tox_conference_offline_peer_get_name_size(tox, group_number, peer_number, &error);
+    if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
+        vlogE("DHT: Get offline peer %lu name size of group %lu error (%d)", peer_number,
+              group_number, error);
+        return __dht_group_peer_query_error(error);
+    }
+
+    if (!len)
+        return 0;
+
+    if (len > length)
+        return ELA_DHT_ERROR(ELAERR_BUFFER_TOO_SMALL);
+
+    tox_conference_offline_peer_get_name(tox, group_number, peer_number,
+                                         (uint8_t *)name, &error);
+    if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
+        vlogE("DHT: Get offline peer %lu name of group %lu error (%d)", group_number,
+              error);
+        return __dht_group_peer_query_error(error);
+    }
+
+    return len;
+}
+
+int dht_group_get_offline_peer_public_key(DHT *dht, uint32_t group_number,
+                                          uint32_t peer_number, uint8_t *public_key)
+{
+    Tox *tox = dht->tox;
+    TOX_ERR_CONFERENCE_PEER_QUERY error;
+
+    assert(tox);
+    assert(group_number !=  UINT32_MAX);
+    assert(peer_number != UINT32_MAX);
+    assert(public_key);
+
+    tox_conference_offline_peer_get_public_key(tox, group_number, peer_number,
+                                               public_key, &error);
+    if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
+        vlogE("DHT: Get offline peer %lu public key from group %lu error (%d)",
+              group_number, peer_number, error);
+        return __dht_group_peer_query_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_offline_peer_count(DHT *dht, uint32_t group_number, uint32_t *peer_count)
+{
+    Tox *tox = dht->tox;
+    TOX_ERR_CONFERENCE_PEER_QUERY error;
+
+    assert(tox);
+    assert(group_number != UINT32_MAX);
+    assert(peer_count);
+
+    *peer_count = tox_conference_offline_peer_count(tox, group_number, &error);
+    if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
+        vlogE("DHT: Get offline peer count of group %lu error (%d)", group_number, error);
         return __dht_group_peer_query_error(error);
     }
 

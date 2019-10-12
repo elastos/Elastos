@@ -104,7 +104,7 @@ int dht_group_get_public_key(DHT *dht, uint32_t group_number,
 int dht_group_number_by_public_key(DHT *dht, const uint8_t *public_key,
                                    uint32_t *group_number);
 
-int dht_group_new(DHT *dht, uint32_t *grou_number);
+int dht_group_new(DHT *dht, uint32_t *group_number);
 
 int dht_group_leave(DHT *dht, uint32_t group_number);
 
@@ -129,6 +129,14 @@ int dht_group_get_peer_public_key(DHT *dht, uint32_t group_number,
                                   uint32_t peer_number, uint8_t *public_key);
 
 int dht_group_peer_count(DHT *dht, uint32_t group_number, uint32_t *peer_count);
+
+int dht_group_get_offline_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_number,
+                                    char *name, size_t length);
+
+int dht_group_get_offline_peer_public_key(DHT *dht, uint32_t group_number,
+                                          uint32_t peer_number, uint8_t *public_key);
+
+int dht_group_offline_peer_count(DHT *dht, uint32_t group_number, uint32_t *peer_count);
 
 uint32_t dht_get_group_count(DHT *dht);
 

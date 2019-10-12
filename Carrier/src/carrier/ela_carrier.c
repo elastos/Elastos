@@ -3757,6 +3757,48 @@ int ela_group_get_peers(ElaCarrier *w, const char *groupid,
             return 0;
     }
 
+    rc = dht_group_offline_peer_count(&w->dht, group_number, &peer_count);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    for (i = 0; i < peer_count; i++) {
+        uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
+        ElaGroupPeer peer;
+        size_t text_sz = sizeof(peer.userid);
+        char *peerid;
+
+        rc = dht_group_get_offline_peer_name(&w->dht, group_number, i, peer.name,
+                                             sizeof(peer.name));
+        if (rc < 0) {
+            vlogW("Carrier: Get peer %lu name from group:%lu error.",
+                  i, group_number);
+            continue;
+        } else if (rc == 0) {
+            peer.name[0] = '\0';
+        } else {
+            //Dothing.
+        }
+
+        rc = dht_group_get_offline_peer_public_key(&w->dht, group_number, i, public_key);
+        if (rc < 0) {
+            vlogW("Carrier: Get peer %lu public key from group %lu error.",
+                  i, group_number);
+            continue;
+        }
+
+        peerid = base58_encode(public_key, sizeof(public_key), peer.userid,
+                               &text_sz);
+        if (!peerid) {
+            vlogW("Carrier: Convert public key to userid error");
+            continue;
+        }
+
+        if (!callback(&peer, context))
+            return 0;
+    }
+
     callback(NULL, context);
     return 0;
 }
@@ -3808,30 +3850,59 @@ int ela_group_get_peer(ElaCarrier *w, const char *groupid,
             continue;
         }
 
-        if (memcmp(peerpk, public_key, sizeof(peerpk)) == 0)
-            break;
+        if (memcmp(peerpk, public_key, sizeof(peerpk)) == 0) {
+            memset(peer->name, 0, sizeof(peer->name));
+            rc = dht_group_get_peer_name(&w->dht, group_number, i, peer->name,
+                                         sizeof(peer->name));
+            if (rc < 0) {
+                vlogE("Carrier: Get peer %lu name from group:%lu error.", i,
+                      group_number);
+                ela_set_error(rc);
+                return -1;
+            }
+
+            strcpy(peer->userid, peerid);
+
+            return 0;
+        }
     }
 
-    if (i == peer_count) {
-        vlogE("Carrier: Can not find peer (%s) in group (%lu)", peerid,
-              group_number);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
-        return -1;
-    }
-
-    memset(peer->name, 0, sizeof(peer->name));
-    rc = dht_group_get_peer_name(&w->dht, group_number, i, peer->name,
-                                 sizeof(peer->name));
+    rc = dht_group_offline_peer_count(&w->dht, group_number, &peer_count);
     if (rc < 0) {
-        vlogE("Carrier: Get peer %lu name from group:%lu error.", i,
-              group_number);
         ela_set_error(rc);
         return -1;
     }
 
-    strcpy(peer->userid, peerid);
+    for (i = 0; i < peer_count; i++) {
+        uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
 
-    return 0;
+        rc = dht_group_get_offline_peer_public_key(&w->dht, group_number, i, public_key);
+        if (rc < 0) {
+            vlogW("Carrier: Get peer %lu name from group:%lu error.",
+                  i, group_number);
+            continue;
+        }
+
+        if (memcmp(peerpk, public_key, sizeof(peerpk)) == 0) {
+            memset(peer->name, 0, sizeof(peer->name));
+            rc = dht_group_get_offline_peer_name(&w->dht, group_number, i, peer->name,
+                                                 sizeof(peer->name));
+            if (rc < 0) {
+                vlogE("Carrier: Get peer %lu name from group:%lu error.", i,
+                      group_number);
+                ela_set_error(rc);
+                return -1;
+            }
+
+            strcpy(peer->userid, peerid);
+
+            return 0;
+        }
+    }
+
+    vlogE("Carrier: Can not find peer (%s) in group (%lu)", peerid, group_number);
+    ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
+    return -1;
 }
 
 int ela_get_groups(ElaCarrier *w, ElaIterateGroupCallback *callback,

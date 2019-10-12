@@ -523,13 +523,24 @@ static void killnode(TestContext *context, int argc, char *argv[])
 static void restartnode(TestContext *context, int argc, char *argv[])
 {
     CarrierContextExtra *extra = context->carrier->extra;
+    CarrierContext *wctx = context->carrier;
     struct timeval timeout_interval;
     struct timeval now;
     extern void *carrier_run_entry(void *);
 
-    CHK_ARGS(argc == 2 || argc == 3);
+    CHK_ARGS(argc == 1 || argc == 2 || argc == 3);
 
     vlogI("Robot will be reborn.");
+
+    if (argc == 1) {
+        pthread_create(&extra->tid, 0, &carrier_run_entry, NULL);
+        // wait until joining persistent group
+        if (extra->groupid[0])
+            cond_wait(wctx->group_cond);
+
+        write_ack("restartnode success\n");
+        return;
+    }
 
     pthread_mutex_lock(&extra->mutex);
     if (argc == 2) {
@@ -1249,6 +1260,7 @@ static void gleave(TestContext *context, int argc, char *argv[])
         write_ack("gleave failed\n");
         return;
     }
+    wextra->groupid[0] = '\0';
     write_ack("gleave succeeded\n");
 }
 
