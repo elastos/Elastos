@@ -17,6 +17,7 @@ dev:
 linux:
 	GOARCH=amd64 GOOS=linux $(BUILD) -o ela log.go settings.go main.go
 	GOARCH=amd64 GOOS=linux $(BUILD) -o ela-cli cmd/ela-cli.go
+	GOARCH=amd64 GOOS=linux $(BUILD) -o ela-dns elanet/dns/main/main.go
 
 cli:
 	$(BUILD) -o ela-cli cmd/ela-cli.go
