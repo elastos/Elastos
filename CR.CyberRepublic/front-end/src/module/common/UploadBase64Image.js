@@ -39,7 +39,7 @@ function resizeImage(img) {
 }
 
 class UploadBase64Image extends BaseComponent {
-  onChange(e) {
+  onChange = e => {
     const file = e.target.files[0]
     // check if the uploaded file is an image
     if (!file.type.includes('image/')) {
@@ -61,6 +61,8 @@ class UploadBase64Image extends BaseComponent {
       const resized = resizeImage(image)
       // release the blob url
       URL.revokeObjectURL(blobURL)
+      // send base64 string to server and return image url
+      this.props.insertImage(blobURL)
     }
   }
 
@@ -104,11 +106,6 @@ const Wrapper = styled.div`
     z-index: 99;
     top: 0;
     right: -32px;
-  }
-
-  #fileInput:focus + label {
-    outline: 1px dotted #000;
-    outline: -webkit-focus-ring-color auto 5px;
   }
 
   .inputfile + label * {

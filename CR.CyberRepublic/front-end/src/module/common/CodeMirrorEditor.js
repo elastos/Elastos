@@ -23,19 +23,16 @@ class Component extends BaseComponent {
     this.setState({ value })
   }
 
-  onClick = () => {
+  insertImage = url => {
     const doc = this.editor.getDoc()
     const cursor = doc.getCursor()
-    doc.replaceRange(
-      '![minion](https://octodex.github.com/images/minion.png)',
-      cursor
-    )
+    doc.replaceRange(`![minion](${url})`, cursor)
   }
 
   ord_render() {
     return (
       <Wrapper>
-        <UploadBase64Image />
+        <UploadBase64Image insertImage={this.insertImage} />
         <CodeMirror
           value={this.props.content}
           options={{
