@@ -49,7 +49,8 @@ set(SRC
     didstore_store_cred_test.c
     didstore_cred_op_test.c
     didstore_new_did_test.c
-    didrequest_test.c)
+    didrequest_test.c
+    diddoc_sign_test.c)
 
 add_definitions(-DLIBCONFIG_STATIC)
 

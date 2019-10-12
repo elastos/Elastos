@@ -20,6 +20,7 @@ CU_SuiteInfo* didstore_store_cred_test_suite_info(void);
 CU_SuiteInfo* didstore_cred_op_test_suite_info(void);
 CU_SuiteInfo* didstore_new_did_test_suite_info(void);
 CU_SuiteInfo* didrequest_test_suite_info(void);
+CU_SuiteInfo* diddoc_sign_test_suite_info(void);
 
 TestSuite suites[] = {
     { "didstore_open_test.c",                didstore_open_test_suite_info           },
@@ -35,5 +36,6 @@ TestSuite suites[] = {
     { "didstore_cred_op_test.c",             didstore_cred_op_test_suite_info        },
     { "didstore_new_did_test.c ",            didstore_new_did_test_suite_info        },
     { "didrequest_test.c",                   didrequest_test_suite_info              },
+    { "diddoc_sign_test.c",                  diddoc_sign_test_suite_info             },
     { NULL,                                  NULL                                    }
 };

@@ -863,6 +863,28 @@ DID_API int DIDDocument_SetExpires(DIDDocument *document, time_t expires);
 
 /**
  * \~English
+ * Sign data by DID.
+ *
+ * @param
+ *      document                [in] The handle to DID Document.
+ * @param
+ *      key                     [in] Public key to sign.
+ *                                   If key = NULL, sdk will get default key from
+ *                                   DID Document.
+ * @param
+ *      password                [in] Pass word to sign.
+ * @param
+ *      sig                     [out] The buffer will receive signature data.
+ * @param
+ *      count                   [in] The size of data list.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *password,
+         char *sig, int count, ...);
+
+/**
+ * \~English
  * Get identifier of public key.
  *
  * @param
@@ -1397,6 +1419,9 @@ DID_API DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint);
  */
 DID_API int DIDStore_Sign(DID *did, DIDURL *key, const char *password,
          char *sig, int count, ...);
+
+DID_API int DIDStore_Signv(DID *did, DIDURL *key, const char *password,
+        char *sig, int count, va_list inputs);
 
 /**
  * \~English

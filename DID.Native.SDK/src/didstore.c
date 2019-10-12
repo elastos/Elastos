@@ -1261,33 +1261,44 @@ DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint)
     return document;
 }
 
-int DIDStore_Sign(DID *did, DIDURL *key, const char *password, char *sig, int count, ...)
+int DIDStore_Signv(DID *did, DIDURL *key, const char *password, char *sig,
+        int count, va_list inputs)
 {
-    const char *decrpted_privatekey;
+    const char *privatekey;
     unsigned char binkey[PRIVATEKEY_BYTES];
-    va_list inputs;
+    int rc;
 
-    if (!did || !key)
+    if (!did || !key || !sig || count == 0)
         return -1;
 
     if (load_files(get_file_path(DIDStore_PrivateKey, did->idstring, key->fragment, 0),
-               &decrpted_privatekey) == -1)
+               &privatekey) == -1)
         return -1;
 
-    if (decrypt_from_base64(binkey, password, decrpted_privatekey) == -1) {
-        free((char*)decrpted_privatekey);
+    rc = decrypt_from_base64(binkey, password, privatekey);
+    free((char*)privatekey);
+    if (rc == -1)
         return -1;
-    }
 
-    free((char*)decrpted_privatekey);
-    va_start(inputs, count);
-    if (ecdsa_sign_base64v(sig, binkey, count, inputs) == -1) {
-        va_end(inputs);
+    if (ecdsa_sign_base64v(sig, binkey, count, inputs) == -1)
         return -1;
-    }
 
-    va_end(inputs);
     return 0;
+}
+
+int DIDStore_Sign(DID *did, DIDURL *key, const char *password, char *sig, int count, ...)
+{
+    int rc;
+    va_list inputs;
+
+    if (!did || !key || !sig || count == 0)
+        return -1;
+
+    va_start(inputs, count);
+    rc = DIDStore_Signv(did, key, password, sig, count, inputs);
+    va_end(inputs);
+
+    return rc;
 }
 
 const char *DIDStore_Verify(DID *did, DIDURL *key, char *signture, char *data)

@@ -1277,7 +1277,7 @@ int DIDDocument_SetExpires(DIDDocument *document, time_t expires)
     struct tm *tm = NULL;
 
     max_expires = time(NULL);
-    tm = gmtime(&current_time);
+    tm = gmtime(&max_expires);
     tm->tm_min = 0;
     tm->tm_sec = 0;
     tm->tm_year += MAX_EXPIRES;
@@ -1298,6 +1298,26 @@ int DIDDocument_SetExpires(DIDDocument *document, time_t expires)
 
     document->expires = expires;
     return 0;
+}
+
+int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *password,
+         char *sig, int count, ...)
+{
+    int rc;
+    va_list inputs;
+
+    if (!document || !password || !sig || count == 0)
+        return -1;
+
+    if (!key)
+        key = DIDDocument_GetDefaultPublicKey(document);
+
+    va_start(inputs, count);
+    rc = DIDStore_Signv(DIDDocument_GetSubject(document), key, password,
+            sig, count, inputs);
+    va_end(inputs);
+
+    return rc;
 }
 
 DIDURL *PublicKey_GetId(PublicKey *publickey)

@@ -50,10 +50,12 @@ _DIDDocument_GetCredential
 _DIDDocument_SelectCredential
 _DIDDocument_GetExpires
 _DIDDocument_SetExpires
+_DIDDocument_Sign
 _DIDDocument_GetService
 _DIDDocument_GetServices
 _DIDDocument_SelectService
 _DIDDocument_GetServicesCount
+
 _PublicKey_GetId
 _PublicKey_GetController
 _PublicKey_GetPublicKeyBase58
@@ -97,6 +99,7 @@ _DIDStore_Open
 _DIDStore_InitPrivateIdentity
 _DIDStore_NewDID
 _DIDStore_Sign
+_DIDStore_Signv
 _DIDStore_Resolve
 _DIDStore_StoreDID
 _DIDStore_LoadDID
