@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -198,7 +199,12 @@ func newChainStore(dataDir string, dbDir string, genesisBlock *types.Block) (ICh
 		return nil, err
 	}
 
-	fdb, err := NewChainStoreFFLDB(filepath.Join(dataDir, dbDir))
+	fflDB, err := LoadBlockDB(filepath.Join(dataDir, dbDir))
+	if err != nil {
+		return nil, err
+	}
+	indexManager := indexers.NewManager(fflDB)
+	fdb, err := NewChainStoreFFLDB(fflDB, indexManager)
 	if err != nil {
 		return nil, err
 	}

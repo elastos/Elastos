@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
@@ -33,30 +32,18 @@ const (
 type ChainStoreFFLDB struct {
 	db database.DB
 
-	txIndex *indexers.TxIndex
+	indexManager IndexManager
 
 	mtx              sync.RWMutex
 	blockHashesCache []Uint256
 	blocksCache      map[Uint256]*Block
 }
 
-func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
-	fflDB, err := LoadBlockDB(dataDir)
-	if err != nil {
-		return nil, err
-	}
-
-	txIndex := indexers.NewTxIndex(fflDB)
-	err = fflDB.Update(func(dbTx database.Tx) error {
-		return txIndex.Create(dbTx)
-	})
-	if err != nil {
-		return nil, err
-	}
-
+func NewChainStoreFFLDB(fflDB database.DB, indexManager IndexManager) (
+	IFFLDBChainStore, error) {
 	s := &ChainStoreFFLDB{
 		db:               fflDB,
-		txIndex:          txIndex,
+		indexManager:     indexManager,
 		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
 		blocksCache:      make(map[Uint256]*Block),
 	}
@@ -183,20 +170,15 @@ func (c *ChainStoreFFLDB) SaveBlock(b *Block, node *BlockNode,
 			return err
 		}
 
-		err = c.txIndex.ConnectBlock(dbTx, b)
-		if err != nil {
-			return err
+		// Allow the index manager to call each of the currently active
+		// optional indexes with the block being connected so they can
+		// update themselves accordingly.
+		if c.indexManager != nil {
+			err := c.indexManager.ConnectBlock(dbTx, b)
+			if err != nil {
+				return err
+			}
 		}
-
-		//// Allow the index manager to call each of the currently active
-		//// optional indexes with the block being connected so they can
-		//// update themselves accordingly.
-		//if b.indexManager != nil {
-		//	err := b.indexManager.ConnectBlock(dbTx, block, stxos)
-		//	if err != nil {
-		//		return err
-		//	}
-		//}
 
 		return nil
 	})
@@ -244,9 +226,14 @@ func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
 			return err
 		}
 
-		err = c.txIndex.DisconnectBlock(dbTx, b)
-		if err != nil {
-			return err
+		// Allow the index manager to call each of the currently active
+		// optional indexes with the block being disconnected so they
+		// can update themselves accordingly.
+		if c.indexManager != nil {
+			err := c.indexManager.DisconnectBlock(dbTx, b)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -384,36 +371,16 @@ func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, uint32, error) {
 }
 
 func (c *ChainStoreFFLDB) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
-	// Look up the location of the transaction.
-	blockRegion, err := c.txIndex.TxBlockRegion(&txID)
-	if err != nil {
-		return nil, 0, errors.New("failed to retrieve transaction location")
-	}
-	if blockRegion == nil {
-		return nil, 0, errors.New("no block region found")
-	}
-
-	// Load the raw transaction bytes from the database.
-	var txBytes []byte
-	var height int32
+	txn, blockHash, err := c.indexManager.FetchTx(txID)
+	var height uint32
 	err = c.db.View(func(dbTx database.Tx) error {
 		var err error
-		txBytes, err = dbTx.FetchBlockRegion(blockRegion)
-		if err != nil {
-			return err
-		}
-		height, err = dbFetchHeightByHash(dbTx, blockRegion.Hash)
+		height, err = dbFetchHeightByHash(dbTx, blockHash)
 		return err
 	})
 	if err != nil {
 		return nil, 0, err
 	}
 
-	txBuf := bytes.NewBuffer(txBytes)
-	var txn Transaction
-	if err := txn.Deserialize(txBuf); err != nil {
-		return nil, 0, err
-	}
-
-	return &txn, uint32(height), nil
+	return txn, height, nil
 }

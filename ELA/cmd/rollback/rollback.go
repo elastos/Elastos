@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/database"
@@ -47,7 +48,13 @@ func rollbackAction(c *cli.Context) error {
 	}
 
 	log.NewDefault("logs/node", 0, 0, 0)
-	fdb, err := blockchain.NewChainStoreFFLDB("elastos/data")
+	fflDB, err := blockchain.LoadBlockDB("elastos/data")
+	if err != nil {
+		fmt.Println("load block db error:", err)
+		return err
+	}
+	indexManager := indexers.NewManager(fflDB)
+	fdb, err := blockchain.NewChainStoreFFLDB(fflDB, indexManager)
 	if err != nil {
 		return err
 	}

@@ -376,9 +376,6 @@ func (idx *TxIndex) Name() string {
 // This is part of the Indexer interface.
 func (idx *TxIndex) Create(dbTx database.Tx) error {
 	meta := dbTx.Metadata()
-	if meta.Bucket(txIndexKey) != nil {
-		return nil
-	}
 	if _, err := meta.CreateBucket(idByHashIndexBucketName); err != nil {
 		return err
 	}

@@ -366,6 +366,33 @@ func (b *BlockChain) GetBlockNode(height uint32) *BlockNode {
 	return b.Nodes[height]
 }
 
+// Get block by height
+func (b *BlockChain) GetBlockByHeight(height uint32) (*Block, error) {
+	// Lookup the block height in the best chain.
+	node := b.GetBlockNode(height)
+	if node == nil {
+		str := fmt.Sprintf("no block at height %d exists", height)
+		return nil, errors.New(str)
+	}
+
+	// Load the block from the database and return it.
+	var block *Block
+	err := b.db.GetFFLDB().View(func(dbTx database.Tx) error {
+		var err error
+		block, err = dbFetchBlockByNode(dbTx, node)
+		return err
+	})
+	return block, err
+}
+
+// MainChainHasBlock returns whether or not the block with the given hash is in
+// the main chain.
+func (b *BlockChain) MainChainHasBlock(height uint32, hash *Uint256) bool {
+	// Lookup the block height in the best chain.
+	node := b.GetBlockNode(height)
+	return node != nil && node.Hash.IsEqual(*hash)
+}
+
 // Get DPOS block with block hash.
 func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
 	if block, _ := b.db.GetFFLDB().GetBlock(hash); block != nil {
