@@ -93,7 +93,6 @@ const Wrapper = styled.div`
     height: 0.1px;
     opacity: 0;
     overflow: hidden;
-    position: absolute;
     z-index: -1;
   }
 
@@ -101,10 +100,7 @@ const Wrapper = styled.div`
     cursor: pointer;
     display: inline-block;
     overflow: hidden;
-    position: absolute;
     z-index: 99;
-    top: 0;
-    right: -32px;
   }
 
   .inputfile + label * {

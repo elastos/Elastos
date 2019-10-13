@@ -1,26 +1,22 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { UnControlled as CodeMirror } from 'react-codemirror2'
+import { Controlled as CodeMirror } from 'react-codemirror2'
 import 'codemirror/mode/gfm/gfm'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/base16-light.css'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import styled from 'styled-components'
 import UploadBase64Image from '@/module/common/UploadBase64Image'
+import ToggleMarkdownPreview from '@/module/common/ToggleMarkdownPreview'
 
 class Component extends BaseComponent {
   constructor(props) {
     super(props)
     this.state = {
-      value: this.props.content ? this.props.content : ''
+      value: this.props.content ? this.props.content : '',
+      show: false
     }
     this.editor = null
-  }
-
-  onChange = (editor, data, value) => {
-    const { onChange } = this.props
-    if (onChange) onChange(value)
-    this.setState({ value })
   }
 
   insertImage = base64 => {
@@ -29,23 +25,36 @@ class Component extends BaseComponent {
     doc.replaceRange(`\n![image](${base64})\n`, cursor)
   }
 
+  togglePreview = () => {
+    this.setState({ show: !this.state.show })
+  }
+
   ord_render() {
+    const { show, value } = this.state
     return (
       <Wrapper>
-        <UploadBase64Image insertImage={this.insertImage} />
-        <CodeMirror
-          value={this.props.content}
-          options={{
-            mode: 'gfm',
-            theme: 'base16-light',
-            lineWrapping: true
-          }}
-          onChange={this.onChange}
-          editorDidMount={editor => {
-            this.editor = editor
-          }}
-        />
-        <MarkdownPreview content={this.state.value} />
+        <Toolbar>
+          <UploadBase64Image insertImage={this.insertImage} />
+          <ToggleMarkdownPreview togglePreview={this.togglePreview} />
+        </Toolbar>
+        {show === false ? (
+          <CodeMirror
+            value={value}
+            options={{
+              mode: 'gfm',
+              theme: 'base16-light',
+              lineWrapping: true
+            }}
+            onBeforeChange={(editor, data, value) => {
+              this.setState({ value })
+            }}
+            editorDidMount={editor => {
+              this.editor = editor
+            }}
+          />
+        ) : (
+          <MarkdownPreview content={value} />
+        )}
       </Wrapper>
     )
   }
@@ -54,7 +63,6 @@ class Component extends BaseComponent {
 export default Component
 
 const Wrapper = styled.div`
-  position: relative;
   .CodeMirror {
     min-height: 450px;
     height: unset;
@@ -79,4 +87,9 @@ const Wrapper = styled.div`
     display: inline-block;
     vertical-align: bottom;
   }
+`
+const Toolbar = styled.div`
+  display: flex;
+  margin-bottom: -16px;
+  justify-content: flex-end;
 `
