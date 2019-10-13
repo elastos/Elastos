@@ -53,7 +53,9 @@ class Component extends BaseComponent {
             }}
           />
         ) : (
-          <MarkdownPreview content={value} />
+          <Preview>
+            <MarkdownPreview content={value} />
+          </Preview>
         )}
       </Wrapper>
     )
@@ -92,4 +94,10 @@ const Toolbar = styled.div`
   display: flex;
   margin-bottom: -16px;
   justify-content: flex-end;
+`
+
+const Preview = styled.div`
+  min-height: 450px;
+  padding: 20px;
+  background: rgba(204, 204, 204, 0.2);
 `
