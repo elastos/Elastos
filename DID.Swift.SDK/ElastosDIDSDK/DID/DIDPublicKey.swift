@@ -1,19 +1,22 @@
 import Foundation
 
 public class DIDPublicKey: DIDObject {
-    var controller: DID?
-    var keyBase58: String?
+   public var controller: DID?
+   public var keyBase58: String?
     
     init(_ id: DIDURL, _ type: String, _ controller: DID, _ keyBase58: String) {
         super.init(id, type)
+        self.controller = controller
+        self.keyBase58 = keyBase58
     }
     
     class public func fromJson(_ dic: Dictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey{
-        let id: DIDURL = try JsonHelper.getDidUrl(dic, Constants.id, ref, "publicKey' id")
-        let type = try JsonHelper.getString(dic, Constants.type, true, Constants.defaultPublicKeyType, "publicKey' type")
-        let controller: DID = try JsonHelper.getDid(dic, Constants.controller, true, ref, "publicKey' controller")
-        let keyBase58: String = try JsonHelper.getString(dic, Constants.publicKeyBase58, false, nil, "publicKeyBase58")
-        return DIDPublicKey(id, type, controller, keyBase58)
+        
+        let controller: DID = try DID(dic["controller"] as! String)
+        let id: DIDURL = try DIDURL(dic["id"] as! String)
+        let type = dic["type"] as! String
+        let publicKeyBase58 = dic["publicKeyBase58"] as! String
+        return DIDPublicKey(id, type, controller, publicKeyBase58)
     }
     
     public func toJson(_ ref: DID, _ compact: Bool) -> Dictionary<String, Any> {
@@ -22,7 +25,7 @@ public class DIDPublicKey: DIDObject {
         
         // id
         if compact && id.did.isEqual(ref){
-            value = "#" + id.fragment
+            value = "#" + id.fragment!
         }
         else {
             value = id.toExternalForm()

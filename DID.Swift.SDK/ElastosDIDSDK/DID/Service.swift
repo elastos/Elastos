@@ -21,7 +21,7 @@ public class Service: DIDObject {
         
         // id
         if compact && id.did.isEqual(ref) {
-            value = "#" + id.fragment
+            value = "#" + id.fragment!
         }
         else {
             value = id.toExternalForm()

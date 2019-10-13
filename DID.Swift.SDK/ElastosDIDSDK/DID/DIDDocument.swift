@@ -8,21 +8,21 @@ public class DIDDocument: NSObject {
     private var credentials: Dictionary<DIDURL, VerifiableCredential> = [: ]
     private var services: Dictionary<DIDURL, Service> = [: ]
     public var expires: Date?
-
+    
     public var readonly: Bool = false
-
+    
     override init() {
         readonly = false
     }
-
+    
     public func getPublicKeyCount() -> Int {
         return publicKeys.count
     }
-
+    
     public func getPublicKeys() -> Array<DIDPublicKey> {
         return getEntries(publicKeys)
     }
-
+    
     public func selectPublicKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
         var didurl: DIDURL
         do {
@@ -32,7 +32,7 @@ public class DIDDocument: NSObject {
         }
         return try selectEntry(publicKeys, didurl, type)
     }
-
+    
     public func selectPublicKey(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
         do {
             return try selectEntry(publicKeys, id, type)
@@ -40,7 +40,7 @@ public class DIDDocument: NSObject {
             throw error
         }
     }
-
+    
     public func getPublicKey(_ id: String) throws -> DIDPublicKey {
         var didurl: DIDURL
         do {
@@ -50,50 +50,60 @@ public class DIDDocument: NSObject {
         }
         return getEntry(publicKeys, didurl)
     }
-
+    
     public func getPublicKey(_ id: DIDURL) throws -> DIDPublicKey {
         return getEntry(publicKeys, id)
     }
-
+    
     public func getDefaultPublicKey() -> DIDPublicKey? {
+        var didpk: DIDPublicKey?
         publicKeys.values.forEach{ pk in
             if (pk.controller?.isEqual(self.subject))! {
-                let address = DerivedKey.getAddress(pk.getPublicKeyBytes())
+                
+                let pks = pk.getPublicKeyBytes()
+                var pks8: [Int8] = [Int8]()
+                pks.forEach { b in
+                    pks8.append(Int8(b))
+                }
+                let idstring = DerivedKey.getIdString(pks8)
+                if idstring == subject?.methodSpecificId {
+                    didpk = pk
+                }
             }
         }
-        return nil
+        return didpk
     }
-
+    
     public func addPublicKey(_ pk: DIDPublicKey) -> Bool{
         if readonly { return false }
         publicKeys[pk.id] = pk
         return true
     }
-
+    
     public func addPublicKey(_ id: String) -> Bool {
         // TODO generate a new key pair, and add it to document
         return false
     }
-
+    
     // TODO: Add an exiting key to document!
-
+    
     public func removePublicKey(_ id: DIDURL) -> Bool {
         if readonly { return false }
-
+        
         // Cann't remove default public key
         if (getDefaultPublicKey()?.id.isEqual(id))! { return false }
         let removed: Bool = removeEntry(publicKeys, id)
-
+        
         if removed {
             // TODO: remove private key if exist
         }
         return removed
     }
-
+    
     public func getAuthenticationKeyCount() -> Int {
         return authentications.count
     }
-
+    
     public func getAuthenticationKeys() -> Array<DIDPublicKey> {
         var list: Array<DIDPublicKey> = []
         authentications.forEach{ (key, value) in
@@ -101,16 +111,16 @@ public class DIDDocument: NSObject {
         }
         return list
     }
-
+    
     public func selectAuthenticationKey(_ id: DIDURL, type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, id, type)
     }
-
+    
     public func selectAuthenticationKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey>{
         let didurl = try DIDURL(id)
         return try selectEntry(authentications, didurl, type)
     }
-
+    
     public func getAuthenticationKey(_ id: DIDURL) -> DIDPublicKey {
         return getEntry(authentications, id)
     }
@@ -118,18 +128,18 @@ public class DIDDocument: NSObject {
     public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey {
         return try getEntry(authentications, DIDURL(id))
     }
-
+    
     public func removeAuthenticationKey(_ id: DIDURL) -> Bool {
         if readonly { return false }
         return removeEntry(authentications, id)
     }
-
+    
     public func addAuthenticationKey(_ id: DIDURL) throws -> Bool {
         if readonly { return false }
         let pk = try getPublicKey(id)
         return addAuthenticationKey(pk)
     }
-
+    
     func addAuthenticationKey(_ pk: DIDPublicKey) -> Bool {
         if readonly { return false }
         // Check the controller is current DID subject
@@ -137,31 +147,31 @@ public class DIDDocument: NSObject {
         authentications[pk.id] = pk
         return true
     }
-
+    
     public func getAuthorizationKeyCount() -> Int {
         return authentications.count
     }
-
+    
     public func getAuthorizationKeys() -> Array<DIDPublicKey> {
         return getEntries(authentications)
     }
-
+    
     public func selectAuthorizationKey(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, id, type)
     }
-
+    
     public func selectAuthorizationKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, DIDURL(id), type)
     }
-
+    
     public func getAuthorizationKey(_ id: DIDURL) -> DIDPublicKey {
         return getEntry(authentications, id)
     }
-
+    
     public func getAuthorizationKey(_ id: String) throws -> DIDPublicKey {
         return try getEntry(authentications, DIDURL(id))
     }
-
+    
     public func addAuthorizationKey(_ id: String, _ did: DID, _ key: DIDURL) throws -> Bool {
         if readonly { return false }
         let doc: DIDDocument = try DIDStore.shareInstance()!.resolveDid(did)
@@ -171,83 +181,83 @@ public class DIDDocument: NSObject {
         _ = addPublicKey(pk)
         return addAuthorizationKey(pk)
     }
-
+    
     public func removeAuthorizationKey(_ id: DIDURL) -> Bool {
         guard !readonly else { return false }
         return removeEntry(authorizations, id)
     }
-
+    
     public func getCredentialCount() -> Int {
         return credentials.count
     }
-
+    
     public func getCredentials() -> Array<VerifiableCredential> {
         return getEntries(credentials)
     }
-
+    
     public func selectCredential(_ id: DIDURL, _ type: String) throws -> Array<VerifiableCredential> {
         return try selectEntry(credentials, id, type)
     }
-
+    
     public func selectCredential(_ id: String, _ type: String) throws -> Array<VerifiableCredential> {
         return try selectEntry(credentials, DIDURL(id), type)
     }
-
+    
     public func getCredential(_ id: String) throws -> VerifiableCredential {
         return try getEntry(credentials, DIDURL(id))
     }
-
+    
     public func getCredential(_ id: DIDURL) throws -> VerifiableCredential {
         return getEntry(credentials, id)
     }
-
+    
     public func addCredential(_ vc: VerifiableCredential) -> Bool {
         if readonly { return false }
         let ec: EmbeddedCredential = EmbeddedCredential(vc)
         credentials[ec.id] = ec
         return true
     }
-
+    
     public func removeCredential(_ id: DIDURL) -> Bool {
         if readonly { return false }
         return removeEntry(credentials, id)
     }
-
+    
     public func getServiceCount() -> Int {
         return services.count
     }
-
+    
     public func getServices() -> Array<Service> {
-       return getEntries(services)
+        return getEntries(services)
     }
-
+    
     public func selectServices(_ id: DIDURL, _ type: String) throws -> Array<Service> {
         return try selectEntry(services, id, type)
     }
-
+    
     public func selectServices(_ id: String, _ type: String) throws -> Array<Service> {
         return try selectEntry(services, DIDURL(id), type)
     }
-
+    
     public func getService(_ id: DIDURL) -> Service {
         return getEntry(services, id)
     }
-
+    
     public func getService(_ id: String) throws -> Service {
         return try getEntry(services, DIDURL(id))
     }
-
+    
     public func addService(_ id: String, _ type: String, endpoint: String) throws -> Bool {
         let idurl: DIDURL = try DIDURL(subject!, id)
         let svc: Service = Service(idurl, type, endpoint)
         return addService(svc)
     }
-
+    
     public func removeService(_ id: DIDURL) -> Bool {
         if readonly { return false }
         return removeEntry(services, id)
     }
-
+    
     public func modify() -> Bool {
         // TODO: Check owner
         readonly = false
@@ -272,7 +282,7 @@ public class DIDDocument: NSObject {
         authentications.forEach { (didUrl, pk) in
             var value: String
             if compact && pk.id.did.isEqual(subject){
-                value = "#" + pk.id.fragment
+                value = "#" + pk.id.fragment!
             }
             else {
                 value = pk.id.toExternalForm()
@@ -287,7 +297,7 @@ public class DIDDocument: NSObject {
             authorizations.forEach { (didUrl, pk) in
                 var value: String
                 if compact && pk.id.did.isEqual(subject) {
-                    value = "#" + pk.id.fragment
+                    value = "#" + pk.id.fragment!
                 }else {
                     value = pk.id.toExternalForm()
                 }
@@ -324,7 +334,6 @@ public class DIDDocument: NSObject {
             // TODO: throws error
         }
         let data: Data = try JSONSerialization.data(withJSONObject: dic, options: [])
-        //  let jsonString: String = String(data: data, encoding: .utf8) ?? ""
         
         // & Write to local
         let writeHandle = FileHandle(forWritingAtPath: path)
@@ -332,142 +341,133 @@ public class DIDDocument: NSObject {
     }
     
     public static func fromJson(_ path: String) throws -> DIDDocument {
-        // url of local path
+
         let doc: DIDDocument = DIDDocument()
-        let urlPath = URL(string: path)
-        try doc.parse(url: urlPath!)
+        let urlPath = URL(fileURLWithPath: path)
+        try doc.parse(url: urlPath)
         doc.readonly = true
         return doc
     }
-
+    
     private func parse(url: URL) throws {
-        let data = try Data(contentsOf: url)
-        let jsonData:Any = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-        return try parse(jsonData as! Dictionary<String, Any>)
+        let json = try! String(contentsOf: url)
+        let data = json.data(using: .utf8)!
+        let output = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]
+        return try parse(output!)
     }
-
-    private func parse(_ dic: Dictionary<String, Any>) throws {
-        // TODO: set did
-
-        // parse
-        var mode = dic[Constants.publicKey]
-        guard (mode != nil) else {
-            // TODO: throw error
-            return
-        }
-        try parsePublick(mode as Any)
-
-        mode = dic[Constants.authentication]
-        guard (mode != nil) else {
-            // TODO: throw error
-            return
-        }
-        try parseAuthentication(mode as Any)
-
-        mode = dic[Constants.authorization]
-        guard (mode != nil) else {
-            // TODO: throw error
-            return
-        }
-        try parseAuthorization(mode as Any)
-
-        mode = dic[Constants.credential]
-        guard (mode != nil) else {
-            // TODO: throw error
-            return
-        }
-        parseCredential(mode as Any)
-
-        mode = dic[Constants.service]
-        guard (mode != nil) else {
-            // TODO: throw error
-            return
-        }
-        try parseService(mode as Any)
-
-        // TODO: ERROR
-        expires = JsonHelper.getDate(dic, Constants.EXPIRES, true, nil, "expires")
+    
+    private func parse(_ json: Dictionary<String, Any>) throws {
+        self.subject = try JsonHelper.getDid(json, Constants.id, false, nil, "subject")
+        
+        try parsePublicKey(json)
+        try parseAuthentication(json)
+        try parseAuthorization(json)
+        try parseCredential(json)
+        try parseService(json)
+        expires = JsonHelper.getDate(json, Constants.EXPIRES, true, nil, "expires")
     }
-
-    private func parsePublick(_ md: Any) throws {
-        if !(md is Array<Any>) {
-            // TODO: error
+    
+    // 解析公钥
+    private func parsePublicKey(_ json: [String: Any]) throws {
+        let publicKeys = json["publicKey"]
+        
+        if publicKeys is Array<Any>{
+            
+        } else {
+            throw DIDError.failue("Invalid publicKey, should be an array.")
         }
-        let arr = md as! Array<Dictionary<String, Any>>
-        if arr.count == 0 {
-            // TODO: error
+        
+        let publicKeysArray: [[String: Any]] = publicKeys as! Array<[String: Any]>
+        
+        if publicKeysArray.count == 0 {
+            throw DIDError.failue("Invalid publicKey, should not be an empty array.")
         }
-
-       try arr.forEach { (obj) in
-            let pk: DIDPublicKey = try DIDPublicKey.fromJson(obj, subject!)
+        
+        self.publicKeys = [:]
+        for publicKey in publicKeysArray {
+            
+            let pk = try DIDPublicKey.fromJson(publicKey, self.subject!)
             _ = addPublicKey(pk)
         }
     }
-
+    
     // MARK: parseAuthentication
-    private func parseAuthentication(_ md: Any) throws {
-        if !(md is Array<Any>) {
-            // TODO: error
-        }
-        let arr = md as! Array<Dictionary<String, Any>>
-        if arr.count == 0 {
-            // TODO: error
+    private func parseAuthentication(_ json: [String: Any]) throws {
+        let authentications = json[Constants.authentication] as? Array<Any>
+
+        if !(authentications != nil) {
+            throw DIDError.failue("Invalid authentication, should be an array.")
         }
 
-        try arr.forEach { (obj) in
-            let pk: DIDPublicKey = try DIDPublicKey.fromJson(obj, subject!)
+        if authentications!.count == 0 {
+            return
+        }
+        
+        try authentications!.forEach { (obj) in
+            var pk: DIDPublicKey
+            if obj is Dictionary<String, Any> {
+                let object: Dictionary<String, Any> = obj as! Dictionary<String, Any>
+                pk = try DIDPublicKey.fromJson(object, subject!)
+            }else {
+                let objString: String = obj as! String
+                let didUrl: DIDURL = try DIDURL(objString)
+                pk = publicKeys[didUrl]!
+            }
             _ = addAuthenticationKey(pk)
         }
     }
-
-    private func parseAuthorization(_ md: Any) throws {
-        if !(md is Array<Any>) {
-            // TODO: error
+    
+    private func parseAuthorization(_ json: [String: Any]) throws {
+        let authorizations = json[Constants.authorization] as? Array<Any>
+        if (authorizations == nil) {
+            throw DIDError.failue("Invalid authorization, should be an array.")
         }
-        let arr = md as! Array<Dictionary<String, Any>>
-        if arr.count == 0 {
-            // TODO: error
+        if authorizations!.count == 0 {
+            return
         }
-
-        try arr.forEach { obj in
-            let pk: DIDPublicKey = try DIDPublicKey.fromJson(obj, subject!)
+        try authorizations!.forEach { (obj) in
+            var pk: DIDPublicKey
+            if obj is Dictionary<String, Any> {
+                let object: Dictionary<String, Any> = obj as! Dictionary<String, Any>
+                pk = try DIDPublicKey.fromJson(object, subject!)
+            }else {
+                let objString: String = obj as! String
+                let didUrl: DIDURL = try DIDURL(objString)
+                pk = publicKeys[didUrl]!
+            }
             _ = addAuthorizationKey(pk)
         }
     }
-
+    
     // mode parse
-    private func parseCredential(_ md: Any) {
-        guard (md is Array<Any>) else {
-            // TODO: Error
+    private func parseCredential(_ json: [String: Any]) throws {
+        let credentials = json[Constants.credential] as? Array<Dictionary<String, Any>>
+        if (credentials == nil) {
+            throw DIDError.failue("Invalid credentials, should be an array.")
+        }
+        if credentials!.count == 0 {
             return
         }
-        let arr = md as! Array<Dictionary<String, Any>>
-        guard arr.count != 0 else {
-            // TODO: throw error
-            return
-        }
-        arr.forEach{ obj in
-            let vc: VerifiableCredential = VerifiableCredential.fromJson(obj, subject!)
-           _ = addCredential(vc)
+        try credentials!.forEach{ obj in
+            let vc: VerifiableCredential = try VerifiableCredential.fromJson(obj, subject!)
+            _ = addCredential(vc)
         }
     }
-
-    private func parseService(_ md: Any) throws {
-        guard (md is Array<Any>) else {
-            // TODO: error
+    
+    private func parseService(_ json: [String: Any]) throws {
+        let services = json[Constants.service] as? Array<Dictionary<String, Any>>
+        if (services == nil) {
+            throw DIDError.failue("Invalid services, should be an array.")
+        }
+        if services!.count == 0 {
             return
         }
-        let arr = md as! Array<Dictionary<String, Any>>
-        guard arr.count != 0 else {
-            // throws error
-            return
-        }
-       try arr.forEach { obj in
+        try services!.forEach { obj in
             let svc: Service = try Service.fromJson(obj, subject!)
             _ = addService(svc)
         }
     }
-
+    
     private func addService(_ svc: Service) -> Bool {
         if readonly  { return false }
         services[svc.id] = svc
@@ -476,13 +476,13 @@ public class DIDDocument: NSObject {
     private func addAuthorizationKey(_ pk: DIDPublicKey) -> Bool {
         if readonly { return false }
         // Cann' authorize to self
-
+        
         guard pk.controller != nil else { return false }
         if (pk.controller?.isEqual(subject))! { return false }
         authorizations[pk.id] = pk
         return true
     }
-
+    
     private func selectEntry<T: DIDObject>(_ entries: Dictionary<DIDURL, T>, _ id: DIDURL, _ type: String) throws -> Array<T>  {
         var list: Array<T> = []
         entries.values.forEach { entry in
@@ -492,21 +492,21 @@ public class DIDDocument: NSObject {
         }
         return list
     }
-
+    
     private func  getEntries<T>(_ entries: Dictionary<DIDURL, T>) -> Array<T> {
         var list: Array<T> = []
-
+        
         entries.forEach{ (arg: (key: DIDURL, value: T)) in
             let (_, value) = arg
             list.append(value)
         }
         return list
     }
-
+    
     private func getEntry<T: DIDObject>(_ entries: Dictionary<DIDURL, T>, _ id: DIDURL) -> T {
         return entries[id]!
     }
-
+    
     private func removeEntry<T: DIDObject>(_ publickeys: Dictionary<DIDURL, T>, _ id: DIDURL) -> Bool {
         if publickeys.isEmpty { return false }
         return (self.publicKeys.removeValue(forKey: id) != nil)
@@ -516,5 +516,5 @@ public class DIDDocument: NSObject {
         // todo
         return ""
     }
-
+    
 }

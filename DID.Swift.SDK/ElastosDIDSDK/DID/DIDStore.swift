@@ -1,6 +1,6 @@
 import Foundation
 
-class DIDStore: NSObject {
+public class DIDStore: NSObject {
 
     public static let DID_HAS_PRIVATEKEY = 0
     public static let DID_NO_PRIVATEKEY = 1
@@ -82,18 +82,18 @@ class DIDStore: NSObject {
         if privateIdentity == nil {
             // TODO: THROWS EROR
         }
-        let key: DerivedKey = try privateIdentity.derive(UInt32(lastIndex++))
-        let did: DID = DID(DID.METHOD, try key.getAddress())
-        let pk: DIDPublicKey = DIDPublicKey(try DIDURL(did, "primary"), Constants.defaultPublicKeyType, did, try key.getPublicKeyBase58())
-        let doc: DIDDocument = DIDDocument()
-        doc.subject = did
-        _ = doc.addPublicKey(pk)
-        _ = doc.addAuthenticationKey(pk)
-        doc.readonly = true
-        try storeDid(doc, hint!)
-        let encryptedKey: String = try encryptToBase64(passphrase, key.serialize())
-        try storePrivateKey(did, pk.id, encryptedKey)
-        key.wipe()
+//        let key: DerivedKey = try privateIdentity.derive(Int32(lastIndex++))
+//        let did: DID = DID(DID.METHOD, try key.getAddress())
+//        let pk: DIDPublicKey = DIDPublicKey(try DIDURL(did, "primary"), Constants.defaultPublicKeyType, did, try key.getPublicKeyBase58())
+//        let doc: DIDDocument = DIDDocument()
+//        doc.subject = did
+//        _ = doc.addPublicKey(pk)
+//        _ = doc.addAuthenticationKey(pk)
+//        doc.readonly = true
+//        try storeDid(doc, hint!)
+////        let encryptedKey: String = try encryptToBase64(passphrase, key.serialize())
+////        try storePrivateKey(did, pk.id, encryptedKey)
+////        key.wipe()
         return DIDDocument()
     }
 
@@ -164,8 +164,10 @@ class DIDStore: NSObject {
     public func setCredentialHint(_ did: DID, _ id: DIDURL, _ hint: String) throws {}
     public func getCredentialHint(_ did: DID, _ id: DIDURL) throws -> String { return "" }
 
-//    public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential { return VerifiableCredential() }
-//    public func loadCredential(_ did:String, _ id: String) throws -> VerifiableCredential { return VerifiableCredential() }
+    public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? { return VerifiableCredential() }
+    public func loadCredential(_ did: String, _ id: String) throws -> VerifiableCredential? {
+        return try loadCredential(DID(did), DIDURL(id))
+    }
 
     public func containsCredentials(_ did:DID) throws -> Bool { return false }
     public func containsCredentials(_ did: String) throws -> Bool {
@@ -224,7 +226,7 @@ class DIDStore: NSObject {
         return ""
     }
     
-    public func sign(did: String, _ id: String, _ passphrase: String, _ data: Array<Any>) throws -> String {
+    public func sign(_ did: String, _ id: String, _ passphrase: String, _ data: Array<Any>) throws -> String {
         return ""
     }
     

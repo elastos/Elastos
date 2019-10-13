@@ -17,6 +17,16 @@ class IDChainRequest: NSObject {
         case CREATE = 0
         case UPDATE
         case DEACRIVATE
+        
+        public func toString() -> String {
+            if self.rawValue == 2 {
+                return "create"
+            } else if self.rawValue == 1{
+                return "update"
+            } else {
+                return "deacrivate"
+            }
+        }
     }
     
     // header
@@ -51,40 +61,27 @@ class IDChainRequest: NSObject {
         doc = doc_
     }
     
-    //    public func sign(_ key: DIDURL, _ passphrase: String) throws -> IDChainRequest {
-    //
-    //        // operation
-    //        let op: String = "\(operation)"
-    //
-    //        // payload: did or doc
-    //        if operation == Operation.DEACRIVATE {
-    //            payload = did?.toExternalForm()
-    //        } else {
-    //            payload = doc?.toExternalForm(true)
-    //        }
-    //
-    //        payload = payload?.toBase64()
-    //
-    ////        let inputs: Array = [
-    ////            specification.getb
-    ////        ]
-    ////
-    ////        signature = DIDStore.shareInstance().sign(did, key, passphrase, <#T##data: Array<Any>##Array<Any>#>)
-    //
-    //    }
-    
-    //
-    //    byte[][] inputs = new byte[][] {
-    //    specification.getBytes(),
-    //    op.getBytes(),
-    //    payload.getBytes()
-    //    };
-    //
-    //    signature = DIDStore.getInstance().sign(did, key, passphrase, inputs);
-    //    signKey = key;
-    //    keyType = Constants.defaultPublicKeyType;
-    //
-    //    return this;
-    //    }
-    
+    public func sign(_ key: DIDURL, _ passphrase: String) throws -> IDChainRequest {
+        
+        let op: String = "\(operation ?? Operation.CREATE)"
+        
+        if operation == Operation.DEACRIVATE {
+            payload = did?.toExternalForm()
+        } else {
+            payload = doc?.toExternalForm(true)
+        }
+        
+        payload = payload?.toBase64()
+        
+        let inputs: [String] = [
+            specification,
+            op,
+            payload!
+        ]
+        
+        self.signature = try DIDStore.shareInstance()?.sign(self.did!, key, passphrase, inputs)
+        self.signKey = key
+        self.keyType = Constants.defaultPublicKeyType
+        return self
+    }
 }

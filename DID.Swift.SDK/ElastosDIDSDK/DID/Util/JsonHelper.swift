@@ -3,22 +3,25 @@ import Foundation
 class JsonHelper {
 
     class func getDid(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DID {
+        
         let vn = dic[name]
         if vn == nil {
             if (optional) { return ref! }
-            else { // TODO:
-
+            else {
+                throw DIDError.failue("Missing " + hint + ".")
             }
         }
 
         if !(vn is String) {
-            // TODO: ERROR
+            throw DIDError.failue("Invalid " + hint + " value.")
         }
+        
         let value: String = vn as! String
 
         if value.isEmpty {
-            // TODO: ERROR
+            throw DIDError.failue("Invalid " + hint + " value.")
         }
+        
         return try DID(value)
     }
 
@@ -50,20 +53,22 @@ class JsonHelper {
     class func getDidUrl(_ dic: Dictionary<String, Any>, _ name: String, _ ref: DID, _ hint: String) throws -> DIDURL{
         let vn = dic[name]
         if vn == nil {
-            // TODO: ERROR
+            throw DIDError.failue("Invalid " + hint + " value.")
         }
         if !(vn is String) {
-            // TODO: ERROR
+            throw DIDError.failue("Invalid " + hint + " value.")
         }
         let value: String = vn as! String
 
         if value.isEmpty {
-            // TODO: ERROR
+            throw DIDError.failue("Invalid " + hint + " value.")
         }
-        let count: Int = value.count - 1
-
-        let index = value.index(value.endIndex, offsetBy: -count)
-        return try DIDURL(ref, String(value.suffix(from: index)))
+        let index = value.index(value.startIndex, offsetBy: 1)
+        let fragment: String = value.substring(to: index)
+        if fragment == "#" {
+            return try DIDURL(ref, value)
+        }
+        return try DIDURL(value)
     }
 
     class func getString(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: String?, _ hint: String) throws -> String {
@@ -73,12 +78,12 @@ class JsonHelper {
         }
 
         if !(vn is String) {
-            // TODO: ERROR
+            throw DIDError.failue("Invalid " + hint)
         }
         let value: String = vn as! String
 
         if value.isEmpty {
-            // TODO: ERROR
+            throw DIDError.failue("Invalid " + hint + value)
         }
         return value
     }

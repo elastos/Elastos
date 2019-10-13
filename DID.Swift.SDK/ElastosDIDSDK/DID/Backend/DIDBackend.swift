@@ -18,6 +18,10 @@ class DIDBackend: NSObject {
     }
 
     public class func resolve(_ did: DID) throws -> DIDDocument? {
+        
+        let request: IDChainRequest = try IDChainRequest(IDChainRequest.Operation.CREATE, did)
+//        let json: String = request.sign
+        
         // TODO:
         return nil
     }
