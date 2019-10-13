@@ -12,7 +12,7 @@ class Component extends BaseComponent {
   constructor(props) {
     super(props)
     this.state = {
-      value: ''
+      value: this.props.content ? this.props.content : ''
     }
     this.editor = null
   }
