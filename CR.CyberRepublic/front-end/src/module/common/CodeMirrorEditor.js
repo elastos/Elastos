@@ -27,15 +27,6 @@ class Component extends BaseComponent {
     const doc = this.editor.getDoc()
     const cursor = doc.getCursor()
     doc.replaceRange(`\n![image](${base64})\n`, cursor)
-    doc.addLineClass(cursor.line + 1, 'text', 'cm-base64-image')
-  }
-
-  editorDidMount = (editor) => {
-    this.editor = editor
-    const docs = document.getElementsByClassName('cm-image')
-    for (let i = 0; i < docs.length; i++) {
-      docs[i].parentNode.classList.add('cm-base64-image')
-    }
   }
 
   ord_render() {
@@ -50,7 +41,9 @@ class Component extends BaseComponent {
             lineWrapping: true
           }}
           onChange={this.onChange}
-          editorDidMount={this.editorDidMount}
+          editorDidMount={editor => {
+            this.editor = editor
+          }}
         />
         <MarkdownPreview content={this.state.value} />
       </Wrapper>
@@ -78,7 +71,7 @@ const Wrapper = styled.div`
     margin-right: 0;
   }
   /* hide long long base64 string */
-  .cm-s-base16-light .cm-base64-image span.cm-string {
+  .cm-s-base16-light .cm-image.cm-link ~ span.cm-string {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
