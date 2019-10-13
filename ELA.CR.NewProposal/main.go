@@ -8,6 +8,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -144,7 +145,17 @@ func startNode(c *cli.Context, st *settings) {
 	// Initializes the foundation address
 	blockchain.FoundationAddress = st.Params().Foundation
 	blockchain.EnableUtxoDB = st.Params().EnableUtxoDB
-	chainStore, err := blockchain.NewChainStore(dataDir, st.Params().GenesisBlock)
+
+	fflDB, err := blockchain.LoadBlockDB(dataDir)
+	if err != nil {
+		printErrorAndExit(err)
+	}
+	indexManager := indexers.NewManager(fflDB)
+	fflDBChainStore, err := blockchain.NewChainStoreFFLDB(fflDB, indexManager)
+	if err != nil {
+		printErrorAndExit(err)
+	}
+	chainStore, err := blockchain.NewChainStore(dataDir, st.Params().GenesisBlock, fflDBChainStore)
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -189,6 +200,9 @@ func startNode(c *cli.Context, st *settings) {
 	chain, err := blockchain.New(chainStore, st.Params(), arbiters.State,
 		committee)
 	if err != nil {
+		printErrorAndExit(err)
+	}
+	if err := indexManager.Init(chain, interrupt.C); err != nil {
 		printErrorAndExit(err)
 	}
 	if err := chain.InitFFLDBFromChainStore(interrupt.C, pgBar.Start,
