@@ -1306,7 +1306,7 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *password,
     int rc;
     va_list inputs;
 
-    if (!document || !password || !sig || count == 0)
+    if (!document || !password || !sig || count <= 0)
         return -1;
 
     if (!key)
@@ -1315,6 +1315,33 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *password,
     va_start(inputs, count);
     rc = DIDStore_Signv(DIDDocument_GetSubject(document), key, password,
             sig, count, inputs);
+    va_end(inputs);
+
+    return rc;
+}
+
+int DIDDocument_Verify(DIDDocument *document, DIDURL *key, char *sig,
+         int count, ...)
+{
+    int rc;
+    va_list inputs;
+    PublicKey *publickey;
+    uint8_t binkey[PUBLICKEY_BYTES];
+
+    if (!document || !key || !sig || count <= 0)
+        return -1;
+
+    if (!key)
+        key = DIDDocument_GetDefaultPublicKey(document);
+
+    publickey = DIDDocument_GetPublicKey(document, key);
+    if (!publickey)
+        return -1;
+
+    base58_decode(binkey, PublicKey_GetPublicKeyBase58(publickey));
+
+    va_start(inputs, count);
+    rc = ecdsa_verify_base64v(sig, binkey, count, inputs);
     va_end(inputs);
 
     return rc;

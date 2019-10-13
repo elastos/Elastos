@@ -19,13 +19,29 @@
 static DIDDocument *document;
 static DID *did;
 static const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
+static const char *data = "abcdefghijklmnopqrstuvwxyz";
+static char signature[SIGNATURE_BYTES];
 
 static void test_diddoc_sign(void)
 {
     int rc;
     DIDURL *signkey;
-    char signature[SIGNATURE_BYTES];
-    char *data = "abcdefghijklmnopqrstuvwxyz";
+    //char signature[SIGNATURE_BYTES];
+    signkey = DIDDocument_GetDefaultPublicKey(document);
+    if (!signkey) {
+        printf("get signkey failed.\n");
+        return;
+    }
+
+    rc = DIDDocument_Sign(document, signkey, "", signature, 1,
+            (unsigned char*)data, strlen(data));
+    CU_ASSERT_NOT_EQUAL(rc, -1);
+}
+
+static void test_diddoc_verify(void)
+{
+    int rc;
+    DIDURL *signkey;
 
     signkey = DIDDocument_GetDefaultPublicKey(document);
     if (!signkey) {
@@ -33,7 +49,8 @@ static void test_diddoc_sign(void)
         return;
     }
 
-    rc = DIDDocument_Sign(document, signkey, "", signature, 1, (unsigned char*)data, strlen(data));
+    rc = DIDDocument_Verify(document, signkey, signature, 1,
+             (unsigned char*)data, strlen(data));
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 
@@ -75,6 +92,7 @@ static int diddoc_sign_test_suite_cleanup(void)
 
 static CU_TestInfo cases[] = {
     {   "test_diddoc_sign",        test_diddoc_sign      },
+    {   "test_diddoc_verify",      test_diddoc_verify    },
     {   NULL,                      NULL                  }
 };
 

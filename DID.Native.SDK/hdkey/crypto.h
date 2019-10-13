@@ -64,7 +64,13 @@ ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...);
 
 ssize_t ecdsa_sign_base64v(char *sig, uint8_t *privatekey, int count, va_list inputs);
 
-//int ECDSAverify(const char* publicKey, const void* data, int len, const char* signedData, int signedLen);
+int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs);
+
+int ecdsa_verify(uint8_t *sig, uint8_t *publickey, int count, ...);
+
+int ecdsa_verify_base64v(char *sig, uint8_t *publickey, int count, va_list inputs);
+
+int ecdsa_verify_base64(char *sig, uint8_t *publickey, int count, ...);
 
 #ifdef __cplusplus
 }

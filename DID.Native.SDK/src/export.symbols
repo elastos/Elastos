@@ -51,6 +51,7 @@ _DIDDocument_SelectCredential
 _DIDDocument_GetExpires
 _DIDDocument_SetExpires
 _DIDDocument_Sign
+_DIDDocument_Verify
 _DIDDocument_GetService
 _DIDDocument_GetServices
 _DIDDocument_SelectService

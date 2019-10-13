@@ -885,6 +885,26 @@ DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *pas
 
 /**
  * \~English
+ * verify data.
+ *
+ * @param
+ *      document                [in] The handle to DID Document.
+ * @param
+ *      key                     [in] Public key to sign.
+ *                                   If key = NULL, sdk will get default key from
+ *                                   DID Document.
+ * @param
+ *      sig                     [in] Signature data.
+ * @param
+ *      count                   [in] The size of data list.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_Verify(DIDDocument *document, DIDURL *key, char *sig,
+         int count, ...);
+
+/**
+ * \~English
  * Get identifier of public key.
  *
  * @param

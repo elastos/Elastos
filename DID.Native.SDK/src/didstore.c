@@ -1268,7 +1268,7 @@ int DIDStore_Signv(DID *did, DIDURL *key, const char *password, char *sig,
     unsigned char binkey[PRIVATEKEY_BYTES];
     int rc;
 
-    if (!did || !key || !sig || count == 0)
+    if (!did || !key || !sig || count <= 0)
         return -1;
 
     if (load_files(get_file_path(DIDStore_PrivateKey, did->idstring, key->fragment, 0),
@@ -1291,7 +1291,7 @@ int DIDStore_Sign(DID *did, DIDURL *key, const char *password, char *sig, int co
     int rc;
     va_list inputs;
 
-    if (!did || !key || !sig || count == 0)
+    if (!did || !key || !sig || count <= 0)
         return -1;
 
     va_start(inputs, count);
@@ -1299,12 +1299,6 @@ int DIDStore_Sign(DID *did, DIDURL *key, const char *password, char *sig, int co
     va_end(inputs);
 
     return rc;
-}
-
-const char *DIDStore_Verify(DID *did, DIDURL *key, char *signture, char *data)
-{
-    //TODO:
-    return NULL;
 }
 
 DIDDocument *DIDStore_Resolve(DID *did)

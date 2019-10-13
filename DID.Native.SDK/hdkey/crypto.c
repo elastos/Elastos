@@ -384,3 +384,63 @@ ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...)
     return len;
 }
 
+int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs)
+{
+    uint8_t digest[SHA256_BYTES];
+
+    if (!sig || !publickey || count <= 0)
+        return -1;
+
+    sha256v(digest, count, inputs);
+
+    return ECDSA65Verify_sha256(publickey, PUBLICKEY_BYTES, digest, sig, SIGNATURE_BYTES);
+}
+
+int ecdsa_verify(uint8_t *sig, uint8_t *publickey, int count, ...)
+{
+    va_list inputs;
+    int rc;
+
+    if (!sig || !publickey || count <= 0)
+        return -1;
+
+    va_start(inputs, count);
+    rc = ecdsa_verifyv(sig, publickey, count, inputs);
+    va_end(inputs);
+
+    return rc;
+}
+
+int ecdsa_verify_base64v(char *sig, uint8_t *publickey, int count, va_list inputs)
+{
+    uint8_t binsig[SIGNATURE_BYTES];
+    ssize_t len;
+
+    if (!sig || !publickey || count <= 0)
+        return -1;
+
+    len = base64_decode(binsig, sig);
+    if (len < 0 )
+        return -1;
+
+    return ecdsa_verifyv(binsig, publickey, count, inputs);
+}
+
+int ecdsa_verify_base64(char *sig, uint8_t *publickey, int count, ...)
+{
+    va_list inputs;
+    int rc;
+
+    if (!sig || !publickey || count <= 0)
+        return -1;
+
+    va_start(inputs, count);
+    rc = ecdsa_verify_base64v(sig, publickey, count, inputs);
+    va_end(inputs);
+
+    return rc;
+}
+
+
+
+
