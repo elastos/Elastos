@@ -54,8 +54,9 @@ const (
 	UpdateCR            TxType = 0x23
 	ReturnCRDepositCoin TxType = 0x24
 
-	CRCProposal       TxType = 0x25
-	CRCProposalReview TxType = 0x26
+	CRCProposal         TxType = 0x25
+	CRCProposalReview   TxType = 0x26
+	CRCProposalTracking TxType = 0x27
 )
 
 func (self TxType) Name() string {
@@ -106,12 +107,14 @@ func (self TxType) Name() string {
 		return "UnregisterCR"
 	case UpdateCR:
 		return "UpdateCR"
-	case CRCProposalReview:
-		return "CRCProposalReview"
 	case ReturnCRDepositCoin:
 		return "ReturnCRDepositCoin"
 	case CRCProposal:
 		return "CRCProposal"
+	case CRCProposalReview:
+		return "CRCProposalReview"
+	case CRCProposalTracking:
+		return "CRCProposalTracking"
 	default:
 		return "Unknown"
 	}
@@ -521,6 +524,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.CRCProposal)
 	case CRCProposalReview:
 		p = new(payload.CRCProposalReview)
+	case CRCProposalTracking:
+		p = new(payload.CRCProposalTracking)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}
