@@ -1,4 +1,4 @@
-#!/Users/admin/Desktop/work/Elastos/DjangoElastos/venv/bin/python
+#!/Users/admin/Desktop/work/Elastos/elastos_console_main/venv/bin/python
 # EASY-INSTALL-ENTRY-SCRIPT: 'pip==19.0.3','console_scripts','pip'
 __requires__ = 'pip==19.0.3'
 import re

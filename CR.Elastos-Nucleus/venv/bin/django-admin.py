@@ -1,4 +1,4 @@
-#!/Users/admin/Desktop/work/Elastos/DjangoElastos/venv/bin/python
+#!/Users/admin/Desktop/work/Elastos/elastos_console_main/venv/bin/python
 from django.core import management
 
 if __name__ == "__main__":
