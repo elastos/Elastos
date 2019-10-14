@@ -8,7 +8,4 @@ export default class extends Base {
   protected getName() {
     return 'elip_review'
   }
-  protected rejectFields() {
-    return {}
-  }
 }
