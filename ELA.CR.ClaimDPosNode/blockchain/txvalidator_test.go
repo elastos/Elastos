@@ -2329,7 +2329,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		},
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs6, references, producersMap, crsMap),
-		"invalid vote output payload CR candidate: "+didCandidate2.String()+" not in crs")
+		"invalid vote output payload CR candidate: "+didCandidate2.String())
 
 	// Check vote output of v0 with invalid candidate
 	outputs7 := []*types.Output{{Type: types.OTNone}}

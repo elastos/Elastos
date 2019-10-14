@@ -359,7 +359,7 @@ func (b *BlockChain) checkVoteCRContent(blockHeight uint32, content outputpayloa
 		}
 		if _, ok := crs[*did]; !ok {
 			return fmt.Errorf("invalid vote output payload "+
-				"CR candidate: %s not in crs", did.String())
+				"CR candidate: %s", did.String())
 		}
 	}
 	var totalVotes common.Fixed64
@@ -1504,7 +1504,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 		return errors.New("unregister unknown CR")
 	}
 	if cr.State() != crstate.Pending && cr.State() != crstate.Active {
-		return errors.New("unregister canceled CR")
+		return errors.New("unregister canceled or returned CR")
 	}
 
 	signedBuf := new(bytes.Buffer)
