@@ -3,7 +3,7 @@ import Antlr4
 
 class ParserHelper: NSObject {
     
-    public static func parase(_ didurl: String, _ didOnly: Bool, _ listener: DIDURLBaseListener) throws {
+    public static func parse(_ didurl: String, _ didOnly: Bool, _ listener: DIDURLBaseListener) throws {
         // TODO: 自定义BaseErrorListener
         let error: BaseErrorListener = BaseErrorListener()
         let input: ANTLRInputStream =  ANTLRInputStream(didurl)
