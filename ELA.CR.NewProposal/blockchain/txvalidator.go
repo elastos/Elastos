@@ -941,7 +941,8 @@ func checkDuplicateSidechainTx(txn *Transaction) error {
 // validate the type of transaction is allowed or not at current height.
 func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) error {
 	switch txn.TxType {
-	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin, CRCProposalReview:
+	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin,
+		CRCProposalReview, CRCProposalTracking:
 		if blockHeight < b.chainParams.CRVotingStartHeight {
 			return errors.New("not support before CRVotingStartHeight")
 		}

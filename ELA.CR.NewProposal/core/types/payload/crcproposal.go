@@ -94,7 +94,7 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 	}
 
 	if err := p.CRSponsorDID.Serialize(w); err != nil {
-		return errors.New("[UnregisterCR], DID serialize failed")
+		return errors.New("CRSponsorDID serialize failed")
 	}
 	if err := p.DraftHash.Serialize(w); err != nil {
 		return err
@@ -133,7 +133,7 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 	}
 	p.SponsorPublicKey = sponsor
 	if err := p.CRSponsorDID.Deserialize(r); err != nil {
-		return errors.New("[UnregisterCR], DID deserialize failed")
+		return errors.New("CRSponsorDID deserialize failed")
 	}
 
 	if err := p.DraftHash.Deserialize(r); err != nil {
