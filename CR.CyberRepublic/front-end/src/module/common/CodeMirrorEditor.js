@@ -29,6 +29,11 @@ class Component extends BaseComponent {
     this.setState({ show: !this.state.show })
   }
 
+  onChange = (editor, data, value) => {
+    const { onChange } = this.props
+    if (onChange) onChange(value)
+  }
+
   ord_render() {
     const { show, value } = this.state
     return (
@@ -51,6 +56,7 @@ class Component extends BaseComponent {
             editorDidMount={editor => {
               this.editor = editor
             }}
+            onChange={this.onChange}
           />
         ) : (
           <Preview>
