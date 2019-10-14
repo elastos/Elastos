@@ -622,6 +622,12 @@ func newSettings() *settings {
 		ParamName:    "CRCArbiters"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.SecretaryGeneralFlag,
+		DefaultValue: "",
+		ConfigPath:   "DPoSConfiguration.SecretaryGeneral",
+		ParamName:    "SecretaryGeneral"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.NormalArbitratorsCountFlag,
 		DefaultValue: 0,
 		ConfigPath:   "DPoSConfiguration.NormalArbitratorsCount",
