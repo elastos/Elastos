@@ -86,6 +86,7 @@ type DPoSConfiguration struct {
 	SignTolerance            time.Duration  `json:"SignTolerance"`
 	OriginArbiters           []string       `json:"OriginArbiters"`
 	CRCArbiters              []string       `json:"CRCArbiters"`
+	SecretaryGeneral         string         `json:"SecretaryGeneral"`
 	NormalArbitratorsCount   int            `json:"NormalArbitratorsCount"`
 	CandidatesCount          int            `json:"CandidatesCount"`
 	EmergencyInactivePenalty common.Fixed64 `json:"EmergencyInactivePenalty"`
