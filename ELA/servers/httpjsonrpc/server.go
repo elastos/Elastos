@@ -103,8 +103,12 @@ func StartRPCServer() {
 		WriteTimeout: IOTimeout,
 	}
 	rpcServeMux.HandleFunc("/", Handle)
-	l, _ := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
-	err := server.Serve(l)
+	l, err := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
+	if err != nil {
+		log.Fatal("Create listener error: ", err.Error())
+		return
+	}
+	err = server.Serve(l)
 	if err != nil {
 		log.Fatal("ListenAndServe error: ", err.Error())
 	}
