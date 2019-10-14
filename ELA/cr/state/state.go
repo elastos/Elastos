@@ -223,6 +223,10 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 		if s.manager != nil {
 			s.manager.registerProposal(tx, height, s.history)
 		}
+	case types.CRCProposalReview:
+		if s.manager != nil {
+			s.manager.proposalReview(tx, height, s.history)
+		}
 	}
 
 	s.processCancelVotes(tx, height)
