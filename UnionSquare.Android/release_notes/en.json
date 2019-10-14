@@ -21,5 +21,12 @@
   "text20":"Fixed two bugs that can crash the app;",
   "text21":"Optimized system compatibility with older versions;",
   "text22":"Modified the translation wording for English version;",
-  "text23":"Optimized UI interface details;"
+  "text23":"Optimized UI interface details;",
+
+  "text24":" October  9, 2019",
+  "text25":" Bug fixes;",
+  "text26":"iOS 13 app crash issues addressed and fixed.",
+  "text27":"Note: Please back up your wallet before upgrading the wallet app.",
+  "text28":"For iOS users, please upgrade the wallet app before upgrading your iOS. ",
+  "text29":" If you have already upgraded to iOS 13, please uninstall the wallet app and reinstall the latest version."
 }
