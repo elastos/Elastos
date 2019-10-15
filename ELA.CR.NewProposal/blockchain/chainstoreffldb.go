@@ -331,9 +331,10 @@ func (c *ChainStoreFFLDB) IsBlockInStore(hash *Uint256) bool {
 // the main chain or any side chains.
 //
 // This function is safe for concurrent access.
-func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, error) {
+func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, uint32, error) {
 	// Check in the database.
 	var exists bool
+	var height uint32
 	err := c.db.View(func(dbTx database.Tx) error {
 		var err error
 		exists, err = dbTx.HasBlock(*hash)
@@ -350,12 +351,12 @@ func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, error) {
 		// Ultimately the entire block index should be serialized
 		// instead of only the current main chain so it can be consulted
 		// directly.
-		_, err = dbFetchHeightByHash(dbTx, hash)
+		height, err = dbFetchHeightByHash(dbTx, hash)
 		if err != nil {
 			exists = false
 			return nil
 		}
 		return err
 	})
-	return exists, err
+	return exists, height, err
 }
