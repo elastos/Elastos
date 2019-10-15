@@ -378,7 +378,7 @@ public class DIDDocument: NSObject {
         try parseAuthorization(json)
         try parseCredential(json)
         try parseService(json)
-        expires = JsonHelper.getDate(json, Constants.EXPIRES, true, nil, "expires")
+        expires = JsonHelper.getDate(json, Constants.expires, true, nil, "expires")
     }
     
     // 解析公钥

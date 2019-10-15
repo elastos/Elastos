@@ -1,14 +1,14 @@
 import Foundation
 
 public class DID: NSObject {
-
     public static let METHOD: String = "elastos"
-    var method: String!
-    public var methodSpecificId: String! // icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN
+
+    public var method: String!
+    public var methodSpecificId: String!
+
     private var document: DIDDocument?
     private var resolved: Bool?
     private var resolveTimestamp: Date?
-    private var listener: DListener?
 
     init(_ method: String, _ methodSpecificId: String) {
         self.method = method
@@ -21,24 +21,22 @@ public class DID: NSObject {
 
     public init(_ did: String) throws {
         super.init()
-        self.listener = DListener(self)
-        try ParserHelper.parase(did, true, self.listener!)
+        try ParserHelper.parase(did, true, DListener(self))
     }
 
     public func toExternalForm() -> String {
         return String("did:\(method!):\(methodSpecificId!)")
     }
 
-    public func toString() -> String {
+    public override var description: String {
         return toExternalForm()
     }
-    
+
     public override var hash: Int {
         return DID.METHOD.hash + self.methodSpecificId.hash
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-
         if object is DID {
             let did = object as! DID
             let didExternalForm = did.toExternalForm()
@@ -54,19 +52,19 @@ public class DID: NSObject {
         
         return super.isEqual(object);
     }
-    
-    
+
     public func resolve() throws -> DIDDocument {
-        if document != nil {return document!}
+        guard let _ = document else {
+            return document!
+        }
+
         do {
             document = try DIDStore.shareInstance()!.resolveDid(self)
         } catch {
             throw error
         }
         
-        if document != nil {
-            self.resolveTimestamp = Date()
-        }
+        self.resolveTimestamp = Date()
         return document!
     }
     
@@ -114,7 +112,6 @@ extension Data {
 }
 
 class DListener: DIDURLBaseListener {
-    
     public var name: String?
     public var value: String?
     public var did: DID?
@@ -124,7 +121,7 @@ class DListener: DIDURLBaseListener {
         self.did = did
     }
     
-    override func exitMethod(_ ctx: DIDURLParser.MethodContext) {
+    public override func exitMethod(_ ctx: DIDURLParser.MethodContext) {
         let method: String = ctx.getText()
         if (method != DID.METHOD){
             // TODO: throw error
@@ -133,7 +130,7 @@ class DListener: DIDURLBaseListener {
         self.did!.method = DID.METHOD
     }
     
-    override func exitMethodSpecificString(_ ctx: DIDURLParser.MethodSpecificStringContext) {
+    public override func exitMethodSpecificString(_ ctx: DIDURLParser.MethodSpecificStringContext) {
         self.did!.methodSpecificId = ctx.getText()
     }
 

@@ -90,7 +90,7 @@ public class DIDURL: NSObject {
     }
     
     public func toExternalForm() -> String {
-        let testDID: String = self.did.toString()
+        let testDID: String = self.did.description
         var params: String = ""
         if self.parameters != nil {
            params = mapToString(self.parameters!, sep: ";")
