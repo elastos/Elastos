@@ -219,7 +219,27 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 	return frame
 }
 
+func proposalHashEqual(first, second map[common.Uint168]ProposalHashSet) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	for firstK, firstV := range first {
+		secondV, ok := second[firstK]
+		if !ok {
+			return false
+		}
+
+		if !firstV.Equal(secondV) {
+			return false
+		}
+	}
+	return true
+}
+
 func proposalKeyFrameEqual(first, second *ProposalKeyFrame) bool {
+	if len(first.Proposals) != len(second.Proposals) {
+		return false
+	}
 	for k, v := range first.Proposals {
 		proposalState, exist := second.Proposals[k]
 		if !exist {
@@ -239,7 +259,9 @@ func proposalKeyFrameEqual(first, second *ProposalKeyFrame) bool {
 			if !ok {
 				return false
 			}
-			return vote == v
+			if vote != v {
+				return false
+			}
 		}
 
 		if !v.Proposal.DraftHash.IsEqual(proposalState.Proposal.DraftHash) ||
@@ -257,7 +279,8 @@ func proposalKeyFrameEqual(first, second *ProposalKeyFrame) bool {
 			}
 		}
 	}
-	return true
+
+	return proposalHashEqual(first.ProposalHashs, second.ProposalHashs)
 }
 
 func randomProposalKeyframe() *ProposalKeyFrame {
@@ -267,7 +290,12 @@ func randomProposalKeyframe() *ProposalKeyFrame {
 		*randomUint256(): randomProposalState(),
 		*randomUint256(): randomProposalState(),
 		*randomUint256(): randomProposalState(),
-	}}
+	},
+		ProposalHashs: map[common.Uint168]ProposalHashSet{
+			*randomUint168(): randomProposalHashSet(),
+			*randomUint168(): randomProposalHashSet(),
+		},
+	}
 }
 
 func randomProposalState() *ProposalState {
@@ -286,6 +314,16 @@ func randomProposalState() *ProposalState {
 			*randomUint168(): payload.VoteResult(rand.Int31n(3)),
 		},
 	}
+}
+
+func randomProposalHashSet() ProposalHashSet {
+	proposalHashSet := NewProposalHashSet()
+	count := rand.Int() % MaxCommitteeProposalCount
+	for i := 0; i < count; i++ {
+		proposalHashSet.Add(*randomUint256())
+	}
+
+	return proposalHashSet
 }
 
 func randomCRCProposal() *payload.CRCProposal {

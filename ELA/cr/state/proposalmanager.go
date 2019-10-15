@@ -44,6 +44,8 @@ const (
 	Aborted ProposalStatus = 0x06
 )
 
+const MaxCommitteeProposalCount = 128
+
 // ProposalManager used to manage all proposals existing in block chain.
 type ProposalManager struct {
 	ProposalKeyFrame
@@ -179,11 +181,59 @@ func (p *ProposalManager) shouldEndPublicVote(hash common.Uint256,
 		height
 }
 
+func (p *ProposalManager) IsProposalFull(did common.Uint168) bool {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	return p.isProposalFull(did)
+}
+
+func (p *ProposalManager) isProposalFull(did common.Uint168) bool {
+	return p.getProposalCount(did) >= MaxCommitteeProposalCount
+}
+
+func (p *ProposalManager) GetProposalCount(did common.Uint168) int {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	return p.getProposalCount(did)
+}
+
+func (p *ProposalManager) getProposalCount(did common.Uint168) int {
+	proposalHashsSet, ok := p.ProposalHashs[did]
+	if !ok {
+		return 0
+	}
+	return proposalHashsSet.Len()
+}
+
+func (p *ProposalManager) addProposal(did common.Uint168,
+	proposalHash common.Uint256) {
+	proposalHashsSet, ok := p.ProposalHashs[did]
+	if !ok {
+		proposalHashsSet = NewProposalHashSet()
+		proposalHashsSet.Add(proposalHash)
+		p.ProposalHashs[did] = proposalHashsSet
+		return
+	}
+	proposalHashsSet.Add(proposalHash)
+}
+
+func (p *ProposalManager) delProposal(did common.Uint168,
+	proposalHash common.Uint256) {
+	proposalHashsSet, ok := p.ProposalHashs[did]
+	if ok {
+		proposalHashsSet.Remove(proposalHash)
+	}
+}
+
 // registerProposal will register proposal state in proposal manager
 func (p *ProposalManager) registerProposal(tx *types.Transaction,
 	height uint32, history *utils.History) {
 	proposal := tx.Payload.(*payload.CRCProposal)
 
+	//The number of the proposals of the committee can not more than 128
+	if p.isProposalFull(proposal.CRSponsorDID) {
+		return
+	}
 	proposalState := &ProposalState{
 		Status:             Registered,
 		Proposal:           *proposal,
@@ -192,11 +242,15 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		CRVotes:            map[common.Uint168]payload.VoteResult{},
 		VotersRejectAmount: common.Fixed64(0),
 	}
+	CRSponsorDID := proposal.CRSponsorDID
+	hash := proposal.Hash()
 
 	history.Append(height, func() {
 		p.Proposals[proposal.Hash()] = proposalState
+		p.addProposal(CRSponsorDID, hash)
 	}, func() {
 		delete(p.Proposals, proposal.Hash())
+		p.delProposal(CRSponsorDID, hash)
 	})
 }
 

@@ -361,6 +361,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 	result := make([]common.Uint168, 0, c.params.CRMemberCount)
 	c.Members = make(map[common.Uint168]*CRMember, c.params.CRMemberCount)
 	c.manager.Proposals = make(map[common.Uint256]*ProposalState)
+	c.manager.ProposalHashs = make(map[common.Uint168]ProposalHashSet)
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
 		c.Members[candidates[i].info.DID] = c.generateMember(candidates[i])
 		result = append(result, candidates[i].info.DID)

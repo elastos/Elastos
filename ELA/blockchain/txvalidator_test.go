@@ -1946,6 +1946,17 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "CR sponsor signature check failed")
 
+	// proposals can not more than MaxCommitteeProposalCount
+	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
+	crcProposal, _ := txn.Payload.(*payload.CRCProposal)
+	proposalHashSet := crstate.NewProposalHashSet()
+	for i := 0; i < crstate.MaxCommitteeProposalCount; i++ {
+		proposalHashSet.Add(*randomUint256())
+	}
+	s.Chain.crCommittee.GetProposalManager().ProposalHashs[crcProposal.
+		CRSponsorDID] = proposalHashSet
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "proposal is full")
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {
