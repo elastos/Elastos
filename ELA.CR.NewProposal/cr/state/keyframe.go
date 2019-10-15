@@ -75,9 +75,57 @@ type ProposalState struct {
 	VoteStartHeight    uint32
 }
 
+type ProposalHashSet map[common.Uint256]struct{}
+
+func NewProposalHashSet() ProposalHashSet {
+	return make(ProposalHashSet)
+}
+
+func (set *ProposalHashSet) Add(proposalHash common.Uint256) bool {
+	_, found := (*set)[proposalHash]
+	if found {
+		return false //False if it existed already
+	}
+	(*set)[proposalHash] = struct{}{}
+	return true
+}
+
+func (set *ProposalHashSet) Clear() {
+	*set = NewProposalHashSet()
+}
+
+func (set *ProposalHashSet) Remove(proposalHash common.Uint256) {
+	delete(*set, proposalHash)
+}
+
+func (set *ProposalHashSet) Contains(proposalHash common.Uint256) bool {
+	if _, ok := (*set)[proposalHash]; !ok {
+		return false
+	}
+	return true
+}
+
+func (set *ProposalHashSet) Len() int {
+	return len(*set)
+}
+
+func (set *ProposalHashSet) Equal(other ProposalHashSet) bool {
+	if set.Len() != other.Len() {
+		return false
+	}
+	for elem := range *set {
+		if !other.Contains(elem) {
+			return false
+		}
+	}
+	return true
+}
+
 // ProposalKeyFrame holds all runtime state about CR proposals.
 type ProposalKeyFrame struct {
 	Proposals map[common.Uint256]*ProposalState
+	//key is did value is proposalhash set
+	ProposalHashs map[common.Uint168]ProposalHashSet
 }
 
 func (c *CRMember) Serialize(w io.Writer) (err error) {
@@ -554,6 +602,62 @@ func (p *ProposalKeyFrame) Serialize(w io.Writer) (err error) {
 			return
 		}
 	}
+	if err = p.serializeProposalHashsMap(p.ProposalHashs, w); err != nil {
+		return
+	}
+	return
+}
+func (p *ProposalKeyFrame) serializeProposalHashsMap(proposalHashMap map[common.Uint168]ProposalHashSet,
+	w io.Writer) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(proposalHashMap))); err != nil {
+		return
+	}
+	for k, ProposalHashSet := range proposalHashMap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+		if err := common.WriteVarUint(w,
+			uint64(len(ProposalHashSet))); err != nil {
+			return err
+		}
+		for proposalHash, _ := range ProposalHashSet {
+			if err := proposalHash.Serialize(w); err != nil {
+				return err
+			}
+		}
+	}
+	return
+}
+
+func (p *ProposalKeyFrame) deserializeProposalHashsMap(r io.Reader) (
+	proposalHashMap map[common.Uint168]ProposalHashSet, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	proposalHashMap = make(map[common.Uint168]ProposalHashSet)
+	for i := uint64(0); i < count; i++ {
+
+		var did common.Uint168
+		if did.Deserialize(r); err != nil {
+			return
+		}
+		var lenProposalHashSet uint64
+		proposalHashSet := NewProposalHashSet()
+
+		if lenProposalHashSet, err = common.ReadVarUint(r, 0); err != nil {
+			return
+		}
+		for i := uint64(0); i < lenProposalHashSet; i++ {
+			hash := &common.Uint256{}
+			if err = hash.Deserialize(r); err != nil {
+				return
+			}
+			proposalHashSet.Add(*hash)
+		}
+
+		proposalHashMap[did] = proposalHashSet
+	}
 	return
 }
 
@@ -576,6 +680,9 @@ func (p *ProposalKeyFrame) Deserialize(r io.Reader) (err error) {
 		}
 		p.Proposals[k] = &v
 	}
+	if p.ProposalHashs, err = p.deserializeProposalHashsMap(r); err != nil {
+		return
+	}
 	return
 }
 
@@ -591,7 +698,8 @@ func (p *ProposalKeyFrame) Snapshot() *ProposalKeyFrame {
 
 func NewProposalKeyFrame() *ProposalKeyFrame {
 	return &ProposalKeyFrame{
-		Proposals: make(map[common.Uint256]*ProposalState),
+		Proposals:     make(map[common.Uint256]*ProposalState),
+		ProposalHashs: make(map[common.Uint168]ProposalHashSet),
 	}
 }
 
