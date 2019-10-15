@@ -1097,9 +1097,14 @@ func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	exist, _ := b.db.GetFFLDB().BlockExists(hash)
+	exist, height, _ := b.db.GetFFLDB().BlockExists(hash)
 
-	return exist
+	if !exist || uint32(len(b.Nodes)) <= height ||
+		!b.Nodes[height].Hash.IsEqual(*hash) {
+		return false
+	}
+
+	return true
 }
 
 func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (bool, error) {

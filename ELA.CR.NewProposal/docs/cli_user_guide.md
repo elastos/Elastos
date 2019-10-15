@@ -409,6 +409,7 @@ OPTIONS:
 The `nodepublickey` parameter is used to specify the node public key of an arbiter.
 
 The account associated with node publickey must exist in the specified keystore file.
+If the nodepublickey parameter is not set, the publickey of the main account in the keystore file is used by default.
 
 ```
 ./ela-cli wallet buildtx activate --nodepublickey 032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5

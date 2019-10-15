@@ -304,11 +304,13 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnCRDepositCoin:
 		s.returnDeposit(tx, height)
+		s.processDeposit(tx, height)
 
 	case types.CRCProposal:
 		if s.manager != nil {
 			s.manager.registerProposal(tx, height, s.history)
 		}
+
 	case types.CRCProposalReview:
 		if s.manager != nil {
 			s.manager.proposalReview(tx, height, s.history)
