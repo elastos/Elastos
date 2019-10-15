@@ -280,14 +280,6 @@
 			path = libhdkey;
 			sourceTree = "<group>";
 		};
-		11CA2F8E23532007009A2067 /* TestResources */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = TestResources;
-			path = ElastosDIDSDK/TestResources;
-			sourceTree = "<group>";
-		};
 		11E3F791233D121900EF35C3 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
@@ -301,7 +293,6 @@
 		11F262A023260CF30009C103 = {
 			isa = PBXGroup;
 			children = (
-				11CA2F8E23532007009A2067 /* TestResources */,
 				11E3F791233D121900EF35C3 /* Externals */,
 				11F262AC23260CF40009C103 /* ElastosDIDSDK */,
 				1155D9472352FACE00DF8C9D /* ElastosDIDSDKTests */,
