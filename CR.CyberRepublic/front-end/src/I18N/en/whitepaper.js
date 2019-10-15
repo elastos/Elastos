@@ -20,9 +20,9 @@ export default {
       <h3>3.1. The Unique Features of Public Blockchains</h3>
       <p>Blockchain development’s short history has already involved a number of significant intra-community disputes. Though often well-intentioned and thorough, attempts to mediate such disputes failed to achieve meaningful resolutions, and resulted in divisive hard forks - most notably that between BTC and BCH, which led to the break-up of the community. In reflecting on these divisions, it is important to acknowledge the unique characteristics that distinguish developing blockchain projects from traditional products being developed for the present internet:</p>
       <ol>
-        <li>For blockchain projects, community is the driving force for development because the blockchain is different from other products. The blockchain is the shared property of the community, and should not be controlled by any one group or entity.</li>
-        <li>Within a blockchain community, consensus is not easily achieved, as various members and team may have different values and ideas.</li>
-        <li>Blockchain technology development can be slow. Two years elapsed between the Bitcoin Network’s initial scalability dispute and the final completion of its hard fork, whereas a similar upgrade to a traditional internet product would only take a few weeks.</li>
+        <li><span>1)</span>For blockchain projects, community is the driving force for development because the blockchain is different from other products. The blockchain is the shared property of the community, and should not be controlled by any one group or entity.</li>
+        <li><span>2)</span>Within a blockchain community, consensus is not easily achieved, as various members and team may have different values and ideas.</li>
+        <li><span>3)</span>Blockchain technology development can be slow. Two years elapsed between the Bitcoin Network’s initial scalability dispute and the final completion of its hard fork, whereas a similar upgrade to a traditional internet product would only take a few weeks.</li>
       </ol>
       <p>The reality of the present state of the blockchain industry is as follows: it is only ten years in development, and community and dApp ecosystems are still lacking in robustness, particularly in contrast with the platforms of the traditional internet.</p>
 
@@ -55,19 +55,19 @@ export default {
       <h3>5.1. CR Council Member</h3>
       <p>A delegate elected by community vote during a blockchain election. According to the CRC, CR Council Members act as the "Supernodes" for all community members and make decisions related to community affairs. Their rights and responsibilities are as follows:</p>
       <ol>
-        <li>The rights and responsibilities that all normal community members have;</li>
-        <li>The right to recommend proposals - that is, to put forth potential proposals originating from within the community (see: 7.1.);</li>
-        <li>The right to vote on proposals - that is, the right to vote for, against, or to abstain from voting on proposals.</li>
+        <li><span>1)</span>The rights and responsibilities that all normal community members have;</li>
+        <li><span>2)</span>The right to recommend proposals - that is, to put forth potential proposals originating from within the community (see: 7.1.);</li>
+        <li><span>3)</span>The right to vote on proposals - that is, the right to vote for, against, or to abstain from voting on proposals.</li>
       </ol>
 
       <h3>5.2. Community Members</h3>
       <p>All token holders in the CR community. Their rights and responsibilities are as follows:</p>
       <ol>
-        <li>The right to vote in elections: the right to cast votes in support of any candidate running for CR Council Member.</li>
-        <li>The right to be elected - that is, the right to run in the election for CR Council Member.</li>
-        <li>The right to submit proposals to CR Council Members, who can recommend them as official CRC proposals, if they so choose.</li>
-        <li>The right to monitor the behaviors of CR Council Members and to vote to impeach them. Each community member can monitor the behaviors of CR Council Members and can vote to impeach Council Members who they find unfit.</li>
-        <li>The right to supervise the proposal process and to object to proposals. Community members can monitor the entire proposal process using the client, including the status of both voting and implementation. Proposals from CR Council Members that pass CR Council voting will be subject to a public referendum, during which time community members can object to proposals through community vote.</li>
+        <li><span>1)</span>The right to vote in elections: the right to cast votes in support of any candidate running for CR Council Member.</li>
+        <li><span>2)</span>The right to be elected - that is, the right to run in the election for CR Council Member.</li>
+        <li><span>3)</span>The right to submit proposals to CR Council Members, who can recommend them as official CRC proposals, if they so choose.</li>
+        <li><span>4)</span>The right to monitor the behaviors of CR Council Members and to vote to impeach them. Each community member can monitor the behaviors of CR Council Members and can vote to impeach Council Members who they find unfit.</li>
+        <li><span>5)</span>The right to supervise the proposal process and to object to proposals. Community members can monitor the entire proposal process using the client, including the status of both voting and implementation. Proposals from CR Council Members that pass CR Council voting will be subject to a public referendum, during which time community members can object to proposals through community vote.</li>
       </ol>
       <p>These roles and processes do not necessitate the establishment of any additional roles or councils, including those designed for legal or supervisory purposes. CR Council Members may arbitrate community disputes by raising proposals, which itself includes the powers of a court. The processes of voting and raising proposals both operate on the blockchain, and all community members can monitor and affect the implementation of this process through the client by collectively voting against proposals or by impeaching council members.</p>
       <p>The blockchain’s intrinsic characteristics of openness, transparency, and immutability expedite the transmission of information, thus simplifying the process of achieving community consensus without requiring excessive bureaucracy and representation.</p>`,
@@ -166,8 +166,8 @@ export default {
       <h3>7.7. Replacing the Proposal Owner</h3>
       <p>In certain circumstances, the Proposal Owner may be unable to carry out the responsibility of tracking the proposal. In such cases, one of the following two methods may be used to replace the Proposal Owner:</p>
       <ol>
-        <li>The original Proposal Owner submits a request to replace himself or herself. The request includes the signature of the original owner and the candidate owner of the proposal. After the Secretariat approves and signs the request, it establishes a consensus along with the original owner and the new owner (formerly the candidate owner). The request will be published on the blockchain as a three-party joint signature transaction. This is a lightweight update method based on the premise that the original Proposal Owner is still able to manage basic responsibilities and is willing to take the initiative to replace the Proposal Owner;</li>
-        <li>The candidate for the Proposal Owner submits a proposal to replace the current Proposal Owner to the CR Council. This method is relatively “heavyweight,” and is better suited to cases where the original Proposal Owner is unable or is unwilling to manage any responsibilities. Prior to submitting proposals, the CR Council Members or the Secretariat must conduct offline discussions with the team responsible for the implementation of the proposal and confirm the new candidate for Proposal Owner.</li>
+        <li><span>1)</span>The original Proposal Owner submits a request to replace himself or herself. The request includes the signature of the original owner and the candidate owner of the proposal. After the Secretariat approves and signs the request, it establishes a consensus along with the original owner and the new owner (formerly the candidate owner). The request will be published on the blockchain as a three-party joint signature transaction. This is a lightweight update method based on the premise that the original Proposal Owner is still able to manage basic responsibilities and is willing to take the initiative to replace the Proposal Owner;</li>
+        <li><span>2)</span>The candidate for the Proposal Owner submits a proposal to replace the current Proposal Owner to the CR Council. This method is relatively “heavyweight,” and is better suited to cases where the original Proposal Owner is unable or is unwilling to manage any responsibilities. Prior to submitting proposals, the CR Council Members or the Secretariat must conduct offline discussions with the team responsible for the implementation of the proposal and confirm the new candidate for Proposal Owner.</li>
       </ol>
 
       <h3>7.8. Budget and Payment</h3>
@@ -185,13 +185,13 @@ export default {
       <p>Beginning with the submission of a proposal to the CR Council, the consensus statuses and process are as follows:</p>
       <img src="/assets/images/whitepaper.png" width="100%" alt="">
       <ul>
-        <li><em>Submitted:</em> A proposal’s status after the Proposal Owner completes the proposal and signs it. Proposals in this state cannot be public on the blockchain, which means that decentralized clients cannot see such proposals from the community.</li>
-        <li><em>Council </em>Voting: A proposal that has been recommended by the CR council member(s) and in the voting period. The proposal contains two signatures: the signature of the Proposal Owner and the signature of the person who recommends the proposal. This is an official CRC proposal posted on the blockchain.</li>
-        <li><em>Community </em>Review: A proposal that has entered the public referendum after the approval of the CR council.</li>
-        <li><em>Tracked:</em> After the notification period, a proposal that enters the implementation period during which the implementation of the proposal is conducted. For some proposals that are automatically executed by blockchain code, this status may not be applicable.</li>
-        <li><em>Finalized:</em> The final status of a proposal. This status generally indicates that the proposal has achieved the desired goal.</li>
-        <li><em>Rejected:</em>​ A proposal that is rejected during the voting period or public referendum.</li>
-        <li><em>Canceled:</em> A proposal that is terminated before it becomes finalized, despite earning approval from the CRC.</li>
+        <li><strong>Submitted:</strong> A proposal’s status after the Proposal Owner completes the proposal and signs it. Proposals in this state cannot be public on the blockchain, which means that decentralized clients cannot see such proposals from the community.</li>
+        <li><strong>Council </strong>Voting: A proposal that has been recommended by the CR council member(s) and in the voting period. The proposal contains two signatures: the signature of the Proposal Owner and the signature of the person who recommends the proposal. This is an official CRC proposal posted on the blockchain.</li>
+        <li><strong>Community </strong>Review: A proposal that has entered the public referendum after the approval of the CR council.</li>
+        <li><strong>Tracked:</strong> After the notification period, a proposal that enters the implementation period during which the implementation of the proposal is conducted. For some proposals that are automatically executed by blockchain code, this status may not be applicable.</li>
+        <li><strong>Finalized:</strong> The final status of a proposal. This status generally indicates that the proposal has achieved the desired goal.</li>
+        <li><strong>Rejected:</strong>​ A proposal that is rejected during the voting period or public referendum.</li>
+        <li><strong>Canceled:</strong> A proposal that is terminated before it becomes finalized, despite earning approval from the CRC.</li>
       </ul>
       <p>A proposal is to be regarded as a public contract between the Proposal Owner and the CR community. Community consensus will be confirmed after the proposal is approved by the CRC. All CR members are to comply with the content of the proposal.</p>`,
   },
@@ -229,9 +229,9 @@ export default {
       <h3>9.2. Source of Funds</h3>
       <p>CR Community assets arise primarily come from three sources:</p>
       <ol>
-        <li>Donations made by community teams or individuals;</li>
-        <li>The annual 1.2% increase in issuance of ELA;</li>
-        <li>Returns on investments, including ecosystem projects and foundations.</li>
+        <li><span>1)</span>Donations made by community teams or individuals;</li>
+        <li><span>2)</span>The annual 1.2% increase in issuance of ELA;</li>
+        <li><span>3)</span>Returns on investments, including ecosystem projects and foundations.</li>
       </ol>
       <p>Stemming from blockchain management requirements and safety considerations, the CR community assets are restricted to ELA; other digital assets should be exchanged into ELA using the buyback method.</p>
       <p>After these assets have been received, they will be stored at a public address called the CR Assets Address. This is the address of a special ELA Wallet whose rules of use are written into the blockchain code.</p>

@@ -82,17 +82,21 @@ const Wrapper = styled.div`
   .ant-collapse-content-box {
     ul, ol {
       padding-left: 1em;
+      list-style: none;
     }
     p {
       text-indent: ${props => props.lang === 'en' ? 0 : '2em'};
     }
     p, ul, ol {
       margin: 0 32px;
-      padding-bottom: 24px;
       line-height: 1.8;
       li {
         padding-left: 1em;
         padding-bottom: 20px;
+        span {
+          color: #333;
+          margin-right: 10px;
+        }
       }
     }
     h3 {
@@ -102,6 +106,18 @@ const Wrapper = styled.div`
     }
     h3 ~ p, h3 ~ ol, h3 ~ ul {
       margin: 0 48px;
+    }
+    ul > li {
+      &::before {
+        content: ' ';
+        width: 6px;
+        height: 6px;
+        border-radius: 3px;
+        background: #333;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 10px;
+      }
     }
     img {
       padding: 48px;
