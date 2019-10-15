@@ -100,7 +100,7 @@ import ElipNewPage from '@/module/page/elip/new/Container'
 import ElipDetailPage from '@/module/page/elip/detail/Container'
 import ElipEditPage from '@/module/page/elip/edit/Container'
 
-import WhitepaperPage from '@/module/page/whitepaper/Component'
+import WhitepaperPage from '@/module/page/whitepaper/Container'
 
 import NotFound from '@/module/page/error/NotFound'
 
