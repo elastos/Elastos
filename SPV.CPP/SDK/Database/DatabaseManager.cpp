@@ -69,12 +69,12 @@ namespace Elastos {
 			return _transactionDataStore.GetAllTransactionsCount();
 		}
 
-		TransactionPtr DatabaseManager::GetTransaction(const uint256 &hash) {
-			return _transactionDataStore.GetTransaction(hash);
+		TransactionPtr DatabaseManager::GetTransaction(const uint256 &hash, const std::string &chainID) {
+			return _transactionDataStore.GetTransaction(hash, chainID);
 		}
 
-		std::vector<TransactionPtr> DatabaseManager::GetAllTransactions() const {
-			return _transactionDataStore.GetAllTransactions();
+		std::vector<TransactionPtr> DatabaseManager::GetAllTransactions(const std::string &chainID) const {
+			return _transactionDataStore.GetAllTransactions(chainID);
 		}
 
 		bool DatabaseManager::UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight,
@@ -131,8 +131,8 @@ namespace Elastos {
 		}
 
 		std::vector<MerkleBlockPtr> DatabaseManager::GetAllMerkleBlocks(const std::string &iso,
-																		const std::string &pluginType) const {
-			return _merkleBlockDataSource.GetAllMerkleBlocks(iso, pluginType);
+																		const std::string &chainID) const {
+			return _merkleBlockDataSource.GetAllMerkleBlocks(iso, chainID);
 		}
 
 		const boost::filesystem::path &DatabaseManager::GetPath() const {

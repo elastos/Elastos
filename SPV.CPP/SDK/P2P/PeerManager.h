@@ -80,7 +80,7 @@ namespace Elastos {
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
 						const boost::shared_ptr<Listener> &listener,
-						const PluginType &plugin);
+						const std::string &chainID);
 
 			~PeerManager();
 
@@ -151,7 +151,7 @@ namespace Elastos {
 
 			uint64_t GetRelayCount(const uint256 &txHash) const;
 
-			const PluginType &GetPluginType() const;
+			const std::string &GetChainID() const;
 
 			const std::vector<PeerInfo> &GetPeers() const;
 
@@ -294,7 +294,7 @@ namespace Elastos {
 			std::vector<PublishedTransaction> _publishedTx;
 			std::vector<uint256> _publishedTxHashes;
 
-			PluginType _pluginType;
+			std::string _chainID;
 			WalletPtr _wallet;
 			ChainParamsPtr _chainParams;
 

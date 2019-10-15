@@ -23,15 +23,16 @@ namespace Elastos {
 		}
 
 		bool TransactionMessage::Accept(const bytes_t &msg) {
-			std::string pluginType = _peer->GetPeerManager()->GetPluginType();
+			std::string chainID = _peer->GetPeerManager()->GetChainID();
 
 			ByteStream stream(msg);
 
 			TransactionPtr tx;
-			if (pluginType == "ELA")
+			if (chainID == CHAINID_MAINCHAIN) {
 				tx = TransactionPtr(new Transaction());
-			else
+			} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
 				tx = TransactionPtr(new IDTransaction());
+			}
 
 			if (!tx->Deserialize(stream)) {
 				_peer->error("malformed tx message with length: {}", msg.size());

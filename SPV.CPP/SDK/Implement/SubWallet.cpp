@@ -10,6 +10,7 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Plugin/Transaction/TransactionInput.h>
+#include <SDK/Plugin/Transaction/IDTransaction.h>
 #include <SDK/Plugin/Transaction/Payload/TransferAsset.h>
 #include <SDK/Account/SubAccount.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
@@ -38,12 +39,10 @@ namespace Elastos {
 			fs::path subWalletDBPath = _parent->GetDataPath();
 			subWalletDBPath /= _info->GetChainID() + DB_FILE_EXTENSION;
 
-			_subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
-			std::string walletID = _parent->GetID() + ":" + _info->GetChainID();
+			SubAccountPtr subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
 			_walletManager = WalletManagerPtr(
-					new SpvService(walletID, _subAccount, subWalletDBPath,
-								   _info->GetEarliestPeerTime(), _config->DisconnectionTime(),
-								   _config->PluginType(), config->ChainParameters()));
+					new SpvService(_parent->GetID(), _info->GetChainID(), subAccount, subWalletDBPath,
+								   _info->GetEarliestPeerTime(), _config));
 
 			_walletManager->RegisterWalletListener(this);
 			_walletManager->RegisterPeerManagerListener(this);
@@ -230,8 +229,6 @@ namespace Elastos {
 		}
 
 		TransactionPtr SubWallet::DecodeTx(const nlohmann::json &encodedTx) const {
-			TransactionPtr tx(new Transaction());
-
 			if (encodedTx.find("Algorithm") == encodedTx.end() ||
 				encodedTx.find("Data") == encodedTx.end() ||
 				encodedTx.find("ChainID") == encodedTx.end()) {
@@ -251,6 +248,13 @@ namespace Elastos {
 			if (chainID != GetChainID()) {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument,
 												  "Invalid input: tx is not belongs to current subwallet");
+			}
+
+			TransactionPtr tx;
+			if (GetChainID() == CHAINID_MAINCHAIN) {
+				tx = TransactionPtr(new Transaction());
+			} else if (GetChainID() == CHAINID_IDCHAIN || GetChainID() == CHAINID_TOKENCHAIN) {
+				tx = TransactionPtr(new IDTransaction());
 			}
 
 			bytes_t rawHex;
@@ -701,7 +705,7 @@ namespace Elastos {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 
 			nlohmann::json j;
-			j["Info"] = _subAccount->GetBasicInfo();
+			j["Info"] = _walletManager->GetWallet()->GetBasicInfo();
 			j["ChainID"] = _info->GetChainID();
 
 			ArgInfo("r => {}", j.dump());

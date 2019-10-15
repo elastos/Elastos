@@ -33,9 +33,9 @@ namespace Elastos {
 
 			size_t GetAllTransactionsCount() const;
 
-			TransactionPtr GetTransaction(const uint256 &hash);
+			TransactionPtr GetTransaction(const uint256 &hash, const std::string &chainID);
 
-			std::vector<TransactionPtr> GetAllTransactions() const;
+			std::vector<TransactionPtr> GetAllTransactions(const std::string &chainID) const;
 
 			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
@@ -46,7 +46,9 @@ namespace Elastos {
 			void flush();
 
 		private:
-			TransactionPtr SelectTxByHash(const std::string &hash) const;
+			TransactionPtr SelectTxByHash(const std::string &hash, const std::string &chainID) const;
+
+			bool ContainHash(const std::string &hash) const;
 
 			void PutTransactionInternal(const std::string &iso, const TransactionPtr &tx);
 

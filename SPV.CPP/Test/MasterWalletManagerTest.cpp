@@ -11,6 +11,7 @@
 #include <SDK/Implement/MainchainSubWallet.h>
 #include <SDK/Implement/IDChainSubWallet.h>
 #include <SDK/Implement/MasterWallet.h>
+#include <SDK/Database/DatabaseManager.h>
 #include <SDK/WalletCore/Crypto/AES.h>
 #include <SDK/WalletCore/BIPs/HDKeychain.h>
 #include <SDK/WalletCore/BIPs/Key.h>
@@ -1313,7 +1314,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 		}
 
 
-		REQUIRE(dm.GetAllTransactions().size() == txCount);
+		REQUIRE(dm.GetAllTransactions(CHAINID_MAINCHAIN).size() == txCount);
 
 		//transfer to another address
 		BigInt transferAmount(2005);
@@ -1374,7 +1375,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 
 		dm.PutTransaction(iso, tx);
 
-		REQUIRE(dm.GetAllTransactions().size() == txCount + 1);
+		REQUIRE(dm.GetAllTransactions(CHAINID_MAINCHAIN).size() == txCount + 1);
 
 		//put coinbase tx
 		for (int i = 0; i < txCount; ++i) {

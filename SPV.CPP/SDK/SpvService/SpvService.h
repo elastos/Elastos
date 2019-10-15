@@ -8,10 +8,6 @@
 #include "BackgroundExecutor.h"
 #include "CoreSpvService.h"
 
-#include <SDK/Database/DatabaseManager.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/WalletCore/KeyStore/KeyStore.h>
-
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
 #include <nlohmann/json.hpp>
@@ -20,21 +16,22 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class DatabaseManager;
 		class Transaction;
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
+		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
 
 		class SpvService :
 				public CoreSpvService {
 		public:
 
 			SpvService(const std::string &walletID,
+					   const std::string &chainID,
 					   const SubAccountPtr &subAccount,
 					   const boost::filesystem::path &dbPath,
 					   time_t earliestPeerTime,
-					   uint32_t reconnectSeconds,
-					   const PluginType &pluginTypes,
-					   const ChainParamsPtr &chainParams);
+					   const ChainConfigPtr &config);
 
 			virtual ~SpvService();
 
@@ -44,7 +41,7 @@ namespace Elastos {
 
 			void ExecutorStop();
 
-			TransactionPtr GetTransaction(const uint256 &hash);
+			TransactionPtr GetTransaction(const uint256 &hash, const std::string &chainID);
 
 			size_t GetAllTransactionsCount();
 
@@ -101,9 +98,9 @@ namespace Elastos {
 		protected:
 			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();
 
-			virtual std::vector<TransactionPtr> loadTransactions();
+			virtual std::vector<TransactionPtr> loadTransactions(const std::string &chainID);
 
-			virtual std::vector<MerkleBlockPtr> loadBlocks();
+			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
 
 			virtual std::vector<PeerInfo> loadPeers();
 
@@ -114,7 +111,8 @@ namespace Elastos {
 			virtual const WalletListenerPtr &createWalletListener();
 
 		private:
-			DatabaseManager _databaseManager;
+			DatabaseManagerPtr _databaseManager;
+
 			BackgroundExecutor _executor;
 
 			std::vector<Wallet::Listener *> _walletListeners;

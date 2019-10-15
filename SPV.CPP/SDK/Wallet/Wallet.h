@@ -89,6 +89,8 @@ namespace Elastos {
 
 			virtual ~Wallet();
 
+			nlohmann::json GetBasicInfo() const;
+
 			const std::string &GetWalletID() const;
 
 			void SetBlockHeight(uint32_t height);
@@ -117,6 +119,8 @@ namespace Elastos {
 			std::vector<Address> GetAllSpecialAddresses() const;
 
 			bytes_t GetOwnerPublilcKey() const;
+
+			bytes_t GetCROwnerPublicKey() const;
 
 			bool IsDepositAddress(const Address &addr) const;
 
@@ -172,6 +176,10 @@ namespace Elastos {
 			void SignTransaction(const TransactionPtr &tx, const std::string &payPassword);
 
 			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd);
+
+			bytes_t SignWithOwnerKey(const bytes_t &msg, const std::string &payPasswd);
+
+			bytes_t SignWithCROwnerKey(const bytes_t &msg, const std::string &payPasswd);
 
 			void UpdateLockedBalance();
 

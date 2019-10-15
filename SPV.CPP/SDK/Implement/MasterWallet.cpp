@@ -9,6 +9,7 @@
 #include "MasterWallet.h"
 #include "TokenchainSubWallet.h"
 
+#include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/Payload/RegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>

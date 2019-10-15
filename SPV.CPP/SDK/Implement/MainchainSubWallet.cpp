@@ -133,8 +133,7 @@ namespace Elastos {
 			pr.SerializeUnsigned(ostream, 0);
 			bytes_t prUnsigned = ostream.GetBytes();
 
-			Key key = _subAccount->DeriveOwnerKey(payPasswd);
-			pr.SetSignature(key.Sign(prUnsigned));
+			pr.SetSignature(_walletManager->GetWallet()->SignWithOwnerKey(prUnsigned, payPasswd));
 
 			nlohmann::json payloadJson = pr.ToJson(0);
 
@@ -162,8 +161,7 @@ namespace Elastos {
 			pc.SerializeUnsigned(ostream, 0);
 			bytes_t pcUnsigned = ostream.GetBytes();
 
-			Key key = _subAccount->DeriveOwnerKey(payPasswd);
-			pc.SetSignature(key.Sign(pcUnsigned));
+			pc.SetSignature(_walletManager->GetWallet()->SignWithOwnerKey(pcUnsigned, payPasswd));
 
 			nlohmann::json payloadJson = pc.ToJson(0);
 			ArgInfo("r => {}", payloadJson.dump());
@@ -489,7 +487,7 @@ namespace Elastos {
 
 		std::string MainchainSubWallet::GetCROwnerDID() const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			bytes_t pubKey = _subAccount->DIDPubKey();
+			bytes_t pubKey = _walletManager->GetWallet()->GetCROwnerPublicKey();
 			std::string addr = Address(PrefixIDChain, pubKey).String();
 
 			ArgInfo("r => {}", addr);
@@ -498,7 +496,7 @@ namespace Elastos {
 
 		std::string MainchainSubWallet::GetCROwnerPublicKey() const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			std::string pubkey = _subAccount->DIDPubKey().getHex();
+			std::string pubkey = _walletManager->GetWallet()->GetCROwnerPublicKey().getHex();
 			ArgInfo("r => {}", pubkey);
 			return pubkey;
 		}
@@ -539,9 +537,7 @@ namespace Elastos {
 			crInfo.SerializeUnsigned(ostream, 0);
 			bytes_t prUnsigned = ostream.GetBytes();
 
-			Key key = _subAccount->DeriveDIDKey(payPasswd);
-
-			crInfo.SetSignature(key.Sign(prUnsigned));
+			crInfo.SetSignature(_walletManager->GetWallet()->SignWithCROwnerKey(prUnsigned, payPasswd));
 
 			nlohmann::json payloadJson = crInfo.ToJson(0);
 
@@ -572,9 +568,7 @@ namespace Elastos {
 			unregisterCR.SerializeUnsigned(ostream, 0);
 			bytes_t prUnsigned = ostream.GetBytes();
 
-			Key key = _subAccount->DeriveDIDKey(payPasswd);
-
-			unregisterCR.SetSignature(key.Sign(prUnsigned));
+			unregisterCR.SetSignature(_walletManager->GetWallet()->SignWithCROwnerKey(prUnsigned, payPasswd));
 
 			nlohmann::json payloadJson = unregisterCR.ToJson(0);
 
@@ -707,7 +701,7 @@ namespace Elastos {
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
-			Address fromAddress = Address(PrefixDeposit, _subAccount->DIDPubKey());
+			Address fromAddress = Address(PrefixDeposit, _walletManager->GetWallet()->GetCROwnerPublicKey());
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());

@@ -34,7 +34,6 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_dataPath(dataPath),
 				_p2pEnable(true) {
-			ErrorChecker::CheckParamNotEmpty(rootPath, "rootPath");
 			initMasterWallets();
 		}
 
@@ -42,7 +41,24 @@ namespace Elastos {
 				_masterWalletMap(walletMap),
 				_rootPath(rootPath),
 				_dataPath(dataPath),
-				_p2pEnable(true) {
+				_p2pEnable(false) {
+			if (_dataPath.empty()) {
+				_dataPath = _rootPath;
+			}
+
+			ErrorChecker::CheckPathExists(_rootPath);
+			ErrorChecker::CheckPathExists(_dataPath);
+
+			Log::registerMultiLogger(_dataPath);
+
+			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
+			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
+
+#ifndef BUILD_SHARED_LIBS
+			Log::info("Registering plugin ...");
+			REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
+			REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
+#endif
 		}
 
 		MasterWalletManager::~MasterWalletManager() {
@@ -492,7 +508,6 @@ namespace Elastos {
 
 		void MasterWalletManager::initMasterWallets() {
 
-			path rootPath = _rootPath;
 			if (_dataPath.empty()) {
 				_dataPath = _rootPath;
 			}
@@ -508,7 +523,7 @@ namespace Elastos {
 #ifndef BUILD_SHARED_LIBS
 			Log::info("Registering plugin ...");
 			REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
-			REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
+			REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
 #endif
 
 

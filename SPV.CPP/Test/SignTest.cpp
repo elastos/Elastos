@@ -30,29 +30,28 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 			std::string payPasswd = "12345678";
 			uint32_t requiredSignCount = 3;
 			uint32_t coinIndex = 0;
-			Lockable lock;
 
 			AccountPtr account1(new Account("Data/1", mnemonic1, passphrase, payPasswd, false));
 			SubAccountPtr subAccount1(new SubAccount(account1, coinIndex));
-			subAccount1->Init({}, &lock);
+			subAccount1->Init({});
 			std::string multiSignPubKey1 = account1->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey1 = account1->OwnerPubKey();
 
 			AccountPtr account2(new Account("Data/2", mnemonic2, passphrase, payPasswd, false));
 			SubAccountPtr subAccount2(new SubAccount(account2, coinIndex));
-			subAccount2->Init({}, &lock);
+			subAccount2->Init({});
 			std::string multiSignPubKey2 = account2->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey2 = account2->OwnerPubKey();
 
 			AccountPtr account3(new Account("Data/3", mnemonic3, passphrase, payPasswd, false));
 			SubAccountPtr subAccount3(new SubAccount(account3, coinIndex));
-			subAccount3->Init({}, &lock);
+			subAccount3->Init({});
 			std::string multiSignPubKey3 = account3->MasterPubKeyHDPMString();
 			bytes_t ownerPubKey3 = account3->OwnerPubKey();
 
 			AccountPtr account4(new Account("Data/4", mnemonic4, passphrase, payPasswd, false));
 			SubAccountPtr subAccount4(new SubAccount(account4, coinIndex));
-			subAccount4->Init({}, &lock);
+			subAccount4->Init({});
 			std::string multiSignPubKey4 = account4->MasterPubKeyHDPMString();
 			bytes_t votePubKey4 = account4->OwnerPubKey();
 
@@ -139,7 +138,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 				AccountPtr multiSignAccount(new Account("Data/multisign", cosigners, requiredSignCount, false, false));
 				SubAccountPtr multiSignSubAccount(new SubAccount(multiSignAccount, coinIndex));
-				multiSignSubAccount->Init({}, &lock);
+				multiSignSubAccount->Init({});
 				std::vector<Address> addresses;
 				multiSignSubAccount->GetAllAddresses(addresses, 0, 1, true);
 				REQUIRE(!addresses.empty());
@@ -174,7 +173,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account("Data/m1", mnemonic1, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms1(new SubAccount(multiSignAccount1, coinIndex));
-				ms1->Init({}, &lock);
+				ms1->Init({});
 				std::vector<Address> addresses1;
 				ms1->GetAllAddresses(addresses1, 0, 10, true);
 
@@ -187,7 +186,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account("Data/m2", mnemonic2, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms2(new SubAccount(multiSignAccount2, coinIndex));
-				ms2->Init({}, &lock);
+				ms2->Init({});
 				std::vector<Address> addresses2;
 				ms2->GetAllAddresses(addresses2, 0, 10, true);
 
@@ -200,7 +199,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account("Data/m3", mnemonic3, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms3(new SubAccount(multiSignAccount3, coinIndex));
-				ms3->Init({}, &lock);
+				ms3->Init({});
 				std::vector<Address> addresses3;
 				ms3->GetAllAddresses(addresses3, 0, 10, true);
 
@@ -213,7 +212,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account("Data/m4", mnemonic4, passphrase, payPasswd, cosigners, requiredSignCount, false,
 								false));
 				SubAccountPtr ms4(new SubAccount(multiSignAccount4, coinIndex));
-				ms4->Init({}, &lock);
+				ms4->Init({});
 				std::vector<Address> addresses4;
 				ms4->GetAllAddresses(addresses4, 0, 10, true);
 
@@ -227,7 +226,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 					new Account("Data/multisign-readonly", cosigners, requiredSignCount, false, false));
 
 				SubAccountPtr ms5(new SubAccount(multiSignAccount5, coinIndex));
-				ms5->Init({}, &lock);
+				ms5->Init({});
 				std::vector<Address> addresses5;
 				ms5->GetAllAddresses(addresses5, 0, 10, true);
 
@@ -264,7 +263,6 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		TransactionPtr tx(new Transaction);
 		tx->FromJson(content);
 
-		Lockable lock;
 		const std::string backupPasswd = "11111111";
 		const std::string payPasswd = "payPasswd";
 		nlohmann::json keystoreJson = R"(
@@ -274,7 +272,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		REQUIRE_NOTHROW(ks.Import(keystoreJson, backupPasswd));
 		AccountPtr account1(new Account("Data/AccountTestMultiSignFromWeb", ks, payPasswd));
 		SubAccountPtr ms1(new SubAccount(account1, 0));
-		ms1->Init({}, &lock);
+		ms1->Init({});
 
 		std::vector<Address> addr1;
 		size_t count1 = ms1->GetAllAddresses(addr1, 0, 1, true);
@@ -286,7 +284,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 		AccountPtr account2(new Account("Data/MultiSignRO", cosigners, account1->GetM(), false, true));
 		SubAccountPtr ms2(new SubAccount(account2, 0));
-		ms2->Init({}, &lock);
+		ms2->Init({});
 		std::vector<Address> addr2;
 		size_t count2 = ms2->GetAllAddresses(addr2, 0, 1, true);
 		REQUIRE_THROWS(account2->MasterPubKey() == nullptr);
@@ -310,7 +308,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		SubAccountPtr ms3;
 		REQUIRE_NOTHROW(account3 = AccountPtr(new Account("Data/ReadOnly", readonlyJSON)));
 		REQUIRE_NOTHROW(ms3 = SubAccountPtr(new SubAccount(account3, 0)));
-		ms3->Init({}, &lock);
+		ms3->Init({});
 		REQUIRE(account3->GetM() == account1->GetM());
 		REQUIRE(account3->GetN() == account1->GetN());
 		REQUIRE(account3->GetSignType() == account1->GetSignType());

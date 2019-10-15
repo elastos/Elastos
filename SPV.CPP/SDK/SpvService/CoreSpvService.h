@@ -11,28 +11,29 @@
 #include <SDK/Account/SubAccount.h>
 #include <SDK/Wallet/Wallet.h>
 
-//#include <boost/thread.hpp>
-
 namespace Elastos {
 	namespace ElaWallet {
 
 		class ChainParams;
+		class ChainConfig;
 
 		typedef boost::shared_ptr<ChainParams> ChainParamsPtr;
+		typedef boost::shared_ptr<ChainConfig> ChainConfigPtr;
 
 		class CoreSpvService :
 				public Wallet::Listener,
 				public PeerManager::Listener {
 
 		public:
-			CoreSpvService(const PluginType &pluginType, const ChainParamsPtr &chainParams);
+			CoreSpvService();
 
-			virtual ~CoreSpvService();
-
-			void init(const std::string &walletID,
+			void Init(const std::string &walletID,
+					  const std::string &chainID,
 					  const SubAccountPtr &subAccount,
 					  time_t earliestPeerTime,
-					  uint32_t reconnectSeconds);
+					  const ChainConfigPtr &config);
+
+			virtual ~CoreSpvService();
 
 			virtual const WalletPtr &GetWallet() const;
 
@@ -83,9 +84,9 @@ namespace Elastos {
 		protected:
 			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();
 
-			virtual std::vector<TransactionPtr> loadTransactions();
+			virtual std::vector<TransactionPtr> loadTransactions(const std::string &chainID);
 
-			virtual std::vector<MerkleBlockPtr> loadBlocks();
+			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
 
 			virtual std::vector<PeerInfo> loadPeers();
 
@@ -100,11 +101,6 @@ namespace Elastos {
 			virtual const WalletListenerPtr &createWalletListener();
 
 		protected:
-			SubAccountPtr _subAccount;
-
-			PluginType _pluginTypes;
-			ChainParamsPtr _chainParams;
-			uint32_t _reconnectSeconds;
 
 			WalletPtr _wallet; // Optional<BRCoreWallet>
 			WalletListenerPtr _walletListener;
@@ -149,8 +145,7 @@ namespace Elastos {
 				public PeerManager::Listener {
 		public:
 			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener,
-											   Executor *executor,
-											   const PluginType &pluginType);
+											   Executor *executor);
 
 			virtual void syncStarted();
 

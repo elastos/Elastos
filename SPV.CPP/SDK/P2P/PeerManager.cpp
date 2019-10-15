@@ -118,11 +118,11 @@ namespace Elastos {
 								 const std::vector<MerkleBlockPtr> &blocks,
 								 const std::vector<PeerInfo> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
-								 const PluginType &plugin) :
+								 const std::string &chainID) :
 				_wallet(wallet),
 				_lastBlock(nullptr),
 				_lastOrphan(nullptr),
-				_pluginType(plugin),
+				_chainID(chainID),
 				_chainParams(params),
 
 				_syncSucceeded(false),
@@ -159,7 +159,7 @@ namespace Elastos {
 
 			const std::vector<CheckPoint> &Checkpoints = params->Checkpoints();
 			for (size_t i = 0; i < Checkpoints.size(); i++) {
-				MerkleBlockPtr checkBlock = Registry::Instance()->CreateMerkleBlock(_pluginType);
+				MerkleBlockPtr checkBlock = Registry::Instance()->CreateMerkleBlock(_chainID);
 				checkBlock->SetHeight(Checkpoints[i].Height());
 				checkBlock->SetHash(Checkpoints[i].Hash());
 				checkBlock->SetTimestamp(Checkpoints[i].Timestamp());
@@ -1698,8 +1698,8 @@ namespace Elastos {
 			peer->Disconnect();
 		}
 
-		const PluginType &PeerManager::GetPluginType() const {
-			return _pluginType;
+		const std::string &PeerManager::GetChainID() const {
+			return _chainID;
 		}
 
 		const std::vector<PeerInfo> &PeerManager::GetPeers() const {

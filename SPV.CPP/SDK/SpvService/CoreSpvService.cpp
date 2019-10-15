@@ -4,56 +4,57 @@
 
 #include "CoreSpvService.h"
 
+#include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Common/Log.h>
+#include <SDK/Common/ErrorChecker.h>
+#include <SDK/SpvService/Config.h>
 
 #include <sstream>
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		CoreSpvService::CoreSpvService(const PluginType &pluginTypes, const ChainParamsPtr &chainParams) :
-				_wallet(nullptr),
-				_walletListener(nullptr),
-				_peerManager(nullptr),
-				_peerManagerListener(nullptr),
-				_subAccount(nullptr),
-				_pluginTypes(pluginTypes),
-				_chainParams(chainParams) {
-		}
-
-		CoreSpvService::~CoreSpvService() {
+		CoreSpvService::CoreSpvService() {
 
 		}
 
-		void CoreSpvService::init(const std::string &walletID,
+		void CoreSpvService::Init(const std::string &walletID,
+								  const std::string &chainID,
 								  const SubAccountPtr &subAccount,
 								  time_t earliestPeerTime,
-								  uint32_t reconnectSeconds) {
-			_subAccount = subAccount;
-			_reconnectSeconds = reconnectSeconds;
+								  const ChainConfigPtr &config) {
 
-			std::vector<TransactionPtr>  txs = loadTransactions();
+			if (chainID != CHAINID_MAINCHAIN &&
+				chainID != CHAINID_IDCHAIN &&
+				chainID != CHAINID_TOKENCHAIN) {
+				ErrorChecker::ThrowParamException(Error::InvalidChainID, "invalid chain ID");
+			}
+
+			std::vector<TransactionPtr>  txs = loadTransactions(chainID);
 			std::vector<UTXOPtr> cbs = loadCoinBaseUTXOs();
 
 			if (_peerManager == nullptr) {
 				_peerManager = PeerManagerPtr(new PeerManager(
-						_chainParams,
+						config->ChainParameters(),
 						nullptr,
 						earliestPeerTime,
-						_reconnectSeconds,
-						loadBlocks(),
+						config->DisconnectionTime(),
+						loadBlocks(chainID),
 						loadPeers(),
 						createPeerManagerListener(),
-						_pluginTypes));
+						chainID));
 			}
 
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), walletID,
-											   loadAssets(), txs, cbs,
-											   _subAccount, createWalletListener()));
+				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), walletID + ":" + chainID,
+											   loadAssets(), txs, cbs, subAccount, createWalletListener()));
 				_peerManager->SetWallet(_wallet);
 			}
+		}
+
+		CoreSpvService::~CoreSpvService() {
+
 		}
 
 		const WalletPtr &CoreSpvService::GetWallet() const {
@@ -150,12 +151,12 @@ namespace Elastos {
 			return std::vector<UTXOPtr>();
 		}
 
-		std::vector<TransactionPtr> CoreSpvService::loadTransactions() {
+		std::vector<TransactionPtr> CoreSpvService::loadTransactions(const std::string &chainID) {
 			//todo complete me
 			return std::vector<TransactionPtr>();
 		}
 
-		std::vector<MerkleBlockPtr> CoreSpvService::loadBlocks() {
+		std::vector<MerkleBlockPtr> CoreSpvService::loadBlocks(const std::string &chainID) {
 			//todo complete me
 			return std::vector<MerkleBlockPtr>();
 		}
@@ -269,8 +270,7 @@ namespace Elastos {
 
 		WrappedExecutorPeerManagerListener::WrappedExecutorPeerManagerListener(
 				PeerManager::Listener *listener,
-				Executor *executor,
-				const PluginType &pluginType) :
+				Executor *executor) :
 				_listener(listener),
 				_executor(executor) {
 		}

@@ -13,6 +13,7 @@
 #include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Wallet/UTXO.h>
+#include <SDK/Database/DatabaseManager.h>
 
 #include <Core/BRMerkleBlock.h>
 #include <Core/BRTransaction.h>
@@ -28,16 +29,14 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		SpvService::SpvService(const std::string &walletID,
+							   const std::string &chainID,
 							   const SubAccountPtr &subAccount,
 							   const boost::filesystem::path &dbPath,
 							   time_t earliestPeerTime,
-							   uint32_t reconnectSeconds,
-							   const PluginType &pluginTypes,
-							   const ChainParamsPtr &chainParams) :
-				CoreSpvService(pluginTypes, chainParams),
+							   const ChainConfigPtr &config) :
 				_executor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(dbPath) {
-			init(walletID, subAccount, earliestPeerTime, reconnectSeconds);
+				_databaseManager(new DatabaseManager(dbPath)) {
+			Init(walletID, chainID, subAccount, earliestPeerTime, config);
 		}
 
 		SpvService::~SpvService() {
@@ -68,7 +67,7 @@ namespace Elastos {
 		}
 
 		void SpvService::DatabaseFlush() {
-			_databaseManager.flush();
+			_databaseManager->flush();
 		}
 
 		//override Wallet listener
@@ -81,7 +80,7 @@ namespace Elastos {
 
 		void SpvService::onCoinBaseTxAdded(const UTXOPtr &cb) {
 
-			_databaseManager.PutCoinBase(cb);
+			_databaseManager->PutCoinBase(cb);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&cb](Wallet::Listener *listener) {
@@ -90,13 +89,13 @@ namespace Elastos {
 		}
 
 		void SpvService::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
-			_databaseManager.DeleteAllCoinBase();
-			_databaseManager.PutCoinBase(cbs);
+			_databaseManager->DeleteAllCoinBase();
+			_databaseManager->PutCoinBase(cbs);
 		}
 
 		void SpvService::onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
 											 time_t timestamp) {
-			_databaseManager.UpdateCoinBase(hashes, blockHeight, timestamp);
+			_databaseManager->UpdateCoinBase(hashes, blockHeight, timestamp);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
@@ -105,7 +104,7 @@ namespace Elastos {
 		}
 
 		void SpvService::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
-			_databaseManager.UpdateSpentCoinBase(spentHashes);
+			_databaseManager->UpdateSpentCoinBase(spentHashes);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&spentHashes](Wallet::Listener *listener) {
@@ -114,7 +113,7 @@ namespace Elastos {
 		}
 
 		void SpvService::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			_databaseManager.DeleteCoinBase(hash);
+			_databaseManager->DeleteCoinBase(hash);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
@@ -123,7 +122,7 @@ namespace Elastos {
 		}
 
 		void SpvService::onTxAdded(const TransactionPtr &tx) {
-			_databaseManager.PutTransaction(ISO, tx);
+			_databaseManager->PutTransaction(ISO, tx);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&tx](Wallet::Listener *listener) {
@@ -132,7 +131,7 @@ namespace Elastos {
 		}
 
 		void SpvService::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
-			_databaseManager.UpdateTransaction(hashes, blockHeight, timestamp);
+			_databaseManager->UpdateTransaction(hashes, blockHeight, timestamp);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hashes, &blockHeight, &timestamp](Wallet::Listener *listener) {
@@ -141,7 +140,7 @@ namespace Elastos {
 		}
 
 		void SpvService::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			_databaseManager.DeleteTxByHash(hash);
+			_databaseManager->DeleteTxByHash(hash);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hash, &notifyUser, &recommendRescan](Wallet::Listener *listener) {
@@ -150,8 +149,8 @@ namespace Elastos {
 		}
 
 		void SpvService::onTxUpdatedAll(const std::vector<TransactionPtr> &txns) {
-			_databaseManager.DeleteAllTransactions();
-			_databaseManager.PutTransactions(ISO, txns);
+			_databaseManager->DeleteAllTransactions();
+			_databaseManager->PutTransactions(ISO, txns);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&txns](Wallet::Listener *listener) {
@@ -164,7 +163,7 @@ namespace Elastos {
 			ByteStream stream;
 			asset->Serialize(stream);
 			AssetEntity assetEntity(assetID, amount, stream.GetBytes());
-			_databaseManager.PutAsset(asset->GetName(), assetEntity);
+			_databaseManager->PutAsset(asset->GetName(), assetEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&asset, &amount, &controller](Wallet::Listener *listener) {
@@ -204,7 +203,7 @@ namespace Elastos {
 		void SpvService::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 
 			if (replace) {
-				_databaseManager.DeleteAllBlocks(ISO);
+				_databaseManager->DeleteAllBlocks(ISO);
 			}
 
 #ifndef NDEBUG
@@ -218,7 +217,7 @@ namespace Elastos {
 			}
 #endif
 
-			_databaseManager.PutMerkleBlocks(ISO, blocks);
+			_databaseManager->PutMerkleBlocks(ISO, blocks);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &blocks](PeerManager::Listener *listener) {
@@ -229,7 +228,7 @@ namespace Elastos {
 		void SpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 			if (replace) {
-				_databaseManager.DeleteAllPeers();
+				_databaseManager->DeleteAllPeers();
 			}
 
 			std::vector<PeerEntity> peerEntityList;
@@ -240,7 +239,7 @@ namespace Elastos {
 				peerEntity.timeStamp = peers[i].Timestamp;
 				peerEntityList.push_back(peerEntity);
 			}
-			_databaseManager.PutPeers(ISO, peerEntityList);
+			_databaseManager->PutPeers(ISO, peerEntityList);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &peers](PeerManager::Listener *listener) {
@@ -272,31 +271,31 @@ namespace Elastos {
 						  });
 		}
 
-		TransactionPtr SpvService::GetTransaction(const uint256 &hash) {
-			return _databaseManager.GetTransaction(hash);
+		TransactionPtr SpvService::GetTransaction(const uint256 &hash, const std::string &chainID) {
+			return _databaseManager->GetTransaction(hash, chainID);
 		}
 
 		size_t SpvService::GetAllTransactionsCount() {
-			return _databaseManager.GetAllTransactionsCount();
+			return _databaseManager->GetAllTransactionsCount();
 		}
 
 		std::vector<UTXOPtr> SpvService::loadCoinBaseUTXOs() {
-			return _databaseManager.GetAllCoinBase();
+			return _databaseManager->GetAllCoinBase();
 		}
 
 		// override protected methods
-		std::vector<TransactionPtr> SpvService::loadTransactions() {
-			return _databaseManager.GetAllTransactions();
+		std::vector<TransactionPtr> SpvService::loadTransactions(const std::string &chainID) {
+			return _databaseManager->GetAllTransactions(chainID);
 		}
 
-		std::vector<MerkleBlockPtr> SpvService::loadBlocks() {
-			return _databaseManager.GetAllMerkleBlocks(ISO, _pluginTypes);
+		std::vector<MerkleBlockPtr> SpvService::loadBlocks(const std::string &chainID) {
+			return _databaseManager->GetAllMerkleBlocks(ISO, chainID);
 		}
 
 		std::vector<PeerInfo> SpvService::loadPeers() {
 			std::vector<PeerInfo> peers;
 
-			std::vector<PeerEntity> peersEntity = _databaseManager.GetAllPeers(ISO);
+			std::vector<PeerEntity> peersEntity = _databaseManager->GetAllPeers(ISO);
 
 			for (size_t i = 0; i < peersEntity.size(); ++i) {
 				peers.push_back(PeerInfo(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp));
@@ -308,7 +307,7 @@ namespace Elastos {
 		std::vector<AssetPtr> SpvService::loadAssets() {
 			std::vector<AssetPtr> assets;
 
-			std::vector<AssetEntity> assetsEntity = _databaseManager.GetAllAssets();
+			std::vector<AssetEntity> assetsEntity = _databaseManager->GetAllAssets();
 
 			for (size_t i = 0; i < assetsEntity.size(); ++i) {
 				ByteStream stream(assetsEntity[i].Asset);
@@ -325,7 +324,7 @@ namespace Elastos {
 		const CoreSpvService::PeerManagerListenerPtr &SpvService::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
-						new WrappedExecutorPeerManagerListener(this, &_executor, _pluginTypes));
+						new WrappedExecutorPeerManagerListener(this, &_executor));
 			}
 			return _peerManagerListener;
 		}

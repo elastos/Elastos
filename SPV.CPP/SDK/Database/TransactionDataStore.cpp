@@ -8,6 +8,8 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/uint256.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/Plugin/Transaction/IDTransaction.h>
+#include <SDK/Plugin/Registry.h>
 
 #include <string>
 
@@ -58,13 +60,11 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::PutTransaction(const std::string &iso, const TransactionPtr &tx) {
-#ifdef SPDLOG_DEBUG_ON
 			std::string txHash = tx->GetHash().GetHex();
-			if (SelectTxByHash(txHash)) {
+			if (ContainHash(txHash)) {
 				Log::error("should not put in existed tx {}", tx->GetHash().GetHex());
 				return false;
 			}
-#endif
 
 			return DoTransaction([&iso, &tx, this]() { this->PutTransactionInternal(iso, tx); });
 		}
@@ -114,13 +114,13 @@ namespace Elastos {
 			return count;
 		}
 
-		TransactionPtr TransactionDataStore::GetTransaction(const uint256 &hash) {
-			return SelectTxByHash(hash.GetHex());
+		TransactionPtr TransactionDataStore::GetTransaction(const uint256 &hash, const std::string &chainID) {
+			return SelectTxByHash(hash.GetHex(), chainID);
 		}
 
-		std::vector<TransactionPtr> TransactionDataStore::GetAllTransactions() const {
+		std::vector<TransactionPtr> TransactionDataStore::GetAllTransactions(const std::string &chainID) const {
 			std::vector<TransactionPtr> txns;
-			DoTransaction([&txns, this]() {
+			DoTransaction([&chainID, &txns, this]() {
 				std::string sql;
 
 				sql = "SELECT " +
@@ -136,7 +136,12 @@ namespace Elastos {
 											 "Prepare sql " + sql);
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					TransactionPtr tx(new Transaction());
+					TransactionPtr tx;
+					if (chainID == CHAINID_MAINCHAIN) {
+						tx = TransactionPtr(new Transaction());
+					} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+						tx = TransactionPtr(new IDTransaction());
+					}
 
 					uint256 txHash(_sqlite->ColumnText(stmt, 0));
 
@@ -224,10 +229,10 @@ namespace Elastos {
 
 		void TransactionDataStore::flush() { _sqlite->flush(); }
 
-		TransactionPtr TransactionDataStore::SelectTxByHash(const std::string &hash) const {
+		TransactionPtr TransactionDataStore::SelectTxByHash(const std::string &hash, const std::string &chainID) const {
 			TransactionPtr tx = nullptr;
 
-			DoTransaction([&hash, &tx, this]() {
+			DoTransaction([&hash, &chainID, &tx, this]() {
 				std::string sql;
 
 				sql = "SELECT " +
@@ -244,7 +249,12 @@ namespace Elastos {
 											 "Prepare sql " + sql);
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					tx = TransactionPtr(new Transaction());
+					if (chainID == CHAINID_MAINCHAIN) {
+						tx = TransactionPtr(new Transaction());
+					} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+						tx = TransactionPtr(new IDTransaction());
+					}
+
 					uint256 txHash(_sqlite->ColumnText(stmt, 0));
 
 					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
@@ -269,6 +279,32 @@ namespace Elastos {
 			});
 
 			return tx;
+		}
+
+		bool TransactionDataStore::ContainHash(const std::string &hash) const {
+			bool contain = false;
+
+			DoTransaction([&hash, &contain, this]() {
+				std::string sql;
+
+				sql = "SELECT " +
+					  TX_COLUMN_ID + "," +
+					  TX_BUFF + "," +
+					  TX_BLOCK_HEIGHT + "," +
+					  TX_TIME_STAMP + "," +
+					  TX_ISO +
+					  " FROM " + TX_TABLE_NAME +
+					  " WHERE " + TX_COLUMN_ID + " = '" + hash + "';";
+
+				sqlite3_stmt *stmt;
+				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr), Error::SqliteError,
+											 "Prepare sql " + sql);
+
+				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+					contain = true;
+				}
+			});
+			return contain;
 		}
 
 	} // namespace ElaWallet

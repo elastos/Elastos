@@ -16,9 +16,11 @@ namespace Elastos {
 
 		class ISubAccount {
 		public:
+			virtual ~ISubAccount() {}
+
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
-			virtual void Init(const std::vector<TransactionPtr> &tx, Lockable *lock) = 0;
+			virtual void Init(const std::vector<TransactionPtr> &tx) = 0;
 
 			virtual void InitDID() = 0;
 
@@ -56,8 +58,6 @@ namespace Elastos {
 			virtual Key DeriveOwnerKey(const std::string &payPasswd) = 0;
 
 			virtual Key DeriveDIDKey(const std::string &payPasswd) = 0;
-
-			virtual bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd) = 0;
 
 			virtual bool GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const = 0;
 

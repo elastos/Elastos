@@ -9,9 +9,9 @@ namespace Elastos {
 		SPVModule::SPVModule(const std::string &wallet_id,
 							 const SubAccountPtr &sub_account,
 							 const boost::filesystem::path &db_path,
-							 time_t earliest_peer_time, const PluginType &plugin_types,
-							 const ChainParamsPtr &chain_params)
-			: SpvService(wallet_id, sub_account, db_path, earliest_peer_time, 0, plugin_types, chain_params),
+							 time_t earliest_peer_time,
+							 const ChainConfigPtr &config)
+			: SpvService("", wallet_id, sub_account, db_path, earliest_peer_time, config),
 			  _notify_queue(db_path) {}
 
 		SPVModule::~SPVModule() {}
@@ -37,7 +37,7 @@ namespace Elastos {
 			SpvService::onTxUpdated(hashes, block_height, timestamp); // Call parent.
 
 			for (auto hash : hashes) {
-				if (GetTransaction(hash))
+				if (GetTransaction(hash, CHAINID_MAINCHAIN))
 					_notify_queue.Upsert(NotifyQueue::RecordPtr(new NotifyQueue::Record(hash, block_height)));
 			}
 		}
@@ -66,7 +66,7 @@ namespace Elastos {
 					new NotifyQueue::Record(record->tx_hash, record->height, now)));
 
 				// Notify the confirmed transactions through the registered listener.
-				TransactionPtr tx = GetTransaction(record->tx_hash);
+				TransactionPtr tx = GetTransaction(record->tx_hash, CHAINID_MAINCHAIN);
 				if (_listener && tx)
 					_listener->OnDepositTxConfirmed(tx);
 			}

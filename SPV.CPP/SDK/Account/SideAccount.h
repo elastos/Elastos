@@ -112,9 +112,11 @@ namespace Elastos {
 		public:
 			SideAccount(const uint256 &genesis_hash);
 
+			~SideAccount();
+
 			nlohmann::json GetBasicInfo() const;
 
-			void Init(const std::vector<TransactionPtr> &tx, Lockable *lock);
+			void Init(const std::vector<TransactionPtr> &tx);
 
 			void InitDID();
 
@@ -152,8 +154,6 @@ namespace Elastos {
 			Key DeriveOwnerKey(const std::string &payPasswd);
 
 			Key DeriveDIDKey(const std::string &payPasswd);
-
-			bool FindKey(Key &key, const bytes_t &pubKey, const std::string &payPasswd);
 
 			bool GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const;
 

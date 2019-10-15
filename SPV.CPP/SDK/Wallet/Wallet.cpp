@@ -8,6 +8,7 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/WalletCore/BIPs/Key.h>
 #include <SDK/WalletCore/BIPs/Mnemonic.h>
 #include <SDK/WalletCore/BIPs/Address.h>
 #include <SDK/WalletCore/BIPs/HDKeychain.h>
@@ -42,7 +43,7 @@ namespace Elastos {
 
 			_listener = boost::weak_ptr<Listener>(listener);
 
-			_subAccount->Init(txns, this);
+			_subAccount->Init(txns);
 
 			// TODO: change to better way later
 			if (walletID.find("IDChain") != std::string::npos)
@@ -701,6 +702,11 @@ namespace Elastos {
 			return _subAccount->OwnerPubKey();
 		}
 
+		bytes_t Wallet::GetCROwnerPublicKey() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _subAccount->DIDPubKey();
+		}
+
 		bool Wallet::IsDepositAddress(const Address &addr) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 
@@ -715,6 +721,11 @@ namespace Elastos {
 		bool Wallet::ContainsAddress(const Address &address) {
 			boost::mutex::scoped_lock scoped_lock(lock);
 			return _subAccount->ContainsAddress(address);
+		}
+
+		nlohmann::json Wallet::GetBasicInfo() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _subAccount->GetBasicInfo();
 		}
 
 		const std::string &Wallet::GetWalletID() const {
@@ -739,6 +750,18 @@ namespace Elastos {
 		std::string Wallet::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->SignWithDID(did, msg, payPasswd);
+		}
+
+		bytes_t Wallet::SignWithOwnerKey(const bytes_t &msg, const std::string &payPasswd) {
+			boost::mutex::scoped_lock scopedLock(lock);
+			Key key = _subAccount->DeriveOwnerKey(payPasswd);
+			return key.Sign(msg);
+		}
+
+		bytes_t Wallet::SignWithCROwnerKey(const bytes_t &msg, const std::string &payPasswd) {
+			boost::mutex::scoped_lock scopedLock(lock);
+			Key key = _subAccount->DeriveDIDKey(payPasswd);
+			return key.Sign(msg);
 		}
 
 		std::vector<TransactionPtr> Wallet::TxUnconfirmedBefore(uint32_t blockHeight) {

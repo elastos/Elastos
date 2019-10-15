@@ -60,7 +60,7 @@ namespace Elastos {
 		protected:
 			SPVModule(const std::string &wallet_id, const SubAccountPtr &sub_account,
 					  const boost::filesystem::path &db_path, time_t earliest_peer_time,
-					  const PluginType &plugin_types, const ChainParamsPtr &chain_params);
+					  const ChainConfigPtr &config);
 
 		private:
 			// Override SpvService methods.
@@ -81,17 +81,15 @@ namespace Elastos {
 			Listener *_listener;
 
 		public:
-			static SPVModulePtr Create(const std::string &chain_id,
-									   const uint256 &genesis_hash,
+			static SPVModulePtr Create(const uint256 &genesis_hash,
 									   const std::string &root_path) {
 				Config cfg(root_path);
-				ChainConfigPtr chain_cfg = cfg.GetChainConfig("ELA");
-				ChainParamsPtr chain_params = chain_cfg->ChainParameters();
+				ChainConfigPtr chain_cfg = cfg.GetChainConfig(CHAINID_MAINCHAIN);
 				std::string db_path = root_path + "/spv_module.db";
 				SubAccountPtr sub_account = SubAccountPtr(new SideAccount(genesis_hash));
-				return SPVModulePtr(new SPVModule(chain_id, sub_account, db_path,
-												  chain_params->LastCheckpoint().Timestamp(),
-												  chain_cfg->PluginType(), chain_params));
+				return SPVModulePtr(new SPVModule(CHAINID_MAINCHAIN, sub_account, db_path,
+												  chain_cfg->ChainParameters()->LastCheckpoint().Timestamp(),
+												  chain_cfg));
 			}
 		};
 

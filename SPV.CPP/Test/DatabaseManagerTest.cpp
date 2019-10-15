@@ -386,7 +386,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Transaction read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions();
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(CHAINID_MAINCHAIN);
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -413,7 +413,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Transaction read after update test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions();
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(CHAINID_MAINCHAIN);
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
@@ -436,7 +436,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				REQUIRE(dbm.DeleteTxByHash(txToUpdate[i]->GetHash()));
 			}
 
-			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions();
+			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(CHAINID_MAINCHAIN);
 			REQUIRE(0 == readTx.size());
 		}
 

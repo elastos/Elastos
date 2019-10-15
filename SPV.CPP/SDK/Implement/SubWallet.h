@@ -197,7 +197,6 @@ namespace Elastos {
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;
-			SubAccountPtr _subAccount;
 		};
 
 	}

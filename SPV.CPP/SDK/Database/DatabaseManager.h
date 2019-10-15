@@ -39,8 +39,8 @@ namespace Elastos {
 			bool PutTransactions(const std::string &iso, const std::vector<TransactionPtr> &txns);
 			bool DeleteAllTransactions();
 			size_t GetAllTransactionsCount() const;
-			TransactionPtr GetTransaction(const uint256& hash);
-			std::vector<TransactionPtr> GetAllTransactions() const;
+			TransactionPtr GetTransaction(const uint256& hash, const std::string &chainID);
+			std::vector<TransactionPtr> GetAllTransactions(const std::string &chainID) const;
 			bool UpdateTransaction(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 			bool DeleteTxByHash(const uint256 &hash);
 			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
@@ -58,7 +58,7 @@ namespace Elastos {
 			bool PutMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockPtr> &blocks);
 			bool DeleteMerkleBlock(const std::string &iso, long id);
 			bool DeleteAllBlocks(const std::string &iso);
-			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &iso, const std::string &pluginType) const;
+			std::vector<MerkleBlockPtr> GetAllMerkleBlocks(const std::string &iso, const std::string &chainID) const;
 
 			// Asset's database interface
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);

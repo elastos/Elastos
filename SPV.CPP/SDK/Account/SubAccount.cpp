@@ -32,6 +32,10 @@ namespace Elastos {
 			}
 		}
 
+		SubAccount::~SubAccount() {
+
+		}
+
 		nlohmann::json SubAccount::GetBasicInfo() const {
 			nlohmann::json j;
 			j["Account"] = _parent->GetBasicInfo();
@@ -39,9 +43,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void SubAccount::Init(const std::vector<TransactionPtr> &tx, Lockable *lock) {
-			_lock = lock;
-
+		void SubAccount::Init(const std::vector<TransactionPtr> &tx) {
 			for (size_t i = 0; i < tx.size(); i++) {
 				const OutputArray &outputs = tx[i]->GetOutputs();
 				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o)
@@ -309,8 +311,6 @@ namespace Elastos {
 			Address addr = Address(PrefixStandard, pubKey);
 			uint32_t index, change;
 
-			_lock->Lock();
-
 			for (index = (uint32_t) _internalChain.size(); index > 0; --index) {
 				if (addr == _internalChain[index - 1]) {
 					found = true;
@@ -328,8 +328,6 @@ namespace Elastos {
 					}
 				}
 			}
-
-			_lock->Unlock();
 
 			if (!found)
 				return false;

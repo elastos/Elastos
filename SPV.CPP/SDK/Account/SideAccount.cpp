@@ -20,6 +20,9 @@ namespace Elastos {
 			side_address.SetRedeemScript(PrefixCrossChain, data);
 		}
 
+		SideAccount::~SideAccount() {
+		}
+
 		nlohmann::json SideAccount::GetBasicInfo() const {
 			nlohmann::json j;
 			j["Account"] = Parent()->GetBasicInfo();
@@ -27,7 +30,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void SideAccount::Init(const std::vector<TransactionPtr> &, Lockable *) {}
+		void SideAccount::Init(const std::vector<TransactionPtr> &) {}
 
 		void SideAccount::InitDID() {}
 
@@ -75,8 +78,6 @@ namespace Elastos {
 		Key SideAccount::DeriveOwnerKey(const std::string &) { return Key(); }
 
 		Key SideAccount::DeriveDIDKey(const std::string &payPasswd) { return Key(); }
-
-		bool SideAccount::FindKey(Key &, const bytes_t &, const std::string &) { return false; }
 
 		bool SideAccount::ContainsAddress(const Address &address) const { return side_address == address; }
 

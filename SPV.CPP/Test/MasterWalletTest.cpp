@@ -95,7 +95,7 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 #ifndef BUILD_SHARED_LIBS
 	Log::info("Registering plugin ...");
 	REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
-	REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
+	REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
 #endif
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";

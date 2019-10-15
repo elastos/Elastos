@@ -92,10 +92,10 @@ namespace Elastos {
 		}
 
 		std::vector<MerkleBlockPtr> MerkleBlockDataSource::GetAllMerkleBlocks(const std::string &iso,
-		                                                                      const std::string &pluginType) const {
+		                                                                      const std::string &chainID) const {
 			std::vector<MerkleBlockPtr> merkleBlocks;
 
-			DoTransaction([&iso, &pluginType, &merkleBlocks, this]() {
+			DoTransaction([&iso, &chainID, &merkleBlocks, this]() {
 
 				std::string sql;
 				sql = "SELECT " + MB_COLUMN_ID + ", " + MB_BUFF + ", " + MB_HEIGHT + " FROM " + MB_TABLE_NAME + ";";
@@ -105,7 +105,7 @@ namespace Elastos {
 											 "prepare sql " + sql);
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(pluginType));
+					MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(chainID));
 					// blockBytes
 					const uint8_t *pblob = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
 					size_t len = _sqlite->ColumnBytes(stmt, 1);

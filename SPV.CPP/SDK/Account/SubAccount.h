@@ -22,9 +22,11 @@ namespace Elastos {
 		public:
 			SubAccount(const AccountPtr &parent, uint32_t coinIndex);
 
+			~SubAccount();
+
 			nlohmann::json GetBasicInfo() const;
 
-			void Init(const std::vector<TransactionPtr> &tx, Lockable *lock);
+			void Init(const std::vector<TransactionPtr> &tx);
 
 			void InitDID();
 
@@ -80,7 +82,6 @@ namespace Elastos {
 			mutable Address _depositAddress, _ownerAddress, _crDepositAddress;
 
 			AccountPtr _parent;
-			Lockable *_lock;
 		};
 
 	}
