@@ -24,6 +24,7 @@
 #define __ELA_DID_H__
 
 #include <stdbool.h>
+#include <stdarg.h>
 #include <sys/types.h>
 
 #if defined(__APPLE__)
@@ -228,13 +229,13 @@ DID_API bool DID_Equals(DID *did1, DID *did2);
  * Copy one DID to the other DID.
  *
  * @param
- *      new                   [in] DID to be copied.
+ *      newdid                   [in] DID to be copied.
  * @param
- *      old                   [in] DID be copied.
+ *      olddid                   [in] DID be copied.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DID_Copy(DID *new, DID *old);
+DID_API int DID_Copy(DID *newdid, DID *olddid);
 
 /**
  * \~English
@@ -341,13 +342,13 @@ DID_API bool DIDURL_Equals(DIDURL *id1, DIDURL *id2);
  * Copy one DID URL to the other DID URL.
  *
  * @param
- *      new                   [in] DID URL to be copied.
+ *      newid                [in] DID URL to be copied.
  * @param
- *      old                   [in] DID URL be copied.
+ *      oldid                [in] DID URL be copied.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDURL_Copy(DIDURL *new, DIDURL *old);
+DID_API int DIDURL_Copy(DIDURL *newid, DIDURL *oldid);
 
 /**
  * \~English
@@ -872,7 +873,7 @@ DID_API int DIDDocument_SetExpires(DIDDocument *document, time_t expires);
  *                                   If key = NULL, sdk will get default key from
  *                                   DID Document.
  * @param
- *      password                [in] Pass word to sign.
+ *      storepass               [in] Pass word to sign.
  * @param
  *      sig                     [out] The buffer will receive signature data.
  * @param
@@ -880,7 +881,7 @@ DID_API int DIDDocument_SetExpires(DIDDocument *document, time_t expires);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *password,
+DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *storepass,
          char *sig, int count, ...);
 
 /**
@@ -1371,7 +1372,7 @@ DID_API ssize_t Credential_SetProofSignture(Credential *cred, const char *signtu
  */
 DID_API Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
     DIDURL *defaultSignKey, const char **types, size_t typesize, Property **properties,
-    int size, time_t expires, const char *passphase);
+    int size, time_t expires, const char *storepass);
 
 /******************************************************************************
  * DIDStore
@@ -1394,7 +1395,9 @@ DID_API int DIDStore_Open(const char *root);
  * @param
  *      mnemonic               [in] Mnemonic for generate key.
  * @param
- *      passphrase             [in] The pass word of DID holder.
+ *      passphrase             [in] The pass word to generate private identity.
+ * @param
+ *      storepass              [in] The pass word of DID holder.
  * @param
  *      language               [in] The language for DID.
  *                             0: English; 1: French; 2: Spanish;
@@ -1405,20 +1408,20 @@ DID_API int DIDStore_Open(const char *root);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_InitPrivateIdentity(const char *mnemonic,
-           const char *passphrase, const int language);
+           const char *passphrase, const char *storepass, const int language);
 /**
  * \~English
  * Create new DID Document and store in the DID Store.
  *
  * @param
- *      passphrase             [in] The pass word of DID holder.
+ *      storepass              [in] The pass word of DID holder.
  * @param
  *      hint                   [in] The nickname of DID.
  * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
  */
-DID_API DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint);
+DID_API DIDDocument *DIDStore_NewDID(const char *storepass, const char *hint);
 
 /**
  * \~English
@@ -1437,10 +1440,10 @@ DID_API DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_Sign(DID *did, DIDURL *key, const char *password,
+DID_API int DIDStore_Sign(DID *did, DIDURL *key, const char *storepass,
          char *sig, int count, ...);
 
-DID_API int DIDStore_Signv(DID *did, DIDURL *key, const char *password,
+DID_API int DIDStore_Signv(DID *did, DIDURL *key, const char *storepass,
         char *sig, int count, va_list inputs);
 
 /**
@@ -1727,12 +1730,12 @@ DID_API void DIDStore_DeletePrivateKey(DID *did, DIDURL *id);
  * @param
  *      signKey                  [in] The public key to sign.
   * @param
- *      passphrase               [in] Pass word to sign.
+ *      storepass                [in] Pass word to sign.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey,
-            const char *passphrase);
+            const char *storepass);
 
 /**
  * \~English
@@ -1743,12 +1746,12 @@ DID_API int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey,
  * @param
  *      signKey                  [in] The public key to sign.
   * @param
- *      passphrase               [in] Pass word to sign.
+ *      storepass                [in] Pass word to sign.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey,
-            const char *passphrase);
+            const char *storepass);
 
 /**
  * \~English
@@ -1759,12 +1762,12 @@ DID_API int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey,
  * @param
  *      signKey                  [in] The public key to sign.
   * @param
- *      passphrase               [in] Pass word to sign.
+ *      storepass                [in] Pass word to sign.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDREQ_DeactivateDID(DID *did, DIDURL *signKey,
-            const char *passphrase);
+            const char *storepass);
 
 #ifdef __cplusplus
 }

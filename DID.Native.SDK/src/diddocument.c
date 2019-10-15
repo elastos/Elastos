@@ -16,7 +16,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARfE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
 
@@ -1300,20 +1300,20 @@ int DIDDocument_SetExpires(DIDDocument *document, time_t expires)
     return 0;
 }
 
-int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *password,
+int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *storepass,
          char *sig, int count, ...)
 {
     int rc;
     va_list inputs;
 
-    if (!document || !password || !sig || count <= 0)
+    if (!document || !storepass || !sig || count <= 0)
         return -1;
 
     if (!key)
         key = DIDDocument_GetDefaultPublicKey(document);
 
     va_start(inputs, count);
-    rc = DIDStore_Signv(DIDDocument_GetSubject(document), key, password,
+    rc = DIDStore_Signv(DIDDocument_GetSubject(document), key, storepass,
             sig, count, inputs);
     va_end(inputs);
 

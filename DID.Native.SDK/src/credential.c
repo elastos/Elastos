@@ -459,14 +459,14 @@ ssize_t Credential_SetProofSignture(Credential *cred, const char *signture)
 
 Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
                              DIDURL *defaultSignKey, const char **types, size_t typesize,
-                             Property **properties, int prosize, time_t expires, const char *passphase)
+                             Property **properties, int prosize, time_t expires, const char *storepass)
 {
     Credential *cred;
     const char *cred_data;
     int i, ret;
     char signed_data[SIGNATURE_BYTES * 2];
 
-    if (!did || !fragment || !issuer || !types || !properties || prosize > 0 || expires > 0 || !passphase)
+    if (!did || !fragment || !issuer || !types || !properties || prosize > 0 || expires > 0 || !storepass)
         return NULL;
 
     if (check_issuer(issuer, &defaultSignKey) == -1)
@@ -510,7 +510,7 @@ Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
         return NULL;
     }
 
-    ret = DIDStore_Sign(issuer, defaultSignKey, passphase, signed_data, 2, (uint8_t *)cred_data,
+    ret = DIDStore_Sign(issuer, defaultSignKey, storepass, signed_data, 2, (uint8_t *)cred_data,
                  strlen(cred_data) + 1, NULL, 0);
     if (ret == -1) {
         free((char*)cred_data);

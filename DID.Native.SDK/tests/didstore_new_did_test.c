@@ -22,7 +22,7 @@ static void test_didstore_new_did(void)
     int rc;
 
     const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
-    rc = DIDStore_InitPrivateIdentity(mnemonic, "", 0);
+    rc = DIDStore_InitPrivateIdentity(mnemonic, "", "", 0);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
     DIDDocument *document = DIDStore_NewDID("", "littlefish");

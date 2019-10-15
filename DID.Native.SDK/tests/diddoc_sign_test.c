@@ -20,20 +20,21 @@ static DIDDocument *document;
 static DID *did;
 static const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
 static const char *data = "abcdefghijklmnopqrstuvwxyz";
+static const char *storepass = "123456";
 static char signature[SIGNATURE_BYTES];
 
 static void test_diddoc_sign(void)
 {
     int rc;
     DIDURL *signkey;
-    //char signature[SIGNATURE_BYTES];
+
     signkey = DIDDocument_GetDefaultPublicKey(document);
     if (!signkey) {
         printf("get signkey failed.\n");
         return;
     }
 
-    rc = DIDDocument_Sign(document, signkey, "", signature, 1,
+    rc = DIDDocument_Sign(document, signkey, storepass, signature, 1,
             (unsigned char*)data, strlen(data));
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
@@ -68,11 +69,11 @@ static int diddoc_sign_test_suite_init(void)
     if (DIDStore_Open(current_path) == -1)
         return -1;
 
-    rc = DIDStore_InitPrivateIdentity(mnemonic, "", 0);
+    rc = DIDStore_InitPrivateIdentity(mnemonic, "", storepass, 0);
     if (rc < 0)
         return -1;
 
-    document = DIDStore_NewDID("", "littlefish");
+    document = DIDStore_NewDID(storepass, "littlefish");
     if(!document)
         return -1;
 

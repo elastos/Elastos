@@ -77,7 +77,7 @@ static int didrequest_test_suite_init(void)
     if (DIDStore_Open(current_path) == -1)
         return -1;
 
-    rc = DIDStore_InitPrivateIdentity(mnemonic, "", 0);
+    rc = DIDStore_InitPrivateIdentity(mnemonic, "", "", 0);
     if (rc < 0)
         return -1;
 

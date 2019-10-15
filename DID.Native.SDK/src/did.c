@@ -157,12 +157,12 @@ char *DID_ToString(DID *did, char *idstring, size_t len)
     return idstring;
 }
 
-int DID_Copy(DID *new, DID *old)
+int DID_Copy(DID *newdid, DID *olddid)
 {
-    if (!new || !old)
+    if (!newdid || !olddid)
         return -1;
 
-    strcpy((char*)(new->idstring), old->idstring);
+    strcpy((char*)(newdid->idstring), olddid->idstring);
     return 0;
 }
 
@@ -272,13 +272,13 @@ bool DIDURL_Equals(DIDURL *id1, DIDURL *id2)
             strcmp(id1->fragment, id2->fragment) == 0);
 }
 
-int DIDURL_Copy(DIDURL *new, DIDURL *old)
+int DIDURL_Copy(DIDURL *newid, DIDURL *oldid)
 {
-    if (!new || !old || strlen(old->fragment) == 0)
+    if (!newid || !oldid || strlen(oldid->fragment) == 0)
         return -1;
 
-    strcpy((char*)new->did.idstring, old->did.idstring);
-    strcpy((char*)new->fragment, old->fragment);
+    strcpy((char*)newid->did.idstring, oldid->did.idstring);
+    strcpy((char*)newid->fragment, oldid->fragment);
     return 0;
 }
 

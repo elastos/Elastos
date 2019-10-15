@@ -108,7 +108,7 @@ static void didrequest_destroy(DIDRequest *req)
     return;
 }
 
-static int didrequest_operate(const char *op, DID *did, DIDURL *signkey, const char *data, const char *passphrase)
+static int didrequest_operate(const char *op, DID *did, DIDURL *signkey, const char *data, const char *storepass)
 {
     DIDRequest req;
     char *base64_text;
@@ -118,14 +118,14 @@ static int didrequest_operate(const char *op, DID *did, DIDURL *signkey, const c
     char signed_data[SIGNATURE_BYTES * 2 + 16];
     const char *did_payload;
 
-    if (!op || !strlen(op) || !did || !signkey || !data || !passphrase)
+    if (!op || !strlen(op) || !did || !signkey || !data || !storepass)
         return -1;
 
     len = strlen(data);
     base64_text = (char *)alloca(len * 4 / 3 + 16);
     base64_url_encode(base64_text, (const uint8_t *)data, len);
 
-    ret = DIDStore_Sign(did, signkey, passphrase, signed_data, 3, (unsigned char*)spec, strlen(spec),
+    ret = DIDStore_Sign(did, signkey, storepass, signed_data, 3, (unsigned char*)spec, strlen(spec),
             (unsigned char*)op, strlen(op), (unsigned char*)base64_text, strlen(base64_text));
     if (ret < 0)
         return -1;
@@ -145,7 +145,7 @@ static int didrequest_operate(const char *op, DID *did, DIDURL *signkey, const c
     return ret;
 }
 
-int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey, const char *passphrase)
+int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey, const char *storepass)
 {
     int ret;
     const char *doc;
@@ -160,13 +160,13 @@ int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey, const char *passph
     if (!doc)
         return -1;
 
-    ret = didrequest_operate("create", &(document->did), signKey, doc, passphrase);
+    ret = didrequest_operate("create", &(document->did), signKey, doc, storepass);
     free((char*)doc);
 
     return ret;
 }
 
-int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey, const char *passphrase)
+int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey, const char *storepass)
 {
     int ret;
     const char *doc;
@@ -181,7 +181,7 @@ int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey, const char *passphr
     if (!doc)
         return -1;
 
-    ret = didrequest_operate("update", &(document->did), signKey, doc, passphrase);
+    ret = didrequest_operate("update", &(document->did), signKey, doc, storepass);
     free((char*)doc);
 
     return ret;

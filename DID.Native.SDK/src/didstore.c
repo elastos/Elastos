@@ -208,10 +208,21 @@ static const char *get_file_root(DIDStore_Type type, const char *didstring, int 
     if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
         return NULL;
 
-    if (type == DIDStore_Root || type == DIDStore_DID || type == DIDStore_DIDMeta)
+    if (type == DIDStore_Root)
         return file_root;
 
-    snprintf(file_root, sizeof(file_root), "%s/%s", StoreRoot, didstring);
+    if (type != DIDStore_Rootkey && type != DIDStore_RootIndex) {
+        snprintf(file_root, sizeof(file_root), "%s/%s", StoreRoot, "ids");
+        if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
+            return NULL;
+    }
+
+    if (type == DIDStore_DID || type == DIDStore_DIDMeta)
+        return file_root;
+
+    snprintf(file_suffix, sizeof(file_suffix), "/%s", didstring);
+    strcat(file_root, file_suffix);
+
     if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
         return NULL;
 
@@ -277,7 +288,7 @@ static int store_file(const char *path, const char *string)
     if (!path || !string)
         return -1;
 
-    fd = open(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+    fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1)
         return -1;
 
@@ -461,13 +472,13 @@ static int check_store(void)
     return 0;
 }
 
-static int store_seed(uint8_t *seed, size_t size, const char *passphrase)
+static int store_seed(uint8_t *seed, size_t size, const char *storepass)
 {
     unsigned char base64[512];
-    if (!seed || !passphrase)
+    if (!seed || !storepass)
         return -1;
 
-    if (encrypt_to_base64(base64, passphrase, seed, size) == -1)
+    if (encrypt_to_base64(base64, storepass, seed, size) == -1)
         return -1;
 
     if (store_file(get_file_path(DIDStore_Rootkey, "private", NULL, 1), base64) == -1)
@@ -476,7 +487,7 @@ static int store_seed(uint8_t *seed, size_t size, const char *passphrase)
     return 0;
 }
 
-static ssize_t load_seed(uint8_t *seed, size_t size, const char *passphrase)
+static ssize_t load_seed(uint8_t *seed, size_t size, const char *storepass)
 {
     const char *decrpted_seed;
     unsigned char binseed[SEED_BYTES];
@@ -488,7 +499,7 @@ static ssize_t load_seed(uint8_t *seed, size_t size, const char *passphrase)
     if (load_files(get_file_path(DIDStore_Rootkey, "private", NULL, 0), &decrpted_seed) == -1)
         return -1;
 
-    len = decrypt_from_base64(binseed, passphrase, decrpted_seed);
+    len = decrypt_from_base64(binseed, storepass, decrpted_seed);
     free((char*)decrpted_seed);
     memcpy(seed, binseed, size);
 
@@ -657,14 +668,13 @@ static int list_credential_helper(const char *path, void *context)
     return ch->cb(cred_entry, NULL);
 }
 
-static DIDDocument *create_document(DID *did, const char *passphrase, const char *publickeybase)
+static DIDDocument *create_document(DID *did, const char *publickeybase)
 {
     PublicKey *publickey;
     DIDURL key;
     DID controller;
 
     assert(did);
-    assert(passphrase);
     assert(publickeybase);
 
     DIDDocument *document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
@@ -1139,7 +1149,7 @@ void DIDStore_DeletePrivateKey(DID *did, DIDURL *id)
     return;
 }
 
-static int refresh_did_fromchain(const char *passphrase, uint8_t *seed, DID *did,
+static int refresh_did_fromchain(const char *storepass, uint8_t *seed, DID *did,
             uint8_t *publickey, size_t size)
 {
     int index, last_index;
@@ -1160,9 +1170,9 @@ static int refresh_did_fromchain(const char *passphrase, uint8_t *seed, DID *did
         return -1;
 
     index = get_last_index();
-    last_index = index + 1;
+    last_index = index;
 
-    while (last_index - index < 20) {
+    while (last_index - index <= 20) {
         if (!HDkey_GetSubPublicKey(masterkey, 0, last_index, last_publickey))
             return -1;
 
@@ -1170,7 +1180,7 @@ static int refresh_did_fromchain(const char *passphrase, uint8_t *seed, DID *did
             return -1;
 
         strcpy((char*)last_did.idstring, last_idstring);
-        if (did && publickey && last_index - index == 1) {
+        if (did && publickey && last_index == index) {
             strcpy(did->idstring, last_idstring);
             memcpy(publickey, last_publickey, size);
         }
@@ -1184,15 +1194,14 @@ static int refresh_did_fromchain(const char *passphrase, uint8_t *seed, DID *did
                 return -1;
 
             if (!HDkey_GetSubPrivateKey(seed, 0, 0, last_index, privatekey) ||
-                encrypt_to_base64(privatekeybase64, passphrase, privatekey, sizeof(privatekey)) == -1 ||
+                encrypt_to_base64(privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
                 DIDStore_StorePrivateKey(&last_did, "primary", privatekeybase64) == -1) {
                 DIDStore_DeleteDID(&last_did);
                 //TODO: check need destroy document
                 return -1;
             }
 
-            index = last_index;
-            last_index++;
+            index = ++last_index;
         }
     }
 
@@ -1200,7 +1209,7 @@ static int refresh_did_fromchain(const char *passphrase, uint8_t *seed, DID *did
 }
 
 int DIDStore_InitPrivateIdentity(const char *mnemonic, const char *passphrase,
-           const int language)
+           const char *storepass, const int language)
 {
     int index;
     uint8_t seed[SEED_BYTES];
@@ -1208,18 +1217,21 @@ int DIDStore_InitPrivateIdentity(const char *mnemonic, const char *passphrase,
     if (!mnemonic)
         return -1;
 
+    if (!passphrase)
+        passphrase = "";
+
     if (!HDkey_GetSeedFromMnemonic(mnemonic, passphrase, language, seed) ||
-        store_seed(seed, sizeof(seed), passphrase) == -1)
+        store_seed(seed, sizeof(seed), storepass) == -1)
         return -1;
 
-    index = refresh_did_fromchain(passphrase, seed, NULL, NULL, 0);
+    index = refresh_did_fromchain(storepass, seed, NULL, NULL, 0);
     if (index < 0)
         return -1;
 
     return store_index(index);
 }
 
-DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint)
+DIDDocument *DIDStore_NewDID(const char *storepass, const char *hint)
 {
     int index;
     unsigned char privatekeybase64[PRIVATEKEY_BYTES * 2];
@@ -1231,17 +1243,17 @@ DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint)
     DID did;
     DIDDocument *document;
 
-    len = load_seed(seed, sizeof(seed), passphrase);
+    len = load_seed(seed, sizeof(seed), storepass);
     if (len < 0)
         return NULL;
 
-    index = refresh_did_fromchain(passphrase, seed, &did, publickey, sizeof(publickey));
+    index = refresh_did_fromchain(storepass, seed, &did, publickey, sizeof(publickey));
     if (index < 0)
         return NULL;
 
     base58_encode(publickeybase58, publickey, sizeof(publickey));
 
-    document = create_document(&did, passphrase, publickeybase58);
+    document = create_document(&did, publickeybase58);
     if (!document)
         return NULL;
 
@@ -1251,7 +1263,7 @@ DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint)
     }
 
     if (!HDkey_GetSubPrivateKey(seed, 0, 0, index, privatekey) ||
-        encrypt_to_base64(privatekeybase64, passphrase, privatekey, sizeof(privatekey)) == -1 ||
+        encrypt_to_base64(privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
         DIDStore_StorePrivateKey(&did, "primary", privatekeybase64) == -1) {
         DIDStore_DeleteDID(&did);
         DIDDocument_Destroy(document);
@@ -1261,7 +1273,7 @@ DIDDocument *DIDStore_NewDID(const char *passphrase, const char *hint)
     return document;
 }
 
-int DIDStore_Signv(DID *did, DIDURL *key, const char *password, char *sig,
+int DIDStore_Signv(DID *did, DIDURL *key, const char *storepass, char *sig,
         int count, va_list inputs)
 {
     const char *privatekey;
@@ -1275,7 +1287,7 @@ int DIDStore_Signv(DID *did, DIDURL *key, const char *password, char *sig,
                &privatekey) == -1)
         return -1;
 
-    rc = decrypt_from_base64(binkey, password, privatekey);
+    rc = decrypt_from_base64(binkey, storepass, privatekey);
     free((char*)privatekey);
     if (rc == -1)
         return -1;
@@ -1286,7 +1298,7 @@ int DIDStore_Signv(DID *did, DIDURL *key, const char *password, char *sig,
     return 0;
 }
 
-int DIDStore_Sign(DID *did, DIDURL *key, const char *password, char *sig, int count, ...)
+int DIDStore_Sign(DID *did, DIDURL *key, const char *storepass, char *sig, int count, ...)
 {
     int rc;
     va_list inputs;
@@ -1295,7 +1307,7 @@ int DIDStore_Sign(DID *did, DIDURL *key, const char *password, char *sig, int co
         return -1;
 
     va_start(inputs, count);
-    rc = DIDStore_Signv(did, key, password, sig, count, inputs);
+    rc = DIDStore_Signv(did, key, storepass, sig, count, inputs);
     va_end(inputs);
 
     return rc;
