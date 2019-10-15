@@ -798,6 +798,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnDepositCoin:
 		s.returnDeposit(tx, height)
+		s.processDeposit(tx, height)
 
 	case types.UpdateVersion:
 		s.updateVersion(tx, height)
