@@ -1624,6 +1624,10 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 		return errors.New("type of proposal should be known")
 	}
 
+	//The number of the proposals of the committee can not more than 128
+	if b.crCommittee.GetProposalManager().IsProposalFull(proposal.CRSponsorDID) {
+		return errors.New("proposal is full")
+	}
 	if b.crCommittee.GetProposalManager().ExistDraft(proposal.DraftHash) {
 		return errors.New("duplicated draft proposal hash")
 	}
