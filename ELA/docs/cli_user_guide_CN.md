@@ -391,6 +391,7 @@ OPTIONS:
 --nodepublickey 用于设定仲裁人节点的 node publickkey
 
 node publickey 对应的账户必须存在于指定的 keystore 文件中。
+若不设定 nodepublickey 参数，则默认使用 keystore 文件中主账户的公钥。
 
 ```
 ./ela-cli wallet buildtx activate --nodepublickey 032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5
