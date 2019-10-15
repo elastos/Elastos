@@ -43,3 +43,4 @@ internal func HDkey_GetSubPublicKey(_ master: UnsafePointer<CMasterPublicKey>!,
 internal func HDkey_GetIdString(_ publickey: UnsafeMutablePointer<Int8>,
                                 _ address: UnsafeMutablePointer<Int8>!,
                                 _ len: Int!) -> UnsafeMutablePointer<Int8>!
+

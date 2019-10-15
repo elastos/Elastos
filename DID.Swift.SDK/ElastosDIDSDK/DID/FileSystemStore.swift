@@ -46,23 +46,19 @@ public class FileSystemStore: DIDStore {
     private static let META_EXT: String = ".meta"
 
     private static let DEFAULT_CHARSET: String = "UTF-8"
-
-    private var storeRootPath: String! = "/Users/liaihong/Desktop/区块链/StoreTest"
     
     public init(_ dir: String) throws {
         super.init()
         if dir.isEmpty {
             throw DIDError.failue("Invalid DIDStore root directory.")
         }
-        
-        try checkStore()
-
-//        if try exists(dir) {
-//           try checkStore()
-//        }
-//        else {
-//           try creatStore(dir)
-//        }
+        self.storeRootPath = dir
+        if try exists(dir) {
+           try checkStore()
+        }
+        else {
+           try creatStore(dir)
+        }
     }
 
     // 创建store文件夹
@@ -70,13 +66,12 @@ public class FileSystemStore: DIDStore {
         let fileManager = FileManager.default
         try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
         let filePath = "\(dir)/\(FileSystemStore.TAG_FILE)"
-        fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
-        let data1 = Data(bytes: FileSystemStore.TAG_MAGIC)
-        let data2 = Data(bytes: FileSystemStore.TAG_VERSION)
-        let writeHandle = FileHandle(forWritingAtPath: filePath)
-        writeHandle?.write(data1)
-        writeHandle?.seekToEndOfFile()
-        writeHandle?.write(data2)
+
+        var didStoreData: Data = Data(capacity: 8)
+        didStoreData.append(Data(bytes: FileSystemStore.TAG_MAGIC, count: 4))
+        didStoreData.append(Data(bytes: FileSystemStore.TAG_VERSION, count: 4))
+        let tagFilePathURL: URL = URL(fileURLWithPath: filePath)
+        try didStoreData.write(to: tagFilePathURL)
     }
 
     private func checkStore() throws {
@@ -88,7 +83,7 @@ public class FileSystemStore: DIDStore {
                 throw DIDError.failue("Store root \(storeRootPath ?? "") is a file.")
             }
         }
-
+        
         // 检查.DIDStore文件
         let tagFilePath: String = storeRootPath + "/" + FileSystemStore.TAG_FILE
         var tagFilePathIsDir: ObjCBool = false
@@ -97,14 +92,7 @@ public class FileSystemStore: DIDStore {
             throw DIDError.failue("Directory \(tagFilePath) is not a DIDStore.")
         }
         
-        var didStoreData: Data = Data(capacity: 8)
-        didStoreData.append(Data(bytes: FileSystemStore.TAG_MAGIC, count: 4))
-        didStoreData.append(Data(bytes: FileSystemStore.TAG_VERSION, count: 4))
-        let tagFilePathURL: URL = URL(fileURLWithPath: tagFilePath)
-        try didStoreData.write(to: tagFilePathURL)
-        
         let localData = try Data(contentsOf: URL(fileURLWithPath: tagFilePath))
-        
         let uInt8DataArray = [UInt8](localData)
 
         /*
@@ -120,66 +108,58 @@ public class FileSystemStore: DIDStore {
         let magicArray = localData[0...3]
         let versionArray = localData[4...7]
         
-        if magicArray.elementsEqual(FileSystemStore.TAG_MAGIC) {
+        if !magicArray.elementsEqual(FileSystemStore.TAG_MAGIC) {
             throw DIDError.failue("Directory \(tagFilePath) is not a DIDStore.")
         }
         
-        if versionArray.elementsEqual(FileSystemStore.TAG_MAGIC) {
+        if !versionArray.elementsEqual(FileSystemStore.TAG_VERSION) {
             throw DIDError.failue("Directory \(tagFilePath) unsupported version.")
         }
         
     }
 
-    private func exists(_ dirPath: String) throws -> Bool {
+    public func exists(_ dirPath: String) throws -> Bool {
         let fileManager = FileManager.default
         var isDir : ObjCBool = false
-        if fileManager.fileExists(atPath: dirPath, isDirectory:&isDir) {
-            if isDir.boolValue {
-                return true
-            }
-        }
-        return false
+        return fileManager.fileExists(atPath: dirPath, isDirectory:&isDir)
     }
 
-    private func getFile(_ create: Bool, _ path: String) throws -> String {
-        var relPath = storeRootPath
+    public func getFile(_ create: Bool, _ path: String) throws -> String {
+        let relPath = path
         let fileManager = FileManager.default
-        let paths = path.split{$0 == "/"}.map(String.init)
-
-        for (index, path) in paths.enumerated() {
-            if index == paths.endIndex - 1 {
-                relPath?.append("/")
-                relPath?.append(path)
-
-                if create {
-                    var isDirectory = ObjCBool.init(false)
-                    let fileExists = FileManager.default.fileExists(atPath: relPath!, isDirectory: &isDirectory)
-                    if !isDirectory.boolValue && fileExists {
-                       try deleteFile(relPath!)
-                    }
-                }
+        if create {
+            var isDirectory = ObjCBool.init(false)
+            let fileExists = FileManager.default.fileExists(atPath: relPath, isDirectory: &isDirectory)
+            if !isDirectory.boolValue && fileExists {
+                try deleteFile(relPath)
             }
         }
-
         if create {
-            fileManager.createFile(atPath: relPath!, contents: nil, attributes: nil)
+            let dirPath: String = PathExtracter(relPath).dirNamePart()
+            if try !exists(dirPath) {
+               try fileManager.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
+            }
+            fileManager.createFile(atPath: relPath, contents: nil, attributes: nil)
         }
-        return relPath!
+        return relPath
     }
 
-    private func deleteFile(_ path: String) throws {
-
+    public func deleteFile(_ path: String) throws {
+        
         let fileManager = FileManager.default
         var isDir = ObjCBool.init(false)
         let fileExists = fileManager.fileExists(atPath: path, isDirectory: &isDir)
         // If path is a folder, traverse the subfiles under the folder and delete them
         if fileExists && isDir.boolValue {
             if let dirContents = fileManager.enumerator(atPath: path) {
-
+                
                 for case let url as URL in dirContents {
-                   try deleteFile(url.absoluteString)
+                    try deleteFile(url.absoluteString)
                 }
             }
+        }
+        guard fileExists else {
+            return
         }
         try fileManager.removeItem(atPath: path)
     }
@@ -194,31 +174,34 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func loadPrivateIdentity() throws -> String {
-        let path = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
+        let path = storeRootPath + "/" + FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
         return try readTextFromPath(path)
     }
 
     override public func storePrivateIdentityIndex(_ index: Int) throws {
-        let targetPath = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
+        let targetPath = storeRootPath + "/" + FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
         let path = try getFile(true, targetPath)
         try writeTextToPath(path, String(index))
         _ = try readTextFromPath(path)
     }
 
     override func loadPrivateIdentityIndex() throws -> Int {
-        let targetPath = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
-        let path = try getFile(true, targetPath)
-        let index = try readTextFromPath(path)
+        let targetPath = storeRootPath + "/" + FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
+        let index = try readTextFromPath(targetPath)
         return Int(index)!
     }
 
     override public func setDidHint(_ did: DID,_ hint: String) throws {
-        let path = FileSystemStore.DID_DIR + "." + did.methodSpecificId + FileSystemStore.META_EXT
+        let path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + "." + did.methodSpecificId + FileSystemStore.META_EXT
         if hint.isEmpty {
             let fileManager = FileManager.default
             try fileManager.removeItem(atPath: path)
         }
         else {
+            let dir: String = PathExtracter(path).dirNamePart()
+            let fm = FileManager.default
+            try fm.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+            fm.createFile(atPath: path, contents: nil, attributes: nil)
             let writeHandle = FileHandle(forWritingAtPath: path)
             writeHandle?.write(hint.data(using: .utf8)!)
         }
@@ -232,7 +215,7 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func storeDid(_ doc: DIDDocument ,_ hint: String?) throws {
-        let path = FileSystemStore.DID_DIR + doc.subject!.methodSpecificId + FileSystemStore.DOCUMENT_FILE
+        let path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + doc.subject!.methodSpecificId + "/" + FileSystemStore.DOCUMENT_FILE
         let exist = try exists(path)
         // TOOD: 如果存在呢，是否删除？java no
         try doc.toJson(path, true)
@@ -391,25 +374,27 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func storePrivateKey(_ did: DID, _ id: DIDURL, _ privateKey: String) throws {
-        let path: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + id.fragment
+        let path: String = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath: String = try getFile(path) ?? ""
 
         // Delete before storing , Java no
         try _ = deletePrivateKey(did, id)
         let fileManager: FileManager = FileManager.default
+        let dir: String = PathExtracter(path).dirNamePart()
+        try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
         fileManager.createFile(atPath: privateKeyPath, contents:nil, attributes:nil)
-        let handle = FileHandle(forWritingAtPath:privateKeyPath)
+        let handle = FileHandle(forWritingAtPath: privateKeyPath)
         handle?.write(privateKey.data(using: String.Encoding.utf8)!)
     }
 
     override func loadPrivateKey(_ did: DID, id: DIDURL) throws -> String {
-        let path: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + id.fragment
+        let path: String = storeRootPath + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + id.fragment
         let privateKeyPath = try getFile(path)
         return try! String(contentsOfFile:privateKeyPath!, encoding: String.Encoding.utf8)
     }
 
     override public func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
-        let path: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + id.fragment
+        let path: String = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath = try getFile(path)
         let fileExists = FileManager.default.fileExists(atPath: privateKeyPath!, isDirectory: nil)
 
@@ -458,20 +443,18 @@ public class FileSystemStore: DIDStore {
     }
 
     private func getHDPrivateKeyFile(_ create: Bool) throws -> String{
-        let path = FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.HDKEY_FILE
+        let path = storeRootPath + "/" + FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.HDKEY_FILE
         return try getFile(create, path)
     }
 
     private func getHDPrivateKeyFile(_ dir: String, _ hdKey: String, _ create: Bool) throws -> Bool {
-        let keyPath = "\(dir)/\(hdKey)/key"
+        let keyPath = storeRootPath + "/" + "\(dir)/\(hdKey)"
         guard try exists(keyPath) else {
-            // TODO: THROWS error
             return false
         }
         let readHandler = FileHandle(forReadingAtPath: keyPath)
         let key = readHandler?.readDataToEndOfFile() ?? Data()
         guard key.count != 0 else {
-            // TODO: throws error
             return false
         }
         return true

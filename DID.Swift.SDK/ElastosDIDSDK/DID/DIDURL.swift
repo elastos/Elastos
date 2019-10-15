@@ -17,7 +17,8 @@ public class DIDURL: NSObject {
     public init(_ url: String) throws {
         super.init()
         self.listener = DURLListener(self)
-        try ParserHelper.parse(url, false, self.listener!)
+        try ParserHelper.parase(url, false, self.listener!)
+        
     }
     
     public func mapToString(_ dictionary: OrderedDictionary<String, String>, sep: String) -> String {
@@ -89,7 +90,7 @@ public class DIDURL: NSObject {
     }
     
     public func toExternalForm() -> String {
-        let testDID: String = self.did.description
+        let testDID: String = self.did.toString()
         var params: String = ""
         if self.parameters != nil {
            params = mapToString(self.parameters!, sep: ";")

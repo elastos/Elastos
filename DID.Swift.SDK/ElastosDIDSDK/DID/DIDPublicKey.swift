@@ -33,12 +33,12 @@ public class DIDPublicKey: DIDObject {
         dic[Constants.id] = value
         
         // type
-        if !compact && (type != Constants.defaultPublicKeyType) {
+        if (!compact || (type != Constants.defaultPublicKeyType)) {
             dic[Constants.type] = type
         }
         
         // controller
-        if !compact && !((controller?.isEqual(ref))!) {
+        if (!compact || !((controller?.isEqual(ref))!)) {
             dic[Constants.controller] = controller?.toExternalForm()
         }
         

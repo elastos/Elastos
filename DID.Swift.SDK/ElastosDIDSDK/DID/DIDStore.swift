@@ -8,6 +8,7 @@ public class DIDStore: NSObject {
     private static var instance: DIDStore!
     private var privateIdentity: HDKey!
     private var lastIndex: Int!
+    var storeRootPath: String!
 
     override init() {
     }
@@ -20,6 +21,7 @@ public class DIDStore: NSObject {
             instance = try FileSystemStore(location)
             _ = try instance.initPrivateIdentity(passphase)
         }
+        instance.storeRootPath = location
     }
 
     public static func shareInstance() -> DIDStore? {
@@ -54,7 +56,7 @@ public class DIDStore: NSObject {
     public func initPrivateIdentity(_ mnemonic: String ,_ passphrase: String, _ force: Bool ) throws {
 
         if (try hasPrivateIdentity() && !force) {
-            // TODO: throws error
+            throw DIDStoreError.failue("Already has private indentity.")
         }
         privateIdentity = try HDKey.fromMnemonic(mnemonic, passphrase)
         lastIndex = 0
@@ -79,23 +81,30 @@ public class DIDStore: NSObject {
     }
 
     public func newDid(_ passphrase:String, _ hint:String?) throws -> DIDDocument {
-        if privateIdentity == nil {
-            // TODO: THROWS EROR
+        guard (privateIdentity != nil) else {
+            throw DIDStoreError.failue("DID Store not contains private identity.")
         }
-//        let key: DerivedKey = try privateIdentity.derive(Int32(lastIndex++))
-//        let did: DID = DID(DID.METHOD, try key.getAddress())
-//        let pk: DIDPublicKey = DIDPublicKey(try DIDURL(did, "primary"), Constants.defaultPublicKeyType, did, try key.getPublicKeyBase58())
-//        let doc: DIDDocument = DIDDocument()
-//        doc.subject = did
-//        _ = doc.addPublicKey(pk)
-//        _ = doc.addAuthenticationKey(pk)
-//        doc.readonly = true
-//        try storeDid(doc, hint!)
-////        let encryptedKey: String = try encryptToBase64(passphrase, key.serialize())
-////        try storePrivateKey(did, pk.id, encryptedKey)
-////        key.wipe()
-        return DIDDocument()
+        let inde: Int32 = Int32(lastIndex + 1)
+        let key: DerivedKey = try! privateIdentity.derive(inde)
+        let pks: [UInt8] = try key.getPublicKeyBytes()
+        let methodIdString: String = DerivedKey.getIdString(pks)
+        let did: DID = DID(DID.METHOD, methodIdString)
+        let pk: DIDPublicKey = DIDPublicKey(try DIDURL(did, "primary"), Constants.defaultPublicKeyType, did, try key.getPublicKeyBase58())
+        let doc: DIDDocument = DIDDocument()
+        doc.subject = did
+        _ = doc.addPublicKey(pk)
+        _ = doc.addAuthenticationKey(pk)
+        doc.readonly = true
+        try storeDid(doc, hint)
+        let skString: String = try key.getPrivateKeyBase58()
+        try storePrivateKey(did, pk.id, skString)
+        
+        return doc
     }
+    
+    /*
+
+     */
 
     public func newDid(_ passphrase: String) throws -> DIDDocument {
         return try newDid(passphrase, nil)

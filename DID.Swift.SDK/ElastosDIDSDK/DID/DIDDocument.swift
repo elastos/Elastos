@@ -8,6 +8,7 @@ public class DIDDocument: NSObject {
     private var credentials: Dictionary<DIDURL, VerifiableCredential> = [: ]
     private var services: Dictionary<DIDURL, Service> = [: ]
     public var expires: Date?
+    private var rootPath: String?
     
     public var readonly: Bool = false
     
@@ -61,11 +62,7 @@ public class DIDDocument: NSObject {
             if (pk.controller?.isEqual(self.subject))! {
                 
                 let pks = pk.getPublicKeyBytes()
-                var pks8: [Int8] = [Int8]()
-                pks.forEach { b in
-                    pks8.append(Int8(b))
-                }
-                let idstring = DerivedKey.getIdString(pks8)
+                let idstring = DerivedKey.getIdString(pks)
                 if idstring == subject?.methodSpecificId {
                     didpk = pk
                 }
@@ -265,6 +262,7 @@ public class DIDDocument: NSObject {
     }
     
     public func toJson(_ path: String, _ compact: Bool) throws {
+        self.rootPath = path
         var dic: Dictionary<String, Any> = [: ]
         // subject
         dic[Constants.id] = subject?.toExternalForm()
@@ -327,7 +325,7 @@ public class DIDDocument: NSObject {
         }
         
         // expires
-        dic[Constants.expires] = JsonHelper.format(expires!)
+//        dic[Constants.EXPIRES] = JsonHelper.format(expires!)
         
         // Change to jsonSting
         if (!JSONSerialization.isValidJSONObject(dic)) {
@@ -336,15 +334,31 @@ public class DIDDocument: NSObject {
         let data: Data = try JSONSerialization.data(withJSONObject: dic, options: [])
         
         // & Write to local
+        let dirPath: String = PathExtracter(path).dirNamePart()
+        let fileM = FileManager.default
+        let re = fileM.fileExists(atPath: dirPath)
+        if !re {
+            try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
+        }
+        let dre = fileM.fileExists(atPath: path)
+        if !dre {
+            fileM.createFile(atPath: path, contents: nil, attributes: nil)
+        }
         let writeHandle = FileHandle(forWritingAtPath: path)
         writeHandle?.write(data)
     }
     
     public static func fromJson(_ path: String) throws -> DIDDocument {
-
         let doc: DIDDocument = DIDDocument()
         let urlPath = URL(fileURLWithPath: path)
         try doc.parse(url: urlPath)
+        doc.readonly = true
+        return doc
+    }
+    
+    public static func fromJson(_ path: URL) throws -> DIDDocument {
+        let doc: DIDDocument = DIDDocument()
+        try doc.parse(url: path)
         doc.readonly = true
         return doc
     }
@@ -364,7 +378,7 @@ public class DIDDocument: NSObject {
         try parseAuthorization(json)
         try parseCredential(json)
         try parseService(json)
-        expires = JsonHelper.getDate(json, Constants.expires, true, nil, "expires")
+        expires = JsonHelper.getDate(json, Constants.EXPIRES, true, nil, "expires")
     }
     
     // 解析公钥
@@ -512,9 +526,11 @@ public class DIDDocument: NSObject {
         return (self.publicKeys.removeValue(forKey: id) != nil)
     }
     
-    public func toExternalForm(_ compact: Bool) -> String {
-        // todo
-        return ""
+    public func toExternalForm(_ compact: Bool) throws -> String {
+        try toJson(self.rootPath!, compact)
+        let urlPath = URL(fileURLWithPath: self.rootPath!)
+        let json = try String(contentsOf: urlPath)
+        return json
     }
     
 }

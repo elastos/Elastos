@@ -68,7 +68,7 @@ class IDChainRequest: NSObject {
         if operation == Operation.DEACRIVATE {
             payload = did?.toExternalForm()
         } else {
-            payload = doc?.toExternalForm(true)
+            payload = try doc?.toExternalForm(true)
         }
         
         payload = payload?.toBase64()
