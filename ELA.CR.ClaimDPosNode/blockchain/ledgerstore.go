@@ -77,7 +77,7 @@ type IFFLDBChainStore interface {
 
 	// If already exist in main chain(exist in file db and exist block index),
 	// will return true.
-	BlockExists(hash *Uint256) (bool, error)
+	BlockExists(hash *Uint256) (bool, uint32, error)
 
 	// If already exist in file db (rollback will not remove from file db), will
 	// return true.

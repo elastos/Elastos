@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package wallet
 
@@ -315,25 +315,40 @@ func CreateActivateProducerTransaction(c *cli.Context) error {
 		return err
 	}
 
+	var acc *account.Account
+	var nodePublicKey []byte
+
 	nodePublicKeyStr := c.String("nodepublickey")
-	nodePublicKey, err := common.HexStringToBytes(nodePublicKeyStr)
-	if err != nil {
-		return err
+	if nodePublicKeyStr != "" {
+		nodePublicKey, err = common.HexStringToBytes(nodePublicKeyStr)
+		if err != nil {
+			return err
+		}
+		codeHash, err := contract.PublicKeyToStandardCodeHash(nodePublicKey)
+		if err != nil {
+			return err
+		}
+		acc = client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			return errors.New("no available account in wallet")
+		}
+	} else {
+		acc = client.GetMainAccount()
+		if contract.GetPrefixType(acc.ProgramHash) != contract.PrefixStandard {
+			return errors.New("main account is not a standard account")
+		}
+		nodePublicKey, err = acc.PublicKey.EncodePoint(true)
+		if err != nil {
+			return err
+		}
 	}
 
-	codeHash, err := contract.PublicKeyToStandardCodeHash(nodePublicKey)
-	if err != nil {
-		return err
-	}
-
+	buf := new(bytes.Buffer)
 	apPayload := &payload.ActivateProducer{
 		NodePublicKey: nodePublicKey,
 	}
-	buf := new(bytes.Buffer)
-	apPayload.SerializeUnsigned(buf, payload.ActivateProducerVersion)
-	acc := client.GetAccountByCodeHash(*codeHash)
-	if acc == nil {
-		return errors.New("no available account in wallet")
+	if err = apPayload.SerializeUnsigned(buf, payload.ActivateProducerVersion); err != nil {
+		return err
 	}
 	signature, err := acc.Sign(buf.Bytes())
 	if err != nil {

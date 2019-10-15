@@ -533,7 +533,7 @@ func blockIndexKey(blockHash *common.Uint256, blockHeight uint32) []byte {
 
 // dbFetchHeightByHash uses an existing database transaction to retrieve the
 // height for the provided hash from the index.
-func dbFetchHeightByHash(dbTx database.Tx, hash *common.Uint256) (int32, error) {
+func dbFetchHeightByHash(dbTx database.Tx, hash *common.Uint256) (uint32, error) {
 	meta := dbTx.Metadata()
 	hashIndex := meta.Bucket(hashIndexBucketName)
 	serializedHeight := hashIndex.Get(hash[:])
@@ -541,7 +541,7 @@ func dbFetchHeightByHash(dbTx database.Tx, hash *common.Uint256) (int32, error) 
 		return 0, fmt.Errorf("block %s is not in the main chain", hash)
 	}
 
-	return int32(byteOrder.Uint32(serializedHeight)), nil
+	return uint32(byteOrder.Uint32(serializedHeight)), nil
 }
 
 // dbFetchBlockByNode uses an existing database transaction to retrieve the
