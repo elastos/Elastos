@@ -10,4 +10,4 @@ include_directories(
 
 add_library(common STATIC ${COMMON_SOURCE_FILES})
 set_target_properties(common PROPERTIES POSITION_INDEPENDENT_CODE ON)
-add_dependencies(common ${SPV_Boost_LIBRARIES})
+add_dependencies(common ${SPV_Boost_LIBRARIES} ${OpenSSL_LIBRARIES})
