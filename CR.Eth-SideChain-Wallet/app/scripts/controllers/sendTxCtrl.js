@@ -244,14 +244,14 @@ var sendTxCtrl = function($scope, $sce, walletService, $rootScope) {
         uiFuncs.sendTx($scope.signedTx, function(resp) {
             if (!resp.isError) {
                 var checkTxLink = "https://mycrypto.com?txHash=" + resp.data + "#check-tx-status";
-                var txHashLinkEtherchain = "https://www.etherchain.org/tx/" + resp.data
+                var txHashLinkEtherchain = "https://explorer.elaeth.io/tx/" + resp.data
                 var txHashLink = $scope.ajaxReq.blockExplorerTX.replace("[[txHash]]", resp.data);
                 var emailBody = 'I%20was%20trying%20to..............%0A%0A%0A%0ABut%20I%27m%20confused%20because...............%0A%0A%0A%0A%0A%0ATo%20Address%3A%20https%3A%2F%2Fetherscan.io%2Faddress%2F' + $scope.tx.to + '%0AFrom%20Address%3A%20https%3A%2F%2Fetherscan.io%2Faddress%2F' + $scope.wallet.getAddressString() + '%0ATX%20Hash%3A%20https%3A%2F%2Fetherscan.io%2Ftx%2F' + resp.data + '%0AAmount%3A%20' + $scope.tx.value + '%20' + $scope.unitReadable + '%0ANode%3A%20' + $scope.ajaxReq.type + '%0AToken%20To%20Addr%3A%20' + $scope.tokenTx.to + '%0AToken%20Amount%3A%20' + $scope.tokenTx.value + '%20' + $scope.unitReadable + '%0AData%3A%20' + $scope.tx.data + '%0AGas%20Limit%3A%20' + $scope.tx.gasLimit + '%0AGas%20Price%3A%20' + $scope.tx.gasPrice;
-                var verifyTxBtn = $scope.ajaxReq.type != nodes.nodeTypes.Custom ? '<a class="btn btn-xs btn-info" href="' + txHashLink + '" class="strong" target="_blank" rel="noopener noreferrer">View TX on Etherscan</a>' : '';
-                var verifyTxEtherchainBtn = $scope.ajaxReq.type == 'ETH' ? '<a class="btn btn-xs btn-info" href="' + txHashLinkEtherchain + '" class="strong" target="_blank" rel="noopener noreferrer">View TX on Etherchain</a>' : '';
-                var checkTxBtn = '<a class="btn btn-xs btn-info" href="' + checkTxLink + '" target="_blank" rel="noopener noreferrer">View TX on MyCrypto</a>';
-                var emailBtn = '<a class="btn btn-xs btn-info " href="mailto:support@mycrypto.com?Subject=Issue%20regarding%20my%20TX%20&Body=' + emailBody + '" target="_blank" rel="noopener noreferrer">Confused? Email Us.</a>';
-                var completeMsg = '<p>' + globalFuncs.successMsgs[2] + '<strong>' + resp.data + '</strong></p><p>' + verifyTxBtn + ' ' + verifyTxEtherchainBtn + ' ' + checkTxBtn + '</p>';
+                //var verifyTxBtn = $scope.ajaxReq.type != nodes.nodeTypes.Custom ? '<a class="btn btn-xs btn-info" href="' + txHashLink + '" class="strong" target="_blank" rel="noopener noreferrer">View TX on Etherscan</a>' : '';
+                var verifyTxEtherchainBtn = $scope.ajaxReq.type == 'ETH' ? '<a class="btn btn-xs btn-info" href="' + txHashLinkEtherchain + '" class="strong" target="_blank" rel="noopener noreferrer">View TX on Explorer</a>' : '';
+                //var checkTxBtn = '<a class="btn btn-xs btn-info" href="' + checkTxLink + '" target="_blank" rel="noopener noreferrer">View TX on MyCrypto</a>';
+                //var emailBtn = '<a class="btn btn-xs btn-info " href="mailto:support@mycrypto.com?Subject=Issue%20regarding%20my%20TX%20&Body=' + emailBody + '" target="_blank" rel="noopener noreferrer">Confused? Email Us.</a>';
+                var completeMsg = '<p>' + globalFuncs.successMsgs[2] + '<strong>' + resp.data + '</strong></p><p>' + ' ' + verifyTxEtherchainBtn + ' ' + '</p>';
                 $scope.notifier.success(completeMsg, 0);
                 $scope.wallet.setBalance(applyScope);
                 if ($scope.tx.sendMode == 'token') $scope.wallet.tokenObjs[$scope.tokenTx.id].setBalance();

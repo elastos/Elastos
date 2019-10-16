@@ -9,11 +9,15 @@
 
     @@include( '../includes/sendTx.tpl',             { "site": "web" } )
 
+    @@include( '../includes/swap.tpl',               { "site": "web" } )
+
     @@include( '../includes/offlineTx.tpl',          { "site": "web" } )
 
     @@include( '../includes/contracts.tpl',          { "site": "web" } )
 
-    @@include( '../includes/mainnet.tpl',          { "site": "web" } )
+    @@include( '../includes/ens.tpl',                { "site": "web" } )
+
+    @@include( '../includes/domainsale.tpl',         { "site": "web" } )
 
     @@include( '../includes/viewWalletInfo.tpl',     { "site": "web" } )
 
@@ -21,11 +25,12 @@
 
     @@include( '../includes/bulkGenerate.tpl',       { "site": "web" } )
 
+    @@include( '../includes/print.tpl',              { "site": "web" } )
 
   </div>
 
 
-  <!-- @@include('../includes/alerts.tpl') -->
+  @@include('../includes/alerts.tpl')
 
 
   <!--

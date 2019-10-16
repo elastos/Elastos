@@ -1,0 +1,16 @@
+{
+    //gitUrls will be the same since we don't have separate develop/prod repos
+
+    "environments": {
+        "develop": {
+            "gitUrl": "git@github.com:MyCryptoHQ/mycrypto.com.git",
+            "distFolder": "dist",
+            "buildCommand": "npm install && npm run build"
+        },
+        "prod": {
+            "gitUrl": "git@github.com:MyCryptoHQ/mycrypto.com.git",
+            "distFolder": "",
+            "defaultBranch": "gh-pages"
+        }
+    }
+}

@@ -61,7 +61,7 @@
 
   <!-- Slider Thingy -->
   <!-- Hardware Wallets -->
-  <a href="https://support.mycrypto.com/getting-started/protecting-yourself-and-your-funds.html"
+  <!-- <a href="https://support.mycrypto.com/getting-started/protecting-yourself-and-your-funds.html"
      ng-show="slide==1 || ajaxReq.type!=='ETH'"
      class="block swap--hw"
      target="_blank" rel="noopener noreferrer">
@@ -80,7 +80,7 @@
       <br />
       <img src="images/logo-trezor.svg" width="80" height="auto" class="swap__logo">
     </div>
-  </a>
+  </a> -->
 
   <!-- Coinbase -->
   <!-- <a href="https://buy.coinbase.com?code=60c05061-3a76-57be-b1cd-a7afa97bcb8c&address={{wallet.getChecksumAddressString()}}&crypto_currency=ETH&currency=USD"
@@ -104,7 +104,7 @@
 
   <!-- Shapeshift -->
 
-  <a ng-click="globalService.currentTab=globalService.tabs.swap.id"
+  <!-- <a ng-click="globalService.currentTab=globalService.tabs.swap.id"
      ng-show="ajaxReq.type=='ETH' && slide==3" class="block swap--ss"
      target="_blank" rel="noopener noreferrer">
     <div class="col-sm-7">
@@ -115,7 +115,7 @@
     </div>
   </a>
 
-  <!-- <div class="swap__nav" ng-show="ajaxReq.type=='ETH'">
+  <div class="swap__nav" ng-show="ajaxReq.type=='ETH'">
     <a ng-click="slide=1"> &bull; </a>
     <a ng-click="slide=2"> &bull; </a>
     <a ng-click="slide=3"> &bull; </a>
@@ -231,7 +231,7 @@
 
 
   <!-- Equivalent Balances -->
-  <!-- <div class="block" ng-show="ajaxReq.type=='ETH'">
+  <div class="block" ng-show="ajaxReq.type=='ETH'">
     <h5 translate="sidebar_Equiv">Equivalent Values:</h5>
     <div class="row">
       <ul class="account-info col-xs-6">
@@ -246,6 +246,6 @@
       </ul>
     </div>
     <p><small> These are only the equivalent values for ETH, not tokens. Sorry! </small></p>
-  </div> -->
+  </div>
 
 </aside>

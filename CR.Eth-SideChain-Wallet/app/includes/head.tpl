@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Ether SideChain Wallet</title>
+<title>MyCrypto.com</title>
 <meta property="og:title" content="MyCrypto.com: MyCrypto.com">
 <meta property="og:site_name" content="MyCrypto.com: MyCrypto.com">
 <meta name="twitter:title" content="MyCrypto.com: MyCrypto.com">

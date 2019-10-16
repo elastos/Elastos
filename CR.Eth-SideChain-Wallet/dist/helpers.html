@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Ether SideChain Wallet</title>
+<title>MyCrypto.com</title>
 <meta property="og:title" content="MyCrypto.com: MyCrypto.com">
 <meta property="og:site_name" content="MyCrypto.com: MyCrypto.com">
 <meta name="twitter:title" content="MyCrypto.com: MyCrypto.com">
@@ -78,12 +78,13 @@
         aria-label="header"
         ng-controller='tabsCtrl'>
 
+
     <section class="header__wrap">
       <div class="container">
 
         
-          <a class="header__brand" href="/" aria-label="Go to homepage" style="visibility: hidden">
-            <img src="images/logo.svg" height="64" width="190" alt="MyCrypto Logo" />
+          <a class="header__brand" href="/" aria-label="Go to homepage">
+            <img src="images/logo.svg" height="53" width="190" alt="MyCrypto Logo" />
           </a>
         
         
@@ -178,19 +179,6 @@
             </ul>
           </span>
 
-          <!-- <span class="dropdown dropdown-alerts" ng-cloak>
-            <a tabindex="0"
-               aria-label="What's New From MyCrypto"
-               title="Try the MyCrypto Beta!"
-               class="dropdown-toggle"
-               href="https://beta.mycrypto.com/"
-               target="_blank"
-               rel="noopener noreferrer">
-                 <p>LATEST</p>
-                 Try the MyCrypto Beta!
-            </a>
-          </span> -->
-
         </div>
 
       </div>
@@ -216,13 +204,13 @@
             </li>
           
           
-          <!-- <li class="nav-item help">
+          <li class="nav-item help">
             <a href="https://support.mycrypto.com/" target="_blank" rel="noopener noreferrer">
               <span translate="NAV_Help">
                 Help
               </span>
             </a>
-          </li> -->
+          </li>
         </ul>
       </div>
 
@@ -984,10 +972,10 @@
 <section class="pre-footer" ng-controller='footerCtrl'>
   <div class="container">
     <p>
-      We does not hold your keys for you. We cannot access accounts, recover keys, reset passwords, nor reverse transactions. Protect your keys &amp; always check that you are on correct URL.
-      <!-- <a role="link" tabindex="0" data-toggle="modal" data-target="#disclaimerModal">
+      MyCrypto.com does not hold your keys for you. We cannot access accounts, recover keys, reset passwords, nor reverse transactions. Protect your keys &amp; always check that you are on correct URL.
+      <a role="link" tabindex="0" data-toggle="modal" data-target="#disclaimerModal">
         You are responsible for your security.
-      </a> -->
+      </a>
     </p>
   </div>
 </section>
@@ -997,12 +985,15 @@
 <!-- Footer -->
 <footer class="footer" role="content" aria-label="footer">
 
-  <div class="footer__left">
+  <div class="footer__left" style="visibility:hidden">
     <p class="footer__icons">
-      <a aria-label="twitter" title="twitter" href="https://twitter.com/Elastos_org" target="_blank" rel="noopener noreferrer" role="link" tabindex="0">
+      <a aria-label="twitter" title="twitter" href="https://twitter.com/mycrypto" target="_blank" rel="noopener noreferrer" role="link" tabindex="0">
         <svg width="20" height="20" class="footer__icon" aria-labelledby="twitter icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.954 4.569c-.885.389-1.83.654-2.825.775 1.014-.611 1.794-1.574 2.163-2.723-.951.555-2.005.959-3.127 1.184-.896-.959-2.173-1.559-3.591-1.559-2.717 0-4.92 2.203-4.92 4.917 0 .39.045.765.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475 0 1.71.87 3.213 2.188 4.096-.807-.026-1.566-.248-2.228-.616v.061c0 2.385 1.693 4.374 3.946 4.827-.413.111-.849.171-1.296.171-.314 0-.615-.03-.916-.086.631 1.953 2.445 3.377 4.604 3.417-1.68 1.319-3.809 2.105-6.102 2.105-.39 0-.779-.023-1.17-.067 2.189 1.394 4.768 2.209 7.557 2.209 9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63.961-.689 1.8-1.56 2.46-2.548l-.047-.02z" fill="#ffffff" /></svg>
       </a>
-      <a aria-label="github" title="github" href="https://github.com/elastos" target="_blank" rel="noopener noreferrer" role="link" tabindex="0">
+      <a aria-label="linkedin" title="linkedin" href="https://www.linkedin.com/company/mycrypto" target="_blank" rel="noopener noreferrer" role="link" tabindex="0">
+        <svg width="20" height="20" class="footer__icon" aria-labelledby="linkedin icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" fill="#ffffff" /></svg>
+      </a>
+      <a aria-label="github" title="github" href="https://github.com/mycryptohq" target="_blank" rel="noopener noreferrer" role="link" tabindex="0">
         <svg width="20" height="20" class="footer__icon" aria-labelledby="github icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" fill="#ffffff" /></svg>
       </a>
       <a aria-label="facebook" title="facebook" href="https://www.facebook.com/mycryptohq" target="_blank" rel="noopener noreferrer" role="link" tabindex="0">
@@ -1018,7 +1009,7 @@
         <svg width="20" height="20" class="footer__icon" aria-labelledby="discord icon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 175.1 198.3"><path d="M105.9,83.2c-5.7,0-10.2,4.9-10.2,11s4.6,11,10.2,11,10.2-4.9,10.2-11S111.5,83.2,105.9,83.2Zm-36.5,0c-5.7,0-10.2,4.9-10.2,11s4.6,11,10.2,11,10.2-4.9,10.2-11S75.1,83.2,69.4,83.2Z" fill="#ffffff"/><path d="M154.5,0H20.5A20.53,20.53,0,0,0,0,20.5v134A20.53,20.53,0,0,0,20.5,175H133.9l-5.3-18.3,12.8,11.8,12.1,11.1,21.6,18.7V20.5A20.68,20.68,0,0,0,154.5,0ZM115.9,129.5s-3.6-4.3-6.6-8c13.1-3.7,18.1-11.8,18.1-11.8a57.22,57.22,0,0,1-11.5,5.9,71.71,71.71,0,0,1-14.5,4.3,70.05,70.05,0,0,1-25.9-.1,76.13,76.13,0,0,1-14.7-4.3,58.6,58.6,0,0,1-7.3-3.4c-.3-.2-.6-.3-.9-.5s-.3-.2-.4-.2c-1.8-1-2.8-1.7-2.8-1.7s4.8,7.9,17.5,11.7c-3,3.8-6.7,8.2-6.7,8.2-22.1-.7-30.5-15.1-30.5-15.1,0-31.9,14.4-57.8,14.4-57.8,14.4-10.7,28-10.4,28-10.4l1,1.2c-18,5.1-26.2,13-26.2,13s2.2-1.2,5.9-2.8a78.35,78.35,0,0,1,22.7-6.3,9.85,9.85,0,0,1,1.7-.2A84.61,84.61,0,0,1,97.4,51a83.13,83.13,0,0,1,30.1,9.5s-7.9-7.5-24.9-12.6l1.4-1.6s13.7-.3,28,10.4c0,0,14.4,25.9,14.4,57.8,0-.1-8.4,14.3-30.5,15Z" fill="#ffffff"/></svg>
       </a>
     </p>
-    <!-- <ul class="footer__links">
+    <ul class="footer__links">
       <li><a href="https://chrome.google.com/webstore/detail/etheraddresslookup/pdknmigbbbhmllnmgdfalmedcmcefdfn" target="_blank" rel="noopener"> Ether Address Lookup </a></li>
       <li><a href="https://chrome.google.com/webstore/detail/ethersecuritylookup/bhhfhgpgmifehjdghlbbijjaimhmcgnf" target="_blank" rel="noopener"> Ether Security Lookup </a></li>
       <li><a href="https://etherscamdb.info/" target="_blank" rel="noopener"> EtherScamDB </a></li>
@@ -1033,11 +1024,11 @@
         <a href="http://etherscan.io/" target="_blank" rel="noopener"> Etherscan </a>
         &nbsp;&middot;&nbsp;
         <a href="https://www.etherchain.org/" target="_blank" rel="noopener"> Etherchain </a>
-      </li> -->
+      </li>
     </ul>
   </div>
 
-  <!-- <div class="footer__center">
+  <div class="footer__center">
     <a href="https://mycrypto.com">
       <img class="footer__logo" src="images/logo-blue-white.svg" height="64px" width="245px" alt="MyCrypto">
     </a>
@@ -1058,9 +1049,9 @@
         v3.17.0
       </span>
     </p>
-  </div> -->
+  </div>
 
-  <!-- <div class="footer__right">
+  <div class="footer__right" style="visibility:hidden">
     <p class="footer__title">Support Us &amp; Our Friends</p>
     <ul class="footer__links">
       <li><a href="https://www.ledgerwallet.com/r/1985?path=/products/" target="_blank" rel="noopener"> Buy a Ledger Wallet </a></li>
@@ -1071,7 +1062,7 @@
       <li>Donate ETH <br /><small class="mono">0x4bbeEB066eD09B7AEd07bF39EEe0460DFa261520</small> </li>
       <li>Donate BTC <br /><small class="mono">32oirLEzZRhi33RCXDF9WHJjEb8RsrSss3</small> </li>
     </ul>
-  </div> -->
+  </div>
 </footer>
 <!-- / Footer -->
 

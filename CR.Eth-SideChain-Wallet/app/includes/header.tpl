@@ -4,16 +4,17 @@
         aria-label="header"
         ng-controller='tabsCtrl'>
 
+
     <section class="header__wrap">
       <div class="container">
 
         @@if (site === 'web' ) {
-          <a class="header__brand" href="/" aria-label="Go to homepage" style="visibility: hidden">
-            <img src="images/logo.svg" height="64" width="190" alt="MyCrypto Logo" />
+          <a class="header__brand" href="/" aria-label="Go to homepage">
+            <img src="images/logo.svg" height="53" width="190" alt="MyCrypto Logo" />
           </a>
         }
         @@if (site === 'cx'  ) {
-          <a class="header__brand" href="/cx-wallet.html" aria-label="Go to homepage" style="visibility: hidden">
+          <a class="header__brand" href="/cx-wallet.html" aria-label="Go to homepage">
             <img src="images/logo.svg" height="48" width="166" alt="MyCrypto Logo" />
           </a>
         }
@@ -108,19 +109,6 @@
             </ul>
           </span>
 
-          <!-- <span class="dropdown dropdown-alerts" ng-cloak>
-            <a tabindex="0"
-               aria-label="What's New From MyCrypto"
-               title="Try the MyCrypto Beta!"
-               class="dropdown-toggle"
-               href="https://beta.mycrypto.com/"
-               target="_blank"
-               rel="noopener noreferrer">
-                 <p>LATEST</p>
-                 Try the MyCrypto Beta!
-            </a>
-          </span> -->
-
         </div>
 
       </div>
@@ -154,13 +142,13 @@
                   <a tabindex="0" aria-label="nav item: {{tab.name | translate}}" translate="{{tab.name}}"></a>
             </li>
           }
-          <!-- <li class="nav-item help">
+          <li class="nav-item help">
             <a href="https://support.mycrypto.com/" target="_blank" rel="noopener noreferrer">
               <span translate="NAV_Help">
                 Help
               </span>
             </a>
-          </li> -->
+          </li>
         </ul>
       </div>
 

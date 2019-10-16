@@ -36,7 +36,7 @@
 <header class="bg-gradient text-white">
 <section class="container text-center">
   <a href="https://mycrypto.com/">
-    <!-- <img src="images/logo.svg" height="53" width="190" alt="MyCrypto Logo" /> -->
+    <img src="images/logo.svg" height="53" width="190" alt="MyCrypto Logo" />
   </a>
 </section>
 </header>

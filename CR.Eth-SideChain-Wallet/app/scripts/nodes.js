@@ -4,7 +4,20 @@ nodes.customNode = require('./nodeHelpers/customNode');
 nodes.infuraNode = require('./nodeHelpers/infura');
 nodes.metamaskNode = require('./nodeHelpers/metamask');
 nodes.nodeTypes = {
-    ETH: "ETH"
+    ETH: "ETH",
+    ETC: "ETC",
+    MUS: "MUSIC",
+    Ropsten: "ROPSTEN ETH",
+    Kovan: "KOVAN ETH",
+    Rinkeby: "RINKEBY ETH",
+    RSK: "RSK",
+    EXP: "EXP",
+    UBQ: "UBQ",
+    POA: "POA",
+    TOMO: "TOMO",
+    ELLA: "ELLA",
+    ETSC: "ETSC",
+    Custom: "CUSTOM ETH"
 };
 nodes.ensNodeTypes = [nodes.nodeTypes.ETH, nodes.nodeTypes.Ropsten];
 nodes.domainsaleNodeTypes = [nodes.nodeTypes.ETH, nodes.nodeTypes.Ropsten];
@@ -27,13 +40,13 @@ nodes.nodeList = {
         'blockExplorerAddr': 'https://etherscan.io/address/[[address]]',
         'type': nodes.nodeTypes.ETH,
         'eip155': true,
-        'chainId': 3,
+        'chainId': 1,
         'tokenList': require('./tokens/ethTokens.json'),
-        'abiList': require('./abiDefinitions/etscAbi.json'),
-        'service': 'ELA_Mainnet',
+        'abiList': require('./abiDefinitions/ethAbi.json'),
+        'service': 'mainnet',
         'lib': new nodes.customNode('https://mainrpc.elaeth.io', '')
     },
-    'eth_myetherwallet': {
+    'eth_etherscan': {
         'name': 'ETH',
         'blockExplorerTX': 'https://etherscan.io/tx/[[txHash]]',
         'blockExplorerAddr': 'https://etherscan.io/address/[[address]]',
@@ -41,8 +54,8 @@ nodes.nodeList = {
         'eip155': true,
         'chainId': 3,
         'tokenList': require('./tokens/ethTokens.json'),
-        'abiList': require('./abiDefinitions/ethAbi.json'),
-        'service': 'ELA_Testnet',
+        'abiList': require('./abiDefinitions/etcAbi.json'),
+        'service': 'testnet',
         'lib': new nodes.customNode('https://rpc.elaeth.io', '')
     },
 };
