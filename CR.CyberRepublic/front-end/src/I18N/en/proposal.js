@@ -86,7 +86,7 @@ export default {
       btn: {
         submit: 'Submit for Review'
       },
-      add: 'Add Tracking Plan'
+      add: 'Add Tracking Messages'
     },
     summary: {
       btn: {
