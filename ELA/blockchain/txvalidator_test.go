@@ -1602,7 +1602,6 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
 	crcProposalPayload.Sign = sig
 
-	// Check signature of CR sponsor.
 	common.WriteVarBytes(signBuf, sig)
 	crSig, _ := crypto.Sign(privateKey2, signBuf.Bytes())
 	crcProposalPayload.CRSign = crSig
@@ -1612,6 +1611,222 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 		Code:      getCode(publicKeyStr),
 		Parameter: nil,
 	}}
+	return txn
+}
+
+func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+
+	publicKeyStr3 := "024010e8ac9b2175837dac34917bdaf3eb0522cff8c40fc58419d119589cae1433"
+	privateKeyStr3 := "e19737ffeb452fc7ed9dc0e70928591c88ad669fd1701210dcd8732e0946829b"
+
+	leaderPubKey, _ := common.HexStringToBytes(publicKeyStr1)
+	//newLeaderPubKey, _ := common.HexStringToBytes(publicKeyStr2)
+	//secretaryGeneralPubKey, _ := common.HexStringToBytes(publicKeyStr3)
+
+	proposalHash := randomUint256()
+	recipient := randomUint168()
+	votingHeight := config.DefaultParams.CRVotingStartHeight
+
+	// Set secretary general.
+	s.Chain.chainParams.SecretaryGeneral = publicKeyStr3
+
+	// Check Common tracking tx.
+	txn := s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 0,
+		publicKeyStr1, privateKeyStr1, "", "",
+		publicKeyStr3, privateKeyStr3)
+
+	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash] =
+		&crstate.ProposalState{
+			Proposal: payload.CRCProposal{
+				ProposalType:     0,
+				SponsorPublicKey: leaderPubKey,
+				CRSponsorDID:     *randomUint168(),
+				DraftHash:        *randomUint256(),
+				Budgets:          []common.Fixed64{100, 200, 300},
+				Recipient:        *recipient,
+			},
+			CurrentStage: 1,
+		}
+
+	err := s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 1, 0,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "stage need to be zero")
+
+	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 1,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "appropriation need to be zero")
+
+	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 0,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "the NewLeaderPubKey need to be empty")
+
+	// Check Progress tracking tx.
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 2, 0,
+		publicKeyStr1, privateKeyStr1, "", "",
+		publicKeyStr3, privateKeyStr3)
+
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 0, 0,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "invalid stage")
+
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 2, 1,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "appropriation need to be zero")
+
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 2, 0,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "the NewLeaderPubKey need to be empty")
+
+	// Check Terminated tracking tx.
+	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0, 0,
+		publicKeyStr1, privateKeyStr1, "", "",
+		publicKeyStr3, privateKeyStr3)
+
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 1, 0,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "stage need to be zero")
+
+	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0, 1,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "appropriation need to be zero")
+
+	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0, 0,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "the NewLeaderPubKey need to be empty")
+
+	// Check ProposalLeader tracking tx.
+	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0, 0,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 1, 0,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "stage need to be zero")
+
+	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0, 1,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "appropriation need to be zero")
+
+	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0, 0,
+		publicKeyStr1, privateKeyStr1, "", "",
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "invalid proposal new leader public key")
+
+	// Check Appropriation tracking tx.
+	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 2, 200,
+		publicKeyStr1, privateKeyStr1, "", "",
+		publicKeyStr3, privateKeyStr3)
+
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.NoError(err)
+
+	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 0, 200,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "invalid stage")
+
+	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 2, 300,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "invalid appropriation")
+
+	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 2, 200,
+		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
+		publicKeyStr3, privateKeyStr3)
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "the NewLeaderPubKey need to be empty")
+}
+
+func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
+	trackingType payload.CRCProposalTrackingType,
+	proposalHash common.Uint256, stage uint32, appropriation common.Fixed64,
+	leaderPublicKeyStr, leaderPrivateKeyStr,
+	newLeaderPublicKeyStr, newLeaderPrivateKeyStr,
+	sgPublicKeyStr, sgPrivateKeyStr string) *types.Transaction {
+
+	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
+	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
+
+	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
+	newLeaderPrivateKey, _ := common.HexStringToBytes(newLeaderPrivateKeyStr)
+
+	//sgPublicKey, _ := common.HexStringToBytes(sgPublicKeyStr)
+	sgPrivateKey, _ := common.HexStringToBytes(sgPrivateKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposalTracking
+	txn.Version = types.TxVersion09
+	cPayload := &payload.CRCProposalTracking{
+		ProposalTrackingType: trackingType,
+		ProposalHash:         proposalHash,
+		Stage:                stage,
+		Appropriation:        appropriation,
+		LeaderPubKey:         leaderPublicKey,
+		NewLeaderPubKey:      newLeaderPublicKey,
+		LeaderSign:           nil,
+		NewLeaderSign:        nil,
+		SecretaryGeneralSign: nil,
+	}
+
+	signBuf := new(bytes.Buffer)
+	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
+	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
+	cPayload.LeaderSign = sig
+
+	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
+		common.WriteVarBytes(signBuf, sig)
+		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
+		cPayload.NewLeaderSign = crSig
+		sig = crSig
+	}
+
+	common.WriteVarBytes(signBuf, sig)
+	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
+	cPayload.SecretaryGeneralSign = crSig
+
+	txn.Payload = cPayload
 	return txn
 }
 
