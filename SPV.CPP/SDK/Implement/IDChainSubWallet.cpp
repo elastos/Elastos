@@ -8,8 +8,10 @@
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
+#include <SDK/Common/Base64.h>
 #include <SDK/WalletCore/KeyStore/CoinInfo.h>
 #include <SDK/WalletCore/BIPs/Key.h>
+#include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/Plugin/Transaction/Payload/DIDInfo.h>
 #include <SDK/Plugin/Transaction/Program.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
@@ -25,14 +27,121 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		IDChainSubWallet::IDChainSubWallet(const CoinInfoPtr &info,
-										   const ChainConfigPtr &config,
-										   MasterWallet *parent) :
+		                                   const ChainConfigPtr &config,
+		                                   MasterWallet *parent) :
 				SidechainSubWallet(info, config, parent) {
 
 		}
 
 		IDChainSubWallet::~IDChainSubWallet() {
 
+		}
+
+		nlohmann::json
+		IDChainSubWallet::GenerateDIDInfoPayload(const nlohmann::json &inputInfo, const std::string &paypasswd) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("inputInfo: {}", inputInfo.dump());
+			ArgInfo("paypassword: *");
+
+			ErrorChecker::CheckParam(inputInfo.empty() || !inputInfo.is_object(), Error::InvalidArgument,
+			                         "invalid credentialSubject JSON");
+
+			std::string did = inputInfo["id"].get<std::string>();
+			std::vector<std::string> idSplited;
+			boost::algorithm::split(idSplited, did, boost::is_any_of(":"), boost::token_compress_on);
+			ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument, "invalid id format");
+
+			std::string operation = inputInfo["operation"].get<std::string>();
+			ErrorChecker::CheckParam(operation != "create" && operation != "update" && operation != "deactivate",
+			                         Error::InvalidArgument, "invalid operation");
+
+			nlohmann::json pubKeyInfoArray = inputInfo["publicKey"];
+			ErrorChecker::CheckJsonArray(pubKeyInfoArray, 1, "pubKeyInfoArray");
+
+			nlohmann::json credentialSubject= inputInfo["credentialSubject"];
+			ErrorChecker::CheckParam(!credentialSubject.is_object(), Error::InvalidArgument,
+			                         "invalid credentialSubject JSON");
+
+			std::string expirationDate = inputInfo["expires"].get<std::string>();
+			ErrorChecker::CheckInternetDate(expirationDate);
+
+			DIDHeaderInfo headerInfo("elastos/did/1.0", operation);
+
+			DIDPubKeyInfoArray didPubKeyInfoArray;
+			for (nlohmann::json::iterator it = pubKeyInfoArray.begin(); it != pubKeyInfoArray.end(); ++it) {
+				DIDPubKeyInfo pubKeyInfo;
+				if ((*it).find("publicKey") != (*it).end()) {
+					std::string pbk = (*it)["publicKey"].get<std::string>();
+					bytes_t pubkey;
+					pubkey.setHex(pbk);
+					(*it)["publicKeyBase58"] = Base58::Encode(pubkey);
+				}
+				pubKeyInfo.FromJson(*it, 0);
+				didPubKeyInfoArray.push_back(pubKeyInfo);
+			}
+
+			CredentialSubject subject;
+			try {
+				subject.FromJson(credentialSubject, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+				                                  "CredentialSubject format err: " + std::string(e.what()));
+			}
+
+			VerifiableCredential verifiableCredential;
+			verifiableCredential.SetID(did);
+
+			std::vector<std::string> types = getVerifiableCredentialTypes(subject);
+			verifiableCredential.SetTypes(types);
+			verifiableCredential.SetCredentialSubject(subject);
+
+			std::stringstream issuerDate;
+			time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			issuerDate << std::put_time(std::localtime(&t), "%FT%TZ");
+			verifiableCredential.SetIssuerDate(issuerDate.str());
+
+			VerifiableCredentialArray verifiableCredentials;
+			verifiableCredentials.push_back(verifiableCredential);
+
+			DIDPayloadInfo payloadInfo;
+			payloadInfo.SetID(did);
+			payloadInfo.SetExpires(expirationDate);
+			payloadInfo.SetPublickKey(didPubKeyInfoArray);
+			payloadInfo.SetVerifiableCredential(verifiableCredentials);
+
+			DIDInfo didInfo;
+			didInfo.SetDIDHeader(headerInfo);
+			didInfo.SetDIDPlayloadInfo(payloadInfo);
+
+			std::string sourceData = headerInfo.Specification() + headerInfo.Operation() + didInfo.DIDPayloadString();
+
+			std::string signature = Sign(idSplited[2], sourceData, paypasswd);
+			DIDProofInfo didProofInfo("#primary", Base64::Encode(signature));
+			didInfo.SetDIDProof(didProofInfo);
+
+			nlohmann::json result = didInfo.ToJson(0);
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		std::vector<std::string>
+		IDChainSubWallet::getVerifiableCredentialTypes(const CredentialSubject &subject) {
+			std::vector<std::string> types = {
+					"SelfProclaimedCredential",
+					"BasicProfileCredential",
+			};
+
+			if (subject.GetPhone().size() > 0) {
+				types.push_back("PhoneCredential");
+			}
+
+			if (subject.GetAlipay().size() > 0 || subject.GetWechat().size() > 0 || subject.GetWeibo().size() > 0
+			    || subject.GetTwitter().size() > 0 || subject.GetFacebook().size() > 0
+			    || subject.GetMicrosoftPassport().size() > 0 || subject.GetGoogleAccount().size() > 0
+			    || subject.GetHomePage().size() > 0 || subject.GetEmail().size() > 0) {
+				types.push_back("InternetAccountCredential");
+			}
+			return types;
 		}
 
 		nlohmann::json
@@ -51,12 +160,14 @@ namespace Elastos {
 				std::string id = didInfo->DIDPayload().ID();
 				std::vector<std::string> idSplited;
 				boost::algorithm::split(idSplited, id, boost::is_any_of(":"), boost::token_compress_on);
-				ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument, "invalid id format in payload JSON");
+				ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument,
+				                         "invalid id format in payload JSON");
 				receiveAddr = Address(idSplited[2]);
-				ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::InvalidArgument, "invalid receive addr(id) in payload JSON");
+				ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::InvalidArgument,
+				                         "invalid receive addr(id) in payload JSON");
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
-												  "Create id tx param error: " + std::string(e.what()));
+				                                  "Create id tx param error: " + std::string(e.what()));
 			}
 
 			std::vector<OutputPtr> outputs;
@@ -94,7 +205,7 @@ namespace Elastos {
 		}
 
 		std::string IDChainSubWallet::Sign(const std::string &did, const std::string &message,
-										   const std::string &payPassword) {
+		                                   const std::string &payPassword) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("did: {}", did);
 			ArgInfo("message: {}", message);
@@ -122,7 +233,7 @@ namespace Elastos {
 			return r;
 		}
 
-		std::string IDChainSubWallet::GetDIDByPublicKey(std::string &pubkey) const {
+		std::string IDChainSubWallet::GetDIDByPublicKey(const std::string &pubkey) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("pubkey:{}", pubkey);
 
@@ -134,5 +245,69 @@ namespace Elastos {
 			return did;
 		}
 
+		nlohmann::json IDChainSubWallet::GetDetailByDID(const std::string &did) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("did:{}", did);
+
+			std::vector<std::string> idSplited;
+			boost::algorithm::split(idSplited, did, boost::is_any_of(":"), boost::token_compress_on);
+			ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument, "invalid id format");
+
+			std::vector<TransactionPtr> allTxs = _walletManager->GetWallet()->GetAllTransactions();
+			size_t count = allTxs.size();
+			DIDInfo *didInfo = nullptr;
+
+			for (size_t i = count; i > 0; --i) {
+				TransactionPtr tx = allTxs[i - 1];
+				if (tx->GetTransactionType() == IDTransaction::didTransaction) {
+					DIDInfo *payload = dynamic_cast<DIDInfo *>(tx->GetPayload());
+					if (payload && payload->DIDPayload().ID() == did) {
+						didInfo = payload;
+						break;
+					}
+				}
+			}
+
+			nlohmann::json j;
+			if (didInfo) {
+				j = toOutJsonInfo(didInfo);
+			}
+
+			ArgInfo("r => {}", j.dump());
+			return j;
+		}
+
+		nlohmann::json IDChainSubWallet::toOutJsonInfo(const DIDInfo *didInfo) const {
+			nlohmann::json summary;
+
+			const DIDHeaderInfo &header = didInfo->DIDHeader();
+			const DIDPayloadInfo &payloadInfo = didInfo->DIDPayload();
+
+			summary["operation"] = header.Operation();
+			summary["id"] = payloadInfo.ID();
+			summary["expires"] =  payloadInfo.Expires();
+
+			nlohmann::json jPublicKeys;
+			const DIDPubKeyInfoArray &publicKeys = payloadInfo.PublicKeyInfo();
+			for (size_t i = 0; i < publicKeys.size(); ++i) {
+				nlohmann::json pbk;
+				pbk["id"]= publicKeys[i].ID();
+				bytes_t pubkey = Base58::Decode(publicKeys[i].PublicKeyBase58());
+				pbk["publicKey"] = pubkey.getHex();
+
+				if (publicKeys[i].Controller().size() > 0){
+					pbk["controller"] = publicKeys[i].Controller();
+				}
+				jPublicKeys.push_back(pbk);
+			}
+			summary["publicKey"] = jPublicKeys;
+
+			const VerifiableCredentialArray &verifiableCredentialArray = payloadInfo.GetVerifiableCredential();
+			for (size_t i = 0; i < verifiableCredentialArray.size(); ++i) {
+				summary["credentialSubject"] = verifiableCredentialArray[i].GetCredentialSubject().ToJson(0);
+			}
+
+			return summary;
+		}
 	}
 }

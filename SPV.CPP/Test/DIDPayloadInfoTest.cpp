@@ -13,8 +13,8 @@ using namespace Elastos::ElaWallet;
 
 static void initCredentialSubject(CredentialSubject &subject) {
 	std::string did = "did:elastos:ifUQ59wFpHUKe5NZ6gjffx48sWEBt9YgQE";
-	std::string name = "tname";
-	std::string nickName = "nick";
+	std::string name = getRandString(5);
+	std::string nickName = getRandString(6);
 	std::string gender = "man";
 	std::string birthday = "2019.10.12";
 	std::string avatar = "img.jpg";
@@ -54,14 +54,11 @@ static void initCredentialSubject(CredentialSubject &subject) {
 static void initVerifiableCredential(VerifiableCredential &veriffiableCredential) {
 	veriffiableCredential.SetID("did:elastos:ifUQ59wFpHUKe5NZ6gjffx48sWEBt9YgQE");
 
-	std::vector<VerifiableCredential::Type> types = {VerifiableCredential::Type::BasicProfileCredential,
-	                                                 VerifiableCredential::Type::ElastosIDteriaCredential,
-	                                                 VerifiableCredential::Type::BasicProfileCredential,
-	                                                 VerifiableCredential::Type::InternetAccountCredential,
-	                                                 VerifiableCredential::Type::PhoneCredential};
+	std::vector<std::string> types = {"BasicProfileCredential", "ElastosIDteriaCredential", "BasicProfileCredential",
+	                                  "InternetAccountCredential", "PhoneCredential"};
 	veriffiableCredential.SetTypes(types);
 
-	veriffiableCredential.SetIssuer("tester");
+	veriffiableCredential.SetIssuer(getRandString(4));
 
 	veriffiableCredential.SetIssuerDate("2019.10.11");
 
@@ -141,58 +138,65 @@ TEST_CASE("CredentialSubject test", "[CredentialSubject]") {
 
 TEST_CASE("VerifiableCredential test", "[VerifiableCredential]") {
 	SECTION("ToJson FromJson test") {
-		VerifiableCredential veriffiableCredential;
+		VerifiableCredentialArray veriffiableCredentials;
 
-		initVerifiableCredential(veriffiableCredential);
-
-		nlohmann::json j = veriffiableCredential.ToJson(0);
-
-		VerifiableCredential veriffiableCredential2;
-
-		veriffiableCredential2.FromJson(j, 0);
-
-		REQUIRE(veriffiableCredential2.ID() == veriffiableCredential.ID());
-
-		std::vector<VerifiableCredential::Type> types = veriffiableCredential.Types();
-		std::vector<VerifiableCredential::Type> types2 = veriffiableCredential2.Types();
-		REQUIRE(types2.size() == types.size());
-		for (size_t i = 0; i < types.size(); ++i) {
-			REQUIRE(types[i] == types2[i]);
+		for (int i = 0; i < 3; ++i) {
+			VerifiableCredential veriffiableCredential;
+			initVerifiableCredential(veriffiableCredential);
+			veriffiableCredentials.push_back(veriffiableCredential);
 		}
 
-		REQUIRE(veriffiableCredential2.GetIssuer() == veriffiableCredential.GetIssuer());
-		REQUIRE(veriffiableCredential2.GetIssuerDate() == veriffiableCredential.GetIssuerDate());
+		for (int i = 0; i < veriffiableCredentials.size(); ++i) {
+			VerifiableCredential veriffiableCredential = veriffiableCredentials[i];
 
-		CredentialSubject subject = veriffiableCredential.GetCredentialSubject();
-		CredentialSubject subject2 = veriffiableCredential2.GetCredentialSubject();
+			nlohmann::json j = veriffiableCredential.ToJson(0);
 
-		REQUIRE(subject2.ID() == subject.ID());
-		REQUIRE(subject2.GetName() == subject.GetName());
-		REQUIRE(subject2.GetNickName() == subject.GetNickName());
-		REQUIRE(subject2.GetGender() == subject.GetGender());
-		REQUIRE(subject2.GetBirthday() == subject.GetBirthday());
-		REQUIRE(subject2.GetAvatar() == subject.GetAvatar());
-		REQUIRE(subject2.GetEmail() == subject.GetEmail());
-		REQUIRE(subject2.GetPhone() == subject.GetPhone());
-		REQUIRE(subject2.GetNation() == subject.GetNation());
-		REQUIRE(subject2.GetDescript() == subject.GetDescript());
-		REQUIRE(subject2.GetHomePage() == subject.GetHomePage());
-		REQUIRE(subject2.GetGoogleAccount() == subject.GetGoogleAccount());
-		REQUIRE(subject2.GetMicrosoftPassport() == subject.GetMicrosoftPassport());
-		REQUIRE(subject2.GetFacebook() == subject.GetFacebook());
-		REQUIRE(subject2.GetTwitter() == subject.GetTwitter());
-		REQUIRE(subject2.GetWeibo() == subject.GetWeibo());
-		REQUIRE(subject2.GetWechat() == subject.GetWechat());
-		REQUIRE(subject2.GetAlipay() == subject.GetAlipay());
+			VerifiableCredential veriffiableCredential2;
 
-		DIDProofInfo proofInfo = veriffiableCredential.Proof();
-		DIDProofInfo proofInfo2 = veriffiableCredential2.Proof();
-		REQUIRE(proofInfo2.Type() == proofInfo.Type());
-		REQUIRE(proofInfo2.VerificationMethod() == proofInfo.VerificationMethod());
-		REQUIRE(proofInfo2.Signature() == proofInfo.Signature());
+			veriffiableCredential2.FromJson(j, 0);
+
+			REQUIRE(veriffiableCredential2.ID() == veriffiableCredential.ID());
+
+			std::vector<std::string> types = veriffiableCredential.Types();
+			std::vector<std::string> types2 = veriffiableCredential2.Types();
+			REQUIRE(types2.size() == types.size());
+			for (size_t i = 0; i < types.size(); ++i) {
+				REQUIRE(types[i] == types2[i]);
+			}
+
+			REQUIRE(veriffiableCredential2.GetIssuer() == veriffiableCredential.GetIssuer());
+			REQUIRE(veriffiableCredential2.GetIssuerDate() == veriffiableCredential.GetIssuerDate());
+
+			CredentialSubject subject = veriffiableCredential.GetCredentialSubject();
+			CredentialSubject subject2 = veriffiableCredential2.GetCredentialSubject();
+
+			REQUIRE(subject2.ID() == subject.ID());
+			REQUIRE(subject2.GetName() == subject.GetName());
+			REQUIRE(subject2.GetNickName() == subject.GetNickName());
+			REQUIRE(subject2.GetGender() == subject.GetGender());
+			REQUIRE(subject2.GetBirthday() == subject.GetBirthday());
+			REQUIRE(subject2.GetAvatar() == subject.GetAvatar());
+			REQUIRE(subject2.GetEmail() == subject.GetEmail());
+			REQUIRE(subject2.GetPhone() == subject.GetPhone());
+			REQUIRE(subject2.GetNation() == subject.GetNation());
+			REQUIRE(subject2.GetDescript() == subject.GetDescript());
+			REQUIRE(subject2.GetHomePage() == subject.GetHomePage());
+			REQUIRE(subject2.GetGoogleAccount() == subject.GetGoogleAccount());
+			REQUIRE(subject2.GetMicrosoftPassport() == subject.GetMicrosoftPassport());
+			REQUIRE(subject2.GetFacebook() == subject.GetFacebook());
+			REQUIRE(subject2.GetTwitter() == subject.GetTwitter());
+			REQUIRE(subject2.GetWeibo() == subject.GetWeibo());
+			REQUIRE(subject2.GetWechat() == subject.GetWechat());
+			REQUIRE(subject2.GetAlipay() == subject.GetAlipay());
+
+			DIDProofInfo proofInfo = veriffiableCredential.Proof();
+			DIDProofInfo proofInfo2 = veriffiableCredential2.Proof();
+			REQUIRE(proofInfo2.Type() == proofInfo.Type());
+			REQUIRE(proofInfo2.VerificationMethod() == proofInfo.VerificationMethod());
+			REQUIRE(proofInfo2.Signature() == proofInfo.Signature());
+		}
 	}
 }
-
 
 TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 	SECTION("ToJson FromJson test") {
@@ -232,15 +236,24 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 		}
 		didPayloadInfo.SetAuthorization(authorization);
 
-		VerifiableCredential veriffiableCredential;
-		initVerifiableCredential(veriffiableCredential);
-		didPayloadInfo.SetVerifiableCredential(veriffiableCredential);
+		VerifiableCredentialArray veriffiableCredentials;
+		for (int i = 0; i < 3; ++i) {
+			VerifiableCredential veriffiableCredential;
+			initVerifiableCredential(veriffiableCredential);
+			veriffiableCredentials.push_back(veriffiableCredential);
+		}
+		didPayloadInfo.SetVerifiableCredential(veriffiableCredentials);
 
-		ServiceEndpoint serviceEndpoint;
-		serviceEndpoint.SetID("#openid");
-		serviceEndpoint.SetType("OpenIdConnectVersion1.0Service");
-		serviceEndpoint.SetService("https://openid.example.com/");
-		didPayloadInfo.SetServiceEndpoint(serviceEndpoint);
+		ServiceEndpoints serviceEndpoints;
+		for (int i = 0; i < 3; ++i) {
+			ServiceEndpoint serviceEndpoint;
+			serviceEndpoint.SetID("#openid");
+			serviceEndpoint.SetType("OpenIdConnectVersion1.0Service");
+			serviceEndpoint.SetService("https://openid.example.com/" + getRandString(6));
+			serviceEndpoints.push_back(serviceEndpoint);
+		}
+
+		didPayloadInfo.SetServiceEndpoints(serviceEndpoints);
 
 		didPayloadInfo.SetExpires("2019-01-01T19:20:18Z");
 
@@ -278,54 +291,60 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 			REQUIRE(authorization[i].PublicKeyBase58() == authorization2[i].PublicKeyBase58());
 		}
 
-		VerifiableCredential veriffiableCredential2 = didPayloadInfo2.GetVerifiableCredential();
+		VerifiableCredentialArray veriffiableCredentials2 = didPayloadInfo2.GetVerifiableCredential();
+		REQUIRE(veriffiableCredentials2.size() == veriffiableCredentials.size());
 
-		REQUIRE(veriffiableCredential2.ID() == veriffiableCredential.ID());
+		for (int i = 0; i < veriffiableCredentials2.size(); ++i) {
+			REQUIRE(veriffiableCredentials2[i].ID() == veriffiableCredentials[i].ID());
 
-		std::vector<VerifiableCredential::Type> types = veriffiableCredential.Types();
-		std::vector<VerifiableCredential::Type> types2 = veriffiableCredential2.Types();
-		REQUIRE(types2.size() == types.size());
-		for (size_t i = 0; i < types.size(); ++i) {
-			REQUIRE(types[i] == types2[i]);
+			std::vector<std::string> types = veriffiableCredentials[i].Types();
+			std::vector<std::string> types2 = veriffiableCredentials2[i].Types();
+			REQUIRE(types2.size() == types.size());
+			for (size_t i = 0; i < types.size(); ++i) {
+				REQUIRE(types[i] == types2[i]);
+			}
+
+			REQUIRE(veriffiableCredentials2[i].GetIssuer() == veriffiableCredentials[i].GetIssuer());
+			REQUIRE(veriffiableCredentials2[i].GetIssuerDate() == veriffiableCredentials[i].GetIssuerDate());
+
+			CredentialSubject subject = veriffiableCredentials[i].GetCredentialSubject();
+			CredentialSubject subject2 = veriffiableCredentials2[i].GetCredentialSubject();
+
+			REQUIRE(subject2.ID() == subject.ID());
+			REQUIRE(subject2.GetName() == subject.GetName());
+			REQUIRE(subject2.GetNickName() == subject.GetNickName());
+			REQUIRE(subject2.GetGender() == subject.GetGender());
+			REQUIRE(subject2.GetBirthday() == subject.GetBirthday());
+			REQUIRE(subject2.GetAvatar() == subject.GetAvatar());
+			REQUIRE(subject2.GetEmail() == subject.GetEmail());
+			REQUIRE(subject2.GetPhone() == subject.GetPhone());
+			REQUIRE(subject2.GetNation() == subject.GetNation());
+			REQUIRE(subject2.GetDescript() == subject.GetDescript());
+			REQUIRE(subject2.GetHomePage() == subject.GetHomePage());
+			REQUIRE(subject2.GetGoogleAccount() == subject.GetGoogleAccount());
+			REQUIRE(subject2.GetMicrosoftPassport() == subject.GetMicrosoftPassport());
+			REQUIRE(subject2.GetFacebook() == subject.GetFacebook());
+			REQUIRE(subject2.GetTwitter() == subject.GetTwitter());
+			REQUIRE(subject2.GetWeibo() == subject.GetWeibo());
+			REQUIRE(subject2.GetWechat() == subject.GetWechat());
+			REQUIRE(subject2.GetAlipay() == subject.GetAlipay());
+
+			DIDProofInfo proofInfo = veriffiableCredentials[i].Proof();
+			DIDProofInfo proofInfo2 = veriffiableCredentials2[i].Proof();
+			REQUIRE(proofInfo2.Type() == proofInfo.Type());
+			REQUIRE(proofInfo2.VerificationMethod() == proofInfo.VerificationMethod());
+			REQUIRE(proofInfo2.Signature() == proofInfo.Signature());
+
+			ServiceEndpoints serviceEndpoints2 = didPayloadInfo2.GetServiceEndpoint();
+			REQUIRE(serviceEndpoints2.size() == serviceEndpoints.size());
+			for (int j = 0; j < serviceEndpoints2.size(); ++j) {
+				REQUIRE(serviceEndpoints2[i].ID() == serviceEndpoints[i].ID());
+				REQUIRE(serviceEndpoints2[i].Type() == serviceEndpoints[i].Type());
+				REQUIRE(serviceEndpoints2[i].GetService() == serviceEndpoints[i].GetService());
+			}
+
 		}
 
-		REQUIRE(veriffiableCredential2.GetIssuer() == veriffiableCredential.GetIssuer());
-		REQUIRE(veriffiableCredential2.GetIssuerDate() == veriffiableCredential.GetIssuerDate());
-
-		CredentialSubject subject = veriffiableCredential.GetCredentialSubject();
-		CredentialSubject subject2 = veriffiableCredential2.GetCredentialSubject();
-
-		REQUIRE(subject2.ID() == subject.ID());
-		REQUIRE(subject2.GetName() == subject.GetName());
-		REQUIRE(subject2.GetNickName() == subject.GetNickName());
-		REQUIRE(subject2.GetGender() == subject.GetGender());
-		REQUIRE(subject2.GetBirthday() == subject.GetBirthday());
-		REQUIRE(subject2.GetAvatar() == subject.GetAvatar());
-		REQUIRE(subject2.GetEmail() == subject.GetEmail());
-		REQUIRE(subject2.GetPhone() == subject.GetPhone());
-		REQUIRE(subject2.GetNation() == subject.GetNation());
-		REQUIRE(subject2.GetDescript() == subject.GetDescript());
-		REQUIRE(subject2.GetHomePage() == subject.GetHomePage());
-		REQUIRE(subject2.GetGoogleAccount() == subject.GetGoogleAccount());
-		REQUIRE(subject2.GetMicrosoftPassport() == subject.GetMicrosoftPassport());
-		REQUIRE(subject2.GetFacebook() == subject.GetFacebook());
-		REQUIRE(subject2.GetTwitter() == subject.GetTwitter());
-		REQUIRE(subject2.GetWeibo() == subject.GetWeibo());
-		REQUIRE(subject2.GetWechat() == subject.GetWechat());
-		REQUIRE(subject2.GetAlipay() == subject.GetAlipay());
-
-		DIDProofInfo proofInfo = veriffiableCredential.Proof();
-		DIDProofInfo proofInfo2 = veriffiableCredential2.Proof();
-		REQUIRE(proofInfo2.Type() == proofInfo.Type());
-		REQUIRE(proofInfo2.VerificationMethod() == proofInfo.VerificationMethod());
-		REQUIRE(proofInfo2.Signature() == proofInfo.Signature());
-
-		ServiceEndpoint serviceEndpoint2 = didPayloadInfo2.GetServiceEndpoint();
-		REQUIRE(serviceEndpoint2.ID() == serviceEndpoint.ID());
-		REQUIRE(serviceEndpoint2.Type() == serviceEndpoint.Type());
-		REQUIRE(serviceEndpoint2.GetService() == serviceEndpoint.GetService());
-
 		REQUIRE(didPayloadInfo2.Expires() == didPayloadInfo.Expires());
-
 	}
 }

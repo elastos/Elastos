@@ -706,11 +706,11 @@ namespace Elastos {
 			return _id;
 		}
 
-		void VerifiableCredential::SetTypes(const std::vector<Type> &types) {
+		void VerifiableCredential::SetTypes(const std::vector<std::string> &types) {
 			_types = types;
 		}
 
-		const std::vector<VerifiableCredential::Type> &VerifiableCredential::Types() const {
+		const std::vector<std::string> &VerifiableCredential::Types() const {
 			return _types;
 		}
 
@@ -749,13 +749,7 @@ namespace Elastos {
 		nlohmann::json VerifiableCredential::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["id"] = _id;
-
-			std::vector<std::string> types;
-			for (int i = 0; i < _types.size(); ++i) {
-				types.push_back(GetTypeDesc(_types[i]));
-			}
-			j["types"] = types;
-
+			j["types"] = _types;
 			j["issuer"] = _issuer;
 			j["issuanceDate"] = _issuanceDate;
 			j["expirationDate"] = _expirationDate;
@@ -771,9 +765,8 @@ namespace Elastos {
 			if (j.find("types") != j.end()) {
 				_types.clear();
 				std::vector<std::string> types = j["types"];
-				for (int i = 0; i < types.size(); ++i) {
-					_types.push_back(GetTypeByDesc(types[i]));
-				}
+				_types = types;
+
 			}
 
 			if (j.find("issuer") != j.end()) {
@@ -796,39 +789,6 @@ namespace Elastos {
 				_proof.FromJson(j["proof"], version);
 			}
 
-		}
-
-		std::string VerifiableCredential::GetTypeDesc(VerifiableCredential::Type type) const {
-			switch (type) {
-				case SelfProclaimedCredential:
-					return "SelfProclaimedCredential";
-				case ElastosIDteriaCredential :
-					return "ElastosIDteriaCredential";
-				case BasicProfileCredential:
-					return "BasicProfileCredential";
-				case InternetAccountCredential:
-					return "InternetAccountCredential";
-				case PhoneCredential:
-					return "PhoneCredential";
-				case None:
-					return "None";
-			}
-			return "None";
-		}
-
-		VerifiableCredential::Type VerifiableCredential::GetTypeByDesc(const std::string &type) const {
-			if (type == "SelfProclaimedCredential") {
-				return SelfProclaimedCredential;
-			} else if(type == "ElastosIDteriaCredential") {
-				return ElastosIDteriaCredential;
-			} else if(type == "BasicProfileCredential") {
-				return BasicProfileCredential;
-			} else if(type == "InternetAccountCredential") {
-				return InternetAccountCredential;
-			} else if(type == "PhoneCredential") {
-				return PhoneCredential;
-			}
-			return None;
 		}
 
 		DIDPayloadInfo::DIDPayloadInfo() {
@@ -871,20 +831,20 @@ namespace Elastos {
 			_authorization = authorization;
 		}
 
-		const VerifiableCredential &DIDPayloadInfo::GetVerifiableCredential() const {
+		const VerifiableCredentialArray &DIDPayloadInfo::GetVerifiableCredential() const {
 			return _verifiableCredential;
 		}
 
-		void DIDPayloadInfo::SetVerifiableCredential(const VerifiableCredential &verifiableCredential) {
+		void DIDPayloadInfo::SetVerifiableCredential(const VerifiableCredentialArray &verifiableCredential) {
 			_verifiableCredential = verifiableCredential;
 		}
 
-		const ServiceEndpoint &DIDPayloadInfo::GetServiceEndpoint() const {
-			return _service;
+		const ServiceEndpoints &DIDPayloadInfo::GetServiceEndpoint() const {
+			return _services;
 		}
 
-		void DIDPayloadInfo::SetServiceEndpoint(const ServiceEndpoint &serviceEndpoint) {
-			_service = serviceEndpoint;
+		void DIDPayloadInfo::SetServiceEndpoints(const ServiceEndpoints &serviceEndpoint) {
+			_services = serviceEndpoint;
 		}
 
 		const std::string &DIDPayloadInfo::Expires() const {
@@ -904,21 +864,38 @@ namespace Elastos {
 				jPubKey.push_back((*it).ToJson(version));
 			j["publicKey"] = jPubKey;
 
-			nlohmann::json jAuthentication;
-			for (DIDPubKeyInfoArray::const_iterator it = _authentication.cbegin(); it != _authentication.cend(); ++it)
-				jAuthentication.push_back((*it).ToJson(version));
-			j["authentication"] = jAuthentication;
+			if (_authentication.size()) {
+				nlohmann::json jAuthentication;
+				for (DIDPubKeyInfoArray::const_iterator it = _authentication.cbegin(); it != _authentication.cend(); ++it)
+					jAuthentication.push_back((*it).ToJson(version));
+				j["authentication"] = jAuthentication;
+			}
 
-			nlohmann::json jAuthorization;
-			for (DIDPubKeyInfoArray::const_iterator it = _authorization.cbegin(); it != _authorization.cend(); ++it)
-				jAuthorization.push_back((*it).ToJson(version));
-			j["authorization"] = jAuthorization;
+			if (_authorization.size()) {
+				nlohmann::json jAuthorization;
+				for (DIDPubKeyInfoArray::const_iterator it = _authorization.cbegin(); it != _authorization.cend(); ++it)
+					jAuthorization.push_back((*it).ToJson(version));
+				j["authorization"] = jAuthorization;
+			}
 
-			j["verifiableCredential"] = _verifiableCredential.ToJson(version);
+			if (_verifiableCredential.size()) {
+				nlohmann::json jVerifiableCredential;
+				for (VerifiableCredentialArray::const_iterator it = _verifiableCredential.cbegin();
+				     it != _verifiableCredential.cend(); ++it) {
+					jVerifiableCredential.push_back((*it).ToJson(version));
+				}
+				j["verifiableCredential"] = jVerifiableCredential;
+			}
 
 			j["expires"] = _expires;
 
-			j["service"] = _service.ToJson(version);
+			if (_services.size()) {
+				nlohmann::json jService;
+				for (ServiceEndpoints::const_iterator it = _services.cbegin(); it != _services.cend(); ++it) {
+					jService.push_back((*it).ToJson(version));
+				}
+				j["service"] = jService;
+			}
 
 			return j;
 		}
@@ -954,11 +931,21 @@ namespace Elastos {
 			_expires = j["expires"].get<std::string>();
 
 			if (j.find("verifiableCredential") != j.end()) {
-				_verifiableCredential.FromJson(j["verifiableCredential"], version);
+				nlohmann::json jVerifiableCredential = j["verifiableCredential"];
+				for (nlohmann::json::iterator it = jVerifiableCredential.begin(); it != jVerifiableCredential.end(); ++it) {
+					VerifiableCredential verifiableCredential;
+					verifiableCredential.FromJson(*it, version);
+					_verifiableCredential.push_back(verifiableCredential);
+				}
 			}
 
 			if (j.find("service") != j.end()) {
-				_service.FromJson(j["service"], version);
+				nlohmann::json jservices = j["service"];
+				for (nlohmann::json::iterator it = jservices.begin(); it != jservices.end(); ++it) {
+					ServiceEndpoint serviceEndpoint;
+					serviceEndpoint.FromJson(*it, version);
+					_services.push_back(serviceEndpoint);
+				}
 			}
 
 		}
@@ -1066,6 +1053,10 @@ namespace Elastos {
 
 		}
 
+		void DIDInfo::SetDIDHeader(const DIDHeaderInfo &headerInfo) {
+			_header = headerInfo;
+		}
+
 		const DIDHeaderInfo &DIDInfo::DIDHeader() const {
 			return _header;
 		}
@@ -1074,8 +1065,19 @@ namespace Elastos {
 			return _payload;
 		}
 
+		void DIDInfo::SetDIDPlayloadInfo(const DIDPayloadInfo &didPayloadInfo) {
+			_payloadInfo = didPayloadInfo;
+			std::string str = _payloadInfo.ToJson(0).dump();
+			bytes_t data(str.data(), str.size());
+			_payload = Base64::EncodeURL(data) ;
+		}
+
 		const DIDPayloadInfo &DIDInfo::DIDPayload() const {
 			return _payloadInfo;
+		}
+
+		void DIDInfo::SetDIDProof(const DIDProofInfo &proofInfo) {
+			_proof = proofInfo;
 		}
 
 		const DIDProofInfo &DIDInfo::DIDProof() const {
@@ -1159,7 +1161,6 @@ namespace Elastos {
 				proofID = _payloadInfo.ID() + proofID;
 
 			std::string sourceData = _header.Specification() + _header.Operation() + _payload;
-			uint256 md = uint256(sha256(bytes_t(sourceData.data(), sourceData.size())));
 			const DIDPubKeyInfoArray &pubkeyInfoArray = _payloadInfo.PublicKeyInfo();
 			for (DIDPubKeyInfoArray::const_iterator it = pubkeyInfoArray.cbegin(); it != pubkeyInfoArray.cend(); ++it) {
 				std::string pubkeyID = (*it).ID();
@@ -1172,7 +1173,7 @@ namespace Elastos {
 					Key key;
 					key.SetPubKey(pubkey);
 
-					if (key.Verify(md, signature)) {
+					if (key.Verify(sourceData, signature)) {
 						verifiedSign = true;
 					}
 

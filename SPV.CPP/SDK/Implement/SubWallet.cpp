@@ -124,10 +124,15 @@ namespace Elastos {
 			ArgInfo("count: {}", count);
 
 			nlohmann::json j;
-			std::vector<std::string> publicKeys;
+			std::vector<bytes_t> publicKeys;
 			size_t maxCount = _walletManager->GetWallet()->GetAllPublickeys(publicKeys, start, count, false);
 
-			j["PublicKeys"] = publicKeys;
+			std::vector<std::string> pubKeyString;
+			for (size_t i = 0; i < publicKeys.size(); ++i) {
+				pubKeyString.push_back(publicKeys[i].getHex());
+			}
+
+			j["PublicKeys"] = pubKeyString;
 			j["MaxCount"] = maxCount;
 
 			ArgInfo("r => {}", j.dump());

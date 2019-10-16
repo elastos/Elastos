@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
-#include <sqlite3.h>
 #include <boost/filesystem/operations.hpp>
 
 #include <Interface/MasterWalletManager.h>
@@ -529,6 +528,22 @@ static void Withdraw(const std::string &fromMasterWalletID, const std::string &f
 	PublishTransaction(sidechainSubWallet, tx);
 }
 
+static nlohmann::json GetDIDPayloadJson() {
+	nlohmann::json inputJson = R"({"id":"did:elastos:iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","operation":"create","publicKey":[{"id": "#primary","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}],
+"credentialSubject":{"id":"did:elastos:iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww", "name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"},
+"expires":"2024-02-10T17:00:00Z"})"_json;
+	nlohmann::json payload;
+	ISubWallet *subWallet = GetSubWallet(gMasterWalletID, gIDchainSubWalletID);
+	IIDChainSubWallet *idChainSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
+	if (idChainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IIdChainSubWallet", gMasterWalletID, gIDchainSubWalletID);
+		return payload;
+	}
+	payload = idChainSubWallet->GenerateDIDInfoPayload(inputJson, payPasswd);
+
+	return payload;
+}
+
 static void CreateIDTransaction(const std::string &masterWalletID, const std::string &DIDSubWalletID) {
 	IMasterWallet *masterWalelt = manager->GetMasterWallet(masterWalletID);
 	if (masterWalelt == nullptr) {
@@ -542,9 +557,10 @@ static void CreateIDTransaction(const std::string &masterWalletID, const std::st
 		logger->error("[{}:{}] is not instance of IIdChainSubWallet", masterWalletID, DIDSubWalletID);
 		return ;
 	}
-	nlohmann::json didPayloadJSON = R"(
-		{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlpc0VlemtuMVB2cGZlU3h6WVNmMVFIcHU4YXZTeTl5OEgiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJreXQ3Z1diaUJUc2VHTmd1ZXMzRmljNThrVFVuenBqUE13cTZuQndEa1NDbSJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXX0","proof":{"verificationMethod":"#primary","signature":"ViEQUpyN4Wej1g5tdiD+/IZw7XrpwZhiNBWa4pV0JO6MmZOVMqSeeOY3NGYdpeN8mMg3KX/83tpz9vTqjKi2Dw=="}}
-	)"_json;
+//	nlohmann::json didPayloadJSON = R"(
+//		{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlpc0VlemtuMVB2cGZlU3h6WVNmMVFIcHU4YXZTeTl5OEgiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJreXQ3Z1diaUJUc2VHTmd1ZXMzRmljNThrVFVuenBqUE13cTZuQndEa1NDbSJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXX0","proof":{"verificationMethod":"#primary","signature":"ViEQUpyN4Wej1g5tdiD+/IZw7XrpwZhiNBWa4pV0JO6MmZOVMqSeeOY3NGYdpeN8mMg3KX/83tpz9vTqjKi2Dw=="}}
+//	)"_json;
+	nlohmann::json didPayloadJSON = GetDIDPayloadJson();
 
 	nlohmann::json tx = DIDSubWallet->CreateIDTransaction(didPayloadJSON, memo);
 

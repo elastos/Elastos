@@ -360,7 +360,7 @@ namespace Elastos {
 			_usedAddrs.clear();
 		}
 
-		size_t SubAccount::GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+		size_t SubAccount::GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
 		                                    bool containInternal) const {
 			if (_parent->GetSignType() == Account::MultiSign) {
 				return 0;
@@ -379,7 +379,7 @@ namespace Elastos {
 				ByteStream stream(_externalChain[i].RedeemScript());
 				bytes_t pubKey;
 				stream.ReadVarBytes(pubKey);
-				pubkeys.push_back(pubKey.getHex());
+				pubkeys.push_back(pubKey);
 			}
 
 			if (containInternal) {
@@ -387,7 +387,7 @@ namespace Elastos {
 					ByteStream stream(_internalChain[i - _externalChain.size()].RedeemScript());
 					bytes_t pubKey;
 					stream.ReadVarBytes(pubKey);
-					pubkeys.push_back(pubKey.getHex());
+					pubkeys.push_back(pubKey);
 				}
 			}
 			return maxCount;

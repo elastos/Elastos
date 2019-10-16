@@ -197,6 +197,8 @@ namespace Elastos {
 
 		};
 
+		typedef std::vector<CredentialSubject> CredentialSubjectArray;
+
 		class DIDProofInfo {
 		public:
 			DIDProofInfo();
@@ -266,17 +268,10 @@ namespace Elastos {
 			std::string _serviceEndpoint;
 		};
 
+		typedef std::vector<ServiceEndpoint> ServiceEndpoints;
+
 		class VerifiableCredential {
 		public:
-			enum Type {
-				None,
-				SelfProclaimedCredential,
-				ElastosIDteriaCredential,
-				BasicProfileCredential,
-				InternetAccountCredential,
-				PhoneCredential
-			};
-
 			VerifiableCredential();
 
 			~VerifiableCredential();
@@ -285,9 +280,9 @@ namespace Elastos {
 
 			const std::string &ID();
 
-			void SetTypes(const std::vector<Type> &types);
+			void SetTypes(const std::vector<std::string> &types);
 
-			const std::vector<Type> &Types() const;
+			const std::vector<std::string> &Types() const;
 
 			void SetIssuer(const std::string &issuer);
 
@@ -309,21 +304,17 @@ namespace Elastos {
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
-
-		private:
-			std::string GetTypeDesc(Type type) const;
-
-			Type GetTypeByDesc(const std::string &type) const;
-
 		private:
 			std::string _id;
-			std::vector<Type> _types;
+			std::vector<std::string> _types;
 			std::string _issuer;
 			std::string _issuanceDate;
 			std::string _expirationDate;
 			CredentialSubject _credentialSubject;
 			DIDProofInfo _proof;
 		};
+
+		typedef std::vector<VerifiableCredential> VerifiableCredentialArray;
 
 		class DIDPayloadInfo {
 		public:
@@ -347,13 +338,13 @@ namespace Elastos {
 
 			void SetAuthorization(const DIDPubKeyInfoArray &authorization);
 
-			const VerifiableCredential &GetVerifiableCredential() const;
+			const VerifiableCredentialArray &GetVerifiableCredential() const;
 
-			void SetVerifiableCredential(const VerifiableCredential &verifiableCredential);
+			void SetVerifiableCredential(const VerifiableCredentialArray &verifiableCredential);
 
-			const ServiceEndpoint &GetServiceEndpoint() const;
+			const ServiceEndpoints &GetServiceEndpoint() const;
 
-			void SetServiceEndpoint(const ServiceEndpoint &serviceEndpoint);
+			void SetServiceEndpoints(const ServiceEndpoints &serviceEndpoint);
 
 			const std::string &Expires() const;
 
@@ -368,8 +359,8 @@ namespace Elastos {
 			DIDPubKeyInfoArray _publickey;
 			DIDPubKeyInfoArray _authentication; // contain 0 or 1
 			DIDPubKeyInfoArray _authorization; // contain 0 or 1
-			VerifiableCredential _verifiableCredential; // contain 0 or 1
-			ServiceEndpoint _service; // contain 0 or 1
+			VerifiableCredentialArray _verifiableCredential; // contain 0 or 1
+			ServiceEndpoints _services; // contain 0 or 1
 			std::string _expires;
 		};
 
@@ -380,11 +371,17 @@ namespace Elastos {
 
 			~DIDInfo();
 
+			void SetDIDHeader(const DIDHeaderInfo &headerInfo);
+
 			const DIDHeaderInfo &DIDHeader() const;
 
 			const std::string &DIDPayloadString() const;
 
+			void SetDIDPlayloadInfo(const DIDPayloadInfo &didPayloadInfo);
+
 			const DIDPayloadInfo &DIDPayload() const;
+
+			void SetDIDProof(const DIDProofInfo &proofInfo);
 
 			const DIDProofInfo &DIDProof() const;
 

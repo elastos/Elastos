@@ -134,7 +134,7 @@ namespace Elastos {
 
 			size_t GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const;
 
-			size_t GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+			size_t GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
 			                        bool containInternal) const;
 
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);

@@ -10,10 +10,17 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+		class CredentialSubject;
+		class DIDInfo;
 
 		class IDChainSubWallet : public SidechainSubWallet, public IIDChainSubWallet {
 		public:
 			virtual ~IDChainSubWallet();
+
+			virtual nlohmann::json GenerateDIDInfoPayload(
+					const nlohmann::json &inputInfo,
+					const std::string &paypasswd
+			);
 
 			virtual nlohmann::json CreateIDTransaction(
 					const nlohmann::json &payloadJson,
@@ -25,8 +32,14 @@ namespace Elastos {
 
 			virtual bool VerifySignature(const std::string &publicKey, const std::string &message, const std::string &signature);
 
-			virtual std::string GetDIDByPublicKey(std::string &pubkey) const;
+			virtual std::string GetDIDByPublicKey(const std::string &pubkey) const;
 
+			virtual nlohmann::json GetDetailByDID(const std::string &did) const;
+
+		private:
+			std::vector<std::string> getVerifiableCredentialTypes(const CredentialSubject &subject);
+
+			nlohmann::json toOutJsonInfo(const DIDInfo *didInfo) const;
 		protected:
 			friend class MasterWallet;
 

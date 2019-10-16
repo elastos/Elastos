@@ -5,6 +5,8 @@
 #include "Log.h"
 #include "ErrorChecker.h"
 
+#include <regex>
+
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -108,6 +110,12 @@ namespace Elastos {
 
 			ErrorChecker::CheckCondition(key.length() != 32 * 2, Error::InvalidArgument,
 			                             "Private key length should be 32 bytes");
+		}
+
+		void ErrorChecker::CheckInternetDate(const std::string &date) {
+			std::regex reg = std::regex("(\\d{4})-(0\\d{1}|1[0-2])-(0\\d{1}|[12]\\d{1}|3[01])T(0\\d{1}|1\\d{1}|2[0-3]):[0-5]\\d{1}:([0-5]\\d{1}Z)");
+			ErrorChecker::CheckParam(!std::regex_match(date, reg), Error::InvalidArgument,
+			                         "date format is error. such as 2019-01-01T19:20:18Z");
 		}
 
 	}

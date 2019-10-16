@@ -660,7 +660,7 @@ namespace Elastos {
 			return _subAccount->GetAllDID(did, start, count);
 		}
 
-		size_t Wallet::GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+		size_t Wallet::GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
 		                                bool containInternal) {
 			boost::mutex::scoped_lock scopedLock(lock);
 

@@ -134,6 +134,7 @@ target_include_directories(${SPVSDK_OBJECT_TARGET} PUBLIC
 	${ThirdParty_SPDLOG_INC_DIR}
 	${ThirdParty_FRUIT_INC_DIR}
 	${ThirdParty_LIBCONFIG_INC_DIR}
+	${ThirdParty_SQLITE_INC_DIR}
 )
 
 add_dependencies(${SPVSDK_OBJECT_TARGET} ${SPV_Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++ common)

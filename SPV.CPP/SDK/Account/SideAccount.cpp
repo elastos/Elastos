@@ -54,7 +54,7 @@ namespace Elastos {
 			return 0;
 		}
 
-		size_t SideAccount::GetAllPublickeys(std::vector<std::string> &pubkeys, uint32_t start, size_t count,
+		size_t SideAccount::GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
 		                        bool containInternal) const {
 			return 0;
 		}

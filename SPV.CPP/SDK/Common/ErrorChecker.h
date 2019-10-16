@@ -122,6 +122,8 @@ namespace Elastos {
 
 			static void CheckPrivateKey(const std::string &key);
 
+			static void CheckInternetDate(const std::string &date);
+
 		};
 
 	}
