@@ -957,7 +957,7 @@ func (s *State) tryInitProducerAssetAmounts(blockHeight uint32) {
 
 	producers := s.getAllProducers()
 	for _, v := range producers {
-		programHash, err := contract.PublicKeyToStandardProgramHash(
+		programHash, err := contract.PublicKeyToDepositProgramHash(
 			v.info.OwnerPublicKey)
 		if err != nil {
 			log.Warn(err)
