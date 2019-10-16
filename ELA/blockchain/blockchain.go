@@ -143,17 +143,20 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 		for start := startHeight; start <= endHeight; start++ {
 			hash, err := b.db.GetBlockHash(start)
 			if err != nil {
+				fmt.Println("GetBlockHash err:", err)
 				done <- false
 				break
 			}
 			block, err := b.db.GetBlock(hash)
 			if err != nil {
+				fmt.Println("GetBlock err:", err)
 				done <- false
 				break
 			}
 			confirm, _ := b.db.GetConfirm(hash)
 			node, err := b.LoadBlockNode(&block.Header, &hash)
 			if err != nil {
+				fmt.Println("LoadBlockNode err:", err)
 				done <- false
 				break
 			}
@@ -162,12 +165,14 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 			b.index.SetFlags(&block.Header, statusDataStored)
 			err = b.index.flushToDB()
 			if err != nil {
+				fmt.Println("flushToDB err:", err)
 				done <- false
 				break
 			}
 
 			err = b.db.GetFFLDB().SaveBlock(block, node, confirm, CalcPastMedianTime(node))
 			if err != nil {
+				fmt.Println("SaveBlock err:", err)
 				done <- false
 				break
 			}
@@ -175,6 +180,7 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 			b.index.SetFlags(&block.Header, statusDataStored|statusValid)
 			err = b.index.flushToDB()
 			if err != nil {
+				fmt.Println("flushToDB err:", err)
 				done <- false
 				break
 			}

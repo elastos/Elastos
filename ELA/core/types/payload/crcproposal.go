@@ -68,6 +68,8 @@ type CRCProposal struct {
 	DraftHash common.Uint256
 	// The budget of different stages.
 	Budgets []common.Fixed64
+	// The address of budget.
+	Recipient common.Uint168
 	// The signature of sponsor.
 	Sign []byte
 	// The signature of CR sponsor, check data include signature of sponsor.
@@ -92,7 +94,6 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 	if err := common.WriteVarBytes(w, p.SponsorPublicKey); err != nil {
 		return err
 	}
-
 	if err := p.CRSponsorDID.Serialize(w); err != nil {
 		return errors.New("CRSponsorDID serialize failed")
 	}
@@ -106,6 +107,9 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 		if err := v.Serialize(w); err != nil {
 			return err
 		}
+	}
+	if err := p.Recipient.Serialize(w); err != nil {
+		return errors.New("CRSponsorDID serialize failed")
 	}
 	return nil
 }
@@ -135,7 +139,6 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 	if err := p.CRSponsorDID.Deserialize(r); err != nil {
 		return errors.New("CRSponsorDID deserialize failed")
 	}
-
 	if err := p.DraftHash.Deserialize(r); err != nil {
 		return err
 	}
@@ -150,6 +153,9 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 			return err
 		}
 		p.Budgets = append(p.Budgets, budget)
+	}
+	if err := p.Recipient.Deserialize(r); err != nil {
+		return errors.New("Recipient deserialize failed")
 	}
 	return nil
 }

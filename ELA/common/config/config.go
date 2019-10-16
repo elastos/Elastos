@@ -86,7 +86,6 @@ type DPoSConfiguration struct {
 	SignTolerance            time.Duration  `json:"SignTolerance"`
 	OriginArbiters           []string       `json:"OriginArbiters"`
 	CRCArbiters              []string       `json:"CRCArbiters"`
-	SecretaryGeneral         string         `json:"SecretaryGeneral"`
 	NormalArbitratorsCount   int            `json:"NormalArbitratorsCount"`
 	CandidatesCount          int            `json:"CandidatesCount"`
 	EmergencyInactivePenalty common.Fixed64 `json:"EmergencyInactivePenalty"`
@@ -104,4 +103,6 @@ type CRConfiguration struct {
 	CRAgreementCount           uint32  `json:"CRAgreementCount"`
 	VoterRejectPercentage      float64 `json:"VoterRejectPercentage"`
 	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
+	SecretaryGeneral           string  `json:"SecretaryGeneral"`
+	AppropriationRecipient     string  `json:"AppropriationRecipient"`
 }

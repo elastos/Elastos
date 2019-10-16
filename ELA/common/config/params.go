@@ -145,6 +145,7 @@ var DefaultParams = Params{
 		"02a0aa9eac0e168f3474c2a0d04e50130833905740a5270e8a44d6c6e85cf6d98c",
 	},
 	SecretaryGeneral:            "", // todo correct me later
+	AppropriationRecipient:      "", // todo correct me later
 	PowLimit:                    powLimit,
 	PowLimitBits:                0x1f0008ff,
 	TargetTimespan:              24 * time.Hour,  // 24 hours
@@ -223,7 +224,8 @@ func (p *Params) TestNet() *Params {
 		"02bf9e37b3db0cbe86acf76a76578c6b17b4146df101ec934a00045f7d201f06dd",
 		"03111f1247c66755d369a8c8b3a736dfd5cf464ca6735b659533cbe1268cd102a9",
 	}
-	copy.SecretaryGeneral = "" // todo correct me later
+	copy.SecretaryGeneral = ""       // todo correct me later
+	copy.AppropriationRecipient = "" // todo correct me later
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
@@ -277,7 +279,8 @@ func (p *Params) RegNet() *Params {
 		"03c559769d5f7bb64c28f11760cb36a2933596ca8a966bc36a09d50c24c48cc3e8",
 		"03b5d90257ad24caf22fa8a11ce270ea57f3c2597e52322b453d4919ebec4e6300",
 	}
-	copy.SecretaryGeneral = "" // todo correct me later
+	copy.SecretaryGeneral = ""       // todo correct me later
+	copy.AppropriationRecipient = "" // todo correct me later
 
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 170000
@@ -403,9 +406,6 @@ type Params struct {
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
 	CRCArbiters []string
 
-	// SecretaryGeneral defines the secretary general of CR.
-	SecretaryGeneral string
-
 	// DPoSMagic defines the magic number used in the DPoS network.
 	DPoSMagic uint32
 
@@ -466,6 +466,12 @@ type Params struct {
 
 	//MaxCommitteeProposalCount defines per committee max proposal count
 	MaxCommitteeProposalCount uint32
+
+	// SecretaryGeneral defines the secretary general of CR.
+	SecretaryGeneral string
+
+	// AppropriationRecipient defines the recipient of appropriation.
+	AppropriationRecipient string
 
 	// CkpManager holds checkpoints save automatically.
 	CkpManager *checkpoint.Manager
