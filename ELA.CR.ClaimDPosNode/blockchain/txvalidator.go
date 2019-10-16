@@ -203,6 +203,13 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			log.Warn("[checkCrcProposalReviewTransaction],", err)
 			return ErrTransactionPayload
 		}
+
+	case CRCProposalTracking:
+		if err := b.checkCrcProposalTrackingTransaction(txn,
+			blockHeight); err != nil {
+			log.Warn("[checkCrcProposalReviewTransaction],", err)
+			return ErrTransactionPayload
+		}
 	}
 
 	// check double spent transaction
@@ -917,6 +924,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.UnregisterCR:
 	case *payload.CRCProposal:
 	case *payload.CRCProposalReview:
+	case *payload.CRCProposalTracking:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1586,6 +1594,215 @@ func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
 	}
 	return checkCRTransactionSignature(crcProposalReview.Sign, crMember.Info.Code,
 		signedBuf.Bytes())
+}
+
+func (b *BlockChain) checkCrcProposalTrackingTransaction(txn *Transaction,
+	blockHeight uint32) error {
+	cptPayload, ok := txn.Payload.(*payload.CRCProposalTracking)
+	if !ok {
+		return errors.New("invalid payload")
+	}
+
+	// Check if the proposal exist.
+	proposalState := b.crCommittee.GetProposalManager().GetProposal(
+		cptPayload.ProposalHash)
+	if proposalState == nil {
+		return errors.New("proposal not exist")
+	}
+
+	switch cptPayload.ProposalTrackingType {
+	case payload.Common:
+		b.checkCRCProposalCommonTracking(cptPayload, proposalState)
+	case payload.Progress:
+		b.checkCRCProposalProgressTracking(cptPayload, proposalState)
+	case payload.Terminated:
+		b.checkCRCProposalTerminatedTracking(cptPayload, proposalState)
+	case payload.ProposalLeader:
+		b.checkCRCProposalLeaderTracking(cptPayload, proposalState)
+	case payload.Appropriation:
+		b.checkCRCProposalAppropriationTracking(cptPayload, proposalState)
+	}
+	return nil
+}
+
+func (b *BlockChain) checkCRCProposalCommonTracking(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check the stage of proposal
+	if cptPayload.Stage != 0 {
+		return errors.New("stage need to be zero")
+	}
+
+	// Check appropriation.
+	if cptPayload.Appropriation != 0 {
+		return errors.New("appropriation need to be zero")
+	}
+
+	// Check signature.
+	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
+}
+
+func (b *BlockChain) checkCRCProposalProgressTracking(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check the stage of proposal
+	if cptPayload.Stage != pState.CurrentStage+1 {
+		return errors.New("invalid stage")
+	}
+
+	// Check appropriation.
+	if cptPayload.Appropriation != 0 {
+		return errors.New("appropriation need to be zero")
+	}
+
+	// Check signature.
+	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
+}
+
+func (b *BlockChain) checkCRCProposalTerminatedTracking(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check the stage of proposal
+	if cptPayload.Stage != 0 {
+		return errors.New("stage need to be zero")
+	}
+
+	// Check appropriation.
+	if cptPayload.Appropriation != 0 {
+		return errors.New("appropriation need to be zero")
+	}
+
+	// Check signature.
+	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
+}
+
+func (b *BlockChain) checkCRCProposalLeaderTracking(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check the stage of proposal
+	if cptPayload.Stage != 0 {
+		return errors.New("stage need to be zero")
+	}
+
+	// Check appropriation.
+	if cptPayload.Appropriation != 0 {
+		return errors.New("appropriation need to be zero")
+	}
+
+	// Check signature.
+	return b.checkCRCProposalTrackingSignature(cptPayload, pState)
+}
+
+func (b *BlockChain) checkCRCProposalAppropriationTracking(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check the stage of proposal
+	if cptPayload.Stage != pState.CurrentStage+1 {
+		return errors.New("invalid stage")
+	}
+
+	// Check appropriation.
+	if cptPayload.Stage > uint32(len(pState.Proposal.Budgets)) ||
+		cptPayload.Appropriation != pState.Proposal.Budgets[cptPayload.Stage-1] {
+		return errors.New("invalid appropriation")
+	}
+
+	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
+}
+
+func (b *BlockChain) checkCRCProposalTrackingSignature(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check signature of proposal leader.
+	if !bytes.Equal(pState.Proposal.SponsorPublicKey, cptPayload.LeaderPubKey) {
+		return errors.New("the LeaderPubKey is not leader of proposal")
+	}
+	signedBuf := new(bytes.Buffer)
+	if err := b.checkProposalLeaderSignature(cptPayload,
+		cptPayload.LeaderPubKey, signedBuf); err != nil {
+		return err
+	}
+
+	// Check other new leader signature.
+	if err := b.checkProposalLeaderSignature(cptPayload,
+		cptPayload.NewLeaderPubKey, signedBuf); err != nil {
+		return err
+	}
+
+	// Check secretary general signature。
+	return b.checkSecretaryGeneralSignature(cptPayload, pState, signedBuf)
+}
+
+func (b *BlockChain) normalCheckCRCProposalTrackingSignature(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
+	// Check new leader public key.
+	if len(cptPayload.NewLeaderPubKey) != 0 {
+		return errors.New("appropriation need to be zero")
+	}
+
+	// Check signature of proposal leader.
+	if !bytes.Equal(pState.Proposal.SponsorPublicKey, cptPayload.LeaderPubKey) {
+		return errors.New("the LeaderPubKey is not leader of proposal")
+	}
+	signedBuf := new(bytes.Buffer)
+	if err := b.checkProposalLeaderSignature(cptPayload,
+		cptPayload.LeaderPubKey, signedBuf); err != nil {
+		return err
+	}
+
+	// Check new leader signature.
+	if len(cptPayload.NewLeaderSign) != 0 {
+		return errors.New("NewLeaderSign need to be empty")
+	}
+
+	// Check secretary general signature。
+	return b.checkSecretaryGeneralSignature(cptPayload, pState, signedBuf)
+}
+
+func (b *BlockChain) checkProposalLeaderSignature(
+	cptPayload *payload.CRCProposalTracking, pubKey []byte,
+	signedBuf *bytes.Buffer) error {
+	publicKey, err := crypto.DecodePoint(pubKey)
+	if err != nil {
+		return errors.New("invalid proposal leader")
+	}
+	lContract, err := contract.CreateStandardContract(publicKey)
+	if err != nil {
+		return errors.New("invalid proposal leader publicKey")
+	}
+	err = cptPayload.SerializeUnsigned(signedBuf,
+		payload.CRCProposalTrackingVersion)
+	if err != nil {
+		return err
+	}
+	if err := checkCRTransactionSignature(cptPayload.LeaderSign, lContract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("proposal leader signature check failed")
+	}
+
+	return nil
+}
+
+func (b *BlockChain) checkSecretaryGeneralSignature(
+	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState,
+	signedBuf *bytes.Buffer) error {
+	err := common.WriteVarBytes(signedBuf, cptPayload.SecretaryGeneralSign)
+	if err != nil {
+		return errors.New("invalid secretary general signature")
+	}
+	var sgContract *contract.Contract
+	publicKeyBytes, err := hex.DecodeString(b.chainParams.SecretaryGeneral)
+	if err != nil {
+		return errors.New("invalid secretary general public key")
+	}
+	publicKey, err := crypto.DecodePoint(publicKeyBytes)
+	if err != nil {
+		return errors.New("invalid proposal leader")
+	}
+	sgContract, err = contract.CreateStandardContract(publicKey)
+	if err != nil {
+		return errors.New("invalid secretary general public key")
+	}
+	if err = checkCRTransactionSignature(cptPayload.SecretaryGeneralSign,
+		sgContract.Code, signedBuf.Bytes()); err != nil {
+		return errors.New("CR sponsor signature check failed")
+	}
+
+	return nil
 }
 
 func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,

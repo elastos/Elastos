@@ -302,6 +302,8 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					key := mp.getCrcProposalReviewKey(crcProposalReview)
 					mp.delCrcProposalReview(key)
+				case CRCProposalTracking:
+					// todo complete me
 				}
 
 				deleteCount++
@@ -564,6 +566,8 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
+	case CRCProposalTracking:
+		// todo complete me
 	}
 
 	return Success

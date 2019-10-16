@@ -247,6 +247,10 @@ var (
 		Name:  "secretarygeneral",
 		Usage: "defines the secretary general of CR",
 	}
+	AppropriationRecipientFlag = cli.StringFlag{
+		Name:  "appropriationrecipient",
+		Usage: "defines the recipient of appropriation",
+	}
 	PreConnectOffsetFlag = cli.StringFlag{
 		Name:  "preconnectoffset",
 		Usage: "defines the offset blocks to pre-connect to the block producers",

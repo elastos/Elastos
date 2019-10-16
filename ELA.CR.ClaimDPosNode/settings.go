@@ -622,12 +622,6 @@ func newSettings() *settings {
 		ParamName:    "CRCArbiters"})
 
 	result.Add(&settingItem{
-		Flag:         cmdcom.SecretaryGeneralFlag,
-		DefaultValue: "",
-		ConfigPath:   "DPoSConfiguration.SecretaryGeneral",
-		ParamName:    "SecretaryGeneral"})
-
-	result.Add(&settingItem{
 		Flag:         cmdcom.NormalArbitratorsCountFlag,
 		DefaultValue: 0,
 		ConfigPath:   "DPoSConfiguration.NormalArbitratorsCount",
@@ -718,6 +712,18 @@ func newSettings() *settings {
 		DefaultValue: float64(0),
 		ConfigPath:   "CRConfiguration.VoterRejectPercentage",
 		ParamName:    "VoterRejectPercentage"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.SecretaryGeneralFlag,
+		DefaultValue: "",
+		ConfigPath:   "CRConfiguration.SecretaryGeneral",
+		ParamName:    "SecretaryGeneral"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.AppropriationRecipientFlag,
+		DefaultValue: "",
+		ConfigPath:   "CRConfiguration.AppropriationRecipient",
+		ParamName:    "AppropriationRecipient"})
 
 	return result
 }

@@ -73,6 +73,7 @@ type ProposalState struct {
 	VotersRejectAmount common.Fixed64
 	RegisterHeight     uint32
 	VoteStartHeight    uint32
+	CurrentStage       uint32
 }
 
 type ProposalHashSet map[common.Uint256]struct{}
@@ -544,6 +545,10 @@ func (p *ProposalState) Serialize(w io.Writer) (err error) {
 		}
 	}
 
+	if err = common.WriteUint32(w, p.CurrentStage); err != nil {
+		return
+	}
+
 	return p.TxHash.Serialize(w)
 }
 
@@ -589,6 +594,10 @@ func (p *ProposalState) Deserialize(r io.Reader) (err error) {
 			return
 		}
 		p.CRVotes[key] = payload.VoteResult(value)
+	}
+
+	if p.CurrentStage, err = common.ReadUint32(r); err != nil {
+		return
 	}
 
 	return p.TxHash.Deserialize(r)
