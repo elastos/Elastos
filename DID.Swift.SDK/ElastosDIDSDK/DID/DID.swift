@@ -33,7 +33,7 @@ public class DID: NSObject {
     }
 
     public override var hash: Int {
-        return DID.METHOD.hash + self.methodSpecificId.hash
+        return (DID.METHOD + self.methodSpecificId!).hash
     }
 
     public override func isEqual(_ object: Any?) -> Bool {

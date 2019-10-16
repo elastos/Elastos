@@ -79,7 +79,7 @@ public class FileSystemStore: DIDStore {
         let fileManager = FileManager.default
         var isDir: ObjCBool = false
         if fileManager.fileExists(atPath: storeRootPath, isDirectory:&isDir) {
-            if !isDir.boolValue {
+            guard isDir.boolValue else {
                 throw DIDError.failue("Store root \(storeRootPath ?? "") is a file.")
             }
         }
@@ -88,7 +88,7 @@ public class FileSystemStore: DIDStore {
         let tagFilePath: String = storeRootPath + "/" + FileSystemStore.TAG_FILE
         var tagFilePathIsDir: ObjCBool = false
         let tagFilePathExists: Bool = fileManager.fileExists(atPath: tagFilePath, isDirectory:&tagFilePathIsDir)
-        if tagFilePathIsDir.boolValue || !tagFilePathExists {
+        guard !tagFilePathIsDir.boolValue || tagFilePathExists else {
             throw DIDError.failue("Directory \(tagFilePath) is not a DIDStore.")
         }
         
@@ -101,21 +101,20 @@ public class FileSystemStore: DIDStore {
              throw new DIDStoreException("Directory \""
                      + storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
          */
-        if uInt8DataArray.count != FileSystemStore.TAG_SIZE {
+        guard uInt8DataArray.count == FileSystemStore.TAG_SIZE else {
             throw DIDError.failue("Directory \(tagFilePath) is not a DIDStore.")
         }
         
         let magicArray = localData[0...3]
         let versionArray = localData[4...7]
         
-        if !magicArray.elementsEqual(FileSystemStore.TAG_MAGIC) {
+        guard magicArray.elementsEqual(FileSystemStore.TAG_MAGIC) else {
             throw DIDError.failue("Directory \(tagFilePath) is not a DIDStore.")
         }
         
-        if !versionArray.elementsEqual(FileSystemStore.TAG_VERSION) {
+        guard versionArray.elementsEqual(FileSystemStore.TAG_VERSION) else {
             throw DIDError.failue("Directory \(tagFilePath) unsupported version.")
         }
-        
     }
 
     public func exists(_ dirPath: String) throws -> Bool {
@@ -131,7 +130,7 @@ public class FileSystemStore: DIDStore {
             var isDirectory = ObjCBool.init(false)
             let fileExists = FileManager.default.fileExists(atPath: relPath, isDirectory: &isDirectory)
             if !isDirectory.boolValue && fileExists {
-                try deleteFile(relPath)
+                _ = try deleteFile(relPath)
             }
         }
         if create {
@@ -144,24 +143,25 @@ public class FileSystemStore: DIDStore {
         return relPath
     }
 
-    public func deleteFile(_ path: String) throws {
-        
+    public func deleteFile(_ path: String) throws -> Bool {
         let fileManager = FileManager.default
         var isDir = ObjCBool.init(false)
         let fileExists = fileManager.fileExists(atPath: path, isDirectory: &isDir)
         // If path is a folder, traverse the subfiles under the folder and delete them
+        var re: Bool = false
         if fileExists && isDir.boolValue {
             if let dirContents = fileManager.enumerator(atPath: path) {
                 
                 for case let url as URL in dirContents {
-                    try deleteFile(url.absoluteString)
+                   re = try deleteFile(url.absoluteString)
                 }
             }
         }
         guard fileExists else {
-            return
+            return re
         }
         try fileManager.removeItem(atPath: path)
+        return true
     }
 
     override public func hasPrivateIdentity() throws -> Bool {
@@ -191,10 +191,13 @@ public class FileSystemStore: DIDStore {
         return Int(index)!
     }
 
-    override public func setDidHint(_ did: DID,_ hint: String) throws {
+    override public func setDidHint(_ did: DID,_ hint: String?) throws {
         let path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + "." + did.methodSpecificId + FileSystemStore.META_EXT
-        if hint.isEmpty {
+        if hint == nil {
             let fileManager = FileManager.default
+            guard fileManager.fileExists(atPath: path) else {
+                return
+            }
             try fileManager.removeItem(atPath: path)
         }
         else {
@@ -203,7 +206,7 @@ public class FileSystemStore: DIDStore {
             try fm.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
             fm.createFile(atPath: path, contents: nil, attributes: nil)
             let writeHandle = FileHandle(forWritingAtPath: path)
-            writeHandle?.write(hint.data(using: .utf8)!)
+            writeHandle?.write(hint!.data(using: .utf8)!)
         }
     }
 
@@ -217,17 +220,16 @@ public class FileSystemStore: DIDStore {
     override public func storeDid(_ doc: DIDDocument ,_ hint: String?) throws {
         let path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + doc.subject!.methodSpecificId + "/" + FileSystemStore.DOCUMENT_FILE
         let exist = try exists(path)
-        // TOOD: 如果存在呢，是否删除？java no
         try doc.toJson(path, true)
-        if !exist || (hint != nil && hint!.isEmpty) {
-           try setDidHint(doc.subject!, hint!)
+        if !exist || (hint != nil) {
+           try setDidHint(doc.subject!, hint)
         }
     }
 
     override public func loadDid(_ did: DID) throws -> DIDDocument? {
         let path = FileSystemStore.DID_DIR + did.methodSpecificId + FileSystemStore.DOCUMENT_FILE
         let exist = try exists(path)
-        if !exist {
+        guard exist else {
             return nil
         }
         return try DIDDocument.fromJson(path)
@@ -239,16 +241,20 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func deleteDid(_ did: DID) throws -> Bool {
-        let path = FileSystemStore.DID_DIR + "." + did.methodSpecificId + FileSystemStore.META_EXT
-         try deleteFile(path)
-        return false
+        var path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/." + did.methodSpecificId + FileSystemStore.META_EXT
+        let re1 = try deleteFile(path)
+        path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId
+        let re2 = try deleteFile(path)
+        return re1 && re2
     }
 
     override public func listDids(_ filter: Int) throws -> Array<Entry<DID, String>> {
+        let arr: Array<Entry<DID, String>> = [Entry]()
         let path = try getDir(FileSystemStore.DID_DIR)
         let exist = try exists(path)
-        if exist { return [Entry]() }
-        
+        if exist {
+        }
+
         return [Entry]()
     }
 
@@ -256,7 +262,7 @@ public class FileSystemStore: DIDStore {
         let targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "." + "/" + id.fragment + "/" + FileSystemStore.META_EXT
         let path: String = try getFile(true, targetPath)
         if hint.isEmpty {
-            try deleteFile(path)
+            _ = try deleteFile(path)
         }
         else {
             try writeTextToPath(path, hint)
@@ -270,17 +276,6 @@ public class FileSystemStore: DIDStore {
     }
     
     override public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
-        /* try {
-         File file = getFile(DID_DIR, did.getMethodSpecificId(),
-         CREDENTIALS_DIR, id.getFragment());
-         if (!file.exists())
-         return null;
-         
-         return VerifiableCredential.fromJson(new FileInputStream(file));
-         } catch (IOException e) {
-         throw new DIDStoreException("Load VerifiableCredential error.", e);
-         }
-         */
         let path: String = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "/" + id.fragment
         guard try exists(path) else { return nil }
         return try VerifiableCredential.fromJsonInPath(path)
@@ -299,7 +294,6 @@ public class FileSystemStore: DIDStore {
         }
     }
 
-    // TODO: override loadCredential
     override public func containsCredentials(_ did: DID) throws -> Bool {
         let targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR
         let path = try getDir(targetPath)
@@ -324,13 +318,13 @@ public class FileSystemStore: DIDStore {
         var targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "." + id.fragment + "/" + FileSystemStore.META_EXT
         var path = try getFile(targetPath)
         if try exists(path!) {
-            try deleteFile(path!)
+           _ = try deleteFile(path!)
         }
         targetPath = FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "/" + id.fragment
         path = try getFile(targetPath)
         
         if try exists(path!) {
-           try deleteFile(path!)
+           _ = try deleteFile(path!)
             return true
         }
         return false
@@ -350,7 +344,7 @@ public class FileSystemStore: DIDStore {
         let fileManager: FileManager = FileManager.default
         var isDir = ObjCBool.init(false)
         _ = fileManager.fileExists(atPath: path, isDirectory: &isDir)
-        if !isDir.boolValue {
+        guard isDir.boolValue else {
             return false
         }
         
@@ -431,7 +425,7 @@ public class FileSystemStore: DIDStore {
         let writePath = try getFile(path)
         let fileManager = FileManager.default
         // Delete before writing
-        try deleteFile(writePath!)
+        _ = try deleteFile(writePath!)
         fileManager.createFile(atPath: path, contents:nil, attributes:nil)
         let handle = FileHandle(forWritingAtPath:path)
         handle?.write(text.data(using: String.Encoding.utf8)!)

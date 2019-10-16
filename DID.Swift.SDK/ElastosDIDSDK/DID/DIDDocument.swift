@@ -121,26 +121,27 @@ public class DIDDocument: NSObject {
     public func getAuthenticationKey(_ id: DIDURL) -> DIDPublicKey {
         return getEntry(authentications, id)
     }
-    // TODO error handle
+    
     public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey {
         return try getEntry(authentications, DIDURL(id))
     }
     
     public func removeAuthenticationKey(_ id: DIDURL) -> Bool {
-        if readonly { return false }
+        guard !readonly else { return false }
         return removeEntry(authentications, id)
     }
     
     public func addAuthenticationKey(_ id: DIDURL) throws -> Bool {
-        if readonly { return false }
+        guard !readonly else { return false }
         let pk = try getPublicKey(id)
         return addAuthenticationKey(pk)
     }
     
     func addAuthenticationKey(_ pk: DIDPublicKey) -> Bool {
-        if readonly { return false }
+        guard !readonly && ((pk.controller?.isEqual(subject))!)  else {
+            return false
+        }
         // Check the controller is current DID subject
-        if !((pk.controller?.isEqual(subject))!) { return false }
         authentications[pk.id] = pk
         return true
     }
@@ -170,7 +171,7 @@ public class DIDDocument: NSObject {
     }
     
     public func addAuthorizationKey(_ id: String, _ did: DID, _ key: DIDURL) throws -> Bool {
-        if readonly { return false }
+        guard !readonly else { return false }
         let doc: DIDDocument = try DIDStore.shareInstance()!.resolveDid(did)
         let refPk: DIDPublicKey = try doc.getPublicKey(key)
         if !((refPk.controller?.isEqual(did))!) { return false }
@@ -209,14 +210,14 @@ public class DIDDocument: NSObject {
     }
     
     public func addCredential(_ vc: VerifiableCredential) -> Bool {
-        if readonly { return false }
+        guard !readonly else { return false }
         let ec: EmbeddedCredential = EmbeddedCredential(vc)
         credentials[ec.id] = ec
         return true
     }
     
     public func removeCredential(_ id: DIDURL) -> Bool {
-        if readonly { return false }
+        guard !readonly else { return false }
         return removeEntry(credentials, id)
     }
     
@@ -251,7 +252,7 @@ public class DIDDocument: NSObject {
     }
     
     public func removeService(_ id: DIDURL) -> Bool {
-        if readonly { return false }
+        guard !readonly else { return false }
         return removeEntry(services, id)
     }
     
@@ -409,11 +410,11 @@ public class DIDDocument: NSObject {
     private func parseAuthentication(_ json: [String: Any]) throws {
         let authentications = json[Constants.authentication] as? Array<Any>
 
-        if !(authentications != nil) {
+        guard (authentications != nil) else {
             throw DIDError.failue("Invalid authentication, should be an array.")
         }
 
-        if authentications!.count == 0 {
+        guard authentications!.count != 0 else {
             return
         }
         
@@ -433,10 +434,10 @@ public class DIDDocument: NSObject {
     
     private func parseAuthorization(_ json: [String: Any]) throws {
         let authorizations = json[Constants.authorization] as? Array<Any>
-        if (authorizations == nil) {
+        guard (authorizations != nil) else {
             throw DIDError.failue("Invalid authorization, should be an array.")
         }
-        if authorizations!.count == 0 {
+        guard authorizations!.count != 0 else {
             return
         }
         try authorizations!.forEach { (obj) in
@@ -456,10 +457,10 @@ public class DIDDocument: NSObject {
     // mode parse
     private func parseCredential(_ json: [String: Any]) throws {
         let credentials = json[Constants.credential] as? Array<Dictionary<String, Any>>
-        if (credentials == nil) {
+        guard (credentials != nil) else {
             throw DIDError.failue("Invalid credentials, should be an array.")
         }
-        if credentials!.count == 0 {
+        guard credentials!.count != 0 else {
             return
         }
         try credentials!.forEach{ obj in
@@ -470,10 +471,10 @@ public class DIDDocument: NSObject {
     
     private func parseService(_ json: [String: Any]) throws {
         let services = json[Constants.service] as? Array<Dictionary<String, Any>>
-        if (services == nil) {
+        guard (services != nil) else {
             throw DIDError.failue("Invalid services, should be an array.")
         }
-        if services!.count == 0 {
+        guard services!.count != 0 else {
             return
         }
         try services!.forEach { obj in
@@ -483,16 +484,16 @@ public class DIDDocument: NSObject {
     }
     
     private func addService(_ svc: Service) -> Bool {
-        if readonly  { return false }
+        guard !readonly else { return false }
         services[svc.id] = svc
         return true
     }
     private func addAuthorizationKey(_ pk: DIDPublicKey) -> Bool {
-        if readonly { return false }
+        guard !readonly else { return false }
         // Cann' authorize to self
         
         guard pk.controller != nil else { return false }
-        if (pk.controller?.isEqual(subject))! { return false }
+        guard !(pk.controller?.isEqual(subject))! else { return false }
         authorizations[pk.id] = pk
         return true
     }

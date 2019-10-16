@@ -8,6 +8,7 @@ public class DIDURL: NSObject {
     public var query: OrderedDictionary<String, String>?
     public var fragment: String!
     private var listener: DURLListener?
+    private var url: String!
     
     public init(_ id: DID, _ fragment: String) throws {
         self.did = id
@@ -18,7 +19,7 @@ public class DIDURL: NSObject {
         super.init()
         self.listener = DURLListener(self)
         try ParserHelper.parase(url, false, self.listener!)
-        
+        self.url = url
     }
     
     public func mapToString(_ dictionary: OrderedDictionary<String, String>, sep: String) -> String {
@@ -110,7 +111,6 @@ public class DIDURL: NSObject {
     
     public override func isEqual(_ object: Any?) -> Bool {
         
-        
         if object is DIDURL {
             let url = object as! DIDURL
             let urlExternalForm = url.toExternalForm()
@@ -143,15 +143,14 @@ public class DIDURL: NSObject {
     }
     
     public override var hash: Int {
-        var hash: Int = did.hash
-        hash = hash + dictionaryHashCode(self.parameters)
-        if self.path != nil {
-            hash = hash + self.path!.hash
-        }
-        hash = hash + dictionaryHashCode(self.query)
-        if self.fragment != nil {
-            hash = hash + self.fragment!.hash
-        }
+        let param: String = (self.parameters != nil) ? mapToString(self.parameters!, sep: ";") : ""
+        let query: String = (self.query != nil) ? mapToString(self.query!, sep: "&") : ""
+        let method: String = (did.method != nil) ? did.method : ""
+        let methodSpecificId: String = (did.methodSpecificId != nil) ? did.methodSpecificId : ""
+        let path: String = (self.path != nil) ? self.path! : ""
+        let fragment: String = (self.fragment != nil) ? self.fragment! : ""
+        
+        let hash: Int = String(method + methodSpecificId + param + query + path + fragment).hash
         
         return hash
     }
@@ -181,7 +180,6 @@ class DURLListener: DIDURLBaseListener {
     
     override func exitMethodSpecificString(_ ctx: DIDURLParser.MethodSpecificStringContext) {
         self.didURL?.did.methodSpecificId = ctx.getText()
-        
     }
     
     override func enterParams(_ ctx: DIDURLParser.ParamsContext) {

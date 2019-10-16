@@ -35,8 +35,8 @@ public class HDKey: NSObject {
     }
     
     // DerivedKey 初步推断是bip44 对于BitcoinKit的HDKeychain
-    public func derive(_ index: Int32) throws -> DerivedKey {
-        return DerivedKey(seed, index)
+    public func derive(_ index: Int) throws -> DerivedKey {
+        return DerivedKey(seed, Int32(index))
     }
 
     

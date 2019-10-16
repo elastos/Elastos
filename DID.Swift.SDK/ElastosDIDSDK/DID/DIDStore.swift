@@ -84,7 +84,7 @@ public class DIDStore: NSObject {
         guard (privateIdentity != nil) else {
             throw DIDStoreError.failue("DID Store not contains private identity.")
         }
-        let inde: Int32 = Int32(lastIndex + 1)
+        let inde: Int = lastIndex
         let key: DerivedKey = try! privateIdentity.derive(inde)
         let pks: [UInt8] = try key.getPublicKeyBytes()
         let methodIdString: String = DerivedKey.getIdString(pks)
@@ -101,10 +101,6 @@ public class DIDStore: NSObject {
         
         return doc
     }
-    
-    /*
-
-     */
 
     public func newDid(_ passphrase: String) throws -> DIDDocument {
         return try newDid(passphrase, nil)

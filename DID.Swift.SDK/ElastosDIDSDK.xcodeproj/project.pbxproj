@@ -29,7 +29,7 @@
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		11CA2F8C23530E49009A2067 /* libcrypto.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11942E42235190BD00746B87 /* libcrypto.a */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		11CA2F8D23530E49009A2067 /* libhdkey.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11942E44235190E000746B87 /* libhdkey.a */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		11D4B9B523535E7000453218 /* DIDDoucument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucument.swift */; };
+		11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */; };
 		11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9C623545A5700453218 /* DIDStoreTests.swift */; };
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D440233485800012CD77 /* EmbeddedCredential.swift */; };
@@ -141,7 +141,7 @@
 		11942E3F2350DBCA00746B87 /* Ccrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ccrypto.swift; sourceTree = "<group>"; };
 		11942E42235190BD00746B87 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto.a; sourceTree = "<group>"; };
 		11942E44235190E000746B87 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libhdkey.a; sourceTree = "<group>"; };
-		11D4B9B423535E7000453218 /* DIDDoucument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDDoucument.swift; sourceTree = "<group>"; };
+		11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDDoucumentTests.swift; sourceTree = "<group>"; };
 		11D4B9C623545A5700453218 /* DIDStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreTests.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
@@ -260,7 +260,7 @@
 			isa = PBXGroup;
 			children = (
 				1155D9482352FACE00DF8C9D /* ElastosDIDSDKTests.swift */,
-				11D4B9B423535E7000453218 /* DIDDoucument.swift */,
+				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
 			);
@@ -603,7 +603,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11D4B9B523535E7000453218 /* DIDDoucument.swift in Sources */,
+				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				1155D9492352FACE00DF8C9D /* ElastosDIDSDKTests.swift in Sources */,
 			);

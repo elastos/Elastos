@@ -7,11 +7,18 @@ import ElastosDIDSDK
 
 class DIDStoreTests: XCTestCase {
 
-    let store: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
+    let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
     let passphrase: String = "secret"
+    var store: DIDStore!
+    var ids: Dictionary<DID, String> = [: ]
+    var primaryDid: DID!
     
     override func setUp() {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        deleteFile(storePath)
+        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+        store = DIDStore.shareInstance()!
+        let mnemonic: String = HDKey.generateMnemonic(0)
+        try! store.initPrivateIdentity(mnemonic, passphrase, true)
     }
 
     override func tearDown() {
@@ -19,40 +26,109 @@ class DIDStoreTests: XCTestCase {
     }
 
     func test00CreateEmptyStore0() {
-        deleteFile(store)
-        try! DIDStore.creatInstance("filesystem", location: store, passphase: passphrase)
+        deleteFile(storePath)
+        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
         let tempStore: DIDStore = try! DIDStore.shareInstance()!
         XCTAssertFalse(try! tempStore.hasPrivateIdentity())
-        XCTAssertTrue(exists(store))
-        let path: String = store + "/" + ".DIDStore"
+        XCTAssertTrue(exists(storePath))
+        let path: String = storePath + "/" + ".DIDStore"
         let filemanage: FileManager = FileManager.default
         filemanage.fileExists(atPath: path)
     }
     
     func test00CreateEmptyStore1() {
-        try! DIDStore.creatInstance("filesystem", location: store, passphase: passphrase)
+        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
         let tempStore: DIDStore = DIDStore.shareInstance()!
         let doc: DIDDocument = try! tempStore.newDid(passphrase, "my first did")
         print(doc)
     }
     
     func test000InitPrivateIdentity0() {
-        deleteFile(store)
-        try! DIDStore.creatInstance("filesystem", location: store, passphase: passphrase)
+        deleteFile(storePath)
+        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
         let tempStore: DIDStore = DIDStore.shareInstance()!
         XCTAssertFalse(try! tempStore.hasPrivateIdentity())
         
         let mnemonic: String = HDKey.generateMnemonic(0)
         try! tempStore.initPrivateIdentity(mnemonic, passphrase, true)
-        let keypath: String = store + "/" + "private" + "/" + "key"
+        let keypath: String = storePath + "/" + "private" + "/" + "key"
         XCTAssertTrue(existsFile(keypath))
-        let indexPath: String = store + "/" + "private" + "/" + "index"
+        let indexPath: String = storePath + "/" + "private" + "/" + "index"
         XCTAssertTrue(existsFile(indexPath))
         XCTAssertTrue(try! tempStore.hasPrivateIdentity())
         
-        try! DIDStore.creatInstance("filesystem", location: store, passphase: passphrase)
+        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
         let tempStore2: DIDStore = DIDStore.shareInstance()!
-        XCTAssertTrue(try! tempStore.hasPrivateIdentity())
+        XCTAssertTrue(try! tempStore2.hasPrivateIdentity())
+    }
+    
+    func test01InitPrivateIdentity1() {
+        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+        let tempStore: DIDStore = DIDStore.shareInstance()!
+        XCTAssert(try! tempStore.hasPrivateIdentity())
+    }
+    
+    func test03CreateDID1() {
+        let hint: String = "my first did"
+        let doc: DIDDocument = try! store.newDid(passphrase, hint)
+        primaryDid = doc.subject
+        let id: String = doc.subject!.methodSpecificId
+        let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
+        XCTAssertTrue(existsFile(path))
+        
+        let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
+        XCTAssertTrue(existsFile(path2))
+        ids[doc.subject!] = hint
+    }
+    
+    func test03CreateDID2() {
+        let doc: DIDDocument = try! store.newDid(passphrase, nil)
+        let id: String = doc.subject!.methodSpecificId
+        let path: String = storePath + "/" + "ids" + "/" + id + "/document"
+        XCTAssertTrue(existsFile(path))
+        let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
+        XCTAssertFalse(existsFile(path2))
+        ids[doc.subject!] = ""
+    }
+    
+    func test03CreateDID3() {
+        for i in 0...100 {
+            var dic: Dictionary<String, String> = [: ]
+            dic["12"] = String(i)
+            
+            let hint: String = "my did " + String(10)
+            let doc: DIDDocument = try! store.newDid(passphrase, hint)
+            let id: String = doc.subject!.methodSpecificId
+            let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
+            XCTAssertTrue(existsFile(path))
+            
+            let path2: String = storePath + "/" + "ids" + "/." + id + ".meta"
+            XCTAssertTrue(existsFile(path2))
+            ids[doc.subject!] = hint
+            print(ids)
+        }
+    }
+    
+    func test04DeleteDID1() {
+        let hint: String = "my did for deleted."
+        let doc: DIDDocument = try! store.newDid(passphrase, hint)
+        ids[doc.subject!] = hint
+        primaryDid = doc.subject
+        let dids: Array<DID> = Array(ids.keys)
+        dids.forEach { did in
+            if did.isEqual(primaryDid) {
+                var deleted: Bool = try! store.deleteDid(did)
+                XCTAssertTrue(deleted)
+                var path: String = storePath + "/ids/" + did.methodSpecificId
+                XCTAssertFalse(exists(path))
+                
+                path = storePath + "/ids/." + did.methodSpecificId + ".meta"
+                XCTAssertFalse(exists(path))
+                
+                deleted = try! store.deleteDid(did)
+                XCTAssertFalse(deleted)
+            }
+        }
     }
     
     /*
