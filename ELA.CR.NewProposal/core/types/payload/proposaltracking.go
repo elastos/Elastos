@@ -161,12 +161,12 @@ func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) err
 		return errors.New("the Appropriation deserialize failed")
 	}
 
-	if p.LeaderSign, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
+	if p.LeaderPubKey, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
 		"leader pubkey"); err != nil {
 		return err
 	}
 
-	if p.NewLeaderSign, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
+	if p.NewLeaderPubKey, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
 		"new leader pubkey"); err != nil {
 		return err
 	}

@@ -9,6 +9,7 @@ import (
 	"bytes"
 	crand "crypto/rand"
 	"encoding/binary"
+	"fmt"
 	"math/big"
 	"math/rand"
 	"strconv"
@@ -625,6 +626,33 @@ func budgetsEqual(budgets1 []common.Fixed64, budgets2 []common.Fixed64) bool {
 	return true
 }
 
+func (s *transactionSuite) TestCRCProposalTracking_Deserialize() {
+
+	ctpPayload1 := randomCRCProposalTrackingPayload()
+
+	buf := new(bytes.Buffer)
+	err := ctpPayload1.Serialize(buf, payload.CRCProposalTrackingVersion)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	ctpPayload2 := &payload.CRCProposalTracking{}
+	err = ctpPayload2.Deserialize(buf, payload.CRCProposalTrackingVersion)
+	s.True(ctpPayloadEqual(ctpPayload1, ctpPayload2))
+}
+
+func ctpPayloadEqual(payload1 *payload.CRCProposalTracking, payload2 *payload.CRCProposalTracking) bool {
+	return payload1.ProposalTrackingType == payload2.ProposalTrackingType &&
+		payload1.ProposalHash.IsEqual(payload2.ProposalHash) &&
+		payload1.Stage == payload2.Stage &&
+		payload1.Appropriation == payload2.Appropriation &&
+		bytes.Equal(payload1.LeaderPubKey, payload2.LeaderPubKey) &&
+		bytes.Equal(payload1.NewLeaderPubKey, payload2.NewLeaderPubKey) &&
+		bytes.Equal(payload1.LeaderSign, payload2.LeaderSign) &&
+		bytes.Equal(payload1.NewLeaderSign, payload2.NewLeaderSign) &&
+		bytes.Equal(payload1.SecretaryGeneralSign, payload2.SecretaryGeneralSign)
+}
+
 func (s *transactionSuite) TestTransaction_SpecificSample() {
 	// update producer transaction deserialize sample
 	byteReader := new(bytes.Buffer)
@@ -771,6 +799,20 @@ func randomCRCProposalPayload() *payload.CRCProposal {
 		Budgets:          randomBudgets(),
 		Sign:             randomBytes(64),
 		CRSign:           randomBytes(64),
+	}
+}
+
+func randomCRCProposalTrackingPayload() *payload.CRCProposalTracking {
+	return &payload.CRCProposalTracking{
+		ProposalTrackingType: payload.CRCProposalTrackingType(rand.Uint32()),
+		ProposalHash:         *randomUint256(),
+		Stage:                rand.Uint32(),
+		Appropriation:        randomFix64(),
+		LeaderPubKey:         randomBytes(33),
+		NewLeaderPubKey:      randomBytes(35),
+		LeaderSign:           randomBytes(64),
+		NewLeaderSign:        randomBytes(64),
+		SecretaryGeneralSign: randomBytes(64),
 	}
 }
 
