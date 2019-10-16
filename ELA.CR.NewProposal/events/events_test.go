@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package events
 
@@ -9,10 +9,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/utils/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNotify(t *testing.T) {
+	test.SkipShort(t)
 	notifyChan := make(chan struct{})
 	Subscribe(func(event *Event) {
 		notifyChan <- struct{}{}
@@ -50,4 +52,5 @@ func TestRecursiveNotify(t *testing.T) {
 	}()
 
 	<-time.After(time.Millisecond)
+
 }
