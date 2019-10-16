@@ -18,10 +18,9 @@ steps:
     GOPATH: /drone
     GOROOT: /usr/local/go
     GO111MODULE: on
+    TEST_BRANCH: master
+    GITLAB_URL: "https://gitlab+deploy-token-105635:PLzwmJuKRbbWHtSGDXxx@gitlab.com/elastos/Elastos.ELA.Test.Cases.git"
   commands:
-  #- mkdir -p $GOBIN
-  #- curl https://glide.sh/get | sh
-  #- glide update && glide install
   - curl -o /bin/addlicense http://172.16.0.120/addlicense
   - curl -o /bin/revive http://172.16.120/revive
   - curl -o /bin/checkcoverage http://172.16.120/checkcoverage
@@ -32,9 +31,9 @@ steps:
   - go tool cover -func .coverage
   - checkcoverage
   - make dev
-  - make dns
   - ./ela -v
   - ./util.sh test
+  - git clone -b $TEST_BRANCH --depth 10 $GITLAB_URL
   when:
     event:
     - push
@@ -43,15 +42,11 @@ steps:
   #- name: gopath
   #  path: /go
 
-#- name: check
-  #image: python:3.6-jessie
-  #environment:
-    #GOPATH: /drone
-  #commands:
-    #- curl -O http://172.16.0.120/testingwork-testing_work.tar.gz
-    #- tar xf testingwork-testing_work.tar.gz
-    #- python -V
-    #- ./ela -v
-    #- cd testingwork-testing_work
-    #- python -m pip install -r requirements.txt
-    #- python dpos_normal_test.py
+- name: superTester
+  image: "peterwillcn/ela-tester:master"
+  environment:
+    GOPATH: /drone
+    CONF: file://drone/src/github.com/elastos/Elastos.ELA/Elastos.ELA.Test.Cases/config.json
+    CASE: file://drone/src/github.com/elastos/Elastos.ELA/Elastos.ELA.Test.Cases/test-cr-case1/registercr.json
+  commands:
+  - /ela-manager --conf=$CONF --case=$CASE
