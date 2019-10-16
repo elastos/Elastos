@@ -9,10 +9,12 @@ DEV_BUILD = go build -ldflags "-X main.Version=$(DEV_BRANCH)-$(DEV_VERSION) -X '
 all:
 	$(BUILD) -o ela log.go settings.go main.go
 	$(BUILD) -o ela-cli cmd/ela-cli.go
+	$(BUILD) -o ela-dns elanet/dns/main/main.go
 
 dev:
 	$(DEV_BUILD) -o ela log.go settings.go main.go
 	$(DEV_BUILD) -o ela-cli cmd/ela-cli.go
+	$(BUILD) -o ela-dns elanet/dns/main/main.go
 
 linux:
 	GOARCH=amd64 GOOS=linux $(BUILD) -o ela log.go settings.go main.go
