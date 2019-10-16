@@ -25,9 +25,9 @@ export default class extends BaseComponent {
     const { proposal, currentUserId, latestStatus } = this.props
     const isOwner = _.get(proposal, 'proposer._id') === currentUserId
     const notInReviewing = latestStatus !== CVOTE_SUMMARY_STATUS.REVIEWING
-    const notFinal = proposal.status !== CVOTE_STATUS.FINAL
+    const isActive = proposal.status === CVOTE_STATUS.ACTIVE
 
-    return isOwner && notInReviewing && notFinal && <CreateForm proposal={proposal} />
+    return isOwner && isActive && notInReviewing && <CreateForm proposal={proposal} />
   }
 }
 
