@@ -1610,19 +1610,22 @@ func (b *BlockChain) checkCrcProposalTrackingTransaction(txn *Transaction,
 		return errors.New("proposal not exist")
 	}
 
+	var result error
 	switch cptPayload.ProposalTrackingType {
 	case payload.Common:
-		b.checkCRCProposalCommonTracking(cptPayload, proposalState)
+		result = b.checkCRCProposalCommonTracking(cptPayload, proposalState)
 	case payload.Progress:
-		b.checkCRCProposalProgressTracking(cptPayload, proposalState)
+		result = b.checkCRCProposalProgressTracking(cptPayload, proposalState)
 	case payload.Terminated:
-		b.checkCRCProposalTerminatedTracking(cptPayload, proposalState)
+		result = b.checkCRCProposalTerminatedTracking(cptPayload, proposalState)
 	case payload.ProposalLeader:
-		b.checkCRCProposalLeaderTracking(cptPayload, proposalState)
+		result = b.checkCRCProposalLeaderTracking(cptPayload, proposalState)
 	case payload.Appropriation:
-		b.checkCRCProposalAppropriationTracking(cptPayload, proposalState)
+		result = b.checkCRCProposalAppropriationTracking(cptPayload, proposalState)
+	default:
+		result = errors.New("invalid proposal tracking type")
 	}
-	return nil
+	return result
 }
 
 func (b *BlockChain) checkCRCProposalCommonTracking(
@@ -1718,7 +1721,7 @@ func (b *BlockChain) checkCRCProposalTrackingSignature(
 	}
 
 	// Check other new leader signature.
-	if err := b.checkProposalLeaderSignature(cptPayload,
+	if err := b.checkProposalNewLeaderSignature(cptPayload,
 		cptPayload.NewLeaderPubKey, signedBuf); err != nil {
 		return err
 	}
@@ -1731,7 +1734,7 @@ func (b *BlockChain) normalCheckCRCProposalTrackingSignature(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check new leader public key.
 	if len(cptPayload.NewLeaderPubKey) != 0 {
-		return errors.New("appropriation need to be zero")
+		return errors.New("the NewLeaderPubKey need to be empty")
 	}
 
 	// Check signature of proposal leader.
@@ -1746,7 +1749,7 @@ func (b *BlockChain) normalCheckCRCProposalTrackingSignature(
 
 	// Check new leader signature.
 	if len(cptPayload.NewLeaderSign) != 0 {
-		return errors.New("NewLeaderSign need to be empty")
+		return errors.New("the NewLeaderSign need to be empty")
 	}
 
 	// Check secretary general signature。
@@ -1774,16 +1777,31 @@ func (b *BlockChain) checkProposalLeaderSignature(
 		return errors.New("proposal leader signature check failed")
 	}
 
-	return nil
+	return common.WriteVarBytes(signedBuf, cptPayload.LeaderSign)
+}
+
+func (b *BlockChain) checkProposalNewLeaderSignature(
+	cptPayload *payload.CRCProposalTracking, pubKey []byte,
+	signedBuf *bytes.Buffer) error {
+	publicKey, err := crypto.DecodePoint(pubKey)
+	if err != nil {
+		return errors.New("invalid proposal new leader public key")
+	}
+	lContract, err := contract.CreateStandardContract(publicKey)
+	if err != nil {
+		return errors.New("invalid proposal leader publicKey")
+	}
+	if err := checkCRTransactionSignature(cptPayload.NewLeaderSign, lContract.Code,
+		signedBuf.Bytes()); err != nil {
+		return errors.New("proposal leader signature check failed")
+	}
+
+	return common.WriteVarBytes(signedBuf, cptPayload.NewLeaderSign)
 }
 
 func (b *BlockChain) checkSecretaryGeneralSignature(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState,
 	signedBuf *bytes.Buffer) error {
-	err := common.WriteVarBytes(signedBuf, cptPayload.SecretaryGeneralSign)
-	if err != nil {
-		return errors.New("invalid secretary general signature")
-	}
 	var sgContract *contract.Contract
 	publicKeyBytes, err := hex.DecodeString(b.chainParams.SecretaryGeneral)
 	if err != nil {
@@ -1791,7 +1809,7 @@ func (b *BlockChain) checkSecretaryGeneralSignature(
 	}
 	publicKey, err := crypto.DecodePoint(publicKeyBytes)
 	if err != nil {
-		return errors.New("invalid proposal leader")
+		return errors.New("invalid proposal secretary general public key")
 	}
 	sgContract, err = contract.CreateStandardContract(publicKey)
 	if err != nil {
@@ -1799,7 +1817,7 @@ func (b *BlockChain) checkSecretaryGeneralSignature(
 	}
 	if err = checkCRTransactionSignature(cptPayload.SecretaryGeneralSign,
 		sgContract.Code, signedBuf.Bytes()); err != nil {
-		return errors.New("CR sponsor signature check failed")
+		return errors.New("secretary general signature check failed")
 	}
 
 	return nil
