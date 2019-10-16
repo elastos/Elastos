@@ -569,6 +569,24 @@ public class MyWallet {
         }
     }
 
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: int start
+    // args[3]: int count
+    public BaseEntity GetAllPublicKeys(String masterWalletID, String chainID, int start, int count) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+            }
+            String allPublicKeys = subWallet.GetAllPublicKeys(start, count);
+
+            return new CommmonStringEntity(SUCCESSCODE, allPublicKeys);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "Get " + formatWalletName(masterWalletID, chainID) + " all addresses");
+        }
+    }
+
 
     // args[0]: String masterWalletID
     // args[1]: String chainID

@@ -300,9 +300,11 @@ namespace Elastos {
 			 *
 			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
 			 *                     Otherwise, pick UTXO from the specific address.
-			 * @param votes        Candidate code and votes in JSON format.such as:
-			 * 						{"2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac": "100000000",
-			 * 						"2102775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74Dac": "200000000"}
+			 * @param votes        Candidate code and votes in JSON format. Such as:
+			 *                     {
+			 *                          "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "100000000",
+			 *                          "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
+			 *                     }
 			 * @param memo         Remarks string. Can be empty string.
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
@@ -316,9 +318,8 @@ namespace Elastos {
 			 *
 			 * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
 			 * {
-			 * 	 "2102848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5ac": "10000000",
-			 * 	 "2102775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74Dac": "200000000",
-			 * 	 "2103E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DAac": "5000000000"
+			 * 	 "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000",
+			 * 	 "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
 			 * }
 			 */
 			virtual	nlohmann::json GetVotedCRList() const = 0;
@@ -333,7 +334,7 @@ namespace Elastos {
 			 *    "Status": "Registered",
 			 *    "Info": {
 			 *      "CROwnerPublicKey": "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-			 *      "CROwnerDID": "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+			 *      "CROwnerDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
 			 *      "NickName": "hello nickname",
 			 *      "URL": "www.google.com",
 			 *      "Location": 86,
@@ -352,11 +353,33 @@ namespace Elastos {
 			 * @return vote info in JSON format. Such as:
 			 *
 			 * summary:
-			 * [{"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null},
-			 *  {"Type": "CRC", "Amount": "56789", "Timestamp": 1560888482, "Expiry": 1561888000}]
+			 *  [
+			 *      {"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null},
+			 *      {"Type": "CRC", "Amount": "56789", "Timestamp": 1560888482, "Expiry": 1561888000}
+			 *  ]
 			 *
 			 * details:
-			 * [{"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null, "Votes": {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000","02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000"}}]
+			 *  [{
+			 *      "Type": "Delegate",
+			 *      "Amount": "200000000",
+			 *      "Timestamp": 1560888482,
+			 *      "Expiry": null,
+			 *      "Votes": {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000","02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000"}
+			 *  },
+			 *  {
+			 *      ...
+			 *  }]
+			 * or:
+			 *  [{
+			 *      "Type": "CRC",
+			 *      "Amount": "300000000",
+			 *      "Timestamp": 1560888482,
+			 *      "Expiry": null,
+			 *      "Votes": {"iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000","iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"}
+			 *  },
+			 *  {
+			 *      ...
+			 *  }]
 			 */
 			virtual nlohmann::json GetVoteInfo(const std::string &type) const = 0;
 
