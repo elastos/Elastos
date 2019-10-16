@@ -69,6 +69,12 @@ type CRCProposalTracking struct {
 	// The appropriation of current stage of proposal.
 	Appropriation common.Fixed64
 
+	// The leader public key.
+	LeaderPubKey []byte
+
+	// The new leader public key.
+	NewLeaderPubKey []byte
+
 	// The signature of proposal leader.
 	LeaderSign []byte
 
@@ -105,12 +111,12 @@ func (p *CRCProposalTracking) SerializeUnsigned(w io.Writer, version byte) error
 		return errors.New("the Appropriation serialize failed")
 	}
 
-	return nil
-}
+	if err := common.WriteVarBytes(w, p.LeaderPubKey); err != nil {
+		return errors.New("the LeaderPubKey serialize failed")
+	}
 
-func (p *CRCProposalTracking) serializeProgressType(w io.Writer, version byte) error {
-	if _, err := w.Write([]byte{byte(p.ProposalTrackingType)}); err != nil {
-		return err
+	if err := common.WriteVarBytes(w, p.NewLeaderPubKey); err != nil {
+		return errors.New("the NewLeaderPubKey serialize failed")
 	}
 
 	return nil
@@ -122,14 +128,18 @@ func (p *CRCProposalTracking) Serialize(w io.Writer, version byte) error {
 	}
 
 	if err := common.WriteVarBytes(w, p.LeaderSign); err != nil {
-		return err
+		return errors.New("the LeaderSign serialize failed")
 	}
 
 	if err := common.WriteVarBytes(w, p.NewLeaderSign); err != nil {
-		return err
+		return errors.New("the NewLeaderSign serialize failed")
 	}
 
-	return common.WriteVarBytes(w, p.SecretaryGeneralSign)
+	if err := common.WriteVarBytes(w, p.SecretaryGeneralSign); err != nil {
+		return errors.New("the SecretaryGeneralSign serialize failed")
+	}
+
+	return nil
 }
 
 func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) error {
@@ -139,15 +149,28 @@ func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) err
 	}
 	p.ProposalTrackingType = CRCProposalTrackingType(pType[0])
 
-	if err := p.ProposalHash.Deserialize(r); err != nil {
+	if err = p.ProposalHash.Deserialize(r); err != nil {
 		return errors.New("the ProposalHash deserialize failed")
 	}
+
 	if p.Stage, err = common.ReadUint32(r); err != nil {
 		return errors.New("the Stage deserialize failed")
 	}
+
 	if err := p.Appropriation.Deserialize(r); err != nil {
 		return errors.New("the Appropriation deserialize failed")
 	}
+
+	if p.LeaderSign, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
+		"leader pubkey"); err != nil {
+		return err
+	}
+
+	if p.NewLeaderSign, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
+		"new leader pubkey"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -155,23 +178,27 @@ func (p *CRCProposalTracking) Deserialize(r io.Reader, version byte) error {
 	if err := p.DeserializeUnSigned(r, version); err != nil {
 		return err
 	}
+
 	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength,
 		"leader signature")
 	if err != nil {
 		return err
 	}
 	p.LeaderSign = crSign
+
 	newCRSign, err := common.ReadVarBytes(r, crypto.SignatureLength,
 		"new leader signature")
 	if err != nil {
 		return err
 	}
 	p.NewLeaderSign = newCRSign
+
 	sgSign, err := common.ReadVarBytes(r, crypto.SignatureLength,
 		"secretary general signature")
 	if err != nil {
 		return err
 	}
 	p.SecretaryGeneralSign = sgSign
+
 	return nil
 }
