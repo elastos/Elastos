@@ -2,8 +2,6 @@ import Base from './Base'
 import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { permissions } from '../utility'
-import * as moment from 'moment'
 import { mail, user as userUtil } from '../utility'
 
 interface Mail {
