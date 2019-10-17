@@ -5,11 +5,14 @@ import I18N from '@/I18N'
 import PopoverProfile from '../PopoverProfile'
 import './style.scss'
 
-export default ({ data, hideAuthor, postedByText }) => {
+export default ({ data, hideAuthor, postedByText, user }) => {
   const { displayId, createdAt, descUpdatedAt } = data
-  const authorNode = hideAuthor ? '' : (
+  const authorNode = hideAuthor ? (
+    ''
+  ) : (
     <span>
-      {postedByText || I18N.get('suggestion.postedBy')} <PopoverProfile data={data} meta={true} />
+      {postedByText || I18N.get('suggestion.postedBy')}{' '}
+      <PopoverProfile data={data} meta={true} user={user} />
     </span>
   )
 
@@ -22,7 +25,11 @@ export default ({ data, hideAuthor, postedByText }) => {
         {moment(createdAt).format('MMM D, YYYY')}
       </span>
 
-      {/* there is a hack here, we set descUpdatedAt always so we only are sorting on that field, remove this when we properly sort on a projected field */}
+      {/**
+        * there is a hack here, 
+        * we set descUpdatedAt always so we only are sorting on that field,
+        * remove this when we properly sort on a projected field
+        */}
       {descUpdatedAt && !moment(descUpdatedAt).isSame(createdAt, 'day') && (
         <span>
           {I18N.get('suggestion.fields.preambleSub.updated')}{' '}

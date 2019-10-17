@@ -5,7 +5,7 @@ import I18N from '@/I18N'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-export default ({ data, meta }) => {
+export default ({ data, meta, user }) => {
   let name = `${_.get(data, 'createdBy.profile.firstName', '')}
     ${_.get(data, 'createdBy.profile.lastName', '')}
   `
@@ -16,6 +16,7 @@ export default ({ data, meta }) => {
   const author = data.author || name
   const userId = _.get(data, 'createdBy._id')
   const email = _.get(data, 'createdBy.email')
+  const isAuthor = user.current_user_id === userId
   const content = (
     <PopoverContent>
       <div>
@@ -41,9 +42,11 @@ export default ({ data, meta }) => {
         <span className="label">{I18N.get('suggestion.popover.name')}:</span>
         <span className="value">{author}</span>
       </div>
-      <Link to={`/member/${userId}`}>
-        {I18N.get('suggestion.popover.viewProfile')}
-      </Link>
+      {(isAuthor || user.is_admin || user.is_secretary || user.is_council) && (
+        <Link to={`/member/${userId}`}>
+          {I18N.get('suggestion.popover.viewProfile')}
+        </Link>
+      )}
     </PopoverContent>
   )
   return (

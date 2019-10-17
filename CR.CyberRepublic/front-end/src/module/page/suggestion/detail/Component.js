@@ -47,7 +47,7 @@ import {
   ItemTitle,
   ItemText,
   StyledAnchor,
-  StyledRichContent,
+  StyledRichContent
 } from './style'
 
 import './style.scss'
@@ -182,8 +182,9 @@ export default class extends StandardPage {
 
   renderPreambleItem(header, value, item) {
     let text = <ItemText>{value}</ItemText>
+    const { detail, user } = this.props
     if (item === 'username') {
-      text = <PopoverProfile data={this.props.detail} />
+      text = <PopoverProfile data={detail} user={user} />
     }
     return (
       <Item>
@@ -279,8 +280,8 @@ export default class extends StandardPage {
   }
 
   renderMetaNode() {
-    const { detail } = this.props
-    return <MetaContainer data={detail} />
+    const { detail, user } = this.props
+    return <MetaContainer data={detail} user={user} />
   }
 
   renderTitleNode() {
