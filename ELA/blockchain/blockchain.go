@@ -117,14 +117,21 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 	return &chain, nil
 }
 
+func (b *BlockChain) Init(interrupt <-chan struct{}) error {
+	if err := b.db.GetFFLDB().InitIndex(b, interrupt); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 	barStart func(total uint32), increase func(), clear bool) (err error) {
+
 	endHeight := b.db.GetHeight()
 	startHeight := b.GetHeight() + 1
 	if endHeight < startHeight {
 		return nil
 	}
-
 	done := make(chan bool)
 
 	go func() {

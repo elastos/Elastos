@@ -46,13 +46,16 @@ type ChainStore struct {
 	persistMutex sync.Mutex
 }
 
-func NewChainStore(dataDir string, genesisBlock *Block, fflDB IFFLDBChainStore) (
+func NewChainStore(dataDir string, genesisBlock *Block) (
 	IChainStore, error) {
 	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
 	if err != nil {
 		return nil, err
 	}
-
+	fflDB, err := NewChainStoreFFLDB(dataDir)
+	if err != nil {
+		return nil, err
+	}
 	s := &ChainStore{
 		IStore:           db,
 		fflDB:            fflDB,

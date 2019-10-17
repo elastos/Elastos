@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -145,16 +144,7 @@ func startNode(c *cli.Context, st *settings) {
 	// Initializes the foundation address
 	blockchain.FoundationAddress = st.Params().Foundation
 
-	fflDB, err := blockchain.LoadBlockDB(dataDir)
-	if err != nil {
-		printErrorAndExit(err)
-	}
-	indexManager := indexers.NewManager(fflDB)
-	fflDBChainStore, err := blockchain.NewChainStoreFFLDB(fflDB, indexManager)
-	if err != nil {
-		printErrorAndExit(err)
-	}
-	chainStore, err := blockchain.NewChainStore(dataDir, st.Params().GenesisBlock, fflDBChainStore)
+	chainStore, err := blockchain.NewChainStore(dataDir, st.Params().GenesisBlock)
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -196,12 +186,11 @@ func startNode(c *cli.Context, st *settings) {
 	}
 	ledger.Arbitrators = arbiters // fixme
 
-	chain, err := blockchain.New(chainStore, st.Params(), arbiters.State,
-		committee)
+	chain, err := blockchain.New(chainStore, st.Params(), arbiters.State, committee)
 	if err != nil {
 		printErrorAndExit(err)
 	}
-	if err := indexManager.Init(chain, interrupt.C); err != nil {
+	if err := chain.Init(interrupt.C); err != nil {
 		printErrorAndExit(err)
 	}
 	if err := chain.InitFFLDBFromChainStore(interrupt.C, pgBar.Start,
