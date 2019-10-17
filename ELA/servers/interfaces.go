@@ -1436,7 +1436,7 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 }
 
 //single producer info
-type producerInfo struct {
+type RpcProducerInfo struct {
 	OwnerPublicKey string `json:"ownerpublickey"`
 	NodePublicKey  string `json:"nodepublickey"`
 	Nickname       string `json:"nickname"`
@@ -1453,14 +1453,14 @@ type producerInfo struct {
 }
 
 //a group producer info  include TotalVotes and producer count
-type producersInfo struct {
-	ProducerInfoSlice []producerInfo `json:"producers"`
-	TotalVotes        string         `json:"totalvotes"`
-	TotalCounts       uint64         `json:"totalcounts"`
+type RpcProducersInfo struct {
+	ProducerInfoSlice []RpcProducerInfo `json:"producers"`
+	TotalVotes        string            `json:"totalvotes"`
+	TotalCounts       uint64            `json:"totalcounts"`
 }
 
 //single cr candidate info
-type crCandidateInfo struct {
+type RpcCrCandidateInfo struct {
 	Code     string `json:"code"`
 	DID      string `json:"did"`
 	NickName string `json:"nickname"`
@@ -1473,14 +1473,14 @@ type crCandidateInfo struct {
 }
 
 //a group cr candidate info include TotalVotes and candidate count
-type crCandidatesInfo struct {
-	CRCandidateInfoSlice []crCandidateInfo `json:"crcandidatesinfo"`
-	TotalVotes           string            `json:"totalvotes"`
-	TotalCounts          uint64            `json:"totalcounts"`
+type RpcCrCandidatesInfo struct {
+	CRCandidateInfoSlice []RpcCrCandidateInfo `json:"crcandidatesinfo"`
+	TotalVotes           string               `json:"totalvotes"`
+	TotalCounts          uint64               `json:"totalcounts"`
 }
 
 //single cr member info
-type crMemberInfo struct {
+type RpcCrMemberInfo struct {
 	Code             string         `json:"code"`
 	DID              string         `json:"did"`
 	NickName         string         `json:"nickname"`
@@ -1494,9 +1494,9 @@ type crMemberInfo struct {
 }
 
 //a group cr member info  include cr member count
-type crMembersInfo struct {
-	CRMemberInfoSlice []crMemberInfo `json:"crmembersinfo"`
-	TotalCounts       uint64         `json:"totalcounts"`
+type RpcCrMembersInfo struct {
+	CRMemberInfoSlice []RpcCrMemberInfo `json:"crmembersinfo"`
+	TotalCounts       uint64            `json:"totalcounts"`
 }
 
 func ListProducers(param Params) map[string]interface{} {
@@ -1537,11 +1537,11 @@ func ListProducers(param Params) map[string]interface{} {
 		return producers[i].Votes() > producers[j].Votes()
 	})
 
-	var producerInfoSlice []producerInfo
+	var producerInfoSlice []RpcProducerInfo
 	var totalVotes common.Fixed64
 	for i, p := range producers {
 		totalVotes += p.Votes()
-		producerInfo := producerInfo{
+		producerInfo := RpcProducerInfo{
 			OwnerPublicKey: hex.EncodeToString(p.Info().OwnerPublicKey),
 			NodePublicKey:  hex.EncodeToString(p.Info().NodePublicKey),
 			Nickname:       p.Info().NickName,
@@ -1563,7 +1563,7 @@ func ListProducers(param Params) map[string]interface{} {
 	if limit < 0 {
 		limit = count
 	}
-	var rsProducerInfoSlice []producerInfo
+	var rsProducerInfoSlice []RpcProducerInfo
 	if start < count {
 		end := start
 		if start+limit <= count {
@@ -1574,7 +1574,7 @@ func ListProducers(param Params) map[string]interface{} {
 		rsProducerInfoSlice = append(rsProducerInfoSlice, producerInfoSlice[start:end]...)
 	}
 
-	result := &producersInfo{
+	result := &RpcProducersInfo{
 		ProducerInfoSlice: rsProducerInfoSlice,
 		TotalVotes:        totalVotes.String(),
 		TotalCounts:       uint64(count),
@@ -1620,12 +1620,12 @@ func ListCRCandidates(param Params) map[string]interface{} {
 		return candidates[i].Votes() > candidates[j].Votes()
 	})
 
-	var candidateInfoSlice []crCandidateInfo
+	var candidateInfoSlice []RpcCrCandidateInfo
 	var totalVotes common.Fixed64
 	for i, c := range candidates {
 		totalVotes += c.Votes()
 		didAddress, _ := c.Info().DID.ToAddress()
-		candidateInfo := crCandidateInfo{
+		candidateInfo := RpcCrCandidateInfo{
 			Code:     hex.EncodeToString(c.Info().Code),
 			DID:      didAddress,
 			NickName: c.Info().NickName,
@@ -1642,7 +1642,7 @@ func ListCRCandidates(param Params) map[string]interface{} {
 	if limit < 0 {
 		limit = count
 	}
-	var rSCandidateInfoSlice []crCandidateInfo
+	var rSCandidateInfoSlice []RpcCrCandidateInfo
 	if start < count {
 		end := start
 		if start+limit <= count {
@@ -1653,7 +1653,7 @@ func ListCRCandidates(param Params) map[string]interface{} {
 		rSCandidateInfoSlice = append(rSCandidateInfoSlice, candidateInfoSlice[start:end]...)
 	}
 
-	result := &crCandidatesInfo{
+	result := &RpcCrCandidatesInfo{
 		CRCandidateInfoSlice: rSCandidateInfoSlice,
 		TotalVotes:           totalVotes.String(),
 		TotalCounts:          uint64(count),
@@ -1677,11 +1677,11 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 			crMembers[j].Info.GetCodeHash()) < 0
 	})
 
-	var rsCRMemberInfoSlice []crMemberInfo
+	var rsCRMemberInfoSlice []RpcCrMemberInfo
 
 	for i, cr := range crMembers {
 		didAddress, _ := cr.Info.DID.ToAddress()
-		memberInfo := crMemberInfo{
+		memberInfo := RpcCrMemberInfo{
 			Code:             hex.EncodeToString(cr.Info.Code),
 			DID:              didAddress,
 			NickName:         cr.Info.NickName,
@@ -1698,7 +1698,7 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 
 	count := int64(len(crMembers))
 
-	result := &crMembersInfo{
+	result := &RpcCrMembersInfo{
 		CRMemberInfoSlice: rsCRMemberInfoSlice,
 		TotalCounts:       uint64(count),
 	}
