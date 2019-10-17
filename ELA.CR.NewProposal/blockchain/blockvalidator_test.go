@@ -50,8 +50,7 @@ func TestCheckBlockSanity(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	params := &config.DefaultParams
 	FoundationAddress = params.Foundation
-	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "sanity"),
-		params.GenesisBlock)
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "sanity"), params.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -59,6 +58,7 @@ func TestCheckBlockSanity(t *testing.T) {
 
 	chain, _ := New(chainStore, params, state.NewState(params,
 		nil, nil), nil)
+	//chain.Init(nil)
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
 			Blockchain: chain,

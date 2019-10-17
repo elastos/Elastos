@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -219,9 +219,8 @@ func (s *txValidatorSpecialTxTestSuite) TestValidateVoteEvidence() {
 			BlockHeight: header.Height,
 			BlockHeader: buf.Bytes(),
 			Proposal: payload.DPOSProposal{
-				BlockHash: header.Hash(),
-				Sponsor:
-				s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
+				BlockHash:  header.Hash(),
+				Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 				ViewOffset: rand.Uint32(),
 			},
 		},
@@ -253,9 +252,8 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_SameProposal()
 			BlockHeight: header.Height,
 			BlockHeader: buf.Bytes(),
 			Proposal: payload.DPOSProposal{
-				BlockHash: header.Hash(),
-				Sponsor:
-				s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
+				BlockHash:  header.Hash(),
+				Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 				ViewOffset: rand.Uint32(),
 			},
 		},
@@ -281,8 +279,7 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_SameProposal()
 	cmpEvidence := &payload.VoteEvidence{
 		ProposalEvidence: evidence.ProposalEvidence,
 		Vote: payload.DPOSProposalVote{
-			Signer:
-			s.arbitrators.CurrentArbitrators[1].GetNodePublicKey(),
+			Signer:       s.arbitrators.CurrentArbitrators[1].GetNodePublicKey(),
 			Accept:       false,
 			ProposalHash: evidence.Proposal.Hash(),
 		},
@@ -320,9 +317,8 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 			BlockHeight: header.Height,
 			BlockHeader: buf.Bytes(),
 			Proposal: payload.DPOSProposal{
-				BlockHash: header.Hash(),
-				Sponsor:
-				s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
+				BlockHash:  header.Hash(),
+				Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 				ViewOffset: rand.Uint32(),
 			},
 		},
@@ -343,9 +339,8 @@ func (s *txValidatorSpecialTxTestSuite) TestCheckDPOSIllegalVotes_DiffProposal()
 			BlockHeight: header2.Height,
 			BlockHeader: buf.Bytes(),
 			Proposal: payload.DPOSProposal{
-				BlockHash: header2.Hash(),
-				Sponsor:
-				s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
+				BlockHash:  header2.Hash(),
+				Sponsor:    s.arbitrators.CurrentArbitrators[0].GetNodePublicKey(),
 				ViewOffset: rand.Uint32(),
 			},
 		},

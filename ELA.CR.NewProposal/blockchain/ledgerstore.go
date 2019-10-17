@@ -8,6 +8,7 @@ package blockchain
 import (
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
@@ -85,28 +86,7 @@ type IFFLDBChainStore interface {
 
 	// Get a transaction by transaction hash
 	GetTransaction(txID Uint256) (*Transaction, uint32, error)
-}
 
-// IndexManager provides a generic interface that the is called when blocks are
-// connected and disconnected to and from the tip of the main chain for the
-// purpose of supporting optional indexes.
-type IndexManager interface {
-	// Init is invoked during chain initialize in order to allow the index
-	// manager to initialize itself and any indexes it is managing.  The
-	// channel parameter specifies a channel the caller can close to signal
-	// that the process should be interrupted.  It can be nil if that
-	// behavior is not desired.
-	Init(*BlockChain, <-chan struct{}) error
-
-	// ConnectBlock is invoked when a new block has been connected to the
-	// main chain.
-	ConnectBlock(database.Tx, *Block) error
-
-	// DisconnectBlock is invoked when a block has been disconnected from
-	// the main chain.
-	DisconnectBlock(database.Tx, *Block) error
-
-	// FetchTx retrieval a transaction and a block hash where it
-	// located by transaction hash
-	FetchTx(txID Uint256) (*Transaction, *Uint256, error)
+	// InitIndex use to initialize the index manager
+	InitIndex(chain indexers.IChain, interrupt <-chan struct{}) error
 }

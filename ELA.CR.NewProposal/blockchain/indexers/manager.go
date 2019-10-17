@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -134,7 +133,7 @@ type Manager struct {
 }
 
 // Ensure the Manager type implements the blockchain.IndexManager interface.
-var _ blockchain.IndexManager = (*Manager)(nil)
+var _ IndexManager = (*Manager)(nil)
 
 // indexDropKey returns the key for an index which indicates it is in the
 // process of being dropped.
@@ -232,7 +231,7 @@ func (m *Manager) maybeCreateIndexes(dbTx database.Tx) error {
 // catch up due to the I/O contention.
 //
 // This is part of the blockchain.IndexManager interface.
-func (m *Manager) Init(chain *blockchain.BlockChain, interrupt <-chan struct{}) error {
+func (m *Manager) Init(chain IChain, interrupt <-chan struct{}) error {
 	// Nothing to do when no indexes are enabled.
 	if len(m.enabledIndexes) == 0 {
 		return nil
@@ -352,7 +351,7 @@ func (m *Manager) Init(chain *blockchain.BlockChain, interrupt <-chan struct{}) 
 	// lowest one so the catchup code only needs to start at the earliest
 	// block and is able to skip connecting the block for the indexes that
 	// don't need it.
-	bestHeight := int32(chain.BestChain.Height)
+	bestHeight := int32(chain.GetHeight())
 	lowestHeight := bestHeight
 	indexerHeights := make([]int32, len(m.enabledIndexes))
 	err = m.db.View(func(dbTx database.Tx) error {
@@ -427,16 +426,6 @@ func (m *Manager) Init(chain *blockchain.BlockChain, interrupt <-chan struct{}) 
 
 	log.Infof("Indexes caught up to height %d", bestHeight)
 	return nil
-}
-
-// indexNeedsInputs returns whether or not the index needs access to the txouts
-// referenced by the transaction inputs being indexed.
-func indexNeedsInputs(index Indexer) bool {
-	if idx, ok := index.(NeedsInputser); ok {
-		return idx.NeedsInputs()
-	}
-
-	return false
 }
 
 // dbFetchTx looks up the passed transaction hash in the transaction index and

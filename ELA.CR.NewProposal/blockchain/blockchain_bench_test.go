@@ -23,7 +23,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -32,7 +31,6 @@ import (
 	"github.com/elastos/Elastos.ELA/database"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
-	"github.com/elastos/Elastos.ELA/utils/signal"
 	"github.com/elastos/Elastos.ELA/utils/test"
 )
 
@@ -44,6 +42,7 @@ const (
 )
 
 var (
+	params        = config.DefaultParams.RegNet()
 	originLedger  *Ledger
 	originAddress common.Uint168
 
@@ -199,12 +198,7 @@ func newChainStore(dataDir string, dbDir string, genesisBlock *types.Block) (ICh
 		return nil, err
 	}
 
-	fflDB, err := LoadBlockDB(filepath.Join(dataDir, dbDir))
-	if err != nil {
-		return nil, err
-	}
-	indexManager := indexers.NewManager(fflDB)
-	fdb, err := NewChainStoreFFLDB(fflDB, indexManager)
+	fdb, err := NewChainStoreFFLDB(filepath.Join(dataDir, dbDir))
 	if err != nil {
 		return nil, err
 	}
@@ -223,15 +217,15 @@ func newChainStore(dataDir string, dbDir string, genesisBlock *types.Block) (ICh
 
 func newBlockChain() *BlockChain {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
-
-	params := config.DefaultParams.RegNet()
 	chainStore, err := newChainStore(test.DataPath, "ffldb", params.GenesisBlock)
 	if err != nil {
 		fmt.Println(err.Error())
+		return nil
 	}
 	chain, err := New(chainStore, params, nil, nil)
 	if err != nil {
 		fmt.Println(err.Error())
+		return nil
 	}
 
 	return chain
@@ -243,23 +237,20 @@ func benchBegin() *BlockChain {
 	}
 
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+	log.Info("Roll back to: ", chainHeight)
+	rollbackTo(chainHeight, params)
 
-	params := config.DefaultParams.RegNet()
-	store, _ := NewChainStore(test.DataPath, params.GenesisBlock)
-	blockChain, _ := New(store, params, nil, nil)
-	var interrupt = signal.NewInterrupt()
-	blockChain.InitFFLDBFromChainStore(interrupt.C, nil, nil, false)
-	rollbackTo(chainHeight, blockChain)
-	store.Close()
-
+	log.Info("New chain store.")
 	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("create new chain store failed, ", err)
+		return nil
 	}
 
 	originAddress = FoundationAddress
 	FoundationAddress = params.Foundation
 
+	log.Info("New arbitrator.")
 	arbiters, _ := state.NewArbitrators(params, nil,
 		func(programHash common.Uint168) (common.Fixed64,
 			error) {
@@ -287,17 +278,19 @@ func benchBegin() *BlockChain {
 		return block, nil
 	})
 
-	chain, _ := New(chainStore, params, arbiters.State, nil)
+	log.Info("New block chain.")
+	newChain, _ := New(chainStore, params, arbiters.State, nil)
 	originLedger = DefaultLedger
 	DefaultLedger = &Ledger{
-		Blockchain:  chain,
+		Blockchain:  newChain,
 		Store:       chainStore,
 		Arbitrators: arbiters,
 	}
 
-	chain.InitCheckpoint(interrupt.C, nil, nil)
+	log.Info("Init check point.")
+	newChain.InitCheckpoint(nil, nil, nil)
 
-	return chain
+	return newChain
 }
 
 func newBlock() (*types.Block, *payload.Confirm) {
@@ -326,7 +319,24 @@ func rollbackBlockNode(ffldb IFFLDBChainStore, header *types.Header) error {
 	})
 }
 
-func rollbackTo(targetHeight uint32, chain *BlockChain) {
+func rollbackTo(targetHeight uint32, params *config.Params) {
+	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
+	if err != nil {
+		fmt.Println("create chain store failed, ", err)
+	}
+	defer chainStore.Close()
+
+	chain, err := New(chainStore, params, nil, nil)
+	if err != nil {
+		fmt.Println("create blockchain failed, ", err)
+	}
+	if err := chain.Init(nil); err != nil {
+		fmt.Println("initialize index manager failed", err)
+	}
+	if err := chain.InitFFLDBFromChainStore(nil, nil, nil, false); err != nil {
+		fmt.Println("initialize ffldb from chain store failed, ", err)
+	}
+
 	store := chain.db.(*ChainStore)
 	currentHeight := uint32(len(chain.Nodes)) - 1
 	for i := currentHeight; i > targetHeight; i-- {
@@ -337,17 +347,10 @@ func rollbackTo(targetHeight uint32, chain *BlockChain) {
 		if parentNode, ok := chain.LookupNodeInIndex(blockNode.ParentHash); ok {
 			blockNode.Parent = parentNode
 		}
-		store.NewBatch()
-		store.RollbackTrimmedBlock(block)
-		store.RollbackBlockHash(block)
-		store.RollbackTransactions(block)
-		store.RollbackUnspendUTXOs(block)
-		store.RollbackUnspend(block)
-		store.RollbackCurrentBlock(block)
-		store.RollbackConfirm(block)
-		store.fflDB.RollbackBlock(block, blockNode, confirm, chain.MedianTimePast)
-		rollbackBlockNode(store.fflDB, &block.Header)
-		store.BatchCommit()
+		err := chain.db.RollbackBlock(block, blockNode, confirm, CalcPastMedianTime(blockNode.Parent))
+		if err != nil {
+			fmt.Println("roll back block failed, ", err)
+		}
 		chain.SetTip(blockNode.Parent)
 	}
 }

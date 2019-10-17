@@ -12,6 +12,7 @@ import (
 	"encoding/binary"
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/database"
 )
@@ -26,10 +27,34 @@ var (
 	errInterruptRequested = errors.New("interrupt requested")
 )
 
-// NeedsInputser provides a generic interface for an indexer to specify the it
-// requires the ability to look up inputs for a transaction.
-type NeedsInputser interface {
-	NeedsInputs() bool
+type IChain interface {
+	MainChainHasBlock(height uint32, hash *common.Uint256) bool
+	GetBlockByHeight(height uint32) (*types.Block, error)
+	GetHeight() uint32
+}
+
+// IndexManager provides a generic interface that the is called when blocks are
+// connected and disconnected to and from the tip of the main chain for the
+// purpose of supporting optional indexes.
+type IndexManager interface {
+	// Init is invoked during chain initialize in order to allow the index
+	// manager to initialize itself and any indexes it is managing.  The
+	// channel parameter specifies a channel the caller can close to signal
+	// that the process should be interrupted.  It can be nil if that
+	// behavior is not desired.
+	Init(IChain, <-chan struct{}) error
+
+	// ConnectBlock is invoked when a new block has been connected to the
+	// main chain.
+	ConnectBlock(database.Tx, *types.Block) error
+
+	// DisconnectBlock is invoked when a block has been disconnected from
+	// the main chain.
+	DisconnectBlock(database.Tx, *types.Block) error
+
+	// FetchTx retrieval a transaction and a block hash where it
+	// located by transaction hash
+	FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint256, error)
 }
 
 // Indexer provides a generic interface for an indexer that is managed by an
@@ -76,13 +101,6 @@ type errDeserialize string
 // Error implements the error interface.
 func (e errDeserialize) Error() string {
 	return string(e)
-}
-
-// isDeserializeErr returns whether or not the passed error is an errDeserialize
-// error.
-func isDeserializeErr(err error) bool {
-	_, ok := err.(errDeserialize)
-	return ok
 }
 
 // interruptRequested returns true when the provided channel has been closed.

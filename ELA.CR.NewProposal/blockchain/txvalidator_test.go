@@ -11,7 +11,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	"math"
 	mrand "math/rand"
 	"path/filepath"
@@ -50,19 +49,9 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = params.Foundation
 	s.foundationAddress = params.Foundation
 
-	fflDB, err := LoadBlockDB(test.DataPath)
-	if err != nil {
-		s.Error(err)
-	}
-	indexManager := indexers.NewManager(fflDB)
-	fflDBChainStore, err := NewChainStoreFFLDB(fflDB, indexManager)
-	if err != nil {
-		s.Error(err)
-	}
 	chainStore, err := NewChainStore(
 		filepath.Join(test.DataPath, "txvalidator"),
-		params.GenesisBlock,
-		fflDBChainStore)
+		params.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
