@@ -19,7 +19,7 @@ namespace Elastos {
 					.install(getSidechainMerkleBlockFactoryComponent);
 		}
 
-		REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
+		REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
 
 	}
 }

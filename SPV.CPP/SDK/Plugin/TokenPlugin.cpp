@@ -17,6 +17,6 @@ namespace Elastos {
 					.install(getSidechainMerkleBlockFactoryComponent);
 		}
 
-		REGISTER_MERKLEBLOCKPLUGIN(Token, getTokenPluginComponent);
+		REGISTER_MERKLEBLOCKPLUGIN(TokenChain, getTokenPluginComponent);
 	}
 }
