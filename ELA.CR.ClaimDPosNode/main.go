@@ -8,7 +8,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -17,6 +16,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -144,7 +144,6 @@ func startNode(c *cli.Context, st *settings) {
 
 	// Initializes the foundation address
 	blockchain.FoundationAddress = st.Params().Foundation
-	blockchain.EnableUtxoDB = st.Params().EnableUtxoDB
 
 	fflDB, err := blockchain.LoadBlockDB(dataDir)
 	if err != nil {
