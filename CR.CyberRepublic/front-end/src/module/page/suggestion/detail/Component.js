@@ -32,6 +32,7 @@ import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import DraftEditor from '@/module/common/DraftEditor'
 import TagsContainer from '../common/tags/Container'
+import PopoverProfile from '../common/PopoverProfile'
 import {
   Container,
   Title,
@@ -46,7 +47,7 @@ import {
   ItemTitle,
   ItemText,
   StyledAnchor,
-  StyledRichContent
+  StyledRichContent,
 } from './style'
 
 import './style.scss'
@@ -179,15 +180,17 @@ export default class extends StandardPage {
     )
   }
 
-  renderPreambleItem(header, content) {
+  renderPreambleItem(header, value, item) {
+    let text = <ItemText>{value}</ItemText>
+    if (item === 'username') {
+      text = <PopoverProfile data={this.props.detail} />
+    }
     return (
       <Item>
         <Col span={6}>
           <ItemTitle>{header}</ItemTitle>
         </Col>
-        <Col span={18}>
-          <ItemText>{content}</ItemText>
-        </Col>
+        <Col span={18}>{text}</Col>
       </Item>
     )
   }
@@ -237,7 +240,8 @@ export default class extends StandardPage {
         )}
         {this.renderPreambleItem(
           I18N.get('suggestion.fields.preambleSub.creator'),
-          detail.createdBy.username
+          detail.createdBy.username,
+          'username'
         )}
         {this.renderPreambleItem(
           I18N.get('suggestion.fields.preambleSub.status'),

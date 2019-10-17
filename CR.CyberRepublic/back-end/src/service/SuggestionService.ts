@@ -142,13 +142,13 @@ export default class extends Base {
 
       cursor = this.model.getDBInstance()
         .find(query, excludedFields.join(' '))
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
         .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
         .sort(sortObject)
     } else {
       cursor = this.model.getDBInstance()
         .find(query)
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
         .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
@@ -178,7 +178,7 @@ export default class extends Base {
     }
     const doc = await this.model.getDBInstance()
       .findById(_id)
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
 
     if (_.isEmpty(doc.comments)) return doc
