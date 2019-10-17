@@ -23,7 +23,19 @@ export default ({ data, meta }) => {
           {I18N.get('suggestion.popover.email')}:
         </span>
         <span className="value email">{email}</span>
-        <Button type="primary">{I18N.get('suggestion.popover.copy')}</Button>
+        <Button
+          type="primary"
+          onClick={() => {
+            let el = document.createElement('input')
+            document.body.appendChild(el)
+            el.value = email
+            el.select()
+            document.execCommand('copy')
+            document.body.removeChild(el)
+          }}
+        >
+          {I18N.get('suggestion.popover.copy')}
+        </Button>
       </div>
       <div>
         <span className="label">{I18N.get('suggestion.popover.name')}:</span>
@@ -44,9 +56,12 @@ export default ({ data, meta }) => {
 const PopoverContent = styled.div`
   padding: 16px 16px 8px;
   > div {
+    display: flex;
+    align-items: center;
     margin-bottom: 8px;
     .label {
       padding-right: 20px;
+      flex-shrink: 0;
     }
     .label.email {
       padding-right: 14px;
