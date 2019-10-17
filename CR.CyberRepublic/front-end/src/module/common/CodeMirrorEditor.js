@@ -30,8 +30,9 @@ class Component extends BaseComponent {
   }
 
   onChange = (editor, data, value) => {
-    const { onChange } = this.props
+    const { onChange, callback, activeKey } = this.props
     if (onChange) onChange(value)
+    if (callback) callback(activeKey)
   }
 
   ord_render() {

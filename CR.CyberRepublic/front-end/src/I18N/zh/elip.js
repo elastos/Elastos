@@ -12,7 +12,15 @@ export default {
     author: '创建者',
     status: '状态',
     createdAt: '创建日期',
-    description: '描述'
+    description: '描述',
+    type: '类型',
+    abstract: '摘要',
+    specifications: '规范',
+    motivation: '动机',
+    rationale: '基本原理',
+    backwardCompatibility: '向后兼容性',
+    referenceImplementation: '参考实现',
+    copyrightDomain: '版权/公共域'
   },
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
@@ -34,7 +42,8 @@ export default {
     reject: '拒绝',
     approve: '批准',
     edit: '编辑',
-    markAsSubmitted: '标记为提交状态'
+    markAsSubmitted: '标记为提交状态',
+    continue: '继续'
   },
   msg: {
     updated: '更新成功',
@@ -44,6 +53,24 @@ export default {
     marked: '已标记'
   },
   form: {
+    note: {
+      type: '选择ELIP类型.',
+      abstract: 'Abstract',
+      specifications: 'Specifications',
+      motivation: 'Motivation',
+      rationale: 'Rationale',
+      backwardCompatibility: 'Backward Compatibility',
+      referenceImplementation: 'Reference Implementation',
+      copyrightDomain: 'Copyright/Public Domain'
+    },
+    type: {
+      standardTitle: 'Standards Tracking ELIP',
+      informationTitle: 'Information ELIP',
+      processTitle: 'Process ELIP',
+      standard: 'The standards tracking ELIP is divided into two parts: design and implementation. The design part should provide basic technical specifications and basic principles as well as implementation guidance. The implementation part is to track the status of the ELIP implementation.',
+      information: 'Describe the design issues of the Elastos, or provide general guidelines or information to the Elastos community, but does not propose new features. The informational ELIP does not necessarily represent the consensus or recommendation of the Elastos community, so users and implementers are free to ignore Informational ELIP or follow their advice.',
+      process: 'Describes a process surrounding Elastos, or proposes a change to a process. The process ELIP is similar to the Standards ELIP, but it is applicable to areas other than Elastos platform technology. Implementations may also be proposed in the ELIP, but should not involve changes to the Elastos platform codebase.<br />In general, the Process ELIP needs to get community consensus. Unlike the information ELIP, the Process ELIP is more than recommendation, and users are typically not free to ignore them. Examples include procedures, guidelines, changes to the decision-making process, and changes to the tools or environments used in Elastos development. ELIP-1 (this proposal) belongs to the process ELIP.',
+    },
     error: {
       required: '必填项',
       tooLong: '文字太长',
@@ -58,7 +85,6 @@ export default {
     approve: '您确定要批准该 ELIP 吗？',
     markAsSubmitted: '您确定要把该 ELIP 标记为提交状态吗？'
   },
-  note: '是一种设计文档，它用于向亦来云社区提供信息、描述流程、介绍新特性或者环境等。同时，ELIP应该提供目标特性的简明技术规范和基本原理。',
   text: {
     reviewDetails: '审核详情',
     approved: '已批准！',
