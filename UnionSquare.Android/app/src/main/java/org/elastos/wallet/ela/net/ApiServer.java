@@ -43,7 +43,7 @@ public interface ApiServer {
     Observable<CRListBean> getCRlist(@FieldMap Map<String, Object> map);
 
     @FormUrlEncoded
-    @POST("api/dposnoderpc/check/getdepositcoin")
+    @POST("api/dposnoderpc/check/getcrdepositcoin")
     @Headers("Content-Type:application/x-www-form-urlencoded; charset=utf-8")
     Observable<CRDePositcoinBean> getCRDepositcoin(@FieldMap Map<String, String> map);
 

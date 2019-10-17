@@ -7,28 +7,26 @@ import android.widget.ImageView;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
-import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CRListAdapter1 extends CRListAdapterFather {
 
     private final GlideRequest<Bitmap> glideRequest;
+    private SuperNodeListPresenter presenter;
 
 
-    public CRListAdapter1(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is,String totalvotes) {
-        super(R.layout.item_super_node_list1, context, data, is,totalvotes);
+    public CRListAdapter1(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is, String totalvotes) {
+        super(R.layout.item_super_node_list1, context, data, is, totalvotes);
 
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial_circle)
                 .placeholder(R.mipmap.found_vote_initial_circle).circleCrop();
@@ -55,8 +53,10 @@ public class CRListAdapter1 extends CRListAdapterFather {
             glideRequest.load(map.get(baseUrl)).into(iv);
             return;
         }
-
-        new SuperNodeListPresenter().getCRUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
+        if (presenter == null) {
+            presenter = new SuperNodeListPresenter();
+        }
+        presenter.getCRUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
             @Override
             public void onError(String url) {
                 map.put(url, "");
@@ -74,8 +74,26 @@ public class CRListAdapter1 extends CRListAdapterFather {
                 }
 
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
-                map.put(url, imgUrl);
-                glideRequest.load(imgUrl).into(iv1);
+                // map.put(url, imgUrl);
+                //   glideRequest.load(imgUrl).into(iv1);
+                presenter.getImage(iv1, url, imgUrl, context, new NodeDotJsonViewData() {
+                    @Override
+                    public void onError(String url) {
+                        map.put(url, "");
+                    }
+
+                    @Override
+                    public void onGetImage(ImageView iv1, String url, ImageBean imageBean) {
+                        if (iv1.getTag(R.id.error_tag_empty) == null || !(iv1.getTag(R.id.error_tag_empty).toString()).equals(url)) {
+                            GlideApp.with(context).clear(iv1);
+                            iv1.setImageResource(R.mipmap.found_vote_initial);
+                            return;
+                        }
+                        String newimgUrl = MyApplication.REQUEST_BASE_URL + "/" + imageBean.getData();
+                        map.put(url, newimgUrl);
+                        glideRequest.load(newimgUrl).into(iv1);
+                    }
+                });
             }
         });
         super.convert(helper, bean);

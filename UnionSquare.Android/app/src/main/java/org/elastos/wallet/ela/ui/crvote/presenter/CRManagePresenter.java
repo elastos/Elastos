@@ -15,9 +15,9 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 
 public class CRManagePresenter extends NewPresenterAbstract {
-    public void getCRDepositcoin(String ownerPublicKey, BaseFragment baseFragment) {
+    public void getCRDepositcoin(String did, BaseFragment baseFragment) {
         Map<String, String> map = new HashMap();
-        map.put("ownerpublickey", ownerPublicKey);
+        map.put("did", did);
         Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).getCRDepositcoin(map);
         Observer observer = createObserver( baseFragment, "getCRDepositcoin");
         subscriberObservable(observer, observable, baseFragment);
