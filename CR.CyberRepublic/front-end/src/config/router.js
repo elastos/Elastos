@@ -44,7 +44,7 @@ import ProfileTeamsPage from '@/module/page/profile/teams/Container'
 import ProfileTeamCreatePage from '@/module/page/profile/team_create/Container'
 import ProfileProjectsPage from '@/module/page/profile/projects/Container'
 import ProfileSubmissionsPage from '@/module/page/profile/submissions/Container'
-import ProfileSubmissionCreatePage from '@/module/page/profile/submission_create/Container'
+// import ProfileSubmissionCreatePage from '@/module/page/profile/submission_create/Container'
 import ProfileCommunitiesPage from '@/module/page/profile/communities/Container'
 import ProfileSubmissionDetailPage from '@/module/page/profile/submission_detail/Container'
 import ProfileSuggestionListPage from '@/module/page/profile/suggestion/list/Container'
@@ -360,10 +360,10 @@ export default [
     path: '/profile/submissions',
     page: ProfileSubmissionsPage,
   },
-  {
-    path: '/profile/submissions/create',
-    page: ProfileSubmissionCreatePage,
-  },
+  // {
+  //   path: '/profile/submissions/create',
+  //   page: ProfileSubmissionCreatePage,
+  // },
   {
     path: '/profile/communities',
     page: ProfileCommunitiesPage,

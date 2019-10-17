@@ -1,7 +1,7 @@
 import Base from '../Base'
 
 import get from './get'
-import create from './create'
+// import create from './create'
 import list from './list'
 import update from './update'
 import archive from './archive'
@@ -10,12 +10,11 @@ import subscribe from './subscribe'
 import unsubscribe from './unsubscribe'
 
 export default Base.setRouter([
-
-    {
-        path : '/create',
-        router : create,
-        method : 'post'
-    },
+    // {
+    //     path : '/create',
+    //     router : create,
+    //     method : 'post'
+    // },
     {
         path : '/list',
         router : list,

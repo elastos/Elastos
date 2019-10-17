@@ -130,9 +130,9 @@ export default class extends ProfilePage {
                   <Navigator selectedItem="profileSubmissions"/>
                 </Col>
                 <Col sm={24} md={20} className="c_ProfileContainer admin-right-column wrap-box-user">
-                  <div className="pull-right filter-group">
+                  {/* <div className="pull-right filter-group">
                     <Button onClick={this.goCreatepage.bind(this)}>Create Issue</Button>
-                  </div>
+                  </div> */}
                   <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
                     <Select
                       name="type"
