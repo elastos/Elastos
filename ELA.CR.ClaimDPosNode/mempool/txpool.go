@@ -30,29 +30,31 @@ type TxPool struct {
 	chainParams *config.Params
 
 	sync.RWMutex
-	txnList           map[Uint256]*Transaction // transaction which have been verifyed will put into this map
-	inputUTXOList     map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
-	sidechainTxList   map[Uint256]*Transaction // sidechain tx pool
-	ownerPublicKeys   map[string]struct{}
-	nodePublicKeys    map[string]struct{}
-	crDIDs            map[Uint168]struct{}
-	specialTxList     map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
-	crcProposals      map[Uint256]struct{}
-	crcProposalReview map[string]struct{}
-	producerNicknames map[string]struct{}
-	crNicknames       map[string]struct{}
+	txnList             map[Uint256]*Transaction // transaction which have been verifyed will put into this map
+	inputUTXOList       map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
+	sidechainTxList     map[Uint256]*Transaction // sidechain tx pool
+	ownerPublicKeys     map[string]struct{}
+	nodePublicKeys      map[string]struct{}
+	crDIDs              map[Uint168]struct{}
+	specialTxList       map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
+	crcProposals        map[Uint256]struct{}
+	crcProposalReview   map[string]struct{}
+	crcProposalTracking map[Uint256]struct{}
+	producerNicknames   map[string]struct{}
+	crNicknames         map[string]struct{}
 
-	tempInputUTXOList     map[string]*Transaction
-	tempSidechainTxList   map[Uint256]*Transaction
-	tempOwnerPublicKeys   map[string]struct{}
-	tempNodePublicKeys    map[string]struct{}
-	tempCrDIDs            map[Uint168]struct{}
-	tempSpecialTxList     map[Uint256]struct{}
-	tempCRCProposals      map[Uint256]struct{}
-	tempCrcProposalReview map[string]struct{}
-	tempProducerNicknames map[string]struct{}
-	tempCrNicknames       map[string]struct{}
-	txnListSize           int
+	tempInputUTXOList       map[string]*Transaction
+	tempSidechainTxList     map[Uint256]*Transaction
+	tempOwnerPublicKeys     map[string]struct{}
+	tempNodePublicKeys      map[string]struct{}
+	tempCRDIDs              map[Uint168]struct{}
+	tempSpecialTxList       map[Uint256]struct{}
+	tempCRCProposals        map[Uint256]struct{}
+	tempCRCProposalReview   map[string]struct{}
+	tempCRCProposalTracking map[Uint256]struct{}
+	tempProducerNicknames   map[string]struct{}
+	tempCRNicknames         map[string]struct{}
+	txnListSize             int
 }
 
 //append transaction to txnpool when check ok.
@@ -271,7 +273,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					mp.delCRDID(rcPayload.DID)
 					mp.delPublicKeyByCode(rcPayload.Code)
-					mp.delCrNickname(rcPayload.NickName)
+					mp.delCRNickname(rcPayload.NickName)
 				case UpdateCR:
 					rcPayload, ok := tx.Payload.(*payload.CRInfo)
 					if !ok {
@@ -279,7 +281,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delCRDID(rcPayload.DID)
-					mp.delCrNickname(rcPayload.NickName)
+					mp.delCRNickname(rcPayload.NickName)
 				case UnregisterCR:
 					unrcPayload, ok := tx.Payload.(*payload.UnregisterCR)
 					if !ok {
@@ -300,10 +302,15 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						log.Error("CRCProposalReview payload cast failed, tx:", tx.Hash())
 						continue
 					}
-					key := mp.getCrcProposalReviewKey(crcProposalReview)
-					mp.delCrcProposalReview(key)
+					key := mp.getCRCProposalReviewKey(crcProposalReview)
+					mp.delCRCProposalReview(key)
 				case CRCProposalTracking:
-					// todo complete me
+					cptPayload, ok := tx.Payload.(*payload.CRCProposalTracking)
+					if !ok {
+						log.Error("CRCProposalTracking payload cast failed, tx:", tx.Hash())
+						continue
+					}
+					mp.delCRCProposalTracking(cptPayload.ProposalHash)
 				}
 
 				deleteCount++
@@ -315,7 +322,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 		len(blockTxs), txsInPool, deleteCount, len(mp.txnList)))
 }
 
-func (mp *TxPool) getCrcProposalReviewKey(proposalReview *payload.
+func (mp *TxPool) getCRCProposalReviewKey(proposalReview *payload.
 	CRCProposalReview) string {
 	return proposalReview.DID.String() + proposalReview.ProposalHash.String()
 }
@@ -567,7 +574,15 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 			return ErrCRProcessing
 		}
 	case CRCProposalTracking:
-		// todo complete me
+		cptPayload, ok := txn.Payload.(*payload.CRCProposalTracking)
+		if !ok {
+			log.Error("crcProposalTracking  payload cast failed, tx:", txn.Hash())
+			return ErrCRProcessing
+		}
+		if err := mp.verifyDuplicateCrcProposalTracking(cptPayload); err != nil {
+			log.Warn(err)
+			return ErrCRProcessing
+		}
 	}
 
 	return Success
@@ -705,7 +720,7 @@ func (mp *TxPool) verifyDuplicateCRAndNickname(did Uint168,
 	if ok {
 		return errors.New("this CR nickname in being processed")
 	}
-	mp.addCrNickName(nickname)
+	mp.addCRNickName(nickname)
 	return nil
 }
 
@@ -728,14 +743,26 @@ func (mp *TxPool) verifyDuplicateCRCProposal(originProposalHash Uint256) error {
 
 	return nil
 }
+
 func (mp *TxPool) verifyDuplicateCrcProposalReview(crcProposalReview *payload.CRCProposalReview) error {
 
-	key := mp.getCrcProposalReviewKey(crcProposalReview)
+	key := mp.getCRCProposalReviewKey(crcProposalReview)
 	_, ok := mp.crcProposalReview[key]
 	if ok {
 		return errors.New("this origin crcProposalReview in being processed")
 	}
-	mp.addCrcProposalReview(key)
+	mp.addCRCProposalReview(key)
+
+	return nil
+}
+
+func (mp *TxPool) verifyDuplicateCrcProposalTracking(crcProposalTracking *payload.CRCProposalTracking) error {
+
+	_, ok := mp.crcProposalTracking[crcProposalTracking.ProposalHash]
+	if ok {
+		return errors.New("this origin CRC proposal tracking in being processed")
+	}
+	mp.addCRCProposalTracking(crcProposalTracking.ProposalHash)
 
 	return nil
 }
@@ -770,13 +797,13 @@ func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte, crNickn
 	}
 
 	mp.addCRDID(did)
-	mp.addCrNickName(crNickname)
+	mp.addCRNickName(crNickname)
 
 	return nil
 }
 
 func (mp *TxPool) addCRDID(did Uint168) {
-	mp.tempCrDIDs[did] = struct{}{}
+	mp.tempCRDIDs[did] = struct{}{}
 }
 
 func (mp *TxPool) delCRDID(did Uint168) {
@@ -799,21 +826,30 @@ func (mp *TxPool) delProducerNickname(key string) {
 	delete(mp.producerNicknames, key)
 }
 
-func (mp *TxPool) addCrNickName(key string) {
-	mp.tempCrNicknames[key] = struct{}{}
+func (mp *TxPool) addCRNickName(key string) {
+	mp.tempCRNicknames[key] = struct{}{}
 }
 
-func (mp *TxPool) delCrNickname(key string) {
+func (mp *TxPool) delCRNickname(key string) {
 	delete(mp.crNicknames, key)
 }
 
-func (mp *TxPool) addCrcProposalReview(key string) {
-	mp.tempCrcProposalReview[key] = struct{}{}
+func (mp *TxPool) addCRCProposalReview(key string) {
+	mp.tempCRCProposalReview[key] = struct{}{}
 }
 
-func (mp *TxPool) delCrcProposalReview(key string) {
+func (mp *TxPool) delCRCProposalReview(key string) {
 	delete(mp.crcProposalReview, key)
 }
+
+func (mp *TxPool) addCRCProposalTracking(key Uint256) {
+	mp.tempCRCProposalTracking[key] = struct{}{}
+}
+
+func (mp *TxPool) delCRCProposalTracking(key Uint256) {
+	delete(mp.crcProposalTracking, key)
+}
+
 func (mp *TxPool) delPublicKeyByCode(code []byte) {
 	signType, err := crypto.GetScriptType(code)
 	if err != nil {
@@ -996,8 +1032,12 @@ func (mp *TxPool) clearTemp() {
 	mp.tempOwnerPublicKeys = make(map[string]struct{})
 	mp.tempNodePublicKeys = make(map[string]struct{})
 	mp.tempSpecialTxList = make(map[Uint256]struct{})
-	mp.tempCrDIDs = make(map[Uint168]struct{})
+	mp.tempCRDIDs = make(map[Uint168]struct{})
 	mp.tempCRCProposals = make(map[Uint256]struct{})
+	mp.tempCRCProposalReview = make(map[string]struct{})
+	mp.tempCRCProposalTracking = make(map[Uint256]struct{})
+	mp.tempProducerNicknames = make(map[string]struct{})
+	mp.tempCRNicknames = make(map[string]struct{})
 }
 
 func (mp *TxPool) commitTemp() {
@@ -1013,7 +1053,7 @@ func (mp *TxPool) commitTemp() {
 	for k, v := range mp.tempNodePublicKeys {
 		mp.nodePublicKeys[k] = v
 	}
-	for k, v := range mp.tempCrDIDs {
+	for k, v := range mp.tempCRDIDs {
 		mp.crDIDs[k] = v
 	}
 	for k, v := range mp.tempSpecialTxList {
@@ -1025,37 +1065,39 @@ func (mp *TxPool) commitTemp() {
 	for k, v := range mp.tempProducerNicknames {
 		mp.producerNicknames[k] = v
 	}
-	for k, v := range mp.tempCrNicknames {
+	for k, v := range mp.tempCRNicknames {
 		mp.crNicknames[k] = v
 	}
-	for k, v := range mp.tempCrcProposalReview {
+	for k, v := range mp.tempCRCProposalReview {
 		mp.crcProposalReview[k] = v
 	}
 }
 
 func NewTxPool(params *config.Params) *TxPool {
 	return &TxPool{
-		chainParams:           params,
-		inputUTXOList:         make(map[string]*Transaction),
-		txnList:               make(map[Uint256]*Transaction),
-		sidechainTxList:       make(map[Uint256]*Transaction),
-		ownerPublicKeys:       make(map[string]struct{}),
-		nodePublicKeys:        make(map[string]struct{}),
-		specialTxList:         make(map[Uint256]struct{}),
-		crDIDs:                make(map[Uint168]struct{}),
-		crcProposals:          make(map[Uint256]struct{}),
-		producerNicknames:     make(map[string]struct{}),
-		crNicknames:           make(map[string]struct{}),
-		crcProposalReview:     make(map[string]struct{}),
-		tempInputUTXOList:     make(map[string]*Transaction),
-		tempSidechainTxList:   make(map[Uint256]*Transaction),
-		tempOwnerPublicKeys:   make(map[string]struct{}),
-		tempNodePublicKeys:    make(map[string]struct{}),
-		tempSpecialTxList:     make(map[Uint256]struct{}),
-		tempCrDIDs:            make(map[Uint168]struct{}),
-		tempCRCProposals:      make(map[Uint256]struct{}),
-		tempProducerNicknames: make(map[string]struct{}),
-		tempCrNicknames:       make(map[string]struct{}),
-		tempCrcProposalReview: make(map[string]struct{}),
+		chainParams:             params,
+		inputUTXOList:           make(map[string]*Transaction),
+		txnList:                 make(map[Uint256]*Transaction),
+		sidechainTxList:         make(map[Uint256]*Transaction),
+		ownerPublicKeys:         make(map[string]struct{}),
+		nodePublicKeys:          make(map[string]struct{}),
+		specialTxList:           make(map[Uint256]struct{}),
+		crDIDs:                  make(map[Uint168]struct{}),
+		crcProposals:            make(map[Uint256]struct{}),
+		producerNicknames:       make(map[string]struct{}),
+		crNicknames:             make(map[string]struct{}),
+		crcProposalReview:       make(map[string]struct{}),
+		crcProposalTracking:     make(map[Uint256]struct{}),
+		tempInputUTXOList:       make(map[string]*Transaction),
+		tempSidechainTxList:     make(map[Uint256]*Transaction),
+		tempOwnerPublicKeys:     make(map[string]struct{}),
+		tempNodePublicKeys:      make(map[string]struct{}),
+		tempSpecialTxList:       make(map[Uint256]struct{}),
+		tempCRDIDs:              make(map[Uint168]struct{}),
+		tempCRCProposals:        make(map[Uint256]struct{}),
+		tempProducerNicknames:   make(map[string]struct{}),
+		tempCRNicknames:         make(map[string]struct{}),
+		tempCRCProposalReview:   make(map[string]struct{}),
+		tempCRCProposalTracking: make(map[Uint256]struct{}),
 	}
 }
