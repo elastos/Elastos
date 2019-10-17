@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
-import com.bumptech.glide.RequestBuilder;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
@@ -15,7 +14,6 @@ import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
-import org.elastos.wallet.ela.utils.Log;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -92,24 +90,28 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
                 }
 
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
-                map.put(url, imgUrl);
-                 glideRequest.load(imgUrl).into(iv1);
+                //map.put(url, imgUrl);
+                //glideRequest.load(imgUrl).into(iv1);
                 //获得url 上传url
 
-             /*   presenter.getImage(iv1, url, imgUrl, context, new NodeDotJsonViewData() {
+                presenter.getImage(iv1, url, imgUrl, context, new NodeDotJsonViewData() {
                     @Override
                     public void onError(String url) {
                         map.put(url, "");
                     }
+
                     @Override
                     public void onGetImage(ImageView iv1, String url, ImageBean imageBean) {
+                        if (iv1.getTag(R.id.error_tag_empty) == null || !(iv1.getTag(R.id.error_tag_empty).toString()).equals(url)) {
+                            GlideApp.with(context).clear(iv1);
+                            iv1.setImageResource(R.mipmap.found_vote_initial);
+                            return;
+                        }
                         String newimgUrl = MyApplication.REQUEST_BASE_URL + "/" + imageBean.getData();
-                        Log.d("???????", imgUrl);
-                        Log.d("???????", newimgUrl);
                         map.put(url, newimgUrl);
                         glideRequest.load(newimgUrl).into(iv1);
                     }
-                });*/
+                });
 
 
             }

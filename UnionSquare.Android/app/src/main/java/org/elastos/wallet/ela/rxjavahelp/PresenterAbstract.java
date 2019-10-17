@@ -66,29 +66,38 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment) {
         //初始化参数
 
-        return createObserver(listener, baseFragment,true,null );
+        return createObserver(listener, baseFragment, true, null);
     }
 
     protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity) {
         //初始化参数
-        return createObserver(listener, baseActivity,true, null);
+        return createObserver(listener, baseActivity, true, null);
     }
 
     protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment, boolean isShowDialog) {
-        return createObserver(listener,baseFragment, isShowDialog, null);
-    }  protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity, boolean isShowDialog) {
-        return createObserver(listener,baseActivity, isShowDialog, null);
+        return createObserver(listener, baseFragment, isShowDialog, null);
     }
+
+    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity, boolean isShowDialog) {
+        return createObserver(listener, baseActivity, isShowDialog, null);
+    }
+
     protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment, Object o) {
-        return createObserver(listener,baseFragment, true, o);
-    } protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity, Object o) {
-        return createObserver(listener,baseActivity, true, o);
+        return createObserver(listener, baseFragment, true, o);
     }
-    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment,boolean isShowDialog,  Object o) {
+
+    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity, Object o) {
+        return createObserver(listener, baseActivity, true, o);
+    }
+
+    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseFragment baseFragment, boolean isShowDialog, Object o) {
         //初始化参数
         this.context = baseFragment.getBaseActivity();
+        Dialog dialog;
         if (isShowDialog) {
-            initProgressDialog(context);
+            dialog = initProgressDialog(context);
+        } else {
+            dialog = null;
         }
         SubscriberOnNextLisenner lisener = LisenerFactor.create(listener);
         lisener.setViewData((BaseViewData) baseFragment);
@@ -96,6 +105,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             lisener.setObj(o);
         }
         //创建 Observer
+        // Dialog finalDialog = dialog;
         return new Observer<BaseEntity>() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -106,7 +116,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
                     lisener.onNextLisenner(value);
@@ -120,7 +130,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             @Override
             public void onError(Throwable e) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -137,11 +147,14 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
     }
 
-    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity,boolean isShowDialog,  Object o) {
+    protected Observer<BaseEntity> createObserver(Class<? extends SubscriberOnNextLisenner> listener, BaseActivity baseActivity, boolean isShowDialog, Object o) {
         //初始化参数
         this.context = baseActivity;
+        Dialog dialog;
         if (isShowDialog) {
-            initProgressDialog(context);
+            dialog=initProgressDialog(context);
+        }else {
+            dialog=null;
         }
         SubscriberOnNextLisenner lisener = LisenerFactor.create(listener);
         lisener.setViewData((BaseViewData) baseActivity);
@@ -159,7 +172,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 if (MyWallet.SUCCESSCODE.equals(value.getCode())) {
                     lisener.onNextLisenner(value);
@@ -176,7 +189,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 finish();
             }
@@ -192,20 +205,30 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     }
 
 
+    protected void dismissProgessDialog(Dialog dialog) {
+        if (dialog != null && dialog.isShowing()) {
+            dialog.dismiss();
+        }
+    }
+
+/*
     protected void dismissProgessDialog() {
         if (DialogUtil.getHttpialog() != null && DialogUtil.getHttpialog().isShowing()) {
             DialogUtil.getHttpialog().dismiss();
             DialogUtil.setHttpialogNull();
         }
     }
+*/
 
-    protected void initProgressDialog(Context context) {
+    protected Dialog initProgressDialog(Context context) {
         Dialog dialog = new DialogUtil().getHttpDialog(context, "loading...");
         dialog.setOnCancelListener(this);
-        dialog.dismiss();
-        if (!dialog.isShowing()) {
+        dialog.show();
+        //  dialog.dismiss();
+      /*  if (!dialog.isShowing()) {
             dialog.show();
-        }
+        }*/
+        return dialog;
     }
 
     @Override

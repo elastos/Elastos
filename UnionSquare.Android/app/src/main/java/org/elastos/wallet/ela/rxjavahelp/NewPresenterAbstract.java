@@ -1,5 +1,6 @@
 package org.elastos.wallet.ela.rxjavahelp;
 
+import android.app.Dialog;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,23 +16,23 @@ public class NewPresenterAbstract extends PresenterAbstract {
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName) {
         //初始化参数
-        return createObserver(baseFragment, methodName, true,null);
+        return createObserver(baseFragment, methodName, true, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName) {
         //初始化参数
-        return createObserver(baseActivity, methodName, true,null);
+        return createObserver(baseActivity, methodName, true, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, boolean isShowDialog) {
         //初始化参数
 
-        return createObserver(baseFragment, methodName, isShowDialog,null);
+        return createObserver(baseFragment, methodName, isShowDialog, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, boolean isShowDialog) {
         //初始化参数
-        return createObserver(baseActivity, methodName,isShowDialog, null);
+        return createObserver(baseActivity, methodName, isShowDialog, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, Object o) {
@@ -48,8 +49,11 @@ public class NewPresenterAbstract extends PresenterAbstract {
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, boolean isShowDialog, Object o) {
         //初始化参数
         this.context = baseFragment.getBaseActivity();
+        Dialog dialog;
         if (isShowDialog) {
-            initProgressDialog(context);
+            dialog = initProgressDialog(context);
+        } else {
+            dialog = null;
         }
         //创建 Observer
         return new Observer<BaseEntity>() {
@@ -62,7 +66,7 @@ public class NewPresenterAbstract extends PresenterAbstract {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
                     ((NewBaseViewData) baseFragment).onGetData(methodName, value, o);
@@ -76,7 +80,7 @@ public class NewPresenterAbstract extends PresenterAbstract {
             @Override
             public void onError(Throwable e) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -97,8 +101,11 @@ public class NewPresenterAbstract extends PresenterAbstract {
     protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, boolean isShowDialog, Object o) {
         //初始化参数
         this.context = baseActivity;
+        Dialog dialog;
         if (isShowDialog) {
-            initProgressDialog(context);
+            dialog = initProgressDialog(context);
+        } else {
+            dialog = null;
         }
         //创建 Observer
         return new Observer<BaseEntity>() {
@@ -111,7 +118,7 @@ public class NewPresenterAbstract extends PresenterAbstract {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 if (MyWallet.SUCCESSCODE.equals(value.getCode())) {
                     ((NewBaseViewData) baseActivity).onGetData(methodName, value, o);
@@ -128,7 +135,7 @@ public class NewPresenterAbstract extends PresenterAbstract {
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 finish();
             }

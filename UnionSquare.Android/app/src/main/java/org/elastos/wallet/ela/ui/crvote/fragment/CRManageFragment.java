@@ -103,6 +103,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     String status;
     private String info;
     private String ownerPublicKey;
+    private String did;
 
 
     @Override
@@ -125,6 +126,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void setExtraData(Bundle data) {
         status = data.getString("status", "Canceled");
+        did = data.getString("did", "");
         info = data.getString("info", "");
         CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
 
@@ -281,7 +283,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             case "getCROwnerPublicKey":
                 ownerPublicKey = ((CommmonStringEntity) baseEntity).getData();
                 //getdepositcoin();//获取赎回金额
-                presenter.getCRDepositcoin(ownerPublicKey, this);
+                presenter.getCRDepositcoin(did, this);
                 break;
         }
     }
