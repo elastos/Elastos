@@ -12,6 +12,9 @@
 #include <SDK/Common/Log.h>
 #include <SDK/Plugin/Transaction/Program.h>
 #include <SDK/Plugin/Transaction/Transaction.h>
+#include <SDK/WalletCore/BIPs/BIP39.h>
+#include <SDK/WalletCore/BIPs/HDKeychain.h>
+#include <BIPs/Key.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -19,6 +22,28 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 	Log::registerMultiLogger();
 
 	nlohmann::json content = "{\"Attributes\":[{\"Data\":\"353634383333303934\",\"Usage\":0}],\"BlockHeight\":2147483647,\"Fee\":10000,\"Inputs\":[{\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":200000000,\"Index\":0,\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"Sequence\":4294967295,\"Signature\":\"\",\"TxHash\":\"e77c3bea963d124311076d4737372cbb23aef8d63d5eadaad578455d481cc025\"}],\"IsRegistered\":false,\"LockTime\":0,\"Outputs\":[{\"FixedIndex\":0,\"Address\":\"Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ\",\"Amount\":10000000,\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"21db215de2758b7d743f66e4c66cfcc35dc54ccbcb\",\"Script\":\"76a914db215de2758b7d743f66e4c66cfcc35dc54ccbcb88ac\",\"ScriptLen\":25,\"SignType\":172},{\"FixedIndex\":1,\"Address\":\"8Gqrkk876Kc1HUjeG9evyFsc91RGYWyQj4\",\"Amount\":189990000,\"AssetId\":\"b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3\",\"OutputLock\":0,\"ProgramHash\":\"12134a742f7782c295d3ea18cb59cd0101b21b1a2f\",\"Script\":\"76a914134a742f7782c295d3ea18cb59cd0101b21b1a2f88ac\",\"ScriptLen\":25,\"SignType\":174}],\"PayLoad\":null,\"PayloadVersion\":0,\"Programs\":[],\"Remark\":\"\",\"Timestamp\":0,\"TxHash\":\"80a0eb3c6bbce2c21d542c7ce9d248fe013fc1c757addd7fcee04b14098d5fa7\",\"Type\":2,\"Version\":1}"_json;
+
+	SECTION("Sign and Verify") {
+		std::string mnemonic = "敌 宾 饰 详 贪 卷 剥 汇 层 富 怨 穷";
+		uint512 seed = BIP39::DeriveSeed(mnemonic, "");
+
+		HDSeed hdseed(seed.bytes());
+		HDKeychain rootprv(hdseed.getExtendedKey(true));
+
+		Key key1 = rootprv.getChild("1'/0");
+		Key key2 = rootprv.getChild("2'/0");
+
+		std::string msg = "hello world";
+
+		bytes_t signature1 = key1.Sign(msg);
+		REQUIRE(key1.Verify(msg, signature1));
+		REQUIRE(!key2.Verify(msg, signature1));
+
+		bytes_t signature2 = key2.Sign(msg);
+		REQUIRE(key2.Verify(msg, signature2));
+		REQUIRE(!key1.Verify(msg, signature2));
+	}
+
 	SECTION("BIP45") {
 
 		SECTION("HD account sign multi sign tx test") {
