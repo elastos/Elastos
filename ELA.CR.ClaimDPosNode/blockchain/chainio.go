@@ -437,7 +437,6 @@ func (b *BlockChain) initChainState() error {
 					"not load block node for block %s", header.Hash())
 			}
 			node.Status = status
-			b.Nodes = append(b.Nodes, node)
 
 			lastNode = node
 			i++

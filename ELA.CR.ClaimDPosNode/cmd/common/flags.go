@@ -251,6 +251,10 @@ var (
 		Name:  "appropriationrecipient",
 		Usage: "defines the recipient of appropriation",
 	}
+	MaxProposalTrackingCountFlag = cli.StringFlag{
+		Name:  "maxproposaltrackingcount",
+		Usage: "defines the max count of CRC proposal tracking",
+	}
 	PreConnectOffsetFlag = cli.StringFlag{
 		Name:  "preconnectoffset",
 		Usage: "defines the offset blocks to pre-connect to the block producers",

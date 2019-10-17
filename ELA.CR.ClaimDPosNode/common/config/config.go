@@ -105,4 +105,5 @@ type CRConfiguration struct {
 	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
 	SecretaryGeneral           string  `json:"SecretaryGeneral"`
 	AppropriationRecipient     string  `json:"AppropriationRecipient"`
+	MaxProposalTrackingCount   uint8   `json:"MaxProposalTrackingCount"`
 }

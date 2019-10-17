@@ -146,6 +146,7 @@ var DefaultParams = Params{
 	},
 	SecretaryGeneral:            "", // todo correct me later
 	AppropriationRecipient:      "", // todo correct me later
+	MaxProposalTrackingCount:    128,
 	PowLimit:                    powLimit,
 	PowLimitBits:                0x1f0008ff,
 	TargetTimespan:              24 * time.Hour,  // 24 hours
@@ -226,6 +227,7 @@ func (p *Params) TestNet() *Params {
 	}
 	copy.SecretaryGeneral = ""       // todo correct me later
 	copy.AppropriationRecipient = "" // todo correct me later
+	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
@@ -281,7 +283,7 @@ func (p *Params) RegNet() *Params {
 	}
 	copy.SecretaryGeneral = ""       // todo correct me later
 	copy.AppropriationRecipient = "" // todo correct me later
-
+	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
@@ -472,6 +474,10 @@ type Params struct {
 
 	// AppropriationRecipient defines the recipient of appropriation.
 	AppropriationRecipient string
+
+	// MaxProposalTrackingCount defines the max count of CRC proposal tracking
+	// transaction.
+	MaxProposalTrackingCount uint8
 
 	// CkpManager holds checkpoints save automatically.
 	CkpManager *checkpoint.Manager

@@ -64,7 +64,7 @@ type CRCProposalTracking struct {
 	ProposalHash common.Uint256
 
 	// The stage of proposal.
-	Stage uint32
+	Stage uint8
 
 	// The appropriation of current stage of proposal.
 	Appropriation common.Fixed64
@@ -103,7 +103,7 @@ func (p *CRCProposalTracking) SerializeUnsigned(w io.Writer, version byte) error
 		return errors.New("the ProposalHash serialize failed")
 	}
 
-	if err := common.WriteUint32(w, p.Stage); err != nil {
+	if err := common.WriteUint8(w, p.Stage); err != nil {
 		return errors.New("the Stage serialize failed")
 	}
 
@@ -153,7 +153,7 @@ func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) err
 		return errors.New("the ProposalHash deserialize failed")
 	}
 
-	if p.Stage, err = common.ReadUint32(r); err != nil {
+	if p.Stage, err = common.ReadUint8(r); err != nil {
 		return errors.New("the Stage deserialize failed")
 	}
 

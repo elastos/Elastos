@@ -725,6 +725,12 @@ func newSettings() *settings {
 		ConfigPath:   "CRConfiguration.AppropriationRecipient",
 		ParamName:    "AppropriationRecipient"})
 
+	result.Add(&settingItem{
+		Flag:         cmdcom.MaxProposalTrackingCountFlag,
+		DefaultValue: uint8(0),
+		ConfigPath:   "CRConfiguration.MaxProposalTrackingCount",
+		ParamName:    "MaxProposalTrackingCount"})
+
 	return result
 }
 

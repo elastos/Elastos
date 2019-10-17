@@ -1675,7 +1675,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	s.EqualError(err, "the NewLeaderPubKey need to be empty")
 
 	// Check Progress tracking tx.
-	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 2, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
 
@@ -1688,13 +1688,13 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "invalid stage")
 
-	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 2, 1,
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1, 1,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "appropriation need to be zero")
 
-	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 2, 0,
+	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
@@ -1777,11 +1777,41 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "the NewLeaderPubKey need to be empty")
+
+	// Check invalid proposal hash.
+	txn = s.getCRCProposalTrackingTx(payload.Common, *randomUint256(), 0, 0,
+		publicKeyStr1, privateKeyStr1, "", "",
+		publicKeyStr3, privateKeyStr3)
+
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "proposal not exist")
+
+	// Check reach max proposal tracking count.
+	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 0,
+		publicKeyStr1, privateKeyStr1, "", "",
+		publicKeyStr3, privateKeyStr3)
+
+	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash] =
+		&crstate.ProposalState{
+			Proposal: payload.CRCProposal{
+				ProposalType:     0,
+				SponsorPublicKey: leaderPubKey,
+				CRSponsorDID:     *randomUint168(),
+				DraftHash:        *randomUint256(),
+				Budgets:          []common.Fixed64{100, 200, 300},
+				Recipient:        *recipient,
+			},
+			CurrentStage:  1,
+			TrackingCount: 128,
+		}
+
+	err = s.Chain.checkCrcProposalTrackingTransaction(txn, votingHeight)
+	s.EqualError(err, "reached max tracking count")
 }
 
 func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	trackingType payload.CRCProposalTrackingType,
-	proposalHash common.Uint256, stage uint32, appropriation common.Fixed64,
+	proposalHash common.Uint256, stage uint8, appropriation common.Fixed64,
 	leaderPublicKeyStr, leaderPrivateKeyStr,
 	newLeaderPublicKeyStr, newLeaderPrivateKeyStr,
 	sgPublicKeyStr, sgPrivateKeyStr string) *types.Transaction {

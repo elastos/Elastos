@@ -309,6 +309,7 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		RegisterHeight:     height,
 		CRVotes:            map[common.Uint168]payload.VoteResult{},
 		VotersRejectAmount: common.Fixed64(0),
+		ProposalLeader:     proposal.SponsorPublicKey,
 	}
 	CRSponsorDID := proposal.CRSponsorDID
 	hash := proposal.Hash()
@@ -343,6 +344,46 @@ func (p *ProposalManager) proposalReview(tx *types.Transaction,
 		proposalState.CRVotes[did] = proposalReview.VoteResult
 	}, func() {
 		delete(proposalState.CRVotes, did)
+	})
+}
+
+func (p *ProposalManager) proposalTracking(tx *types.Transaction,
+	height uint32, history *utils.History) {
+	proposalTracking := tx.Payload.(*payload.CRCProposalTracking)
+	proposalState := p.getProposal(proposalTracking.ProposalHash)
+	if proposalState == nil {
+		return
+	}
+
+	trackingType := proposalTracking.ProposalTrackingType
+	leader := proposalState.ProposalLeader
+	terminatedHeight := proposalState.TerminatedHeight
+	stage := proposalTracking.Stage
+
+	history.Append(height, func() {
+		proposalState.TrackingCount++
+		switch trackingType {
+		case payload.Common:
+		case payload.Progress:
+		case payload.Terminated:
+			proposalState.TerminatedHeight = height
+		case payload.ProposalLeader:
+			proposalState.ProposalLeader = proposalTracking.NewLeaderPubKey
+		case payload.Appropriation:
+			proposalState.CurrentStage = proposalTracking.Stage
+		}
+	}, func() {
+		proposalState.TrackingCount--
+		switch trackingType {
+		case payload.Common:
+		case payload.Progress:
+		case payload.Terminated:
+			proposalState.TerminatedHeight = terminatedHeight
+		case payload.ProposalLeader:
+			proposalState.ProposalLeader = leader
+		case payload.Appropriation:
+			proposalState.CurrentStage = stage
+		}
 	})
 }
 
