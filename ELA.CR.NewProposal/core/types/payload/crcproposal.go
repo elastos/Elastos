@@ -131,7 +131,7 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 		return err
 	}
 	p.ProposalType = CRCProposalType(pType[0])
-	sponsor, err := common.ReadVarBytes(r, crypto.MaxSignatureScriptLength, "sponsor")
+	sponsor, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "sponsor")
 	if err != nil {
 		return err
 	}

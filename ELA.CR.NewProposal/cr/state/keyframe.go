@@ -7,6 +7,7 @@ package state
 
 import (
 	"bytes"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -73,7 +74,11 @@ type ProposalState struct {
 	VotersRejectAmount common.Fixed64
 	RegisterHeight     uint32
 	VoteStartHeight    uint32
-	CurrentStage       uint32
+
+	CurrentStage     uint8
+	TrackingCount    uint8
+	TerminatedHeight uint32
+	ProposalLeader   []byte
 }
 
 type ProposalHashSet map[common.Uint256]struct{}
@@ -545,8 +550,17 @@ func (p *ProposalState) Serialize(w io.Writer) (err error) {
 		}
 	}
 
-	if err = common.WriteUint32(w, p.CurrentStage); err != nil {
+	if err = common.WriteUint8(w, p.CurrentStage); err != nil {
 		return
+	}
+	if err = common.WriteUint8(w, p.TrackingCount); err != nil {
+		return
+	}
+	if err = common.WriteUint32(w, p.TerminatedHeight); err != nil {
+		return
+	}
+	if err := common.WriteVarBytes(w, p.ProposalLeader); err != nil {
+		return err
 	}
 
 	return p.TxHash.Serialize(w)
@@ -596,10 +610,19 @@ func (p *ProposalState) Deserialize(r io.Reader) (err error) {
 		p.CRVotes[key] = payload.VoteResult(value)
 	}
 
-	if p.CurrentStage, err = common.ReadUint32(r); err != nil {
+	if p.CurrentStage, err = common.ReadUint8(r); err != nil {
 		return
 	}
-
+	if p.TrackingCount, err = common.ReadUint8(r); err != nil {
+		return
+	}
+	if p.TerminatedHeight, err = common.ReadUint32(r); err != nil {
+		return
+	}
+	if p.ProposalLeader, err = common.ReadVarBytes(r, crypto.NegativeBigLength,
+		"proposal leader"); err != nil {
+		return err
+	}
 	return p.TxHash.Deserialize(r)
 }
 
