@@ -50,7 +50,7 @@ class C extends BaseComponent {
   // header + main area
   renderMain() {
     return (
-      <div className="c_Comments">
+      <div className="c_Comments" id={this.props.id}>
         {this.renderHeader()}
         {this.renderComments()}
         <Modal

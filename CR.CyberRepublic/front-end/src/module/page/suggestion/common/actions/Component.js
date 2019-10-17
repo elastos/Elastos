@@ -1,6 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
-import { Popover, Icon } from 'antd'
+import { Popover, Icon, Anchor } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery } from '@/util'
@@ -15,6 +15,8 @@ import { ReactComponent as FlagIcon } from '@/assets/images/icon-flag.svg'
 import { ReactComponent as ArchiveIcon } from '@/assets/images/icon-archive.svg'
 
 import './style.scss'
+
+const { Link } = Anchor
 
 const IconText = ({
   component, text, onClick, className = '',
@@ -90,11 +92,19 @@ export default class extends BaseComponent {
         className={dislikeClass}
       />
     )
-
+   
     const commentNode = (
-      <div className="cr-icon-group">
-        <IconText component={!!CommentIcon && <CommentIcon />} text={commentsNum} />
-      </div>
+      <Anchor className="cr-icon-group">
+        <Link
+          href="#comments"
+          title={
+            <IconText
+              component={!!CommentIcon && <CommentIcon />}
+              text={commentsNum}
+            />
+          }
+        />
+      </Anchor>
     )
 
     const viewsNode = (

@@ -474,6 +474,7 @@ export default class extends StandardPage {
     const { detail } = this.props
     return (
       <Comments
+        id="comments"
         type="suggestion"
         suggestion={detail}
         canPost={true}
