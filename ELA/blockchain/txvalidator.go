@@ -1610,6 +1610,10 @@ func (b *BlockChain) checkCrcProposalTrackingTransaction(txn *Transaction,
 		return errors.New("proposal not exist")
 	}
 
+	if proposalState.TrackingCount >= b.chainParams.MaxProposalTrackingCount {
+		return errors.New("reached max tracking count")
+	}
+
 	var result error
 	switch cptPayload.ProposalTrackingType {
 	case payload.Common:
@@ -1647,7 +1651,7 @@ func (b *BlockChain) checkCRCProposalCommonTracking(
 func (b *BlockChain) checkCRCProposalProgressTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check the stage of proposal
-	if cptPayload.Stage != pState.CurrentStage+1 {
+	if cptPayload.Stage != pState.CurrentStage {
 		return errors.New("invalid stage")
 	}
 
@@ -1700,7 +1704,7 @@ func (b *BlockChain) checkCRCProposalAppropriationTracking(
 	}
 
 	// Check appropriation.
-	if cptPayload.Stage > uint32(len(pState.Proposal.Budgets)) ||
+	if cptPayload.Stage > uint8(len(pState.Proposal.Budgets)) ||
 		cptPayload.Appropriation != pState.Proposal.Budgets[cptPayload.Stage-1] {
 		return errors.New("invalid appropriation")
 	}

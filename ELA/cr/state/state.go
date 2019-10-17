@@ -320,7 +320,9 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 			s.manager.proposalReview(tx, height, s.history)
 		}
 	case types.CRCProposalTracking:
-		// todo complete me
+		if s.manager != nil {
+			s.manager.proposalTracking(tx, height, s.history)
+		}
 	}
 
 	s.processCancelVotes(tx, height)

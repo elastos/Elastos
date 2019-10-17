@@ -806,7 +806,7 @@ func randomCRCProposalTrackingPayload() *payload.CRCProposalTracking {
 	return &payload.CRCProposalTracking{
 		ProposalTrackingType: payload.CRCProposalTrackingType(rand.Uint32()),
 		ProposalHash:         *randomUint256(),
-		Stage:                rand.Uint32(),
+		Stage:                randomUint8(),
 		Appropriation:        randomFix64(),
 		LeaderPubKey:         randomBytes(33),
 		NewLeaderPubKey:      randomBytes(35),
@@ -913,6 +913,13 @@ func randomUint168() *common.Uint168 {
 	result, _ := common.Uint168FromBytes(randBytes)
 
 	return result
+}
+
+func randomUint8() uint8 {
+	randBytes := make([]byte, 1)
+	rand.Read(randBytes)
+
+	return uint8(randBytes[0])
 }
 
 func randomSignature() []byte {
