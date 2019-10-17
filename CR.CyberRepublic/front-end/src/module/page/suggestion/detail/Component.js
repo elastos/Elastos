@@ -1,6 +1,16 @@
 import React from 'react'
 import _ from 'lodash'
-import { Row, Col, Spin, Modal, Input, Button, Anchor, Popconfirm, message } from 'antd'
+import {
+  Row,
+  Col,
+  Spin,
+  Modal,
+  Input,
+  Button,
+  Anchor,
+  Popconfirm,
+  message
+} from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -78,7 +88,10 @@ export default class extends StandardPage {
           title={I18N.get('suggestion.fields.abstract')}
         />
         <div style={{ marginTop: 48 }}>
-          <Anchor.Link href="#goal" title={I18N.get('suggestion.fields.goal')} />
+          <Anchor.Link
+            href="#goal"
+            title={I18N.get('suggestion.fields.goal')}
+          />
         </div>
         <Anchor.Link
           href="#motivation"
@@ -142,7 +155,10 @@ export default class extends StandardPage {
             <div style={{ marginTop: 60 }}>{commentNode}</div>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
-            <BackLink link="/suggestion" style={{ position: 'fixed', left: '27px', top: '189px' }} />
+            <BackLink
+              link="/suggestion"
+              style={{ position: 'fixed', left: '27px', top: '189px' }}
+            />
             {this.renderAnchors()}
             <Row gutter={24}>
               <Col span={24}>
@@ -178,7 +194,14 @@ export default class extends StandardPage {
 
   renderDetail() {
     const { detail } = this.props
-    const sections = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
+    const sections = [
+      'abstract',
+      'goal',
+      'motivation',
+      'plan',
+      'relevance',
+      'budget'
+    ]
 
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
@@ -201,26 +224,43 @@ export default class extends StandardPage {
         <div style={{ margin: '14px 0' }}>{labelNode}</div>
         <div>{tagsNode}</div>
 
-        <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.suggestion'), `#${detail.displayId}`)}
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.title'), detail.title)}
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.creator'), detail.createdBy.username)}
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.status'), status)}
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
-        {
-          sections.map(section => (
-            <div key={section}>
-              <DescLabel id={section}>{I18N.get(`suggestion.fields.${section}`)}</DescLabel>
-              <StyledRichContent>
-                <DraftEditor
-                  value={detail[section]}
-                  editorEnabled={false}
-                  contentType={CONTENT_TYPE.MARKDOWN}
-                />
-              </StyledRichContent>
-            </div>
-          ))
-        }
+        <DescLabel id="preamble">
+          {I18N.get('suggestion.fields.preamble')}
+        </DescLabel>
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.suggestion'),
+          `#${detail.displayId}`
+        )}
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.title'),
+          detail.title
+        )}
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.creator'),
+          detail.createdBy.username
+        )}
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.status'),
+          status
+        )}
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.created'),
+          moment(detail.createdAt).format('MMM D, YYYY')
+        )}
+        {sections.map(section => (
+          <div key={section}>
+            <DescLabel id={section}>
+              {I18N.get(`suggestion.fields.${section}`)}
+            </DescLabel>
+            <StyledRichContent>
+              <DraftEditor
+                value={detail[section]}
+                editorEnabled={false}
+                contentType={CONTENT_TYPE.MARKDOWN}
+              />
+            </StyledRichContent>
+          </div>
+        ))}
       </div>
     )
   }
@@ -284,7 +324,10 @@ export default class extends StandardPage {
               visible={this.state.needsInfoVisible}
               onCancel={this.closeNeedsInfoModal.bind(this)}
               footer={[
-                <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>
+                <Button
+                  key="close"
+                  onClick={this.closeNeedsInfoModal.bind(this)}
+                >
                   Close
                 </Button>
               ]}
@@ -380,12 +423,9 @@ export default class extends StandardPage {
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
         >
-        <StyledButton
-          type="ebp"
-          className="cr-btn cr-btn-default"
-        >
-          {I18N.get('suggestion.btnText.markConsider')}
-        </StyledButton>
+          <StyledButton type="ebp" className="cr-btn cr-btn-default">
+            {I18N.get('suggestion.btnText.markConsider')}
+          </StyledButton>
         </Popconfirm>
       </Col>
     )
