@@ -41,7 +41,7 @@ import ProfileInfoPage from '@/module/page/profile/info/Container'
 import ProfileTasksPage from '@/module/page/profile/tasks/Container'
 import ProfileTaskApplicationDetailPage from '@/module/page/profile/task_candidate_detail/Container'
 import ProfileTeamsPage from '@/module/page/profile/teams/Container'
-import ProfileTeamCreatePage from '@/module/page/profile/team_create/Container'
+// import ProfileTeamCreatePage from '@/module/page/profile/team_create/Container'
 import ProfileProjectsPage from '@/module/page/profile/projects/Container'
 import ProfileSubmissionsPage from '@/module/page/profile/submissions/Container'
 // import ProfileSubmissionCreatePage from '@/module/page/profile/submission_create/Container'
@@ -348,10 +348,10 @@ export default [
     path: '/profile/teams',
     page: ProfileTeamsPage,
   },
-  {
-    path: '/profile/teams/create',
-    page: ProfileTeamCreatePage,
-  },
+  // {
+  //   path: '/profile/teams/create',
+  //   page: ProfileTeamCreatePage,
+  // },
   {
     path: '/team-detail/:teamId',
     page: TeamDetailPage,

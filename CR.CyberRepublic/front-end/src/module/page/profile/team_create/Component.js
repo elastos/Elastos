@@ -50,7 +50,5 @@ export default class extends ProfilePage {
 
   async componentDidMount() {
     await super.componentDidMount()
-
-
   }
 }
