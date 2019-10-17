@@ -131,8 +131,54 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    /*
-     */
+    func test04PublishDID() {
+        let hint: String = "my did for deleted."
+        let doc: DIDDocument = try! store.newDid(passphrase, hint)
+        ids[doc.subject!] = hint
+        primaryDid = doc.subject
+        let dids: Array<DID> = Array(ids.keys)
+        dids.forEach { did in
+            do {
+                let doc: DIDDocument = try store.loadDid(did)!
+                try store.publishDid(doc, DIDURL(did, "primary"), passphrase)
+            }catch {
+                print(error)
+            }
+        }
+    }
+    
+    func test05IssueSelfClaimCredential1() throws {
+        let hint: String = "my did for test05IssueSelfClaimCredential1."
+        let doc: DIDDocument = try! store.newDid(passphrase, hint)
+        ids[doc.subject!] = hint
+        primaryDid = doc.subject
+        let issuer: Issuer = try! Issuer(primaryDid, nil)
+        var props: OrderedDictionary<String, String> = OrderedDictionary()
+        props["name"] = "Elastos"
+        props["email"] = "contact@elastos.org"
+        props["website"] = "https://www.elastos.org/"
+        props["phone"] = "12345678900"
+        
+        issuer.target = primaryDid
+        issuer.vc?.id = try DIDURL(primaryDid, "cred-1")
+        issuer.vc?.types = ["SelfProclaimedCredential", "BasicProfileCredential"]
+        issuer.vc?.expirationDate = Date()
+        issuer.vc?.subject.properties = props
+        issuer.sign(passphrase)
+        
+        var doc2: DIDDocument = try store.resolveDid(primaryDid)
+        _ = doc2.modify()
+        _ = doc2.addCredential(issuer.vc!)
+        try store.storeDid(doc2)
+        doc2 = try store.resolveDid(primaryDid)
+        var vcId: DIDURL = try DIDURL(primaryDid, "cred-1")
+        issuer.vc = try doc2.getCredential(vcId)
+        
+        XCTAssertNil(issuer.vc)
+        XCTAssertEqual(vcId, issuer.vc?.id)
+        XCTAssertEqual(primaryDid, issuer.vc?.subject.id)
+    }
+
     func deleteFile(_ path: String) {
         let filemanager: FileManager = FileManager.default
         var isdir = ObjCBool.init(false)

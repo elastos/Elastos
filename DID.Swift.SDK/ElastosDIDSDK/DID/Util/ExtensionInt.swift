@@ -42,7 +42,7 @@ extension Dictionary {
 
 extension Character {
     var asciiValue: UInt32? {
-        return     String(self).unicodeScalars.filter{$0.isASCII}.first?.value
+        return String(self).unicodeScalars.filter{$0.isASCII}.first?.value
     }
 }
 

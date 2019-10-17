@@ -15,7 +15,6 @@ class DIDDoucumentTests: XCTestCase {
     }
 
     func testParseDocument() {
-//        let testdiddocUrl: URL = Bundle(for: type(of: self)).url(forResource: "testdiddoc", withExtension: "json")!
         let document: DIDDocument = try! DIDDocument.fromJson("/Users/liaihong/Desktop/testdiddoc.json")
         XCTAssertEqual(3, document.getPublicKeyCount())
         let pks: Array<DIDPublicKey> = document.getPublicKeys()

@@ -12,15 +12,32 @@ public class DIDPublicKey: DIDObject {
     
     class public func fromJson(_ dic: Dictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey{
         
-        let controller: DID = try DID(dic["controller"] as! String)
-        let id: DIDURL = try DIDURL(dic["id"] as! String)
-        let type = dic["type"] as! String
+        var value = dic[Constants.controller]
+        var controller: DID
+        if (value != nil) {
+            controller = try DID(dic[Constants.controller] as! String)
+        }
+        else {
+            controller = ref
+        }
+        var  fra = dic[Constants.id] as! String
+        fra = String(fra.suffix(fra.count - 1))
+        let id: DIDURL = try DIDURL(ref, fra)
+        
+        value = dic[Constants.type]
+        var type: String
+        if value == nil {
+            type = "ECDSAsecp256r1"
+        }
+        else {
+           type = value as! String
+        }
         let publicKeyBase58 = dic["publicKeyBase58"] as! String
         return DIDPublicKey(id, type, controller, publicKeyBase58)
     }
     
-    public func toJson(_ ref: DID, _ compact: Bool) -> Dictionary<String, Any> {
-        var dic: Dictionary<String, Any> = [: ]
+    public func toJson(_ ref: DID, _ compact: Bool) -> OrderedDictionary<String, Any> {
+        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         
         // id

@@ -24,8 +24,8 @@ public class VerifiableCredential: DIDObject {
         self.proof = vc.proof
     }
     
-    public func toJson(_ ref: DID, _ compact: Bool, _ forSign: Bool) -> Dictionary<String, Any> {
-        var dic: Dictionary<String, Any> = [: ]
+    public func toJson(_ ref: DID, _ compact: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
+        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         
         // id
@@ -75,20 +75,15 @@ public class VerifiableCredential: DIDObject {
         return vc
     }
     
-    class func fromJson(_ json: String) -> VerifiableCredential {
-        let vc: VerifiableCredential = VerifiableCredential()
-        
-        return vc
-    }
-
     class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         try vc.parse(json, ref)
         return vc
     }
 
-    class func fromJson(_ md: Any) -> VerifiableCredential {
+    class func fromJson(_ json: Dictionary<String, Any>) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
+        try vc.parse(json, nil)
         return vc
     }
     
@@ -117,10 +112,10 @@ public class VerifiableCredential: DIDObject {
         issuer = try JsonHelper.getDid(json, Constants.issuer, true, ref, "crendential issuer")
         
         // issuanceDate
-        issuanceDate = JsonHelper.getDate(json, Constants.issuanceDate, false, nil, "credential issuanceDate")
+        issuanceDate = try JsonHelper.getDate(json, Constants.issuanceDate, false, nil, "credential issuanceDate")
         
         // expirationDate
-        expirationDate = JsonHelper.getDate(json, Constants.expirationDate, true, nil, "credential expirationDate")
+        expirationDate = try JsonHelper.getDate(json, Constants.expirationDate, true, nil, "credential expirationDate")
         
         // credentialSubject
         value = json[Constants.credentialSubject]
@@ -139,5 +134,10 @@ public class VerifiableCredential: DIDObject {
         value = json[Constants.proof] 
         proof = try Proof.fromJson(value as! Dictionary<String, Any>, re)
         self.type = proof.type
+    }
+    
+    public func toJsonForSign(_ compact: Bool) -> String {
+
+        return ""
     }
 }

@@ -25,6 +25,8 @@
 		116C94F2234D827D00BA9777 /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 116C94F1234D827D00BA9777 /* crypto.h */; };
 		116C950C234E2B6200BA9777 /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116C950B234E2B6200BA9777 /* CHDKey.swift */; };
 		1189A4BF23386A9E0068EE41 /* PathExtracter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1189A4BE23386A9E0068EE41 /* PathExtracter.swift */; };
+		1190E62C2358D26C00A84E3C /* CredentialBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1190E62B2358D26C00A84E3C /* CredentialBuilder.swift */; };
+		1190E6302358DDDD00A84E3C /* OrderedDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1190E62F2358DDDD00A84E3C /* OrderedDictionary.swift */; };
 		11942E402350DBCA00746B87 /* Ccrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11942E3F2350DBCA00746B87 /* Ccrypto.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		11CA2F8C23530E49009A2067 /* libcrypto.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11942E42235190BD00746B87 /* libcrypto.a */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -138,6 +140,8 @@
 		116C94F1234D827D00BA9777 /* crypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto.h; sourceTree = "<group>"; };
 		116C950B234E2B6200BA9777 /* CHDKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CHDKey.swift; sourceTree = "<group>"; };
 		1189A4BE23386A9E0068EE41 /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PathExtracter.swift; path = ElastosDIDSDK/DID/Util/PathExtracter.swift; sourceTree = SOURCE_ROOT; };
+		1190E62B2358D26C00A84E3C /* CredentialBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CredentialBuilder.swift; path = ../../../../../../Applications/CredentialBuilder.swift; sourceTree = "<group>"; };
+		1190E62F2358DDDD00A84E3C /* OrderedDictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OrderedDictionary.swift; path = ElastosDIDSDK/DID/Util/OrderedDictionary.swift; sourceTree = SOURCE_ROOT; };
 		11942E3F2350DBCA00746B87 /* Ccrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ccrypto.swift; sourceTree = "<group>"; };
 		11942E42235190BD00746B87 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto.a; sourceTree = "<group>"; };
 		11942E44235190E000746B87 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libhdkey.a; sourceTree = "<group>"; };
@@ -327,6 +331,7 @@
 			isa = PBXGroup;
 			children = (
 				A3E6D444233485800012CD77 /* CredentialSubject.swift */,
+				1190E62B2358D26C00A84E3C /* CredentialBuilder.swift */,
 				A3E6D440233485800012CD77 /* EmbeddedCredential.swift */,
 				A3E6D443233485800012CD77 /* Issuer.swift */,
 				A3E6D441233485800012CD77 /* Proof.swift */,
@@ -373,6 +378,7 @@
 		11F262BC23260DFD0009C103 /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				1190E62F2358DDDD00A84E3C /* OrderedDictionary.swift */,
 				11508521233CC65400EF6A8D /* Base64.swift */,
 				1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */,
 				1189A4BE23386A9E0068EE41 /* PathExtracter.swift */,
@@ -616,7 +622,9 @@
 				A3E6D480233485E00012CD77 /* DIDDocument.swift in Sources */,
 				A3E6D47D233485E00012CD77 /* DIDStoreError.swift in Sources */,
 				A3E6D482233485E00012CD77 /* DIDError.swift in Sources */,
+				1190E62C2358D26C00A84E3C /* CredentialBuilder.swift in Sources */,
 				A3E6D47F233485E00012CD77 /* Service.swift in Sources */,
+				1190E6302358DDDD00A84E3C /* OrderedDictionary.swift in Sources */,
 				11508522233CC65500EF6A8D /* Base64.swift in Sources */,
 				11942E402350DBCA00746B87 /* Ccrypto.swift in Sources */,
 				A3E6D465233485C90012CD77 /* HDKey.swift in Sources */,

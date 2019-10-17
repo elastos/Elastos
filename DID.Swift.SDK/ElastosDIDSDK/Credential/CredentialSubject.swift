@@ -3,11 +3,11 @@ import Foundation
 public class CredentialSubject {
     
     public var id: DID!
-    public var properties: Dictionary<String, String>!
+    public var properties: OrderedDictionary<String, String>!
     
     init(_ id: DID) {
         self.id = id
-        properties = [: ]
+        properties = OrderedDictionary()
     }
     
     public func getPropertyCount() -> Int {
@@ -22,12 +22,14 @@ public class CredentialSubject {
         properties[name] = value
     }
     
-    public func addProperties(_ dic: Dictionary<String, String> ) {
-        properties.merge(dict: dic)
+    public func addProperties(_ dic: OrderedDictionary<String, String> ) {
+        dic.forEach { (key, value) in
+            properties[key] = value
+        }
     }
     
-    func toJson(_ ref: DID, _ compact: Bool) -> Dictionary< String, Any> {
-        var dic: Dictionary<String, Any> = [: ]
+    func toJson(_ ref: DID, _ compact: Bool) -> OrderedDictionary< String, Any> {
+        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         
         // id
         if !compact && !id.isEqual(ref) {
@@ -41,16 +43,16 @@ public class CredentialSubject {
         return dic
     }
     
-    class func fromJson(_ md: Dictionary<String, Any>, _ ref: DID?) throws -> CredentialSubject {
+    class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID?) throws -> CredentialSubject {
         // id
         let op: Bool = ref != nil
-        let id: DID = try JsonHelper.getDid(md, Constants.id, op, ref, "crendentialSubject id")
+        let id: DID = try JsonHelper.getDid(json, Constants.id, op, ref, "crendentialSubject id")
         let cs: CredentialSubject = CredentialSubject(id)
-        guard md.count > 1 else {
+        guard json.count > 1 else {
             print("Empty credentialSubject.")
             return cs
         }
-        md.forEach { key, value in
+        json.forEach { key, value in
             if key == Constants.id {
                 cs.addProperty(key, value as! String)
             }

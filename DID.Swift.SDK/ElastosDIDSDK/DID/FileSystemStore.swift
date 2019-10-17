@@ -227,7 +227,7 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func loadDid(_ did: DID) throws -> DIDDocument? {
-        let path = FileSystemStore.DID_DIR + did.methodSpecificId + FileSystemStore.DOCUMENT_FILE
+        let path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.DOCUMENT_FILE
         let exist = try exists(path)
         guard exist else {
             return nil
@@ -249,13 +249,23 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func listDids(_ filter: Int) throws -> Array<Entry<DID, String>> {
-        let arr: Array<Entry<DID, String>> = [Entry]()
+        var arr: Array<Entry<DID, String>> = [Entry]()
         let path = try getDir(FileSystemStore.DID_DIR)
         let exist = try exists(path)
         if exist {
         }
-
-        return [Entry]()
+        let fileManager = FileManager.default
+        let enumerator = fileManager.enumerator(atPath: path)
+        while let element = enumerator?.nextObject() as? String {
+            if !element.hasSuffix(".meta") {
+                let did: DID = DID(DID.METHOD, element)
+                let hint: String = try getDidHint(did)
+                let dic: Entry<DID, String> = Entry(did, hint)
+                arr.append(dic)
+            }
+        }
+        
+        return arr
     }
 
     override public func setCredentialHint(_ did: DID, _ id: DIDURL, _ hint: String) throws {
@@ -331,10 +341,29 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func listCredentials(_ did: DID) throws -> Array<Entry<DIDURL, String>> {
-        return [Entry]()
+        let dir: String = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR
+        guard try exists(dir) else {
+            return [Entry]()
+        }
+        
+        let fileManager = FileManager.default
+        let enumerater = fileManager.enumerator(atPath: dir)
+        var arr: Array<Entry<DIDURL, String>> = []
+        while let file = enumerater?.nextObject() as? String {
+            if !file.hasSuffix(".meta") {
+                let didUrl: DIDURL = try DIDURL(did, file)
+                var hint: String = ""
+                hint = try getCredentialHint(did, didUrl)
+                let dic: Entry<DIDURL, String> = Entry(didUrl, hint)
+                arr.append(dic)
+            }
+        }
+        
+        return arr
     }
 
     override public func selectCredentials(_ did: DID, _ id: DIDURL, _ type: Array<Any>) throws -> Array<Entry<DIDURL, String>> {
+        // TODO: Auto-generated method stub
         return [Entry]()
     }
 
@@ -400,12 +429,7 @@ public class FileSystemStore: DIDStore {
     }
 
     private func getFile(_ path: String) throws -> String? {
-        do {
-            return try getFile(false, path)
-        }
-        catch{
-            return nil
-        }
+        return try getFile(false, path)
     }
 
     private func getDir(_ path: String) throws -> String {

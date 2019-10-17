@@ -25,29 +25,30 @@ class JsonHelper {
         return try DID(value)
     }
 
-    class func getDate(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: Date?, _ hint: String) -> Date {
+    class func getDate(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: Date?, _ hint: String) throws -> Date? {
         let vn = dic[name]
         if vn == nil {
             if optional {
-                return ref ?? Date()
+                return ref
             }
             else {
-                // TODO: ERROR
+                throw DIDError.failue("Missing \(hint).")
             }
         }
         if !(vn is String) {
-            // TODO: ERROR
+            throw DIDError.failue("Invalid \(hint) value.")
         }
-        let value: String = vn as! String
-
-        if value.isEmpty {
-            // TODO: ERROR
+        let value: String = String("\(vn as! String)")
+        
+        if value == "" {
+            throw DIDError.failue("Invalid \(hint) value.")
         }
-        // TODO: KEY- VALUE
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = Constants.DATE_FORMAT
-        dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone?
-        return dateFormatter.date(from: value)!
+        
+        let formatter = Foundation.DateFormatter()
+        formatter.dateFormat = Constants.DATE_FORMAT
+        let date: Date  = formatter.date(from: value) ?? Date()
+        
+        return date
     }
 
     class func getDidUrl(_ dic: Dictionary<String, Any>, _ name: String, _ ref: DID, _ hint: String) throws -> DIDURL{
@@ -89,11 +90,11 @@ class JsonHelper {
     }
     
     class func format(_ date: Date) -> String{
-        let formatter = DateFormatter()
-        formatter.locale = Locale.init(identifier: "zh_CN")
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        let date = formatter.string(from: date)
-        // TODO: change to utc
-        return date
+        var formatter = Foundation.DateFormatter()
+        formatter = Foundation.DateFormatter()
+        formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss'Z'"
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        let localDate = formatter.string(from: date)
+        return localDate
     }
 }
