@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
@@ -32,15 +33,20 @@ const (
 type ChainStoreFFLDB struct {
 	db database.DB
 
-	indexManager IndexManager
+	indexManager indexers.IndexManager
 
 	mtx              sync.RWMutex
 	blockHashesCache []Uint256
 	blocksCache      map[Uint256]*Block
 }
 
-func NewChainStoreFFLDB(fflDB database.DB, indexManager IndexManager) (
-	IFFLDBChainStore, error) {
+func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
+	fflDB, err := LoadBlockDB(dataDir)
+	if err != nil {
+		return nil, err
+	}
+	indexManager := indexers.NewManager(fflDB)
+
 	s := &ChainStoreFFLDB{
 		db:               fflDB,
 		indexManager:     indexManager,
@@ -383,4 +389,8 @@ func (c *ChainStoreFFLDB) GetTransaction(txID Uint256) (*Transaction, uint32, er
 	}
 
 	return txn, height, nil
+}
+
+func (c *ChainStoreFFLDB) InitIndex(chain indexers.IChain, interrupt <-chan struct{}) error {
+	return c.indexManager.Init(chain, interrupt)
 }

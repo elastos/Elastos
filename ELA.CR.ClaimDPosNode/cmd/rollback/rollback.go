@@ -11,7 +11,6 @@ import (
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/blockchain/indexers"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -58,19 +57,7 @@ func rollbackAction(c *cli.Context) error {
 	}
 
 	log.NewDefault("logs/node", 0, 0, 0)
-	fflDB, err := blockchain.LoadBlockDB(dataDir)
-	if err != nil {
-		fmt.Println("load block db error:", err)
-		return err
-	}
-	indexManager := indexers.NewManager(fflDB)
-	fdb, err := blockchain.NewChainStoreFFLDB(fflDB, indexManager)
-	if err != nil {
-		return err
-	}
-	defer fdb.Close()
-
-	chainStore, err := blockchain.NewChainStore(dataDir, chainParams.GenesisBlock, fdb)
+	chainStore, err := blockchain.NewChainStore(dataDir, chainParams.GenesisBlock)
 	if err != nil {
 		fmt.Println("create chain store failed, ", err)
 		return err
@@ -94,11 +81,11 @@ func rollbackAction(c *cli.Context) error {
 
 	for i := currentHeight; i > targetHeight; i-- {
 		fmt.Println("current height is", i)
-		block, err := fdb.GetBlock(*nodes[i].Hash)
+		block, err := chainStore.GetFFLDB().GetBlock(*nodes[i].Hash)
 		if err != nil {
 			return err
 		}
-		if err = removeBlockNode(fdb, &block.Header); err != nil {
+		if err = removeBlockNode(chainStore.GetFFLDB(), &block.Header); err != nil {
 			return err
 		}
 		fmt.Println("block hash before rollback:", block.Hash())

@@ -13,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/utils/test"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +20,6 @@ var testChainStore *ChainStore
 var sidechainTxHash common.Uint256
 
 func TestChainStoreInit(t *testing.T) {
-	// Get new chainstore
 	temp, err := NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
 	testChainStore = temp.(*ChainStore)
 	testChainStore.NewBatch()
