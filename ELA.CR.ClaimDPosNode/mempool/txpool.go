@@ -912,6 +912,8 @@ func (mp *TxPool) clearTemp() {
 	mp.tempNodePublicKeys = make(map[string]struct{})
 	mp.tempSpecialTxList = make(map[Uint256]struct{})
 	mp.tempCrDIDs = make(map[Uint168]struct{})
+	mp.tempProducerNicknames = make(map[string]struct{})
+	mp.tempCrNicknames = make(map[string]struct{})
 }
 
 func (mp *TxPool) commitTemp() {
