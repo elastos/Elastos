@@ -23,6 +23,11 @@ export default class extends StandardPage {
     this.setState({ elip: data.elip, loading: false })
   }
 
+  historyBack = () => {
+    const id = this.state.elip._id
+    this.props.history.push(`/elips/${id}`)
+  }
+
   ord_renderContent() {
     const { isLogin, currentUserId, history } = this.props
     if (!isLogin) {
@@ -40,18 +45,20 @@ export default class extends StandardPage {
       return history.push('/elips')
     }
 
-    const isVisible = !loading && elip.createdBy._id === currentUserId &&
+    const isVisible =
+      !loading &&
+      elip.createdBy._id === currentUserId &&
       [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(elip.status)
-    
+
     if (!isVisible) {
-      return history.push(`/elips/${elip._id}`)
+      return this.historyBack()
     }
 
     return (
       <Wrapper>
         <BackLink link="/elips" />
         <Container>
-          <ElipForm data={elip} />
+          <ElipForm data={elip} onCancel={this.historyBack} />
         </Container>
         <Footer />
       </Wrapper>
@@ -62,10 +69,6 @@ export default class extends StandardPage {
 const Wrapper = styled.div`
   margin-top: 64px;
   position: relative;
-  .cr-backlink {
-    top: -32px;
-    left: 16px;
-  }
 `
 
 const StyledSpin = styled.div`
@@ -75,7 +78,7 @@ const StyledSpin = styled.div`
 
 const Container = styled.div`
   padding: 0 50px 80px;
-  width: 70vw;
+  width: 80vw;
   margin: 80px auto 0;
   background: #ffffff;
   text-align: left;

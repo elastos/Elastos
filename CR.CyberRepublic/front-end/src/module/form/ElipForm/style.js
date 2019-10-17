@@ -101,3 +101,49 @@ export const Status = styled.div`
     font-size: 14px;
   }
 `
+export const Text = styled.div`
+  text-align: center;
+`
+export const TabText = styled.span`
+  ${props => props.hasErr && `
+    color: red;
+  `}
+`
+export const TabPaneInner = styled.div`
+  margin: 40px;
+`
+export const Note = styled.div`
+  margin-bottom: 15px;
+`
+export const RadioCardLabel = styled.label`
+  &.radio-card-wrapper {
+    margin: 0;
+    height: 32px;
+    line-height: 30px;
+    color: rgba(0, 0, 0, 0.65);
+    display: inline-block;
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #fff;
+    padding: 0 15px;
+    position: relative;
+    vertical-align: top;
+  }
+`
+export const RadioCardSpan = styled.span`
+  &.radio-card-flex {
+    display: flex;
+    justify-content:center;
+  }
+  .ant-typography {
+    font-family: Synthese;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .radio-card-check {
+    font-weight: bold;
+    font-size: 25px;
+    color: #008D85;
+  }
+`
