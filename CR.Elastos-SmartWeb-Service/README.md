@@ -6,6 +6,21 @@ An API service that handles API calls between front-end and back-end operations 
 
 Tested in Python version 3.7.4
 
+For macOS, to install python using homebrew:
+```
+$brew install python3
+```
+
+For Linux based OS, to install python using homebrew:
+```
+$apt-get install python3
+```
+
+Install virtualenv:
+```
+$pip3 install virtualenv
+```
+
 To get the API service running, run the following terminal commands:
 
 ```
