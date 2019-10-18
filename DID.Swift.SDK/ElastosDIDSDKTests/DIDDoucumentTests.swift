@@ -36,13 +36,14 @@ class DIDDoucumentTests: XCTestCase {
     }
     
     func testCompactJson() {
-//        let testdiddocUrl: URL = Bundle(for: type(of: self)).url(forResource: "testdiddoc", withExtension: "json")!
         let document: DIDDocument = try! DIDDocument.fromJson("/Users/liaihong/Desktop/testdiddoc.json")
         let jsonString: String = try! document.toExternalForm(true)
-        
-        let compactUrl: URL = Bundle(for: type(of: self)).url(forResource: "compact", withExtension: "json")!
-        let json = try! String(contentsOf: compactUrl)
-        XCTAssertEqual(jsonString, json)
+        let url = URL(fileURLWithPath: "/Users/liaihong/Desktop/compact.json")
+        let jsonStr = try! String(contentsOf: url)
+//        let data = jsonStr.data(using: .utf8)
+//        let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
+
+        XCTAssertEqual(jsonString, jsonStr)
     }
     
     func  testNormalizedJson() {

@@ -27,7 +27,7 @@ class DIDBackend: NSObject {
             let request: IDChainRequest = try IDChainRequest(IDChainRequest.Operation.CREATE, doc)
             let jsonString: String = try request.sign(signKey, passphrase).toJson(true)
             
-            return adaptor.createIdTransaction(jsonString, nil)
+            return try adaptor.createIdTransaction(jsonString, nil)
         } catch  {
             DIDError.failue("Create ID transaction error: \(error.localizedDescription)")
         }

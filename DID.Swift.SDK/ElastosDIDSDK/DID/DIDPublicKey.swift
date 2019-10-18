@@ -21,8 +21,15 @@ public class DIDPublicKey: DIDObject {
             controller = ref
         }
         var  fra = dic[Constants.id] as! String
-        fra = String(fra.suffix(fra.count - 1))
-        let id: DIDURL = try DIDURL(ref, fra)
+        var id: DIDURL
+        let preString = fra.prefix(1)
+        if preString == "#" {
+            fra = String(fra.suffix(fra.count - 1))
+            id = try DIDURL(ref, fra)
+        }
+        else {
+            id = try DIDURL(fra)
+        }
         
         value = dic[Constants.type]
         var type: String

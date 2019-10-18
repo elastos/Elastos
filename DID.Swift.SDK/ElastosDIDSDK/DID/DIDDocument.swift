@@ -149,7 +149,7 @@ public class DIDDocument: NSObject {
     }
     
     public func getAuthorizationKeyCount() -> Int {
-        return authentications.count
+        return authorizations.count
     }
     
     public func getAuthorizationKeys() -> Array<DIDPublicKey> {
@@ -281,7 +281,7 @@ public class DIDDocument: NSObject {
         return true
     }
     
-    public func toJson(_ path: String, _ compact: Bool) throws {
+    public func toJson(_ path: String, _ compact: Bool) throws -> String? {
         self.rootPath = path
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         // subject
@@ -364,6 +364,7 @@ public class DIDDocument: NSObject {
         }
         let writeHandle = FileHandle(forWritingAtPath: path)
         writeHandle?.write(data)
+        return dicString
     }
     
     public static func fromJson(_ path: String) throws -> DIDDocument {
@@ -383,8 +384,10 @@ public class DIDDocument: NSObject {
         return doc
     }
     
-    public static func fromJson(_ dic: Dictionary<String, Any>) throws -> DIDDocument {
-       return try parse(dic!)
+    public func fromJson(_ dic: Dictionary<String, Any>) throws -> DIDDocument {
+        let doc: DIDDocument = DIDDocument()
+        try doc.parse(dic)
+        return doc
     }
     
     private func parse(url: URL) throws {
@@ -568,10 +571,7 @@ public class DIDDocument: NSObject {
     }
     
     public func toExternalForm(_ compact: Bool) throws -> String {
-        try toJson(self.rootPath!, compact)
-        let urlPath = URL(fileURLWithPath: self.rootPath!)
-        let json = try String(contentsOf: urlPath)
-        return json
+        return try (toJson(self.rootPath!, compact) ?? "")
     }
     
 }

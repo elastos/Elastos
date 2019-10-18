@@ -61,7 +61,7 @@ public class FileSystemStore: DIDStore {
         }
     }
 
-    // 创建store文件夹
+    // create store file
     private func creatStore(_ dir: String) throws {
         let fileManager = FileManager.default
         try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
