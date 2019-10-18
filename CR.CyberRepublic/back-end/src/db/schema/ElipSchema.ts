@@ -63,8 +63,7 @@ export const Elip = {
   supersededBy: {
     type: String
   },
-  // description = Abstract
-  description: {
+  abstract: {
     type: String
   },
   specifications: {
@@ -77,6 +76,9 @@ export const Elip = {
     type: String
   },
   backwardCompatibility: {
+    type: String
+  },
+  referenceImplementation: {
     type: String
   },
   copyright: {
