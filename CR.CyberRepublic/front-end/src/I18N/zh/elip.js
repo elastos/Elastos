@@ -13,14 +13,14 @@ export default {
     status: '状态',
     createdAt: '创建日期',
     description: '描述',
-    type: '类型',
+    elipType: '类型',
     abstract: '摘要',
     specifications: '规范',
     motivation: '动机',
     rationale: '基本原理',
     backwardCompatibility: '向后兼容性',
     referenceImplementation: '参考实现',
-    copyrightDomain: '版权/公共域',
+    copyright: '版权/公共域',
     review: 'Review',
     preambleItems: {
       elip: 'ELIP',
@@ -56,6 +56,7 @@ export default {
     approve: '批准',
     edit: '编辑',
     markAsSubmitted: '标记为提交状态',
+    markAsCancelled: '标记为取消状态',
     continue: '继续'
   },
   msg: {
@@ -67,14 +68,14 @@ export default {
   },
   form: {
     note: {
-      type: '选择ELIP类型.',
+      elipType: '选择ELIP类型.',
       abstract: 'Abstract',
       specifications: 'Specifications',
       motivation: 'Motivation',
       rationale: 'Rationale',
       backwardCompatibility: 'Backward Compatibility',
       referenceImplementation: 'Reference Implementation',
-      copyrightDomain: 'Copyright/Public Domain',
+      copyright: 'Copyright/Public Domain',
       review: 'Review'
     },
     type: {

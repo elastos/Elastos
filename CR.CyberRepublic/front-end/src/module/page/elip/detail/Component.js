@@ -42,7 +42,7 @@ class C extends StandardPage {
   }
 
   handleSubmit = async e => {
-    const { review, data } = this.props
+    const { review, reviews, data } = this.props
     const param = {
       comment: e.reason,
       status: e.status,
@@ -52,8 +52,8 @@ class C extends StandardPage {
       const comment = await review(param)
       if (comment && comment.elipId === data._id) {
         this.setState({
-          elip: { ...data, status: comment.elipStatus },
-          reviews: [...this.state.reviews, comment]
+          detail: { ...data, status: comment.elipStatus },
+          reviews: [...reviews, comment]
         })
         if (comment.elipStatus === ELIP_STATUS.DRAFT) {
           message.info(I18N.get('elip.msg.approved'))
@@ -159,7 +159,7 @@ class C extends StandardPage {
           />
           <Link
             href="#copyrightDomain"
-            title={I18N.get('elip.fields.copyrightDomain')}
+            title={I18N.get('elip.fields.copyright')}
           />
         </LinkGroup>
         {reviewLink}
@@ -176,7 +176,7 @@ class C extends StandardPage {
       'rationale',
       'backwardCompatibility',
       'referenceImplementation',
-      'copyrightDomain'
+      'copyright'
     ]
 
     const metaNode = this.renderMeta()
@@ -240,7 +240,7 @@ class C extends StandardPage {
       author: data.createdBy && data.createdBy.username,
       discussions: data.discussions,
       status: data.status,
-      type: data.type,
+      type: data.elipType,
       created: moment(data.createdAt).format('MMM D, YYYY'),
       requires: data.requires,
       replaces: data.replaces,
@@ -352,7 +352,7 @@ class C extends StandardPage {
             cancelText={I18N.get('.no')}
           >
             <Button className="cr-btn cr-btn-black">
-              {I18N.get('elip.button.cancel')}
+              {I18N.get('elip.button.markAsCancelled')}
             </Button>
           </Popconfirm>
         </Col>
