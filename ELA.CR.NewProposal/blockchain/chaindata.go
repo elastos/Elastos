@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package blockchain
 
@@ -326,10 +326,6 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 
 func (c *ChainStore) PersistTransactions(b *Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.persistTransaction(txn, b.Header.Height); err != nil {
-			return err
-		}
-
 		switch txn.TxType {
 		case RegisterAsset:
 			regPayload := txn.Payload.(*payload.RegisterAsset)
@@ -350,9 +346,6 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 
 func (c *ChainStore) RollbackTransactions(b *Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.rollbackTransaction(txn); err != nil {
-			return err
-		}
 		switch txn.TxType {
 		case RegisterAsset:
 			if err := c.rollbackAsset(txn.Hash()); err != nil {

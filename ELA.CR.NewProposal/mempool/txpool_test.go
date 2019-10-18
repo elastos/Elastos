@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -24,14 +25,44 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	dplog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/errors"
+	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var txPool *TxPool
-var initialLedger *blockchain.Ledger
+var (
+	txPool        *TxPool
+	initialLedger *blockchain.Ledger
+	utxoCacheDB   = NewUtxoCacheDB()
+)
+
+type UtxoCacheDB struct {
+	transactions map[common.Uint256]*types.Transaction
+}
+
+func (s *UtxoCacheDB) GetTransaction(txID common.Uint256) (
+	*types.Transaction, uint32, error) {
+	txn, exist := s.transactions[txID]
+	if exist {
+		return txn, 0, nil
+	}
+	return nil, 0, errors.New("leveldb: not found")
+}
+
+func (s *UtxoCacheDB) PutTransaction(txn *types.Transaction) {
+	s.transactions[txn.Hash()] = txn
+}
+
+func (s *UtxoCacheDB) RemoveTransaction(txID common.Uint256) {
+	delete(s.transactions, txID)
+}
+
+func NewUtxoCacheDB() *UtxoCacheDB {
+	var db UtxoCacheDB
+	db.transactions = make(map[common.Uint256]*types.Transaction)
+	return &db
+}
 
 func TestTxPoolInit(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
@@ -70,6 +101,9 @@ func TestTxPoolInit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err, "BlockChain generate failed")
 	}
+	chain.UTXOCache = blockchain.NewUTXOCache(utxoCacheDB)
+	err = chain.Init(nil)
+	assert.NoError(t, err)
 	initialLedger = blockchain.DefaultLedger
 	blockchain.DefaultLedger = &blockchain.Ledger{
 		Blockchain:  chain,
@@ -252,32 +286,29 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	}
 
 	// 2. Add tx1 and tx2 into store and input UTXO list
-	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).NewBatch()
-	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).PersistTransactions(
-		&types.Block{
-			Transactions: []*types.Transaction{tx1, tx2},
-		})
-	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).BatchCommit()
+	utxoCacheDB.PutTransaction(tx1)
+	utxoCacheDB.PutTransaction(tx2)
+
 	txPool.addInputUTXOList(tx3, input1)
 	txPool.addInputUTXOList(tx4, input2)
 	txPool.addInputUTXOList(tx5, input3)
 
 	// 3. Verify CR related tx
 	errCode := txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == errors.Success)
+	assert.True(t, errCode == elaerr.Success)
 	txPool.commitTemp()
 
 	// 4. Verify duplicate CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx4)
-	assert.True(t, errCode == errors.ErrCRProcessing)
+	assert.True(t, errCode == elaerr.ErrCRProcessing)
 
 	// 5. Verify duplicate producer related tx
 	errCode = txPool.verifyProducerRelatedTx(tx5)
-	assert.True(t, errCode == errors.ErrProducerProcessing)
+	assert.True(t, errCode == elaerr.ErrProducerProcessing)
 
 	// 6. Verify duplicate producer related tx
 	errCode = txPool.verifyProducerRelatedTx(tx6)
-	assert.True(t, errCode == errors.ErrProducerProcessing)
+	assert.True(t, errCode == elaerr.ErrProducerProcessing)
 	txPool.clearTemp()
 
 	// 7. Clean CR related tx
@@ -287,17 +318,17 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 
 	// 8. Verify duplicate producer related tx
 	errCode = txPool.verifyProducerRelatedTx(tx5)
-	assert.True(t, errCode == errors.Success)
+	assert.True(t, errCode == elaerr.Success)
 	txPool.commitTemp()
 
 	// 9. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == errors.ErrCRProcessing)
+	assert.True(t, errCode == elaerr.ErrCRProcessing)
 	txPool.clearTemp()
 
 	// 10. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx4)
-	assert.True(t, errCode == errors.Success)
+	assert.True(t, errCode == elaerr.Success)
 	txPool.commitTemp()
 
 	// 11. Clean producer related tx
@@ -308,16 +339,16 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 
 	// 12. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == errors.ErrCRProcessing)
+	assert.True(t, errCode == elaerr.ErrCRProcessing)
 
 	// 13. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx7)
-	assert.True(t, errCode == errors.Success)
+	assert.True(t, errCode == elaerr.Success)
 	txPool.commitTemp()
 
 	// 14. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx7)
-	assert.True(t, errCode == errors.ErrCRProcessing)
+	assert.True(t, errCode == elaerr.ErrCRProcessing)
 }
 
 func TestTxPool_CleanSidechainTx(t *testing.T) {
@@ -484,7 +515,7 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 		"06dd00000000")
 	tx.Deserialize(bytes.NewReader(txBytes))
 	errCode := txPool.AppendToTxPool(tx)
-	assert.Equal(t, errCode, errors.ErrIneffectiveCoinbase)
+	assert.Equal(t, errCode, elaerr.ErrIneffectiveCoinbase)
 
 }
 
