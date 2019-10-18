@@ -9,11 +9,14 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/elastos/Elastos.ELA/common"
 	lua "github.com/yuin/gopher-lua"
@@ -240,15 +243,29 @@ func newVoteContent(L *lua.LState) int {
 		voteStr := lua.LVAsString(value)
 		voteStr = strings.Replace(voteStr, "{", "", 1)
 		voteStr = strings.Replace(voteStr, "}", "", 1)
-		vote, _ := common.StringToFixed64(voteStr)
-		votes = append(votes, *vote)
+		vote, err := strconv.ParseFloat(voteStr, 64)
+		if err != nil {
+			fmt.Println("invalid votes")
+			os.Exit(1)
+		}
+		votes = append(votes, common.Fixed64(int64(vote*1e8)))
 	})
 
 	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(candidates))
 	for i := 0; i < len(candidates); i++ {
+		pk, err := crypto.DecodePoint(candidates[i])
+		if err != nil {
+			fmt.Println("wrong cr public key")
+			os.Exit(1)
+		}
+		code, err := contract.CreateStandardRedeemScript(pk)
+		if err != nil {
+			fmt.Println("wrong cr public key")
+			os.Exit(1)
+		}
 
 		//get didUint168 from code
-		didUint168 := getDidProgramHash(candidates[i])
+		didUint168 := getDidProgramHash(code)
 		candidateVotes = append(candidateVotes, outputpayload.CandidateVotes{
 			Candidate: didUint168.Bytes(),
 			Votes:     votes[i],
