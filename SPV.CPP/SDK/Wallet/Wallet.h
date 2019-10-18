@@ -81,6 +81,7 @@ namespace Elastos {
 
 			Wallet(uint32_t lastBlockHeight,
 				   const std::string &walletID,
+				   const std::string &chainID,
 				   const std::vector<AssetPtr> &assetArray,
 				   const std::vector<TransactionPtr> &txns,
 				   const std::vector<UTXOPtr> &utxos,
@@ -260,7 +261,7 @@ namespace Elastos {
 		protected:
 			friend class GroupedAsset;
 
-			std::string _walletID;
+			std::string _walletID, _chainID;
 
 			SubAccountPtr _subAccount;
 

@@ -585,7 +585,7 @@ static void OpenWallet(const std::string &masterWalletID, const std::string &sub
 static void TestIDSubWallet() {
 	ISubWallet *subWallet = GetSubWallet(gMasterWalletID, gIDchainSubWalletID);
 
-	nlohmann::json j = subWallet->GetAllPublicKeys(0, 500);
+	nlohmann::json j = subWallet->GetAllPublicKeys(0, 10);
 	std::vector<std::string> pubkeys = j["PublicKeys"];
 	IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
 	for (size_t i = 0; i <  pubkeys.size(); ++i) {

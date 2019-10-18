@@ -17,6 +17,7 @@
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
+#include <SDK/Plugin/Registry.h>
 #include <SDK/Wallet/UTXO.h>
 
 #include <Interface/ISubWallet.h>
@@ -31,12 +32,14 @@ namespace Elastos {
 
 		Wallet::Wallet(uint32_t lastBlockHeight,
 					   const std::string &walletID,
+					   const std::string &chainID,
 					   const std::vector<AssetPtr> &assetArray,
 					   const std::vector<TransactionPtr> &txns,
 					   const UTXOArray &cbUTXOs,
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Wallet::Listener> &listener) :
-				_walletID(walletID),
+				_walletID(walletID + ":" + chainID),
+				_chainID(chainID),
 				_blockHeight(lastBlockHeight),
 				_feePerKb(DEFAULT_FEE_PER_KB),
 				_subAccount(subAccount) {
@@ -44,10 +47,6 @@ namespace Elastos {
 			_listener = boost::weak_ptr<Listener>(listener);
 
 			_subAccount->Init(txns);
-
-			// TODO: change to better way later
-			if (walletID.find("IDChain") != std::string::npos)
-				_subAccount->InitDID();
 
 			if (assetArray.empty()) {
 				InstallDefaultAsset();
@@ -657,7 +656,12 @@ namespace Elastos {
 
 		size_t Wallet::GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->GetAllDID(did, start, count);
+
+			if (_chainID == CHAINID_IDCHAIN) {
+				return _subAccount->GetAllDID(did, start, count);
+			}
+
+			return 0;
 		}
 
 		size_t Wallet::GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
@@ -748,6 +752,7 @@ namespace Elastos {
 		}
 
 		std::string Wallet::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
+			ErrorChecker::CheckParam(_chainID != CHAINID_IDCHAIN, Error::InvalidArgument, "subWallet should be IDChain");
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->SignWithDID(did, msg, payPasswd);
 		}

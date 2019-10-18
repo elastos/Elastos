@@ -54,13 +54,6 @@ namespace Elastos {
 			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 		}
 
-		void SubAccount::InitDID() {
-			_allDID = _externalChain;
-			for (size_t i = 0; i < _allDID.size(); ++i) {
-				_allDID[i].ChangePrefix(PrefixIDChain);
-			}
-		}
-
 		bool SubAccount::IsSingleAddress() const {
 			return _parent->SingleAddress();
 		}
@@ -117,10 +110,18 @@ namespace Elastos {
 		}
 
 		size_t SubAccount::GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const {
-			for (size_t i = start; i < _allDID.size() && did.size() < count; ++i)
-				did.push_back(_allDID[i]);
+			size_t size = 0;
 
-			return _allDID.size();
+			if (_parent->GetSignType() != IAccount::MultiSign) {
+				size = _externalChain.size();
+				for (size_t i = start; i < _externalChain.size() && did.size() < count; ++i) {
+					Address addr = _externalChain[i];
+					addr.ChangePrefix(PrefixIDChain);
+					did.push_back(addr);
+				}
+			}
+
+			return size;
 		}
 
 		std::vector<Address> SubAccount::UnusedAddresses(uint32_t gapLimit, bool internal) {
@@ -275,10 +276,14 @@ namespace Elastos {
 		}
 
 		std::string SubAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
-			for (size_t i = 0; i < _allDID.size(); ++i) {
-				if (did == _allDID[i]) {
-					Key key = _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
-					return key.Sign(msg).getHex();
+			if (_parent->GetSignType() != IAccount::MultiSign) {
+				for (size_t i = 0; i < _externalChain.size(); ++i) {
+					Address didAddr = _externalChain[i];
+					didAddr.ChangePrefix(PrefixIDChain);
+					if (did == didAddr) {
+						Key key = _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
+						return key.Sign(msg).getHex();
+					}
 				}
 			}
 
@@ -349,8 +354,11 @@ namespace Elastos {
 				return true;
 			}
 
-			if (std::find(_allDID.begin(), _allDID.end(), address) != std::end(_allDID)) {
-				return true;
+			for (std::vector<Address>::const_iterator it = _externalChain.cbegin(); it != _externalChain.cend(); ++it) {
+				Address did = *it;
+				did.ChangePrefix(PrefixIDChain);
+				if (did == address)
+					return true;
 			}
 
 			return _allAddrs.find(address) != _allAddrs.end();

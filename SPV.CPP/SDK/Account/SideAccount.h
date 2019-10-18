@@ -118,8 +118,6 @@ namespace Elastos {
 
 			void Init(const std::vector<TransactionPtr> &tx);
 
-			void InitDID();
-
 			bool IsSingleAddress() const;
 
 			bool IsProducerDepositAddress(const Address &address) const;

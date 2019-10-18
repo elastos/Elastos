@@ -283,6 +283,7 @@ namespace Elastos {
 				it = _createdWallets.erase(it);
 
 				delete subWallet;
+				subWallet = nullptr;
 				Log::info("{} closed", id);
 			}
 		}
@@ -309,6 +310,7 @@ namespace Elastos {
 			_createdWallets.erase(it);
 
 			delete subWallet;
+			subWallet = nullptr;
 
 			ArgInfo("r => {} {} done", _id, GetFunName());
 		}

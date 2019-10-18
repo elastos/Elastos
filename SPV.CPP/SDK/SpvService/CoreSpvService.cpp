@@ -47,7 +47,7 @@ namespace Elastos {
 			}
 
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), walletID + ":" + chainID,
+				_wallet = WalletPtr(new Wallet(_peerManager->GetLastBlockHeight(), walletID, chainID,
 											   loadAssets(), txs, cbs, subAccount, createWalletListener()));
 				_peerManager->SetWallet(_wallet);
 			}

@@ -28,8 +28,6 @@ namespace Elastos {
 
 			void Init(const std::vector<TransactionPtr> &tx);
 
-			void InitDID();
-
 			bool IsSingleAddress() const;
 
 			bool IsProducerDepositAddress(const Address &address) const;
@@ -77,7 +75,6 @@ namespace Elastos {
 		private:
 			uint32_t _coinIndex;
 			std::vector<Address> _internalChain, _externalChain;
-			std::vector<Address> _allDID;
 			std::set<Address> _usedAddrs, _allAddrs;
 			mutable Address _depositAddress, _ownerAddress, _crDepositAddress;
 

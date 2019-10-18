@@ -22,8 +22,6 @@ namespace Elastos {
 
 			virtual void Init(const std::vector<TransactionPtr> &tx) = 0;
 
-			virtual void InitDID() = 0;
-
 			virtual bool IsSingleAddress() const = 0;
 
 			virtual bool IsProducerDepositAddress(const Address &address) const = 0;

@@ -70,6 +70,7 @@ namespace Elastos {
 				it = _masterWalletMap.erase(it);
 
 				delete masterWallet;
+				masterWallet = nullptr;
 				Log::info("closed master wallet (ID = {})", id);
 			}
 		}
@@ -315,6 +316,7 @@ namespace Elastos {
 				masterWallet->CloseAllSubWallets();
 				_masterWalletMap.erase(masterWallet->GetWalletID());
 				delete masterWallet;
+				masterWallet = nullptr;
 			} else {
 				Log::warn("Master wallet is not exist");
 			}
@@ -632,6 +634,7 @@ namespace Elastos {
 				}
 
 				delete masterWallet;
+				masterWallet = nullptr;
 			}
 
 			ErrorChecker::CheckCondition(hasRedundant, Error::CreateMasterWalletError,

@@ -32,8 +32,6 @@ namespace Elastos {
 
 		void SideAccount::Init(const std::vector<TransactionPtr> &) {}
 
-		void SideAccount::InitDID() {}
-
 		bool SideAccount::IsSingleAddress() const { return true; }
 
 		bool SideAccount::IsProducerDepositAddress(const Address &address) const { return false; }
