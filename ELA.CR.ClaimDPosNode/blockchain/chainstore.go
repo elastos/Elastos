@@ -139,7 +139,16 @@ func (c *ChainStore) init(genesisBlock *Block) error {
 	return err
 }
 
-func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
+func (c *ChainStore) IsTxHashDuplicate(txID Uint256) bool {
+	txn, _, err := c.fflDB.GetTransaction(txID)
+	if err != nil || txn == nil {
+		return false
+	}
+
+	return true
+}
+
+func (c *ChainStore) isTxHashDuplicate(txhash Uint256) bool {
 	prefix := []byte{byte(DATATransaction)}
 	_, err := c.Get(append(prefix, txhash.Bytes()...))
 	if err != nil {

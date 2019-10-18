@@ -18,10 +18,14 @@ const (
 	maxReferenceSize = 100000
 )
 
+type IUTXOCacheStore interface {
+	GetTransaction(txID common.Uint256) (*types.Transaction, uint32, error)
+}
+
 type UTXOCache struct {
 	sync.Mutex
 
-	db        IChainStore
+	db        IUTXOCacheStore
 	inputs    *list.List
 	reference map[*types.Input]*types.Output
 	txCache   map[common.Uint256]*types.Transaction
@@ -104,7 +108,7 @@ func (up *UTXOCache) CleanCache() {
 	up.txCache = make(map[common.Uint256]*types.Transaction)
 }
 
-func NewUTXOCache(db IChainStore) *UTXOCache {
+func NewUTXOCache(db IUTXOCacheStore) *UTXOCache {
 	return &UTXOCache{
 		db:        db,
 		inputs:    list.New(),
