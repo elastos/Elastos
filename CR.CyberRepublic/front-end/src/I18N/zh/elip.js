@@ -20,7 +20,20 @@ export default {
     rationale: '基本原理',
     backwardCompatibility: '向后兼容性',
     referenceImplementation: '参考实现',
-    copyrightDomain: '版权/公共域'
+    copyrightDomain: '版权/公共域',
+    review: 'Review',
+    preambleItems: {
+      elip: 'ELIP',
+      title: 'Title',
+      author: 'Author',
+      discussions: 'Discussions-To',
+      status: 'Status',
+      type: 'Type',
+      created: 'Created',
+      requires: 'Requires',
+      replaces: 'Replaces',
+      superseded: 'Superseded-By'
+    }
   },
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
@@ -61,7 +74,8 @@ export default {
       rationale: 'Rationale',
       backwardCompatibility: 'Backward Compatibility',
       referenceImplementation: 'Reference Implementation',
-      copyrightDomain: 'Copyright/Public Domain'
+      copyrightDomain: 'Copyright/Public Domain',
+      review: 'Review'
     },
     type: {
       standardTitle: 'Standards Tracking ELIP',
@@ -83,7 +97,8 @@ export default {
     cancel: '取消',
     reason: '理由',
     approve: '您确定要批准该 ELIP 吗？',
-    markAsSubmitted: '您确定要把该 ELIP 标记为提交状态吗？'
+    markAsSubmitted: '您确定要把该 ELIP 标记为提交状态吗？',
+    markAsCancelled: '您确定要把该 ELIP 标记为取消状态吗？'
   },
   text: {
     reviewDetails: '审核详情',
