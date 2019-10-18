@@ -29,16 +29,21 @@ export default class extends BaseService {
   }
 
   async getData(param) {
-    this.dispatch(this.selfRedux.actions.detail_reset())
     this.dispatch(this.selfRedux.actions.loading_update(true))
     const path = `${this.prefixPath}/detail/${param.id}`
     const rs = await api_request({
       path,
       method: 'get'
     })
-    this.dispatch(this.selfRedux.actions.loading_update(false))
     this.dispatch(this.selfRedux.actions.detail_update(rs.elip))
+    this.dispatch(this.selfRedux.actions.reviews_update(rs.reviews))
+    this.dispatch(this.selfRedux.actions.loading_update(false))
     return rs
+  }
+
+  async resetData() {
+    this.dispatch(this.selfRedux.actions.detail_reset())
+    this.dispatch(this.selfRedux.actions.reviews_reset())
   }
 
   async listData(param) {

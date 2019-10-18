@@ -14,13 +14,27 @@ export default {
     createdAt: 'Created',
     description: 'Description',
     type: 'Type',
+    preamble: 'Preamble',
     abstract: 'Abstract',
     specifications: 'Specifications',
     motivation: 'Motivation',
     rationale: 'Rationale',
     backwardCompatibility: 'Backward Compatibility',
     referenceImplementation: 'Reference Implementation',
-    copyrightDomain: 'Copyright/Public Domain'
+    copyrightDomain: 'Copyright/Public Domain',
+    review: 'Review',
+    preambleItems: {
+      elip: 'ELIP',
+      title: 'Title',
+      author: 'Author',
+      discussions: 'Discussions-To',
+      status: 'Status',
+      type: 'Type',
+      created: 'Created',
+      requires: 'Requires',
+      replaces: 'Replaces',
+      superseded: 'Superseded-By'
+    }
   },
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: 'WAIT FOR REVIEW',
@@ -84,7 +98,8 @@ export default {
     cancel: 'Cancel',
     reason: 'Reason',
     approve: 'Are you sure to approve this ELIP?',
-    markAsSubmitted: 'Are you sure to mark this ELIP as submitted status?'
+    markAsSubmitted: 'Are you sure to mark this ELIP as submitted status?',
+    markAsCancelled: 'Are you sure to mark this ELIP as cancelled status?'
   },
   text: {
     reviewDetails: 'Review Details',
