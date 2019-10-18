@@ -60,7 +60,7 @@ export default class extends Base {
       if (title) {
         doc.title = title
       }
-      if (elipType && constant.ELIP_STATUS[elipType]) {
+      if (elipType && constant.ELIP_TYPE[elipType]) {
         doc.elipType = elipType
       }
       if (abstract) {
@@ -102,7 +102,7 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     try {
       const db_elip = this.getDBModel('Elip')
-      const { title,
+      let { title,
               elipType,
               abstract,
               specifications,
@@ -111,16 +111,15 @@ export default class extends Base {
               backwardCompatibility,
               referenceImplementation,
               copyright
-            } = param
-      let eType = elipType
-      if(!constant.ELIP_STATUS[eType]){
-        eType = _.values(constant.ELIP_STATUS)[0]
+          } = param
+      if(!constant.ELIP_TYPE[elipType]){
+        elipType = _.values(constant.ELIP_TYPE)[0]
       }
       const vid = await this.getNewVid()
       const doc: any = {
         title,
         vid,
-        elipType: eType,
+        elipType,
         abstract,
         specifications,
         motivation,
