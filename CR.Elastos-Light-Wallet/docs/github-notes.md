@@ -33,6 +33,6 @@
 
   Mac:
 
-  openssl sha -sha256 dist/elastos-light-wallet-1.0.0-RC.dmg
-
+  openssl dgst -sha256 dist/elastos-light-wallet-1.0.0-RC.dmg
+  
   xxxx
