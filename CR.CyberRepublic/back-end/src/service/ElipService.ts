@@ -46,15 +46,44 @@ export default class extends Base {
         return rs
       }
 
-      const { title, description } = param
+      const { title,
+              elipType,
+              description,
+              specifications,
+              motivation,
+              rationale,
+              backwardCompatibility,
+              copyright
+            } = param
       const doc: any = {}
       if (title) {
         doc.title = title
       }
+      if (elipType && constant.ELIP_STATUS[elipType]) {
+        doc.elipType = elipType
+      }
       if (description) {
         doc.description = description
       }
-      if (doc.title || doc.description) {
+      if (specifications) {
+        doc.specifications = specifications
+      }
+      if (motivation) {
+        doc.motivation = motivation
+      }
+      if (rationale) {
+        doc.rationale = rationale
+      }
+      if (backwardCompatibility) {
+        doc.backwardCompatibility = backwardCompatibility
+      }
+      if (copyright) {
+        doc.copyright = copyright
+      }
+      if (doc.title || doc.description
+          || doc.elipType  || doc.specifications || doc.motivation
+          || doc.rationale || doc.backwardCompatibility
+          || doc.copyright) {
         doc.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
         const rs = await db_elip.update({ _id }, doc)
         this.notifySecretaries(elip, true)
@@ -78,14 +107,15 @@ export default class extends Base {
               backwardCompatibility,
               copyright
             } = param
-      if(!constant.ELIP_STATUS[elipType]){
-        elipType = _.values(constant.ELIP_STATUS)[0]
+      let eType = elipType
+      if(!constant.ELIP_STATUS[eType]){
+        eType = _.values(constant.ELIP_STATUS)[0]
       }
       const vid = await this.getNewVid()
       const doc: any = {
         title,
         vid,
-        elipType,
+        elipType: eType,
         description,
         specifications,
         motivation,
