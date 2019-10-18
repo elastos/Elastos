@@ -4,6 +4,8 @@ An API service that handles API calls between front-end and back-end operations 
 
 ## Installation
 
+Tested in Python version 3.7.4
+
 To get the API service running, run the following terminal commands:
 
 ```
@@ -49,3 +51,17 @@ Step 4: Execute the create table scripts at smartweb_service/scripts/elastos_con
 
 Step 5: Execute the insert scripts at smartweb_service/scripts/elastos_insert_script.sql
 
+
+## Unit Testing
+
+Requires pytest version 2.9.1. Included as part of requirements.txt
+
+Step 1:
+```
+cd _pytest
+```
+
+Step 2:
+```
+py.test
+```
