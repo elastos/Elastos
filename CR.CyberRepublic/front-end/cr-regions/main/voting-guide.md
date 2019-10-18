@@ -7,7 +7,7 @@ Voting our supernodes helps us earn ELA and fund our projects! Eventually our CR
 wish to form a global network of teams that are all self-funded and can work to continually
 grow the Elastos ecosystem.
 
-## Getting Started - Download the Official Elastos Wallet
+### Getting Started - Download the Official Elastos Wallet
 
 ##### 1. Download the official Elastos Wallet that supports the Supernode Voting at&nbsp;[https://www.elastos.org/wallet](https://www.elastos.org/wallet)
 
