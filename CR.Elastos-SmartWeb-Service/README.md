@@ -38,17 +38,17 @@ $ source venv/bin/activate
 While running the requirements.txt, if you are get a error "Library LSSL not found" while installing psycopg2, then run the following command or else skip this.
 
 ```
-env LDFLAGS="-I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib" pip install psycopg2
+$env LDFLAGS="-I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib" pip install psycopg2
 ```
 
 Now let’s set up the app for development and start it:
 
 ```
-(venv) $ python setup.py develop
+(venv) $python setup.py develop
 ```
 
 ```
-(venv) $ python smartweb_service/app.py
+(venv) $python smartweb_service/app.py
 ```
 
 ## PostgreSQL Setup
@@ -59,7 +59,7 @@ Step 2: Create a database name 'elastos_console'
 Step 3: Start the PostgreSQL Server
 
 ```
-pg_ctl -D /usr/local/var/postgres start
+$pg_ctl -D /usr/local/var/postgres start
 ```
 
 Step 4: Execute the create table scripts at smartweb_service/scripts/elastos_console_create_scripts.sql
@@ -73,10 +73,10 @@ Requires pytest version 2.9.1. Included as part of requirements.txt
 
 Step 1:
 ```
-cd _pytest
+$cd _pytest
 ```
 
 Step 2:
 ```
-py.test
+$py.test test_api1.py
 ```
