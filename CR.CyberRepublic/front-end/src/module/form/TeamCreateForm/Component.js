@@ -78,7 +78,7 @@ class C extends BaseComponent {
         const createParams = {
           ...values,
           description: sanitizeHtml(values.description, {
-            allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's'])
+            // allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's'])
           }),
           tags: tags.join(','),
           logo: '',
