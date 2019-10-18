@@ -8,6 +8,7 @@ package script
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/cmd/script/api"
@@ -33,11 +34,11 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	ownPubkey := c.String("ownerpublickey")
 	nodePubkey := c.String("nodepublickey")
 	host := c.String("host")
-	candidates := c.StringSlice("candidates")
-	candidateVotes := c.StringSlice("candidateVotes")
+	candidates := c.String("candidates")
+	candidateVotes := c.String("candidateVotes")
 	proposalType := c.Int64("proposaltype")
 	draftHash := c.String("drafthash")
-	budgets := c.StringSlice("budgets")
+	budgets := c.String("budgets")
 	proposalhash := c.String("proposalhash")
 	voteresult := c.Int("voteresult")
 
@@ -116,7 +117,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	getCandidates := func(L *lua.LState) int {
 		table := L.NewTable()
 		L.SetMetatable(table, L.GetTypeMetatable("candidates"))
-		for _, c := range candidates {
+		cs := strings.Split(candidates, ",")
+		for _, c := range cs {
 			table.Append(lua.LString(c))
 		}
 		L.Push(table)
@@ -125,7 +127,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	getCandidateVotes := func(L *lua.LState) int {
 		table := L.NewTable()
 		L.SetMetatable(table, L.GetTypeMetatable("candidateVotes"))
-		for _, cv := range candidateVotes {
+		votes := strings.Split(candidateVotes, ",")
+		for _, cv := range votes {
 			table.Append(lua.LString(cv))
 		}
 		L.Push(table)
@@ -142,7 +145,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	getBudgets := func(L *lua.LState) int {
 		table := L.NewTable()
 		L.SetMetatable(table, L.GetTypeMetatable("budgets"))
-		for _, budget := range budgets {
+		bs := strings.Split(budgets, ",")
+		for _, budget := range bs {
 			table.Append(lua.LString(budget))
 		}
 		L.Push(table)
@@ -291,11 +295,11 @@ func NewCommand() *cli.Command {
 				Name:  "host",
 				Usage: "set the host address",
 			},
-			cli.StringSliceFlag{
+			cli.StringFlag{
 				Name:  "candidates, cds",
 				Usage: "set the candidates public key",
 			},
-			cli.StringSliceFlag{
+			cli.StringFlag{
 				Name:  "candidateVotes, cvs",
 				Usage: "set the candidateVotes values",
 			},
@@ -311,7 +315,7 @@ func NewCommand() *cli.Command {
 				Name:  "voteresult, votres",
 				Usage: "set the owner public key",
 			},
-			cli.StringSliceFlag{
+			cli.StringFlag{
 				Name:  "budgets",
 				Usage: "set the budgets",
 			},
