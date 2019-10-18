@@ -2754,22 +2754,9 @@ int ela_add_friend(ElaCarrier *w, const char *address, const char *hello)
 
     base58_decode(address, strlen(address), addr, sizeof(addr));
 
-    rc = dht_get_friend_number(&w->dht, addr, &friend_number);
-    if (rc == 0 && friend_number != UINT32_MAX) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_ALREADY_EXIST));
-        return -1;
-    }
-
-    fi = (FriendInfo *)rc_zalloc(sizeof(FriendInfo), NULL);
-    if (!fi) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return -1;
-    }
-
     cp = elacp_create(ELACP_TYPE_FRIEND_REQUEST, NULL);
     if (!cp) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        deref(fi);
         return -1;
     }
 
@@ -2782,7 +2769,32 @@ int ela_add_friend(ElaCarrier *w, const char *address, const char *hello)
 
     if (!data) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        deref(fi);
+        return -1;
+    }
+
+    rc = dht_get_friend_number(&w->dht, addr, &friend_number);
+    if (rc < 0 && rc != ELA_DHT_ERROR(ELAERR_NOT_EXIST)) {
+        ela_set_error(rc);
+        free(data);
+        return -1;
+    }
+
+    if (rc == 0) { // friend already exist.
+        rc = dht_friend_add(&w->dht, addr, data, data_len, &friend_number);
+        free(data);
+
+        if (rc < 0) {
+            ela_set_error(rc);
+            return -1;
+        }
+        return 0;
+    }
+
+    // this is the first time send friend request.
+    fi = (FriendInfo *)rc_zalloc(sizeof(FriendInfo), NULL);
+    if (!fi) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        free(data);
         return -1;
     }
 

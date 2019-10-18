@@ -246,6 +246,8 @@ static inline int __dht_friend_add_error(TOX_ERR_FRIEND_ADD code)
 
     switch (code) {
     case TOX_ERR_FRIEND_ADD_OK:
+    case TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM:
+    case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
         rc = ELASUCCESS;
         break;
 
@@ -265,12 +267,7 @@ static inline int __dht_friend_add_error(TOX_ERR_FRIEND_ADD code)
         rc = ELA_DHT_ERROR(ELAERR_ADD_SELF);
         break;
 
-    case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
-        rc = ELA_DHT_ERROR(ELAERR_ALREADY_EXIST);
-        break;
-
     case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM:
-    case TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM:
         rc = ELA_DHT_ERROR(ELAERR_BAD_ADDRESS);
         break;
 
@@ -1112,8 +1109,19 @@ int dht_friend_add(DHT *dht, const uint8_t *address, const uint8_t *msg,
 
     fid = tox_friend_add(tox, address, msg, length, &error);
     if (fid == UINT32_MAX) {
-        vlogW("DHT: add friend error (%d).", error);
-        return __dht_friend_add_error(error);
+        int rc;
+
+        rc = __dht_friend_add_error(error);
+        if (rc < 0) {
+            vlogW("DHT: add friend error (%d).", error);
+            return rc;
+        }
+
+        if (friend_number) {
+            rc = dht_get_friend_number(dht, address, &fid);
+            if (rc < 0)
+                return rc;
+        }
     }
 
     if (friend_number)
