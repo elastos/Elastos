@@ -69,12 +69,29 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     try {
       const db_elip = this.getDBModel('Elip')
-      const { title, description } = param
+      const { title,
+              elipType,
+              description,
+              specifications,
+              motivation,
+              rationale,
+              backwardCompatibility,
+              copyright
+            } = param
+      if(!constant.ELIP_STATUS[elipType]){
+        elipType = _.values(constant.ELIP_STATUS)[0]
+      }
       const vid = await this.getNewVid()
       const doc: any = {
         title,
         vid,
+        elipType,
         description,
+        specifications,
+        motivation,
+        rationale,
+        backwardCompatibility,
+        copyright,
         status: constant.ELIP_STATUS.WAIT_FOR_REVIEW,
         contentType: constant.CONTENT_TYPE.MARKDOWN,
         createdBy: this.currentUser._id

@@ -316,3 +316,9 @@ export const ELIP_REVIEW_STATUS = create([
   'APPROVED',
   'REJECTED'
 ])
+
+export const ELIP_TYPE = create([
+    'STANDARD_TRACK',
+    'PROCESS',
+    'INFORMATIONAL'
+])
