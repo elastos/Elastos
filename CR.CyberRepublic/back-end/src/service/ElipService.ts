@@ -48,11 +48,12 @@ export default class extends Base {
 
       const { title,
               elipType,
-              description,
+              abstract,
               specifications,
               motivation,
               rationale,
               backwardCompatibility,
+              referenceImplementation,
               copyright
             } = param
       const doc: any = {}
@@ -62,8 +63,8 @@ export default class extends Base {
       if (elipType && constant.ELIP_STATUS[elipType]) {
         doc.elipType = elipType
       }
-      if (description) {
-        doc.description = description
+      if (abstract) {
+        doc.abstract = abstract
       }
       if (specifications) {
         doc.specifications = specifications
@@ -77,13 +78,16 @@ export default class extends Base {
       if (backwardCompatibility) {
         doc.backwardCompatibility = backwardCompatibility
       }
+      if (referenceImplementation) {
+        doc.referenceImplementation = referenceImplementation
+      }
       if (copyright) {
         doc.copyright = copyright
       }
-      if (doc.title || doc.description
+      if (doc.title || doc.abstract
           || doc.elipType  || doc.specifications || doc.motivation
-          || doc.rationale || doc.backwardCompatibility
-          || doc.copyright) {
+          || doc.rationale || doc.backwardCompatibility 
+          || referenceImplementation || doc.copyright) {
         doc.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
         const rs = await db_elip.update({ _id }, doc)
         this.notifySecretaries(elip, true)
@@ -100,11 +104,12 @@ export default class extends Base {
       const db_elip = this.getDBModel('Elip')
       const { title,
               elipType,
-              description,
+              abstract,
               specifications,
               motivation,
               rationale,
               backwardCompatibility,
+              referenceImplementation,
               copyright
             } = param
       let eType = elipType
@@ -116,11 +121,12 @@ export default class extends Base {
         title,
         vid,
         elipType: eType,
-        description,
+        abstract,
         specifications,
         motivation,
         rationale,
         backwardCompatibility,
+        referenceImplementation,
         copyright,
         status: constant.ELIP_STATUS.WAIT_FOR_REVIEW,
         contentType: constant.CONTENT_TYPE.MARKDOWN,
