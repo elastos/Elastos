@@ -13,7 +13,7 @@ export default {
     status: 'Status',
     createdAt: 'Created',
     description: 'Description',
-    type: 'Type',
+    elipType: 'Type',
     preamble: 'Preamble',
     abstract: 'Abstract',
     specifications: 'Specifications',
@@ -21,7 +21,7 @@ export default {
     rationale: 'Rationale',
     backwardCompatibility: 'Backward Compatibility',
     referenceImplementation: 'Reference Implementation',
-    copyrightDomain: 'Copyright/Public Domain',
+    copyright: 'Copyright/Public Domain',
     review: 'Review',
     preambleItems: {
       elip: 'ELIP',
@@ -57,6 +57,7 @@ export default {
     approve: 'Approve',
     edit: 'Edit',
     markAsSubmitted: 'Mark as Submitted',
+    markAsCancelled: 'Mark as Cancelled',
     continue: 'Continue'
   },
   msg: {
@@ -69,14 +70,14 @@ export default {
   },
   form: {
     note: {
-      type: 'Select ELIP Type.',
+      elipType: 'Select ELIP Type.',
       abstract: 'Abstract',
       specifications: 'Specifications',
       motivation: 'Motivation',
       rationale: 'Rationale',
       backwardCompatibility: 'Backward Compatibility',
       referenceImplementation: 'Reference Implementation',
-      copyrightDomain: 'Copyright/Public Domain'
+      copyright: 'Copyright/Public Domain'
     },
     type: {
       standardTitle: 'Standards Tracking ELIP',

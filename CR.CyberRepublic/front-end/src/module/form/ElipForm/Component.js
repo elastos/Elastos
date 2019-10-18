@@ -20,14 +20,14 @@ const FormItem = Form.Item
 const { TabPane } = Tabs
 
 const TAB_KEYS = [
-  'type',
+  'elipType',
   'abstract',
   'specifications',
   'motivation',
   'rationale',
   'backwardCompatibility',
   'referenceImplementation',
-  'copyrightDomain'
+  'copyright'
 ]
 const editorTransform = value => {
   // string or object
@@ -68,15 +68,15 @@ class C extends BaseComponent {
 
       onSubmit({
         title: values.title,
-        type: values.type,
+        elipType: values.elipType,
         abstract: values.abstract,
         specifications: values.specifications,
         motivation: values.motivation,
         rationale: values.rationale,
         backwardCompatibility: values.backwardCompatibility,
         referenceImplementation: values.referenceImplementation,
-        copyrightDomain: values.copyrightDomain
-      }).finally(() => this.state({ loading: false }))
+        copyright: values.copyright
+      }).finally(() => this.setState({ loading: false }))
     })
   }
 
@@ -119,7 +119,7 @@ class C extends BaseComponent {
   }
 
   getTypeRadioGroup = key => {
-    const { getFieldDecorator } = this.props.form
+    const { getFieldDecorator, data } = this.props.form
     const rules = [
       {
         required: true,
@@ -128,7 +128,7 @@ class C extends BaseComponent {
     ]
     return getFieldDecorator(key, {
       rules,
-      initialValue: '1'
+      initialValue: data && data.elipType ? data.elipType : 'STANDARD_TRACK'
     })(<RadioCard radioKey={key} />)
   }
 
@@ -275,7 +275,7 @@ class C extends BaseComponent {
               className="cr-btn cr-btn-primary"
               htmlType="submit"
             >
-              {I18N.get('elip.button.submit')}
+              {this.props.submitName || I18N.get('elip.button.submit')}
             </Button>
           </Row>
         </Form>
@@ -292,7 +292,7 @@ class RadioCard extends BaseComponent {
   constructor(props) {
     super(props)
     this.state = {
-      data: this.props && this.props.value ? this.props.value : '0'
+      data: this.props && this.props.value ? this.props.value : 'STANDARD_TRACK'
     }
     this.handleChange = this.handleChange.bind(this)
   }
@@ -327,6 +327,7 @@ class RadioCard extends BaseComponent {
 
   handleChange(evt) {
     this.setState({ data: evt.target.value })
+    this.props.onChange(evt.target.value)
   }
 
   ord_render() {
@@ -343,14 +344,14 @@ class RadioCard extends BaseComponent {
                 <Input
                   type="radio"
                   name={radioKey}
-                  value="1"
+                  value="STANDARD_TRACK"
                   style={{ display: 'none' }}
                   onChange={this.handleChange}
                 />
               </RadioCardSpan>
               <RadioCardSpan>
                 <Paragraph>{this.renderContent('standard')}</Paragraph>
-                {this.renderCheck('1')}
+                {this.renderCheck('STANDARD_TRACK')}
               </RadioCardSpan>
             </RadioCardLabel>
             <RadioCardLabel
@@ -361,14 +362,14 @@ class RadioCard extends BaseComponent {
                 <Input
                   type="radio"
                   name={radioKey}
-                  value="2"
+                  value="PROCESS"
                   style={{ display: 'none' }}
                   onChange={this.handleChange}
                 />
               </RadioCardSpan>
               <RadioCardSpan>
                 <Paragraph>{this.renderContent('information')}</Paragraph>
-                {this.renderCheck('2')}
+                {this.renderCheck('PROCESS')}
               </RadioCardSpan>
             </RadioCardLabel>
             <RadioCardLabel
@@ -379,14 +380,14 @@ class RadioCard extends BaseComponent {
                 <Input
                   type="radio"
                   name={radioKey}
-                  value="3"
+                  value="INFORMATIONAL"
                   style={{ display: 'none' }}
                   onChange={this.handleChange}
                 />
               </RadioCardSpan>
               <RadioCardSpan>
                 <Paragraph>{this.renderContent('process')}</Paragraph>
-                {this.renderCheck('3')}
+                {this.renderCheck('INFORMATIONAL')}
               </RadioCardSpan>
             </RadioCardLabel>
           </Radio.Group>

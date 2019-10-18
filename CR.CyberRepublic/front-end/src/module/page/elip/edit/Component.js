@@ -7,6 +7,7 @@ import ElipForm from '@/module/form/ElipForm/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import { ELIP_STATUS } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
+import I18N from '@/I18N'
 
 export default class extends StandardPage {
   constructor(p) {
@@ -26,6 +27,15 @@ export default class extends StandardPage {
   historyBack = () => {
     const id = this.state.elip._id
     this.props.history.push(`/elips/${id}`)
+  }
+
+  onSubmit = model => {
+    const id = this.state.elip._id
+    const status = ELIP_STATUS.DRAFT === this.state.elip.status ? ELIP_STATUS.SUBMITTED : ELIP_STATUS.WAIT_FOR_REVIEW
+    return this.props
+      .update({ _id: id, status, ...model })
+      .then(() => this.historyBack())
+      .catch(err => this.setState({ error: err }))
   }
 
   ord_renderContent() {
@@ -54,11 +64,18 @@ export default class extends StandardPage {
       return this.historyBack()
     }
 
+    const submitName = ELIP_STATUS.DRAFT === elip.status ? I18N.get('elip.button.markAsSubmitted') : I18N.get('elip.button.submit')
+
     return (
       <Wrapper>
         <BackLink link="/elips" />
         <Container>
-          <ElipForm data={elip} onCancel={this.historyBack} />
+          <ElipForm
+            data={elip}
+            onSubmit={this.onSubmit}
+            onCancel={this.historyBack}
+            submitName={submitName}
+          />
         </Container>
         <Footer />
       </Wrapper>
