@@ -171,7 +171,7 @@ class DIDStoreTests: XCTestCase {
         _ = doc2.addCredential(issuer.vc!)
         try store.storeDid(doc2)
         doc2 = try store.resolveDid(primaryDid)
-        var vcId: DIDURL = try DIDURL(primaryDid, "cred-1")
+        let vcId: DIDURL = try DIDURL(primaryDid, "cred-1")
         issuer.vc = try doc2.getCredential(vcId)
         
         XCTAssertNil(issuer.vc)

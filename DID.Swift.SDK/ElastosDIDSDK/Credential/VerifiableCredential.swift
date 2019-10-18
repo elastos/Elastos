@@ -112,10 +112,10 @@ public class VerifiableCredential: DIDObject {
         issuer = try JsonHelper.getDid(json, Constants.issuer, true, ref, "crendential issuer")
         
         // issuanceDate
-        issuanceDate = try JsonHelper.getDate(json, Constants.issuanceDate, false, nil, "credential issuanceDate")
+        issuanceDate = try DateFormater.getDate(json, Constants.issuanceDate, false, nil, "credential issuanceDate")
         
         // expirationDate
-        expirationDate = try JsonHelper.getDate(json, Constants.expirationDate, true, nil, "credential expirationDate")
+        expirationDate = try DateFormater.getDate(json, Constants.expirationDate, true, nil, "credential expirationDate")
         
         // credentialSubject
         value = json[Constants.credentialSubject]

@@ -84,4 +84,8 @@ class IDChainRequest: NSObject {
         self.keyType = Constants.defaultPublicKeyType
         return self
     }
+    
+    public func toJson(_ compact: Bool) -> String {
+        return ""
+    }
 }

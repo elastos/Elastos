@@ -57,13 +57,7 @@ public class DID: NSObject {
         guard let _ = document else {
             return document!
         }
-
-        do {
-            document = try DIDStore.shareInstance()!.resolveDid(self)
-        } catch {
-            throw error
-        }
-        
+        document = try DIDStore.shareInstance()!.resolveDid(self)
         self.resolveTimestamp = Date()
         return document!
     }
@@ -95,22 +89,6 @@ public class DID: NSObject {
     }
 }
 
-extension Data {
-  func toPointer() -> UnsafePointer<UInt8>? {
-    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-    let stream = OutputStream(toBuffer: buffer, capacity: count)
-
-    stream.open()
-    withUnsafeBytes({ (p: UnsafePointer<UInt8>) -> Void in
-      stream.write(p, maxLength: count)
-    })
-
-    stream.close()
-
-    return UnsafePointer<UInt8>(buffer)
-  }
-}
-
 class DListener: DIDURLBaseListener {
     public var name: String?
     public var value: String?
@@ -124,8 +102,8 @@ class DListener: DIDURLBaseListener {
     public override func exitMethod(_ ctx: DIDURLParser.MethodContext) {
         let method: String = ctx.getText()
         if (method != DID.METHOD){
-            // TODO: throw error
-            // let error = DIDError.failue("Unknown method: \(method)")
+            // can't throw , print...
+            print(DIDError.failue("Unknown method: \(method)"))
         }
         self.did!.method = DID.METHOD
     }

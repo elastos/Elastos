@@ -30,6 +30,19 @@ extension Data {
     func hexEncodedString() -> String {
         return map { String(format: "%02hhx", $0) }.joined()
     }
+    
+    func toPointer() -> UnsafePointer<UInt8>? {
+      let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
+      let stream = OutputStream(toBuffer: buffer, capacity: count)
+
+      stream.open()
+      withUnsafeBytes({ (p: UnsafePointer<UInt8>) -> Void in
+        stream.write(p, maxLength: count)
+      })
+      stream.close()
+
+      return UnsafePointer<UInt8>(buffer)
+    }
 }
 
 extension Dictionary {

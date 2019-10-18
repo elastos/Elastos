@@ -13,7 +13,9 @@ public class DIDDocument: NSObject {
     public var readonly: Bool = false
     
     override init() {
+        super.init()
         readonly = false
+        setDefaultExpires()
     }
     
     public func getPublicKeyCount() -> Int {
@@ -256,6 +258,23 @@ public class DIDDocument: NSObject {
         return removeEntry(services, id)
     }
     
+    public func setDefaultExpires() {
+        expires = DateFormater.currentDateToWantDate(Constants.MAX_VALID_YEARS)
+    }
+    
+    public func setExpires(_ expiresDate: Date) -> Bool {
+        guard !readonly else {
+            return false
+        }
+        
+        if DateFormater.comporsDate(expiresDate, expires!) {
+            self.expires = DateFormater.setExpires(expiresDate)
+            return true
+        }
+        
+        return false
+    }
+    
     public func modify() -> Bool {
         // TODO: Check owner
         readonly = false
@@ -327,7 +346,7 @@ public class DIDDocument: NSObject {
         
         // expires
         if expires != nil {
-            dic[Constants.expires] = JsonHelper.format(expires!)
+            dic[Constants.expires] = DateFormater.format(expires!)
         }
         let dicString = OrderedDictionary<String, Any>.creatJsonString(dic: dic)
                 
@@ -364,6 +383,10 @@ public class DIDDocument: NSObject {
         return doc
     }
     
+    public static func fromJson(_ dic: Dictionary<String, Any>) throws -> DIDDocument {
+       return try parse(dic!)
+    }
+    
     private func parse(url: URL) throws {
         let json = try! String(contentsOf: url)
         let data = json.data(using: .utf8)!
@@ -379,7 +402,7 @@ public class DIDDocument: NSObject {
         try parseAuthorization(json)
         try parseCredential(json)
         try parseService(json)
-        expires = try JsonHelper.getDate(json, Constants.expires, true, nil, "expires")
+        expires = try DateFormater.getDate(json, Constants.expires, true, nil, "expires")
     }
     
     // 解析公钥
@@ -504,6 +527,7 @@ public class DIDDocument: NSObject {
         services[svc.id] = svc
         return true
     }
+    
     private func addAuthorizationKey(_ pk: DIDPublicKey) -> Bool {
         guard !readonly else { return false }
         // Cann' authorize to self

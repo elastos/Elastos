@@ -28,6 +28,6 @@ public class Constants {
     public static let defaultPublicKeyType: String = "ECDSAsecp256r1"
 
     public static let DATE_FORMAT: String = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    public static let MAX_VALID_YEARS: Int = 5
 
-    // TODO:UTC
 }

@@ -83,15 +83,7 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
     
     static public func creatJsonString(dic: OrderedDictionary<String, Any>) -> String {
         
-//        var result: String = String()
-//        // id
-//        result.append("{")
-//        result.append("\"id\":\"\(dic["id"]!)\",")
-//        result.append("\"publicKey\": [{\"")
-//
-//        let publicKeys: Array = dic["publicKey"] as! Array<Any>
-
-     var namedPaird = [String]()
+        var namedPaird = [String]()
         dic.forEach { (key, value) in
             if value is OrderedDictionary<String, Any> {
                 namedPaird.append("\"\(key)\":\(self.creatJsonString(dic: value as! OrderedDictionary<String, Any>))")
@@ -113,10 +105,7 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
         }
         let returnString = namedPaird.joined(separator:",")
         return "{\(returnString)}"
-//        return result
     }
-
-    
 }
 
 extension OrderedDictionary: Sequence {
