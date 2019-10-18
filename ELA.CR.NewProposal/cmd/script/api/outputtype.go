@@ -12,8 +12,10 @@ import (
 	"strings"
 
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/elastos/Elastos.ELA/common"
 	lua "github.com/yuin/gopher-lua"
@@ -246,9 +248,19 @@ func newVoteContent(L *lua.LState) int {
 
 	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(candidates))
 	for i := 0; i < len(candidates); i++ {
+		pk, err := crypto.DecodePoint(candidates[i])
+		if err != nil {
+			fmt.Println("wrong cr public key")
+			os.Exit(1)
+		}
+		code, err := contract.CreateStandardRedeemScript(pk)
+		if err != nil {
+			fmt.Println("wrong cr public key")
+			os.Exit(1)
+		}
 
 		//get didUint168 from code
-		didUint168 := getDidProgramHash(candidates[i])
+		didUint168 := getDidProgramHash(code)
 		candidateVotes = append(candidateVotes, outputpayload.CandidateVotes{
 			Candidate: didUint168.Bytes(),
 			Votes:     votes[i],
