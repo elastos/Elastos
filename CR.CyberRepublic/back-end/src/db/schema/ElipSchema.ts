@@ -21,7 +21,7 @@ export const ElipResultSchema = {
 }
 
 export const ElipHistorySchema = {
-  ...CVoteResultSchema,
+  ...ElipResultSchema,
   createdAt: {
     type: Date,
     required: true,
