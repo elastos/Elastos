@@ -1,4 +1,5 @@
 Django==2.2.6
+python3==3.7.4
 pytz==2019.3
 sqlparse==0.3.0
 virtualenv==16.7.5
