@@ -11,7 +11,7 @@ For macOS, to install python using homebrew:
 $brew install python3
 ```
 
-For Linux based OS, to install python using homebrew:
+For Linux based OS, to install python:
 ```
 $apt-get install python3
 ```
