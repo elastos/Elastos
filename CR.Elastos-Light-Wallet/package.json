@@ -1,0 +1,62 @@
+{
+  "name": "elastos-light-wallet",
+  "version": "1.0.0-RC07",
+  "description": "elastos light wallet",
+  "productName": "elastos-light-wallet",
+  "main": "index.js",
+  "scripts": {
+    "coverage": "nyc -x 'test/**' ./node_modules/mocha/bin/mocha --experimental-worker --recursive -t 100000 test",
+    "start": "electron . --enable-logging --remote-debugging-port=9222",
+    "test": "check-node-version --node 8 --npm 6 && ./node_modules/mocha/bin/mocha test",
+    "test-ledger": "check-node-version --node 8 --npm 6 && ./node_modules/mocha/bin/mocha --timeout 100000 ledger-test -g 'ledger'",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist-all": "electron-builder -mwl",
+    "dist-mac": "electron-builder -m",
+    "dist-win": "electron-builder -w",
+    "dist-linux": "electron-builder -l",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coranos/elastos-light-wallet.git"
+  },
+  "keywords": [
+    "elastos"
+  ],
+  "author": "coranos",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/coranos/elastos-light-wallet/issues"
+  },
+  "homepage": "https://github.com/coranos/elastos-light-wallet#readme",
+  "dependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^4.70.0",
+    "babel-polyfill": "^6.26.0",
+    "bignumber.js": "^7.2.1",
+    "bs58": "^4.0.1",
+    "check-node-version": "^3.3.0",
+    "elliptic": "^6.5.0",
+    "node": "^8.16.1",
+    "node-jsx": "^0.13.3",
+    "prebuild-install": "^5.3.2",
+    "react": "^16.9.0",
+    "react-bootstrap": "^0.32.4",
+    "react-dom": "^16.9.0",
+    "regenerator-runtime": "^0.13.3",
+    "ripemd160": "^2.0.2",
+    "smart-buffer": "^4.1.0",
+    "usb": "^1.6.0",
+    "wif": "^2.0.6"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "electron": "^6.0.10",
+    "electron-builder": "^21.2.0",
+    "eslint": "^6.4.0",
+    "eslint-config-google": "^0.14.0",
+    "mocha": "^6.2.0",
+    "node-abi": "^2.11.0",
+    "nyc": "^14.1.1"
+  }
+}

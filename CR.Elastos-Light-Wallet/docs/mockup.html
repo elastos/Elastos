@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Light Wallet for Elastos</title>
+  <link type="text/css" href="../style.css" rel="stylesheet">
+</head>
+
+<body onload="onLoad()">
+  <table class="w800h600px no_padding no_border">
+    <tr class="no_padding">
+      <td class="valign_top white_on_purple no_border" style="width: 150px;">
+        <table class="w100pct no_border">
+          <tr>
+            <td class="black_on_offwhite h20px no_border user_select_none"><img class="valign_middle" src="../artwork/elastos-black-small.svg"> Elastos</td>
+          </tr>
+          <tr>
+            <td class="white_on_purple h20px no_border"></td>
+          </tr>
+          <tr>
+            <td id='home' class="white_on_purple_with_hover h20px fake_button" onclick="showHome()"><img class="valign_middle" src="../artwork/home.svg">
+              Home</td>
+          </tr>
+          <tr>
+            <td id='send' class="white_on_purple_with_hover h20px fake_button" onclick="showSend()"><img class="valign_middle" src="../artwork/send.svg">
+              Send</td>
+          </tr>
+          <tr>
+            <td id='receive' class="white_on_purple_with_hover h20px fake_button" onclick="showReceive()"><img class="valign_middle" src="../artwork/receive.svg"> Receive</td>
+          </tr>
+          <tr>
+            <td id='transactions' class="white_on_purple_with_hover h20px fake_button" onclick="showTransactions()"><img class="valign_middle" src="../artwork/transactions.svg"> Transactions</td>
+          </tr>
+          <tr>
+            <td class="white_on_purple h290px no_border"></td>
+          </tr>
+          <tr>
+            <td class="white_on_purple_with_hover h20px fake_button" onclick="showLogin()">Logout</td>
+          </tr>
+        </table>
+      </td>
+      <td class="valign_top black_on_offwhite no_border no_padding">
+        <table class="w626px black_on_offwhite no_border no_padding">
+          <tr id="elastos-branding" class="no_border no_padding">
+            <td class="h325px w595px no_border no_padding">
+              <div class="branding_container">
+                <img class="branding_image" style="left: 175px; top: 10px;" src="../artwork/elastos-branding.svg"><img style="left: 380px; top: 130px;" class="branding_image" src="../artwork/elastos-white-large.svg">
+              </div>
+            </td>
+          </tr>
+          <tr id="ledger-login">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">Ledger Status</div>
+              <p>Found USB Ledger Nano S Device. Elastos App found on hardware device. Click button to login.
+                <p>
+                  <div class="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px">Use Ledger</div>
+            </td>
+          </tr>
+          <tr id="private-key-login">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">Private Key</div>
+              <p>Alternatively, enter private key manually.
+                <p>
+                  <div class="white_on_gray bordered display_inline_block float_right fake_button rounded padding_5px">Enter Key</div>
+            </td>
+          </tr>
+          <tr id="your-address">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">Your Address</div> <br>EbDbMuMQcNhuyuyJdJT2DqN38bxiApQRgt
+            </td>
+          </tr>
+          <tr id="transaction-list-small">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white ` display_inline_block">Previous Transactions (2 total)</div>
+              <div class="gray_on_white float_right display_inline_block">1234 Blocks</div>
+              <p>
+                <table class="w100pct black_on_offwhite no_border whitespace_nowrap">
+                  <tr>
+                    <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                    <td class="no_border no_padding">10.1 ELA</td>
+                    <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                  </tr>
+                  <tr>
+                    <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                    <td class="no_border no_padding">1.1 ELA</td>
+                    <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                  </tr>
+                </table>
+            </td>
+          </tr>
+          <tr id="transaction-list-large">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white ` display_inline_block">Previous Transactions (22 total)</div>
+              <div class="gray_on_white float_right display_inline_block">1234 Blocks</div>
+              <p>
+                <div class="h470px overflow_auto">
+                  <table class="w100pct black_on_offwhite no_border whitespace_nowrap">
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/received-ela.svg"></td>
+                      <td class="no_border no_padding">10.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                    <tr>
+                      <td class="no_border no_padding"><img src="../artwork/sent-ela.svg"></td>
+                      <td class="no_border no_padding">1.1 ELA</td>
+                      <td class="no_border no_padding">160cae1e19ef4e8901793259eef07148f35b6fcf3dfd8d7bd82eb2664db04d98</td>
+                    </tr>
+                  </table>
+                </div>
+            </td>
+          </tr>
+          <tr id="transaction-more-info">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">More Info</div> <br>Tap on the transaction ID to view further
+              details or visit http://blockchain.elastos.org
+            </td>
+          </tr>
+          <tr id="from-address">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">From Address</div>
+              <p>EbDbMuMQcNhuyuyJdJT2DqN38bxiApQRgt
+            </td>
+          </tr>
+          <tr id="send-amount">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">Send Amount</div>
+              <p>
+                <input type="text"> <input type="range" min="1" max="100" value="50">
+            </td>
+          </tr>
+          <tr id="to-address">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">To Address</div>
+              <p>EbDbMuMQcNhuyuyJdJT2DqN38bxiApQRgt
+            </td>
+          </tr>
+          <tr id="send-spacer-01">
+            <td class="black_on_white h200px no_border"></td>
+          </tr>
+          <tr id="confirm-and-see-fees">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">Confirm</div>
+              <p>Tap ‘Next’ to confirm the fees for your transaction.
+                <p>
+                  <div class="lightgray_border white_on_black bordered display_inline_block float_right fake_button rounded padding_5px">Next</div>
+            </td>
+          </tr>
+          <tr id="fees">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white display_inline_block">Fees</div>
+              <div class="black_on_white float_right display_inline_block">Estimated New Balance</div>
+              <p>
+          </tr>
+          <tr id="cancel-confirm-transaction">
+            <td class="black_on_white h20px darkgray_border">
+              <div class="gray_on_white">Confirm</div>
+              <p>Your balance will be deducted 10.5 ELA + 0.000045 ELA in fees.
+                <p>
+                  <div class="white_on_black lightgray_border bordered display_inline_block float_right fake_button rounded padding_5px">Confirm</div>
+                  <div class="white_on_gray darkgray_border bordered display_inline_block float_right fake_button rounded padding_5px">Cancel</div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <script>
+    const get = (id) => {
+      const elt = document.getElementById(id);
+      if (elt == null) {
+        throw new Error('elt is null:' + id);
+      }
+      return elt;
+    }
+
+    const hide = (id) => {
+      get(id).style = 'display:none;';
+    }
+
+    const show = (id) => {
+      get(id).style = 'display:default;';
+    }
+
+    const removeClass = (id, cl) => {
+      get(id).classList.remove(cl);
+    }
+
+    const addClass = (id, cl) => {
+      get(id).classList.add(cl);
+    }
+
+    const selectButton = (id) => {
+      addClass(id, 'white_on_light_purple');
+      removeClass(id, 'white_on_purple_with_hover');
+    }
+
+    const clearButtonSelection = (id) => {
+      removeClass(id, 'white_on_light_purple');
+      addClass(id, 'white_on_purple_with_hover');
+    }
+
+    const hideEverything = () => {
+      clearButtonSelection('send');
+      clearButtonSelection('home');
+      clearButtonSelection('receive');
+      clearButtonSelection('transactions');
+      hide('cancel-confirm-transaction');
+      hide('fees');
+      hide('confirm-and-see-fees');
+      hide('to-address');
+      hide('send-amount');
+      hide('from-address');
+      hide('transaction-more-info');
+      hide('transaction-list-small');
+      hide('transaction-list-large');
+      hide('your-address');
+      hide('private-key-login');
+      hide('ledger-login');
+      hide('elastos-branding');
+      hide('send-spacer-01');
+    }
+
+    const showLogin = () => {
+      hideEverything();
+      show('private-key-login');
+      show('ledger-login');
+      show('elastos-branding');
+    }
+
+    const showHome = () => {
+      hideEverything();
+      show('transaction-more-info');
+      show('transaction-list-small');
+      show('your-address');
+      show('elastos-branding');
+      selectButton('home');
+    }
+
+    const showSend = () => {
+      hideEverything();
+      show('from-address');
+      show('send-amount');
+      show('to-address');
+      show('confirm-and-see-fees');
+      show('send-spacer-01');
+      selectButton('send');
+    }
+
+    const showReceive = () => {
+      hideEverything();
+      show('your-address');
+      selectButton('receive');
+    }
+
+    const showTransactions = () => {
+      hideEverything();
+      show('transaction-more-info');
+      show('transaction-list-large');
+      selectButton('transactions');
+    }
+
+    const onLoad = () => {
+      showLogin();
+    }
+  </script>
+</body>
+
+</html>
