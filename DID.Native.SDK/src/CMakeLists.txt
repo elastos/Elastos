@@ -85,13 +85,13 @@ if(WIN32)
 endif()
 
 set(LIBS
-    crystal
     crypto
     cjson)
 
 if(WIN32)
 set(LIBS
     ${LIBS}
+    crystal
     pthread)
 else()
 set(LIBS
@@ -102,7 +102,12 @@ add_definitions(-DDID_BUILD)
 
 add_custom_target(ela-did)
 
-set(ELADID_DEPENDS libressl libcrystal cJSON hdkey)
+set(ELADID_DEPENDS libressl cJSON hdkey)
+if(WIN32)
+set(ELADID_DEPENDS
+    libcrystal
+    ${ELADID_DEPENDS})
+endif()
 
 if(ENABLE_STATIC)
     add_library(eladid-static STATIC ${SRC})
@@ -140,14 +145,35 @@ if(ENABLE_SHARED)
         set_property(TARGET eladid-shared APPEND_STRING PROPERTY
             LINK_FLAGS " -Wl,-exported_symbols_list,\"${CMAKE_CURRENT_SOURCE_DIR}/export.symbols\"")
     endif()
-    target_link_libraries(eladid-shared hdkey-static ${LIBS} ${SYSTEM_LIBS})
+    target_include_directories(eladid-shared
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:include>
+    )
+    target_link_libraries(eladid-shared PRIVATE hdkey-static ${LIBS} ${SYSTEM_LIBS})
 
     add_dependencies(ela-did eladid-shared)
 
     install(TARGETS eladid-shared
+        EXPORT ElastosDIDConfig
         RUNTIME DESTINATION "bin"
         ARCHIVE DESTINATION "lib"
         LIBRARY DESTINATION "lib")
 endif()
 
 install(FILES ${HEADERS} DESTINATION "include")
+
+install(EXPORT
+          ElastosDIDConfig
+        NAMESPACE
+          "ElastosDID::"
+        DESTINATION
+          share/ElastosDID/cmake
+)
+export(
+  TARGETS
+    eladid-shared
+  FILE
+    ElastosDIDConfig.cmake
+)
+
