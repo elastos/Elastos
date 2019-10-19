@@ -354,11 +354,14 @@ namespace Elastos {
 				return true;
 			}
 
-			for (std::vector<Address>::const_iterator it = _externalChain.cbegin(); it != _externalChain.cend(); ++it) {
-				Address did = *it;
-				did.ChangePrefix(PrefixIDChain);
-				if (did == address)
-					return true;
+			if (_parent->GetSignType() != IAccount::MultiSign) {
+				for (std::vector<Address>::const_iterator it = _externalChain.cbegin();
+					 it != _externalChain.cend(); ++it) {
+					Address did = *it;
+					did.ChangePrefix(PrefixIDChain);
+					if (did == address)
+						return true;
+				}
 			}
 
 			return _allAddrs.find(address) != _allAddrs.end();
