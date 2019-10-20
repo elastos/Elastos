@@ -21,19 +21,20 @@ import (
 )
 
 const (
-	luaCoinBaseTypeName      = "coinbase"
-	luaTransferAssetTypeName = "transferasset"
-	luaRegisterProducerName  = "registerproducer"
-	luaUpdateProducerName    = "updateproducer"
-	luaCancelProducerName    = "cancelproducer"
-	luaActivateProducerName  = "activateproducer"
-	luaReturnDepositCoinName = "returndepositcoin"
-	luaSideChainPowName      = "sidechainpow"
-	luaRegisterCRName        = "registercr"
-	luaUpdateCRName          = "updatecr"
-	luaUnregisterCRName      = "unregistercr"
-	luaCRCProposalName       = "crcproposal"
-	luaCrcProposalReviewName = "crcproposalreview"
+	luaCoinBaseTypeName        = "coinbase"
+	luaTransferAssetTypeName   = "transferasset"
+	luaRegisterProducerName    = "registerproducer"
+	luaUpdateProducerName      = "updateproducer"
+	luaCancelProducerName      = "cancelproducer"
+	luaActivateProducerName    = "activateproducer"
+	luaReturnDepositCoinName   = "returndepositcoin"
+	luaSideChainPowName        = "sidechainpow"
+	luaRegisterCRName          = "registercr"
+	luaUpdateCRName            = "updatecr"
+	luaUnregisterCRName        = "unregistercr"
+	luaCRCProposalName         = "crcproposal"
+	luaCRCProposalReviewName   = "crcproposalreview"
+	luaCRCProposalTrackingName = "crcproposaltracking"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -1054,7 +1055,7 @@ func crcProposalGet(L *lua.LState) int {
 	return 0
 }
 
-func checkCrcProposalReview(L *lua.LState, idx int) *payload.CRCProposalReview {
+func checkCRCProposalReview(L *lua.LState, idx int) *payload.CRCProposalReview {
 	ud := L.CheckUserData(idx)
 	if v, ok := ud.Value.(*payload.CRCProposalReview); ok {
 		return v
@@ -1063,11 +1064,11 @@ func checkCrcProposalReview(L *lua.LState, idx int) *payload.CRCProposalReview {
 	return nil
 }
 
-func RegisterCrcProposalReviewType(L *lua.LState) {
-	mt := L.NewTypeMetatable(luaCrcProposalReviewName)
+func RegisterCRCProposalReviewType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCRCProposalReviewName)
 	L.SetGlobal("crcproposalreview", mt)
 	// static attributes
-	L.SetField(mt, "new", L.NewFunction(newCrcProposalReview))
+	L.SetField(mt, "new", L.NewFunction(newCRCProposalReview))
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalReviewMethods))
 }
@@ -1078,8 +1079,8 @@ func getDid(code []byte) *common.Uint168 {
 }
 
 // Constructor
-func newCrcProposalReview(L *lua.LState) int {
-	fmt.Println("newCrcProposalReview begin")
+func newCRCProposalReview(L *lua.LState) int {
+	fmt.Println("newCRCProposalReview begin")
 
 	proposalHashString := L.ToString(1)
 	voteResult := L.ToInt(2)
@@ -1102,7 +1103,7 @@ func newCrcProposalReview(L *lua.LState) int {
 		rpSignBuf := new(bytes.Buffer)
 		err = crcProposalReview.SerializeUnsigned(rpSignBuf, payload.CRCProposalReviewVersion)
 		codeHash := common.ToCodeHash(codeByte)
-		fmt.Println("newCrcProposalReview codeHash", common.BytesToHexString(codeHash.Bytes()))
+		fmt.Println("newCRCProposalReview codeHash", common.BytesToHexString(codeHash.Bytes()))
 		acc := client.GetAccountByCodeHash(*codeHash)
 		if acc == nil {
 			fmt.Println("no available account in wallet")
@@ -1118,9 +1119,9 @@ func newCrcProposalReview(L *lua.LState) int {
 
 	ud := L.NewUserData()
 	ud.Value = crcProposalReview
-	L.SetMetatable(ud, L.GetTypeMetatable(luaCrcProposalReviewName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCProposalReviewName))
 	L.Push(ud)
-	fmt.Println("newCrcProposalReview end")
+	fmt.Println("newCRCProposalReview end")
 	return 1
 }
 
@@ -1130,8 +1131,99 @@ var crcProposalReviewMethods = map[string]lua.LGFunction{
 
 // Getter and setter for the Person#Name
 func crcProposalReviewGet(L *lua.LState) int {
-	p := checkCrcProposalReview(L, 1)
+	p := checkCRCProposalReview(L, 1)
 	fmt.Println(p)
 
 	return 0
+}
+
+func RegisterCRCProposalTrackingType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCRCProposalTrackingName)
+	L.SetGlobal("crcproposaltracking", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newCRCProposalTracking))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), crcProposalTrackingMethods))
+}
+
+// Constructor
+func newCRCProposalTracking(L *lua.LState) int {
+	fmt.Println("newCRCProposalTracking begin")
+
+	proposalTrackingType := L.ToInt64(1)
+	proposalHashStr := L.ToString(2)
+	documentHashStr := L.ToString(3)
+	stage := L.ToInt64(4)
+	appropriation := L.ToNumber(5)
+	leaderPublicKeyStr := L.ToString(6)
+	leaderPrivateKeyStr := L.ToString(7)
+	newLeaderPublicKeyStr := L.ToString(8)
+	newLeaderPrivateKeyStr := L.ToString(9)
+	sgPrivateKeyStr := L.ToString(10)
+
+	proposalHash, _ := common.Uint256FromHexString(proposalHashStr)
+	documentHash, _ := common.Uint256FromHexString(documentHashStr)
+	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
+	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
+	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
+	newLeaderPrivateKey, _ := common.HexStringToBytes(newLeaderPrivateKeyStr)
+	sgPrivateKey, _ := common.HexStringToBytes(sgPrivateKeyStr)
+
+	cPayload := &payload.CRCProposalTracking{
+		ProposalTrackingType: payload.CRCProposalTrackingType(proposalTrackingType),
+		ProposalHash:         *proposalHash,
+		DocumentHash:         *documentHash,
+		Stage:                uint8(stage),
+		Appropriation:        common.Fixed64(appropriation * 1e8),
+		LeaderPubKey:         leaderPublicKey,
+		NewLeaderPubKey:      newLeaderPublicKey,
+		LeaderSign:           nil,
+		NewLeaderSign:        nil,
+		SecretaryGeneralSign: nil,
+	}
+
+	signBuf := new(bytes.Buffer)
+	cPayload.SerializeUnsigned(signBuf, payload.CRCProposalTrackingVersion)
+	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
+	cPayload.LeaderSign = sig
+
+	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
+		common.WriteVarBytes(signBuf, sig)
+		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
+		cPayload.NewLeaderSign = crSig
+		sig = crSig
+	}
+
+	common.WriteVarBytes(signBuf, sig)
+	crSig, _ := crypto.Sign(sgPrivateKey, signBuf.Bytes())
+	cPayload.SecretaryGeneralSign = crSig
+
+	ud := L.NewUserData()
+	ud.Value = cPayload
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCProposalTrackingName))
+	L.Push(ud)
+	fmt.Println("newCRCProposalTracking end")
+
+	return 1
+}
+
+var crcProposalTrackingMethods = map[string]lua.LGFunction{
+	"get": crcProposalTrackingGet,
+}
+
+// Getter and setter for the Person#Name
+func crcProposalTrackingGet(L *lua.LState) int {
+	p := checkCRCProposalTracking(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func checkCRCProposalTracking(L *lua.LState, idx int) *payload.CRCProposalTracking {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.CRCProposalTracking); ok {
+		return v
+	}
+	L.ArgError(1, "CRCProposalTracking expected")
+	return nil
 }

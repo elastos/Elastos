@@ -132,7 +132,8 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 	if endHeight < startHeight {
 		return nil
 	}
-	done := make(chan bool)
+
+	done := make(chan error)
 
 	go func() {
 		log.Info("[InitFFLDBFromChainStore] start height: ", startHeight, "end height:", endHeight)
@@ -143,21 +144,18 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 		for start := startHeight; start <= endHeight; start++ {
 			hash, err := b.db.GetBlockHash(start)
 			if err != nil {
-				fmt.Println("GetBlockHash err:", err)
-				done <- false
+				done <- fmt.Errorf("GetBlockHash err: %s", err)
 				break
 			}
 			block, err := b.db.GetBlock(hash)
 			if err != nil {
-				fmt.Println("GetBlock err:", err)
-				done <- false
+				done <- fmt.Errorf("GetBlock err: %s", err)
 				break
 			}
 			confirm, _ := b.db.GetConfirm(hash)
 			node, err := b.LoadBlockNode(&block.Header, &hash)
 			if err != nil {
-				fmt.Println("LoadBlockNode err:", err)
-				done <- false
+				done <- fmt.Errorf("LoadBlockNode err: %s", err)
 				break
 			}
 			b.SetTip(node)
@@ -165,23 +163,20 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 			b.index.SetFlags(&block.Header, statusDataStored)
 			err = b.index.flushToDB()
 			if err != nil {
-				fmt.Println("flushToDB err:", err)
-				done <- false
+				done <- fmt.Errorf("flushToDB err: %s", err)
 				break
 			}
 
 			err = b.db.GetFFLDB().SaveBlock(block, node, confirm, CalcPastMedianTime(node))
 			if err != nil {
-				fmt.Println("SaveBlock err:", err)
-				done <- false
+				done <- fmt.Errorf("SaveBlock err: %s", err)
 				break
 			}
 
 			b.index.SetFlags(&block.Header, statusDataStored|statusValid)
 			err = b.index.flushToDB()
 			if err != nil {
-				fmt.Println("flushToDB err:", err)
-				done <- false
+				done <- fmt.Errorf("flushToDB err: %s", err)
 				break
 			}
 
@@ -200,15 +195,15 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 				chain.BatchCommit()
 			}
 		}
-		done <- true
+		done <- nil
 	}()
 	var result error
 	select {
-	case ok := <-done:
-		if ok {
+	case err := <-done:
+		if err == nil {
 			log.Info("process block finished.")
 		} else {
-			result = errors.New("process block failed")
+			result = fmt.Errorf("process block failed, %s", err)
 		}
 
 	case <-interrupt:

@@ -91,6 +91,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.CRCProposal)
 	case *payload.CRCProposalReview:
 		pload, _ = ud.Value.(*payload.CRCProposalReview)
+	case *payload.CRCProposalTracking:
+		pload, _ = ud.Value.(*payload.CRCProposalTracking)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)

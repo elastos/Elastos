@@ -198,16 +198,16 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 
 	case CRCProposalReview:
-		if err := b.checkCrcProposalReviewTransaction(txn,
+		if err := b.checkCRCProposalReviewTransaction(txn,
 			blockHeight); err != nil {
-			log.Warn("[checkCrcProposalReviewTransaction],", err)
+			log.Warn("[checkCRCProposalReviewTransaction],", err)
 			return ErrTransactionPayload
 		}
 
 	case CRCProposalTracking:
-		if err := b.checkCrcProposalTrackingTransaction(txn,
+		if err := b.checkCRCProposalTrackingTransaction(txn,
 			blockHeight); err != nil {
-			log.Warn("[checkCrcProposalReviewTransaction],", err)
+			log.Warn("[checkCRCProposalTrackingTransaction],", err)
 			return ErrTransactionPayload
 		}
 	}
@@ -1567,7 +1567,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 	return nil
 }
 
-func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
+func (b *BlockChain) checkCRCProposalReviewTransaction(txn *Transaction,
 	blockHeight uint32) error {
 	crcProposalReview, ok := txn.Payload.(*payload.CRCProposalReview)
 	if !ok {
@@ -1596,7 +1596,7 @@ func (b *BlockChain) checkCrcProposalReviewTransaction(txn *Transaction,
 		signedBuf.Bytes())
 }
 
-func (b *BlockChain) checkCrcProposalTrackingTransaction(txn *Transaction,
+func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 	blockHeight uint32) error {
 	cptPayload, ok := txn.Payload.(*payload.CRCProposalTracking)
 	if !ok {
@@ -1608,6 +1608,10 @@ func (b *BlockChain) checkCrcProposalTrackingTransaction(txn *Transaction,
 		cptPayload.ProposalHash)
 	if proposalState == nil {
 		return errors.New("proposal not exist")
+	}
+
+	if proposalState.Status != crstate.VoterAgreed {
+		return errors.New("proposal status is not VoterAgreed")
 	}
 
 	if proposalState.TrackingCount >= b.chainParams.MaxProposalTrackingCount {
@@ -1715,7 +1719,7 @@ func (b *BlockChain) checkCRCProposalAppropriationTracking(
 func (b *BlockChain) checkCRCProposalTrackingSignature(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
 	// Check signature of proposal leader.
-	if !bytes.Equal(pState.Proposal.SponsorPublicKey, cptPayload.LeaderPubKey) {
+	if !bytes.Equal(pState.ProposalLeader, cptPayload.LeaderPubKey) {
 		return errors.New("the LeaderPubKey is not leader of proposal")
 	}
 	signedBuf := new(bytes.Buffer)
@@ -1742,7 +1746,7 @@ func (b *BlockChain) normalCheckCRCProposalTrackingSignature(
 	}
 
 	// Check signature of proposal leader.
-	if !bytes.Equal(pState.Proposal.SponsorPublicKey, cptPayload.LeaderPubKey) {
+	if !bytes.Equal(pState.ProposalLeader, cptPayload.LeaderPubKey) {
 		return errors.New("the LeaderPubKey is not leader of proposal")
 	}
 	signedBuf := new(bytes.Buffer)
@@ -1789,15 +1793,15 @@ func (b *BlockChain) checkProposalNewLeaderSignature(
 	signedBuf *bytes.Buffer) error {
 	publicKey, err := crypto.DecodePoint(pubKey)
 	if err != nil {
-		return errors.New("invalid proposal new leader public key")
+		return errors.New("invalid new proposal leader public key")
 	}
 	lContract, err := contract.CreateStandardContract(publicKey)
 	if err != nil {
-		return errors.New("invalid proposal leader publicKey")
+		return errors.New("invalid new proposal leader publicKey")
 	}
 	if err := checkCRTransactionSignature(cptPayload.NewLeaderSign, lContract.Code,
 		signedBuf.Bytes()); err != nil {
-		return errors.New("proposal leader signature check failed")
+		return errors.New("new proposal leader signature check failed")
 	}
 
 	return common.WriteVarBytes(signedBuf, cptPayload.NewLeaderSign)

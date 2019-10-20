@@ -247,10 +247,6 @@ var (
 		Name:  "secretarygeneral",
 		Usage: "defines the secretary general of CR",
 	}
-	AppropriationRecipientFlag = cli.StringFlag{
-		Name:  "appropriationrecipient",
-		Usage: "defines the recipient of appropriation",
-	}
 	MaxProposalTrackingCountFlag = cli.StringFlag{
 		Name:  "maxproposaltrackingcount",
 		Usage: "defines the max count of CRC proposal tracking",

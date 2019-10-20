@@ -16,7 +16,7 @@ import (
 )
 
 func TestCRCProposalReview_Deserialize(t *testing.T) {
-	proposalReview1 := randomCrcProposalReviewPayload()
+	proposalReview1 := randomCRCProposalReviewPayload()
 
 	buf := new(bytes.Buffer)
 	proposalReview1.Serialize(buf, CRCProposalReviewVersion)
@@ -39,7 +39,7 @@ func crcProposalReviewPayloadEqual(payload1 *CRCProposalReview,
 	return true
 }
 
-func randomCrcProposalReviewPayload() *CRCProposalReview {
+func randomCRCProposalReviewPayload() *CRCProposalReview {
 	return &CRCProposalReview{
 		ProposalHash: *randomUint256(),
 		VoteResult:   VoteResult(mathRand.Int() % (int(Abstain) + 1)),
