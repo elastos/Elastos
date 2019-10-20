@@ -569,7 +569,7 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 			log.Error("crcProposalReview  payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCrcProposalReview(crcProposalReview); err != nil {
+		if err := mp.verifyDuplicateCRCProposalReview(crcProposalReview); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
@@ -579,7 +579,7 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 			log.Error("crcProposalTracking  payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCrcProposalTracking(cptPayload); err != nil {
+		if err := mp.verifyDuplicateCRCProposalTracking(cptPayload); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
@@ -744,7 +744,7 @@ func (mp *TxPool) verifyDuplicateCRCProposal(originProposalHash Uint256) error {
 	return nil
 }
 
-func (mp *TxPool) verifyDuplicateCrcProposalReview(crcProposalReview *payload.CRCProposalReview) error {
+func (mp *TxPool) verifyDuplicateCRCProposalReview(crcProposalReview *payload.CRCProposalReview) error {
 
 	key := mp.getCRCProposalReviewKey(crcProposalReview)
 	_, ok := mp.crcProposalReview[key]
@@ -756,7 +756,7 @@ func (mp *TxPool) verifyDuplicateCrcProposalReview(crcProposalReview *payload.CR
 	return nil
 }
 
-func (mp *TxPool) verifyDuplicateCrcProposalTracking(crcProposalTracking *payload.CRCProposalTracking) error {
+func (mp *TxPool) verifyDuplicateCRCProposalTracking(crcProposalTracking *payload.CRCProposalTracking) error {
 
 	_, ok := mp.crcProposalTracking[crcProposalTracking.ProposalHash]
 	if ok {

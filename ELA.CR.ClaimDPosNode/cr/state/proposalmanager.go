@@ -190,11 +190,15 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 		}
 	}
 
+	oriVoteStartHeight := proposal.VoteStartHeight
+
 	if agreedCount >= p.params.CRAgreementCount {
 		history.Append(height, func() {
 			proposal.Status = CRAgreed
+			proposal.VoteStartHeight = height
 		}, func() {
 			proposal.Status = Registered
+			proposal.VoteStartHeight = oriVoteStartHeight
 		})
 	} else {
 		history.Append(height, func() {
@@ -359,6 +363,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 	leader := proposalState.ProposalLeader
 	terminatedHeight := proposalState.TerminatedHeight
 	stage := proposalTracking.Stage
+	status := proposalState.Status
 
 	history.Append(height, func() {
 		proposalState.TrackingCount++
@@ -367,6 +372,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 		case payload.Progress:
 		case payload.Terminated:
 			proposalState.TerminatedHeight = height
+			proposalState.Status = Aborted
 		case payload.ProposalLeader:
 			proposalState.ProposalLeader = proposalTracking.NewLeaderPubKey
 		case payload.Appropriation:
@@ -379,6 +385,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 		case payload.Progress:
 		case payload.Terminated:
 			proposalState.TerminatedHeight = terminatedHeight
+			proposalState.Status = status
 		case payload.ProposalLeader:
 			proposalState.ProposalLeader = leader
 		case payload.Appropriation:

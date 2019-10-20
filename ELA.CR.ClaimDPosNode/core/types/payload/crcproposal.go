@@ -109,7 +109,7 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 		}
 	}
 	if err := p.Recipient.Serialize(w); err != nil {
-		return errors.New("CRSponsorDID serialize failed")
+		return errors.New("Recipient serialize failed")
 	}
 	return nil
 }
