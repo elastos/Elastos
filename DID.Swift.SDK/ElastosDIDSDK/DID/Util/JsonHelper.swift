@@ -2,7 +2,7 @@ import Foundation
 
 class JsonHelper {
 
-    class func getDid(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DID {
+    class func getDid(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DID {
         
         let vn = dic[name]
         if vn == nil {
@@ -11,31 +11,22 @@ class JsonHelper {
                 throw DIDError.failue("Missing " + hint + ".")
             }
         }
-
-        if !(vn is String) {
-            throw DIDError.failue("Invalid " + hint + " value.")
-        }
-        
-        let value: String = vn as! String
-
-        if value.isEmpty {
+        let value: String = vn as? String ?? ""
+        guard value != "" else {
             throw DIDError.failue("Invalid " + hint + " value.")
         }
         
         return try DID(value)
     }
 
-    class func getDidUrl(_ dic: Dictionary<String, Any>, _ name: String, _ ref: DID, _ hint: String) throws -> DIDURL{
+    class func getDidUrl(_ dic: OrderedDictionary<String, Any>, _ name: String, _ ref: DID, _ hint: String) throws -> DIDURL{
         let vn = dic[name]
         if vn == nil {
             throw DIDError.failue("Invalid " + hint + " value.")
         }
-        if !(vn is String) {
-            throw DIDError.failue("Invalid " + hint + " value.")
-        }
-        let value: String = vn as! String
+        let value: String = vn as? String ?? ""
 
-        if value.isEmpty {
+        guard value != "" else {
             throw DIDError.failue("Invalid " + hint + " value.")
         }
         let index = value.index(value.startIndex, offsetBy: 1)
@@ -46,19 +37,16 @@ class JsonHelper {
         return try DIDURL(value)
     }
 
-    class func getString(_ dic: Dictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: String?, _ hint: String) throws -> String {
+    class func getString(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: String?, _ hint: String) throws -> String {
         let vn = dic[name]
         if vn == nil {
             if (optional) { return ref! }
         }
 
-        if !(vn is String) {
-            throw DIDError.failue("Invalid " + hint)
-        }
-        let value: String = vn as! String
+        let value: String = vn as? String ?? ""
 
-        if value.isEmpty {
-            throw DIDError.failue("Invalid " + hint + value)
+        guard value != "" else {
+            throw DIDError.failue("Invalid " + hint + " value.")
         }
         return value
     }

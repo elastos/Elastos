@@ -40,36 +40,17 @@ class DIDDoucumentTests: XCTestCase {
         let jsonString: String = try! document.toExternalForm(true)
         let url = URL(fileURLWithPath: "/Users/liaihong/Desktop/compact.json")
         let jsonStr = try! String(contentsOf: url)
-//        let data = jsonStr.data(using: .utf8)
-//        let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
-
         XCTAssertEqual(jsonString, jsonStr)
     }
     
     func  testNormalizedJson() {
         let document: DIDDocument = try! DIDDocument.fromJson("/Users/liaihong/Desktop/testdiddoc.json")
+        let str: String = try! document.toExternalForm(false)
+        let url = URL(fileURLWithPath: "/Users/liaihong/Desktop/normalized.json")
+        let jsonStr = try! String(contentsOf: url)
+        XCTAssertEqual(str, jsonStr)
     }
-    
-    /*
-     public void testNormalizedJson() throws DIDException, IOException {
-         Reader input = new InputStreamReader(getClass()
-                 .getClassLoader().getResourceAsStream("testdiddoc.json"));
-         DIDDocument doc = DIDDocument.fromJson(input);
-         input.close();
 
-         String json = doc.toExternalForm(false);
-
-         File file = new File(getClass().getClassLoader().getResource("normalized.json").getFile());
-         char[] chars = new char[(int)file.length()];
-         input = new InputStreamReader(new FileInputStream(file));
-         input.read(chars);
-         input.close();
-
-         String expected = new String(chars);
-
-         assertEquals(expected, json);
-     }
-   */
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {

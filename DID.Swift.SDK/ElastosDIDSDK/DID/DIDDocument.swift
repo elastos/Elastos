@@ -384,20 +384,22 @@ public class DIDDocument: NSObject {
         return doc
     }
     
-    public func fromJson(_ dic: Dictionary<String, Any>) throws -> DIDDocument {
+    public func fromJson(_ dic: OrderedDictionary<String, Any>) throws -> DIDDocument {
         let doc: DIDDocument = DIDDocument()
-        try doc.parse(dic)
+        let ordDic: OrderedDictionary<String, Any> = dic
+        try doc.parse(ordDic)
         return doc
     }
     
     private func parse(url: URL) throws {
         let json = try! String(contentsOf: url)
-        let data = json.data(using: .utf8)!
-        let output = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]
-        return try parse(output!)
+        var jsonString = json.replacingOccurrences(of: " ", with: "")
+        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
+        let ordDic = OrderedDictionary<String, Any>.handleString(jsonString) as! OrderedDictionary<String, Any>
+        return try parse(ordDic)
     }
     
-    private func parse(_ json: Dictionary<String, Any>) throws {
+    private func parse(_ json: OrderedDictionary<String, Any>) throws {
         self.subject = try JsonHelper.getDid(json, Constants.id, false, nil, "subject")
         
         try parsePublicKey(json)
@@ -409,14 +411,14 @@ public class DIDDocument: NSObject {
     }
     
     // 解析公钥
-    private func parsePublicKey(_ json: [String: Any]) throws {
+    private func parsePublicKey(_ json: OrderedDictionary<String, Any>) throws {
         let publicKeys = json["publicKey"] as? Array<Any>
         
         guard publicKeys != nil else {
             throw DIDError.failue("Invalid publicKey, should be an array.")
         }
         
-        let publicKeysArray: [[String: Any]] = publicKeys as! Array<[String: Any]>
+        let publicKeysArray: [OrderedDictionary<String, Any>] = publicKeys as! Array<OrderedDictionary<String, Any>>
         guard publicKeysArray.count != 0 else {
             throw DIDError.failue("Invalid publicKey, should not be an empty array.")
         }
@@ -428,7 +430,7 @@ public class DIDDocument: NSObject {
     }
     
     // MARK: parseAuthentication
-    private func parseAuthentication(_ json: [String: Any]) throws {
+    private func parseAuthentication(_ json: OrderedDictionary<String, Any>) throws {
         let authentications = json[Constants.authentication] as? Array<Any>
 
         guard (authentications != nil) else {
@@ -442,7 +444,7 @@ public class DIDDocument: NSObject {
         try authentications!.forEach { (obj) in
             var pk: DIDPublicKey
             if obj is Dictionary<String, Any> {
-                let object: Dictionary<String, Any> = obj as! Dictionary<String, Any>
+                let object: OrderedDictionary<String, Any> = obj as! OrderedDictionary<String, Any>
                 pk = try DIDPublicKey.fromJson(object, subject!)
             }else {
                 let objString: String = obj as! String
@@ -460,7 +462,7 @@ public class DIDDocument: NSObject {
         }
     }
     
-    private func parseAuthorization(_ json: [String: Any]) throws {
+    private func parseAuthorization(_ json: OrderedDictionary<String, Any>) throws {
         let aus = json[Constants.authorization]
         guard (aus != nil) else {
             return
@@ -475,7 +477,7 @@ public class DIDDocument: NSObject {
         try authorizations!.forEach { (obj) in
             var pk: DIDPublicKey
             if obj is Dictionary<String, Any> {
-                let object: Dictionary<String, Any> = obj as! Dictionary<String, Any>
+                let object: OrderedDictionary<String, Any> = obj as! OrderedDictionary<String, Any>
                 pk = try DIDPublicKey.fromJson(object, subject!)
             }else {
                 let objString: String = obj as! String
@@ -487,12 +489,12 @@ public class DIDDocument: NSObject {
     }
     
     // mode parse
-    private func parseCredential(_ json: [String: Any]) throws {
+    private func parseCredential(_ json: OrderedDictionary<String, Any>) throws {
         let crs = json[Constants.credential]
         guard (crs != nil) else {
             return
         }
-        let credentials = crs as? Array<Dictionary<String, Any>>
+        let credentials = crs as? Array<OrderedDictionary<String, Any>>
         guard (credentials != nil) else {
             throw DIDError.failue("Invalid credential, should be an array.")
         }
@@ -506,12 +508,12 @@ public class DIDDocument: NSObject {
         }
     }
     
-    private func parseService(_ json: [String: Any]) throws {
+    private func parseService(_ json: OrderedDictionary<String, Any>) throws {
         let ses = json[Constants.service]
         guard (ses != nil) else {
             return
         }
-        let services = ses as? Array<Dictionary<String, Any>>
+        let services = ses as? Array<OrderedDictionary<String, Any>>
         guard (services != nil) else {
             throw DIDError.failue("Invalid services, should be an array.")
         }

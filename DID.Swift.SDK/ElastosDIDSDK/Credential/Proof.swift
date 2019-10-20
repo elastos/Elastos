@@ -33,10 +33,10 @@ public class Proof {
         return dic
     }
     
-    class func fromJson(_ md: Dictionary<String, Any>, _ ref: DID) throws -> Proof {
-        let type: String = try JsonHelper.getString(md, Constants.type, true, Constants.defaultPublicKeyType, "crendential proof type")
-        let method: DIDURL = try JsonHelper.getDidUrl(md, Constants.verificationMethod, ref, "crendential proof verificationMethod")
-        let signature: String = try JsonHelper.getString(md, Constants.signature, false, nil, "crendential proof signature")
+    class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID) throws -> Proof {
+        let type: String = try JsonHelper.getString(json, Constants.type, true, Constants.defaultPublicKeyType, "crendential proof type")
+        let method: DIDURL = try JsonHelper.getDidUrl(json, Constants.verificationMethod, ref, "crendential proof verificationMethod")
+        let signature: String = try JsonHelper.getString(json, Constants.signature, false, nil, "crendential proof signature")
         return Proof(type, method, signature)
     }
 }

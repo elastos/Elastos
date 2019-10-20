@@ -66,28 +66,28 @@ public class VerifiableCredential: DIDObject {
     
     class func fromJsonInPath(_ path: String) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
-        let readHandle = FileHandle(forReadingAtPath: path)
-        let data = readHandle?.readDataToEndOfFile()
-        
-        let json = try JSONSerialization.jsonObject(with: data!, options: [])
-        let dic = json as! Dictionary<String, Any>
-        try vc.parse(dic, nil)
+        let url = URL(fileURLWithPath: path)
+        let json = try! String(contentsOf: url)
+        var jsonString = json.replacingOccurrences(of: " ", with: "")
+        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
+        let ordDic = OrderedDictionary<String, Any>.handleString(jsonString) as! OrderedDictionary<String, Any>
+        try vc.parse(ordDic, nil)
         return vc
     }
     
-    class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
+    class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         try vc.parse(json, ref)
         return vc
     }
 
-    class func fromJson(_ json: Dictionary<String, Any>) throws -> VerifiableCredential {
+    class func fromJson(_ json: OrderedDictionary<String, Any>) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         try vc.parse(json, nil)
         return vc
     }
     
-    func parse(_ json: Dictionary<String, Any>, _ ref: DID?) throws {
+    func parse(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws {
         // id
         let id: DIDURL = try JsonHelper.getDidUrl(json, Constants.id, ref!, "crendential id")
         self.id = id
@@ -132,7 +132,7 @@ public class VerifiableCredential: DIDObject {
         
         // proof
         value = json[Constants.proof] 
-        proof = try Proof.fromJson(value as! Dictionary<String, Any>, re)
+        proof = try Proof.fromJson(value as! OrderedDictionary<String, Any>, re)
         self.type = proof.type
     }
     

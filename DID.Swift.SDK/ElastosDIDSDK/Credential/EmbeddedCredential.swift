@@ -7,7 +7,7 @@ public class EmbeddedCredential: VerifiableCredential {
         super.init(vc)
     }
 
-    override class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
+    override class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
         return try EmbeddedCredential(VerifiableCredential.fromJson(json, ref))
     }
 

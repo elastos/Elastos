@@ -106,6 +106,154 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
         let returnString = namedPaird.joined(separator:",")
         return "{\(returnString)}"
     }
+    
+    static public func handleString(_ jsonString: String) -> Any? {
+        
+        let firstString = jsonString[jsonString.index(jsonString.startIndex, offsetBy: 0)]
+        let lastString = jsonString[jsonString.index(jsonString.endIndex, offsetBy: -1)]
+        
+        // 按字典字符串逻辑处理
+        if firstString == "{" && lastString == "}" {
+            
+            var resultOrderedDictionarys: OrderedDictionary<String, Any>
+            var keys: Array = Array<String>()
+            var tempStr: String?
+            var strIndex = 0
+            var level: Int = 0
+            
+            let firstStringIndex = jsonString.index(jsonString.startIndex, offsetBy: 1)
+            let lastStringIndex = jsonString.index(jsonString.endIndex, offsetBy: -2)
+            
+            let content = jsonString[firstStringIndex...lastStringIndex]
+            
+            resultOrderedDictionarys = OrderedDictionary<String, Any>()
+            
+            for char in content {
+                
+                strIndex = strIndex + 1
+                
+                if char == "{" {
+                    level = level + 1
+                }
+                if char == "[" {
+                    level = level + 1
+                }
+                if char == "}" {
+                    level = level - 1
+                }
+                if char == "]" {
+                    level = level - 1
+                }
+                
+                if level == 0 && char == "," {
+                    if tempStr?.count ?? 0 >= 0 {
+                        keys.append(String(tempStr!))
+                        tempStr = nil
+                    }
+                } else {
+                    tempStr = (tempStr ?? "") + String(char)
+                }
+                
+                if level == 0 && strIndex == String(content).count - 1 {
+                    keys.append(String(tempStr!))
+                }
+            }
+            
+            for content: String in keys {
+                
+                let sepIndex = content.index(content.firstIndex(of: ":")!, offsetBy: -2)
+                let firstStringIndex = content.index(content.startIndex, offsetBy: 1)
+                let lastStringIndex = content.index(content.endIndex, offsetBy: -1)
+                let sepAfterIndex = content.index(content.firstIndex(of: ":")!, offsetBy: 1)
+                
+                let key = String(content[firstStringIndex...sepIndex])
+                var value = content[sepAfterIndex...lastStringIndex]
+                
+                let firstString = value.first
+                // 是数组
+                if firstString == "[" {
+                    resultOrderedDictionarys[key] = self.handleString(String(value))
+                    
+                } else if firstString == "{" {
+                    resultOrderedDictionarys[key] = self.handleString(String(value))
+                } else {
+                    
+                    let firstStringIndex = value.index(value.startIndex, offsetBy: 1)
+                    let lastStringIndex = value.index(value.endIndex, offsetBy: -2)
+                    resultOrderedDictionarys[key] = value[firstStringIndex...lastStringIndex]
+                    // 是字符串
+                }
+            }
+            
+            return resultOrderedDictionarys;
+        }
+        
+        if firstString == "[" && lastString == "]" {
+            
+            var resultArray: Array = Array<Any>()
+            var tempStr: String?
+            var strIndex = 0
+            var level: Int = 0
+            
+            let firstStringIndex = jsonString.index(jsonString.startIndex, offsetBy: 1)
+            let lastStringIndex = jsonString.index(jsonString.endIndex, offsetBy: -2)
+            
+            let content = jsonString[firstStringIndex...lastStringIndex]
+            for char in content {
+                
+                strIndex = strIndex + 1
+                
+                if char == "{" {
+                    level = level + 1
+                }
+                if char == "[" {
+                    level = level + 1
+                }
+                if char == "}" {
+                    level = level - 1
+                }
+                if char == "]" {
+                    level = level - 1
+                }
+                
+                if level == 0 && char == "," {
+                    
+                    if tempStr?.first == "{" {
+                        resultArray.append(self.handleString(tempStr!) as Any)
+                    } else if tempStr?.first == "[" {
+                        resultArray.append(self.handleString(tempStr!) as Any)
+                    } else {
+                        
+                        
+                        let firstStringIndex = tempStr!.index(tempStr!.startIndex, offsetBy: 1)
+                        let lastStringIndex = tempStr!.index(tempStr!.endIndex, offsetBy: -2)
+                        let result = tempStr![firstStringIndex...lastStringIndex]
+                        resultArray.append(result)
+                    }
+                    tempStr = nil
+                } else {
+                    tempStr = (tempStr ?? "") + String(char)
+                }
+                
+                if level == 0 && strIndex == String(content).count {
+                    if tempStr?.first == "{" {
+                        resultArray.append(self.handleString(tempStr!) as Any)
+                    } else if tempStr?.first == "[" {
+                        resultArray.append(self.handleString(tempStr!) as Any)
+                    } else {
+                        
+                        let firstStringIndex = tempStr!.index(tempStr!.startIndex, offsetBy: 1)
+                        let lastStringIndex = tempStr!.index(tempStr!.endIndex, offsetBy: -2)
+                        let result = tempStr![firstStringIndex...lastStringIndex]
+                        resultArray.append(result)
+                    }
+                }
+            }
+            return resultArray
+        }
+        
+        return nil
+    }
 }
 
 extension OrderedDictionary: Sequence {

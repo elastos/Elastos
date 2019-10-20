@@ -43,7 +43,7 @@ public class CredentialSubject {
         return dic
     }
     
-    class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID?) throws -> CredentialSubject {
+    class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws -> CredentialSubject {
         // id
         let op: Bool = ref != nil
         let id: DID = try JsonHelper.getDid(json, Constants.id, op, ref, "crendentialSubject id")

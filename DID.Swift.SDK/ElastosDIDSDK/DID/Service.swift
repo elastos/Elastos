@@ -8,7 +8,7 @@ public class Service: DIDObject {
         self.endpoint = endpoint
     }
 
-    class func fromJson(_ json: Dictionary<String, Any>, _ ref: DID) throws -> Service {
+    class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID) throws -> Service {
         let id = try JsonHelper.getDidUrl(json, Constants.id, ref, "service' id")
         let type = try JsonHelper.getString(json,Constants.type, false, nil, "service' type")
         let endpoint = try JsonHelper.getString(json,Constants.serviceEndpoint, false, nil, "service' endpoint")

@@ -10,7 +10,7 @@ public class DIDPublicKey: DIDObject {
         self.keyBase58 = keyBase58
     }
     
-    class public func fromJson(_ dic: Dictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey{
+    class public func fromJson(_ dic: OrderedDictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey{
         
         var value = dic[Constants.controller]
         var controller: DID
