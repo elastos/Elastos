@@ -9,7 +9,8 @@ import Footer from '@/module/layout/Footer/Container'
 import BackLink from '@/module/shared/BackLink/Component'
 import Meta from '@/module/common/Meta'
 import MetaComponent from '@/module/shared/meta/Container'
-import { ELIP_STATUS } from '@/constant'
+import CRPopover from '@/module/shared/Popover/Component'
+import { ELIP_STATUS, ELIP_REVIEW_STATUS } from '@/constant'
 import { text } from '@/constants/color'
 import { logger } from '@/util'
 import { breakPoint } from '@/constants/breakPoint'
@@ -24,21 +25,26 @@ class C extends StandardPage {
     super(p)
 
     this.state = {
-      loading: false
+      visibleReject: false,
+      visibleApprove: false,
     }
   }
 
   async componentDidMount() {
+    await this.refetch()
+  }
+
+  componentWillUnmount() {
+    this.props.resetData()
+  }
+
+  refetch = async () => {
     const { getData, match } = this.props
     try {
       await getData(match.params)
     } catch (err) {
       logger.error(err)
     }
-  }
-
-  componentWillUnmount() {
-    this.props.resetData()
   }
 
   handleSubmit = async e => {
@@ -51,16 +57,17 @@ class C extends StandardPage {
     try {
       const comment = await review(param)
       if (comment && comment.elipId === data._id) {
-        this.setState({
-          detail: { ...data, status: comment.elipStatus },
-          reviews: [...reviews, comment]
-        })
+        // this.setState({
+        //   detail: { ...data, status: comment.elipStatus },
+        //   reviews: [...reviews, comment]
+        // })
         if (comment.elipStatus === ELIP_STATUS.DRAFT) {
           message.info(I18N.get('elip.msg.approved'))
         }
         if (comment.elipStatus === ELIP_STATUS.REJECTED) {
           message.info(I18N.get('elip.msg.rejected'))
         }
+        this.refetch()
       }
     } catch (err) {
       logger.error(err)
@@ -68,8 +75,8 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { data, loading } = this.props
-    if (loading) {
+    const { data } = this.props
+    if (_.isEmpty(data)) {
       return (
         <StyledSpin>
           <Spin />
@@ -114,14 +121,41 @@ class C extends StandardPage {
         status: elipStatus
       })
       if (rs && rs.ok === 1 && rs.n === 1) {
-        this.setState({
-          data: { ...data, status: elipStatus }
-        })
         message.info(I18N.get('elip.msg.marked'))
+        this.refetch()
       }
     } catch (error) {
       logger.error(error)
     }
+  }
+
+  updateReviewStatus = async (status, reason) => {
+    const { review, data } = this.props
+    const param = {
+      comment: reason && reason.reason,
+      status: status,
+      elipId: data._id
+    }
+    try {
+      await review(param)
+      if (ELIP_REVIEW_STATUS.REJECTED === status) {
+        message.info(I18N.get('elip.msg.rejected'))
+      }
+      if (ELIP_REVIEW_STATUS.APPROVED === status) {
+        message.info(I18N.get('elip.msg.approved'))
+      }
+      this.refetch()
+    } catch (err) {
+      logger.error(err)
+    }
+  }
+
+  rejectdReview = (reason) => {
+    this.updateReviewStatus(ELIP_REVIEW_STATUS.REJECTED, reason)
+  }
+
+  approvedReview = (reason) => {
+    this.updateReviewStatus(ELIP_REVIEW_STATUS.APPROVED, reason)
   }
 
   renderAnchors() {
@@ -132,8 +166,8 @@ class C extends StandardPage {
           <Link href="#review" title={I18N.get('elip.fields.review')} />
         </LinkGroup>
       ) : (
-        ''
-      )
+          ''
+        )
     return (
       <StyledAnchor offsetTop={420}>
         <LinkGroup>
@@ -158,7 +192,7 @@ class C extends StandardPage {
             title={I18N.get('elip.fields.referenceImplementation')}
           />
           <Link
-            href="#copyrightDomain"
+            href="#copyright"
             title={I18N.get('elip.fields.copyright')}
           />
         </LinkGroup>
@@ -284,6 +318,7 @@ class C extends StandardPage {
 
   renderStatus() {
     const { data } = this.props
+
     return (
       <Col>
         <Label>{I18N.get('.status')}</Label>
@@ -300,98 +335,154 @@ class C extends StandardPage {
       this.isAuthor(data) &&
       [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(data.status)
 
-    if (isEditable) {
-      const btnStyle =
-        ELIP_STATUS.DRAFT === data.status ? 'cr-btn-black' : 'cr-btn-primary'
-      return (
-        <Col>
-          <Button
-            onClick={() => this.props.history.push(`/elips/${data._id}/edit`)}
-            className={`cr-btn ${btnStyle}`}
-          >
-            {I18N.get('elip.button.edit')}
-          </Button>
-        </Col>
-      )
-    }
-    return ''
+    if (!isEditable) return null
+
+    const btnStyle =
+      ELIP_STATUS.DRAFT === data.status ? 'cr-btn-black' : 'cr-btn-primary'
+    return (
+      <Col>
+        <Button
+          onClick={() => this.props.history.push(`/elips/${data._id}/edit`)}
+          className={`cr-btn ${btnStyle}`}
+        >
+          {I18N.get('elip.button.edit')}
+        </Button>
+      </Col>
+    )
   }
 
   renderSubmittedButton() {
     const { data } = this.props
     const isEditable = this.isAuthor(data) && data.status === ELIP_STATUS.DRAFT
-    if (isEditable) {
-      return (
-        <Col>
-          <Popconfirm
-            title={I18N.get('elip.modal.markAsSubmitted')}
-            onConfirm={this.submittedDraft}
-            okText={I18N.get('.yes')}
-            cancelText={I18N.get('.no')}
-          >
-            <Button className="cr-btn cr-btn-primary">
-              {I18N.get('elip.button.markAsSubmitted')}
-            </Button>
-          </Popconfirm>
-        </Col>
-      )
-    }
-    return ''
+    
+    if (!isEditable) return null
+
+    return (
+      <Col>
+        <Popconfirm
+          title={I18N.get('elip.modal.markAsSubmitted')}
+          onConfirm={this.submittedDraft}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
+          <Button className="cr-btn cr-btn-primary">
+            {I18N.get('elip.button.markAsSubmitted')}
+          </Button>
+        </Popconfirm>
+      </Col>
+    )
   }
 
   renderCancelledButton() {
     const { data, isCouncil } = this.props
     const canCancel = isCouncil && ELIP_STATUS.SUBMITTED === data.status
-    if (canCancel) {
-      return (
-        <Col>
-          <Popconfirm
-            title={I18N.get('elip.modal.markAsCancelled')}
-            onConfirm={this.cancelledSubmitted}
-            okText={I18N.get('.yes')}
-            cancelText={I18N.get('.no')}
-          >
-            <Button className="cr-btn cr-btn-black">
-              {I18N.get('elip.button.markAsCancelled')}
-            </Button>
-          </Popconfirm>
-        </Col>
-      )
-    }
-    return ''
+    
+    if (!canCancel) return null
+
+    return (
+      <Col>
+        <Popconfirm
+          title={I18N.get('elip.modal.markAsCancelled')}
+          onConfirm={this.cancelledSubmitted}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
+          <Button className="cr-btn cr-btn-black">
+            {I18N.get('elip.button.markAsCancelled')}
+          </Button>
+        </Popconfirm>
+      </Col>
+    )
   }
 
   renderReviewButton() {
     const { data, isSecretary } = this.props
     const isVisible = isSecretary && data.status === ELIP_STATUS.WAIT_FOR_REVIEW
-    if (isVisible) {
-      return (
-        <Row>
-          <LabelCol span={3} />
-          <Col span={17}>
-            <Actions>
-              <ReviewButtons onSubmit={this.handleSubmit} />
-            </Actions>
-          </Col>
-        </Row>
-      )
-    }
-    return ''
+    
+    if (!isVisible) return null
+
+    const { visibleReject, visibleApprove } = this.state
+    const rejectBtn = (
+      <Button
+        type="primary"
+        className="cr-btn cr-btn-danger"
+        onClick={this.showRejectModal}
+      >
+        {I18N.get('elip.button.reject')}
+      </Button>
+    )
+    const approveBtn = (
+      <Button
+        type="danger"
+        className="cr-btn cr-btn-primary"
+        onClick={this.showApproveModal}
+      >
+        {I18N.get('elip.button.approve')}
+      </Button>
+    )
+
+    const rejectPopover = (
+      <CRPopover
+        triggeredBy={rejectBtn}
+        visible={visibleReject}
+        onToggle={this.showRejectModal}
+        onSubmit={this.rejectdReview}
+        btnType="primary"
+      />
+    )
+    const approvePopover = (
+      <CRPopover
+        triggeredBy={approveBtn}
+        visible={visibleApprove}
+        onToggle={this.showApproveModal}
+        onSubmit={this.approvedReview}
+        btnType="danger"
+      />
+    )
+  
+    return (
+      <Row>
+        {/* <LabelCol span={3} /> */}
+        <Col offset={8} span={4}>
+          {rejectPopover}
+        </Col>
+        <Col span={4}>
+          <Popconfirm
+            title={I18N.get('elip.modal.approve')}
+            onConfirm={this.approvedReview}
+            okText={I18N.get('.yes')}
+            cancelText={I18N.get('.no')}
+          >
+            <Button className="cr-btn cr-btn-primary">
+              {I18N.get('elip.button.approve')}
+            </Button>
+          </Popconfirm>
+        </Col>
+      </Row>
+    )
   }
 
   renderReviewHistory() {
     const { data, reviews, isSecretary } = this.props
-    if (this.isAuthor(data) || isSecretary) {
-      return (
-        <Row>
-          <LabelCol span={3} />
-          <Col span={17} style={{ position: 'relative' }}>
-            <ReviewHistory reviews={reviews} />
-          </Col>
-        </Row>
-      )
-    }
-    return ''
+    if (!this.isAuthor(data) && !isSecretary) return null
+    return (
+      <Row>
+        <LabelCol span={3} />
+        <Col span={17} style={{ position: 'relative' }}>
+          <ReviewHistory reviews={reviews} />
+        </Col>
+      </Row>
+    )
+  }
+
+  showRejectModal = () => {
+    const { visibleReject } = this.state
+    this.setState({ visibleReject: !visibleReject })
+  }
+
+  showApproveModal = () => {
+    const { visibleApprove } = this.state
+    this.setState({ visibleApprove: !visibleApprove })
   }
 }
 
