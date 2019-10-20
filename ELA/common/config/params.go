@@ -145,7 +145,6 @@ var DefaultParams = Params{
 		"02a0aa9eac0e168f3474c2a0d04e50130833905740a5270e8a44d6c6e85cf6d98c",
 	},
 	SecretaryGeneral:            "", // todo correct me later
-	AppropriationRecipient:      "", // todo correct me later
 	MaxProposalTrackingCount:    128,
 	PowLimit:                    powLimit,
 	PowLimitBits:                0x1f0008ff,
@@ -226,7 +225,6 @@ func (p *Params) TestNet() *Params {
 		"03111f1247c66755d369a8c8b3a736dfd5cf464ca6735b659533cbe1268cd102a9",
 	}
 	copy.SecretaryGeneral = ""       // todo correct me later
-	copy.AppropriationRecipient = "" // todo correct me later
 	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
@@ -282,7 +280,6 @@ func (p *Params) RegNet() *Params {
 		"03b5d90257ad24caf22fa8a11ce270ea57f3c2597e52322b453d4919ebec4e6300",
 	}
 	copy.SecretaryGeneral = ""       // todo correct me later
-	copy.AppropriationRecipient = "" // todo correct me later
 	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 170000
@@ -471,9 +468,6 @@ type Params struct {
 
 	// SecretaryGeneral defines the secretary general of CR.
 	SecretaryGeneral string
-
-	// AppropriationRecipient defines the recipient of appropriation.
-	AppropriationRecipient string
 
 	// MaxProposalTrackingCount defines the max count of CRC proposal tracking
 	// transaction.

@@ -720,12 +720,6 @@ func newSettings() *settings {
 		ParamName:    "SecretaryGeneral"})
 
 	result.Add(&settingItem{
-		Flag:         cmdcom.AppropriationRecipientFlag,
-		DefaultValue: "",
-		ConfigPath:   "CRConfiguration.AppropriationRecipient",
-		ParamName:    "AppropriationRecipient"})
-
-	result.Add(&settingItem{
 		Flag:         cmdcom.MaxProposalTrackingCountFlag,
 		DefaultValue: uint8(0),
 		ConfigPath:   "CRConfiguration.MaxProposalTrackingCount",

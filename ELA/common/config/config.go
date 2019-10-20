@@ -104,6 +104,5 @@ type CRConfiguration struct {
 	VoterRejectPercentage      float64 `json:"VoterRejectPercentage"`
 	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
 	SecretaryGeneral           string  `json:"SecretaryGeneral"`
-	AppropriationRecipient     string  `json:"AppropriationRecipient"`
 	MaxProposalTrackingCount   uint8   `json:"MaxProposalTrackingCount"`
 }

@@ -39,7 +39,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	proposalType := c.Int64("proposaltype")
 	draftHash := c.String("drafthash")
 	budgets := c.String("budgets")
-	proposalhash := c.String("proposalhash")
+	proposalHash := c.String("proposalhash")
 	voteresult := c.Int("voteresult")
 
 	getWallet := func(L *lua.LState) int {
@@ -102,12 +102,12 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(nodePubkey))
 		return 1
 	}
-	getHostAddr := func(L *lua.LState) int {
-		L.Push(lua.LString(host))
+	getProposalHash := func(L *lua.LState) int {
+		L.Push(lua.LString(proposalHash))
 		return 1
 	}
-	getProposalHash := func(L *lua.LState) int {
-		L.Push(lua.LString(proposalhash))
+	getHostAddr := func(L *lua.LState) int {
+		L.Push(lua.LString(host))
 		return 1
 	}
 	getVoteResult := func(L *lua.LState) int {
@@ -175,6 +175,66 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getBudgets", getBudgets)
 	L.Register("getProposalHash", getProposalHash)
 	L.Register("getVoteResult", getVoteResult)
+	registerCRCProposalTrackingParams(c, L)
+}
+
+func registerCRCProposalTrackingParams(c *cli.Context, L *lua.LState) {
+	proposalTrackingType := c.Int64("proposaltrackingtype")
+	documentHash := c.String("documenthash")
+	stage := c.Int64("stage")
+	appropriation := c.Float64("appropriation")
+	leaderPubkey := c.String("leaderpublickey")
+	newLeaderPubkey := c.String("newleaderpublickey")
+	ledgerPrivkey := c.String("ledgerprivatekey")
+	newLedgerPrivkey := c.String("newledgerprivatekey")
+	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
+
+	getProposalTrackingType := func(L *lua.LState) int {
+		L.Push(lua.LNumber(proposalTrackingType))
+		return 1
+	}
+	getDocumentHash := func(L *lua.LState) int {
+		L.Push(lua.LString(documentHash))
+		return 1
+	}
+	getStage := func(L *lua.LState) int {
+		L.Push(lua.LNumber(stage))
+		return 1
+	}
+	getAppropriation := func(L *lua.LState) int {
+		L.Push(lua.LNumber(appropriation))
+		return 1
+	}
+	getLedgerPubkey := func(L *lua.LState) int {
+		L.Push(lua.LString(leaderPubkey))
+		return 1
+	}
+	getNewLedgerPubkey := func(L *lua.LState) int {
+		L.Push(lua.LString(newLeaderPubkey))
+		return 1
+	}
+	getLedgerPrivkey := func(L *lua.LState) int {
+		L.Push(lua.LString(ledgerPrivkey))
+		return 1
+	}
+	getNewLedgerPrivkey := func(L *lua.LState) int {
+		L.Push(lua.LString(newLedgerPrivkey))
+		return 1
+	}
+	getSecretaryGeneralPrivkey := func(L *lua.LState) int {
+		L.Push(lua.LString(secretaryGeneralPrivkey))
+		return 1
+	}
+
+	L.Register("getProposalTrackingType", getProposalTrackingType)
+	L.Register("getDocumentHash", getDocumentHash)
+	L.Register("getStage", getStage)
+	L.Register("getAppropriation", getAppropriation)
+	L.Register("getLedgerPubkey", getLedgerPubkey)
+	L.Register("getNewLedgerPubkey", getNewLedgerPubkey)
+	L.Register("getLedgerPrivkey", getLedgerPrivkey)
+	L.Register("getNewLedgerPrivkey", getNewLedgerPrivkey)
+	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -326,6 +386,42 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "votecontenttype, votconttype",
 				Usage: "set the owner public key",
+			},
+			cli.Int64Flag{
+				Name:  "proposaltrackingtype",
+				Usage: "set the type of proposal tracking transaction",
+			},
+			cli.StringFlag{
+				Name:  "documenthash",
+				Usage: "set the hash of proposal tracking document",
+			},
+			cli.Int64Flag{
+				Name:  "stage",
+				Usage: "set the stage of the proposal",
+			},
+			cli.Float64Flag{
+				Name:  "appropriation",
+				Usage: "set the appropriation",
+			},
+			cli.StringFlag{
+				Name:  "ledgerpublickey",
+				Usage: "set the public key of proposal ledger",
+			},
+			cli.StringFlag{
+				Name:  "newledgerpublickey",
+				Usage: "set the public key of new proposal ledger",
+			},
+			cli.StringFlag{
+				Name:  "ledgerprivatekey",
+				Usage: "set the private key of proposal ledger",
+			},
+			cli.StringFlag{
+				Name:  "newledgerprivatekey",
+				Usage: "set the private key of new proposal ledger",
+			},
+			cli.StringFlag{
+				Name:  "secretarygeneralprivatekey",
+				Usage: "set the private key of secretary general",
 			},
 		},
 		Action: scriptAction,

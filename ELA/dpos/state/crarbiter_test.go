@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCrcArbiter_Deserialize(t *testing.T) {
+func TestCRCArbiter_Deserialize(t *testing.T) {
 	a, _ := NewCRCArbiter(randomPublicKey(), randomCRMember())
 	ar1 := a.(*crcArbiter)
 
@@ -32,7 +32,7 @@ func TestCrcArbiter_Deserialize(t *testing.T) {
 	assert.True(t, crMemberEqual(ar1.crMember, ar2.crMember))
 }
 
-func TestCrcArbiter_Clone(t *testing.T) {
+func TestCRCArbiter_Clone(t *testing.T) {
 	a, _ := NewCRCArbiter(randomPublicKey(), randomCRMember())
 	ar1 := a.(*crcArbiter)
 
