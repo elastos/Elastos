@@ -10,8 +10,7 @@ const mapState = state => ({
   isSecretary: state.user.is_secretary,
   isCouncil: state.user.is_council,
   data: state.elip.detail,
-  reviews: state.elip.reviews,
-  loading: state.elip.loading
+  reviews: state.elip.reviews
 })
 
 const mapDispatch = () => {
