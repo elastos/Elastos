@@ -9,6 +9,10 @@ add_submodule(libcrystal
     DEPENDS platform-specific)
 add_submodule(CUnit
     DEPENDS platform-specific)
+add_submodule(libspvsdk
+    DEPENDS platform-specific)
+add_submodule(libcurl
+    DEPENDS libressl platform-specific)
 
 if(WIN32)
     add_submodule(pthreads-w32

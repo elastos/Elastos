@@ -30,6 +30,7 @@ set(ENABLE_DOCS FALSE CACHE BOOL "Build APIs documentation")
 
 add_subdirectory(deps)
 add_subdirectory(hdkey)
+add_subdirectory(adaptor)
 
 if(NOT HDKEY_ONLY)
     add_subdirectory(src)
