@@ -24,11 +24,11 @@ $pip3 install virtualenv
 To get the API service running, run the following terminal commands:
 
 ```
-$ virtualenv -p `which python3` venv
+$virtualenv -p `which python3` venv
 ```
 
 ```
-$ source venv/bin/activate
+$source venv/bin/activate
 ```
 
 ```
@@ -38,6 +38,7 @@ $ source venv/bin/activate
 While running the requirements.txt, if you are get a error "Library LSSL not found" while installing psycopg2, then run the following command or else skip this.
 
 ```
+$brew install openssl
 $env LDFLAGS="-I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib" pip install psycopg2
 ```
 
@@ -70,6 +71,11 @@ Step 5: Execute the insert scripts at smartweb_service/scripts/elastos_insert_sc
 ## Unit Testing
 
 Requires pytest version 2.9.1. Included as part of requirements.txt
+
+If pytest is not installed. Run the following command:
+```
+$pip install pytest==2.9.1
+```
 
 Step 1:
 ```
