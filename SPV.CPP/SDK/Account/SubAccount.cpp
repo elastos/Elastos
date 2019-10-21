@@ -198,7 +198,7 @@ namespace Elastos {
 			return _parent->MasterPubKey()->getChild(0).getChild(0).pubkey();
 		}
 
-		void SubAccount::SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) {
+		void SubAccount::SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) const {
 			std::string addr;
 			Key key;
 			bytes_t signature;
@@ -275,7 +275,7 @@ namespace Elastos {
 			}
 		}
 
-		std::string SubAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
+		std::string SubAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const {
 			if (_parent->GetSignType() != IAccount::MultiSign) {
 				for (size_t i = 0; i < _externalChain.size(); ++i) {
 					Address didAddr = _externalChain[i];

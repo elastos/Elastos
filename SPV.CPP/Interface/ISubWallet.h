@@ -163,7 +163,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json SignTransaction(
 					const nlohmann::json &createdTx,
-					const std::string &payPassword) = 0;
+					const std::string &payPassword) const = 0;
 
 			/**
 			 * Get signers already signed specified transaction.

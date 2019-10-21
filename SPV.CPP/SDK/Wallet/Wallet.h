@@ -174,9 +174,9 @@ namespace Elastos {
 
 			bool StripTransaction(const TransactionPtr &tx) const;
 
-			void SignTransaction(const TransactionPtr &tx, const std::string &payPassword);
+			void SignTransaction(const TransactionPtr &tx, const std::string &payPassword) const;
 
-			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd);
+			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const;
 
 			bytes_t SignWithOwnerKey(const bytes_t &msg, const std::string &payPasswd);
 

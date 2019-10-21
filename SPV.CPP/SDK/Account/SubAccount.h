@@ -55,9 +55,9 @@ namespace Elastos {
 
 			bytes_t DIDPubKey() const;
 
-			void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd);
+			void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) const;
 
-			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd);
+			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const;
 
 			Key DeriveOwnerKey(const std::string &payPasswd);
 

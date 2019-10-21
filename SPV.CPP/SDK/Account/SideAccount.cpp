@@ -67,9 +67,9 @@ namespace Elastos {
 
 		bytes_t SideAccount::DIDPubKey() const { return bytes_t(); }
 
-		void SideAccount::SignTransaction(const TransactionPtr &, const std::string &) {}
+		void SideAccount::SignTransaction(const TransactionPtr &, const std::string &) const {}
 
-		std::string SideAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
+		std::string SideAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const {
 			return "";
 		}
 

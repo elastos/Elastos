@@ -746,12 +746,12 @@ namespace Elastos {
 			return _blockHeight;
 		}
 
-		void Wallet::SignTransaction(const TransactionPtr &tx, const std::string &payPassword) {
+		void Wallet::SignTransaction(const TransactionPtr &tx, const std::string &payPassword) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			_subAccount->SignTransaction(tx, payPassword);
 		}
 
-		std::string Wallet::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) {
+		std::string Wallet::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const {
 			ErrorChecker::CheckParam(_chainID != CHAINID_IDCHAIN, Error::InvalidArgument, "subWallet should be IDChain");
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->SignWithDID(did, msg, payPasswd);

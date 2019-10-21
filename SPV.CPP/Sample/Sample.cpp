@@ -617,7 +617,7 @@ static void TestIDSubWallet() {
 	std::vector<std::string> pubkeys = j["PublicKeys"];
 	IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
 	for (size_t i = 0; i <  pubkeys.size(); ++i) {
-		iidChainSubWallet->GetDIDByPublicKey(pubkeys[i]);
+		iidChainSubWallet->GetDIDPublicKey(pubkeys[i]);
 	}
 
 	iidChainSubWallet->GetAllDID(0, 500);

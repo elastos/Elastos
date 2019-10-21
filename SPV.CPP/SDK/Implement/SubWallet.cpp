@@ -309,7 +309,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &createdTx,
-												  const std::string &payPassword) {
+												  const std::string &payPassword) const {
 
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("tx: {}", createdTx.dump());

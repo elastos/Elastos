@@ -17,24 +17,23 @@ namespace Elastos {
 		public:
 			virtual ~IDChainSubWallet();
 
-			virtual nlohmann::json GenerateDIDInfoPayload(
-					const nlohmann::json &inputInfo,
-					const std::string &paypasswd
-			);
-
 			virtual nlohmann::json CreateIDTransaction(
 					const nlohmann::json &payloadJson,
 					const std::string &memo = "");
 
 			virtual nlohmann::json GetAllDID(uint32_t start, uint32_t count) const;
 
-			virtual std::string Sign(const std::string &did, const std::string &message, const std::string &payPassword);
+			virtual std::string Sign(const std::string &did, const std::string &message, const std::string &payPassword) const;
 
 			virtual bool VerifySignature(const std::string &publicKey, const std::string &message, const std::string &signature);
 
-			virtual std::string GetDIDByPublicKey(const std::string &pubkey) const;
+			virtual std::string GetDIDPublicKey(const std::string &pubkey) const;
 
-			virtual nlohmann::json GetDetailByDID(const std::string &did) const;
+			virtual nlohmann::json GenerateDIDInfoPayload(
+				const nlohmann::json &didInfo,
+				const std::string &paypasswd);
+
+			virtual nlohmann::json GetDIDInfo(const std::string &did) const;
 
 		private:
 			std::vector<std::string> getVerifiableCredentialTypes(const CredentialSubject &subject);
