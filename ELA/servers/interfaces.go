@@ -1500,7 +1500,7 @@ type RpcCrMembersInfo struct {
 }
 
 type RpcProposalBaseState struct {
-	Status             crstate.ProposalStatus        `json:"status"`
+	Status             string                        `json:"status"`
 	ProposalHash       string                        `json:"proposalhash"`
 	TxHash             string                        `json:"txhash"`
 	CRVotes            map[string]payload.VoteResult `json:"crvotes"`
@@ -1528,7 +1528,7 @@ type RpcCRCProposal struct {
 	Budgets []common.Fixed64
 }
 type RpcProposalState struct {
-	Status             crstate.ProposalStatus        `json:"status"`
+	Status             string                        `json:"status"`
 	Proposal           RpcCRCProposal                `json:"proposal"`
 	TxHash             string                        `json:"txhash"`
 	CRVotes            map[string]payload.VoteResult `json:"crvotes"`
@@ -1790,7 +1790,7 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			crVotes[k.String()] = v
 		}
 		RpcProposalBaseState := RpcProposalBaseState{
-			Status:             proposal.Status,
+			Status:             proposal.Status.String(),
 			ProposalHash:       proposal.Proposal.Hash().String(),
 			TxHash:             proposal.TxHash.String(),
 			CRVotes:            crVotes,
@@ -1864,7 +1864,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	}
 
 	RpcProposalState := RpcProposalState{
-		Status:             ProposalState.Status,
+		Status:             ProposalState.Status.String(),
 		Proposal:           rpcProposal,
 		TxHash:             ProposalState.TxHash.String(),
 		CRVotes:            crVotes,

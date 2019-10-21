@@ -6,6 +6,7 @@
 package state
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -45,6 +46,27 @@ const (
 )
 
 const MaxCommitteeProposalCount = 128
+
+func (status ProposalStatus) String() string {
+	switch status {
+	case Registered:
+		return "Registered"
+	case CRAgreed:
+		return "CRAgreed"
+	case VoterAgreed:
+		return "VoterAgreed"
+	case Finished:
+		return "Finished"
+	case CRCanceled:
+		return "CRCanceled"
+	case VoterCanceled:
+		return "VoterCanceled"
+	case Aborted:
+		return "Aborted"
+	default:
+		return fmt.Sprintf("Unknown ProposalStatus (%d)", status)
+	}
+}
 
 // ProposalManager used to manage all proposals existing in block chain.
 type ProposalManager struct {
