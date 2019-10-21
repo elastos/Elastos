@@ -154,8 +154,7 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
                     tempStr = (tempStr ?? "") + String(char)
                 }
                 
-                if level == 0 && strIndex == String(content).count - 1 {
-                    keys.append(String(tempStr!))
+                if level == 0 && strIndex == String(jsonString).count - 2 {                    keys.append(String(tempStr!))
                 }
             }
             
@@ -167,8 +166,7 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
                 let sepAfterIndex = content.index(content.firstIndex(of: ":")!, offsetBy: 1)
                 
                 let key = String(content[firstStringIndex...sepIndex])
-                var value = content[sepAfterIndex...lastStringIndex]
-                
+                let value = String(content[sepAfterIndex...lastStringIndex])
                 let firstString = value.first
                 // 是数组
                 if firstString == "[" {
@@ -180,7 +178,7 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
                     
                     let firstStringIndex = value.index(value.startIndex, offsetBy: 1)
                     let lastStringIndex = value.index(value.endIndex, offsetBy: -2)
-                    resultOrderedDictionarys[key] = value[firstStringIndex...lastStringIndex]
+                    resultOrderedDictionarys[key] = String(value[firstStringIndex...lastStringIndex])
                     // 是字符串
                 }
             }
@@ -224,11 +222,10 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
                         resultArray.append(self.handleString(tempStr!) as Any)
                     } else {
                         
-                        
                         let firstStringIndex = tempStr!.index(tempStr!.startIndex, offsetBy: 1)
                         let lastStringIndex = tempStr!.index(tempStr!.endIndex, offsetBy: -2)
                         let result = tempStr![firstStringIndex...lastStringIndex]
-                        resultArray.append(result)
+                        resultArray.append(String(result))
                     }
                     tempStr = nil
                 } else {
@@ -245,7 +242,7 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
                         let firstStringIndex = tempStr!.index(tempStr!.startIndex, offsetBy: 1)
                         let lastStringIndex = tempStr!.index(tempStr!.endIndex, offsetBy: -2)
                         let result = tempStr![firstStringIndex...lastStringIndex]
-                        resultArray.append(result)
+                        resultArray.append(String(result))
                     }
                 }
             }

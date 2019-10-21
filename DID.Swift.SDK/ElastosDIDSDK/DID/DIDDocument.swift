@@ -443,7 +443,7 @@ public class DIDDocument: NSObject {
         
         try authentications!.forEach { (obj) in
             var pk: DIDPublicKey
-            if obj is Dictionary<String, Any> {
+            if obj is OrderedDictionary<String, Any> {
                 let object: OrderedDictionary<String, Any> = obj as! OrderedDictionary<String, Any>
                 pk = try DIDPublicKey.fromJson(object, subject!)
             }else {
@@ -476,7 +476,7 @@ public class DIDDocument: NSObject {
         }
         try authorizations!.forEach { (obj) in
             var pk: DIDPublicKey
-            if obj is Dictionary<String, Any> {
+            if obj is OrderedDictionary<String, Any> {
                 let object: OrderedDictionary<String, Any> = obj as! OrderedDictionary<String, Any>
                 pk = try DIDPublicKey.fromJson(object, subject!)
             }else {
