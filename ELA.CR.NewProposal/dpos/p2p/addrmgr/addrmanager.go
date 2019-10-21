@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package addrmgr
 
@@ -123,7 +123,7 @@ func (a *AddrManager) deserializePeers(filePath string) error {
 	if os.IsNotExist(err) {
 		return nil
 	}
-	r, err := os.Open(filePath)
+	r, err := os.OpenFile(filePath, os.O_RDONLY, 0400)
 	if err != nil {
 		return fmt.Errorf("%s error opening file: %v", filePath, err)
 	}

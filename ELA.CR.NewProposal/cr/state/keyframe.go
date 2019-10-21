@@ -121,11 +121,17 @@ func (set *ProposalHashSet) Equal(other ProposalHashSet) bool {
 	return true
 }
 
+type ProposalsMap map[common.Uint256]*ProposalState
+
 // ProposalKeyFrame holds all runtime state about CR proposals.
 type ProposalKeyFrame struct {
-	Proposals map[common.Uint256]*ProposalState
+	Proposals ProposalsMap
 	//key is did value is proposalhash set
 	ProposalHashs map[common.Uint168]ProposalHashSet
+}
+
+func NewProposalMap() ProposalsMap {
+	return make(ProposalsMap)
 }
 
 func (c *CRMember) Serialize(w io.Writer) (err error) {
