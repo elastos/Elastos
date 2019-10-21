@@ -24,6 +24,10 @@ export default class extends StandardPage {
     this.setState({ elip: data.elip, loading: false })
   }
 
+  componentWillUnmount() {
+    this.props.resetData()
+  }
+
   historyBack = () => {
     const id = this.state.elip._id
     this.props.history.push(`/elips/${id}`)
