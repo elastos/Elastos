@@ -18,6 +18,7 @@
 #include <SDK/Plugin/Transaction/Payload/CRInfo.h>
 #include <SDK/Plugin/Transaction/Payload/UnregisterCR.h>
 #include <SDK/Plugin/Transaction/Payload/CRCProposal.h>
+#include <SDK/Plugin/Transaction/Payload/CRCProposalReview.h>
 #include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/SpvService/Config.h>
@@ -1046,7 +1047,7 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateCRCProposalTransaction(const nlohmann::json &proposal,
 		                                                    const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("payload: {}", proposal.dump());
+			ArgInfo("proposalReview: {}", proposal.dump());
 			ArgInfo("memo: {}", memo);
 
 			PayloadPtr payload = PayloadPtr(new CRCProposal());
@@ -1057,14 +1058,77 @@ namespace Elastos {
 				                                  "Payload format err: " + std::string(e.what()));
 			}
 
-			const uint168 &recipient = static_cast<CRCProposal *>(payload.get())->GetRecipient();
-			Address receiveAddr(recipient);
-			ErrorChecker::CheckParam(!receiveAddr.Valid(), Error::InvalidArgument, "invalid recipient");
-
+			Address receiveAddr(CreateAddress());
 			std::vector<OutputPtr> outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), receiveAddr)));
 
 			TransactionPtr tx = CreateTx(Transaction::crcProposal, payload, "", outputs, memo);
+
+			if (tx->GetOutputs().size() > 1) {
+				tx->RemoveOutput(tx->GetOutputs().front());
+				tx->FixIndex();
+			}
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json MainchainSubWallet::GenerateCRCProposalReview(const std::string &proposalHash,
+		                                                             uint8_t voteResult,
+		                                                             const std::string &crDID,
+		                                                             const std::string &payPasswd) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("proposalHash: {}", proposalHash);
+			ArgInfo("voteResult: {}", voteResult);
+			ArgInfo("crDID: {}", crDID);
+			ArgInfo("payPasswd: *");
+
+			ErrorChecker::CheckParam(proposalHash.size() != 64, Error::InvalidArgument, "invalid proposalHash");
+			ErrorChecker::CheckParam(voteResult > 2, Error::InvalidArgument, "invalid voteResult");
+
+			Address did(crDID);
+			ErrorChecker::CheckParam(!did.Valid(), Error::InvalidArgument, "invalid crDID value");
+
+			CRCProposalReview review;
+
+			uint256 hash(proposalHash);
+			review.SetProposalHash(hash);
+			review.SetResult((CRCProposalReview::VoteResult) voteResult);
+			review.SetCRDID(did.ProgramHash());
+
+			ByteStream byteStream;
+			review.SerializeUnsigned(byteStream, 0);
+
+			bytes_t signature = _walletManager->GetWallet()->SignWithOwnerKey(byteStream.GetBytes(), payPasswd);
+			review.SetSignature(signature);
+
+			nlohmann::json result = review.ToJson(0);
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json MainchainSubWallet::CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
+		                                                                      const std::string &memo) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("proposalReview: {}", proposalReview.dump());
+			ArgInfo("memo: {}", memo);
+
+			PayloadPtr payload = PayloadPtr(new CRCProposalReview());
+			try {
+				payload->FromJson(proposalReview, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+				                                  "Payload format err: " + std::string(e.what()));
+			}
+
+			std::vector<OutputPtr> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr)));
+
+			TransactionPtr tx = CreateTx(Transaction::crcProposalReview, payload, "", outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
