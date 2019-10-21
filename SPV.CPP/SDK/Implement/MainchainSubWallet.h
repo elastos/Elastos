@@ -118,6 +118,26 @@ namespace Elastos {
 
 			virtual nlohmann::json GetVoteInfo(const std::string &type) const;
 
+			virtual nlohmann::json SponsorSignProposal(uint8_t type,
+			                                           const std::string &sponsorPublicKey,
+			                                           const std::string &crSponsorDID,
+			                                           const std::string &draftHash,
+			                                           const std::vector<std::string> &budgets,
+			                                           const std::string &recipient,
+			                                           const std::string &payPasswd) const;
+
+			virtual nlohmann::json CRSponsorSignProposal(uint8_t type,
+			                                             const std::string &sponsorPublicKey,
+			                                             const std::string &crSponsorDID,
+			                                             const std::string &draftHash,
+			                                             const std::vector<std::string> &budgets,
+			                                             const std::string &recipient,
+			                                             const std::string &signature,
+			                                             const std::string &payPasswd) const;
+
+			virtual nlohmann::json CreateCRCProposalTransaction(const nlohmann::json &proposal,
+			                                                    const std::string &memo);
+
 		protected:
 			friend class MasterWallet;
 

@@ -21,6 +21,7 @@
 #include "SDK/Plugin/Transaction/Payload/ReturnDepositCoin.h"
 #include "SDK/Plugin/Transaction/Payload/CRInfo.h"
 #include "SDK/Plugin/Transaction/Payload/UnregisterCR.h"
+#include "SDK/Plugin/Transaction/Payload/CRCProposal.h"
 #include <SDK/Wallet/UTXO.h>
 #include <SDK/Wallet/Wallet.h>
 
@@ -872,6 +873,8 @@ namespace Elastos {
 				payload = PayloadPtr(new UnregisterCR());
 			} else if (type == returnCRDepositCoin) {
 				payload = PayloadPtr(new ReturnDepositCoin());
+			} else if (type == crcProposal) {
+				payload = PayloadPtr(new CRCProposal());
 			}
 
 			return payload;

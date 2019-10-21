@@ -58,6 +58,9 @@ namespace Elastos {
 				unregisterCR             = 0x22,
 				updateCR                 = 0x23,
 				returnCRDepositCoin      = 0x24,
+				crcProposal              = 0x25,
+				crcProposalReview        = 0x26,
+				crcProposalTracking      = 0x27,
 
 				TypeMaxCount
 			};

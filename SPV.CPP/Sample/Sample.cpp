@@ -444,6 +444,37 @@ static void GetRegisteredCrInfo(const std::string &masterWalletID, const std::st
 	mainchainSubWallet->GetRegisteredCRInfo();
 }
 
+static void CreateCRProposalTransaction(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+	uint8_t type = 0;
+	std::string pubkey = "03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc";
+	std::string crSponsorDID = "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww";
+	std::string draftHash = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0";
+	std::vector<std::string> budgets = {"324", "434", "343"};
+	std::string receiptAddress = "Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ";
+
+
+	nlohmann::json info = mainchainSubWallet->SponsorSignProposal(type, pubkey, crSponsorDID, draftHash, budgets,
+			receiptAddress, payPasswd);
+
+	std::string signature = info["Sgnature"].get<std::string>();
+	info = mainchainSubWallet->CRSponsorSignProposal(type, pubkey, crSponsorDID, draftHash, budgets,
+			receiptAddress, signature, payPasswd);
+
+	nlohmann::json tx = mainchainSubWallet->CreateCRCProposalTransaction(info, memo);
+
+	PublishTransaction(mainchainSubWallet, tx);
+
+}
+
 static void GetVotedList(const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	if (!subWallet)
@@ -715,6 +746,7 @@ static void ELATest() {
 	static bool combineUTXODone = true, transferDone = true, depositDone = true;
 	static bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
 	static bool registerCR = true, updateCR = true, unregisterCR = true, retrieveCr = true, voteCR = true;
+	static bool createCRProposal = true;
 
 	logger->debug("ELA {}", separator);
 	GetAllTxSummary(gMasterWalletID, gMainchainSubWalletID);
@@ -791,6 +823,11 @@ static void ELATest() {
 		VoteCR(gMasterWalletID, gMainchainSubWalletID,
 		     nlohmann::json::parse("{\"0205a250b3a96ccc776604fafb84b0f8623fdfda6ec8f42c9154aa727bd95edfe2\":23,\"03d55285f06683c9e5c6b5892a688affd046940c7161571611ea3a98330f72459f\":34}"));
 		voteCR = true;
+	}
+
+	if (!createCRProposal) {
+		createCRProposal = true;
+		CreateCRProposalTransaction(gMasterWalletID, gMainchainSubWalletID);
 	}
 
 	logger->debug("ELA {}", separator);

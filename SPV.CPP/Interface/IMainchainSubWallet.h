@@ -383,6 +383,60 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetVoteInfo(const std::string &type) const = 0;
 
+
+			/**
+			 *Sponsor generate and sign payload for create CRC proposal.
+			 *
+			 * @param type             Proposal type, value is [0-5]
+			 * @param sponsorPublicKey Public key of sponsor
+			 * @param crSponsorDID     Did of sponsor. Such as "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+			 * @param draftHash        The hash of draft proposal
+			 * @param budgets          The budgets of proposal every stage. Such as ["300", "33", "344"]
+			 * @param recipient        Address of budget payee. Such as "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"
+			 * @param payPasswd        Pay password is using for signing the payload with the owner private key.
+			 *
+			 * @return The payload in JSON format.
+			 */
+			virtual nlohmann::json SponsorSignProposal(uint8_t type,
+			                                           const std::string &sponsorPublicKey,
+			                                           const std::string &crSponsorDID,
+			                                           const std::string &draftHash,
+			                                           const std::vector<std::string> &budgets,
+			                                           const std::string &recipient,
+			                                           const std::string &payPasswd) const = 0;
+
+			/**
+			 *CR sponsor generate payload for create CRC proposal.
+			 *
+			 * @param type             Proposal type, value is [0-5]
+			 * @param sponsorPublicKey Public key of sponsor
+			 * @param crSponsorDID     Did of sponsor. Such as "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+			 * @param draftHash        The hash of draft proposal
+			 * @param budgets          The budgets of proposal every stage. Such as ["300", "33", "344"]
+			 * @param recipient        Address of budget payee. Such as "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"
+			 * @param payPasswd        Pay password is using for signing the payload with the owner private key.
+			 *
+			 * @return The payload in JSON format.
+			 */
+			virtual nlohmann::json CRSponsorSignProposal(uint8_t type,
+			                                             const std::string &sponsorPublicKey,
+			                                             const std::string &crSponsorDID,
+			                                             const std::string &draftHash,
+			                                             const std::vector<std::string> &budgets,
+			                                             const std::string &recipient,
+			                                             const std::string &signature,
+			                                             const std::string &payPasswd) const = 0;
+
+			/**
+			 * Create CRC Proposal transaction.
+			 *
+			 * @param proposal  The proposal of CRC, should be Signed with SponsorSignProposal() and CRSponsorSignProposal().
+			 * @param memo      Remarks string. Can be empty string.
+			 * @return          The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json
+			CreateCRCProposalTransaction(const nlohmann::json &proposal, const std::string &memo) = 0;
+
 		};
 
 	}
