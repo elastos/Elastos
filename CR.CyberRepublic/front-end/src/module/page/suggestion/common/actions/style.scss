@@ -14,19 +14,8 @@
       line-height: 16px;
       height: 16px;
     }
-  }
-  .cr-icon-group.ant-anchor-wrapper {
-    .ant-anchor .ant-anchor-ink {
-      display: none;
-    }
-    .ant-anchor-link {
-      padding: 0;
-    }
-    .ant-anchor-link-active
-    .ant-anchor-link-title
-    .cr-icon-group
-    span:nth-child(2) {
-      color:#333;
+    > a span{
+      color: rgba(3, 30, 40, 0.3);
     }
   }
   .anticon-ellipsis {

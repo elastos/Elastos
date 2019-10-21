@@ -29,6 +29,13 @@ class C extends BaseComponent {
 
   async componentDidMount() {
     this.props.listUsers()
+    const hash = this.props.location.hash
+    if (hash && hash === '#comments') {
+      document.getElementById('comments').scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      })
+    }
   }
 
   componentWillUnmount() {
