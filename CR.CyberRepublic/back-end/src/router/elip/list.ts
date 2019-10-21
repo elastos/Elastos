@@ -7,6 +7,8 @@ export default class extends Base {
     const param = this.getParam()
     const service = this.buildService(ElipService)
 
+    service.cronjob()
+
     if (param.search) {
       param.$or = [
         { title: { $regex: _.trim(param.search), $options: 'i' } },

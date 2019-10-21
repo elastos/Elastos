@@ -3,6 +3,9 @@ import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
 import { mail, logger, user as userUtil } from '../utility'
+import * as moment from 'moment'
+
+let tm = undefined
 
 export default class extends Base {
   public async update(param: any): Promise<Document> {
@@ -12,6 +15,10 @@ export default class extends Base {
       const elip = await db_elip
         .getDBInstance()
         .findOne({ _id })
+        .populate(
+          'voteResult.votedBy',
+          constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+        )
         .populate('createdBy')
       if (!elip) {
         throw 'ElipService.update - invalid elip id'
@@ -102,6 +109,7 @@ export default class extends Base {
   public async create(param: any): Promise<Document> {
     try {
       const db_elip = this.getDBModel('Elip')
+      const db_user = this.getDBModel('User')
       let { title,
               elipType,
               abstract,
@@ -131,6 +139,19 @@ export default class extends Base {
         contentType: constant.CONTENT_TYPE.MARKDOWN,
         createdBy: this.currentUser._id
       }
+      const councilMembers = await db_user.find({
+        role: constant.USER_ROLE.COUNCIL
+      })
+      const voteResult = []
+      _.map(councilMembers, user => {
+        voteResult.push({
+          votedBy: user._id,
+          value: constant.ELIP_VOTE_RESULT.UNDECIDED
+        })
+      })
+      doc.voteResult = voteResult
+      doc.voteHistory = voteResult
+
       const elip = await db_elip.save(doc)
       this.notifySecretaries(elip)
       return elip
@@ -138,6 +159,38 @@ export default class extends Base {
       logger.error(error)
       return
     }
+  }
+
+  public async vote(param): Promise<Document> {
+    const db_elip = this.getDBModel('Elip')
+    const { _id, value, reason } = param
+    const cur = await db_elip.findOne({ _id })
+    const votedBy = _.get(this.currentUser, '_id')
+    if (!cur) {
+      throw 'invalid proposal id'
+    }
+
+    await db_elip.update(
+      {
+        _id,
+        'voteResult.votedBy': votedBy
+      },
+      {
+        $set: {
+          'voteResult.$.value': value,
+          'voteResult.$.reason': reason || ''
+        },
+        $push: {
+          voteHistory: {
+            value,
+            reason,
+            votedBy
+          }
+        }
+      }
+    )
+
+    return await this.getById(_id)
   }
 
   public async getNewVid() {
@@ -191,11 +244,64 @@ export default class extends Base {
     mail.send(mailObj)
   }
 
+  private async notifyCouncil(elip: any) {
+    const db_user = this.getDBModel('User')
+    const currentUserId = _.get(this.currentUser, '_id')
+    const councilMembers = await db_user.find({
+      role: constant.USER_ROLE.COUNCIL
+    })
+    const toUsers = _.filter(
+      councilMembers,
+      user => !user._id.equals(currentUserId)
+    )
+    const toMails = _.map(toUsers, 'email')
+
+    const subject = `New ELIP: ${elip.title}`
+    const body = `
+      <p>There is a new ELIP added:</p>
+      <br />
+      <p>${elip.title}</p>
+      <br />
+      <p>Click this link to view more details: <a href="${
+        process.env.SERVER_URL
+      }/elips/${elip._id}">${process.env.SERVER_URL}/elips/${
+      elip._id
+    }</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+
+    const recVariables = _.zipObject(
+      toMails,
+      _.map(toUsers, user => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      })
+    )
+
+    const mailObj = {
+      to: toMails,
+      // toName: ownerToName,
+      subject,
+      body,
+      recVariables
+    }
+
+    mail.send(mailObj)
+  }
+
   public async getById(id: string): Promise<any> {
     const db_elip = this.getDBModel('Elip')
     const rs = await db_elip
       .getDBInstance()
       .findById({ _id: id })
+      .populate(
+        'voteResult.votedBy',
+        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+      )
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
     if (!rs) {
       throw 'ElipService.getById - invalid elip id'
@@ -301,5 +407,150 @@ export default class extends Base {
       .limit(100)
 
     return list
+  }
+
+  private async notifyCouncilToVote() {
+    // find elip before 1 day expiration without vote yet for each council member
+    const db_elip = this.getDBModel('Elip')
+    const nearExpiredTime =
+      Date.now() - (constant.ELIP_EXPIRATION - constant.ONE_DAY)
+    const unvotedElips = await db_elip
+      .getDBInstance()
+      .find({
+        proposedAt: {
+          $lt: nearExpiredTime,
+          $gt: Date.now() - constant.ELIP_EXPIRATION
+        },
+        notified: { $ne: true },
+        status: constant.ELIP_STATUS.PROPOSED
+      })
+      .populate(
+        'voteResult.votedBy',
+        constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL
+      )
+
+    _.each(unvotedElips, elip => {
+      _.each(elip.voteResult, result => {
+        if (result.value === constant.ELIP_VOTE_RESULT.UNDECIDED) {
+          // send email to council member to notify to vote
+          const { title, _id } = elip
+          const subject = `Proposal Vote Reminder: ${title}`
+          const body = `
+            <p>You only got 24 hours to vote this proposal:</p>
+            <br />
+            <p>${title}</p>
+            <br />
+            <p>Click this link to vote: <a href="${
+              process.env.SERVER_URL
+            }/elips/${_id}">${
+            process.env.SERVER_URL
+          }/elips/${_id}</a></p>
+            <br /> <br />
+            <p>Thanks</p>
+            <p>Cyber Republic</p>
+          `
+          const mailObj = {
+            to: result.votedBy.email,
+            toName: userUtil.formatUsername(result.votedBy),
+            subject,
+            body
+          }
+          mail.send(mailObj)
+
+          // update notified to true
+          db_elip.update({ _id: elip._id }, { $set: { notified: true } })
+        }
+      })
+    })
+  }
+
+  public isExpired(data: any, extraTime = 0): Boolean {
+    const ct = moment(data.proposedAt || data.createdAt).valueOf()
+    if (Date.now() - ct - extraTime > constant.ELIP_EXPIRATION) {
+      return true
+    }
+    return false
+  }
+
+  // proposal active/passed
+  public isActive(data): Boolean {
+    const supportNum =
+      _.countBy(data.voteResult, 'value')[constant.ELIP_VOTE_RESULT.SUPPORT] || 0
+    return supportNum > data.voteResult.length * 0.5
+  }
+
+  // proposal rejected
+  public isRejected(data): Boolean {
+    const rejectNum =
+      _.countBy(data.voteResult, 'value')[constant.ELIP_VOTE_RESULT.REJECT] || 0
+    return rejectNum > data.voteResult.length * 0.5
+  }
+
+  private async eachJob() {
+    const db_elip = this.getDBModel('Elip')
+    const list = await db_elip.find({
+      // wait requirement 
+      status: constant.ELIP_STATUS.PROPOSED
+    })
+    const idsDeferred = []
+    const idsActive = []
+    const idsRejected = []
+
+    _.each(list, item => {
+      if (this.isExpired(item)) {
+        if (this.isActive(item)) {
+          idsActive.push(item._id)
+        } else if (this.isRejected(item)) {
+          idsRejected.push(item._id)
+        } else {
+          idsDeferred.push(item._id)
+        }
+      }
+    })
+    await db_elip.update(
+      {
+        _id: {
+          $in: idsDeferred
+        }
+      },
+      {
+        status: constant.ELIP_STATUS.DEFERRED
+      },
+      { multi: true }
+    )
+    await db_elip.update(
+      {
+        _id: {
+          $in: idsActive
+        }
+      },
+      {
+        status: constant.ELIP_STATUS.ACTIVE
+      },
+      { multi: true }
+    )
+    await db_elip.update(
+      {
+        _id: {
+          $in: idsRejected
+        }
+      },
+      {
+        status: constant.ELIP_STATUS.REJECT
+      },
+      { multi: true }
+    )
+
+    this.notifyCouncilToVote()
+  }
+
+  public cronjob() {
+    if (tm) {
+      return false
+    }
+    tm = setInterval(() => {
+      console.log('---------------- start elip cronjob -------------')
+      this.eachJob()
+    }, 1000 * 60)
   }
 }
