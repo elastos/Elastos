@@ -2049,7 +2049,7 @@ Show current cr proposal base state information
 
 | name               | type                  | description                                        |
 | ------------------ | --------------------- | -------------------------------------------------- |
-| Status             | ProposalStatus        | the proposal status                                |
+| Status             | string                | the proposal status                                |
 | ProposalHash       | string                | the cr proposal hash                               |
 | TxHash             | string                | the transacion's hash which cr proposal located in |
 | CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
@@ -2083,7 +2083,7 @@ Response:
     "result": {
         "RpcProposalBaseStateslice": [
             {
-                "status": 0,
+                "status": "Registered",
                 "proposalhash": "42de0adf2b3673d712fc3efdaf643889ef8442fe25987b25add8c0c961b13612",
                 "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
                 "crvotes": {
@@ -2095,10 +2095,12 @@ Response:
                 "index": 0
             },
             {
-                "status": 0,
-                "proposalhash": "59be5165123b4be3296f2c72464332086f89be3a8fee1a2d8ae3fd7cca218e68",
-                "txhash": "87536938d0e4f093c16b4b77b70a3b2ae53a3b79217697bd283f1203e2443a83",
-                "crvotes": {},
+                "status": "Registered",
+                "proposalhash": "7868943061e77bd29a6aafa4426d5f14c85e0bb0e40e333bcaa2ca4bc702fcac",
+                "txhash": "fd957410f85c6a4691bf60ccbd8c1d25901631941dc17ae6af91541b7695b265",
+                "crvotes": {
+                    "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+                },
                 "votersrejectamount": 0,
                 "RegisterHeight": 1468,
                 "votestartheight": 0,
@@ -2127,7 +2129,7 @@ Get one cr proposal detail state information by proposalhash or drafthash
 
 | name               | type                  | description                                        |
 | ------------------ | --------------------- | -------------------------------------------------- |
-| Status             | ProposalStatus        | the proposal status                                |
+| Status             | string                | the proposal status                                |
 | Proposal           | RpcCRCProposal        | the cr proposal                                    |
 | TxHash             | string                | hash of the transacion which cr proposal located in|
 | CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
@@ -2169,7 +2171,7 @@ Response:
     "jsonrpc": "2.0",
     "result": {
         "RpcProposalState": {
-            "status": 0,
+            "status": "Registered",
             "proposal": {
                 "ProposalType": 0,
                 "SponsorPublicKey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
@@ -2213,7 +2215,7 @@ Response:
     "jsonrpc": "2.0",
     "result": {
         "RpcProposalState": {
-            "status": 0,
+            "status": "Registered",
             "proposal": {
                 "ProposalType": 0,
                 "SponsorPublicKey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
