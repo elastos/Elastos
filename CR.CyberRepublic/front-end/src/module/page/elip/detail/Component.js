@@ -1,5 +1,6 @@
 import React from 'react'
 import { Row, Col, Spin, Button, message, Popconfirm, Anchor } from 'antd'
+import { StickyContainer, Sticky } from 'react-sticky'
 import styled from 'styled-components'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import I18N from '@/I18N'
@@ -10,13 +11,13 @@ import BackLink from '@/module/shared/BackLink/Component'
 import Meta from '@/module/common/Meta'
 import MetaComponent from '@/module/shared/meta/Container'
 import CRPopover from '@/module/shared/Popover/Component'
-import { ELIP_STATUS, ELIP_REVIEW_STATUS } from '@/constant'
+import { ELIP_STATUS, ELIP_REVIEW_STATUS, ELIP_VOTE_STATUS } from '@/constant'
 import { text } from '@/constants/color'
 import { logger } from '@/util'
 import { breakPoint } from '@/constants/breakPoint'
 import moment from 'moment/moment'
-import ReviewButtons from './ReviewButtons'
 import ReviewHistory from './ReviewHistory'
+import VoteHistory from './VoteHistory'
 
 const { Link } = Anchor
 
@@ -27,6 +28,8 @@ class C extends StandardPage {
     this.state = {
       visibleReject: false,
       visibleApprove: false,
+      visibleYes: false,
+      visibleOppose: false,
     }
   }
 
@@ -42,33 +45,6 @@ class C extends StandardPage {
     const { getData, match } = this.props
     try {
       await getData(match.params)
-    } catch (err) {
-      logger.error(err)
-    }
-  }
-
-  handleSubmit = async e => {
-    const { review, reviews, data } = this.props
-    const param = {
-      comment: e.reason,
-      status: e.status,
-      elipId: data._id
-    }
-    try {
-      const comment = await review(param)
-      if (comment && comment.elipId === data._id) {
-        // this.setState({
-        //   detail: { ...data, status: comment.elipStatus },
-        //   reviews: [...reviews, comment]
-        // })
-        if (comment.elipStatus === ELIP_STATUS.DRAFT) {
-          message.info(I18N.get('elip.msg.approved'))
-        }
-        if (comment.elipStatus === ELIP_STATUS.REJECTED) {
-          message.info(I18N.get('elip.msg.rejected'))
-        }
-        this.refetch()
-      }
     } catch (err) {
       logger.error(err)
     }
@@ -113,7 +89,7 @@ class C extends StandardPage {
     await this.updateStatus(ELIP_STATUS.CANCELLED)
   }
 
-  updateStatus = async (elipStatus) => {
+  updateStatus = async elipStatus => {
     try {
       const { updateStatus, data } = this.props
       const rs = await updateStatus({
@@ -133,7 +109,7 @@ class C extends StandardPage {
     const { review, data } = this.props
     const param = {
       comment: reason && reason.reason,
-      status: status,
+      status,
       elipId: data._id
     }
     try {
@@ -150,26 +126,54 @@ class C extends StandardPage {
     }
   }
 
-  rejectdReview = (reason) => {
+  rejectdReview = reason => {
     this.updateReviewStatus(ELIP_REVIEW_STATUS.REJECTED, reason)
   }
 
-  approvedReview = (reason) => {
+  approvedReview = reason => {
     this.updateReviewStatus(ELIP_REVIEW_STATUS.APPROVED, reason)
   }
 
+  updateVoteStatus = async (status, reason) => {
+    const { vote, data } = this.props
+    const param = {
+      comment: reason && reason.reason,
+      status,
+      elipId: data._id
+    }
+    try {
+      await vote(param)
+      message.success(I18N.get('elip.msg.updated'))
+      this.refetch()
+    } catch (err) {
+      logger.error(err)
+    }
+  }
+
+  yesVote = reason => {
+    this.updateVoteStatus(ELIP_VOTE_STATUS.YES, reason)
+  }
+
+  opposeVote = reason => {
+    this.updateVoteStatus(ELIP_VOTE_STATUS.OPPOSE, reason)
+  }
+
+  abstainVote = reason => {
+    this.updateVoteStatus(ELIP_VOTE_STATUS.ABSTAIN, reason)
+  }
+
   renderAnchors() {
-    const { data, isSecretary } = this.props
+    const { data, isSecretary, isCouncil } = this.props
     const reviewLink =
       isSecretary || this.isAuthor(data) ? (
-        <LinkGroup marginTop={30}>
-          <Link href="#review" title={I18N.get('elip.fields.review')} />
-        </LinkGroup>
-      ) : (
-          ''
-        )
+        <Link href="#review" title={I18N.get('elip.fields.review')} />
+      ) : null
+    const voteLink =
+      ELIP_STATUS.SUBMITTED === data.status ? (
+        <Link href="#vote" title={I18N.get('elip.fields.vote')} />
+      ) : null
     return (
-      <StyledAnchor offsetTop={420}>
+      <StyledAnchor offsetTop={300}>
         <LinkGroup>
           <Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
           <Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
@@ -191,12 +195,12 @@ class C extends StandardPage {
             href="#referenceImplementation"
             title={I18N.get('elip.fields.referenceImplementation')}
           />
-          <Link
-            href="#copyright"
-            title={I18N.get('elip.fields.copyright')}
-          />
+          <Link href="#copyright" title={I18N.get('elip.fields.copyright')} />
         </LinkGroup>
-        {reviewLink}
+        <LinkGroup marginTop={51}>
+          {reviewLink}
+          {voteLink}
+        </LinkGroup>
       </StyledAnchor>
     )
   }
@@ -213,28 +217,57 @@ class C extends StandardPage {
       'copyright'
     ]
 
-    const metaNode = this.renderMeta()
-    const titleNode = this.renderTitleNode()
-    const subTitleNode = this.renderSubTitle()
+    const stickyHeader = this.renderStickyHeader()
     const preamble = this.renderPreamble()
     const review = this.renderReview()
+    const vote = this.renderVote()
+
 
     return (
       <Content>
-        {metaNode}
-        {titleNode}
-        {subTitleNode}
-        {preamble}
-        {_.map(sections, section => (
-          <Part id={section} key={section}>
-            <PartTitle>{I18N.get(`elip.fields.${section}`)}</PartTitle>
-            <PartContent>
-              <MarkdownPreview content={data[section] ? data[section] : ''} />
-            </PartContent>
-          </Part>
-        ))}
-        {review}
+        <StickyContainer>
+          {stickyHeader}
+          {preamble}
+          {_.map(sections, section => (
+            <Part id={section} key={section}>
+              <PartTitle>{I18N.get(`elip.fields.${section}`)}</PartTitle>
+              <PartContent>
+                <MarkdownPreview content={data[section] ? data[section] : ''} />
+              </PartContent>
+            </Part>
+          ))}
+          {review}
+          {vote}
+        </StickyContainer>
       </Content>
+    )
+  }
+
+  renderStickyHeader() {
+    const metaNode = this.renderMeta()
+    const titleNode = this.renderTitleNode()
+    const subTitleNode = this.renderSubTitle()
+
+    return (
+      <Sticky>
+        {({ style, isSticky, wasSticky }) => {
+          const finalStyle = style
+            ? {
+              ...style,
+              zIndex: 2
+            }
+            : style
+          return (
+            <div style={finalStyle}>
+              <FixedHeader>
+                {metaNode}
+                {titleNode}
+                {subTitleNode}
+              </FixedHeader>
+            </div>
+          )
+        }}
+      </Sticky>
     )
   }
 
@@ -285,7 +318,12 @@ class C extends StandardPage {
       <Part id="preamble">
         <PartTitle>{I18N.get('elip.fields.preamble')}</PartTitle>
         <PartContent className="preamble">
-          {_.map(preambles, (v, k) => this.renderPreambleItem(I18N.get(`elip.fields.preambleItems.${k}`), v))}
+          {_.map(preambles, (v, k) =>
+            this.renderPreambleItem(
+              I18N.get(`elip.fields.preambleItems.${k}`),
+              v
+            )
+          )}
         </PartContent>
       </Part>
     )
@@ -312,6 +350,18 @@ class C extends StandardPage {
       <Part id="review">
         {review}
         {reviewHistory}
+      </Part>
+    )
+  }
+
+  renderVote() {
+    const vote = this.renderVoteButton()
+    const voteHistory = this.renderVoteHistory()
+
+    return (
+      <Part id="vote">
+        {vote}
+        {voteHistory}
       </Part>
     )
   }
@@ -354,7 +404,7 @@ class C extends StandardPage {
   renderSubmittedButton() {
     const { data } = this.props
     const isEditable = this.isAuthor(data) && data.status === ELIP_STATUS.DRAFT
-    
+
     if (!isEditable) return null
 
     return (
@@ -376,7 +426,7 @@ class C extends StandardPage {
   renderCancelledButton() {
     const { data, isCouncil } = this.props
     const canCancel = isCouncil && ELIP_STATUS.SUBMITTED === data.status
-    
+
     if (!canCancel) return null
 
     return (
@@ -398,10 +448,10 @@ class C extends StandardPage {
   renderReviewButton() {
     const { data, isSecretary } = this.props
     const isVisible = isSecretary && data.status === ELIP_STATUS.WAIT_FOR_REVIEW
-    
+
     if (!isVisible) return null
 
-    const { visibleReject, visibleApprove } = this.state
+    const { visibleReject } = this.state
     const rejectBtn = (
       <Button
         type="primary"
@@ -409,15 +459,6 @@ class C extends StandardPage {
         onClick={this.showRejectModal}
       >
         {I18N.get('elip.button.reject')}
-      </Button>
-    )
-    const approveBtn = (
-      <Button
-        type="danger"
-        className="cr-btn cr-btn-primary"
-        onClick={this.showApproveModal}
-      >
-        {I18N.get('elip.button.approve')}
       </Button>
     )
 
@@ -430,19 +471,9 @@ class C extends StandardPage {
         btnType="primary"
       />
     )
-    const approvePopover = (
-      <CRPopover
-        triggeredBy={approveBtn}
-        visible={visibleApprove}
-        onToggle={this.showApproveModal}
-        onSubmit={this.approvedReview}
-        btnType="danger"
-      />
-    )
-  
+
     return (
       <Row>
-        {/* <LabelCol span={3} /> */}
         <Col offset={8} span={4}>
           {rejectPopover}
         </Col>
@@ -475,6 +506,101 @@ class C extends StandardPage {
     )
   }
 
+  renderVoteButton() {
+    const { data, isCouncil } = this.props
+    const isVisible = isCouncil && data.status === ELIP_STATUS.SUBMITTED
+
+    if (!isVisible) return null
+
+    const { visibleYes, visibleOppose } = this.state
+    const yesBtn = (
+      <Button
+        type="primary"
+        icon="check-circle"
+        onClick={this.showYesVoteModal}
+      >
+        {I18N.get('elip.button.yes')}
+      </Button>
+    )
+    const opposeBtn = (
+      <Button
+        type="danger"
+        icon="close-circle"
+        onClick={this.showOpposeVoteModal}
+      >
+        {I18N.get('elip.button.oppose')}
+      </Button>
+    )
+
+    const yesPopover = (
+      <CRPopover
+        triggeredBy={yesBtn}
+        visible={visibleYes}
+        onToggle={this.showYesVoteModal}
+        onSubmit={this.yesVote}
+        btnType="primary"
+      />
+    )
+    const opposePopover = (
+      <CRPopover
+        triggeredBy={opposeBtn}
+        visible={visibleOppose}
+        onToggle={this.showOpposeVoteModal}
+        onSubmit={this.opposeVote}
+        btnType="danger"
+      />
+    )
+
+    return (
+      <VoteBtnGroup>
+        {yesPopover}
+        {opposePopover}
+        <Popconfirm
+          title={I18N.get('elip.modal.abstain')}
+          onConfirm={this.abstainVote}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
+          <Button icon="stop">{I18N.get('elip.button.abstain')}</Button>
+        </Popconfirm>
+      </VoteBtnGroup>
+    )
+  }
+
+  renderVoteHistory() {
+    const { data } = this.props
+    const isVisible = data.status === ELIP_STATUS.SUBMITTED
+
+    if (!isVisible) return null
+
+    const dataList = [
+      { name: 'test1', reason: 'hahhhahahha' },
+      { name: 'test2', reason: 'hahhhahahha123' }
+    ]
+    return (
+      <VotePanel id="vote">
+        <VotePanelTitle>test</VotePanelTitle>
+        <VotePanelContent>
+          <VoteHistory
+            label="Voted Yes"
+            type={ELIP_VOTE_STATUS.YES}
+            dataList={dataList}
+          />
+          <VoteHistory
+            label="Opposed"
+            type={ELIP_VOTE_STATUS.OPPOSE}
+            dataList={dataList}
+          />
+          <VoteHistory
+            label="Abstained"
+            type={ELIP_VOTE_STATUS.ABSTAIN}
+            dataList={dataList}
+          />
+        </VotePanelContent>
+      </VotePanel>
+    )
+  }
+
   showRejectModal = () => {
     const { visibleReject } = this.state
     this.setState({ visibleReject: !visibleReject })
@@ -483,6 +609,16 @@ class C extends StandardPage {
   showApproveModal = () => {
     const { visibleApprove } = this.state
     this.setState({ visibleApprove: !visibleApprove })
+  }
+
+  showYesVoteModal = () => {
+    const { visibleYes } = this.state
+    this.setState({ visibleYes: !visibleYes })
+  }
+
+  showOpposeVoteModal = () => {
+    const { visibleOppose } = this.state
+    this.setState({ visibleOppose: !visibleOppose })
   }
 }
 
@@ -637,3 +773,64 @@ const PartTitle = styled.h4`
 `
 
 const PartContent = styled.div``
+
+const FixedHeader = styled.div`
+  background: white;
+  padding-bottom: 24px;
+`
+
+const VoteBtnGroup = styled.div`
+  display: flex;
+  margin-top: 30px;
+  @media only screen and (max-width: ${breakPoint.mobile}) {
+    display: block;
+    .ant-btn {
+      margin-bottom: 10px;
+    }
+  }
+  .ant-btn {
+    border-radius: 0 !important;
+    margin-right: 15px;
+    box-sizing: border-box;
+    flex: 210px;
+  }
+  .ant-btn.ant-btn-primary {
+    color: white;
+    background-color: #008D85;
+    border: none;
+  }
+  .ant-btn-primary:hover, .ant-btn-primary:focus {
+    color: #fff;
+    background-color: #008D85;
+    border: none;
+  }
+  .ant-btn.ant-btn-danger {
+    color: white;
+    background-color: #BE1313;
+    border: none;
+  }
+  .ant-btn-danger:hover, .ant-btn-danger:focus {
+    color: #fff;
+    background-color: #BE1313;
+    border: none;
+  }
+`
+
+const VotePanel = styled.div`
+  background-color: #F2F6FB;
+  margin-top: 63px;
+`
+
+const VotePanelTitle = styled.div`
+  font-family: Synthese;
+  font-size: 30px;
+  line-height: 42px;
+  text-align: center;
+  color: #031e28;
+  padding-top: 60px;
+  padding-bottom: 80px;
+`
+
+const VotePanelContent = styled.div`
+  padding-bottom: 100px;
+`

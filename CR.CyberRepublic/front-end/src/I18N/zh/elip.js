@@ -22,6 +22,7 @@ export default {
     referenceImplementation: '参考实现',
     copyright: '版权/公共域',
     review: 'Review',
+    vote: 'Council Member Votes',
     preambleItems: {
       elip: 'ELIP',
       title: 'Title',
@@ -57,7 +58,10 @@ export default {
     edit: '编辑',
     markAsSubmitted: '标记为提交状态',
     markAsCancelled: '标记为取消状态',
-    continue: '继续'
+    continue: '继续',
+    yes: 'Vote Yes',
+    oppose: 'Oppose with a Reason',
+    abstain: 'Abstain'
   },
   msg: {
     updated: '更新成功',
@@ -98,6 +102,7 @@ export default {
     cancel: '取消',
     reason: '理由',
     approve: '您确定要批准该 ELIP 吗？',
+    abstain: '您确定要放弃该 Vote 的投票吗？',
     markAsSubmitted: '您确定要把该 ELIP 标记为提交状态吗？',
     markAsCancelled: '您确定要把该 ELIP 标记为取消状态吗？'
   },

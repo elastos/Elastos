@@ -23,6 +23,7 @@ export default {
     referenceImplementation: 'Reference Implementation',
     copyright: 'Copyright/Public Domain',
     review: 'Review',
+    vote: 'Council Member Votes',
     preambleItems: {
       elip: 'ELIP',
       title: 'Title',
@@ -58,7 +59,10 @@ export default {
     edit: 'Edit',
     markAsSubmitted: 'Mark as Submitted',
     markAsCancelled: 'Mark as Cancelled',
-    continue: 'Continue'
+    continue: 'Continue',
+    yes: 'Vote Yes',
+    oppose: 'Oppose with a Reason',
+    abstain: 'Abstain'
   },
   msg: {
     updated: 'Updated successfully',
@@ -99,6 +103,7 @@ export default {
     cancel: 'Cancel',
     reason: 'Reason',
     approve: 'Are you sure to approve this ELIP?',
+    abstain: 'Are you sure to abstain this Vote?',
     markAsSubmitted: 'Are you sure to mark this ELIP as submitted status?',
     markAsCancelled: 'Are you sure to mark this ELIP as cancelled status?'
   },
