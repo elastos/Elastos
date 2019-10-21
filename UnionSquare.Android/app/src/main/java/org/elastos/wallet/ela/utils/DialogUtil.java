@@ -1,10 +1,9 @@
 package org.elastos.wallet.ela.utils;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -31,9 +30,10 @@ import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener2;
+import org.elastos.wallet.ela.utils.widget.TextConfigDataPicker;
 import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
 
-import java.lang.reflect.Field;
+import java.util.Calendar;
 
 import javax.inject.Inject;
 
@@ -68,7 +68,7 @@ public class DialogUtil {
         loadingDialog.setContentView(layout, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT));// 设置布局
-       // httpialog = loadingDialog;
+        // httpialog = loadingDialog;
         return loadingDialog;
     }
 
@@ -262,6 +262,7 @@ public class DialogUtil {
         dialog.show();
         return dialog;
     }
+
     public void showTransferSucess(BaseActivity activity) {
         Dialog dialog = new Dialog(activity, R.style.coustom_dialog);
         dialog.setContentView(R.layout.dialog_transfersuccess);
@@ -319,6 +320,45 @@ public class DialogUtil {
         numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+              picker.performClick();
+            }
+        });
+        WindowManager m = activity.getWindowManager();
+        Window window = dialog.getWindow();
+        window.getDecorView().setPadding(0, 0, 0, 0);
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(params);
+        window.getDecorView().setBackgroundResource(R.color.pickerbg);
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+        dialog.show();
+    }
+
+    public void showCommonSelect(BaseActivity activity, String[] strings, WarmPromptListener listener) {
+        Dialog dialog = new Dialog(activity);
+        dialog.setContentView(R.layout.dialog_numberpicker);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextConfigNumberPicker numberPicker = dialog.findViewById(R.id.np);
+        tvSure.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.affireBtnClick(numberPicker);
+        });
+        //DatePicker
+        //设置需要显示的内容数组
+        numberPicker.setDisplayedValues(strings);
+        //设置最大最小值
+        numberPicker.setMinValue(0);
+        numberPicker.setMaxValue(strings.length - 1);
+        //设置默认的位置
+        // numberPicker.setValue(2);
+        numberPicker.setWrapSelectorWheel(false);
+        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        numberPicker.setMInputStyle(16f);
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 picker.performClick();
             }
         });
@@ -334,4 +374,55 @@ public class DialogUtil {
         dialog.show();
     }
 
+    public void showTime(BaseActivity activity, WarmPromptListener listener) {
+        Dialog dialog = new Dialog(activity);
+        dialog.setContentView(R.layout.dialog_timepicker);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        TextConfigDataPicker datePicker = dialog.findViewById(R.id.np);
+        //datePicker.updateUI(datePicker);
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        datePicker.setMinDate(calendar.getTimeInMillis());
+        calendar.set(Calendar.YEAR, year + 5);
+        datePicker.setMaxDate(calendar.getTimeInMillis());
+        tvSure.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.affireBtnClick(datePicker);
+        });
+        //DatePicker
+        //设置需要显示的内容数组
+     /*   numberPicker.setDisplayedValues(strings);
+        //设置最大最小值
+        numberPicker.setMinValue(0);
+        numberPicker.setMaxValue(strings.length-1);
+        //设置默认的位置
+        // numberPicker.setValue(2);
+        numberPicker.setWrapSelectorWheel(false);
+        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        numberPicker.setMInputStyle(16f);
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                picker.performClick();
+            }
+        });*/
+
+        WindowManager m = activity.getWindowManager();
+        Window window = dialog.getWindow();
+        window.getDecorView().setPadding(0, 0, 0, 0);
+        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(params);
+        window.getDecorView().setBackgroundResource(R.color.pickerbg);
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+        dialog.show();
+    }
+
+    public static void backgroundAlpha(Context context, float bgAlpha) {
+        WindowManager.LayoutParams lp = ((Activity) context).getWindow().getAttributes();
+        lp.alpha = bgAlpha; // 0.0-1.0
+        ((Activity) context).getWindow().setAttributes(lp);
+    }
 }

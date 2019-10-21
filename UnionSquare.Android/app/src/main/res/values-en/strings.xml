@@ -446,4 +446,13 @@
     <string name="findlistdown2">参与社区运营共治</string>
     <string name="hasquit">已退出</string>
     <string name="cr_72">退出参选72小时后，方可提取质押金。</string>
+    <string name="currentno">暂无</string>
+    <string name="selfannouncecer">自声明凭证</string>
+    <string name="plziputdidname">请输入DID名称(必填)</string>
+    <string name="plzselectwallet">请选择钱包</string>
+    <string name="mainkpnomodify">主管理公钥（发布后不可更改）</string>
+    <string name="didonlywithmainpk">DID（与主管理公钥一一对应）</string>
+    <string name="adddid">添加DID</string>
+    <string name="plzselctoutdate">请选择失效日期</string>
+    <string name="validtime">有效期至</string>
 </resources>

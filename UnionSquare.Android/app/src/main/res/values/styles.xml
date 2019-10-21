@@ -14,6 +14,7 @@
         <!--默认 Button,TextView的文字颜色-->
         <item name="android:textColor">#ffffff</item>
         <item name="android:textSize">13sp</item>
+        <item name="android:editTextStyle">@style/Widget.EditText.White</item>
     </style>
 
     <style name="card_view">
@@ -158,5 +159,16 @@
         <item name="android:layout_marginRight">@dimen/common_margin_button</item>
     </style>
 
+    <style name="MyDatePicker" parent="@android:style/Widget.DatePicker">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:editTextStyle">@style/Widget.EditText.White</item>
+    </style>
+
+
+    <style name="Widget.EditText.White" parent="@android:style/Widget.EditText">
+        <item name="android:textColor">@color/whiter</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 
 </resources>

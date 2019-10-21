@@ -8,9 +8,19 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class DateUtil {
+    public static final String FORMART1 = "yyyy-MM-dd HH:mm:ss";
+    public static final String FORMART2 = "yyyy/MM/dd";
+
     public static String getCurrentData() {
         Date day = new Date();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return df.format(day);
+
+    }
+
+    public static String getCurrentData(String formant) {
+        Date day = new Date();
+        SimpleDateFormat df = new SimpleDateFormat(formant);
         return df.format(day);
 
     }
