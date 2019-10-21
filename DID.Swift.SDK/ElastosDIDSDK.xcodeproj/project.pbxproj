@@ -7,31 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11049B072341A42800AC5FFB /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11049B062341A42800AC5FFB /* ExtensionInt.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
-		11138418234060B6004CA9C2 /* Aes256cbc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11138417234060B6004CA9C2 /* Aes256cbc.swift */; };
 		111BF47E235467830043D570 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11942E42235190BD00746B87 /* libcrypto.a */; };
 		111BF47F235467830043D570 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11942E44235190E000746B87 /* libhdkey.a */; };
 		111BF480235467880043D570 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; };
 		111BF481235467880043D570 /* Antlr4.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		111BF4832354678B0043D570 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; };
 		111BF4842354678B0043D570 /* Pods_ElastosDIDSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		11508520233CC64C00EF6A8D /* EcdsaSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */; };
-		11508522233CC65500EF6A8D /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508521233CC65400EF6A8D /* Base64.swift */; };
 		11508524233CC67B00EF6A8D /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508523233CC67B00EF6A8D /* DIDAdaptor.swift */; };
 		1155D9492352FACE00DF8C9D /* ElastosDIDSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1155D9482352FACE00DF8C9D /* ElastosDIDSDKTests.swift */; };
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
 		116C94F0234D827100BA9777 /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 116C94EF234D827100BA9777 /* HDkey.h */; };
 		116C94F2234D827D00BA9777 /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 116C94F1234D827D00BA9777 /* crypto.h */; };
 		116C950C234E2B6200BA9777 /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116C950B234E2B6200BA9777 /* CHDKey.swift */; };
-		1189A4BF23386A9E0068EE41 /* PathExtracter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1189A4BE23386A9E0068EE41 /* PathExtracter.swift */; };
-		1190E62C2358D26C00A84E3C /* CredentialBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1190E62B2358D26C00A84E3C /* CredentialBuilder.swift */; };
-		1190E6302358DDDD00A84E3C /* OrderedDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1190E62F2358DDDD00A84E3C /* OrderedDictionary.swift */; };
-		1190E63923596EB400A84E3C /* DateFormater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1190E63823596EB400A84E3C /* DateFormater.swift */; };
 		11942E402350DBCA00746B87 /* Ccrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11942E3F2350DBCA00746B87 /* Ccrypto.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		11CA2F8C23530E49009A2067 /* libcrypto.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11942E42235190BD00746B87 /* libcrypto.a */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		11CA2F8D23530E49009A2067 /* libhdkey.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11942E44235190E000746B87 /* libhdkey.a */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		11CA74B7235E06B7006E66F7 /* EcdsaSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */; };
+		11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AE235E06B7006E66F7 /* DerivedKey.swift */; };
+		11CA74B9235E06B7006E66F7 /* DateFormater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AF235E06B7006E66F7 /* DateFormater.swift */; };
+		11CA74BA235E06B7006E66F7 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B0235E06B7006E66F7 /* HDKey.swift */; };
+		11CA74BB235E06B7006E66F7 /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B1235E06B7006E66F7 /* Base64.swift */; };
+		11CA74BC235E06B7006E66F7 /* Aes256cbc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B2235E06B7006E66F7 /* Aes256cbc.swift */; };
+		11CA74BD235E06B7006E66F7 /* JsonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B3235E06B7006E66F7 /* JsonHelper.swift */; };
+		11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */; };
+		11CA74BF235E06B7006E66F7 /* OrderedDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */; };
+		11CA74C0235E06B7006E66F7 /* PathExtracter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B6235E06B7006E66F7 /* PathExtracter.swift */; };
 		11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */; };
 		11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9C623545A5700453218 /* DIDStoreTests.swift */; };
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -51,9 +53,6 @@
 		A3E6D45B233485AD0012CD77 /* ParserHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D452233485AD0012CD77 /* ParserHelper.swift */; };
 		A3E6D45E233485BB0012CD77 /* IDChainRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */; };
 		A3E6D45F233485BB0012CD77 /* DIDBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D45D233485BB0012CD77 /* DIDBackend.swift */; };
-		A3E6D463233485C90012CD77 /* JsonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D460233485C90012CD77 /* JsonHelper.swift */; };
-		A3E6D464233485C90012CD77 /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D461233485C90012CD77 /* DerivedKey.swift */; };
-		A3E6D465233485C90012CD77 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D462233485C90012CD77 /* HDKey.swift */; };
 		A3E6D475233485DF0012CD77 /* FileSystemStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D466233485DE0012CD77 /* FileSystemStore.swift */; };
 		A3E6D476233485DF0012CD77 /* MalformedCredentialError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */; };
 		A3E6D477233485E00012CD77 /* DIDStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D468233485DF0012CD77 /* DIDStore.swift */; };
@@ -126,13 +125,9 @@
 /* Begin PBXFileReference section */
 		067C25678EDA0C004955F401 /* Pods-ElastosDIDSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.debug.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.debug.xcconfig"; sourceTree = "<group>"; };
 		0CCD0722BB081BABCB596D2F /* Pods-ElastosDIDSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.release.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.release.xcconfig"; sourceTree = "<group>"; };
-		11049B062341A42800AC5FFB /* ExtensionInt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtensionInt.swift; path = ElastosDIDSDK/DID/Util/ExtensionInt.swift; sourceTree = SOURCE_ROOT; };
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
-		11138417234060B6004CA9C2 /* Aes256cbc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Aes256cbc.swift; path = ElastosDIDSDK/DID/Util/Aes256cbc.swift; sourceTree = SOURCE_ROOT; };
-		1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EcdsaSigner.swift; path = ElastosDIDSDK/DID/Util/EcdsaSigner.swift; sourceTree = SOURCE_ROOT; };
-		11508521233CC65400EF6A8D /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Base64.swift; path = ElastosDIDSDK/DID/Util/Base64.swift; sourceTree = SOURCE_ROOT; };
 		11508523233CC67B00EF6A8D /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/Backend/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D9482352FACE00DF8C9D /* ElastosDIDSDKTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElastosDIDSDKTests.swift; sourceTree = "<group>"; };
@@ -140,13 +135,19 @@
 		116C94EF234D827100BA9777 /* HDkey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HDkey.h; sourceTree = "<group>"; };
 		116C94F1234D827D00BA9777 /* crypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypto.h; sourceTree = "<group>"; };
 		116C950B234E2B6200BA9777 /* CHDKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CHDKey.swift; sourceTree = "<group>"; };
-		1189A4BE23386A9E0068EE41 /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PathExtracter.swift; path = ElastosDIDSDK/DID/Util/PathExtracter.swift; sourceTree = SOURCE_ROOT; };
-		1190E62B2358D26C00A84E3C /* CredentialBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CredentialBuilder.swift; path = ../../../../../../Applications/CredentialBuilder.swift; sourceTree = "<group>"; };
-		1190E62F2358DDDD00A84E3C /* OrderedDictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OrderedDictionary.swift; path = ElastosDIDSDK/DID/Util/OrderedDictionary.swift; sourceTree = SOURCE_ROOT; };
-		1190E63823596EB400A84E3C /* DateFormater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DateFormater.swift; path = ../../../../../../../Applications/DateFormater.swift; sourceTree = "<group>"; };
 		11942E3F2350DBCA00746B87 /* Ccrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ccrypto.swift; sourceTree = "<group>"; };
 		11942E42235190BD00746B87 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto.a; sourceTree = "<group>"; };
 		11942E44235190E000746B87 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libhdkey.a; sourceTree = "<group>"; };
+		11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EcdsaSigner.swift; sourceTree = "<group>"; };
+		11CA74AE235E06B7006E66F7 /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
+		11CA74AF235E06B7006E66F7 /* DateFormater.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateFormater.swift; sourceTree = "<group>"; };
+		11CA74B0235E06B7006E66F7 /* HDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HDKey.swift; sourceTree = "<group>"; };
+		11CA74B1235E06B7006E66F7 /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base64.swift; sourceTree = "<group>"; };
+		11CA74B2235E06B7006E66F7 /* Aes256cbc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Aes256cbc.swift; sourceTree = "<group>"; };
+		11CA74B3235E06B7006E66F7 /* JsonHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonHelper.swift; sourceTree = "<group>"; };
+		11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionInt.swift; sourceTree = "<group>"; };
+		11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderedDictionary.swift; sourceTree = "<group>"; };
+		11CA74B6235E06B7006E66F7 /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathExtracter.swift; sourceTree = "<group>"; };
 		11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDDoucumentTests.swift; sourceTree = "<group>"; };
 		11D4B9C623545A5700453218 /* DIDStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreTests.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -175,9 +176,6 @@
 		A3E6D452233485AD0012CD77 /* ParserHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParserHelper.swift; path = ElastosDIDSDK/DID/Parser/ParserHelper.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequest.swift; path = ElastosDIDSDK/DID/Backend/IDChainRequest.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D45D233485BB0012CD77 /* DIDBackend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDBackend.swift; path = ElastosDIDSDK/DID/Backend/DIDBackend.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D460233485C90012CD77 /* JsonHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JsonHelper.swift; path = ElastosDIDSDK/DID/Util/JsonHelper.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D461233485C90012CD77 /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DerivedKey.swift; path = ElastosDIDSDK/DID/Util/DerivedKey.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D462233485C90012CD77 /* HDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HDKey.swift; path = ElastosDIDSDK/DID/Util/HDKey.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D466233485DE0012CD77 /* FileSystemStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FileSystemStore.swift; path = ElastosDIDSDK/DID/FileSystemStore.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedCredentialError.swift; path = ElastosDIDSDK/DID/MalformedCredentialError.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D468233485DF0012CD77 /* DIDStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDStore.swift; path = ElastosDIDSDK/DID/DIDStore.swift; sourceTree = SOURCE_ROOT; };
@@ -286,6 +284,24 @@
 			path = libhdkey;
 			sourceTree = "<group>";
 		};
+		11CA74AC235E06B7006E66F7 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */,
+				11CA74AE235E06B7006E66F7 /* DerivedKey.swift */,
+				11CA74AF235E06B7006E66F7 /* DateFormater.swift */,
+				11CA74B0235E06B7006E66F7 /* HDKey.swift */,
+				11CA74B1235E06B7006E66F7 /* Base64.swift */,
+				11CA74B2235E06B7006E66F7 /* Aes256cbc.swift */,
+				11CA74B3235E06B7006E66F7 /* JsonHelper.swift */,
+				11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */,
+				11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */,
+				11CA74B6235E06B7006E66F7 /* PathExtracter.swift */,
+			);
+			name = Util;
+			path = ElastosDIDSDK/DID/Util;
+			sourceTree = SOURCE_ROOT;
+		};
 		11E3F791233D121900EF35C3 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
@@ -333,7 +349,6 @@
 			isa = PBXGroup;
 			children = (
 				A3E6D444233485800012CD77 /* CredentialSubject.swift */,
-				1190E62B2358D26C00A84E3C /* CredentialBuilder.swift */,
 				A3E6D440233485800012CD77 /* EmbeddedCredential.swift */,
 				A3E6D443233485800012CD77 /* Issuer.swift */,
 				A3E6D441233485800012CD77 /* Proof.swift */,
@@ -345,7 +360,7 @@
 		11F262B623260D550009C103 /* DID */ = {
 			isa = PBXGroup;
 			children = (
-				11F262BC23260DFD0009C103 /* Util */,
+				11CA74AC235E06B7006E66F7 /* Util */,
 				11F262BB23260DFD0009C103 /* Backend */,
 				1109D06D232758D500A03D56 /* Parser */,
 				A3E6D474233485DF0012CD77 /* Constants.swift */,
@@ -375,23 +390,6 @@
 				A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */,
 			);
 			path = Backend;
-			sourceTree = "<group>";
-		};
-		11F262BC23260DFD0009C103 /* Util */ = {
-			isa = PBXGroup;
-			children = (
-				1190E62F2358DDDD00A84E3C /* OrderedDictionary.swift */,
-				11508521233CC65400EF6A8D /* Base64.swift */,
-				1150851F233CC64C00EF6A8D /* EcdsaSigner.swift */,
-				1189A4BE23386A9E0068EE41 /* PathExtracter.swift */,
-				A3E6D461233485C90012CD77 /* DerivedKey.swift */,
-				A3E6D462233485C90012CD77 /* HDKey.swift */,
-				A3E6D460233485C90012CD77 /* JsonHelper.swift */,
-				1190E63823596EB400A84E3C /* DateFormater.swift */,
-				11138417234060B6004CA9C2 /* Aes256cbc.swift */,
-				11049B062341A42800AC5FFB /* ExtensionInt.swift */,
-			);
-			path = Util;
 			sourceTree = "<group>";
 		};
 		FD074BC0D415E85B37CD7DAB /* Pods */ = {
@@ -625,17 +623,15 @@
 				A3E6D480233485E00012CD77 /* DIDDocument.swift in Sources */,
 				A3E6D47D233485E00012CD77 /* DIDStoreError.swift in Sources */,
 				A3E6D482233485E00012CD77 /* DIDError.swift in Sources */,
-				1190E62C2358D26C00A84E3C /* CredentialBuilder.swift in Sources */,
 				A3E6D47F233485E00012CD77 /* Service.swift in Sources */,
-				1190E6302358DDDD00A84E3C /* OrderedDictionary.swift in Sources */,
-				11508522233CC65500EF6A8D /* Base64.swift in Sources */,
-				1190E63923596EB400A84E3C /* DateFormater.swift in Sources */,
+				11CA74BF235E06B7006E66F7 /* OrderedDictionary.swift in Sources */,
+				11CA74B9235E06B7006E66F7 /* DateFormater.swift in Sources */,
+				11CA74BD235E06B7006E66F7 /* JsonHelper.swift in Sources */,
 				11942E402350DBCA00746B87 /* Ccrypto.swift in Sources */,
-				A3E6D465233485C90012CD77 /* HDKey.swift in Sources */,
 				A3E6D45A233485AD0012CD77 /* DIDURLParser.swift in Sources */,
 				A3E6D476233485DF0012CD77 /* MalformedCredentialError.swift in Sources */,
-				11138418234060B6004CA9C2 /* Aes256cbc.swift in Sources */,
 				A3E6D483233485E00012CD77 /* Constants.swift in Sources */,
+				11CA74BB235E06B7006E66F7 /* Base64.swift in Sources */,
 				A3E6D447233485800012CD77 /* VerifiableCredential.swift in Sources */,
 				A3E6D479233485E00012CD77 /* MalformedDIDURLError.swift in Sources */,
 				A3E6D47C233485E00012CD77 /* DIDURL.swift in Sources */,
@@ -646,22 +642,23 @@
 				A3E6D456233485AD0012CD77 /* DIDURLLexer.swift in Sources */,
 				A3E6D458233485AD0012CD77 /* DIDURLParserATN.swift in Sources */,
 				A3E6D446233485800012CD77 /* Proof.swift in Sources */,
+				11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */,
 				A3E6D459233485AD0012CD77 /* DIDURLBaseListener.swift in Sources */,
+				11CA74C0235E06B7006E66F7 /* PathExtracter.swift in Sources */,
 				A3E6D475233485DF0012CD77 /* FileSystemStore.swift in Sources */,
-				11049B072341A42800AC5FFB /* ExtensionInt.swift in Sources */,
+				11CA74BC235E06B7006E66F7 /* Aes256cbc.swift in Sources */,
 				110AD2FF234E44C8006578D6 /* Base58.swift in Sources */,
-				A3E6D464233485C90012CD77 /* DerivedKey.swift in Sources */,
 				A3E6D477233485E00012CD77 /* DIDStore.swift in Sources */,
 				A3E6D448233485800012CD77 /* Issuer.swift in Sources */,
 				A3E6D45F233485BB0012CD77 /* DIDBackend.swift in Sources */,
 				A3E6D47A233485E00012CD77 /* MalformedDIDError.swift in Sources */,
-				A3E6D463233485C90012CD77 /* JsonHelper.swift in Sources */,
-				1189A4BF23386A9E0068EE41 /* PathExtracter.swift in Sources */,
 				A3E6D453233485AD0012CD77 /* DIDURLListener.swift in Sources */,
 				A3E6D45E233485BB0012CD77 /* IDChainRequest.swift in Sources */,
-				11508520233CC64C00EF6A8D /* EcdsaSigner.swift in Sources */,
+				11CA74B7235E06B7006E66F7 /* EcdsaSigner.swift in Sources */,
 				A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */,
+				11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */,
 				A3E6D457233485AD0012CD77 /* DIDURLLexerATN.swift in Sources */,
+				11CA74BA235E06B7006E66F7 /* HDKey.swift in Sources */,
 				A3E6D47B233485E00012CD77 /* DID.swift in Sources */,
 				A3E6D478233485E00012CD77 /* DIDObject.swift in Sources */,
 				A3E6D449233485800012CD77 /* CredentialSubject.swift in Sources */,
