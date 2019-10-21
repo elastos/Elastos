@@ -175,8 +175,15 @@ export const CVOTE_RESULT = {
   ABSTENTION: 'abstention',
   UNDECIDED: 'undecided'
 }
+export const ELIP_VOTE_RESULT = {
+  SUPPORT: 'support',
+  REJECT: 'reject',
+  ABSTENTION: 'abstention',
+  UNDECIDED: 'undecided'
+}
 // expiration period: 7 days
 export const CVOTE_EXPIRATION = 1000 * 60 * 60 * 24 * 7
+export const ELIP_EXPIRATION = 1000 * 60 * 60 * 24 * 7
 
 export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
 
