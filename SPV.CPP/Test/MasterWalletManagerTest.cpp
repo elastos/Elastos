@@ -110,7 +110,7 @@ TEST_CASE(
 				masterWalletManager->CreateMasterWallet("MasterWalletId", mnemonic, phrasePassword, payPassword,
 														"english"));
 
-		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+		std::string mnemonic2 = masterWallet->ExportMnemonic(payPassword);
 		REQUIRE(mnemonic == mnemonic2);
 	}
 }
@@ -320,8 +320,7 @@ TEST_CASE("Wallet factory export & import  WithKeystore mnemonic", "[MasterWalle
 
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-																					   payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		IMasterWallet *masterWallet2 = masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent,
 																					 backupPassword, payPassword);
@@ -350,7 +349,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Master
 		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
-		std::string mnemonicExport = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+		std::string mnemonicExport = masterWallet->ExportMnemonic(payPassword);
 		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length());;
 		REQUIRE(mnemonicExport == mnemonic);
 
@@ -379,9 +378,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-																					   payPassword);
-		keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
+		keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		IMasterWallet *masterWallet2 = masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent,
 																					 backupPassword, payPassword);
@@ -400,8 +398,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		REQUIRE(masterWallet != nullptr);
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-																					   payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		masterWalletId = "";
 		CHECK_THROWS_AS(masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent, backupPassword,
@@ -416,8 +413,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-																					   payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 		backupPassword = "";
 		CHECK_THROWS_AS(masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent, backupPassword,
 																	  payPassword), std::invalid_argument);
@@ -432,8 +428,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 
 		std::string backupPassword = "backupPassword";
 
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-																					   payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		payPassword = "";
 		CHECK_THROWS_AS(masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent, backupPassword,
@@ -449,8 +444,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-																					   payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		IMasterWallet *masterWallet2 = masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent,
 																					 backupPassword, payPassword);
@@ -468,8 +462,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<IDChainSubWallet *>(subWallet) != nullptr);
 
-		nlohmann::json keyStoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-																					   payPassword);
+		nlohmann::json keyStoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 		masterWalletManager->DestroyWallet(masterWalletId);
 
 		std::stringstream ss;
@@ -522,7 +515,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 
 		payPassword = "payPasswordChg";
 		CHECK_THROWS_AS(
-				masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword),
+				masterWallet->ExportKeystore(backupPassword, payPassword),
 				std::logic_error);
 	}
 	SECTION("ExportWalletWithKeystore payPassword invalid str ") {
@@ -535,7 +528,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 		std::string backupPassword = "backupPassword";
 		payPassword = "";
 
-		REQUIRE_THROWS(masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword));
+		REQUIRE_THROWS(masterWallet->ExportKeystore(backupPassword, payPassword));
 	}
 	SECTION("ExportWalletWithKeystore backupPassword invalid str ") {
 
@@ -547,7 +540,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 		std::string backupPassword = "";
 
 		CHECK_THROWS_AS(
-				masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword),
+				masterWallet->ExportKeystore(backupPassword, payPassword),
 				std::invalid_argument);
 	}
 	SECTION("Save") {
@@ -557,7 +550,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 																			  payPassword, singleAddress);
 
 		REQUIRE(masterWallet != nullptr);
-		masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+		masterWallet->ExportKeystore(backupPassword, payPassword);
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
 }
@@ -645,27 +638,20 @@ TEST_CASE("Wallet ExportWalletWithMnemonic method", "[ExportWalletWithMnemonic]"
 			masterWalletManager->ImportWalletWithMnemonic(masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress));
 
 	SECTION("Normal exporting") {
-		std::string actual = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+		std::string actual = masterWallet->ExportMnemonic(payPassword);
 		REQUIRE(actual == mnemonic);
 	}
 	SECTION("Export with wrong password") {
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, "wrongPassword"),
+		CHECK_THROWS_AS(masterWallet->ExportMnemonic("wrongPassword"),
 						std::logic_error);
 	}
 
-	SECTION("Export with null pointer of mater wallet") {
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(nullptr, "wrongPassword"),
-						std::invalid_argument);
-	}
 	SECTION("Export with pay password that is empty or less than 8") {
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, ""), std::invalid_argument);
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, "ilegal"),
-						std::invalid_argument);
+		CHECK_THROWS(masterWallet->ExportMnemonic(""));
+		CHECK_THROWS(masterWallet->ExportMnemonic("ilegal"));
 	}
 	SECTION("Export with pay password that is more than 128") {
-		REQUIRE_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet,
-																		"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
-						  std::invalid_argument);
+		REQUIRE_THROWS(masterWallet->ExportMnemonic("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"));
 	}
 }
 TEST_CASE("Master wallet manager test", "[CreateMasterWallet]") {
@@ -914,7 +900,7 @@ TEST_CASE("Wallet factory import & export with mnemonic", "[MasterWalletManager]
 		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA");
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
-		std::string mnemonicExport = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+		std::string mnemonicExport = masterWallet->ExportMnemonic(payPassword);
 		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length());;
 		REQUIRE(mnemonicExport == mnemonic);
 
@@ -941,9 +927,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-		                                                                               payPassword);
-		keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
+		keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		IMasterWallet *masterWallet2 = masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent,
 		                                                                             backupPassword, payPassword);
@@ -963,8 +948,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		REQUIRE(masterWallet != nullptr);
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-		                                                                               payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		masterWalletId = "";
 		CHECK_THROWS_AS(masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent, backupPassword,
@@ -980,8 +964,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-		                                                                               payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 		backupPassword = "";
 		CHECK_THROWS_AS(masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent, backupPassword,
 		                                                              payPassword), std::invalid_argument);
@@ -997,8 +980,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 
 		std::string backupPassword = "backupPassword";
 
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-		                                                                               payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		payPassword = "";
 		CHECK_THROWS_AS(masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent, backupPassword,
@@ -1014,8 +996,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		REQUIRE(nullptr != masterWallet->CreateSubWallet("ELA"));
 
 		std::string backupPassword = "backupPassword";
-		nlohmann::json keystoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
-		                                                                               payPassword);
+		nlohmann::json keystoreContent = masterWallet->ExportKeystore(backupPassword, payPassword);
 
 		IMasterWallet *masterWallet2 = masterWalletManager->ImportWalletWithKeystore(masterWalletId, keystoreContent,
 		                                                                             backupPassword, payPassword);
@@ -1034,7 +1015,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method test", "[ImportWalletWithKeyst
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<IDChainSubWallet *>(subWallet) != nullptr);
 
-		nlohmann::json keyStoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword,
+		nlohmann::json keyStoreContent = masterWallet->ExportKeystore(backupPassword,
 		                                                                               payPassword);
 		masterWalletManager->DestroyWallet(masterWalletId);
 
@@ -1088,7 +1069,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method test", "[ExportWalletWithKeyst
 
 		payPassword = "payPasswordChg";
 		CHECK_THROWS_AS(
-				masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword),
+				masterWallet->ExportKeystore(backupPassword, payPassword),
 				std::logic_error);
 	}
 	SECTION("ExportWalletWithKeystore payPassword invalid str ") {
@@ -1101,7 +1082,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method test", "[ExportWalletWithKeyst
 		std::string backupPassword = "backupPassword";
 		payPassword = "";
 
-		REQUIRE_THROWS(masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword));
+		REQUIRE_THROWS(masterWallet->ExportKeystore(backupPassword, payPassword));
 	}
 	SECTION("ExportWalletWithKeystore backupPassword invalid str ") {
 
@@ -1112,9 +1093,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method test", "[ExportWalletWithKeyst
 
 		std::string backupPassword = "";
 
-		CHECK_THROWS_AS(
-				masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword),
-				std::invalid_argument);
+		CHECK_THROWS(masterWallet->ExportKeystore(backupPassword, payPassword));
 	}
 	SECTION("Save") {
 		mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
@@ -1123,7 +1102,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method test", "[ExportWalletWithKeyst
 		                                                                      payPassword, singleAddress);
 
 		REQUIRE(masterWallet != nullptr);
-		masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+		masterWallet->ExportKeystore(backupPassword, payPassword);
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
 }
@@ -1199,7 +1178,7 @@ TEST_CASE("Wallet ImportWalletWithMnemonic method test", "[ImportWalletWithMnemo
 	}
 }
 
-TEST_CASE("Wallet ExportWalletWithMnemonic method test", "[ExportWalletWithMnemonic]") {
+TEST_CASE("Wallet ExportMnemonic method test", "[IMasterWallet::ExportMnemonic]") {
 
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
@@ -1211,27 +1190,20 @@ TEST_CASE("Wallet ExportWalletWithMnemonic method test", "[ExportWalletWithMnemo
 			masterWalletManager->ImportWalletWithMnemonic(masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress));
 
 	SECTION("Normal exporting") {
-		std::string actual = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+		std::string actual = masterWallet->ExportMnemonic(payPassword);
 		REQUIRE(actual == mnemonic);
 	}
 	SECTION("Export with wrong password") {
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, "wrongPassword"),
+		CHECK_THROWS_AS(masterWallet->ExportMnemonic("wrongPassword"),
 		                std::logic_error);
 	}
 
-	SECTION("Export with null pointer of mater wallet") {
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(nullptr, "wrongPassword"),
-		                std::invalid_argument);
-	}
 	SECTION("Export with pay password that is empty or less than 8") {
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, ""), std::invalid_argument);
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, "ilegal"),
-		                std::invalid_argument);
+		CHECK_THROWS(masterWallet->ExportMnemonic(""));
+		CHECK_THROWS(masterWallet->ExportMnemonic("ilegal"));
 	}
 	SECTION("Export with pay password that is more than 128") {
-		REQUIRE_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet,
-		                                                                "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
-		                  std::invalid_argument);
+		REQUIRE_THROWS(masterWallet->ExportMnemonic("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"));
 	}
 	SECTION("Clear wallet data") {
 		masterWalletManager->DestroyWallet(masterWalletId);

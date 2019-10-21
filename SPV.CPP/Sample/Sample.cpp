@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
-#include <boost/filesystem/operations.hpp>
 
 #include <Interface/MasterWalletManager.h>
 #include <Interface/IMasterWallet.h>
@@ -588,9 +587,7 @@ static void CreateIDTransaction(const std::string &masterWalletID, const std::st
 		logger->error("[{}:{}] is not instance of IIdChainSubWallet", masterWalletID, DIDSubWalletID);
 		return ;
 	}
-//	nlohmann::json didPayloadJSON = R"(
-//		{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlpc0VlemtuMVB2cGZlU3h6WVNmMVFIcHU4YXZTeTl5OEgiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJreXQ3Z1diaUJUc2VHTmd1ZXMzRmljNThrVFVuenBqUE13cTZuQndEa1NDbSJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXX0","proof":{"verificationMethod":"#primary","signature":"ViEQUpyN4Wej1g5tdiD+/IZw7XrpwZhiNBWa4pV0JO6MmZOVMqSeeOY3NGYdpeN8mMg3KX/83tpz9vTqjKi2Dw=="}}
-//	)"_json;
+
 	nlohmann::json didPayloadJSON = GetDIDPayloadJson();
 
 	nlohmann::json tx = DIDSubWallet->CreateIDTransaction(didPayloadJSON, memo);
@@ -648,10 +645,10 @@ static void InitWallets() {
 	}
 
 	for (size_t i = 0; i < masterWallets.size(); ++i) {
-		manager->ExportReadonlyWallet(masterWallets[i]);
+		masterWallets[i]->ExportReadonlyWallet();
 		masterWallets[i]->GetPubKeyInfo();
 //		logger->debug("{} xprv -> {}", masterWallets[i]->GetID(), manager->ExportxPrivateKey(masterWallets[i], payPasswd));
-		manager->ExportMasterPublicKey(masterWallets[i]);
+		masterWallets[i]->ExportMasterPublicKey();
 		std::vector<ISubWallet *> subWallets = masterWallets[i]->GetAllSubWallets();
 		for (size_t j = 0; j < subWallets.size(); ++j) {
 			std::string walletID = masterWallets[i]->GetID() + ":" + subWallets[j]->GetChainID();

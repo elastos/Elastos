@@ -118,7 +118,6 @@ namespace Elastos {
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			ArgInfo("r => create master wallet");
-			masterWallet->GetBasicInfo();
 
 			return masterWallet;
 		}
@@ -169,7 +168,6 @@ namespace Elastos {
 			_masterWalletMap[masterWalletID] = masterWallet;
 
 			ArgInfo("r => create multi sign wallet");
-			masterWallet->GetBasicInfo();
 
 			return masterWallet;
 		}
@@ -225,7 +223,6 @@ namespace Elastos {
 			_masterWalletMap[masterWalletID] = masterWallet;
 
 			ArgInfo("r => create multi sign wallet");
-			masterWallet->GetBasicInfo();
 
 			return masterWallet;
 		}
@@ -354,7 +351,6 @@ namespace Elastos {
 			masterWallet->InitSubWallets();
 
 			ArgInfo("r => import with keystore");
-			masterWallet->GetBasicInfo();
 
 			return masterWallet;
 		}
@@ -388,7 +384,6 @@ namespace Elastos {
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			ArgInfo("r => import with mnemonic");
-			masterWallet->GetBasicInfo();
 
 			return masterWallet;
 		}
@@ -413,83 +408,8 @@ namespace Elastos {
 			_masterWalletMap[masterWalletID] = masterWallet;
 			masterWallet->InitSubWallets();
 			ArgInfo("r => import read-only");
-			masterWallet->GetBasicInfo();
 
 			return masterWallet;
-		}
-
-		nlohmann::json
-		MasterWalletManager::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
-													  const std::string &payPassword) const {
-
-			ArgInfo("{}", GetFunName());
-			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "Master wallet is null");
-			ErrorChecker::CheckPassword(backupPassword, "Backup");
-			ArgInfo("masterWallet: {}", static_cast<MasterWallet *>(masterWallet)->GetWalletID());
-			ArgInfo("backupPasswd: *");
-			ArgInfo("payPasswd: *");
-
-			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			nlohmann::json keystore = wallet->ExportKeyStore(backupPassword, payPassword);
-
-			ArgInfo("r => *");
-			return keystore;
-		}
-
-		std::string
-		MasterWalletManager::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) const {
-			ArgInfo("{}", GetFunName());
-			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "Master wallet is null");
-			ErrorChecker::CheckPassword(payPassword, "Pay");
-			ArgInfo("masterWallet: {}", static_cast<MasterWallet *>(masterWallet)->GetWalletID());
-			ArgInfo("payPasswd: *");
-
-			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-
-			std::string mnemonic = wallet->ExportMnemonic(payPassword);
-
-			ArgInfo("r => *");
-
-			return mnemonic;
-		}
-
-		nlohmann::json MasterWalletManager::ExportReadonlyWallet(IMasterWallet *masterWallet) const {
-			ArgInfo("{}", GetFunName());
-
-			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "master wallet is null");
-			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			ArgInfo("masterWallet: {}", wallet->GetWalletID());
-
-			nlohmann::json keystore = wallet->ExportReadonlyKeyStore();
-
-			ArgInfo("r => {}", keystore.dump());
-			return keystore;
-		}
-
-		std::string MasterWalletManager::ExportxPrivateKey(IMasterWallet *masterWallet,
-														   const std::string &payPasswd) const {
-			ArgInfo("{}", GetFunName());
-
-			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "master wallet is null");
-			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			ArgInfo("masterWallet: {}", wallet->GetWalletID());
-			ArgInfo("payPasswd: *");
-			ArgInfo("r => *");
-
-			return wallet->ExportxPrivateKey(payPasswd);
-		}
-
-		std::string MasterWalletManager::ExportMasterPublicKey(IMasterWallet *masterWallet) const {
-			ArgInfo("{}", GetFunName());
-
-			ErrorChecker::CheckParam(masterWallet == nullptr, Error::InvalidArgument, "master wallet is null");
-			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			ArgInfo("masterWallet: {}", wallet->GetWalletID());
-
-			std::string xpub = wallet->ExportMasterPublicKey();
-			ArgInfo("r => {}", xpub);
-
-			return xpub;
 		}
 
 		std::string MasterWalletManager::GetVersion() const {
@@ -586,8 +506,6 @@ namespace Elastos {
 			masterWallet->InitSubWallets();
 
 			ArgInfo("r => {}", GetFunName());
-			ExportReadonlyWallet(masterWallet);
-			masterWallet->GetBasicInfo();
 
 			return masterWallet;
 		}

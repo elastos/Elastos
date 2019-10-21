@@ -116,7 +116,6 @@ configure_file(
 add_subdirectory(ThirdParty)
 add_subdirectory(Core)
 add_subdirectory(SDK)
-add_subdirectory(Interface)
 
 set(SPVSDK_OBJECT_TARGET spvsdk_object)
 

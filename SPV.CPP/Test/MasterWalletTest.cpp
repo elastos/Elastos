@@ -76,11 +76,6 @@ public:
 
 	}
 
-	nlohmann::json ExportKeystore(const std::string &backupPassword,
-										  const std::string &payPassword) {
-		return ExportKeyStore(backupPassword, payPassword);
-	}
-
 	std::string GetxPubKey() {
 		return _account->MasterPubKeyString();
 	}
@@ -345,6 +340,8 @@ TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]")
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "MasterWalletId";
+
+	Log::registerMultiLogger();
 
 	boost::filesystem::remove_all(boost::filesystem::path(std::string("Data/") + MasterWalletTestID));
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";

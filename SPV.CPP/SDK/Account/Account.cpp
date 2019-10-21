@@ -354,6 +354,10 @@ namespace Elastos {
 		}
 
 		std::string Account::GetxPrvKeyString(const std::string &payPasswd) const {
+			if (_localstore->Readonly()) {
+				ErrorChecker::ThrowLogicException(Error::UnsupportOperation, "Readonly wallet can not export private key");
+			}
+
 			if (!_localstore->Readonly() && (_localstore->GetxPrivKey().empty() || _localstore->GetxPubKeyHDPM().empty())) {
 				RegenerateKey(payPasswd);
 				Init();
@@ -509,7 +513,11 @@ namespace Elastos {
 			_localstore->RemoveSubWalletInfo(info);
 		}
 
-		KeyStore Account::ExportKeyStore(const std::string &payPasswd) {
+		KeyStore Account::ExportKeystore(const std::string &payPasswd) const {
+			if (_localstore->Readonly()) {
+				ErrorChecker::ThrowLogicException(Error::UnsupportOperation, "Readonly wallet can not export keystore");
+			}
+
 			if (!_localstore->Readonly() && (_localstore->GetxPrivKey().empty() || _localstore->GetxPubKeyHDPM().empty())) {
 				RegenerateKey(payPasswd);
 				Init();
@@ -757,9 +765,9 @@ namespace Elastos {
 			return true;
 		}
 
-		std::string Account::GetDecryptedMnemonic(const std::string &payPasswd) const {
+		std::string Account::ExportMnemonic(const std::string &payPasswd) const {
 			if (_localstore->Readonly()) {
-				ErrorChecker::ThrowLogicException(Error::Key, "Readonly wallet do not contain mnemonic");
+				ErrorChecker::ThrowLogicException(Error::UnsupportOperation, "Readonly wallet can not export mnemonic");
 			}
 
 			if (_localstore->GetxPrivKey().empty() || _localstore->GetxPubKeyHDPM().empty()) {

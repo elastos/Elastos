@@ -81,13 +81,13 @@ namespace Elastos {
 
 			void RemoveSubWalletInfo(const CoinInfoPtr &) {}
 
-			KeyStore ExportKeyStore(const std::string &) { return KeyStore(); }
+			KeyStore ExportKeystore(const std::string &) const { return KeyStore(); }
 
 			nlohmann::json ExportReadonlyWallet() const { return nlohmann::json(); }
 
 			bool ImportReadonlyWallet(const nlohmann::json &walletJSON) { return true; }
 
-			std::string GetDecryptedMnemonic(const std::string &) const { return ""; }
+			std::string ExportMnemonic(const std::string &) const { return ""; }
 
 			void RegenerateKey(const std::string &) const {}
 

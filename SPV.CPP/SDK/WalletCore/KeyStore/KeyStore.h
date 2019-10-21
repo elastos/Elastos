@@ -30,7 +30,7 @@ namespace Elastos {
 
 			nlohmann::json ExportReadonly() const;
 
-			nlohmann::json Export(const std::string &password, bool withPrivKey);
+			nlohmann::json Export(const std::string &password, bool withPrivKey) const;
 
 			const ElaNewWalletJson &WalletJson() const { return _walletJson; }
 

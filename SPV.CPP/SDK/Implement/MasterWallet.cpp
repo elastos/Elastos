@@ -324,28 +324,58 @@ namespace Elastos {
 			return j;
 		}
 
-		nlohmann::json MasterWallet::ExportReadonlyKeyStore() {
-			return _account->ExportReadonlyWallet();
+		nlohmann::json MasterWallet::ExportReadonlyWallet() const {
+			ArgInfo("{} {}", _id, GetFunName());
+
+			nlohmann::json j = _account->ExportReadonlyWallet();
+
+			ArgInfo("r => {}", j.dump());
+			return j;
 		}
 
-		nlohmann::json MasterWallet::ExportKeyStore(const std::string &backupPassword, const std::string &payPassword) {
-			KeyStore keyStore = _account->ExportKeyStore(payPassword);
-			return keyStore.Export(backupPassword, true);
+		nlohmann::json MasterWallet::ExportKeystore(const std::string &backupPassword, const std::string &payPassword) const {
+			ArgInfo("{} {}", _id, GetFunName());
+			ArgInfo("backupPassword: *");
+			ArgInfo("payPassword: *");
+			ErrorChecker::CheckPassword(backupPassword, "Backup");
+
+			KeyStore keyStore = _account->ExportKeystore(payPassword);
+			nlohmann::json j = keyStore.Export(backupPassword, true);
+
+			ArgInfo("r => *");
+			return j;
 		}
 
-		std::string MasterWallet::ExportMnemonic(const std::string &payPassword) {
-			return _account->GetDecryptedMnemonic(payPassword);
+		std::string MasterWallet::ExportMnemonic(const std::string &payPassword) const {
+			ArgInfo("{} {}", _id, GetFunName());
+			ArgInfo("payPassword: *");
+
+			std::string mnemonic = _account->ExportMnemonic(payPassword);
+
+			ArgInfo("r => *");
+			return mnemonic;
 		}
 
-		std::string MasterWallet::ExportxPrivateKey(const std::string &payPasswd) const {
+		std::string MasterWallet::ExportPrivateKey(const std::string &payPasswd) const {
+			ArgInfo("{} {}", _id, GetFunName());
+			ArgInfo("payPsswd: *");
+
 			ErrorChecker::CheckLogic(_account->Readonly(), Error::UnsupportOperation,
 									 "Unsupport operation: read-only wallet do not contain xprv");
 
-			return _account->GetxPrvKeyString(payPasswd);
+			std::string xprv = _account->GetxPrvKeyString(payPasswd);
+
+			ArgInfo("r => *");
+			return xprv;
 		}
 
 		std::string MasterWallet::ExportMasterPublicKey() const {
-			return _account->MasterPubKeyString();
+			ArgInfo("{} {}", _id, GetFunName());
+
+			std::string mpk = _account->MasterPubKeyString();
+
+			ArgInfo("r => {}", mpk);
+			return mpk;
 		}
 
 		void MasterWallet::InitSubWallets() {

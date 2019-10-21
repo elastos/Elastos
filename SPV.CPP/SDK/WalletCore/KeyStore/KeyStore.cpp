@@ -77,7 +77,7 @@ namespace Elastos {
 			return roJson;
 		}
 
-		nlohmann::json KeyStore::Export(const std::string &passwd, bool withPrivKey) {
+		nlohmann::json KeyStore::Export(const std::string &passwd, bool withPrivKey) const {
 			std::string plaintext = _walletJson.ToJson(withPrivKey).dump();
 
 			std::string salt = AES::RandomSalt().getBase64();

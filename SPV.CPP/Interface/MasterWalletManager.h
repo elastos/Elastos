@@ -89,25 +89,6 @@ namespace Elastos {
 				const std::string &masterWalletID,
 				const nlohmann::json &walletJson);
 
-			virtual nlohmann::json ExportWalletWithKeystore(
-					IMasterWallet *masterWallet,
-					const std::string &backupPassword,
-					const std::string &payPassword) const;
-
-			virtual std::string ExportWalletWithMnemonic(
-					IMasterWallet *masterWallet,
-					const std::string &payPassword) const;
-
-			virtual nlohmann::json ExportReadonlyWallet(
-				IMasterWallet *masterWallet) const;
-
-			virtual std::string ExportxPrivateKey(
-				IMasterWallet *masterWallet,
-				const std::string &payPasswd) const;
-
-			virtual std::string ExportMasterPublicKey(
-				IMasterWallet *masterWallet) const;
-
 			virtual std::string GetVersion() const;
 
 			virtual void FlushData();

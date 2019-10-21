@@ -85,13 +85,13 @@ namespace Elastos {
 
 			virtual void RemoveSubWalletInfo(const CoinInfoPtr &info) = 0;
 
-			virtual KeyStore ExportKeyStore(const std::string &payPasswd) = 0;
+			virtual KeyStore ExportKeystore(const std::string &payPasswd) const = 0;
 
 			virtual nlohmann::json ExportReadonlyWallet() const = 0;
 
 			virtual bool ImportReadonlyWallet(const nlohmann::json &walletJSON) = 0;
 
-			virtual std::string GetDecryptedMnemonic(const std::string &payPasswd) const = 0;
+			virtual std::string ExportMnemonic(const std::string &payPasswd) const = 0;
 
 			virtual bool VerifyPrivateKey(const std::string &mnemonic, const std::string &passphrase) const = 0;
 

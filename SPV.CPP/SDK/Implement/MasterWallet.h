@@ -64,6 +64,17 @@ namespace Elastos {
 
 			virtual ISubWallet *CreateSubWallet(const std::string &chainID);
 
+			nlohmann::json ExportKeystore(const std::string &backupPassword,
+										  const std::string &payPassword) const;
+
+			std::string ExportMnemonic(const std::string &payPassword) const;
+
+			nlohmann::json ExportReadonlyWallet() const;
+
+			std::string ExportPrivateKey(const std::string &payPasswd) const;
+
+			std::string ExportMasterPublicKey() const;
+
 			virtual bool VerifyPrivateKey(const std::string &mnemonic, const std::string &passphrase) const;
 
 			virtual bool VerifyPassPhrase(const std::string &passphrase, const std::string &payPasswd) const;
@@ -169,17 +180,6 @@ namespace Elastos {
 					bool compatible,
 					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
-
-			nlohmann::json ExportReadonlyKeyStore();
-
-			nlohmann::json ExportKeyStore(const std::string &backupPassword,
-										  const std::string &payPassword);
-
-			std::string ExportMnemonic(const std::string &payPassword);
-
-			std::string ExportxPrivateKey(const std::string &payPasswd) const;
-
-			std::string ExportMasterPublicKey() const;
 
 			SubWallet *SubWalletFactoryMethod(const CoinInfoPtr &info,
 											  const ChainConfigPtr &config,

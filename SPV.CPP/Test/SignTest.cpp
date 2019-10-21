@@ -339,7 +339,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		REQUIRE(account3->GetSignType() == account1->GetSignType());
 		REQUIRE(account3->DerivationStrategy() == account1->DerivationStrategy());
 		REQUIRE(account3->SingleAddress() == account1->SingleAddress());
-		REQUIRE_THROWS(account3->GetDecryptedMnemonic(payPasswd));
+		REQUIRE_THROWS(account3->ExportMnemonic(payPasswd));
 		REQUIRE(account3->SubWalletInfoList().size() == account1->SubWalletInfoList().size());
 		REQUIRE_THROWS(account3->RootKey(payPasswd));
 		REQUIRE(account3->RequestPubKey().empty());
