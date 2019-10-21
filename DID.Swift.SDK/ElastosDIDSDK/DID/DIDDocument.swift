@@ -288,19 +288,16 @@ public class DIDDocument: NSObject {
         dic[Constants.id] = subject?.toExternalForm()
         
         // publicKey
+        publicKeys = DIDURLComparator.DIDOrderedDictionaryComparator(publicKeys)
         var pks: Array<OrderedDictionary<String, Any>> = []
         publicKeys.forEach { (didUrl, pk) in
             let dic = pk.toJson(subject!, compact)
             pks.append(dic)
         }
-
-//        pks.sort {
-//
-////            $0.firstName < $1.firstName
-//        }
         dic[Constants.publicKey] = pks
         
         // authentication
+        authentications = DIDURLComparator.DIDOrderedDictionaryComparator(authentications)
         var authenPKs: Array<String> = []
         authentications.forEach { (didUrl, pk) in
             var value: String
@@ -315,6 +312,7 @@ public class DIDDocument: NSObject {
         dic[Constants.authentication] = authenPKs
         
         // authorization
+        authorizations = DIDURLComparator.DIDOrderedDictionaryComparator(authorizations)
         var authoriPks: Array<String> = []
         if authorizations.count != 0 {
             authorizations.forEach { (didUrl, pk) in
@@ -330,6 +328,7 @@ public class DIDDocument: NSObject {
         }
         
         // credential
+        credentials = DIDURLComparator.DIDOrderedDictionaryComparatorByVerifiableCredential(credentials)
         if credentials.count != 0 {
             var vcs: Array<OrderedDictionary<String, Any>> = []
             credentials.forEach { (didUrl, vc) in
