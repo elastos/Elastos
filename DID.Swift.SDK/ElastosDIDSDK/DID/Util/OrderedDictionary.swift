@@ -81,7 +81,7 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
         lhs._keys != rhs._keys || lhs._dictionary != rhs._dictionary
     }
     
-    static public func creatJsonString(dic: OrderedDictionary<String, Any>) -> String {
+    public static func creatJsonString(dic: OrderedDictionary<String, Any>) -> String {
         
         var namedPaird = [String]()
         dic.forEach { (key, value) in
@@ -107,45 +107,87 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
         return "{\(returnString)}"
     }
     
-    static public func handleString(_ jsonString: String) -> Any? {
+//    MARK: json
+    public static func isArrayJsonString(_ jsonString: String) -> Bool {
+        return jsonString.first == "[" && jsonString.last == "]"
+    }
+    
+    public static func isDictionaryJsonString(_ jsonString: String) -> Bool {
+        return jsonString.first == "{" && jsonString.last == "}"
+    }
+    
+    public static func checkAndRemoveFirstAndLastDoubleQuotes(_ string: String) -> String {
         
-        let firstString = jsonString[jsonString.index(jsonString.startIndex, offsetBy: 0)]
-        let lastString = jsonString[jsonString.index(jsonString.endIndex, offsetBy: -1)]
+        var startIndex: String.Index
+        var endIndex: String.Index
+        if string.first == "\"" {
+            startIndex = string.index(string.startIndex, offsetBy: 1)
+        } else {
+            startIndex = string.startIndex
+        }
+        if string.last == "\"" {
+            endIndex = string.index(string.endIndex, offsetBy: -2)
+        } else {
+            endIndex = string.index(string.endIndex, offsetBy: -1)
+        }
         
-        // 按字典字符串逻辑处理
-        if firstString == "{" && lastString == "}" {
+        return String(string[startIndex...endIndex])
+    }
+    
+    public static func checkAndRemoveFirstAndLastBrackets(_ string: String) -> String {
+        if ((string.first == "{" && string.last == "}")
+            || (string.first == "[" && string.last == "]"))
+            && string.count > 2 {
             
-            var resultOrderedDictionarys: OrderedDictionary<String, Any>
-            var keys: Array = Array<String>()
+            let startIndex = string.index(string.startIndex, offsetBy: 1)
+            let endIndex = string.index(string.endIndex, offsetBy: -2)
+            return String(string[startIndex...endIndex])
+        }
+        return string
+    }
+    
+    public static func getKeyAndValueFromString(_ string: String) -> (String, String) {
+        
+        let colonStringIndex = string.index(string.firstIndex(of: ":")!, offsetBy:0)
+        let keyStartIndex = string.index(string.startIndex, offsetBy:0)
+        let keyEndIndex = string.index(colonStringIndex, offsetBy:-1)
+        let valueStartIndex = string.index(colonStringIndex, offsetBy:1)
+        let valueEndIndex = string.index(string.endIndex, offsetBy:-1)
+        
+        let key: String = checkAndRemoveFirstAndLastDoubleQuotes(String(string[keyStartIndex...keyEndIndex]))
+        let value: String = checkAndRemoveFirstAndLastDoubleQuotes(String(string[valueStartIndex...valueEndIndex]))
+        
+        return (key, value)
+    }
+    
+    public static func handleString(_ jsonString: String) -> Any? {
+        
+        if isDictionaryJsonString(jsonString) {
+            
+            var orderDictionary: OrderedDictionary<String, Any>
+            var keys: Array = [String]()
             var tempStr: String?
-            var strIndex = 0
             var level: Int = 0
             
-            let firstStringIndex = jsonString.index(jsonString.startIndex, offsetBy: 1)
-            let lastStringIndex = jsonString.index(jsonString.endIndex, offsetBy: -2)
+            let content = checkAndRemoveFirstAndLastBrackets(jsonString)
             
-            let content = jsonString[firstStringIndex...lastStringIndex]
+            orderDictionary = OrderedDictionary<String, Any>()
             
-            resultOrderedDictionarys = OrderedDictionary<String, Any>()
-            
-            for char in content {
+            for (index, char) in content.enumerated() {
                 
-                strIndex = strIndex + 1
-                
-                if char == "{" {
+                if char == "{" || char == "["{
                     level = level + 1
                 }
-                if char == "[" {
-                    level = level + 1
-                }
-                if char == "}" {
-                    level = level - 1
-                }
-                if char == "]" {
+                if char == "}" || char == "]"{
                     level = level - 1
                 }
                 
-                if level == 0 && char == "," {
+                if (level == 0 && char == ",") || (level == 0 && index == String(content).count - 1) {
+                    
+                    if (level == 0 && index == String(content).count - 1) {
+                        tempStr = (tempStr ?? "") + String(char)
+                    }
+                    
                     if tempStr?.count ?? 0 >= 0 {
                         keys.append(String(tempStr!))
                         tempStr = nil
@@ -153,102 +195,63 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
                 } else {
                     tempStr = (tempStr ?? "") + String(char)
                 }
-                
-                if level == 0 && strIndex == String(jsonString).count - 2 {                    keys.append(String(tempStr!))
-                }
             }
             
             for content: String in keys {
                 
-                let sepIndex = content.index(content.firstIndex(of: ":")!, offsetBy: -2)
-                let firstStringIndex = content.index(content.startIndex, offsetBy: 1)
-                let lastStringIndex = content.index(content.endIndex, offsetBy: -1)
-                let sepAfterIndex = content.index(content.firstIndex(of: ":")!, offsetBy: 1)
+                let keyAndValue: (String, String) = getKeyAndValueFromString(content)
+                let key: String = keyAndValue.0
+                let value: String = keyAndValue.1
                 
-                let key = String(content[firstStringIndex...sepIndex])
-                let value = String(content[sepAfterIndex...lastStringIndex])
-                let firstString = value.first
-                // 是数组
-                if firstString == "[" {
-                    resultOrderedDictionarys[key] = self.handleString(String(value))
-                    
-                } else if firstString == "{" {
-                    resultOrderedDictionarys[key] = self.handleString(String(value))
+                
+                if isDictionaryJsonString(value) {
+                    orderDictionary[key] = self.handleString(String(value))
+                } else if isArrayJsonString(value) {
+                    orderDictionary[key] = self.handleString(String(value))
                 } else {
-                    
-                    let firstStringIndex = value.index(value.startIndex, offsetBy: 1)
-                    let lastStringIndex = value.index(value.endIndex, offsetBy: -2)
-                    resultOrderedDictionarys[key] = String(value[firstStringIndex...lastStringIndex])
-                    // 是字符串
+                    orderDictionary[key] = value
                 }
             }
             
-            return resultOrderedDictionarys;
+            return orderDictionary;
         }
         
-        if firstString == "[" && lastString == "]" {
+        if isArrayJsonString(jsonString) {
             
             var resultArray: Array = Array<Any>()
             var tempStr: String?
-            var strIndex = 0
             var level: Int = 0
             
-            let firstStringIndex = jsonString.index(jsonString.startIndex, offsetBy: 1)
-            let lastStringIndex = jsonString.index(jsonString.endIndex, offsetBy: -2)
+            let content = checkAndRemoveFirstAndLastBrackets(jsonString)
             
-            let content = jsonString[firstStringIndex...lastStringIndex]
-            for char in content {
+            for (index, char) in content.enumerated() {
                 
-                strIndex = strIndex + 1
-                
-                if char == "{" {
+                if char == "{" || char == "["{
                     level = level + 1
                 }
-                if char == "[" {
-                    level = level + 1
-                }
-                if char == "}" {
-                    level = level - 1
-                }
-                if char == "]" {
+                if char == "}" || char == "]"{
                     level = level - 1
                 }
                 
-                if level == 0 && char == "," {
-                    
-                    if tempStr?.first == "{" {
+                if (level == 0 && char == ",") || (level == 0 && index == String(content).count - 1) {
+                    if (level == 0 && index == String(content).count - 1) {
+                        tempStr = (tempStr ?? "") + String(char)
+                    }
+                    if isDictionaryJsonString(tempStr ?? "") {
                         resultArray.append(self.handleString(tempStr!) as Any)
-                    } else if tempStr?.first == "[" {
+                    } else if isArrayJsonString(tempStr ?? "") {
                         resultArray.append(self.handleString(tempStr!) as Any)
                     } else {
-                        
-                        let firstStringIndex = tempStr!.index(tempStr!.startIndex, offsetBy: 1)
-                        let lastStringIndex = tempStr!.index(tempStr!.endIndex, offsetBy: -2)
-                        let result = tempStr![firstStringIndex...lastStringIndex]
-                        resultArray.append(String(result))
+                        resultArray.append(checkAndRemoveFirstAndLastDoubleQuotes(String(tempStr ?? "")))
                     }
                     tempStr = nil
                 } else {
                     tempStr = (tempStr ?? "") + String(char)
                 }
                 
-                if level == 0 && strIndex == String(content).count {
-                    if tempStr?.first == "{" {
-                        resultArray.append(self.handleString(tempStr!) as Any)
-                    } else if tempStr?.first == "[" {
-                        resultArray.append(self.handleString(tempStr!) as Any)
-                    } else {
-                        
-                        let firstStringIndex = tempStr!.index(tempStr!.startIndex, offsetBy: 1)
-                        let lastStringIndex = tempStr!.index(tempStr!.endIndex, offsetBy: -2)
-                        let result = tempStr![firstStringIndex...lastStringIndex]
-                        resultArray.append(String(result))
-                    }
-                }
             }
             return resultArray
         }
-        
         return nil
     }
 }
@@ -258,7 +261,6 @@ extension OrderedDictionary: Sequence {
     public func makeIterator() -> OrderedDictionaryIterator<KeyType, ValueType> {
         OrderedDictionaryIterator<KeyType, ValueType>(sequence: _dictionary, keys: _keys, current: 0)
     }
-    
 }
 
 public struct OrderedDictionaryIterator<KeyType: Hashable, ValueType>: IteratorProtocol {

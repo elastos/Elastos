@@ -293,6 +293,11 @@ public class DIDDocument: NSObject {
             let dic = pk.toJson(subject!, compact)
             pks.append(dic)
         }
+
+//        pks.sort {
+//
+////            $0.firstName < $1.firstName
+//        }
         dic[Constants.publicKey] = pks
         
         // authentication
@@ -459,6 +464,8 @@ public class DIDDocument: NSObject {
                 pk = publicKeys[didUrl]!
             }
             _ = addAuthenticationKey(pk)
+            _ = addPublicKey(pk)
+
         }
     }
     
