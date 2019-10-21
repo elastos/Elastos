@@ -2,8 +2,6 @@ import Base from './Base'
 import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import { constant } from '../constant'
-import { permissions } from '../utility'
-import * as moment from 'moment'
 import { mail, user as userUtil } from '../utility'
 
 interface Mail {
@@ -249,9 +247,9 @@ export default class extends Base {
   }
 
   private async notifySecretary(cvote: any) {
-    const subject = `[Review needed] Tracking plan is updated in Prop #${cvote.vid}`
+    const subject = `[Review needed] Tracking messages are updated in Proposal #${cvote.vid}`
     const body = `
-      <p>${cvote.proposedBy} has updated the tracking plan in proposal #${cvote.vid}</p>
+      <p>${cvote.proposedBy} has updated the tracking messages in proposal #${cvote.vid}</p>
       <br />
       <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />
@@ -269,9 +267,9 @@ export default class extends Base {
   }
 
   private async notifyRejected(cvote: any) {
-    const subject = `[Tracking plan Rejected] Please respond in Prop #${cvote.vid}`
+    const subject = `[Tracking messages rejected] Please respond in Proposal #${cvote.vid}`
     const body = `
-      <p>Your tracking plan update has been rejected in proposal #${cvote.vid}</p>
+      <p>Your tracking messages update has been rejected in proposal #${cvote.vid}</p>
       <br />
       <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />
@@ -290,9 +288,9 @@ export default class extends Base {
   }
 
   private async notifyApproved(cvote: any) {
-    const subject = `[Tracking plan approved] Approved in Prop #${cvote.vid}`
+    const subject = `[Tracking messages approved] Approved in Proposal #${cvote.vid}`
     const body = `
-      <p>Your tracking plan update has been approved and published in proposal #${cvote.vid}</p>
+      <p>Your tracking messages update has been approved and published in proposal #${cvote.vid}</p>
       <br />
       <p>Click this link to view more details: <a href="${process.env.SERVER_URL}/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${cvote._id}</a></p>
       <br /> <br />

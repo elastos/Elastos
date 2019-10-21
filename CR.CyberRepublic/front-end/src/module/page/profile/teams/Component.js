@@ -1,22 +1,16 @@
 import React from 'react'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
-import config from '@/config'
 import _ from 'lodash'
 import './style.scss'
 import '../../admin/admin.scss'
-import { Col, Row, Icon, Form, Input, Breadcrumb, Button,
-  Divider, Select, Table, List, Carousel, Avatar, Tag, Spin } from 'antd'
+import { Col, Row, Input, Button, Divider, Select, List, Carousel, Avatar, Tag } from 'antd'
 import { TEAM_USER_STATUS, TEAM_AVATAR_DEFAULT } from '@/constant'
-import InfiniteScroll from 'react-infinite-scroller'
 import MediaQuery from 'react-responsive'
-import moment from 'moment/moment'
 import sanitizeHtml from '@/util/html'
 import ProfilePage from '../../ProfilePage'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
-
-const FormItem = Form.Item
 
 const FILTERS = {
   ALL: 'all',
@@ -156,9 +150,9 @@ export default class extends ProfilePage {
                   <Navigator selectedItem="profileTeams"/>
                 </Col>
                 <Col sm={24} md={20} className="c_ProfileContainer admin-right-column wrap-box-user">
-                  <div className="pull-right filter-group">
+                  {/* <div className="pull-right filter-group">
                     <Button onClick={this.goCreatepage.bind(this)}>{I18N.get('myrepublic.teams.create')}</Button>
-                  </div>
+                  </div> */}
                   <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
                     <Select
                       name="type"

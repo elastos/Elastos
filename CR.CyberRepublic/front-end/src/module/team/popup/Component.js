@@ -57,7 +57,7 @@ class C extends BaseComponent {
               {this.renderHeader()}
               {this.getCarousel()}
               {this.renderMeta()}
-              {this.renderFooter()}
+              {/* {this.renderFooter()} */}
             </div>
           )
         }

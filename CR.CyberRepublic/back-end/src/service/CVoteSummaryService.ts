@@ -255,7 +255,7 @@ export default class extends Base {
   }
 
   private async notifySecretary(cvote: any) {
-    const subject = `[Review needed] Summary is updated in Prop #${cvote.vid}`
+    const subject = `[Review needed] Summary is updated in Proposal #${cvote.vid}`
     const body = `
       <p>${cvote.proposedBy} has updated the summary in proposal #${cvote.vid}</p>
       <br />
@@ -275,7 +275,7 @@ export default class extends Base {
   }
 
   private async notifyRejected(cvote: any) {
-    const subject = `[Summary Rejected] Please respond in Prop #${cvote.vid}`
+    const subject = `[Summary Rejected] Please respond in Proposal #${cvote.vid}`
     const body = `
       <p>Your summary update has been rejected in proposal #${cvote.vid}</p>
       <br />
@@ -296,7 +296,7 @@ export default class extends Base {
   }
 
   private async notifyApproved(cvote: any) {
-    const subject = `[Summary approved] Approved in Prop #${cvote.vid}`
+    const subject = `[Summary approved] Approved in Proposal #${cvote.vid}`
     const body = `
       <p>Your summary update has been approved and published in proposal #${cvote.vid}</p>
       <br />

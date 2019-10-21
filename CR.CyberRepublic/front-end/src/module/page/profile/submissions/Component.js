@@ -6,14 +6,12 @@ import _ from 'lodash'
 import './style.scss'
 import '../../admin/admin.scss'
 
-import { Col, Row, Icon, Select, Form, Tooltip, Badge, Breadcrumb, Button, Table } from 'antd'
+import { Col, Row, Icon, Select, Tooltip, Badge, Button, Table } from 'antd'
 import moment from 'moment/moment'
 import MediaQuery from 'react-responsive'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '@/config/constant'
 
 import ProfilePage from '../../ProfilePage'
-
-const FormItem = Form.Item
 
 const FILTERS = {
   ALL: 'all',
@@ -130,9 +128,9 @@ export default class extends ProfilePage {
                   <Navigator selectedItem="profileSubmissions"/>
                 </Col>
                 <Col sm={24} md={20} className="c_ProfileContainer admin-right-column wrap-box-user">
-                  <div className="pull-right filter-group">
+                  {/* <div className="pull-right filter-group">
                     <Button onClick={this.goCreatepage.bind(this)}>Create Issue</Button>
-                  </div>
+                  </div> */}
                   <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
                     <Select
                       name="type"

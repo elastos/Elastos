@@ -2,7 +2,6 @@
 @import "@/style/color";
 
 .c_SuggestionActions {
-
   margin: 27px 0;
   color: $text_lighter_gray;
   display: flex;
@@ -14,6 +13,9 @@
     > span {
       line-height: 16px;
       height: 16px;
+    }
+    > a span{
+      color: rgba(3, 30, 40, 0.3);
     }
   }
   .anticon-ellipsis {
@@ -64,8 +66,5 @@
 
   .selected {
     color: black;
-    // svg {
-    //   fill: black;
-    // }
   }
 }

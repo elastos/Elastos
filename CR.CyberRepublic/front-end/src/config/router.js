@@ -41,10 +41,10 @@ import ProfileInfoPage from '@/module/page/profile/info/Container'
 import ProfileTasksPage from '@/module/page/profile/tasks/Container'
 import ProfileTaskApplicationDetailPage from '@/module/page/profile/task_candidate_detail/Container'
 import ProfileTeamsPage from '@/module/page/profile/teams/Container'
-import ProfileTeamCreatePage from '@/module/page/profile/team_create/Container'
+// import ProfileTeamCreatePage from '@/module/page/profile/team_create/Container'
 import ProfileProjectsPage from '@/module/page/profile/projects/Container'
 import ProfileSubmissionsPage from '@/module/page/profile/submissions/Container'
-import ProfileSubmissionCreatePage from '@/module/page/profile/submission_create/Container'
+// import ProfileSubmissionCreatePage from '@/module/page/profile/submission_create/Container'
 import ProfileCommunitiesPage from '@/module/page/profile/communities/Container'
 import ProfileSubmissionDetailPage from '@/module/page/profile/submission_detail/Container'
 import ProfileSuggestionListPage from '@/module/page/profile/suggestion/list/Container'
@@ -77,6 +77,9 @@ import CouncilPage from '../module/page/council/Container'
 import CouncilListPage from '../module/page/council/list/Container'
 import CouncilDetailPage from '../module/page/council/detail/Container'
 
+// candidates
+import CandidatesPage from '../module/page/candidates/Container'
+
 // import CVoteCreatePage from '@/module/page/CVote/create/Container'
 import CVoteDetailPage from '@/module/page/CVote/detail/Container'
 import CVoteEditPage from '@/module/page/CVote/edit/Container'
@@ -97,7 +100,7 @@ import ElipNewPage from '@/module/page/elip/new/Container'
 import ElipDetailPage from '@/module/page/elip/detail/Container'
 import ElipEditPage from '@/module/page/elip/edit/Container'
 
-import WhitepaperPage from '@/module/page/whitepaper/Component'
+import WhitepaperPage from '@/module/page/whitepaper/Container'
 
 import NotFound from '@/module/page/error/NotFound'
 
@@ -345,10 +348,10 @@ export default [
     path: '/profile/teams',
     page: ProfileTeamsPage,
   },
-  {
-    path: '/profile/teams/create',
-    page: ProfileTeamCreatePage,
-  },
+  // {
+  //   path: '/profile/teams/create',
+  //   page: ProfileTeamCreatePage,
+  // },
   {
     path: '/team-detail/:teamId',
     page: TeamDetailPage,
@@ -357,10 +360,10 @@ export default [
     path: '/profile/submissions',
     page: ProfileSubmissionsPage,
   },
-  {
-    path: '/profile/submissions/create',
-    page: ProfileSubmissionCreatePage,
-  },
+  // {
+  //   path: '/profile/submissions/create',
+  //   page: ProfileSubmissionCreatePage,
+  // },
   {
     path: '/profile/communities',
     page: ProfileCommunitiesPage,
@@ -510,6 +513,11 @@ export default [
     page: CouncilDetailPage,
   },
 
+  // candidates
+  {
+    path: '/candidates',
+    page: CandidatesPage,
+  },
 
   // Other
   {

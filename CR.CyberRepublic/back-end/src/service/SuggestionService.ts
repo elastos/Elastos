@@ -3,23 +3,7 @@ import * as _ from 'lodash'
 import { constant } from '../constant'
 import { validate, mail, user as userUtil, permissions, logger } from '../utility'
 
-const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
-const emptyDoc = {
-  title: '',
-  type: constant.SUGGESTION_TYPE.NEW_MOTION,
-  abstract: '',
-  goal: '',
-  motivation: '',
-  relevance: '',
-  budget: '',
-  plan: '',
-  link: [],
-}
-
-const listExlucdedFields = [
-  constant.SUGGESTION_TAG_TYPE.UNDER_CONSIDERATION,
-  constant.SUGGESTION_TAG_TYPE.INFO_NEEDED
-]
+const BASE_FIELDS = ['title', 'type', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan']
 
 export default class extends Base {
   private model: any
@@ -142,8 +126,8 @@ export default class extends Base {
     delete query['tags.type']
 
     const excludedFields = [
-      '-editHistory', '-comments', '-goal',
-      '-motivation', '-relevance', '-budget', '-plan',
+      '-comments', '-goal', '-motivation',
+      '-relevance', '-budget', '-plan',
       '-subscribers', '-likes', '-dislikes', '-updatedAt'
     ]
 
@@ -158,13 +142,13 @@ export default class extends Base {
 
       cursor = this.model.getDBInstance()
         .find(query, excludedFields.join(' '))
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
         .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
         .sort(sortObject)
     } else {
       cursor = this.model.getDBInstance()
         .find(query)
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
         .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
@@ -194,7 +178,7 @@ export default class extends Base {
     }
     const doc = await this.model.getDBInstance()
       .findById(_id)
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
 
     if (_.isEmpty(doc.comments)) return doc

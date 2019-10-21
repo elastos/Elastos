@@ -1,13 +1,8 @@
 import React from 'react'
+import { Row } from 'antd'
 import StandardPage from '../../StandardPage'
-import { Link } from 'react-router-dom'
-import config from '@/config'
 import Search from '@/module/search/Container'
-import _ from 'lodash'
 import './style.scss'
-import { Col, Row, Icon, Form, Input, Button, Breadcrumb } from 'antd'
-import moment from 'moment/moment'
-import I18N from '@/I18N'
 
 export default class extends StandardPage {
   ord_renderContent () {

@@ -436,7 +436,7 @@ export default class extends StandardPage {
     return <Pagination {...props} className="cr-pagination" />
   }
 
-  renderMetaNode = detail => <MetaContainer data={detail} />
+  renderMetaNode = detail => <MetaContainer data={detail} user={this.props.user} />
 
   renderTagsNode = detail => <TagsContainer data={detail} />
 

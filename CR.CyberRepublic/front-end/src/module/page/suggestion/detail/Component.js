@@ -1,7 +1,16 @@
 import React from 'react'
-import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
-import { Row, Col, Spin, Modal, Input, Button, Anchor, Popconfirm, message } from 'antd'
+import {
+  Row,
+  Col,
+  Spin,
+  Modal,
+  Input,
+  Button,
+  Anchor,
+  Popconfirm,
+  message
+} from 'antd'
 import { Link } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
 import moment from 'moment/moment'
@@ -13,8 +22,6 @@ import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
 import { CVOTE_STATUS, SUGGESTION_TAG_TYPE, CONTENT_TYPE } from '@/constant'
-import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from '@/util/html'
 import { getHTML } from '@/util/editor'
 import { logger } from '@/util'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
@@ -25,18 +32,15 @@ import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import DraftEditor from '@/module/common/DraftEditor'
 import TagsContainer from '../common/tags/Container'
+import PopoverProfile from '../common/PopoverProfile'
 import {
   Container,
   Title,
-  CoverImg,
-  ShortDesc,
   DescLabel,
   Label,
   LabelPointer,
-  Desc,
   BtnGroup,
   StyledButton,
-  DescBody,
   CouncilComments,
   IconWrap,
   Item,
@@ -85,7 +89,10 @@ export default class extends StandardPage {
           title={I18N.get('suggestion.fields.abstract')}
         />
         <div style={{ marginTop: 48 }}>
-          <Anchor.Link href="#goal" title={I18N.get('suggestion.fields.goal')} />
+          <Anchor.Link
+            href="#goal"
+            title={I18N.get('suggestion.fields.goal')}
+          />
         </div>
         <Anchor.Link
           href="#motivation"
@@ -118,7 +125,6 @@ export default class extends StandardPage {
     const ownerActionsNode = this.renderOwnerActionsNode()
     const councilActionsNode = this.renderCouncilActionsNode()
     const editForm = this.renderEditForm()
-    // const mySuggestionNode = <MySuggestion />
     const commentNode = this.renderCommentNode()
     const socialShareButtonsNode = this.renderSocialShareButtonsNode()
 
@@ -147,11 +153,13 @@ export default class extends StandardPage {
               {ownerActionsNode}
               {councilActionsNode}
             </div>
-            {/* <div>{mySuggestionNode}</div> */}
             <div style={{ marginTop: 60 }}>{commentNode}</div>
           </MediaQuery>
           <MediaQuery minWidth={LG_WIDTH + 1}>
-            <BackLink link="/suggestion" style={{ position: 'fixed', left: '27px', top: '189px' }} />
+            <BackLink
+              link="/suggestion"
+              style={{ position: 'fixed', left: '27px', top: '189px' }}
+            />
             {this.renderAnchors()}
             <Row gutter={24}>
               <Col span={24}>
@@ -163,7 +171,6 @@ export default class extends StandardPage {
                 {councilActionsNode}
                 <div style={{ marginTop: 60 }}>{commentNode}</div>
               </Col>
-              {/* <Col span={9}>{mySuggestionNode}</Col> */}
             </Row>
           </MediaQuery>
           {editForm}
@@ -173,34 +180,37 @@ export default class extends StandardPage {
     )
   }
 
-  renderPreambleItem(header, content) {
+  renderPreambleItem(header, value, item) {
+    let text = <ItemText>{value}</ItemText>
+    const { detail, user } = this.props
+    if (item === 'username') {
+      text = <PopoverProfile data={detail} user={user} />
+    }
     return (
       <Item>
         <Col span={6}>
           <ItemTitle>{header}</ItemTitle>
         </Col>
-        <Col span={18}>
-          <ItemText>{content}</ItemText>
-        </Col>
+        <Col span={18}>{text}</Col>
       </Item>
     )
   }
 
   renderDetail() {
     const { detail } = this.props
-    const sections = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
+    const sections = [
+      'abstract',
+      'goal',
+      'motivation',
+      'plan',
+      'relevance',
+      'budget'
+    ]
 
     const metaNode = this.renderMetaNode()
     const titleNode = this.renderTitleNode()
-    const coverNode = this.renderCoverNode()
-    const shortDescNode = this.renderShortDescNode()
     const labelNode = this.renderLabelNode()
     const tagsNode = this.renderTagsNode()
-    const descNode = this.renderDescNode()
-    const benefitsNode = this.renderBenefitsNode()
-    const fundingNode = this.renderFundingNode()
-    const timelineNode = this.renderTimelineNode()
-    const linkNode = this.renderLinkNode()
 
     let status = I18N.get('suggestion.status.posted')
     if (_.get(detail, 'reference.0.vid')) {
@@ -218,35 +228,44 @@ export default class extends StandardPage {
         <div style={{ margin: '14px 0' }}>{labelNode}</div>
         <div>{tagsNode}</div>
 
-        <DescLabel id="preamble">{I18N.get('suggestion.fields.preamble')}</DescLabel>
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.suggestion'), `#${detail.displayId}`)}
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.title'), detail.title)}
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.creator'), detail.createdBy.username)}
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.status'), status)}
-        {this.renderPreambleItem(I18N.get('suggestion.fields.preambleSub.created'), moment(detail.createdAt).format('MMM D, YYYY'))}
-        {
-          sections.map(section => (
-            <div key={section}>
-              <DescLabel id={section}>{I18N.get(`suggestion.fields.${section}`)}</DescLabel>
-              <StyledRichContent>
-                <DraftEditor
-                  value={detail[section]}
-                  editorEnabled={false}
-                  contentType={CONTENT_TYPE.MARKDOWN}
-                />
-              </StyledRichContent>
-            </div>
-          ))
-        }
-        {/* {coverNode} */}
-        {/* {shortDescNode} */}
-        {/* <Divider /> */}
-        {/* {descNode} */}
-        {/* <Divider /> */}
-        {/* {benefitsNode} */}
-        {/* {fundingNode} */}
-        {/* {timelineNode} */}
-        {/* {linkNode} */}
+        <DescLabel id="preamble">
+          {I18N.get('suggestion.fields.preamble')}
+        </DescLabel>
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.suggestion'),
+          `#${detail.displayId}`
+        )}
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.title'),
+          detail.title
+        )}
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.creator'),
+          detail.createdBy.username,
+          'username'
+        )}
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.status'),
+          status
+        )}
+        {this.renderPreambleItem(
+          I18N.get('suggestion.fields.preambleSub.created'),
+          moment(detail.createdAt).format('MMM D, YYYY')
+        )}
+        {sections.map(section => (
+          <div key={section}>
+            <DescLabel id={section}>
+              {I18N.get(`suggestion.fields.${section}`)}
+            </DescLabel>
+            <StyledRichContent>
+              <DraftEditor
+                value={detail[section]}
+                editorEnabled={false}
+                contentType={CONTENT_TYPE.MARKDOWN}
+              />
+            </StyledRichContent>
+          </div>
+        ))}
       </div>
     )
   }
@@ -261,23 +280,13 @@ export default class extends StandardPage {
   }
 
   renderMetaNode() {
-    const { detail } = this.props
-    return <MetaContainer data={detail} />
+    const { detail, user } = this.props
+    return <MetaContainer data={detail} user={user} />
   }
 
   renderTitleNode() {
     const { detail } = this.props
     return <Title>{detail.title}</Title>
-  }
-
-  renderCoverNode() {
-    const { detail } = this.props
-    return detail.coverImg ? <CoverImg src={detail.coverImg} /> : ''
-  }
-
-  renderShortDescNode() {
-    const { detail } = this.props
-    return <ShortDesc>{detail.shortDesc}</ShortDesc>
   }
 
   renderLabelNode() {
@@ -320,7 +329,10 @@ export default class extends StandardPage {
               visible={this.state.needsInfoVisible}
               onCancel={this.closeNeedsInfoModal.bind(this)}
               footer={[
-                <Button key="close" onClick={this.closeNeedsInfoModal.bind(this)}>
+                <Button
+                  key="close"
+                  onClick={this.closeNeedsInfoModal.bind(this)}
+                >
                   Close
                 </Button>
               ]}
@@ -351,83 +363,6 @@ export default class extends StandardPage {
     this.setState({
       needsInfoVisible: false
     })
-  }
-
-  renderDescNode() {
-    const { detail } = this.props
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.fullDesc')}</DescLabel>
-        <DescBody
-          className="ql-editor"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail.desc) }}
-        />
-      </Desc>
-    )
-  }
-
-  renderBenefitsNode() {
-    const { detail } = this.props
-    if (!detail.benefits) {
-      return null
-    }
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.benefits')}</DescLabel>
-        <DescBody>{detail.benefits}</DescBody>
-      </Desc>
-    )
-  }
-
-  renderFundingNode() {
-    const { detail } = this.props
-    if (!detail.funding) {
-      return null
-    }
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.funding')}</DescLabel>
-        <div>{detail.funding}</div>
-      </Desc>
-    )
-  }
-
-  renderTimelineNode() {
-    const { detail } = this.props
-    if (!detail.timeline) {
-      return null
-    }
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.timeline')}</DescLabel>
-        <div>{moment(detail.timeline).format('MMM D, YYYY')}</div>
-      </Desc>
-    )
-  }
-
-  renderLinkNode() {
-    const { link } = this.props.detail
-
-    if (_.isEmpty(link || _.isEmpty(_.get(link, '[0]')))) {
-      return null
-    }
-
-    return (
-      <Desc>
-        <DescLabel>{I18N.get('suggestion.form.fields.links')}</DescLabel>
-        {_.map(link, href => (
-          <div key={href}>
-            <a
-              href={getSafeUrl(href)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {href}
-            </a>
-          </div>
-        ))}
-      </Desc>
-    )
   }
 
   renderTranslationBtn() {
@@ -483,45 +418,8 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    // const { isCouncil, match } = this.props
+    const { isCouncil, isAdmin } = this.props
 
-    // return isCouncil && (
-    //   <StyledButton
-    //     type="ebp"
-    //     className="cr-btn cr-btn-default"
-    //     onClick={this.}
-    //   >
-    //     {I18N.get('suggestion.btnText.edit')}
-    //   </StyledButton>
-    // )
-
-    const { isCouncil, isAdmin, detail } = this.props
-    const { _id, displayId, title } = detail
-    const descNode = this.renderDescNode()
-    const benefitsNode = this.renderBenefitsNode()
-    const fundingNode = this.renderFundingNode()
-    const timelineNode = this.renderTimelineNode()
-    const linkNode = this.renderLinkNode()
-
-    const proposalContent = `
-      ${ReactDOMServer.renderToString(descNode)}
-      ${ReactDOMServer.renderToString(benefitsNode)}
-      ${ReactDOMServer.renderToString(fundingNode)}
-      ${ReactDOMServer.renderToString(timelineNode)}
-      ${ReactDOMServer.renderToString(linkNode)}
-    `
-
-    const props = {
-      data: {
-        title,
-        content: proposalContent
-      },
-      suggestionDisplayId: displayId,
-      suggestionId: _id,
-      onCreated: this.onCreated,
-      btnText: I18N.get('suggestion.btnText.makeIntoProposal'),
-      btnStyle: { width: 200 }
-    }
     const considerBtn = (isCouncil || isAdmin) && (
       <Col xs={24} sm={8}>
         <Popconfirm
@@ -530,12 +428,9 @@ export default class extends StandardPage {
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
         >
-        <StyledButton
-          type="ebp"
-          className="cr-btn cr-btn-default"
-        >
-          {I18N.get('suggestion.btnText.markConsider')}
-        </StyledButton>
+          <StyledButton type="ebp" className="cr-btn cr-btn-default">
+            {I18N.get('suggestion.btnText.markConsider')}
+          </StyledButton>
         </Popconfirm>
       </Col>
     )
@@ -579,6 +474,7 @@ export default class extends StandardPage {
     const { detail } = this.props
     return (
       <Comments
+        id="comments"
         type="suggestion"
         suggestion={detail}
         canPost={true}
@@ -611,7 +507,6 @@ export default class extends StandardPage {
         type: SUGGESTION_TAG_TYPE.INFO_NEEDED,
         desc: comment
       })
-      // this.showAddTagModal()
       this.refetch()
     } catch (error) {
       logger.error(error)
@@ -670,9 +565,6 @@ export default class extends StandardPage {
   showEditForm = () => {
     const id = _.get(this.props, 'match.params.id')
     this.props.history.push(`/suggestion/${id}/edit`)
-    // this.setState({
-    //   showForm: !showForm
-    // })
   }
 
   showDropdownActions = () => {
