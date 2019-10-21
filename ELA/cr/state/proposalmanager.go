@@ -75,6 +75,54 @@ func (p *ProposalManager) ExistProposal(hash common.Uint256) bool {
 	return ok
 }
 
+func (p *ProposalManager) GetAllProposals() (dst ProposalsMap) {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	return p.getAllProposal()
+}
+func (p *ProposalManager) getAllProposal() (dst ProposalsMap) {
+	dst = NewProposalMap()
+	for k, v := range p.Proposals {
+		p := *v
+		dst[k] = &p
+	}
+	return
+}
+
+func (p *ProposalManager) GetProposals(status ProposalStatus) (dst ProposalsMap) {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	return p.getProposals(status)
+}
+func (p *ProposalManager) getProposals(status ProposalStatus) (dst ProposalsMap) {
+	dst = NewProposalMap()
+	for k, v := range p.Proposals {
+		if v.Status == status {
+			p := *v
+			dst[k] = &p
+		}
+	}
+	return
+}
+
+func (p *ProposalManager) GetProposalByDraftHash(draftHash common.
+	Uint256) *ProposalState {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	return p.getProposalByDraftHash(draftHash)
+}
+
+func (p *ProposalManager) getProposalByDraftHash(draftHash common.
+	Uint256) *ProposalState {
+	for _, v := range p.Proposals {
+		if v.Proposal.DraftHash.IsEqual(draftHash) {
+			return v
+		}
+	}
+	return nil
+}
+
 // GetProposal will return a proposal with specified hash,
 // and return nil if not found.
 func (p *ProposalManager) GetProposal(hash common.Uint256) *ProposalState {

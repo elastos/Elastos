@@ -1887,6 +1887,7 @@ Response:
 Show cr candidates information
 
 #### Parameter
+
 | name  | type    | description                                                  |
 | ----- | ------- | ------------------------------------------------------------ |
 | start | integer | the start index of cr candidates                                 |
@@ -2020,6 +2021,218 @@ Response:
             }
         ],
         "totalcounts": 2
+    }
+}
+```
+
+### listcrproposalbasestate
+
+Show current cr proposal base state information
+
+#### Parameter
+
+| name  | type    | description                          |
+| :---- | ------- | ------------------------------------ |
+| start | integer | the start index of cr proposal state |
+| limit | integer | the limit count of cr proposal state |
+| state | string  | the proposal state you want<br/>
+"all": get proposals in any state<br/>
+"registered": get proposals in the registered state<br/>
+"cragreed": get proposals in the cragreed state<br/>
+"voteragreed": get proposals in the voteragreed state<br/>
+"finished": get proposals in the finished state<br/>
+"crcanceled": get proposals in the crcanceled state<br/>
+"votercanceled": get proposals in the votercanceled state |
+"aborted": get proposals in the aborted state .
+
+#### Result
+
+| name               | type                  | description                                        |
+| ------------------ | --------------------- | -------------------------------------------------- |
+| Status             | ProposalStatus        | the proposal status                                |
+| ProposalHash       | string                | the cr proposal hash                               |
+| TxHash             | string                | the transacion's hash which cr proposal located in |
+| CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
+| VotersRejectAmount | common.Fixed64        | voters reject amount                               |
+| RegisterHeight     | uint32                | the proposal register height                       |
+| VoteStartHeight    | uint32                | the proposal vote start height                     |
+| Index              | uint64                | the index of the cr proposal                       |
+
+#### Example
+
+Request:
+
+```json
+{
+"method": "listcrproposalbasestate",
+  "params":{
+    "state":"all",
+    "start": 0,
+    "limit": 10
+  }
+}
+```
+
+Response:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "RpcProposalBaseStateslice": [
+            {
+                "status": 0,
+                "proposalhash": "42de0adf2b3673d712fc3efdaf643889ef8442fe25987b25add8c0c961b13612",
+                "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
+                "crvotes": {
+                    "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+                },
+                "votersrejectamount": 0,
+                "RegisterHeight": 1277,
+                "votestartheight": 0,
+                "index": 0
+            },
+            {
+                "status": 0,
+                "proposalhash": "59be5165123b4be3296f2c72464332086f89be3a8fee1a2d8ae3fd7cca218e68",
+                "txhash": "87536938d0e4f093c16b4b77b70a3b2ae53a3b79217697bd283f1203e2443a83",
+                "crvotes": {},
+                "votersrejectamount": 0,
+                "RegisterHeight": 1468,
+                "votestartheight": 0,
+                "index": 1
+            }
+        ],
+        "totalcounts": 2
+    }
+}
+```
+
+
+
+### getcrproposalstate
+
+Get one cr proposal detail state information by proposalhash or drafthash
+
+#### Parameter
+
+| name         | type   | description                                               |
+| ------------ | ------ | ----------------------------------------------------------|
+| proposalhash | string | hash of the proposal which you want get detail state      |
+| drafthash    | string | drafthash of the proposal which you want get detail state |
+
+#### Result
+
+| name               | type                  | description                                        |
+| ------------------ | --------------------- | -------------------------------------------------- |
+| Status             | ProposalStatus        | the proposal status                                |
+| Proposal           | RpcCRCProposal        | the cr proposal                                    |
+| TxHash             | string                | hash of the transacion which cr proposal located in|
+| CRVotes            | map[string]VoteResult | per cr VoteResult                                  |
+| VotersRejectAmount | common.Fixed64        | voters reject amount                               |
+| RegisterHeight     | uint32                | the proposal register height                       |
+| VoteStartHeight    | uint32                | the proposal vote start height                     |
+| ProposalType       | CRCProposalType       | the type of cr proposal                            |
+| SponsorPublicKey   | string                | the public key of sponsor                          |
+| CRSponsorDID       | string                | the did of sponsor                                 |
+| DraftHash          | string                | the hash of draft proposal                         |
+| Budgets            | []common.Fixed64      | the budget of different stages                     |
+ProposalType value as follows:
+0x00:"Normal" Normal indicates the normal types of proposal.
+0x01:"Code" indicates the code upgrade types of proposals.
+0x02:"SideChain" indicates the side chain related types of proposals.
+0x03:"ChangeSponsor" indicates the change proposal sponsor types of proposals.
+0x04:"CloseProposal" indicates the close proposal types of proposals.
+0x05:"SecretaryGeneral"indicates the vote secretary general types of proposals.
+
+#### Example
+
+Request by proposalhash:
+
+```json
+{
+"method": "getcrproposalstate",
+  "params":{
+    "proposalhash":"42de0adf2b3673d712fc3efdaf643889ef8442fe25987b25add8c0c961b13612"
+  }
+}
+```
+
+Response:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "RpcProposalState": {
+            "status": 0,
+            "proposal": {
+                "ProposalType": 0,
+                "SponsorPublicKey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
+                "CRSponsorDID": "670f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "DraftHash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
+                "Budgets": [
+                    110000000,
+                    220000000,
+                    330000000
+                ]
+            },
+            "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
+            "crvotes": {
+                "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+            },
+            "votersrejectamount": 0,
+            "RegisterHeight": 1277,
+            "votestartheight": 0
+        }
+    }
+}
+```
+
+Request by drafthash:
+
+```json
+{
+"method": "getcrproposalstate",
+  "params":{
+    "drafthash":"9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0"
+  }
+}
+```
+
+Response:
+
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "RpcProposalState": {
+            "status": 0,
+            "proposal": {
+                "ProposalType": 0,
+                "SponsorPublicKey": "03c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95",
+                "CRSponsorDID": "670f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "DraftHash": "9c5ab8998718e0c1c405a719542879dc7553fca05b4e89132ec8d0e88551fcc0",
+                "Budgets": [
+                    110000000,
+                    220000000,
+                    330000000
+                ]
+            },
+            "txhash": "9f425a8012a3e36128ee61be78a0b6a7832f9d895d08c86cc16e6a084e7f054f",
+            "crvotes": {
+                "670f11c336563d31ed1cf81ac4a83f9df7306f9967": 0
+            },
+            "votersrejectamount": 0,
+            "RegisterHeight": 1277,
+            "votestartheight": 0
+        }
     }
 }
 ```
