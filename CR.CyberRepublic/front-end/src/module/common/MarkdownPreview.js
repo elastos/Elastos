@@ -46,7 +46,7 @@ const Wrapper = styled.div`
   font-size: 16px;
   font-family: 'Synthese', 'Montserrat', sans-serif;
   font-variant-ligatures: common-ligatures;
-  line-height: 1.67;
+  line-height: 1.8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   tab-size: 4;
