@@ -15,6 +15,9 @@ export default createContainer(
       async getData(param) {
         return service.getData(param)
       },
+      async resetData() {
+        return service.resetData()
+      },
       async update(param) {
         return service.update(param)
       }
