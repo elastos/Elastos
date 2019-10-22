@@ -192,7 +192,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
             for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : list) {
                 if (bean.isChecked() && bean.getCurentBalance() != null
                         && !TextUtils.isEmpty(bean.getCurentBalance().toPlainString())) {
-                    checkedData.put("\""+bean.getCode()+"\"", "\""+bean.getCurentBalance().multiply(new BigDecimal(MyWallet.RATE)).setScale(0, BigDecimal.ROUND_DOWN).toPlainString()+"\"");
+                    checkedData.put("\""+bean.getDid()+"\"", "\""+bean.getCurentBalance().multiply(new BigDecimal(MyWallet.RATE)).setScale(0, BigDecimal.ROUND_DOWN).toPlainString()+"\"");
                 }
 
             }

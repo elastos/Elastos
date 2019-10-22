@@ -3,13 +3,13 @@ package org.elastos.wallet.ela.rxjavahelp;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.Log;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;

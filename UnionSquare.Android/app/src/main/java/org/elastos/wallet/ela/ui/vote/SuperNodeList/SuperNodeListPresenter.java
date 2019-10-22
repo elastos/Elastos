@@ -1,7 +1,7 @@
 package org.elastos.wallet.ela.ui.vote.SuperNodeList;
 
 import android.text.TextUtils;
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 import android.widget.ImageView;
 
 import org.elastos.wallet.ela.base.BaseFragment;

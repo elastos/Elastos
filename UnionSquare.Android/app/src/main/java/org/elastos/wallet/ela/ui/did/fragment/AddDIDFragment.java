@@ -2,9 +2,7 @@ package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -15,6 +13,7 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.fragment.WalletUpdataPwdFragment;
 import org.elastos.wallet.ela.ui.mine.presenter.AboutPresenter;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -24,7 +23,6 @@ import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
@@ -75,9 +73,18 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     }
 
 
-    @OnClick({R.id.rl_selectwallet, R.id.rl_outdate})
+    @OnClick({R.id.rl_selectwallet, R.id.rl_outdate, R.id.tv_next})
     public void onViewClicked(View view) {
         switch (view.getId()) {
+            case R.id.tv_next:
+                String didName = etDidname.getText().toString().trim();
+                if (TextUtils.isEmpty(didName)) {
+                    showToast(getString(R.string.plziputdidname));
+                    break;
+                }
+                Bundle bundle = new Bundle();
+                start(WalletUpdataPwdFragment.class, bundle);
+                break;
             case R.id.rl_selectwallet:
 
 
@@ -108,7 +115,14 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     public boolean onBackPressedSupport() {
         String didName = etDidname.getText().toString().trim();
         if (!TextUtils.isEmpty(didName)) {
-            showToast("22");
+            new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.keepeditornot),
+                    getString(R.string.keep), getString(R.string.nokeep), new WarmPromptListener() {
+                        @Override
+                        public void affireBtnClick(View view) {
+                            showToast(getString(R.string.keepsucess));
+                            getBaseActivity().pop();
+                        }
+                    });
             return true;
         }
         return super.onBackPressedSupport();
@@ -121,17 +135,5 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: inflate a fragment view
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
-    }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }
