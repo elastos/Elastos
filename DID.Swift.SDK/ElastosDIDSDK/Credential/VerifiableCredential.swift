@@ -48,7 +48,7 @@ public class VerifiableCredential: DIDObject {
         dic[Constants.type] = strs
         
         // issuer
-        if !compact && !(issuer.isEqual(subject.id)) {
+        if !compact || !(issuer.isEqual(subject.id)) {
             dic[Constants.issuer] = issuer.toExternalForm()
         }
         
@@ -70,7 +70,7 @@ public class VerifiableCredential: DIDObject {
         
         // proof
         if !forSign {
-            dic[Constants.proof] = proof.toJson(ref, compact)
+            dic[Constants.proof] = proof.toJson(issuer, compact)
         }
         return dic
     }

@@ -24,7 +24,7 @@ public class Proof {
             value = "#" + verificationMethod.fragment
         }
         else {
-            value = verificationMethod.fragment
+            value = verificationMethod.toExternalForm()
         }
         dic[Constants.verificationMethod] = value
         

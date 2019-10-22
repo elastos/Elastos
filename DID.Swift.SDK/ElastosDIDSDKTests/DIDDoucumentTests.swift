@@ -5,17 +5,29 @@ import ElastosDIDSDK
 
 
 class DIDDoucumentTests: XCTestCase {
+    
+    var compactPath: String!
+    var documentPath: String!
+    var normalizedPath: String!
 
     override func setUp() {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        super.setUp()
+        
+        let bundle = Bundle(for: type(of: self))
+        compactPath = bundle.path(forResource: "compact", ofType: "json")!
+        documentPath = bundle.path(forResource: "testdiddoc", ofType: "json")!
     }
 
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        compactPath = nil
+        documentPath = nil
+        normalizedPath = nil
+        
+        super.tearDown()
     }
 
     func testParseDocument() {
-        let document: DIDDocument = try! DIDDocument.fromJson("/Users/liaihong/Desktop/testdiddoc.json")
+        let document: DIDDocument = try! DIDDocument.fromJson(documentPath)
         XCTAssertEqual(3, document.getPublicKeyCount())
         let pks: Array<DIDPublicKey> = document.getPublicKeys()
         pks.forEach { pk in
@@ -36,9 +48,7 @@ class DIDDoucumentTests: XCTestCase {
     }
     
     func testCompactJson() {
-        let bundle = Bundle(for: type(of: self))
-        let documentPath = bundle.path(forResource: "testdiddoc", ofType: "json")!
-        let compactPath = bundle.path(forResource: "compact", ofType: "json")!
+
         let document: DIDDocument = try! DIDDocument.fromJson(documentPath)
         let jsonString: String = try! document.toExternalForm(true)
         let url = URL(fileURLWithPath:compactPath)
@@ -47,9 +57,6 @@ class DIDDoucumentTests: XCTestCase {
     }
     
     func  testNormalizedJson() {
-        let bundle = Bundle(for: type(of: self))
-        let documentPath = bundle.path(forResource: "testdiddoc", ofType: "json")!
-        let normalizedPath = bundle.path(forResource: "normalized", ofType: "json")!
         
         let document: DIDDocument = try! DIDDocument.fromJson(documentPath)
         let str: String = try! document.toExternalForm(false)

@@ -77,4 +77,26 @@ class DIDURLComparator {
 
         return result
     }
+    
+    class func DIDOrderedDictionaryComparatorByService(_ source: OrderedDictionary<DIDURL, Service>) -> OrderedDictionary<DIDURL, Service> {
+        
+        var sortArray: Array<(DIDURL, Service)> = Array()
+        for (key, value) in source {
+            sortArray.append((key, value))
+        }
+        
+        sortArray.sort { (a, b) -> Bool in
+            let urlA: DIDURL = a.0
+            let urlB: DIDURL = b.0
+            return DIDURLComparator(urlA, urlB)
+        }
+        
+        var result: OrderedDictionary<DIDURL, Service> = OrderedDictionary<DIDURL, Service>()
+        for obj in sortArray {
+            result[obj.0] = obj.1
+        }
+
+        return result
+    }
+
 }

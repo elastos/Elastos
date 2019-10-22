@@ -312,9 +312,9 @@ public class DIDDocument: NSObject {
         dic[Constants.authentication] = authenPKs
         
         // authorization
-        authorizations = DIDURLComparator.DIDOrderedDictionaryComparator(authorizations)
-        var authoriPks: Array<String> = []
-        if authorizations.count != 0 {
+        if authorizations.count > 0 {
+            authorizations = DIDURLComparator.DIDOrderedDictionaryComparator(authorizations)
+            var authoriPks: Array<String> = []
             authorizations.forEach { (didUrl, pk) in
                 var value: String
                 if compact && pk.id.did.isEqual(subject) {
@@ -328,8 +328,8 @@ public class DIDDocument: NSObject {
         }
         
         // credential
-        credentials = DIDURLComparator.DIDOrderedDictionaryComparatorByVerifiableCredential(credentials)
-        if credentials.count != 0 {
+        if credentials.count > 0 {
+            credentials = DIDURLComparator.DIDOrderedDictionaryComparatorByVerifiableCredential(credentials)
             var vcs: Array<OrderedDictionary<String, Any>> = []
             credentials.forEach { (didUrl, vc) in
                 let dic = vc.toJson(subject!, compact, false)
@@ -339,9 +339,10 @@ public class DIDDocument: NSObject {
         }
         
         // service
-        if services.count != 0 {
+        if services.count > 0 {
+            services = DIDURLComparator.DIDOrderedDictionaryComparatorByService(services)
             var ser_s: Array<OrderedDictionary<String, Any>> = [ ]
-            services.forEach { (didUrl, service) in
+            services.forEach { (_, service) in
                 let dic = service.toJson(subject!, compact)
                 ser_s.append(dic)
             }

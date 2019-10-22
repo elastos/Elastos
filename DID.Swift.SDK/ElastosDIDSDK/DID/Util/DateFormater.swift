@@ -24,6 +24,7 @@ class DateFormater {
         
         let formatter = Foundation.DateFormatter()
         formatter.dateFormat = Constants.DATE_FORMAT
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
         let date: Date  = formatter.date(from: value) ?? Date()
         
         return date
