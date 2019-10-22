@@ -2081,7 +2081,7 @@ Response:
     "id": null,
     "jsonrpc": "2.0",
     "result": {
-        "RpcProposalBaseStateslice": [
+        "RpcProposalBaseStates": [
             {
                 "status": "Registered",
                 "proposalhash": "42de0adf2b3673d712fc3efdaf643889ef8442fe25987b25add8c0c961b13612",

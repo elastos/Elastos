@@ -45,8 +45,6 @@ const (
 	Aborted ProposalStatus = 0x06
 )
 
-const MaxCommitteeProposalCount = 128
-
 func (status ProposalStatus) String() string {
 	switch status {
 	case Registered:
@@ -258,7 +256,7 @@ func (p *ProposalManager) IsProposalFull(did common.Uint168) bool {
 }
 
 func (p *ProposalManager) isProposalFull(did common.Uint168) bool {
-	return p.getProposalCount(did) >= MaxCommitteeProposalCount
+	return p.getProposalCount(did) >= int(p.params.MaxCommitteeProposalCount)
 }
 
 func (p *ProposalManager) GetProposalCount(did common.Uint168) int {

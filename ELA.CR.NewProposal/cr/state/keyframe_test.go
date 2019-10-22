@@ -318,7 +318,7 @@ func randomProposalState() *ProposalState {
 
 func randomProposalHashSet() ProposalHashSet {
 	proposalHashSet := NewProposalHashSet()
-	count := rand.Int() % MaxCommitteeProposalCount
+	count := rand.Int() % 128
 	for i := 0; i < count; i++ {
 		proposalHashSet.Add(*randomUint256())
 	}

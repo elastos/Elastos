@@ -201,7 +201,7 @@ var (
 		Usage: "defines the height begin to check output hash",
 	}
 	EnableArbiterFlag = cli.StringFlag{
-		Name: "arbiter",
+		Name:  "arbiter",
 		Usage: "indicates where or not to enable DPoS arbiter switch",
 	}
 	CRCOnlyDPOSHeightFlag = cli.StringFlag{
@@ -221,6 +221,10 @@ var (
 	CRVotingStartHeightFlag = cli.StringFlag{
 		Name:  "crvotingstartheight",
 		Usage: "defines the height of CR voting started",
+	}
+	MaxCommitteeProposalCount = cli.StringFlag{
+		Name:  "maxcommitteeproposalcount",
+		Usage: "defines max count of the proposal that one cr can proposal",
 	}
 	EnableActivateIllegalHeightFlag = cli.StringFlag{
 		Name: "enableactivateillegalheight",

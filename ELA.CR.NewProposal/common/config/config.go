@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package config
 
@@ -67,6 +67,7 @@ type Configuration struct {
 	EnableActivateIllegalHeight uint32            `json:"EnableActivateIllegalHeight"`
 	CRVotingStartHeight         uint32            `json:"CRVotingStartHeight"`
 	CRCommitteeStartHeight      uint32            `json:"CRCommitteeStartHeight"`
+	MaxCommitteeProposalCount   uint32            `json:"MaxCommitteeProposalCount"`
 	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
 	MaxBlockSize                uint32            `json"MaxBlockSize"`
@@ -101,4 +102,5 @@ type CRConfiguration struct {
 	ProposalPublicVotingPeriod uint32  `json:"ProposalPublicVotingPeriod"`
 	CRAgreementCount           uint32  `json:"CRAgreementCount"`
 	VoterRejectPercentage      float64 `json:"VoterRejectPercentage"`
+	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
 }
