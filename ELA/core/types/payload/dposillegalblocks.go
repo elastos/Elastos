@@ -125,7 +125,7 @@ func (b *BlockEvidence) BlockHash() common.Uint256 {
 	if b.hash == nil {
 		buf := new(bytes.Buffer)
 		b.Serialize(buf)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		b.hash = &hash
 	}
 	return *b.hash
@@ -218,7 +218,7 @@ func (d *DPOSIllegalBlocks) Hash() common.Uint256 {
 	if d.hash == nil {
 		buf := new(bytes.Buffer)
 		d.SerializeUnsigned(buf, IllegalBlockVersion)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		d.hash = &hash
 	}
 	return *d.hash

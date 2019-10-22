@@ -36,11 +36,6 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	host := c.String("host")
 	candidates := c.String("candidates")
 	candidateVotes := c.String("candidateVotes")
-	proposalType := c.Int64("proposaltype")
-	draftHash := c.String("drafthash")
-	budgets := c.String("budgets")
-	proposalHash := c.String("proposalhash")
-	voteresult := c.Int("voteresult")
 
 	getWallet := func(L *lua.LState) int {
 		L.Push(lua.LString(wallet))
@@ -102,16 +97,8 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(nodePubkey))
 		return 1
 	}
-	getProposalHash := func(L *lua.LState) int {
-		L.Push(lua.LString(proposalHash))
-		return 1
-	}
 	getHostAddr := func(L *lua.LState) int {
 		L.Push(lua.LString(host))
-		return 1
-	}
-	getVoteResult := func(L *lua.LState) int {
-		L.Push(lua.LNumber(voteresult))
 		return 1
 	}
 	getCandidates := func(L *lua.LState) int {
@@ -134,24 +121,6 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(table)
 		return 1
 	}
-	getProposalType := func(L *lua.LState) int {
-		L.Push(lua.LNumber(proposalType))
-		return 1
-	}
-	getDraftHash := func(L *lua.LState) int {
-		L.Push(lua.LString(draftHash))
-		return 1
-	}
-	getBudgets := func(L *lua.LState) int {
-		table := L.NewTable()
-		L.SetMetatable(table, L.GetTypeMetatable("budgets"))
-		bs := strings.Split(budgets, ",")
-		for _, budget := range bs {
-			table.Append(lua.LString(budget))
-		}
-		L.Push(table)
-		return 1
-	}
 	L.Register("getWallet", getWallet)
 	L.Register("getPassword", getPassword)
 	L.Register("getDepositAddr", getDepositAddr)
@@ -170,17 +139,17 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getHostAddr", getHostAddr)
 	L.Register("getCandidates", getCandidates)
 	L.Register("getCandidateVotes", getCandidateVotes)
-	L.Register("getProposalType", getProposalType)
-	L.Register("getDraftHash", getDraftHash)
-	L.Register("getBudgets", getBudgets)
-	L.Register("getProposalHash", getProposalHash)
-	L.Register("getVoteResult", getVoteResult)
-	registerCRCProposalTrackingParams(c, L)
+	registerCRCProposalRelatedParams(c, L)
 }
 
-func registerCRCProposalTrackingParams(c *cli.Context, L *lua.LState) {
+func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
+	proposalType := c.Int64("proposaltype")
+	proposalHash := c.String("proposalhash")
+	draftData := c.String("draftdata")
+	budgets := c.String("budgets")
+	voteResult := c.Int("voteresult")
 	proposalTrackingType := c.Int64("proposaltrackingtype")
-	documentHash := c.String("documenthash")
+	documentData := c.String("documentdata")
 	stage := c.Int64("stage")
 	appropriation := c.Float64("appropriation")
 	leaderPubkey := c.String("leaderpublickey")
@@ -189,12 +158,38 @@ func registerCRCProposalTrackingParams(c *cli.Context, L *lua.LState) {
 	newLedgerPrivkey := c.String("newledgerprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
 
+	getProposalType := func(L *lua.LState) int {
+		L.Push(lua.LNumber(proposalType))
+		return 1
+	}
+	getProposalHash := func(L *lua.LState) int {
+		L.Push(lua.LString(proposalHash))
+		return 1
+	}
+	getDraftData := func(L *lua.LState) int {
+		L.Push(lua.LString(draftData))
+		return 1
+	}
+	getBudgets := func(L *lua.LState) int {
+		table := L.NewTable()
+		L.SetMetatable(table, L.GetTypeMetatable("budgets"))
+		bs := strings.Split(budgets, ",")
+		for _, budget := range bs {
+			table.Append(lua.LString(budget))
+		}
+		L.Push(table)
+		return 1
+	}
+	getVoteResult := func(L *lua.LState) int {
+		L.Push(lua.LNumber(voteResult))
+		return 1
+	}
 	getProposalTrackingType := func(L *lua.LState) int {
 		L.Push(lua.LNumber(proposalTrackingType))
 		return 1
 	}
-	getDocumentHash := func(L *lua.LState) int {
-		L.Push(lua.LString(documentHash))
+	getDocumentData := func(L *lua.LState) int {
+		L.Push(lua.LString(documentData))
 		return 1
 	}
 	getStage := func(L *lua.LState) int {
@@ -226,8 +221,13 @@ func registerCRCProposalTrackingParams(c *cli.Context, L *lua.LState) {
 		return 1
 	}
 
+	L.Register("getProposalType", getProposalType)
+	L.Register("getDraftData", getDraftData)
+	L.Register("getBudgets", getBudgets)
+	L.Register("getProposalHash", getProposalHash)
+	L.Register("getVoteResult", getVoteResult)
 	L.Register("getProposalTrackingType", getProposalTrackingType)
-	L.Register("getDocumentHash", getDocumentHash)
+	L.Register("getDocumentData", getDocumentData)
 	L.Register("getStage", getStage)
 	L.Register("getAppropriation", getAppropriation)
 	L.Register("getLedgerPubkey", getLedgerPubkey)
@@ -372,6 +372,10 @@ func NewCommand() *cli.Command {
 				Usage: "set the draft proposal hash",
 			},
 			cli.StringFlag{
+				Name:  "draftdata",
+				Usage: "set the data of draft proposal",
+			},
+			cli.StringFlag{
 				Name:  "voteresult, votres",
 				Usage: "set the owner public key",
 			},
@@ -395,9 +399,13 @@ func NewCommand() *cli.Command {
 				Name:  "documenthash",
 				Usage: "set the hash of proposal tracking document",
 			},
+			cli.StringFlag{
+				Name:  "documentdata",
+				Usage: "set the data of proposal tracking document",
+			},
 			cli.Int64Flag{
 				Name:  "stage",
-				Usage: "set the stage of the proposal",
+				Usage: "set the stage of proposal",
 			},
 			cli.Float64Flag{
 				Name:  "appropriation",

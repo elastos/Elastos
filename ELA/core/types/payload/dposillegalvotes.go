@@ -88,7 +88,7 @@ func (d *DPOSIllegalVotes) Hash() common.Uint256 {
 	if d.hash == nil {
 		buf := new(bytes.Buffer)
 		d.Serialize(buf, IllegalVoteVersion)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		d.hash = &hash
 	}
 	return *d.hash

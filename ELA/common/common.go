@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package common
 
@@ -80,6 +80,10 @@ func ClearBytes(arr []byte) {
 func Sha256D(data []byte) [32]byte {
 	once := sha256.Sum256(data)
 	return sha256.Sum256(once[:])
+}
+
+func Hash(data []byte) Uint256 {
+	return Uint256(Sha256D(data))
 }
 
 // Goid returns the current goroutine id.

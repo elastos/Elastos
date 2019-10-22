@@ -104,7 +104,7 @@ func (v *DPOSProposalVote) Hash() common.Uint256 {
 	if v.hash == nil {
 		buf := new(bytes.Buffer)
 		v.SerializeUnsigned(buf)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		v.hash = &hash
 	}
 	return *v.hash
