@@ -1,7 +1,7 @@
 package org.elastos.wallet.ela.rxjavahelp;
 
 import android.app.Dialog;
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 import android.widget.Toast;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;

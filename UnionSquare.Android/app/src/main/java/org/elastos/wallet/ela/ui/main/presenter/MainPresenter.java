@@ -1,6 +1,6 @@
 package org.elastos.wallet.ela.ui.main.presenter;
 
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.MyApplication;

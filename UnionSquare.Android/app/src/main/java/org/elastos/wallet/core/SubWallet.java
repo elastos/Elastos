@@ -4,7 +4,7 @@
 
 package org.elastos.wallet.core;
 
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 
 import org.elastos.wallet.ela.db.table.Wallet;
 

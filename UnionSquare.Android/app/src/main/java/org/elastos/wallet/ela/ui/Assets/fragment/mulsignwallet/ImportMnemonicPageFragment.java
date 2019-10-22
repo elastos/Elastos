@@ -1,13 +1,9 @@
 package org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet;
 
 
-import android.os.Bundle;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
@@ -15,22 +11,13 @@ import com.allen.library.SuperTextView;
 import com.qmuiteam.qmui.layout.QMUIRelativeLayout;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.CreateWalletBean;
-import org.elastos.wallet.ela.db.RealmUtil;
-import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
-import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.ImportMnemonicPresenter;
-import org.elastos.wallet.ela.ui.Assets.viewdata.CommonCreateSubWalletViewData;
-import org.elastos.wallet.ela.ui.Assets.viewdata.ImportMnemonicViewData;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.RxEnum;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**

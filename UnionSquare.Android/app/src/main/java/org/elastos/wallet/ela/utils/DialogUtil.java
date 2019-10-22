@@ -320,7 +320,7 @@ public class DialogUtil {
         numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-              picker.performClick();
+                picker.performClick();
             }
         });
         WindowManager m = activity.getWindowManager();
@@ -424,5 +424,37 @@ public class DialogUtil {
         WindowManager.LayoutParams lp = ((Activity) context).getWindow().getAttributes();
         lp.alpha = bgAlpha; // 0.0-1.0
         ((Activity) context).getWindow().setAttributes(lp);
+    }
+
+    public void showCommonWarmPrompt(BaseActivity activity, String contentStr, String textSure, String textCancel, WarmPromptListener listener) {
+        Dialog dialog = getDialogs(activity, R.layout.dialog_settingtip1);
+
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
+        if (!TextUtils.isEmpty(textCancel)) {
+            tvCancel.setText(textCancel);
+        }
+        TextView contentTv = dialog.findViewById(R.id.tv_content);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        if (!TextUtils.isEmpty(textSure)) {
+            tvSure.setText(textSure);
+        }
+
+
+        if (!TextUtils.isEmpty(contentStr)) {
+            contentTv.setText(Html.fromHtml(contentStr));
+        }
+
+        ivCancel.setOnClickListener(v -> dialogDismiss(dialog));
+        tvCancel.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            activity.pop();
+        });
+
+        tvSure.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.affireBtnClick(contentTv);
+        });
+        dialog.show();
     }
 }

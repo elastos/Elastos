@@ -10,7 +10,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -149,14 +148,14 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
             case VERTICAL_LIST:
                 childCount -= 1;
                 //水平布局右侧留Margin,如果是最后一列,就不要留Margin了
-               // outRect.set(0, 0, (itemPosition != childCount) ? mDividerHeight : 0, 0);
-                outRect.set(0, 0,  mDividerHeight, 0);
+                // outRect.set(0, 0, (itemPosition != childCount) ? mDividerHeight : 0, 0);
+                outRect.set(0, 0, mDividerHeight, 0);
                 break;
             case HORIZONTAL_LIST:
                 childCount -= 1;
                 //垂直布局底部留边，最后一行不留
-               // outRect.set(0, 0, 0, (itemPosition != childCount) ? mDividerHeight : 0);
-                outRect.set(0, 0, 0,mDividerHeight);
+                // outRect.set(0, 0, 0, (itemPosition != childCount) ? mDividerHeight : 0);
+                outRect.set(0, 0, 0, mDividerHeight);
                 break;
         }
     }
@@ -199,7 +198,7 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
             //item底部的Y轴坐标+margin值
             final int y = child.getBottom() + layoutParams.bottomMargin;
             final int height = y + mDividerHeight;
-          //  Log.e("height", height + "===================");
+            //  Log.e("height", height + "===================");
             if (mDrawable != null) {
                 //setBounds(x,y,width,height); x:组件在容器X轴上的起点 y:组件在容器Y轴上的起点
                 // width:组件的长度 height:组件的高度

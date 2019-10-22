@@ -187,10 +187,10 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
     }
 
     //获取名字
-    private Recorder getRecord(String publickey, String ticketNum) {
+    private Recorder getRecord(String did, String ticketNum) {
         Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
-            if (netList.get(i).getCode().equals(publickey)) {
+            if (netList.get(i).getDid().equals(did)) {
                 recorder.no = (netList.get(i).getIndex() + 1);
                 recorder.name = netList.get(i).getNickname();
                 recorder.ticketNum = ticketNum;
