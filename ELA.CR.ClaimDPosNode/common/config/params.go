@@ -175,6 +175,7 @@ var DefaultParams = Params{
 	ProposalPublicVotingPeriod:  7 * 720,
 	CRAgreementCount:            8,
 	VoterRejectPercentage:       10,
+	MaxCommitteeProposalCount:   128,
 	EnableUtxoDB:                true,
 	WalletPath:                  "keystore.dat",
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
@@ -231,6 +232,8 @@ func (p *Params) TestNet() *Params {
 	copy.CheckRewardHeight = 100               //todo correct me later
 	copy.EnableUtxoDB = true
 	copy.VoterRejectPercentage = 10
+	copy.MaxCommitteeProposalCount = 128
+
 	return &copy
 }
 
@@ -283,6 +286,7 @@ func (p *Params) RegNet() *Params {
 	copy.CheckRewardHeight = 280000
 	copy.EnableUtxoDB = true
 	copy.VoterRejectPercentage = 10
+	copy.MaxCommitteeProposalCount = 128
 	return &copy
 }
 
@@ -453,6 +457,9 @@ type Params struct {
 
 	// VoterRejectPercentage defines percentage about voters reject a proposal.
 	VoterRejectPercentage float64
+
+	//MaxCommitteeProposalCount defines per committee max proposal count
+	MaxCommitteeProposalCount uint32
 
 	// CkpManager holds checkpoints save automatically.
 	CkpManager *checkpoint.Manager

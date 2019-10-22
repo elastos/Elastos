@@ -1950,7 +1950,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
 	crcProposal, _ := txn.Payload.(*payload.CRCProposal)
 	proposalHashSet := crstate.NewProposalHashSet()
-	for i := 0; i < crstate.MaxCommitteeProposalCount; i++ {
+	for i := 0; i < int(s.Chain.chainParams.MaxCommitteeProposalCount); i++ {
 		proposalHashSet.Add(*randomUint256())
 	}
 	s.Chain.crCommittee.GetProposalManager().ProposalHashs[crcProposal.
