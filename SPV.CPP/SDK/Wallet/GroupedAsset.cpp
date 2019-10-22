@@ -172,6 +172,8 @@ namespace Elastos {
 			} else if (voteContent.GetType() == VoteContent::Delegate) {
 				// producer vote
 				newVoteMaxAmount = voteContent.GetMaxVoteAmount();
+			} else if (voteContent.GetType() == VoteContent::CRCProposal) {
+				newVoteMaxAmount = voteContent.GetMaxVoteAmount();
 			} else {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid vote content type");
 			}
@@ -198,7 +200,7 @@ namespace Elastos {
 						oldVoteContent.push_back(vc);
 						if (vc.GetType() == VoteContent::CRC) {
 							oldVoteAmount.push_back(BigInt(vc.GetTotalVoteAmount()));
-						} else if (vc.GetType() == VoteContent::Delegate) {
+						} else if (vc.GetType() == VoteContent::Delegate || vc.GetType() == VoteContent::CRCProposal) {
 							oldVoteAmount.push_back(BigInt(vc.GetMaxVoteAmount()));
 						} else {
 							_parent->Unlock();

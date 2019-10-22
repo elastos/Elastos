@@ -105,6 +105,10 @@ namespace Elastos {
 				return "CRC";
 			} else if (_type == VoteContent::Delegate) {
 				return "Delegate";
+			} else if (_type == VoteContent::CRCProposal) {
+				return "CRCProposal";
+			} else if (_type == VoteContent::CRCImpeachment) {
+				return "CRCImpeachment";
 			}
 
 			return "Unknow";

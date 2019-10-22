@@ -474,6 +474,25 @@ static void CreateCRProposalTransaction(const std::string &masterWalletID, const
 
 }
 
+static void CreateVoteCRProposalTransaction(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	nlohmann::json votes = nlohmann::json::parse(
+			"{\"109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c\":\"50\",\"92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7\":\"40\"}");
+
+	nlohmann::json tx = mainchainSubWallet->CreateVoteCRCProposalTransaction("", votes, memo);
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
 static void GetVotedList(const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	if (!subWallet)
@@ -638,7 +657,7 @@ static void InitWallets() {
 //			masterWallet = NewMultiSignWalletWithPrvKey();
 
 			masterWallet->CreateSubWallet(gMainchainSubWalletID);
-			masterWallet->CreateSubWallet(gIDchainSubWalletID);
+//			masterWallet->CreateSubWallet(gIDchainSubWalletID);
 //			masterWallet->CreateSubWallet(gTokenchainSubWalletID);
 		}
 		masterWallets.push_back(masterWallet);
@@ -743,7 +762,7 @@ static void ELATest() {
 	static bool combineUTXODone = true, transferDone = true, depositDone = true;
 	static bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
 	static bool registerCR = true, updateCR = true, unregisterCR = true, retrieveCr = true, voteCR = true;
-	static bool createCRProposal = true;
+	static bool createCRProposal = true, voteCRProposal = true;
 
 	logger->debug("ELA {}", separator);
 	GetAllTxSummary(gMasterWalletID, gMainchainSubWalletID);
@@ -823,8 +842,13 @@ static void ELATest() {
 	}
 
 	if (!createCRProposal) {
-		createCRProposal = true;
 		CreateCRProposalTransaction(gMasterWalletID, gMainchainSubWalletID);
+		createCRProposal = true;
+	}
+
+	if (!voteCRProposal) {
+		CreateVoteCRProposalTransaction(gMasterWalletID, gMainchainSubWalletID);
+		voteCRProposal = true;
 	}
 
 	logger->debug("ELA {}", separator);

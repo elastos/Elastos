@@ -146,6 +146,10 @@ namespace Elastos {
 			virtual nlohmann::json CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
 			                                                          const std::string &memo);
 
+			virtual nlohmann::json CreateVoteCRCProposalTransaction(const std::string &fromAddress,
+			                                                        const nlohmann::json &votes,
+			                                                        const std::string &memo);
+
 		protected:
 			friend class MasterWallet;
 

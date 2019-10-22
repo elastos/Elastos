@@ -437,6 +437,24 @@ namespace Elastos {
 			virtual nlohmann::json
 			CreateCRCProposalTransaction(const nlohmann::json &proposal, const std::string &memo) = 0;
 
+			/**
+			 * Create vote crc proposal transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param votes        Proposal hash and votes in JSON format. Such as:
+			 *                     {
+			 *                          "109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c": "100000000",
+			 *                          "92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7": "200000000"
+			 *                     }
+			 * @param memo         Remarks string. Can be empty string.
+			 * @return             The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateVoteCRCProposalTransaction(
+					const std::string &fromAddress,
+					const nlohmann::json &votes,
+					const std::string &memo) = 0;
+
 		};
 
 	}

@@ -44,6 +44,8 @@ namespace Elastos {
 			enum Type {
 				Delegate,
 				CRC,
+				CRCProposal,
+				CRCImpeachment,
 				Max,
 			};
 
