@@ -167,7 +167,7 @@ func (s *SidechainIllegalData) Hash() common.Uint256 {
 	if s.hash == nil {
 		buf := new(bytes.Buffer)
 		s.SerializeUnsigned(buf, SidechainIllegalDataVersion)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		s.hash = &hash
 	}
 	return *s.hash

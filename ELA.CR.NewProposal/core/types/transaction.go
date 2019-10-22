@@ -343,7 +343,7 @@ func (tx *Transaction) GetSize() int {
 func (tx *Transaction) hash() common.Uint256 {
 	buf := new(bytes.Buffer)
 	tx.SerializeUnsigned(buf)
-	return common.Uint256(common.Sha256D(buf.Bytes()))
+	return common.Hash(buf.Bytes())
 }
 
 func (tx *Transaction) Hash() common.Uint256 {

@@ -29,7 +29,7 @@ local asset_id = m.get_asset_id()
 local fee = getFee()
 local cr_pubkey = getPublicKey()
 local proposal_type = getProposalType()
-local draft_hash = getDraftHash()
+local draft_data = getDraftData()
 local budgets = getBudgets()
 
 if fee == 0
@@ -41,8 +41,8 @@ if cr_pubkey == "" then
     cr_pubkey = pubkey
 end
 
-if draft_hash == "" then
-    print("public key is nil, should use --draftHash or -pk to set it.")
+if draft_data == "" then
+    print("draft data is nil, should use --draftdata to set it.")
     return
 end
 
@@ -54,7 +54,7 @@ end
 print("fee:", fee)
 print("public key:", cr_pubkey)
 print("proposal type:", proposal_type)
-print("draft proposal hash:", draft_hash)
+print("draft proposal data:", draft_data)
 print("budgets:")
 print("-----------------------")
 for i, v in pairs(budgets) do
@@ -62,8 +62,8 @@ for i, v in pairs(budgets) do
 end
 print("-----------------------")
 
--- crc proposal payload: crPublickey, proposalType, draftHash, budgets, wallet
-local cp_payload =crcproposal.new(cr_pubkey, proposal_type, draft_hash, budgets, wallet)
+-- crc proposal payload: crPublickey, proposalType, draftData, budgets, wallet
+local cp_payload =crcproposal.new(cr_pubkey, proposal_type, draft_data, budgets, wallet)
 print(cp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime

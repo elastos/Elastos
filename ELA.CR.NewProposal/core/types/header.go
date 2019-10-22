@@ -96,5 +96,5 @@ func (header *Header) DeserializeNoAux(r io.Reader) error {
 func (header *Header) Hash() common.Uint256 {
 	buf := new(bytes.Buffer)
 	header.SerializeNoAux(buf)
-	return common.Uint256(common.Sha256D(buf.Bytes()))
+	return common.Hash(buf.Bytes())
 }

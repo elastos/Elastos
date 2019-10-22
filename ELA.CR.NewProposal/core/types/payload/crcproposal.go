@@ -8,6 +8,7 @@ package payload
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -55,7 +56,14 @@ func (pt CRCProposalType) Name() string {
 	}
 }
 
-const CRCProposalVersion byte = 0x00
+const (
+	// CRCProposalVersion indicates the version of CRC proposal payload
+	CRCProposalVersion byte = 0x00
+
+	// MaxProposalDataSize the max size of proposal draft data or proposal
+	// tracking document data.
+	MaxProposalDataSize = 2 * 1024 * 1024
+)
 
 type CRCProposal struct {
 	// The type of current proposal.
@@ -66,10 +74,13 @@ type CRCProposal struct {
 	CRSponsorDID common.Uint168
 	// The hash of draft proposal.
 	DraftHash common.Uint256
+	// The data of draft proposal.
+	DraftData []byte
 	// The budget of different stages.
 	Budgets []common.Fixed64
 	// The address of budget.
 	Recipient common.Uint168
+
 	// The signature of sponsor.
 	Sign []byte
 	// The signature of CR sponsor, check data include signature of sponsor.
@@ -89,28 +100,39 @@ func (p *CRCProposal) Data(version byte) []byte {
 
 func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 	if _, err := w.Write([]byte{byte(p.ProposalType)}); err != nil {
-		return err
+		return errors.New("failed to serialize ProposalType")
 	}
+
 	if err := common.WriteVarBytes(w, p.SponsorPublicKey); err != nil {
-		return err
+		return errors.New("failed to serialize SponsorPublicKey")
 	}
+
 	if err := p.CRSponsorDID.Serialize(w); err != nil {
-		return errors.New("CRSponsorDID serialize failed")
+		return errors.New("failed to serialize CRSponsorDID")
 	}
+
 	if err := p.DraftHash.Serialize(w); err != nil {
-		return err
+		return errors.New("failed to serialize DraftHash")
 	}
+
+	if err := common.WriteVarBytes(w, p.DraftData); err != nil {
+		return errors.New("failed to serialize DraftData")
+	}
+
 	if err := common.WriteVarUint(w, uint64(len(p.Budgets))); err != nil {
-		return err
+		return errors.New("failed to serialize Budgets")
 	}
+
 	for _, v := range p.Budgets {
 		if err := v.Serialize(w); err != nil {
-			return err
+			return errors.New("failed to serialize Budgets")
 		}
 	}
+
 	if err := p.Recipient.Serialize(w); err != nil {
-		return errors.New("Recipient serialize failed")
+		return errors.New("failed to serialize Recipient")
 	}
+
 	return nil
 }
 
@@ -122,6 +144,7 @@ func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 	if err := common.WriteVarBytes(w, p.Sign); err != nil {
 		return err
 	}
+
 	return common.WriteVarBytes(w, p.CRSign)
 }
 
@@ -131,32 +154,41 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 		return err
 	}
 	p.ProposalType = CRCProposalType(pType[0])
-	sponsor, err := common.ReadVarBytes(r, crypto.NegativeBigLength, "sponsor")
+
+	p.SponsorPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "sponsor")
 	if err != nil {
-		return err
+		return errors.New("failed to deserialize SponsorPublicKey")
 	}
-	p.SponsorPublicKey = sponsor
-	if err := p.CRSponsorDID.Deserialize(r); err != nil {
-		return errors.New("CRSponsorDID deserialize failed")
+
+	if err = p.CRSponsorDID.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize CRSponsorDID")
 	}
-	if err := p.DraftHash.Deserialize(r); err != nil {
-		return err
+
+	if err = p.DraftHash.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize DraftHash")
 	}
+	p.DraftData, err = common.ReadVarBytes(r, MaxProposalDataSize, "draftData")
+	if err != nil {
+		return fmt.Errorf("failed to deserialize DraftData %s", err)
+	}
+
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
-		return err
+		return errors.New("failed to deserialize Budgets")
 	}
 	p.Budgets = make([]common.Fixed64, 0)
 	for i := 0; i < int(count); i++ {
 		var budget common.Fixed64
 		if err := budget.Deserialize(r); err != nil {
-			return err
+			return errors.New("failed to deserialize Budgets")
 		}
 		p.Budgets = append(p.Budgets, budget)
 	}
-	if err := p.Recipient.Deserialize(r); err != nil {
-		return errors.New("Recipient deserialize failed")
+
+	if err = p.Recipient.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize Recipient")
 	}
+
 	return nil
 }
 
@@ -164,16 +196,19 @@ func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
 	if err := p.DeserializeUnSigned(r, version); err != nil {
 		return err
 	}
+
 	sign, err := common.ReadVarBytes(r, crypto.SignatureLength, "sign data")
 	if err != nil {
 		return err
 	}
 	p.Sign = sign
+
 	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
 	if err != nil {
 		return err
 	}
 	p.CRSign = crSign
+
 	return nil
 }
 
@@ -181,7 +216,7 @@ func (p *CRCProposal) Hash() common.Uint256 {
 	if p.hash == nil {
 		buf := new(bytes.Buffer)
 		p.Serialize(buf, CRCProposalVersion)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		p.hash = &hash
 	}
 	return *p.hash
