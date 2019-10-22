@@ -11,8 +11,8 @@ public class Proof {
         self.signature = signature
     }
     
-    func toJson(_ ref: DID, _ compact: Bool) -> Dictionary<String, Any> {
-        var dic: Dictionary<String, Any> = [: ]
+    func toJson(_ ref: DID, _ compact: Bool) -> OrderedDictionary<String, Any> {
+        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         //type:
         if !compact || !(type == Constants.defaultPublicKeyType) {

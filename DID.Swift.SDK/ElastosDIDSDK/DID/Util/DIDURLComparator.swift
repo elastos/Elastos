@@ -2,6 +2,32 @@ import Foundation
 
 class DIDURLComparator {
     
+    // TODO string 判断比较
+    class func DIDStringComparator(_ a: String, _ b: String) -> Bool {
+        return a.caseInsensitiveCompare(b) == ComparisonResult.orderedAscending
+    }
+    
+    class func DIDOrderedDictionaryComparatorByKey(_ source: OrderedDictionary<String, Any>) -> OrderedDictionary<String, Any> {
+        
+        var sortArray: Array<(String, Any)> = Array()
+        for (key, value) in source {
+            sortArray.append((key, value))
+        }
+        
+        sortArray.sort { (a, b) -> Bool in
+            let strA: String = a.0
+            let strB: String = b.0
+            return DIDStringComparator(strA, strB)
+        }
+        
+        var result: OrderedDictionary<String, Any> = OrderedDictionary<String, Any>()
+        for obj in sortArray {
+            result[obj.0] = obj.1
+        }
+
+        return result
+    }
+    
     // TODO DIDURL 判断比较
     class func DIDURLComparator(_ a: DIDURL, _ b: DIDURL) -> Bool {
         let aToken = a.toExternalForm()

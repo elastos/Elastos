@@ -3,8 +3,8 @@ import Foundation
 public class VerifiableCredential: DIDObject {
     public var types: Array<String> = [String]()
     public var issuer: DID!
-    public var issuanceDate: Date!
-    public var expirationDate: Date!
+    public var issuanceDate: Date?
+    public var expirationDate: Date?
     public var subject: CredentialSubject!
     public var proof: Proof!
     private var propf: Proof?
@@ -39,6 +39,9 @@ public class VerifiableCredential: DIDObject {
         
         // type
         var strs: Array<String> = []
+        types.sort { (a, b) -> Bool in
+            return a.caseInsensitiveCompare(b) == ComparisonResult.orderedAscending
+        }
         types.forEach{ str in
             strs.append(str)
         }
@@ -51,16 +54,19 @@ public class VerifiableCredential: DIDObject {
         
         // issuanceDate
         if (issuanceDate != nil) {
-            dic[Constants.expirationDate] = DateFormater.format(issuanceDate)
+            dic[Constants.issuanceDate] = DateFormater.format(issuanceDate!)
         }
         
         // expirationDate
         if (expirationDate != nil) {
-            dic[Constants.expirationDate] = DateFormater.format(expirationDate)
+            dic[Constants.expirationDate] = DateFormater.format(expirationDate!)
         }
         
+        let credSubject = subject.toJson(ref, compact)
+        let orderCredSubject = DIDURLComparator.DIDOrderedDictionaryComparatorByKey(credSubject)
+
         // credentialSubject
-        dic[Constants.credentialSubject] = subject.toJson(ref, compact)
+        dic[Constants.credentialSubject] = orderCredSubject
         
         // proof
         if !forSign {
@@ -136,7 +142,7 @@ public class VerifiableCredential: DIDObject {
         }
         
         // proof
-        value = json[Constants.proof] 
+        value = json[Constants.proof]
         proof = try Proof.fromJson(value as! OrderedDictionary<String, Any>, re)
         self.type = proof.type
     }
