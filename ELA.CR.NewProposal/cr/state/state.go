@@ -610,16 +610,16 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	p := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
-			did, err := common.Uint168FromBytes(cv.Candidate)
-			if err != nil {
-				continue
-			}
-			candidate := s.getCandidate(*did)
-			if candidate == nil {
-				continue
-			}
 			switch vote.VoteType {
 			case outputpayload.CRC:
+				did, err := common.Uint168FromBytes(cv.Candidate)
+				if err != nil {
+					continue
+				}
+				candidate := s.getCandidate(*did)
+				if candidate == nil {
+					continue
+				}
 				v := cv.Votes
 				s.history.Append(height, func() {
 					candidate.votes -= v
