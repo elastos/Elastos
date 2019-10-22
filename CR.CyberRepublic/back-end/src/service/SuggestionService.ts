@@ -397,6 +397,79 @@ export default class extends Base {
     return this.model.findById(_id)
   }
 
+  public async investigation(param: any): Promise<object> {
+    const { id } = param
+    const sugg = await this.model.getDBInstance().findById(id)
+    if (!sugg) {
+      return { success: false }
+    }
+    const council = userUtil.formatUsername(this.currentUser)
+    const subject = `Need background investigation on suggestion #${sugg.displayId}`
+    const body = `
+      <p>Council member ${council} requested secretary to do background investigation on suggestion #${sugg.displayId}</p>
+      <br />
+      <p>Click the link to view the suggestion detail: <a href="${
+      process.env.SERVER_URL
+      }/suggestion/${sugg._id}">${process.env.SERVER_URL}/suggestion/${sugg._id}</a></p>
+      <br />
+      <p>Cyber Republic Team</p>
+      <p>Thanks</p>
+    `
+    await this.notifySecretaries(subject, body)
+    return { success: true, message: 'Ok' }
+  }
+
+  public async advisory(param: any): Promise<object> {
+    const { id } = param
+    const sugg = await this.model.getDBInstance().findById(id)
+    if (!sugg) {
+      return { success: false }
+    }
+    const council = userUtil.formatUsername(this.currentUser)
+    const subject = `Need technical advisory on suggestion #${sugg.displayId}`
+    const body = `
+      <p>Council member ${council} requested secretary to provide advisory on suggestion #${sugg.displayId}</p>
+      <br />
+      <p>Click the link to view the suggestion detail: <a href="${
+      process.env.SERVER_URL
+      }/suggestion/${sugg._id}">${process.env.SERVER_URL}/suggestion/${sugg._id}</a></p>
+      <br />
+      <p>Cyber Republic Team</p>
+      <p>Thanks</p>
+    `
+    await this.notifySecretaries(subject, body)
+    return { success: true, message: 'Ok' }
+  }
+
+  private async notifySecretaries(subject: string, body: string) {
+    const db_user = this.getDBModel('User')
+    const currentUserId = _.get(this.currentUser, '_id')
+    const secretaries = await db_user.find({
+      role: constant.USER_ROLE.SECRETARY
+    })
+    const toUsers = _.filter(
+      secretaries,
+      user => !user._id.equals(currentUserId)
+    )
+    const toMails = _.map(toUsers, 'email')
+    const recVariables = _.zipObject(
+      toMails,
+      _.map(toUsers, user => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      })
+    )
+    const mailObj = {
+      to: toMails,
+      subject,
+      body,
+      recVariables
+    }
+    mail.send(mailObj)
+  }
+
   /**
    * Admin only
    */

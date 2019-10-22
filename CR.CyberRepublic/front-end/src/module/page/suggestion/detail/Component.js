@@ -632,10 +632,12 @@ export default class extends StandardPage {
   }
 
   needBgInvestigation = async () => {
-    this.props.needBgInvestigation()
+    const { _id } = this.props.detail
+    this.props.needBgInvestigation(_id)
   }
 
   needAdvisory = async () => {
-    this.props.needAdvisory()
+    const { _id } = this.props.detail
+    this.props.needAdvisory(_id)
   }
 }
