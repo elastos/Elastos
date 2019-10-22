@@ -64,5 +64,11 @@ export default createContainer(Component, (state) => {
     async unsubscribe(id) {
       return commentService.unsubscribe('suggestion', id)
     },
+    async needBgInvestigation() {
+      return service.needBgInvestigation()
+    },
+    async needAdvisory() {
+      return service.needAdvisory()
+    }
   }
 })

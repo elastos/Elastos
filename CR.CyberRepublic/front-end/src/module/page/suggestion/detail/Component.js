@@ -457,6 +457,28 @@ export default class extends StandardPage {
         </StyledButton>
       </Col>
     )
+    const needBgInvestigationBtn = isCouncil && (
+      <Col xs={24} sm={8}>
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          onClick={this.needBgInvestigation}
+        >
+          {I18N.get('suggestion.btn.needBgInvestigation')}
+        </StyledButton>
+      </Col>
+    )
+    const needAdvisoryBtn = isCouncil && (
+      <Col xs={24} sm={8}>
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          onClick={this.needAdvisory}
+        >
+          {I18N.get('suggestion.btn.needAdvisory')}
+        </StyledButton>
+      </Col>
+    )
 
     const res = (
       <BtnGroup>
@@ -464,6 +486,8 @@ export default class extends StandardPage {
           {considerBtn}
           {needMoreInfoBtn}
           {createFormBtn}
+          {needBgInvestigationBtn}
+          {needAdvisoryBtn}
         </Row>
       </BtnGroup>
     )
@@ -605,5 +629,13 @@ export default class extends StandardPage {
       this.setState({ proposeLoading: false })
       logger.error(error)
     }
+  }
+
+  needBgInvestigation = async () => {
+    this.props.needBgInvestigation()
+  }
+
+  needAdvisory = async () => {
+    this.props.needAdvisory()
   }
 }

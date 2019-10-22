@@ -28,7 +28,9 @@ export default {
     summary: '总结'
   },
   btn: {
-    makeIntoProposal: '发布为提案'
+    makeIntoProposal: '发布为提案',
+    needBgInvestigation: '需要背景调查',
+    needAdvisory: '需要咨询'
   },
   status: {
     posted: '发布',

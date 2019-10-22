@@ -28,7 +28,9 @@ export default {
     summary: 'Summary'
   },
   btn: {
-    makeIntoProposal: 'Make Into Proposal'
+    makeIntoProposal: 'Make Into Proposal',
+    needBgInvestigation: 'Need Background Investigation',
+    needAdvisory: 'Need Advisory'
   },
   status: {
     posted: 'Posted',
