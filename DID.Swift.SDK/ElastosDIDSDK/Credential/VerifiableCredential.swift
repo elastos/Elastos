@@ -29,7 +29,7 @@ public class VerifiableCredential: DIDObject {
         var value: String
         
         // id
-        if compact && id.isEqual(ref) {
+        if compact && id.did.isEqual(ref) {
             value = "#" + id.fragment!
         }
         else {
@@ -50,8 +50,13 @@ public class VerifiableCredential: DIDObject {
         }
         
         // issuanceDate
+        if (issuanceDate != nil) {
+            dic[Constants.expirationDate] = DateFormater.format(issuanceDate)
+        }
+        
+        // expirationDate
         if (expirationDate != nil) {
-            dic[Constants.expirationDate] = "TODO: change to time string"
+            dic[Constants.expirationDate] = DateFormater.format(expirationDate)
         }
         
         // credentialSubject

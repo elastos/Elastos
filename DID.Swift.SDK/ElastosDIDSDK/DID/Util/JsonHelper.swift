@@ -24,14 +24,14 @@ class JsonHelper {
         if vn == nil {
             throw DIDError.failue("Invalid " + hint + " value.")
         }
-        let value: String = vn as? String ?? ""
+        var value: String = vn as? String ?? ""
 
         guard value != "" else {
             throw DIDError.failue("Invalid " + hint + " value.")
         }
-        let index = value.index(value.startIndex, offsetBy: 1)
-        let fragment: String = value.substring(to: index)
+        let fragment: String = String(value.prefix(1))
         if fragment == "#" {
+            value = String(value.suffix(value.count - 1))
             return try DIDURL(ref, value)
         }
         return try DIDURL(value)

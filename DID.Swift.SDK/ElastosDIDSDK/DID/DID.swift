@@ -3,8 +3,8 @@ import Foundation
 public class DID: NSObject {
     public static let METHOD: String = "elastos"
 
-    public var method: String!
-    public var methodSpecificId: String!
+    public var method: String?
+    public var methodSpecificId: String?
 
     private var document: DIDDocument?
     private var resolved: Bool?

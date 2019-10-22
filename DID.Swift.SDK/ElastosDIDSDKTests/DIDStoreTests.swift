@@ -72,7 +72,7 @@ class DIDStoreTests: XCTestCase {
         let hint: String = "my first did"
         let doc: DIDDocument = try! store.newDid(passphrase, hint)
         primaryDid = doc.subject
-        let id: String = doc.subject!.methodSpecificId
+        let id: String = doc.subject!.methodSpecificId!
         let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
         XCTAssertTrue(existsFile(path))
         
@@ -83,7 +83,7 @@ class DIDStoreTests: XCTestCase {
     
     func test03CreateDID2() {
         let doc: DIDDocument = try! store.newDid(passphrase, nil)
-        let id: String = doc.subject!.methodSpecificId
+        let id: String = doc.subject!.methodSpecificId!
         let path: String = storePath + "/" + "ids" + "/" + id + "/document"
         XCTAssertTrue(existsFile(path))
         let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
@@ -98,7 +98,7 @@ class DIDStoreTests: XCTestCase {
             
             let hint: String = "my did " + String(10)
             let doc: DIDDocument = try! store.newDid(passphrase, hint)
-            let id: String = doc.subject!.methodSpecificId
+            let id: String = doc.subject!.methodSpecificId!
             let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
             XCTAssertTrue(existsFile(path))
             
@@ -119,10 +119,10 @@ class DIDStoreTests: XCTestCase {
             if did.isEqual(primaryDid) {
                 var deleted: Bool = try! store.deleteDid(did)
                 XCTAssertTrue(deleted)
-                var path: String = storePath + "/ids/" + did.methodSpecificId
+                var path: String = storePath + "/ids/" + did.methodSpecificId!
                 XCTAssertFalse(exists(path))
                 
-                path = storePath + "/ids/." + did.methodSpecificId + ".meta"
+                path = storePath + "/ids/." + did.methodSpecificId! + ".meta"
                 XCTAssertFalse(exists(path))
                 
                 deleted = try! store.deleteDid(did)
