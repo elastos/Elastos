@@ -163,9 +163,9 @@ class C extends StandardPage {
   }
 
   renderAnchors() {
-    const { data, isSecretary, isCouncil } = this.props
+    const { data, reviews, isSecretary } = this.props
     const reviewLink =
-      isSecretary || this.isAuthor(data) ? (
+      isSecretary || (this.isAuthor(data) && !_.isEmpty(reviews)) ? (
         <Link href="#review" title={I18N.get('elip.fields.review')} />
       ) : null
     const voteLink =
@@ -199,7 +199,7 @@ class C extends StandardPage {
         </LinkGroup>
         <LinkGroup marginTop={51}>
           {reviewLink}
-          {voteLink}
+          {/* {voteLink} */}
         </LinkGroup>
       </StyledAnchor>
     )
@@ -237,7 +237,7 @@ class C extends StandardPage {
             </Part>
           ))}
           {review}
-          {vote}
+          {/* {vote} */}
         </StickyContainer>
       </Content>
     )
@@ -302,13 +302,13 @@ class C extends StandardPage {
   renderPreamble() {
     const { data } = this.props
     const preambles = {
-      elip: `#${data.vid}`,
+      elip: ![ELIP_STATUS.WAIT_FOR_REVIEW, ELIP_STATUS.REJECTED].includes(data.status) && `#${data.vid}`,
       title: data.title,
       author: data.createdBy && data.createdBy.username,
       discussions: data.discussions,
-      status: data.status,
-      type: data.elipType,
-      created: moment(data.createdAt).format('MMM D, YYYY'),
+      status: I18N.get(`elip.status.${data.status}`),
+      type: I18N.get(`elip.form.typeTitle.${data.elipType}`),
+      created: moment(data.createdAt).format('YYYY-MM-DD'),
       requires: data.requires,
       replaces: data.replaces,
       superseded: data.superseded
@@ -318,12 +318,7 @@ class C extends StandardPage {
       <Part id="preamble">
         <PartTitle>{I18N.get('elip.fields.preamble')}</PartTitle>
         <PartContent className="preamble">
-          {_.map(preambles, (v, k) =>
-            this.renderPreambleItem(
-              I18N.get(`elip.fields.preambleItems.${k}`),
-              v
-            )
-          )}
+          {_.map(preambles, (v, k) => !_.isEmpty(v) && this.renderPreambleItem(I18N.get(`elip.fields.preambleItems.${k}`), v))}
         </PartContent>
       </Part>
     )
@@ -473,23 +468,19 @@ class C extends StandardPage {
     )
 
     return (
-      <Row>
-        <Col offset={8} span={4}>
-          {rejectPopover}
-        </Col>
-        <Col span={4}>
-          <Popconfirm
-            title={I18N.get('elip.modal.approve')}
-            onConfirm={this.approvedReview}
-            okText={I18N.get('.yes')}
-            cancelText={I18N.get('.no')}
-          >
-            <Button className="cr-btn cr-btn-primary">
-              {I18N.get('elip.button.approve')}
-            </Button>
-          </Popconfirm>
-        </Col>
-      </Row>
+      <ReviewBtnGroup style={{ marginTop: 30 }}>
+        {rejectPopover}
+        <Popconfirm
+          title={I18N.get('elip.modal.approve')}
+          onConfirm={this.approvedReview}
+          okText={I18N.get('.yes')}
+          cancelText={I18N.get('.no')}
+        >
+          <Button className="cr-btn cr-btn-primary" style={{ marginLeft: 10 }}>
+            {I18N.get('elip.button.approve')}
+          </Button>
+        </Popconfirm>
+      </ReviewBtnGroup>
     )
   }
 
@@ -672,7 +663,6 @@ const Status = styled.div`
   color: ${props => {
     return props.status === ELIP_STATUS.REJECTED ? '#fff' : '#000'
   }};
-  margin-bottom: 42px;
   background: ${props => {
     switch (props.status) {
       case ELIP_STATUS.REJECTED:
@@ -685,7 +675,6 @@ const Status = styled.div`
   padding: 0 6px;
   display: inline-block;
   @media only screen and (max-width: ${breakPoint.mobile}) {
-    margin-bottom: 32px;
     font-size: 14px;
   }
 `
@@ -833,4 +822,9 @@ const VotePanelTitle = styled.div`
 
 const VotePanelContent = styled.div`
   padding-bottom: 100px;
+`
+
+const ReviewBtnGroup = styled.div`
+  display: flex;
+  justify-content: center;
 `

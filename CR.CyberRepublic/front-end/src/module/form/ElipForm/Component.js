@@ -4,6 +4,7 @@ import { Form, Input, Button, Row, Radio, Tabs, Typography, Icon } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
+import { ELIP_TYPE } from '@/constant'
 
 import {
   Container,
@@ -76,7 +77,7 @@ class C extends BaseComponent {
         backwardCompatibility: values.backwardCompatibility,
         referenceImplementation: values.referenceImplementation,
         copyright: values.copyright
-      }).finally(() => this.setState({ loading: false }))
+      })
     })
   }
 
@@ -119,7 +120,8 @@ class C extends BaseComponent {
   }
 
   getTypeRadioGroup = key => {
-    const { getFieldDecorator, data } = this.props.form
+    const { data = {} } = this.props
+    const { getFieldDecorator } = this.props.form
     const rules = [
       {
         required: true,
@@ -128,7 +130,7 @@ class C extends BaseComponent {
     ]
     return getFieldDecorator(key, {
       rules,
-      initialValue: data && data.elipType ? data.elipType : 'STANDARD_TRACK'
+      initialValue: data && data.elipType ? data.elipType : ELIP_TYPE.STANDARD_TRACK
     })(<RadioCard radioKey={key} />)
   }
 
@@ -292,7 +294,7 @@ class RadioCard extends BaseComponent {
   constructor(props) {
     super(props)
     this.state = {
-      data: this.props && this.props.value ? this.props.value : 'STANDARD_TRACK'
+      data: this.props.value
     }
     this.handleChange = this.handleChange.bind(this)
   }
@@ -318,7 +320,7 @@ class RadioCard extends BaseComponent {
     return (
       <Typography>
         <RadioCardSpan style={{ fontWeight: 'bold' }}>
-          {I18N.get(`elip.form.type.${id}Title`)}
+          {I18N.get(`elip.form.typeTitle.${id}`)}
         </RadioCardSpan>
         {content}
       </Typography>
@@ -335,7 +337,7 @@ class RadioCard extends BaseComponent {
     return (
       <div>
         <div>
-          <Radio.Group defaultValue="a">
+          <Radio.Group>
             <RadioCardLabel
               className="radio-card-wrapper"
               style={{ width: 238.8, height: 350 }}
@@ -344,14 +346,14 @@ class RadioCard extends BaseComponent {
                 <Input
                   type="radio"
                   name={radioKey}
-                  value="STANDARD_TRACK"
+                  value={ELIP_TYPE.STANDARD_TRACK}
                   style={{ display: 'none' }}
                   onChange={this.handleChange}
                 />
               </RadioCardSpan>
               <RadioCardSpan>
-                <Paragraph>{this.renderContent('standard')}</Paragraph>
-                {this.renderCheck('STANDARD_TRACK')}
+                <Paragraph>{this.renderContent(ELIP_TYPE.STANDARD_TRACK)}</Paragraph>
+                {this.renderCheck(ELIP_TYPE.STANDARD_TRACK)}
               </RadioCardSpan>
             </RadioCardLabel>
             <RadioCardLabel
@@ -362,14 +364,14 @@ class RadioCard extends BaseComponent {
                 <Input
                   type="radio"
                   name={radioKey}
-                  value="PROCESS"
+                  value={ELIP_TYPE.INFORMATIONAL}
                   style={{ display: 'none' }}
                   onChange={this.handleChange}
                 />
               </RadioCardSpan>
               <RadioCardSpan>
-                <Paragraph>{this.renderContent('information')}</Paragraph>
-                {this.renderCheck('PROCESS')}
+                <Paragraph>{this.renderContent(ELIP_TYPE.INFORMATIONAL)}</Paragraph>
+                {this.renderCheck(ELIP_TYPE.INFORMATIONAL)}
               </RadioCardSpan>
             </RadioCardLabel>
             <RadioCardLabel
@@ -380,14 +382,14 @@ class RadioCard extends BaseComponent {
                 <Input
                   type="radio"
                   name={radioKey}
-                  value="INFORMATIONAL"
+                  value={ELIP_TYPE.PROCESS}
                   style={{ display: 'none' }}
                   onChange={this.handleChange}
                 />
               </RadioCardSpan>
               <RadioCardSpan>
-                <Paragraph>{this.renderContent('process')}</Paragraph>
-                {this.renderCheck('INFORMATIONAL')}
+                <Paragraph>{this.renderContent(ELIP_TYPE.PROCESS)}</Paragraph>
+                {this.renderCheck(ELIP_TYPE.PROCESS)}
               </RadioCardSpan>
             </RadioCardLabel>
           </Radio.Group>
