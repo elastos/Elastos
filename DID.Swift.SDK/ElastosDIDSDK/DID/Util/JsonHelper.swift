@@ -26,7 +26,7 @@ class JsonHelper {
         }
         var value: String = vn as? String ?? ""
 
-        guard value != "" else {
+        guard !value.isEmpty else {
             throw DIDError.failue("Invalid " + hint + " value.")
         }
         let fragment: String = String(value.prefix(1))

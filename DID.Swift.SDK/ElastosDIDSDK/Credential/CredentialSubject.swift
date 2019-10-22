@@ -53,7 +53,7 @@ public class CredentialSubject {
             return cs
         }
         json.forEach { key, value in
-            if key == Constants.id {
+            if key != Constants.id {
                 cs.addProperty(key, value as! String)
             }
         }

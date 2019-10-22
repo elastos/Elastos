@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11092151235ED8BD006B7F47 /* DIDUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11092150235ED8BD006B7F47 /* DIDUtil.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		111BF47E235467830043D570 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11942E42235190BD00746B87 /* libcrypto.a */; };
 		111BF47F235467830043D570 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11942E44235190E000746B87 /* libhdkey.a */; };
@@ -129,6 +130,7 @@
 /* Begin PBXFileReference section */
 		067C25678EDA0C004955F401 /* Pods-ElastosDIDSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.debug.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.debug.xcconfig"; sourceTree = "<group>"; };
 		0CCD0722BB081BABCB596D2F /* Pods-ElastosDIDSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ElastosDIDSDK.release.xcconfig"; path = "Target Support Files/Pods-ElastosDIDSDK/Pods-ElastosDIDSDK.release.xcconfig"; sourceTree = "<group>"; };
+		11092150235ED8BD006B7F47 /* DIDUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDUtil.swift; sourceTree = "<group>"; };
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
@@ -297,6 +299,7 @@
 			isa = PBXGroup;
 			children = (
 				11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */,
+				11092150235ED8BD006B7F47 /* DIDUtil.swift */,
 				11CA74AE235E06B7006E66F7 /* DerivedKey.swift */,
 				11CA74AF235E06B7006E66F7 /* DateFormater.swift */,
 				11CA74B0235E06B7006E66F7 /* HDKey.swift */,
@@ -676,6 +679,7 @@
 				A3E6D448233485800012CD77 /* Issuer.swift in Sources */,
 				A3E6D45F233485BB0012CD77 /* DIDBackend.swift in Sources */,
 				A3E6D47A233485E00012CD77 /* MalformedDIDError.swift in Sources */,
+				11092151235ED8BD006B7F47 /* DIDUtil.swift in Sources */,
 				A3E6D453233485AD0012CD77 /* DIDURLListener.swift in Sources */,
 				A3E6D45E233485BB0012CD77 /* IDChainRequest.swift in Sources */,
 				11CA74B7235E06B7006E66F7 /* EcdsaSigner.swift in Sources */,

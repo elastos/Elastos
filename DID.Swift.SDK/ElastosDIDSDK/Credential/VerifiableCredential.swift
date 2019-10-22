@@ -124,7 +124,7 @@ public class VerifiableCredential: DIDObject {
         
         // credentialSubject
         value = json[Constants.credentialSubject]
-        subject = try CredentialSubject.fromJson(json, ref)
+        subject = try CredentialSubject.fromJson(value as! OrderedDictionary<String, Any>, ref)
         
         // IMPORTANT: help resolve full method in proof
         var re: DID

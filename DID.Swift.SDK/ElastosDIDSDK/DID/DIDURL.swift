@@ -148,8 +148,8 @@ public class DIDURL: NSObject {
     public override var hash: Int {
         let param: String = (self.parameters != nil) ? mapToString(self.parameters!, sep: ";") : ""
         let query: String = (self.query != nil) ? mapToString(self.query!, sep: "&") : ""
-        let method: String = (did.method != nil) ? did.method : ""
-        let methodSpecificId: String = (did.methodSpecificId != nil) ? did.methodSpecificId : ""
+        let method: String = (did.method != nil) ? String("\(did.method)") : ""
+        let methodSpecificId: String = (did.methodSpecificId != nil) ? String("\(did.methodSpecificId)") : ""
         let path: String = (self.path != nil) ? self.path! : ""
         let fragment: String = (self.fragment != nil) ? self.fragment! : ""
         
@@ -157,7 +157,6 @@ public class DIDURL: NSObject {
         
         return hash
     }
-    
 }
 
 class DURLListener: DIDURLBaseListener {
