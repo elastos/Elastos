@@ -47,7 +47,9 @@ set(CONFIGURE_ARGS
     "--disable-smtp"
     "--disable-gopher"
     "--disable-manual"
-    ${CONFIGURE_ARGS_INIT})
+    ${CONFIGURE_ARGS_INIT}
+    "PKG_CONFIG= "
+    "ac_tool_prefix=")
 
 set(INSTALL_CMD
     make install)
