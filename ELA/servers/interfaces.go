@@ -1511,8 +1511,8 @@ type RpcProposalBaseState struct {
 }
 
 type RpcCRProposalBaseStateInfo struct {
-	RpcProposalBaseStateSlice []RpcProposalBaseState `json:"RpcProposalBaseStateslice"`
-	TotalCounts               uint64                 `json:"totalcounts"`
+	RpcProposalBaseStates []RpcProposalBaseState `json:"RpcProposalBaseStates"`
+	TotalCounts           uint64                 `json:"totalcounts"`
 }
 
 type RpcCRCProposal struct {
@@ -1782,8 +1782,8 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 	}
 
 	var crVotes map[string]payload.VoteResult
-	var RpcProposalBaseStateSlice []RpcProposalBaseState
-	i := 0
+	var RpcProposalBaseStates []RpcProposalBaseState
+
 	for _, proposal := range proposalMap {
 		crVotes = make(map[string]payload.VoteResult)
 		for k, v := range proposal.CRVotes {
@@ -1797,20 +1797,23 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			VotersRejectAmount: proposal.VotersRejectAmount,
 			RegisterHeight:     proposal.RegisterHeight,
 			VoteStartHeight:    proposal.VoteStartHeight,
-			Index:              uint64(i),
 		}
-		i++
-		RpcProposalBaseStateSlice = append(RpcProposalBaseStateSlice, RpcProposalBaseState)
+		RpcProposalBaseStates = append(RpcProposalBaseStates, RpcProposalBaseState)
 	}
-	sort.Slice(RpcProposalBaseStateSlice, func(i, j int) bool {
-		return RpcProposalBaseStateSlice[i].
-			ProposalHash < RpcProposalBaseStateSlice[j].ProposalHash
+	sort.Slice(RpcProposalBaseStates, func(i, j int) bool {
+		return RpcProposalBaseStates[i].
+			ProposalHash < RpcProposalBaseStates[j].ProposalHash
 	})
-	count := int64(len(RpcProposalBaseStateSlice))
+
+	for k := range RpcProposalBaseStates {
+		RpcProposalBaseStates[k].Index = uint64(k)
+	}
+
+	count := int64(len(RpcProposalBaseStates))
 	if limit < 0 {
 		limit = count
 	}
-	var rSRpcProposalBaseStateSlice []RpcProposalBaseState
+	var rSRpcProposalBaseStates []RpcProposalBaseState
 	if start < count {
 		end := start
 		if start+limit <= count {
@@ -1818,12 +1821,12 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 		} else {
 			end = count
 		}
-		rSRpcProposalBaseStateSlice = append(rSRpcProposalBaseStateSlice, RpcProposalBaseStateSlice[start:end]...)
+		rSRpcProposalBaseStates = append(rSRpcProposalBaseStates, RpcProposalBaseStates[start:end]...)
 	}
 
 	result := &RpcCRProposalBaseStateInfo{
-		RpcProposalBaseStateSlice: rSRpcProposalBaseStateSlice,
-		TotalCounts:               uint64(count),
+		RpcProposalBaseStates: rSRpcProposalBaseStates,
+		TotalCounts:           uint64(count),
 	}
 
 	return ResponsePack(Success, result)
