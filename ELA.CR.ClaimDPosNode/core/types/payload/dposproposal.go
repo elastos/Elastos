@@ -77,7 +77,7 @@ func (p *DPOSProposal) Hash() common.Uint256 {
 	if p.hash == nil {
 		buf := new(bytes.Buffer)
 		p.SerializeUnsigned(buf)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		p.hash = &hash
 	}
 	return *p.hash

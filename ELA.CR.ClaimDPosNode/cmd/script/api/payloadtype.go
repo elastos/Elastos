@@ -926,16 +926,16 @@ func RegisterCRCProposalType(L *lua.LState) {
 func newCRCProposal(L *lua.LState) int {
 	publicKeyStr := L.ToString(1)
 	proposalType := L.ToInt64(2)
-	draftHashStr := L.ToString(3)
+	draftDataStr := L.ToString(3)
 	budgetsTable := L.ToTable(4)
 	needSign := true
 	client, err := checkClient(L, 5)
 	if err != nil {
 		needSign = false
 	}
-	draftHash, err := common.Uint256FromHexString(draftHashStr)
+	draftData, err := common.HexStringToBytes(draftDataStr)
 	if err != nil {
-		fmt.Println("wrong draft proposal hash")
+		fmt.Println("wrong draft proposal data")
 		os.Exit(1)
 	}
 
@@ -969,7 +969,8 @@ func newCRCProposal(L *lua.LState) int {
 		ProposalType:     payload.CRCProposalType(proposalType),
 		SponsorPublicKey: publicKey,
 		CRSponsorDID:     *getDid(ct.Code),
-		DraftHash:        *draftHash,
+		DraftHash:        common.Hash(draftData),
+		DraftData:        draftData,
 		Budgets:          budgets,
 	}
 
@@ -1152,7 +1153,7 @@ func newCRCProposalTracking(L *lua.LState) int {
 
 	proposalTrackingType := L.ToInt64(1)
 	proposalHashStr := L.ToString(2)
-	documentHashStr := L.ToString(3)
+	documentDataStr := L.ToString(3)
 	stage := L.ToInt64(4)
 	appropriation := L.ToNumber(5)
 	leaderPublicKeyStr := L.ToString(6)
@@ -1162,7 +1163,7 @@ func newCRCProposalTracking(L *lua.LState) int {
 	sgPrivateKeyStr := L.ToString(10)
 
 	proposalHash, _ := common.Uint256FromHexString(proposalHashStr)
-	documentHash, _ := common.Uint256FromHexString(documentHashStr)
+	documentData, _ := common.HexStringToBytes(documentDataStr)
 	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
 	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
 	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
@@ -1172,7 +1173,8 @@ func newCRCProposalTracking(L *lua.LState) int {
 	cPayload := &payload.CRCProposalTracking{
 		ProposalTrackingType: payload.CRCProposalTrackingType(proposalTrackingType),
 		ProposalHash:         *proposalHash,
-		DocumentHash:         *documentHash,
+		DocumentHash:         common.Hash(documentData),
+		DocumentData:         documentData,
 		Stage:                uint8(stage),
 		Appropriation:        common.Fixed64(appropriation * 1e8),
 		LeaderPubKey:         leaderPublicKey,

@@ -1203,7 +1203,7 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return errors.New("invalid signature in payload")
 	}
 
-	// check the deposit coin
+	// check deposit coin
 	hash, err := contract.PublicKeyToDepositProgramHash(info.OwnerPublicKey)
 	if err != nil {
 		return errors.New("invalid public key")
@@ -1484,7 +1484,7 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		return err
 	}
 
-	// check the deposit coin
+	// check deposit coin
 	var depositCount int
 	for _, output := range txn.Outputs {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
@@ -1603,19 +1603,27 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 		return errors.New("invalid payload")
 	}
 
-	// Check if the proposal exist.
+	// Check if proposal exist.
 	proposalState := b.crCommittee.GetProposalManager().GetProposal(
 		cptPayload.ProposalHash)
 	if proposalState == nil {
 		return errors.New("proposal not exist")
 	}
 
+	// Check proposal status.
 	if proposalState.Status != crstate.VoterAgreed {
 		return errors.New("proposal status is not VoterAgreed")
 	}
 
+	// Check proposal tracking count.
 	if proposalState.TrackingCount >= b.chainParams.MaxProposalTrackingCount {
 		return errors.New("reached max tracking count")
+	}
+
+	// Check draft data of proposal tracking document.
+	dataHash := common.Hash(cptPayload.DocumentData)
+	if !dataHash.IsEqual(cptPayload.DocumentHash) {
+		return errors.New("failed to check document data hash")
 	}
 
 	var result error
@@ -1638,7 +1646,7 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 
 func (b *BlockChain) checkCRCProposalCommonTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
-	// Check the stage of proposal
+	// Check stage of proposal
 	if cptPayload.Stage != 0 {
 		return errors.New("stage need to be zero")
 	}
@@ -1654,7 +1662,7 @@ func (b *BlockChain) checkCRCProposalCommonTracking(
 
 func (b *BlockChain) checkCRCProposalProgressTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
-	// Check the stage of proposal
+	// Check stage of proposal
 	if cptPayload.Stage != pState.CurrentStage {
 		return errors.New("invalid stage")
 	}
@@ -1670,7 +1678,7 @@ func (b *BlockChain) checkCRCProposalProgressTracking(
 
 func (b *BlockChain) checkCRCProposalTerminatedTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
-	// Check the stage of proposal
+	// Check stage of proposal
 	if cptPayload.Stage != 0 {
 		return errors.New("stage need to be zero")
 	}
@@ -1686,7 +1694,7 @@ func (b *BlockChain) checkCRCProposalTerminatedTracking(
 
 func (b *BlockChain) checkCRCProposalLeaderTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
-	// Check the stage of proposal
+	// Check stage of proposal
 	if cptPayload.Stage != 0 {
 		return errors.New("stage need to be zero")
 	}
@@ -1702,7 +1710,7 @@ func (b *BlockChain) checkCRCProposalLeaderTracking(
 
 func (b *BlockChain) checkCRCProposalAppropriationTracking(
 	cptPayload *payload.CRCProposalTracking, pState *crstate.ProposalState) error {
-	// Check the stage of proposal
+	// Check stage of proposal
 	if cptPayload.Stage != pState.CurrentStage+1 {
 		return errors.New("invalid stage")
 	}
@@ -1864,17 +1872,28 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if !ok {
 		return errors.New("invalid payload")
 	}
+
+	// Check type of proposal.
 	if proposal.ProposalType.Name() == "Unknown" {
 		return errors.New("type of proposal should be known")
 	}
 
-	//The number of the proposals of the committee can not more than 128
+	// The number of the proposals of the committee can not more than 128
 	if b.crCommittee.GetProposalManager().IsProposalFull(proposal.CRSponsorDID) {
 		return errors.New("proposal is full")
 	}
+	// Check draft hash of proposal.
 	if b.crCommittee.GetProposalManager().ExistDraft(proposal.DraftHash) {
 		return errors.New("duplicated draft proposal hash")
 	}
+
+	// Check draft data of proposal.
+	dataHash := common.Hash(proposal.DraftData)
+	if !dataHash.IsEqual(proposal.DraftHash) {
+		return errors.New("failed to check draft data hash")
+	}
+
+	// Check sponsor of proposal.
 	crMember := b.crCommittee.GetMember(proposal.CRSponsorDID)
 	if crMember == nil {
 		return errors.New("CR sponsor should be one of the CR members")

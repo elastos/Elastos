@@ -107,7 +107,7 @@ func (i *InactiveArbitrators) Hash() common.Uint256 {
 	if i.hash == nil {
 		buf := new(bytes.Buffer)
 		i.SerializeUnsigned(buf, InactiveArbitratorsVersion)
-		hash := common.Uint256(common.Sha256D(buf.Bytes()))
+		hash := common.Hash(buf.Bytes())
 		i.hash = &hash
 	}
 	return *i.hash
