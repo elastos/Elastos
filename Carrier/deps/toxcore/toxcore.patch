@@ -1,19 +1,19 @@
 diff -ruN c-toxcore-0.2.10/CMakeLists.txt c-toxcore-0.2.10-mod/CMakeLists.txt
 --- c-toxcore-0.2.10/CMakeLists.txt	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/CMakeLists.txt	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/CMakeLists.txt	2019-10-21 17:12:37.000000000 +0800
 @@ -14,8 +14,8 @@
  #
  ################################################################################
- 
+
 -cmake_minimum_required(VERSION 2.8.12)
 -cmake_policy(VERSION 2.8.12)
 +cmake_minimum_required(VERSION 2.9)
 +cmake_policy(VERSION 2.9)
  project(toxcore)
- 
+
  set(CMAKE_MODULE_PATH ${toxcore_SOURCE_DIR}/cmake)
 @@ -129,6 +129,52 @@
- 
+
  ################################################################################
  #
 +# Used for carrier build.
@@ -67,7 +67,7 @@ diff -ruN c-toxcore-0.2.10/CMakeLists.txt c-toxcore-0.2.10-mod/CMakeLists.txt
  ################################################################################
 @@ -455,7 +501,7 @@
  endif()
- 
+
  option(BOOTSTRAP_DAEMON "Enable building of tox-bootstrapd" ON)
 -if(BOOTSTRAP_DAEMON AND WIN32)
 +if(BOOTSTRAP_DAEMON AND MSVC)
@@ -91,29 +91,29 @@ diff -ruN c-toxcore-0.2.10/CMakeLists.txt c-toxcore-0.2.10-mod/CMakeLists.txt
 +	install(TARGETS tox-bootstrapd_static ARCHIVE DESTINATION lib)
    endif()
  endif()
- 
+
 diff -ruN c-toxcore-0.2.10/cmake/Dependencies.cmake c-toxcore-0.2.10-mod/cmake/Dependencies.cmake
 --- c-toxcore-0.2.10/cmake/Dependencies.cmake	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/cmake/Dependencies.cmake	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/cmake/Dependencies.cmake	2019-10-21 17:12:37.000000000 +0800
 @@ -13,17 +13,17 @@
  find_library(SOCKET_LIBRARIES       socket       )
- 
+
  # For toxcore.
 -pkg_use_module(LIBSODIUM            libsodium    )
 +#pkg_use_module(LIBSODIUM            libsodium    )
- 
+
  # For toxav.
  pkg_use_module(OPUS                 opus         )
  pkg_use_module(VPX                  vpx          )
- 
+
  # For tox-bootstrapd.
 -pkg_use_module(LIBCONFIG            libconfig    )
 +#pkg_use_module(LIBCONFIG            libconfig    )
- 
+
  # For tox-spectest.
 -pkg_use_module(MSGPACK              msgpack      )
 +#pkg_use_module(MSGPACK              msgpack      )
- 
+
  # For av_test.
  pkg_use_module(OPENCV               opencv       )
 @@ -45,9 +45,10 @@
@@ -129,7 +129,7 @@ diff -ruN c-toxcore-0.2.10/cmake/Dependencies.cmake c-toxcore-0.2.10-mod/cmake/D
    if(LIBSODIUM_LIBRARIES)
      include_directories("third_party/libsodium/include")
 @@ -59,6 +60,7 @@
- 
+
    # pthreads
    # --------
 +  if(FALSE) # skip to use win32 thread.
@@ -160,11 +160,11 @@ diff -ruN c-toxcore-0.2.10/cmake/Dependencies.cmake c-toxcore-0.2.10-mod/cmake/D
  endif()
 diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/config.c c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/config.c
 --- c-toxcore-0.2.10/other/bootstrap_daemon/src/config.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/config.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/config.c	2019-10-21 17:12:37.000000000 +0800
 @@ -294,6 +294,123 @@
      return 1;
  }
- 
+
 +#ifdef CARRIER_BUILD
 +int get_turn_config(const char *cfg_file_path, int *port, char **realm,
 +                    char **pid_file_path, char **userdb, int *verbose)
@@ -286,17 +286,17 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/config.c c-toxcore-0.2.10-
   *
   * Converts a hex string with even number of characters into binary.
 @@ -323,6 +440,7 @@
- 
+
      return ret;
  }
 +#endif
- 
+
  int bootstrap_from_config(const char *cfg_file_path, DHT *dht, int enable_ipv6)
  {
 @@ -393,12 +511,14 @@
              goto next;
          }
- 
+
 +#ifndef CARRIER_BUILD
          // Process settings
          if (strlen(bs_public_key) != CRYPTO_PUBLIC_KEY_SIZE * 2) {
@@ -305,13 +305,13 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/config.c c-toxcore-0.2.10-
              goto next;
          }
 +#endif
- 
+
          if (bs_port < MIN_ALLOWED_PORT || bs_port > MAX_ALLOWED_PORT) {
              log_write(LOG_LEVEL_WARNING, "Bootstrap node #%d: Invalid '%s': %d, should be in [%d, %d]. Skipping the node.\n", i,
 @@ -407,7 +527,11 @@
              goto next;
          }
- 
+
 +#ifdef CARRIER_BUILD
 +        bs_public_key_bin = base58_string_to_bin(bs_public_key);
 +#else
@@ -321,7 +321,7 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/config.c c-toxcore-0.2.10-
                             bs_public_key_bin);
          free(bs_public_key_bin);
 @@ -431,3 +555,136 @@
- 
+
      return 1;
  }
 +
@@ -459,11 +459,11 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/config.c c-toxcore-0.2.10-
 +#endif
 diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/config.h c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/config.h
 --- c-toxcore-0.2.10/other/bootstrap_daemon/src/config.h	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/config.h	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/config.h	2019-10-21 17:12:37.000000000 +0800
 @@ -49,4 +49,21 @@
   */
  int bootstrap_from_config(const char *cfg_file_path, DHT *dht, int enable_ipv6);
- 
+
 +#ifdef CARRIER_BUILD
 +/*
 + * Get TURN server config options from the config file.
@@ -484,11 +484,11 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/config.h c-toxcore-0.2.10-
  #endif // C_TOXCORE_OTHER_BOOTSTRAP_DAEMON_SRC_CONFIG_H
 diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/global.h c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/global.h
 --- c-toxcore-0.2.10/other/bootstrap_daemon/src/global.h	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/global.h	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/global.h	2019-10-21 17:12:37.000000000 +0800
 @@ -27,8 +27,7 @@
- 
+
  #include "../../../toxcore/tox.h"
- 
+
 -#define DAEMON_NAME "tox-bootstrapd"
 -
 +#define DAEMON_NAME "carrier-bootstrapd"
@@ -497,19 +497,19 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/global.h c-toxcore-0.2.10-
  #define DAEMON_VERSION_PATCH TOX_VERSION_PATCH
 diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/tox-bootstrapd.c
 --- c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/tox-bootstrapd.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/other/bootstrap_daemon/src/tox-bootstrapd.c	2019-10-21 17:12:37.000000000 +0800
 @@ -31,6 +31,7 @@
  #include <sys/stat.h>
  #include <signal.h> // system header, rather than C, because we need it for POSIX sigaction(2)
  #include <unistd.h>
 +#include <limits.h>
- 
+
  // C
  #include <assert.h>
 @@ -109,9 +110,20 @@
- 
+
  // Prints public key
- 
+
 -static void print_public_key(const uint8_t *public_key)
 +static void print_public_key(const uint8_t *public_key, const char *public_key_file_path)
  {
@@ -526,7 +526,7 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
 +
 + #ifndef CARRIER_BUILD
      int index = 0;
- 
+
      size_t i;
 @@ -119,6 +131,15 @@
      for (i = 0; i < CRYPTO_PUBLIC_KEY_SIZE; i++) {
@@ -541,22 +541,22 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
 +        fprintf(key_file, "%s\n", buffer);
 +        fclose(key_file);
 +    }
- 
+
      log_write(LOG_LEVEL_INFO, "Public Key: %s\n", buffer);
  }
 @@ -137,7 +158,7 @@
      }
- 
+
      // Open the PID file for writing
 -    pid_file = fopen(pid_file_path, "a+");
 +    pid_file = fopen(pid_file_path, "w+");
- 
+
      if (pid_file == nullptr) {
          log_write(LOG_LEVEL_ERROR, "Couldn't open the PID file for writing: %s. Exiting.\n", pid_file_path);
 @@ -167,7 +188,7 @@
          exit(1);
      }
- 
+
 -
 +#if 0
      // Change the current working directory
@@ -568,12 +568,12 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
      }
 +#endif
  }
- 
+
  // Logs toxcore logger message using our logger facility
 @@ -225,7 +247,16 @@
      caught_signal = signum;
  }
- 
+
 +#ifndef CARRIER_BUILD
  int main(int argc, char *argv[])
 +#else
@@ -588,7 +588,7 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
      umask(077);
      char *cfg_file_path;
 @@ -245,6 +276,8 @@
- 
+
      char *pid_file_path = nullptr;
      char *keys_file_path = nullptr;
 +    char public_key_file_path[PATH_MAX];
@@ -599,7 +599,7 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
 @@ -406,6 +439,15 @@
          return 1;
      }
- 
+
 +    strcpy(public_key_file_path, keys_file_path);
 +    p = strrchr(public_key_file_path, '/');
 +    if (p)
@@ -610,21 +610,21 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
 +    log_write(LOG_LEVEL_INFO, "Public key file: %s.\n", public_key_file_path);
 +
      TCP_Server *tcp_server = nullptr;
- 
+
      if (enable_tcp_relay) {
 @@ -477,7 +519,7 @@
          return 1;
      }
- 
+
 -    print_public_key(dht_get_self_public_key(dht));
 +    print_public_key(dht_get_self_public_key(dht), public_key_file_path);
- 
+
      uint64_t last_LANdiscovery = 0;
      const uint16_t net_htons_port = net_htons(port);
 @@ -489,6 +531,29 @@
          log_write(LOG_LEVEL_INFO, "Initialized LAN discovery successfully.\n");
      }
- 
+
 +#ifdef CARRIER_BUILD
 +    pid_t turn_pid = 0;
 +
@@ -649,12 +649,12 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
 +#endif
 +
      struct sigaction sa;
- 
+
      sa.sa_handler = handle_signal;
 @@ -556,5 +621,10 @@
      kill_networking(net);
      logger_kill(logger);
- 
+
 +#ifdef CARRIER_BUILD
 +    if (turn_pid > 0)
 +        kill(turn_pid, SIGTERM);
@@ -664,11 +664,11 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
  }
 diff -ruN c-toxcore-0.2.10/other/bootstrap_node_packets.c c-toxcore-0.2.10-mod/other/bootstrap_node_packets.c
 --- c-toxcore-0.2.10/other/bootstrap_node_packets.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/other/bootstrap_node_packets.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/other/bootstrap_node_packets.c	2019-10-21 17:12:37.000000000 +0800
 @@ -44,7 +44,7 @@
- 
+
      Networking_Core *nc = (Networking_Core *)object;
- 
+
 -    uint8_t data[1 + sizeof(bootstrap_version) + MAX_MOTD_LENGTH];
 +    CARRIER_VLA(uint8_t, data, 1 + sizeof(bootstrap_version) + MAX_MOTD_LENGTH);
      data[0] = BOOTSTRAP_INFO_PACKET_ID;
@@ -676,53 +676,53 @@ diff -ruN c-toxcore-0.2.10/other/bootstrap_node_packets.c c-toxcore-0.2.10-mod/o
      uint16_t len = 1 + sizeof(bootstrap_version) + bootstrap_motd_length;
 diff -ruN c-toxcore-0.2.10/toxcore/DHT.c c-toxcore-0.2.10-mod/toxcore/DHT.c
 --- c-toxcore-0.2.10/toxcore/DHT.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/DHT.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/DHT.c	2019-10-21 17:12:37.000000000 +0800
 @@ -1336,7 +1336,7 @@
      }
- 
+
      uint8_t plain[CRYPTO_PUBLIC_KEY_SIZE + sizeof(ping_id)];
 -    uint8_t data[1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + sizeof(plain) + CRYPTO_MAC_SIZE];
 +    CARRIER_VLA(uint8_t, data, 1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + sizeof(plain) + CRYPTO_MAC_SIZE);
- 
+
      memcpy(plain, client_id, CRYPTO_PUBLIC_KEY_SIZE);
      memcpy(plain + CRYPTO_PUBLIC_KEY_SIZE, &ping_id, sizeof(ping_id));
 @@ -1347,7 +1347,7 @@
      const int len = dht_create_packet(dht->self_public_key, shared_key, NET_PACKET_GET_NODES,
                                        plain, sizeof(plain), data);
- 
+
 -    if (len != sizeof(data)) {
 +    if (len != CARRIER_SIZEOF_VLA(data)) {
          return -1;
      }
- 
+
 @@ -1389,12 +1389,12 @@
      memcpy(plain + 1 + nodes_length, sendback_data, length);
- 
+
      const uint32_t crypto_size = 1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + CRYPTO_MAC_SIZE;
 -    VLA(uint8_t, data, 1 + nodes_length + length + crypto_size);
 +    CARRIER_VLA(uint8_t, data, 1 + nodes_length + length + crypto_size);
- 
+
      const int len = dht_create_packet(dht->self_public_key, shared_encryption_key, NET_PACKET_SEND_NODES_IPV6,
                                        plain, 1 + nodes_length + length, data);
- 
+
 -    if (len != SIZEOF_VLA(data)) {
 +    if (len != CARRIER_SIZEOF_VLA(data)) {
          return -1;
      }
- 
+
 @@ -2075,7 +2075,7 @@
  static int send_NATping(DHT *dht, const uint8_t *public_key, uint64_t ping_id, uint8_t type)
  {
      uint8_t data[sizeof(uint64_t) + 1];
 -    uint8_t packet[MAX_CRYPTO_REQUEST_SIZE];
 +    CARRIER_VLA(uint8_t, packet, MAX_CRYPTO_REQUEST_SIZE);
- 
+
      int num = 0;
- 
+
 @@ -2317,7 +2317,7 @@
          return -1;
      }
- 
+
 -    uint8_t packet[MAX_CRYPTO_REQUEST_SIZE];
 +    CARRIER_VLA(uint8_t, packet, MAX_CRYPTO_REQUEST_SIZE);
      uint8_t data[HARDREQ_DATA_SIZE] = {0};
@@ -731,7 +731,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/DHT.c c-toxcore-0.2.10-mod/toxcore/DHT.c
 @@ -2350,7 +2350,7 @@
          return -1;
      }
- 
+
 -    uint8_t packet[MAX_CRYPTO_REQUEST_SIZE];
 +    CARRIER_VLA(uint8_t, packet, MAX_CRYPTO_REQUEST_SIZE);
      VLA(uint8_t, data, 1 + CRYPTO_PUBLIC_KEY_SIZE + nodes_data_length);
@@ -739,43 +739,39 @@ diff -ruN c-toxcore-0.2.10/toxcore/DHT.c c-toxcore-0.2.10-mod/toxcore/DHT.c
      memcpy(data + 1, queried_client_id, CRYPTO_PUBLIC_KEY_SIZE);
 diff -ruN c-toxcore-0.2.10/toxcore/LAN_discovery.c c-toxcore-0.2.10-mod/toxcore/LAN_discovery.c
 --- c-toxcore-0.2.10/toxcore/LAN_discovery.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/LAN_discovery.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/LAN_discovery.c	2019-10-21 17:12:37.000000000 +0800
 @@ -383,7 +383,7 @@
- 
+
  int lan_discovery_send(uint16_t port, DHT *dht)
  {
 -    uint8_t data[CRYPTO_PUBLIC_KEY_SIZE + 1];
 +    CARRIER_VLA(uint8_t, data, CRYPTO_PUBLIC_KEY_SIZE + 1);
      data[0] = NET_PACKET_LAN_DISCOVERY;
      id_copy(data + 1, dht_get_self_public_key(dht));
- 
+
 diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Messenger.c
 --- c-toxcore-0.2.10/toxcore/Messenger.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/Messenger.c	2019-10-15 17:01:54.000000000 +0800
-@@ -275,11 +275,19 @@
++++ c-toxcore-0.2.10-mod/toxcore/Messenger.c	2019-10-21 17:12:46.000000000 +0800
+@@ -275,11 +275,16 @@
          uint32_t nospam;
          memcpy(&nospam, address + CRYPTO_PUBLIC_KEY_SIZE, sizeof(nospam));
- 
+
 -        if (m->friendlist[friend_id].friendrequest_nospam == nospam) {
 +        if (m->friendlist[friend_id].friendrequest_nospam == nospam &&
 +            (m->friendlist[friend_id].info_size == length &&
 +             !memcmp(m->friendlist[friend_id].info, data, length))) {
              return FAERR_ALREADYSENT;
          }
- 
--        m->friendlist[friend_id].friendrequest_nospam = nospam;
-+        if (m->friendlist[friend_id].friendrequest_nospam != nospam) {
-+            m->friendlist[friend_id].friendrequest_nospam = nospam;
-+        } else {
-+            memcpy(m->friendlist[friend_id].info, data, length);
-+            m->friendlist[friend_id].info_size = length;
-+        }
+
+         m->friendlist[friend_id].friendrequest_nospam = nospam;
++        memcpy(m->friendlist[friend_id].info, data, length);
++        m->friendlist[friend_id].info_size = length;
 +
          return FAERR_SETNEWNOSPAM;
      }
- 
-@@ -835,11 +843,19 @@
- 
+
+@@ -835,11 +840,19 @@
+
  static void set_friend_userstatus(const Messenger *m, int32_t friendnumber, uint8_t status)
  {
 +    if (friend_not_valid(m, friendnumber)) {
@@ -784,7 +780,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
 +
      m->friendlist[friendnumber].userstatus = (Userstatus)status;
  }
- 
+
  static void set_friend_typing(const Messenger *m, int32_t friendnumber, uint8_t is_typing)
  {
 +    if (friend_not_valid(m, friendnumber)) {
@@ -793,27 +789,27 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
 +
      m->friendlist[friendnumber].is_typing = is_typing;
  }
- 
-@@ -921,7 +937,7 @@
+
+@@ -921,7 +934,7 @@
          }
      }
- 
+
 -    m->friendlist[friendnumber].last_connection_udp_tcp = ret;
 +    if (0 == friend_not_valid(m, friendnumber)) m->friendlist[friendnumber].last_connection_udp_tcp = ret;
  }
- 
+
  static void break_files(const Messenger *m, int32_t friendnumber);
-@@ -959,7 +975,7 @@
+@@ -959,7 +972,7 @@
  static void set_friend_status(Messenger *m, int32_t friendnumber, uint8_t status, void *userdata)
  {
      check_friend_connectionstatus(m, friendnumber, status, userdata);
 -    m->friendlist[friendnumber].status = status;
 +    if (0 == friend_not_valid(m, friendnumber)) m->friendlist[friendnumber].status = status;
  }
- 
+
  static int write_cryptpacket_id(const Messenger *m, int32_t friendnumber, uint8_t packet_id, const uint8_t *data,
-@@ -1598,6 +1614,8 @@
- 
+@@ -1598,6 +1611,8 @@
+
  static void do_reqchunk_filecb(Messenger *m, int32_t friendnumber, void *userdata)
  {
 +    if (friend_not_valid(m, friendnumber)) return;
@@ -821,17 +817,17 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
      // We're not currently doing any file transfers.
      if (m->friendlist[friendnumber].num_sending_files == 0) {
          return;
-@@ -1968,7 +1986,7 @@
- 
+@@ -1968,7 +1983,7 @@
+
      m->mono_time = mono_time;
- 
+
 -    m->fr = friendreq_new();
 +    m->fr = friendreq_new(m->mono_time);
- 
+
      if (!m->fr) {
          free(m);
-@@ -2485,7 +2503,10 @@
- 
+@@ -2485,7 +2500,10 @@
+
              if (fr >= 0) {
                  set_friend_status(m, i, FRIEND_REQUESTED, userdata);
 -                m->friendlist[i].friendrequest_lastsent = temp_time;
@@ -841,8 +837,8 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
 +                }
              }
          }
- 
-@@ -2502,25 +2523,37 @@
+
+@@ -2502,25 +2520,37 @@
          if (m->friendlist[i].status == FRIEND_ONLINE) { /* friend is online. */
              if (m->friendlist[i].name_sent == 0) {
                  if (m_sendname(m, i, m->name, m->name_length)) {
@@ -853,7 +849,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
 +                    }
                  }
              }
- 
+
              if (m->friendlist[i].statusmessage_sent == 0) {
                  if (send_statusmessage(m, i, m->statusmessage, m->statusmessage_length)) {
 -                    m->friendlist[i].statusmessage_sent = 1;
@@ -863,7 +859,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
 +                    }
                  }
              }
- 
+
              if (m->friendlist[i].userstatus_sent == 0) {
                  if (send_userstatus(m, i, m->userstatus)) {
 -                    m->friendlist[i].userstatus_sent = 1;
@@ -873,7 +869,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
 +                    }
                  }
              }
- 
+
              if (m->friendlist[i].user_istyping_sent == 0) {
                  if (send_user_istyping(m, i, m->friendlist[i].user_istyping)) {
 -                    m->friendlist[i].user_istyping_sent = 1;
@@ -883,18 +879,18 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
 +                    }
                  }
              }
- 
-@@ -2528,7 +2561,7 @@
+
+@@ -2528,7 +2558,7 @@
              do_receipts(m, i, userdata);
              do_reqchunk_filecb(m, i, userdata);
- 
+
 -            m->friendlist[i].last_seen_time = (uint64_t) time(nullptr);
 +            if (0 == friend_not_valid(m, i)) m->friendlist[i].last_seen_time = (uint64_t) time(nullptr);
          }
      }
  }
-@@ -3321,3 +3354,14 @@
- 
+@@ -3321,3 +3351,14 @@
+
      return ret;
  }
 +
@@ -910,11 +906,11 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.c c-toxcore-0.2.10-mod/toxcore/Mess
 +
 diff -ruN c-toxcore-0.2.10/toxcore/Messenger.h c-toxcore-0.2.10-mod/toxcore/Messenger.h
 --- c-toxcore-0.2.10/toxcore/Messenger.h	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/Messenger.h	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/Messenger.h	2019-10-21 17:12:37.000000000 +0800
 @@ -817,4 +817,8 @@
   * of out_list will be truncated to list_size. */
  uint32_t copy_friendlist(const Messenger *m, uint32_t *out_list, uint32_t list_size);
- 
+
 +#if defined(CARRIER_BUILD)
 +int messenger_get_random_tcp_relay_addr(const Messenger *m, IP_Port *ip_port, uint8_t *public_key);
 +#endif
@@ -922,11 +918,11 @@ diff -ruN c-toxcore-0.2.10/toxcore/Messenger.h c-toxcore-0.2.10-mod/toxcore/Mess
  #endif
 diff -ruN c-toxcore-0.2.10/toxcore/TCP_client.c c-toxcore-0.2.10-mod/toxcore/TCP_client.c
 --- c-toxcore-0.2.10/toxcore/TCP_client.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/TCP_client.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/TCP_client.c	2019-10-21 17:12:37.000000000 +0800
 @@ -27,6 +27,10 @@
- 
+
  #include "TCP_client.h"
- 
+
 +#if defined(CARRIER_BUILD)
 +#include "network.h"
 +#endif
@@ -937,53 +933,53 @@ diff -ruN c-toxcore-0.2.10/toxcore/TCP_client.c c-toxcore-0.2.10-mod/toxcore/TCP
 @@ -440,18 +444,19 @@
          }
      }
- 
+
 -    VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
 +    CARRIER_VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
- 
+
      uint16_t c_length = net_htons(length + CRYPTO_MAC_SIZE);
      memcpy(packet, &c_length, sizeof(uint16_t));
      int len = encrypt_data_symmetric(con->shared_key, con->sent_nonce, data, length, packet + sizeof(uint16_t));
- 
+
 -    if ((unsigned int)len != (SIZEOF_VLA(packet) - sizeof(uint16_t))) {
 +    if ((unsigned int)len != (CARRIER_SIZEOF_VLA(packet) - sizeof(uint16_t))) {
          return -1;
      }
- 
+
 +    carrier_magic_set(packet);
      if (priority) {
 -        len = sendpriority ? net_send(con->sock, packet, SIZEOF_VLA(packet)) : 0;
 +        len = sendpriority ? net_send(con->sock, carrier_rewind(packet), carrier_rewind_sizeof(packet)) : 0;
- 
+
          if (len <= 0) {
              len = 0;
 @@ -459,14 +464,14 @@
- 
+
          increment_nonce(con->sent_nonce);
- 
+
 -        if ((unsigned int)len == SIZEOF_VLA(packet)) {
 +        if ((unsigned int)len == carrier_rewind_sizeof(packet)) {
              return 1;
          }
- 
+
 -        return client_add_priority(con, packet, SIZEOF_VLA(packet), len);
 +        return client_add_priority(con, carrier_rewind(packet), carrier_rewind_sizeof(packet), len);
      }
- 
+
 -    len = net_send(con->sock, packet, SIZEOF_VLA(packet));
 +    len = net_send(con->sock, carrier_rewind(packet), carrier_rewind_sizeof(packet));
- 
+
      if (len <= 0) {
          return 0;
 @@ -474,12 +479,12 @@
- 
+
      increment_nonce(con->sent_nonce);
- 
+
 -    if ((unsigned int)len == SIZEOF_VLA(packet)) {
 +    if ((unsigned int)len == carrier_rewind_sizeof(packet)) {
          return 1;
      }
- 
+
 -    memcpy(con->last_packet, packet, SIZEOF_VLA(packet));
 -    con->last_packet_length = SIZEOF_VLA(packet);
 +    memcpy(con->last_packet, carrier_rewind(packet), carrier_rewind_sizeof(packet));
@@ -993,7 +989,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/TCP_client.c c-toxcore-0.2.10-mod/toxcore/TCP
  }
 diff -ruN c-toxcore-0.2.10/toxcore/TCP_connection.c c-toxcore-0.2.10-mod/toxcore/TCP_connection.c
 --- c-toxcore-0.2.10/toxcore/TCP_connection.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/TCP_connection.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/TCP_connection.c	2019-10-21 17:12:37.000000000 +0800
 @@ -1518,3 +1518,58 @@
      free(tcp_c->connections);
      free(tcp_c);
@@ -1055,24 +1051,24 @@ diff -ruN c-toxcore-0.2.10/toxcore/TCP_connection.c c-toxcore-0.2.10-mod/toxcore
 +
 diff -ruN c-toxcore-0.2.10/toxcore/TCP_connection.h c-toxcore-0.2.10-mod/toxcore/TCP_connection.h
 --- c-toxcore-0.2.10/toxcore/TCP_connection.h	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/TCP_connection.h	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/TCP_connection.h	2019-10-21 17:12:37.000000000 +0800
 @@ -224,5 +224,9 @@
  void do_tcp_connections(TCP_Connections *tcp_c, void *userdata);
  void kill_tcp_connections(TCP_Connections *tcp_c);
- 
+
 +#if defined(CARRIER_BUILD)
 +int get_random_tcp_relay_addr(TCP_Connections *tcp_c, IP_Port *ip_port, uint8_t *public_key);
 +#endif
 +
  #endif
- 
+
 diff -ruN c-toxcore-0.2.10/toxcore/TCP_server.c c-toxcore-0.2.10-mod/toxcore/TCP_server.c
 --- c-toxcore-0.2.10/toxcore/TCP_server.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/TCP_server.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/TCP_server.c	2019-10-21 17:12:37.000000000 +0800
 @@ -27,6 +27,13 @@
- 
+
  #include "TCP_server.h"
- 
+
 +#if defined(CARRIER_BUILD)
 +#include "network.h"
 +#if defined(__ANDROID__)
@@ -1086,7 +1082,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/TCP_server.c c-toxcore-0.2.10-mod/toxcore/TCP
 @@ -294,7 +301,21 @@
  {
      const unsigned int count = net_socket_data_recv_buffer(sock);
- 
+
 -    if (count >= sizeof(uint16_t)) {
 +    if (count >= sizeof(uint16_t) + carrier_magic_size()) {
 +#if defined(CARRIER_BUILD)
@@ -1105,57 +1101,57 @@ diff -ruN c-toxcore-0.2.10/toxcore/TCP_server.c c-toxcore-0.2.10-mod/toxcore/TCP
 +#endif
          uint16_t length;
          const int len = net_recv(sock, &length, sizeof(uint16_t));
- 
+
 @@ -496,18 +517,19 @@
          }
      }
- 
+
 -    VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
 +    CARRIER_VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
- 
+
      const uint16_t c_length = net_htons(length + CRYPTO_MAC_SIZE);
      memcpy(packet, &c_length, sizeof(uint16_t));
      int len = encrypt_data_symmetric(con->shared_key, con->sent_nonce, data, length, packet + sizeof(uint16_t));
- 
+
 -    if ((unsigned int)len != (SIZEOF_VLA(packet) - sizeof(uint16_t))) {
 +    if ((unsigned int)len != (CARRIER_SIZEOF_VLA(packet) - sizeof(uint16_t))) {
          return -1;
      }
- 
+
 +    carrier_magic_set(packet);
      if (priority) {
 -        len = sendpriority ? net_send(con->sock, packet, SIZEOF_VLA(packet)) : 0;
 +        len = sendpriority ? net_send(con->sock, carrier_rewind(packet), carrier_rewind_sizeof(packet)) : 0;
- 
+
          if (len <= 0) {
              len = 0;
 @@ -515,14 +537,14 @@
- 
+
          increment_nonce(con->sent_nonce);
- 
+
 -        if ((unsigned int)len == SIZEOF_VLA(packet)) {
 +        if ((unsigned int)len == carrier_rewind_sizeof(packet)) {
              return 1;
          }
- 
+
 -        return add_priority(con, packet, SIZEOF_VLA(packet), len);
 +        return add_priority(con, packet, carrier_rewind_sizeof(packet), len);
      }
- 
+
 -    len = net_send(con->sock, packet, SIZEOF_VLA(packet));
 +    len = net_send(con->sock, carrier_rewind(packet), carrier_rewind_sizeof(packet));
- 
+
      if (len <= 0) {
          return 0;
 @@ -530,12 +552,12 @@
- 
+
      increment_nonce(con->sent_nonce);
- 
+
 -    if ((unsigned int)len == SIZEOF_VLA(packet)) {
 +    if ((unsigned int)len == carrier_rewind_sizeof(packet)) {
          return 1;
      }
- 
+
 -    memcpy(con->last_packet, packet, SIZEOF_VLA(packet));
 -    con->last_packet_length = SIZEOF_VLA(packet);
 +    memcpy(con->last_packet, carrier_rewind(packet), carrier_rewind_sizeof(packet));
@@ -1165,17 +1161,17 @@ diff -ruN c-toxcore-0.2.10/toxcore/TCP_server.c c-toxcore-0.2.10-mod/toxcore/TCP
  }
 diff -ruN c-toxcore-0.2.10/toxcore/friend_requests.c c-toxcore-0.2.10-mod/toxcore/friend_requests.c
 --- c-toxcore-0.2.10/toxcore/friend_requests.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/friend_requests.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/friend_requests.c	2019-10-21 17:12:37.000000000 +0800
 @@ -31,6 +31,7 @@
  #include <string.h>
- 
+
  #include "util.h"
 +#include "crypto_core.h"
- 
+
  /* NOTE: The following is just a temporary fix for the multiple friend requests received at the same time problem.
   * TODO(irungentoo): Make this better (This will most likely tie in with the way we will handle spam.)
 @@ -39,6 +40,9 @@
- 
+
  struct Received_Requests {
      uint8_t requests[MAX_RECEIVED_STORED][CRYPTO_PUBLIC_KEY_SIZE];
 +    uint8_t msg_sha256[MAX_RECEIVED_STORED][CRYPTO_SHA256_SIZE];
@@ -1183,19 +1179,19 @@ diff -ruN c-toxcore-0.2.10/toxcore/friend_requests.c c-toxcore-0.2.10-mod/toxcor
 +    uint32_t accept_count[MAX_RECEIVED_STORED];
      uint16_t requests_index;
  };
- 
+
 @@ -52,6 +56,8 @@
      void *filter_function_userdata;
- 
+
      struct Received_Requests received;
 +
 +    Mono_Time *mono_time;
  };
- 
+
  /* Set and get the nospam variable used to prevent one type of friend request spam. */
 @@ -82,13 +88,17 @@
  }
- 
+
  /* Add to list of received friend requests. */
 -static void addto_receivedlist(Friend_Requests *fr, const uint8_t *real_pk)
 +static void addto_receivedlist(Friend_Requests *fr, const uint8_t *real_pk,
@@ -1204,14 +1200,14 @@ diff -ruN c-toxcore-0.2.10/toxcore/friend_requests.c c-toxcore-0.2.10-mod/toxcor
      if (fr->received.requests_index >= MAX_RECEIVED_STORED) {
          fr->received.requests_index = 0;
      }
- 
+
      id_copy(fr->received.requests[fr->received.requests_index], real_pk);
 +    memcpy(fr->received.msg_sha256[fr->received.requests_index], msg_sha256, CRYPTO_SHA256_SIZE);
 +    fr->received.last_accept_at[fr->received.requests_index] = mono_time_get(fr->mono_time);
 +    fr->received.accept_count[fr->received.requests_index] = 1;
      ++fr->received.requests_index;
  }
- 
+
 @@ -97,14 +107,32 @@
   *  return false if it did not.
   *  return true if it did.
@@ -1242,15 +1238,15 @@ diff -ruN c-toxcore-0.2.10/toxcore/friend_requests.c c-toxcore-0.2.10-mod/toxcor
 +            return false;
          }
      }
- 
+
 +    *exist = false;
      return false;
  }
- 
+
 @@ -125,11 +153,12 @@
      return -1;
  }
- 
+
 -
  static int friendreq_handlepacket(void *object, const uint8_t *source_pubkey, const uint8_t *packet, uint16_t length,
                                    void *userdata)
@@ -1258,38 +1254,38 @@ diff -ruN c-toxcore-0.2.10/toxcore/friend_requests.c c-toxcore-0.2.10-mod/toxcor
      Friend_Requests *const fr = (Friend_Requests *)object;
 +    uint8_t msg_sha256[CRYPTO_SHA256_SIZE];
 +    bool exist;
- 
+
      if (length <= 1 + sizeof(fr->nospam) || length > ONION_CLIENT_MAX_DATA_SIZE) {
          return 1;
 @@ -138,11 +167,13 @@
      ++packet;
      --length;
- 
+
 +    crypto_sha256(msg_sha256, packet + sizeof(fr->nospam), length - sizeof(fr->nospam));
 +
      if (fr->handle_friendrequest_isset == 0) {
          return 1;
      }
- 
+
 -    if (request_received(fr, source_pubkey)) {
 +    if (request_received(fr, source_pubkey, msg_sha256, &exist)) {
          return 1;
      }
- 
+
 @@ -156,7 +187,8 @@
          }
      }
- 
+
 -    addto_receivedlist(fr, source_pubkey);
 +    if (!exist)
 +        addto_receivedlist(fr, source_pubkey, msg_sha256);
- 
+
      const uint32_t message_len = length - sizeof(fr->nospam);
      VLA(uint8_t, message, message_len + 1);
 @@ -172,9 +204,16 @@
      set_friend_request_callback(fr_c, &friendreq_handlepacket, fr);
  }
- 
+
 -Friend_Requests *friendreq_new(void)
 +Friend_Requests *friendreq_new(Mono_Time *mono_time)
  {
@@ -1303,58 +1299,58 @@ diff -ruN c-toxcore-0.2.10/toxcore/friend_requests.c c-toxcore-0.2.10-mod/toxcor
 +    fr->mono_time = mono_time;
 +    return fr;
  }
- 
+
  void friendreq_kill(Friend_Requests *fr)
 diff -ruN c-toxcore-0.2.10/toxcore/friend_requests.h c-toxcore-0.2.10-mod/toxcore/friend_requests.h
 --- c-toxcore-0.2.10/toxcore/friend_requests.h	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/friend_requests.h	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/friend_requests.h	2019-10-21 17:12:37.000000000 +0800
 @@ -25,6 +25,7 @@
  #define C_TOXCORE_TOXCORE_FRIEND_REQUESTS_H
- 
+
  #include "friend_connection.h"
 +#include "mono_time.h"
- 
+
  #define MAX_FRIEND_REQUEST_DATA_SIZE (ONION_CLIENT_MAX_DATA_SIZE - (1 + sizeof(uint32_t)))
- 
+
 @@ -60,7 +61,7 @@
  /* Sets up friendreq packet handlers. */
  void friendreq_init(Friend_Requests *fr, Friend_Connections *fr_c);
- 
+
 -Friend_Requests *friendreq_new(void);
 +Friend_Requests *friendreq_new(Mono_Time *mono_time);
  void friendreq_kill(Friend_Requests *fr);
- 
+
  #endif
 diff -ruN c-toxcore-0.2.10/toxcore/net_crypto.c c-toxcore-0.2.10-mod/toxcore/net_crypto.c
 --- c-toxcore-0.2.10/toxcore/net_crypto.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/net_crypto.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/net_crypto.c	2019-10-21 17:12:37.000000000 +0800
 @@ -367,13 +367,13 @@
          return 1;
      }
- 
+
 -    uint8_t data[COOKIE_RESPONSE_LENGTH];
 +    CARRIER_VLA(uint8_t, data, COOKIE_RESPONSE_LENGTH);
- 
+
 -    if (create_cookie_response(c, data, request_plain, shared_key, dht_public_key) != sizeof(data)) {
 +    if (create_cookie_response(c, data, request_plain, shared_key, dht_public_key) != CARRIER_SIZEOF_VLA(data)) {
          return 1;
      }
- 
+
 -    if ((uint32_t)sendpacket(dht_get_net(c->dht), source, data, sizeof(data)) != sizeof(data)) {
 +    if ((uint32_t)sendpacket(dht_get_net(c->dht), source, data, CARRIER_SIZEOF_VLA(data)) != CARRIER_SIZEOF_VLA(data)) {
          return 1;
      }
- 
+
 @@ -1074,12 +1074,12 @@
      }
- 
+
      pthread_mutex_lock(&conn->mutex);
 -    VLA(uint8_t, packet, 1 + sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
 +    CARRIER_VLA(uint8_t, packet, 1 + sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
      packet[0] = NET_PACKET_CRYPTO_DATA;
      memcpy(packet + 1, conn->sent_nonce + (CRYPTO_NONCE_SIZE - sizeof(uint16_t)), sizeof(uint16_t));
      const int len = encrypt_data_symmetric(conn->shared_key, conn->sent_nonce, data, length, packet + 1 + sizeof(uint16_t));
- 
+
 -    if (len + 1 + sizeof(uint16_t) != SIZEOF_VLA(packet)) {
 +    if (len + 1 + sizeof(uint16_t) != CARRIER_SIZEOF_VLA(packet)) {
          pthread_mutex_unlock(&conn->mutex);
@@ -1363,11 +1359,11 @@ diff -ruN c-toxcore-0.2.10/toxcore/net_crypto.c c-toxcore-0.2.10-mod/toxcore/net
 @@ -1087,7 +1087,7 @@
      increment_nonce(conn->sent_nonce);
      pthread_mutex_unlock(&conn->mutex);
- 
+
 -    return send_packet_to(c, crypt_connection_id, packet, SIZEOF_VLA(packet));
 +    return send_packet_to(c, crypt_connection_id, packet, CARRIER_SIZEOF_VLA(packet));
  }
- 
+
  /* Creates and sends a data packet with buffer_start and num to the peer using the fastest route.
 @@ -1397,6 +1397,12 @@
  static int send_temp_packet(Net_Crypto *c, int crypt_connection_id)
@@ -1379,18 +1375,18 @@ diff -ruN c-toxcore-0.2.10/toxcore/net_crypto.c c-toxcore-0.2.10-mod/toxcore/net
 +#else
 +    uint8_t *packet = conn->temp_packet;
 +#endif
- 
+
      if (conn == nullptr) {
          return -1;
 @@ -1406,7 +1412,7 @@
          return -1;
      }
- 
+
 -    if (send_packet_to(c, crypt_connection_id, conn->temp_packet, conn->temp_packet_length) != 0) {
 +    if (send_packet_to(c, crypt_connection_id, packet, conn->temp_packet_length) != 0) {
          return -1;
      }
- 
+
 @@ -3061,3 +3067,14 @@
      crypto_memzero(c, sizeof(Net_Crypto));
      free(c);
@@ -1408,20 +1404,20 @@ diff -ruN c-toxcore-0.2.10/toxcore/net_crypto.c c-toxcore-0.2.10-mod/toxcore/net
 +
 diff -ruN c-toxcore-0.2.10/toxcore/net_crypto.h c-toxcore-0.2.10-mod/toxcore/net_crypto.h
 --- c-toxcore-0.2.10/toxcore/net_crypto.h	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/net_crypto.h	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/net_crypto.h	2019-10-21 17:12:37.000000000 +0800
 @@ -356,6 +356,8 @@
- 
+
  void kill_net_crypto(Net_Crypto *c);
- 
+
 -
 +#if defined(CARRIER_BUILD)
 +int crypto_get_random_tcp_relay_addr(Net_Crypto *c, IP_Port *ip_Port, uint8_t *public_key);
 +#endif
- 
+
  #endif
 diff -ruN c-toxcore-0.2.10/toxcore/network.c c-toxcore-0.2.10-mod/toxcore/network.c
 --- c-toxcore-0.2.10/toxcore/network.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/network.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/network.c	2019-10-21 17:12:37.000000000 +0800
 @@ -481,14 +481,18 @@
  int sendpacket(Networking_Core *net, IP_Port ip_port, const uint8_t *data, uint16_t length)
  {
@@ -1432,7 +1428,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/network.c c-toxcore-0.2.10-mod/toxcore/networ
 +                        "uninitialised socket", (unsigned)length); */
          return -1;
      }
- 
+
      /* socket TOX_AF_INET, but target IP NOT: can't send */
      if (net_family_is_ipv4(net->family) && !net_family_is_ipv4(ip_port.ip.family)) {
 -        LOGGER_ERROR(net->log, "attempted to send message with network family %d (probably IPv6) on IPv4 socket",
@@ -1443,21 +1439,21 @@ diff -ruN c-toxcore-0.2.10/toxcore/network.c c-toxcore-0.2.10-mod/toxcore/networ
 +                        ip_port.ip.family.value); */
          return -1;
      }
- 
+
 @@ -533,11 +537,12 @@
          return -1;
      }
- 
+
 -    const int res = sendto(net->sock.socket, (const char *)data, length, 0, (struct sockaddr *)&addr, addrsize);
 +    carrier_magic_set(data);
 +    const int res = sendto(net->sock.socket, (const char *)carrier_rewind(data), carrier_rewind_size(length), 0, (struct sockaddr *)&addr, addrsize);
- 
+
      loglogdata(net->log, "O=>", data, length, ip_port, res);
- 
+
 -    return res;
 +    return res > 0 ? (res - carrier_magic_size()) : res;
  }
- 
+
  /* Function to receive data
 @@ -555,7 +560,7 @@
      socklen_t addrlen = sizeof(addr);
@@ -1465,11 +1461,11 @@ diff -ruN c-toxcore-0.2.10/toxcore/network.c c-toxcore-0.2.10-mod/toxcore/networ
      *length = 0;
 -    int fail_or_len = recvfrom(sock.socket, (char *) data, MAX_UDP_PACKET_SIZE, 0, (struct sockaddr *)&addr, &addrlen);
 +    int fail_or_len = recvfrom(sock.socket, (char *)carrier_rewind(data), carrier_rewind_size(MAX_UDP_PACKET_SIZE), 0, (struct sockaddr *)&addr, &addrlen);
- 
+
      if (fail_or_len < 0) {
          int error = net_error();
 @@ -568,6 +573,19 @@
- 
+
          return -1; /* Nothing received. */
      }
 +#if defined(CARRIER_BUILD)
@@ -1485,13 +1481,13 @@ diff -ruN c-toxcore-0.2.10/toxcore/network.c c-toxcore-0.2.10-mod/toxcore/networ
 +		//LOGGER_DEBUG(log, "Recevied valid DHT message, congradulations!!!!");
 +	}
 +#endif
- 
+
      *length = (uint32_t)fail_or_len;
- 
+
 @@ -616,6 +634,91 @@
      net->packethandlers[byte].object = object;
  }
- 
+
 +#if defined(CARRIER_BUILD)
 +static const char* packet_name(uint8_t type)
 +{
@@ -1582,17 +1578,17 @@ diff -ruN c-toxcore-0.2.10/toxcore/network.c c-toxcore-0.2.10-mod/toxcore/networ
      if (net_family_is_unspec(net->family)) {
 @@ -624,7 +727,7 @@
      }
- 
+
      IP_Port ip_port;
 -    uint8_t data[MAX_UDP_PACKET_SIZE];
 +    CARRIER_VLA(uint8_t, data, MAX_UDP_PACKET_SIZE);
      uint32_t length;
- 
+
      while (receivepacket(net->log, net->sock, &ip_port, data, &length) != -1) {
 @@ -637,6 +740,8 @@
              continue;
          }
- 
+
 +        LOGGER_TRACE(net->log, "received packet [0x%x](%s)", data[0], packet_name(data[0]));
 +
          net->packethandlers[data[0]].function(net->packethandlers[data[0]].object, ip_port, data, length, userdata);
@@ -1600,11 +1596,11 @@ diff -ruN c-toxcore-0.2.10/toxcore/network.c c-toxcore-0.2.10-mod/toxcore/networ
  }
 diff -ruN c-toxcore-0.2.10/toxcore/network.h c-toxcore-0.2.10-mod/toxcore/network.h
 --- c-toxcore-0.2.10/toxcore/network.h	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/network.h	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/network.h	2019-10-21 17:12:37.000000000 +0800
 @@ -34,10 +34,106 @@
  extern "C" {
  #endif
- 
+
 +#if defined(_WIN32) || defined(__WIN32__) || defined (WIN32) /* Put win32 includes here */
 +#ifndef WINVER
 +//Windows XP
@@ -1624,7 +1620,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/network.h c-toxcore-0.2.10-mod/toxcore/networ
  typedef struct Family {
      uint8_t value;
  } Family;
- 
+
 +#if defined(CARRIER_BUILD)
 +#if defined(_WIN32)
 +#include <malloc.h>
@@ -1710,7 +1706,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/network.h c-toxcore-0.2.10-mod/toxcore/networ
  bool net_family_is_ipv6(Family family);
 diff -ruN c-toxcore-0.2.10/toxcore/onion.c c-toxcore-0.2.10-mod/toxcore/onion.c
 --- c-toxcore-0.2.10/toxcore/onion.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/onion.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/onion.c	2019-10-21 17:12:37.000000000 +0800
 @@ -289,8 +289,8 @@
   */
  int send_onion_packet(Networking_Core *net, const Onion_Path *path, IP_Port dest, const uint8_t *data, uint16_t length)
@@ -1719,28 +1715,28 @@ diff -ruN c-toxcore-0.2.10/toxcore/onion.c c-toxcore-0.2.10-mod/toxcore/onion.c
 -    int len = create_onion_packet(packet, sizeof(packet), path, dest, data, length);
 +    CARRIER_VLA(uint8_t, packet, ONION_MAX_PACKET_SIZE);
 +    int len = create_onion_packet(packet, CARRIER_SIZEOF_VLA(packet), path, dest, data, length);
- 
+
      if (len == -1) {
          return -1;
 @@ -315,12 +315,12 @@
          return -1;
      }
- 
+
 -    VLA(uint8_t, packet, 1 + RETURN_3 + length);
 +    CARRIER_VLA(uint8_t, packet, 1 + RETURN_3 + length);
      packet[0] = NET_PACKET_ONION_RECV_3;
      memcpy(packet + 1, ret, RETURN_3);
      memcpy(packet + 1 + RETURN_3, data, length);
- 
+
 -    if ((uint32_t)sendpacket(net, dest, packet, SIZEOF_VLA(packet)) != SIZEOF_VLA(packet)) {
 +    if ((uint32_t)sendpacket(net, dest, packet, CARRIER_SIZEOF_VLA(packet)) != CARRIER_SIZEOF_VLA(packet)) {
          return -1;
      }
- 
+
 @@ -374,7 +374,7 @@
      uint8_t ip_port[SIZE_IPPORT];
      ipport_pack(ip_port, &source);
- 
+
 -    uint8_t data[ONION_MAX_PACKET_SIZE];
 +    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
      data[0] = NET_PACKET_ONION_SEND_1;
@@ -1749,7 +1745,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/onion.c c-toxcore-0.2.10-mod/toxcore/onion.c
 @@ -428,7 +428,7 @@
          return 1;
      }
- 
+
 -    uint8_t data[ONION_MAX_PACKET_SIZE];
 +    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
      data[0] = NET_PACKET_ONION_SEND_2;
@@ -1758,7 +1754,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/onion.c c-toxcore-0.2.10-mod/toxcore/onion.c
 @@ -494,7 +494,7 @@
          return 1;
      }
- 
+
 -    uint8_t data[ONION_MAX_PACKET_SIZE];
 +    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
      memcpy(data, plain + SIZE_IPPORT, len - SIZE_IPPORT);
@@ -1767,7 +1763,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/onion.c c-toxcore-0.2.10-mod/toxcore/onion.c
 @@ -552,7 +552,7 @@
          return 1;
      }
- 
+
 -    uint8_t data[ONION_MAX_PACKET_SIZE];
 +    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
      data[0] = NET_PACKET_ONION_RECV_2;
@@ -1776,7 +1772,7 @@ diff -ruN c-toxcore-0.2.10/toxcore/onion.c c-toxcore-0.2.10-mod/toxcore/onion.c
 @@ -598,7 +598,7 @@
          return 1;
      }
- 
+
 -    uint8_t data[ONION_MAX_PACKET_SIZE];
 +    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
      data[0] = NET_PACKET_ONION_RECV_1;
@@ -1784,50 +1780,50 @@ diff -ruN c-toxcore-0.2.10/toxcore/onion.c c-toxcore-0.2.10-mod/toxcore/onion.c
      memcpy(data + 1 + RETURN_1, packet + 1 + RETURN_2, length - (1 + RETURN_2));
 @@ -645,6 +645,7 @@
      }
- 
+
      uint16_t data_len = length - (1 + RETURN_1);
 +    CARRIER_VLA(uint8_t, pkt, data_len);
- 
+
      if (onion->recv_1_function &&
              !net_family_is_ipv4(send_to.ip.family) &&
 @@ -652,7 +653,8 @@
          return onion->recv_1_function(onion->callback_object, send_to, packet + (1 + RETURN_1), data_len);
      }
- 
+
 -    if ((uint32_t)sendpacket(onion->net, send_to, packet + (1 + RETURN_1), data_len) != data_len) {
 +    memcpy(pkt, packet + (1 + RETURN_1), data_len);
 +    if ((uint32_t)sendpacket(onion->net, send_to, pkt, data_len) != data_len) {
          return 1;
      }
- 
+
 diff -ruN c-toxcore-0.2.10/toxcore/onion_announce.c c-toxcore-0.2.10-mod/toxcore/onion_announce.c
 --- c-toxcore-0.2.10/toxcore/onion_announce.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/onion_announce.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/onion_announce.c	2019-10-21 17:12:37.000000000 +0800
 @@ -182,8 +182,8 @@
          return -1;
      }
- 
+
 -    uint8_t packet[ONION_MAX_PACKET_SIZE];
 -    len = create_onion_packet(packet, sizeof(packet), path, dest.ip_port, request, sizeof(request));
 +    CARRIER_VLA(uint8_t, packet, ONION_MAX_PACKET_SIZE);
 +    len = create_onion_packet(packet, CARRIER_SIZEOF_VLA(packet), path, dest.ip_port, request, sizeof(request));
- 
+
      if (len == -1) {
          return -1;
 @@ -220,8 +220,8 @@
          return -1;
      }
- 
+
 -    uint8_t packet[ONION_MAX_PACKET_SIZE];
 -    len = create_onion_packet(packet, sizeof(packet), path, dest, request, len);
 +    CARRIER_VLA(uint8_t, packet, ONION_MAX_PACKET_SIZE);
 +    len = create_onion_packet(packet, CARRIER_SIZEOF_VLA(packet), path, dest, request, len);
- 
+
      if (len == -1) {
          return -1;
 diff -ruN c-toxcore-0.2.10/toxcore/onion_client.c c-toxcore-0.2.10-mod/toxcore/onion_client.c
 --- c-toxcore-0.2.10/toxcore/onion_client.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/onion_client.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/onion_client.c	2019-10-21 17:12:37.000000000 +0800
 @@ -477,8 +477,8 @@
                                       const uint8_t *data, uint16_t length)
  {
@@ -1836,58 +1832,58 @@ diff -ruN c-toxcore-0.2.10/toxcore/onion_client.c c-toxcore-0.2.10-mod/toxcore/o
 -        int len = create_onion_packet(packet, sizeof(packet), path, dest, data, length);
 +        CARRIER_VLA(uint8_t, packet, ONION_MAX_PACKET_SIZE);
 +        int len = create_onion_packet(packet, CARRIER_SIZEOF_VLA(packet), path, dest, data, length);
- 
+
          if (len == -1) {
              return -1;
 @@ -1150,7 +1150,7 @@
          return -1;
      }
- 
+
 -    uint8_t packet[MAX_CRYPTO_REQUEST_SIZE];
 +    CARRIER_VLA(uint8_t, packet, MAX_CRYPTO_REQUEST_SIZE);
      len = create_request(dht_get_self_public_key(onion_c->dht), dht_get_self_secret_key(onion_c->dht), packet,
                           onion_c->friends_list[friend_num].dht_public_key, temp, SIZEOF_VLA(temp), CRYPTO_PACKET_DHTPK);
- 
+
 diff -ruN c-toxcore-0.2.10/toxcore/ping.c c-toxcore-0.2.10-mod/toxcore/ping.c
 --- c-toxcore-0.2.10/toxcore/ping.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/ping.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/ping.c	2019-10-21 17:12:37.000000000 +0800
 @@ -63,7 +63,7 @@
- 
+
  int32_t ping_send_request(Ping *ping, IP_Port ipp, const uint8_t *public_key)
  {
 -    uint8_t   pk[DHT_PING_SIZE];
 +    CARRIER_VLA(uint8_t, pk, DHT_PING_SIZE);
      int       rc;
      uint64_t  ping_id;
- 
+
 @@ -103,13 +103,13 @@
          return 1;
      }
- 
+
 -    return sendpacket(dht_get_net(ping->dht), ipp, pk, sizeof(pk));
 +    return sendpacket(dht_get_net(ping->dht), ipp, pk, CARRIER_SIZEOF_VLA(pk));
  }
- 
+
  static int ping_send_response(Ping *ping, IP_Port ipp, const uint8_t *public_key, uint64_t ping_id,
                                uint8_t *shared_encryption_key)
  {
 -    uint8_t   pk[DHT_PING_SIZE];
 +    CARRIER_VLA(uint8_t, pk, DHT_PING_SIZE);
      int       rc;
- 
+
      if (id_equal(public_key, dht_get_self_public_key(ping->dht))) {
 @@ -134,7 +134,7 @@
          return 1;
      }
- 
+
 -    return sendpacket(dht_get_net(ping->dht), ipp, pk, sizeof(pk));
 +    return sendpacket(dht_get_net(ping->dht), ipp, pk, CARRIER_SIZEOF_VLA(pk));
  }
- 
+
  static int handle_ping_request(void *object, IP_Port source, const uint8_t *packet, uint16_t length, void *userdata)
 diff -ruN c-toxcore-0.2.10/toxcore/tox.c c-toxcore-0.2.10-mod/toxcore/tox.c
 --- c-toxcore-0.2.10/toxcore/tox.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/tox.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/tox.c	2019-10-21 17:12:37.000000000 +0800
 @@ -2127,3 +2127,23 @@
      SET_ERROR_PARAMETER(error, TOX_ERR_GET_PORT_NOT_BOUND);
      return 0;
@@ -1914,11 +1910,11 @@ diff -ruN c-toxcore-0.2.10/toxcore/tox.c c-toxcore-0.2.10-mod/toxcore/tox.c
 +
 diff -ruN c-toxcore-0.2.10/toxcore/tox.h c-toxcore-0.2.10-mod/toxcore/tox.h
 --- c-toxcore-0.2.10/toxcore/tox.h	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/tox.h	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/tox.h	2019-10-21 17:12:37.000000000 +0800
 @@ -3188,6 +3188,18 @@
   */
  uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
- 
+
 +#if defined(CARRIER_BUILD)
 +/* Return a random TCP relay address for use as address of turn server.
 + *
@@ -1936,11 +1932,11 @@ diff -ruN c-toxcore-0.2.10/toxcore/tox.h c-toxcore-0.2.10-mod/toxcore/tox.h
  #endif
 diff -ruN c-toxcore-0.2.10/toxcore/util.c c-toxcore-0.2.10-mod/toxcore/util.c
 --- c-toxcore-0.2.10/toxcore/util.c	2019-05-30 21:36:12.000000000 +0800
-+++ c-toxcore-0.2.10-mod/toxcore/util.c	2019-10-15 17:01:54.000000000 +0800
++++ c-toxcore-0.2.10-mod/toxcore/util.c	2019-10-21 17:12:37.000000000 +0800
 @@ -27,6 +27,10 @@
  #include "config.h"
  #endif
- 
+
 +#ifdef _WIN32
 +#define _WINSOCKAPI_ //hack to exclude to include winsock.h
 +#endif
