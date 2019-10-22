@@ -4,8 +4,9 @@
 #include <limits.h>
 #include <getopt.h>
 #include <sys/stat.h>
-
+#include <unistd.h>
 #include <iostream>
+#include <signal.h>
 
 #include <MasterWalletManager.h>
 #include <IMasterWallet.h>
