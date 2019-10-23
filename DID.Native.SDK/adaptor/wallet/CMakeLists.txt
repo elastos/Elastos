@@ -41,6 +41,7 @@ set(LIBS
     spvsdk)
 
 add_executable(wallet ${SRC})
+add_dependencies(wallet libspvsdk)
 
 target_link_libraries(wallet ${LIBS} ${SYSTEM_LIBS})
 

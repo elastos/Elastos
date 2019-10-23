@@ -11,8 +11,9 @@ add_submodule(CUnit
     DEPENDS platform-specific)
 add_submodule(libspvsdk
     DEPENDS platform-specific)
+# libcurl will use openssl built by libspvsdk
 add_submodule(libcurl
-    DEPENDS libressl platform-specific)
+    DEPENDS libspvsdk platform-specific)
 
 if(WIN32)
     add_submodule(pthreads-w32

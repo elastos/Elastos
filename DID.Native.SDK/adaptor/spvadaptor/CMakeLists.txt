@@ -34,7 +34,7 @@ endif()
 link_directories(
     ${PROJECT_INT_DIST_DIR}/lib)
 
-set(SPVADAPTOR_DEPENDS libressl libcurl)
+set(SPVADAPTOR_DEPENDS libcurl libspvsdk)
 
 add_custom_target(spvadaptor)
 
