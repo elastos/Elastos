@@ -89,7 +89,8 @@ export default {
     }
   },
   msg: {
-    consideration: '已标记为委员会正在审议中'
+    consideration: '已标记为委员会正在审议中',
+    notify: '已给秘书发送邮件'
   },
   popover: {
     email: '邮箱',

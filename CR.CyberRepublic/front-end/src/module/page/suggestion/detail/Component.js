@@ -486,6 +486,8 @@ export default class extends StandardPage {
           {considerBtn}
           {needMoreInfoBtn}
           {createFormBtn}
+        </Row>
+        <Row type="flex" justify="start">
           {needBgInvestigationBtn}
           {needAdvisoryBtn}
         </Row>
@@ -633,11 +635,13 @@ export default class extends StandardPage {
 
   needBgInvestigation = async () => {
     const { _id } = this.props.detail
-    this.props.needBgInvestigation(_id)
+    await this.props.needBgInvestigation(_id)
+    message.success(I18N.get('suggestion.msg.notify'))
   }
 
   needAdvisory = async () => {
     const { _id } = this.props.detail
-    this.props.needAdvisory(_id)
+    await this.props.needAdvisory(_id)
+    message.success(I18N.get('suggestion.msg.notify'))
   }
 }

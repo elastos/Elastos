@@ -92,8 +92,7 @@ export const BtnGroup = styled.div`
 `
 
 export const StyledButton = styled(Button)`
-  width: 200px;
-  height: 44px !important;
+  margin: 8px 0;
   > span {
     font-size: 12px !important;
     line-height: 12px !important;

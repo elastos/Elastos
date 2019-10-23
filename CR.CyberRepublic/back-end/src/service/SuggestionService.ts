@@ -415,6 +415,7 @@ export default class extends Base {
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
     `
+
     await this.notifySecretaries(subject, body)
     return { success: true, message: 'Ok' }
   }
@@ -437,11 +438,12 @@ export default class extends Base {
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
     `
+
     await this.notifySecretaries(subject, body)
     return { success: true, message: 'Ok' }
   }
 
-  private async notifySecretaries(subject: string, body: string) {
+  private async notifySecretaries(subject: string, body: string): Promise<any> {
     const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
     const secretaries = await db_user.find({
@@ -467,7 +469,8 @@ export default class extends Base {
       body,
       recVariables
     }
-    mail.send(mailObj)
+ 
+    return mail.send(mailObj)
   }
 
   /**

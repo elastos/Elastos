@@ -90,7 +90,8 @@ export default {
     }
   },
   msg: {
-    consideration: 'Marked as under council consideration'
+    consideration: 'Marked as under council consideration',
+    notify: 'Email was sent to secretary.'
   },
   popover: {
     email: 'Email',
