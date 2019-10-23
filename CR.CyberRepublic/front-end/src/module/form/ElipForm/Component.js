@@ -1,6 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Row, Radio, Tabs, Typography, Icon } from 'antd'
+import { Form, Input, Button, Row, Col, Radio, Tabs, Typography, Icon } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
@@ -13,7 +13,8 @@ import {
   Note,
   TabText,
   RadioCardLabel,
-  RadioCardSpan
+  RadioCardSpan,
+  UncheckedIcon
 } from './style'
 
 const { Paragraph } = Typography
@@ -305,7 +306,7 @@ class RadioCard extends BaseComponent {
         {this.state.data === value ? (
           <Icon type="check" className="radio-card-check" />
         ) : (
-          ''
+          <UncheckedIcon />
         )}
       </RadioCardSpan>
     )
@@ -334,67 +335,77 @@ class RadioCard extends BaseComponent {
 
   ord_render() {
     const { radioKey } = this.props
+    // const responsive = { md: 20, lg: 12, xl: 8, xxl: 6 }
+    // const doubleResponsive = { md: 20, lg: 24, xl: 16, xxl: 8 }
+    const responsive = { md: 20, lg: 16, xl: 16, xxl: 6 }
+    const doubleResponsive = { md: 20, lg: 16, xl: 16, xxl: 8 }
     return (
-      <div>
-        <div>
-          <Radio.Group>
-            <RadioCardLabel
-              className="radio-card-wrapper"
-              style={{ width: 238.8, height: 350 }}
-            >
-              <RadioCardSpan>
-                <Input
-                  type="radio"
-                  name={radioKey}
-                  value={ELIP_TYPE.STANDARD_TRACK}
-                  style={{ display: 'none' }}
-                  onChange={this.handleChange}
-                />
-              </RadioCardSpan>
-              <RadioCardSpan>
-                <Paragraph>{this.renderContent(ELIP_TYPE.STANDARD_TRACK)}</Paragraph>
-                {this.renderCheck(ELIP_TYPE.STANDARD_TRACK)}
-              </RadioCardSpan>
-            </RadioCardLabel>
-            <RadioCardLabel
-              className="radio-card-wrapper"
-              style={{ width: 238.8, height: 350 }}
-            >
-              <RadioCardSpan>
-                <Input
-                  type="radio"
-                  name={radioKey}
-                  value={ELIP_TYPE.INFORMATIONAL}
-                  style={{ display: 'none' }}
-                  onChange={this.handleChange}
-                />
-              </RadioCardSpan>
-              <RadioCardSpan>
-                <Paragraph>{this.renderContent(ELIP_TYPE.INFORMATIONAL)}</Paragraph>
-                {this.renderCheck(ELIP_TYPE.INFORMATIONAL)}
-              </RadioCardSpan>
-            </RadioCardLabel>
-            <RadioCardLabel
-              className="radio-card-wrapper"
-              style={{ width: 477.6, height: 350 }}
-            >
-              <RadioCardSpan>
-                <Input
-                  type="radio"
-                  name={radioKey}
-                  value={ELIP_TYPE.PROCESS}
-                  style={{ display: 'none' }}
-                  onChange={this.handleChange}
-                />
-              </RadioCardSpan>
-              <RadioCardSpan>
-                <Paragraph>{this.renderContent(ELIP_TYPE.PROCESS)}</Paragraph>
-                {this.renderCheck(ELIP_TYPE.PROCESS)}
-              </RadioCardSpan>
-            </RadioCardLabel>
-          </Radio.Group>
-        </div>
-      </div>
+      <Row type="flex" justify="center" align="top" gutter={70}>
+        <Col {...responsive}>
+          <RadioCardLabel
+            className="radio-card-wrapper"
+            // style={{ width: 238.8 }}
+          >
+            <RadioCardSpan>
+              <Input
+                type="radio"
+                name={radioKey}
+                value={ELIP_TYPE.STANDARD_TRACK}
+                style={{ display: 'none' }}
+                onChange={this.handleChange}
+              />
+            </RadioCardSpan>
+            <RadioCardSpan>
+              <Paragraph>
+                {this.renderContent(ELIP_TYPE.STANDARD_TRACK)}
+              </Paragraph>
+              {this.renderCheck(ELIP_TYPE.STANDARD_TRACK)}
+            </RadioCardSpan>
+          </RadioCardLabel>
+        </Col>
+        <Col {...responsive}>
+          <RadioCardLabel
+            className="radio-card-wrapper"
+            // style={{ width: 238.8 }}
+          >
+            <RadioCardSpan>
+              <Input
+                type="radio"
+                name={radioKey}
+                value={ELIP_TYPE.INFORMATIONAL}
+                style={{ display: 'none' }}
+                onChange={this.handleChange}
+              />
+            </RadioCardSpan>
+            <RadioCardSpan>
+              <Paragraph>
+                {this.renderContent(ELIP_TYPE.INFORMATIONAL)}
+              </Paragraph>
+              {this.renderCheck(ELIP_TYPE.INFORMATIONAL)}
+            </RadioCardSpan>
+          </RadioCardLabel>
+        </Col>
+        <Col {...doubleResponsive}>
+          <RadioCardLabel
+            className="radio-card-wrapper"
+            // style={{ width: 477.6 }}
+          >
+            <RadioCardSpan>
+              <Input
+                type="radio"
+                name={radioKey}
+                value={ELIP_TYPE.PROCESS}
+                style={{ display: 'none' }}
+                onChange={this.handleChange}
+              />
+            </RadioCardSpan>
+            <RadioCardSpan>
+              <Paragraph>{this.renderContent(ELIP_TYPE.PROCESS)}</Paragraph>
+              {this.renderCheck(ELIP_TYPE.PROCESS)}
+            </RadioCardSpan>
+          </RadioCardLabel>
+        </Col>
+      </Row>
     )
   }
 }
