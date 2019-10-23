@@ -118,8 +118,7 @@ namespace Elastos {
 			DoTransaction([&count, this]() {
 				std::string sql;
 
-				sql = std::string("SELECT ") + " COUNT(" + TX_COLUMN_ID + ") AS nums " +
-					  " FROM " + TX_TABLE_NAME + ";";
+				sql = "SELECT COUNT(" + TX_COLUMN_ID + ") AS nums FROM " + TX_TABLE_NAME + ";";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -127,7 +126,7 @@ namespace Elastos {
 					return false;
 				}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				if (SQLITE_ROW == _sqlite->Step(stmt)) {
 					count = (uint32_t) _sqlite->ColumnInt(stmt, 0);
 				}
 
@@ -341,7 +340,7 @@ namespace Elastos {
 					return false;
 				}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				if (SQLITE_ROW == _sqlite->Step(stmt)) {
 					if (chainID == CHAINID_MAINCHAIN) {
 						tx = TransactionPtr(new Transaction());
 					} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
@@ -407,7 +406,7 @@ namespace Elastos {
 					return false;
 				}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				if (SQLITE_ROW == _sqlite->Step(stmt)) {
 					contain = true;
 				}
 

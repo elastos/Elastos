@@ -55,7 +55,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		// verify save
 		std::vector<AssetEntity> assetsVerify = dm.GetAllAssets();
-		REQUIRE(assetsVerify.size() > 0);
+		REQUIRE(assetsVerify.size() == TEST_ASSET_RECORD_CNT);
 		REQUIRE(assetsVerify.size() == assets.size());
 		for (size_t i = 0; i < assets.size(); ++i) {
 			REQUIRE(assets[i].Asset == assetsVerify[i].Asset);

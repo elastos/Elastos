@@ -180,7 +180,7 @@ namespace Elastos {
 			DoTransaction([&count, this]() {
 				std::string sql;
 
-				sql = std::string("SELECT ") + " COUNT(" + PEER_COLUMN_ID + ") AS nums " + " FROM " + PEER_TABLE_NAME + ";";
+				sql = "SELECT COUNT(" + PEER_COLUMN_ID + ") AS nums FROM " + PEER_TABLE_NAME + ";";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -188,7 +188,7 @@ namespace Elastos {
 					return false;
 				}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				if (SQLITE_ROW == _sqlite->Step(stmt)) {
 					count = (uint32_t) _sqlite->ColumnInt(stmt, 0);
 				}
 

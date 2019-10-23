@@ -62,6 +62,8 @@ namespace Elastos {
 
 			virtual std::vector<ISubWallet *> GetAllSubWallets() const;
 
+			virtual ISubWallet *GetSubWallet(const std::string &chainID) const;
+
 			virtual ISubWallet *CreateSubWallet(const std::string &chainID);
 
 			nlohmann::json ExportKeystore(const std::string &backupPassword,

@@ -64,8 +64,7 @@ namespace Elastos {
 			DoTransaction([&count, this]() {
 				std::string sql;
 
-				sql = std::string("SELECT ") + "COUNT(" + _txHash + ") AS nums "
-					  + "FROM " + _tableName + ";";
+				sql = "SELECT COUNT(" + _txHash + ") AS nums FROM " + _tableName + ";";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -73,7 +72,7 @@ namespace Elastos {
 					return false;
 				}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				if (SQLITE_ROW == _sqlite->Step(stmt)) {
 					count = (uint32_t) _sqlite->ColumnInt(stmt, 0);
 				}
 
@@ -187,8 +186,7 @@ namespace Elastos {
 
 				for (size_t i = 0; i < txHashes.size(); ++i) {
 					hash = txHashes[i].GetHex();
-					sql = "UPDATE " + _tableName + " SET " + _spent + " = ? " + " WHERE " +
-						  _txHash + " = ?;";
+					sql = "UPDATE " + _tableName + " SET " + _spent + " = ? WHERE " + _txHash + " = ?;";
 
 					sqlite3_stmt *stmt;
 					if (!_sqlite->Prepare(sql, &stmt, nullptr)) {

@@ -4,7 +4,6 @@
 
 #include "MerkleBlockDataSource.h"
 
-#include <SDK/Common/Utils.h>
 #include <SDK/Common/ErrorChecker.h>
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Log.h>

@@ -37,7 +37,14 @@ namespace Elastos {
 			virtual std::vector<ISubWallet *> GetAllSubWallets() const = 0;
 
 			/**
-			 * Create a sub wallet by specifying wallet type.
+			 * Get a sub wallet of chainID.
+			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+			 * @return If success will return a pointer of sub wallet interface.
+			 */
+			virtual ISubWallet *GetSubWallet(const std::string &chainID) const = 0;
+
+			/**
+			 * Create a sub wallet of chainID.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
 			 * @return If success will return a pointer of sub wallet interface.
 			 */

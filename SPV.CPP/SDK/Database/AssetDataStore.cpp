@@ -84,9 +84,7 @@ namespace Elastos {
 		}
 
 		bool AssetDataStore::GetAssetDetails(const std::string &assetID, AssetEntity &asset) const {
-			bool found = false;
-
-			return DoTransaction([&assetID, &asset, &found, this]() {
+			return DoTransaction([&assetID, &asset, this]() {
 				return SelectAsset(assetID, asset);
 			});
 		}
@@ -153,7 +151,7 @@ namespace Elastos {
 				return false;
 			}
 
-			while (SQLITE_ROW == _sqlite->Step(stmt)) {
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
 				found = true;
 
 				asset.AssetID = assetID;
