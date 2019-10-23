@@ -48,8 +48,7 @@ public class Issuer {
 			throw new DIDException("Can not resolve DID.");
 
 		if (defaultSignKey == null) {
-			PublicKey pk = self.getDefaultPublicKey();
-			defaultSignKey = pk.getId();
+			defaultSignKey = self.getDefaultPublicKey();
 		} else {
 			if (self.getAuthenticationKey(defaultSignKey) == null)
 				throw new DIDException("Invalid sign key id.");

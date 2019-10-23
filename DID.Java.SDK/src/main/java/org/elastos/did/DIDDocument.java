@@ -181,7 +181,7 @@ public class DIDDocument {
 		return getEntry(publicKeys, id);
 	}
 
-	public PublicKey getDefaultPublicKey() {
+	public DIDURL getDefaultPublicKey() {
 		DID self = getSubject();
 
 		for (PublicKey pk : publicKeys.values()) {
@@ -191,7 +191,7 @@ public class DIDDocument {
 			String address = HDKey.DerivedKey.getAddress(
 					pk.getPublicKeyBytes());
 			if (address.equals(self.getMethodSpecificId()))
-				return pk;
+				return pk.getId();
 		}
 
 		return null;
@@ -220,7 +220,7 @@ public class DIDDocument {
 			return false;
 
 		// Can not remove default public key
-		if (getDefaultPublicKey().getId().equals(id))
+		if (getDefaultPublicKey().equals(id))
 			return false;
 
 		boolean removed = removeEntry(publicKeys, id);
@@ -510,8 +510,8 @@ public class DIDDocument {
 
 	public String sign(String storepass, byte[] ... data)
 			throws DIDStoreException {
-		PublicKey pk = getDefaultPublicKey();
-		return sign(pk.getId(), storepass, data);
+		DIDURL key = getDefaultPublicKey();
+		return sign(key, storepass, data);
 	}
 
 	public String sign(DIDURL id, String storepass, byte[] ... data)
@@ -521,8 +521,8 @@ public class DIDDocument {
 
 	public boolean verify(String signature, byte[] ... data)
 			throws DIDStoreException {
-		PublicKey pk = getDefaultPublicKey();
-		return verify(pk.getId(), signature, data);
+		DIDURL key = getDefaultPublicKey();
+		return verify(key, signature, data);
 	}
 
 	public boolean verify(DIDURL id, String signature, byte[] ... data)
