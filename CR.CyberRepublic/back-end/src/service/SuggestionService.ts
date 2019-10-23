@@ -474,10 +474,9 @@ export default class extends Base {
   }
 
   /**
-   * Admin only
+   * Admin and Author
    */
   public async archive(param: any): Promise<Document> {
-
     const { id: _id } = param
     const updateObject = {
       status: constant.SUGGESTION_STATUS.ARCHIVED,

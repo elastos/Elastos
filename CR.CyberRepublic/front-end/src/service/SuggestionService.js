@@ -237,7 +237,7 @@ export default class extends BaseService {
     return res
   }
 
-  // ADMIN ONLY
+  // ADMIN and Author
   async archive(id) {
     const path = `${this.prefixPath}/${id}/archive`
 

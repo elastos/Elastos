@@ -122,6 +122,8 @@ export default class extends BaseComponent {
 
   renderPopover() {
     const { isSubscribed, isAbused, isArchived } = this.state
+    const { currentUserId, data: { createdBy } } = this.props
+    const isAuthor = currentUserId === createdBy._id
     const content = (
       <div className="popover-actions">
         <IconText
@@ -142,7 +144,7 @@ export default class extends BaseComponent {
           onClick={this.handleClick('isAbused')}
           className={`abuse-icon ${isAbused ? 'selected' : ''}`}
         />
-        {(this.props.isAdmin || this.props.isCouncil) ? (
+        {(this.props.isAdmin || isAuthor) ? (
           <IconText
           component={!!ArchiveIcon && <ArchiveIcon />}
           text={isArchived ? I18N.get('suggestion.unarchive') : I18N.get('suggestion.archive')}
