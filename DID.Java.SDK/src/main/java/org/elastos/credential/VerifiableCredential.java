@@ -408,6 +408,9 @@ public class VerifiableCredential extends DIDObject {
 			throw new MalformedCredentialException("Missing credentialSubject.");
 		subject = CredentialSubject.fromJson(valueNode, ref);
 
+		if (issuer == null)
+			issuer = subject.getId();
+
 		// IMPORTANT: help resolve full method in proof
 		if (ref == null)
 			ref = issuer;
