@@ -32,7 +32,7 @@ public class CredentialSubject {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         
         // id
-        if !compact && !id.isEqual(ref) {
+        if !compact || !id.isEqual(ref) {
             dic[Constants.id] = id.toExternalForm()
         }
         

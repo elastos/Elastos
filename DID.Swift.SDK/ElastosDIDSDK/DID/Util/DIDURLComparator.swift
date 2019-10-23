@@ -10,8 +10,14 @@ class DIDURLComparator {
     class func DIDOrderedDictionaryComparatorByKey(_ source: OrderedDictionary<String, Any>) -> OrderedDictionary<String, Any> {
         
         var sortArray: Array<(String, Any)> = Array()
+        var did: String = ""
         for (key, value) in source {
-            sortArray.append((key, value))
+            if key == Constants.id {
+                did = String("\(value)")
+            }
+            else {
+                sortArray.append((key, value))
+            }
         }
         
         sortArray.sort { (a, b) -> Bool in
@@ -21,10 +27,12 @@ class DIDURLComparator {
         }
         
         var result: OrderedDictionary<String, Any> = OrderedDictionary<String, Any>()
+        if did != "" {
+            result[Constants.id] = did
+        }
         for obj in sortArray {
             result[obj.0] = obj.1
         }
-
         return result
     }
     
