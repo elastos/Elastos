@@ -7,48 +7,61 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.Assets.fragment.WalletUpdataPwdFragment;
-import org.elastos.wallet.ela.ui.mine.presenter.AboutPresenter;
+import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
+import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
+import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.widget.TextConfigDataPicker;
 import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
 
-    AboutPresenter aboutPresenter;
+    AddDIDPresenter presenter;
     @BindView(R.id.et_didname)
     EditText etDidname;
     @BindView(R.id.tv_walletname)
     TextView tvWalletname;
     @BindView(R.id.rl_selectwallet)
     RelativeLayout rlSelectwallet;
-    @BindView(R.id.et_didpk)
-    TextView etDidpk;
-    @BindView(R.id.et_did)
-    TextView etDid;
+    @BindView(R.id.tv_didpk)
+    TextView tvDidpk;
+    @BindView(R.id.tv_did)
+    TextView tvDid;
     @BindView(R.id.tv_date)
     TextView tvDate;
     @BindView(R.id.rl_outdate)
     RelativeLayout rlOutdate;
-    Unbinder unbinder;
     String[] walletNames;
     List<Wallet> wallets;
+    Wallet tempWallet;
 
     @Override
     protected int getLayoutId() {
@@ -64,12 +77,19 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.adddid));
         wallets = new RealmUtil().queryUserAllWallet();
+        Iterator<Wallet> iterator = wallets.iterator();
+        while (iterator.hasNext()) {
+            Wallet wallet = iterator.next();
+            if (wallet.getType() != 0)
+                iterator.remove();
+        }
         walletNames = new String[wallets.size()];
         for (int i = 0; i < wallets.size(); i++) {
             walletNames[i] = wallets.get(i).getWalletName();
         }
-        aboutPresenter = new AboutPresenter();
 
+        presenter = new AddDIDPresenter();
+        registReceiver();
     }
 
 
@@ -83,20 +103,29 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     break;
                 }
                 Bundle bundle = new Bundle();
-                start(WalletUpdataPwdFragment.class, bundle);
+                start(PersonalInfoFragment.class, bundle);
                 break;
             case R.id.rl_selectwallet:
-
-
                 new DialogUtil().showCommonSelect(getBaseActivity(), walletNames, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        tvWalletname.setText(walletNames[((TextConfigNumberPicker) view).getValue()]);
+                        tempWallet = wallets.get(((TextConfigNumberPicker) view).getValue());
+                    /*    if (AddDIDFragment.this.tempWallet != null && AddDIDFragment.this.tempWallet.getWalletId().equals(tempWallet.getWalletId())) {
+                            return;
+                        }*/
+                        tvWalletname.setText(getString(R.string.plzselectwallet));
+                        tvDid.setText("");
+                        tvDidpk.setText("");
+                        presenter.getAllSubWallets(tempWallet.getWalletId(), AddDIDFragment.this);
                     }
                 });
                 break;
             case R.id.rl_outdate:
-                new DialogUtil().showTime(getBaseActivity(), new WarmPromptListener() {
+                Calendar calendar = Calendar.getInstance();
+                long minData = calendar.getTimeInMillis();
+                int year = calendar.get(Calendar.YEAR);
+                calendar.set(Calendar.YEAR, year + 5);
+                new DialogUtil().showTime(getBaseActivity(), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
                         String endDate = ((TextConfigDataPicker) view).getYear() + "/" + (((TextConfigDataPicker) view).getMonth() + 1)
@@ -116,7 +145,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
         String didName = etDidname.getText().toString().trim();
         if (!TextUtils.isEmpty(didName)) {
             new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.keepeditornot),
-                    getString(R.string.keep), getString(R.string.nokeep), new WarmPromptListener() {
+                    getString(R.string.keep), getString(R.string.nokeep), true, new WarmPromptListener() {
                         @Override
                         public void affireBtnClick(View view) {
                             showToast(getString(R.string.keepsucess));
@@ -132,8 +161,63 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "getAllSubWallets":
+                ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
+                for (SubWallet subWallet : subWalletListEntity.getData()) {
+                    if (subWallet.getChainId().equals(MyWallet.IDChain)) {
+                        presenter.getAllPublicKeys(tempWallet.getWalletId(), MyWallet.IDChain, 0, 1, AddDIDFragment.this);
+                        return;
+                    }
+                }
+                //没有对应的子钱包 需要打开idchain
+                showOpenDIDWarm(subWalletListEntity);
+
+                break;
+            case "getAllPublicKeys":
+                //{"MaxCount":110,"PublicKeys":["03a3a59e3bc3ddd9a048119d5cee1e8266484e1c1b7c5d529f5d7681066066495f"]}
+                AllPkEntity allPkEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), AllPkEntity.class);
+
+                if (allPkEntity.getPublicKeys() == null || allPkEntity.getPublicKeys().size() == 0) {
+                    return;
+                }
+                tvWalletname.setText(tempWallet.getWalletName());
+                tvDidpk.setText(allPkEntity.getPublicKeys().get(0));
+                presenter.getDIDByPublicKey(tempWallet.getWalletId(), allPkEntity.getPublicKeys().get(0), this);
+                break;
+            case "getDIDByPublicKey":
+                tvDid.setText(((CommmonStringEntity) baseEntity).getData());
+                break;
+        }
 
     }
 
+    private void showOpenDIDWarm(ISubWalletListEntity subWalletListEntity) {
+        new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.noidchainopenornot),
+                getString(R.string.toopen), getString(R.string.cancel), false, new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("walletId", tempWallet.getWalletId());
+                        ArrayList<String> chainIds = new ArrayList<>();
+                        for (SubWallet iSubWallet : subWalletListEntity.getData()) {
+                            chainIds.add(iSubWallet.getChainId());
+                        }
+                        bundle.putStringArrayList("chainIds", chainIds);
+                        start(AddAssetFragment.class, bundle);
+                    }
+                });
+    }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+
+        if (integer == RxEnum.UPDATAPROPERTY.ordinal()) {
+            //子钱包改变  创建或删除
+            presenter.getAllSubWallets(tempWallet.getWalletId(), this);
+        }
+
+
+    }
 }

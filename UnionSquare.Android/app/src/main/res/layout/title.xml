@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#00000000"
     android:orientation="vertical">
 
     <View
@@ -43,6 +42,18 @@
             android:paddingRight="14dp"
             android:src="@mipmap/window_750_back"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_title_right"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:gravity="center"
+            android:paddingRight="14dp"
+            android:textSize="14dp"
+            android:visibility="gone"
+            android:text="@string/jump"
+             />
     </RelativeLayout>
 
 </LinearLayout>

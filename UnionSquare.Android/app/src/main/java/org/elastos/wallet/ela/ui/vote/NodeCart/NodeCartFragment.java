@@ -467,7 +467,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
     //点击全选按钮
     private void onClickSelectAll() {
-        if (netList==null||netList.size()==0){
+        if (list == null || list.size() == 0) {
             return;
         }
         MyAdapter curentAdapter = ((MyAdapter) recyclerView.getAdapter());

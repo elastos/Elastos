@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white20"
+        android:paddingLeft="15dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:text="@string/tipcanjump"
+        android:textSize="11sp" />
+
+    <EditText
+        android:maxLength="800"
+        android:id="@+id/et_intro"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="15dp"
+        android:background="@drawable/st_ffffff_cr5"
+        android:gravity="left"
+        android:hint="@string/plzinputinti800"
+        android:padding="10dp" />
+
+    <TextView
+        android:id="@+id/tv_next"
+        style="@style/button_margin"
+        android:layout_marginTop="100dp"
+        android:text="@string/next" />
+</LinearLayout>

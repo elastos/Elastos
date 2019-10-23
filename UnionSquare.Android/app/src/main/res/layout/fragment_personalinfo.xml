@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue1"
+    android:orientation="vertical">
+
+    <include layout="@layout/title" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white20"
+        android:paddingLeft="15dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:text="@string/tipcanjump"
+        android:textSize="11sp" />
+
+    <EditText
+        android:id="@+id/et_name"
+        style="@style/settingItem_margin15"
+        android:background="@null"
+        android:hint="@string/plzinputname" />
+
+    <View style="@style/line_margin15" />
+
+    <EditText
+        android:id="@+id/et_nick"
+        style="@style/settingItem_margin15"
+        android:background="@null"
+        android:hint="@string/plzinputnick" />
+
+    <View style="@style/line_margin15" />
+
+    <RelativeLayout
+        android:id="@+id/rl_selectsex"
+        style="@style/settingItem_margin15">
+
+        <TextView
+            android:id="@+id/tv_sex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/plzselcetsex"
+            android:textColor="#ffffffff"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/px10"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+
+    <View style="@style/line_margin15" />
+
+    <RelativeLayout
+        android:id="@+id/rl_selectbirthday"
+        style="@style/settingItem_margin15">
+
+        <TextView
+            android:id="@+id/tv_birthday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/plzselectbirthday"
+            android:textColor="#ffffffff"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/px10"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+
+    <View style="@style/line_margin15" />
+
+    <EditText
+        android:id="@+id/et_headurl"
+        style="@style/settingItem_margin15"
+        android:background="@null"
+        android:hint="@string/plzinputheadurl" />
+
+
+    <View style="@style/line_margin15" />
+
+    <EditText
+        android:id="@+id/et_email"
+        style="@style/settingItem_margin15"
+        android:background="@null"
+        android:hint="@string/pleaseinputemail" />
+
+    <View style="@style/line_margin15" />
+
+    <RelativeLayout style="@style/settingItem_margin15">
+
+
+        <EditText
+            android:id="@+id/et_code"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:hint="@string/plzinputcode" />
+
+        <View
+            style="@style/line1"
+            android:layout_width="150dp"
+            android:layout_alignParentBottom="true" />
+
+        <EditText
+            android:id="@+id/et_phone"
+            android:layout_width="180dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:background="@null"
+            android:hint="@string/pleaseinputmobile" />
+
+        <View
+
+            style="@style/line1"
+            android:layout_width="180dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_selectarea"
+        style="@style/settingItem_margin15">
+
+        <TextView
+            android:id="@+id/tv_area"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/choosearea"
+            android:textColor="#ffffffff"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/px10"
+            android:src="@mipmap/asset_list_arrow" />
+    </RelativeLayout>
+
+    <View style="@style/line_margin15" />
+
+    <TextView
+        android:id="@+id/tv_next"
+        style="@style/button_margin"
+        android:layout_marginTop="40dp"
+        android:text="@string/next" />
+</LinearLayout>
