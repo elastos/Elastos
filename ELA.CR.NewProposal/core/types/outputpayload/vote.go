@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package outputpayload
 
@@ -205,8 +205,8 @@ func (o *VoteOutput) Validate() error {
 		}
 		typeMap[content.VoteType] = struct{}{}
 
-		if len(content.CandidateVotes) == 0 ||
-			len(content.CandidateVotes) > MaxVoteProducersPerTransaction {
+		if len(content.CandidateVotes) == 0 || (content.VoteType == Delegate &&
+			len(content.CandidateVotes) > MaxVoteProducersPerTransaction) {
 			return errors.New("invalid public key count")
 		}
 		// only use Delegate and CRC as a vote type for now
