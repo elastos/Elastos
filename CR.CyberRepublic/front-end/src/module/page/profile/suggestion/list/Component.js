@@ -160,6 +160,7 @@ export default class extends ProfilePage {
           <Button.Group className="filter-group">
             {_.map(FILTERS, (value, key) => (
               <Button
+                type="link"
                 key={value}
                 onClick={() => this.onFilterChanged(value)}
                 className={
