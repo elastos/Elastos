@@ -16,6 +16,8 @@ class DIDDoucumentTests: XCTestCase {
         let bundle = Bundle(for: type(of: self))
         compactPath = bundle.path(forResource: "compact", ofType: "json")!
         documentPath = bundle.path(forResource: "testdiddoc", ofType: "json")!
+        normalizedPath = bundle.path(forResource: "normalized", ofType: "json")!
+
     }
 
     override func tearDown() {
@@ -28,7 +30,7 @@ class DIDDoucumentTests: XCTestCase {
 
     func testParseDocument() {
         let document: DIDDocument = try! DIDDocument.fromJson(documentPath)
-        XCTAssertEqual(3, document.getPublicKeyCount())
+        XCTAssertEqual(4, document.getPublicKeyCount())
         let pks: Array<DIDPublicKey> = document.getPublicKeys()
         pks.forEach { pk in
             let result: Bool = pk.id.fragment == "default" || pk.id.fragment == "key2" || pk.id.fragment == "keys3" || pk.id.fragment == "recovery"
