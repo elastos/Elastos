@@ -476,13 +476,22 @@ export default class extends Base {
   /**
    * Admin and Author
    */
-  public async archive(param: any): Promise<Document> {
+  public async archive(param: any): Promise<object> {
     const { id: _id } = param
+    const suggestion = await this.model.getDBInstance().findById(_id).populate('createdBy')
+    if (!suggestion) {
+      return
+    }
+    const isAdmin = this.currentUser.role === constant.USER_ROLE.ADMIN
+    const isAuthor = suggestion.createdBy._id.equals(this.currentUser._id)
+    if (!(isAdmin || isAuthor)) {
+      return
+    }
     const updateObject = {
       status: constant.SUGGESTION_STATUS.ARCHIVED,
     }
-    await this.model.findOneAndUpdate({ _id }, updateObject)
-    return this.model.findById(_id)
+    await this.model.update({ _id }, updateObject)
+    return { success: true, message: 'Ok'}
   }
 
   public async delete(param: any): Promise<Document> {
