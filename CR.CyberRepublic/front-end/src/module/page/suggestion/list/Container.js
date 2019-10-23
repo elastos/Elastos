@@ -10,8 +10,7 @@ import Component from './Component'
 
 const mapState = (state) => {
   const currentUserId = state.user.current_user_id
-  // const isAdmin = state.user.role === USER_ROLE.ADMIN
-
+  
   const suggestionState = {
     ...state.suggestion,
     tagsIncluded: state.suggestion.tags_included,
@@ -21,6 +20,7 @@ const mapState = (state) => {
     currentUserId,
     filter: state.suggestion.filter || {},
     isLogin: state.user.is_login,
+    user: state.user
   }
 
   return suggestionState

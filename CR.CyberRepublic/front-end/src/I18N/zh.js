@@ -1519,6 +1519,7 @@ const zh = {
 
   // Council & Secretariat
   cs: {
+    candidates: '候选人',
     incumbent: '现任委员',
     council: 'CYBER REPUBLIC 筹委会',
     secretariat: {

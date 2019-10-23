@@ -1080,7 +1080,7 @@ ELA
                         </div>
                       </a>
 
-                      {this.renderApplyButton(item, clickHandler)}
+                      {/* {this.renderApplyButton(item, clickHandler)} */}
 
                     </div>
                   </List.Item>

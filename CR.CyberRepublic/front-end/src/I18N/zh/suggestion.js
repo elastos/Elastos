@@ -88,5 +88,11 @@ export default {
   },
   msg: {
     consideration: '已标记为委员会正在审议中'
+  },
+  popover: {
+    email: '邮箱',
+    name: '姓名',
+    copy: '复制',
+    viewProfile: '查看个人资料'
   }
 }

@@ -1,6 +1,5 @@
 import Base from '../Base'
-
-import create from './create'
+// import create from './create'
 import update from './update'
 import add_candidate from './add_candidate'
 import action from './action'
@@ -10,11 +9,11 @@ import comment from './comment'
 
 
 export default Base.setRouter([
-    {
-        path : '/create',
-        router : create,
-        method : 'post'
-    },
+    // {
+    //     path : '/create',
+    //     router : create,
+    //     method : 'post'
+    // },
     {
         path : '/update',
         router : update,

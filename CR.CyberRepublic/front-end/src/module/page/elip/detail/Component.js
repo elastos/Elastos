@@ -1,7 +1,7 @@
 import React from 'react'
 import { Row, Col, Spin, Button, message, Popconfirm } from 'antd'
 import styled from 'styled-components'
-import DraftEditor from '@/module/common/DraftEditor'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import I18N from '@/I18N'
 import StandardPage from '@/module/page/StandardPage'
 import Footer from '@/module/layout/Footer/Container'
@@ -105,13 +105,7 @@ class C extends StandardPage {
             <LabelCol span={3}>{I18N.get('elip.fields.description')}</LabelCol>
             <WrapperCol span={17}>
               <Dec status={elip.status}>
-                <StyledRichContent>
-                  <DraftEditor
-                    value={elip.description}
-                    contentType={elip.contentType}
-                    editorEnabled={false}
-                  />
-                </StyledRichContent>
+                <MarkdownPreview content={elip.description} />
               </Dec>
             </WrapperCol>
           </Row>
@@ -147,7 +141,10 @@ class C extends StandardPage {
     try {
       const { updateStatus } = this.props
       const { elip } = this.state
-      const rs = await updateStatus({ _id: elip._id, status: ELIP_STATUS.SUBMITTED })
+      const rs = await updateStatus({
+        _id: elip._id,
+        status: ELIP_STATUS.SUBMITTED
+      })
       if (rs && rs.ok === 1 && rs.n === 1) {
         this.setState({
           elip: { ...elip, status: ELIP_STATUS.SUBMITTED }
@@ -170,7 +167,7 @@ class C extends StandardPage {
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
         >
-          <Button style={{ marginLeft: 16}}>
+          <Button style={{ marginLeft: 16 }}>
             {I18N.get('elip.button.markAsSubmitted')}
           </Button>
         </Popconfirm>
@@ -180,7 +177,8 @@ class C extends StandardPage {
 
   renderEditButton() {
     const { elip } = this.state
-    const isEditable = this.isAuthor(elip) &&
+    const isEditable =
+      this.isAuthor(elip) &&
       [ELIP_STATUS.REJECTED, ELIP_STATUS.DRAFT].includes(elip.status)
 
     if (isEditable) {
@@ -190,7 +188,9 @@ class C extends StandardPage {
           <Col span={17}>
             <Actions>
               <Button
-                onClick={() => this.props.history.push(`/elips/${elip._id}/edit`)}
+                onClick={() =>
+                  this.props.history.push(`/elips/${elip._id}/edit`)
+                }
                 className="cr-btn cr-btn-primary"
               >
                 {I18N.get('elip.button.edit')}
@@ -337,9 +337,6 @@ const Title = styled.div`
 const Dec = styled.div`
   min-height: 320px;
   padding: 20px;
-  font-size: 14px;
-  line-height: 20px;
-  color: #000;
   background: ${props => {
     switch (props.status) {
       case ELIP_STATUS.REJECTED:
@@ -347,7 +344,7 @@ const Dec = styled.div`
       case ELIP_STATUS.DRAFT:
         return 'rgba(29, 233, 182, 0.1)'
       default:
-        return 'background: rgba(204, 204, 204, 0.2)'
+        return 'rgba(204, 204, 204, 0.2)'
     }
   }};
 `
@@ -359,29 +356,5 @@ const Actions = styled.div`
   flex-wrap: wrap;
   button {
     margin: 8px 0;
-  }
-`
-
-export const StyledRichContent = styled.div`
-  .md-RichEditor-root {
-    background: none;
-    padding: 0;
-    .md-RichEditor-editor {
-      .md-RichEditor-blockquote {
-        border-left: 5px solid #ccc;
-        background-color: unset;
-        font-size: 1.1em;
-      }
-      .public-DraftEditor-content {
-        padding: 0;
-        margin: 0;
-      }
-    }
-    figure.md-block-image {
-      background: none;
-      figcaption .public-DraftStyleDefault-block {
-        text-align: left;
-      }
-    }
   }
 `

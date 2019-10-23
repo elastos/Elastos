@@ -89,5 +89,11 @@ export default {
   },
   msg: {
     consideration: 'Marked as under council consideration'
+  },
+  popover: {
+    email: 'Email',
+    name: 'Name',
+    copy: 'Copy',
+    viewProfile: 'View Profile'
   }
 }

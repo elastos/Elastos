@@ -157,19 +157,6 @@ export default class extends BaseComponent {
 
     return (
       <Menu onClick={this.clickItem.bind(this)} className="help-menu">
-        {/*
-      <Menu.Item key="about">
-          {I18N.get('0008')}
-      </Menu.Item>
-      <Menu.Item key="faq">
-          {I18N.get('0009')}
-      </Menu.Item>
-      */}
-
-        <Menu.Item key="teams">
-          {I18N.get('0005')}
-        </Menu.Item>
-
         <Menu.Item key="developer">
           {I18N.get('0102')}
         </Menu.Item>
@@ -177,12 +164,6 @@ export default class extends BaseComponent {
         <Menu.Item key="developer/learn">
           {I18N.get('developer.learn')}
         </Menu.Item>
-
-        {/*
-      <Menu.Item key="forum">
-        {I18N.get('0011')}
-      </Menu.Item>
-      */}
 
         {this.props.isLogin
       && (
@@ -468,8 +449,6 @@ export default class extends BaseComponent {
       })
     } else if (key === 'profile') {
       this.props.history.push('/profile/info')
-    } else if (key === 'teams') {
-      this.props.history.push('/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC')
     } else if (key === 'blog') {
       analytics.track('BLOG_CLICKED', {
         url: location.href,

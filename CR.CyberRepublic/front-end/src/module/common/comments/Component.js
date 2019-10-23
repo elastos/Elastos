@@ -29,6 +29,13 @@ class C extends BaseComponent {
 
   async componentDidMount() {
     this.props.listUsers()
+    const hash = this.props.location.hash
+    if (hash && hash === '#comments') {
+      document.getElementById('comments').scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      })
+    }
   }
 
   componentWillUnmount() {
@@ -50,7 +57,7 @@ class C extends BaseComponent {
   // header + main area
   renderMain() {
     return (
-      <div className="c_Comments">
+      <div className="c_Comments" id={this.props.id}>
         {this.renderHeader()}
         {this.renderComments()}
         <Modal

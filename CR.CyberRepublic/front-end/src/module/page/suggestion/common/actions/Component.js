@@ -1,12 +1,12 @@
 import React from 'react'
 import _ from 'lodash'
-import { Popover, Icon } from 'antd'
+import { Popover, Icon, Anchor } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery } from '@/util'
 import { SUGGESTION_ABUSED_STATUS, SUGGESTION_STATUS } from '@/constant'
 import BaseComponent from '@/model/BaseComponent'
-
+import { Link } from 'react-router-dom'
 import { ReactComponent as LikeIcon } from '@/assets/images/icon-like.svg'
 import { ReactComponent as DislikeIcon } from '@/assets/images/icon-dislike.svg'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-comment.svg'
@@ -66,7 +66,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { data: { commentsNum, viewsNum } } = this.props
+    const { data: { commentsNum, viewsNum, _id } } = this.props
     const popoverActions = this.renderPopover()
     const {
       isLiked, isDisliked, likesNum, dislikesNum,
@@ -90,10 +90,15 @@ export default class extends BaseComponent {
         className={dislikeClass}
       />
     )
-
+   
     const commentNode = (
       <div className="cr-icon-group">
-        <IconText component={!!CommentIcon && <CommentIcon />} text={commentsNum} />
+        <Link to={`/suggestion/${_id}/#comments`}>
+          <IconText
+            component={!!CommentIcon && <CommentIcon />}
+            text={commentsNum}
+          />
+        </Link>
       </div>
     )
 

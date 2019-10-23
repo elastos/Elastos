@@ -19,17 +19,47 @@ export default class extends Base {
       if (!elip.createdBy._id.equals(this.currentUser._id)) {
         throw 'ElipService.update - current user is not the author of elip'
       }
+      if (
+        [
+          constant.ELIP_STATUS.WAIT_FOR_REVIEW,
+          constant.ELIP_STATUS.SUBMITTED
+        ].includes(elip.status)
+      ) {
+        throw `ElipService.update - can not update a ${status} elip`
+      }
+      if (
+        status === constant.ELIP_STATUS.SUBMITTED &&
+        elip.status !== constant.ELIP_STATUS.DRAFT
+      ) {
+        throw `ElipService.update - can not change elip status to submitted`
+      }
+
+      if (
+        status === constant.ELIP_STATUS.SUBMITTED &&
+        elip.status === constant.ELIP_STATUS.DRAFT
+      ) {
+        const rs = await db_elip.update(
+          { _id },
+          { status: constant.ELIP_STATUS.SUBMITTED }
+        )
+        this.notifySecretaries(elip, true)
+        return rs
+      }
+
       const { title, description } = param
-      const doc: any = { status }
+      const doc: any = {}
       if (title) {
         doc.title = title
       }
       if (description) {
         doc.description = description
       }
-      const rs = await db_elip.update({ _id }, doc)
-      this.notifySecretaries(elip)
-      return rs
+      if (doc.title || doc.description) {
+        doc.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
+        const rs = await db_elip.update({ _id }, doc)
+        this.notifySecretaries(elip, true)
+        return rs
+      }
     } catch (error) {
       logger.error(error)
       return
@@ -64,7 +94,7 @@ export default class extends Base {
     return n + 1
   }
 
-  private async notifySecretaries(elip: any) {
+  private async notifySecretaries(elip: any, update?: boolean) {
     const db_user = this.getDBModel('User')
     const currentUserId = _.get(this.currentUser, '_id')
     const secretaries = await db_user.find({
@@ -75,9 +105,11 @@ export default class extends Base {
       user => !user._id.equals(currentUserId)
     )
     const toMails = _.map(toUsers, 'email')
-    const subject = `New ELIP created`
+    const subject = update ? 'An ELIP updated' : 'New ELIP created'
+    const p = `This is ELIP ${elip.title} updated and to be reviewed:`
+    const p1 = `This is a new ELIP ${elip.title} added and to be reviewed:`
     const body = `
-      <p>This is a new ${elip.title} added and to be reviewed:</p>
+      <p>${update ? p : p1}</p>
       <br />
       <p>Click this link to view more details: <a href="${
         process.env.SERVER_URL
@@ -125,21 +157,27 @@ export default class extends Base {
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
 
-    const isVisible = [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED].includes(rs.status) ||
-      rs.createdBy._id.equals(currentUserId) ||
-      userRole === constant.USER_ROLE.SECRETARY
+    const isVisible = rs.createdBy._id.equals(currentUserId) ||
+      userRole === constant.USER_ROLE.SECRETARY ||
+      [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED].includes(
+        rs.status
+      )
 
     if (_.isEmpty(rs.comments)) {
       return isVisible ? { elip: rs, reviews } : {}
     }
 
     for (const comment of rs.comments) {
+      let promises = []
       for (const thread of comment) {
-        await db_elip.getDBInstance().populate(thread, {
-          path: 'createdBy',
-          select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
-        })
+        promises.push(
+          db_elip.getDBInstance().populate(thread, {
+            path: 'createdBy',
+            select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
+          })
+        )
       }
+      await Promise.all(promises)
     }
 
     return isVisible ? { elip: rs, reviews } : {}
@@ -152,7 +190,10 @@ export default class extends Base {
     const query: any = {}
 
     if (!this.isLoggedIn()) {
-      query.status = { $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED] }
+      query.status = {
+        $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED]
+      }
+      param.filter = null
     }
 
     if (param.filter === constant.ELIP_FILTER.DRAFT) {
@@ -174,18 +215,25 @@ export default class extends Base {
       param.filter === constant.ELIP_FILTER.ALL
     ) {
       query.$or = [
-        { createdBy: currentUserId, 
-          status: { $in: [constant.ELIP_STATUS.REJECTED, constant.ELIP_STATUS.WAIT_FOR_REVIEW] }
+        {
+          createdBy: currentUserId,
+          status: {
+            $in: [
+              constant.ELIP_STATUS.REJECTED,
+              constant.ELIP_STATUS.WAIT_FOR_REVIEW
+            ]
+          }
         },
-        { status: { $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED] } }
+        {
+          status: {
+            $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED]
+          }
+        }
       ]
     }
 
     if (param.$or && query.$or) {
-      query.$and= [
-        { $or: query.$or},
-        {$or: param.$or}
-      ]
+      query.$and = [{ $or: query.$or }, { $or: param.$or }]
     }
 
     if (param.$or && !query.$or) {
@@ -193,10 +241,11 @@ export default class extends Base {
     }
 
     const fields = 'vid title createdBy createdAt status'
-    const list = await db_elip.getDBInstance()
+    const list = await db_elip
+      .getDBInstance()
       .find(query, fields)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
-      .sort({vid: -1})
+      .sort({ vid: -1 })
       .limit(100)
 
     return list
