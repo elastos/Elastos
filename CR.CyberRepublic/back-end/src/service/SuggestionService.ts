@@ -109,36 +109,40 @@ export default class extends Base {
 
   public async list(param: any): Promise<Object> {
     const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded', 'referenceStatus'])
-    const { sortBy, sortOrder, tagsIncluded, referenceStatus } = param
-    let qryTagsType: any
+    
+    const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
+    
+    if (!profileListFor) {
+      let qryTagsType: any
+      query.$or = []
+      if (!_.isEmpty(tagsIncluded)) {
+        qryTagsType = { $in: tagsIncluded.split(',') }
+        query.$or.push({ 'tags.type': qryTagsType })
+      }
+      if (referenceStatus === 'true') {
+        // if we have another tag selected we only want that tag and referenced suggestions
+        query.$or.push({ reference: { $exists: true, $ne: [] } })
+      }
 
-    query.$or = []
-    if (!_.isEmpty(tagsIncluded)) {
-      qryTagsType = { $in: tagsIncluded.split(',') }
-      query.$or.push({'tags.type': qryTagsType})
+      if (_.isEmpty(query.$or)) delete query.$or
+      delete query['tags.type']
     }
-    if (referenceStatus === 'true') {
-      // if we have another tag selected we only want that tag and referenced suggestions
-      query.$or.push({reference: {$exists: true, $ne: []}})
-    }
 
-    if (_.isEmpty(query.$or)) delete query.$or
-    delete query['tags.type']
-
-    const excludedFields = [
-      '-comments', '-goal', '-motivation',
-      '-relevance', '-budget', '-plan',
-      '-subscribers', '-likes', '-dislikes', '-updatedAt'
-    ]
-
-    const sortObject = {}
     let cursor: any
+    // suggestions on suggestion list page
     if (sortBy) {
+      const sortObject = {}
       // hack to prioritize descUpdatedAt if it's createdAt
       if (sortBy === 'createdAt') {
         sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
       }
       sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+
+      const excludedFields = [
+        '-comments', '-goal', '-motivation',
+        '-relevance', '-budget', '-plan',
+        '-subscribers', '-likes', '-dislikes', '-updatedAt'
+      ]
 
       cursor = this.model.getDBInstance()
         .find(query, excludedFields.join(' '))
@@ -146,10 +150,9 @@ export default class extends Base {
         .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
         .sort(sortObject)
     } else {
+      // my suggestions on profile page
       cursor = this.model.getDBInstance()
-        .find(query)
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .find(query, 'title activeness commentsNum createdAt dislikesNum displayId likesNum')
     }
 
     if (param.results) {

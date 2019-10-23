@@ -15,14 +15,16 @@ const FILTERS = {
   ALL: 'all',
   CREATED: 'createdBy',
   COMMENTED: 'commented',
-  SUBSCRIBED: 'subscribed'
+  SUBSCRIBED: 'subscribed',
+  ARCHIVED: 'archived'
 }
 
 const FILTERS_TEXT = {
   ALL: 'suggestion.all',
   CREATED: 'suggestion.addedByMe',
   COMMENTED: 'suggestion.commentedByMe',
-  SUBSCRIBED: 'suggestion.subscribed'
+  SUBSCRIBED: 'suggestion.subscribed',
+  ARCHIVED: 'suggestion.archived'
 }
 
 export default class extends ProfilePage {
@@ -131,8 +133,7 @@ export default class extends ProfilePage {
         title: <span>{I18N.get('suggestion.created')}</span>,
         dataIndex: 'createdAt',
         render: createdAt => moment(createdAt).format('MMM D'),
-        sorter: (a, b) =>
-          moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf()
+        sorter: (a, b) => moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf()
       }
     ]
     return columns
