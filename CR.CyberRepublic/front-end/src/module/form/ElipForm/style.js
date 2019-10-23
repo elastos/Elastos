@@ -117,8 +117,6 @@ export const Note = styled.div`
 `
 export const RadioCardLabel = styled.label`
   &.radio-card-wrapper {
-    margin: 0;
-    height: 32px;
     line-height: 30px;
     color: rgba(0, 0, 0, 0.65);
     display: inline-block;
@@ -146,4 +144,7 @@ export const RadioCardSpan = styled.span`
     font-size: 25px;
     color: #008D85;
   }
+`
+export const UncheckedIcon = styled.div`
+  height: 26px;
 `
