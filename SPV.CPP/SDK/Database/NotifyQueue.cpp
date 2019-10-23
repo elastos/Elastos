@@ -6,6 +6,7 @@
 
 #include <SDK/Common/ByteStream.h>
 #include <SDK/Common/ErrorChecker.h>
+#include <SDK/Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -26,14 +27,29 @@ namespace Elastos {
 					  NOTIFY_QUEUE_COLUMN_LAST_NOTIFY_TIME + ") VALUES(?,?,?);";
 
 				sqlite3_stmt *stmt;
-				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr),
-											 Error::SqliteError, "Prepare sql " + sql);
+				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+					Log::error("prepare sql: {}", sql);
+					return false;
+				}
 
-				_sqlite->BindText(stmt, 1, tx_hash, nullptr);
-				_sqlite->BindInt(stmt, 2, record->height);
-				_sqlite->BindInt64(stmt, 3, record->last_notify_time);
-				_sqlite->Step(stmt);
-				_sqlite->Finalize(stmt);
+				if (!_sqlite->BindText(stmt, 1, tx_hash, nullptr) ||
+					!_sqlite->BindInt(stmt, 2, record->height) ||
+					!_sqlite->BindInt64(stmt, 3, record->last_notify_time)) {
+					Log::error("bind args");
+					return false;
+				}
+
+				if (SQLITE_DONE != _sqlite->Step(stmt)) {
+					Log::error("step");
+					return false;
+				}
+
+				if (!_sqlite->Finalize(stmt)) {
+					Log::error("finalize");
+					return false;
+				}
+
+				return true;
 			});
 		}
 
@@ -50,10 +66,15 @@ namespace Elastos {
 					  " WHERE " + NOTIFY_QUEUE_COLUMN_HEIGHT + " != 0 AND " + NOTIFY_QUEUE_COLUMN_HEIGHT + " <= ?;";
 
 				sqlite3_stmt *stmt;
-				ErrorChecker::CheckCondition(!_sqlite->Prepare(sql, &stmt, nullptr),
-											 Error::SqliteError, "Prepare sql " + sql);
-				ErrorChecker::CheckLogic(!_sqlite->BindInt(stmt, 1, current - 5),
-										 Error::SqliteError, "bind int");
+				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+					Log::error("prepare sql: {}", sql);
+					return false;
+				}
+
+				if (!_sqlite->BindInt(stmt, 1, current - 5)) {
+					Log::error("bind args");
+					return false;
+				}
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 					RecordPtr row(new Record(uint256(_sqlite->ColumnText(stmt, 0)),
@@ -61,6 +82,13 @@ namespace Elastos {
 											 (time_t) _sqlite->ColumnInt(stmt, 2)));
 					rows.push_back(row);
 				}
+
+				if (!_sqlite->Finalize(stmt)) {
+					Log::error("finalize");
+					return false;
+				}
+
+				return true;
 			});
 			return rows;
 		}
@@ -70,10 +98,30 @@ namespace Elastos {
 				std::string sql, hash = tx_hash.GetHex();
 
 				sql = "DELETE FROM " + NOTIFY_QUEUE_TABLE +
-					  " WHERE " + NOTIFY_QUEUE_COLUMN_TX_HASH + " = '" + hash + "';";
+					  " WHERE " + NOTIFY_QUEUE_COLUMN_TX_HASH + " = ?;";
 
-				ErrorChecker::CheckCondition(!_sqlite->exec(sql, nullptr, nullptr),
-											 Error::SqliteError, "Exec sql " + sql);
+				sqlite3_stmt *stmt;
+				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+					Log::error("prepare sql: {}", sql);
+					return false;
+				}
+
+				if (!_sqlite->BindText(stmt, 1, hash, nullptr)) {
+					Log::error("bind args");
+					return false;
+				}
+
+				if (SQLITE_DONE != _sqlite->Step(stmt)) {
+					Log::error("step");
+					return false;
+				}
+
+				if (!_sqlite->Finalize(stmt)) {
+					Log::error("finalize");
+					return false;
+				}
+
+				return true;
 			});
 		}
 

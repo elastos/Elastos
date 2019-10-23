@@ -50,7 +50,7 @@ namespace Elastos {
 
 			bool ContainHash(const std::string &hash) const;
 
-			void PutTransactionInternal(const std::string &iso, const TransactionPtr &tx);
+			bool PutTransactionInternal(const std::string &iso, const TransactionPtr &tx);
 
 		private:
 			/*

@@ -5,19 +5,19 @@
 #include "AssetDataStore.h"
 
 #include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		AssetDataStore::AssetDataStore(Sqlite *sqlite) :
-				TableBase(sqlite) {
+			TableBase(sqlite) {
 			InitializeTable(ASSET_DATABASE_CREATE);
 			InitializeTable("drop table if exists " + ASSET_OLD_TABLE_NAME + ";");
 		}
 
 		AssetDataStore::AssetDataStore(SqliteTransactionType type, Sqlite *sqlite) :
-				TableBase(type, sqlite) {
+			TableBase(type, sqlite) {
 			InitializeTable(ASSET_DATABASE_CREATE);
 			InitializeTable("drop table if exists " + ASSET_OLD_TABLE_NAME + ";");
 		}
@@ -30,47 +30,65 @@ namespace Elastos {
 			return DoTransaction([&iso, &asset, this]() {
 				AssetEntity existAsset;
 
-				if (SelectAsset(asset.AssetID, existAsset)) {
-					UpdateAsset(iso, asset);
-				} else {
-					InsertAsset(iso, asset);
-				}
+				if (SelectAsset(asset.AssetID, existAsset))
+					return UpdateAsset(iso, asset);
+
+				return InsertAsset(iso, asset);
 			});
 		}
 
 		bool AssetDataStore::DeleteAsset(const std::string &assetID) {
 			return DoTransaction([&assetID, this]() {
-				std::stringstream ss;
+				std::string sql;
 
-				ss << "DELETE FROM "
-				   << ASSET_TABLE_NAME
-				   << " WHERE " << ASSET_COLUMN_ID << " = '" << assetID << "';";
+				sql = "DELETE FROM " + ASSET_TABLE_NAME + " WHERE " + ASSET_COLUMN_ID + " = ?;";
 
-				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
-											 "exec sql " + ss.str());
+				sqlite3_stmt *stmt;
+				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+					Log::error("Prepare sql {}", sql);
+					return false;
+				}
+
+				if (!_sqlite->BindText(stmt, 1, assetID, nullptr)) {
+					Log::error("bind text");
+					return false;
+				}
+
+				if (SQLITE_DONE != _sqlite->Step(stmt)) {
+					Log::error("step");
+					return false;
+				}
+
+				if (!_sqlite->Finalize(stmt)) {
+					Log::error("finalize");
+					return false;
+				}
+
+				return true;
 			});
 		}
 
 		bool AssetDataStore::DeleteAllAssets() {
 			return DoTransaction([this]() {
-				std::stringstream ss;
+				std::string sql;
 
-				ss << "DELETE FROM "
-				   << ASSET_TABLE_NAME << ";";
+				sql = "DELETE FROM " + ASSET_TABLE_NAME + ";";
 
-				ErrorChecker::CheckCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
-											 "exec sql " + ss.str());
+				if (!_sqlite->exec(sql, nullptr, nullptr)) {
+					Log::error("exec sql: {}", sql);
+					return false;
+				}
+
+				return true;
 			});
 		}
 
 		bool AssetDataStore::GetAssetDetails(const std::string &assetID, AssetEntity &asset) const {
 			bool found = false;
 
-			DoTransaction([&assetID, &asset, &found, this]() {
-				found = SelectAsset(assetID, asset);
+			return DoTransaction([&assetID, &asset, &found, this]() {
+				return SelectAsset(assetID, asset);
 			});
-
-			return found;
 		}
 
 		std::vector<AssetEntity> AssetDataStore::GetAllAssets() const {
@@ -78,17 +96,16 @@ namespace Elastos {
 
 			DoTransaction([&assets, this]() {
 				AssetEntity asset;
-				std::stringstream ss;
+				std::string sql;
 
-				ss << "SELECT "
-				   << ASSET_COLUMN_ID << ", "
-				   << ASSET_AMOUNT << ", "
-				   << ASSET_BUFF
-				   << " FROM " << ASSET_TABLE_NAME << ";";
+				sql = "SELECT " + ASSET_COLUMN_ID + ", " + ASSET_AMOUNT + ", " + ASSET_BUFF + " FROM " +
+					  ASSET_TABLE_NAME + ";";
 
 				sqlite3_stmt *stmt;
-				ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-											 "Prepare sql " + ss.str());
+				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+					Log::error("prepare sql: {}", sql);
+					return false;
+				}
 
 				while (SQLITE_ROW == _sqlite->Step(stmt)) {
 
@@ -102,6 +119,13 @@ namespace Elastos {
 
 					assets.push_back(asset);
 				}
+
+				if (!_sqlite->Finalize(stmt)) {
+					Log::error("finalize");
+					return false;
+				}
+
+				return true;
 			});
 
 			return assets;
@@ -113,17 +137,21 @@ namespace Elastos {
 
 		bool AssetDataStore::SelectAsset(const std::string &assetID, AssetEntity &asset) const {
 			bool found = false;
-			std::stringstream ss;
+			std::string sql;
 
-			ss << "SELECT "
-				<< ASSET_AMOUNT << ", "
-				<< ASSET_BUFF
-				<< " FROM " << ASSET_TABLE_NAME
-				<< " WHERE " << ASSET_COLUMN_ID << " = '" << assetID << "';";
+			sql = "SELECT " + ASSET_AMOUNT + ", " + ASSET_BUFF + " FROM " + ASSET_TABLE_NAME + " WHERE " +
+				  ASSET_COLUMN_ID + " = ?;";
 
 			sqlite3_stmt *stmt;
-			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-										 "Prepare sql " + ss.str());
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return false;
+			}
+
+			if (!_sqlite->BindText(stmt, 1, assetID, nullptr)) {
+				Log::error("bind text");
+				return false;
+			}
 
 			while (SQLITE_ROW == _sqlite->Step(stmt)) {
 				found = true;
@@ -137,55 +165,79 @@ namespace Elastos {
 				asset.Asset.assign(pdata, pdata + len);
 			}
 
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("finalize");
+				return false;
+			}
+
 			return found;
 		}
 
 		bool AssetDataStore::InsertAsset(const std::string &iso, const AssetEntity &asset) {
-			std::stringstream ss;
+			std::string sql;
 
-			ss << "INSERT INTO " << ASSET_TABLE_NAME << "("
-				<< ASSET_COLUMN_ID << ","
-				<< ASSET_AMOUNT    << ","
-				<< ASSET_BUFF      << ","
-				<< ASSET_ISO
-				<< ") VALUES (?, ?, ?, ?);";
+			sql = "INSERT INTO " + ASSET_TABLE_NAME + "(" + ASSET_COLUMN_ID + "," +
+				  ASSET_AMOUNT + "," + ASSET_BUFF + "," + ASSET_ISO + ") VALUES (?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
-			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-										 "Prepare sql " + ss.str());
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return false;
+			}
 
-			_sqlite->BindText(stmt, 1, asset.AssetID, nullptr);
-			_sqlite->BindText(stmt, 2, asset.Amount.getDec(), nullptr);
-			_sqlite->BindBlob(stmt, 3, asset.Asset, nullptr);
-			_sqlite->BindText(stmt, 4, iso, nullptr);
+			if (!_sqlite->BindText(stmt, 1, asset.AssetID, nullptr) ||
+				!_sqlite->BindText(stmt, 2, asset.Amount.getDec(), nullptr) ||
+				!_sqlite->BindBlob(stmt, 3, asset.Asset, nullptr) ||
+				!_sqlite->BindText(stmt, 4, iso, nullptr)) {
+				Log::error("bind args");
+				return false;
+			}
 
-			_sqlite->Step(stmt);
+			if (SQLITE_DONE != _sqlite->Step(stmt)) {
+				Log::error("step");
+				return false;
+			}
 
-			_sqlite->Finalize(stmt);
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("finalize");
+				return false;
+			}
 
 			return true;
 		}
 
 		bool AssetDataStore::UpdateAsset(const std::string &iso, const AssetEntity &asset) {
-			std::stringstream ss;
+			std::string sql;
 
-			ss << "UPDATE " << ASSET_TABLE_NAME << " SET "
-				<< ASSET_AMOUNT << " = ?, "
-				<< ASSET_BUFF   << " = ?, "
-				<< ASSET_ISO    << " = ?"
-				<< " WHERE " << ASSET_COLUMN_ID << " = '" << asset.AssetID << "';";
+			sql = "UPDATE " + ASSET_TABLE_NAME + " SET "
+				  + ASSET_AMOUNT + " = ?, "
+				  + ASSET_BUFF + " = ?, "
+				  + ASSET_ISO + " = ?"
+				  + " WHERE " + ASSET_COLUMN_ID + " = ?;";
 
 			sqlite3_stmt *stmt;
-			ErrorChecker::CheckCondition(!_sqlite->Prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
-										 "Prepare sql " + ss.str());
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}" + sql);
+				return false;
+			}
 
-			_sqlite->BindText(stmt, 1, asset.Amount.getDec(), nullptr);
-			_sqlite->BindBlob(stmt, 2, asset.Asset, nullptr);
-			_sqlite->BindText(stmt, 3, iso, nullptr);
+			if (!_sqlite->BindText(stmt, 1, asset.Amount.getDec(), nullptr) ||
+				!_sqlite->BindBlob(stmt, 2, asset.Asset, nullptr) ||
+				!_sqlite->BindText(stmt, 3, iso, nullptr) ||
+				!_sqlite->BindText(stmt, 4, asset.AssetID, nullptr)) {
+				Log::error("bind args");
+				return false;
+			}
 
-			_sqlite->Step(stmt);
+			if (SQLITE_DONE != _sqlite->Step(stmt)) {
+				Log::error("step");
+				return false;
+			}
 
-			_sqlite->Finalize(stmt);
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("finalize");
+				return false;
+			}
 
 			return true;
 		}

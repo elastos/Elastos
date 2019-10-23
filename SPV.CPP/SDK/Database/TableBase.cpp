@@ -23,12 +23,12 @@ namespace Elastos {
 
 		}
 
-		bool TableBase::DoTransaction(const boost::function<void()> &fun) const {
+		bool TableBase::DoTransaction(const boost::function<bool()> &fun) const {
 
-			bool result = true;
+			bool result;
 			_sqlite->BeginTransaction(_txType);
 			try {
-				fun();
+				result = fun();
 			} catch (const std::exception &e) {
 				result = false;
 				Log::error("Data base error: {}", e.what());
