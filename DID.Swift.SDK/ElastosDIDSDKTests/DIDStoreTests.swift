@@ -14,37 +14,29 @@ class DIDStoreTests: XCTestCase {
     var primaryDid: DID!
     
     override func setUp() {
-        deleteFile(storePath)
+        TestUtils.deleteFile(storePath)
         try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
         store = DIDStore.shareInstance()!
         let mnemonic: String = HDKey.generateMnemonic(0)
         try! store.initPrivateIdentity(mnemonic, passphrase, true)
     }
-
+    
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
-
-    func test00CreateEmptyStore0() {
-        deleteFile(storePath)
-        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
-        let tempStore: DIDStore = try! DIDStore.shareInstance()!
-        XCTAssertFalse(try! tempStore.hasPrivateIdentity())
-        XCTAssertTrue(exists(storePath))
-        let path: String = storePath + "/" + ".DIDStore"
-        let filemanage: FileManager = FileManager.default
-        filemanage.fileExists(atPath: path)
-    }
     
     func test00CreateEmptyStore1() {
-        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
-        let tempStore: DIDStore = DIDStore.shareInstance()!
-        let doc: DIDDocument = try! tempStore.newDid(passphrase, "my first did")
-        print(doc)
+        do {
+            try DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            let tempStore: DIDStore = DIDStore.shareInstance()!
+            _ = try tempStore.newDid(passphrase, "my first did")
+        } catch {
+            print("test00CreateEmptyStore1 error: \(error)")
+        }
     }
     
     func test000InitPrivateIdentity0() {
-        deleteFile(storePath)
+        TestUtils.deleteFile(storePath)
         try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
         let tempStore: DIDStore = DIDStore.shareInstance()!
         XCTAssertFalse(try! tempStore.hasPrivateIdentity())
@@ -52,9 +44,9 @@ class DIDStoreTests: XCTestCase {
         let mnemonic: String = HDKey.generateMnemonic(0)
         try! tempStore.initPrivateIdentity(mnemonic, passphrase, true)
         let keypath: String = storePath + "/" + "private" + "/" + "key"
-        XCTAssertTrue(existsFile(keypath))
+        XCTAssertTrue(TestUtils.existsFile(keypath))
         let indexPath: String = storePath + "/" + "private" + "/" + "index"
-        XCTAssertTrue(existsFile(indexPath))
+        XCTAssertTrue(TestUtils.existsFile(indexPath))
         XCTAssertTrue(try! tempStore.hasPrivateIdentity())
         
         try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
@@ -74,10 +66,10 @@ class DIDStoreTests: XCTestCase {
         primaryDid = doc.subject
         let id: String = doc.subject!.methodSpecificId!
         let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
-        XCTAssertTrue(existsFile(path))
+        XCTAssertTrue(TestUtils.existsFile(path))
         
         let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
-        XCTAssertTrue(existsFile(path2))
+        XCTAssertTrue(TestUtils.existsFile(path2))
         ids[doc.subject!] = hint
     }
     
@@ -85,9 +77,9 @@ class DIDStoreTests: XCTestCase {
         let doc: DIDDocument = try! store.newDid(passphrase, nil)
         let id: String = doc.subject!.methodSpecificId!
         let path: String = storePath + "/" + "ids" + "/" + id + "/document"
-        XCTAssertTrue(existsFile(path))
+        XCTAssertTrue(TestUtils.existsFile(path))
         let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
-        XCTAssertFalse(existsFile(path2))
+        XCTAssertFalse(TestUtils.existsFile(path2))
         ids[doc.subject!] = ""
     }
     
@@ -100,10 +92,10 @@ class DIDStoreTests: XCTestCase {
             let doc: DIDDocument = try! store.newDid(passphrase, hint)
             let id: String = doc.subject!.methodSpecificId!
             let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
-            XCTAssertTrue(existsFile(path))
+            XCTAssertTrue(TestUtils.existsFile(path))
             
             let path2: String = storePath + "/" + "ids" + "/." + id + ".meta"
-            XCTAssertTrue(existsFile(path2))
+            XCTAssertTrue(TestUtils.existsFile(path2))
             ids[doc.subject!] = hint
             print(ids)
         }
@@ -120,10 +112,10 @@ class DIDStoreTests: XCTestCase {
                 var deleted: Bool = try! store.deleteDid(did)
                 XCTAssertTrue(deleted)
                 var path: String = storePath + "/ids/" + did.methodSpecificId!
-                XCTAssertFalse(exists(path))
+                XCTAssertFalse(TestUtils.exists(path))
                 
                 path = storePath + "/ids/." + did.methodSpecificId! + ".meta"
-                XCTAssertFalse(exists(path))
+                XCTAssertFalse(TestUtils.exists(path))
                 
                 deleted = try! store.deleteDid(did)
                 XCTAssertFalse(deleted)
@@ -177,40 +169,6 @@ class DIDStoreTests: XCTestCase {
         XCTAssertNil(issuer.vc)
         XCTAssertEqual(vcId, issuer.vc?.id)
         XCTAssertEqual(primaryDid, issuer.vc?.subject.id)
-    }
-
-    func deleteFile(_ path: String) {
-        let filemanager: FileManager = FileManager.default
-        var isdir = ObjCBool.init(false)
-        let fileExists = filemanager.fileExists(atPath: path, isDirectory: &isdir)
-        if fileExists && isdir.boolValue {
-            if let dircontents = filemanager.enumerator(atPath: path) {
-                for case let url as URL in dircontents {
-                    try! deleteFile(url.absoluteString)
-                }
-            }
-        }
-        guard fileExists else {
-            return
-        }
-        try! filemanager.removeItem(atPath: path)
-    }
-    
-     func exists(_ dirPath: String) -> Bool {
-        let fileManager = FileManager.default
-        var isDir : ObjCBool = false
-        if fileManager.fileExists(atPath: dirPath, isDirectory:&isDir) {
-            if isDir.boolValue {
-                return true
-            }
-        }
-        return false
-    }
-    
-    func existsFile(_ path: String) -> Bool {
-        var isDirectory = ObjCBool.init(false)
-        let fileExists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
-        return !isDirectory.boolValue && fileExists
     }
 
     func testPerformanceExample() {

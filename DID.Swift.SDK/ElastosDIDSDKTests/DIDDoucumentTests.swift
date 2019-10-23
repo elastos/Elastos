@@ -17,14 +17,12 @@ class DIDDoucumentTests: XCTestCase {
         compactPath = bundle.path(forResource: "compact", ofType: "json")!
         documentPath = bundle.path(forResource: "testdiddoc", ofType: "json")!
         normalizedPath = bundle.path(forResource: "normalized", ofType: "json")!
-
     }
 
     override func tearDown() {
         compactPath = nil
         documentPath = nil
         normalizedPath = nil
-        
         super.tearDown()
     }
 
