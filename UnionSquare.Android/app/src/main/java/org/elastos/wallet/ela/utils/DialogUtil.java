@@ -374,7 +374,7 @@ public class DialogUtil {
         dialog.show();
     }
 
-    public void showTime(BaseActivity activity, WarmPromptListener listener) {
+    public void showTime(BaseActivity activity, long minDate, long maxDate, WarmPromptListener listener) {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.dialog_timepicker);
         dialog.setCancelable(true);
@@ -382,11 +382,8 @@ public class DialogUtil {
         TextView tvSure = dialog.findViewById(R.id.tv_sure);
         TextConfigDataPicker datePicker = dialog.findViewById(R.id.np);
         //datePicker.updateUI(datePicker);
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        datePicker.setMinDate(calendar.getTimeInMillis());
-        calendar.set(Calendar.YEAR, year + 5);
-        datePicker.setMaxDate(calendar.getTimeInMillis());
+        datePicker.setMinDate(minDate);
+        datePicker.setMaxDate(maxDate);
         tvSure.setOnClickListener(v -> {
             dialog.dismiss();
             listener.affireBtnClick(datePicker);
@@ -426,7 +423,7 @@ public class DialogUtil {
         ((Activity) context).getWindow().setAttributes(lp);
     }
 
-    public void showCommonWarmPrompt(BaseActivity activity, String contentStr, String textSure, String textCancel, WarmPromptListener listener) {
+    public void showCommonWarmPrompt(BaseActivity activity, String contentStr, String textSure, String textCancel, boolean pop, WarmPromptListener listener) {
         Dialog dialog = getDialogs(activity, R.layout.dialog_settingtip1);
 
         ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
@@ -448,7 +445,8 @@ public class DialogUtil {
         ivCancel.setOnClickListener(v -> dialogDismiss(dialog));
         tvCancel.setOnClickListener(v -> {
             dialogDismiss(dialog);
-            activity.pop();
+            if (pop)
+                activity.pop();
         });
 
         tvSure.setOnClickListener(v -> {

@@ -18,6 +18,7 @@
             android:orientation="vertical">
 
             <RelativeLayout
+                android:visibility="gone"
                 android:id="@+id/rl_did"
                 style="@style/settingItem"
                 android:layout_gravity="center"

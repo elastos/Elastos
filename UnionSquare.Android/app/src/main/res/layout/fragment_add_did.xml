@@ -46,7 +46,7 @@
     <View style="@style/line_margin15" />
 
     <TextView
-        android:id="@+id/et_didpk"
+        android:id="@+id/tv_didpk"
         style="@style/settingItem_margin15"
         android:gravity="center_vertical"
         android:hint="@string/mainkpnomodify" />
@@ -54,7 +54,7 @@
     <View style="@style/line_margin15" />
 
     <TextView
-        android:id="@+id/et_did"
+        android:id="@+id/tv_did"
         style="@style/settingItem_margin15"
         android:gravity="center_vertical"
         android:hint="@string/didonlywithmainpk" />

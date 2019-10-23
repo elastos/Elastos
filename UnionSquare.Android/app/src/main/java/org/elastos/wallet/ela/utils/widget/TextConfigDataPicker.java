@@ -75,7 +75,7 @@ public class TextConfigDataPicker extends DatePicker {
                     //设置分割线大小颜色
                     Field mSelectionDivider = getFile("mSelectionDivider");
                     mSelectionDivider.set(np, new ColorDrawable(getResources().getColor(R.color.pickline)));
-                    mSelectionDivider.set(np, 1);
+                    //mSelectionDivider.set(np, 1);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

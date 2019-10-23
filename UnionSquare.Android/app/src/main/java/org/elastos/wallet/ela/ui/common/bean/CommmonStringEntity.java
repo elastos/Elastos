@@ -9,6 +9,11 @@ public class CommmonStringEntity extends BaseEntity {
         this.setCode(code);
         this.data = data;
     }
+ public CommmonStringEntity(String code, String data,String msg) {
+        this(code,data);
+        this.setMsg(msg);
+
+    }
 
     public String getData() {
         return data;

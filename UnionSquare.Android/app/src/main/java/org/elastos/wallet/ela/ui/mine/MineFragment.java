@@ -4,14 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -20,6 +17,7 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.did.fragment.AddDIDFragment;
+import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
@@ -34,9 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * tab-设置
@@ -174,7 +170,8 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
                 ((BaseFragment) getParentFragment()).start(AboutFragment.class);
                 break;
             case R.id.rl_did:
-                ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
+               // ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
+                ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
                 break;
         }
     }
