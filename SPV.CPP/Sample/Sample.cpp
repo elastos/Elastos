@@ -578,8 +578,8 @@ static void Withdraw(const std::string &fromMasterWalletID, const std::string &f
 }
 
 static nlohmann::json GetDIDPayloadJson() {
-	nlohmann::json inputJson = R"({"id":"did:elastos:iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","operation":"create","publicKey":[{"id": "#primary","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}],
-"credentialSubject":{"id":"did:elastos:iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww", "name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"},
+	nlohmann::json inputJson = R"({"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","operation":"create","publicKey":[{"id": "#primary","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}],
+"credentialSubject":{"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww", "name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"},
 "expires":"2024-02-10T17:00:00Z"})"_json;
 	nlohmann::json payload;
 	ISubWallet *subWallet = GetSubWallet(gMasterWalletID, gIDchainSubWalletID);
@@ -636,7 +636,7 @@ static void TestIDSubWallet() {
 	std::vector<std::string> pubkeys = j["PublicKeys"];
 	IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
 	for (size_t i = 0; i <  pubkeys.size(); ++i) {
-		iidChainSubWallet->GetDIDPublicKey(pubkeys[i]);
+		iidChainSubWallet->GetPublicKeyDID(pubkeys[i]);
 	}
 
 	iidChainSubWallet->GetAllDID(0, 500);

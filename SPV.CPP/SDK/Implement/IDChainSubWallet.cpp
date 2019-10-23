@@ -146,7 +146,7 @@ namespace Elastos {
 			return r;
 		}
 
-		std::string IDChainSubWallet::GetDIDPublicKey(const std::string &pubkey) const {
+		std::string IDChainSubWallet::GetPublicKeyDID(const std::string &pubkey) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("pubkey:{}", pubkey);
 
@@ -168,9 +168,9 @@ namespace Elastos {
 									 "invalid credentialSubject JSON");
 
 			std::string did = didInfo["id"].get<std::string>();
-			std::vector<std::string> idSplited;
-			boost::algorithm::split(idSplited, did, boost::is_any_of(":"), boost::token_compress_on);
-			ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument, "invalid id format");
+			Address address(did);
+			ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "id is invalid");
+			std::string id = PREFIX_DID + did;
 
 			std::string operation = didInfo["operation"].get<std::string>();
 			ErrorChecker::CheckParam(operation != "create" && operation != "update" && operation != "deactivate",
@@ -203,6 +203,10 @@ namespace Elastos {
 
 			CredentialSubject subject;
 			try {
+				std::string cid = credentialSubject["id"].get<std::string>();
+				if (!cid.empty() && cid.compare(0, sizeof(PREFIX_DID) - 1, PREFIX_DID) != 0) {
+					credentialSubject["id"] = PREFIX_DID + cid;
+				}
 				subject.FromJson(credentialSubject, 0);
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
@@ -210,7 +214,7 @@ namespace Elastos {
 			}
 
 			VerifiableCredential verifiableCredential;
-			verifiableCredential.SetID(did);
+			verifiableCredential.SetID(id);
 
 			std::vector<std::string> types = getVerifiableCredentialTypes(subject);
 			verifiableCredential.SetTypes(types);
@@ -225,7 +229,7 @@ namespace Elastos {
 			verifiableCredentials.push_back(verifiableCredential);
 
 			DIDPayloadInfo payloadInfo;
-			payloadInfo.SetID(did);
+			payloadInfo.SetID(id);
 			payloadInfo.SetExpires(expirationDate);
 			payloadInfo.SetPublickKey(didPubKeyInfoArray);
 			payloadInfo.SetVerifiableCredential(verifiableCredentials);
@@ -236,7 +240,7 @@ namespace Elastos {
 
 			std::string sourceData = headerInfo.Specification() + headerInfo.Operation() + didInfoPayload.DIDPayloadString();
 
-			std::string signature = Sign(idSplited[2], sourceData, payPasswd);
+			std::string signature = Sign(did, sourceData, payPasswd);
 			DIDProofInfo didProofInfo("#primary", Base64::Encode(signature));
 			didInfoPayload.SetDIDProof(didProofInfo);
 
@@ -245,66 +249,99 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json IDChainSubWallet::GetDIDInfo(const std::string &did) const {
+		nlohmann::json
+		IDChainSubWallet::GetResolveDIDInfo(uint32_t start, uint32_t count, const std::string &did) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("did:{}", did);
+			ArgInfo("start: {}", start);
+			ArgInfo("count: {}", count);
+			ArgInfo("did: {}", did);
 
-			std::vector<std::string> idSplited;
-			boost::algorithm::split(idSplited, did, boost::is_any_of(":"), boost::token_compress_on);
-			ErrorChecker::CheckParam(idSplited.size() != 3, Error::InvalidArgument, "invalid id format");
+			nlohmann::json j;
 
+			bool isDetail = !did.empty();
+			if (isDetail) {
+				Address address(did);
+				ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid did");
+			}
+			std::string id = PREFIX_DID + did;
+
+			std::map<std::string, DIDInfo *> didInfo;
 			std::vector<TransactionPtr> allTxs = _walletManager->GetWallet()->GetAllTransactions();
-			size_t count = allTxs.size();
-			DIDInfo *didInfo = nullptr;
+			size_t num = allTxs.size();
+			size_t pageCount = count;
 
-			for (size_t i = count; i > 0; --i) {
-				TransactionPtr tx = allTxs[i - 1];
+			for (size_t i = 0; i < num; ++i) {
+				TransactionPtr tx = allTxs[i];
 				if (tx->GetTransactionType() == IDTransaction::didTransaction) {
 					DIDInfo *payload = dynamic_cast<DIDInfo *>(tx->GetPayload());
-					if (payload && payload->DIDPayload().ID() == did) {
-						didInfo = payload;
-						break;
+					if (payload) {
+						if (isDetail && payload->DIDPayload().ID() == id) {
+							didInfo[did] = payload;
+						} else if (!isDetail) {
+							didInfo[payload->DIDPayload().ID()] = payload;
+						}
 					}
 				}
 			}
 
-			nlohmann::json j;
-			if (didInfo) {
-				j = toOutJsonInfo(didInfo);
+			if (start >= didInfo.size()) {
+				j["DID"] = {};
+				j["MaxCount"] = didInfo.size();
+
+				ArgInfo("r => {}", j.dump());
+				return j;
 			}
+
+			if (didInfo.size() < start + count)
+				pageCount = didInfo.size() - start;
+
+			std::vector<nlohmann::json> jsonList;
+			for (std::map<std::string, DIDInfo *>::iterator iter = didInfo.begin();
+					iter != didInfo.end() && jsonList.size() < pageCount; ++iter) {
+				jsonList.push_back(toDIDInfoJson(iter->second, isDetail));
+			}
+
+			j["DID"] = jsonList;
+			j["MaxCount"] = didInfo.size();
 
 			ArgInfo("r => {}", j.dump());
 			return j;
 		}
 
-		nlohmann::json IDChainSubWallet::toOutJsonInfo(const DIDInfo *didInfo) const {
+		nlohmann::json IDChainSubWallet::toDIDInfoJson(const DIDInfo *didInfo, bool isDetail) const {
 			nlohmann::json summary;
 
 			const DIDHeaderInfo &header = didInfo->DIDHeader();
 			const DIDPayloadInfo &payloadInfo = didInfo->DIDPayload();
 
 			summary["operation"] = header.Operation();
-			summary["id"] = payloadInfo.ID();
+			summary["id"] = payloadInfo.ID().substr(sizeof(PREFIX_DID) - 1);
 			summary["expires"] =  payloadInfo.Expires();
 
-			nlohmann::json jPublicKeys;
-			const DIDPubKeyInfoArray &publicKeys = payloadInfo.PublicKeyInfo();
-			for (size_t i = 0; i < publicKeys.size(); ++i) {
-				nlohmann::json pbk;
-				pbk["id"]= publicKeys[i].ID();
-				bytes_t pubkey = Base58::Decode(publicKeys[i].PublicKeyBase58());
-				pbk["publicKey"] = pubkey.getHex();
+			if (isDetail) {
+				nlohmann::json jPublicKeys;
+				const DIDPubKeyInfoArray &publicKeys = payloadInfo.PublicKeyInfo();
+				for (size_t i = 0; i < publicKeys.size(); ++i) {
+					nlohmann::json pbk;
+					pbk["id"]= publicKeys[i].ID();
+					bytes_t pubkey = Base58::Decode(publicKeys[i].PublicKeyBase58());
+					pbk["publicKey"] = pubkey.getHex();
 
-				if (publicKeys[i].Controller().size() > 0){
-					pbk["controller"] = publicKeys[i].Controller();
+					if (publicKeys[i].Controller().size() > 0){
+						pbk["controller"] = publicKeys[i].Controller().substr(sizeof(PREFIX_DID) - 1);
+					}
+					jPublicKeys.push_back(pbk);
 				}
-				jPublicKeys.push_back(pbk);
-			}
-			summary["publicKey"] = jPublicKeys;
+				summary["publicKey"] = jPublicKeys;
 
-			const VerifiableCredentialArray &verifiableCredentialArray = payloadInfo.GetVerifiableCredential();
-			for (size_t i = 0; i < verifiableCredentialArray.size(); ++i) {
-				summary["credentialSubject"] = verifiableCredentialArray[i].GetCredentialSubject().ToJson(0);
+				const VerifiableCredentialArray &verifiableCredentialArray = payloadInfo.GetVerifiableCredential();
+				for (size_t i = 0; i < verifiableCredentialArray.size(); ++i) {
+					summary["credentialSubject"] = verifiableCredentialArray[i].GetCredentialSubject().ToJson(0);
+					std::string id = summary["credentialSubject"]["id"].get<std::string>();
+					if (!id.empty() && id.compare(0, sizeof(PREFIX_DID) - 1, PREFIX_DID) == 0) {
+						summary["credentialSubject"]["id"] = id.substr(sizeof(PREFIX_DID) - 1);
+					}
+				}
 			}
 
 			return summary;

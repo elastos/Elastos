@@ -208,7 +208,7 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 			DIDPubKeyInfo pubKeyInfo;
 			pubKeyInfo.SetID(getRandString(23));
 			pubKeyInfo.SetType(getRandString(5));
-			pubKeyInfo.SetController(getRandString(20));
+			pubKeyInfo.SetController(PREFIX_DID + getRandString(20));
 			pubKeyInfo.SetPublicKeyBase58(getRandHexString(25));
 			didPubKeyInfoArray.push_back(pubKeyInfo);
 		}
@@ -219,7 +219,7 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 			DIDPubKeyInfo pubKeyInfo;
 			pubKeyInfo.SetID(getRandString(23));
 			pubKeyInfo.SetType(getRandString(5));
-			pubKeyInfo.SetController(getRandString(20));
+			pubKeyInfo.SetController(PREFIX_DID + getRandString(20));
 			pubKeyInfo.SetPublicKeyBase58(getRandHexString(25));
 			authentication.push_back(pubKeyInfo);
 		}
@@ -230,7 +230,7 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 			DIDPubKeyInfo pubKeyInfo;
 			pubKeyInfo.SetID(getRandString(23));
 			pubKeyInfo.SetType(getRandString(5));
-			pubKeyInfo.SetController(getRandString(20));
+			pubKeyInfo.SetController(PREFIX_DID + getRandString(20));
 			pubKeyInfo.SetPublicKeyBase58(getRandHexString(25));
 			authorization.push_back(pubKeyInfo);
 		}

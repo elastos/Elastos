@@ -27,18 +27,18 @@ namespace Elastos {
 
 			virtual bool VerifySignature(const std::string &publicKey, const std::string &message, const std::string &signature);
 
-			virtual std::string GetDIDPublicKey(const std::string &pubkey) const;
+			virtual std::string GetPublicKeyDID(const std::string &pubkey) const;
 
 			virtual nlohmann::json GenerateDIDInfoPayload(
 				const nlohmann::json &didInfo,
 				const std::string &paypasswd);
 
-			virtual nlohmann::json GetDIDInfo(const std::string &did) const;
+			virtual nlohmann::json GetResolveDIDInfo(uint32_t start, uint32_t count, const std::string &did) const;
 
 		private:
 			std::vector<std::string> getVerifiableCredentialTypes(const CredentialSubject &subject);
 
-			nlohmann::json toOutJsonInfo(const DIDInfo *didInfo) const;
+			nlohmann::json toDIDInfoJson(const DIDInfo *didInfo, bool isDetail) const;
 		protected:
 			friend class MasterWallet;
 

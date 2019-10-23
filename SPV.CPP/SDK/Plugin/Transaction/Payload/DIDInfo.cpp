@@ -4,8 +4,10 @@
 
 #include <SDK/Common/Log.h>
 #include <SDK/Common/Base64.h>
+#include <SDK/Common/ErrorChecker.h>
 #include <SDK/WalletCore/BIPs/Base58.h>
 #include <SDK/WalletCore/BIPs/Key.h>
+
 #include "DIDInfo.h"
 
 namespace Elastos {
@@ -156,6 +158,7 @@ namespace Elastos {
 
 			if (j.find("controller") != j.end()) {
 				_controller = j["controller"].get<std::string>();
+				ErrorChecker::CheckParam(!_controller.empty() && _controller.find(PREFIX_DID) == std::string::npos, Error::InvalidArgument, "invalid controller");
 			}
 		}
 
@@ -191,6 +194,7 @@ namespace Elastos {
 		}
 
 		void CredentialSubject::SetID(const std::string &id) {
+			ErrorChecker::CheckParam(id.find(PREFIX_DID) == std::string::npos, Error::InvalidArgument, "invalid id");
 			_id = id;
 		}
 
@@ -578,6 +582,8 @@ namespace Elastos {
 		void CredentialSubject::FromJson(const nlohmann::json &j, uint8_t version) {
 			if (j.find("id") != j.end())
 				_id = j["id"].get<std::string>();
+
+			ErrorChecker::CheckParam(_id.find(PREFIX_DID) == std::string::npos, Error::InvalidArgument, "invalid id");
 
 			if (j.find("name") != j.end())
 				_name = j["name"].get<std::string>();

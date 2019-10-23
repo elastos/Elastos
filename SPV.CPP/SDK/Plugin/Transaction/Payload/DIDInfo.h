@@ -11,6 +11,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #define DID_DEFAULT_TYPE "ECDSAsecp256r1"
+#define PREFIX_DID "did:elastos:"
 
 		class DIDHeaderInfo {
 		public:
