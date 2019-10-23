@@ -25,12 +25,8 @@ const mapDispatch = () => {
       return service.myList(query)
     },
 
-    async loadMore(query) {
-      return service.loadMore(query)
-    },
-
     resetAll() {
-      return service.resetAll()
+      return service.resetMyList()
     },
   }
 }

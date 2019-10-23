@@ -187,6 +187,7 @@ export default class extends ProfilePage {
         loading={loading}
         onChange={this.onTableChanged}
         pagination={{
+          current: this.state.page,
           pageSize: this.state.results,
           total: loading ? 0 : total,
           onChange: this.loadPage
@@ -205,7 +206,7 @@ export default class extends ProfilePage {
   // TODO
   onSortByChanged = sortBy => this.setState({ sortBy }, this.refetch)
 
-  onFilterChanged = filter => this.setState({ filter }, this.refetch)
+  onFilterChanged = filter => this.setState({ filter, page: 1 }, this.refetch)
 
   /**
    * Builds the query from the current state
@@ -245,7 +246,7 @@ export default class extends ProfilePage {
     this.setState({ loadingMore: true })
 
     try {
-      await this.props.loadMore(query)
+      await this.props.getList(query)
       this.setState({ page })
     } catch (e) {
       // Do not update page in state if the call fails
