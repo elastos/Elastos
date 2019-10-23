@@ -182,9 +182,6 @@ export default class extends ProfilePage {
     return (
       <Table
         columns={columns}
-        onRow={record => ({
-          onMouseEnter: event => this.setState({ currRowId: record._id })
-        })}
         rowKey={item => item._id}
         dataSource={dataList}
         loading={loading}
