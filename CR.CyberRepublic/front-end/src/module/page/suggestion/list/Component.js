@@ -10,7 +10,6 @@ import I18N from '@/I18N'
 import { loginRedirectWithQuery, logger } from '@/util'
 import StandardPage from '../../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
-import MySuggestion from '../my_list/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
@@ -420,8 +419,6 @@ export default class extends StandardPage {
   renderTagsNode = detail => <TagsContainer data={detail} />
 
   renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
-
-  renderMySuggestion = () => <MySuggestion />
 
   onSortByChanged = async (sortBy) => {
     await this.props.onSortByChanged(sortBy)
