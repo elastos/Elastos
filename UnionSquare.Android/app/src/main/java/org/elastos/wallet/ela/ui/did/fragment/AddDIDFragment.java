@@ -22,7 +22,9 @@ import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -62,6 +64,12 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     String[] walletNames;
     List<Wallet> wallets;
     Wallet tempWallet;
+    private DIDInfoEntity didInfo;
+
+
+    private DIDInfoEntity.PublicKeyBean publicKeyBean;
+    private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
+    private String endDate;
 
     @Override
     protected int getLayoutId() {
@@ -90,8 +98,29 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
         presenter = new AddDIDPresenter();
         registReceiver();
+
+
+        didInfo = new DIDInfoEntity();
+        didInfo.setOperation("create");
+        List<DIDInfoEntity.PublicKeyBean> list = new ArrayList<>();
+        publicKeyBean = new DIDInfoEntity.PublicKeyBean();
+        publicKeyBean.setId("#primary");
+        list.add(publicKeyBean);
+
+        didInfo.setPublicKey(list);
+        credentialSubjectBean = new DIDInfoEntity.CredentialSubjectBean();
+        didInfo.setCredentialSubject(credentialSubjectBean);
+
+
     }
 
+    private void setData() {
+        credentialSubjectBean.setId(getText(tvDid));
+        didInfo.setId(getText(tvDid));
+        publicKeyBean.setPublicKey(getText(tvDidpk));
+        didInfo.setExpires(endDate == null ? null : (endDate + "T00:00:00Z"));
+        credentialSubjectBean.setDidName(getText(etDidname));
+    }
 
     @OnClick({R.id.rl_selectwallet, R.id.rl_outdate, R.id.tv_next})
     public void onViewClicked(View view) {
@@ -102,7 +131,15 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     showToast(getString(R.string.plziputdidname));
                     break;
                 }
+                String did = tvDid.getText().toString().trim();
+                if (TextUtils.isEmpty(did)) {
+                    showToast(getString(R.string.plzselectwallet));
+                    break;
+                }
+                setData();
+
                 Bundle bundle = new Bundle();
+                bundle.putParcelable("didInfo", didInfo);
                 start(PersonalInfoFragment.class, bundle);
                 break;
             case R.id.rl_selectwallet:
@@ -113,7 +150,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     /*    if (AddDIDFragment.this.tempWallet != null && AddDIDFragment.this.tempWallet.getWalletId().equals(tempWallet.getWalletId())) {
                             return;
                         }*/
-                        tvWalletname.setText(getString(R.string.plzselectwallet));
+                        tvWalletname.setText("");
                         tvDid.setText("");
                         tvDidpk.setText("");
                         presenter.getAllSubWallets(tempWallet.getWalletId(), AddDIDFragment.this);
@@ -128,10 +165,11 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 new DialogUtil().showTime(getBaseActivity(), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        String endDate = ((TextConfigDataPicker) view).getYear() + "/" + (((TextConfigDataPicker) view).getMonth() + 1)
-                                + "/" + ((TextConfigDataPicker) view).getDayOfMonth();
+                        endDate = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
+                                + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
                         // String begainDate = DateUtil.getCurrentData(DateUtil.FORMART2);
                         tvDate.setText(getString(R.string.validtime) + endDate);
+
                     }
                 });
                 break;
@@ -143,11 +181,20 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     @Override
     public boolean onBackPressedSupport() {
         String didName = etDidname.getText().toString().trim();
-        if (!TextUtils.isEmpty(didName)) {
+        String walletName = tvWalletname.getText().toString().trim();
+        if (!TextUtils.isEmpty(didName) && !TextUtils.isEmpty(walletName)) {
             new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.keepeditornot),
                     getString(R.string.keep), getString(R.string.nokeep), true, new WarmPromptListener() {
                         @Override
                         public void affireBtnClick(View view) {
+                            setData();
+                            //保存草稿
+                            ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
+                            if (infoEntities.contains(didInfo)) {
+                                infoEntities.remove(didInfo);
+                            }
+                            infoEntities.add(didInfo);
+                            CacheUtil.setDIDInfoList(infoEntities);
                             showToast(getString(R.string.keepsucess));
                             getBaseActivity().pop();
                         }
@@ -158,6 +205,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
 
     }
+
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
@@ -182,10 +230,12 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     return;
                 }
                 tvWalletname.setText(tempWallet.getWalletName());
+
                 tvDidpk.setText(allPkEntity.getPublicKeys().get(0));
                 presenter.getDIDByPublicKey(tempWallet.getWalletId(), allPkEntity.getPublicKeys().get(0), this);
                 break;
             case "getDIDByPublicKey":
+
                 tvDid.setText(((CommmonStringEntity) baseEntity).getData());
                 break;
         }

@@ -14,6 +14,7 @@
         android:textSize="16sp" />
 
     <EditText
+        android:maxLength="16"
         android:id="@+id/et_didname"
         style="@style/settingItem_margin15"
         android:background="@null"
@@ -30,7 +31,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="@string/plzselectwallet"
+            android:hint="@string/plzselectwallet"
+            android:textColorHint="@color/whiter"
             android:textColor="#ffffffff"
             android:textSize="14sp" />
 
@@ -70,7 +72,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="@string/plzselctoutdate"
+            android:hint="@string/plzselctoutdate"
+            android:textColorHint="@color/whiter"
             android:textColor="#ffffffff"
             android:textSize="14sp" />
 

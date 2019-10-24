@@ -170,8 +170,8 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
                 ((BaseFragment) getParentFragment()).start(AboutFragment.class);
                 break;
             case R.id.rl_did:
-               // ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
-                ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
+                ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
+                // ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
                 break;
         }
     }
