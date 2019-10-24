@@ -62,16 +62,16 @@ class IDChainRequest: NSObject {
     }
     
     public func sign(_ key: DIDURL, _ passphrase: String) throws -> IDChainRequest {
-        
+        // operation
         let op: String = "\(operation ?? Operation.CREATE)"
         
+        // payload: did or doc
         if operation == Operation.DEACRIVATE {
             payload = did?.toExternalForm()
         } else {
             payload = try doc?.toExternalForm(true)
+            payload = payload?.toBase64()
         }
-        
-        payload = payload?.toBase64()
         
         let inputs: [String] = [
             specification,
@@ -84,8 +84,57 @@ class IDChainRequest: NSObject {
         self.keyType = Constants.defaultPublicKeyType
         return self
     }
-    
+
     public func toJson(_ compact: Bool) -> String {
         return ""
     }
+    /*
+    public void toJson(Writer out, boolean compact) throws IOException {
+        JsonFactory factory = new JsonFactory();
+        JsonGenerator generator = factory.createGenerator(out);
+
+        generator.writeStartObject();
+
+        // header
+        generator.writeFieldName(HEADER);
+        generator.writeStartObject();
+
+        generator.writeFieldName(SPECIFICATION);
+        generator.writeString(specification);
+
+        generator.writeFieldName(OPERATION);
+        generator.writeString(operation.toString());
+
+        generator.writeEndObject();
+
+        // payload
+        generator.writeFieldName(PAYLOAD);
+        generator.writeString(payload);
+
+        // signature
+        generator.writeFieldName(PROOF);
+        generator.writeStartObject();
+
+        String keyId;
+
+        if (!compact) {
+            generator.writeFieldName(KEY_TYPE);
+            generator.writeString(keyType);
+
+            keyId = signKey.toExternalForm();
+        } else {
+            keyId = "#" + signKey.getFragment();
+        }
+
+        generator.writeFieldName(KEY_ID);
+        generator.writeString(keyId);
+
+
+        generator.writeFieldName(SIGNATURE);
+        generator.writeString(signature);
+
+        generator.writeEndObject();
+        generator.close();
+    }
+ */
 }

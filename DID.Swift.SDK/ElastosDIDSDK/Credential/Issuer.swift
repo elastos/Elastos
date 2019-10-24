@@ -8,7 +8,7 @@ public class Issuer {
     public var vc: VerifiableCredential?
     
     public init(_ did: DID, _ defaultSignKey: DIDURL?) throws {
-        let store = DIDStore.shareInstance()
+        let store = try DIDStore.shareInstance()
         self.didDocument = try store?.resolveDid(did)
         guard self.didDocument != nil else {
             throw DIDError.failue("Can not resolve DID.")

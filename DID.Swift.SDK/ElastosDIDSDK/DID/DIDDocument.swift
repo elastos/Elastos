@@ -8,7 +8,6 @@ public class DIDDocument: NSObject {
     private var credentials: OrderedDictionary<DIDURL, VerifiableCredential> = OrderedDictionary()
     private var services: OrderedDictionary<DIDURL, Service> = OrderedDictionary()
     public var expires: Date?
-    private var rootPath: String?
     
     public var readonly: Bool = false
     
@@ -281,8 +280,7 @@ public class DIDDocument: NSObject {
         return true
     }
     
-    public func toJson(_ path: String, _ compact: Bool) throws -> String? {
-        self.rootPath = path
+    public func toJson(_ compact: Bool) throws -> String? {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         // subject
         dic[Constants.id] = subject?.toExternalForm()
@@ -354,28 +352,28 @@ public class DIDDocument: NSObject {
             dic[Constants.expires] = DateFormater.format(expires!)
         }
         let dicString = OrderedDictionary<String, Any>.creatJsonString(dic: dic)
-                
-        let data: Data = dicString.data(using: .utf8)!
-        // & Write to local
-        let dirPath: String = PathExtracter(path).dirNamePart()
-        let fileM = FileManager.default
-        let re = fileM.fileExists(atPath: dirPath)
-        if !re {
-            try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
-        }
-        let dre = fileM.fileExists(atPath: path)
-        if !dre {
-            fileM.createFile(atPath: path, contents: nil, attributes: nil)
-        }
-        let writeHandle = FileHandle(forWritingAtPath: path)
-        writeHandle?.write(data)
+        
+//        let data: Data = dicString.data(using: .utf8)!
+//        // & Write to local
+//        let dirPath: String = PathExtracter(path).dirNamePart()
+//        let fileM = FileManager.default
+//        let re = fileM.fileExists(atPath: dirPath)
+//        if !re {
+//            try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
+//        }
+//        let dre = fileM.fileExists(atPath: path)
+//        if !dre {
+//            fileM.createFile(atPath: path, contents: nil, attributes: nil)
+//        }
+//        let writeHandle = FileHandle(forWritingAtPath: path)
+//        writeHandle?.write(data)
         return dicString
     }
     
     public static func fromJson(_ path: String) throws -> DIDDocument {
         
         let doc: DIDDocument = DIDDocument()
-        doc.rootPath = path
+//        doc.rootPath = path
         let urlPath = URL(fileURLWithPath: path)
         try doc.parse(url: urlPath)
         doc.readonly = true
@@ -580,7 +578,7 @@ public class DIDDocument: NSObject {
     }
     
     public func toExternalForm(_ compact: Bool) throws -> String {
-        return try (toJson(self.rootPath!, compact) ?? "")
+        return try (toJson(compact) ?? "")
     }
     
 }

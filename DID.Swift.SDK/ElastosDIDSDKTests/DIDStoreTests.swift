@@ -6,19 +6,24 @@ import ElastosDIDSDK
 
 
 class DIDStoreTests: XCTestCase {
-
+    
     let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
     let passphrase: String = "secret"
+    let storePass: String = "passwd"
     var store: DIDStore!
     var ids: Dictionary<DID, String> = [: ]
     var primaryDid: DID!
     
     override func setUp() {
-        TestUtils.deleteFile(storePath)
-        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
-        store = DIDStore.shareInstance()!
-        let mnemonic: String = HDKey.generateMnemonic(0)
-        try! store.initPrivateIdentity(mnemonic, passphrase, true)
+        do {
+            TestUtils.deleteFile(storePath)
+            try DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            store = try DIDStore.shareInstance()!
+            let mnemonic: String = HDKey.generateMnemonic(0)
+            try store.initPrivateIdentity(mnemonic, passphrase, true)
+        } catch {
+            print(error)
+        }
     }
     
     override func tearDown() {
@@ -28,36 +33,44 @@ class DIDStoreTests: XCTestCase {
     func test00CreateEmptyStore1() {
         do {
             try DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
-            let tempStore: DIDStore = DIDStore.shareInstance()!
+            let tempStore: DIDStore = try DIDStore.shareInstance()!
             _ = try tempStore.newDid(passphrase, "my first did")
         } catch {
             print("test00CreateEmptyStore1 error: \(error)")
         }
     }
     
-    func test000InitPrivateIdentity0() {
-        TestUtils.deleteFile(storePath)
-        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
-        let tempStore: DIDStore = DIDStore.shareInstance()!
-        XCTAssertFalse(try! tempStore.hasPrivateIdentity())
-        
-        let mnemonic: String = HDKey.generateMnemonic(0)
-        try! tempStore.initPrivateIdentity(mnemonic, passphrase, true)
-        let keypath: String = storePath + "/" + "private" + "/" + "key"
-        XCTAssertTrue(TestUtils.existsFile(keypath))
-        let indexPath: String = storePath + "/" + "private" + "/" + "index"
-        XCTAssertTrue(TestUtils.existsFile(indexPath))
-        XCTAssertTrue(try! tempStore.hasPrivateIdentity())
-        
-        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
-        let tempStore2: DIDStore = DIDStore.shareInstance()!
-        XCTAssertTrue(try! tempStore2.hasPrivateIdentity())
+    func test00InitPrivateIdentity0() {
+        do {
+            TestUtils.deleteFile(storePath)
+            try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            let tempStore: DIDStore = try DIDStore.shareInstance()!
+            XCTAssertFalse(try! tempStore.hasPrivateIdentity())
+            
+            let mnemonic: String = HDKey.generateMnemonic(0)
+            try! tempStore.initPrivateIdentity(mnemonic, passphrase, true)
+            let keypath: String = storePath + "/" + "private" + "/" + "key"
+            XCTAssertTrue(TestUtils.existsFile(keypath))
+            let indexPath: String = storePath + "/" + "private" + "/" + "index"
+            XCTAssertTrue(TestUtils.existsFile(indexPath))
+            XCTAssertTrue(try! tempStore.hasPrivateIdentity())
+            
+            try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            let tempStore2: DIDStore = try DIDStore.shareInstance()!
+            XCTAssertTrue(try! tempStore2.hasPrivateIdentity())
+        } catch {
+            print(error)
+        }
     }
     
     func test01InitPrivateIdentity1() {
-        try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
-        let tempStore: DIDStore = DIDStore.shareInstance()!
-        XCTAssert(try! tempStore.hasPrivateIdentity())
+        do {
+            try DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            let tempStore: DIDStore = try DIDStore.shareInstance()!
+            XCTAssert(try tempStore.hasPrivateIdentity())
+        } catch {
+            print(error)
+        }
     }
     
     func test03CreateDID1() {
@@ -171,6 +184,36 @@ class DIDStoreTests: XCTestCase {
         XCTAssertEqual(primaryDid, issuer.vc?.subject.id)
     }
 
+    func test30CreateDID1() {
+        do {
+            let hint: String = "my first did"
+            let doc: DIDDocument = try store.newDid(storePass, hint)
+        } catch {
+            print(error)
+        }
+    }
+    /*
+    public void test30CreateDID1() throws DIDStoreException {
+        String hint = "my first did";
+
+        DIDDocument doc = store.newDid(storePass, hint);
+        primaryDid = doc.getSubject();
+
+        File file = new File(storeRoot + File.separator + "ids"
+                + File.separator + doc.getSubject().getMethodSpecificId()
+                + File.separator + "document");
+        assertTrue(file.exists());
+        assertTrue(file.isFile());
+
+        file = new File(storeRoot + File.separator + "ids"
+                + File.separator + "."
+                + doc.getSubject().getMethodSpecificId() + ".meta");
+        assertTrue(file.exists());
+        assertTrue(file.isFile());
+
+        ids.put(doc.getSubject(), hint);
+    }
+    */
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {

@@ -120,7 +120,11 @@ public class FileSystemStore: DIDStore {
     public func exists(_ dirPath: String) throws -> Bool {
         let fileManager = FileManager.default
         var isDir : ObjCBool = false
-        return fileManager.fileExists(atPath: dirPath, isDirectory:&isDir)
+        fileManager.fileExists(atPath: dirPath, isDirectory:&isDir)
+        let readhandle = FileHandle.init(forReadingAtPath: dirPath)
+        let data: Data = (readhandle?.readDataToEndOfFile()) ?? Data()
+        let str: String = String(data: data, encoding: .utf8) ?? ""
+        return str.count > 0 ? true : false
     }
 
     public func getFile(_ create: Bool, _ path: String) throws -> String {
@@ -219,8 +223,9 @@ public class FileSystemStore: DIDStore {
 
     override public func storeDid(_ doc: DIDDocument ,_ hint: String?) throws {
         let path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + doc.subject!.methodSpecificId + "/" + FileSystemStore.DOCUMENT_FILE
+        _ = try getFile(true, path)
         let exist = try exists(path)
-        try doc.toJson(path, true)
+        _ = try doc.toJson(true)
         if !exist || (hint != nil) {
            try setDidHint(doc.subject!, hint)
         }

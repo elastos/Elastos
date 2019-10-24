@@ -24,10 +24,9 @@ public class DIDStore: NSObject {
         instance.storeRootPath = location
     }
 
-    public static func shareInstance() -> DIDStore? {
+    public static func shareInstance() throws -> DIDStore? {
         guard (instance != nil) else {
-            // TODO: throw error
-            return nil
+            throw DIDStoreError.failue("Please call the creatInstance first.")
         }
         return instance
     }
