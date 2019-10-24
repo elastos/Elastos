@@ -103,6 +103,7 @@ option(SPDSDK_DEBUG_ON "SPD debug" OFF)
 option(SPV_BUILD_TEST_CASES "Build test cases" OFF)
 option(SPV_BUILD_SAMPLE "Build sample" OFF)
 option(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
+option(SPV_CONSOLE_LOG "Enable console log" OFF)
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)

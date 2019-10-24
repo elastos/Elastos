@@ -29,6 +29,7 @@ namespace Elastos {
 				if (spdlog::get(SPV_DEFAULT_LOG) != nullptr)
 					return ;
 
+#ifdef SPV_CONSOLE_LOG
 #if defined(__ANDROID__)
 				auto console_sink = std::make_shared<spdlog::sinks::android_sink>("spvsdk");
 #else
@@ -37,6 +38,9 @@ namespace Elastos {
 				console_sink->set_level(spdlog::level::trace);
 
 				std::vector<spdlog::sink_ptr> sinks = {console_sink};
+#else
+				std::vector<spdlog::sink_ptr> sinks = {};
+#endif
 
 				std::string filepath = SPV_FILE_NAME;
 				if (path != "") {
