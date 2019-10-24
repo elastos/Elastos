@@ -221,7 +221,6 @@ const zh = {
   'suggestion.suggestion': '建议',
   'suggestion.referred': '引用在',
   'suggestion.title': '建议',
-  'suggestion.listTitle': '建议',
   'suggestion.add': '添加建议',
   'suggestion.sort': '排序方式',
   'suggestion.likes': '点赞量',

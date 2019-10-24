@@ -39,6 +39,7 @@ export default {
     referred: '相关提案'
   },
   form: {
+    search: '搜索建议',
     button: {
       continue: '继续',
       cancel: '取消',

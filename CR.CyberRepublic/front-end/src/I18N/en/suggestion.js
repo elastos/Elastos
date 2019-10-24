@@ -40,6 +40,7 @@ export default {
     referred: 'Referred in Proposal'
   },
   form: {
+    search: 'Search Suggestions',
     button: {
       continue: 'Continue',
       cancel: 'Cancel',

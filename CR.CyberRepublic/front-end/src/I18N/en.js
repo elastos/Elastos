@@ -223,7 +223,6 @@ const en = {
   'suggestion.suggestion': 'Suggestion',
   'suggestion.referred': 'Referred in',
   'suggestion.title': 'Suggestions',
-  'suggestion.listTitle': 'Suggestions',
   'suggestion.add': 'Add a Suggestion',
   'suggestion.sort': 'Sort by',
   'suggestion.likes': 'Most Popular',
