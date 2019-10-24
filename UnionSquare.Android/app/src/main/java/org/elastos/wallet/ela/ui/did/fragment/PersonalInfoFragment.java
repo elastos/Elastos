@@ -1,5 +1,7 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
+import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -7,6 +9,7 @@ import android.widget.TextView;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -50,8 +53,9 @@ public class PersonalInfoFragment extends BaseFragment {
     TextView tvArea;
     @BindView(R.id.tv_title_right)
     TextView tvTitleRight;
-    Unbinder unbinder;
-
+    private  DIDInfoEntity didInfo;
+    private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
+    private String birthday;
 
     @Override
     protected int getLayoutId() {
@@ -59,8 +63,9 @@ public class PersonalInfoFragment extends BaseFragment {
     }
 
     @Override
-    protected void initInjector() {
-
+    protected void setExtraData(Bundle data) {
+        didInfo = data.getParcelable("didInfo");
+        credentialSubjectBean = didInfo.getCredentialSubject();
     }
 
     @Override
@@ -90,8 +95,10 @@ public class PersonalInfoFragment extends BaseFragment {
                 new DialogUtil().showTime(getBaseActivity(), calendar.getTimeInMillis(), minData, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        String endDate = ((TextConfigDataPicker) view).getYear() + "/" + (((TextConfigDataPicker) view).getMonth() + 1)
-                                + "/" + ((TextConfigDataPicker) view).getDayOfMonth();
+                        String endDate = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
+                                + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
+                        birthday = ((TextConfigDataPicker) view).getYear() + "." + (((TextConfigDataPicker) view).getMonth() + 1)
+                                + "." + ((TextConfigDataPicker) view).getDayOfMonth();
                         tvBirthday.setText(endDate);
                     }
                 });
@@ -102,13 +109,29 @@ public class PersonalInfoFragment extends BaseFragment {
                 break;
             case R.id.tv_title_right:
             case R.id.tv_next:
-
-                start(PersonalIntroFragment.class);
+                setData();
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("didInfo", didInfo);
+                start(PersonalIntroFragment.class, bundle);
                 break;
 
 
         }
     }
+
+    private void setData() {
+        credentialSubjectBean.setName(getText(etName));
+        credentialSubjectBean.setNickname(getText(etNick));
+        credentialSubjectBean.setGender(null == (getText(tvSex)) ? "n/a" : (getString(R.string.man).equals(getText(tvSex)) ? "male" : "female"));
+        credentialSubjectBean.setBirthday(birthday);
+        credentialSubjectBean.setAvatar(getText(etHeadurl));
+        credentialSubjectBean.setEmail(getText(etEmail));
+        credentialSubjectBean.setPhone((getText(etCode) == null ? null : "+" + getText(etCode)) + getText(etPhone));
+        credentialSubjectBean.setNation(getText(tvArea));
+
+    }
+
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {

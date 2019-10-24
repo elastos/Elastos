@@ -5,16 +5,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
-import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.DateUtil;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.util.List;
 
@@ -47,47 +42,18 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_transfer_record, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_did_record, parent, false);
         ViewHolder holder = new ViewHolder(v);
         return holder;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
-        TransferRecordEntity.TransactionsBean data = list.get(position);
-        String direction = data.getDirection();//direction有3种, Moved ,Received,Sent
-        if (data.getStatus().equals("Pending")) {
-            holder.tvStatus.setText(R.string.Pending);
-            holder.tvStatus.setTextColor(context.getResources().getColor(R.color.green1));
-            holder.tvTime.setText("- -");
-        } else {
-            holder.tvStatus.setText(R.string.confirmed);
-            holder.tvStatus.setTextColor(context.getResources().getColor(R.color.blue1));
-            holder.tvTime.setText(DateUtil.time(data.getTimestamp(),context));
-        }
-
-        switch (direction) {
-            case "Moved":
-                //自己给自己
-                setViewData(holder, R.mipmap.asset_trade_record_self, NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12));
-                break;
-            case "Received":
-                setViewData(holder, R.mipmap.asset_trade_record_in, "+" + NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12));
-                //接受
-                break;
-            case "Sent":
-            case "Deposit":
-                // setViewData(holder, R.mipmap.asset_trade_record_out, "-" + NumberiUtil.maxNumberFormat(((double) data.getAmount() / MyWallet.RATE) + "", 12) + " " + chainId);
-                setViewData(holder, R.mipmap.asset_trade_record_out, "-" + NumberiUtil.maxNumberFormat(Arith.div(data.getAmount() + "", MyWallet.RATE_S), 12));
-                //发出
-                break;
-
-        }
         if (commonRvListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    commonRvListener.onRvItemClick(position, data);
+                    commonRvListener.onRvItemClick(position, null);
                 }
             });
         }
@@ -101,17 +67,13 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.iv_status)
-        ImageView ivStatus;
-        @BindView(R.id.tv_address)
-        TextView tvAddress;
-        @BindView(R.id.tv_time)
-        TextView tvTime;
-        @BindView(R.id.tv_balance)
-        TextView tvBalance;
+
+        @BindView(R.id.tv_didname)
+        TextView tvDidname;
+        @BindView(R.id.tv_did)
+        TextView tvDid;
         @BindView(R.id.tv_status)
         TextView tvStatus;
-
 
         ViewHolder(View view) {
             super(view);
@@ -119,9 +81,5 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
         }
     }
 
-    private void setViewData(ViewHolder holder, int imageId, String balance) {
-        holder.ivStatus.setImageResource(imageId);
-        holder.tvBalance.setText(balance);
 
-    }
 }

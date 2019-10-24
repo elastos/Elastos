@@ -17,77 +17,92 @@
         android:text="@string/tipcanjump"
         android:textSize="11sp" />
 
-    <EditText
-        android:id="@+id/et_name"
-        style="@style/settingItem_margin15"
-        android:background="@null"
-        android:hint="@string/plzinputpersonalurl" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <View style="@style/line_margin15" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/et_google"
-        style="@style/settingItem_margin15"
-        android:background="@null"
-        android:hint="@string/plzinputgoogle" />
+            <EditText
+                android:id="@+id/et_homepage"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputpersonalurl" />
 
-    <View style="@style/line_margin15" />
+            <View style="@style/line_margin15" />
 
-    <EditText
-        android:id="@+id/et_mircrosoft"
-        style="@style/settingItem_margin15"
-        android:background="@null"
-        android:hint="@string/plzinputmircrosoft" />
+            <EditText
+                android:id="@+id/et_google"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputgoogle" />
 
-    <View style="@style/line_margin15" />
+            <View style="@style/line_margin15" />
 
-    <EditText
-        android:id="@+id/et_facebook"
-        style="@style/settingItem_margin15"
-        android:background="@null"
-        android:hint="@string/plzinputfacebook" />
+            <EditText
+                android:id="@+id/et_mircrosoft"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputmircrosoft" />
 
-    <View style="@style/line_margin15" />
+            <View style="@style/line_margin15" />
 
-    <EditText
-        android:id="@+id/et_twitter"
-        style="@style/settingItem_margin15"
-        android:background="@null"
-        android:hint="@string/plzinputtwitter" />
+            <EditText
+                android:id="@+id/et_facebook"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputfacebook" />
+
+            <View style="@style/line_margin15" />
+
+            <EditText
+                android:id="@+id/et_twitter"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputtwitter" />
 
 
-    <View style="@style/line_margin15" />
+            <View style="@style/line_margin15" />
 
-    <EditText
-        android:id="@+id/et_webo"
-        style="@style/settingItem_margin15"
-        android:background="@null"
-        android:hint="@string/plzinpurwebo" />
+            <EditText
+                android:id="@+id/et_webo"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinpurwebo" />
 
-    <View style="@style/line_margin15" />
-    <EditText
-        android:id="@+id/et_wechat"
-        style="@style/settingItem_margin15"
-        android:background="@null"
-        android:hint="@string/plzinputwechat" />
-    <View style="@style/line_margin15" />
+            <View style="@style/line_margin15" />
 
-    <EditText
-        android:id="@+id/et_alipay"
-        style="@style/settingItem_margin15"
-        android:background="@null"
-        android:hint="@string/plzinputalipay" />
+            <EditText
+                android:id="@+id/et_wechat"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputwechat" />
 
-    <View style="@style/line_margin15" />
+            <View style="@style/line_margin15" />
 
-    <TextView
-        android:id="@+id/tv_public"
-        style="@style/button_margin"
-        android:layout_marginTop="40dp"
-        android:text="@string/publish" />
-    <TextView
-        android:id="@+id/tv_keep"
-        style="@style/button_margin"
-        android:layout_marginTop="20dp"
-        android:text="@string/keepasdraft" />
+            <EditText
+                android:id="@+id/et_alipay"
+                style="@style/settingItem_margin15"
+                android:background="@null"
+                android:hint="@string/plzinputalipay" />
+
+            <View style="@style/line_margin15" />
+
+            <TextView
+                android:id="@+id/tv_public"
+                style="@style/button_margin"
+                android:layout_marginTop="40dp"
+                android:text="@string/publish" />
+
+            <TextView
+                android:layout_marginBottom="40dp"
+                android:id="@+id/tv_keep"
+                style="@style/button_margin"
+                android:layout_marginTop="20dp"
+                android:text="@string/keepasdraft" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

@@ -18,6 +18,7 @@
         android:textSize="11sp" />
 
     <EditText
+        android:maxLength="16"
         android:id="@+id/et_name"
         style="@style/settingItem_margin15"
         android:background="@null"
@@ -26,6 +27,7 @@
     <View style="@style/line_margin15" />
 
     <EditText
+        android:maxLength="16"
         android:id="@+id/et_nick"
         style="@style/settingItem_margin15"
         android:background="@null"
@@ -42,8 +44,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="@string/plzselcetsex"
-            android:textColor="#ffffffff"
+            android:hint="@string/plzselcetsex"
+            android:textColorHint="@color/whiter"
             android:textSize="14sp" />
 
         <ImageView
@@ -66,8 +68,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="@string/plzselectbirthday"
-            android:textColor="#ffffffff"
+            android:hint="@string/plzselectbirthday"
+            android:textColorHint="@color/whiter"
             android:textSize="14sp" />
 
         <ImageView
@@ -82,6 +84,7 @@
     <View style="@style/line_margin15" />
 
     <EditText
+        android:maxLength="100"
         android:id="@+id/et_headurl"
         style="@style/settingItem_margin15"
         android:background="@null"
@@ -91,6 +94,7 @@
     <View style="@style/line_margin15" />
 
     <EditText
+        android:maxLength="100"
         android:id="@+id/et_email"
         style="@style/settingItem_margin15"
         android:background="@null"
@@ -102,6 +106,8 @@
 
 
         <EditText
+            android:inputType="number"
+            android:maxLength="6"
             android:id="@+id/et_code"
             android:layout_width="150dp"
             android:layout_height="match_parent"
@@ -114,6 +120,7 @@
             android:layout_alignParentBottom="true" />
 
         <EditText
+            android:maxLength="15"
             android:id="@+id/et_phone"
             android:layout_width="180dp"
             android:layout_height="match_parent"
@@ -138,7 +145,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="@string/choosearea"
+            android:hint="@string/choosearea"
+            android:textColorHint="@color/whiter"
             android:textColor="#ffffffff"
             android:textSize="14sp" />
 

@@ -1,11 +1,13 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
+import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -18,7 +20,8 @@ public class PersonalIntroFragment extends BaseFragment {
     TextView tvTitleRight;
     @BindView(R.id.et_intro)
     EditText etIntro;
-
+    private  DIDInfoEntity didInfo;
+    private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -26,9 +29,11 @@ public class PersonalIntroFragment extends BaseFragment {
     }
 
     @Override
-    protected void initInjector() {
-
+    protected void setExtraData(Bundle data) {
+        didInfo = data.getParcelable("didInfo");
+        credentialSubjectBean = didInfo.getCredentialSubject();
     }
+
 
     @Override
     protected void initView(View view) {
@@ -42,7 +47,10 @@ public class PersonalIntroFragment extends BaseFragment {
         switch (view.getId()) {
             case R.id.tv_title_right:
             case R.id.tv_next:
-                start(SocialAccountFragment.class);
+                credentialSubjectBean.setDescript(getText(etIntro));
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("didInfo", didInfo);
+                start(SocialAccountFragment.class, bundle);
                 break;
 
 
