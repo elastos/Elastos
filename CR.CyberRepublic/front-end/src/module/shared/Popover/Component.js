@@ -1,38 +1,70 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import I18N from '@/I18N'
+import _ from 'lodash'
 
-import { Container, StyledPopover, CloseIcon, Title, StyledTextArea, Footer, Btn } from './style'
+import { Container, StyledPopover, CloseIcon, Title, StyledTextArea, Footer, Btn, DataExplain } from './style'
 
 class Component extends React.Component {
   state = {
     reason: '',
+    emptyStatus: false
   }
 
-  onReasonChanged = (e) => {
+  onReasonChanged = e => {
+    const { required } = this.props
+    if (required) {
+      if (_.isEmpty(e.target.value)) {
+        this.setState({ emptyStatus: true })
+      } else {
+        this.setState({ emptyStatus: false })
+      }
+    }
     this.setState({ reason: e.target.value })
   }
 
   onSubmit = () => {
-    const { onToggle, onSubmit } = this.props
+    const { onToggle, onSubmit, required } = this.props
     const { reason } = this.state
+    if (required && _.isEmpty(reason)) {
+      this.setState({ emptyStatus: true })
+      return
+    }
     onToggle()
     onSubmit({ reason })
     this.setState({ reason: '' })
   }
 
   render() {
-    const { triggeredBy, onToggle, visible, title, btnType } = this.props
+    const {
+      triggeredBy,
+      onToggle,
+      visible,
+      title,
+      btnType,
+      requiredMsg
+    } = this.props
+    const { emptyStatus } = this.state
+    const dataExplain = emptyStatus && <DataExplain>{requiredMsg}</DataExplain>
     const content = (
       <Container>
         <CloseIcon type="close" onClick={onToggle} />
         <Title>{title || I18N.get('council.voting.modal.voteReason')}</Title>
-        <StyledTextArea onChange={this.onReasonChanged} />
+        <StyledTextArea
+          className={emptyStatus && 'has-error'}
+          onChange={this.onReasonChanged}
+        />
+        {dataExplain}
         <Footer>
           <Btn type="default" onClick={onToggle} style={{ borderRadius: 0 }}>
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
-          <Btn type={btnType || 'default'} colored="true" onClick={this.onSubmit} style={{ borderRadius: 0 }}>
+          <Btn
+            type={btnType || 'default'}
+            colored="true"
+            onClick={this.onSubmit}
+            style={{ borderRadius: 0 }}
+          >
             {I18N.get('council.voting.modal.confirm')}
           </Btn>
         </Footer>
@@ -52,6 +84,8 @@ const propTypes = {
   onToggle: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   visible: PropTypes.bool.isRequired,
+  required: PropTypes.bool,
+  requiredMsg: PropTypes.string,
 }
 
 Component.propTypes = propTypes
