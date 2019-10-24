@@ -280,7 +280,7 @@ public class DIDDocument: NSObject {
         return true
     }
     
-    public func toJson(_ compact: Bool) throws -> String? {
+    public func toJson(_ path: String?, _ compact: Bool) throws -> String? {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         // subject
         dic[Constants.id] = subject?.toExternalForm()
@@ -353,20 +353,23 @@ public class DIDDocument: NSObject {
         }
         let dicString = OrderedDictionary<String, Any>.creatJsonString(dic: dic)
         
-//        let data: Data = dicString.data(using: .utf8)!
-//        // & Write to local
-//        let dirPath: String = PathExtracter(path).dirNamePart()
-//        let fileM = FileManager.default
-//        let re = fileM.fileExists(atPath: dirPath)
-//        if !re {
-//            try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
-//        }
-//        let dre = fileM.fileExists(atPath: path)
-//        if !dre {
-//            fileM.createFile(atPath: path, contents: nil, attributes: nil)
-//        }
-//        let writeHandle = FileHandle(forWritingAtPath: path)
-//        writeHandle?.write(data)
+        guard path != nil else {
+            return dicString
+        }
+        let data: Data = dicString.data(using: .utf8)!
+        // & Write to local
+        let dirPath: String = PathExtracter(path!).dirNamePart()
+        let fileM = FileManager.default
+        let re = fileM.fileExists(atPath: dirPath)
+        if !re {
+            try fileM.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
+        }
+        let dre = fileM.fileExists(atPath: path!)
+        if !dre {
+            fileM.createFile(atPath: path!, contents: nil, attributes: nil)
+        }
+        let writeHandle = FileHandle(forWritingAtPath: path!)
+        writeHandle?.write(data)
         return dicString
     }
     
@@ -578,7 +581,7 @@ public class DIDDocument: NSObject {
     }
     
     public func toExternalForm(_ compact: Bool) throws -> String {
-        return try (toJson(compact) ?? "")
+        return try (toJson(nil, compact) ?? "")
     }
     
 }

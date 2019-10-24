@@ -73,7 +73,7 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func test03CreateDID1() {
+    func testCreateDID1() {
         let hint: String = "my first did"
         let doc: DIDDocument = try! store.newDid(passphrase, hint)
         primaryDid = doc.subject
@@ -86,7 +86,7 @@ class DIDStoreTests: XCTestCase {
         ids[doc.subject!] = hint
     }
     
-    func test03CreateDID2() {
+    func testCreateDID2() {
         let doc: DIDDocument = try! store.newDid(passphrase, nil)
         let id: String = doc.subject!.methodSpecificId!
         let path: String = storePath + "/" + "ids" + "/" + id + "/document"
@@ -96,7 +96,7 @@ class DIDStoreTests: XCTestCase {
         ids[doc.subject!] = ""
     }
     
-    func test03CreateDID3() {
+    func testCreateDID3() {
         for i in 0...100 {
             var dic: Dictionary<String, String> = [: ]
             dic["12"] = String(i)
@@ -114,7 +114,44 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func test04DeleteDID1() {
+    func testSignAndVerify() {
+        do {
+            
+        } catch {
+            print(error)
+        }
+    }
+    
+    /*
+     @Test
+     public void test31SignAndVerify() throws DIDException {
+         Iterator<DID> dids = ids.keySet().iterator();
+
+         while (dids.hasNext()) {
+             DID did = dids.next();
+
+             DIDDocument doc = DIDStore.getInstance().loadDid(did);
+             String json = doc.toExternalForm(false);
+             DIDURL pkid = new DIDURL(did, "primary");
+
+             String sig = doc.sign(pkid, storePass, json.getBytes());
+             boolean result = doc.verify(pkid, sig, json.getBytes());
+             assertTrue(result);
+
+             result = doc.verify(pkid, sig, json.substring(1).getBytes());
+             assertFalse(result);
+
+             sig = doc.sign(storePass, json.getBytes());
+             result = doc.verify(sig, json.getBytes());
+             assertTrue(result);
+
+             result = doc.verify(sig, json.substring(1).getBytes());
+             assertFalse(result);
+         }
+     }
+     */
+    
+    func testDeleteDID1() {
         let hint: String = "my did for deleted."
         let doc: DIDDocument = try! store.newDid(passphrase, hint)
         ids[doc.subject!] = hint
@@ -136,7 +173,7 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func test04PublishDID() {
+    func testPublishDID() {
         let hint: String = "my did for deleted."
         let doc: DIDDocument = try! store.newDid(passphrase, hint)
         ids[doc.subject!] = hint
@@ -152,7 +189,7 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func test05IssueSelfClaimCredential1() throws {
+    func testIssueSelfClaimCredential1() throws {
         let hint: String = "my did for test05IssueSelfClaimCredential1."
         let doc: DIDDocument = try! store.newDid(passphrase, hint)
         ids[doc.subject!] = hint
@@ -183,37 +220,6 @@ class DIDStoreTests: XCTestCase {
         XCTAssertEqual(vcId, issuer.vc?.id)
         XCTAssertEqual(primaryDid, issuer.vc?.subject.id)
     }
-
-    func test30CreateDID1() {
-        do {
-            let hint: String = "my first did"
-            let doc: DIDDocument = try store.newDid(storePass, hint)
-        } catch {
-            print(error)
-        }
-    }
-    /*
-    public void test30CreateDID1() throws DIDStoreException {
-        String hint = "my first did";
-
-        DIDDocument doc = store.newDid(storePass, hint);
-        primaryDid = doc.getSubject();
-
-        File file = new File(storeRoot + File.separator + "ids"
-                + File.separator + doc.getSubject().getMethodSpecificId()
-                + File.separator + "document");
-        assertTrue(file.exists());
-        assertTrue(file.isFile());
-
-        file = new File(storeRoot + File.separator + "ids"
-                + File.separator + "."
-                + doc.getSubject().getMethodSpecificId() + ".meta");
-        assertTrue(file.exists());
-        assertTrue(file.isFile());
-
-        ids.put(doc.getSubject(), hint);
-    }
-    */
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {

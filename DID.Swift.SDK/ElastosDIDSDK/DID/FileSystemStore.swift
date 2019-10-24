@@ -225,7 +225,7 @@ public class FileSystemStore: DIDStore {
         let path = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + doc.subject!.methodSpecificId + "/" + FileSystemStore.DOCUMENT_FILE
         _ = try getFile(true, path)
         let exist = try exists(path)
-        _ = try doc.toJson(true)
+        _ = try doc.toJson(path, true)
         if !exist || (hint != nil) {
            try setDidHint(doc.subject!, hint)
         }
