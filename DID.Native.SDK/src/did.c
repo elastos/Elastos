@@ -20,9 +20,11 @@
  * SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "did.h"
 
@@ -39,8 +41,8 @@ static int parse_id_string(char *id, char *fragment, const char *idstring, DID *
     const char *s, *e;
     size_t len;
 
-    if(!id || !idstring)
-        return -1;
+    assert(id);
+    assert(idstring && *idstring);
 
     // Fragment only, need ref DID object
     if (*idstring == '#') {
@@ -97,10 +99,10 @@ DID *DID_FromString(const char *idstring)
 {
     DID *did;
 
-    if (!idstring)
+    if (!idstring || !*idstring)
         return NULL;
 
-    did = (DID *)malloc(sizeof(DID));
+    did = (DID *)calloc(1, sizeof(DID));
     if (!did)
         return NULL;
 
@@ -116,10 +118,11 @@ DID *DID_New(const char *method_specific_string)
 {
     DID *did;
 
-    if (!method_specific_string || strlen(method_specific_string) >= MAX_ID_SPECIFIC_STRING)
+    if (!method_specific_string || !*method_specific_string ||
+        strlen(method_specific_string) >= MAX_ID_SPECIFIC_STRING)
         return NULL;
 
-    did = (DID *)malloc(sizeof(DID));
+    did = (DID *)calloc(1, sizeof(DID));
     if (!did)
         return NULL;
 
@@ -141,28 +144,29 @@ const char *DID_GetMethodSpecificString(DID *did)
     if (!did)
         return NULL;
 
-    return did->idstring;
+    return (const char *)did->idstring;
 }
 
 char *DID_ToString(DID *did, char *idstring, size_t len)
 {
-    if (!did)
+    if (!did || !idstring)
         return NULL;
 
-    if (strlen(did->idstring) + sizeof(elastos_did_prefix) > len)
+    if (strlen(did->idstring) + strlen(elastos_did_prefix) >= len)
         return NULL;
 
-    snprintf(idstring, len, "%s%s", elastos_did_prefix, did->idstring);
+    strcpy(idstring, elastos_did_prefix);
+    strcat(idstring, did->idstring);
 
     return idstring;
 }
 
-int DID_Copy(DID *newdid, DID *olddid)
+int DID_Copy(DID *dest, DID *src)
 {
-    if (!newdid || !olddid)
+    if (!dest || !src)
         return -1;
 
-    strcpy((char*)(newdid->idstring), olddid->idstring);
+    strcpy(dest->idstring, src->idstring);
     return 0;
 }
 
@@ -186,10 +190,10 @@ DIDURL *DIDURL_FromString(const char *idstring)
 {
     DIDURL *id;
 
-    if (!idstring)
+    if (!idstring || !*idstring)
         return NULL;
 
-    id = (DIDURL *)malloc(sizeof(DIDURL));
+    id = (DIDURL *)calloc(1, sizeof(DIDURL));
     if (!id)
         return NULL;
 
@@ -205,19 +209,20 @@ DIDURL *DIDURL_New(const char *method_specific_string, const char *fragment)
 {
     DIDURL *id;
 
-    if (!method_specific_string || !fragment)
+    if (!method_specific_string || !*method_specific_string ||
+        !fragment || !*fragment)
         return NULL;
 
     if (strlen(method_specific_string) >= MAX_ID_SPECIFIC_STRING ||
-            strlen(fragment) >= MAX_FRAGMENT)
+        strlen(fragment) >= MAX_FRAGMENT)
         return NULL;
 
-    id = (DIDURL *)malloc(sizeof(DIDURL));
+    id = (DIDURL *)calloc(1, sizeof(DIDURL));
     if (!id)
         return NULL;
 
-    strcpy((char*)id->did.idstring, method_specific_string);
-    strcpy((char*)id->fragment, fragment);
+    strcpy(id->did.idstring, method_specific_string);
+    strcpy(id->fragment, fragment);
 
     return id;
 }
@@ -235,30 +240,27 @@ const char *DIDURL_GetFragment(DIDURL *id)
     if (!id)
         return NULL;
 
-    return (const char*)(id->fragment);
+    return (const char*)id->fragment;
 }
 
 char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact)
 {
-    size_t expect_len;
+    size_t expect_len = 0;
 
-    if (!id)
+    if (!id || !idstring)
         return NULL;
 
-    if (compact)
-        expect_len = strlen(id->fragment) + 2;
-    else
-        expect_len = strlen(id->did.idstring) + sizeof(elastos_did_prefix) +
-                strlen(id->fragment) + 1;
+    expect_len += strlen(id->fragment) + 1;         /* #xxxx */
+    expect_len += compact ? 0 : strlen(elastos_did_prefix) + strlen(id->did.idstring);
 
-    if (expect_len > len)
+    if (expect_len >= len)
         return NULL;
 
     if (compact)
         snprintf(idstring, len, "#%s", id->fragment);
     else
         snprintf(idstring, len, "%s%s#%s", elastos_did_prefix,
-                id->did.idstring, id->fragment);
+            id->did.idstring, id->fragment);
 
     return idstring;
 }
@@ -272,13 +274,14 @@ bool DIDURL_Equals(DIDURL *id1, DIDURL *id2)
             strcmp(id1->fragment, id2->fragment) == 0);
 }
 
-int DIDURL_Copy(DIDURL *newid, DIDURL *oldid)
+int DIDURL_Copy(DIDURL *dest, DIDURL *src)
 {
-    if (!newid || !oldid || strlen(oldid->fragment) == 0)
+    if (!dest || !src )
         return -1;
 
-    strcpy((char*)newid->did.idstring, oldid->did.idstring);
-    strcpy((char*)newid->fragment, oldid->fragment);
+    strcpy(dest->did.idstring, src->did.idstring);
+    strcpy(dest->fragment, src->fragment);
+
     return 0;
 }
 
