@@ -172,6 +172,7 @@ namespace Elastos {
 
 		void CredentialSubject::init() {
 			_id = "";
+			_didName = "";
 			_name = "";
 			_nickname = "";
 			_gender = "";
@@ -208,6 +209,14 @@ namespace Elastos {
 
 		const std::string &CredentialSubject::GetName() const {
 			return _name;
+		}
+
+		void CredentialSubject::SetDIDName(const std::string &didName) {
+			_didName = didName;
+		}
+
+		const std::string &CredentialSubject::GetDIDName() const  {
+			return _didName;
 		}
 
 		void CredentialSubject::SetNickName(const std::string &nickName) {
@@ -344,6 +353,8 @@ namespace Elastos {
 
 			size += stream.WriteVarUint(_id.size());
 			size += _id.size();
+			size += stream.WriteVarUint(_didName.size());
+			size += _didName.size();
 			size += stream.WriteVarUint(_name.size());
 			size += _name.size();
 			size += stream.WriteVarUint(_nickname.size());
@@ -384,6 +395,7 @@ namespace Elastos {
 
 		void CredentialSubject::Serialize(ByteStream &stream, uint8_t version) const {
 			stream.WriteVarString(_id);
+			stream.WriteVarString(_didName);
 			stream.WriteVarString(_name);
 			stream.WriteVarString(_nickname);
 			stream.WriteVarString(_gender);
@@ -406,6 +418,11 @@ namespace Elastos {
 		bool CredentialSubject::Deserialize(const ByteStream &stream, uint8_t version) {
 			if (!stream.ReadVarString(_id)) {
 				Log::error("CredentialSubject deserialize: id");
+				return false;
+			}
+
+			if (!stream.ReadVarString(_didName)) {
+				Log::error("CredentialSubject deserialize: didName");
 				return false;
 			}
 
@@ -504,6 +521,8 @@ namespace Elastos {
 				j["id"] = _id;
 			}
 
+			j["didName"] = _didName;
+
 			if (_name.size() > 0) {
 				j["name"] = _name;
 			}
@@ -584,6 +603,10 @@ namespace Elastos {
 				_id = j["id"].get<std::string>();
 
 			ErrorChecker::CheckParam(_id.find(PREFIX_DID) == std::string::npos, Error::InvalidArgument, "invalid id");
+
+			if (j.find("didName") != j.end())  {
+				_didName = j["didName"].get<std::string>();
+			}
 
 			if (j.find("name") != j.end())
 				_name = j["name"].get<std::string>();

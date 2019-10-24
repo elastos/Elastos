@@ -93,6 +93,10 @@ namespace Elastos {
 
 			const std::string &ID() const;
 
+			void SetDIDName(const std::string &didName);
+
+			const std::string &GetDIDName() const;
+
 			void SetName(const std::string &name);
 
 			const std::string &GetName() const;
@@ -176,6 +180,7 @@ namespace Elastos {
 
 		private:
 			std::string _id;
+			std::string _didName;
 			std::string _name;
 			std::string _nickname;
 			std::string _gender;

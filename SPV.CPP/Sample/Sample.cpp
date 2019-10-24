@@ -457,7 +457,7 @@ static void CreateCRProposalTransaction(const std::string &masterWalletID, const
 	std::string pubkey = "03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc";
 	std::string crSponsorDID = "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww";
 	std::string draftHash = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0";
-	std::vector<std::string> budgets = {"324", "434", "343"};
+	nlohmann::json budgets = R"(["324","266","234"])"_json;
 	std::string receiptAddress = "Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ";
 
 
@@ -579,7 +579,7 @@ static void Withdraw(const std::string &fromMasterWalletID, const std::string &f
 
 static nlohmann::json GetDIDPayloadJson() {
 	nlohmann::json inputJson = R"({"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","operation":"create","publicKey":[{"id": "#primary","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}],
-"credentialSubject":{"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww", "name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"},
+"credentialSubject":{"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","didName":"myName","name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"},
 "expires":"2024-02-10T17:00:00Z"})"_json;
 	nlohmann::json payload;
 	ISubWallet *subWallet = GetSubWallet(gMasterWalletID, gIDchainSubWalletID);

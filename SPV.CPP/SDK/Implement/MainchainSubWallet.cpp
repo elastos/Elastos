@@ -928,7 +928,7 @@ namespace Elastos {
 		                                                       const std::string &sponsorPublicKey,
 		                                                       const std::string &crSponsorDID,
 		                                                       const std::string &draftHash,
-		                                                       const std::vector<std::string> &budgets,
+		                                                       const nlohmann::json &budgets,
 		                                                       const std::string &recipient,
 		                                                       const std::string &payPasswd) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
@@ -936,10 +936,7 @@ namespace Elastos {
 			ArgInfo("sponsorPublicKey: {}", sponsorPublicKey);
 			ArgInfo("crSponsorDID: {}", crSponsorDID);
 			ArgInfo("draftHash: {}", draftHash);
-			ArgInfo("budgets: {}", budgets.size());
-			for (size_t i = 0; i < budgets.size(); ++i) {
-				ArgInfo("budgets[{}]={}", i, budgets[i]);
-			}
+			ArgInfo("budgets: {}", budgets.dump());
 			ArgInfo("recipient: {}", recipient);
 			ArgInfo("payPasswd: *");
 
@@ -963,11 +960,14 @@ namespace Elastos {
 			crcProposal.SetCRSponsorDID(did.ProgramHash());
 			crcProposal.SetDraftHash(uint256(draftHash));
 
-			std::vector<uint64_t> budgetsList;
+			std::vector<uint64_t> budgetList;
 			for (size_t i = 0; i < budgets.size(); ++i) {
-				budgetsList.push_back(atoll(budgets[i].c_str()));
+				std::string amount = budgets[i].get<std::string>();
+				int64_t value = strtoll(amount.c_str(), NULL, 10);
+				ErrorChecker::CheckParam(value < 0, Error::InvalidArgument, "invalid budgets");
+				budgetList.push_back(value);
 			}
-			crcProposal.SetBudgets(budgetsList);
+			crcProposal.SetBudgets(budgetList);
 
 			crcProposal.SetRecipient(receiptAddress.ProgramHash());
 
@@ -986,7 +986,7 @@ namespace Elastos {
 		                                                         const std::string &sponsorPublicKey,
 		                                                         const std::string &crSponsorDID,
 		                                                         const std::string &draftHash,
-		                                                         const std::vector<std::string> &budgets,
+		                                                         const nlohmann::json &budgets,
 		                                                         const std::string &recipient,
 		                                                         const std::string &signature,
 		                                                         const std::string &payPasswd) const {
@@ -995,10 +995,7 @@ namespace Elastos {
 			ArgInfo("sponsorPublicKey: {}", sponsorPublicKey);
 			ArgInfo("crSponsorDID: {}", crSponsorDID);
 			ArgInfo("draftHash: {}", draftHash);
-			ArgInfo("budgets: {}", budgets.size());
-			for (size_t i = 0; i < budgets.size(); ++i) {
-				ArgInfo("budgets[{}]={}", i, budgets[i]);
-			}
+			ArgInfo("budgets: {}", budgets.dump());
 			ArgInfo("recipient: {}", recipient);
 			ArgInfo("signature: {}", signature);
 			ArgInfo("payPasswd: *");
@@ -1022,11 +1019,14 @@ namespace Elastos {
 			crcProposal.SetCRSponsorDID(did.ProgramHash());
 			crcProposal.SetDraftHash(uint256(draftHash));
 
-			std::vector<uint64_t> budgetsList;
+			std::vector<uint64_t> budgetList;
 			for (size_t i = 0; i < budgets.size(); ++i) {
-				budgetsList.push_back(atoll(budgets[i].c_str()));
+				std::string amount = budgets[i].get<std::string>();
+				int64_t value = strtoll(amount.c_str(), NULL, 10);
+				ErrorChecker::CheckParam(value < 0, Error::InvalidArgument, "invalid budgets");
+				budgetList.push_back(value);
 			}
-			crcProposal.SetBudgets(budgetsList);
+			crcProposal.SetBudgets(budgetList);
 
 			crcProposal.SetRecipient(receiptAddress.ProgramHash());
 			crcProposal.SetSignature(signature);

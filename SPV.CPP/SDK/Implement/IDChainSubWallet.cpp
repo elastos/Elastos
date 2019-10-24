@@ -183,6 +183,9 @@ namespace Elastos {
 			ErrorChecker::CheckParam(!credentialSubject.is_object(), Error::InvalidArgument,
 									 "invalid credentialSubject JSON");
 
+			ErrorChecker::CheckParam(credentialSubject.find("didName") == credentialSubject.end(), Error::InvalidArgument,
+			                         "must contain didName");
+
 			std::string expirationDate = didInfo["expires"].get<std::string>();
 			ErrorChecker::CheckInternetDate(expirationDate);
 
@@ -207,6 +210,7 @@ namespace Elastos {
 				if (!cid.empty() && cid.compare(0, sizeof(PREFIX_DID) - 1, PREFIX_DID) != 0) {
 					credentialSubject["id"] = PREFIX_DID + cid;
 				}
+
 				subject.FromJson(credentialSubject, 0);
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,

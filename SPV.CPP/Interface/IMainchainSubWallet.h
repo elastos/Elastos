@@ -401,7 +401,7 @@ namespace Elastos {
 			                                           const std::string &sponsorPublicKey,
 			                                           const std::string &crSponsorDID,
 			                                           const std::string &draftHash,
-			                                           const std::vector<std::string> &budgets,
+			                                           const nlohmann::json &budgets,
 			                                           const std::string &recipient,
 			                                           const std::string &payPasswd) const = 0;
 
@@ -422,7 +422,7 @@ namespace Elastos {
 			                                             const std::string &sponsorPublicKey,
 			                                             const std::string &crSponsorDID,
 			                                             const std::string &draftHash,
-			                                             const std::vector<std::string> &budgets,
+			                                             const nlohmann::json &budgets,
 			                                             const std::string &recipient,
 			                                             const std::string &signature,
 			                                             const std::string &payPasswd) const = 0;
