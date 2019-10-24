@@ -108,6 +108,22 @@ public class MainchainSubWallet extends SubWallet {
         return GetRegisteredCRInfo(mMainchainProxy);
     }
 
+    public String SponsorSignProposal(byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String payPaswd) throws WalletException {
+        return SponsorSignProposal(mMainchainProxy, type, sponsorPublicKey, crSponsorDID, draftHash, budgets, recipient, payPaswd);
+    }
+
+    public String CRSponsorSignProposal(byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String signature, String payPaswd) throws WalletException {
+        return CRSponsorSignProposal(mMainchainProxy, type, sponsorPublicKey, crSponsorDID, draftHash, budgets, recipient, signature, payPaswd);
+    }
+
+    public String CreateCRCProposalTransaction(String proposalJson, String memo) throws WalletException {
+        return CreateCRCProposalTransaction(mMainchainProxy, proposalJson, memo);
+    }
+
+    public String CreateVoteCRCProposalTransaction(String fromAddress, String votes, String memo) throws WalletException {
+        return CreateVoteCRCProposalTransaction(mMainchainProxy, fromAddress, votes, memo);
+    }
+
     private native String CreateDepositTransaction(long proxy, String fromAddress, String lockedAddress, String amount,
                                                    String sideChainAddress, String memo);
 
@@ -156,5 +172,13 @@ public class MainchainSubWallet extends SubWallet {
     private native String GetVotedCRList(long Proxy);
 
     private native String GetRegisteredCRInfo(long Proxy);
+
+    private native String SponsorSignProposal(long Proxy, byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String payPaswd);
+
+    private native String CRSponsorSignProposal(long Proxy, byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String signature, String payPaswd);
+
+    private native String CreateCRCProposalTransaction(long Proxy, String proposalJson, String memo);
+
+    private native String CreateVoteCRCProposalTransaction(long Proxy, String fromAddress, String votes, String memo);
 
 }

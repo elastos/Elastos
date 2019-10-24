@@ -84,6 +84,33 @@ static jobjectArray JNICALL GetAllSubWallets(JNIEnv *env, jobject clazz, jlong i
     }
 }
 
+#define JNI_GetSubWallet "(JLjava/lang/String;)J"
+
+static jlong JNICALL GetSubWallet(JNIEnv *env, jobject clazz, jlong instance, jstring jChainID) {
+
+    bool exception = false;
+    std::string msgException;
+    ISubWallet *subWallet = NULL;
+
+    const char *chainID = env->GetStringUTFChars(jChainID, NULL);
+
+    IMasterWallet *masterWallet = (IMasterWallet *) instance;
+    try {
+        subWallet = masterWallet->GetSubWallet(chainID);
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jChainID, chainID);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return (jlong) subWallet;
+}
+
 #define JNI_CreateSubWallet "(JLjava/lang/String;)J"
 
 static jlong JNICALL CreateSubWallet(JNIEnv *env, jobject clazz, jlong instance, jstring jChainID) {
@@ -282,7 +309,8 @@ static jboolean JNICALL VerifyPassPhrase(JNIEnv *env, jobject clazz, jlong insta
 
 #define JNI_VerifyPayPassword "(JLjava/lang/String;)Z"
 
-static jboolean JNICALL VerifyPayPassword(JNIEnv *env, jobject clazz, jlong instance, jstring jpayPasswd) {
+static jboolean JNICALL
+VerifyPayPassword(JNIEnv *env, jobject clazz, jlong instance, jstring jpayPasswd) {
     bool exception = false;
     std::string msgException;
     bool valid = false;
@@ -307,10 +335,135 @@ static jboolean JNICALL VerifyPayPassword(JNIEnv *env, jobject clazz, jlong inst
     return (jboolean) valid;
 }
 
+#define JNI_ExportKeystore "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL ExportKeystore(JNIEnv *env, jobject clazz, jlong instance,
+                                      jstring jbackPassword,
+                                      jstring jpayPassword) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *backPassword = env->GetStringUTFChars(jbackPassword, NULL);
+    const char *payPassword = env->GetStringUTFChars(jpayPassword, NULL);
+
+    IMasterWallet *masterWallet = (IMasterWallet *) instance;
+
+    try {
+        nlohmann::json keyStore = masterWallet->ExportKeystore(backPassword, payPassword);
+        result = env->NewStringUTF(keyStore.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jbackPassword, backPassword);
+    env->ReleaseStringUTFChars(jpayPassword, payPassword);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_ExportMnemonic "(JLjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL ExportMnemonic(JNIEnv *env, jobject clazz, jlong instance,
+                                      jstring jpayPassword) {
+    bool exception = false;
+    std::string msgException;
+    jstring jmnemonic = NULL;
+
+    const char *payPassword = env->GetStringUTFChars(jpayPassword, NULL);
+
+    IMasterWallet *masterWallet = (IMasterWallet *) instance;
+
+    try {
+        std::string result = masterWallet->ExportMnemonic(payPassword);
+        jmnemonic = env->NewStringUTF(result.c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jpayPassword, payPassword);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return jmnemonic;
+}
+
+#define JNI_ExportReadonlyWallet "(J)Ljava/lang/String;"
+
+static jstring JNICALL ExportReadonlyWallet(JNIEnv *env, jobject clazz, jlong instance) {
+    jstring result = NULL;
+
+    IMasterWallet *masterWallet = (IMasterWallet *) instance;
+
+    try {
+        nlohmann::json j = masterWallet->ExportReadonlyWallet();
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        ThrowWalletException(env, e.what());
+    }
+
+    return result;
+}
+
+#define JNI_ExportPrivateKey "(JLjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL ExportPrivateKey(JNIEnv *env, jobject clazz, jlong instance,
+                                        jstring jpayPassword) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *payPassword = env->GetStringUTFChars(jpayPassword, NULL);
+
+    IMasterWallet *masterWallet = (IMasterWallet *) instance;
+
+    try {
+        std::string privateKey = masterWallet->ExportPrivateKey(payPassword);
+        result = env->NewStringUTF(privateKey.c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jpayPassword, payPassword);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_ExportMasterPublicKey "(J)Ljava/lang/String;"
+
+static jstring JNICALL ExportMasterPublicKey(JNIEnv *env, jobject clazz, jlong instance) {
+    jstring result = NULL;
+
+    IMasterWallet *masterWallet = (IMasterWallet *) instance;
+
+    try {
+        std::string pubKey = masterWallet->ExportMasterPublicKey();
+        result = env->NewStringUTF(pubKey.c_str());
+    } catch (const std::exception &e) {
+        ThrowWalletException(env, e.what());
+    }
+
+    return result;
+}
+
 static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetID),
         REGISTER_METHOD(GetBasicInfo),
         REGISTER_METHOD(GetAllSubWallets),
+        REGISTER_METHOD(GetSubWallet),
         REGISTER_METHOD(CreateSubWallet),
         REGISTER_METHOD(DestroyWallet),
         REGISTER_METHOD(IsAddressValid),
@@ -320,6 +473,11 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(VerifyPrivateKey),
         REGISTER_METHOD(VerifyPassPhrase),
         REGISTER_METHOD(VerifyPayPassword),
+        REGISTER_METHOD(ExportKeystore),
+        REGISTER_METHOD(ExportMnemonic),
+        REGISTER_METHOD(ExportReadonlyWallet),
+        REGISTER_METHOD(ExportPrivateKey),
+        REGISTER_METHOD(ExportMasterPublicKey),
 };
 
 jint RegisterMasterWallet(JNIEnv *env, const std::string &path) {

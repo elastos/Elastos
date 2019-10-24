@@ -150,11 +150,33 @@ public class MasterWallet {
         return VerifyPayPassword(mInstance, payPasswd);
     }
 
+    public String ExportKeystore(String backPasswd, String payPasswd) throws WalletException {
+        return ExportKeystore(mInstance, backPasswd, payPasswd);
+    }
+
+    public String ExportMnemonic(String payPasswd) throws WalletException {
+        return ExportMnemonic(mInstance, payPasswd);
+    }
+
+    public String ExportReadonlyWallet() throws WalletException {
+        return ExportReadonlyWallet(mInstance);
+    }
+
+    public String ExportPrivateKey(String payPasswd) throws WalletException {
+        return ExportPrivateKey(mInstance, payPasswd);
+    }
+
+    public String ExportMasterPublicKey() throws WalletException {
+        return ExportMasterPublicKey(mInstance);
+    }
+
     private native String GetID(long instance);
 
     private native String GetBasicInfo(long instance);
 
     private native Object[] GetAllSubWallets(long instance);
+
+    private native long GetSubWallet(long instance, String chainID);
 
     private native long CreateSubWallet(long instance, String chainID);
 
@@ -177,4 +199,14 @@ public class MasterWallet {
     private native boolean VerifyPassPhrase(long instance, String passPhrase, String payPasswd);
 
     private native boolean VerifyPayPassword(long instance, String payPasswd);
+
+    private native String ExportKeystore(long instance, String backPasswd, String payPasswd);
+
+    private native String ExportMnemonic(long instance, String payPasswd);
+
+    private native String ExportReadonlyWallet(long instance);
+
+    private native String ExportPrivateKey(long instance, String payPasswd);
+
+    private native String ExportMasterPublicKey(long instance);
 }

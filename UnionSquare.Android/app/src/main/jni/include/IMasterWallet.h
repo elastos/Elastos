@@ -37,11 +37,54 @@ namespace Elastos {
 			virtual std::vector<ISubWallet *> GetAllSubWallets() const = 0;
 
 			/**
-			 * Create a sub wallet by specifying wallet type.
+			 * Get a sub wallet of chainID.
+			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+			 * @return If success will return a pointer of sub wallet interface.
+			 */
+			virtual ISubWallet *GetSubWallet(const std::string &chainID) const = 0;
+
+			/**
+			 * Create a sub wallet of chainID.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
 			 * @return If success will return a pointer of sub wallet interface.
 			 */
 			virtual ISubWallet *CreateSubWallet(const std::string &chainID) = 0;
+
+			/**
+			 * Export Keystore of the current wallet in JSON format.
+			 * @param backupPassword use to decrypt key store file. Backup password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param payPassword use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return If success will return key store content in json format.
+			 */
+			virtual nlohmann::json ExportKeystore(
+				const std::string &backupPassword,
+				const std::string &payPassword) const = 0;
+
+			/**
+			 * Export mnemonic of the current wallet.
+			 * @param payPassword use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return If success will return the mnemonic of master wallet.
+			 */
+			virtual std::string ExportMnemonic(const std::string &payPassword) const = 0;
+
+			/**
+			 * Export wallet info except private keys.
+			 * @return If success, readonly wallet will be returned.
+			 */
+			virtual nlohmann::json ExportReadonlyWallet() const = 0;
+
+			/**
+			 * Export root private key of the current wallet.
+			 * @param payPasswd use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return root private key.
+			 */
+			virtual std::string ExportPrivateKey(const std::string &payPasswd) const = 0;
+
+			/**
+			 * Export master public key.
+			 * @return master public key
+			 */
+			virtual std::string ExportMasterPublicKey() const = 0;
 
 			/**
 			 * Verify private key whether same as current wallet

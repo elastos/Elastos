@@ -498,7 +498,7 @@ public class MyWallet {
 
             }
 
-            String keystore = mMasterWalletManager.ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+            String keystore = masterWallet.ExportKeystore(backupPassword, payPassword);
 
             return new CommmonStringEntity(SUCCESSCODE, keystore);
         } catch (WalletException e) {
@@ -515,7 +515,7 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
             }
 
-            String mnemonic = mMasterWalletManager.ExportWalletWithMnemonic(masterWallet, backupPassword);
+            String mnemonic = masterWallet.ExportMnemonic(backupPassword);
 
             //  return new CommmonStringEntity(SUCCESSCODE, mnemonic);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, mnemonic, "exportWalletWithMnemonic");
@@ -533,7 +533,7 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
             }
 
-            String walletJson = mMasterWalletManager.ExportReadonlyWallet(masterWallet);
+            String walletJson = masterWallet.ExportReadonlyWallet();
 
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, walletJson, "exportReadonlyWallet");
         } catch (WalletException e) {
@@ -1619,7 +1619,7 @@ public class MyWallet {
             if (masterWallet == null) {
                 return errorProcess(errCodeInvalidMasterWallet + "", "Get " + formatWalletName(masterWalletID));
             }
-            String privateKey = mMasterWalletManager.ExportxPrivateKey(masterWallet, payPasswd);
+            String privateKey = masterWallet.ExportPrivateKey(payPasswd);
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, privateKey, "exportxPrivateKey");
         } catch (WalletException e) {
             return exceptionProcess(e, "ExportxPrivateKey" + formatWalletName(masterWalletID));
@@ -1703,7 +1703,7 @@ public class MyWallet {
             if (idChainSubWallet == null) {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
             }
-            String did = idChainSubWallet.GetDIDByPublicKey(publicKey);
+            String did = idChainSubWallet.GetPublicKeyDID(publicKey);
             return new CommmonStringEntity(SUCCESSCODE, did);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "GetDIDByPublicKey");

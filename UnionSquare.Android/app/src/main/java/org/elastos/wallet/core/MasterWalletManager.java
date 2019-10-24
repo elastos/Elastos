@@ -163,31 +163,6 @@ public class MasterWalletManager {
         return masterWallet;
     }
 
-
-    public String ExportWalletWithKeystore(MasterWallet masterWallet, String backupPassWord,
-                                           String payPassword) throws WalletException {
-
-        return ExportWalletWithKeystore(mInstance, masterWallet, backupPassWord, payPassword);
-    }
-
-    public String ExportWalletWithMnemonic(MasterWallet masterWallet,
-                                           String payPassWord) throws WalletException {
-
-        return ExportWalletWithMnemonic(mInstance, masterWallet, payPassWord);
-    }
-
-    public String ExportReadonlyWallet(MasterWallet masterWallet) throws WalletException {
-        return ExportReadonlyWallet(mInstance, masterWallet);
-    }
-
-    public String ExportxPrivateKey(MasterWallet masterWallet, String payPasswd) throws WalletException {
-        return ExportxPrivateKey(mInstance, masterWallet, payPasswd);
-    }
-
-    public String ExportMasterPublicKey(MasterWallet masterWallet) throws WalletException {
-        return ExportMasterPublicKey(mInstance, masterWallet);
-    }
-
     public String GenerateMnemonic(String language, int wordCount) throws WalletException {
         return GenerateMnemonic(mInstance, language, wordCount);
     }
@@ -299,18 +274,6 @@ public class MasterWalletManager {
             String payPassWord, boolean singleAddress, long timestamp);
 
     private native long ImportReadonlyWallet(long instance, String masterWalletID, String walletJson);
-
-    private native String ExportWalletWithKeystore(long instance, MasterWallet masterWallet,
-                                                   String backupPassWord, String payPassword);
-
-    private native String ExportWalletWithMnemonic(long instance, MasterWallet masterWallet,
-                                                   String backupPassWord);
-
-    private native String ExportReadonlyWallet(long instance, MasterWallet masterWallet);
-
-    private native String ExportxPrivateKey(long instance, MasterWallet masterWallet, String payPasswd);
-
-    private native String ExportMasterPublicKey(long instance, MasterWallet masterWallet);
 
     private native String GetVersion(long instance);
 
