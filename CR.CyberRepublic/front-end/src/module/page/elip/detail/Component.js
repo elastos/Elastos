@@ -463,7 +463,9 @@ class C extends StandardPage {
         visible={visibleReject}
         onToggle={this.showRejectModal}
         onSubmit={this.rejectdReview}
-        btnType="primary"
+        btnType="danger"
+        required={true}
+        requiredMsg={I18N.get('elip.form.error.required')}
       />
     )
 

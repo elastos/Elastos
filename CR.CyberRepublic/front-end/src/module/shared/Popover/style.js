@@ -19,6 +19,9 @@ export const Title = styled.h4`
 
 `
 export const StyledTextArea = styled(TextArea)`
+  &.has-error {
+    border-color: #f5222d;
+  }
 `
 export const Footer = styled.div`
   display: flex;
@@ -38,4 +41,11 @@ export const Btn = styled(Button)`
 color: ${props => (props.type === 'default' && props.colored && '#66bda3!important')
     || (props.type === 'danger' && '#fff!important')
 };
+`
+export const DataExplain = styled.div`
+  min-height: 22px;
+  margin-top: -2px;
+  color: #f5222d;
+  font-size: 14px;
+  line-height: 1.5;
 `
