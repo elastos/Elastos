@@ -186,7 +186,14 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 			KeyFrame: c.KeyFrame,
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
+
+		c.createCRAppropriationTransaction()
 	}
+}
+
+func (c *Committee) createCRAppropriationTransaction() error {
+	// todo create CR appropriation transaction and send to txpool.
+	return nil
 }
 
 func (c *Committee) recordLastVotingStartHeight(height uint32) {

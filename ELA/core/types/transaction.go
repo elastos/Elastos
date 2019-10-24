@@ -54,10 +54,12 @@ const (
 	UpdateCR            TxType = 0x23
 	ReturnCRDepositCoin TxType = 0x24
 
-	CRCProposal         TxType = 0x25
-	CRCProposalReview   TxType = 0x26
-	CRCProposalTracking TxType = 0x27
-	CRCProposalWithdraw TxType = 0x28
+	CRCProposal              TxType = 0x25
+	CRCProposalReview        TxType = 0x26
+	CRCProposalTracking      TxType = 0x27
+	CRAppropriation          TxType = 0x28
+	CRCProposalAppropriation TxType = 0x29
+	CRCProposalWithdraw      TxType = 0x30
 )
 
 func (self TxType) Name() string {
@@ -118,6 +120,10 @@ func (self TxType) Name() string {
 		return "CRCProposalWithdraw"
 	case CRCProposalTracking:
 		return "CRCProposalTracking"
+	case CRAppropriation:
+		return "CRAppropriation"
+	case CRCProposalAppropriation:
+		return "CRCProposalAppropriation"
 	default:
 		return "Unknown"
 	}
