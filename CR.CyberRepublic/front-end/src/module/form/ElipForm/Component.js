@@ -65,6 +65,11 @@ class C extends BaseComponent {
     e.preventDefault()
     form.validateFields(async (err, values) => {
       if (err) {
+        this.setState({
+          loading: false,
+          errorKeys: err,
+          activeKey: this.getActiveKey(Object.keys(err)[0])
+        })
         return
       }
 
@@ -335,16 +340,13 @@ class RadioCard extends BaseComponent {
 
   ord_render() {
     const { radioKey } = this.props
-    // const responsive = { md: 20, lg: 12, xl: 8, xxl: 6 }
-    // const doubleResponsive = { md: 20, lg: 24, xl: 16, xxl: 8 }
-    const responsive = { md: 20, lg: 16, xl: 16, xxl: 6 }
-    const doubleResponsive = { md: 20, lg: 16, xl: 16, xxl: 8 }
+    const responsive = { md: 20, lg: 18, xl: 7, xxl: 6 }
+    const doubleResponsive = { md: 20, lg: 18, xl: 10, xxl: 10 }
     return (
-      <Row type="flex" justify="center" align="top" gutter={70}>
+      <Row type="flex" justify="center" align="top" gutter={30}>
         <Col {...responsive}>
           <RadioCardLabel
             className="radio-card-wrapper"
-            // style={{ width: 238.8 }}
           >
             <RadioCardSpan>
               <Input
@@ -366,7 +368,6 @@ class RadioCard extends BaseComponent {
         <Col {...responsive}>
           <RadioCardLabel
             className="radio-card-wrapper"
-            // style={{ width: 238.8 }}
           >
             <RadioCardSpan>
               <Input
@@ -388,7 +389,6 @@ class RadioCard extends BaseComponent {
         <Col {...doubleResponsive}>
           <RadioCardLabel
             className="radio-card-wrapper"
-            // style={{ width: 477.6 }}
           >
             <RadioCardSpan>
               <Input
