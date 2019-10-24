@@ -294,7 +294,7 @@ class C extends StandardPage {
         {status}
         {edit}
         {submitted}
-        {cancelled}
+        {/* {cancelled} */}
       </Row>
     )
   }
