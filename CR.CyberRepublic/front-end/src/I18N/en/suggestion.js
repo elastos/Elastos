@@ -1,4 +1,5 @@
 import { ABSTRACT_MAX_WORDS } from '@/constant'
+import CrProposalPageSvg from '../../module/page/suggestion/list/svg/CrProposalPageSvg';
 
 export default {
   title: {
@@ -98,5 +99,11 @@ export default {
     name: 'Name',
     copy: 'Copy',
     viewProfile: 'View Profile'
+  },
+  header: {
+    suggestion: 'suggestion',
+    crCouncil: 'cr council',
+    crProposalPage: 'cr proposal page',
+    approvedProposal: 'approved proposal'
   }
 }

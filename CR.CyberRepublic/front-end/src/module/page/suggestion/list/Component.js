@@ -15,13 +15,12 @@ import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import TagsContainer from '../common/tags/Container'
-import suggestionImg from '@/assets/images/SuggestionToProposal.png'
-import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
 import { SUGGESTION_STATUS, CONTENT_TYPE, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
 import DraftEditor from '@/module/common/DraftEditor'
 import MediaQuery from 'react-responsive'
 import { LG_WIDTH } from '@/config/constant'
+import PageHeader from './PageHeader'
 
 import './style.scss'
 
@@ -203,35 +202,32 @@ export default class extends StandardPage {
 
         <HeaderDiagramContainer>
           <SuggestionContainer>
-            <img src={I18N.getLang() === 'zh' ? suggestionZhImg : suggestionImg}/>
+            <PageHeader />
+            <HeaderDesc>
+              {I18N.get('suggestion.intro.1')}
+              <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
+              {I18N.get('suggestion.intro.1.1')}
+              <br />
+              <br />
+              {I18N.get('suggestion.intro.3')}
+              {localStorage.getItem('lang') === 'en' ? (
+                <a
+                  href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
+                  target="_blank"
+                >
+                  https://www.cyberrepublic.org/docs/#/guide/suggestions
+              </a>
+              ) : (
+                  <a
+                    href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
+                    target="_blank"
+                  >
+                    https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
+              </a>
+                )}
+            </HeaderDesc>
           </SuggestionContainer>
         </HeaderDiagramContainer>
-
-        <SuggestionContainer>
-          <HeaderDesc>
-            {I18N.get('suggestion.intro.1')}
-            <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
-            {I18N.get('suggestion.intro.1.1')}
-            <br/>
-            <br/>
-            {I18N.get('suggestion.intro.3')}
-            {localStorage.getItem('lang') === 'en' ? (
-              <a
-                href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
-                target="_blank"
-              >
-                https://www.cyberrepublic.org/docs/#/guide/suggestions
-              </a>
-            ) : (
-              <a
-                href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
-                target="_blank"
-              >
-                https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
-              </a>
-            )}
-          </HeaderDesc>
-        </SuggestionContainer>
       </div>
     )
   }
@@ -512,10 +508,10 @@ export default class extends StandardPage {
 
 const HeaderDiagramContainer = styled.div`
   background-color: #162f45;
+  padding-top: 36px;
   padding-bottom: 36px;
   img {
     max-height: 250px;
-
     @media only screen and (max-width: ${breakPoint.lg}) {
       width: 100%;
     }
@@ -561,9 +557,9 @@ const ShortDesc = styled.div`
 `
 
 const HeaderDesc = styled.div`
-  width: 60%;
   font-weight: 200;
   padding: 24px 0;
+  color: #fff;
 `
 
 const SuggestionContainer = styled.div`

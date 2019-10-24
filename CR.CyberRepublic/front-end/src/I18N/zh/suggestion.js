@@ -97,5 +97,11 @@ export default {
     name: '姓名',
     copy: '复制',
     viewProfile: '查看个人资料'
+  },
+  header: {
+    suggestion: '建议',
+    crCouncil: 'CR 理事会',
+    crProposalPage: 'CR 提案页面',
+    approvedProposal: '已批准的提案'
   }
 }
