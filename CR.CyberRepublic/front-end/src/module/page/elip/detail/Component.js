@@ -3,6 +3,7 @@ import { Row, Col, Spin, Button, message, Popconfirm, Anchor } from 'antd'
 import { StickyContainer, Sticky } from 'react-sticky'
 import styled from 'styled-components'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import Comments from '@/module/common/comments/Container'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import StandardPage from '@/module/page/StandardPage'
@@ -221,7 +222,7 @@ class C extends StandardPage {
     const preamble = this.renderPreamble()
     const review = this.renderReview()
     const vote = this.renderVote()
-
+    const comment = this.renderComment()
 
     return (
       <Content>
@@ -238,6 +239,7 @@ class C extends StandardPage {
           ))}
           {review}
           {/* {vote} */}
+          {comment}
         </StickyContainer>
       </Content>
     )
@@ -358,6 +360,24 @@ class C extends StandardPage {
         {vote}
         {voteHistory}
       </Part>
+    )
+  }
+
+  renderComment() {
+    const { data } = this.props
+    return [ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED].includes(data.status) && (
+      <Row style={{ marginTop: 24 }}>
+        <LabelCol span={3} />
+        <Col span={17}>
+          <Comments
+            type="elip"
+            elip={data}
+            canPost={true}
+            model={data._id}
+            returnUrl={`/elips/${data._id}`}
+          />
+        </Col>
+      </Row>
     )
   }
 
