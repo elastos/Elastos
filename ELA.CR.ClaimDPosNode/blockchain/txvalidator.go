@@ -257,8 +257,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		}
 
 	case CRCAppropriation:
-		if err := b.checkCRCAppropriationTransaction(txn, references,
-			blockHeight); err != nil {
+		if err := b.checkCRCAppropriationTransaction(txn, references); err != nil {
 			log.Warn("[checkCRCAppropriationTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxAppropriation, err)
 		}
@@ -1800,7 +1799,7 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
-	references map[*Input]*Output, blockHeight uint32) error {
+	references map[*Input]*Output) error {
 	// Check if current session has appropriated.
 	if !b.crCommittee.IsAppropriationNeeded() {
 		return errors.New("should have no appropriation transaction")
@@ -1831,7 +1830,7 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 	// first one to CRCommitteeAddress, second one to CRCFoundation
 	fAmount := b.crCommittee.CRCFoundationAmount
 	cAmount := b.crCommittee.CRCCommitteeAmount
-	appropriationAmount := common.Fixed64(float64(fAmount-cAmount)*b.chainParams.CRCAppropriatePercentage/100.0) - cAmount
+	appropriationAmount := common.Fixed64(float64(fAmount+cAmount)*b.chainParams.CRCAppropriatePercentage/100.0) - cAmount
 	if appropriationAmount != txn.Outputs[0].Value {
 		return fmt.Errorf("invalid appropriation amount %s, need to be %s",
 			txn.Outputs[0].Value, appropriationAmount)

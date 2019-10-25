@@ -1903,6 +1903,96 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	return txn
 }
 
+func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
+	// Set CRC foundation and CRC committee address.
+	s.Chain.chainParams.CRCFoundation = *randomUint168()
+	s.Chain.chainParams.CRCCommitteeAddress = *randomUint168()
+
+	// Set CRC foundation and CRC committee amount.
+	s.Chain.crCommittee.CRCFoundationAmount = common.Fixed64(990 * 1e8)
+	s.Chain.crCommittee.CRCCommitteeAmount = common.Fixed64(10 * 1e8)
+	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0 * 1e8)
+
+	// Create reference.
+	reference := make(map[*types.Input]*types.Output)
+	input := &types.Input{
+		Previous: types.OutPoint{
+			TxID:  *randomUint256(),
+			Index: 0,
+		},
+	}
+	refOutput := &types.Output{
+		Value:       990 * 1e8,
+		ProgramHash: s.Chain.chainParams.CRCFoundation,
+	}
+	refOutputErr := &types.Output{
+		Value:       990 * 1e8,
+		ProgramHash: *randomUint168(),
+	}
+	reference[input] = refOutput
+
+	// Create CRC appropriation transaction.
+	output1 := &types.Output{
+		Value:       90 * 1e8,
+		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
+	}
+	output2 := &types.Output{
+		Value:       900 * 1e8,
+		ProgramHash: s.Chain.chainParams.CRCFoundation,
+	}
+	output1Err := &types.Output{
+		Value:       91 * 1e8,
+		ProgramHash: s.Chain.chainParams.CRCCommitteeAddress,
+	}
+	output2Err := &types.Output{
+		Value:       899 * 1e8,
+		ProgramHash: s.Chain.chainParams.CRCFoundation,
+	}
+
+	// Check correct transaction.
+	s.Chain.crCommittee.NeedAppropriation = true
+	txn := s.getCRCAppropriationTx(input, output1, output2)
+	err := s.Chain.checkCRCAppropriationTransaction(txn, reference)
+	s.NoError(err)
+
+	// Appropriation transaction already exist.
+	s.Chain.crCommittee.NeedAppropriation = false
+	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
+	s.EqualError(err, "should have no appropriation transaction")
+
+	// Input does not from CRC foundation
+	s.Chain.crCommittee.NeedAppropriation = true
+	reference[input] = refOutputErr
+	txn = s.getCRCAppropriationTx(input, output1, output2)
+	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
+	s.EqualError(err, "input does not from CRC foundation")
+
+	// Inputs total amount does not equal to outputs total amount.
+	reference[input] = refOutput
+	txn = s.getCRCAppropriationTx(input, output1, output2Err)
+	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
+	s.EqualError(err, "inputs does not equal to outputs "+
+		"amount, inputs:990 outputs:989")
+
+	// Invalid CRC appropriation amount.
+	txn = s.getCRCAppropriationTx(input, output1Err, output2Err)
+	err = s.Chain.checkCRCAppropriationTransaction(txn, reference)
+	s.EqualError(err, "invalid appropriation amount 91, need to be 90")
+}
+
+func (s *txValidatorTestSuite) getCRCAppropriationTx(input *types.Input,
+	output1 *types.Output, output2 *types.Output) *types.Transaction {
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCAppropriation
+	txn.Version = types.TxVersion09
+	cPayload := &payload.CRCAppropriation{}
+	txn.Payload = cPayload
+	txn.Inputs = []*types.Input{input}
+	txn.Outputs = []*types.Output{output1, output2}
+
+	return txn
+}
+
 func (s *txValidatorTestSuite) TestCrInfoSanityCheck() {
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
