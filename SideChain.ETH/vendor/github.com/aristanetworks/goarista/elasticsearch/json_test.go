@@ -61,21 +61,21 @@ func TestDataConversion(t *testing.T) {
 				}},
 			data: []Data{
 				Data{
-					Timestamp:   "123",
+					Timestamp:   123,
 					DatasetID:   "0",
 					Path:        "/foo/String",
 					Key:         []byte("/String"),
 					KeyString:   toPtr("/String").(*string),
 					ValueString: toPtr("hello").(*string)},
 				Data{
-					Timestamp: "123",
+					Timestamp: 123,
 					DatasetID: "0",
 					Path:      "/foo/Int",
 					Key:       []byte("/Int"),
 					KeyString: toPtr("/Int").(*string),
 					ValueLong: toPtr(-123).(*int64)},
 				Data{
-					Timestamp: "123",
+					Timestamp: 123,
 					DatasetID: "0",
 					Path:      "/foo/Bool",
 					Key:       []byte("/Bool"),
@@ -93,12 +93,30 @@ func TestDataConversion(t *testing.T) {
 				}},
 			data: []Data{
 				Data{
-					Timestamp:   "234",
+					Timestamp:   234,
 					DatasetID:   "0",
 					Path:        "/bar/Decimal",
 					Key:         []byte("/Decimal"),
 					KeyString:   toPtr("/Decimal").(*string),
 					ValueDouble: toPtr(-1.23).(*float64)},
+			},
+		},
+		{
+			in: &pb.Notification{
+				Timestamp: 345,
+				Prefix:    stringToGNMIPath("baz"),
+				Update: []*pb.Update{
+					gnmiUpdate("Leaflist", &pb.TypedValue{Value: &pb.TypedValue_LeaflistVal{
+						LeaflistVal: &pb.ScalarArray{Element: []*pb.TypedValue{}}}}),
+				}},
+			data: []Data{
+				Data{
+					Timestamp: 345,
+					DatasetID: "0",
+					Path:      "/baz/Leaflist",
+					Key:       []byte("/Leaflist"),
+					KeyString: toPtr("/Leaflist").(*string),
+					Value:     []*field{}},
 			},
 		},
 		{
@@ -115,7 +133,7 @@ func TestDataConversion(t *testing.T) {
 				}},
 			data: []Data{
 				Data{
-					Timestamp: "345",
+					Timestamp: 345,
 					DatasetID: "0",
 					Path:      "/baz/Leaflist",
 					Key:       []byte("/Leaflist"),
@@ -137,7 +155,25 @@ func TestDataConversion(t *testing.T) {
 						JsonVal: []byte("67")}})}},
 			data: []Data{
 				Data{
-					Timestamp:   "456",
+					Timestamp:   456,
+					DatasetID:   "0",
+					Path:        "/foo/bar",
+					Key:         []byte("/bar"),
+					KeyString:   toPtr("/bar").(*string),
+					ValueDouble: toPtr(float64(67)).(*float64)},
+			},
+		},
+		{
+			// JsonIetfVal -> ValueString
+			in: &pb.Notification{
+				Timestamp: 456,
+				Prefix:    stringToGNMIPath("foo"),
+				Update: []*pb.Update{gnmiUpdate("bar",
+					&pb.TypedValue{Value: &pb.TypedValue_JsonIetfVal{
+						JsonIetfVal: []byte("67")}})}},
+			data: []Data{
+				Data{
+					Timestamp:   456,
 					DatasetID:   "0",
 					Path:        "/foo/bar",
 					Key:         []byte("/bar"),
