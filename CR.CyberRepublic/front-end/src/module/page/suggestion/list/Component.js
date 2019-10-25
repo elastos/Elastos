@@ -50,7 +50,9 @@ export default class extends StandardPage {
       showMobile: false,
       results: 10,
       total: 0,
+      search: ''
     }
+    this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
 
   componentDidMount() {
@@ -83,7 +85,7 @@ export default class extends StandardPage {
             <Col xs={24} sm={12} style={{ paddingTop: 24 }}>
               <Input.Search
                 defaultValue={this.state.search}
-                onSearch={this.searchChangedHandler}
+                onSearch={this.handleSearch}
                 placeholder={I18N.get('suggestion.form.search')}
               />
             </Col>
@@ -121,7 +123,9 @@ export default class extends StandardPage {
     )
   }
 
-  searchChangedHandler = () => {}
+  handleSearch = search => {
+    this.setState({ search }, this.debouncedRefetch)
+  }
 
   onFormSubmit = async (param) => {
     try {
@@ -389,7 +393,7 @@ export default class extends StandardPage {
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page } = this.props
-    const { results, referenceStatus} = this.state
+    const { results, referenceStatus, search } = this.state
     const query = {
       status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
@@ -426,6 +430,9 @@ export default class extends StandardPage {
       query.sortBy = sortBy
     }
 
+    if (search) {
+      query.search = search
+    }
     return query
   }
 

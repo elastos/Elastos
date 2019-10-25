@@ -109,12 +109,30 @@ export default class extends Base {
 
   public async list(param: any): Promise<Object> {
     const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded', 'referenceStatus'])
-    
     const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
-    
+
     if (!profileListFor) {
-      let qryTagsType: any
       query.$or = []
+      const search = _.trim(param.search)
+      if (search) {
+        const db_user = this.getDBModel('User')
+        const users = await db_user.getDBInstance().find({
+          $or: [
+            { email: { $regex: search, $options: 'i' } },
+            { username: { $regex: search, $options: 'i' } },
+            { 'profile.firstName': { $regex: search, $options: 'i' } }
+          ]
+        }).select('_id')
+        const userIds = _.map(users, (el: { _id: string }) => el._id) 
+        query.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { abstract: { $regex: search, $options: 'i' } },
+          { displayId: _.toNumber(search) || 1 },
+          { createdBy: { $in: userIds } }
+        ]
+      }
+
+      let qryTagsType: any
       if (!_.isEmpty(tagsIncluded)) {
         qryTagsType = { $in: tagsIncluded.split(',') }
         query.$or.push({ 'tags.type': qryTagsType })
