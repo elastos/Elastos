@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	mathRand "math/rand"
 	"strconv"
 	"testing"
 
@@ -624,6 +625,39 @@ func budgetsEqual(budgets1 []common.Fixed64, budgets2 []common.Fixed64) bool {
 		}
 	}
 	return true
+}
+
+func (s *transactionSuite) TestCRCProposalReview_Deserialize() {
+	proposalReview1 := randomCRCProposalReviewPayload()
+
+	buf := new(bytes.Buffer)
+	proposalReview1.Serialize(buf, payload.CRCProposalReviewVersion)
+
+	proposalReview2 := &payload.CRCProposalReview{}
+	proposalReview2.Deserialize(buf, payload.CRCProposalReviewVersion)
+
+	s.True(crcProposalReviewPayloadEqual(proposalReview1, proposalReview2))
+}
+
+func crcProposalReviewPayloadEqual(payload1 *payload.CRCProposalReview,
+	payload2 *payload.CRCProposalReview) bool {
+	if !payload1.ProposalHash.IsEqual(payload2.ProposalHash) ||
+		payload1.VoteResult != payload2.VoteResult ||
+		!payload1.DID.IsEqual(payload2.DID) ||
+		!bytes.Equal(payload1.Sign, payload2.Sign) {
+		return false
+	}
+
+	return true
+}
+
+func randomCRCProposalReviewPayload() *payload.CRCProposalReview {
+	return &payload.CRCProposalReview{
+		ProposalHash: *randomUint256(),
+		VoteResult:   payload.VoteResult(mathRand.Int() % 3),
+		DID:          *randomUint168(),
+		Sign:         randomBytes(65),
+	}
 }
 
 func (s *transactionSuite) TestCRCProposalTracking_Deserialize() {

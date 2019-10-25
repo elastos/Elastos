@@ -117,9 +117,11 @@ var DefaultParams = Params{
 		"node-mainnet-025.elastos.org:20338",
 	},
 
-	Foundation:   mainNetFoundation,
-	CRCAddress:   mainNetCRCAddress,
-	GenesisBlock: GenesisBlock(&mainNetFoundation),
+	Foundation:          mainNetFoundation,
+	CRCAddress:          mainNetCRCAddress,
+	CRCFoundation:       common.Uint168{}, // todo correct me later
+	CRCCommitteeAddress: common.Uint168{}, // todo correct me later
+	GenesisBlock:        GenesisBlock(&mainNetFoundation),
 
 	DPoSMagic:       2019000,
 	DPoSDefaultPort: 20339,
@@ -177,6 +179,7 @@ var DefaultParams = Params{
 	ProposalPublicVotingPeriod:  7 * 720,
 	CRAgreementCount:            8,
 	VoterRejectPercentage:       10,
+	CRCAppropriatePercentage:    10,
 	MaxCommitteeProposalCount:   128,
 	EnableUtxoDB:                true,
 	WalletPath:                  "keystore.dat",
@@ -200,6 +203,8 @@ func (p *Params) TestNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
+	copy.CRCFoundation = common.Uint168{}       // todo correct me later
+	copy.CRCCommitteeAddress = common.Uint168{} // todo correct me later
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019100
 	copy.DPoSDefaultPort = 21339
@@ -224,7 +229,7 @@ func (p *Params) TestNet() *Params {
 		"02bf9e37b3db0cbe86acf76a76578c6b17b4146df101ec934a00045f7d201f06dd",
 		"03111f1247c66755d369a8c8b3a736dfd5cf464ca6735b659533cbe1268cd102a9",
 	}
-	copy.SecretaryGeneral = ""       // todo correct me later
+	copy.SecretaryGeneral = "" // todo correct me later
 	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 200000
@@ -236,6 +241,7 @@ func (p *Params) TestNet() *Params {
 	copy.CheckRewardHeight = 100               //todo correct me later
 	copy.EnableUtxoDB = true
 	copy.VoterRejectPercentage = 10
+	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
 
 	return &copy
@@ -255,6 +261,8 @@ func (p *Params) RegNet() *Params {
 
 	copy.Foundation = testNetFoundation
 	copy.CRCAddress = testNetCRCAddress
+	copy.CRCFoundation = common.Uint168{}       // todo correct me later
+	copy.CRCCommitteeAddress = common.Uint168{} // todo correct me later
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019200
 	copy.DPoSDefaultPort = 22339
@@ -279,7 +287,7 @@ func (p *Params) RegNet() *Params {
 		"03c559769d5f7bb64c28f11760cb36a2933596ca8a966bc36a09d50c24c48cc3e8",
 		"03b5d90257ad24caf22fa8a11ce270ea57f3c2597e52322b453d4919ebec4e6300",
 	}
-	copy.SecretaryGeneral = ""       // todo correct me later
+	copy.SecretaryGeneral = "" // todo correct me later
 	copy.MaxProposalTrackingCount = 128
 	copy.CheckAddressHeight = 0
 	copy.VoteStartHeight = 170000
@@ -291,6 +299,7 @@ func (p *Params) RegNet() *Params {
 	copy.CheckRewardHeight = 280000
 	copy.EnableUtxoDB = true
 	copy.VoterRejectPercentage = 10
+	copy.CRCAppropriatePercentage = 10
 	copy.MaxCommitteeProposalCount = 128
 	return &copy
 }
@@ -326,6 +335,13 @@ type Params struct {
 
 	// CRCAddress defines the CRC address which receiving mining rewards.
 	CRCAddress common.Uint168
+
+	// CRCFoundation defines the CRC foundation address.
+	CRCFoundation common.Uint168
+
+	// CRCCommitteeAddress defines the CR committee address which receiving
+	// appropriation from CRC foundation address.
+	CRCCommitteeAddress common.Uint168
 
 	// GenesisBlock defines the first block of the chain.
 	GenesisBlock *types.Block
@@ -462,6 +478,9 @@ type Params struct {
 
 	// VoterRejectPercentage defines percentage about voters reject a proposal.
 	VoterRejectPercentage float64
+
+	// CRCAppropriatePercentage defines percentage about CRC appropriation.
+	CRCAppropriatePercentage float64
 
 	//MaxCommitteeProposalCount defines per committee max proposal count
 	MaxCommitteeProposalCount uint32

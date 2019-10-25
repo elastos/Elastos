@@ -56,6 +56,8 @@ type Configuration struct {
 	MinCrossChainTxFee          common.Fixed64    `json:"MinCrossChainTxFee"`
 	FoundationAddress           string            `json:"FoundationAddress"`
 	CRCAddress                  string            `json:"CRCAddress"`
+	CRCFoundation               string            `json:"CRCFoundation"`
+	CRCCommitteeAddress         string            `json:"CRCCommitteeAddress"`
 	PowConfiguration            PowConfiguration  `json:"PowConfiguration"`
 	RpcConfiguration            RpcConfiguration  `json:"RpcConfiguration"`
 	DPoSConfiguration           DPoSConfiguration `json:"DPoSConfiguration"`
@@ -102,6 +104,7 @@ type CRConfiguration struct {
 	ProposalPublicVotingPeriod uint32  `json:"ProposalPublicVotingPeriod"`
 	CRAgreementCount           uint32  `json:"CRAgreementCount"`
 	VoterRejectPercentage      float64 `json:"VoterRejectPercentage"`
+	CRCAppropriatePercentage   float64 `json:"CRCAppropriatePercentage"`
 	MaxCommitteeProposalCount  uint32  `json:"MaxCommitteeProposalCount"`
 	SecretaryGeneral           string  `json:"SecretaryGeneral"`
 	MaxProposalTrackingCount   uint8   `json:"MaxProposalTrackingCount"`
