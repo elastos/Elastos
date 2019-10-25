@@ -347,8 +347,8 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 
 func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	state := NewState(nil)
-	state.RegisterFunction(nil, nil,
-		func(code []byte) *CRMember { return nil })
+	state.RegisterFunctions(&FunctionsConfig{
+		GetHistoryMember: func(code []byte) *CRMember { return nil }})
 	height := uint32(1)
 
 	_, pk, _ := crypto.GenerateKeyPair()

@@ -85,6 +85,12 @@ func (c *Committee) IsInElectionPeriod() bool {
 	return c.InElectionPeriod
 }
 
+func (c *Committee) IsAppropriationNeeded() bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.NeedAppropriation
+}
+
 func (c *Committee) GetMembersDIDs() []common.Uint168 {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -187,11 +193,12 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
 
-		c.createCRAppropriationTransaction()
+		c.createCRCAppropriationTransaction()
+		c.NeedAppropriation = true
 	}
 }
 
-func (c *Committee) createCRAppropriationTransaction() error {
+func (c *Committee) createCRCAppropriationTransaction() error {
 	// todo create CR appropriation transaction and send to txpool.
 	return nil
 }
@@ -265,6 +272,15 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 			return
 		}
 	}
+}
+
+func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32,
+	history *utils.History) {
+	history.Append(height, func() {
+		c.NeedAppropriation = false
+	}, func() {
+		c.NeedAppropriation = true
+	})
 }
 
 func (c *Committee) GetHistoryMember(code []byte) *CRMember {
@@ -456,10 +472,12 @@ func NewCommittee(params *config.Params) *Committee {
 		manager:  NewProposalManager(params),
 	}
 	committee.state.SetManager(committee.manager)
-	committee.state.RegisterFunction(
-		committee.tryStartVotingPeriod,
-		committee.processImpeachment,
-		committee.getHistoryMember)
+	committee.state.RegisterFunctions(&FunctionsConfig{
+		TryStartVotingPeriod:    committee.tryStartVotingPeriod,
+		ProcessImpeachment:      committee.processImpeachment,
+		ProcessCRCAppropriation: committee.processCRCAppropriation,
+		GetHistoryMember:        committee.getHistoryMember,
+	})
 	params.CkpManager.Register(NewCheckpoint(committee))
 	return committee
 }

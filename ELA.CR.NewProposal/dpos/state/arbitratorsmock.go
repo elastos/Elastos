@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -135,6 +135,10 @@ func (a *ArbitratorsMock) GetDutyIndex() int {
 }
 
 func (a *ArbitratorsMock) ProcessSpecialTxPayload(p types.Payload, height uint32) error {
+	panic("implement me")
+}
+
+func (a *ArbitratorsMock) CheckCRCAppropriationTx(block *types.Block) error {
 	panic("implement me")
 }
 

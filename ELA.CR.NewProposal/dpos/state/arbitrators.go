@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -151,6 +151,32 @@ func (a *arbitrators) CheckDPOSIllegalTx(block *types.Block) error {
 			return errors.New("expect an illegal blocks transaction in this block")
 		}
 	}
+	return nil
+}
+
+func (a *arbitrators) CheckCRCAppropriationTx(block *types.Block) error {
+	a.mtx.Lock()
+	needAppropriation := a.crCommittee.NeedAppropriation
+	a.mtx.Unlock()
+
+	var appropriationCount uint32
+	for _, tx := range block.Transactions {
+		if tx.IsCRCAppropriationTx() {
+			appropriationCount++
+		}
+	}
+
+	var needAppropriationCount uint32
+	if needAppropriation {
+		needAppropriationCount = 1
+	}
+
+	if appropriationCount != needAppropriationCount {
+		return fmt.Errorf("current block height %d, appropriation "+
+			"transaction count should be %d, current block contains %d",
+			block.Height, needAppropriationCount, appropriationCount)
+	}
+
 	return nil
 }
 
@@ -1155,7 +1181,7 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 
 func NewArbitrators(chainParams *config.Params, committee *state.Committee,
 	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
-	error)) (*arbitrators, error) {
+		error)) (*arbitrators, error) {
 	a := &arbitrators{
 		chainParams:                chainParams,
 		crCommittee:                committee,

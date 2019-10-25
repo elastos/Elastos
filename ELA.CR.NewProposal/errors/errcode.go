@@ -41,6 +41,7 @@ const (
 	ErrTxHeightVersion     ErrCode = -22012
 	ErrTxAssetPrecision    ErrCode = -22013
 	ErrTxReturnDeposit     ErrCode = -22014
+	ErrTxAppropriation     ErrCode = -22015
 	// 23 sidechain
 	ErrTxSidechainValidation   ErrCode = -23000
 	ErrTxSidechainDuplicate    ErrCode = -23001

@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -15,6 +15,7 @@ type Arbitrators interface {
 	Start()
 	CheckDPOSIllegalTx(block *types.Block) error
 	ProcessSpecialTxPayload(p types.Payload, height uint32) error
+	CheckCRCAppropriationTx(block *types.Block) error
 
 	IsArbitrator(pk []byte) bool
 	GetArbitrators() [][]byte

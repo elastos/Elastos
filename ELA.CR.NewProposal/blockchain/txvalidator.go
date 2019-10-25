@@ -92,17 +92,28 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		return elaerr.Simple(elaerr.ErrTxDuplicate, nil)
 	}
 
-	switch txn.TxType {
-	case CoinBase:
+	if txn.IsCoinBaseTx() {
 		return nil
+	}
 
+	// check double spent transaction
+	if DefaultLedger.IsDoubleSpend(txn) {
+		log.Warn("[CheckTransactionContext] IsDoubleSpend check failed")
+		return elaerr.Simple(elaerr.ErrTxDoubleSpend, nil)
+	}
+
+	if err := checkTransactionUTXOLock(txn, references); err != nil {
+		log.Warn("[CheckTransactionUTXOLock],", err)
+		return elaerr.Simple(elaerr.ErrTxUTXOLocked, err)
+	}
+
+	switch txn.TxType {
 	case IllegalProposalEvidence:
 		if err := b.checkIllegalProposalsTransaction(txn); err != nil {
 			log.Warn("[CheckIllegalProposalsTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxPayload, err)
-		} else {
-			return nil
 		}
+		return nil
 
 	case IllegalVoteEvidence:
 		if err := b.checkIllegalVotesTransaction(txn); err != nil {
@@ -219,47 +230,39 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 			return elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
-	}
-
-	// check double spent transaction
-	if DefaultLedger.IsDoubleSpend(txn) {
-		log.Warn("[CheckTransactionContext] IsDoubleSpend check failed")
-		return elaerr.Simple(elaerr.ErrTxDoubleSpend, nil)
-	}
-
-	if txn.IsWithdrawFromSideChainTx() {
+	case WithdrawFromSideChain:
 		if err := b.checkWithdrawFromSideChainTransaction(txn, references); err != nil {
 			log.Warn("[CheckWithdrawFromSideChainTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxSidechainDuplicate, err)
 		}
-	}
 
-	if txn.IsTransferCrossChainAssetTx() {
+	case TransferCrossChainAsset:
 		if err := b.checkTransferCrossChainAssetTransaction(txn, references); err != nil {
 			log.Warn("[CheckTransferCrossChainAssetTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxInvalidOutput, err)
 		}
-	}
 
-	if txn.IsReturnDepositCoin() {
+	case ReturnDepositCoin:
 		if err := b.checkReturnDepositCoinTransaction(
 			txn, references, b.GetHeight()); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxReturnDeposit, err)
 		}
-	}
 
-	if txn.IsReturnCRDepositCoinTx() {
+	case ReturnCRDepositCoin:
 		if err := b.checkReturnCRDepositCoinTransaction(
 			txn, references, b.GetHeight(), b.crCommittee.IsInVotingPeriod); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxReturnDeposit, err)
 		}
-	}
 
-	if err := checkTransactionUTXOLock(txn, references); err != nil {
-		log.Warn("[CheckTransactionUTXOLock],", err)
-		return elaerr.Simple(elaerr.ErrTxUTXOLocked, err)
+	case CRCAppropriation:
+		if err := b.checkCRCAppropriationTransaction(txn, references,
+			blockHeight); err != nil {
+			log.Warn("[checkCRCAppropriationTransaction],", err)
+			return elaerr.Simple(elaerr.ErrTxAppropriation, err)
+		}
+		return nil
 	}
 
 	if err := b.checkTransactionFee(txn, references); err != nil {
@@ -620,6 +623,20 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 		return nil
 	}
 
+	if txn.IsCRCAppropriationTx() {
+		if len(txn.Outputs) != 2 {
+			return errors.New("new CRCAppropriation tx must have two output")
+		}
+		if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRCCommitteeAddress) {
+			return errors.New("new CRCAppropriation tx must have the first" +
+				"output to CRC committee address")
+		}
+		if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRCCommitteeAddress) {
+			return errors.New("new CRCAppropriation tx must have the second" +
+				"output to CRC foundation")
+		}
+	}
+
 	if txn.IsNewSideChainPowTx() {
 		if len(txn.Outputs) != 1 {
 			return errors.New("new sideChainPow tx must have only one output")
@@ -736,9 +753,6 @@ func checkOutputPayload(txType TxType, output *Output) error {
 }
 
 func checkTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
-	if txn.IsCoinBaseTx() {
-		return nil
-	}
 	for input, output := range references {
 
 		if output.OutputLock == 0 {
@@ -1033,10 +1047,14 @@ func checkDuplicateSidechainTx(txn *Transaction) error {
 // validate the type of transaction is allowed or not at current height.
 func (b *BlockChain) checkTxHeightVersion(txn *Transaction, blockHeight uint32) error {
 	switch txn.TxType {
-	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin,
-		CRCProposalReview, CRCProposalTracking, CRCProposalWithdraw:
+	case RegisterCR, UpdateCR, UnregisterCR, ReturnCRDepositCoin:
 		if blockHeight < b.chainParams.CRVotingStartHeight {
 			return errors.New("not support before CRVotingStartHeight")
+		}
+	case CRCProposal, CRCProposalReview, CRCProposalTracking, CRCAppropriation,
+		CRCProposalWithdraw:
+		if blockHeight < b.chainParams.CRCommitteeStartHeight {
+			return errors.New("not support before CRCommitteeStartHeight")
 		}
 	case TransferAsset:
 		if blockHeight >= b.chainParams.CRVotingStartHeight {
@@ -1779,6 +1797,47 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 		result = errors.New("invalid proposal tracking type")
 	}
 	return result
+}
+
+func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
+	references map[*Input]*Output, blockHeight uint32) error {
+	// Check if current session has appropriated.
+	if !b.crCommittee.IsAppropriationNeeded() {
+		return errors.New("should have no appropriation transaction")
+	}
+
+	// Inputs need to only from CRC foundation
+	var totalInput common.Fixed64
+	for _, output := range references {
+		totalInput += output.Value
+		if !output.ProgramHash.IsEqual(b.chainParams.CRCFoundation) {
+			return errors.New("input does not from CRC foundation")
+		}
+	}
+
+	// Inputs amount need equal to outputs amount
+	var totalOutput common.Fixed64
+	for _, output := range txn.Outputs {
+		totalOutput += output.Value
+	}
+	if totalInput != totalOutput {
+		return fmt.Errorf("inputs does not equal to outputs amount, "+
+			"inputs:%s outputs:%s", totalInput, totalOutput)
+	}
+
+	// Check output amount to CRCCommitteeAddress: (CRCFoundation+
+	// CRCCommitteeAddress)*CRCAppropriatePercentage/100 - CRCCommitteeAddress
+	// Outputs has check in CheckTransactionOutput function:
+	// first one to CRCommitteeAddress, second one to CRCFoundation
+	fAmount := b.crCommittee.CRCFoundationAmount
+	cAmount := b.crCommittee.CRCCommitteeAmount
+	appropriationAmount := common.Fixed64(float64(fAmount-cAmount)*b.chainParams.CRCAppropriatePercentage/100.0) - cAmount
+	if appropriationAmount != txn.Outputs[0].Value {
+		return fmt.Errorf("invalid appropriation amount %s, need to be %s",
+			txn.Outputs[0].Value, appropriationAmount)
+	}
+
+	return nil
 }
 
 func (b *BlockChain) checkCRCProposalCommonTracking(
