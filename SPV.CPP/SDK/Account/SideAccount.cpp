@@ -69,8 +69,8 @@ namespace Elastos {
 
 		void SideAccount::SignTransaction(const TransactionPtr &, const std::string &) const {}
 
-		std::string SideAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const {
-			return "";
+		Key SideAccount::GetKeyWithDID(const Address &did, const std::string &payPasswd) const {
+			return Key();
 		}
 
 		Key SideAccount::DeriveOwnerKey(const std::string &) { return Key(); }

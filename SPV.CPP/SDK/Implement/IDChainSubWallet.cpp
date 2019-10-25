@@ -131,6 +131,22 @@ namespace Elastos {
 			return signature;
 		}
 
+		std::string IDChainSubWallet::SignDigest(const std::string &did, const std::string &digest,
+		                                         const std::string &payPassword) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("did: {}", did);
+			ArgInfo("digest: {}", digest);
+			ArgInfo("payPasswd: *");
+
+			ErrorChecker::CheckParam(digest.size() != 64, Error::InvalidArgument, "invalid digest");
+			std::string signature = _walletManager->GetWallet()->SignDigestWithDID(Address(did), uint256(digest), payPassword);
+
+			ArgInfo("r => {}", signature);
+
+			return signature;
+		}
+
+
 		bool IDChainSubWallet::VerifySignature(const std::string &publicKey, const std::string &message,
 											   const std::string &signature) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());

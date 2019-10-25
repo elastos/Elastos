@@ -385,7 +385,7 @@ namespace Elastos {
 
 
 			/**
-			 *Sponsor generate and sign payload for create CRC proposal.
+			 *Sponsor generate proposal digest for sponsor signature.
 			 *
 			 * @param type             Proposal type, value is [0-5]
 			 * @param sponsorPublicKey Public key of sponsor
@@ -393,20 +393,18 @@ namespace Elastos {
 			 * @param draftHash        The hash of draft proposal
 			 * @param budgets          The budgets of proposal every stage. Such as ["300", "33", "344"]
 			 * @param recipient        Address of budget payee. Such as "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"
-			 * @param payPasswd        Pay password is using for signing the payload with the owner private key.
 			 *
-			 * @return The payload in JSON format.
+			 * @return Hex string of sha256
 			 */
-			virtual nlohmann::json SponsorSignProposal(uint8_t type,
-			                                           const std::string &sponsorPublicKey,
-			                                           const std::string &crSponsorDID,
-			                                           const std::string &draftHash,
-			                                           const nlohmann::json &budgets,
-			                                           const std::string &recipient,
-			                                           const std::string &payPasswd) const = 0;
+			virtual std::string SponsorProposalDigest(uint8_t type,
+			                                          const std::string &sponsorPublicKey,
+			                                          const std::string &crSponsorDID,
+			                                          const std::string &draftHash,
+			                                          const nlohmann::json &budgets,
+			                                          const std::string &recipient) const = 0;
 
 			/**
-			 *CR sponsor generate payload for create CRC proposal.
+			 *CR sponsor generate proposal digest for cr signature.
 			 *
 			 * @param type             Proposal type, value is [0-5]
 			 * @param sponsorPublicKey Public key of sponsor
@@ -414,28 +412,39 @@ namespace Elastos {
 			 * @param draftHash        The hash of draft proposal
 			 * @param budgets          The budgets of proposal every stage. Such as ["300", "33", "344"]
 			 * @param recipient        Address of budget payee. Such as "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"
-			 * @param payPasswd        Pay password is using for signing the payload with the owner private key.
-			 *
-			 * @return The payload in JSON format.
+			 * @sponsorSignature       The signature of the proposal by the sponsor
+			 * @return Hex string of sha256
 			 */
-			virtual nlohmann::json CRSponsorSignProposal(uint8_t type,
-			                                             const std::string &sponsorPublicKey,
-			                                             const std::string &crSponsorDID,
-			                                             const std::string &draftHash,
-			                                             const nlohmann::json &budgets,
-			                                             const std::string &recipient,
-			                                             const std::string &signature,
-			                                             const std::string &payPasswd) const = 0;
+			virtual std::string CRSponsorProposalDigest(uint8_t type,
+			                                            const std::string &sponsorPublicKey,
+			                                            const std::string &crSponsorDID,
+			                                            const std::string &draftHash,
+			                                            const nlohmann::json &budgets,
+			                                            const std::string &recipient,
+			                                            const std::string &sponsorSignature) const = 0;
 
 			/**
 			 * Create CRC Proposal transaction.
 			 *
-			 * @param proposal  The proposal of CRC, should be Signed with SponsorSignProposal() and CRSponsorSignProposal().
-			 * @param memo      Remarks string. Can be empty string.
-			 * @return          The transaction in JSON format to be signed and published.
+			 * @param type             Proposal type, value is [0-5]
+			 * @param sponsorPublicKey Public key of sponsor
+			 * @param crSponsorDID     Did of sponsor. Such as "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+			 * @param draftHash        The hash of draft proposal
+			 * @param budgets          The budgets of proposal every stage. Such as ["300", "33", "344"]
+			 * @param recipient        Address of budget payee. Such as "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"
+			 * @sponsorSignature       The signature of the proposal by the sponsor
+			 * @crSponsorSignature     The signature of the proposal by cr
+			 * @return  The transaction in JSON format to be signed and published.
 			 */
-			virtual nlohmann::json
-			CreateCRCProposalTransaction(const nlohmann::json &proposal, const std::string &memo) = 0;
+			virtual nlohmann::json CreateCRCProposalTransaction(uint8_t type,
+			                                                    const std::string &sponsorPublicKey,
+			                                                    const std::string &crSponsorDID,
+			                                                    const std::string &draftHash,
+			                                                    const nlohmann::json &budgets,
+			                                                    const std::string &recipient,
+			                                                    const std::string &sponsorSignature,
+			                                                    const std::string &crSponsorSignature,
+			                                                    const std::string &memo) = 0;
 
 			/**
 			 * Create vote crc proposal transaction.

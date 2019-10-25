@@ -51,7 +51,7 @@ namespace Elastos {
 
 			virtual void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) const = 0;
 
-			virtual std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const = 0;
+			virtual Key GetKeyWithDID(const Address &did, const std::string &payPasswd) const = 0;
 
 			virtual Key DeriveOwnerKey(const std::string &payPasswd) = 0;
 

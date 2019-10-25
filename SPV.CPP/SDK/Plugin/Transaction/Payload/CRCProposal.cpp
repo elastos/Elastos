@@ -6,6 +6,7 @@
 
 #include <SDK/Common/hash.h>
 #include <SDK/Common/Log.h>
+#include <SDK/Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -173,6 +174,26 @@ namespace Elastos {
 			return true;
 		}
 
+		void CRCProposal::SerializeSponsorSigned(ByteStream &ostream, uint8_t version) {
+			SerializeUnsigned(ostream, version);
+
+			ErrorChecker::CheckParam(_signature.size() <= 0, Error::Sign, "sponsor unsigned");
+
+			ostream.WriteVarBytes(_signature);
+		}
+
+		bool CRCProposal::DeserializeSponsorSigned(const ByteStream &istream, uint8_t version) {
+			if (!DeserializeUnsigned(istream, version)) {
+				return false;
+			}
+
+			if (!istream.ReadVarBytes(_signature)) {
+				Log::error("CRCProposal DeserializeUnsigned: read sponsorSignature key");
+				return false;
+			}
+			return true;
+		}
+
 		void CRCProposal::Serialize(ByteStream &ostream, uint8_t version) const {
 			SerializeUnsigned(ostream, version);
 
@@ -182,17 +203,12 @@ namespace Elastos {
 		}
 
 		bool CRCProposal::Deserialize(const ByteStream &istream, uint8_t version) {
-			if (!DeserializeUnsigned(istream, version)) {
-				return false;
-			}
-
-			if (!istream.ReadVarBytes(_signature)) {
-				Log::error("CRCProposal DeserializeUnsigned: read _signature key");
+			if (!DeserializeSponsorSigned(istream, version)) {
 				return false;
 			}
 
 			if (!istream.ReadVarBytes(_crSignature)) {
-				Log::error("CRCProposal DeserializeUnsigned: read _crSignature key");
+				Log::error("CRCProposal DeserializeUnsigned: read crSignature key");
 				return false;
 			}
 

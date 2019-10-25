@@ -65,6 +65,10 @@ namespace Elastos {
 
 			bool DeserializeUnsigned(const ByteStream &istream, uint8_t version);
 
+			void SerializeSponsorSigned(ByteStream &ostream, uint8_t version);
+
+			bool DeserializeSponsorSigned(const ByteStream &istream, uint8_t version);
+
 			virtual void Serialize(ByteStream &ostream, uint8_t version) const;
 
 			virtual bool Deserialize(const ByteStream &istream, uint8_t version);

@@ -754,7 +754,16 @@ namespace Elastos {
 		std::string Wallet::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const {
 			ErrorChecker::CheckParam(_chainID != CHAINID_IDCHAIN, Error::InvalidArgument, "subWallet should be IDChain");
 			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->SignWithDID(did, msg, payPasswd);
+			Key key = _subAccount->GetKeyWithDID(did, payPasswd);
+			return key.Sign(msg).getHex();
+		}
+
+		std::string Wallet::SignDigestWithDID(const Address &did, const uint256 &digest,
+		                                      const std::string &payPasswd) const {
+			ErrorChecker::CheckParam(_chainID != CHAINID_IDCHAIN, Error::InvalidArgument, "subWallet should be IDChain");
+			boost::mutex::scoped_lock scopedLock(lock);
+			Key key = _subAccount->GetKeyWithDID(did, payPasswd);
+			return key.Sign(digest).getHex();
 		}
 
 		bytes_t Wallet::SignWithOwnerKey(const bytes_t &msg, const std::string &payPasswd) {

@@ -178,6 +178,9 @@ namespace Elastos {
 
 			std::string SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const;
 
+			std::string SignDigestWithDID(const Address &did, const uint256 &digest,
+			                              const std::string &payPasswd) const;
+
 			bytes_t SignWithOwnerKey(const bytes_t &msg, const std::string &payPasswd);
 
 			bytes_t SignWithCROwnerKey(const bytes_t &msg, const std::string &payPasswd);

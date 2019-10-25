@@ -453,22 +453,39 @@ static void CreateCRProposalTransaction(const std::string &masterWalletID, const
 		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
 		return;
 	}
+
+	subWallet = GetSubWallet(masterWalletID, gIDchainSubWalletID);
+	IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
+
+	if (iidChainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IIDChainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
 	uint8_t type = 0;
-	std::string pubkey = "03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc";
-	std::string crSponsorDID = "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww";
+	nlohmann::json pubKeyJson = iidChainSubWallet->GetAllPublicKeys(0, 1);
+	std::string pubkey = pubKeyJson["PublicKeys"][0].get<std::string>();
+	nlohmann::json allDID = iidChainSubWallet->GetAllDID(0, 1);
+	std::string crSponsorDID = allDID["DID"][0].get<std::string>();
 	std::string draftHash = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0";
 	nlohmann::json budgets = R"(["324","266","234"])"_json;
 	std::string receiptAddress = "Ed8ZSxSB98roeyuRZwwekrnRqcgnfiUDeQ";
 
+	std::string sponsorDID = iidChainSubWallet->GetPublicKeyDID(pubkey);
 
-	nlohmann::json info = mainchainSubWallet->SponsorSignProposal(type, pubkey, crSponsorDID, draftHash, budgets,
-			receiptAddress, payPasswd);
+	std::string digest = mainchainSubWallet->SponsorProposalDigest(type, pubkey, crSponsorDID, draftHash, budgets,
+	                                                               receiptAddress);
 
-	std::string signature = info["Sgnature"].get<std::string>();
-	info = mainchainSubWallet->CRSponsorSignProposal(type, pubkey, crSponsorDID, draftHash, budgets,
-			receiptAddress, signature, payPasswd);
+	std::string sponsorSignature = iidChainSubWallet->SignDigest(sponsorDID, digest, payPasswd);
 
-	nlohmann::json tx = mainchainSubWallet->CreateCRCProposalTransaction(info, memo);
+	digest = mainchainSubWallet->CRSponsorProposalDigest(type, pubkey, crSponsorDID, draftHash, budgets, receiptAddress,
+	                                                     sponsorSignature);
+
+	std::string crSignature = iidChainSubWallet->SignDigest(crSponsorDID, digest,  payPasswd);
+
+	nlohmann::json tx = mainchainSubWallet->CreateCRCProposalTransaction(type, pubkey, crSponsorDID, draftHash, budgets,
+	                                                                     receiptAddress, sponsorSignature, crSignature,
+	                                                                     memo);
 
 	PublishTransaction(mainchainSubWallet, tx);
 

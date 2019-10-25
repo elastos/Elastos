@@ -275,21 +275,19 @@ namespace Elastos {
 			}
 		}
 
-		std::string SubAccount::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const {
+		Key SubAccount::GetKeyWithDID(const Address &did, const std::string &payPasswd) const {
 			if (_parent->GetSignType() != IAccount::MultiSign) {
 				for (size_t i = 0; i < _externalChain.size(); ++i) {
 					Address didAddr = _externalChain[i];
 					didAddr.ChangePrefix(PrefixIDChain);
 					if (did == didAddr) {
-						Key key = _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
-						return key.Sign(msg).getHex();
+						return _parent->RootKey(payPasswd)->getChild("44'/0'/0'/0").getChild(i);
 					}
 				}
 			}
 
 			ErrorChecker::ThrowLogicException(Error::PrivateKeyNotFound, "private key not found");
-
-			return "";
+			return Key();
 		}
 
 		Key SubAccount::DeriveOwnerKey(const std::string &payPasswd) {

@@ -118,24 +118,29 @@ namespace Elastos {
 
 			virtual nlohmann::json GetVoteInfo(const std::string &type) const;
 
-			virtual nlohmann::json SponsorSignProposal(uint8_t type,
-			                                           const std::string &sponsorPublicKey,
-			                                           const std::string &crSponsorDID,
-			                                           const std::string &draftHash,
-			                                           const nlohmann::json &budgets,
-			                                           const std::string &recipient,
-			                                           const std::string &payPasswd) const;
+			virtual std::string SponsorProposalDigest(uint8_t type,
+			                                          const std::string &sponsorPublicKey,
+			                                          const std::string &crSponsorDID,
+			                                          const std::string &draftHash,
+			                                          const nlohmann::json &budgets,
+			                                          const std::string &recipient) const;
 
-			virtual nlohmann::json CRSponsorSignProposal(uint8_t type,
-			                                             const std::string &sponsorPublicKey,
-			                                             const std::string &crSponsorDID,
-			                                             const std::string &draftHash,
-			                                             const nlohmann::json &budgets,
-			                                             const std::string &recipient,
-			                                             const std::string &signature,
-			                                             const std::string &payPasswd) const;
+			virtual std::string CRSponsorProposalDigest(uint8_t type,
+			                                            const std::string &sponsorPublicKey,
+			                                            const std::string &crSponsorDID,
+			                                            const std::string &draftHash,
+			                                            const nlohmann::json &budgets,
+			                                            const std::string &recipient,
+			                                            const std::string &sponsorSignature) const;
 
-			virtual nlohmann::json CreateCRCProposalTransaction(const nlohmann::json &proposal,
+			virtual nlohmann::json CreateCRCProposalTransaction(uint8_t type,
+			                                                    const std::string &sponsorPublicKey,
+			                                                    const std::string &crSponsorDID,
+			                                                    const std::string &draftHash,
+			                                                    const nlohmann::json &budgets,
+			                                                    const std::string &recipient,
+			                                                    const std::string &sponsorSignature,
+			                                                    const std::string &crSponsorSignature,
 			                                                    const std::string &memo);
 
 			virtual nlohmann::json GenerateCRCProposalReview(const std::string &proposalHash,
@@ -150,6 +155,15 @@ namespace Elastos {
 			                                                        const nlohmann::json &votes,
 			                                                        const std::string &memo);
 
+		private:
+			PayloadPtr GenerateCRCProposalPayload(uint8_t type,
+			                                      const std::string &sponsorPublicKey,
+			                                      const std::string &crSponsorDID,
+			                                      const std::string &draftHash,
+			                                      const nlohmann::json &budgets,
+			                                      const std::string &recipient,
+			                                      const std::string &sponsorSignature = "",
+			                                      const std::string &crSponsorSignature = "") const;
 		protected:
 			friend class MasterWallet;
 

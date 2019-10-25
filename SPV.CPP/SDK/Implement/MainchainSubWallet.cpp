@@ -924,13 +924,12 @@ namespace Elastos {
 			return jinfo;
 		}
 
-		nlohmann::json MainchainSubWallet::SponsorSignProposal(uint8_t type,
-		                                                       const std::string &sponsorPublicKey,
-		                                                       const std::string &crSponsorDID,
-		                                                       const std::string &draftHash,
-		                                                       const nlohmann::json &budgets,
-		                                                       const std::string &recipient,
-		                                                       const std::string &payPasswd) const {
+		std::string MainchainSubWallet::SponsorProposalDigest(uint8_t type,
+		                                                      const std::string &sponsorPublicKey,
+		                                                      const std::string &crSponsorDID,
+		                                                      const std::string &draftHash,
+		                                                      const nlohmann::json &budgets,
+		                                                      const std::string &recipient) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("type: {}", type);
 			ArgInfo("sponsorPublicKey: {}", sponsorPublicKey);
@@ -938,58 +937,26 @@ namespace Elastos {
 			ArgInfo("draftHash: {}", draftHash);
 			ArgInfo("budgets: {}", budgets.dump());
 			ArgInfo("recipient: {}", recipient);
-			ArgInfo("payPasswd: *");
 
-			ErrorChecker::CheckParam(type >= CRCProposal::maxType, Error::InvalidArgument, "type is invalid");
+			PayloadPtr payload = GenerateCRCProposalPayload(type, sponsorPublicKey, crSponsorDID, draftHash, budgets,
+			                                                   recipient);
+			CRCProposal *crcProposal = static_cast<CRCProposal *>(payload.get());
 
-			Key verifyPubKey;
-			bytes_t publicKey(sponsorPublicKey);
-			verifyPubKey.SetPubKey(publicKey);
+			ByteStream stream;
+			crcProposal->SerializeUnsigned(stream, 0);
+			uint256 digest(sha256(stream.GetBytes()));
 
-			Address did(crSponsorDID);
-			ErrorChecker::CheckParam(!did.Valid() || !did.IsIDAddress(), Error::InvalidArgument,
-			                         "crSponsorDID is invalid");
-
-			ErrorChecker::CheckPassword(payPasswd, "SponsorSignProposal");
-
-			Address receiptAddress(recipient);
-			ErrorChecker::CheckParam(!receiptAddress.Valid(), Error::InvalidArgument, "invalid recipient");
-
-			CRCProposal crcProposal;
-			crcProposal.SetTpye(CRCProposal::CRCProposalType(type));
-			crcProposal.SetCRSponsorDID(did.ProgramHash());
-			crcProposal.SetDraftHash(uint256(draftHash));
-
-			std::vector<uint64_t> budgetList;
-			for (size_t i = 0; i < budgets.size(); ++i) {
-				std::string amount = budgets[i].get<std::string>();
-				int64_t value = strtoll(amount.c_str(), NULL, 10);
-				ErrorChecker::CheckParam(value < 0, Error::InvalidArgument, "invalid budgets");
-				budgetList.push_back(value);
-			}
-			crcProposal.SetBudgets(budgetList);
-
-			crcProposal.SetRecipient(receiptAddress.ProgramHash());
-
-			ByteStream byteStream;
-			crcProposal.SerializeUnsigned(byteStream, 0);
-
-			bytes_t signature = _walletManager->GetWallet()->SignWithOwnerKey(byteStream.GetBytes(), payPasswd);
-			crcProposal.SetSignature(signature);
-
-			nlohmann::json result = crcProposal.ToJson(0);
-			ArgInfo("r => {}", result.dump());
-			return result;
+			ArgInfo("r => {}", digest.GetHex());
+			return digest.GetHex();
 		}
 
-		nlohmann::json MainchainSubWallet::CRSponsorSignProposal(uint8_t type,
-		                                                         const std::string &sponsorPublicKey,
-		                                                         const std::string &crSponsorDID,
-		                                                         const std::string &draftHash,
-		                                                         const nlohmann::json &budgets,
-		                                                         const std::string &recipient,
-		                                                         const std::string &signature,
-		                                                         const std::string &payPasswd) const {
+		std::string MainchainSubWallet::CRSponsorProposalDigest(uint8_t type,
+		                                                        const std::string &sponsorPublicKey,
+		                                                        const std::string &crSponsorDID,
+		                                                        const std::string &draftHash,
+		                                                        const nlohmann::json &budgets,
+		                                                        const std::string &recipient,
+		                                                        const std::string &sponsorSignature) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("type: {}", type);
 			ArgInfo("sponsorPublicKey: {}", sponsorPublicKey);
@@ -997,66 +964,48 @@ namespace Elastos {
 			ArgInfo("draftHash: {}", draftHash);
 			ArgInfo("budgets: {}", budgets.dump());
 			ArgInfo("recipient: {}", recipient);
-			ArgInfo("signature: {}", signature);
-			ArgInfo("payPasswd: *");
+			ArgInfo("sponsorSignature: {}", sponsorSignature);
 
-			ErrorChecker::CheckParam(type >= CRCProposal::maxType, Error::InvalidArgument, "type is invalid");
+			ErrorChecker::CheckParam(!sponsorSignature.empty(), Error::InvalidArgument, "invalid sponsorSignature");
 
-			Key verifyPubKey;
-			bytes_t publicKey(sponsorPublicKey);
-			verifyPubKey.SetPubKey(publicKey);
+			PayloadPtr payload = GenerateCRCProposalPayload(type, sponsorPublicKey, crSponsorDID, draftHash, budgets,
+			                                                recipient, sponsorSignature);
+			CRCProposal *crcProposal = static_cast<CRCProposal *>(payload.get());
 
-			Address did(crSponsorDID);
-			ErrorChecker::CheckParam(!did.Valid() || !did.IsIDAddress(), Error::InvalidArgument,
-			                         "crSponsorDID is invalid");
+			ByteStream stream;
+			crcProposal->SerializeSponsorSigned(stream, 0);
+			uint256 digest(sha256(stream.GetBytes()));
 
-			ErrorChecker::CheckPassword(payPasswd, "SponsorSignProposal");
-			Address receiptAddress(recipient);
-			ErrorChecker::CheckParam(!receiptAddress.Valid(), Error::InvalidArgument, "invalid recipient");
-
-			CRCProposal crcProposal;
-			crcProposal.SetTpye(CRCProposal::CRCProposalType(type));
-			crcProposal.SetCRSponsorDID(did.ProgramHash());
-			crcProposal.SetDraftHash(uint256(draftHash));
-
-			std::vector<uint64_t> budgetList;
-			for (size_t i = 0; i < budgets.size(); ++i) {
-				std::string amount = budgets[i].get<std::string>();
-				int64_t value = strtoll(amount.c_str(), NULL, 10);
-				ErrorChecker::CheckParam(value < 0, Error::InvalidArgument, "invalid budgets");
-				budgetList.push_back(value);
-			}
-			crcProposal.SetBudgets(budgetList);
-
-			crcProposal.SetRecipient(receiptAddress.ProgramHash());
-			crcProposal.SetSignature(signature);
-
-			ByteStream byteStream;
-			crcProposal.Serialize(byteStream, 0);
-
-//			Todo: fix me later
-//			std::string data = byteStream.GetBytes().getCharsAsString();
-//			bytes_t crSignature = _walletManager->GetWallet()->SignWithDID(did, data, payPasswd);
-//			crcProposal.SetCRSignature(crSignature);
-
-			nlohmann::json result = crcProposal.ToJson(0);
-			ArgInfo("r => {}", result.dump());
-			return result;
+			ArgInfo("r => {}", digest.GetHex());
+			return digest.GetHex();
 		}
 
-		nlohmann::json MainchainSubWallet::CreateCRCProposalTransaction(const nlohmann::json &proposal,
-		                                                    const std::string &memo) {
+		nlohmann::json MainchainSubWallet::CreateCRCProposalTransaction(uint8_t type,
+		                                                                const std::string &sponsorPublicKey,
+		                                                                const std::string &crSponsorDID,
+		                                                                const std::string &draftHash,
+		                                                                const nlohmann::json &budgets,
+		                                                                const std::string &recipient,
+		                                                                const std::string &sponsorSignature,
+		                                                                const std::string &crSponsorSignature,
+		                                                                const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("proposalReview: {}", proposal.dump());
+			ArgInfo("type: {}", type);
+			ArgInfo("sponsorPublicKey: {}", sponsorPublicKey);
+			ArgInfo("crSponsorDID: {}", crSponsorDID);
+			ArgInfo("draftHash: {}", draftHash);
+			ArgInfo("budgets: {}", budgets.dump());
+			ArgInfo("recipient: {}", recipient);
+			ArgInfo("sponsorSignature: {}", sponsorSignature);
+			ArgInfo("crSponsorSignature: {}", crSponsorSignature);
 			ArgInfo("memo: {}", memo);
 
-			PayloadPtr payload = PayloadPtr(new CRCProposal());
-			try {
-				payload->FromJson(proposal, 0);
-			} catch (const nlohmann::detail::exception &e) {
-				ErrorChecker::ThrowParamException(Error::JsonFormatError,
-				                                  "Payload format err: " + std::string(e.what()));
-			}
+			ErrorChecker::CheckParam(!sponsorSignature.empty(), Error::InvalidArgument, "invalid sponsorSignature");
+			ErrorChecker::CheckParam(!crSponsorSignature.empty(), Error::InvalidArgument, "invalid crSponsorSignature");
+
+			PayloadPtr payload = GenerateCRCProposalPayload(type, sponsorPublicKey, crSponsorDID, draftHash, budgets,
+			                                                recipient, sponsorSignature, crSponsorSignature);
+			CRCProposal *crcProposal = static_cast<CRCProposal *>(payload.get());
 
 			Address receiveAddr(CreateAddress());
 			std::vector<OutputPtr> outputs;
@@ -1074,6 +1023,57 @@ namespace Elastos {
 
 			ArgInfo("r => {}", result.dump());
 			return result;
+		}
+
+		PayloadPtr MainchainSubWallet::GenerateCRCProposalPayload(uint8_t type,
+		                                                          const std::string &sponsorPublicKey,
+		                                                          const std::string &crSponsorDID,
+		                                                          const std::string &draftHash,
+		                                                          const nlohmann::json &budgets,
+		                                                          const std::string &recipient,
+		                                                          const std::string &sponsorSignature,
+		                                                          const std::string &crSponsorSignature) const {
+			ErrorChecker::CheckParam(type >= CRCProposal::maxType, Error::InvalidArgument, "type is invalid");
+
+			Key verifyPubKey;
+			bytes_t publicKey(sponsorPublicKey);
+			verifyPubKey.SetPubKey(publicKey);
+
+			Address did(crSponsorDID);
+			ErrorChecker::CheckParam(!did.Valid() || !did.IsIDAddress(), Error::InvalidArgument,
+			                         "crSponsorDID is invalid");
+
+			uint256 proposalHash(draftHash);
+			ErrorChecker::CheckParam(proposalHash.GetHex() != draftHash, Error::InvalidArgument, "invalid draftHash");
+
+			Address receiptAddress(recipient);
+			ErrorChecker::CheckParam(!receiptAddress.Valid(), Error::InvalidArgument, "invalid recipient");
+
+			PayloadPtr payload = PayloadPtr(new CRCProposal());
+			CRCProposal *crcProposal = static_cast<CRCProposal *>(payload.get());
+			crcProposal->SetTpye(CRCProposal::CRCProposalType(type));
+			crcProposal->SetCRSponsorDID(did.ProgramHash());
+			crcProposal->SetDraftHash(proposalHash);
+			crcProposal->SetRecipient(receiptAddress.ProgramHash());
+
+			std::vector<uint64_t> budgetList;
+			for (size_t i = 0; i < budgets.size(); ++i) {
+				std::string amount = budgets[i].get<std::string>();
+				int64_t value = strtoll(amount.c_str(), NULL, 10);
+				ErrorChecker::CheckParam(value < 0, Error::InvalidArgument, "invalid budgets");
+				budgetList.push_back(value);
+			}
+			crcProposal->SetBudgets(budgetList);
+
+			if (!sponsorSignature.empty()) {
+				crcProposal->SetSignature(sponsorSignature);
+			}
+
+			if (!crSponsorSignature.empty()) {
+				crcProposal->SetCRSignature(crSponsorSignature);
+			}
+
+			return payload;
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateCRCProposalReview(const std::string &proposalHash,
