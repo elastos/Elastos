@@ -3420,6 +3420,10 @@ func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
 	s.NoError(checkOutputProgramHash(88811, programHash))
 }
 
+func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
+	s.Chain.CreateCRCAppropriationTransaction()
+}
+
 func TestTxValidatorSuite(t *testing.T) {
 	suite.Run(t, new(txValidatorTestSuite))
 }

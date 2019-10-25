@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"sort"
 	"sync"
 
@@ -17,6 +18,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/p2p"
+	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
@@ -30,7 +33,11 @@ type Committee struct {
 	getCheckpoint             func(height uint32) *Checkpoint
 	getUnspentFromProgramHash func(programHash common.Uint168,
 		assetid common.Uint256) ([]*types.UTXO, error)
-	getHeight func() uint32
+	getHeight                func() uint32
+	isCurrent                func() bool
+	broadcast                func(msg p2p.Message)
+	appendToTxpool           func(transaction *types.Transaction) elaerr.ELAError
+	createCRCAppropriationTx func() *types.Transaction
 
 	recordBalanceHeight uint32
 }
@@ -201,10 +208,21 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
 
-		c.createCRCAppropriationTransaction()
-		c.NeedAppropriation = true
-		// todo calculate used amount by current proposal.
-		c.CRCCommitteeUsedAmount = 0
+		if c.createCRCAppropriationTx != nil {
+			tx := c.createCRCAppropriationTx()
+			log.Info("create CRCAppropriation transaction:", tx.Hash())
+			if c.isCurrent != nil && c.broadcast != nil && c.
+				appendToTxpool != nil {
+				if c.isCurrent() {
+					if err := c.appendToTxpool(tx); err == nil {
+						c.broadcast(msg.NewTx(tx))
+					}
+				}
+			}
+			c.NeedAppropriation = true
+			// todo calculate used amount by current proposal.
+			c.CRCCommitteeUsedAmount = 0
+		}
 	}
 }
 
@@ -545,10 +563,18 @@ type CommitteeFuncsConfig struct {
 		map[*types.Input]*types.Output, error)
 	GetUnspentFromProgramHash func(programHash common.Uint168,
 		assetid common.Uint256) ([]*types.UTXO, error)
-	GetHeight func() uint32
+	GetHeight                        func() uint32
+	CreateCRAppropriationTransaction func() *types.Transaction
+	IsCurrent                        func() bool
+	Broadcast                        func(msg p2p.Message)
+	AppendToTxpool                   func(transaction *types.Transaction) elaerr.ELAError
 }
 
 func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
+	c.createCRCAppropriationTx = cfg.CreateCRAppropriationTransaction
+	c.isCurrent = cfg.IsCurrent
+	c.broadcast = cfg.Broadcast
+	c.appendToTxpool = cfg.AppendToTxpool
 	c.state.RegisterFunctions(&FunctionsConfig{
 		TryStartVotingPeriod:    c.tryStartVotingPeriod,
 		ProcessImpeachment:      c.processImpeachment,

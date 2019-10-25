@@ -1,11 +1,12 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package types
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -35,4 +36,9 @@ func (uu *UTXO) Deserialize(r io.Reader) error {
 	uu.Value.Deserialize(r)
 
 	return nil
+}
+func (uu *UTXO) Hash() common.Uint256 {
+	buf := new(bytes.Buffer)
+	uu.Serialize(buf)
+	return common.Uint256(common.Sha256D(buf.Bytes()))
 }
