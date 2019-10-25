@@ -45,11 +45,15 @@ type CRMember struct {
 
 // StateKeyFrame holds necessary state about CR committee.
 type KeyFrame struct {
-	Members               map[common.Uint168]*CRMember
-	HistoryMembers        map[common.Uint168]*CRMember
-	LastCommitteeHeight   uint32
-	LastVotingStartHeight uint32
-	InElectionPeriod      bool
+	Members                map[common.Uint168]*CRMember
+	HistoryMembers         map[common.Uint168]*CRMember
+	LastCommitteeHeight    uint32
+	LastVotingStartHeight  uint32
+	InElectionPeriod       bool
+	NeedAppropriation      bool
+	CRCFoundationAmount    common.Fixed64
+	CRCCommitteeAmount     common.Fixed64
+	CRCCommitteeUsedAmount common.Fixed64
 }
 
 // StateKeyFrame holds necessary state about CR state.
@@ -198,7 +202,8 @@ func (k *KeyFrame) Serialize(w io.Writer) (err error) {
 	}
 
 	return common.WriteElements(w, k.LastCommitteeHeight,
-		k.LastVotingStartHeight, k.InElectionPeriod)
+		k.LastVotingStartHeight, k.InElectionPeriod, k.NeedAppropriation,
+		k.CRCFoundationAmount, k.CRCCommitteeAmount, k.CRCCommitteeUsedAmount)
 }
 
 func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
@@ -211,7 +216,8 @@ func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
 	}
 
 	err = common.ReadElements(r, &k.LastCommitteeHeight,
-		&k.LastVotingStartHeight, &k.InElectionPeriod)
+		&k.LastVotingStartHeight, &k.InElectionPeriod, &k.NeedAppropriation,
+		&k.CRCFoundationAmount, &k.CRCCommitteeAmount, &k.CRCCommitteeUsedAmount)
 	return
 }
 

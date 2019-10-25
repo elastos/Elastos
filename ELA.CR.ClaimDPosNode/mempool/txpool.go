@@ -321,6 +321,8 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delCRCProposalTracking(cptPayload.ProposalHash)
+				case CRCAppropriation:
+					// todo complete me
 				}
 
 				deleteCount++
@@ -621,6 +623,8 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) elaerr.ELAError {
 			log.Warn(err)
 			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
+	case CRCAppropriation:
+		// todo complete me
 	}
 
 	return nil

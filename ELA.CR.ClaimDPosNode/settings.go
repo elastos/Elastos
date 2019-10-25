@@ -392,6 +392,36 @@ func newSettings() *settings {
 		ParamName:  "CRCAddress"})
 
 	result.Add(&settingItem{
+		Flag:         nil,
+		DefaultValue: "",
+		ConfigSetter: func(path string, params *config.Params,
+			conf *config.Configuration) error {
+			crcFoundation, err := common.Uint168FromAddress(conf.CRCFoundation)
+			if err != nil {
+				return errors.New("invalid CRC foundation")
+			}
+			params.CRCFoundation = *crcFoundation
+			return nil
+		},
+		ConfigPath: "CRCFoundation",
+		ParamName:  "CRCFoundation"})
+
+	result.Add(&settingItem{
+		Flag:         nil,
+		DefaultValue: "",
+		ConfigSetter: func(path string, params *config.Params,
+			conf *config.Configuration) error {
+			crcCommitteeAddress, err := common.Uint168FromAddress(conf.CRCCommitteeAddress)
+			if err != nil {
+				return errors.New("invalid CRC committee address")
+			}
+			params.CRCCommitteeAddress = *crcCommitteeAddress
+			return nil
+		},
+		ConfigPath: "CRCCommitteeAddress",
+		ParamName:  "CRCCommitteeAddress"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.VoteStartHeightFlag,
 		DefaultValue: uint32(0),
 		ConfigPath:   "VoteStartHeight",
@@ -712,6 +742,12 @@ func newSettings() *settings {
 		DefaultValue: float64(0),
 		ConfigPath:   "CRConfiguration.VoterRejectPercentage",
 		ParamName:    "VoterRejectPercentage"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.CRCAppropriatePercentageFlag,
+		DefaultValue: float64(0),
+		ConfigPath:   "CRConfiguration.CRCAppropriatePercentage",
+		ParamName:    "CRCAppropriatePercentage"})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.SecretaryGeneralFlag,

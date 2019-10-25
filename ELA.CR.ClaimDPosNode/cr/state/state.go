@@ -38,6 +38,8 @@ type State struct {
 	tryStartVotingPeriod func(height uint32)
 	processImpeachment   func(height uint32, member []byte, votes common.Fixed64,
 		history *utils.History)
+	processCRCAppropriation func(tx *types.Transaction, height uint32,
+		history *utils.History)
 	getHistoryMember func(code []byte) *CRMember
 
 	mtx     sync.RWMutex
@@ -50,14 +52,22 @@ func (s *State) SetManager(manager *ProposalManager) {
 	s.manager = manager
 }
 
-// RegisterFunction set the tryStartVotingPeriod and processImpeachment function
+type FunctionsConfig struct {
+	TryStartVotingPeriod func(height uint32)
+	ProcessImpeachment   func(height uint32, member []byte, votes common.Fixed64,
+		history *utils.History)
+	ProcessCRCAppropriation func(tx *types.Transaction, height uint32,
+		history *utils.History)
+	GetHistoryMember func(code []byte) *CRMember
+}
+
+// RegisterFunctions set the tryStartVotingPeriod and processImpeachment function
 // to change member state.
-func (s *State) RegisterFunction(tryStartVotingPeriod func(height uint32),
-	processImpeachment func(uint32, []byte, common.Fixed64, *utils.History),
-	getHistoryMember func(code []byte) *CRMember) {
-	s.tryStartVotingPeriod = tryStartVotingPeriod
-	s.processImpeachment = processImpeachment
-	s.getHistoryMember = getHistoryMember
+func (s *State) RegisterFunctions(cfg *FunctionsConfig) {
+	s.tryStartVotingPeriod = cfg.TryStartVotingPeriod
+	s.processImpeachment = cfg.ProcessImpeachment
+	s.processCRCAppropriation = cfg.ProcessCRCAppropriation
+	s.getHistoryMember = cfg.GetHistoryMember
 }
 
 // GetCandidateByDID returns candidate with specified did, it will return nil
@@ -227,6 +237,8 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 		if s.manager != nil {
 			s.manager.proposalReview(tx, height, s.history)
 		}
+	case types.CRCProposalAppropriation:
+		s.processCRCAppropriation(tx, height, s.history)
 	}
 
 	s.processCancelVotes(tx, height)
@@ -327,6 +339,8 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 		if s.manager != nil {
 			s.manager.proposalWithdraw(tx, height, s.history)
 		}
+	case types.CRCAppropriation:
+		s.processCRCAppropriation(tx, height, s.history)
 	}
 
 	s.processCancelVotes(tx, height)

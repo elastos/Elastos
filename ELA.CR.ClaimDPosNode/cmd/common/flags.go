@@ -311,6 +311,10 @@ var (
 		Name:  "crccommiteeaddr",
 		Usage: "the  `<crccommiteeaddr>`",
 	}
+	CRCAppropriatePercentageFlag = cli.StringFlag{
+		Name:  "crcappropriatepercentage",
+		Usage: "defines percentage about CRC appropriation",
+	}
 )
 
 // MoveRPCFlags finds the rpc argument and moves it to the front
