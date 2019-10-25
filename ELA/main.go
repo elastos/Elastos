@@ -213,12 +213,6 @@ func startNode(c *cli.Context, st *settings) {
 			blockchain.CalculateTxsFee(block)
 			return block, nil
 		}, chain.UTXOCache.GetTxReference)
-	committee.RegisterFuncitons(
-		&crstate.CommitteeFuncsConfig{
-			GetTxReference:            chain.UTXOCache.GetTxReference,
-			GetUnspentFromProgramHash: chainStore.GetUnspentFromProgramHash,
-			GetHeight:                 chainStore.GetHeight,
-		})
 
 	routesCfg := &routes.Config{TimeSource: chain.TimeSource}
 	if act != nil {
@@ -244,6 +238,18 @@ func startNode(c *cli.Context, st *settings) {
 	routesCfg.IsCurrent = server.IsCurrent
 	routesCfg.RelayAddr = server.RelayInventory
 	blockMemPool.IsCurrent = server.IsCurrent
+
+	committee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetTxReference:                   chain.UTXOCache.GetTxReference,
+		GetUnspentFromProgramHash:        chainStore.GetUnspentFromProgramHash,
+		GetHeight:                        chainStore.GetHeight,
+		CreateCRAppropriationTransaction: chain.CreateCRCAppropriationTransaction,
+		IsCurrent:                        server.IsCurrent,
+		Broadcast: func(msg p2p.Message) {
+			server.BroadcastMessage(msg)
+		},
+		AppendToTxpool: txMemPool.AppendToTxPool,
+	})
 
 	var arbitrator *dpos.Arbitrator
 	if act != nil {
