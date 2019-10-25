@@ -43,6 +43,7 @@ type TxPool struct {
 	crcProposalTracking map[Uint256]struct{}
 	producerNicknames   map[string]struct{}
 	crNicknames         map[string]struct{}
+	hasCRCAppropriation bool
 
 	tempInputUTXOList       map[string]*Transaction
 	tempSidechainTxList     map[Uint256]*Transaction
@@ -56,7 +57,9 @@ type TxPool struct {
 	tempCRCProposalTracking map[Uint256]struct{}
 	tempProducerNicknames   map[string]struct{}
 	tempCRNicknames         map[string]struct{}
-	txnListSize             int
+	tempHasCRCAppropriation bool
+
+	txnListSize int
 }
 
 //append transaction to txnpool when check ok.
@@ -322,7 +325,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					mp.delCRCProposalTracking(cptPayload.ProposalHash)
 				case CRCAppropriation:
-					// todo complete me
+					mp.hasCRCAppropriation = false
 				}
 
 				deleteCount++
@@ -624,7 +627,10 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) elaerr.ELAError {
 			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	case CRCAppropriation:
-		// todo complete me
+		if err := mp.verifyDuplicateCRCAppropriation(); err != nil {
+			log.Warn(err)
+			return ErrCRProcessing
+		}
 	}
 
 	return nil
@@ -815,6 +821,15 @@ func (mp *TxPool) verifyDuplicateCRCProposalTracking(crcProposalTracking *payloa
 		return errors.New("this origin CRC proposal tracking in being processed")
 	}
 	mp.addCRCProposalTracking(crcProposalTracking.ProposalHash)
+
+	return nil
+}
+
+func (mp *TxPool) verifyDuplicateCRCAppropriation() error {
+	if mp.hasCRCAppropriation {
+		return errors.New("this CRC appropriation in being processed")
+	}
+	mp.tempHasCRCAppropriation = true
 
 	return nil
 }
@@ -1095,6 +1110,7 @@ func (mp *TxPool) clearTemp() {
 	mp.tempCRCProposalTracking = make(map[Uint256]struct{})
 	mp.tempProducerNicknames = make(map[string]struct{})
 	mp.tempCRNicknames = make(map[string]struct{})
+	mp.tempHasCRCAppropriation = false
 }
 
 func (mp *TxPool) commitTemp() {
@@ -1131,6 +1147,7 @@ func (mp *TxPool) commitTemp() {
 	for k, v := range mp.tempCRCProposalWithdraw {
 		mp.crcProposalWithdraw[k] = v
 	}
+	mp.hasCRCAppropriation = mp.tempHasCRCAppropriation
 }
 
 func NewTxPool(params *config.Params) *TxPool {
