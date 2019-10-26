@@ -262,7 +262,7 @@ export default class extends BaseService {
   }
 
   // ADMIN and Council
-  async needBgInvestigation(id) {
+  async needDueDiligence(id) {
     const path = `${this.prefixPath}/${id}/investigation`
     const res = await api_request({
       path,

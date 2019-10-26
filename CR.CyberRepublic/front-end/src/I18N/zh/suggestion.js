@@ -29,7 +29,7 @@ export default {
   },
   btn: {
     makeIntoProposal: '发布为提案',
-    needBgInvestigation: '需要背景调查',
+    needDueDiligence: '需要尽职调查',
     needAdvisory: '需要咨询'
   },
   status: {

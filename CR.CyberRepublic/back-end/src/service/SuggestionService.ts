@@ -429,9 +429,9 @@ export default class extends Base {
       return { success: false }
     }
     const council = userUtil.formatUsername(this.currentUser)
-    const subject = `Need background investigation on suggestion #${sugg.displayId}`
+    const subject = `Need due diligence on suggestion #${sugg.displayId}`
     const body = `
-      <p>Council member ${council} requested secretary to do background investigation on suggestion #${sugg.displayId}</p>
+      <p>Council member ${council} requested secretary to do due diligence on suggestion #${sugg.displayId}</p>
       <br />
       <p>Click the link to view the suggestion detail: <a href="${
       process.env.SERVER_URL

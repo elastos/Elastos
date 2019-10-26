@@ -457,14 +457,14 @@ export default class extends StandardPage {
         </StyledButton>
       </Col>
     )
-    const needBgInvestigationBtn = isCouncil && (
+    const needDueDiligenceBtn = isCouncil && (
       <Col xs={24} sm={8}>
         <StyledButton
           type="ebp"
           className="cr-btn cr-btn-default"
-          onClick={this.needBgInvestigation}
+          onClick={this.needDueDiligence}
         >
-          {I18N.get('suggestion.btn.needBgInvestigation')}
+          {I18N.get('suggestion.btn.needDueDiligence')}
         </StyledButton>
       </Col>
     )
@@ -488,7 +488,7 @@ export default class extends StandardPage {
           {createFormBtn}
         </Row>
         <Row type="flex" justify="start">
-          {needBgInvestigationBtn}
+          {needDueDiligenceBtn}
           {needAdvisoryBtn}
         </Row>
       </BtnGroup>
@@ -633,9 +633,9 @@ export default class extends StandardPage {
     }
   }
 
-  needBgInvestigation = async () => {
+  needDueDiligence = async () => {
     const { _id } = this.props.detail
-    await this.props.needBgInvestigation(_id)
+    await this.props.needDueDiligence(_id)
     message.success(I18N.get('suggestion.msg.notify'))
   }
 

@@ -30,7 +30,7 @@ export default {
   },
   btn: {
     makeIntoProposal: 'Make Into Proposal',
-    needBgInvestigation: 'Need Background Investigation',
+    needDueDiligence: 'Need Due Diligence',
     needAdvisory: 'Need Advisory'
   },
   status: {
