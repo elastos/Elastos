@@ -433,12 +433,9 @@ static int Parser_Services(DIDDocument *document, cJSON *json)
 ////////////////////////////////Document///////////////////////////////////////////////////////////
 DIDDocument *DIDDocument_FromJson(const char *json)
 {
-    cJSON *root = NULL, *id_part = NULL;
-    char *sepecific_id = NULL;
-    DIDDocument *document;
-    cJSON *pk_part = NULL, *authentice_part = NULL, *author_part = NULL, *expires_part = NULL;
-    cJSON *cred_part = NULL, *service_part = NULL;
-    int rc;
+    DIDDocument *doc;
+    cJSON *root;
+    cJSON *item;
 
     if (!json)
         return NULL;
@@ -447,69 +444,61 @@ DIDDocument *DIDDocument_FromJson(const char *json)
     if (!root)
         return NULL;
 
-    document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
-    if (!document) {
+    doc = (DIDDocument*)calloc(1, sizeof(DIDDocument));
+    if (!doc) {
         cJSON_Delete(root);
         return NULL;
     }
 
-    id_part = cJSON_GetObjectItem(root, "id");
-    if (parse_did(&document->did, id_part->valuestring) < 0) {
-        cJSON_Delete(root);
-        return NULL;
-    }
+    item = cJSON_GetObjectItem(root, "id");
+    if (!item || !cJSON_IsString(item) ||
+        parse_did(&doc->did, item->valuestring) == -1)
+        goto errorExit;
 
     //parse publickey
-    pk_part = cJSON_GetObjectItem(root, "publicKey");
-    if (!pk_part || Parser_Publickeys(document, &(document->did), pk_part) == -1) {
-        DIDDocument_Destroy(document);
-        cJSON_Delete(root);
-        return NULL;
-    }
+    item = cJSON_GetObjectItem(root, "publicKey");
+    if (!item || !cJSON_IsArray(item) ||
+        Parser_Publickeys(doc, &doc->did, item) == -1)
+        goto errorExit;
 
     //parse authentication(optional)
-    authentice_part = cJSON_GetObjectItem(root, "authentication");
-    if (authentice_part && Parser_Authentication(document, authentice_part) == -1) {
-        DIDDocument_Destroy(document);
-        cJSON_Delete(root);
-        return NULL;
-    }
+    item = cJSON_GetObjectItem(root, "authentication");
+    if (item && (!cJSON_IsArray(item) ||
+            Parser_Authentication(doc, item) == -1))
+        goto errorExit;
 
-    author_part = cJSON_GetObjectItem(root, "authorization");
-    if (author_part && Parser_Authorization(document, author_part) == -1) {
-        DIDDocument_Destroy(document);
-        cJSON_Delete(root);
-        return NULL;
-    }
+    item = cJSON_GetObjectItem(root, "authorization");
+    if (item  && (!cJSON_IsArray(item) ||
+            Parser_Authorization(doc, item) == -1))
+        goto errorExit;
 
     //parse expires
-    expires_part = cJSON_GetObjectItem(root, "expires");
-    if (expires_part && parse_time(&document->expires, expires_part->valuestring) == -1) {
-        DIDDocument_Destroy(document);
-        cJSON_Delete(root);
-        return NULL;
-    }
+    item = cJSON_GetObjectItem(root, "expires");
+    if (!item || !cJSON_IsString(item) ||
+        parse_time(&doc->expires, item->valuestring) == -1)
+        goto errorExit;
 
     //todo: parse credential
-    cred_part = cJSON_GetObjectItem(root, "verifiableCredential");
-    if (cred_part && Parser_Credentials(document, cred_part) == -1) {
-        DIDDocument_Destroy(document);
-        cJSON_Delete(root);
-        return NULL;
-    }
+    item = cJSON_GetObjectItem(root, "verifiableCredential");
+    if (item && (!cJSON_IsArray(item) ||
+            Parser_Credentials(doc, item) == -1))
+        goto errorExit;
 
     //parse services
-    service_part = cJSON_GetObjectItem(root, "service");
-    if (service_part && Parser_Services(document, service_part) == -1) {
-        DIDDocument_Destroy(document);
-        cJSON_Delete(root);
-        return NULL;
-    }
+    item = cJSON_GetObjectItem(root, "service");
+    if (item && (!cJSON_IsArray(item) ||
+            Parser_Services(doc, item) == -1))
+        goto errorExit;
 
     cJSON_Delete(root);
-    root = NULL;
 
-    return document;
+    return doc;
+
+errorExit:
+    DIDDocument_Destroy(doc);
+    cJSON_Delete(root);
+
+    return NULL;
 }
 
 const char *DIDDocument_ToJson(DIDDocument *document, int compact)
@@ -570,16 +559,22 @@ const char *DIDDocument_ToJson(DIDDocument *document, int compact)
 
 void DIDDocument_Destroy(DIDDocument *document)
 {
-    int i;
+    size_t i;
 
     if (!document)
         return;
 
-    if (document->publickeys.pks) {
-        for (i = 0; i < document->publickeys.size; i++)
-            Publickey_Destroy(document->publickeys.pks[i]);
+    for (i = 0; i < document->publickeys.size; i++)
+        Publickey_Destroy(document->publickeys.pks[i]);
+
+    for (i = 0; i < document->services.size; i++)
+        Service_Destroy(document->services.services[i]);
+
+    for (i = 0; i < document->credentials.size; i++)
+        Credential_Destroy(document->credentials.credentials[i]);
+
+    if (document->publickeys.pks)
         free(document->publickeys.pks);
-    }
 
     if (document->authentication.pks)
         free(document->authentication.pks);
@@ -587,20 +582,13 @@ void DIDDocument_Destroy(DIDDocument *document)
     if (document->authorization.pks)
         free(document->authorization.pks);
 
-    if (document->credentials.credentials) {
-        for (i = 0; i < document->credentials.size; i++)
-            Credential_Destroy(document->credentials.credentials[i]);
-        free(document->credentials.credentials);
-    }
-
-    if (document->services.services) {
-        for (i = 0; i < document->services.size; i++)
-            Service_Destroy(document->services.services[i]);
+    if (document->services.services)
         free(document->services.services);
-    }
+
+    if (document->credentials.credentials)
+        free(document->credentials.credentials);
 
     free(document);
-    return;
 }
 
 static PublicKey *create_publickey(DIDURL *id, DID *controller, const char *publickey)
@@ -810,7 +798,7 @@ DID* DIDDocument_GetSubject(DIDDocument *document)
     if (!document)
         return NULL;
 
-    return &(document->did);
+    return &document->did;
 }
 
 ssize_t DIDDocument_GetPublicKeysCount(DIDDocument *document)
@@ -818,7 +806,7 @@ ssize_t DIDDocument_GetPublicKeysCount(DIDDocument *document)
     if (!document)
         return -1;
 
-    return document->publickeys.size;
+    return (ssize_t)document->publickeys.size;
 }
 
 PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *id)
@@ -934,12 +922,12 @@ ssize_t DIDDocument_GetAuthenticationsCount(DIDDocument *document)
     if (!document)
         return -1;
 
-    return document->authentication.size;
+    return (ssize_t)document->authentication.size;
 }
 
 ssize_t DIDDocument_GetAuthentications(DIDDocument *document, PublicKey **pks, size_t size)
 {
-    ssize_t actual_size;
+    size_t actual_size;
 
     if (!document || !pks)
         return -1;
@@ -949,7 +937,7 @@ ssize_t DIDDocument_GetAuthentications(DIDDocument *document, PublicKey **pks, s
         return -1;
 
     memcpy(pks, document->authentication.pks, sizeof(PublicKey*) * actual_size);
-    return actual_size;
+    return (ssize_t)actual_size;
 }
 
 PublicKey *DIDDocument_GetAuthentication(DIDDocument *document, DIDURL *id)
@@ -1006,7 +994,7 @@ ssize_t DIDDocument_SelectAuthentication(DIDDocument *document, const char *type
             return -1;
         }
     }
-    return actual_size;
+    return (ssize_t)actual_size;
 }
 
 ////////////////////////////Authorization//////////////////////////
@@ -1015,7 +1003,7 @@ ssize_t DIDDocument_GetAuthorizationsCount(DIDDocument *document)
     if (!document)
         return -1;
 
-    return document->authorization.size;
+    return (ssize_t)document->authorization.size;
 }
 
 ssize_t DIDDocument_GetAuthorizations(DIDDocument *document, PublicKey **pks, size_t size)
@@ -1030,14 +1018,14 @@ ssize_t DIDDocument_GetAuthorizations(DIDDocument *document, PublicKey **pks, si
         return -1;
 
     memcpy(pks, document->authorization.pks, sizeof(PublicKey*) * actual_size);
-    return actual_size;
+    return (ssize_t)actual_size;
 }
 
 PublicKey *DIDDocument_GetAuthorization(DIDDocument *document, DIDURL *id)
 {
+    PublicKey *pk = NULL;
     size_t size;
-    PublicKey *pk;
-    int i;
+    size_t i;
 
     if (!document || !id)
         return NULL;
@@ -1051,10 +1039,10 @@ PublicKey *DIDDocument_GetAuthorization(DIDDocument *document, DIDURL *id)
 
     for (i = 0; i < size; i++) {
         pk = document->authorization.pks[i];
-        if (DIDURL_Equals(id, &pk->id)) {
+        if (DIDURL_Equals(id, &pk->id))
             return pk;
-        }
     }
+
     return NULL;
 }
 
@@ -1102,12 +1090,12 @@ ssize_t DIDDocument_GetCredentialsCount(DIDDocument *document)
     if (!document)
         return -1;
 
-    return document->credentials.size;
+    return (ssize_t)document->credentials.size;
 }
 
 ssize_t DIDDocument_GetCredentials(DIDDocument *document, Credential **creds, size_t size)
 {
-    ssize_t actual_size;
+    size_t actual_size;
 
     if (!document || !creds)
         return -1;
@@ -1117,14 +1105,14 @@ ssize_t DIDDocument_GetCredentials(DIDDocument *document, Credential **creds, si
         return -1;
 
     memcpy(creds, document->credentials.credentials, sizeof(Credential*) * actual_size);
-    return actual_size;
+    return (ssize_t)actual_size;
 }
 
 Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *id)
 {
+    Credential *credential = NULL;
     size_t size;
-    Credential *credential;
-    int i;
+    size_t i;
 
     if (!document || !id || strlen(id->fragment) == 0)
         return NULL;
@@ -1188,7 +1176,7 @@ ssize_t DIDDocument_GetServicesCount(DIDDocument *document)
     if (!document)
         return -1;
 
-    return document->services.size;
+    return (ssize_t)document->services.size;
 }
 
 ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services, size_t size)
@@ -1203,14 +1191,14 @@ ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services, size_
         return -1;
 
     memcpy(services, document->services.services, sizeof(Service*) * actual_size);
-    return actual_size;
+    return (ssize_t)actual_size;
 }
 
 Service *DIDDocument_GetService(DIDDocument *document, DIDURL *id)
 {
-    ssize_t size;
-    Service *service;
-    int i;
+    Service *service = NULL;
+    size_t size;
+    size_t i;
 
     if (!document || !id || strlen(id->fragment) == 0)
         return NULL;
@@ -1275,6 +1263,9 @@ int DIDDocument_SetExpires(DIDDocument *document, time_t expires)
 {
     time_t max_expires;
     struct tm *tm = NULL;
+
+    if (!document)
+        return -1;
 
     max_expires = time(NULL);
     tm = gmtime(&max_expires);
@@ -1352,7 +1343,7 @@ DIDURL *PublicKey_GetId(PublicKey *publickey)
     if (!publickey)
         return NULL;
 
-    return &(publickey->id);
+    return &publickey->id;
 }
 
 DID *PublicKey_GetController(PublicKey *publickey)
@@ -1360,7 +1351,7 @@ DID *PublicKey_GetController(PublicKey *publickey)
     if (!publickey)
         return NULL;
 
-    return &(publickey->controller);
+    return &publickey->controller;
 }
 
 const char *PublicKey_GetPublicKeyBase58(PublicKey *publickey)
@@ -1385,7 +1376,6 @@ void Publickey_Destroy(PublicKey *publickey)
         return;
 
     free(publickey);
-    return;
 }
 
 DIDURL *Service_GetId(Service *service)
@@ -1418,5 +1408,4 @@ void Service_Destroy(Service *service)
         return;
 
     free(service);
-    return;
 }
