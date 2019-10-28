@@ -57,8 +57,12 @@ void SyncStart(IMasterWalletManager *manager, ISubWalletCallback *callback)
     for (auto it = masterWallets.begin(); it != masterWallets.end(); ++it) {
         auto subWallets = (*it)->GetAllSubWallets();
         for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
-            (*it)->AddCallback(callback);
-            (*it)->SyncStart();
+            try {
+                (*it)->AddCallback(callback);
+                (*it)->SyncStart();
+            } catch (...) {
+                // ignore
+            }
         }
     }
 }
@@ -70,12 +74,20 @@ void SyncStop(IMasterWalletManager *manager, ISubWalletCallback *callback)
     for (auto it = masterWallets.begin(); it != masterWallets.end(); ++it) {
         auto subWallets = (*it)->GetAllSubWallets();
         for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
-            (*it)->SyncStop();
-            (*it)->RemoveCallback(callback);
+            try {
+                (*it)->SyncStop();
+                (*it)->RemoveCallback(callback);
+            } catch (...) {
+                // ignore
+            }
         }
     }
 
-    manager->FlushData();
+    try {
+        manager->FlushData();
+    } catch (...) {
+        // ignore
+    }
 }
 
 SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId)

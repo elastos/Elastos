@@ -243,16 +243,6 @@ ssize_t base64_url_decode(uint8_t *buffer, const char *base64)
     return len; //success
 }
 
-ssize_t base64_encode(char *base64, const uint8_t *input, size_t len)
-{
-    return EVP_EncodeBlock(base64, input, (int)len);
-}
-
-ssize_t base64_decode(uint8_t *data, const char *base64)
-{
-    return EVP_DecodeBlock(data, base64, (int)strlen(base64));
-}
-
 ssize_t base58_encode(char *base58, uint8_t *input, size_t len)
 {
     if (!base58 || !input || !len)
@@ -333,13 +323,16 @@ ssize_t sha256(uint8_t *digest, int count, ...)
 ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey, int count, va_list inputs)
 {
     uint8_t digest[SHA256_BYTES];
+    int rc;
 
     if (!sig || !privatekey || count <= 0)
         return -1;
 
     sha256v(digest, count, inputs);
 
-    return ECDSA65Sign_sha256(privatekey, PRIVATEKEY_BYTES, digest, sig, sizeof(sig));
+    // CHECKME: ECDSA65Sign_sha256 return wrong length - 32
+    rc = ECDSA65Sign_sha256(privatekey, PRIVATEKEY_BYTES, digest, sig, SIGNATURE_BYTES);
+    return rc == 32 ? SIGNATURE_BYTES : -1;
 }
 
 ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, int count, ...)
@@ -366,7 +359,10 @@ ssize_t ecdsa_sign_base64v(char *sig, uint8_t *privatekey, int count, va_list in
         return -1;
 
     len = ecdsa_signv(binsig, privatekey, count, inputs);
-    return base64_encode(sig, binsig, len);
+    if (len < 0)
+        return len;
+
+    return base64_url_encode(sig, binsig, len);
 }
 
 ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...)
@@ -387,13 +383,15 @@ ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...)
 int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs)
 {
     uint8_t digest[SHA256_BYTES];
+    int rc;
 
     if (!sig || !publickey || count <= 0)
         return -1;
 
     sha256v(digest, count, inputs);
 
-    return ECDSA65Verify_sha256(publickey, PUBLICKEY_BYTES, digest, sig, SIGNATURE_BYTES);
+    rc = ECDSA65Verify_sha256(publickey, PUBLICKEY_BYTES, digest, sig, SIGNATURE_BYTES);
+    return rc == 0 ? -1 : 0;
 }
 
 int ecdsa_verify(uint8_t *sig, uint8_t *publickey, int count, ...)
@@ -419,7 +417,7 @@ int ecdsa_verify_base64v(char *sig, uint8_t *publickey, int count, va_list input
     if (!sig || !publickey || count <= 0)
         return -1;
 
-    len = base64_decode(binsig, sig);
+    len = base64_url_decode(binsig, sig);
     if (len < 0 )
         return -1;
 

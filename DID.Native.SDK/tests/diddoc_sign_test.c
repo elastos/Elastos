@@ -21,7 +21,7 @@ static DID *did;
 static const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
 static const char *data = "abcdefghijklmnopqrstuvwxyz";
 static const char *storepass = "123456";
-static char signature[SIGNATURE_BYTES];
+static char signature[SIGNATURE_BYTES * 2];
 
 static void test_diddoc_sign(void)
 {

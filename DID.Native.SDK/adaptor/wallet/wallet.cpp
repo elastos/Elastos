@@ -100,8 +100,16 @@ static void syncStart(void)
         auto subWallets = (*it)->GetAllSubWallets();
         for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
             // TODO: remove callback on sync stop
-            (*it)->AddCallback(new SubWalletCallback((*it)->GetChainID()));
-            (*it)->SyncStart();
+            auto subWallet = *it;
+            auto chainID = subWallet->GetChainID();
+            try {
+                (*it)->AddCallback(new SubWalletCallback(chainID));
+                (*it)->SyncStart();
+            } catch (std::exception e) {
+                std::cerr << "Failed start sync blocks for " << chainID
+                        << ": " << e.what() << std::endl;
+                continue;
+            }
         }
     }
 }
@@ -112,7 +120,13 @@ static void syncStop(void)
     for (auto it = masterWallets.begin(); it != masterWallets.end(); ++it) {
         auto subWallets = (*it)->GetAllSubWallets();
         for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
-            (*it)->SyncStop();
+            auto subWallet = *it;
+            try {
+                subWallet->SyncStop();
+            } catch (std::exception e) {
+                // Ignore any exception
+                continue;
+            }
         }
     }
 
@@ -133,7 +147,7 @@ static void init(int argc, char *argv[])
         return;
     }
 
-    const std::string mnemonic = manager->GenerateMnemonic("english");
+    auto mnemonic = manager->GenerateMnemonic("english");
 
     std::cout << "Please write down the following mnemonic words." << std::endl;
     std::cout << "Mnemonic: " << mnemonic << std::endl;
@@ -141,29 +155,31 @@ static void init(int argc, char *argv[])
     std::cin.get();
 
     std::string password;
-    std::cout << "Payment password: ";
-    std::getline(std::cin, password);
+    while (true) {
+        std::cout << "Payment password: ";
+        std::getline(std::cin, password);
+        if (password.length() >= 8)
+            break;
 
-    IMasterWallet *masterWallet = manager->CreateMasterWallet(walletId,
-            mnemonic, "", password, false);
-    if (!masterWallet) {
-        std::cerr << "Create master wallet failed." << std::endl;
-        return;
+        std::cout << "Password should be at least 8 characters long." << std::endl;
     }
 
-    ISubWallet *subWallet = masterWallet->CreateSubWallet(MAIN_CHAIN);
-    if (!subWallet) {
-        std::cerr << "Create main chain wallet failed." << std::endl;
+    try {
+        auto masterWallet = manager->CreateMasterWallet(walletId, mnemonic, "",
+                password, false);
+        std::cout << "Master wallet '" << walletId << "' created." << std::endl;
+
+        masterWallet->CreateSubWallet(MAIN_CHAIN);
+        std::cout << "SubWallet for '" << MAIN_CHAIN << "' created." << std::endl;
+
+        masterWallet->CreateSubWallet(ID_CHAIN);
+        std::cout << "SubWallet for '" << ID_CHAIN << "' created." << std::endl;
+
+        std::cout << "Wallet create success." << std::endl;
+    } catch (std::exception e) {
+        std::cerr << "Create wallet failed: " << e.what() << std::endl;
         return;
     }
-
-    subWallet = masterWallet->CreateSubWallet(ID_CHAIN);
-    if (!subWallet) {
-        std::cerr << "Create ID sidechain wallet failed." << std::endl;
-        return;
-    }
-
-    std::cout << "Wallet create success." << std::endl;
 
     syncStart();
 }
@@ -187,29 +203,31 @@ static void import(int argc, char *argv[])
     std::getline(std::cin, mnemonic);
 
     std::string password;
-    std::cout << "Payment password: ";
-    std::getline(std::cin, password);
+    while (true) {
+        std::cout << "Payment password: ";
+        std::getline(std::cin, password);
+        if (password.length() >= 8)
+            break;
 
-    IMasterWallet *masterWallet = manager->ImportWalletWithMnemonic(walletId,
-            mnemonic, "", password, false);
-    if (!masterWallet) {
-        std::cerr << "Import master wallet failed." << std::endl;
-        return;
+        std::cout << "Password should be at least 8 characters long." << std::endl;
     }
 
-    ISubWallet *subWallet = masterWallet->CreateSubWallet(MAIN_CHAIN);
-    if (!subWallet) {
-        std::cerr << "Create main chain wallet failed." << std::endl;
+    try {
+        auto *masterWallet = manager->ImportWalletWithMnemonic(walletId,
+                mnemonic, "", password, false);
+        std::cout << "Master wallet '" << walletId << "' imported." << std::endl;
+
+        masterWallet->CreateSubWallet(MAIN_CHAIN);
+        std::cout << "SubWallet for '" << MAIN_CHAIN << "' created." << std::endl;
+
+        masterWallet->CreateSubWallet(ID_CHAIN);
+        std::cout << "SubWallet for '" << ID_CHAIN << "' created." << std::endl;
+
+        std::cout << "Wallet import success." << std::endl;
+    } catch (std::exception e) {
+        std::cerr << "import wallet failed: " << e.what() << std::endl;
         return;
     }
-
-    subWallet = masterWallet->CreateSubWallet(ID_CHAIN);
-    if (!subWallet) {
-        std::cerr << "Create ID sidechain wallet failed." << std::endl;
-        return;
-    }
-
-    std::cout << "Wallet import success." << std::endl;
 
     syncStart();
 }
@@ -328,15 +346,21 @@ static void deposit(int argc, char *argv[])
     }
 
     try {
-        std::string lockedAddress = sidechainSubWallet->GetGenesisAddress();
+        auto lockedAddress = sidechainSubWallet->GetGenesisAddress();
 
-        nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(
-            "", lockedAddress, std::to_string(amount), sidechainSubWallet->CreateAddress(), "");
+        auto tx = mainchainSubWallet->CreateDepositTransaction(
+                "", lockedAddress, std::to_string(amount),
+                sidechainSubWallet->CreateAddress(), "");
 
-        nlohmann::json signedTx = mainchainSubWallet->SignTransaction(tx, password);
-        mainchainSubWallet->PublishTransaction(signedTx);
-    } catch (...) {
-        std::cerr << "Create deposit transaction failed." << std::endl;
+        tx = mainchainSubWallet->SignTransaction(tx, password);
+        tx = mainchainSubWallet->PublishTransaction(tx);
+
+        std::cout << tx["TxHash"] << std::endl;
+
+        std::cout << "Deposit transaction created success." << std::endl;
+        std::cout << "Deposit transactions need 8 confirms!" << std::endl;
+    } catch (std::exception e) {
+        std::cerr << "Create deposit transaction failed: " << e.what() << std::endl;
     }
 }
 
@@ -386,13 +410,18 @@ static void withdraw(int argc, char *argv[])
     }
 
     try {
-        nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(
+        auto tx = sidechainSubWallet->CreateWithdrawTransaction(
             "", std::to_string(amount), mainchainSubWallet->CreateAddress(), "");
 
-        nlohmann::json signedTx = sidechainSubWallet->SignTransaction(tx, password);
-        sidechainSubWallet->PublishTransaction(signedTx);
-    } catch (...) {
-        std::cerr << "Create withdraw transaction failed." << std::endl;
+        tx = sidechainSubWallet->SignTransaction(tx, password);
+        tx = sidechainSubWallet->PublishTransaction(tx);
+
+        std::cout << tx << std::endl;
+
+        std::cout << "Withdraw transaction created success." << std::endl;
+        std::cout << "Withdraw transactions need 8 confirms!" << std::endl;
+    } catch (std::exception e) {
+        std::cerr << "Create withdraw transaction failed: " << e.what() << std::endl;
     }
 }
 
@@ -409,13 +438,13 @@ static void exportm(int argc, char *argv[])
     walletId = argv[1];
     password = argv[2];
 
-    IMasterWallet *masterWallet = manager->GetMasterWallet(walletId);
+    auto masterWallet = manager->GetMasterWallet(walletId);
     if (!masterWallet) {
         std::cerr << "Can not find wallet: " << walletId << std::endl;
         return;
     }
 
-    std::string mnemonic = manager->ExportWalletWithMnemonic(masterWallet, password);
+    auto mnemonic = manager->ExportWalletWithMnemonic(masterWallet, password);
     std::cout << "Mnemonic: " << mnemonic << std::endl;
 }
 

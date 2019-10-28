@@ -46,10 +46,6 @@ ssize_t base64_url_encode(char *base64, const uint8_t *input, size_t len);
 
 ssize_t base64_url_decode(uint8_t *buffer, const char *base64);
 
-ssize_t base64_encode(char *base64, const uint8_t *input, size_t len);
-
-ssize_t base64_decode(uint8_t *data, const char *base64);
-
 ssize_t base58_encode(char *base58, uint8_t *input, size_t len);
 
 ssize_t base58_decode(uint8_t *data, const char *base58);

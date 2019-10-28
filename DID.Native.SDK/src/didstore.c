@@ -292,7 +292,7 @@ static int store_file(const char *path, const char *string)
     if (fd == -1)
         return -1;
 
-    string_len = strlen(string) + 1;
+    string_len = strlen(string);
     size = write(fd, string, string_len);
     if (size < string_len) {
         close(fd);
@@ -1292,7 +1292,7 @@ int DIDStore_Signv(DID *did, DIDURL *key, const char *storepass, char *sig,
     if (rc == -1)
         return -1;
 
-    if (ecdsa_sign_base64v(sig, binkey, count, inputs) == -1)
+    if (ecdsa_sign_base64v(sig, binkey, count, inputs) <= 0)
         return -1;
 
     return 0;
