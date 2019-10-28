@@ -452,7 +452,7 @@ export default class extends Base {
       return { success: false }
     }
     const council = userUtil.formatUsername(this.currentUser)
-    const subject = `Need technical advisory on suggestion #${sugg.displayId}`
+    const subject = `Need advisory on suggestion #${sugg.displayId}`
     const body = `
       <p>Council member ${council} requested secretary to provide advisory on suggestion #${sugg.displayId}</p>
       <br />
