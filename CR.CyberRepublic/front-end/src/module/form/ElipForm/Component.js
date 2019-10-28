@@ -1,6 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Row, Col, Radio, Tabs, Typography, Icon } from 'antd'
+import { Form, Input, Button, Row, Tabs, Typography } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
@@ -12,9 +12,10 @@ import {
   TabPaneInner,
   Note,
   TabText,
+  RadioCardPanel,
+  RadioCardItem,
   RadioCardLabel,
-  RadioCardSpan,
-  UncheckedIcon
+  RadioCardSpan
 } from './style'
 
 const { Paragraph } = Typography
@@ -306,18 +307,6 @@ class RadioCard extends BaseComponent {
     this.handleChange = this.handleChange.bind(this)
   }
 
-  renderCheck(value) {
-    return (
-      <RadioCardSpan className="radio-card-flex">
-        {this.state.data === value ? (
-          <Icon type="check" className="radio-card-check" />
-        ) : (
-          <UncheckedIcon />
-        )}
-      </RadioCardSpan>
-    )
-  }
-
   renderContent(id) {
     const contentStr = I18N.get(`elip.form.type.${id}`)
     const contentArr = _.split(contentStr, '<br />')
@@ -326,7 +315,7 @@ class RadioCard extends BaseComponent {
     })
     return (
       <Typography>
-        <RadioCardSpan style={{ fontWeight: 'bold' }}>
+        <RadioCardSpan style={{ fontWeight: 'bold', marginBottom: '1em' }}>
           {I18N.get(`elip.form.typeTitle.${id}`)}
         </RadioCardSpan>
         {content}
@@ -341,14 +330,10 @@ class RadioCard extends BaseComponent {
 
   ord_render() {
     const { radioKey } = this.props
-    const responsive = { md: 20, lg: 18, xl: 7, xxl: 6 }
-    const doubleResponsive = { md: 20, lg: 18, xl: 10, xxl: 10 }
     return (
-      <Row type="flex" justify="center" align="top" gutter={30}>
-        <Col {...responsive}>
-          <RadioCardLabel
-            className="radio-card-wrapper"
-          >
+      <RadioCardPanel>
+        <RadioCardItem className={`small-label ${this.state.data === ELIP_TYPE.STANDARD_TRACK ? 'radio-card-check' : ''}`}>
+          <RadioCardLabel>
             <RadioCardSpan>
               <Input
                 type="radio"
@@ -362,14 +347,11 @@ class RadioCard extends BaseComponent {
               <Paragraph>
                 {this.renderContent(ELIP_TYPE.STANDARD_TRACK)}
               </Paragraph>
-              {this.renderCheck(ELIP_TYPE.STANDARD_TRACK)}
             </RadioCardSpan>
           </RadioCardLabel>
-        </Col>
-        <Col {...responsive}>
-          <RadioCardLabel
-            className="radio-card-wrapper"
-          >
+        </RadioCardItem>
+        <RadioCardItem className={`small-label ${this.state.data === ELIP_TYPE.INFORMATIONAL ? 'radio-card-check' : ''}`}>
+          <RadioCardLabel>
             <RadioCardSpan>
               <Input
                 type="radio"
@@ -383,14 +365,11 @@ class RadioCard extends BaseComponent {
               <Paragraph>
                 {this.renderContent(ELIP_TYPE.INFORMATIONAL)}
               </Paragraph>
-              {this.renderCheck(ELIP_TYPE.INFORMATIONAL)}
             </RadioCardSpan>
           </RadioCardLabel>
-        </Col>
-        <Col {...doubleResponsive}>
-          <RadioCardLabel
-            className="radio-card-wrapper"
-          >
+        </RadioCardItem>
+        <RadioCardItem className={`large-label ${this.state.data === ELIP_TYPE.PROCESS ? 'radio-card-check' : ''}`}>
+          <RadioCardLabel>
             <RadioCardSpan>
               <Input
                 type="radio"
@@ -402,11 +381,10 @@ class RadioCard extends BaseComponent {
             </RadioCardSpan>
             <RadioCardSpan>
               <Paragraph>{this.renderContent(ELIP_TYPE.PROCESS)}</Paragraph>
-              {this.renderCheck(ELIP_TYPE.PROCESS)}
             </RadioCardSpan>
           </RadioCardLabel>
-        </Col>
-      </Row>
+        </RadioCardItem>
+      </RadioCardPanel>
     )
   }
 }
