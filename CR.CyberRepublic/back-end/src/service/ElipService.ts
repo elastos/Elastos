@@ -7,6 +7,7 @@ import * as moment from 'moment'
 
 let tm = undefined
 
+const BASE_FIELDS = ['title', 'abstract', 'specifications', 'motivation', 'rationale', 'backwardCompatibility', 'referenceImplementation', 'copyright'];
 export default class extends Base {
   public async update(param: any): Promise<Document> {
     try {
@@ -341,6 +342,31 @@ export default class extends Base {
     return isVisible ? { elip: rs, reviews } : {}
   }
 
+  public async remove(_id: string): Promise<any> {
+    const db_elip = this.getDBModel('Elip')
+    let rs = await db_elip
+      .getDBInstance()
+      .findById({ _id })
+      .populate(
+        'voteResult.votedBy',
+        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+      )
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+    if (!rs) {
+      throw 'ElipService.remove - invalid elip id'
+    }
+
+    const currentUserId = _.get(this.currentUser, '_id')
+    const userRole = _.get(this.currentUser, 'role')
+    if(userRole !== constant.USER_ROLE.ADMIN) {
+      throw 'ElipService.remove - invalid user role'
+    }
+    
+    rs = await db_elip.remove({ _id })
+
+    return rs
+  }
+
   public async list(param: any): Promise<any> {
     const db_elip = this.getDBModel('Elip')
     const currentUserId = _.get(this.currentUser, '_id')
@@ -462,6 +488,124 @@ export default class extends Base {
         }
       })
     })
+  }
+
+  public async getNewCVoteVid() {
+    const db_cvote = this.getDBModel('CVote')
+    const n = await db_cvote.count({})
+    return n + 1
+  }
+  public async propose(elipId: string): Promise<Document> {
+    const currentUserId = _.get(this.currentUser, '_id')
+    const userRole = _.get(this.currentUser, 'role')
+    if(userRole !== constant.USER_ROLE.SECRETARY) {
+      throw 'ElipService.propose - invalid user role'
+    }
+    
+    const db_elip = this.getDBModel('Elip')
+    const db_cvote = this.getDBModel('CVote')
+    const db_user = this.getDBModel('User')
+
+    const elip = elipId && (await db_elip.findById(elipId))
+    if (!elip) {
+      throw 'cannot find elip'
+    }
+
+    const creator = await db_user.findById(elip.createdBy);
+    const vid = await this.getNewCVoteVid()
+
+    const doc: any = {
+      vid,
+      type: elip.elipType,
+      status: constant.CVOTE_STATUS.PROPOSED,
+      published: true,
+      contentType: constant.CONTENT_TYPE.MARKDOWN,
+      proposedBy: userUtil.formatUsername(creator),
+      proposer: elip.createdBy,
+      createdBy: this.currentUser._id,
+      reference: elipId
+    }
+
+    Object.assign(doc, _.pick(elip, BASE_FIELDS));
+
+    const councilMembers = await db_user.find({
+      role: constant.USER_ROLE.COUNCIL
+    })
+    const voteResult = []
+    doc.proposedAt = Date.now()
+    _.each(councilMembers, user =>
+      voteResult.push({
+        votedBy: user._id,
+        value: constant.CVOTE_RESULT.UNDECIDED
+      })
+    )
+    doc.voteResult = voteResult
+    doc.voteHistory = voteResult
+
+    try {
+      const res = await db_cvote.save(doc)
+      await db_elip.update(
+        { _id: elipId },
+        {
+          $addToSet: { reference: res._id },
+          $set: { tags: [] }
+        }
+      )
+      this.notifyCouncilAfterPropose(res)
+      return res
+    } catch (error) {
+      logger.error(error)
+      return
+    }
+  }
+
+  private async notifyCouncilAfterPropose(cvote: any) {
+    const db_user = this.getDBModel('User')
+    const currentUserId = _.get(this.currentUser, '_id')
+    const councilMembers = await db_user.find({
+      role: constant.USER_ROLE.COUNCIL
+    })
+    const toUsers = _.filter(
+      councilMembers,
+      user => !user._id.equals(currentUserId)
+    )
+    const toMails = _.map(toUsers, 'email')
+
+    const subject = `New Proposal: ${cvote.title}`
+    const body = `
+      <p>There is a new proposal added:</p>
+      <br />
+      <p>${cvote.title}</p>
+      <br />
+      <p>Click this link to view more details: <a href="${
+        process.env.SERVER_URL
+      }/proposals/${cvote._id}">${process.env.SERVER_URL}/proposals/${
+      cvote._id
+    }</a></p>
+      <br /> <br />
+      <p>Thanks</p>
+      <p>Cyber Republic</p>
+    `
+
+    const recVariables = _.zipObject(
+      toMails,
+      _.map(toUsers, user => {
+        return {
+          _id: user._id,
+          username: userUtil.formatUsername(user)
+        }
+      })
+    )
+
+    const mailObj = {
+      to: toMails,
+      // toName: ownerToName,
+      subject,
+      body,
+      recVariables
+    }
+
+    mail.send(mailObj)
   }
 
   public isExpired(data: any, extraTime = 0): Boolean {
