@@ -91,7 +91,8 @@ export default {
   },
   msg: {
     consideration: '已标记为委员会正在审议中',
-    notify: '已给秘书发送邮件'
+    notify: '已给秘书发送邮件',
+    archived: '建议已归档，您可以在我的Republic下找到它'
   },
   popover: {
     email: '邮箱',

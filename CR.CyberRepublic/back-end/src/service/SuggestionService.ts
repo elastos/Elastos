@@ -515,8 +515,12 @@ export default class extends Base {
     const updateObject = {
       status: constant.SUGGESTION_STATUS.ARCHIVED,
     }
-    await this.model.update({ _id }, updateObject)
-    return { success: true, message: 'Ok'}
+    try {
+      await this.model.update({ _id }, updateObject)
+      return { success: true, message: 'ok' }
+    } catch (err) {
+      return { success: false, message: 'ok' }
+    }
   }
 
   public async delete(param: any): Promise<Document> {
