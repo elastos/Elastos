@@ -6,7 +6,7 @@
     <h4 translate="CONTRACT_Interact_Title">
       Read / Write Contract
     </h4>
-    <h5> {{ contract.address }} </h5>
+    <h5> {{ contract.address }} ({{contract.name}}) </h5>
 
     <div class="form-group well"
          ng-show="contract.address=='0x0101010101010101010101010101010101010101' || contract.address=='0x1010101010101010101010101010101010101010'">
@@ -100,6 +100,17 @@
 
   <!-- Write -->
   <span class="form-group" ng-show="contract.selectedFunc!=null">
+    <p ng-show="contract.name == 'Exchange ETH to ELA'">
+      <p>_addr: ELA address</p>
+      <p>_amount: ETH value in wei, should be >= 200000000000000(0.0002 eth)</p>
+      <p>_fee: fixed_fee + gas * gasPrice</p>
+      <ul>
+        <li>fixed_fee = 100000000000000 wei(10**14 wei, 0.0001 eth), this fee is fixed</li>
+        <li>gas: The gas you pay for the miners, same as Ethereum's usage</li>
+        <li>gasPrice: 10000000000(10 GWei)</li>
+      </ul>
+    </p>
+
     <div ng-repeat="input in contract.functions[contract.selectedFunc.index].inputs track by $index">
       <div ng-switch on="input.type">
 

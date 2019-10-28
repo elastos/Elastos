@@ -41,7 +41,7 @@
           </label>
           <input class="form-control"
                  type="text"
-                 placeholder="300000"
+                 placeholder="3000000"
                  ng-model="tx.gasLimit"
                  ng-class="Validator.isPositiveNumber(tx.gasLimit) ? 'is-valid' : 'is-invalid'"/>
 
