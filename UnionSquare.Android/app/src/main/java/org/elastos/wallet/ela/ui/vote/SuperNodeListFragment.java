@@ -85,6 +85,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     SignUpPresenter signUpPresenter = new SignUpPresenter();
     private SuperNodeListAdapter1 adapter1;
     private String publicKey;
+    private VoteListBean.DataBean.ResultBean.ProducersBean curentNode;
 
     @Override
     protected int getLayoutId() {
@@ -148,6 +149,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                     bundle = new Bundle();
                     bundle.putString("status", status);
                     bundle.putString("info", info);
+                    bundle.putParcelable("curentNode", curentNode);
                     start(ElectoralAffairsFragment.class, bundle);
                 }
                 break;
@@ -178,12 +180,12 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     boolean is = false;//是否有自已的选举
 
 
-    private void setRecyclerview(boolean is, int pos) {
+    private void setRecyclerview(boolean is) {
         if (adapter == null) {
             recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 3));
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
             recyclerview.addItemDecoration(decoration);
-            adapter = new SuperNodeListAdapter(this, netList, is, pos);
+            adapter = new SuperNodeListAdapter(this, netList, is);
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
         } else {
@@ -191,10 +193,10 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
-    private void setRecyclerview1(boolean is, int pos) {
+    private void setRecyclerview1(boolean is) {
         if (adapter1 == null) {
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
-            adapter1 = new SuperNodeListAdapter1(this, netList, is, pos);
+            adapter1 = new SuperNodeListAdapter1(this, netList, is);
             adapter1.setOnItemClickListener(this);
             recyclerview1.setAdapter(adapter1);
         } else {
@@ -218,22 +220,21 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     }
 
     private void onGetPk(String data) {
-        int pos = -1;
+
         if (netList != null) {
 
             for (int i = 0; i < netList.size(); i++) {
                 if (netList.get(i).getOwnerpublickey().equals(data)) {
-                    VoteListBean.DataBean.ResultBean.ProducersBean temp = netList.get(i);
+                    curentNode = netList.get(i);
+                    netList.add(0, curentNode);
                     netList.remove(i);
-                    pos = i;
-                    netList.add(0, temp);
                     is = true;
                 }
             }
 
         }
-        setRecyclerview(is, pos);
-        setRecyclerview1(is, pos);
+        setRecyclerview(is );
+        setRecyclerview1(is);
     }
 
     @Override
@@ -258,8 +259,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 onGetPk(publicKey);
             }
         } else {
-            setRecyclerview(is, -1);
-            setRecyclerview1(is, -1);
+            setRecyclerview(is);
+            setRecyclerview1(is);
         }
 
 

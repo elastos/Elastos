@@ -91,8 +91,8 @@ public class OutportKeystoreFragment extends BaseFragment implements OutportKeys
     @Override
     public void onOutportKeystore(String data) {
         Bundle bundle = new Bundle();
-        wallet.setKeyStore(data);
         bundle.putParcelable("wallet", wallet);
+        bundle.putString("keyStore", data);
         start(SureOutportKSTFragment.class, bundle);
     }
 }

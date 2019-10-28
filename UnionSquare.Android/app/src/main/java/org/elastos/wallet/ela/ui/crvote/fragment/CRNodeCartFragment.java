@@ -6,17 +6,12 @@ import android.os.Bundle;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.wallet.R;
@@ -25,21 +20,24 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
+import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.WallletManagePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRNodeCartAdapter;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
-import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartPresenter;
-import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRNodeCartPresenter;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -48,6 +46,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -55,7 +54,7 @@ import butterknife.OnClick;
 /**
  * 节点购车车
  */
-public class CRNodeCartFragment extends BaseFragment implements CommonBalanceViewData, WarmPromptListener, CommmonStringWithMethNameViewData, CRNodeCartAdapter.OnViewClickListener, CRNodeCartAdapter.OnTextChangedListener {
+public class CRNodeCartFragment extends BaseFragment implements CommonBalanceViewData, CRNodeCartAdapter.OnViewClickListener, CRNodeCartAdapter.OnTextChangedListener, NewBaseViewData {
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -79,8 +78,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
     @BindView(R.id.tv_amount)
     AppCompatTextView tvAmount;
-    List<CRListBean.DataBean.ResultBean.ProducersBean> list;
-    DialogUtil dialogUtil = new DialogUtil();
+    List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list;
     @BindView(R.id.ll_blank)
     LinearLayout ll_blank;
     @BindView(R.id.cb_selectall)
@@ -89,9 +87,8 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
 
-    NodeCartPresenter presenter = new NodeCartPresenter();
-    PwdPresenter pwdpresenter = new PwdPresenter();
-    ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> netList;
+    CRNodeCartPresenter presenter;
+    ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netList;
     private BigDecimal balance;
 
 
@@ -108,7 +105,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        netList = (ArrayList<CRListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
+        netList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
     }
 
     @Override
@@ -136,8 +133,8 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         if (list == null || list.size() == 0) {
             return;
         }
-        ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> newlist = new ArrayList<CRListBean.DataBean.ResultBean.ProducersBean>();
-        for (CRListBean.DataBean.ResultBean.ProducersBean bean : netList) {
+        ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> newlist = new ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>();
+        for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
             if (list.contains(bean)) {
                 newlist.add(bean);
             }
@@ -149,7 +146,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     }
 
 
-    public void setRecyclerView(List<CRListBean.DataBean.ResultBean.ProducersBean> list) {
+    public void setRecyclerView(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list) {
 
         if (list == null || list.size() == 0) {
             ll_blank.setVisibility(View.VISIBLE);
@@ -161,6 +158,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         if (mAdapter == null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             mAdapter = new CRNodeCartAdapter(list, this);
+            mAdapter.initDateStaus(false);
             recyclerView.setAdapter(mAdapter);
             mAdapter.setOnViewClickListener(this);
             mAdapter.setOnTextChangedListener(this);
@@ -169,48 +167,34 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         }
     }
 
-
-    // 刷新listview和TextView的显示 点击全选或者全不选
-    private void dataChanged(int size, boolean statue) {
-        //tvAmount.setText(checkNum + getString(R.string.has_been_selected));
-        setSelectStatus(size, statue);
-        mAdapter.notifyDataSetChanged();
-    }
-
-    private void setSelectStatus(int size, boolean statue) {
-        for (int i = 0; i < size; i++) {
-            //  mAdapter.getDataMap().put(i, statue);
-        }
-    }
-
-
-    boolean is = false;//状态值
-    List nodelist = new ArrayList();
-    JSONArray jsonArray;
-
-    @OnClick({R.id.iv_title_left, R.id.iv_title_right, R.id.tv_delete, R.id.tv_vote, R.id.cb_selectall, R.id.cb_equal})
+    @OnClick({R.id.iv_title_right, R.id.tv_delete, R.id.tv_vote, R.id.cb_selectall, R.id.cb_equal})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.cb_equal:
-                onClickEqual();
+                mAdapter.equalDataMapELA();
+                initUi(cbEqual.isChecked());
                 break;
             case R.id.cb_selectall:
-                onClickSelectAll();
+                mAdapter.initDateStaus(cbSelectall.isChecked());
+                mAdapter.notifyDataSetChanged();
                 break;
-            case R.id.iv_title_left:
-                _mActivity.onBackPressed();
-                break;
+
             case R.id.iv_title_right:
-                if (is == false) {
+                initUi(false);
+                if (tvAvaliable.getVisibility() == View.VISIBLE) {
+                    tvAvaliable.setVisibility(View.GONE);
+                    tvBalance.setVisibility(View.GONE);
                     llBottom2.setVisibility(View.VISIBLE);
                     llBottom1.setVisibility(View.GONE);
                     ivTitleRight.setImageResource(R.mipmap.found_vote_finish);
-                    is = true;
+
                 } else {
+                    tvAvaliable.setVisibility(View.VISIBLE);
+                    tvBalance.setVisibility(View.VISIBLE);
                     llBottom2.setVisibility(View.GONE);
                     llBottom1.setVisibility(View.VISIBLE);
                     ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
-                    is = false;
+
                 }
                 break;
 
@@ -218,43 +202,31 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                 if (list == null || list.size() == 0) {
                     return;
                 }
-                List<CRListBean.DataBean.ResultBean.ProducersBean> deleteList = new ArrayList();
-               /* for (int i = 0; i < list.size(); i++) {
-                    if (mAdapter.getDataMap().get(i)) {
-                        deleteList.add(list.get(i));
+                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> deleteList = new ArrayList();
+                for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : list) {
+                    if (bean.isChecked()) {
+                        deleteList.add(bean);
                     }
-                }*/
+                }
                 list.removeAll(deleteList);
-                dataChanged(list.size(), false);
+                cbSelectall.setChecked(false);
+                mAdapter.notifyDataSetChanged();
                 CacheUtil.setCRProducerList(list);
                 break;
 
             case R.id.tv_vote:
-                if (list == null || list.size() == 0) {
-                    return;
-                }
-                nodelist.clear();
-                for (int i = 0; i < list.size(); i++) {
-                   /* if (mAdapter.getDataMap().get(i)) {
-                        nodelist.add(list.get(i).getOwnerpublickey());
-                    }*/
-                }
-                if (nodelist.size() > 36) {
-                    showToast(getString(R.string.max36dot));
-                    return;
-                }
 
-
-                if (nodelist.size() == 0) {
+                Map<String, String> checkedData = mAdapter.getCheckedData();
+                if (checkedData == null || checkedData.size() == 0) {
                     ToastUtils.showShort(getString(R.string.please_select));
                     return;
                 }
-                jsonArray = JSONArray.parseArray(JSON.toJSONString(nodelist));
+                String result = checkedData.toString().replace("=", ":");
+                if (presenter == null) {
+                    presenter = new CRNodeCartPresenter();
+                }
+                presenter.createVoteCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", result, "", this);
 
-                Intent intent = new Intent(getContext(), VoteActivity.class);
-                intent.putExtra("balance", "");
-                startActivity(intent);
-                break;
         }
     }
 
@@ -262,76 +234,38 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     @Override
     public void onBalance(BalanceEntity data) {
         balance = Arith.sub(Arith.div(data.getBalance(), MyWallet.RATE_S), "0.01").setScale(8, BigDecimal.ROUND_DOWN);
-        tvBalance.setText(getString(R.string.maxvote) + balance.toPlainString());
-        tvAvaliable.setText(getString(R.string.available) + balance.toPlainString());
+        tvBalance.setText(getString(R.string.maxvote) + balance.toPlainString() + " ELA");
+        tvAvaliable.setText(getString(R.string.available) + balance.toPlainString() + " ELA");
         mAdapter.setBalance(balance);
     }
 
-    String num;
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void Event(BusEvent result) {
-        int integer = result.getCode();
-        if (integer == RxEnum.VOTETRANSFERACTIVITY.ordinal()) {
-            dialogUtil.showWarmPromptInput(getBaseActivity(), null, null, this);
-            KeyboardUtils.showSoftInput(getBaseActivity());
-            num = result.getName();
-        }
-    }
-
-    String pwd;
-
-    @Override
-    public void affireBtnClick(View view) {
-        pwd = ((EditText) view).getText().toString().trim();
-        if (TextUtils.isEmpty(pwd)) {
-            showToastMessage(getString(R.string.pwdnoempty));
-            return;
-        }
-        new WallletManagePresenter().exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
-    }
-
-
-    @Override
-    public void onGetCommonData(String methodname, String data) {
-        //  Double sl = Double.parseDouble(num) * MyWallet.RATE_;
-        switch (methodname) {
-            //验证密码
-            case "exportWalletWithMnemonic":
-                //创建投票
-                presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
-                        Arith.mul(num, MyWallet.RATE_S).toPlainString(), String.valueOf(jsonArray), "", true, this);
-                break;
-            //创建投票交易
-            case "createVoteProducerTransaction":
-                KLog.a("createVoteProducerTransaction" + data);
-                //计算手续费
-                pwdpresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
-                break;
-            case "signTransaction":
-                pwdpresenter.publishTransaction(wallet.getWalletId(), MyWallet.ELA, data, this);
-                break;
-            case "publishTransaction":
-                KLog.a(data);
-                dialogUtil.dialogDismiss();
-                ToastUtils.showShort(getString(R.string.vote_success));
-                break;
-        }
-    }
-
-    private void onClickEqual() {
-        mAdapter.initDateStaus(cbEqual.isChecked());
-        mAdapter.equalDataMapELA();
+    /**
+     * 一次性全部取消 或者全选时候的ui改变
+     *
+     * @param tag
+     */
+    private void initUi(boolean tag) {
+        mAdapter.initDateStaus(tag);
         mAdapter.notifyDataSetChanged();
-        setOtherUI();
+
+        if (!tag) {
+            tvAmount.setText(getString(R.string.totle) + "0 ELA");
+            tvAvaliable.setText(getString(R.string.available) + balance.toPlainString() + " ELA");
+        } else {
+            tvAmount.setText(getString(R.string.totle) + mAdapter.getCountEla().toPlainString() + " ELA");
+            BigDecimal countEla = mAdapter.getCountEla();
+            if (balance.compareTo(countEla) <= 0) {
+                tvAvaliable.setText(getString(R.string.available) + "0 ELA");
+            } else {
+                tvAvaliable.setText(getString(R.string.available) + balance.subtract(countEla).toPlainString() + " ELA");
+            }
+        }
+        cbSelectall.setChecked(tag);
+        cbEqual.setChecked(tag);
+
     }
 
-    private void onClickSelectAll() {
-        mAdapter.initDateStaus(cbSelectall.isChecked());
-        mAdapter.notifyDataSetChanged();
-        tvAmount.setText(getString(R.string.totle) + mAdapter.getCountEla().toPlainString() + " ELA");
-
-    }
 
     @Override
     public void onItemViewClick(CRNodeCartAdapter adapter, View clickView, int position) {
@@ -350,14 +284,11 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     }
 
     /**
-     * 设置下部全选按钮
+     * 设置下部全选按钮状态
      */
     private void setSelectAllStatus() {
         int checkSum = mAdapter.getCheckNum();
-        if (list == null || list.size() == 0) {
-            cbSelectall.setChecked(false);
-
-        } else if (checkSum == list.size()) {
+        if (list != null && list.size() > 0 && checkSum == list.size()) {
             cbSelectall.setChecked(true);
 
         } else {
@@ -370,5 +301,54 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     public void onTextChanged(CRNodeCartAdapter adapter, View clickView, int position) {
         setOtherUI();
 
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+
+            case "createVoteCRTransaction":
+                Intent intent = new Intent(getActivity(), TransferActivity.class);
+                intent.putExtra("amount", tvAmount.getText().toString());
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("attributes", ((CommmonStringEntity) baseEntity).getData());
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("type", Constant.CRVOTE);
+                startActivity(intent);
+                break;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    popBackFragment();
+                }
+            });
+
+        }
+        if (integer == RxEnum.TOSIGN.ordinal()) {
+            //生成待签名交易
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            start(SignFragment.class, bundle);
+
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
+            //签名成功
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            bundle.putBoolean("signStatus", true);
+            start(SignFragment.class, bundle);
+
+        }
     }
 }

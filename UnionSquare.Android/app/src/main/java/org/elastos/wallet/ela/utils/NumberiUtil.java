@@ -15,12 +15,19 @@ public class NumberiUtil {
      */
     public static String numberFormat(String number, int wei) {
         BigDecimal b = new BigDecimal(number);
-        return b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString();
+        return removeZero(b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString());
     }
 
     public static String numberFormat(Object number, int wei) {
         BigDecimal b = new BigDecimal(number.toString());
-        return b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString();
+        return removeZero(b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString());
+    }
+
+    private static String removeZero(String number) {
+        while ((number.endsWith("0") || number.endsWith(".")) && number.contains(".")) {
+            number = number.substring(0, number.length() - 1);
+        }
+        return number;
     }
 
     /* public static BigDecimal setScal(String f, int newScale) {
@@ -46,9 +53,7 @@ public class NumberiUtil {
         if (number.contains("E") || number.contains("e")) {
             number = new BigDecimal(number).toPlainString();
         }
-        while ((number.endsWith("0") || number.endsWith(".")) && number.contains(".")) {
-            number = number.substring(0, number.length() - 1);
-        }
+        number=removeZero(number);
         if (number.split("\\.").length > 1) {
             String part1 = (number.split("\\."))[0];//整数部分
             String part2 = number.split("\\.")[1];//小数部分
@@ -67,9 +72,7 @@ public class NumberiUtil {
 
     public static String maxNumberFormat(BigDecimal number1, int wei) {
         String number = number1.toPlainString();
-        while ((number.endsWith("0") || number.endsWith(".")) && number.contains(".")) {
-            number = number.substring(0, number.length() - 1);
-        }
+        number=removeZero(number);
         if (number.contains(".")) {
             String part1 = (number.split("\\."))[0];//整数部分
             String part2 = number.split("\\.")[1];//小数部分

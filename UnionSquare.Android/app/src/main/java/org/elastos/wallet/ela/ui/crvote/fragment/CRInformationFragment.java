@@ -25,7 +25,6 @@ import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +47,7 @@ public class CRInformationFragment extends BaseFragment {
     SuperButton sbJrhxlb;
     @BindView(R.id.sb_ckhxlb)
     SuperButton sbCkhxlb;
-    CRListBean.DataBean.ResultBean.ProducersBean bean;
+    CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean;
     @BindView(R.id.tv_name)
     TextView tvName;
 
@@ -58,11 +57,10 @@ public class CRInformationFragment extends BaseFragment {
     TextView tvZl;
     @BindView(R.id.tv_addrs)
     TextView tv_addrs;
-    List<CRListBean.DataBean.ResultBean.ProducersBean> list;
-    String zb;
+    List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list;
     public String type;
-    @BindView(R.id.tv_node_publickey)
-    TextView tvNodePublickey;
+    @BindView(R.id.tv_did)
+    TextView tvDid;
     @BindView(R.id.iv_icon)
     AppCompatImageView ivIcon;
     @BindView(R.id.line_info)
@@ -83,11 +81,11 @@ public class CRInformationFragment extends BaseFragment {
     LinearLayout llInfodetail;
     @BindView(R.id.tv_intro_detail)
     TextView tvIntroDetail;
-    private ArrayList<CRListBean.DataBean.ResultBean.ProducersBean> netlist;
+    private ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netlist;
 
     @Override
     protected int getLayoutId() {
-        return R.layout.fragment_node_information;
+        return R.layout.fragment_cr_information;
     }
 
     @Override
@@ -97,58 +95,55 @@ public class CRInformationFragment extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-        bean = (CRListBean.DataBean.ResultBean.ProducersBean) data.getSerializable("bean");
-        zb = data.getString("zb");
-        netlist = (ArrayList<CRListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
+        int postion = data.getInt("postion");
+
+        netlist = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
+        bean = netlist.get(postion);
     }
 
     @Override
     protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, getString(R.string.node_information));
-//        registReceiver();
+        setToobar(toolbar, toolbarTitle, getString(R.string.crinfor));
         String url = bean.getUrl();
-        new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
+        new SuperNodeListPresenter().getCRUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
                 //获取icon
-                if (t == null || t.getOrg() == null || t.getOrg().getBranding() == null || t.getOrg().getBranding().getLogo_256() == null) {
-                    return;
-                }
-                String imgUrl = t.getOrg().getBranding().getLogo_256();
-                GlideApp.with(CRInformationFragment.this).load(imgUrl)
-                        .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
-                //获取节点简介
-                NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
-                if (infoBean != null) {
-                    String info = new SPUtil(CRInformationFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
 
+                try {
+                    String imgUrl = t.getOrg().getBranding().getLogo_256();
+
+
+                    GlideApp.with(CRInformationFragment.this).load(imgUrl)
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+
+                } catch (Exception e) {
+                }
+
+                //获取节点简介
+                try {
+                    NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
+                    String info = new SPUtil(CRInformationFragment.this.getContext()).getLanguage() == 0 ? infoBean.getZh() : infoBean.getEn();
                     if (!TextUtils.isEmpty(info)) {
                         llTab.setVisibility(View.VISIBLE);
                         tvIntroDetail.setText(info);
                     }
+                } catch (Exception e) {
                 }
+
 
             }
         });
         tvName.setText(bean.getNickname());
         tvNumVote.setText(bean.getVotes().split("\\.")[0] + " " + getString(R.string.ticket));
-        tvNodePublickey.setText(bean.getOwnerpublickey());
+        tvDid.setText(bean.getDid());
         tv_addrs.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         tvUrl.setText(bean.getUrl());
-        if (bean.getVoterate() != null) {
-            tvZl.setText(NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
-        }
-
-        if (bean.isActive() == false) {
-            sbJrhxlb.setEnabled(false);
-            sbJrhxlb.setBackgroundColor(getResources().getColor(R.color.player_grey));
-        }
-
-        //  tvZl.setText(bean.getIp());
+        tvZl.setText(NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
         list = CacheUtil.getCRProducerList();
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).getOwnerpublickey().equals(bean.getOwnerpublickey())) {
+                if (list.get(i).getDid().equals(bean.getDid())) {
                     sbJrhxlb.setText(getString(R.string.remove_candidate_list));
                 }
             }
@@ -182,7 +177,7 @@ public class CRInformationFragment extends BaseFragment {
                 //移除
                 if (sbJrhxlb.getText().toString().equals(getString(R.string.remove_candidate_list))) {
                     for (int i = 0; i < list.size(); i++) {
-                        if (list.get(i).getOwnerpublickey().equals(bean.getOwnerpublickey())) {
+                        if (list.get(i).getDid().equals(bean.getDid())) {
                             ToastUtils.showShort(getString(R.string.yi_remove_candidate_list));
                             sbJrhxlb.setText(getString(R.string.candidate_list));
                             list.remove(i);
@@ -208,9 +203,7 @@ public class CRInformationFragment extends BaseFragment {
                 break;
             case R.id.sb_ckhxlb:
                 Bundle bundle = new Bundle();
-                bundle.putString("zb", zb);
-                bundle.putString("type", type);
-                bundle.putSerializable("netList", (Serializable) netlist);
+                bundle.putSerializable("netList", netlist);
                 start(CRNodeCartFragment.class, bundle);
                 break;
         }

@@ -60,6 +60,10 @@ public class Arith {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
         return b1.multiply(b2);
+    }public static BigDecimal mul(Object v1, Object v2) {
+        BigDecimal b1 = new BigDecimal(v1.toString());
+        BigDecimal b2 = new BigDecimal(v2.toString());
+        return b1.multiply(b2);
     }
 
     /**
@@ -90,7 +94,7 @@ public class Arith {
                     "The scale must be a positive integer or zero");*/
         }
         if ("0".equals(v2.trim())) {
-            return new BigDecimal("-1");
+            return new BigDecimal("0");
         }
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
@@ -105,7 +109,7 @@ public class Arith {
                     "The scale must be a positive integer or zero");*/
         }
         if (0 == v2) {
-            return new BigDecimal("-1");
+            return new BigDecimal("0");
         }
         BigDecimal b2 = new BigDecimal(v2);
 

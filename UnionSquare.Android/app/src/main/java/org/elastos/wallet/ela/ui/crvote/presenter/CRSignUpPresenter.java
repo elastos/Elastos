@@ -4,30 +4,19 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
-import org.json.JSONException;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
 public class CRSignUpPresenter extends NewPresenterAbstract {
-    //为了验证密码
-    public void exportWalletWithMnemonic(String walletId, String pwd, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "exportWalletWithMnemonic");
+
+
+    public void getCROwnerPublicKey(String walletId, String chainID, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "getCROwnerPublicKey");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().exportWalletWithMnemonic(walletId, pwd);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
-
-    public void getCROwnerDID(String masterWalletID, String chainID, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getCROwnerDID");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() throws JSONException {
-                return baseFragment.getMyWallet().getCROwnerDID(masterWalletID, chainID);
+                return baseFragment.getMyWallet().getCROwnerPublicKey(walletId, chainID);
             }
         });
         subscriberObservable(observer, observable, baseFragment);
@@ -39,22 +28,8 @@ public class CRSignUpPresenter extends NewPresenterAbstract {
         Observer observer = createObserver(baseFragment, "generateCRInfoPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
-            public BaseEntity subscribe() throws JSONException {
-                return baseFragment.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location, payPasswd);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
-
-
-    //创建交易
-    public void createRegisterCRTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO
-            , BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "createRegisterCRTransaction");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createRegisterCRTransaction(masterWalletID, chainID, fromAddress, payloadJson, amount, memo, useVotedUTXO);
+                return baseFragment.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location, payPasswd);
             }
         });
         subscriberObservable(observer, observable, baseFragment);
@@ -72,5 +47,16 @@ public class CRSignUpPresenter extends NewPresenterAbstract {
             }
         });
         subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void getFee(String walletId, String chainId, String s, String address, String amount, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "getFee");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getFee(walletId, chainId, s, address, amount);
+            }
+        });
+        subscriberObservable(observer, observable,baseFragment);
     }
 }

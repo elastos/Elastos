@@ -7,46 +7,37 @@ import android.widget.ImageView;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
-import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class CRListAdapter extends CRListAdapterFather {
 
     private final GlideRequest<Bitmap> glideRequest;
+    private SuperNodeListPresenter presenter;
 
-    public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.ProducersBean> data, int pos, boolean is) {
-        super(R.layout.item_cr_list, context, data, is);
+    public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is, String totalvotes) {
+        super(R.layout.item_cr_list, context, data, is, totalvotes);
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
 
 
     }
 
     @Override
-    protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.ProducersBean bean) {
-        super.convert(helper, bean);
-        helper.setGone(R.id.view, !showCheckbox);
+    protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
 
-        helper.setBackgroundColor(R.id.tv_rank, context.getResources().getColor(R.color.white));
-        helper.setTextColor(R.id.tv_rank, context.getResources().getColor(R.color.surebutton));
-        if (is && 0 == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.tv_rank, context.getResources().getColor(R.color.blue1));
-            helper.setTextColor(R.id.tv_rank, context.getResources().getColor(R.color.white));
-        }
+        helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.a26ffffff));
+        helper.setGone(R.id.view, !showCheckbox);
         helper.setText(R.id.tv_rank, "No." + (bean.getIndex() + 1));
-        helper.setText(R.id.tv_name, bean.getNickname());
-        helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
-        helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
-        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
+
 
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial);
@@ -63,8 +54,10 @@ public class CRListAdapter extends CRListAdapterFather {
             glideRequest.load(map.get(baseUrl)).into(iv);
             return;
         }
-
-        new SuperNodeListPresenter().getUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
+        if (presenter == null) {
+            presenter = new SuperNodeListPresenter();
+        }
+        presenter.getCRUrlJson(iv, baseUrl, context, new NodeDotJsonViewData() {
             @Override
             public void onError(String url) {
                 map.put(url, "");
@@ -82,8 +75,26 @@ public class CRListAdapter extends CRListAdapterFather {
                 }
 
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
-                map.put(url, imgUrl);
-                glideRequest.load(imgUrl).into(iv1);
+                // map.put(url, imgUrl);
+                // glideRequest.load(imgUrl).into(iv1);
+                presenter.getImage(iv1, url, imgUrl, context, new NodeDotJsonViewData() {
+                    @Override
+                    public void onError(String url) {
+                        map.put(url, "");
+                    }
+
+                    @Override
+                    public void onGetImage(ImageView iv1, String url, ImageBean imageBean) {
+                        if (iv1.getTag(R.id.error_tag_empty) == null || !(iv1.getTag(R.id.error_tag_empty).toString()).equals(url)) {
+                            GlideApp.with(context).clear(iv1);
+                            iv1.setImageResource(R.mipmap.found_vote_initial);
+                            return;
+                        }
+                        String newimgUrl = MyApplication.REQUEST_BASE_URL + "/" + imageBean.getData();
+                        map.put(url, newimgUrl);
+                        glideRequest.load(newimgUrl).into(iv1);
+                    }
+                });
                 //CustomViewTarget clear不了
          /*       glideRequest.load(imgUrl).into(new CustomViewTarget<ImageView, Bitmap>(iv1) {
                     @Override
@@ -109,6 +120,7 @@ public class CRListAdapter extends CRListAdapterFather {
 
             }
         });
+        super.convert(helper, bean);
     }
 
 

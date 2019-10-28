@@ -24,6 +24,10 @@ public class CustomMigration implements RealmMigration {
         }
         if (oldVersion == 2) {
             uodata2to3(schema);
+            oldVersion++;
+        }
+        if (oldVersion == 3) {
+            uodata3to4(schema);
             // oldVersion++;
         }
     }
@@ -48,6 +52,12 @@ public class CustomMigration implements RealmMigration {
                     }
                 });
         // oldVersion++;
+    }
+
+    private void uodata3to4(RealmSchema schema) {
+        RealmObjectSchema personSchema = schema.get("Wallet");
+        //新增@Required的id
+        personSchema.removeField("privateKey").removeField("keyStore").removeField("mnemonic");//移除属性
     }
 
     @Override

@@ -186,7 +186,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         //获得手续费后
         Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
         intent.putExtra("wallet", wallet);
-        intent.putExtra("type", Constant.SUPERNODEVOTE);
+        intent.putExtra("type", Constant.SUPERNODESIGN);
         intent.putExtra("amount", "5000");
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("nodePublicKey", nodePublicKey);

@@ -5,7 +5,7 @@ import android.support.multidex.MultiDexApplication;
 import android.webkit.WebView;
 
 import com.blankj.utilcode.util.Utils;
-/*import com.tencent.bugly.crashreport.CrashReport;*/
+import com.tencent.bugly.crashreport.CrashReport;
 
 import org.elastos.wallet.BuildConfig;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -36,7 +36,7 @@ public class MyApplication extends MultiDexApplication {
         new WebView(this).destroy();
         myApplication = this;
         serverList.add("https://unionsquare01.elastos.com.cn");
-        serverList.add("https://unionsquare.elastos.org/");
+        serverList.add("https://unionsquare.elastos.org");
         serverList = new SPUtil(this.getApplicationContext()).getDefaultServerList(serverList);
         REQUEST_BASE_URL = new SPUtil(this.getApplicationContext()).getDefaultServer(serverList.iterator().next());
         initApplicationComponent();
@@ -46,17 +46,17 @@ public class MyApplication extends MultiDexApplication {
 
         if (pachageName.endsWith("unionsquare")) {
             chainID = -1;
-            //useBugly();
+            useBugly();
         }
         if (pachageName.endsWith("testnet")) {
             chainID = 1;
             useBugly();
-            REQUEST_BASE_URL = "https://52.81.8.194:442/";
+            REQUEST_BASE_URL = "https://52.81.8.194:442";
         }
         if (pachageName.endsWith("regtest")) {
             chainID = 2;
             useBugly();
-            REQUEST_BASE_URL = "https://54.223.244.60/";
+            REQUEST_BASE_URL = "https://54.223.244.60";
         }
 
 
@@ -64,7 +64,7 @@ public class MyApplication extends MultiDexApplication {
 
     private void useBugly() {
         if (!BuildConfig.DEBUG) {
-           // CrashReport.initCrashReport(getApplicationContext(), "9c89947c00", false);
+            CrashReport.initCrashReport(getApplicationContext(), "9c89947c00", false);
         }
     }
 

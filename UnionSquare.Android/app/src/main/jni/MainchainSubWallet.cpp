@@ -456,7 +456,7 @@ static jstring JNICALL GenerateUnregisterCRPayload(JNIEnv *env, jobject clazz, j
 
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
-        nlohmann::json payloadJson = wallet->GenerateCancelProducerPayload(publicKey, payPasswd);
+        nlohmann::json payloadJson = wallet->GenerateUnregisterCRPayload(publicKey, payPasswd);
         payload = env->NewStringUTF(payloadJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -751,6 +751,177 @@ GetRegisteredCRInfo(JNIEnv *env, jobject clazz, jlong jSubWalletProxy) {
     return info;
 }
 
+#define JNI_SponsorSignProposal "(JBLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL SponsorSignProposal(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                                           jbyte jtype,
+                                           jstring jsponsorPublickey,
+                                           jstring jcrSponsorDID,
+                                           jstring jdraftHash,
+                                           jstring jbudgets,
+                                           jstring jrecipient,
+                                           jstring jpayPasswd) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *sponsorPublickey = env->GetStringUTFChars(jsponsorPublickey, NULL);
+    const char *crSponsorDID = env->GetStringUTFChars(jcrSponsorDID, NULL);
+    const char *draftHash = env->GetStringUTFChars(jdraftHash, NULL);
+    const char *budgets = env->GetStringUTFChars(jbudgets, NULL);
+    const char *recipent = env->GetStringUTFChars(jrecipient, NULL);
+    const char *payPasswd = env->GetStringUTFChars(jpayPasswd, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->SponsorSignProposal(jtype, sponsorPublickey, crSponsorDID,
+                                                          draftHash, nlohmann::json::parse(budgets),
+                                                          recipent, payPasswd);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jsponsorPublickey, sponsorPublickey);
+    env->ReleaseStringUTFChars(jcrSponsorDID, crSponsorDID);
+    env->ReleaseStringUTFChars(jdraftHash, draftHash);
+    env->ReleaseStringUTFChars(jbudgets, budgets);
+    env->ReleaseStringUTFChars(jrecipient, recipent);
+    env->ReleaseStringUTFChars(jpayPasswd, payPasswd);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_CRSponsorSignProposal "(JBLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL CRSponsorSignProposal(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                                             jbyte jtype,
+                                             jstring jsponsorPublickey,
+                                             jstring jcrSponsorDID,
+                                             jstring jdraftHash,
+                                             jstring jbudgets,
+                                             jstring jrecipient,
+                                             jstring jsignature,
+                                             jstring jpayPasswd) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *sponsorPublickey = env->GetStringUTFChars(jsponsorPublickey, NULL);
+    const char *crSponsorDID = env->GetStringUTFChars(jcrSponsorDID, NULL);
+    const char *draftHash = env->GetStringUTFChars(jdraftHash, NULL);
+    const char *budgets = env->GetStringUTFChars(jbudgets, NULL);
+    const char *recipent = env->GetStringUTFChars(jrecipient, NULL);
+    const char *signature = env->GetStringUTFChars(jsignature, NULL);
+    const char *payPasswd = env->GetStringUTFChars(jpayPasswd, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->CRSponsorSignProposal(jtype, sponsorPublickey, crSponsorDID,
+                                                            draftHash, nlohmann::json::parse(budgets),
+                                                            recipent, signature, payPasswd);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jsponsorPublickey, sponsorPublickey);
+    env->ReleaseStringUTFChars(jcrSponsorDID, crSponsorDID);
+    env->ReleaseStringUTFChars(jdraftHash, draftHash);
+    env->ReleaseStringUTFChars(jbudgets, budgets);
+    env->ReleaseStringUTFChars(jrecipient, recipent);
+    env->ReleaseStringUTFChars(jsignature, signature);
+    env->ReleaseStringUTFChars(jpayPasswd, payPasswd);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_CreateCRCProposalTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+CreateCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                             jstring jproposal,
+                             jstring jmemo) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *proposal = env->GetStringUTFChars(jproposal, NULL);
+    const char *memo = env->GetStringUTFChars(jmemo, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->CreateCRCProposalTransaction(nlohmann::json::parse(proposal),
+                                                                   memo);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jproposal, proposal);
+    env->ReleaseStringUTFChars(jmemo, memo);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_CreateVoteCRCProposalTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+CreateVoteCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                                 jstring jfromAddress,
+                                 jstring jvotes,
+                                 jstring jmemo) {
+
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
+    const char *votes = env->GetStringUTFChars(jvotes, NULL);
+    const char *memo = env->GetStringUTFChars(jmemo, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->CreateVoteCRCProposalTransaction(fromAddress,
+                                                                       nlohmann::json::parse(votes),
+                                                                       memo);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jfromAddress, fromAddress);
+    env->ReleaseStringUTFChars(jvotes, votes);
+    env->ReleaseStringUTFChars(jmemo, memo);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+
+}
+
 static const JNINativeMethod methods[] = {
         REGISTER_METHOD(CreateDepositTransaction),
         REGISTER_METHOD(GenerateProducerPayload),
@@ -775,6 +946,10 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(CreateVoteCRTransaction),
         REGISTER_METHOD(GetVotedCRList),
         REGISTER_METHOD(GetRegisteredCRInfo),
+        REGISTER_METHOD(SponsorSignProposal),
+        REGISTER_METHOD(CRSponsorSignProposal),
+        REGISTER_METHOD(CreateCRCProposalTransaction),
+        REGISTER_METHOD(CreateVoteCRCProposalTransaction),
 };
 
 jint RegisterMainchainSubWallet(JNIEnv *env, const std::string &path) {

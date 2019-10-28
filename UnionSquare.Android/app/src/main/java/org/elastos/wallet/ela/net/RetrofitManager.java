@@ -104,7 +104,7 @@ public class RetrofitManager {
      *
      * @return
      */
-    private static OkHttpClient getOkHttpClient(Context context) {
+    public static OkHttpClient getOkHttpClient(Context context) {
         HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
         if (BuildConfig.DEBUG) {
             logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -112,10 +112,12 @@ public class RetrofitManager {
             logInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
         }
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        try {
-            OkhttpManager.getInstance().setTrustrCertificates(context.getAssets().open("server.cer"));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (MyApplication.chainID > 0) {
+            try {
+                OkhttpManager.getInstance().setTrustrCertificates(context.getAssets().open("server.cer"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         builder = OkhttpManager.getInstance().build();
         if (mOkHttpClient == null) {
@@ -182,11 +184,9 @@ public class RetrofitManager {
         Retrofit.Builder build = new Retrofit.Builder().baseUrl(MyApplication.REQUEST_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
-        if (MyApplication.chainID <= 0) {
-            retrofit = build.client(getOkHttpClient()).build();
-        } else {
-            retrofit = build.client(getOkHttpClient(context)).build();
-        }
+
+        retrofit = build.client(getOkHttpClient(context)).build();
+
         return retrofit.create(clazz);
     }
 

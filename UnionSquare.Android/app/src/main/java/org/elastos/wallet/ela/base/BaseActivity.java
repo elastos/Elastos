@@ -223,4 +223,8 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
             refreshLayout = null;
         }
     }
+
+    public MyWallet getMyWallet() {
+        return getWallet();
+    }
 }

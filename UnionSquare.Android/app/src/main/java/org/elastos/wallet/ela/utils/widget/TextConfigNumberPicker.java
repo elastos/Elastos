@@ -55,7 +55,7 @@ public class TextConfigNumberPicker extends NumberPicker {
             //设置分割线大小颜色
             Field mSelectionDivider = this.getFile("mSelectionDivider");
             mSelectionDivider.set(this, new ColorDrawable(getResources().getColor(R.color.pickline)));
-            mSelectionDivider.set(this, 1);
+           // mSelectionDivider.set(this, 1);
         } catch (Exception e) {
             e.printStackTrace();
         }

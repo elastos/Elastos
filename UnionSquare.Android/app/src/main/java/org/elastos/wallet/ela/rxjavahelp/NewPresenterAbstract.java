@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.rxjavahelp;
 
-import android.util.Log;
+import android.app.Dialog;
+import org.elastos.wallet.ela.utils.Log;
 import android.widget.Toast;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -15,43 +16,44 @@ public class NewPresenterAbstract extends PresenterAbstract {
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName) {
         //初始化参数
-        return createObserver(baseFragment, methodName, null);
+        return createObserver(baseFragment, methodName, true, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName) {
         //初始化参数
-        return createObserver(baseActivity, methodName, null);
+        return createObserver(baseActivity, methodName, true, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, boolean isShowDialog) {
         //初始化参数
-        this.isShowDialog = isShowDialog;
-        return createObserver(baseFragment, methodName, null);
+
+        return createObserver(baseFragment, methodName, isShowDialog, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, boolean isShowDialog) {
         //初始化参数
-        this.isShowDialog = isShowDialog;
-        return createObserver(baseActivity, methodName, null);
-    }
-
-    protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, Object o, boolean isShowDialog) {
-        //初始化参数
-        this.isShowDialog = isShowDialog;
-        return createObserver(baseFragment, methodName, o);
-    }
-
-    protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, Object o, boolean isShowDialog) {
-        //初始化参数
-        this.isShowDialog = isShowDialog;
-        return createObserver(baseActivity, methodName, o);
+        return createObserver(baseActivity, methodName, isShowDialog, null);
     }
 
     protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, Object o) {
         //初始化参数
+        return createObserver(baseFragment, methodName, true, o);
+    }
+
+    protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, Object o) {
+        //初始化参数
+
+        return createObserver(baseActivity, methodName, true, o);
+    }
+
+    protected Observer<BaseEntity> createObserver(BaseFragment baseFragment, String methodName, boolean isShowDialog, Object o) {
+        //初始化参数
         this.context = baseFragment.getBaseActivity();
+        Dialog dialog;
         if (isShowDialog) {
-            initProgressDialog(context);
+            dialog = initProgressDialog(context);
+        } else {
+            dialog = null;
         }
         //创建 Observer
         return new Observer<BaseEntity>() {
@@ -64,21 +66,22 @@ public class NewPresenterAbstract extends PresenterAbstract {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
-                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())) {
+                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())
+                        ||MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
                     ((NewBaseViewData) baseFragment).onGetData(methodName, value, o);
                 } else {
                     showTips(value);
                 }
-                Log.e(TAG, "onNext:" + value);
+                Log.e(TAG, methodName+" onNext:" + value);
 
             }
 
             @Override
             public void onError(Throwable e) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -96,11 +99,14 @@ public class NewPresenterAbstract extends PresenterAbstract {
     }
 
 
-    protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, Object o) {
+    protected Observer<BaseEntity> createObserver(BaseActivity baseActivity, String methodName, boolean isShowDialog, Object o) {
         //初始化参数
         this.context = baseActivity;
+        Dialog dialog;
         if (isShowDialog) {
-            initProgressDialog(context);
+            dialog = initProgressDialog(context);
+        } else {
+            dialog = null;
         }
         //创建 Observer
         return new Observer<BaseEntity>() {
@@ -113,9 +119,10 @@ public class NewPresenterAbstract extends PresenterAbstract {
             @Override
             public void onNext(BaseEntity value) {
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
-                if (MyWallet.SUCCESSCODE.equals(value.getCode())) {
+                if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())
+                        ||MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
                     ((NewBaseViewData) baseActivity).onGetData(methodName, value, o);
                 } else {
                     showTips(value);
@@ -130,7 +137,7 @@ public class NewPresenterAbstract extends PresenterAbstract {
                 Log.e(TAG, "onError=" + e.getMessage());
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
                 if (isShowDialog) {
-                    dismissProgessDialog();
+                    dismissProgessDialog(dialog);
                 }
                 finish();
             }

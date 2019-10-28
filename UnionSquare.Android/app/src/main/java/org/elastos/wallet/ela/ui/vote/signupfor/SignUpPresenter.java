@@ -24,46 +24,8 @@ public class SignUpPresenter extends PresenterAbstract {
     }
 
 
-    //验证交易
-    public void generateProducerPayload(String masterWalletID, String chainID, String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd
-            , BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().generateProducerPayload(masterWalletID, chainID, publicKey, nodePublicKey, nickName, url, IPAddress, location, payPasswd);
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
 
 
-    //创建交易
-    public void createRegisterProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String amount, String memo, boolean useVotedUTXO
-            , BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createRegisterProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson, amount, memo, useVotedUTXO);
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
 
 
-    //更新信息
-
-    //创建交易
-    public void createUpdateProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, String memo, boolean useVotedUTXO
-            , BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createUpdateProducerTransaction(masterWalletID, chainID, fromAddress, payloadJson, memo, useVotedUTXO);
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
 }

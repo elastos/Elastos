@@ -110,6 +110,24 @@ static jstring JNICALL GetAllAddress(JNIEnv *env, jobject clazz, jlong jSubProxy
     return addresses;
 }
 
+#define JNI_GetAllPublicKeys "(JII)Ljava/lang/String;"
+
+static jstring JNICALL GetAllPublicKeys(JNIEnv *env, jobject clazz, jlong jSubProxy,
+                                        jint jStart,
+                                        jint jCount) {
+    jstring publicKeys = NULL;
+
+    try {
+        ISubWallet *subWallet = (ISubWallet *) jSubProxy;
+        nlohmann::json pubKeyJson = subWallet->GetAllPublicKeys(jStart, jCount);
+        publicKeys = env->NewStringUTF(pubKeyJson.dump().c_str());
+    } catch (const std::exception &e) {
+        ThrowWalletException(env, e.what());
+    }
+
+    return publicKeys;
+}
+
 #define JNI_GetBalanceWithAddress "(JLjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL GetBalanceWithAddress(JNIEnv *env, jobject clazz, jlong jSubProxy,
@@ -484,6 +502,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetBalance),
         REGISTER_METHOD(CreateAddress),
         REGISTER_METHOD(GetAllAddress),
+        REGISTER_METHOD(GetAllPublicKeys),
         REGISTER_METHOD(GetBalanceWithAddress),
         REGISTER_METHOD(AddCallback),
         REGISTER_METHOD(RemoveCallback),

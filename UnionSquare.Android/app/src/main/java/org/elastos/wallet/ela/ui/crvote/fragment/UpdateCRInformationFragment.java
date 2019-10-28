@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.crvote.fragment;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -19,14 +20,14 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
-import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
+import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -41,7 +42,7 @@ import butterknife.OnClick;
 /**
  * 更新信息
  */
-public class UpdateCRInformationFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, NewBaseViewData {
+public class UpdateCRInformationFragment extends BaseFragment implements NewBaseViewData {
 
 
     @BindView(R.id.toolbar_title)
@@ -55,11 +56,9 @@ public class UpdateCRInformationFragment extends BaseFragment implements WarmPro
     TextView tvArea;
     @BindView(R.id.et_url)
     EditText etUrl;
-    DialogUtil dialogUtil = new DialogUtil();
     CRSignUpPresenter presenter = new CRSignUpPresenter();
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
-    private PwdPresenter pwdPresenter = new PwdPresenter();
     private String ownerPublicKey;
 
     @Override
@@ -70,7 +69,7 @@ public class UpdateCRInformationFragment extends BaseFragment implements WarmPro
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.update_information));
-        EventBus.getDefault().register(this);
+      registReceiver();
     }
 
     @Override
@@ -87,7 +86,7 @@ public class UpdateCRInformationFragment extends BaseFragment implements WarmPro
 
     }
 
-    String name, area, url, pwd;
+    String name, area, url;
 
     @OnClick({R.id.sb_up, R.id.ll_area})
     public void onViewClicked(View view) {
@@ -109,51 +108,17 @@ public class UpdateCRInformationFragment extends BaseFragment implements WarmPro
                     return;
                 }
                 if (TextUtils.isEmpty(url)) {
-                    ToastUtils.showShort(getString(R.string.the_official_website_cannot_be_empty));
+                    ToastUtils.showShort(getString(R.string.cr_website_cannot_be_empty));
                     return;
                 }
 
-                dialogUtil.showWarmPrompt1(getBaseActivity(), getString(R.string.charge) + ":0.0001ELA", new WarmPromptListener() {
-                    @Override
-                    public void affireBtnClick(View view) {
-                        showWarmPromptInput();
-                    }
-                });
+
+                presenter.getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
 
                 break;
             case R.id.ll_area:
                 //选择国家和地区
                 start(new AreaCodeFragment());
-                break;
-        }
-    }
-
-    private void showWarmPromptInput() {
-        dialogUtil.showWarmPromptInput(getBaseActivity(), getString(R.string.securitycertificate), getString(R.string.inputWalletPwd), this);
-    }
-
-    @Override
-    public void affireBtnClick(View view) {
-        pwd = ((EditText) view).getText().toString().trim();
-        if (TextUtils.isEmpty(pwd)) {
-            showToastMessage(getString(R.string.pwdnoempty));
-            return;
-        }
-        presenter.exportWalletWithMnemonic(wallet.getWalletId(), pwd, this);
-    }
-
-
-    @Override
-    public void onGetCommonData(String methodname, String data) {
-
-        switch (methodname) {
-            //验证交易
-            case "signTransaction":
-                pwdPresenter.publishTransaction(wallet.getWalletId(), MyWallet.ELA, data, this);
-                break;
-            case "publishTransaction":
-                ToastUtils.showShort(R.string.update_successful);
-                _mActivity.onBackPressed();
                 break;
         }
     }
@@ -187,21 +152,22 @@ public class UpdateCRInformationFragment extends BaseFragment implements WarmPro
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-        String data = ((CommmonStringEntity) baseEntity).getData();
+
         switch (methodName) {
             //验证密码
-            case "exportWalletWithMnemonic":
+            case "getFee":
+                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("type", Constant.CRUPDATE);
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("ownerPublicKey", ownerPublicKey);
+                intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                intent.putExtra("name", name);
+                intent.putExtra("url", url);
+                intent.putExtra("code", code);
+                startActivity(intent);
+                break;
 
-                presenter.generateCRInfoPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, name, url, code, pwd, this);
-                break;
-            case "generateCRInfoPayload":
-                presenter.createUpdateCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
-                break;
-            //创建交易
-            case "createUpdateCRTransaction":
-                pwdPresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
-                dialogUtil.dialogDismiss();
-                break;
         }
     }
 }

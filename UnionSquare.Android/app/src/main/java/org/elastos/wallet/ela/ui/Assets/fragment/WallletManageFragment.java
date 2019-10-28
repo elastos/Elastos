@@ -184,6 +184,11 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     @Override
     public void affireBtnClick(View view) {
 //这里只见他showWarmPromptInput的确认
+        if (wallet.getType()==1||wallet.getType()==3){
+            //0 普通单签 1单签只读 2普通多签 3多签只读
+            presenter.destroyWallet(wallet.getWalletId(), this);
+            return;
+        }
         payPasswd = ((EditText) view).getText().toString().trim();
         if (TextUtils.isEmpty(payPasswd)) {
             showToastMessage(getString(R.string.pwdnoempty));

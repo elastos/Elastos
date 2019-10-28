@@ -4,7 +4,7 @@
 
 package org.elastos.wallet.core;
 
-import android.util.Log;
+import org.elastos.wallet.ela.utils.Log;
 
 import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
 import org.json.JSONException;
@@ -148,7 +148,6 @@ public class SubWalletCallback {
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
             jsonObject.put("Action", "OnConnectStatusChanged");
-            org.elastos.wallet.ela.utils.Log.i("xxxxxx",jsonObject.toString());
             mListener.OnConnectStatusChanged(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();

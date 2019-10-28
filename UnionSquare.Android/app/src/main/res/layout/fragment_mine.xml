@@ -18,18 +18,122 @@
             android:orientation="vertical">
 
             <RelativeLayout
-                android:id="@+id/rl_language"
+                android:id="@+id/rl_did"
                 style="@style/settingItem"
                 android:layout_gravity="center"
+                android:background="@drawable/ass_border"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
+                    android:text="DID"
+                    android:textColor="#ffffffff"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tv_did"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@id/iv_did"
+                    android:text="@string/currentno"
+                    android:textColor="@color/whiter50"
+                    android:textSize="13sp" />
+
+                <ImageView
+                    android:id="@+id/iv_did"
+                    android:layout_width="@dimen/px44"
+                    android:layout_height="@dimen/px44"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/px40"
+                    android:src="@mipmap/asset_list_arrow" />
+
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:id="@+id/rl_contact"
+                style="@style/settingItem"
+                android:layout_marginTop="@dimen/px30"
                 android:background="@drawable/ass_border">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
+                    android:text="@string/contact"
+                    android:textColor="#ffffffff"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/iv_contact"
+                    android:layout_width="@dimen/px44"
+                    android:layout_height="@dimen/px44"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/px40"
+                    android:src="@mipmap/asset_list_arrow" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/tv_contact_none"
+                style="@style/settingItem"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="@dimen/px10"
+                android:background="@drawable/ass_border"
+                android:gravity="center"
+                android:text="@string/nocontact"
+                android:textSize="11sp"
+                android:visibility="gone" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv"
+                style="@style/settingItem"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/iv_contact_add"
+                style="@style/settingItem"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="@dimen/px10"
+                android:background="@drawable/ass_border"
+                android:gravity="center"
+                android:paddingTop="@dimen/px30"
+                android:paddingBottom="@dimen/px30"
+                android:src="@mipmap/setting_contacts_add"
+                android:visibility="gone" />
+
+            <RelativeLayout
+                android:id="@+id/rl_language"
+                style="@style/settingItem"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/px30"
+                android:background="@drawable/ass_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
                     android:text="@string/language"
                     android:textColor="#ffffffff"
                     android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tv_language"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@id/iv_language"
+                    android:text="中文(简体)"
+                    android:textColor="@color/whiter50"
+                    android:textSize="13sp" />
 
                 <ImageView
                     android:id="@+id/iv_language"
@@ -76,58 +180,6 @@
             </LinearLayout>
 
             <RelativeLayout
-                android:id="@+id/rl_contact"
-                style="@style/settingItem"
-                android:layout_marginTop="@dimen/px30"
-                android:background="@drawable/ass_border">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:text="@string/contact"
-                    android:textColor="#ffffffff"
-                    android:textSize="14sp" />
-
-                <ImageView
-                    android:id="@+id/iv_contact"
-                    android:layout_width="@dimen/px44"
-                    android:layout_height="@dimen/px44"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="@dimen/px40"
-                    android:src="@mipmap/asset_list_arrow" />
-            </RelativeLayout>
-
-            <TextView
-                android:id="@+id/tv_contact_none"
-                style="@style/settingItem"
-                android:layout_centerInParent="true"
-                android:layout_marginTop="@dimen/px10"
-                android:background="@drawable/ass_border"
-                android:gravity="center"
-                android:text="@string/nocontact"
-                android:textSize="11sp"
-                android:visibility="gone" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv"
-                style="@style/settingItem"
-                android:layout_height="wrap_content"
-                android:visibility="gone" />
-
-            <ImageView
-                android:src="@mipmap/setting_contacts_add"
-                android:id="@+id/iv_contact_add"
-                style="@style/settingItem"
-                android:paddingTop="@dimen/px30"
-                android:paddingBottom="@dimen/px30"
-                android:layout_centerInParent="true"
-                android:layout_marginTop="@dimen/px10"
-                android:background="@drawable/ass_border"
-                android:gravity="center"
-                android:visibility="gone" />
-            <RelativeLayout
                 android:id="@+id/rl_about"
                 style="@style/settingItem"
                 android:layout_marginTop="@dimen/px30"
@@ -136,7 +188,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
                     android:text="@string/about"
                     android:textColor="#ffffffff"
                     android:textSize="14sp" />

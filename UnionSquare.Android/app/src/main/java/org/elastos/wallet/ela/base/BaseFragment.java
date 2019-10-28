@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,9 +59,6 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     private Unbinder unbinder;
     public Context mContext;
 
-    @Nullable
-    @BindView(R.id.MultipleStatusView)
-    MultipleStatusView multipleStatusView;
 
     protected abstract int getLayoutId();
 
@@ -85,7 +83,13 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     public MyWallet getMyWallet() {
         return getBaseActivity().getWallet();
     }
-
+    protected String getText(TextView et) {
+        String text = et.getText().toString().trim();
+        if (!TextUtils.isEmpty(text)) {
+            return text;
+        }
+        return null;
+    }
 
     @Nullable
     @Override
@@ -174,16 +178,12 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     @Override
     public void showLoading() {
-        if (multipleStatusView != null) {
-            multipleStatusView.showLoading();
-        }
+
     }
 
     @Override
     public void hideLoading() {
-        if (multipleStatusView != null) {
-            multipleStatusView.showContent();
-        }
+
     }
 
     @Override

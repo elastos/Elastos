@@ -391,8 +391,8 @@ public class QRCodeUtils {
         while (i < content.length()) {
             int max = i + factor <= content.length() ? i + factor : content.length();
             String tempContent = content.substring(i, max);
-            JsonObject jsonObject = getQrJson(0, "MultiQrContent", Math.ceil(content.length() / (factor * 1f))
-                    , Math.ceil(max / (factor * 1f)), tempContent, MD5Utils.md5Encode(content), type, "ELA");
+            JsonObject jsonObject = getQrJson(0, "MultiQrContent",(int) Math.ceil(content.length() / (factor * 1f))
+                    ,(int) Math.ceil(max / (factor * 1f)), tempContent, MD5Utils.md5Encode(content), type, "ELA");
             Bitmap bitmap = createQrCodeBitmap(jsonObject.toString(), width, height);
             bitmaps.add(bitmap);
             i = max;
@@ -400,7 +400,7 @@ public class QRCodeUtils {
         return bitmaps;
     }
 
-    private static JsonObject getQrJson(int version, String name, double total, double index, String data, String md5, int type, String subWallet) {
+    private static JsonObject getQrJson(int version, String name, int total, int index, String data, String md5, int type, String subWallet) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("version", version);
         jsonObject.addProperty("name", name);

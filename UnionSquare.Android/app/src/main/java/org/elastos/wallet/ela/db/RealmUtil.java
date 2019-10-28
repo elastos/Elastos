@@ -23,7 +23,7 @@ import io.realm.RealmResults;
 
 public class RealmUtil {
 
-    public static final long DB_VERSION_CODE = 3;//当前数据库版本号
+    public static final long DB_VERSION_CODE = 4;//当前数据库版本号
     public static final String DB_NAME = "DB";//BuildConfig
 
     @Inject
@@ -256,15 +256,6 @@ public class RealmUtil {
     }
 
 
-    public void updateWalletKeystore(String walletAddr, String keyStore) {
-        //更新钱包keystore
-        Realm realm = getInstanceRealm();
-        realm.beginTransaction();
-        Wallet wallet = realm.where(Wallet.class).equalTo("walletAddr", walletAddr.toLowerCase()).findFirst();
-        wallet.setKeyStore(keyStore);
-        realm.commitTransaction();
-        closeRealm(realm);
-    }
 
     public void upDataWalletName(String walletId, String name) {
         Realm realm = getInstanceRealm();
@@ -291,18 +282,7 @@ public class RealmUtil {
     }
 
 
-    public void deleteMnemonic(@NonNull String walletAddress, String memberId) {
-        Realm realm = getInstanceRealm();
-        Wallet wallet = realm.where(Wallet.class)
-                .equalTo("memberId", memberId).equalTo("walletAddr", walletAddress.toLowerCase())
-                .findFirst();
-        if (wallet != null) {
-            realm.beginTransaction();
-            wallet.setMnemonic(null);
-            realm.commitTransaction();
-        }
-        realm.close();
-    }
+
 
     private List<Wallet> getWalletList(RealmResults<Wallet> list) {
         List<Wallet> wallets = new ArrayList<>();

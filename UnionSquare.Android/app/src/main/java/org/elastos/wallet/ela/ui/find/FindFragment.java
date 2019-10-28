@@ -1,4 +1,4 @@
-package org.elastos.wallet.ela.ui.find.fragment;
+package org.elastos.wallet.ela.ui.find;
 
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,9 +11,9 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
-import org.elastos.wallet.ela.ui.find.FindListRecAdapter;
+import org.elastos.wallet.ela.ui.crvote.bean.FindListBean;
+import org.elastos.wallet.ela.ui.find.adapter.FindListRecAdapter;
 import org.elastos.wallet.ela.ui.vote.SuperNodeListFragment;
-import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +28,7 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
     @BindView(R.id.rv)
     RecyclerView rv;
     private FindListRecAdapter adapter;
-    private List<Integer> list;
-    private SPUtil sp;
+    private List<FindListBean> list;
 
     @Override
     protected int getLayoutId() {
@@ -44,16 +43,18 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.social));
-        sp = new SPUtil(getContext());
         ivTitleLeft.setVisibility(View.GONE);
         list = new ArrayList<>();
-        if (sp.getLanguage() == 0) {
-            list.add(R.mipmap.found_card_vote);
-            list.add(R.mipmap.found_card_vote);
-        } else {
-            list.add(R.mipmap.eg_found_card_vote);
-            list.add(R.mipmap.eg_found_card_vote);
-        }
+        FindListBean bean1 = new FindListBean();
+        bean1.setResouceId(R.mipmap.found_dpos_icon);
+        bean1.setUpText(getString(R.string.supernode_election));
+        bean1.setDownText(getString(R.string.findlistdown1));
+        FindListBean bean2 = new FindListBean();
+        bean2.setResouceId(R.mipmap.found_cr_vote);
+        bean2.setUpText(getString(R.string.findlistup2));
+        bean2.setDownText(getString(R.string.findlistdown2));
+        list.add(bean1);
+        list.add(bean2);
         //  list.add(R.mipmap.found_card_id);
         //list.add(R.mipmap.found_card_paradrop);
 //        presenter = new FindPresenter();

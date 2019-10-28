@@ -1,19 +1,18 @@
 package org.elastos.wallet.ela.ui.vote.ElectoralAffairs;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.allen.library.SuperButton;
-import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -21,33 +20,35 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.GetdePositcoinBean;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.UpdateInformation.UpdateInformationFragment;
+import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
-import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
-import org.elastos.wallet.ela.utils.klog.KLog;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 /**
  * 选举管理  getRegisteredProducerInfo
  */
-public class ElectoralAffairsFragment extends BaseFragment implements WarmPromptListener, CommmonStringWithMethNameViewData, VotelistViewData, CommmonObjectWithMethNameViewData {
+public class ElectoralAffairsFragment extends BaseFragment implements NewBaseViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -94,11 +95,9 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
     TextView tvIntroDetail;
     @BindView(R.id.ll_infodetail)
     LinearLayout llInfodetail;
-    Unbinder unbinder;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     ElectoralAffairsPresenter presenter = new ElectoralAffairsPresenter();
-    PwdPresenter pwdpresenter = new PwdPresenter();
     String status;
     private String ownerPublicKey;
     private String info;
@@ -124,8 +123,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
     protected void setExtraData(Bundle data) {
         status = data.getString("status", "Canceled");
         info = data.getString("info", "");
-        KLog.a(status);
-        KLog.a(info);
+        VoteListBean.DataBean.ResultBean.ProducersBean curentNode = (VoteListBean.DataBean.ResultBean.ProducersBean) data.getSerializable("curentNode");
         //这里只会有 "Registered", "Canceled"分别代表, 已注册过, 已注销(不知道可不可提取)
         if (status.equals("Canceled")) {
             //已经注销了
@@ -140,7 +138,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
             }
         } else {
             //未注销展示选举信息
-            onJustRegistered(info);
+            onJustRegistered(info, curentNode);
         }
         super.setExtraData(data);
     }
@@ -192,13 +190,51 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
 
 
     private void showWarmPromptInput() {
-        dialogUtil.showWarmPromptInput(getBaseActivity(), getString(R.string.securitycertificate), getString(R.string.inputWalletPwd), this);
+        // dialogUtil.showWarmPromptInput(getBaseActivity(), getString(R.string.securitycertificate), getString(R.string.inputWalletPwd), this);
+
+        new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+
     }
 
-    String pwd;
 
+    String available;
 
-    private void onJustRegistered(String data) {
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+
+        switch (methodName) {
+            case "getDepositcoin":
+                GetdePositcoinBean getdePositcoinBean = (GetdePositcoinBean) baseEntity;
+                available = getdePositcoinBean.getData().getResult().getAvailable();
+                //注销可提取
+                sbtq.setVisibility(View.VISIBLE);
+                break;
+            case "getPublicKeyForVote":
+                ownerPublicKey = ((CommmonStringWithiMethNameEntity) baseEntity).getData();
+                presenter.getDepositcoin(ownerPublicKey, this);
+                break;
+
+            case "getFee":
+                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent.putExtra("wallet", wallet);
+                if (status.equals("Canceled")) {
+                    //提取按钮
+                    intent.putExtra("type", Constant.WITHDRAWSUPERNODE);
+                    intent.putExtra("amount", available);
+                } else {
+                    //注销按钮
+                    intent.putExtra("type", Constant.UNREGISTERSUPRRNODE);
+                }
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("ownerPublicKey", ownerPublicKey);
+                intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                startActivity(intent);
+                break;
+
+        }
+    }
+
+    private void onJustRegistered(String data, VoteListBean.DataBean.ResultBean.ProducersBean curentNode) {
         ElectoralAffairsBean bean = JSON.parseObject(data, ElectoralAffairsBean.class);
         tvName.setText(bean.getNickName());
         tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
@@ -229,103 +265,9 @@ public class ElectoralAffairsFragment extends BaseFragment implements WarmPrompt
         tvUrl.setText(url);
         tvNode.setText(bean.getNodePublicKey());
         ownerPublicKey = bean.getOwnerPublicKey();
-        // tv_zb.setText(bean.getInfo().);
-        // HttpList();
-        new VoteListPresenter().votelistbean("1", this);
-    }
-
-
-    //输入密码后
-    @Override
-    public void affireBtnClick(View view) {
-        pwd = ((EditText) view).getText().toString().trim();
-        if (TextUtils.isEmpty(pwd)) {
-            showToastMessage(getString(R.string.pwdnoempty));
-            return;
-        }
-        presenter.generateCancelProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
-    }
-
-
-    @Override
-    public void onGetCommonData(String methodname, String data) {
-
-        switch (methodname) {
-
-            case "generateCancelProducerPayload":
-                KLog.a(data);
-                if (status.equals("Canceled")) {
-                    //提取按钮
-                    presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            Arith.sub(Arith.mul(available, MyWallet.RATE_S), "10000").toPlainString(), "", this);
-                } else {
-                    //注销按钮
-                    presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", data, "", false, this);
-                }
-
-                break;
-            case "createRetrieveDepositTransaction":
-            case "createCancelProducerTransaction":
-                pwdpresenter.signTransaction(wallet.getWalletId(), MyWallet.ELA, data, pwd, this);
-                break;
-            case "signTransaction":
-                pwdpresenter.publishTransaction(wallet.getWalletId(), MyWallet.ELA, data, this);
-                break;
-            case "publishTransaction":
-                dialogUtil.dialogDismiss();
-                if (status.equals("Canceled")) {
-                    ToastUtils.showShort(R.string.deposit_was_retrieved_successfully);
-                    sbtq.setVisibility(View.GONE);
-                } else {
-                    ll_xggl.setVisibility(View.GONE);
-                    ll_tq.setVisibility(View.VISIBLE);
-                    ToastUtils.showShort(getString(R.string._72));
-                }
-                break;
-
-            //获取钱包owner公钥
-            case "getPublicKeyForVote":
-                ownerPublicKey = data;
-                //getdepositcoin();//获取赎回金额
-                presenter.getDepositcoin(ownerPublicKey, this);
-                break;
-        }
-    }
-
-
-    String available;
-
-
-    @Override
-    public void onGetVoteList(VoteListBean dataResponse) {
-
-
-        if (dataResponse.getData().getResult().getProducers() != null) {
-
-            for (int i = 0; i < dataResponse.getData().getResult().getProducers().size(); i++) {
-
-                if (dataResponse.getData().getResult().getProducers().get(i).getOwnerpublickey().equals(ownerPublicKey)) {
-                    tvNum.setText(dataResponse.getData().getResult().getProducers().get(i).getVotes() + getString(R.string.ticket));
-                    if (dataResponse.getData().getResult().getProducers().get(i).getVoterate() != null) {
-                        tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(dataResponse.getData().getResult().getProducers().get(i).getVoterate()) * 100 + "", 5) + "%");
-                    }
-                }
-
-            }
-        }
-
-
-    }
-
-    @Override
-    public void onGetCommonData(String methodname, Object data) {
-        switch (methodname) {
-            case "getDepositcoin":
-                GetdePositcoinBean getdePositcoinBean = (GetdePositcoinBean) data;
-                available = getdePositcoinBean.getData().getResult().getAvailable();
-                //注销可提取
-                sbtq.setVisibility(View.VISIBLE);
-                break;
+        if (curentNode != null) {
+            tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
+            tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(curentNode.getVoterate()) * 100 + "", 5) + "%");
         }
     }
 
