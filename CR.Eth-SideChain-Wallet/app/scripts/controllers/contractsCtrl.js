@@ -8,7 +8,7 @@ var contractsCtrl = function($scope, $sce, walletService) {
     $scope.sendTxModal = new Modal(document.getElementById('deployContract'));
     $scope.Validator = Validator;
     $scope.tx = {
-        gasLimit: '',
+        gasLimit: '3000000',
         data: '',
         to: '',
         unit: "ether",
@@ -199,6 +199,10 @@ var contractsCtrl = function($scope, $sce, walletService) {
             return;
         }
         $scope.tx.data = $scope.getTxData();
+        if ($scope.contract.name == 'Exchange ETH to ELA' && $scope.contract.functions.length) {
+            $scope.tx.value = (Number($scope.contract.functions[0].inputs[1].value) + Number($scope.contract.functions[0].inputs[2].value)) / 10**18
+            ;
+        }
         $scope.tx.to = $scope.contract.address;
         $scope.sendContractModal.open();
     }
