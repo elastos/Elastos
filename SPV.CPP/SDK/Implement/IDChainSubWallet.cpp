@@ -80,8 +80,15 @@ namespace Elastos {
 		IDChainSubWallet::getVerifiableCredentialTypes(const CredentialSubject &subject) {
 			std::vector<std::string> types = {
 					"SelfProclaimedCredential",
-					"BasicProfileCredential",
 			};
+
+			if (subject.GetName().size() > 0) {
+				types.push_back("BasicProfileCredential");
+			}
+
+			if (subject.ID().find(PREFIX_DID) != std::string::npos) {
+				types.push_back("ElastosIDteriaCredential");
+			}
 
 			if (subject.GetPhone().size() > 0) {
 				types.push_back("PhoneCredential");
@@ -195,13 +202,6 @@ namespace Elastos {
 			nlohmann::json pubKeyInfoArray = didInfo["publicKey"];
 			ErrorChecker::CheckJsonArray(pubKeyInfoArray, 1, "pubKeyInfoArray");
 
-			nlohmann::json credentialSubject= didInfo["credentialSubject"];
-			ErrorChecker::CheckParam(!credentialSubject.is_object(), Error::InvalidArgument,
-									 "invalid credentialSubject JSON");
-
-			ErrorChecker::CheckParam(credentialSubject.find("didName") == credentialSubject.end(), Error::InvalidArgument,
-			                         "must contain didName");
-
 			std::string expirationDate = didInfo["expires"].get<std::string>();
 			ErrorChecker::CheckInternetDate(expirationDate);
 
@@ -220,33 +220,42 @@ namespace Elastos {
 				didPubKeyInfoArray.push_back(pubKeyInfo);
 			}
 
-			CredentialSubject subject;
-			try {
-				std::string cid = credentialSubject["id"].get<std::string>();
-				if (!cid.empty() && cid.compare(0, sizeof(PREFIX_DID) - 1, PREFIX_DID) != 0) {
-					credentialSubject["id"] = PREFIX_DID + cid;
+			VerifiableCredentialArray verifiableCredentials;
+
+			if (didInfo.find("credentialSubject") != didInfo.end()) {
+				VerifiableCredential verifiableCredential;
+				verifiableCredential.SetID(id);
+
+				nlohmann::json credentialSubject = didInfo["credentialSubject"];
+				ErrorChecker::CheckParam(!credentialSubject.is_object(), Error::InvalidArgument,
+				                         "invalid credentialSubject JSON");
+
+				CredentialSubject subject;
+				try {
+					if (credentialSubject.find("id") != credentialSubject.end()) {
+						std::string cid = credentialSubject["id"].get<std::string>();
+						if (!cid.empty() && cid.compare(0, sizeof(PREFIX_DID) - 1, PREFIX_DID) != 0) {
+							credentialSubject["id"] = PREFIX_DID + cid;
+						}
+					}
+					subject.FromJson(credentialSubject, 0);
+				} catch (const nlohmann::detail::exception &e) {
+					ErrorChecker::ThrowParamException(Error::JsonFormatError,
+					                                  "CredentialSubject format err: " + std::string(e.what()));
 				}
 
-				subject.FromJson(credentialSubject, 0);
-			} catch (const nlohmann::detail::exception &e) {
-				ErrorChecker::ThrowParamException(Error::JsonFormatError,
-												  "CredentialSubject format err: " + std::string(e.what()));
+				verifiableCredential.SetCredentialSubject(subject);
+
+				std::vector<std::string> types = getVerifiableCredentialTypes(subject);
+				verifiableCredential.SetTypes(types);
+
+				std::stringstream issuerDate;
+				time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+				issuerDate << std::put_time(std::localtime(&t), "%FT%TZ");
+				verifiableCredential.SetIssuerDate(issuerDate.str());
+
+				verifiableCredentials.push_back(verifiableCredential);
 			}
-
-			VerifiableCredential verifiableCredential;
-			verifiableCredential.SetID(id);
-
-			std::vector<std::string> types = getVerifiableCredentialTypes(subject);
-			verifiableCredential.SetTypes(types);
-			verifiableCredential.SetCredentialSubject(subject);
-
-			std::stringstream issuerDate;
-			time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-			issuerDate << std::put_time(std::localtime(&t), "%FT%TZ");
-			verifiableCredential.SetIssuerDate(issuerDate.str());
-
-			VerifiableCredentialArray verifiableCredentials;
-			verifiableCredentials.push_back(verifiableCredential);
 
 			DIDPayloadInfo payloadInfo;
 			payloadInfo.SetID(id);

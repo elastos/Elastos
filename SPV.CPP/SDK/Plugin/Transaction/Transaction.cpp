@@ -437,9 +437,7 @@ namespace Elastos {
 			ostream.WriteUint32(_lockTime);
 		}
 
-		bool Transaction::Deserialize(const ByteStream &istream, bool extend) {
-			Reinit();
-
+		bool Transaction::DeserializeType(const ByteStream &istream) {
 			uint8_t flagByte = 0;
 			if (!istream.ReadByte(flagByte)) {
 				Log::error("deserialize flag byte error");
@@ -455,6 +453,15 @@ namespace Elastos {
 			} else {
 				_version = TxVersion::Default;
 				_type = flagByte;
+			}
+			return true;
+		}
+
+		bool Transaction::Deserialize(const ByteStream &istream, bool extend) {
+			Reinit();
+
+			if (!DeserializeType(istream)) {
+				return false;
 			}
 
 			if (!istream.ReadByte(_payloadVersion))

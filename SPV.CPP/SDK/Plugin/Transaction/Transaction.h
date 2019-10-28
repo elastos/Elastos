@@ -85,6 +85,8 @@ namespace Elastos {
 
 			bool Deserialize(const ByteStream &istream, bool extend = false);
 
+			virtual bool DeserializeType(const ByteStream &istream);
+
 			uint64_t CalculateFee(uint64_t feePerKb);
 
 			uint64_t GetTxFee(const boost::shared_ptr<Wallet> &wallet);
@@ -199,7 +201,7 @@ namespace Elastos {
 			void Reinit();
 
 
-		private:
+		protected:
 			bool _isRegistered;
 			mutable uint256 _txHash;
 

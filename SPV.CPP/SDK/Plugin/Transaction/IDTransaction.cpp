@@ -5,6 +5,8 @@
 #include "IDTransaction.h"
 #include "SDK/Plugin/Transaction/Payload/DIDInfo.h"
 #include "SDK/Plugin/Transaction/Payload/RegisterIdentification.h"
+#include <SDK/Common/Log.h>
+
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -39,6 +41,16 @@ namespace Elastos {
 			}
 
 			return payload;
+		}
+
+		bool IDTransaction::DeserializeType(const ByteStream &istream) {
+			if (!istream.ReadByte(_type)) {
+				Log::error("deserialize flag byte error");
+				return false;
+			}
+			_version = TxVersion::Default;
+
+			return true;
 		}
 
 	}
