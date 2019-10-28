@@ -16,6 +16,7 @@ import (
 
 	"github.com/aristanetworks/glog"
 	pb "github.com/openconfig/gnmi/proto/gnmi"
+	"golang.org/x/sync/errgroup"
 )
 
 // TODO: Make this more clear
@@ -60,6 +61,8 @@ func main() {
 		"only applies for sample subscriptions (400ms, 2.5s, 1m, etc.)")
 	heartbeatIntervalStr := flag.String("heartbeat_interval", "0", "Subscribe heartbeat "+
 		"interval, only applies for on-change subscriptions (400ms, 2.5s, 1m, etc.)")
+	arbitrationStr := flag.String("arbitration", "", "master arbitration identifier "+
+		"([<role_id>:]<election_id>)")
 
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, help)
@@ -123,32 +126,33 @@ func main() {
 				i++
 			}
 			respChan := make(chan *pb.SubscribeResponse)
-			errChan := make(chan error)
-			defer close(errChan)
 			subscribeOptions.Origin = origin
 			subscribeOptions.Paths = gnmi.SplitPaths(args[i+1:])
-			go gnmi.Subscribe(ctx, client, subscribeOptions, respChan, errChan)
-			for {
-				select {
-				case resp, open := <-respChan:
-					if !open {
-						return
-					}
-					if err := gnmi.LogSubscribeResponse(resp); err != nil {
-						glog.Fatal(err)
-					}
-				case err := <-errChan:
+			var g errgroup.Group
+			g.Go(func() error {
+				return gnmi.SubscribeErr(ctx, client, subscribeOptions, respChan)
+			})
+			for resp := range respChan {
+				if err := gnmi.LogSubscribeResponse(resp); err != nil {
 					glog.Fatal(err)
 				}
 			}
+			if err := g.Wait(); err != nil {
+				glog.Fatal(err)
+			}
+			return
 		case "update", "replace", "delete":
-			if len(args) == i+1 {
+			// ok if no args, if arbitration was specified
+			if len(args) == i+1 && *arbitrationStr == "" {
 				usageAndExit("error: missing path")
 			}
 			op := &gnmi.Operation{
 				Type: args[i],
 			}
 			i++
+			if len(args) <= i {
+				break
+			}
 			var ok bool
 			op.Origin, ok = parseOrigin(args[i])
 			if ok {
@@ -167,10 +171,11 @@ func main() {
 			usageAndExit(fmt.Sprintf("error: unknown operation %q", args[i]))
 		}
 	}
-	if len(setOps) == 0 {
-		usageAndExit("")
+	arb, err := gnmi.ArbitrationExt(*arbitrationStr)
+	if err != nil {
+		glog.Fatal(err)
 	}
-	err = gnmi.Set(ctx, client, setOps)
+	err = gnmi.Set(ctx, client, setOps, arb)
 	if err != nil {
 		glog.Fatal(err)
 	}
