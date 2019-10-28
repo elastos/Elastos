@@ -12,7 +12,7 @@ export default ({ data, hideAuthor, postedByText, user }) => {
   ) : (
     <span>
       {postedByText || I18N.get('suggestion.postedBy')}{' '}
-      <PopoverProfile data={data} meta={true} user={user} />
+      <PopoverProfile data={data} user={user} />
     </span>
   )
 
