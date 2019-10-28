@@ -65,15 +65,15 @@ struct DIDDocument {
 
 struct PublicKey {
     DIDURL id;
-    const char type[MAX_TYPE];
+    char type[MAX_TYPE];
     DID controller;
-    const char publicKeyBase58[MAX_PUBLICKEY_BASE58];
+    char publicKeyBase58[MAX_PUBLICKEY_BASE58];
 };
 
 struct Service {
     DIDURL id;
-    const char type[MAX_TYPE];
-    const char endpoint[MAX_ENDPOINT];
+    char type[MAX_TYPE];
+    char endpoint[MAX_ENDPOINT];
 };
 
 #ifdef __cplusplus

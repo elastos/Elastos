@@ -591,7 +591,8 @@ void DIDDocument_Destroy(DIDDocument *document)
     free(document);
 }
 
-static PublicKey *create_publickey(DIDURL *id, DID *controller, const char *publickey)
+static
+PublicKey *create_publickey(DIDURL *id, DID *controller, const char *publickey)
 {
     PublicKey *pk = NULL;
 
@@ -603,13 +604,14 @@ static PublicKey *create_publickey(DIDURL *id, DID *controller, const char *publ
     if (!pk)
         return NULL;
 
-    if (DIDURL_Copy(&(pk->id), id) == -1 || DID_Copy(&(pk->controller), controller) == -1) {
+    if (DIDURL_Copy(&pk->id, id) == -1 ||
+        DID_Copy(&pk->controller, controller) == -1) {
         free(pk);
         return NULL;
     }
 
-    strcpy((char*)pk->type, "ECDSAsecp256r1");
-    strcpy((char*)pk->publicKeyBase58, publickey);
+    strcpy(pk->type, "ECDSAsecp256r1");
+    strcpy(pk->publicKeyBase58, publickey);
 
     return pk;
 }
@@ -619,7 +621,9 @@ int DIDDocument_SetSubject(DIDDocument *document, DID *subject)
     if (!document || !subject)
         return -1;
 
-    return DID_Copy(&(document->did), subject);
+    (void)DID_Copy(&document->did, subject);
+
+    return 0;
 }
 
 int DIDDocument_AddPublickey(DIDDocument *document, DIDURL *key, DID *controller,
@@ -811,32 +815,34 @@ ssize_t DIDDocument_GetPublicKeysCount(DIDDocument *document)
 
 PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *id)
 {
-    size_t size;
     PublicKey *pk;
+    size_t size;
+    size_t i;
 
-    if (!document || !id || strlen(id->fragment) == 0)
+    if (!document || !id || !*id->fragment)
         return NULL;
 
     size = document->publickeys.size;
     if (!size)
         return NULL;
 
-    if (strlen(id->did.idstring) == 0)
+    if (!*id->did.idstring)
         strcpy(id->did.idstring, document->did.idstring);
 
-    for ( int i = 0; i < size; i++ ) {
+    for (i = 0; i < size; i++ ) {
         pk = document->publickeys.pks[i];
-        if (DIDURL_Equals(id, &(pk->id)))
+        if (DIDURL_Equals(id, &pk->id))
             return pk;
     }
 
     return NULL;
 }
 
-ssize_t DIDDocument_GetPublicKeys(DIDDocument *document, PublicKey **pks, size_t size)
+ssize_t DIDDocument_GetPublicKeys(DIDDocument *document, PublicKey **pks,
+                                  size_t size)
 {
-    ssize_t actual_size;
     PublicKey **temp_pks;
+    size_t actual_size;
 
     if (!document || !pks)
         return -1;
@@ -846,42 +852,44 @@ ssize_t DIDDocument_GetPublicKeys(DIDDocument *document, PublicKey **pks, size_t
         return -1;
 
     memcpy(pks, document->publickeys.pks, sizeof(PublicKey*) * actual_size);
-    return actual_size;
+    return (ssize_t)actual_size;
 }
 
-ssize_t DIDDocument_SelectPublicKey(DIDDocument *document, const char *type,
-         DIDURL *id, PublicKey **pks, size_t size)
+ssize_t DIDDocument_SelectPublicKey(DIDDocument *document,
+                                    const char *type, DIDURL *id,
+                                    PublicKey **pks, size_t size)
 {
-    size_t pk_size, actual_size = 0;
-    int i;
+    size_t actual_size = 0;
+    size_t total_size;
+    size_t i;
 
-    if (!document || (!id && !type) || (id && strlen(id->fragment) == 0))
+    if (!document || (!id && !type) || (id && !*id->fragment))
         return -1;
 
-    pk_size = document->publickeys.size;
-    for (i = 0; i < pk_size && actual_size <= size; i++) {
-        PublicKey *pk = document->publickeys.pks[i];
-        if (id) {
-            if (strlen(id->did.idstring) == 0)
-                strcpy(id->did.idstring, document->did.idstring);
-            if (!DIDURL_Equals(id, &pk->id))
-                continue;
-        }
+    if (id && !*id->did.idstring)
+        strcpy(id->did.idstring, document->did.idstring);
 
+    total_size = document->publickeys.size;
+    for (i = 0; i < total_size; i++) {
+        PublicKey *pk = document->publickeys.pks[i];
+
+        if (id && !DIDURL_Equals(id, &pk->id))
+            continue;
         if (type && strcmp(type, pk->type))
             continue;
 
-        if (actual_size < size)
-            pks[actual_size++] = pk;
-        else {
-            memset(pks, 0, sizeof(PublicKey*) * size);
+        if (actual_size >= size)
             return -1;
-        }
+
+        pks[actual_size++] = pk;
     }
-    return actual_size;
+
+    return (ssize_t)actual_size;
 }
 
-static void dumpbin(const char *hint, const unsigned char *data, size_t len)
+#if __DEBUG
+static
+void dumpbin(const char *hint, const unsigned char *data, size_t len)
 {
     printf("%s: ", hint);
 
@@ -890,27 +898,28 @@ static void dumpbin(const char *hint, const unsigned char *data, size_t len)
 
     printf("\n");
 }
+#endif
 
 DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document)
 {
-    int i;
-    PublicKey *publickey;
-    uint8_t binkey[PUBLICKEY_BYTES];
     char idstring[MAX_ID_SPECIFIC_STRING];
+    uint8_t binkey[PUBLICKEY_BYTES];
+    PublicKey *pk;
+    size_t i;
 
     if (!document)
         return NULL;
 
-    for ( i = 0; i < document->publickeys.size; i++) {
-        publickey = document->publickeys.pks[i];
-        if (DID_Equals(&publickey->controller, &document->did) == 0)
+    for (i = 0; i < document->publickeys.size; i++) {
+        pk = document->publickeys.pks[i];
+        if (DID_Equals(&pk->controller, &document->did) == 0)
             continue;
 
-        base58_decode(binkey, publickey->publicKeyBase58);
+        base58_decode(binkey, pk->publicKeyBase58);
         HDkey_GetIdString(binkey, idstring, sizeof(idstring));
-        printf("ID String: %s\n", idstring);
-        if (!strcmp(idstring, publickey->id.did.idstring))
-            return &(document->publickeys.pks[i]->id);
+
+        if (!strcmp(idstring, pk->id.did.idstring))
+            return &pk->id;
     }
 
     return NULL;
@@ -925,7 +934,8 @@ ssize_t DIDDocument_GetAuthenticationsCount(DIDDocument *document)
     return (ssize_t)document->authentication.size;
 }
 
-ssize_t DIDDocument_GetAuthentications(DIDDocument *document, PublicKey **pks, size_t size)
+ssize_t DIDDocument_GetAuthentications(DIDDocument *document, PublicKey **pks,
+                                       size_t size)
 {
     size_t actual_size;
 
@@ -942,18 +952,18 @@ ssize_t DIDDocument_GetAuthentications(DIDDocument *document, PublicKey **pks, s
 
 PublicKey *DIDDocument_GetAuthentication(DIDDocument *document, DIDURL *id)
 {
-    size_t size;
     PublicKey *pk;
-    int i;
+    size_t size;
+    size_t i;
 
-    if (!document || !id || strlen(id->fragment) == 0)
+    if (!document || !id || !*id->fragment)
         return NULL;
 
     size = document->authentication.size;
     if (!size)
         return NULL;
 
-    if (strlen(id->did.idstring) == 0)
+    if (!*id->did.idstring)
         strcpy(id->did.idstring, document->did.idstring);
 
     for (i = 0; i < size; i++) {
@@ -965,35 +975,35 @@ PublicKey *DIDDocument_GetAuthentication(DIDDocument *document, DIDURL *id)
     return NULL;
 }
 
-ssize_t DIDDocument_SelectAuthentication(DIDDocument *document, const char *type,
-         DIDURL *id, PublicKey **pks, size_t size)
+ssize_t DIDDocument_SelectAuthentication(DIDDocument *document,
+                                         const char *type, DIDURL *id,
+                                         PublicKey **pks, size_t size)
 {
-    size_t pk_size, actual_size = 0;
-    int i;
+    size_t actual_size = 0;
+    size_t total_size;
+    size_t i;
 
-    if (!document || (!id && !type) || (id && strlen(id->fragment) == 0))
+    if (!document || (!id && !type) || (id && !*id->fragment))
         return -1;
 
-    pk_size = document->authentication.size;
-    for (i = 0; i < pk_size && actual_size <= size; i++) {
-        PublicKey *pk = document->authentication.pks[i];
-        if (id) {
-            if (strlen(id->did.idstring) == 0)
-                strcpy((char*)id->did.idstring, document->did.idstring);
-            if (!DIDURL_Equals(id, &pk->id))
-                continue;
-        }
+    if (id && !*id->did.idstring)
+        strcpy(id->did.idstring, document->did.idstring);
 
+    total_size = document->authentication.size;
+    for (i = 0; i < total_size; i++) {
+        PublicKey *pk = document->authentication.pks[i];
+
+        if (id && !DIDURL_Equals(id, &pk->id))
+            continue;
         if (type && strcmp(type, pk->type))
             continue;
 
-        if (actual_size < size)
-            pks[actual_size++] = pk;
-        else {
-            memset(pks, 0, sizeof(PublicKey*) * size);
+        if (actual_size >= size)
             return -1;
-        }
+
+        pks[actual_size++] = pk;
     }
+
     return (ssize_t)actual_size;
 }
 
@@ -1006,7 +1016,8 @@ ssize_t DIDDocument_GetAuthorizationsCount(DIDDocument *document)
     return (ssize_t)document->authorization.size;
 }
 
-ssize_t DIDDocument_GetAuthorizations(DIDDocument *document, PublicKey **pks, size_t size)
+ssize_t DIDDocument_GetAuthorizations(DIDDocument *document, PublicKey **pks,
+                                      size_t size)
 {
     size_t actual_size;
 
@@ -1046,42 +1057,39 @@ PublicKey *DIDDocument_GetAuthorization(DIDDocument *document, DIDURL *id)
     return NULL;
 }
 
-ssize_t DIDDocument_SelectAuthorization(DIDDocument *document, const char *type,
-          DIDURL *id, PublicKey **pks, size_t size)
+ssize_t DIDDocument_SelectAuthorization(DIDDocument *document,
+                                        const char *type, DIDURL *id,
+                                        PublicKey **pks, size_t size)
 {
-    size_t pk_size, actual_size = 0;
-    int i;
+    size_t actual_size = 0;
+    size_t total_size;
+    size_t i;
 
-    if (!document || (!id && !type) || (id && strlen(id->fragment) == 0))
+    if (!document || (!id && !type) || (id && !*id->fragment))
         return -1;
 
-    pk_size = document->authorization.size;
-    if (!pk_size)
+    total_size = document->authorization.size;
+    if (!total_size)
         return -1;
 
-    if (strlen(id->did.idstring) == 0)
+    if (id && !*id->did.idstring)
         strcpy(id->did.idstring, document->did.idstring);
 
-    for (i = 0; i < pk_size && actual_size <= size; i++) {
+    for (i = 0; i < total_size; i++) {
         PublicKey *pk = document->authorization.pks[i];
-        if (id) {
-            if (strlen(id->did.idstring) == 0)
-                strcpy(id->did.idstring, document->did.idstring);
-            if (!DIDURL_Equals(id, &pk->id))
-                continue;
-        }
 
+        if (id && !DIDURL_Equals(id, &pk->id))
+            continue;
         if (type && strcmp(type, pk->type))
             continue;
 
-        if (actual_size < size)
-            pks[actual_size++] = pk;
-        else {
-            memset(pks, 0, sizeof(PublicKey*) * size);
+        if (actual_size >= size)
             return -1;
-        }
+
+        pks[actual_size++] = pk;
     }
-    return actual_size;
+
+    return (ssize_t)actual_size;
 }
 
 //////////////////////////Credential///////////////////////////
@@ -1093,7 +1101,8 @@ ssize_t DIDDocument_GetCredentialsCount(DIDDocument *document)
     return (ssize_t)document->credentials.size;
 }
 
-ssize_t DIDDocument_GetCredentials(DIDDocument *document, Credential **creds, size_t size)
+ssize_t DIDDocument_GetCredentials(DIDDocument *document, Credential **creds,
+                                   size_t size)
 {
     size_t actual_size;
 
@@ -1114,7 +1123,7 @@ Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *id)
     size_t size;
     size_t i;
 
-    if (!document || !id || strlen(id->fragment) == 0)
+    if (!document || !id || !*id->fragment)
         return NULL;
 
     size = document->credentials.size;
@@ -1130,29 +1139,31 @@ Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *id)
     return NULL;
 }
 
-ssize_t DIDDocument_SelectCredential(DIDDocument *document, const char *type, DIDURL *id,
-        Credential **creds, size_t size)
+ssize_t DIDDocument_SelectCredential(DIDDocument *document,
+                                     const char *type, DIDURL *id,
+                                     Credential **creds, size_t size)
 {
-    ssize_t cred_size, actual_size = 0;
-    int i, j;
+    size_t actual_size = 0;
+    size_t total_size;
+    size_t i, j;
 
-    if (!document || (!id && !type) || (id && strlen(id->fragment) == 0))
+    if (!document || (!id && !type) || (id && !*id->fragment))
         return -1;
 
-    cred_size = document->credentials.size;
-    if (!cred_size)
+    total_size = document->credentials.size;
+    if (!total_size)
         return -1;
 
-    for (i = 0; i < cred_size && actual_size <= size; i++) {
+    if (id && (!*id->did.idstring))
+        strcpy(id->did.idstring, document->did.idstring);
+
+    for (i = 0; i < total_size; i++) {
         Credential *cred = document->credentials.credentials[i];
-        if (id) {
-            if (strlen(id->did.idstring) == 0)
-                strcpy(id->did.idstring, document->did.idstring);
-            if (!DIDURL_Equals(id, &cred->id))
-                continue;
-        }
 
-        if (type) {
+        if (id && !DIDURL_Equals(id, &cred->id))
+            continue;
+
+        if (type) { // TODO: check.
             for (j = 0; j < cred->type.size; j++) {
                 const char *new_type = cred->type.types[j];
                 if (!new_type || strcmp(new_type, type))
@@ -1160,14 +1171,13 @@ ssize_t DIDDocument_SelectCredential(DIDDocument *document, const char *type, DI
             }
         }
 
-        if (actual_size < size)
-            creds[actual_size++] = cred;
-        else {
-            memset(creds, 0, sizeof(Credential*) * actual_size);
+        if (actual_size >= size)
             return -1;
-        }
+
+        creds[actual_size++] = cred;
     }
-    return actual_size;
+
+    return (ssize_t)actual_size;
 }
 
 ////////////////////////////////service//////////////////////
@@ -1179,7 +1189,8 @@ ssize_t DIDDocument_GetServicesCount(DIDDocument *document)
     return (ssize_t)document->services.size;
 }
 
-ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services, size_t size)
+ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services,
+                                size_t size)
 {
     size_t actual_size;
 
@@ -1200,7 +1211,7 @@ Service *DIDDocument_GetService(DIDDocument *document, DIDURL *id)
     size_t size;
     size_t i;
 
-    if (!document || !id || strlen(id->fragment) == 0)
+    if (!document || !id || !*id->fragment)
         return NULL;
 
     size = document->services.size;
@@ -1216,38 +1227,39 @@ Service *DIDDocument_GetService(DIDDocument *document, DIDURL *id)
     return NULL;
 }
 
-ssize_t DIDDocument_SelectService(DIDDocument *document, const char *type,
-        DIDURL *id, Service **services, size_t size)
+ssize_t DIDDocument_SelectService(DIDDocument *document,
+                                  const char *type, DIDURL *id,
+                                  Service **services, size_t size)
 {
-    ssize_t ser_size, actual_size = 0;
+    size_t actual_size = 0;
+    size_t total_size;
+    size_t i;
 
-    if (!document || (!id && !type) || strlen(id->fragment) == 0)
+    if (!document || (!id && !type) || !*id->fragment)
         return -1;
 
-    ser_size = document->services.size;
-    if (!ser_size)
+    total_size = document->services.size;
+    if (!total_size)
         return -1;
 
-    for (int i = 0; i < ser_size && actual_size <= size; i++) {
+    if (id && !*id->did.idstring)
+        strcpy(id->did.idstring, document->did.idstring);
+
+    for (i = 0; i < total_size; i++) {
         Service *service = document->services.services[i];
-        if (id) {
-            if (strlen(id->did.idstring) == 0)
-                strcpy((char*)id->did.idstring, document->did.idstring);
-            if (!DIDURL_Equals(id, &service->id))
-                continue;
-        }
 
+        if (id && !DIDURL_Equals(id, &service->id))
+            continue;
         if (type && strcmp(type, service->type))
             continue;
 
-        if (actual_size < size)
-            services[actual_size++] = service;
-        else {
-            memset(services, 0, sizeof(Service*) * size);
+        if (actual_size >= size)
             return -1;
-        }
+
+        services[actual_size++] = service;
     }
-    return actual_size;
+
+    return (ssize_t)actual_size;
 }
 
 ///////////////////////////////expires////////////////////////
