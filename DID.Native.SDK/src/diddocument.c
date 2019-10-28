@@ -170,25 +170,23 @@ static int Credentials_ToJson(JsonGenerator *generator, Credential **creds, int 
     return 0;
 }
 
-static int add_to_publickeys(DIDDocument *document, PublicKey *pulickey)
+static int add_to_publickeys(DIDDocument *document, PublicKey *pk)
 {
     PublicKey **pks = NULL;
 
-    if (!document || !pulickey)
+    assert(document);
+    assert(pk);
+
+    if (!document->publickeys.pks)
+        pks = (PublicKey**)calloc(1, sizeof(PublicKey*));
+    else
+        pks = realloc(document->publickeys.pks,
+                     (document->publickeys.size + 1) * sizeof(PublicKey*));
+
+    if (!pks)
         return -1;
 
-    if (!document->publickeys.pks) {
-        pks = (PublicKey**)calloc(1, sizeof(PublicKey*));
-        if (!pks)
-            return -1;
-    }
-    else {
-        pks = realloc(document->publickeys.pks, (document->publickeys.size + 1) * sizeof(PublicKey*));
-        if (!pks)
-            return -1;
-    }
-
-    pks[document->publickeys.size] = pulickey;
+    pks[document->publickeys.size] = pk;
     document->publickeys.pks = pks;
     document->publickeys.size++;
 
@@ -604,11 +602,8 @@ PublicKey *create_publickey(DIDURL *id, DID *controller, const char *publickey)
     if (!pk)
         return NULL;
 
-    if (DIDURL_Copy(&pk->id, id) == -1 ||
-        DID_Copy(&pk->controller, controller) == -1) {
-        free(pk);
-        return NULL;
-    }
+    DIDURL_Copy(&pk->id, id);
+    DID_Copy(&pk->controller, controller);
 
     strcpy(pk->type, "ECDSAsecp256r1");
     strcpy(pk->publicKeyBase58, publickey);
@@ -621,36 +616,44 @@ int DIDDocument_SetSubject(DIDDocument *document, DID *subject)
     if (!document || !subject)
         return -1;
 
-    (void)DID_Copy(&document->did, subject);
-
+    DID_Copy(&document->did, subject);
     return 0;
 }
 
 int DIDDocument_AddPublickey(DIDDocument *document, DIDURL *key, DID *controller,
-        const char *publickeybase)
+                             const char *publickeybase)
 {
     PublicKey *pk;
 
-    if (!document || !key || !controller || !publickeybase || strlen(publickeybase) == 0
-             || strlen (publickeybase) >= MAX_PUBLICKEY_BASE58)
+    if (!document || !key || !controller ||
+        !publickeybase || !*publickeybase ||
+        strlen(publickeybase) >= MAX_PUBLICKEY_BASE58)
         return -1;
 
     pk = create_publickey(key, controller, publickeybase);
     if (!pk)
         return -1;
 
-    return add_to_publickeys(document, pk);
+    if (add_to_publickeys(document, pk) == -1) {
+        Publickey_Destroy(pk);
+        return -1;
+    }
+
+    return 0;
 }
 
 int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *key,
-        DID *controller, const char *publickeybase)
+                                     DID *controller, const char *publickeybase)
 {
-    PublicKey **pks = NULL;
+    PublicKey **pks;
     PublicKey *pk;
-    int i, pk_size, auth_size;
+    size_t pk_size;
+    size_t auth_size;
+    size_t i;
 
-    if (!document || !key || !controller || !publickeybase || strlen(publickeybase) == 0
-             || strlen (publickeybase) >= MAX_PUBLICKEY_BASE58)
+    if (!document || !key || !controller ||
+        !publickeybase || !*publickeybase ||
+        strlen (publickeybase) >= MAX_PUBLICKEY_BASE58)
         return -1;
 
     pk_size = document->publickeys.size;
@@ -659,75 +662,94 @@ int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *key,
     if (auth_size == 0)
         pks = (PublicKey**)calloc(1, sizeof(PublicKey*));
     else
-        pks = (PublicKey**)realloc(document->authentication.pks, (auth_size + 1) * sizeof(PublicKey*));
+        pks = (PublicKey**)realloc(document->authentication.pks,
+                                  (auth_size + 1) * sizeof(PublicKey*));
 
     if (!pks)
         return -1;
 
     //check new authentication key is exist in publickeys
-    if (pk_size > 0) {
-        for (i = 0; i < pk_size; i++) {
-            PublicKey *temp_pk = document->publickeys.pks[i];
-            if (strcmp(temp_pk->id.did.idstring, key->did.idstring) != 0
-                    || strcmp(temp_pk->id.fragment, key->fragment) != 0)
-                continue;
+    for (i = 0; i < pk_size; i++) {
+        PublicKey *temp_pk = document->publickeys.pks[i];
+        if (strcmp(temp_pk->id.did.idstring, key->did.idstring) != 0 ||
+            strcmp(temp_pk->id.fragment, key->fragment) != 0)
+            continue;
 
-            pks[document->authentication.size++] = temp_pk;
-            document->authentication.pks = pks;
-            return 0;
-        }
+        pks[document->authentication.size++] = temp_pk;
+        document->authentication.pks = pks;
+        return 0;
     }
 
     pk = create_publickey(key, controller, publickeybase);
+    if (!pk) {
+        // BUGBUG: what about pks.
+        return -1;
+    }
+
+    if (add_to_publickeys(document, pk) == -1) {
+        // BUGBUG: what about pks;
+        Publickey_Destroy(pk);
+        return -1;
+    }
+
     pks[document->authentication.size++] = pk;
     document->authentication.pks = pks;
 
-    return add_to_publickeys(document, pk);
+    return 0;
 }
 
 int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *key,
-        DID *controller, const char *publickeybase)
+                                    DID *controller, const char *publickeybase)
 {
-    PublicKey **pks = NULL;
+    PublicKey **pks;
     PublicKey *pk;
-    int i, size;
+    size_t pk_size;
+    size_t auth_size;
+    size_t i;
 
-    if (!document || !key || !controller || !publickeybase || strlen(publickeybase) == 0
-             || strlen (publickeybase) >= MAX_PUBLICKEY_BASE58)
+    if (!document || !key || !controller ||
+        !publickeybase || !*publickeybase ||
+        strlen (publickeybase) >= MAX_PUBLICKEY_BASE58)
         return -1;
 
-    size = document->publickeys.size;
+    pk_size = document->publickeys.size;
+    auth_size = document->authorization.size;
 
-    if (document->authorization.size == 0) {
+    if (auth_size == 0)
         pks = (PublicKey**)calloc(1, sizeof(PublicKey*));
-        if (!pks)
-            return -1;
-    }
-    else {
-        pks = (PublicKey**)realloc(document->authorization.pks, (size + 1) * sizeof(PublicKey*));
-        if (!pks)
-            return -1;
-    }
+    else
+        pks = (PublicKey**)realloc(document->authorization.pks,
+                                  (auth_size + 1) * sizeof(PublicKey*));
 
     //check new authentication key is exist in publickeys
-    if (size > 0) {
-        for (i = 0; i < size; i++) {
-            PublicKey *temp_pk = document->publickeys.pks[i];
-            if (strcmp(temp_pk->id.did.idstring, key->did.idstring) == 0
-                    || strcmp(temp_pk->id.fragment, key->fragment) == 0)
-                continue;
+    for (i = 0; i < pk_size; i++) {
+        PublicKey *temp_pk = document->publickeys.pks[i];
 
-            pks[document->authorization.size++] = temp_pk;
-            document->authorization.pks = pks;
-            return 0;
-        }
+        if (strcmp(temp_pk->id.did.idstring, key->did.idstring) != 0 ||
+            strcmp(temp_pk->id.fragment, key->fragment) != 0)
+            continue;
+
+        pks[document->authorization.size++] = temp_pk;
+        document->authorization.pks = pks;
+        return 0;
     }
 
     pk = create_publickey(key, controller, publickeybase);
+    if (pk < 0) {
+        //BUGBUG: what about pks;
+        return -1;
+    }
+
+    if (add_to_publickeys(document, pk) == -1) {
+        //BUGBUG: what about pks;
+        Publickey_Destroy(pk);
+        return -1;
+    }
+
     pks[document->authorization.size++] = pk;
     document->authorization.pks = pks;
 
-    return add_to_publickeys(document, pk);
+    return 0;
 }
 
 int DIDDocument_AddCredential(DIDDocument *document, Credential *credential)
@@ -737,16 +759,14 @@ int DIDDocument_AddCredential(DIDDocument *document, Credential *credential)
     if (!document || !credential)
         return -1;
 
-    if ( document->credentials.size == 0 ) {
+    if ( document->credentials.size == 0 )
         creds = (Credential**)calloc(1, sizeof(Credential*));
-        if (!creds)
-            return -1;
-    }
-    else {
-        creds = realloc(document->credentials.credentials, (document->credentials.size + 1) * sizeof(Credential*));
-        if (!creds)
-            return -1;
-    }
+    else
+        creds = (Credential**)realloc(document->credentials.credentials,
+                       (document->credentials.size + 1) * sizeof(Credential*));
+
+    if (!creds)
+        return -1;
 
     creds[document->credentials.size] = credential;
     document->credentials.credentials = creds;
@@ -755,39 +775,33 @@ int DIDDocument_AddCredential(DIDDocument *document, Credential *credential)
     return 0;
 }
 
-int DIDDocument_AddService(DIDDocument *document, DIDURL *id, const char *type, const char *endpoint)
+int DIDDocument_AddService(DIDDocument *document, DIDURL *id,
+                           const char *type, const char *endpoint)
 {
     Service **services = NULL;
     Service *service = NULL;
 
-    if (!document || !id || !type || !endpoint || strlen(type) == 0 || strlen(type) >= MAX_TYPE
-             || strlen(endpoint) == 0 || strlen(endpoint) >= MAX_ENDPOINT)
+    if (!document || !id || !type || !*type || strlen(type) >= MAX_TYPE ||
+        !endpoint || !*endpoint || strlen(endpoint) >= MAX_ENDPOINT)
         return -1;
 
     service = (Service*)calloc(1, sizeof(Service));
     if (!service)
         return -1;
 
-    if (DIDURL_Copy(&(service->id), id) == 0) {
+    DIDURL_Copy(&service->id, id);
+    strcpy(service->type, type);
+    strcpy(service->endpoint, endpoint);
+
+    if (document->services.size == 0 )
+        services = (Service**)calloc(1, sizeof(Service*));
+    else
+        services = (Service**)realloc(document->services.services,
+                            (document->services.size + 1) * sizeof(Service*));
+
+    if (!services) {
         Service_Destroy(service);
         return -1;
-    }
-    strcpy((char*)service->type, type);
-    strcpy((char*)service->endpoint, endpoint);
-
-    if (document->services.size == 0 ) {
-        services = (Service**)calloc(1, sizeof(Service*));
-        if (!services) {
-            Service_Destroy(service);
-            return -1;
-        }
-    }
-    else {
-        services = realloc(document->services.services, (document->services.size + 1) * sizeof(Service*));
-        if (!services) {
-            Service_Destroy(service);
-            return -1;
-        }
     }
 
     services[document->services.size++] = service;
