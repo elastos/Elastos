@@ -328,14 +328,14 @@ class C extends StandardPage {
 
   renderPreambleItem(key, value) {
     return (
-      <Row key={key}>
+      <Item key={key}>
         <Col span={6}>
-          <PartContent>{`${key}:`}</PartContent>
+          <ItemTitle>{key}</ItemTitle>
         </Col>
         <Col span={18}>
-          <PartContent>{value}</PartContent>
+          <ItemText className="preamble preamble-value">{value}</ItemText>
         </Col>
-      </Row>
+      </Item>
     )
   }
 
@@ -784,6 +784,21 @@ const PartTitle = styled.h4`
 `
 
 const PartContent = styled.div``
+
+const Item = styled(Row)`
+  margin-top: 10px;
+  font-size: 13px;
+  font-style: italic;
+`
+const ItemTitle = styled.div`
+  font-weight: 400;
+  :after {
+    content: ':';
+  }
+`
+const ItemText = styled.div`
+  font-weight: 200;
+`
 
 const FixedHeader = styled.div`
   background: white;
