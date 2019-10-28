@@ -466,7 +466,7 @@ class C extends StandardPage {
 
     if (!isVisible) return null
 
-    const { visibleReject } = this.state
+    const { visibleReject, visibleApprove } = this.state
     const rejectBtn = (
       <Button
         type="primary"
@@ -497,8 +497,9 @@ class C extends StandardPage {
           onConfirm={this.approvedReview}
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
+          visible={visibleApprove}
         >
-          <Button className="cr-btn cr-btn-primary" style={{ marginLeft: 10 }}>
+          <Button className="cr-btn cr-btn-primary" style={{ marginLeft: 10 }} onClick={this.showApproveModal}>
             {I18N.get('elip.button.approve')}
           </Button>
         </Popconfirm>
@@ -615,13 +616,15 @@ class C extends StandardPage {
   }
 
   showRejectModal = () => {
-    const { visibleReject } = this.state
+    const { visibleReject, visibleApprove } = this.state
     this.setState({ visibleReject: !visibleReject })
+    if (!visibleReject && visibleApprove) this.setState({ visibleApprove: !visibleApprove })
   }
 
   showApproveModal = () => {
-    const { visibleApprove } = this.state
+    const { visibleReject, visibleApprove } = this.state
     this.setState({ visibleApprove: !visibleApprove })
+    if (!visibleApprove && visibleReject) this.setState({ visibleReject: !visibleReject })
   }
 
   showYesVoteModal = () => {
