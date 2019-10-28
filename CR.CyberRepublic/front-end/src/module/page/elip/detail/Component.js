@@ -12,14 +12,13 @@ import BackLink from '@/module/shared/BackLink/Component'
 import Meta from '@/module/common/Meta'
 import MetaComponent from '@/module/shared/meta/Container'
 import CRPopover from '@/module/shared/Popover/Component'
-import { ELIP_STATUS, ELIP_REVIEW_STATUS, ELIP_VOTE_STATUS } from '@/constant'
+import { ELIP_STATUS, ELIP_REVIEW_STATUS } from '@/constant'
 import { text } from '@/constants/color'
 import { logger } from '@/util'
 import { breakPoint } from '@/constants/breakPoint'
 import moment from 'moment/moment'
 import PopoverProfile from '@/module/common/PopoverProfile'
 import ReviewHistory from './ReviewHistory'
-import VoteHistory from './VoteHistory'
 
 const { Link } = Anchor
 
@@ -136,43 +135,11 @@ class C extends StandardPage {
     this.updateReviewStatus(ELIP_REVIEW_STATUS.APPROVED, reason)
   }
 
-  updateVoteStatus = async (status, reason) => {
-    const { vote, data } = this.props
-    const param = {
-      comment: reason && reason.reason,
-      status,
-      elipId: data._id
-    }
-    try {
-      await vote(param)
-      message.success(I18N.get('elip.msg.updated'))
-      this.refetch()
-    } catch (err) {
-      logger.error(err)
-    }
-  }
-
-  yesVote = reason => {
-    this.updateVoteStatus(ELIP_VOTE_STATUS.YES, reason)
-  }
-
-  opposeVote = reason => {
-    this.updateVoteStatus(ELIP_VOTE_STATUS.OPPOSE, reason)
-  }
-
-  abstainVote = reason => {
-    this.updateVoteStatus(ELIP_VOTE_STATUS.ABSTAIN, reason)
-  }
-
   renderAnchors() {
     const { data, reviews, isSecretary } = this.props
     const reviewLink =
       isSecretary || (this.isAuthor(data) && !_.isEmpty(reviews)) ? (
         <Link href="#review" title={I18N.get('elip.fields.review')} />
-      ) : null
-    const voteLink =
-      ELIP_STATUS.SUBMITTED === data.status ? (
-        <Link href="#vote" title={I18N.get('elip.fields.vote')} />
       ) : null
     return (
       <StyledAnchor offsetTop={300}>
@@ -201,7 +168,6 @@ class C extends StandardPage {
         </LinkGroup>
         <LinkGroup marginTop={51}>
           {reviewLink}
-          {/* {voteLink} */}
         </LinkGroup>
       </StyledAnchor>
     )
@@ -222,7 +188,6 @@ class C extends StandardPage {
     const stickyHeader = this.renderStickyHeader()
     const preamble = this.renderPreamble()
     const review = this.renderReview()
-    const vote = this.renderVote()
     const comment = this.renderComment()
 
     return (
@@ -239,7 +204,6 @@ class C extends StandardPage {
             </Part>
           ))}
           {review}
-          {/* {vote} */}
           {comment}
         </StickyContainer>
       </Content>
@@ -353,18 +317,6 @@ class C extends StandardPage {
       <Part id="review">
         {review}
         {reviewHistory}
-      </Part>
-    )
-  }
-
-  renderVote() {
-    const vote = this.renderVoteButton()
-    const voteHistory = this.renderVoteHistory()
-
-    return (
-      <Part id="vote">
-        {vote}
-        {voteHistory}
       </Part>
     )
   }
@@ -526,101 +478,6 @@ class C extends StandardPage {
     )
   }
 
-  renderVoteButton() {
-    const { data, isCouncil } = this.props
-    const isVisible = isCouncil && data.status === ELIP_STATUS.SUBMITTED
-
-    if (!isVisible) return null
-
-    const { visibleYes, visibleOppose } = this.state
-    const yesBtn = (
-      <Button
-        type="primary"
-        icon="check-circle"
-        onClick={this.showYesVoteModal}
-      >
-        {I18N.get('elip.button.yes')}
-      </Button>
-    )
-    const opposeBtn = (
-      <Button
-        type="danger"
-        icon="close-circle"
-        onClick={this.showOpposeVoteModal}
-      >
-        {I18N.get('elip.button.oppose')}
-      </Button>
-    )
-
-    const yesPopover = (
-      <CRPopover
-        triggeredBy={yesBtn}
-        visible={visibleYes}
-        onToggle={this.showYesVoteModal}
-        onSubmit={this.yesVote}
-        btnType="primary"
-      />
-    )
-    const opposePopover = (
-      <CRPopover
-        triggeredBy={opposeBtn}
-        visible={visibleOppose}
-        onToggle={this.showOpposeVoteModal}
-        onSubmit={this.opposeVote}
-        btnType="danger"
-      />
-    )
-
-    return (
-      <VoteBtnGroup>
-        {yesPopover}
-        {opposePopover}
-        <Popconfirm
-          title={I18N.get('elip.modal.abstain')}
-          onConfirm={this.abstainVote}
-          okText={I18N.get('.yes')}
-          cancelText={I18N.get('.no')}
-        >
-          <Button icon="stop">{I18N.get('elip.button.abstain')}</Button>
-        </Popconfirm>
-      </VoteBtnGroup>
-    )
-  }
-
-  renderVoteHistory() {
-    const { data } = this.props
-    const isVisible = data.status === ELIP_STATUS.SUBMITTED
-
-    if (!isVisible) return null
-
-    const dataList = [
-      { name: 'test1', reason: 'hahhhahahha' },
-      { name: 'test2', reason: 'hahhhahahha123' }
-    ]
-    return (
-      <VotePanel id="vote">
-        <VotePanelTitle>test</VotePanelTitle>
-        <VotePanelContent>
-          <VoteHistory
-            label="Voted Yes"
-            type={ELIP_VOTE_STATUS.YES}
-            dataList={dataList}
-          />
-          <VoteHistory
-            label="Opposed"
-            type={ELIP_VOTE_STATUS.OPPOSE}
-            dataList={dataList}
-          />
-          <VoteHistory
-            label="Abstained"
-            type={ELIP_VOTE_STATUS.ABSTAIN}
-            dataList={dataList}
-          />
-        </VotePanelContent>
-      </VotePanel>
-    )
-  }
-
   showRejectModal = () => {
     const { visibleReject, visibleApprove } = this.state
     this.setState({ visibleReject: !visibleReject })
@@ -631,16 +488,6 @@ class C extends StandardPage {
     const { visibleReject, visibleApprove } = this.state
     this.setState({ visibleApprove: !visibleApprove })
     if (!visibleApprove && visibleReject) this.setState({ visibleReject: !visibleReject })
-  }
-
-  showYesVoteModal = () => {
-    const { visibleYes } = this.state
-    this.setState({ visibleYes: !visibleYes })
-  }
-
-  showOpposeVoteModal = () => {
-    const { visibleOppose } = this.state
-    this.setState({ visibleOppose: !visibleOppose })
   }
 }
 
@@ -812,62 +659,6 @@ const ItemText = styled.div`
 const FixedHeader = styled.div`
   background: white;
   padding-bottom: 24px;
-`
-
-const VoteBtnGroup = styled.div`
-  display: flex;
-  margin-top: 30px;
-  @media only screen and (max-width: ${breakPoint.mobile}) {
-    display: block;
-    .ant-btn {
-      margin-bottom: 10px;
-    }
-  }
-  .ant-btn {
-    border-radius: 0 !important;
-    margin-right: 15px;
-    box-sizing: border-box;
-    flex: 210px;
-  }
-  .ant-btn.ant-btn-primary {
-    color: white;
-    background-color: #008D85;
-    border: none;
-  }
-  .ant-btn-primary:hover, .ant-btn-primary:focus {
-    color: #fff;
-    background-color: #008D85;
-    border: none;
-  }
-  .ant-btn.ant-btn-danger {
-    color: white;
-    background-color: #BE1313;
-    border: none;
-  }
-  .ant-btn-danger:hover, .ant-btn-danger:focus {
-    color: #fff;
-    background-color: #BE1313;
-    border: none;
-  }
-`
-
-const VotePanel = styled.div`
-  background-color: #F2F6FB;
-  margin-top: 63px;
-`
-
-const VotePanelTitle = styled.div`
-  font-family: Synthese;
-  font-size: 30px;
-  line-height: 42px;
-  text-align: center;
-  color: #031e28;
-  padding-top: 60px;
-  padding-bottom: 80px;
-`
-
-const VotePanelContent = styled.div`
-  padding-bottom: 100px;
 `
 
 const ReviewBtnGroup = styled.div`
