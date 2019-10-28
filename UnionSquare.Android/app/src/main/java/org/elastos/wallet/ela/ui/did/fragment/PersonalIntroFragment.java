@@ -48,9 +48,7 @@ public class PersonalIntroFragment extends BaseFragment {
             case R.id.tv_title_right:
             case R.id.tv_next:
                 credentialSubjectBean.setDescript(getText(etIntro));
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("didInfo", didInfo);
-                start(SocialAccountFragment.class, bundle);
+                start(SocialAccountFragment.class,  getArguments());
                 break;
 
 

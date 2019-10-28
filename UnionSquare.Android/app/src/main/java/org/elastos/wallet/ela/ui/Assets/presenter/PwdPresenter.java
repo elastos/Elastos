@@ -225,4 +225,25 @@ public class PwdPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseActivity);
     }
+
+    //注册did
+    public void generateDIDInfoPayload(String masterWalletID, String inputJson, String passwd, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "generateDIDInfoPayload");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().generateDIDInfoPayload(masterWalletID, inputJson, passwd);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }public void createIDTransaction(String masterWalletID, String inputJson, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "createIDTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getMyWallet().createIDTransaction(masterWalletID, inputJson);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
 }

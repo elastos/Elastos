@@ -36,6 +36,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private PwdPresenter presenter;
     private String type, amount, nodePublicKey, ownerPublicKey, name, url;
     private long code;
+    private String inputJson;
 
     @Override
     protected int getLayoutId() {
@@ -66,6 +67,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         name = data.getStringExtra("name");
         url = data.getStringExtra("url");
         code = data.getLongExtra("code", 0);
+        inputJson = data.getStringExtra("inputJson");
 
 
     }
@@ -99,6 +101,9 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                     case Constant.WITHDRAWCR:
                         presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
                         break;
+                    case Constant.DIDSIGNUP:
+                        presenter.generateDIDInfoPayload(wallet.getWalletId(), inputJson, pwd, this);
+                        break;
 
                 }
                 break;
@@ -127,6 +132,9 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
         switch (methodName) {
+            case "generateDIDInfoPayload":
+                presenter.createIDTransaction(wallet.getWalletId(), ((CommmonStringEntity) baseEntity).getData(), this);
+                break;
             case "generateUnregisterCRPayload":
                 if (type.equals(Constant.WITHDRAWCR)) {
                     //提取按钮
@@ -173,6 +181,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
             case "createCancelProducerTransaction":
             case "createRetrieveCRDepositTransaction":
             case "createUnregisterCRTransaction":
+            case "createIDTransaction":
                 presenter.signTransaction(wallet.getWalletId(), chainId, ((CommmonStringEntity) baseEntity).getData(), pwd, this);
                 break;
         }

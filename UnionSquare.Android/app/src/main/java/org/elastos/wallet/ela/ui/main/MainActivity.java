@@ -1,10 +1,13 @@
 package org.elastos.wallet.ela.ui.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
 import org.elastos.wallet.R;
@@ -48,6 +51,14 @@ public class MainActivity extends BaseActivity implements MainViewData {
     @Override
     protected void initView() {
         //initJG();
+        Intent mIntent = getIntent();
+        String action = mIntent.getAction();
+        if (TextUtils.equals(action, Intent.ACTION_VIEW)) {
+            Uri uri = mIntent.getData();
+            if (TextUtils.equals(uri.getScheme(), "content")) {
+                // readFileByBytes(uri);
+            }
+        }
         init();
         StatusBarUtil.setTranslucentForImageViewInFragment(this, 0, null);
         if (findFragment(FirstFragment.class) == null) {
@@ -56,6 +67,30 @@ public class MainActivity extends BaseActivity implements MainViewData {
         flag = false;
         registReceiver();
     }
+
+
+    public String readFileByBytes(Uri uri) {
+
+        StringBuffer sb = new StringBuffer();
+
+        // 一次读多个字节
+        byte[] tempbytes = new byte[1024];
+        int byteread = 0;
+        try {
+            InputStream in = getContentResolver().openInputStream(uri);
+            // 读入多个字节到字节数组中，byteread为一次读入的字节数
+            while ((byteread = in.read(tempbytes)) != -1) {
+                String str = new String(tempbytes, 0, byteread);
+                sb.append(str);
+
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     @Override
     protected void initInjector() {
@@ -178,9 +213,9 @@ public class MainActivity extends BaseActivity implements MainViewData {
 
         for (int i = 0; i < names1.size(); i++) {
             File file = new File(rootPath + "/" + names1.get(i));
-           /* if (file.exists()) {
+            if (file.exists() && names1.get(i).endsWith("txt")) {
                 continue;
-            }*/
+            }
             InputStream is = context.getClass().getClassLoader().getResourceAsStream("assets/" + names.get(i));
             try {
                 OutputStream fosto = new FileOutputStream(file);

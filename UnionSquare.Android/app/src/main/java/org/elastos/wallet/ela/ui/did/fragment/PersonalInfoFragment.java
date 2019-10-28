@@ -1,7 +1,6 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -25,7 +24,6 @@ import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class PersonalInfoFragment extends BaseFragment {
 
@@ -53,7 +51,7 @@ public class PersonalInfoFragment extends BaseFragment {
     TextView tvArea;
     @BindView(R.id.tv_title_right)
     TextView tvTitleRight;
-    private  DIDInfoEntity didInfo;
+    private DIDInfoEntity didInfo;
     private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
     private String birthday;
 
@@ -64,6 +62,7 @@ public class PersonalInfoFragment extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
+
         didInfo = data.getParcelable("didInfo");
         credentialSubjectBean = didInfo.getCredentialSubject();
     }
@@ -110,9 +109,7 @@ public class PersonalInfoFragment extends BaseFragment {
             case R.id.tv_title_right:
             case R.id.tv_next:
                 setData();
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("didInfo", didInfo);
-                start(PersonalIntroFragment.class, bundle);
+                start(PersonalIntroFragment.class, getArguments());
                 break;
 
 
@@ -126,11 +123,20 @@ public class PersonalInfoFragment extends BaseFragment {
         credentialSubjectBean.setBirthday(birthday);
         credentialSubjectBean.setAvatar(getText(etHeadurl));
         credentialSubjectBean.setEmail(getText(etEmail));
-        credentialSubjectBean.setPhone((getText(etCode) == null ? null : "+" + getText(etCode)) + getText(etPhone));
+        String codePhone = null;
+        String code = getText(etCode);
+        String phone = getText(etPhone);
+        if (phone != null && code != null) {
+            codePhone = code + phone;
+        } else if (phone == null && code != null) {
+            codePhone = code;
+        } else if (phone != null) {
+            codePhone = phone;
+        }
+        credentialSubjectBean.setPhone(codePhone);
         credentialSubjectBean.setNation(getText(tvArea));
 
     }
-
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)

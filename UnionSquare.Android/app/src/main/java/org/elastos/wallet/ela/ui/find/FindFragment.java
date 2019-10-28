@@ -1,4 +1,4 @@
-package org.elastos.wallet.ela.ui.find.fragment;
+package org.elastos.wallet.ela.ui.find;
 
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,9 +12,8 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.FindListBean;
-import org.elastos.wallet.ela.ui.find.FindListRecAdapter;
+import org.elastos.wallet.ela.ui.find.adapter.FindListRecAdapter;
 import org.elastos.wallet.ela.ui.vote.SuperNodeListFragment;
-import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -13,7 +13,7 @@ import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonObjectWithMethNameViewData;
-import org.elastos.wallet.ela.ui.find.fragment.FindFragment;
+import org.elastos.wallet.ela.ui.find.FindFragment;
 import org.elastos.wallet.ela.ui.main.presenter.MainPresenter;
 import org.elastos.wallet.ela.ui.mine.MineFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;

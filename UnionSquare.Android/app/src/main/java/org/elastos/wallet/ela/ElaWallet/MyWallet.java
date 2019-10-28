@@ -1723,6 +1723,19 @@ public class MyWallet {
         }
     }
 
+    public BaseEntity createIDTransaction(String masterWalletID, String payloadJson) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String did = idChainSubWallet.CreateIDTransaction(payloadJson, "");
+            return new CommmonStringEntity(SUCCESSCODE, did);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "CreateIDTransaction");
+        }
+    }
+
 
 }
 
