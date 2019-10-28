@@ -36,16 +36,7 @@ public class AddDIDPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    public void generateDIDInfoPayload(String masterWalletID, String inputJson, String passwd, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "generateDIDInfoPayload");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().generateDIDInfoPayload(masterWalletID, inputJson, passwd);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
+
 
     public void getAllSubWallets(String walletId, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "getAllSubWallets");

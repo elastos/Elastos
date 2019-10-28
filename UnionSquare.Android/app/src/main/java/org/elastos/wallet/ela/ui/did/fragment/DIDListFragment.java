@@ -12,6 +12,10 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.fragment.TransferDetailFragment;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.did.adapter.DIDRecordRecAdapetr;
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
+import org.elastos.wallet.ela.utils.CacheUtil;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -35,7 +39,7 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     RecyclerView rv1;
     private DIDRecordRecAdapetr adapter1;
     private DIDRecordRecAdapetr adapter;
-
+    ArrayList<DIDInfoEntity> draftList;
 
     @Override
     protected int getLayoutId() {
@@ -66,6 +70,9 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
                 rv1.setVisibility(View.GONE);
                 break;
             case R.id.ll_tab2:
+                if (draftList == null) {
+                    draftList = CacheUtil.getDIDInfoList();
+                }
                 lineTab1.setVisibility(View.GONE);
                 lineTab2.setVisibility(View.VISIBLE);
                 tvTab1.setTextColor(getResources().getColor(R.color.whiter50));

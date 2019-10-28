@@ -140,6 +140,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("didInfo", didInfo);
+                bundle.putParcelable("wallet", tempWallet);
                 start(PersonalInfoFragment.class, bundle);
                 break;
             case R.id.rl_selectwallet:
