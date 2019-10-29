@@ -1145,6 +1145,11 @@ const en = {
   'profile.detail.yes': 'Yes',
   'profile.detail.no': 'No',
 
+  'profile.popover.email': 'Email',
+  'profile.popover.name': 'Name',
+  'profile.popover.copy': 'Copy',
+  'profile.popover.viewProfile': 'View Profile',
+
   // Module form
   'from.CVoteForm.upload.type.error': 'The upload file is not an image.',
   'from.CVoteForm.upload.size.error': 'The maximum upload file size is less than 500KB.',

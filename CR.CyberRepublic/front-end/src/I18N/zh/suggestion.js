@@ -94,12 +94,6 @@ export default {
     notify: '已给秘书发送邮件',
     archived: '建议已归档，您可以在我的Republic下找到它'
   },
-  popover: {
-    email: '邮箱',
-    name: '姓名',
-    copy: '复制',
-    viewProfile: '查看个人资料'
-  },
   header: {
     suggestion: '建议',
     crCouncil: 'CR 理事会',

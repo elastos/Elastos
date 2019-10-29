@@ -96,12 +96,6 @@ export default {
     notify: 'Email was sent to secretary.',
     archived: 'Suggestion archived, you can find it in My republic later.'
   },
-  popover: {
-    email: 'Email',
-    name: 'Name',
-    copy: 'Copy',
-    viewProfile: 'View Profile'
-  },
   header: {
     suggestion: 'suggestion',
     crCouncil: 'cr council',

@@ -32,7 +32,7 @@ import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import DraftEditor from '@/module/common/DraftEditor'
 import TagsContainer from '../common/tags/Container'
-import PopoverProfile from '../common/PopoverProfile'
+import PopoverProfile from '@/module/common/PopoverProfile'
 import {
   Container,
   Title,
@@ -182,9 +182,9 @@ export default class extends StandardPage {
 
   renderPreambleItem(header, value, item) {
     let text = <ItemText>{value}</ItemText>
-    const { detail, user } = this.props
+    const { detail: { createdBy }, user } = this.props
     if (item === 'username') {
-      text = <PopoverProfile data={detail} user={user} />
+      text = <PopoverProfile owner={createdBy} curUser={user} />
     }
     return (
       <Item>

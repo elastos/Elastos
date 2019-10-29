@@ -6,16 +6,16 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import userUtil from '@/util/user'
 
-export default ({ data, user }) => {
-  const name = userUtil.formatUsername(_.get(data, 'createdBy'))
-  const userId = _.get(data, 'createdBy._id')
-  const email = _.get(data, 'createdBy.email')
-  const isAuthor = user.current_user_id === userId
+export default ({ owner, curUser }) => {
+  const name = userUtil.formatUsername(owner)
+  const userId = _.get(owner, '_id')
+  const email = _.get(owner, 'email')
+  const isAuthor = curUser.current_user_id === userId
   const content = (
     <PopoverContent>
       <div>
         <span className="label email">
-          {I18N.get('suggestion.popover.email')}:
+          {I18N.get('profile.popover.email')}:
         </span>
         <span className="value email">{email}</span>
         <Button
@@ -29,16 +29,16 @@ export default ({ data, user }) => {
             document.body.removeChild(el)
           }}
         >
-          {I18N.get('suggestion.popover.copy')}
+          {I18N.get('profile.popover.copy')}
         </Button>
       </div>
       <div>
-        <span className="label">{I18N.get('suggestion.popover.name')}:</span>
+        <span className="label">{I18N.get('profile.popover.name')}:</span>
         <span className="value">{name}</span>
       </div>
-      {(isAuthor || user.is_admin || user.is_secretary || user.is_council) && (
+      {(isAuthor || curUser.is_admin || curUser.is_secretary || curUser.is_council) && (
         <Link to={`/member/${userId}`}>
-          {I18N.get('suggestion.popover.viewProfile')}
+          {I18N.get('profile.popover.viewProfile')}
         </Link>
       )}
     </PopoverContent>

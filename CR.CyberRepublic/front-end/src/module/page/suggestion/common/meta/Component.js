@@ -2,17 +2,17 @@ import React from 'react'
 import moment from 'moment/moment'
 import _ from 'lodash'
 import I18N from '@/I18N'
-import PopoverProfile from '../PopoverProfile'
+import PopoverProfile from '@/module/common/PopoverProfile'
 import './style.scss'
 
 export default ({ data, hideAuthor, postedByText, user }) => {
-  const { displayId, createdAt, descUpdatedAt } = data
+  const { displayId, createdAt, descUpdatedAt, createdBy } = data
   const authorNode = hideAuthor ? (
     ''
   ) : (
     <span>
       {postedByText || I18N.get('suggestion.postedBy')}{' '}
-      <PopoverProfile data={data} user={user} />
+      <PopoverProfile owner={createdBy} curUser={user} />
     </span>
   )
 

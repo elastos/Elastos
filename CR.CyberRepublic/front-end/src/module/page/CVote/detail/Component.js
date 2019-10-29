@@ -406,12 +406,12 @@ class C extends StandardPage {
   }
 
   renderContent() {
-    const { data } = this.props
+    const { data, user } = this.props
     // legacy data structure has content field
     if (_.has(data, 'content')) return renderRichContent(data, 'content')
     return (
       <div>
-        <Preamble {...data} />
+        <Preamble {...data} user={user} />
         {renderRichContent(
           data,
           'abstract',

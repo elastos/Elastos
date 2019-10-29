@@ -1109,6 +1109,11 @@ const zh = {
   'profile.detail.yes': '是',
   'profile.detail.no': '否',
 
+  'profile.popover.email': '邮箱',
+  'profile.popover.name': '姓名',
+  'profile.popover.copy': '复制',
+  'profile.popover.viewProfile': '查看个人资料',
+
   // Module form
   'from.CVoteForm.upload.type.error': '上传的文件不是图片',
   'from.CVoteForm.upload.size.error': '上传的文件大小不能超过500KB',
