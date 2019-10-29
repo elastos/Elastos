@@ -37,135 +37,155 @@
 
 #define MAX_EXPIRES              5
 
-static int PublicKey_ToJson(JsonGenerator *generator, PublicKey *publickey, int compact)
+#define TOJSON(func)        do { if (func == -1) return -1; } while(0)
+
+static
+int PublicKey_ToJson(JsonGenerator *gen, PublicKey *pk, int compact)
 {
     char id[MAX_DIDURL];
 
-    if (!publickey || !generator || !generator->buffer)
-        return -1;
+    assert(gen);
+    assert(gen->buffer);
+    assert(pk);
 
-    if (JsonGenerator_WriteStartObject(generator) == -1 ||
-            JsonGenerator_WriteStringField(generator, "id", DIDURL_ToString(&publickey->id, id, sizeof(id), compact)) == -1 ||
-            (!compact && JsonGenerator_WriteStringField(generator, "type", publickey->type) == -1))
-        return -1;
-
-    if (!compact || strcmp(publickey->id.did.idstring, publickey->controller.idstring) != 0)
-        if ( JsonGenerator_WriteStringField(generator, "controller", DID_ToString(&publickey->controller, id, sizeof(id))) == -1 )
-            return -1;
-
-    if (JsonGenerator_WriteStringField(generator, "publicKeyBase58", publickey->publicKeyBase58) == -1 ||
-            JsonGenerator_WriteEndObject(generator) == -1 )
-        return -1;
+    TOJSON(JsonGenerator_WriteStartObject(gen));
+    TOJSON(JsonGenerator_WriteStringField(gen, "id",
+        DIDURL_ToString(&pk->id, id, sizeof(id), compact)));
+    if (!compact || !DID_Equals(&pk->id.did, &pk->controller))
+        TOJSON(JsonGenerator_WriteStringField(gen, "controller",
+            DID_ToString(&pk->controller, id, sizeof(id))));
+    TOJSON(JsonGenerator_WriteStringField(gen, "publicKeyBase58", pk->publicKeyBase58));
+    TOJSON(JsonGenerator_WriteEndObject(gen));
 
     return 0;
 }
 
-static int Service_ToJson(JsonGenerator *generator, Service *service, int compact)
-{
-    char id[MAX_DIDURL];
-
-    if (!generator || !generator->buffer || !service)
-        return -1;
-
-    if ( JsonGenerator_WriteStartObject(generator) == -1 ||
-            JsonGenerator_WriteStringField(generator, "id", DIDURL_ToString(&service->id, id, sizeof(id), compact)) == -1 ||
-            JsonGenerator_WriteStringField(generator, "type", service->type) == -1 ||
-            JsonGenerator_WriteStringField(generator, "serviceEndpoint", service->endpoint) == -1 ||
-            JsonGenerator_WriteEndObject(generator) == -1)
-        return -1;
-
-    return 0;
-}
-
-static int cmpfunc(const void *a, const void *b)
+static int didurl_func(const void *a, const void *b)
 {
     char ida[MAX_DIDURL], idb[MAX_DIDURL];
+
     PublicKey **pka = (PublicKey**)a;
     PublicKey **pkb = (PublicKey**)b;
+
+    //return !DIDURL_Equals(&(*pka)->id,  &(*pkb)->id);
 
     return strcasecmp(DIDURL_ToString(&(*pka)->id, ida, sizeof(ida), false),
             DIDURL_ToString(&(*pkb)->id, idb, sizeof(idb), false));
 }
 
-static int Publickeys_ToJson(JsonGenerator *generator, PublicKey **pks, int size, int compact, int queot)
+static
+int PublicKeyArray_ToJson(JsonGenerator *gen, PublicKey **pks, size_t size,
+                          int compact, int quoted)
 {
-    char id[MAX_DIDURL];
-    PublicKey *temp;
-    int i, j;
+    size_t i;
 
-    if (!generator || !generator->buffer || !pks)
-        return -1;
+    assert(gen);
+    assert(gen->buffer);
+    assert(pks);
 
-    qsort(pks, size, sizeof(PublicKey*), cmpfunc);
+    qsort(pks, size, sizeof(PublicKey*), didurl_func);
 
-    if ( JsonGenerator_WriteStartArray(generator) == -1 )
-        return -1;
-    for ( i = 0; i < size; i++ ) {
-        if ( !queot && PublicKey_ToJson(generator, pks[i], compact) == -1 ||
-                ( queot && JsonGenerator_WriteString(generator, DIDURL_ToString(&pks[i]->id, id, sizeof(id), compact)) == -1 ))
-            return -1;
+    TOJSON(JsonGenerator_WriteStartArray(gen));
+    for (i = 0; i < size; i++ ) {
+        char id[MAX_DIDURL];
+
+        if (!quoted)
+            TOJSON(PublicKey_ToJson(gen, pks[i], compact));
+        if (quoted)
+            TOJSON(JsonGenerator_WriteString(gen,
+                DIDURL_ToString(&pks[i]->id, id, sizeof(id), compact)));
     }
-    if ( JsonGenerator_WriteEndArray(generator) == -1 )
-        return -1;
+    TOJSON(JsonGenerator_WriteEndArray(gen));
 
     return 0;
 }
 
-static int Credential_ToJsonGenerator(JsonGenerator *generator, Credential *cred, int compact)
+static
+int Service_ToJson(JsonGenerator *gen, Service *service, int compact)
 {
     char id[MAX_DIDURL];
 
-    if (!cred)
-        return -1;
+    assert(gen);
+    assert(gen->buffer);
+    assert(service);
 
-    if (!generator || !generator->buffer || !cred)
-        return -1;
-
-    if ( JsonGenerator_WriteStartObject(generator) == -1 ||
-            JsonGenerator_WriteStringField(generator, "id", DIDURL_ToString(&cred->id, id, sizeof(id), compact)) == -1 ||
-            JsonGenerator_WriteFieldName(generator, "type") == -1 ||
-            types_toJson(generator, cred) == -1 ||
-            (!compact && JsonGenerator_WriteStringField(generator, "issuer", DID_ToString(&cred->issuer, id, sizeof(id))) == -1 ) ||
-            JsonGenerator_WriteStringField(generator, "issuanceDate", get_time_string(&(cred->issuanceDate))) == -1 ||
-            JsonGenerator_WriteFieldName(generator, "credentialSubject") == -1 ||
-            subject_toJson(generator, cred, compact) == -1 ||
-            JsonGenerator_WriteFieldName(generator, "proof") == -1 ||
-            proof_toJson(generator, cred, compact) == -1 ||
-            JsonGenerator_WriteEndObject(generator) == -1)
-        return -1;
+    TOJSON(JsonGenerator_WriteStartObject(gen));
+    TOJSON(JsonGenerator_WriteStringField(gen, "id",
+        DIDURL_ToString(&service->id, id, sizeof(id), compact)));
+    TOJSON(JsonGenerator_WriteStringField(gen, "type", service->type));
+    TOJSON(JsonGenerator_WriteStringField(gen, "serviceEndpoint", service->endpoint));
+    TOJSON(JsonGenerator_WriteEndObject(gen));
 
     return 0;
 }
 
-static int credcmpfunc(const void *a, const void *b)
+static
+int ServiceArray_ToJson(JsonGenerator *gen, Service **services, size_t size,
+                        int compact)
 {
-    char ida[MAX_DIDURL], idb[MAX_DIDURL];
-    Credential **creda = (Credential**)a;
-    Credential **credb = (Credential**)b;
+    size_t i;
 
-    return strcasecmp(DIDURL_ToString(&(*creda)->id, ida, sizeof(ida), false),
-            DIDURL_ToString(&(*credb)->id, idb, sizeof(idb), false));
+    assert(gen);
+    assert(gen->buffer);
+    assert(services);
+
+    // TODO: qsort ?
+
+    TOJSON(JsonGenerator_WriteStartArray(gen));
+    for ( i = 0; i < size; i++ ) {
+        TOJSON(Service_ToJson(gen, services[i], compact));
+    }
+    TOJSON(JsonGenerator_WriteEndArray(gen));
+
+    return 0;
 }
 
-static int Credentials_ToJson(JsonGenerator *generator, Credential **creds, int size, int compact)
+static
+int Credential_ToJson_Internal(JsonGenerator *gen, Credential *cred, int compact)
 {
-    int i, j;
+    char id[MAX_DIDURL];
 
-    if (!generator || !generator->buffer || !creds)
-        return -1;
+    assert(gen);
+    assert(gen->buffer);
+    assert(cred);
 
-    qsort(creds, size, sizeof(Credential*), credcmpfunc);
-
-    if ( JsonGenerator_WriteStartArray(generator) == -1 )
-        return -1;
-
-    for ( i = 0; i < size; i++ ) {
-        if ( Credential_ToJsonGenerator(generator, creds[i], compact) == -1)
-            return -1;
+    TOJSON(JsonGenerator_WriteStartObject(gen));
+    TOJSON(JsonGenerator_WriteStringField(gen, "id",
+        DIDURL_ToString(&cred->id, id, sizeof(id), compact)));
+    TOJSON(JsonGenerator_WriteFieldName(gen, "type"));
+    TOJSON(types_toJson(gen, cred));
+    if (!compact) {
+        TOJSON(JsonGenerator_WriteStringField(gen, "issuer",
+            DID_ToString(&cred->issuer, id, sizeof(id))));
     }
+    TOJSON(JsonGenerator_WriteStringField(gen, "issuanceDate",
+        get_time_string(&cred->issuanceDate)));
+    TOJSON(JsonGenerator_WriteFieldName(gen, "credentialSubject"));
+    TOJSON(subject_toJson(gen, cred, compact));
+    TOJSON(JsonGenerator_WriteFieldName(gen, "proof"));
+    TOJSON(proof_toJson(gen, cred, compact));
+    TOJSON(JsonGenerator_WriteEndObject(gen));
 
-    if ( JsonGenerator_WriteEndArray(generator) == -1 )
-        return -1;
+    return 0;
+}
+
+static
+int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
+                           size_t size, int compact)
+{
+    size_t i;
+
+    assert(gen);
+    assert(gen->buffer);
+    assert(creds);
+
+    qsort(creds, size, sizeof(Credential*), didurl_func);
+
+    TOJSON(JsonGenerator_WriteStartArray(gen));
+    for ( i = 0; i < size; i++ ) {
+        TOJSON(Credential_ToJson_Internal(gen, creds[i], compact));
+    }
+    TOJSON(JsonGenerator_WriteEndArray(gen));
 
     return 0;
 }
@@ -195,45 +215,58 @@ static int add_to_publickeys(DIDDocument *document, PublicKey *pk)
 
 static int Parser_Publickey(DID *did, cJSON *json, PublicKey **publickey)
 {
-    char fragment[48];
-    cJSON *id_field = NULL, *base_field = NULL, *controller_filed = NULL;
     PublicKey *pk;
-    char *base;
+    cJSON *field;
 
-    if (!json || !did)
-        return -1;
-
-    id_field = cJSON_GetObjectItem(json, "id");
-    base_field = cJSON_GetObjectItem(json, "publicKeybase58");
-    if (!id_field || !base_field)
-        return -1;
+    assert(did);
+    assert(json);
+    assert(publickey);
 
     pk = (PublicKey*)calloc(1, sizeof(PublicKey));
     if (!pk)
         return -1;
 
-    if (parse_didurl(&pk->id, id_field->valuestring, did) < 0) {
+    field = cJSON_GetObjectItem(json, "id");
+    if (!field || !cJSON_IsString(field)) {
+        Publickey_Destroy(pk);
+        return -1;
+    }
+
+    if (parse_didurl(&pk->id, field->valuestring, did) < 0) {
         Publickey_Destroy(pk);
         return -1;
     }
 
     assert(strcmp(did->idstring, pk->id.did.idstring) == 0);
 
-    //'type' is default
-    strcpy((char*)pk->type, "ECDSAsecp256r1");
+    // set default value for 'type'
+    strcpy(pk->type, "ECDSAsecp256r1");
+
+    field = cJSON_GetObjectItem(json, "publicKeybase58");
+    if (!field || !cJSON_IsString(field)) {
+        Publickey_Destroy(pk);
+        return -1;
+    }
 
     //public key must be have 'publicKeybase58'
-    strcpy((char*)pk->publicKeyBase58, base_field->valuestring);
+    strcpy(pk->publicKeyBase58, field->valuestring);
 
     //'controller' may be default
-    controller_filed = cJSON_GetObjectItem(json, "controller");
-    if (!controller_filed)
-        strcpy((char*)pk->controller.idstring, did->idstring);
-    else {      //have 'controller' field
-        if (parse_did(&pk->controller, controller_filed->valuestring) < 0) {
-            Publickey_Destroy(pk);
-            return -1;
-        }
+    field = cJSON_GetObjectItem(json, "controller");
+    if (field && !cJSON_IsString(field)) {
+        Publickey_Destroy(pk);
+        return -1;
+    }
+
+    if (!field) { // the controller is self did.
+        strcpy(pk->controller.idstring, did->idstring);
+        *publickey = pk;
+        return 0;
+    }
+
+    if (parse_did(&pk->controller, field->valuestring) < 0) {
+        Publickey_Destroy(pk);
+        return -1;
     }
 
     *publickey = pk;
@@ -244,8 +277,9 @@ static int Parser_Publickeys(DIDDocument *document, DID *did, cJSON *json)
 {
     int pk_size, i, size = 0;
 
-    if (!document || !did || !json)
-        return -1;
+    assert(document);
+    assert(did);
+    assert(json);
 
     pk_size = cJSON_GetArraySize(json);
     if (!pk_size)
@@ -287,12 +321,13 @@ static int Parser_Publickeys(DIDDocument *document, DID *did, cJSON *json)
     return 0;
 }
 
-static int Parser_Auth_Publickeys(DIDDocument *document, cJSON *json, int is_auth)
+static
+int Parser_Auth_Publickeys(DIDDocument *document, cJSON *json, int is_auth)
 {
     int pk_size, i, j, size = 0, total_size = 0;
 
-    if (!document || !json)
-        return -1;
+    assert(document);
+    assert(json);
 
     pk_size = cJSON_GetArraySize(json);
     if (!pk_size)
@@ -376,8 +411,9 @@ static int Parser_Authorization(DIDDocument *document, cJSON *json)
 
 static int Parser_Services(DIDDocument *document, cJSON *json)
 {
-    int service_size, i, size = 0;
-    char id[48], fragment[48];
+    size_t service_size;
+    size_t autal_size = 0;
+    size_t i;
 
     if (!document || !json)
         return -1;
@@ -391,40 +427,57 @@ static int Parser_Services(DIDDocument *document, cJSON *json)
         return -1;
 
     for (i = 0; i < service_size; i++) {
-        cJSON *service_item = cJSON_GetArrayItem(json, i);
-        if (!service_item)
+        Service *service;
+        cJSON *item;
+        cJSON *field;
+
+        item = cJSON_GetArrayItem(json, i);
+        if (!item)
             continue;
 
-        cJSON *id_field = cJSON_GetObjectItem(service_item, "id");
-        cJSON *type_field = cJSON_GetObjectItem(service_item, "type");
-        cJSON *point_field = cJSON_GetObjectItem(service_item, "serviceEndPoint");
-        if(!id_field || !type_field || !point_field)
-            continue;
-
-        Service *service = (Service*)calloc(1, sizeof(Service));
+        service = (Service *)calloc(1, sizeof(Service));
         if (!service)
             continue;
 
-        if (parse_didurl(&service->id, id_field->valuestring, &document->did) < 0) {
+        field = cJSON_GetObjectItem(item, "id");
+        if (!field || !cJSON_IsString(field)) {
             Service_Destroy(service);
             continue;
         }
-        if (strlen(service->id.did.idstring) == 0)
-            strcpy((char*)service->id.did.idstring, document->did.idstring);
 
-        strcpy((char*)service->type, type_field->valuestring);
-        strcpy((char*)service->endpoint, point_field->valuestring);
+        if (parse_didurl(&service->id, field->valuestring, &document->did) < 0) {
+            Service_Destroy(service);
+            continue;
+        }
 
-        services[size++] = service;
+        if (!*service->id.did.idstring)
+            strcpy(service->id.did.idstring, document->did.idstring);
+
+        field = cJSON_GetObjectItem(item, "type");
+        if (!field || !cJSON_IsString(field)) {
+            Service_Destroy(service);
+            continue;
+        }
+        strcpy(service->type, field->valuestring);
+
+        field = cJSON_GetObjectItem(item, "serviceEndPoint");
+        if (!field || !cJSON_IsString(field)) {
+            Service_Destroy(service);
+            continue;
+        }
+        strcpy(service->endpoint, field->valuestring);
+
+        services[autal_size++] = service;
     }
 
-    if (!size) {
+    if (!autal_size) {
         free(services);
         return -1;
     }
 
     document->services.services = services;
-    document->services.size = size;
+    document->services.size = autal_size;
+
     return 0;
 }
 
@@ -499,60 +552,69 @@ errorExit:
     return NULL;
 }
 
-const char *DIDDocument_ToJson(DIDDocument *document, int compact)
+static
+int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc, int compact)
 {
-    JsonGenerator g, *generator;
-    char id[MAX_DID];
-    int i;
+    char id[MAX_DIDURL];
+    size_t i;
 
-    if (!document)
+    assert(gen);
+    assert(gen->buffer);
+    assert(doc);
+
+    TOJSON(JsonGenerator_WriteStartObject(gen));
+    TOJSON(JsonGenerator_WriteStringField(gen, "id",
+        DID_ToString(&doc->did, id, sizeof(id))));
+    TOJSON(JsonGenerator_WriteFieldName(gen, "publickey"));
+    TOJSON(PublicKeyArray_ToJson(gen, doc->publickeys.pks, doc->publickeys.size,
+                                 compact, 0));
+
+    if (doc->authentication.size > 0) {
+        TOJSON(JsonGenerator_WriteFieldName(gen, "authentication"));
+        TOJSON(PublicKeyArray_ToJson(gen, doc->authentication.pks,
+                                doc->authentication.size, compact, 1));
+    }
+
+    if (doc->authorization.size > 0) {
+        TOJSON(JsonGenerator_WriteFieldName(gen, "authorization"));
+        TOJSON(PublicKeyArray_ToJson(gen, doc->authorization.pks,
+                                doc->authorization.size, compact, 1));
+    }
+
+    if (doc->credentials.size > 0) {
+        TOJSON(JsonGenerator_WriteFieldName(gen, "verifiableCredential"));
+        TOJSON(CredentialArray_ToJson(gen, doc->credentials.credentials,
+                                 doc->credentials.size, compact));
+    }
+
+    if (doc->services.size > 0) {
+        TOJSON(JsonGenerator_WriteFieldName(gen, "service"));
+        TOJSON(ServiceArray_ToJson(gen, doc->services.services,
+                                doc->services.size, compact));
+    }
+
+    TOJSON(JsonGenerator_WriteStringField(gen, "expires", get_time_string(&doc->expires)));
+    TOJSON(JsonGenerator_WriteEndObject(gen));
+
+    return 0;
+}
+
+
+const char *DIDDocument_ToJson(DIDDocument *doc, int compact)
+{
+    JsonGenerator g, *gen;
+
+    if (!doc)
         return NULL;
 
-    generator = JsonGenerator_Initialize(&g);
-    if (!generator)
+    gen = JsonGenerator_Initialize(&g);
+    if (!gen)
         return NULL;
 
-    if ( JsonGenerator_WriteStartObject(generator) == -1 ||
-        JsonGenerator_WriteStringField(generator, "id", DID_ToString(&document->did, id, sizeof(id))) == -1 ||
-        JsonGenerator_WriteFieldName(generator, "publickey") == -1 ||
-        Publickeys_ToJson(generator, document->publickeys.pks, document->publickeys.size, compact, 0) == -1)
-            return NULL;
-
-    if ( document->authentication.size != 0 ) {
-        if ( JsonGenerator_WriteFieldName(generator, "authentication") == -1 ||
-             Publickeys_ToJson(generator, document->authentication.pks, document->authentication.size, compact, 1) == -1 )
-                return NULL;
-    }
-
-    if ( document->authorization.size != 0 ) {
-        if ( JsonGenerator_WriteFieldName(generator, "authorization") == -1 ||
-             Publickeys_ToJson(generator, document->authorization.pks, document->authorization.size, compact, 1) == -1 )
-                 return NULL;
-    }
-
-    if ( document->credentials.size != 0 ) {
-        if ( JsonGenerator_WriteFieldName(generator, "verifiableCredential") == -1 ||
-             Credentials_ToJson(generator, document->credentials.credentials, document->credentials.size, compact) == -1 )
-                 return NULL;
-    }
-
-    if ( document->services.size != 0 ) {
-        if ( JsonGenerator_WriteFieldName(generator, "service") == -1 ||
-                JsonGenerator_WriteStartArray(generator) == -1 )
-            return NULL;
-        for ( i = 0; i < document->services.size; i++ ) {
-            if (Service_ToJson(generator, document->services.services[i], compact) == -1)
-                return NULL;
-        }
-        if (JsonGenerator_WriteEndArray(generator) == -1)
-            return NULL;
-    }
-
-    if (JsonGenerator_WriteStringField(generator, "expires", get_time_string(&(document->expires))) == -1 ||
-            JsonGenerator_WriteEndObject(generator) == -1 )
+    if (DIDDocument_ToJson_Internal(gen, doc, compact) < 0)
         return NULL;
 
-    return JsonGenerator_Finish(generator);
+    return JsonGenerator_Finish(gen);
 }
 
 void DIDDocument_Destroy(DIDDocument *document)
@@ -900,19 +962,6 @@ ssize_t DIDDocument_SelectPublicKey(DIDDocument *document,
 
     return (ssize_t)actual_size;
 }
-
-#if __DEBUG
-static
-void dumpbin(const char *hint, const unsigned char *data, size_t len)
-{
-    printf("%s: ", hint);
-
-    for (int i = 0; i < len; i++)
-        printf("%02x", data[i]);
-
-    printf("\n");
-}
-#endif
 
 DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document)
 {
