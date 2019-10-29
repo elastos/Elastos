@@ -488,10 +488,8 @@ func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	if err := c.RollbackTransactions(b); err != nil {
 		return err
 	}
-	if EnableUtxoDB {
-		if err := c.RollbackUnspendUTXOs(b); err != nil {
-			return err
-		}
+	if err := c.RollbackUnspendUTXOs(b); err != nil {
+		return err
 	}
 	if err := c.RollbackUnspend(b); err != nil {
 		return err
@@ -522,10 +520,8 @@ func (c *ChainStore) persist(b *Block, node *BlockNode,
 	if err := c.PersistTransactions(b); err != nil {
 		return err
 	}
-	if EnableUtxoDB {
-		if err := c.persistUTXOs(b); err != nil {
-			return err
-		}
+	if err := c.persistUTXOs(b); err != nil {
+		return err
 	}
 	if err := c.persistUnspend(b); err != nil {
 		return err
