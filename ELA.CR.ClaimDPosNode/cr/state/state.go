@@ -40,6 +40,8 @@ type State struct {
 		history *utils.History)
 	processCRCAppropriation func(tx *types.Transaction, height uint32,
 		history *utils.History)
+	processCRCRelatedAmount func(tx *types.Transaction, height uint32,
+		history *utils.History)
 	getHistoryMember func(code []byte) *CRMember
 
 	mtx     sync.RWMutex
@@ -58,6 +60,8 @@ type FunctionsConfig struct {
 		history *utils.History)
 	ProcessCRCAppropriation func(tx *types.Transaction, height uint32,
 		history *utils.History)
+	ProcessCRCRelatedAmount func(tx *types.Transaction, height uint32,
+		history *utils.History)
 	GetHistoryMember func(code []byte) *CRMember
 }
 
@@ -67,6 +71,7 @@ func (s *State) RegisterFunctions(cfg *FunctionsConfig) {
 	s.tryStartVotingPeriod = cfg.TryStartVotingPeriod
 	s.processImpeachment = cfg.ProcessImpeachment
 	s.processCRCAppropriation = cfg.ProcessCRCAppropriation
+	s.processCRCRelatedAmount = cfg.ProcessCRCRelatedAmount
 	s.getHistoryMember = cfg.GetHistoryMember
 }
 
@@ -225,6 +230,7 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 	switch tx.TxType {
 	case types.TransferAsset:
 		s.processVotes(tx, height)
+		s.processDeposit(tx, height)
 
 	case types.ReturnCRDepositCoin:
 		s.returnDeposit(tx, height)
@@ -242,6 +248,7 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 	}
 
 	s.processCancelVotes(tx, height)
+	s.processCRCRelatedAmount(tx, height, s.history)
 }
 
 // RollbackTo restores the database state to the given height, if no enough
@@ -344,6 +351,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	}
 
 	s.processCancelVotes(tx, height)
+	s.processCRCRelatedAmount(tx, height, s.history)
 }
 
 // registerCR handles the register CR transaction.

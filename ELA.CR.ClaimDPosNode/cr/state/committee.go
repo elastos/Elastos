@@ -195,6 +195,8 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 		c.createCRCAppropriationTransaction()
 		c.NeedAppropriation = true
+		// todo calculate used amount by current proposal.
+		c.CRCCommitteeUsedAmount = 0
 	}
 }
 
@@ -278,9 +280,30 @@ func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32
 	history *utils.History) {
 	history.Append(height, func() {
 		c.NeedAppropriation = false
+		c.CRCCommitteeUsedAmount += tx.Outputs[0].Value
 	}, func() {
 		c.NeedAppropriation = true
+		c.CRCCommitteeUsedAmount -= tx.Outputs[0].Value
 	})
+}
+
+func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32,
+	history *utils.History) {
+	for _, output := range tx.Outputs {
+		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
+			history.Append(height, func() {
+				c.CRCFoundationAmount += output.Value
+			}, func() {
+				c.CRCFoundationAmount -= output.Value
+			})
+		} else if output.ProgramHash.IsEqual(c.params.CRCCommitteeAddress) {
+			history.Append(height, func() {
+				c.CRCCommitteeAmount += output.Value
+			}, func() {
+				c.CRCCommitteeAmount -= output.Value
+			})
+		}
+	}
 }
 
 func (c *Committee) GetHistoryMember(code []byte) *CRMember {
@@ -476,6 +499,7 @@ func NewCommittee(params *config.Params) *Committee {
 		TryStartVotingPeriod:    committee.tryStartVotingPeriod,
 		ProcessImpeachment:      committee.processImpeachment,
 		ProcessCRCAppropriation: committee.processCRCAppropriation,
+		ProcessCRCRelatedAmount: committee.processCRCRelatedAmount,
 		GetHistoryMember:        committee.getHistoryMember,
 	})
 	params.CkpManager.Register(NewCheckpoint(committee))
