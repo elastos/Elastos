@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"sort"
 	"sync"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/utils"
@@ -172,9 +172,9 @@ func (c *Committee) getMember(did common.Uint168) *CRMember {
 
 func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.mtx.Lock()
-	defer c.mtx.Unlock()
 
 	if block.Height < c.params.CRVotingStartHeight {
+		c.mtx.Unlock()
 		return
 	}
 
@@ -187,6 +187,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	// If in election period and not in voting period, deal with TransferAsset
 	// ReturnCRDepositCoin CRCProposal type of transaction only.
 	isVoting := c.isInVotingPeriod(block.Height)
+
 	if isVoting {
 		c.state.ProcessBlock(block, confirm)
 	} else {
@@ -200,6 +201,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		committeeDIDs, err := c.changeCommitteeMembers(block.Height)
 		if err != nil {
 			log.Error("[ProcessBlock] change committee members error: ", err)
+			c.mtx.Unlock()
 			return
 		}
 
@@ -207,23 +209,29 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 			KeyFrame: c.KeyFrame,
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
+		c.NeedAppropriation = true
+		// todo calculate used amount by current proposal.
+		c.CRCCommitteeUsedAmount = 0
+		c.mtx.Unlock()
 
 		if c.createCRCAppropriationTx != nil {
 			tx := c.createCRCAppropriationTx()
 			log.Info("create CRCAppropriation transaction:", tx.Hash())
 			if c.isCurrent != nil && c.broadcast != nil && c.
 				appendToTxpool != nil {
-				if c.isCurrent() {
-					if err := c.appendToTxpool(tx); err == nil {
-						c.broadcast(msg.NewTx(tx))
+				go func() {
+					if c.isCurrent() {
+						if err := c.appendToTxpool(tx); err == nil {
+							c.broadcast(msg.NewTx(tx))
+						}
 					}
-				}
+				}()
 			}
-			c.NeedAppropriation = true
-			// todo calculate used amount by current proposal.
-			c.CRCCommitteeUsedAmount = 0
+
 		}
+		return
 	}
+	c.mtx.Unlock()
 }
 
 func (c *Committee) createCRCAppropriationTransaction() error {

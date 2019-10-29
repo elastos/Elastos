@@ -562,8 +562,7 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 	}
 	//check output[1] if exist must equal with CRCComitteeAddresss
 	if len(txn.Outputs) > 1 {
-		//todo use other branch CRCComitteeAddresss
-		if txn.Outputs[1].ProgramHash != b.chainParams.CRCAddress {
+		if txn.Outputs[1].ProgramHash != b.chainParams.CRCCommitteeAddress {
 			return errors.New("txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
 		}
 	}
@@ -630,7 +629,7 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 			return errors.New("new CRCAppropriation tx must have the first" +
 				"output to CRC committee address")
 		}
-		if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRCCommitteeAddress) {
+		if !txn.Outputs[1].ProgramHash.IsEqual(b.chainParams.CRCFoundation) {
 			return errors.New("new CRCAppropriation tx must have the second" +
 				"output to CRC foundation")
 		}
@@ -930,6 +929,14 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 			}
 			return nil
 		}
+	case CRCAppropriation:
+		if len(tx.Programs) != 0 {
+			return errors.New("CRCAppropriation txs should have no programs")
+		}
+		if len(tx.Attributes) != 0 {
+			return errors.New("CRCAppropriation txs should have no attributes")
+		}
+		return nil
 	case ReturnDepositCoin:
 		if blockHeight >= b.chainParams.CRVotingStartHeight {
 			if len(tx.Programs) != 1 {
@@ -1022,6 +1029,7 @@ func checkTransactionPayload(txn *Transaction) error {
 	case *payload.CRCProposalReview:
 	case *payload.CRCProposalWithdraw:
 	case *payload.CRCProposalTracking:
+	case *payload.CRCAppropriation:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
@@ -1830,7 +1838,8 @@ func (b *BlockChain) checkCRCAppropriationTransaction(txn *Transaction,
 	// first one to CRCommitteeAddress, second one to CRCFoundation
 	fAmount := b.crCommittee.CRCFoundationBalance
 	cAmount := b.crCommittee.CRCCommitteeBalance
-	appropriationAmount := common.Fixed64(float64(fAmount+cAmount)*b.chainParams.CRCAppropriatePercentage/100.0) - cAmount
+	appropriationAmount := common.Fixed64(float64(fAmount+cAmount)*
+		b.chainParams.CRCAppropriatePercentage/100.0) - cAmount
 	if appropriationAmount != txn.Outputs[0].Value {
 		return fmt.Errorf("invalid appropriation amount %s, need to be %s",
 			txn.Outputs[0].Value, appropriationAmount)
