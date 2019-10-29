@@ -1605,6 +1605,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	crcProposalPayload.Sign = sig
 
 	common.WriteVarBytes(signBuf, sig)
+	crcProposalPayload.CRSponsorDID.Serialize(signBuf)
 	crSig, _ := crypto.Sign(privateKey2, signBuf.Bytes())
 	crcProposalPayload.CRSign = crSig
 
