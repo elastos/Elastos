@@ -61,6 +61,8 @@ public enum RxEnum {
     SELECTRIVATEKEY,//导入助记词成功
     TOSIGN,//生成待签名交易
 
+    //did
+    KEEPDRAFT//保存草稿
 
    /* enum Type {
         CoinBase, // 创币交易

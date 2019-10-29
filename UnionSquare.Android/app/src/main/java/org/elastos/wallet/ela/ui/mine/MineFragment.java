@@ -16,12 +16,14 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.did.fragment.AddDIDFragment;
 import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.ContactDetailFragment;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -170,8 +172,14 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
                 ((BaseFragment) getParentFragment()).start(AboutFragment.class);
                 break;
             case R.id.rl_did:
-                ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
-                // ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
+                ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
+                if (infoEntities.size() == 0) {
+                    ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
+                } else {
+                    Bundle bundle1 = new Bundle();
+                    bundle1.putParcelableArrayList("draftInfo", infoEntities);
+                    ((BaseFragment) getParentFragment()).start(DIDListFragment.class, bundle1);
+                }
                 break;
         }
     }
@@ -210,6 +218,10 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
                 rv.setVisibility(View.VISIBLE);
                 setRecycleView();
             }
+        }if (integer == RxEnum.KEEPDRAFT.ordinal()) {
+
+          //保存草稿成功
+            tvDid.setText("");
         }
     }
 

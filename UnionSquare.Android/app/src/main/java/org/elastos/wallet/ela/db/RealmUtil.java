@@ -197,6 +197,17 @@ public class RealmUtil {
         return wallets;
     }
 
+    /*查询所有钱包*/
+    public List<Wallet> queryTypeUserAllWallet(int type) {
+        Realm realm = getInstanceRealm();
+        RealmResults<Wallet> list = realm.where(Wallet.class).equalTo("type", type)
+                .findAll();
+
+        List<Wallet> wallets = getWalletList(list);
+        closeRealm(realm);
+        return wallets;
+    }
+
     public List<Wallet> queryUnReadOnlyUserAllWallet() {
         Realm realm = getInstanceRealm();
         RealmResults<Wallet> list = realm.where(Wallet.class).beginGroup()
@@ -256,7 +267,6 @@ public class RealmUtil {
     }
 
 
-
     public void upDataWalletName(String walletId, String name) {
         Realm realm = getInstanceRealm();
         Wallet wallet = realm.where(Wallet.class).equalTo("walletId", walletId).findFirst();
@@ -280,8 +290,6 @@ public class RealmUtil {
             closeRealm(realm);
         }
     }
-
-
 
 
     private List<Wallet> getWalletList(RealmResults<Wallet> list) {

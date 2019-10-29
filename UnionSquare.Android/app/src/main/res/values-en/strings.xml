@@ -454,7 +454,7 @@
     <string name="didonlywithmainpk">DID(consistent with the master management public key)</string>
     <string name="adddid">Add DID</string>
     <string name="plzselctoutdate">Select an expiration date</string>
-    <string name="validtime">Valid until</string>
+    <string name="validtime">Valid until&#160;</string>
     <string name="keepeditornot">Do you want to save this edit?</string>
     <string name="keep">Save</string>
     <string name="nokeep">Abandon</string>
@@ -486,4 +486,9 @@
     <string name="toopen">去开启</string>
     <string name="published">已发布</string>
     <string name="draft">草稿</string>
+    <string name="usedraftornot">是否使用上次保存的草稿？</string>
+    <string name="lastedit">上次编辑</string>
+    <string name="validdate">有效期</string>
+    <string name="expired">已失效</string>
+    <string name="expireddate">失效日期</string>
 </resources>

@@ -459,7 +459,7 @@
     <string name="didonlywithmainpk">DID（与主管理公钥一一对应）</string>
     <string name="adddid">添加DID</string>
     <string name="plzselctoutdate">请选择失效日期</string>
-    <string name="validtime">有效期至</string>
+    <string name="validtime">有效期至&#160;</string>
     <string name="keepeditornot">是否保留本次编辑？</string>
     <string name="keep">保留</string>
     <string name="nokeep">不保留</string>
@@ -491,4 +491,9 @@
     <string name="toopen">去开启</string>
     <string name="published">已发布</string>
     <string name="draft">草稿</string>
+    <string name="usedraftornot">是否使用上次保存的草稿？</string>
+    <string name="lastedit">上次编辑</string>
+    <string name="validdate">有效期</string>
+    <string name="expired">已失效</string>
+    <string name="expireddate">失效日期</string>
 </resources>

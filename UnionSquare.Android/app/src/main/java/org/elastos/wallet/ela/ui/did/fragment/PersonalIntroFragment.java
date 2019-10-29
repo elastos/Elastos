@@ -20,7 +20,7 @@ public class PersonalIntroFragment extends BaseFragment {
     TextView tvTitleRight;
     @BindView(R.id.et_intro)
     EditText etIntro;
-    private  DIDInfoEntity didInfo;
+    private DIDInfoEntity didInfo;
     private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
 
     @Override
@@ -32,6 +32,12 @@ public class PersonalIntroFragment extends BaseFragment {
     protected void setExtraData(Bundle data) {
         didInfo = data.getParcelable("didInfo");
         credentialSubjectBean = didInfo.getCredentialSubject();
+        if (data.getBoolean("useDraft"))
+            putData();
+    }
+
+    private void putData() {
+        etIntro.setText(credentialSubjectBean.getDescript());
     }
 
 
@@ -42,13 +48,13 @@ public class PersonalIntroFragment extends BaseFragment {
     }
 
 
-    @OnClick({R.id.tv_next,R.id.tv_title_right})
+    @OnClick({R.id.tv_next, R.id.tv_title_right})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_title_right:
             case R.id.tv_next:
                 credentialSubjectBean.setDescript(getText(etIntro));
-                start(SocialAccountFragment.class,  getArguments());
+                start(SocialAccountFragment.class, getArguments());
                 break;
 
 
