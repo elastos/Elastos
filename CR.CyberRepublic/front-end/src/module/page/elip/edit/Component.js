@@ -68,8 +68,6 @@ export default class extends StandardPage {
       return this.historyBack()
     }
 
-    const submitName = ELIP_STATUS.DRAFT === elip.status ? I18N.get('elip.button.markAsSubmitted') : I18N.get('elip.button.submit')
-
     return (
       <Wrapper>
         <BackLink link="/elips" />
@@ -78,7 +76,7 @@ export default class extends StandardPage {
             data={elip}
             onSubmit={this.onSubmit}
             onCancel={this.historyBack}
-            submitName={submitName}
+            submitName={I18N.get('elip.button.submit')}
           />
         </Container>
         <Footer />

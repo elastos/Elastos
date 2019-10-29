@@ -29,7 +29,7 @@ class C extends StandardPage {
       visibleReject: false,
       visibleApprove: false,
       visibleYes: false,
-      visibleOppose: false,
+      visibleOppose: false
     }
   }
 
@@ -81,12 +81,15 @@ class C extends StandardPage {
     return elip.createdBy && elip.createdBy._id === currentUserId
   }
 
-  submittedDraft = async () => {
-    await this.updateStatus(ELIP_STATUS.SUBMITTED)
-  }
-
-  cancelledSubmitted = async () => {
-    await this.updateStatus(ELIP_STATUS.CANCELLED)
+  submittedAsProposal = async () => {
+    try {
+      const { submitAsPropose, data } = this.props
+      await submitAsPropose({ id: data._id })
+      message.info(I18N.get('elip.msg.marked'))
+      this.refetch()
+    } catch (error) {
+      logger.error(error)
+    }
   }
 
   updateStatus = async elipStatus => {
@@ -123,6 +126,18 @@ class C extends StandardPage {
       this.refetch()
     } catch (err) {
       logger.error(err)
+    }
+  }
+
+  deletedElip = async () => {
+    try {
+      const { deleteData, data } = this.props
+      console.log(data)
+      await deleteData({ id: data._id })
+      message.info(I18N.get('elip.msg.marked'))
+      this.props.history.push('/elips')
+    } catch (error) {
+      logger.error(error)
     }
   }
 
@@ -165,9 +180,7 @@ class C extends StandardPage {
           />
           <Link href="#copyright" title={I18N.get('elip.fields.copyright')} />
         </LinkGroup>
-        <LinkGroup marginTop={51}>
-          {reviewLink}
-        </LinkGroup>
+        <LinkGroup marginTop={51}>{reviewLink}</LinkGroup>
       </StyledAnchor>
     )
   }
@@ -219,9 +232,9 @@ class C extends StandardPage {
         {({ style, isSticky, wasSticky }) => {
           const finalStyle = style
             ? {
-              ...style,
-              zIndex: 2
-            }
+                ...style,
+                zIndex: 2
+              }
             : style
           return (
             <div style={finalStyle}>
@@ -253,14 +266,14 @@ class C extends StandardPage {
   renderSubTitle() {
     const status = this.renderStatus()
     const edit = this.renderEditButton()
-    const submitted = this.renderSubmittedButton()
-    const cancelled = this.renderCancelledButton()
+    const submittedProposal = this.renderSubmittedProposalButton()
+    const deleteElip = this.renderDeleteElipButton()
     return (
       <Row type="flex" justify="start" gutter={25.5}>
         {status}
         {edit}
-        {submitted}
-        {/* {cancelled} */}
+        {submittedProposal}
+        {deleteElip}
       </Row>
     )
   }
@@ -268,7 +281,10 @@ class C extends StandardPage {
   renderPreamble() {
     const { data } = this.props
     const preambles = {
-      elip: ![ELIP_STATUS.WAIT_FOR_REVIEW, ELIP_STATUS.REJECTED].includes(data.status) && `#${data.vid}`,
+      elip:
+        ![ELIP_STATUS.WAIT_FOR_REVIEW, ELIP_STATUS.REJECTED].includes(
+          data.status
+        ) && `#${data.vid}`,
       title: data.title,
       author: data.createdBy && data.createdBy.username,
       discussions: data.discussions,
@@ -284,7 +300,15 @@ class C extends StandardPage {
       <Part id="preamble">
         <PartTitle>{I18N.get('elip.fields.preamble')}</PartTitle>
         <PartContent className="preamble">
-          {_.map(preambles, (v, k) => !_.isEmpty(v) && this.renderPreambleItem(I18N.get(`elip.fields.preambleItems.${k}`), v))}
+          {_.map(
+            preambles,
+            (v, k) =>
+              !_.isEmpty(v) &&
+              this.renderPreambleItem(
+                I18N.get(`elip.fields.preambleItems.${k}`),
+                v
+              )
+          )}
         </PartContent>
       </Part>
     )
@@ -317,19 +341,21 @@ class C extends StandardPage {
 
   renderComment() {
     const { data } = this.props
-    return [ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED].includes(data.status) && (
-      <Row style={{ marginTop: 24 }}>
-        <LabelCol span={3} />
-        <Col span={17}>
-          <Comments
-            type="elip"
-            elip={data}
-            canPost={true}
-            model={data._id}
-            returnUrl={`/elips/${data._id}`}
-          />
-        </Col>
-      </Row>
+    return (
+      [ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED].includes(data.status) && (
+        <Row style={{ marginTop: 24 }}>
+          <LabelCol span={3} />
+          <Col span={17}>
+            <Comments
+              type="elip"
+              elip={data}
+              canPost={true}
+              model={data._id}
+              returnUrl={`/elips/${data._id}`}
+            />
+          </Col>
+        </Row>
+      )
     )
   }
 
@@ -368,44 +394,43 @@ class C extends StandardPage {
     )
   }
 
-  renderSubmittedButton() {
+  renderSubmittedProposalButton() {
     const { data } = this.props
-    const isEditable = this.isAuthor(data) && data.status === ELIP_STATUS.DRAFT
+    const isVisible = this.isAuthor(data) && data.status === ELIP_STATUS.DRAFT
 
-    if (!isEditable) return null
+    if (!isVisible) return null
 
     return (
       <Col>
         <Popconfirm
-          title={I18N.get('elip.modal.markAsSubmitted')}
-          onConfirm={this.submittedDraft}
+          title={I18N.get('elip.modal.submittedAsProposal')}
+          onConfirm={this.submittedAsProposal}
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
         >
           <Button className="cr-btn cr-btn-primary">
-            {I18N.get('elip.button.markAsSubmitted')}
+            {I18N.get('elip.button.submittedAsProposal')}
           </Button>
         </Popconfirm>
       </Col>
     )
   }
 
-  renderCancelledButton() {
-    const { data, isCouncil } = this.props
-    const canCancel = isCouncil && ELIP_STATUS.SUBMITTED === data.status
+  renderDeleteElipButton() {
+    const { isAdmin } = this.props
 
-    if (!canCancel) return null
+    if (!isAdmin) return null
 
     return (
       <Col>
         <Popconfirm
-          title={I18N.get('elip.modal.markAsCancelled')}
-          onConfirm={this.cancelledSubmitted}
+          title={I18N.get('elip.modal.delete')}
+          onConfirm={this.deletedElip}
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
         >
-          <Button className="cr-btn cr-btn-black">
-            {I18N.get('elip.button.markAsCancelled')}
+          <Button className="cr-btn cr-btn-danger">
+            {I18N.get('elip.button.delete')}
           </Button>
         </Popconfirm>
       </Col>
@@ -451,7 +476,11 @@ class C extends StandardPage {
           cancelText={I18N.get('.no')}
           visible={visibleApprove}
         >
-          <Button className="cr-btn cr-btn-primary" style={{ marginLeft: 10 }} onClick={this.showApproveModal}>
+          <Button
+            className="cr-btn cr-btn-primary"
+            style={{ marginLeft: 10 }}
+            onClick={this.showApproveModal}
+          >
             {I18N.get('elip.button.approve')}
           </Button>
         </Popconfirm>
@@ -475,13 +504,17 @@ class C extends StandardPage {
   showRejectModal = () => {
     const { visibleReject, visibleApprove } = this.state
     this.setState({ visibleReject: !visibleReject })
-    if (!visibleReject && visibleApprove) this.setState({ visibleApprove: !visibleApprove })
+    if (!visibleReject && visibleApprove) {
+      this.setState({ visibleApprove: !visibleApprove })
+    }
   }
 
   showApproveModal = () => {
     const { visibleReject, visibleApprove } = this.state
     this.setState({ visibleApprove: !visibleApprove })
-    if (!visibleApprove && visibleReject) this.setState({ visibleReject: !visibleReject })
+    if (!visibleApprove && visibleReject) {
+      this.setState({ visibleReject: !visibleReject })
+    }
   }
 }
 

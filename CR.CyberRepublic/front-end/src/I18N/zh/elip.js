@@ -42,7 +42,8 @@ export default {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
     [ELIP_STATUS.REJECTED]: '已拒绝',
     [ELIP_STATUS.DRAFT]: '草案',
-    [ELIP_STATUS.SUBMITTED]: '已提交'
+    [ELIP_STATUS.SUBMITTED]: '已提交',
+    [ELIP_STATUS.SUBMITTED_AS_PROPOSAL]: '提交为提案'
   },
   show: '展示',
   filter: {
@@ -58,12 +59,12 @@ export default {
     reject: '拒绝',
     approve: '批准',
     edit: '编辑',
-    markAsSubmitted: '标记为提交状态',
-    markAsCancelled: '标记为取消状态',
+    submittedAsProposal: '提交为提案',
     continue: '继续',
     yes: '赞成',
     oppose: '反对',
-    abstain: '弃权'
+    abstain: '弃权',
+    delete: '删除'
   },
   msg: {
     updated: '更新成功',
@@ -107,8 +108,8 @@ export default {
     reason: '理由',
     approve: '您确定要批准该 ELIP 吗？',
     abstain: '您确定要放弃该 Vote 的投票吗？',
-    markAsSubmitted: '您确定要把该 ELIP 标记为提交状态吗？',
-    markAsCancelled: '您确定要把该 ELIP 标记为取消状态吗？'
+    submittedAsProposal: '您确定要提交该 ELIP 作为提案吗？',
+    delete: '您确定要删除该 ELIP 吗？'
   },
   text: {
     reviewDetails: '审核详情',
