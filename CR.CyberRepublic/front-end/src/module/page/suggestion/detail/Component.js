@@ -30,7 +30,7 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
-import DraftEditor from '@/module/common/DraftEditor'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import TagsContainer from '../common/tags/Container'
 import PopoverProfile from '@/module/common/PopoverProfile'
 import {
@@ -46,8 +46,7 @@ import {
   Item,
   ItemTitle,
   ItemText,
-  StyledAnchor,
-  StyledRichContent
+  StyledAnchor
 } from './style'
 
 import './style.scss'
@@ -257,13 +256,7 @@ export default class extends StandardPage {
             <DescLabel id={section}>
               {I18N.get(`suggestion.fields.${section}`)}
             </DescLabel>
-            <StyledRichContent>
-              <DraftEditor
-                value={detail[section]}
-                editorEnabled={false}
-                contentType={CONTENT_TYPE.MARKDOWN}
-              />
-            </StyledRichContent>
+            <MarkdownPreview content={detail[section] ? detail[section] : ''} />
           </div>
         ))}
       </div>
