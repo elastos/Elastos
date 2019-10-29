@@ -17,6 +17,7 @@ import { text } from '@/constants/color'
 import { logger } from '@/util'
 import { breakPoint } from '@/constants/breakPoint'
 import moment from 'moment/moment'
+import PopoverProfile from '@/module/common/PopoverProfile'
 import ReviewHistory from './ReviewHistory'
 import VoteHistory from './VoteHistory'
 
@@ -320,20 +321,25 @@ class C extends StandardPage {
       <Part id="preamble">
         <PartTitle>{I18N.get('elip.fields.preamble')}</PartTitle>
         <PartContent className="preamble">
-          {_.map(preambles, (v, k) => !_.isEmpty(v) && this.renderPreambleItem(I18N.get(`elip.fields.preambleItems.${k}`), v))}
+          {_.map(preambles, (v, k) => !_.isEmpty(v) && this.renderPreambleItem(I18N.get(`elip.fields.preambleItems.${k}`), v, k))}
         </PartContent>
       </Part>
     )
   }
 
-  renderPreambleItem(key, value) {
+  renderPreambleItem(key, value, item) {
+    const { data, user } = this.props
+    let text = value
+    if (item === 'author') {
+      text = <PopoverProfile owner={data.createdBy} curUser={user} />
+    }
     return (
       <Row key={key}>
         <Col span={6}>
           <PartContent>{`${key}:`}</PartContent>
         </Col>
         <Col span={18}>
-          <PartContent>{value}</PartContent>
+          <PartContent>{text}</PartContent>
         </Col>
       </Row>
     )

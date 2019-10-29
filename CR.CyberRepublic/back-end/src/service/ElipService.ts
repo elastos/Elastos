@@ -302,7 +302,7 @@ export default class extends Base {
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
       )
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
     if (!rs) {
       throw 'ElipService.getById - invalid elip id'
     }
