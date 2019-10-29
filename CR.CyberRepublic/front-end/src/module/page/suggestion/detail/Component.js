@@ -364,7 +364,7 @@ export default class extends StandardPage {
     const result = sections.map(section => {
       return `
         <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
-        <p>${convertMarkdownToHtml(detail[section])}</p>
+        <p>${convertMarkdownToHtml(detail[section] ? detail[section] : '')}</p>
       `
     }).join('')
     const text = `

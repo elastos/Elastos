@@ -14,9 +14,9 @@ import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import TagsContainer from '../common/tags/Container'
-import { SUGGESTION_STATUS, CONTENT_TYPE, SUGGESTION_TAG_TYPE } from '@/constant'
+import { SUGGESTION_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
-import DraftEditor from '@/module/common/DraftEditor'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import PageHeader from './PageHeader'
 import SearchBox from './SearchBox'
 
@@ -347,7 +347,7 @@ export default class extends StandardPage {
         {title}
         {tagsNode}
         <ShortDesc>
-          <DraftEditor value={data.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+          <MarkdownPreview content={data.abstract} />
           {_.isArray(data.link) && (data.link.map((link) => {
             return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
           }))}
