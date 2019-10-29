@@ -125,3 +125,26 @@ export const StyledRichContent = styled.div`
     }
   }
 `
+
+export const LinkGroup = styled.div`
+  ${props => props.marginTop && `margin-top: ${props.marginTop}px;`}
+`
+
+export const Part = styled.div`
+  .preamble {
+    font-family: Synthese;
+    font-size: 13px;
+    line-height: 18px;
+    align-items: center;
+    color: #000;
+  }
+`
+
+export const PartTitle = styled.h4`
+  font-family: Synthese;
+  font-size: 20px;
+  line-height: 28px;
+  color: #000;
+`
+
+export const PartContent = styled.div``
