@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <sys/types.h>
 
 #ifdef __cplusplus
@@ -57,10 +58,19 @@ ssize_t sha256(uint8_t *digest, int count, ...);
 
 ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, int count, ...);
 
-//ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...);
-ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, va_list inputs);
+ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey, int count, va_list inputs);
 
-//int ECDSAverify(const char* publicKey, const void* data, int len, const char* signedData, int signedLen);
+ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...);
+
+ssize_t ecdsa_sign_base64v(char *sig, uint8_t *privatekey, int count, va_list inputs);
+
+int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs);
+
+int ecdsa_verify(uint8_t *sig, uint8_t *publickey, int count, ...);
+
+int ecdsa_verify_base64v(char *sig, uint8_t *publickey, int count, va_list inputs);
+
+int ecdsa_verify_base64(char *sig, uint8_t *publickey, int count, ...);
 
 #ifdef __cplusplus
 }

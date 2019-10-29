@@ -5,7 +5,7 @@ public class HDKey: NSObject {
     private var seed: Data!
     private var subPublicKey: String!
     private var childPrivatedKey: String!
-    
+    private var rootPrivateKey: String!
     init(_ seed: Data) {
         self.seed = seed
     }
@@ -16,8 +16,10 @@ public class HDKey: NSObject {
     }
     
     public class func fromMnemonic(_ mnemonic: String, _ passphrase: String) throws -> HDKey {
-        let mpointer: UnsafePointer<Int8> = mnemonic.toUnsafePointerInt8()!
-        let passphrasebase58Pointer = passphrase.toUnsafePointerInt8()
+        let mnem: String = mnemonic + "\0"
+        let passph: String = passphrase + "\0"
+        let mpointer: UnsafePointer<Int8> = mnem.toUnsafePointerInt8()!
+        let passphrasebase58Pointer = passph.toUnsafePointerInt8()
         
         var seed: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
         seed = HDkey_GetSeedFromMnemonic(mpointer, passphrasebase58Pointer!, 0, seed)

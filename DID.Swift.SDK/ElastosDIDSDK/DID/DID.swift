@@ -61,32 +61,6 @@ public class DID: NSObject {
         self.resolveTimestamp = Date()
         return document!
     }
-    
-    // delete after test
-    public static func testSign() throws {
-        
-        let dhKey: HDKey = try HDKey.fromMnemonic("cloth always junk crash fun exist stumble shift over benefit fun toe", "")
-        let key: DerivedKey = try dhKey.derive(0)
-        
-        let privateKey: [UInt8] = try key.getPrivateKeyBytes()
-        print(privateKey)
-        
-        let data = Data(bytes: privateKey, count: privateKey.count)
-        let pkPointer: UnsafePointer<UInt8> = data.toPointer()!
-        let none: UnsafePointer<Int8> = "1111".toUnsafePointerInt8()!
-        let raw: UnsafeMutableRawPointer = UnsafeMutableRawPointer(mutating: none)
-        var _: CVaListPointer = CVaListPointer(_fromUnsafeMutablePointer: raw)
-
-        let sign: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 1000)
-
-        let args: [CVarArg] = ["foo", 3, "foo".count, "hello world".count]
-//        withVaList(args) { ecdsa_sign_base64v(sign, pkPointer, 2, args) }
-        
-//        QIOWXABY+daUhaEDZ3uP6CmApXyZpQqw5/8BUWJVxEQ=
-//        QL4eNEJpsIMsaGjBorRPlkr/eOR1Ee9GME/y53KHXSk=
-        let sk: UnsafeMutablePointer<Int8> = ecdsa_sign_base64v(sign, pkPointer, 2, getVaList(args))
-        print(String(cString: sign))
-    }
 }
 
 class DListener: DIDURLBaseListener {
