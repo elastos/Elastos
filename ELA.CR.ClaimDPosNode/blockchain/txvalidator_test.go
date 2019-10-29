@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	elaact "github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
@@ -62,7 +63,9 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		s.Error(err)
 	}
 	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{})
-
+	if err := s.Chain.Init(nil); err != nil {
+		s.Error(err)
+	}
 	s.OriginalLedger = DefaultLedger
 
 	arbiters, err := state.NewArbitrators(params,
@@ -2340,7 +2343,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 		Value:       common.Fixed64(60 * ela),
 	}
 	CRCCommitteeAddressU168, _ := common.Uint168FromAddress(CRCCommitteeAddress)
-	s.Chain.chainParams.CRCAddress = *CRCCommitteeAddressU168
+	s.Chain.chainParams.CRCCommitteeAddress = *CRCCommitteeAddressU168
 
 	// stage = 1 ok
 	txn := s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 1,
@@ -3421,7 +3424,72 @@ func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
 }
 
 func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
-	s.Chain.CreateCRCAppropriationTransaction()
+	var crAddress string
+	crAddress = "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
+	crcFoundation, _ := common.Uint168FromAddress(crAddress)
+
+	s.Chain.chainParams.CRCFoundation = *crcFoundation
+	crcCommiteeAddressStr := "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+
+	crcCommiteeAddressHash, _ := common.Uint168FromAddress(crcCommiteeAddressStr)
+	s.Chain.chainParams.CRCCommitteeAddress = *crcCommiteeAddressHash
+
+	var txOutputs []*types.Output
+	txOutput := &types.Output{
+		AssetID:     *elaact.SystemAssetID,
+		ProgramHash: *crcFoundation,
+		Value:       common.Fixed64(0),
+		OutputLock:  0,
+		Type:        types.OTNone,
+		Payload:     &outputpayload.DefaultOutput{},
+	}
+	for i := 1; i < 5; i++ {
+		txOutPutNew := *txOutput
+		txOutPutNew.Value = common.Fixed64(i * 100)
+		txOutputs = append(txOutputs, &txOutPutNew)
+	}
+
+	txn := &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.TransferAsset,
+		Payload:    &payload.TransferAsset{},
+		Attributes: nil,
+		Inputs:     nil,
+		Outputs:    txOutputs,
+		Programs:   nil,
+		LockTime:   0,
+	}
+
+	txOutputs = nil
+	txOutputCoinBase := *txOutput
+	txOutputCoinBase.Value = common.Fixed64(500)
+	txOutputCoinBase.OutputLock = uint32(100)
+	txOutputs = append(txOutputs, &txOutputCoinBase)
+	txnCoinBase := &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.CoinBase,
+		Payload:    &payload.TransferAsset{},
+		Attributes: nil,
+		Inputs:     nil,
+		Outputs:    txOutputs,
+		Programs:   nil,
+		LockTime:   0,
+	}
+	block := &types.Block{
+		Transactions: []*types.Transaction{
+			txn,
+			txnCoinBase,
+		},
+		Header: types.Header{
+			Height:   1,
+			Previous: s.Chain.chainParams.GenesisBlock.Hash(),
+		},
+	}
+	hash := block.Hash()
+	node, _ := s.Chain.LoadBlockNode(&block.Header, &hash)
+	s.Chain.db.SaveBlock(block, node, nil, CalcPastMedianTime(node))
+	txCrcAppropriation := s.Chain.CreateCRCAppropriationTransaction()
+	s.NotNil(txCrcAppropriation)
 }
 
 func TestTxValidatorSuite(t *testing.T) {

@@ -322,7 +322,6 @@ func (p *ProposalManager) delProposal(did common.Uint168,
 func (p *ProposalManager) registerProposal(tx *types.Transaction,
 	height uint32, history *utils.History) {
 	proposal := tx.Payload.(*payload.CRCProposal)
-
 	//The number of the proposals of the committee can not more than 128
 	if p.isProposalFull(proposal.CRSponsorDID) {
 		return
