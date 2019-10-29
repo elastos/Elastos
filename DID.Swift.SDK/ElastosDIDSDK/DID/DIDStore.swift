@@ -41,13 +41,23 @@ public class DIDStore: NSObject {
 
     func loadPrivateIdentityIndex() throws -> Int { return 0 }
 
-    private func encryptToBase64(_ passphrase: String ,_ input: [UInt8]) throws -> String {
-        let bytes = try Aes256cbc.encrypt(passphrase, input)
-        let bytesData = Data(bytes: bytes, count: bytes.count)
-        return bytesData.base64EncodedString()
+    private func encryptToBase64(_ passphrase: String ,_ input: Data) throws -> String {
+        let pas: String = passphrase + "\0"
+        let cpassphrase: UnsafePointer<Int8> = pas.withCString { cpass -> UnsafePointer<Int8> in
+            return cpass
+        }
+        let cinput: UnsafePointer<UInt8> = input.withUnsafeBytes{ (by: UnsafePointer<UInt8>) -> UnsafePointer<UInt8> in
+            return by
+        }
+        let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 100)
+        let re = encrypt_to_base64(base64url, cpassphrase, cinput, input.count)
+        guard re == 0 else {
+            throw DIDStoreError.failue("decryptFromBase64 error.")
+        }
+        return String(cString: base64url)
     }
 
-    private func decryptFromBase64(_ passphrase: String ,_ input: String) throws -> Data{
+    private func decryptFromBase64(_ passphrase: String ,_ input: String) throws -> Data {
         // TODO:
         return Data()
     }
@@ -63,7 +73,7 @@ public class DIDStore: NSObject {
         // Save seed instead of root private key,
         // keep compatible with Native SDK
         let seedData = privateIdentity.getSeed()
-        let encryptedIdentity = try encryptToBase64(passphrase, [UInt8](seedData))
+        let encryptedIdentity = try encryptToBase64(passphrase, seedData)
         try storePrivateIdentity(encryptedIdentity)
         try storePrivateIdentityIndex(lastIndex)
     }
