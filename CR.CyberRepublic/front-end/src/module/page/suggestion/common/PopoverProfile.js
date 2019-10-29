@@ -4,16 +4,10 @@ import _ from 'lodash'
 import I18N from '@/I18N'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import userUtil from '@/util/user'
 
 export default ({ data, user }) => {
-  let name = `${_.get(data, 'createdBy.profile.firstName', '')}
-    ${_.get(data, 'createdBy.profile.lastName', '')}
-  `
-  const username = _.get(data, 'createdBy.username')
-  if (name === ' ') {
-    name = username
-  }
-
+  const name = userUtil.formatUsername(_.get(data, 'createdBy'))
   const userId = _.get(data, 'createdBy._id')
   const email = _.get(data, 'createdBy.email')
   const isAuthor = user.current_user_id === userId
