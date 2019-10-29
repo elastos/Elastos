@@ -1,8 +1,12 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
@@ -18,7 +22,9 @@ import org.elastos.wallet.ela.utils.CacheUtil;
 import java.util.ArrayList;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 public class DIDListFragment extends BaseFragment implements NewBaseViewData, CommonRvListener {
 
@@ -37,9 +43,13 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     RecyclerView rv;
     @BindView(R.id.rv1)
     RecyclerView rv1;
+    @BindView(R.id.iv_title_right)
+    ImageView ivTitleRight;
+    Unbinder unbinder;
     private DIDRecordRecAdapetr adapter1;
     private DIDRecordRecAdapetr adapter;
     ArrayList<DIDInfoEntity> draftList;
+    ArrayList<DIDInfoEntity> netList;
 
     @Override
     protected int getLayoutId() {
@@ -47,20 +57,29 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     }
 
     @Override
-    protected void initInjector() {
+    protected void setExtraData(Bundle data) {
 
+        draftList = data.getParcelableArrayList("draftInfo");
+        netList = data.getParcelableArrayList("netList");
+        if (draftList == null) {
+            draftList = CacheUtil.getDIDInfoList();
+        }
     }
 
     @Override
     protected void initView(View view) {
         tvTitle.setText("DID");
-
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.mine_did_add);
     }
 
 
-    @OnClick({R.id.ll_tab1, R.id.ll_tab2})
+    @OnClick({R.id.ll_tab1, R.id.ll_tab2, R.id.iv_title_right})
     public void onViewClicked(View view) {
         switch (view.getId()) {
+            case R.id.iv_title_right:
+                start(AddDIDFragment.class);
+                break;
             case R.id.ll_tab1:
                 lineTab1.setVisibility(View.VISIBLE);
                 lineTab2.setVisibility(View.GONE);
@@ -70,15 +89,13 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
                 rv1.setVisibility(View.GONE);
                 break;
             case R.id.ll_tab2:
-                if (draftList == null) {
-                    draftList = CacheUtil.getDIDInfoList();
-                }
                 lineTab1.setVisibility(View.GONE);
                 lineTab2.setVisibility(View.VISIBLE);
                 tvTab1.setTextColor(getResources().getColor(R.color.whiter50));
                 tvTab2.setTextColor(getResources().getColor(R.color.whiter));
                 rv.setVisibility(View.GONE);
                 rv1.setVisibility(View.VISIBLE);
+                setRecycleView1();
                 break;
         }
     }
@@ -127,32 +144,11 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
             adapter.notifyDataSetChanged();
         }
         startCount += data.size();
-    }
+    }*/
 
-    private void setRecycleView1(TransferRecordEntity entity) {
-        List<TransferRecordEntity.TransactionsBean> data = entity.getTransactions();
-        if (startCount1 == 0 && (data == null || data.size() == 0)) {
-            rv1.setVisibility(View.GONE);
-            tvEarnBg.setVisibility(View.VISIBLE);
-            return;
-        } else {
-            rv1.setVisibility(View.VISIBLE);
-            tvEarnBg.setVisibility(View.GONE);
-        }
-
-        if (startCount1 == 0) {
-            if (list1 == null) {
-                list1 = new ArrayList<>();
-            } else {
-                list1.clear();
-            }
-        } else if (data == null || data.size() == 0) {
-            showToastMessage(getString(R.string.loadall));
-            return;
-        }
-        list1.addAll(data);
+    private void setRecycleView1() {
         if (adapter1 == null) {
-            adapter1 = new DIDRecordRecAdapetr(getContext(), list1, chainId);
+            adapter1 = new DIDRecordRecAdapetr(getContext(), draftList);
             rv1.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
             rv1.setAdapter(adapter1);
             adapter1.setCommonRvListener(this);
@@ -160,8 +156,8 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
         } else {
             adapter1.notifyDataSetChanged();
         }
-        startCount1 += data.size();
-    }*/
+
+    }
 
     @Override
     public void onRvItemClick(int position, Object o) {
@@ -174,5 +170,19 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
         }
 
         start(TransferDetailFragment.class, bundle);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // TODO: inflate a fragment view
+        View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, rootView);
+        return rootView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 }

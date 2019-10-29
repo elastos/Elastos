@@ -2,15 +2,18 @@ package org.elastos.wallet.ela.ui.did.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
-import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
+import org.elastos.wallet.ela.utils.DateUtil;
 
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -28,15 +31,13 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
     }
 
     private CommonRvListener commonRvListener;
-    private List<TransferRecordEntity.TransactionsBean> list;
+    private List<DIDInfoEntity> list;
 
     private Context context;
-    private String chainId;
 
-    public DIDRecordRecAdapetr(Context context, List<TransferRecordEntity.TransactionsBean> list, String chainId) {
+    public DIDRecordRecAdapetr(Context context, List<DIDInfoEntity> list) {
         this.list = list;
         this.context = context;
-        this.chainId = chainId;
 
     }
 
@@ -48,12 +49,43 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        DIDInfoEntity didInfoEntity = list.get(position);
+        holder.tvDidname.setText(didInfoEntity.getCredentialSubject().getDidName());
+        ////Pending 确认中   Confirmed已确认  Unpublished 未发布(草稿  这个api不提供,保存草稿时候自己设置)
+        switch (didInfoEntity.getStatus()) {
+            case "Pending":
+                holder.tvDid.setVisibility(View.GONE);
+                holder.tvStatus.setTextColor(context.getResources().getColor(R.color.c7DF17B));
+                holder.tvStatus.setText(context.getString(R.string.Pending));
+                break;
+            case "Unpublished":
+                holder.tvDid.setVisibility(View.GONE);
+                holder.tvStatus.setTextColor(context.getResources().getColor(R.color.whiter50));
+                holder.tvStatus.setText(context.getString(R.string.lastedit) + DateUtil.timeNYR(didInfoEntity.getIssuanceDate(), context));
+                break;
+            default:
+                holder.tvDid.setVisibility(View.VISIBLE);
+                holder.tvDid.setText("did:ela:" + didInfoEntity.getId());
+                holder.tvStatus.setTextColor(context.getResources().getColor(R.color.whiter50));
+                if (DateUtil.parseToLong(didInfoEntity.getExpires()) > new Date().getTime()) {
+                    //过期
+                    String str = "<font color='#FBAD42'>" + context.getString(R.string.expired) + "</font> " +
+                            context.getString(R.string.expireddate) + DateUtil.timeNYR(didInfoEntity.getIssuanceDate(), context);
+                    holder.tvStatus.setText(Html.fromHtml(str));
+                    break;
+                }
+                holder.tvStatus.setText(context.getString(R.string.validdate) + DateUtil.timeNYR(didInfoEntity.getIssuanceDate(), context)
+                        + "至" + DateUtil.timeNYR(didInfoEntity.getExpires(), context));
+
+                break;
+        }
+
         if (commonRvListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    commonRvListener.onRvItemClick(position, null);
+                    commonRvListener.onRvItemClick(position, didInfoEntity);
                 }
             });
         }

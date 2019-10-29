@@ -27,16 +27,27 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
     /**
      * id : innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs
      * operation : create
+     * Status : "Pending
      * publicKey : [{"id":"#primary","publicKey":"031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4"},{"id":"#recovery","controller":"ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}]
-     * credentialSubject : {"id":"innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs","name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"}
+     * credentialSubject : {"id":"innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs","name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019-10-12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","code":"86","phone":"13032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"}
      * expires : 2024-02-10T17:00:00Z
      */
-
+    private String issuanceDate;//编辑时间
     private String id;
     private String operation;
+    private String Status;//Pending 确认中   Confirmed已确认  Unpublished 未发布(草稿  这个api不提供,保存草稿时候自己设置)
     private CredentialSubjectBean credentialSubject;
     private String expires;
     private List<PublicKeyBean> publicKey;
+
+
+    public String getIssuanceDate() {
+        return issuanceDate;
+    }
+
+    public void setIssuanceDate(String issuanceDate) {
+        this.issuanceDate = issuanceDate;
+    }
 
     public String getId() {
         return id;
@@ -52,6 +63,14 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public String getStatus() {
+        return Status;
+    }
+
+    public void setStatus(String status) {
+        Status = status;
     }
 
     public CredentialSubjectBean getCredentialSubject() {
@@ -85,7 +104,7 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
          * nickname : jHo8AB
          * alipay : alipay@223.com
          * avatar : img.jpg
-         * birthday : 2019.10.12
+         * birthday : 2019-10-12
          * descript : this is simple descript
          * email : test@test.com
          * facebook : facebook
@@ -95,6 +114,7 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
          * microsoftPassport : MicrosoftPassport
          * nation : china
          * phone : +8613032454523
+         * code : 86
          * twitter : twitter
          * wechat : wechat2333
          * weibo : test@sina.com
@@ -114,8 +134,9 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
         private String googleAccount;
         private String homePage;
         private String microsoftPassport;
-        private String nation;
+        private String nation;//使用area code
         private String phone;
+        private String code;//新增
         private String twitter;
         private String wechat;
         private String weibo;
@@ -248,6 +269,14 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
             this.phone = phone;
         }
 
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
         public String getTwitter() {
             return twitter;
         }
@@ -295,6 +324,7 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
             dest.writeString(this.microsoftPassport);
             dest.writeString(this.nation);
             dest.writeString(this.phone);
+            dest.writeString(this.code);
             dest.writeString(this.twitter);
             dest.writeString(this.wechat);
             dest.writeString(this.weibo);
@@ -320,6 +350,7 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
             this.microsoftPassport = in.readString();
             this.nation = in.readString();
             this.phone = in.readString();
+            this.code = in.readString();
             this.twitter = in.readString();
             this.wechat = in.readString();
             this.weibo = in.readString();
@@ -414,8 +445,10 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.issuanceDate);
         dest.writeString(this.id);
         dest.writeString(this.operation);
+        dest.writeString(this.Status);
         dest.writeParcelable(this.credentialSubject, flags);
         dest.writeString(this.expires);
         dest.writeList(this.publicKey);
@@ -425,8 +458,10 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
     }
 
     protected DIDInfoEntity(Parcel in) {
+        this.issuanceDate = in.readString();
         this.id = in.readString();
         this.operation = in.readString();
+        this.Status = in.readString();
         this.credentialSubject = in.readParcelable(CredentialSubjectBean.class.getClassLoader());
         this.expires = in.readString();
         this.publicKey = new ArrayList<PublicKeyBean>();

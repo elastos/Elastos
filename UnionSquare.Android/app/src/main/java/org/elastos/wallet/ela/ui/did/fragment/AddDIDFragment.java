@@ -25,6 +25,7 @@ import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -35,6 +36,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -65,11 +67,8 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     List<Wallet> wallets;
     Wallet tempWallet;
     private DIDInfoEntity didInfo;
-
-
-    private DIDInfoEntity.PublicKeyBean publicKeyBean;
-    private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
     private String endDate;
+    private boolean useDraft;
 
     @Override
     protected int getLayoutId() {
@@ -84,13 +83,13 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.adddid));
-        wallets = new RealmUtil().queryUserAllWallet();
-        Iterator<Wallet> iterator = wallets.iterator();
+        wallets = new RealmUtil().queryTypeUserAllWallet(0);
+       /* Iterator<Wallet> iterator = wallets.iterator();
         while (iterator.hasNext()) {
             Wallet wallet = iterator.next();
             if (wallet.getType() != 0)
                 iterator.remove();
-        }
+        }*/
         walletNames = new String[wallets.size()];
         for (int i = 0; i < wallets.size(); i++) {
             walletNames[i] = wallets.get(i).getWalletName();
@@ -103,23 +102,23 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
         didInfo = new DIDInfoEntity();
         didInfo.setOperation("create");
         List<DIDInfoEntity.PublicKeyBean> list = new ArrayList<>();
-        publicKeyBean = new DIDInfoEntity.PublicKeyBean();
+        DIDInfoEntity.PublicKeyBean publicKeyBean = new DIDInfoEntity.PublicKeyBean();
         publicKeyBean.setId("#primary");
         list.add(publicKeyBean);
 
         didInfo.setPublicKey(list);
-        credentialSubjectBean = new DIDInfoEntity.CredentialSubjectBean();
+        DIDInfoEntity.CredentialSubjectBean credentialSubjectBean = new DIDInfoEntity.CredentialSubjectBean();
         didInfo.setCredentialSubject(credentialSubjectBean);
 
 
     }
 
     private void setData() {
-        credentialSubjectBean.setId(getText(tvDid));
+        didInfo.getCredentialSubject().setId(getText(tvDid));
         didInfo.setId(getText(tvDid));
-        publicKeyBean.setPublicKey(getText(tvDidpk));
-        didInfo.setExpires(endDate == null ? null : (endDate + "T00:00:00Z"));
-        credentialSubjectBean.setDidName(getText(etDidname));
+        didInfo.getPublicKey().get(0).setPublicKey(getText(tvDidpk));
+        didInfo.setExpires(endDate);
+        didInfo.getCredentialSubject().setDidName(getText(etDidname));
     }
 
     @OnClick({R.id.rl_selectwallet, R.id.rl_outdate, R.id.tv_next})
@@ -136,10 +135,16 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     showToast(getString(R.string.plzselectwallet));
                     break;
                 }
+
+                if (TextUtils.isEmpty(endDate)) {
+                    showToast(getString(R.string.plzselctoutdate));
+                    break;
+                }
                 setData();
 
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("didInfo", didInfo);
+                bundle.putBoolean("useDraft", useDraft);
                 bundle.putParcelable("wallet", tempWallet);
                 start(PersonalInfoFragment.class, bundle);
                 break;
@@ -166,11 +171,11 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 new DialogUtil().showTime(getBaseActivity(), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        endDate = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
+                        String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
                                 + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
-                        // String begainDate = DateUtil.getCurrentData(DateUtil.FORMART2);
-                        tvDate.setText(getString(R.string.validtime) + endDate);
-
+                        long time = DateUtil.parseToLong(date) / 1000;
+                        endDate = time + "";
+                        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(time, getContext()));
                     }
                 });
                 break;
@@ -190,13 +195,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                         public void affireBtnClick(View view) {
                             setData();
                             //保存草稿
-                            ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
-                            if (infoEntities.contains(didInfo)) {
-                                infoEntities.remove(didInfo);
-                            }
-                            infoEntities.add(didInfo);
-                            CacheUtil.setDIDInfoList(infoEntities);
-                            showToast(getString(R.string.keepsucess));
+                            keep();
                             getBaseActivity().pop();
                         }
                     });
@@ -207,6 +206,18 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
     }
 
+    private void keep() {
+        ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
+        if (infoEntities.contains(didInfo)) {
+            infoEntities.remove(didInfo);
+        }
+        didInfo.setIssuanceDate(new Date().getTime() / 1000 + "");
+        didInfo.setStatus("Unpublished");
+        infoEntities.add(didInfo);
+        CacheUtil.setDIDInfoList(infoEntities);
+        post(RxEnum.KEEPDRAFT.ordinal(), null, null);
+        showToast(getString(R.string.keepsucess));
+    }
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
@@ -231,13 +242,24 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     return;
                 }
                 tvWalletname.setText(tempWallet.getWalletName());
-
                 tvDidpk.setText(allPkEntity.getPublicKeys().get(0));
                 presenter.getDIDByPublicKey(tempWallet.getWalletId(), allPkEntity.getPublicKeys().get(0), this);
                 break;
             case "getDIDByPublicKey":
+                String did = ((CommmonStringEntity) baseEntity).getData();
+                tvDid.setText(did);
+                //查询草稿
+                ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
+                for (DIDInfoEntity didInfoEntity : infoEntities) {
+                    if (didInfoEntity.getId().equals(did)) {
+                        //草稿里有此did
+                        didInfo = didInfoEntity;
+                        useDraft = true;
+                        showOpenDraftWarm();
+                        break;
+                    }
+                }
 
-                tvDid.setText(((CommmonStringEntity) baseEntity).getData());
                 break;
         }
 
@@ -256,6 +278,24 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                         }
                         bundle.putStringArrayList("chainIds", chainIds);
                         start(AddAssetFragment.class, bundle);
+                    }
+                });
+    }
+
+    private void showOpenDraftWarm() {
+        new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.usedraftornot),
+                getString(R.string.sure), getString(R.string.cancel), false, new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        //充填数据
+                        etDidname.setText(didInfo.getCredentialSubject().getDidName());
+                        if (!TextUtils.isEmpty(didInfo.getExpires())) {
+                            endDate = didInfo.getExpires();
+                            tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(endDate, getContext()));
+                        } else {
+                            endDate = null;
+                            tvDate.setText(null);
+                        }
                     }
                 });
     }

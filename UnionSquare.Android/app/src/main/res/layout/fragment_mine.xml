@@ -21,8 +21,7 @@
                 android:id="@+id/rl_did"
                 style="@style/settingItem"
                 android:layout_gravity="center"
-                android:background="@drawable/ass_border"
-                android:visibility="gone">
+                android:background="@drawable/ass_border">
 
                 <TextView
                     android:layout_width="wrap_content"
