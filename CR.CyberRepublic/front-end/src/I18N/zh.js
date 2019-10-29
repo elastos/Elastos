@@ -114,7 +114,9 @@ const zh = {
 
   'mentions.notFound': '该用户不存在',
 
-  comments: '评论',
+  'meta.postedBy': '发布者',
+
+  'comments': '评论',
   'comments.posts': '动态',
   'comments.post': '发言',
   'comments.noComments': '还没有评论，',

@@ -113,8 +113,10 @@ const en = {
   'login.success': 'Login Successful',
 
   'mentions.notFound': 'User not found',
+  
+  'meta.postedBy': 'Posted By',
 
-  comments: 'Comments',
+  'comments': 'Comments',
   'comments.posts': 'Posts',
   'comments.post': 'Post',
   'comments.noComments': `No comments yet, `,

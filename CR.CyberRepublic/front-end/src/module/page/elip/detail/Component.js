@@ -274,11 +274,11 @@ class C extends StandardPage {
   }
 
   renderMeta() {
-    const { data } = this.props
+    const { data, user } = this.props
     data.proposer = data.createdBy
     data.displayId = data.vid
     const postedByText = I18N.get('from.CVoteForm.label.proposedby')
-    return <MetaComponent data={data} postedByText={postedByText} />
+    return <MetaComponent data={data} postedByText={postedByText} user={user}/>
   }
 
   renderTitleNode() {
