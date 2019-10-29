@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package config
 
@@ -69,7 +69,7 @@ type Configuration struct {
 	CRCommitteeStartHeight      uint32            `json:"CRCommitteeStartHeight"`
 	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
-	MaxBlockSize                uint32            `json"MaxBlockSize"`
+	MaxBlockSize                uint32            `json:"MaxBlockSize"`
 	EnableHistory               bool              `json:"EnableHistory"`
 	HistoryStartHeight          uint32            `json:"HistoryStartHeight"`
 	EnableUtxoDB                bool              `json:"EnableUtxoDB"`
