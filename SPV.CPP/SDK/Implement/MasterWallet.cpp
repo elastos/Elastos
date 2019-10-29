@@ -32,16 +32,16 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		MasterWallet::MasterWallet(const std::string &id,
-								   const std::string &rootPath,
+								   const ConfigPtr &config,
 								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_earliestPeerTime(0) {
+				_earliestPeerTime(0),
+				_config(config) {
 
-			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id));
 		}
 
@@ -51,19 +51,16 @@ namespace Elastos {
 								   const std::string &payPasswd,
 								   bool singleAddress,
 								   bool p2pEnable,
-								   const std::string &rootPath,
+								   const ConfigPtr &config,
 								   const std::string &dataPath,
 								   time_t earliestPeerTime,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_earliestPeerTime(earliestPeerTime),
-				_initFrom(from) {
+				_initFrom(from),
+				_config(config) {
 
-			Mnemonic m(rootPath);
-			ErrorChecker::CheckLogic(!m.Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
-
-			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, singleAddress));
 			_account->Save();
 		}
@@ -72,19 +69,18 @@ namespace Elastos {
 								   const nlohmann::json &keystoreContent,
 								   const std::string &backupPassword,
 								   const std::string &payPasswd,
-								   const std::string &rootPath,
+								   const ConfigPtr &config,
 								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_earliestPeerTime(0),
-				_initFrom(from) {
+				_initFrom(from),
+				_config(config) {
 
 			KeyStore keystore;
 			keystore.Import(keystoreContent, backupPassword);
-
-			_config = ConfigPtr(new Config(rootPath));
 
 			_account = AccountPtr(new Account(dataPath + "/" + _id, keystore, payPasswd));
 			_account->Save();
@@ -92,16 +88,16 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &id,
 								   const nlohmann::json &readonlyWalletJson,
-								   const std::string &rootPath,
+								   const ConfigPtr &config,
 								   const std::string &dataPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
 			_id(id),
 			_p2pEnable(p2pEnable),
 			_initFrom(from),
-			_earliestPeerTime(0) {
+			_earliestPeerTime(0),
+			_config(config) {
 
-			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id, readonlyWalletJson));
 			_account->Save();
 		}
@@ -109,7 +105,7 @@ namespace Elastos {
 		MasterWallet::MasterWallet(const std::string &id,
 								   const std::vector<PublicKeyRing> &pubKeyRings,
 								   uint32_t m,
-								   const std::string &rootPath,
+								   const ConfigPtr &config,
 								   const std::string &dataPath,
 								   bool p2pEnable,
 								   bool singleAddress,
@@ -119,10 +115,10 @@ namespace Elastos {
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime) {
+				_earliestPeerTime(earliestPeerTime),
+				_config(config) {
 			ErrorChecker::CheckParam(pubKeyRings.size() < m, Error::InvalidArgument, "Invalid M");
 
-			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id, pubKeyRings, m, singleAddress, compatible));
 			_account->Save();
 		}
@@ -132,7 +128,7 @@ namespace Elastos {
 								   const std::string &payPassword,
 								   const std::vector<PublicKeyRing> &cosigners,
 								   uint32_t m,
-								   const std::string &rootPath,
+								   const ConfigPtr &config,
 								   const std::string &dataPath,
 								   bool p2pEnable,
 								   bool singleAddress,
@@ -142,11 +138,11 @@ namespace Elastos {
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime) {
+				_earliestPeerTime(earliestPeerTime),
+				_config(config) {
 
 			ErrorChecker::CheckParam(cosigners.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
-			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id, xprv, payPassword, cosigners, m, singleAddress, compatible));
 			_account->Save();
 		}
@@ -157,7 +153,7 @@ namespace Elastos {
 								   const std::string &payPasswd,
 								   const std::vector<PublicKeyRing> &cosigners,
 								   uint32_t m,
-								   const std::string &rootPath,
+								   const ConfigPtr &config,
 								   const std::string &dataPath,
 								   bool p2pEnable,
 								   bool singleAddress,
@@ -167,11 +163,11 @@ namespace Elastos {
 				_id(id),
 				_p2pEnable(p2pEnable),
 				_initFrom(from),
-				_earliestPeerTime(earliestPeerTime) {
+				_earliestPeerTime(earliestPeerTime),
+				_config(config) {
 
 			ErrorChecker::CheckParam(cosigners.size() + 1 < m, Error::InvalidArgument, "Invalid M");
 
-			_config = ConfigPtr(new Config(rootPath));
 			_account = AccountPtr(new Account(dataPath + "/" + _id, mnemonic, passphrase, payPasswd, cosigners, m, singleAddress, compatible));
 			_account->Save();
 		}
@@ -399,10 +395,10 @@ namespace Elastos {
 			const std::vector<CoinInfoPtr> &info = _account->SubWalletInfoList();
 
 			if (info.size() == 0) {
-				ChainConfigPtr mainchainConfig = _config->GetChainConfig("ELA");
+				ChainConfigPtr mainchainConfig = _config->GetChainConfig(CHAINID_MAINCHAIN);
 				if (mainchainConfig) {
 					CoinInfoPtr defaultInfo(new CoinInfo());
-					defaultInfo->SetChainID(mainchainConfig->ID());
+					defaultInfo->SetChainID(CHAINID_MAINCHAIN);
 					defaultInfo->SetVisibleAsset(Asset::GetELAAssetID());
 
 					ISubWallet *subWallet = SubWalletFactoryMethod(defaultInfo, mainchainConfig, this);
@@ -503,18 +499,14 @@ namespace Elastos {
 		std::vector<std::string> MasterWallet::GetSupportedChains() const {
 			ArgInfo("{} {}", _id, GetFunName());
 
-			std::vector<std::string> chainIDs;
+			std::vector<std::string> chainIDs = _config->GetAllChainIDs();
 
-			const std::vector<ChainConfigPtr> &chainConfigs = _config->GetChainConfigs();
-			for (size_t i = 0; i < chainConfigs.size(); ++i)
-				chainIDs.push_back(chainConfigs[i]->ID());
-
-			std::string chainID = "";
+			std::string result;
 			for (size_t i = 0; i < chainIDs.size(); ++i) {
-				chainID += chainIDs[i] + ", ";
+				result += chainIDs[i] + ", ";
 			}
 
-			ArgInfo("r => size: {} list: {}", chainIDs.size(), chainID);
+			ArgInfo("r => {}", result);
 			return chainIDs;
 		}
 

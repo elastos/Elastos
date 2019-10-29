@@ -1,6 +1,5 @@
 set(BUILD_SHARED_LIBS OFF "build static thirdparty")
 
-include(libconfig.cmake)
 include(openssl.cmake)
 include(boost.cmake)
 include(fruit.cmake)

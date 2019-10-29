@@ -133,11 +133,10 @@ target_include_directories(${SPVSDK_OBJECT_TARGET} PUBLIC
 	${ThirdParty_OPENSSL_INC_DIR}
 	${ThirdParty_SPDLOG_INC_DIR}
 	${ThirdParty_FRUIT_INC_DIR}
-	${ThirdParty_LIBCONFIG_INC_DIR}
 	${ThirdParty_SQLITE_INC_DIR}
 )
 
-add_dependencies(${SPVSDK_OBJECT_TARGET} ${SPV_Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++ common)
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${SPV_Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit common)
 set_target_properties(${SPVSDK_OBJECT_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 if("${BUILD_SHARED_LIBS}")
@@ -147,7 +146,7 @@ else()
 endif()
 
 set_target_properties(spvsdk PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(spvsdk dl ${SPV_Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit config++ common)
+target_link_libraries(spvsdk dl ${SPV_Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite walletcore fruit common)
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
 endif()
@@ -179,7 +178,6 @@ if(UNIX AND NOT BUILD_SHARED_LIBS)
 	foreach(OpenSSL_Library ${OpenSSL_LIBRARIES})
 		set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:${OpenSSL_Library}>)
 	endforeach()
-	set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:config++>)
 	set(ALL_LIBRARIES ${ALL_LIBRARIES};$<TARGET_FILE:common>)
 
 	string(REPLACE ";" "," ALL_LIBRARIES "${ALL_LIBRARIES}")

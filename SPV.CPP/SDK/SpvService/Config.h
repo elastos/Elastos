@@ -5,13 +5,18 @@
 #ifndef __ELASTOS_SDK_CONFIG_H__
 #define __ELASTOS_SDK_CONFIG_H__
 
-#include <libconfig.hh>
-
+#include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
 namespace Elastos {
 	namespace ElaWallet {
+
+#define CONFIG_FILENAME "Config.json"
+#define CONFIG_MAINNET "MainNet"
+#define CONFIG_TESTNET "TestNet"
+#define CONFIG_REGTEST "RegTest"
+#define CONFIG_PRVNET  "PrvNet"
 
 		class ChainParams;
 
@@ -19,42 +24,27 @@ namespace Elastos {
 
 		class ChainConfig {
 		public:
-			ChainConfig() :
-				_index(0),
-				_minFee(0),
-				_feePerKB(0),
-				_disconnectionTime(0),
-				_chainParameters(nullptr)
-			{}
+			ChainConfig();
 
-			const std::string &ID() const { return _id; }
+			const uint32_t &Index() const;
 
-			const uint32_t &Index() const { return _index; }
+			const uint64_t &MinFee() const;
 
-			const std::string &NetType() const { return _netType; }
+			const uint64_t &FeePerKB() const;
 
-			const uint64_t &MinFee() const { return _minFee; }
+			const uint32_t &DisconnectionTime() const;
 
-			const uint64_t &FeePerKB() const { return _feePerKB; }
+			const std::string &GenesisAddress() const;
 
-			const uint32_t &DisconnectionTime() const { return _disconnectionTime; }
-
-			const std::string &PluginType() const { return _pluginType; }
-
-			const std::string &GenesisAddress() const { return _genesisAddress; }
-
-			const ChainParamsPtr &ChainParameters() const { return _chainParameters; }
+			const ChainParamsPtr &ChainParameters() const;
 
 		private:
 			friend class Config;
 
-			std::string _id;
 			uint32_t _index;
-			std::string _netType;
 			uint64_t _minFee;
 			uint64_t _feePerKB;
 			uint32_t _disconnectionTime;
-			std::string _pluginType;
 			std::string _genesisAddress;
 			ChainParamsPtr _chainParameters;
 		};
@@ -64,23 +54,33 @@ namespace Elastos {
 
 		class Config {
 		public:
-			Config();
+			Config(const Config &cfg);
 
-			explicit Config(const std::string &path, const std::string &netType = "");
+			Config(const std::string &rootPath);
 
 			~Config();
 
+			Config& operator=(const Config &cfg);
+
 			ChainConfigPtr GetChainConfig(const std::string &id) const;
 
-			const std::vector<ChainConfigPtr> &GetChainConfigs() const;
+			bool Load();
+
+			bool SetConfiguration(const std::string &netType, const nlohmann::json &jsonConfig = nlohmann::json());
+
+			std::vector<std::string> GetAllChainIDs() const;
+
+			std::string GetNetType() const;
 
 		private:
-			void LoadConfig(const libconfig::Config &cfg, const std::string &netType = "");
+			bool FromJSON(const nlohmann::json &j);
 
-			ChainParamsPtr LoadChainParameter(const libconfig::Setting &paramSetting);
+			bool ChangeConfig(nlohmann::json &currentConfig, const nlohmann::json &newConfig) const;
 
 		private:
-			std::vector<ChainConfigPtr> _chains;
+			std::string _netType;
+			std::map<std::string, ChainConfigPtr> _chains;
+			std::string _filepath;
 		};
 
 		typedef boost::shared_ptr<Config> ConfigPtr;

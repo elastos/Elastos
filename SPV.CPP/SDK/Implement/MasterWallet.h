@@ -107,7 +107,7 @@ namespace Elastos {
 
 			MasterWallet(
 					const std::string &id,
-					const std::string &rootPath,
+					const ConfigPtr &config,
 					const std::string &dataPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
@@ -119,7 +119,7 @@ namespace Elastos {
 					const std::string &payPasswd,
 					bool singleAddress,
 					bool p2pEnable,
-					const std::string &rootPath,
+					const ConfigPtr &config,
 					const std::string &dataPath,
 					time_t earliestPeerTime,
 					MasterWalletInitFrom from);
@@ -129,7 +129,7 @@ namespace Elastos {
 					const nlohmann::json &keystoreContent,
 					const std::string &backupPassword,
 					const std::string &payPassword,
-					const std::string &rootPath,
+					const ConfigPtr &config,
 					const std::string &dataPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
@@ -137,7 +137,7 @@ namespace Elastos {
 			MasterWallet(
 					const std::string &id,
 					const nlohmann::json &readonlyWalletJson,
-					const std::string &rootPath,
+					const ConfigPtr &config,
 					const std::string &dataPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
@@ -146,7 +146,7 @@ namespace Elastos {
 					const std::string &id,
 					const std::vector<PublicKeyRing> &pubKeyRings,
 					uint32_t m,
-					const std::string &rootPath,
+					const ConfigPtr &config,
 					const std::string &dataPath,
 					bool p2pEnable,
 					bool singleAddress,
@@ -160,7 +160,7 @@ namespace Elastos {
 					const std::string &payPassword,
 					const std::vector<PublicKeyRing> &cosigners,
 					uint32_t m,
-					const std::string &rootPath,
+					const ConfigPtr &config,
 					const std::string &dataPath,
 					bool p2pEnable,
 					bool singleAddress,
@@ -175,7 +175,7 @@ namespace Elastos {
 					const std::string &payPasswd,
 					const std::vector<PublicKeyRing> &cosigners,
 					uint32_t m,
-					const std::string &rootPath,
+					const ConfigPtr &config,
 					const std::string &dataPath,
 					bool p2pEnable,
 					bool singleAddress,
