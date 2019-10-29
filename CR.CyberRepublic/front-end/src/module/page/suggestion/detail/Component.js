@@ -21,8 +21,8 @@ import Translation from '@/module/common/Translation/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
-import { CVOTE_STATUS, SUGGESTION_TAG_TYPE, CONTENT_TYPE } from '@/constant'
-import { getHTML } from '@/util/editor'
+import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
+import { convertMarkdownToHtml } from '@/util/markdown-it'
 import { logger } from '@/util'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
@@ -360,24 +360,19 @@ export default class extends StandardPage {
 
   renderTranslationBtn() {
     const { detail } = this.props
+    const sections = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
+    const result = sections.map(section => {
+      return `
+        <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
+        <p>${convertMarkdownToHtml(detail[section])}</p>
+      `
+    }).join('')
     const text = `
       <h3>${detail.title}</h3>
       <br />
       <br />
-      <h2>${I18N.get('suggestion.fields.abstract')}</h2>
-      <p>${getHTML(detail, 'abstract')}</p>
-      <h2>${I18N.get('suggestion.fields.goal')}</h2>
-      <p>${getHTML(detail, 'goal')}</p>
-      <h2>${I18N.get('suggestion.fields.motivation')}</h2>
-      <p>${getHTML(detail, 'motivation')}</p>
-      <h2>${I18N.get('suggestion.fields.plan')}</h2>
-      <p>${getHTML(detail, 'plan')}</p>
-      <h2>${I18N.get('suggestion.fields.relevance')}</h2>
-      <p>${getHTML(detail, 'relevance')}</p>
-      <h2>${I18N.get('suggestion.fields.budget')}</h2>
-      <p>${getHTML(detail, 'budget')}</p>
+      ${result}
     `
-
     return (
       <div style={{ marginTop: 20 }}>
         <Translation text={text} />
