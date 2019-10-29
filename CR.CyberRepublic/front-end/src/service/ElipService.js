@@ -55,4 +55,22 @@ export default class extends BaseService {
     })
     return rs
   }
+
+  async deleteData(param) {
+    const path = `${this.prefixPath}/${param.id}/remove`
+    const rs = await api_request({
+      path,
+      method: 'get'
+    })
+    return rs
+  }
+
+  async submitAsPropose(param) {
+    const path = `${this.prefixPath}/${param.id}/propose`
+    const rs = await api_request({
+      path,
+      method: 'get'
+    })
+    return rs
+  }
 }

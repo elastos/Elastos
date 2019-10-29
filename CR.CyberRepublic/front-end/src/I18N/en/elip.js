@@ -42,7 +42,8 @@ export default {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: 'SUBMIT FOR REVIEW',
     [ELIP_STATUS.REJECTED]: 'REJECTED',
     [ELIP_STATUS.DRAFT]: 'DRAFT',
-    [ELIP_STATUS.SUBMITTED]: 'SUBMITTED'
+    [ELIP_STATUS.SUBMITTED]: 'SUBMITTED',
+    [ELIP_STATUS.SUBMITTED_AS_PROPOSAL]: 'Submitted as Proposal'
   },
   show: 'Show',
   filter: {
@@ -58,12 +59,12 @@ export default {
     reject: 'Reject',
     approve: 'Approve',
     edit: 'Edit',
-    markAsSubmitted: 'Mark as Submitted',
-    markAsCancelled: 'Mark as Cancelled',
+    submittedAsProposal: 'Submit as Proposal',
     continue: 'Continue',
     yes: 'Vote Yes',
     oppose: 'Oppose with a Reason',
-    abstain: 'Abstain'
+    abstain: 'Abstain',
+    delete: 'Delete'
   },
   msg: {
     updated: 'Updated successfully',
@@ -107,8 +108,8 @@ export default {
     reason: 'Reason',
     approve: 'Are you sure to approve this ELIP?',
     abstain: 'Are you sure to abstain this Vote?',
-    markAsSubmitted: 'Are you sure to mark this ELIP as submitted status?',
-    markAsCancelled: 'Are you sure to mark this ELIP as cancelled status?'
+    submittedAsProposal: 'Are you sure to submit this ELIP as Proposal?',
+    delete: 'Are you sure to delete this ELIP?'
   },
   text: {
     reviewDetails: 'Review Details',
