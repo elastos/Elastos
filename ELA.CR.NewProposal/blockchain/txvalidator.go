@@ -2117,7 +2117,9 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if err = common.WriteVarBytes(signedBuf, proposal.Sign); err != nil {
 		return errors.New("invalid CR signature")
 	}
-
+	if err = proposal.CRSponsorDID.Serialize(signedBuf); err != nil {
+		return errors.New("invalid DID of CR sponsor")
+	}
 	if err = checkCRTransactionSignature(proposal.CRSign, crMember.Info.Code,
 		signedBuf.Bytes()); err != nil {
 		return errors.New("CR sponsor signature check failed")

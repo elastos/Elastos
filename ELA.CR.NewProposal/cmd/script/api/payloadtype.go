@@ -1005,6 +1005,10 @@ func newCRCProposal(L *lua.LState) int {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+		if err = crcProposal.CRSponsorDID.Serialize(signBuf); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		crSig, err := crypto.Sign(acc.PrivKey(), signBuf.Bytes())
 
 		if err != nil {
