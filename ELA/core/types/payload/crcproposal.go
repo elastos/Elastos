@@ -70,8 +70,6 @@ type CRCProposal struct {
 	ProposalType CRCProposalType
 	// Public key of sponsor.
 	SponsorPublicKey []byte
-	// DID of CR sponsor.
-	CRSponsorDID common.Uint168
 	// The hash of draft proposal.
 	DraftHash common.Uint256
 	// The data of draft proposal.
@@ -83,6 +81,9 @@ type CRCProposal struct {
 
 	// The signature of sponsor.
 	Sign []byte
+
+	// DID of CR sponsor.
+	CRSponsorDID common.Uint168
 	// The signature of CR sponsor, check data include signature of sponsor.
 	CRSign []byte
 
@@ -105,10 +106,6 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 
 	if err := common.WriteVarBytes(w, p.SponsorPublicKey); err != nil {
 		return errors.New("failed to serialize SponsorPublicKey")
-	}
-
-	if err := p.CRSponsorDID.Serialize(w); err != nil {
-		return errors.New("failed to serialize CRSponsorDID")
 	}
 
 	if err := p.DraftHash.Serialize(w); err != nil {
@@ -145,6 +142,10 @@ func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 		return err
 	}
 
+	if err := p.CRSponsorDID.Serialize(w); err != nil {
+		return errors.New("failed to serialize CRSponsorDID")
+	}
+
 	return common.WriteVarBytes(w, p.CRSign)
 }
 
@@ -160,10 +161,6 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 		return errors.New("failed to deserialize SponsorPublicKey")
 	}
 
-	if err = p.CRSponsorDID.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize CRSponsorDID")
-	}
-
 	if err = p.DraftHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize DraftHash")
 	}
@@ -171,7 +168,6 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to deserialize DraftData %s", err)
 	}
-
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return errors.New("failed to deserialize Budgets")
@@ -203,6 +199,9 @@ func (p *CRCProposal) Deserialize(r io.Reader, version byte) error {
 	}
 	p.Sign = sign
 
+	if err := p.CRSponsorDID.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize CRSponsorDID")
+	}
 	crSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "CR sign data")
 	if err != nil {
 		return err
