@@ -143,7 +143,6 @@ func startNode(c *cli.Context, st *settings) {
 
 	// Initializes the foundation address
 	blockchain.FoundationAddress = st.Params().Foundation
-	blockchain.EnableUtxoDB = st.Params().EnableUtxoDB
 	chainStore, err := blockchain.NewChainStore(dataDir, st.Params().GenesisBlock)
 	if err != nil {
 		printErrorAndExit(err)
