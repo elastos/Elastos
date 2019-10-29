@@ -55,6 +55,7 @@ func (c *Checkpoint) OnRollbackTo(height uint32) error {
 			TryStartVotingPeriod:    committee.tryStartVotingPeriod,
 			ProcessImpeachment:      committee.processImpeachment,
 			ProcessCRCAppropriation: committee.processCRCAppropriation,
+			ProcessCRCRelatedAmount: committee.processCRCRelatedAmount,
 			GetHistoryMember:        committee.getHistoryMember,
 		})
 		return nil
