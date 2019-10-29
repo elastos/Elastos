@@ -52,14 +52,26 @@ public class DIDStore: NSObject {
         let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 100)
         let re = encrypt_to_base64(base64url, cpassphrase, cinput, input.count)
         guard re == 0 else {
-            throw DIDStoreError.failue("decryptFromBase64 error.")
+            throw DIDStoreError.failue("encryptToBase64 error.")
         }
         return String(cString: base64url)
     }
 
     private func decryptFromBase64(_ passphrase: String ,_ input: String) throws -> Data {
-        // TODO:
-        return Data()
+        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 100)
+        let cpassphrase: UnsafePointer<Int8> = passphrase.withCString { cstr -> UnsafePointer<Int8> in
+            return cstr
+        }
+        let inpt: String = input + "\0"
+        let cinput: UnsafePointer<Int8> = inpt.withCString { cstr -> UnsafePointer<Int8> in
+            return cstr
+        }
+        let re = decrypt_from_base64(plain, cpassphrase, cinput)
+        guard re == 0 else {
+            throw DIDStoreError.failue("decryptFromBase64 error.")
+        }
+        let str: String = String(cString: plain)
+        return str.data(using: .utf8)!
     }
 
     public func initPrivateIdentity(_ mnemonic: String ,_ passphrase: String, _ force: Bool ) throws {
@@ -88,7 +100,7 @@ public class DIDStore: NSObject {
         try lastIndex = loadPrivateIdentityIndex()
         return true
     }
-
+    
     public func newDid(_ passphrase:String, _ hint:String?) throws -> DIDDocument {
         guard (privateIdentity != nil) else {
             throw DIDStoreError.failue("DID Store not contains private identity.")
@@ -230,20 +242,18 @@ public class DIDStore: NSObject {
         return try deletePrivateKey(DID(did), DIDURL(id))
     }
     
-    public func sign(_ did: DID,_ id: DIDURL,_ passphrase: String,_ data: Array<Any>, _ nonce: Array<Any> ) throws -> String {
-        let privateKey: String = try loadPrivateKey(did, id: id)
-//        let binKey: String = try decryptFromBase64(passphrase, privateKey)
-        // todo
-        return ""
+    public func sign(_ did: DID, _ id: DIDURL, _ storepass: String, _ inputs: [CVarArg]) throws -> String {
+        let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 52)
+        var privatekeydata: Data = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id))
+        let pk: UnsafeMutablePointer<UInt8> = privatekeydata.withUnsafeMutableBytes{ (by: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+        return by
+        }
+        let result = getVaList(inputs)
+       let re = ecdsa_sign_base64v(sig, pk, Int32(inputs.count), result)
+        guard re == 0 else {
+            throw DIDStoreError.failue("sign error.")
+        }
+        return String(cString: sig)
     }
-    public func sign(_ did: DID,_ id: DIDURL,_ passphrase: String,_ data: Array<Any>) throws -> String {
-        return ""
-    }
-    
-    public func sign(_ did: String, _ id: String, _ passphrase: String, _ data: Array<Any>) throws -> String {
-        return ""
-    }
-    
-    
 }
 
