@@ -113,6 +113,8 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 	assert.False(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
 
+	registerFuncs(state)
+
 	// register CR
 	state.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -175,6 +177,8 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 	assert.False(t, state.ExistCandidate(code))
 	assert.False(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
+
+	registerFuncs(state)
 
 	// register CR
 	state.ProcessBlock(&types.Block{
@@ -247,6 +251,7 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 		StateKeyFrame: *randomStateKeyFrame(5, true),
 		history:       utils.NewHistory(maxHistoryCapacity),
 	}
+	registerFuncs(&state)
 	height := uint32(1)
 
 	assert.Equal(t, 15, len(state.GetAllCandidates()))
@@ -306,6 +311,8 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 		activeDIDs = append(activeDIDs, k.Bytes())
 	}
 
+	registerFuncs(&state)
+
 	// vote for the active candidates
 	voteTx := mockNewVoteTx(activeDIDs)
 	state.ProcessBlock(&types.Block{
@@ -347,8 +354,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 
 func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	state := NewState(nil)
-	state.RegisterFunctions(&FunctionsConfig{
-		GetHistoryMember: func(code []byte) *CRMember { return nil }})
+	registerFuncs(state)
 	height := uint32(1)
 
 	_, pk, _ := crypto.GenerateKeyPair()
@@ -535,4 +541,12 @@ func generateReturnCRDeposit(code []byte) *types.Transaction {
 			},
 		},
 	}
+}
+
+func registerFuncs(state *State) {
+	state.RegisterFunctions(&FunctionsConfig{
+		GetHistoryMember: func(code []byte) *CRMember { return nil },
+		ProcessCRCRelatedAmount: func(tx *types.Transaction, height uint32,
+			history *utils.History) {
+		}})
 }

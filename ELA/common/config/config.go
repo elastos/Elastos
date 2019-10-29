@@ -72,7 +72,7 @@ type Configuration struct {
 	MaxCommitteeProposalCount   uint32            `json:"MaxCommitteeProposalCount"`
 	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
-	MaxBlockSize                uint32            `json"MaxBlockSize"`
+	MaxBlockSize                uint32            `json:"MaxBlockSize"`
 	EnableHistory               bool              `json:"EnableHistory"`
 	HistoryStartHeight          uint32            `json:"HistoryStartHeight"`
 	EnableUtxoDB                bool              `json:"EnableUtxoDB"`
