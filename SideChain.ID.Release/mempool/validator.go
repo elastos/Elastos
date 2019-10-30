@@ -2,8 +2,8 @@ package mempool
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
+	"encoding/base64"
 	"errors"
 	"math"
 	"strings"
@@ -377,7 +377,7 @@ func (v *validator) checkRegisterDID(txn *types.Transaction) error {
 		return err
 	}
 	//get byte[] signatrure
-	signature, _ := hex.DecodeString(payloadDidInfo.Proof.Signature)
+	signature, _ := base64.StdEncoding.DecodeString(payloadDidInfo.Proof.Signature)
 
 	var success bool
 	success, err = v.VerifyByVM(payloadDidInfo, code, signature)
