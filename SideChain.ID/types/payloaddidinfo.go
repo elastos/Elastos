@@ -215,5 +215,6 @@ func (p *PayloadDIDInfo) Deserialize(r io.Reader, version byte) error {
 }
 
 func (p *PayloadDIDInfo) GetData() []byte {
-	return p.Data(DIDInfoVersion)
+	dataString := p.Header.Specification + p.Header.Operation + p.Payload
+	return []byte(dataString)
 }
