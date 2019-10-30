@@ -478,10 +478,10 @@ static int store_seed(uint8_t *seed, size_t size, const char *storepass)
     if (!seed || !storepass)
         return -1;
 
-    if (encrypt_to_base64(base64, storepass, seed, size) == -1)
+    if (encrypt_to_base64((char *)base64, storepass, seed, size) == -1)
         return -1;
 
-    if (store_file(get_file_path(DIDStore_Rootkey, "private", NULL, 1), base64) == -1)
+    if (store_file(get_file_path(DIDStore_Rootkey, "private", NULL, 1), (const char *)base64) == -1)
         return -1;
 
     return 0;
@@ -950,7 +950,7 @@ bool DIDStore_ContainsCredential(DID *did, DIDURL *id)
     const char *path;
     int rc;
 
-    if (strlen(StoreRoot) == 0 || !did || !id || DIDStore_ContainsCredentials(did) == -1)
+    if (strlen(StoreRoot) == 0 || !did || !id || !DIDStore_ContainsCredentials(did))
         return false;
 
     path = get_file_path(DIDStore_Credential, did->idstring, id->fragment, 0);
@@ -969,7 +969,7 @@ void DIDStore_DeleteCredential(DID *did, DIDURL *id)
 {
     const char *root, *path, *meta_path;
 
-    if (strlen(StoreRoot) == 0 || !did || !id || DIDStore_ContainsCredentials(did) == -1)
+    if (strlen(StoreRoot) == 0 || !did || !id || !DIDStore_ContainsCredentials(did))
         return;
 
     path = get_file_path(DIDStore_Credential, did->idstring, id->fragment, 0);
@@ -981,7 +981,7 @@ void DIDStore_DeleteCredential(DID *did, DIDURL *id)
         delete_file(meta_path);
 
     root = get_file_root(DIDStore_Credential, did->idstring, 0);
-    if (root && is_empty(root) == -1)
+    if (root && !is_empty(root))
         delete_file(root);
 
     return;
@@ -1194,8 +1194,8 @@ static int refresh_did_fromchain(const char *storepass, uint8_t *seed, DID *did,
                 return -1;
 
             if (!HDkey_GetSubPrivateKey(seed, 0, 0, last_index, privatekey) ||
-                encrypt_to_base64(privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
-                DIDStore_StorePrivateKey(&last_did, "primary", privatekeybase64) == -1) {
+                encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
+                DIDStore_StorePrivateKey(&last_did, "primary", (const char *)privatekeybase64) == -1) {
                 DIDStore_DeleteDID(&last_did);
                 //TODO: check need destroy document
                 return -1;
@@ -1263,8 +1263,8 @@ DIDDocument *DIDStore_NewDID(const char *storepass, const char *hint)
     }
 
     if (!HDkey_GetSubPrivateKey(seed, 0, 0, index, privatekey) ||
-        encrypt_to_base64(privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
-        DIDStore_StorePrivateKey(&did, "primary", privatekeybase64) == -1) {
+        encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
+        DIDStore_StorePrivateKey(&did, "primary", (const char *)privatekeybase64) == -1) {
         DIDStore_DeleteDID(&did);
         DIDDocument_Destroy(document);
         return NULL;

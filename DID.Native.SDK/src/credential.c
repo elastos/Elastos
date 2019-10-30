@@ -66,7 +66,7 @@ static int check_issuer(DID *issuer, DIDURL **defaultSignKey)
             return -1;
     }
 
-    if (DIDStore_ContainPrivatekey(issuer, *defaultSignKey) == -1)
+    if (!DIDStore_ContainPrivatekey(issuer, *defaultSignKey))
         return -1;
 
     return 0;
