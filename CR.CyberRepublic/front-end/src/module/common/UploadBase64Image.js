@@ -3,6 +3,7 @@ import BaseComponent from '@/model/BaseComponent'
 import { message } from 'antd'
 import I18N from '@/I18N'
 import styled from 'styled-components'
+import PropTypes from 'prop-types'
 
 const IMAGE_SIZE = {
   MAX_WIDTH: 720,
@@ -42,7 +43,7 @@ class UploadBase64Image extends BaseComponent {
   onChange = e => {
     const file = e.target.files[0]
     // check if the uploaded file is an image
-    if (!file.type.includes('image/')) {
+    if (file.type && !file.type.includes('image/')) {
       message.error(I18N.get('from.CVoteForm.upload.type.error'))
       return false
     }
@@ -66,10 +67,16 @@ class UploadBase64Image extends BaseComponent {
   }
 
   ord_render() {
+    const { name } = this.props
     return (
       <Wrapper>
-        <input type="file" id="fileInput" onChange={this.onChange} />
-        <label htmlFor="fileInput">
+        <input
+          type="file"
+          id={name}
+          className="upload-base64"
+          onChange={this.onChange}
+        />
+        <label htmlFor={name}>
           <figure>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -85,10 +92,15 @@ class UploadBase64Image extends BaseComponent {
   }
 }
 
+UploadBase64Image.propTypes = {
+  name: PropTypes.string.isRequired,
+  insertImage: PropTypes.func.isRequired
+}
+
 export default UploadBase64Image
 
 const Wrapper = styled.div`
-  #fileInput {
+  .upload-base64 {
     width: 0.1px;
     height: 0.1px;
     opacity: 0;
@@ -96,18 +108,14 @@ const Wrapper = styled.div`
     z-index: -1;
   }
 
-  #fileInput + label {
+  .upload-base64 + label {
     cursor: pointer;
     display: inline-block;
     overflow: hidden;
     z-index: 99;
   }
 
-  .inputfile + label * {
-    pointer-events: none;
-  }
-
-  #fileInput + label figure {
+  .upload-base64 + label figure {
     width: 30px;
     height: 30px;
     background-color: #008d85;
@@ -117,7 +125,7 @@ const Wrapper = styled.div`
     align-items: center;
   }
 
-  #fileInput + label svg {
+  .upload-base64 + label svg {
     fill: #fff;
     width: 18px;
     height: 18px;
