@@ -524,9 +524,16 @@ export default class extends Base {
     const creator = await db_user.findById(elip.createdBy);
     const vid = await this.getNewCVoteVid()
 
+    let cvoteType = constant.CVOTE_TYPE.STANDARD_TRACK
+    if( elip.elipType === constant.ELIP_TYPE.PROCESS ) {
+      cvoteType = constant.CVOTE_TYPE.PROCESS
+    }else if( elip.elipType === constant.ELIP_TYPE.INFORMATIONAL ) {
+      cvoteType = constant.CVOTE_TYPE.INFORMATIONAL
+    }
+
     const doc: any = {
       vid,
-      type: elip.elipType,
+      type: cvoteType,
       status: constant.CVOTE_STATUS.PROPOSED,
       published: true,
       contentType: constant.CONTENT_TYPE.MARKDOWN,
