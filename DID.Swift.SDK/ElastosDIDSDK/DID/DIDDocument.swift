@@ -57,19 +57,19 @@ public class DIDDocument: NSObject {
         return getEntry(publicKeys, id)
     }
     
-    public func getDefaultPublicKey() -> DIDPublicKey? {
-        var didpk: DIDPublicKey?
+    public func getDefaultPublicKey() -> DIDURL? {
+        var didurl: DIDURL?
         publicKeys.values.forEach{ pk in
             if (pk.controller?.isEqual(self.subject))! {
                 
                 let pks = pk.getPublicKeyBytes()
                 let idstring = DerivedKey.getIdString(pks)
                 if idstring == subject?.methodSpecificId {
-                    didpk = pk
+                    didurl = pk.id
                 }
             }
         }
-        return didpk
+        return didurl
     }
     
     public func addPublicKey(_ pk: DIDPublicKey) -> Bool{
@@ -89,7 +89,7 @@ public class DIDDocument: NSObject {
         if readonly { return false }
         
         // Cann't remove default public key
-        if (getDefaultPublicKey()?.id.isEqual(id))! { return false }
+        if (getDefaultPublicKey()?.isEqual(id))! { return false }
         let removed: Bool = removeEntry(publicKeys, id)
         
         if removed {
@@ -455,7 +455,7 @@ public class DIDDocument: NSObject {
             }else {
                 let objString: String = obj as! String
                 let index = objString.index(objString.startIndex, offsetBy: 1)
-                let str: String = objString.substring(to: index)
+                let str: String = String(objString[..<index])
                 var didString: String = objString
                 if str == "#" {
                     let id: String = json[Constants.id] as! String

@@ -28,12 +28,10 @@ public class DerivedKey: NSObject {
     
     public func getPrivateKeyBytes() throws -> [UInt8] {
         return seed.withUnsafeMutableBytes { (seeds: UnsafeMutablePointer<Int8>) -> [UInt8] in
-            let pukey: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 66)
-            let cmasterKey: UnsafeMutablePointer<CMasterPublicKey> = UnsafeMutablePointer<CMasterPublicKey>.allocate(capacity: 66)
-            let masterKey: UnsafePointer<CMasterPublicKey> = HDkey_GetMasterPublicKey(seeds, 0, cmasterKey)
-            let pk: UnsafeMutablePointer<Int8> = HDkey_GetSubPrivateKey(seeds, 0, 0, index, pukey)
-            let pkpointToarry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: pk, count: 33)
-            let pkData: Data = Data(buffer: pkpointToarry)
+            let privateKey: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
+            let pk: UnsafeMutablePointer<Int8> = HDkey_GetSubPrivateKey(seeds, 0, 0, index, privateKey)
+            let privateKeyPointToarry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: pk, count: 33)
+            let pkData: Data = Data(buffer: privateKeyPointToarry)
             return [UInt8](pkData)
         }
     }
