@@ -15,6 +15,7 @@ local.properties
 ehthumbs.db
 Thumbs.db
 *.jks
+.cxx
 
 /app/RegTest
 /app/TestNet
