@@ -564,9 +564,9 @@ export default class extends Base {
       await db_elip.update(
         { _id: elipId },
         {
-          $addToSet: { reference: res._id },
           $set: {
             tags: [],
+            reference: res._id,
             status: constant.ELIP_STATUS.SUBMITTED
           }
         }
