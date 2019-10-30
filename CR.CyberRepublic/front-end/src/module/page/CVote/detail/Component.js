@@ -157,7 +157,7 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { data } = this.props
+    const { data, isElip } = this.props
     if (!data) {
       return (
         <div className="center">
@@ -178,11 +178,13 @@ class C extends StandardPage {
     // get the first line pure text of abstract
     let abstract = ''
     try {
-      if (data.abstract) {
+      if (!isElip && data.abstract) {
         const result = JSON.parse(data.abstract)
         if (result && result.blocks && result.blocks.length) {
           abstract = result.blocks[0].text
         }
+      } else {
+        abstract = data.abstract
       }
     } catch (error) {
       logger.error(error)
@@ -325,10 +327,10 @@ class C extends StandardPage {
       I18N.get('proposal.fields.summary')
     )
     const tracking = isShowFollowingUp && (
-      <Anchor.Link href="#tracking" title={trackingTitle} />
+      <Anchor.Link href="#tracking" title={trackingTitle} key="tracking"/>
     )
     const summary = isShowFollowingUp && (
-      <Anchor.Link href="#summary" title={summaryTitle} />
+      <Anchor.Link href="#summary" title={summaryTitle} key="summary"/>
     )
     const commonLinks = [tracking, summary]
     return isElip
@@ -339,26 +341,26 @@ class C extends StandardPage {
   renderElipLinks(commonLinks) {
     return (
       <StyledAnchor offsetTop={300}>
-        <Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
-        <Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
+        <Anchor.Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
+        <Anchor.Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
         <LinkGroup marginTop={48}>
-          <Link
+          <Anchor.Link
             href="#specifications"
             title={I18N.get('elip.fields.specifications')}
           />
-          <Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
-          <Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
+          <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
+          <Anchor.Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
         </LinkGroup>
         <LinkGroup marginTop={48}>
-          <Link
+          <Anchor.Link
             href="#backwardCompatibility"
             title={I18N.get('elip.fields.backwardCompatibility')}
           />
-          <Link
+          <Anchor.Link
             href="#referenceImplementation"
             title={I18N.get('elip.fields.referenceImplementation')}
           />
-          <Link href="#copyright" title={I18N.get('elip.fields.copyright')} />
+          <Anchor.Link href="#copyright" title={I18N.get('elip.fields.copyright')} />
         </LinkGroup>
         <LinkGroup marginTop={48}>
           <Anchor.Link href="#vote" title={I18N.get('proposal.fields.vote')} />

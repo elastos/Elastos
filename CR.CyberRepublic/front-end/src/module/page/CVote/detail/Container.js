@@ -1,7 +1,7 @@
 import { createContainer } from '@/util'
 import Component from './Component'
 import _ from 'lodash'
-import { avatar_map, ELIP_TYPE } from '@/constant'
+import { avatar_map, ELIP_NUMBER_TYPE } from '@/constant'
 import CVoteService from '@/service/CVoteService'
 
 const mapState = state => ({
@@ -27,7 +27,7 @@ const mapState = state => ({
     ]),
     'status'
   ),
-  isElip: state.cvote.data && _.values(ELIP_TYPE).includes(state.cvote.data.type)
+  isElip: state.cvote.data && ELIP_NUMBER_TYPE.includes(state.cvote.data.type)
 })
 
 const mapDispatch = () => {
