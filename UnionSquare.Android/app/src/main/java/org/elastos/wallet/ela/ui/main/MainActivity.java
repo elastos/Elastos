@@ -186,7 +186,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
     public static void moveTestConfigFiles2RootPath(Context context) {
         String rootPath = context.getFilesDir().getParent();
         List<String> names = new ArrayList<String>();
-        String name = "Config.cfg";
+     /*   String name = "Config.cfg";
         switch (MyApplication.chainID) {
             case 1:
                 name = "Config_TestNet.cfg";
@@ -196,24 +196,24 @@ public class MainActivity extends BaseActivity implements MainViewData {
                 break;
 
         }
-        names.add(name);
+        names.add(name);*/
         names.add("mnemonic_chinese.txt");
         names.add("mnemonic_french.txt");
         names.add("mnemonic_italian.txt");
         names.add("mnemonic_japanese.txt");
         names.add("mnemonic_spanish.txt");
 
-        List<String> names1 = new ArrayList<String>();
+       /* List<String> names1 = new ArrayList<String>();
         names1.add("Config.cfg");
         names1.add("mnemonic_chinese.txt");
         names1.add("mnemonic_french.txt");
         names1.add("mnemonic_italian.txt");
         names1.add("mnemonic_japanese.txt");
-        names1.add("mnemonic_spanish.txt");
+        names1.add("mnemonic_spanish.txt");*/
 
-        for (int i = 0; i < names1.size(); i++) {
-            File file = new File(rootPath + "/" + names1.get(i));
-            if (file.exists() && names1.get(i).endsWith("txt")) {
+        for (int i = 0; i < names.size(); i++) {
+            File file = new File(rootPath + "/" + names.get(i));
+            if (file.exists()) {
                 continue;
             }
             InputStream is = context.getClass().getClassLoader().getResourceAsStream("assets/" + names.get(i));

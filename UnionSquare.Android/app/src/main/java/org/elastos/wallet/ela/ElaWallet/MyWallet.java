@@ -62,7 +62,17 @@ public class MyWallet {
     public MyWallet() {
 
         mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
-        mMasterWalletManager = new MasterWalletManager(mRootPath, "MainNet", "", "");
+        String net = "MainNet";
+        switch (MyApplication.chainID) {
+            case 1:
+                net = "TestNet";
+                break;
+            case 2:
+                net = "RegTest";
+                break;
+
+        }
+        mMasterWalletManager = new MasterWalletManager(mRootPath, net, "", "");
     }
 
     private static String getTxHashBaseUrl() {
