@@ -424,6 +424,18 @@ namespace Elastos {
 				return true;
 			}
 
+			if (_parent->GetSignType() != IAccount::MultiSign) {
+				for (index = _externalChain.size(); index > 0; index--) {
+					Address did = _externalChain[index - 1];
+					did.ChangePrefix(PrefixIDChain);
+					if (did == addr) {
+						code = did.RedeemScript();
+						path = "44'/0'/0'/0/" + std::to_string(index - 1);
+						return true;
+					}
+				}
+			}
+
 			for (index = _internalChain.size(); index > 0; index--) {
 				if (_internalChain[index - 1] == addr) {
 					code = _internalChain[index - 1].RedeemScript();

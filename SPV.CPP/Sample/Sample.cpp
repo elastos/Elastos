@@ -595,9 +595,11 @@ static void Withdraw(const std::string &fromMasterWalletID, const std::string &f
 }
 
 static nlohmann::json GetDIDPayloadJson() {
+//	nlohmann::json inputJson = R"({"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","operation":"create","publicKey":[{"id": "#primary","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}],
+//"credentialSubject":{"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","didName":"myName","name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019-10-12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"},
+//"expires":"2024-02-10T17:00:00Z"})"_json;
 	nlohmann::json inputJson = R"({"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","operation":"create","publicKey":[{"id": "#primary","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}],
-"credentialSubject":{"id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","didName":"myName","name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"},
-"expires":"2024-02-10T17:00:00Z"})"_json;
+"expires":1575104460})"_json;
 	nlohmann::json payload;
 	ISubWallet *subWallet = GetSubWallet(gMasterWalletID, gIDchainSubWalletID);
 	IIDChainSubWallet *idChainSubWallet = dynamic_cast<IIDChainSubWallet *>(subWallet);
@@ -657,6 +659,8 @@ static void TestIDSubWallet() {
 	}
 
 	iidChainSubWallet->GetAllDID(0, 500);
+
+	iidChainSubWallet->GetResolveDIDInfo(0, 10, "");
 }
 
 static void InitWallets() {
@@ -674,7 +678,7 @@ static void InitWallets() {
 //			masterWallet = NewMultiSignWalletWithPrvKey();
 
 			masterWallet->CreateSubWallet(gMainchainSubWalletID);
-//			masterWallet->CreateSubWallet(gIDchainSubWalletID);
+			masterWallet->CreateSubWallet(gIDchainSubWalletID);
 //			masterWallet->CreateSubWallet(gTokenchainSubWalletID);
 		}
 		masterWallets.push_back(masterWallet);

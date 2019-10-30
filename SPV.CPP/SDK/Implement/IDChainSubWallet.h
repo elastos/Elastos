@@ -13,6 +13,38 @@ namespace Elastos {
 		class CredentialSubject;
 		class DIDInfo;
 
+		class DIDDetail {
+		public:
+			DIDDetail();
+
+			~DIDDetail();
+
+			void SetDIDInfo(const PayloadPtr &didInfo);
+
+			const PayloadPtr &GetDIDInfo() const;
+
+			void SetIssuanceTime(time_t issuanceTime);
+
+			time_t GetIssuanceTime() const;
+
+			void SetBlockHeighht(uint32_t blockHeight);
+
+			uint32_t GetBlockHeight() const;
+
+			void SetTxHash(const std::string &txHash);
+
+			const std::string &GetTxHash() const;
+
+			uint32_t GetConfirms(uint32_t walletBlockHeight) const;
+		private:
+			PayloadPtr _didInfo;
+			time_t _issuanceTime;
+			uint32_t _blockHeight;
+			std::string _txHash;
+		};
+
+		typedef boost::shared_ptr<DIDDetail> DIDDetailPtr;
+
 		class IDChainSubWallet : public SidechainSubWallet, public IIDChainSubWallet {
 		public:
 			virtual ~IDChainSubWallet();
@@ -38,10 +70,21 @@ namespace Elastos {
 
 			virtual nlohmann::json GetResolveDIDInfo(uint32_t start, uint32_t count, const std::string &did) const;
 
-		private:
-			std::vector<std::string> getVerifiableCredentialTypes(const CredentialSubject &subject);
+		protected:
+			virtual void onTxAdded(const TransactionPtr &tx);
 
-			nlohmann::json toDIDInfoJson(const DIDInfo *didInfo, bool isDetail) const;
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
+
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
+		private:
+			std::vector<std::string> GetVerifiableCredentialTypes(const CredentialSubject &subject);
+
+			nlohmann::json ToDIDInfoJson(const DIDDetailPtr &didDetailPtr, bool isDetail) const;
+
+			void InitDIDList();
+
+			void InsertDID(const DIDDetailPtr &didDetailPtr);
 		protected:
 			friend class MasterWallet;
 
@@ -49,6 +92,8 @@ namespace Elastos {
 							 const ChainConfigPtr &config,
 							 MasterWallet *parent);
 
+		private:
+			std::vector<DIDDetailPtr> _didList;
 		};
 
 	}

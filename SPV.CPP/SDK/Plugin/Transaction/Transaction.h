@@ -159,6 +159,8 @@ namespace Elastos {
 
 			IPayload *GetPayload();
 
+			const PayloadPtr &GetPayloadPtr() const;
+
 			void SetPayload(const PayloadPtr &payload);
 
 			void AddAttribute(const AttributePtr &attribute);

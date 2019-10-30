@@ -16,6 +16,7 @@
 #include <SDK/Plugin/Transaction/Program.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
 #include <SDK/Plugin/Transaction/IDTransaction.h>
+#include <SDK/Database/DIDDataStore.h>
 
 #include <set>
 #include <boost/scoped_ptr.hpp>
@@ -26,11 +27,80 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		DIDDetail::DIDDetail() {
+
+		}
+
+		DIDDetail::~DIDDetail() {
+
+		}
+
+		void DIDDetail::SetDIDInfo(const PayloadPtr &didInfo) {
+			_didInfo = didInfo;
+		}
+
+		const PayloadPtr &DIDDetail::GetDIDInfo() const {
+			return _didInfo;
+		}
+
+		void DIDDetail::SetBlockHeighht(uint32_t blockHeight) {
+			_blockHeight = blockHeight;
+		}
+
+		uint32_t DIDDetail::GetBlockHeight() const {
+			return _blockHeight;
+		}
+
+		void DIDDetail::SetIssuanceTime(time_t issuanceTime) {
+			_issuanceTime = issuanceTime;
+		}
+
+		time_t DIDDetail::GetIssuanceTime() const {
+			return _issuanceTime;
+		}
+
+		void DIDDetail::SetTxHash(const std::string &txHash) {
+			_txHash = txHash;
+		}
+
+		const std::string &DIDDetail::GetTxHash() const {
+			return _txHash;
+		}
+
+		uint32_t DIDDetail::GetConfirms(uint32_t walletBlockHeight) const {
+			if (_blockHeight == TX_UNCONFIRMED)
+				return 0;
+
+			return walletBlockHeight >= _blockHeight ? walletBlockHeight - _blockHeight + 1 : 0;
+		}
+
 		IDChainSubWallet::IDChainSubWallet(const CoinInfoPtr &info,
 		                                   const ChainConfigPtr &config,
 		                                   MasterWallet *parent) :
 				SidechainSubWallet(info, config, parent) {
 
+			InitDIDList();
+		}
+
+		void IDChainSubWallet::InitDIDList() {
+			_didList.clear();
+			std::vector<DIDEntity> list = _walletManager->loadDIDList();
+			size_t len = list.size();
+			for (size_t i = 0; i < len; ++i) {
+				PayloadPtr infoPtr(new DIDInfo());
+				ByteStream stream(list[i].PayloadInfo);
+				infoPtr->Deserialize(stream, 0);
+
+				DIDDetailPtr didDetailPtr(new DIDDetail());
+				didDetailPtr->SetDIDInfo(infoPtr);
+				didDetailPtr->SetBlockHeighht(list[i].BlockHeight);
+				didDetailPtr->SetIssuanceTime(list[i].TimeStamp);
+				didDetailPtr->SetTxHash(list[i].TxHash);
+
+				Lock();
+				InsertDID(didDetailPtr);
+				Unlock();
+			}
 		}
 
 		IDChainSubWallet::~IDChainSubWallet() {
@@ -48,6 +118,7 @@ namespace Elastos {
 			try {
 				payload = PayloadPtr(new DIDInfo());
 				payload->FromJson(payloadJson, 0);
+
 				DIDInfo *didInfo = static_cast<DIDInfo *>(payload.get());
 				ErrorChecker::CheckParam(!didInfo->IsValid(), Error::InvalidArgument, "verify did signature failed");
 				std::string id = didInfo->DIDPayload().ID();
@@ -77,7 +148,7 @@ namespace Elastos {
 		}
 
 		std::vector<std::string>
-		IDChainSubWallet::getVerifiableCredentialTypes(const CredentialSubject &subject) {
+		IDChainSubWallet::GetVerifiableCredentialTypes(const CredentialSubject &subject) {
 			std::vector<std::string> types = {
 					"SelfProclaimedCredential",
 			};
@@ -187,6 +258,9 @@ namespace Elastos {
 			ArgInfo("didInfo: {}", didInfo.dump());
 			ArgInfo("paypassword: *");
 
+			const std::string verificationMethod = "#primary";
+			std::string signDID = "";
+
 			ErrorChecker::CheckParam(didInfo.empty() || !didInfo.is_object(), Error::InvalidArgument,
 									 "invalid credentialSubject JSON");
 
@@ -202,23 +276,33 @@ namespace Elastos {
 			nlohmann::json pubKeyInfoArray = didInfo["publicKey"];
 			ErrorChecker::CheckJsonArray(pubKeyInfoArray, 1, "pubKeyInfoArray");
 
-			std::string expirationDate = didInfo["expires"].get<std::string>();
-			ErrorChecker::CheckInternetDate(expirationDate);
+			time_t expiresTimeStamp = didInfo["expires"].get<uint64_t>();
+			std::stringstream expirationDate;
+			struct tm dateTm;
+			expirationDate << std::put_time(localtime_r(&expiresTimeStamp, &dateTm), "%FT%TZ");
+			ErrorChecker::CheckInternetDate(expirationDate.str());
 
 			DIDHeaderInfo headerInfo("elastos/did/1.0", operation);
 
 			DIDPubKeyInfoArray didPubKeyInfoArray;
 			for (nlohmann::json::iterator it = pubKeyInfoArray.begin(); it != pubKeyInfoArray.end(); ++it) {
 				DIDPubKeyInfo pubKeyInfo;
+				bytes_t pubkey;
 				if ((*it).find("publicKey") != (*it).end()) {
 					std::string pbk = (*it)["publicKey"].get<std::string>();
-					bytes_t pubkey;
 					pubkey.setHex(pbk);
 					(*it)["publicKeyBase58"] = Base58::Encode(pubkey);
 				}
 				pubKeyInfo.FromJson(*it, 0);
 				didPubKeyInfoArray.push_back(pubKeyInfo);
+
+				size_t index = pubKeyInfo.ID().find_last_of("#", pubKeyInfo.ID().size() - 1);
+				if (index != std::string::npos) {
+					signDID = GetPublicKeyDID(pubkey.getHex());
+				}
 			}
+
+			ErrorChecker::CheckParam(signDID.empty(), Error::InvalidArgument, "publicKey id error");
 
 			VerifiableCredentialArray verifiableCredentials;
 
@@ -246,12 +330,13 @@ namespace Elastos {
 
 				verifiableCredential.SetCredentialSubject(subject);
 
-				std::vector<std::string> types = getVerifiableCredentialTypes(subject);
+				std::vector<std::string> types = GetVerifiableCredentialTypes(subject);
 				verifiableCredential.SetTypes(types);
 
 				std::stringstream issuerDate;
 				time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-				issuerDate << std::put_time(std::localtime(&t), "%FT%TZ");
+				struct tm dateTm;
+				issuerDate << std::put_time(localtime_r(&t, &dateTm), "%FT%TZ");
 				verifiableCredential.SetIssuerDate(issuerDate.str());
 
 				verifiableCredentials.push_back(verifiableCredential);
@@ -259,7 +344,7 @@ namespace Elastos {
 
 			DIDPayloadInfo payloadInfo;
 			payloadInfo.SetID(id);
-			payloadInfo.SetExpires(expirationDate);
+			payloadInfo.SetExpires(expirationDate.str());
 			payloadInfo.SetPublickKey(didPubKeyInfoArray);
 			payloadInfo.SetVerifiableCredential(verifiableCredentials);
 
@@ -269,13 +354,19 @@ namespace Elastos {
 
 			std::string sourceData = headerInfo.Specification() + headerInfo.Operation() + didInfoPayload.DIDPayloadString();
 
-			std::string signature = Sign(did, sourceData, payPasswd);
-			DIDProofInfo didProofInfo("#primary", Base64::Encode(signature));
+			std::string signature = Sign(signDID, sourceData, payPasswd);
+			DIDProofInfo didProofInfo(verificationMethod, Base64::Encode(signature));
 			didInfoPayload.SetDIDProof(didProofInfo);
 
 			nlohmann::json result = didInfoPayload.ToJson(0);
 			ArgInfo("r => {}", result.dump());
 			return result;
+		}
+
+		bool compareDIDInfo(const nlohmann::json &a, const nlohmann::json &b) {
+			uint64_t timeStamp1 = a["issuanceDate"].get<uint64_t>();
+			uint64_t timeStamp2 = b["issuanceDate"].get<uint64_t>();
+			return timeStamp1 > timeStamp2;
 		}
 
 		nlohmann::json
@@ -294,20 +385,20 @@ namespace Elastos {
 			}
 			std::string id = PREFIX_DID + did;
 
-			std::map<std::string, DIDInfo *> didInfo;
-			std::vector<TransactionPtr> allTxs = _walletManager->GetWallet()->GetAllTransactions();
-			size_t num = allTxs.size();
+			std::map<std::string, DIDDetailPtr> didInfo;
+			size_t num = _didList.size();
 			size_t pageCount = count;
 
-			for (size_t i = 0; i < num; ++i) {
-				TransactionPtr tx = allTxs[i];
-				if (tx->GetTransactionType() == IDTransaction::didTransaction) {
-					DIDInfo *payload = dynamic_cast<DIDInfo *>(tx->GetPayload());
-					if (payload) {
-						if (isDetail && payload->DIDPayload().ID() == id) {
-							didInfo[did] = payload;
-						} else if (!isDetail) {
-							didInfo[payload->DIDPayload().ID()] = payload;
+			for (size_t i = num; i > 0; --i) {
+				DIDDetailPtr detailPtr = _didList[i - 1];
+				DIDInfo *payload = dynamic_cast<DIDInfo *>(detailPtr->GetDIDInfo().get());
+				if (payload) {
+					if (isDetail && payload->DIDPayload().ID() == id) {
+						didInfo[did] = detailPtr;
+						break;
+					} else if (!isDetail) {
+						if (didInfo.find(payload->DIDPayload().ID()) == didInfo.end()) {
+							didInfo[payload->DIDPayload().ID()] = detailPtr;
 						}
 					}
 				}
@@ -325,10 +416,12 @@ namespace Elastos {
 				pageCount = didInfo.size() - start;
 
 			std::vector<nlohmann::json> jsonList;
-			for (std::map<std::string, DIDInfo *>::iterator iter = didInfo.begin();
+			for (std::map<std::string, DIDDetailPtr>::iterator iter = didInfo.begin();
 					iter != didInfo.end() && jsonList.size() < pageCount; ++iter) {
-				jsonList.push_back(toDIDInfoJson(iter->second, isDetail));
+				jsonList.push_back(ToDIDInfoJson(iter->second, isDetail));
 			}
+
+			std::sort(jsonList.begin(), jsonList.end(), compareDIDInfo);
 
 			j["DID"] = jsonList;
 			j["MaxCount"] = didInfo.size();
@@ -337,15 +430,23 @@ namespace Elastos {
 			return j;
 		}
 
-		nlohmann::json IDChainSubWallet::toDIDInfoJson(const DIDInfo *didInfo, bool isDetail) const {
+		nlohmann::json IDChainSubWallet::ToDIDInfoJson(const DIDDetailPtr &didDetailPtr, bool isDetail) const {
 			nlohmann::json summary;
 
+			DIDInfo *didInfo = dynamic_cast<DIDInfo *>(didDetailPtr->GetDIDInfo().get());
 			const DIDHeaderInfo &header = didInfo->DIDHeader();
 			const DIDPayloadInfo &payloadInfo = didInfo->DIDPayload();
 
 			summary["operation"] = header.Operation();
 			summary["id"] = payloadInfo.ID().substr(sizeof(PREFIX_DID) - 1);
-			summary["expires"] =  payloadInfo.Expires();
+			summary["issuanceDate"] = didDetailPtr->GetIssuanceTime();
+
+			uint32_t lastBlockHeight = _walletManager->GetWallet()->LastBlockHeight();
+			summary["status"] = didDetailPtr->GetConfirms(lastBlockHeight) <= 6 ? "Pending" : "Confirmed";
+
+			time_t timeStamp;
+			Utils::ParseInternetTime(payloadInfo.Expires(), timeStamp);
+			summary["expires"] =  timeStamp;
 
 			if (isDetail) {
 				nlohmann::json jPublicKeys;
@@ -375,5 +476,87 @@ namespace Elastos {
 
 			return summary;
 		}
+
+		void IDChainSubWallet::InsertDID(const DIDDetailPtr &didDetailPtr) {
+			size_t i = _didList.size();
+
+			while (i > 0 && _didList[i - 1]->GetIssuanceTime() - didDetailPtr->GetIssuanceTime() > 0) {
+				i--;
+			}
+
+			_didList.insert(_didList.begin() + i, didDetailPtr);
+		}
+
+		void IDChainSubWallet::onTxAdded(const TransactionPtr &tx) {
+			SubWallet::onTxAdded(tx);
+
+			if (tx->GetTransactionType() == IDTransaction::didTransaction) {
+				DIDInfo *payload = dynamic_cast<DIDInfo *>(tx->GetPayload());
+				if (payload) {
+					DIDDetailPtr didDetailPtr(new DIDDetail());
+					didDetailPtr->SetDIDInfo(tx->GetPayloadPtr());
+					didDetailPtr->SetTxHash(tx->GetHash().GetHex());
+					didDetailPtr->SetBlockHeighht(tx->GetBlockHeight());
+					didDetailPtr->SetIssuanceTime(tx->GetTimestamp());
+
+					Lock();
+					InsertDID(didDetailPtr);
+					Unlock();
+
+					DIDEntity didEntity;
+					didEntity.DID = payload->DIDPayload().ID();
+					didEntity.TxHash = didDetailPtr->GetTxHash();
+					didEntity.BlockHeight = didDetailPtr->GetBlockHeight();
+					didEntity.TimeStamp = didDetailPtr->GetIssuanceTime();
+
+					ByteStream stream;
+					didDetailPtr->GetDIDInfo()->Serialize(stream, 0);
+					didEntity.PayloadInfo = stream.GetBytes();
+
+					_walletManager->saveDIDInfo(didEntity);
+				}
+			}
+
+		}
+
+		void IDChainSubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
+			SubWallet::onTxUpdated(hashes, blockHeight,timeStamp);
+			Lock();
+			size_t didCount = _didList.size();
+
+			for (size_t i = 0;  i < hashes.size(); ++i) {
+				for (size_t j = 0; j < didCount; ++j) {
+					DIDDetailPtr detailPtr = _didList[j];
+					if (detailPtr->GetTxHash() == hashes[i].GetHex()) {
+						detailPtr->SetBlockHeighht(blockHeight);
+						detailPtr->SetIssuanceTime(timeStamp);
+						break;
+					}
+				}
+			}
+			Unlock();
+
+			if (!hashes.empty()) {
+				_walletManager->updateDIDInfo(hashes, blockHeight, timeStamp);
+			}
+
+		}
+
+		void IDChainSubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+			SubWallet::onTxDeleted(hash, notifyUser, recommendRescan);
+
+			Lock();
+			size_t len = _didList.size();
+			for (size_t i = 0; i < len; ++i) {
+				if (_didList[i]->GetTxHash() == hash.GetHex()) {
+					_didList.erase(_didList.begin() + i);
+					break;
+				}
+			}
+			Unlock();
+
+			_walletManager->deleteDIDInfo(hash.GetHex());
+		}
+
 	}
 }

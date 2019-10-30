@@ -14,7 +14,8 @@ namespace Elastos {
 			_coinbaseDataStore(&_sqlite),
 			_transactionDataStore(&_sqlite),
 			_assetDataStore(&_sqlite),
-			_merkleBlockDataSource(&_sqlite) {}
+			_merkleBlockDataSource(&_sqlite),
+			_didDataStore(&_sqlite){}
 
 		DatabaseManager::DatabaseManager() : DatabaseManager("spv_wallet.db") {}
 
@@ -159,12 +160,45 @@ namespace Elastos {
 			return _assetDataStore.GetAllAssets();
 		}
 
+		bool DatabaseManager::PutDID(const std::string &iso, const DIDEntity &didEntity) {
+			return _didDataStore.PutDID(iso, didEntity);
+		}
+
+		bool DatabaseManager::UpdateDID(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp) {
+			return _didDataStore.UpdateDID(hashes, blockHeight, timestamp);
+		}
+
+		bool DatabaseManager::DeleteDID(const std::string &did) {
+			return _didDataStore.DeleteDID(did);
+		}
+
+		bool DatabaseManager::DeleteDIDByTxHash(const std::string &txHash) {
+			return _didDataStore.DeleteDIDByTxHash(txHash);
+		}
+
+		std::string DatabaseManager::GetDIDByTxHash(const std::string &txHash) const {
+			return _didDataStore.GetDIDByTxHash(txHash);
+		}
+
+		bool DatabaseManager::GetDIDDetails(const std::string &did, DIDEntity &didEntity) const {
+			return _didDataStore.GetDIDDetails(did, didEntity);
+		}
+
+		std::vector<DIDEntity> DatabaseManager::GetAllDID() const {
+			return _didDataStore.GetAllDID();
+		}
+
+		bool DatabaseManager::DeleteAllDID() {
+			return _didDataStore.DeleteAllDID();
+		}
+
 		void DatabaseManager::flush() {
 			_transactionDataStore.flush();
 			_coinbaseDataStore.flush();
 			_merkleBlockDataSource.flush();
 			_peerDataSource.flush();
 			_assetDataStore.flush();
+			_didDataStore.flush();
 		}
 
 	} // namespace ElaWallet

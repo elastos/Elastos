@@ -10,6 +10,7 @@
 #include "PeerDataSource.h"
 #include "AssetDataStore.h"
 #include "CoinBaseUTXODataStore.h"
+#include "DIDDataStore.h"
 #include "Sqlite.h"
 
 namespace Elastos {
@@ -67,6 +68,16 @@ namespace Elastos {
 			bool GetAssetDetails(const std::string &assetID, AssetEntity &asset) const;
 			std::vector<AssetEntity> GetAllAssets() const;
 
+			// DID's database interface
+			bool PutDID(const std::string &iso, const DIDEntity &didEntity);
+			bool UpdateDID(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
+			bool DeleteDID(const std::string &did);
+			bool DeleteDIDByTxHash(const std::string &txHash);
+			bool GetDIDDetails(const std::string &did, DIDEntity &didEntity) const;
+			std::string GetDIDByTxHash(const std::string &txHash) const;
+			std::vector<DIDEntity> GetAllDID() const;
+			bool DeleteAllDID();
+
 			const boost::filesystem::path &GetPath() const;
 
 			void flush();
@@ -79,6 +90,7 @@ namespace Elastos {
 			TransactionDataStore  	_transactionDataStore;
 			MerkleBlockDataSource 	_merkleBlockDataSource;
 			AssetDataStore          _assetDataStore;
+			DIDDataStore            _didDataStore;
 		};
 
 	}

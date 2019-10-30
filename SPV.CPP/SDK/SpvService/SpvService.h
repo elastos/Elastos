@@ -18,6 +18,7 @@ namespace Elastos {
 
 		class DatabaseManager;
 		class Transaction;
+		struct DIDEntity;
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;
 		typedef boost::shared_ptr<DatabaseManager> DatabaseManagerPtr;
@@ -94,6 +95,16 @@ namespace Elastos {
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void connectStatusChanged(const std::string &status);
+
+			virtual void saveDIDInfo(const DIDEntity &didEntity);
+
+			virtual void updateDIDInfo(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
+
+			virtual void deleteDIDInfo(const std::string &txHash);
+
+			virtual std::string GetDIDByTxHash(const std::string &txHash) const;
+
+			virtual std::vector<DIDEntity> loadDIDList()  const;
 
 		protected:
 			virtual std::vector<UTXOPtr> loadCoinBaseUTXOs();

@@ -361,6 +361,10 @@ namespace Elastos {
 			return _payload.get();
 		}
 
+		const PayloadPtr &Transaction::GetPayloadPtr() const {
+			return _payload;
+		}
+
 		void Transaction::SetPayload(const PayloadPtr &payload) {
 			_payload = payload;
 		}

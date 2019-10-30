@@ -12,6 +12,7 @@
 #include <SDK/Plugin/Transaction/Asset.h>
 #include <SDK/Plugin/Transaction/TransactionInput.h>
 #include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <SDK/Plugin/Transaction/Payload/DIDInfo.h>
 #include <SDK/Wallet/UTXO.h>
 #include <SDK/Database/DatabaseManager.h>
 
@@ -245,6 +246,26 @@ namespace Elastos {
 						  [replace, &peers](PeerManager::Listener *listener) {
 							  listener->savePeers(replace, peers);
 						  });
+		}
+
+		void SpvService::saveDIDInfo(const DIDEntity &didEntity) {
+			_databaseManager->PutDID(ISO, didEntity);
+		}
+
+		void SpvService::updateDIDInfo(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
+			_databaseManager->UpdateDID(hashes, blockHeight, timeStamp);
+		}
+
+		void SpvService::deleteDIDInfo(const std::string &txHash) {
+			_databaseManager->DeleteDIDByTxHash(txHash);
+		}
+
+		std::string SpvService::GetDIDByTxHash(const std::string &txHash) const {
+			return _databaseManager->GetDIDByTxHash(txHash);
+		}
+
+		std::vector<DIDEntity> SpvService::loadDIDList() const {
+			return _databaseManager->GetAllDID();
 		}
 
 		bool SpvService::networkIsReachable() {

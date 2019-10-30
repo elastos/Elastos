@@ -18,6 +18,7 @@
 #include <SDK/Plugin/ELAPlugin.h>
 
 #include <fstream>
+
 using namespace Elastos::ElaWallet;
 
 #define ISO "ela1"
@@ -187,8 +188,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (int i = 0; i < TEST_PEER_RECORD_CNT; i++) {
 				PeerEntity peer;
 				peer.address = getRandUInt128();
-				peer.port = (uint16_t)rand();
-				peer.timeStamp = (uint64_t)rand();
+				peer.port = (uint16_t) rand();
+				peer.timeStamp = (uint64_t) rand();
 				peerToSave.push_back(peer);
 			}
 
@@ -371,8 +372,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
 				TransactionPtr tx(new Transaction());
 				tx->FromJson(txToSave[i]->ToJson());
-				tx->SetBlockHeight((uint32_t)1234);
-				tx->SetTimestamp((uint32_t)12345678);
+				tx->SetBlockHeight((uint32_t) 1234);
+				tx->SetTimestamp((uint32_t) 12345678);
 				txToUpdate.push_back(tx);
 			}
 		}
@@ -438,6 +439,85 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 			std::vector<TransactionPtr> readTx = dbm.GetAllTransactions(CHAINID_MAINCHAIN);
 			REQUIRE(0 == readTx.size());
+		}
+
+	}
+
+	SECTION("DID test") {
+#define TEST_DID_RECORD_CNT DEFAULT_RECORD_CNT
+		DatabaseManager dm(DBFILE);
+		static std::vector<DIDEntity> didToSave;
+		// save
+		SECTION("Prepare data") {
+			for (int i = 0; i < TEST_DID_RECORD_CNT; ++i) {
+				DIDEntity didEntity;
+				didEntity.DID = getRandHexString(21);
+				didEntity.PayloadInfo = getRandBytes(200);
+				didEntity.BlockHeight = getRandUInt32();
+				didEntity.TimeStamp = getRandUInt64();
+				didEntity.TxHash = getRanduint256().GetHex();
+				didToSave.push_back(didEntity);
+
+				REQUIRE(dm.PutDID(ISO, didEntity));
+			}
+		}
+
+		SECTION("Verify prepare data") {
+			std::vector<DIDEntity> didVerify = dm.GetAllDID();
+			REQUIRE(didVerify.size() == TEST_DID_RECORD_CNT);
+			REQUIRE(didVerify.size() == didToSave.size());
+
+			for (size_t i = 0; i < TEST_DID_RECORD_CNT; ++i) {
+				REQUIRE(didVerify[i].DID == didToSave[i].DID);
+				REQUIRE(didVerify[i].PayloadInfo == didToSave[i].PayloadInfo);
+				REQUIRE(didVerify[i].BlockHeight == didToSave[i].BlockHeight);
+				REQUIRE(didVerify[i].TimeStamp == didToSave[i].TimeStamp);
+				REQUIRE(didVerify[i].TxHash == didToSave[i].TxHash);
+			}
+
+			DIDEntity detail;
+			dm.GetDIDDetails(didToSave[0].DID, detail);
+			REQUIRE(detail.DID == didToSave[0].DID);
+			REQUIRE(detail.PayloadInfo == didToSave[0].PayloadInfo);
+			REQUIRE(detail.BlockHeight == didToSave[0].BlockHeight);
+			REQUIRE(detail.TimeStamp == didToSave[0].TimeStamp);
+			REQUIRE(detail.TxHash == didToSave[0].TxHash);
+		}
+
+		SECTION("update test") {
+			std::vector<DIDEntity> didList = dm.GetAllDID();
+			std::vector<uint256> hashList;
+			time_t updateTime = getRandUInt64();
+			uint32_t updateHeight = getRandUInt32();
+			for (size_t i = 0; i < didList.size(); ++i) {
+				hashList.push_back(uint256(didToSave[i].TxHash));
+			}
+
+			REQUIRE(dm.UpdateDID(hashList, updateHeight, updateTime));
+
+			std::vector<DIDEntity> verifyList = dm.GetAllDID();
+			REQUIRE(verifyList.size() == didList.size());
+
+			for (size_t i = 0; i < verifyList.size(); ++i) {
+				REQUIRE(verifyList[i].BlockHeight == updateHeight);
+				REQUIRE(verifyList[i].TimeStamp == updateTime);
+			}
+		}
+
+		SECTION("delete test") {
+			int idx = getRandUInt8() % didToSave.size();
+			REQUIRE(dm.DeleteDID(didToSave[idx].DID));
+			std::vector<DIDEntity> didVerify = dm.GetAllDID();
+			REQUIRE(didVerify.size() == didToSave.size() - 1);
+
+			idx = getRandUInt8() % didToSave.size() - 1;
+			REQUIRE(dm.DeleteDIDByTxHash(didToSave[idx].TxHash));
+			didVerify = dm.GetAllDID();
+			REQUIRE(didVerify.size() == didToSave.size() - 2);
+
+			REQUIRE(dm.DeleteAllDID());
+			didVerify = dm.GetAllDID();
+			REQUIRE(didVerify.size() == 0);
 		}
 
 	}

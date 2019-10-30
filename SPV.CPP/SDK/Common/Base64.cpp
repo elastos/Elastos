@@ -3,7 +3,6 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "Base64.h"
-#include "Log.h"
 
 namespace Elastos {
 	namespace ElaWallet {
