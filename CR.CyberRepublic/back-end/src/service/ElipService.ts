@@ -498,19 +498,21 @@ export default class extends Base {
   public async propose(elipId: string): Promise<Document> {
     const currentUserId = _.get(this.currentUser, '_id')
     const userRole = _.get(this.currentUser, 'role')
-    if(userRole !== constant.USER_ROLE.SECRETARY) {
-      throw 'ElipService.propose - invalid user role'
-    }
-    
     const db_elip = this.getDBModel('Elip')
     const db_cvote = this.getDBModel('CVote')
     const db_user = this.getDBModel('User')
 
     const elip = elipId && (await db_elip.findById(elipId))
     if (!elip) {
-      throw 'cannot find elip'
+      throw 'ElipService.propose - cannot find elip'
     }
-
+    if (!elip.createdBy._id.equals(this.currentUser._id)) {
+      throw 'ElipService.propose - current user is not the author of elip'
+    }
+    if ( elip.status !== constant.ELIP_STATUS.DRAFT ) {
+      throw 'ElipService.propose - elip status not equal DRAFT '
+    }
+    
     const creator = await db_user.findById(elip.createdBy);
     const vid = await this.getNewCVoteVid()
 
@@ -548,7 +550,10 @@ export default class extends Base {
         { _id: elipId },
         {
           $addToSet: { reference: res._id },
-          $set: { tags: [] }
+          $set: {
+            tags: [],
+            status: constant.ELIP_STATUS.SUBMITTED
+          }
         }
       )
       this.notifyCouncilAfterPropose(res)
