@@ -24,8 +24,6 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 
-#define COIN_COINFIG_FILE "CoinConfig.json"
-
 namespace fs = boost::filesystem;
 
 namespace Elastos {

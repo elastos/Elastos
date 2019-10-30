@@ -7,7 +7,7 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-		const std::vector<std::string> EnglistWordLists = {
+		const std::vector<std::string> EnglishWordLists = {
 			"abandon",
 			"ability",
 			"able",
