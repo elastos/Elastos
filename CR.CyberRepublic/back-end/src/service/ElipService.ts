@@ -502,7 +502,15 @@ export default class extends Base {
     const db_cvote = this.getDBModel('CVote')
     const db_user = this.getDBModel('User')
 
-    const elip = elipId && (await db_elip.findById(elipId))
+    const elip = await db_elip
+      .getDBInstance()
+      .findOne({ _id: elipId })
+      .populate(
+        'voteResult.votedBy',
+        constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
+      )
+      .populate('createdBy')
+    
     if (!elip) {
       throw 'ElipService.propose - cannot find elip'
     }
