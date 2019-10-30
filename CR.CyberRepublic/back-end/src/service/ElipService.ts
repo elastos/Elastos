@@ -567,7 +567,7 @@ export default class extends Base {
           $set: {
             tags: [],
             reference: res._id,
-            status: constant.ELIP_STATUS.SUBMITTED
+            status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
           }
         }
       )
