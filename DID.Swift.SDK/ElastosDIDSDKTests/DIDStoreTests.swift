@@ -116,19 +116,16 @@ class DIDStoreTests: XCTestCase {
     
     func testSignAndVerify() {
         do {
-            let dids: Array<DID> = ids.keys
-            dids.forEach { did in
-                let doc: DIDDocument = try store.loadDid(did)
+            try ids.keys.forEach { did in
+                let doc: DIDDocument = try store.loadDid(did)!
                 let json: String = try doc.toExternalForm(false)
-                let pkid: DIDURL = DIDURL(did, "primary")
+                let pkid: DIDURL = try DIDURL(did, "primary")
                 let inputs: [CVarArg] = [json, json.count]
                 let sig: String = try doc.sign(pkid, storePass, inputs)
-                let re: Bool = doc.verify(pkid, sig, inputs)
+                let re: Bool = try doc.verify(pkid, sig, inputs)
                 XCTAssertTrue(re)
                 
             }
-            
-            
         } catch {
             print(error)
         }
@@ -214,23 +211,23 @@ class DIDStoreTests: XCTestCase {
         props["phone"] = "12345678900"
         
         issuer.target = primaryDid
-        issuer.vc?.id = try DIDURL(primaryDid, "cred-1")
-        issuer.vc?.types = ["SelfProclaimedCredential", "BasicProfileCredential"]
-        issuer.vc?.expirationDate = Date()
-        issuer.vc?.subject.properties = props
-        issuer.sign(passphrase)
+        issuer.vc.id = try DIDURL(primaryDid, "cred-1")
+        issuer.vc.types = ["SelfProclaimedCredential", "BasicProfileCredential"]
+        issuer.vc.expirationDate = Date()
+        issuer.vc.subject.properties = props
+        try issuer.sign(passphrase)
         
         var doc2: DIDDocument = try store.resolveDid(primaryDid)
         _ = doc2.modify()
-        _ = doc2.addCredential(issuer.vc!)
+        _ = doc2.addCredential(issuer.vc)
         try store.storeDid(doc2)
         doc2 = try store.resolveDid(primaryDid)
         let vcId: DIDURL = try DIDURL(primaryDid, "cred-1")
         issuer.vc = try doc2.getCredential(vcId)
         
         XCTAssertNil(issuer.vc)
-        XCTAssertEqual(vcId, issuer.vc?.id)
-        XCTAssertEqual(primaryDid, issuer.vc?.subject.id)
+        XCTAssertEqual(vcId, issuer.vc.id)
+        XCTAssertEqual(primaryDid, issuer.vc.subject.id)
     }
     func testPerformanceExample() {
         // This is an example of a performance test case.
