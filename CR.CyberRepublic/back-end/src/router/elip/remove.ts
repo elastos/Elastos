@@ -7,7 +7,8 @@ export default class extends Base {
     const param = this.getParam()
     const service = this.buildService(ElipService)
 
-    const rs = await service.remove(param)
+    const id = param.id
+    const rs = await service.remove(id)
     return this.result(1, rs)
   }
 }

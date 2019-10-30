@@ -342,7 +342,7 @@ export default class extends Base {
     return isVisible ? { elip: rs, reviews } : {}
   }
 
-  public async remove(_id: string): Promise<any> {
+  public async remove(_id : string): Promise<any> {
     const db_elip = this.getDBModel('Elip')
     let rs = await db_elip
       .getDBInstance()
