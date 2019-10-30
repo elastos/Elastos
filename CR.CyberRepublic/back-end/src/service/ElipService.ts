@@ -540,7 +540,7 @@ export default class extends Base {
       proposedBy: userUtil.formatUsername(creator),
       proposer: elip.createdBy,
       createdBy: this.currentUser._id,
-      reference: elipId
+      reference: { _id: elipId, displayId: elip.vid }
     }
 
     Object.assign(doc, _.pick(elip, BASE_FIELDS));
@@ -566,7 +566,7 @@ export default class extends Base {
         {
           $set: {
             tags: [],
-            reference: res._id,
+            reference: { _id: res._id, displayId: res.vid },
             status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
           }
         }
