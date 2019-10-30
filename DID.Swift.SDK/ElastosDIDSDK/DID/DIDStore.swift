@@ -51,7 +51,7 @@ public class DIDStore: NSObject {
         }
         let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 100)
         let re = encrypt_to_base64(base64url, cpassphrase, cinput, input.count)
-        guard re == 0 else {
+        guard re >= 0 else {
             throw DIDStoreError.failue("encryptToBase64 error.")
         }
         return String(cString: base64url)
@@ -67,9 +67,10 @@ public class DIDStore: NSObject {
             return cstr
         }
         let re = decrypt_from_base64(plain, cpassphrase, cinput)
-        guard re == 0 else {
+        guard re >= 0 else {
             throw DIDStoreError.failue("decryptFromBase64 error.")
         }
+        
         let str: String = String(cString: plain)
         return str.data(using: .utf8)!
     }

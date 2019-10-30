@@ -16,15 +16,16 @@ public class HDKey: NSObject {
     }
     
     public class func fromMnemonic(_ mnemonic: String, _ passphrase: String) throws -> HDKey {
-        let mnem: String = mnemonic + "\0"
-        let passph: String = passphrase + "\0"
+        let mnem: String = mnemonic
+        let passph: String = passphrase
         let mpointer: UnsafePointer<Int8> = mnem.toUnsafePointerInt8()!
         let passphrasebase58Pointer = passph.toUnsafePointerInt8()
         
-        var seed: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
-        seed = HDkey_GetSeedFromMnemonic(mpointer, passphrasebase58Pointer!, 0, seed)
-        let seedPointToArry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: seed, count: 64)
+        var seedPinter: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
+        seedPinter = HDkey_GetSeedFromMnemonic(mpointer, passphrasebase58Pointer!, 0, seedPinter)
+        let seedPointToArry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: seedPinter, count: 64)
         let seedData: Data = Data(buffer: seedPointToArry)
+        print(seedData.hexEncodedString())
         return HDKey(seedData)
     }
     
