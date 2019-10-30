@@ -564,11 +564,8 @@ export default class extends Base {
       await db_elip.update(
         { _id: elipId },
         {
-          $set: {
-            tags: [],
-            reference: { _id: res._id, displayId: res.vid },
-            status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
-          }
+          reference: { _id: res._id, displayId: res.vid },
+          status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
         }
       )
       this.notifyCouncilAfterPropose(res)
