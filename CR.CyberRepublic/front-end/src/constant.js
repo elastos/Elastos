@@ -309,3 +309,4 @@ export const ELIP_VOTE_STATUS_COLOR = {
   [ELIP_VOTE_STATUS.ABSTAIN]: '#C4C4C4',
 }
 export const ELIP_TYPE = create(['STANDARD_TRACK', 'PROCESS', 'INFORMATIONAL'])
+export const ELIP_NUMBER_TYPE = ['4', '5', '6']

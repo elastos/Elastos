@@ -42,6 +42,9 @@ export default class extends BaseComponent {
       1: I18N.get('council.voting.type.newMotion'),
       2: I18N.get('council.voting.type.motionAgainst'),
       3: I18N.get('council.voting.type.anythingElse'),
+      4: I18N.get('council.voting.type.standardTrack'),
+      5: I18N.get('council.voting.type.information'),
+      6: I18N.get('council.voting.type.process'),
     }
 
     const columns = [
