@@ -23,9 +23,9 @@ public class MasterWalletManager {
         return false;
     }
 
-    public MasterWalletManager(String rootPath, String dataPath) throws WalletException {
+    public MasterWalletManager(String rootPath, String netType, String config, String dataPath) throws WalletException {
         mRootPath = rootPath;
-        mInstance = InitMasterWalletManager(mRootPath, dataPath);
+        mInstance = InitMasterWalletManager(mRootPath, netType, config, dataPath);
 
         long[] masterWalletProxies = GetAllMasterWallets(mInstance);
         for (int i = 0; i < masterWalletProxies.length; i++) {
@@ -287,7 +287,7 @@ public class MasterWalletManager {
 
     private native long GetMasterWallet(long instance, String masterWalletId);
 
-    private native long InitMasterWalletManager(String rootPath, String dataPath);
+    private native long InitMasterWalletManager(String rootPath, String netType, String config, String dataPath);
 
     private native void DisposeNative(long instance);
 }

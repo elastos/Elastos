@@ -58,7 +58,7 @@ namespace Elastos {
 			virtual nlohmann::json GetAllDID(uint32_t start, uint32_t count) const = 0;
 
 			/**
-			 * Sign message with public key of did.
+			 * Sign message with private key of did.
 			 * @param did will sign the message with public key of this did.
 			 * @param message to be signed.
 			 * @param payPassword pay password.
@@ -68,6 +68,18 @@ namespace Elastos {
 				const std::string &did,
 				const std::string &message,
 				const std::string &payPassword) const = 0;
+
+			/**
+			 * Sign message with private key of did.
+			 * @param did will sign the message with public key of this did.
+			 * @param digest hex string of sha256
+			 * @param payPassword pay password.
+			 * @return If success, signature will be returned.
+			 */
+			virtual std::string SignDigest(
+					const std::string &did,
+					const std::string &digest,
+					const std::string &payPassword) const = 0;
 
 			/**
 			 * Verify signature with specify public key
