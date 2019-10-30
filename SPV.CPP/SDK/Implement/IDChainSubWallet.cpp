@@ -298,7 +298,10 @@ namespace Elastos {
 
 				size_t index = pubKeyInfo.ID().find_last_of("#", pubKeyInfo.ID().size() - 1);
 				if (index != std::string::npos) {
-					signDID = GetPublicKeyDID(pubkey.getHex());
+					std::string proofUriSegment = pubKeyInfo.ID().substr(index);
+					if (proofUriSegment == verificationMethod) {
+						signDID = GetPublicKeyDID(pubkey.getHex());
+					}
 				}
 			}
 
