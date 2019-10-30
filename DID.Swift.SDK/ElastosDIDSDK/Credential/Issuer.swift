@@ -30,7 +30,6 @@ public class Issuer {
 
     public convenience init(_ did: DID) throws {
         try self.init(did, nil)
-        
     }
     
     public func sign(_ passphrase: String) throws -> VerifiableCredential {

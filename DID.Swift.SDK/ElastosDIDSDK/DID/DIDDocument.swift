@@ -584,4 +584,34 @@ public class DIDDocument: NSObject {
         return try (toJson(nil, compact) ?? "")
     }
     
+    public func sign(_ storepass: String, _ inputs: [CVarArg]) throws -> String {
+        let key: DIDURL = getDefaultPublicKey()!
+        return try sign(key, storepass, inputs)
+    }
+    
+    public func sign(_ id: DIDURL, _ storepass: String, _ inputs: [CVarArg]) throws -> String {
+        return try (DIDStore.shareInstance()?.sign(subject!, id, storepass, inputs))!
+    }
+    
+    public func verify(_ signature: String, _ inputs: [CVarArg]) throws -> Bool {
+        let key: DIDURL = getDefaultPublicKey()!
+        return try verify(key, signature, inputs)
+    }
+    
+    public func verify(_ id: DIDURL, _ signature: String, _ inputs: [CVarArg]) throws -> Bool {
+        let pk: DIDPublicKey = try getPublicKey(id)
+        let pks: [UInt8] = pk.getPublicKeyBytes()
+        var pkData: Data = Data(bytes: pks, count: pks.count)
+        let cpk: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (pk: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
+            return pk
+        }
+        var sigData: Data = signature.data(using: .utf8)!
+        let sig: UnsafeMutablePointer<Int8> = sigData.withUnsafeMutableBytes { (csign: UnsafeMutablePointer<Int8>) -> UnsafeMutablePointer<Int8> in
+            return csign
+        }
+        let cinputs = getVaList(inputs)
+       let re = ecdsa_verify_base64v(sig, cpk, Int32(inputs.count), cinputs)
+        
+        return re >= 0 ? true : false
+    }
 }

@@ -41,6 +41,4 @@ public class HDKey: NSObject {
     public func derive(_ index: Int) throws -> DerivedKey {
         return DerivedKey(seed, Int32(index))
     }
-
-    
 }

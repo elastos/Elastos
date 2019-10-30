@@ -116,6 +116,18 @@ class DIDStoreTests: XCTestCase {
     
     func testSignAndVerify() {
         do {
+            let dids: Array<DID> = ids.keys
+            dids.forEach { did in
+                let doc: DIDDocument = try store.loadDid(did)
+                let json: String = try doc.toExternalForm(false)
+                let pkid: DIDURL = DIDURL(did, "primary")
+                let inputs: [CVarArg] = [json, json.count]
+                let sig: String = try doc.sign(pkid, storePass, inputs)
+                let re: Bool = doc.verify(pkid, sig, inputs)
+                XCTAssertTrue(re)
+                
+            }
+            
             
         } catch {
             print(error)

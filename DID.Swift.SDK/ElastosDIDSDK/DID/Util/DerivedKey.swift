@@ -55,7 +55,6 @@ public class DerivedKey: NSObject {
         return (String(cString: idstring!))
     }
     
-    
     public func getRedeemScript(_ pk: [UInt8]) throws -> [UInt8] {
         
         var script: [UInt8] = [UInt8](repeating: 0, count: 35)

@@ -247,10 +247,10 @@ public class DIDStore: NSObject {
         let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 52)
         var privatekeydata: Data = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id))
         let pk: UnsafeMutablePointer<UInt8> = privatekeydata.withUnsafeMutableBytes{ (by: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
-        return by
+            return by
         }
         let result = getVaList(inputs)
-       let re = ecdsa_sign_base64v(sig, pk, Int32(inputs.count), result)
+        let re = ecdsa_sign_base64v(sig, pk, Int32(inputs.count), result)
         guard re == 0 else {
             throw DIDStoreError.failue("sign error.")
         }
