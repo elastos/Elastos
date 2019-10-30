@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"math/big"
 	"testing"
@@ -147,7 +148,7 @@ func getPayloadCreateDID() *types.PayloadDIDInfo {
 
 	privateKey1, _ := common.HexStringToBytes(PayloadPrivateKey)
 	sign, _ := crypto.Sign(privateKey1, p.Data(types.DIDInfoVersion))
-	p.Proof.Signature = hex.EncodeToString(sign)
+	p.Proof.Signature = base64.StdEncoding.EncodeToString(sign)
 
 	return p
 }
