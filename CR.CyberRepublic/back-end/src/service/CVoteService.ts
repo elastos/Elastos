@@ -616,6 +616,7 @@ export default class extends Base {
       .populate('proposer', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
+      .populate('referenceElip', 'vid')
     return rs
   }
 

@@ -303,6 +303,7 @@ export default class extends Base {
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
       )
+      .populate('reference')
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
     if (!rs) {
       throw 'ElipService.getById - invalid elip id'
@@ -540,7 +541,7 @@ export default class extends Base {
       proposedBy: userUtil.formatUsername(creator),
       proposer: elip.createdBy,
       createdBy: this.currentUser._id,
-      reference: { _id: elipId, displayId: elip.vid }
+      referenceElip:  elipId
     }
 
     Object.assign(doc, _.pick(elip, BASE_FIELDS));
@@ -564,7 +565,7 @@ export default class extends Base {
       await db_elip.update(
         { _id: elipId },
         {
-          reference: { _id: res._id, displayId: res.vid },
+          reference: res._id,
           status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
         }
       )

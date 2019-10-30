@@ -51,6 +51,10 @@ export const Elip = {
     ref: 'users',
     required: true
   },
+  reference: {
+    type: Schema.Types.ObjectId,
+    ref: 'cvote'
+  },
   discussionsTo: {
     type: String
   },

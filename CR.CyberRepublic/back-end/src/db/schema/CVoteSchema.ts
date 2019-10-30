@@ -114,5 +114,9 @@ export const CVote = {
   reference: {
     type: Schema.Types.ObjectId,
     ref: 'suggestion'
+  },
+  referenceElip: {
+    type: Schema.Types.ObjectId,
+    ref: 'elip'
   }
 }
