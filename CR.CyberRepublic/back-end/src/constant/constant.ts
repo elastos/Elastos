@@ -18,7 +18,10 @@ export const SUGGESTION_TYPE = {
 export const CVOTE_TYPE = {
   NEW_MOTION: '1',
   MOTION_AGAINST: '2',
-  ANYTHING_ELSE: '3'
+  ANYTHING_ELSE: '3',
+  STANDARD_TRACK: '4',
+  PROCESS: '5',
+  INFORMATIONAL: '6'
 }
 
 export const USER_ROLE = {
