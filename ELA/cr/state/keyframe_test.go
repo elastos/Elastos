@@ -96,15 +96,9 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		}
 	}
 
-	for k, v := range first.Votes {
-		v2, ok := second.Votes[k]
+	for k := range first.Votes {
+		_, ok := second.Votes[k]
 		if !ok {
-			return false
-		}
-
-		if v.Type != v2.Type || v.Value != v2.Value ||
-			!v.ProgramHash.IsEqual(v2.ProgramHash) ||
-			v.OutputLock != v2.OutputLock || !v.AssetID.IsEqual(v2.AssetID) {
 			return false
 		}
 	}
@@ -214,7 +208,7 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 		frame.Nicknames[nickname] = struct{}{}
 	}
 	for i := 0; i < size; i++ {
-		frame.Votes[randomString()] = randomOutputs()
+		frame.Votes[randomString()] = struct{}{}
 	}
 	return frame
 }

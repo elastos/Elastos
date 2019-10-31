@@ -264,8 +264,7 @@ func benchBegin() *BlockChain {
 				amount += utxo.Value
 			}
 			return amount, nil
-		},
-		DefaultLedger.Blockchain.UTXOCache.GetTxReference)
+		})
 	arbiters.RegisterFunction(chainStore.GetHeight, func(height uint32) (*types.Block, error) {
 		hash, err := chainStore.GetBlockHash(height)
 		if err != nil {
@@ -277,7 +276,7 @@ func benchBegin() *BlockChain {
 		}
 		CalculateTxsFee(block)
 		return block, nil
-	})
+	}, DefaultLedger.Blockchain.UTXOCache.GetTxReference)
 
 	log.Info("New block chain.")
 	newChain, _ := New(chainStore, params, arbiters.State, nil)

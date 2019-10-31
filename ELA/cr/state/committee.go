@@ -288,7 +288,24 @@ func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32
 }
 
 func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32,
-	history *utils.History) {
+	history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
+	committeeInputsAmounts map[string]common.Fixed64) {
+	for _, input := range tx.Inputs {
+		if amount, ok := foundationInputsAmounts[input.Previous.ReferKey()]; ok {
+			history.Append(height, func() {
+				c.CRCFoundationAmount -= amount
+			}, func() {
+				c.CRCFoundationAmount += amount
+			})
+		} else if amount, ok := committeeInputsAmounts[input.Previous.ReferKey()]; ok {
+			history.Append(height, func() {
+				c.CRCCommitteeAmount -= amount
+			}, func() {
+				c.CRCCommitteeAmount += amount
+			})
+		}
+	}
+
 	for _, output := range tx.Outputs {
 		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
 			history.Append(height, func() {
@@ -487,6 +504,18 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 	return candidates, nil
 }
 
+func (c *Committee) RegisterFuncitons(getTxReference func(tx *types.Transaction) (
+	map[*types.Input]*types.Output, error)) {
+	c.state.RegisterFunctions(&FunctionsConfig{
+		TryStartVotingPeriod:    c.tryStartVotingPeriod,
+		ProcessImpeachment:      c.processImpeachment,
+		ProcessCRCAppropriation: c.processCRCAppropriation,
+		ProcessCRCRelatedAmount: c.processCRCRelatedAmount,
+		GetHistoryMember:        c.getHistoryMember,
+		GetTxReference:          getTxReference,
+	})
+}
+
 func NewCommittee(params *config.Params) *Committee {
 	committee := &Committee{
 		state:    NewState(params),
@@ -495,13 +524,6 @@ func NewCommittee(params *config.Params) *Committee {
 		manager:  NewProposalManager(params),
 	}
 	committee.state.SetManager(committee.manager)
-	committee.state.RegisterFunctions(&FunctionsConfig{
-		TryStartVotingPeriod:    committee.tryStartVotingPeriod,
-		ProcessImpeachment:      committee.processImpeachment,
-		ProcessCRCAppropriation: committee.processCRCAppropriation,
-		ProcessCRCRelatedAmount: committee.processCRCRelatedAmount,
-		GetHistoryMember:        committee.getHistoryMember,
-	})
 	params.CkpManager.Register(NewCheckpoint(committee))
 	return committee
 }

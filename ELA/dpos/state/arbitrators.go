@@ -93,9 +93,12 @@ func (a *arbitrators) Start() {
 }
 
 func (a *arbitrators) RegisterFunction(bestHeight func() uint32,
-	getBlockByHeight func(uint32) (*types.Block, error)) {
+	getBlockByHeight func(uint32) (*types.Block, error),
+	getTxReference func(tx *types.Transaction) (
+		map[*types.Input]*types.Output, error)) {
 	a.bestHeight = bestHeight
 	a.getBlockByHeight = getBlockByHeight
+	a.getTxReference = getTxReference
 }
 
 func (a *arbitrators) RecoverFromCheckPoints(point *CheckPoint) {
@@ -1180,9 +1183,8 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 }
 
 func NewArbitrators(chainParams *config.Params, committee *state.Committee,
-	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error),
-	getTxReference func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error)) (*arbitrators, error) {
+	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error)) (
+	*arbitrators, error) {
 	a := &arbitrators{
 		chainParams:                chainParams,
 		crCommittee:                committee,
@@ -1205,7 +1207,7 @@ func NewArbitrators(chainParams *config.Params, committee *state.Committee,
 		return nil, err
 	}
 	a.State = NewState(chainParams, a.GetArbitrators,
-		getProducerDepositAmount, getTxReference)
+		getProducerDepositAmount)
 
 	chainParams.CkpManager.Register(NewCheckpoint(a))
 	return a, nil

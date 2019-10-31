@@ -180,8 +180,7 @@ func startNode(c *cli.Context, st *settings) {
 				amount += utxo.Value
 			}
 			return amount, nil
-		},
-		blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference)
+		})
 	if err != nil {
 		printErrorAndExit(err)
 	}
@@ -213,7 +212,8 @@ func startNode(c *cli.Context, st *settings) {
 			}
 			blockchain.CalculateTxsFee(block)
 			return block, nil
-		})
+		}, chain.UTXOCache.GetTxReference)
+	committee.RegisterFuncitons(chain.UTXOCache.GetTxReference)
 
 	routesCfg := &routes.Config{TimeSource: chain.TimeSource}
 	if act != nil {

@@ -41,8 +41,11 @@ type State struct {
 	processCRCAppropriation func(tx *types.Transaction, height uint32,
 		history *utils.History)
 	processCRCRelatedAmount func(tx *types.Transaction, height uint32,
-		history *utils.History)
+		history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
+		committeeInputsAmounts map[string]common.Fixed64)
 	getHistoryMember func(code []byte) *CRMember
+	getTxReference   func(tx *types.Transaction) (
+		map[*types.Input]*types.Output, error)
 
 	mtx     sync.RWMutex
 	params  *config.Params
@@ -61,8 +64,11 @@ type FunctionsConfig struct {
 	ProcessCRCAppropriation func(tx *types.Transaction, height uint32,
 		history *utils.History)
 	ProcessCRCRelatedAmount func(tx *types.Transaction, height uint32,
-		history *utils.History)
+		history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
+		committeeInputsAmounts map[string]common.Fixed64)
 	GetHistoryMember func(code []byte) *CRMember
+	GetTxReference   func(tx *types.Transaction) (
+		map[*types.Input]*types.Output, error)
 }
 
 // RegisterFunctions set the tryStartVotingPeriod and processImpeachment function
@@ -73,6 +79,7 @@ func (s *State) RegisterFunctions(cfg *FunctionsConfig) {
 	s.processCRCAppropriation = cfg.ProcessCRCAppropriation
 	s.processCRCRelatedAmount = cfg.ProcessCRCRelatedAmount
 	s.getHistoryMember = cfg.GetHistoryMember
+	s.getTxReference = cfg.GetTxReference
 }
 
 // GetCandidateByDID returns candidate with specified did, it will return nil
@@ -248,7 +255,8 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 	}
 
 	s.processCancelVotes(tx, height)
-	s.processCRCRelatedAmount(tx, height, s.history)
+	s.processCRCAddressRelatedTx(tx, height)
+
 }
 
 // RollbackTo restores the database state to the given height, if no enough
@@ -351,7 +359,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 	}
 
 	s.processCancelVotes(tx, height)
-	s.processCRCRelatedAmount(tx, height, s.history)
+	s.processCRCAddressRelatedTx(tx, height)
 }
 
 // registerCR handles the register CR transaction.
@@ -374,7 +382,7 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 		if output.ProgramHash.IsEqual(candidate.depositHash) {
 			amount += output.Value
 			op := types.NewOutPoint(tx.Hash(), uint16(i))
-			s.DepositOutputs[op.ReferKey()] = output
+			s.DepositOutputs[op.ReferKey()] = output.Value
 		}
 	}
 	candidate.depositAmount = amount
@@ -489,7 +497,7 @@ func (s *State) processVotes(tx *types.Transaction, height uint32) {
 			}
 			if exist {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.Votes[op.ReferKey()] = output
+				s.Votes[op.ReferKey()] = struct{}{}
 				s.processVoteOutput(output, height)
 			}
 		}
@@ -502,7 +510,7 @@ func (s *State) processDeposit(tx *types.Transaction, height uint32) {
 		if contract.GetPrefixType(output.ProgramHash) == contract.PrefixDeposit {
 			if s.addCandidateAssert(output, height) {
 				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.DepositOutputs[op.ReferKey()] = output
+				s.DepositOutputs[op.ReferKey()] = output.Value
 			}
 		}
 	}
@@ -512,7 +520,7 @@ func (s *State) processDeposit(tx *types.Transaction, height uint32) {
 func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 	var inputValue common.Fixed64
 	for _, input := range tx.Inputs {
-		inputValue += s.DepositOutputs[input.ReferKey()].Value
+		inputValue += s.DepositOutputs[input.ReferKey()]
 	}
 
 	returnCandidateAction := func(candidate *Candidate, originState CandidateState) {
@@ -622,17 +630,48 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 }
 
 // processCancelVotes takes a transaction, if the transaction takes a previous
-// vote output then try to subtract the vote
+// vote output then try to subtract the vote.
 func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
+	var exist bool
 	for _, input := range tx.Inputs {
 		referKey := input.ReferKey()
-		output, ok := s.Votes[referKey]
-		if ok {
-			s.processVoteCancel(output, height)
-			// todo consider rollback
-			s.Votes[referKey] = nil
+		if _, ok := s.Votes[referKey]; ok {
+			exist = true
 		}
 	}
+	if !exist {
+		return
+	}
+
+	references, err := s.getTxReference(tx)
+	if err != nil {
+		log.Errorf("get tx reference failed, tx hash:%s", tx.Hash())
+		return
+	}
+	for _, input := range tx.Inputs {
+		referKey := input.ReferKey()
+		_, ok := s.Votes[referKey]
+		if ok {
+			s.processVoteCancel(references[input], height)
+		}
+	}
+}
+
+// processCRCRelatedAmount takes a transaction, if the transaction takes a previous
+// output to CRC related address then try to subtract the vote.
+func (s *State) processCRCAddressRelatedTx(tx *types.Transaction, height uint32) {
+	for i, output := range tx.Outputs {
+		if output.ProgramHash.IsEqual(s.params.CRCFoundation) {
+			op := types.NewOutPoint(tx.Hash(), uint16(i))
+			s.CRCFoundationOutputs[op.ReferKey()] = output.Value
+		} else if output.ProgramHash.IsEqual(s.params.CRCCommitteeAddress) {
+			op := types.NewOutPoint(tx.Hash(), uint16(i))
+			s.CRCCommitteeOutputs[op.ReferKey()] = output.Value
+		}
+	}
+
+	s.processCRCRelatedAmount(tx, height, s.history,
+		s.CRCFoundationOutputs, s.CRCCommitteeOutputs)
 }
 
 // processVoteCancel takes a previous vote output and decrease CR votes.

@@ -6,6 +6,7 @@
 package state
 
 import (
+	"github.com/elastos/Elastos.ELA/common/config"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -300,6 +301,7 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	keyframe := randomStateKeyFrame(5, true)
 	state := State{
+		params:        &config.DefaultParams,
 		StateKeyFrame: *keyframe,
 		history:       utils.NewHistory(maxHistoryCapacity),
 	}
@@ -312,6 +314,11 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	}
 
 	registerFuncs(&state)
+	references := make(map[*types.Input]*types.Output)
+	state.getTxReference = func(tx *types.Transaction) (
+		map[*types.Input]*types.Output, error) {
+		return references, nil
+	}
 
 	// vote for the active candidates
 	voteTx := mockNewVoteTx(activeDIDs)
@@ -329,6 +336,11 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 		assert.Equal(t, common.Fixed64((i+1)*10), candidate.votes)
 	}
 
+	input := &types.Input{
+		Previous: *types.NewOutPoint(voteTx.Hash(), uint16(0)),
+	}
+	references[input] = voteTx.Outputs[0]
+
 	// cancel votes the active candidates
 	state.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -336,11 +348,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 		},
 		Transactions: []*types.Transaction{
 			{
-				Inputs: []*types.Input{
-					{
-						Previous: *types.NewOutPoint(voteTx.Hash(), uint16(0)),
-					},
-				},
+				Inputs: []*types.Input{input},
 			},
 		},
 	}, nil)
@@ -353,7 +361,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 }
 
 func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
-	state := NewState(nil)
+	state := NewState(&config.DefaultParams)
 	registerFuncs(state)
 	height := uint32(1)
 
@@ -547,6 +555,11 @@ func registerFuncs(state *State) {
 	state.RegisterFunctions(&FunctionsConfig{
 		GetHistoryMember: func(code []byte) *CRMember { return nil },
 		ProcessCRCRelatedAmount: func(tx *types.Transaction, height uint32,
-			history *utils.History) {
+			history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
+			committeeInputsAmounts map[string]common.Fixed64) {
+		},
+		GetTxReference: func(tx *types.Transaction) (
+			map[*types.Input]*types.Output, error) {
+			return make(map[*types.Input]*types.Output), nil
 		}})
 }
