@@ -101,7 +101,7 @@ int parse_time(time_t *time, const char *string)
     ptr = strrchr(string_copy, '-');
     if (!ptr)
         return -1;
-    ptm.tm_mon = atoi(ptr + sizeof(char));
+    ptm.tm_mon = atoi(ptr + sizeof(char) -1);
     *ptr = '\0';
 
     ptm.tm_year = atoi(string_copy) - 1900;
