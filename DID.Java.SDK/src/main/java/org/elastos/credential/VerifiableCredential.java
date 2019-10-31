@@ -31,7 +31,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -59,20 +58,13 @@ public class VerifiableCredential extends DIDObject {
 	private CredentialSubject subject;
 	private Proof proof;
 
-	static class StringComparator implements Comparator<String> {
-		@Override
-		public int compare(String key1, String key2) {
-			return key1.compareToIgnoreCase(key2);
-		}
-	};
-
 	static public class CredentialSubject {
 		private DID id;
 		private Map<String, String> properties;
 
 		protected CredentialSubject(DID id) {
 			this.id = id;
-			properties = new TreeMap<String, String>(new StringComparator());
+			properties = new TreeMap<String, String>();
 		}
 
 		public DID getId() {
@@ -494,7 +486,7 @@ public class VerifiableCredential extends DIDObject {
 		// type
 		generator.writeFieldName(Constants.type);
 		generator.writeStartArray();
-		Collections.sort(types, new StringComparator());
+		Collections.sort(types);
 		for (String s : types) {
 			generator.writeString(s);
 		}

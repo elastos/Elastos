@@ -68,7 +68,7 @@ public class DIDStoreTest {
 	public void test00CreateEmptyStore0() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
-    	deleteFile(new File(tempStoreRoot));
+    	Util.deleteFile(new File(tempStoreRoot));
 
     	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
 
@@ -102,7 +102,7 @@ public class DIDStoreTest {
 	public void test10InitPrivateIdentity0() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
-    	deleteFile(new File(tempStoreRoot));
+		Util.deleteFile(new File(tempStoreRoot));
 
     	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
 
@@ -146,7 +146,7 @@ public class DIDStoreTest {
 
     @Test
     public void test20Setup() throws DIDStoreException {
-    	deleteFile(new File(storeRoot));
+    	Util.deleteFile(new File(storeRoot));
 
     	DIDStore.initialize("filesystem", storeRoot, storePass);
 
@@ -218,33 +218,6 @@ public class DIDStoreTest {
 
 	    	ids.put(doc.getSubject(), hint);
     	}
-	}
-
-	@Test
-	public void test31SignAndVerify() throws DIDException {
-		Iterator<DID> dids = ids.keySet().iterator();
-
-		while (dids.hasNext()) {
-			DID did = dids.next();
-
-			DIDDocument doc = DIDStore.getInstance().loadDid(did);
-			String json = doc.toExternalForm(false);
-			DIDURL pkid = new DIDURL(did, "primary");
-
-			String sig = doc.sign(pkid, storePass, json.getBytes());
-			boolean result = doc.verify(pkid, sig, json.getBytes());
-			assertTrue(result);
-
-			result = doc.verify(pkid, sig, json.substring(1).getBytes());
-			assertFalse(result);
-
-			sig = doc.sign(storePass, json.getBytes());
-			result = doc.verify(sig, json.getBytes());
-			assertTrue(result);
-
-			result = doc.verify(sig, json.substring(1).getBytes());
-			assertFalse(result);
-		}
 	}
 
 	@Test
@@ -484,14 +457,4 @@ public class DIDStoreTest {
     		assertEquals(ids.get(entry.getKey()), entry.getValue());
     	}
     }
-
-	private static void deleteFile(File file) {
-		if (file.isDirectory()) {
-			File[] children = file.listFiles();
-			for (File child : children)
-				deleteFile(child);
-		}
-
-		file.delete();
-	}
 }

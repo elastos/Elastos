@@ -31,7 +31,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -58,14 +57,6 @@ public class DIDDocument {
 	private Date expires;
 
 	private boolean readonly;
-
-	static class DIDURLComparator implements Comparator<DIDURL> {
-		@Override
-		public int compare(DIDURL id1, DIDURL id2) {
-			return id1.toExternalForm().compareToIgnoreCase(
-					id2.toExternalForm());
-		}
-	}
 
 	/* Just expose from/toJson method for current package */
 	static class EmbeddedCredential extends VerifiableCredential {
@@ -202,7 +193,7 @@ public class DIDDocument {
 			return false;
 
 		if (publicKeys == null)
-			publicKeys = new TreeMap<DIDURL, PublicKey>(new DIDURLComparator());
+			publicKeys = new TreeMap<DIDURL, PublicKey>();
 
 		publicKeys.put(pk.getId(), pk);
 		return true;
@@ -266,8 +257,7 @@ public class DIDDocument {
 			return false;
 
 		if (authentications == null)
-			authentications = new TreeMap<DIDURL, PublicKey>(
-					new DIDURLComparator());
+			authentications = new TreeMap<DIDURL, PublicKey>();
 
 		authentications.put(pk.getId(), pk);
 		return true;
@@ -326,8 +316,7 @@ public class DIDDocument {
 			return false;
 
 		if (authorizations == null)
-			authorizations = new TreeMap<DIDURL, PublicKey>(
-					new DIDURLComparator());
+			authorizations = new TreeMap<DIDURL, PublicKey>();
 
 		authorizations.put(pk.getId(), pk);
 		return true;
@@ -395,8 +384,7 @@ public class DIDDocument {
 			return false;
 
 		if (credentials == null)
-			credentials = new TreeMap<DIDURL, VerifiableCredential>(
-					new DIDURLComparator());
+			credentials = new TreeMap<DIDURL, VerifiableCredential>();
 
 		EmbeddedCredential ec = new EmbeddedCredential(vc);
 		credentials.put(ec.getId(), ec);
@@ -446,7 +434,7 @@ public class DIDDocument {
 			return false;
 
 		if (services == null)
-			services = new TreeMap<DIDURL, Service>(new DIDURLComparator());
+			services = new TreeMap<DIDURL, Service>();
 
 		services.put(svc.getId(), svc);
 		return true;

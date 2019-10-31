@@ -29,7 +29,7 @@ import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
 
-public class DIDURL {
+public class DIDURL implements Comparable<DIDURL> {
 	private DID did;
 	private Map<String, String> parameters;
 	private String path;
@@ -167,17 +167,23 @@ public class DIDURL {
 			return true;
 
 		if (obj instanceof DIDURL) {
-			DIDURL url = (DIDURL)obj;
-			return url.toExternalForm().equals(toExternalForm());
+			DIDURL id = (DIDURL)obj;
+			return toExternalForm().equals(id.toExternalForm());
 		}
 
 		if (obj instanceof String) {
 			String url = (String)obj;
-			return url.equals(toExternalForm());
+			return toExternalForm().equals(url);
 		}
 
 		return false;
 	}
+
+	@Override
+	public int compareTo(DIDURL id) {
+		return toExternalForm().compareTo(id.toExternalForm());
+	}
+
 
 	private int mapHashCode(Map<String, String> map) {
 		int hash = 0;

@@ -29,7 +29,7 @@ import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
 
-public class DID {
+public class DID implements Comparable<DID> {
 	public final static String METHOD = "elastos";
 
 	private String method;
@@ -95,15 +95,22 @@ public class DID {
 
 		if (obj instanceof DID) {
 			DID did = (DID)obj;
-			return did.toExternalForm().equals(toExternalForm());
+			boolean eq = method.equals(did.method);
+			return eq ? methodSpecificId.equals(did.methodSpecificId) : eq;
 		}
 
 		if (obj instanceof String) {
 			String did = (String)obj;
-			return did.equals(toExternalForm());
+			return toExternalForm().equals(did);
 		}
 
 		return false;
+	}
+
+	@Override
+	public int compareTo(DID did) {
+		int rc = method.compareTo(did.method);
+		return rc == 0 ? methodSpecificId.compareTo(did.methodSpecificId) : rc;
 	}
 
 	public DIDDocument resolve() throws DIDException {
