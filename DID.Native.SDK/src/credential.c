@@ -41,83 +41,49 @@
 static const char *presentations_type = "VerifiablePresentation";
 static const char *proof_type = "ECDSAsecp256r1";
 
-static int check_issuer(DID *issuer, DIDURL **defaultSignKey)
+static void free_subject(Credential *cred)
 {
-    char id[MAX_DIDURL];
-    DIDDocument *issuer_doc;
-    DIDURL *default_pk;
-
-    assert(issuer);
-
-    issuer_doc = DIDStore_Resolve(issuer);
-    if (!issuer_doc)
-        return -1;
-
-    if (!*defaultSignKey) {
-        default_pk = DIDDocument_GetDefaultPublicKey(issuer_doc);
-        if (!default_pk)
-            return -1;
-
-        strcpy((char*)(*defaultSignKey)->did.idstring, default_pk->did.idstring);
-        strcpy((char*)(*defaultSignKey)->fragment, default_pk->fragment);
-    }
-    else {
-        if (!DIDDocument_GetAuthentication(issuer_doc, *defaultSignKey))
-            return -1;
-    }
-
-    if (!DIDStore_ContainPrivatekey(issuer, *defaultSignKey))
-        return -1;
-
-    return 0;
-}
-
-static int free_subject(Credential *cred)
-{
-    Property **properties;
-    Property *property;
-    int i;
+    Property **props;
+    size_t i;
 
     assert(cred);
 
-    properties = cred->subject.infos.properties;
-    if (!properties)
-        return 0;
+    props = cred->subject.infos.properties;
+    if (!props)
+        return;
 
     for (i = 0; i < cred->subject.infos.size; i++) {
-        property = properties[i];
-        if (!property)
+        Property *prop = props[i];
+        if (prop) // CHECK: ??
             continue;
-        if (property->key)
-            free((char*)property->key);
-        if (property->value)
-            free((char*)property->value);
-        free(property);
+        if (prop->key)
+            free(prop->key);
+        if (prop->value)
+            free(prop->value);
+        free(prop);
     }
-    free(properties);
-    return 0;
+
+    free(props);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void Credential_Destroy(Credential *cred)
 {
-    int i;
     DIDURL *method;
+    size_t i;
 
     if (!cred)
         return;
 
     for (i = 0; i < cred->type.size; i++) {
-        const char *type = cred->type.types[i];
-        if (!type)
-            continue;
-        free((char*)type);
+        char *type = cred->type.types[i];
+        if (type)
+            free(type);
     }
 
     free(cred->type.types);
     free_subject(cred);
     free(cred);
-    return;
 }
 
 /////////////////////////////////////////////
@@ -126,7 +92,7 @@ DIDURL *Credential_GetId(Credential *cred)
     if (!cred)
         return NULL;
 
-    return &(cred->id);
+    return &cred->id;
 }
 
 ssize_t Credential_GetTypeCount(Credential *cred)
@@ -139,9 +105,9 @@ ssize_t Credential_GetTypeCount(Credential *cred)
 
 ssize_t Credential_GetTypes(Credential *cred, const char **types, size_t size)
 {
-    ssize_t actual_size;
+    size_t actual_size;
 
-    if (!cred || !types)
+    if (!cred || !types || !size)
         return -1;
 
     actual_size = cred->type.size;
@@ -149,7 +115,7 @@ ssize_t Credential_GetTypes(Credential *cred, const char **types, size_t size)
         return -1;
 
     memcpy(types, cred->type.types, sizeof(char*) * actual_size);
-    return actual_size;
+    return (ssize_t)actual_size;
 }
 
 DID *Credential_GetIssuer(Credential *cred)
@@ -181,14 +147,15 @@ ssize_t Credential_GetPropertyCount(Credential *cred)
     if (!cred)
         return -1;
 
-    return cred->subject.infos.size;
+    return (ssize_t)cred->subject.infos.size;
 }
 
-ssize_t Credential_GetPropertys(Credential *cred, Property **properties, size_t size)
+ssize_t Credential_GetProperties(Credential *cred, Property **properties,
+                                 size_t size)
 {
-    ssize_t actual_size;
+    size_t actual_size;
 
-    if (!cred || !properties)
+    if (!cred || !properties || !size)
         return -1;
 
     actual_size = cred->subject.infos.size;
@@ -196,15 +163,15 @@ ssize_t Credential_GetPropertys(Credential *cred, Property **properties, size_t 
         return -1;
 
     memcpy(properties, cred->subject.infos.properties, sizeof(Property*) * actual_size);
-    return actual_size;
+    return (ssize_t)actual_size;
 }
 
 Property *Credential_GetProperty(Credential *cred, const char *name)
 {
-    int i, flag = 0;
     Property *property;
+    size_t i;
 
-    if (!cred || !name)
+    if (!cred || !name || !*name)
         return NULL;
 
     for (i = 0; i < cred->subject.infos.size; i++) {
@@ -222,7 +189,7 @@ DIDURL *Credential_GetProofMethod(Credential *cred)
     if (!cred)
         return NULL;
 
-    return &(cred->proof.verificationMethod);
+    return &cred->proof.verificationMethod;
 }
 
 const char *Credential_GetProofType(Credential *cred)
@@ -241,32 +208,54 @@ const char *Credential_GetProofSignture(Credential *cred)
     return cred->proof.signatureValue;
 }
 
+static
+int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
+                               int compact, int forsign)
+{
+    char id[MAX_DIDURL];
+
+    assert(gen);
+    assert(gen->buffer);
+    assert(cred);
+
+    DIDURL_ToString(&cred->id, id, sizeof(id), compact);
+
+    CHECK(JsonGenerator_WriteStartObject(gen));
+    CHECK(JsonGenerator_WriteStringField(gen, "id", id));
+    CHECK(JsonGenerator_WriteFieldName(gen, "type"));
+    CHECK(types_toJson(gen, cred));
+    if (!compact) {
+        DID_ToString(&cred->issuer, id, sizeof(id));
+        CHECK(JsonGenerator_WriteStringField(gen, "issuer", id));
+    }
+    CHECK(JsonGenerator_WriteStringField(gen, "issuanceDate",
+        get_time_string(&cred->issuanceDate)));
+    CHECK(JsonGenerator_WriteFieldName(gen, "credentialSubject"));
+    CHECK(subject_toJson(gen, cred, compact));
+    CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
+    if (!forsign)
+        CHECK(proof_toJson(gen, cred, compact));
+    CHECK(JsonGenerator_WriteEndObject(gen));
+
+    return 0;
+}
+
 const char* Credential_ToJson(Credential *cred, int compact, int forsign)
 {
-    JsonGenerator g, *generator;
+    JsonGenerator g, *gen;
     char id[MAX_DIDURL];
 
     if (!cred)
         return NULL;
 
-    generator = JsonGenerator_Initialize(&g);
-    if (!generator)
+    gen = JsonGenerator_Initialize(&g);
+    if (!gen)
         return NULL;
 
-    if ( JsonGenerator_WriteStartObject(generator) == -1 ||
-            JsonGenerator_WriteStringField(generator, "id", DIDURL_ToString(&cred->id, id, sizeof(id), compact)) == -1 ||
-            JsonGenerator_WriteFieldName(generator, "type") == -1 ||
-            types_toJson(generator, cred) == -1 ||
-            (!compact && JsonGenerator_WriteStringField(generator, "issuer", DID_ToString(&cred->issuer, id, sizeof(id))) == -1 ) ||
-            JsonGenerator_WriteStringField(generator, "issuanceDate", get_time_string(&(cred->issuanceDate))) == -1 ||
-            JsonGenerator_WriteFieldName(generator, "credentialSubject") == -1 ||
-            subject_toJson(generator, cred, compact) == -1 ||
-            JsonGenerator_WriteFieldName(generator, "proof") == -1 ||
-            (!forsign && proof_toJson(generator, cred, compact) == -1) ||
-            JsonGenerator_WriteEndObject(generator) == -1)
-        return NULL;
+    if (Credential_ToJson_Internal(gen, cred, compact, forsign) < 0)
+        return NULL; // TODO: to call finished ?
 
-    return JsonGenerator_Finish(generator);
+    return JsonGenerator_Finish(gen);
 }
 
 Credential *Credential_FromJson(const char *json, DID *did)
@@ -293,57 +282,54 @@ Credential *Credential_FromJson(const char *json, DID *did)
     return cred;
 }
 
-ssize_t Credential_SetId(Credential *cred, DIDURL *id)
+int Credential_SetId(Credential *cred, DIDURL *id)
 {
-    if (!cred || !id || strlen(id->did.idstring) == 0 || strlen(id->fragment) == 0)
+    if (!cred || !id || !*id->did.idstring || !*id->fragment)
         return -1;
 
-    return DIDURL_Copy(&(cred->id), id) == 1;
+    return DIDURL_Copy(&cred->id, id);
 }
 
-ssize_t Credential_AddType(Credential *cred, const char *type)
+int Credential_AddType(Credential *cred, const char *type)
 {
-    const char **types;
-    const char *temp_type;
+    char **types;
     int size, i;
 
-    if (!cred || !type)
+    if (!cred || !type || !*type)
         return -1;
 
     size = cred->type.size;
+    for (i = 0; i < size; i++) {
+        char *temp_type = cred->type.types[i];
+        assert(temp_type);
 
-    if (!size) {
-        for (i = 0; i < size; i++) {
-            temp_type = cred->type.types[i];
-            if (!temp_type)
-                continue;
-            if (strcmp(temp_type, type) == 0)
-                return 0;
-        }
-
-        types = (const char**)realloc(cred->type.types, sizeof(const char*) * (size + 1));
+        if (strcmp(temp_type, type) == 0)
+            return 0;
     }
+
+    if (size > 0)
+        types = (char **)realloc(cred->type.types, sizeof(char **) * (size + 1));
     else
-        types = (const char**)calloc(1, sizeof(const char*));
+        types = (char **)calloc(1, sizeof(char **));
 
     if (!types)
         return -1;
 
-    types[cred->type.size++]  = type;
+    types[cred->type.size++] = (char *)type;
     cred->type.types = types;
 
     return 0;
 }
 
-ssize_t Credential_SetIssuer(Credential *cred, DID *issuer)
+int Credential_SetIssuer(Credential *cred, DID *issuer)
 {
-    if (!cred || !issuer || strlen(issuer->idstring) == 0)
+    if (!cred || !issuer || !*issuer->idstring)
         return -1;
 
-    return DID_Copy(&(cred->issuer), issuer) == 1;
+    return DID_Copy(&cred->issuer, issuer);
 }
 
-ssize_t Credential_SetIssuanceDate(Credential *cred, time_t time)
+int Credential_SetIssuanceDate(Credential *cred, time_t time)
 {
     if (!cred || !time)
         return -1;
@@ -352,7 +338,7 @@ ssize_t Credential_SetIssuanceDate(Credential *cred, time_t time)
     return 0;
 }
 
-ssize_t Credential_SetExpirationDate(Credential *cred, time_t time)
+int Credential_SetExpirationDate(Credential *cred, time_t time)
 {
     if (!cred || !time)
         return -1;
@@ -361,112 +347,139 @@ ssize_t Credential_SetExpirationDate(Credential *cred, time_t time)
     return 0;
 }
 
-ssize_t Credential_SetSubjectId(Credential *cred, DIDURL *subject)
+int Credential_SetSubjectId(Credential *cred, DIDURL *subject)
 {
     if (!cred || !subject || strlen(subject->did.idstring) == 0)
         return -1;
 
-    return DIDURL_Copy(&(cred->id), subject) == 1;
+    return DIDURL_Copy(&cred->id, subject);
 }
 
-ssize_t Credential_AddProperty(Credential *cred, const char *name, const char *value)
+int Credential_AddProperty(Credential *cred, const char *name, const char *value)
 {
-    int i, size = 0;
-    const char *p_value, *p_key;
-    Property **properties;
-    Property *pro;
+    Property **prop_array;
+    Property *prop;
+    char *pvalue;
+    char *pkey;
+    size_t size;
+    size_t i;
 
-    if (!cred || !name || !value || strlen(name) == 0 || strlen(value) == 0)
+    if (!cred || !name || !*name || !value || !*value)
         return -1;
 
-    p_value = (const char*)calloc(1, strlen(value) + 1);
-    if (!p_value)
+    pvalue = strdup(value);
+    if (!pvalue)
         return -1;
-    strcpy((char*)p_value, (char*)value);
 
     size = cred->subject.infos.size;
-    if (size) {
-        for (i = 0; i < cred->subject.infos.size; i++) {
-            Property *temp_pro = cred->subject.infos.properties[i];
-            if (!temp_pro)
-                continue;
-            if (!strcmp(temp_pro->key, name)) {
-                temp_pro->value = p_value;
-                return 0;
-            }
+    for (i = 0; i < size; i++) {
+        prop = cred->subject.infos.properties[i];
+        if (!strcmp(prop->key, name)) {
+            prop->value = pvalue;
+            return 0;
         }
     }
 
-    pro = (Property*)calloc(1, sizeof(Property));
-    if (!pro) {
-        free((char*)p_value);
+    pkey = strdup(name);
+    if (!pkey) {
+        free(pvalue);
         return -1;
     }
 
-    p_key = (const char*)calloc(1, strlen(name) + 1);
-    if (!p_key) {
-        free((char*)p_value);
-        free(pro);
+    prop = (Property*)calloc(1, sizeof(Property));
+    if (!prop) {
+        free(pvalue);
+        free(pkey);
         return -1;
     }
-    strcpy((char*)p_key, value);
 
-    pro->key = p_key;
-    pro->value = p_value;
+    prop->key = pkey;
+    prop->value = pvalue;
 
     if (size)
-        properties = realloc(cred->subject.infos.properties, size + 1);
+        prop_array = (Property **)realloc(cred->subject.infos.properties,
+                                         (size + 1) * sizeof(Property *));
     else
-        properties = (Property**)calloc(1, sizeof(Property*));
+        prop_array = (Property **)calloc(1, sizeof(Property*));
 
-    if (!properties) {
-        free((char*)p_value);
-        free((char*)p_key);
-        free(pro);
+    if (!prop_array) {
+        free(pvalue);
+        free(pkey);
+        free(prop);
         return -1;
     }
 
-    cred->subject.infos.properties[cred->subject.infos.size++] = pro;
+    prop_array[cred->subject.infos.size++] = prop;
+    cred->subject.infos.properties = prop_array;
 
-    return cred->subject.infos.size;
+    return (ssize_t)cred->subject.infos.size;
 }
 
-ssize_t Credential_SetProofMethod(Credential *cred, DIDURL *id)
+int Credential_SetProofMethod(Credential *cred, DIDURL *id)
 {
-    if (!cred || !id || strlen(id->fragment) == 0 || strlen(id->did.idstring) == 0)
+    if (!cred || !id || !*id->fragment || !*id->did.idstring)
         return -1;
 
-    return DIDURL_Copy(&(cred->proof.verificationMethod), id) == 1;
+    return DIDURL_Copy(&cred->proof.verificationMethod, id);
 }
 
-ssize_t Credential_SetProofType(Credential *cred, const char *type)
+int Credential_SetProofType(Credential *cred, const char *type)
 {
-    if (!cred || !type || strlen(type) == 0 || strlen(type) >= MAX_TYPE)
+    if (!cred || !type || !*type || strlen(type) >= MAX_TYPE)
         return -1;
 
-    strcpy((char*)cred->proof.type, type);
+    strcpy(cred->proof.type, type);
     return 0;
 }
 
-ssize_t Credential_SetProofSignture(Credential *cred, const char *signture)
+int Credential_SetProofSignture(Credential *cred, const char *signture)
 {
-    if (!cred || !signture || strlen(signture) == 0 || strlen(signture) >= MAX_SIGN)
+    if (!cred || !signture || *signture || strlen(signture) >= MAX_SIGN)
         return -1;
 
-    strcpy((char*)cred->proof.signatureValue, signture);
+    strcpy(cred->proof.signatureValue, signture);
     return 0;
 }
 
-Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
-                             DIDURL *defaultSignKey, const char **types, size_t typesize,
-                             Property **properties, int prosize, time_t expires, const char *storepass)
+static int check_issuer(DID *issuer, DIDURL **defaultSignKey)
+{
+    DIDDocument *doc;
+    DIDURL *pk;
+
+    assert(issuer);
+    assert(defaultSignKey);
+
+    doc = DIDStore_Resolve(issuer);
+    if (!doc)
+        return -1;
+
+    if (!*defaultSignKey) {
+        pk = DIDDocument_GetDefaultPublicKey(doc);
+        if (!pk)
+            return -1;
+
+        DID_Copy(&(*defaultSignKey)->did, &pk->did);
+    }
+
+    if (!DIDDocument_GetAuthentication(doc, *defaultSignKey))
+        return -1;
+
+    return DIDStore_ContainPrivatekey(issuer, *defaultSignKey) ? 0 : -1;
+}
+
+Credential *Credential_Issue(DID *did, const char *fragment,
+                             DID *issuer, DIDURL *defaultSignKey,
+                             const char **types, size_t typesize,
+                             Property **properties, int propsize,
+                             time_t expires,
+                             const char *storepass)
 {
     Credential *cred;
     const char *cred_data;
     int i, ret;
     char signed_data[SIGNATURE_BYTES * 2];
 
-    if (!did || !fragment || !issuer || !types || !properties || prosize > 0 || expires > 0 || !storepass)
+    if (!did || !fragment || !*fragment || !issuer || !types || !properties || propsize > 0 || expires > 0 || !storepass)
         return NULL;
 
     if (check_issuer(issuer, &defaultSignKey) == -1)
@@ -476,32 +489,32 @@ Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
     if (!cred)
         return NULL;
 
-    strcpy((char*)cred->id.did.idstring, did->idstring);
-    strcpy((char*)cred->id.fragment, fragment);
+    strcpy(cred->id.did.idstring, did->idstring);
+    strcpy(cred->id.fragment, fragment);
 
     cred->type.size = typesize;
-    cred->type.types = (const char**)calloc(typesize, sizeof(const char*));
+    cred->type.types = (char**)calloc(typesize, sizeof(char*));
     if (!cred->type.types) {
         Credential_Destroy(cred);
         return NULL;
     }
     for (i = 0; i < typesize; i++)
-        cred->type.types[i] = types[i];
+        cred->type.types[i] = (char *)types[i];
 
-    strcpy((char*)cred->issuer.idstring, issuer->idstring);
+    strcpy(cred->issuer.idstring, issuer->idstring);
 
     cred->expirationDate = expires;
-    time(&(cred->issuanceDate));
+    time(&cred->issuanceDate);
 
-    strcpy((char*)cred->subject.id.idstring, did->idstring);
+    strcpy(cred->subject.id.idstring, did->idstring);
 
-    cred->subject.infos.size = prosize;
-    cred->subject.infos.properties = (Property**)calloc(prosize, sizeof(Property*));
+    cred->subject.infos.size = propsize;
+    cred->subject.infos.properties = (Property**)calloc(propsize, sizeof(Property*));
     if (!cred->subject.infos.properties) {
         Credential_Destroy(cred);
         return NULL;
     }
-    for (i = 0; i < prosize; i++)
+    for (i = 0; i < propsize; i++)
         cred->subject.infos.properties[i] = properties[i];
 
     cred_data = Credential_ToJson(cred, 1, 1);
@@ -518,11 +531,11 @@ Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
         return NULL;
     }
 
-    strcpy((char*)cred->proof.type, proof_type);
+    strcpy(cred->proof.type, proof_type);
 
-    strcpy((char*)cred->proof.verificationMethod.did.idstring, defaultSignKey->did.idstring);
-    strcpy((char*)cred->proof.verificationMethod.fragment, defaultSignKey->fragment);
+    strcpy(cred->proof.verificationMethod.did.idstring, defaultSignKey->did.idstring);
+    strcpy(cred->proof.verificationMethod.fragment, defaultSignKey->fragment);
 
-    strcpy((char*)cred->proof.signatureValue, signed_data);
+    strcpy(cred->proof.signatureValue, signed_data);
     return cred;
 }

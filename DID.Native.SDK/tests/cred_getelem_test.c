@@ -73,7 +73,7 @@ static void test_cred_get_properties(void)
     ssize_t size = Credential_GetPropertyCount(credential);
     CU_ASSERT_EQUAL(size, 4);
 
-    size = Credential_GetPropertys(credential, properties, size);
+    size = Credential_GetProperties(credential, properties, size);
     CU_ASSERT_EQUAL(size, 4);
     return;
 }

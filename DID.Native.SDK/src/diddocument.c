@@ -37,8 +37,6 @@
 
 #define MAX_EXPIRES              5
 
-#define CHECK(func)        do { if (func == -1) return -1; } while(0)
-
 static
 int PublicKey_ToJson(JsonGenerator *gen, PublicKey *pk, int compact)
 {

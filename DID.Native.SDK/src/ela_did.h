@@ -1154,7 +1154,7 @@ DID_API ssize_t Credential_GetPropertyCount(Credential *cred);
  * @return
  *      size of subject porperties on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_GetPropertys(Credential *cred, Property **properties, size_t size);
+DID_API ssize_t Credential_GetProperties(Credential *cred, Property **properties, size_t size);
 
 /**
  * \~English
@@ -1219,7 +1219,7 @@ DID_API const char *Credential_GetProofSignture(Credential *cred);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_SetId(Credential *cred, DIDURL *id);
+DID_API int Credential_SetId(Credential *cred, DIDURL *id);
 
 /**
  * \~English
@@ -1232,7 +1232,7 @@ DID_API ssize_t Credential_SetId(Credential *cred, DIDURL *id);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_AddType(Credential *cred, const char *type);
+DID_API int Credential_AddType(Credential *cred, const char *type);
 
 /**
  * \~English
@@ -1245,7 +1245,7 @@ DID_API ssize_t Credential_AddType(Credential *cred, const char *type);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_SetIssuer(Credential *cred, DID *issuer);
+DID_API int Credential_SetIssuer(Credential *cred, DID *issuer);
 
 /**
  * \~English
@@ -1258,7 +1258,7 @@ DID_API ssize_t Credential_SetIssuer(Credential *cred, DID *issuer);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_SetIssuanceDate(Credential *cred, time_t time);
+DID_API int Credential_SetIssuanceDate(Credential *cred, time_t time);
 
 /**
  * \~English
@@ -1271,7 +1271,7 @@ DID_API ssize_t Credential_SetIssuanceDate(Credential *cred, time_t time);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_SetExpirationDate(Credential *cred, time_t time);
+DID_API int Credential_SetExpirationDate(Credential *cred, time_t time);
 
 /**
  * \~English
@@ -1284,7 +1284,7 @@ DID_API ssize_t Credential_SetExpirationDate(Credential *cred, time_t time);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_SetSubjectId(Credential *cred, DIDURL *subject);
+DID_API int Credential_SetSubjectId(Credential *cred, DIDURL *subject);
 
 /**
  * \~English
@@ -1299,7 +1299,7 @@ DID_API ssize_t Credential_SetSubjectId(Credential *cred, DIDURL *subject);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_AddProperty(Credential *cred, const char *name, const char *value);
+DID_API int Credential_AddProperty(Credential *cred, const char *name, const char *value);
 
 /**
  * \~English
@@ -1312,7 +1312,7 @@ DID_API ssize_t Credential_AddProperty(Credential *cred, const char *name, const
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_SetProofMethod(Credential *cred, DIDURL *id);
+DID_API int Credential_SetProofMethod(Credential *cred, DIDURL *id);
 
 /**
  * \~English
@@ -1325,7 +1325,7 @@ DID_API ssize_t Credential_SetProofMethod(Credential *cred, DIDURL *id);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_SetProofType(Credential *cred, const char *type);
+DID_API int Credential_SetProofType(Credential *cred, const char *type);
 
 /**
  * \~English
@@ -1338,7 +1338,7 @@ DID_API ssize_t Credential_SetProofType(Credential *cred, const char *type);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API ssize_t Credential_SetProofSignture(Credential *cred, const char *signture);
+DID_API int Credential_SetProofSignture(Credential *cred, const char *signture);
 
 /**
  * \~English

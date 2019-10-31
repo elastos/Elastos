@@ -39,8 +39,8 @@ typedef struct DID    DID;
 typedef struct DIDURL DIDURL;
 
 typedef struct Property {
-    const char *key;
-    const char *value;
+    char *key;
+    char *value;
 } Property;
 
 typedef struct CredentialSubject {
@@ -53,16 +53,16 @@ typedef struct CredentialSubject {
 } CredentialSubject;
 
 typedef struct CredentialProof {
-    const char type[MAX_TYPE];
+    char type[MAX_TYPE];
     DIDURL verificationMethod;
-    const char signatureValue[MAX_SIGN];
+    char signatureValue[MAX_SIGN];
 } CredentialProof;
 
 typedef struct Credential {
     DIDURL id;
 
     struct {
-        const char **types;
+        char **types;
         size_t size;
     } type;
 
@@ -74,16 +74,16 @@ typedef struct Credential {
 } Credential;
 
 typedef struct PresentationProof {
-    const char *type;
+    char *type;
     DIDURL *verificationMethod;
-    const char *nonce;
-    const char *realm;
-    const char *signatureValue;
+    char *nonce;
+    char *realm;
+    char *signatureValue;
 } PresentationProof;
 
 //Verifiable Presentations
 typedef struct Presentations {
-    const char *type;
+    char *type;
     time_t created;
 
     struct {

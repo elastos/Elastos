@@ -78,7 +78,7 @@ _Credential_GetIssuer
 _Credential_GetIssuanceDate
 _Credential_GetExpirationDate
 _Credential_GetPropertyCount
-_Credential_GetPropertys
+_Credential_GetProperties
 _Credential_GetProperty
 _Credential_GetProofMethod
 _Credential_GetProofType

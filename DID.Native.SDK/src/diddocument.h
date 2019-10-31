@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#define CHECK(func)        do { if (func == -1) return -1; } while(0)
+
 struct DIDDocument {
     DID did;
 

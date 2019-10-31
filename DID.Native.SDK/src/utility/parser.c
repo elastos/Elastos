@@ -172,7 +172,7 @@ Credential *Parser_Credential(cJSON *json, DID *did)
         return NULL;
     }
 
-    credential->type.types = (const char**)calloc(type_size, sizeof(char*));
+    credential->type.types = (char**)calloc(type_size, sizeof(char*));
     if (!credential->type.types) {
         Credential_Destroy(credential);
         return NULL;
@@ -308,8 +308,7 @@ static int type_compr(const void *a, const void *b)
 
 int types_toJson(JsonGenerator *generator, Credential *cred)
 {
-    const char *temp;
-    const char **types;
+    char **types;
     int i, j;
     size_t size;
 
