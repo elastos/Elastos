@@ -730,6 +730,7 @@ func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint
 	return unspents, nil
 
 }
+
 func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*UTXO, error) {
 	uxtoUnspents := make(map[Uint256][]*UTXO)
 

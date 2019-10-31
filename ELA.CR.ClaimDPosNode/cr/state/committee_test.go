@@ -180,6 +180,7 @@ func TestCommittee_IsInVotingPeriod(t *testing.T) {
 
 func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
+	committee.RegisterFuncitons(nil)
 
 	code := randomBytes(34)
 	nickname := randomString()
@@ -243,6 +244,7 @@ func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
 		config.DefaultParams.CRCommitteeStartHeight)
 	committee := NewCommittee(&config.DefaultParams)
 	committee.KeyFrame = *keyframe
+	committee.RegisterFuncitons(nil)
 
 	// let processing height be 6 blocks before the second voting
 	height := config.DefaultParams.CRCommitteeStartHeight + config.

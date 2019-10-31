@@ -139,7 +139,7 @@ func (a *ArbitratorsMock) ProcessSpecialTxPayload(p types.Payload, height uint32
 }
 
 func (a *ArbitratorsMock) CheckCRCAppropriationTx(block *types.Block) error {
-	panic("implement me")
+	return nil
 }
 
 func (a *ArbitratorsMock) GetNeedConnectArbiters() []peer.PID {
