@@ -294,10 +294,9 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 
 func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	keyframe := randomStateKeyFrame(5, true)
-	state := State{
-		StateKeyFrame: *keyframe,
-		history:       utils.NewHistory(maxHistoryCapacity),
-	}
+	state := NewState(nil)
+	state.StateKeyFrame = *keyframe
+	state.history = utils.NewHistory(maxHistoryCapacity)
 	height := uint32(1)
 
 	activeCodes := make([][]byte, 0, 5)
