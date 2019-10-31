@@ -36,7 +36,7 @@ export default Base.setRouter([
   {
     path: '/:id/update',
     router: update,
-    method: 'post',
+    method: 'put',
   },
   {
     path: '/:id/addtag',

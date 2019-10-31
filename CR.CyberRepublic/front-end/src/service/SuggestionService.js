@@ -132,7 +132,7 @@ export default class extends BaseService {
     try {
       res = await api_request({
         path,
-        method: 'post',
+        method: 'put',
         data: doc,
       })
     } catch (error) {
