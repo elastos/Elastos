@@ -81,7 +81,8 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		s.Error(err)
 	}
 	s.Chain, err = New(chainStore, &config.DefaultParams,
-		state.NewState(&config.DefaultParams, nil, nil), nil)
+		state.NewState(&config.DefaultParams, nil,
+			nil, nil), nil)
 	if err != nil {
 		s.Error(err)
 	}

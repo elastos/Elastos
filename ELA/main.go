@@ -180,7 +180,8 @@ func startNode(c *cli.Context, st *settings) {
 				amount += utxo.Value
 			}
 			return amount, nil
-		})
+		},
+		blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference)
 	if err != nil {
 		printErrorAndExit(err)
 	}

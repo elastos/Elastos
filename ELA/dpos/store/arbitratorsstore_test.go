@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package store
 
@@ -154,7 +154,8 @@ func randomStateKeyFrame() *state.StateKeyFrame {
 		CanceledProducers:         make(map[string]*state.Producer),
 		IllegalProducers:          make(map[string]*state.Producer),
 		PendingCanceledProducers:  make(map[string]*state.Producer),
-		Votes:                     make(map[string]*types.Output),
+		Votes:                     make(map[string]struct{}),
+		DepositOutputs:            make(map[string]common.Fixed64),
 		Nicknames:                 make(map[string]struct{}),
 		SpecialTxHashes:           make(map[common.Uint256]struct{}),
 		PreBlockArbiters:          make(map[string]struct{}),
@@ -171,7 +172,8 @@ func randomStateKeyFrame() *state.StateKeyFrame {
 		result.CanceledProducers[randomString()] = &state.Producer{}
 		result.IllegalProducers[randomString()] = &state.Producer{}
 		result.PendingCanceledProducers[randomString()] = &state.Producer{}
-		result.Votes[randomString()] = randomVotes()
+		result.Votes[randomString()] = struct{}{}
+		result.DepositOutputs[randomString()] = common.Fixed64(rand.Uint64())
 		result.Nicknames[randomString()] = struct{}{}
 		result.SpecialTxHashes[*randomHash()] = struct{}{}
 		result.PreBlockArbiters[randomString()] = struct{}{}

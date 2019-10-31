@@ -179,7 +179,7 @@ func initLedger(L *lua.LState) int {
 	}
 
 	arbiters, err := state.NewArbitrators(chainParams,
-		nil, nil)
+		nil, nil, nil)
 	if err != nil {
 		fmt.Printf("New arbitrators error: %s \n", err.Error())
 	}
@@ -194,7 +194,8 @@ func initLedger(L *lua.LState) int {
 
 	var interrupt = signal.NewInterrupt()
 	chain, err := blockchain.New(chainStore, chainParams,
-		state.NewState(chainParams, arbiters.GetArbitrators, nil), nil)
+		state.NewState(chainParams, arbiters.GetArbitrators,
+			nil, nil), nil)
 	if err != nil {
 		fmt.Printf("Init block chain error: %s \n", err.Error())
 	}
