@@ -416,7 +416,7 @@ public class FileSystemStore: DIDStore {
     }
 
     override func loadPrivateKey(_ did: DID, id: DIDURL) throws -> String {
-        let path: String = storeRootPath + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + "/" + id.fragment
+        let path: String = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath = try getFile(path)
         return try! String(contentsOfFile:privateKeyPath!, encoding: String.Encoding.utf8)
     }

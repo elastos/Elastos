@@ -9,7 +9,7 @@ class DIDStoreTests: XCTestCase {
     
     let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
     let passphrase: String = "secret"
-    let storePass: String = "passwd"
+    let storePass: String = "passph"
     var store: DIDStore!
     var ids: Dictionary<DID, String> = [: ]
     var primaryDid: DID!
@@ -17,10 +17,10 @@ class DIDStoreTests: XCTestCase {
     override func setUp() {
         do {
             TestUtils.deleteFile(storePath)
-            try DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass)
             store = try DIDStore.shareInstance()!
             let mnemonic: String = HDKey.generateMnemonic(0)
-            try store.initPrivateIdentity(mnemonic, passphrase, true)
+            try store.initPrivateIdentity(mnemonic, passphrase, storePass, true)
         } catch {
             print(error)
         }
@@ -32,7 +32,7 @@ class DIDStoreTests: XCTestCase {
     
     func test00CreateEmptyStore1() {
         do {
-            try DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             _ = try tempStore.newDid(passphrase, "my first did")
         } catch {
@@ -43,19 +43,19 @@ class DIDStoreTests: XCTestCase {
     func test00InitPrivateIdentity0() {
         do {
             TestUtils.deleteFile(storePath)
-            try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            try! DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             XCTAssertFalse(try! tempStore.hasPrivateIdentity())
             
             let mnemonic: String = HDKey.generateMnemonic(0)
-            try! tempStore.initPrivateIdentity(mnemonic, passphrase, true)
+            try! tempStore.initPrivateIdentity(mnemonic, passphrase, storePass, true)
             let keypath: String = storePath + "/" + "private" + "/" + "key"
             XCTAssertTrue(TestUtils.existsFile(keypath))
             let indexPath: String = storePath + "/" + "private" + "/" + "index"
             XCTAssertTrue(TestUtils.existsFile(indexPath))
             XCTAssertTrue(try! tempStore.hasPrivateIdentity())
             
-            try! DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            try! DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass)
             let tempStore2: DIDStore = try DIDStore.shareInstance()!
             XCTAssertTrue(try! tempStore2.hasPrivateIdentity())
         } catch {
@@ -65,7 +65,7 @@ class DIDStoreTests: XCTestCase {
     
     func test01InitPrivateIdentity1() {
         do {
-            try DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             XCTAssert(try tempStore.hasPrivateIdentity())
         } catch {
@@ -116,6 +116,18 @@ class DIDStoreTests: XCTestCase {
     
     func testSignAndVerify() {
         do {
+            // add ids
+            let hint: String = "my first did"
+            let doc: DIDDocument = try! store.newDid(storePass, hint)
+            primaryDid = doc.subject
+            let id: String = doc.subject!.methodSpecificId!
+            let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
+            XCTAssertTrue(TestUtils.existsFile(path))
+            
+            let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
+            XCTAssertTrue(TestUtils.existsFile(path2))
+            ids[doc.subject!] = hint
+            
             try ids.keys.forEach { did in
                 let doc: DIDDocument = try store.loadDid(did)!
                 let json: String = try doc.toExternalForm(false)

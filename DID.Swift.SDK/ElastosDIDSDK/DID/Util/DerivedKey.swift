@@ -13,7 +13,6 @@ public class DerivedKey: NSObject {
         self.index = index
     }
     
-    // 初步猜测是获取公钥bytes数组
     public func getPublicKeyBytes() throws -> [UInt8] {
         return seed.withUnsafeMutableBytes { (seeds: UnsafeMutablePointer<Int8>) -> [UInt8] in
             let pukey: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 66)
@@ -26,6 +25,18 @@ public class DerivedKey: NSObject {
         }
     }
     
+    public func getPublicKeyData() throws -> Data {
+        return seed.withUnsafeMutableBytes { (seeds: UnsafeMutablePointer<Int8>) -> Data in
+            let pukey: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 66)
+            let cmasterKey: UnsafeMutablePointer<CMasterPublicKey> = UnsafeMutablePointer<CMasterPublicKey>.allocate(capacity: 66)
+            let masterKey: UnsafePointer<CMasterPublicKey> = HDkey_GetMasterPublicKey(seeds, 0, cmasterKey)
+            let pk: UnsafeMutablePointer<Int8> = HDkey_GetSubPublicKey(masterKey, 0, index, pukey)
+            let pkpointToarry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: pk, count: 33)
+            let pkData: Data = Data(buffer: pkpointToarry)
+            return pkData
+        }
+    }
+    
     public func getPrivateKeyBytes() throws -> [UInt8] {
         return seed.withUnsafeMutableBytes { (seeds: UnsafeMutablePointer<Int8>) -> [UInt8] in
             let privateKey: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
@@ -33,6 +44,16 @@ public class DerivedKey: NSObject {
             let privateKeyPointToarry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: pk, count: 33)
             let pkData: Data = Data(buffer: privateKeyPointToarry)
             return [UInt8](pkData)
+        }
+    }
+    
+    public func getPrivateKeyData() throws -> Data {
+        return seed.withUnsafeMutableBytes { (seeds: UnsafeMutablePointer<Int8>) -> Data in
+            let privateKey: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
+            _ = HDkey_GetSubPrivateKey(seeds, 0, 0, index, privateKey)
+            let privateKeyPointToarry: UnsafeBufferPointer<Int8> = UnsafeBufferPointer(start: privateKey, count: 33)
+            let pkData: Data = Data(buffer: privateKeyPointToarry)
+            return pkData
         }
     }
     
@@ -53,15 +74,5 @@ public class DerivedKey: NSObject {
         let address: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 48)
         let idstring = HDkey_GetIdString(pks, address, 48)
         return (String(cString: idstring!))
-    }
-    
-    public func getRedeemScript(_ pk: [UInt8]) throws -> [UInt8] {
-        
-        var script: [UInt8] = [UInt8](repeating: 0, count: 35)
-        script[0] = 33
-        // https://stackoverflow.com/questions/37200341/how-to-implement-java-arraycopy-in-swift
-        script[1...33] = pk[0...32]
-        script[34] = 0xAD
-        return script
     }
 }

@@ -15,7 +15,7 @@ class DIDStoreCreateTests: XCTestCase {
     func test00CreateEmptyStore0() {
         TestUtils.deleteFile(storePath)
         do {
-            try DIDStore.creatInstance("filesystem", location: storePath, passphase: passphrase)
+            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePath)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             XCTAssertFalse(try! tempStore.hasPrivateIdentity())
             XCTAssertTrue(TestUtils.exists(storePath))

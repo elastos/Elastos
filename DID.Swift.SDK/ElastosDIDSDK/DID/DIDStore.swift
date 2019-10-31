@@ -13,13 +13,13 @@ public class DIDStore: NSObject {
     override init() {
     }
 
-    public static func creatInstance(_ type: String, location: String, passphase: String) throws {
+    public static func creatInstance(_ type: String, location: String, storepass: String) throws {
         guard type == "filesystem" else {
             throw DIDStoreError.failue("Unsupported store type:\(type)")
         }
         if instance == nil {
             instance = try FileSystemStore(location)
-            _ = try instance.initPrivateIdentity(passphase)
+            _ = try instance.initPrivateIdentity(storepass)
         }
         instance.storeRootPath = location
     }
@@ -41,32 +41,25 @@ public class DIDStore: NSObject {
 
     func loadPrivateIdentityIndex() throws -> Int { return 0 }
 
-    private func encryptToBase64(_ passphrase: String ,_ input: Data) throws -> String {
-        let pas: String = passphrase + "\0"
-        let cpassphrase: UnsafePointer<Int8> = pas.withCString { cpass -> UnsafePointer<Int8> in
+    private func encryptToBase64(_ passwd: String ,_ input: Data) throws -> String {
+        let pas: String = passwd
+        let cpasswd: UnsafePointer<Int8> = pas.withCString { cpass -> UnsafePointer<Int8> in
             return cpass
         }
         let cinput: UnsafePointer<UInt8> = input.withUnsafeBytes{ (by: UnsafePointer<UInt8>) -> UnsafePointer<UInt8> in
             return by
         }
-        let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 100)
-        let re = encrypt_to_base64(base64url, cpassphrase, cinput, input.count)
+        let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 108)
+          let re = encrypt_to_base64(base64url, passwd, cinput, input.count)
         guard re >= 0 else {
             throw DIDStoreError.failue("encryptToBase64 error.")
         }
         return String(cString: base64url)
     }
 
-    private func decryptFromBase64(_ passphrase: String ,_ input: String) throws -> Data {
-        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 100)
-        let cpassphrase: UnsafePointer<Int8> = passphrase.withCString { cstr -> UnsafePointer<Int8> in
-            return cstr
-        }
-        let inpt: String = input + "\0"
-        let cinput: UnsafePointer<Int8> = inpt.withCString { cstr -> UnsafePointer<Int8> in
-            return cstr
-        }
-        let re = decrypt_from_base64(plain, cpassphrase, cinput)
+    private func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
+        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 108)
+        let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
             throw DIDStoreError.failue("decryptFromBase64 error.")
         }
@@ -75,7 +68,7 @@ public class DIDStore: NSObject {
         return str.data(using: .utf8)!
     }
 
-    public func initPrivateIdentity(_ mnemonic: String ,_ passphrase: String, _ force: Bool ) throws {
+    public func initPrivateIdentity(_ mnemonic: String ,_ passphrase: String, _ storepass: String, _ force: Bool ) throws {
 
         if (try hasPrivateIdentity() && !force) {
             throw DIDStoreError.failue("Already has private indentity.")
@@ -86,7 +79,7 @@ public class DIDStore: NSObject {
         // Save seed instead of root private key,
         // keep compatible with Native SDK
         let seedData = privateIdentity.getSeed()
-        let encryptedIdentity = try encryptToBase64(passphrase, seedData)
+        let encryptedIdentity = try encryptToBase64(storepass, seedData)
         try storePrivateIdentity(encryptedIdentity)
         try storePrivateIdentityIndex(lastIndex)
     }
@@ -102,7 +95,7 @@ public class DIDStore: NSObject {
         return true
     }
     
-    public func newDid(_ passphrase:String, _ hint:String?) throws -> DIDDocument {
+    public func newDid(_ storepass:String, _ hint:String?) throws -> DIDDocument {
         guard (privateIdentity != nil) else {
             throw DIDStoreError.failue("DID Store not contains private identity.")
         }
@@ -118,14 +111,42 @@ public class DIDStore: NSObject {
         _ = doc.addAuthenticationKey(pk)
         doc.readonly = true
         try storeDid(doc, hint)
-        let skString: String = try key.getPrivateKeyBase58()
-        try storePrivateKey(did, pk.id, skString)
+        let privatekeyData: Data = try key.getPrivateKeyData()
+        let encryptedKey = try encryptToBase64(storepass, privatekeyData)
+        try storePrivateKey(did, pk.id, encryptedKey)
         
         return doc
     }
+    /*
+    public DIDDocument newDid(String storepass, String hint)
+            throws DIDStoreException {
+        if (privateIdentity == null)
+            throw new DIDStoreException("DID Store not contains private identity.");
 
-    public func newDid(_ passphrase: String) throws -> DIDDocument {
-        return try newDid(passphrase, nil)
+        HDKey.DerivedKey key = privateIdentity.derive(lastIndex++);
+        DID did = new DID(DID.METHOD, key.getAddress());
+        PublicKey pk = new PublicKey(new DIDURL(did, "primary"),
+                Constants.defaultPublicKeyType, did, key.getPublicKeyBase58());
+
+        DIDDocument doc = new DIDDocument();
+        doc.setSubject(did);
+        doc.addPublicKey(pk);
+        doc.addAuthenticationKey(pk);
+        doc.setReadonly(true);
+
+        storeDid(doc, hint);
+
+        String encryptedKey = encryptToBase64(storepass, key.serialize());
+        storePrivateKey(did, pk.getId(), encryptedKey);
+
+        key.wipe();
+
+        return doc;
+    }
+*/
+    
+    public func newDid(_ storepass: String) throws -> DIDDocument {
+        return try newDid(storepass, nil)
     }
 
     public func publishDid(_ doc: DIDDocument,_ signKey: DIDURL ,_ passphrase :String) throws -> Bool {
