@@ -1467,11 +1467,11 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
 
-		block, err := b.db.GetFFLDB().GetBlock(hash)
-		if err != nil {
+		exist, height, err := b.db.GetFFLDB().BlockExists(&hash)
+		if err != nil || !exist {
 			return locator
 		}
-		blockHeight = int32(block.Header.Height)
+		blockHeight = int32(height)
 	} else {
 		blockHeight = int32(node.Height)
 	}
@@ -1512,8 +1512,8 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 func (b *BlockChain) locateStartBlock(locator []*Uint256) *Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
-		_, err := b.db.GetFFLDB().GetBlock(*hash)
-		if err == nil {
+		exist, _, err := b.db.GetFFLDB().BlockExists(hash)
+		if err == nil && exist {
 			startHash = *hash
 			break
 		}
