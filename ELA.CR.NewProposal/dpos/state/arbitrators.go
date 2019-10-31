@@ -1180,8 +1180,9 @@ func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 }
 
 func NewArbitrators(chainParams *config.Params, committee *state.Committee,
-	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
-		error)) (*arbitrators, error) {
+	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error),
+	getTxReference func(tx *types.Transaction) (
+		map[*types.Input]*types.Output, error)) (*arbitrators, error) {
 	a := &arbitrators{
 		chainParams:                chainParams,
 		crCommittee:                committee,
@@ -1203,7 +1204,8 @@ func NewArbitrators(chainParams *config.Params, committee *state.Committee,
 	if err := a.initArbitrators(chainParams); err != nil {
 		return nil, err
 	}
-	a.State = NewState(chainParams, a.GetArbitrators, getProducerDepositAmount)
+	a.State = NewState(chainParams, a.GetArbitrators,
+		getProducerDepositAmount, getTxReference)
 
 	chainParams.CkpManager.Register(NewCheckpoint(a))
 	return a, nil
