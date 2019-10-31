@@ -101,5 +101,12 @@ export default {
     crCouncil: 'cr council',
     crProposalPage: 'cr proposal page',
     approvedProposal: 'approved proposal'
+  },
+  search: {
+    number: 'Number',
+    title: 'Title',
+    abstract: 'Abstract',
+    email: 'Author email',
+    name: 'Author name'
   }
 }

@@ -108,32 +108,68 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<Object> {
-    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded', 'referenceStatus'])
+    const query = _.omit(
+      param,
+      [
+        'results', 'page', 'sortBy', 'sortOrder',
+        'filter', 'profileListFor', 'search',
+        'tagsIncluded', 'referenceStatus'
+      ]
+    )
     const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
 
     if (!profileListFor) {
       query.$or = []
       const search = _.trim(param.search)
-      if (search) {
-        if (parseInt(search)) {
-          query.$or = [{ displayId: parseInt(search) }]
-        } else {
-          const pattern = search.split(' ').join('|')
+      const filter = param.filter
+      if (search && filter) {
+        const SEARCH_FILTERS = {
+          TITLE: 'TITLE',
+          NUMBER: 'NUMBER',
+          ABSTRACT: 'ABSTRACT',
+          EMAIL: 'EMAIL',
+          NAME: 'NAME'
+        }
+        
+        if (filter === SEARCH_FILTERS.NUMBER) {
+          query.$or = [{ displayId: parseInt(search) || 0 }]
+        }
+            
+        if (filter === SEARCH_FILTERS.TITLE) {
+          query.$or = [
+            { title: { $regex: search, $options: 'i' } }
+          ]
+        }
+
+        if (filter === SEARCH_FILTERS.ABSTRACT) {
+          query.$or = [
+            { abstract: { $regex: search, $options: 'i' } }
+          ]
+        }
+
+        if (filter === SEARCH_FILTERS.EMAIL) {
           const db_user = this.getDBModel('User')
           const users = await db_user.getDBInstance().find({
             $or: [
-              { email: { $regex: search, $options: 'i' } },
+              { email: { $regex: search, $options: 'i' } }
+            ]
+          }).select('_id')
+          const userIds = _.map(users, (el: { _id: string }) => el._id)
+          query.$or = [{ createdBy: { $in: userIds } }]
+        }
+
+        if (filter === SEARCH_FILTERS.NAME) {
+          const db_user = this.getDBModel('User')
+          const pattern = search.split(' ').join('|')
+          const users = await db_user.getDBInstance().find({
+            $or: [
               { username: { $regex: search, $options: 'i' } },
               { 'profile.firstName': { $regex: pattern, $options: 'i' } },
               { 'profile.lastName': { $regex: pattern, $options: 'i' } }
             ]
           }).select('_id')
           const userIds = _.map(users, (el: { _id: string }) => el._id)
-          query.$or = [
-            { title: { $regex: search, $options: 'i' } },
-            { abstract: { $regex: search, $options: 'i' } },
-            { createdBy: { $in: userIds } }
-          ]
+          query.$or = [{ createdBy: { $in: userIds } }]
         }
       }
 

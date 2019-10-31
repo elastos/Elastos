@@ -99,5 +99,12 @@ export default {
     crCouncil: 'CR 理事会',
     crProposalPage: 'CR 提案页面',
     approvedProposal: '已批准的提案'
+  },
+  search: {
+    number: '编号',
+    title: '标题',
+    abstract: '摘要',
+    email: '作者邮箱',
+    name: '作者姓名'
   }
 }

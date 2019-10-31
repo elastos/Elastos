@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import styled from 'styled-components'
 import {
-  Pagination, Modal, Button, Col, Row, Select, Spin, Checkbox, Input
+  Pagination, Modal, Button, Col, Row, Select, Spin, Checkbox
 } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
@@ -18,6 +18,7 @@ import { SUGGESTION_STATUS, CONTENT_TYPE, SUGGESTION_TAG_TYPE } from '@/constant
 import { breakPoint } from '@/constants/breakPoint'
 import DraftEditor from '@/module/common/DraftEditor'
 import PageHeader from './PageHeader'
+import SearchBox from './SearchBox'
 
 import './style.scss'
 
@@ -50,7 +51,8 @@ export default class extends StandardPage {
       showMobile: false,
       results: 10,
       total: 0,
-      search: ''
+      search: '',
+      filter: ''
     }
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
@@ -64,12 +66,14 @@ export default class extends StandardPage {
     this.props.resetAll()
   }
 
+
   ord_renderContent() {
     const headerNode = this.renderHeader()
     const filterNode = this.renderFilters()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
     const sortActionsNode = this.renderSortActions()
+
     return (
       <div>
         <div className="suggestion-header">
@@ -83,11 +87,7 @@ export default class extends StandardPage {
             style={{margin: '24px 0 48px'}}
           >
             <Col xs={24} sm={12} style={{ paddingTop: 24 }}>
-              <Input.Search
-                defaultValue={this.state.search}
-                onSearch={this.handleSearch}
-                placeholder={I18N.get('suggestion.form.search')}
-              />
+              <SearchBox search={this.handleSearch} value={this.state.search} />
             </Col>
             <Col xs={24} sm={12} style={{textAlign: 'right', paddingTop: 24}}>
               <Button onClick={this.toggleArchivedList} className="btn-view-archived">
@@ -123,8 +123,8 @@ export default class extends StandardPage {
     )
   }
 
-  handleSearch = search => {
-    this.setState({ search }, this.debouncedRefetch)
+  handleSearch = (filter, search) => {
+    this.setState({ search, filter }, this.debouncedRefetch)
   }
 
   onFormSubmit = async (param) => {
@@ -393,7 +393,7 @@ export default class extends StandardPage {
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page } = this.props
-    const { results, referenceStatus, search } = this.state
+    const { results, referenceStatus, search, filter } = this.state
     const query = {
       status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
@@ -432,6 +432,10 @@ export default class extends StandardPage {
 
     if (search) {
       query.search = search
+    }
+
+    if (filter) {
+      query.filter = filter
     }
     return query
   }
