@@ -1454,14 +1454,11 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte,
-	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error),
-	getTxReference func(tx *types.Transaction) (
-		map[*types.Input]*types.Output, error)) *State {
+	getProducerDepositAmount func(common.Uint168) (common.Fixed64, error)) *State {
 	return &State{
 		chainParams:              chainParams,
 		getArbiters:              getArbiters,
 		getProducerDepositAmount: getProducerDepositAmount,
-		getTxReference:           getTxReference,
 		history:                  utils.NewHistory(maxHistoryCapacity),
 		StateKeyFrame:            NewStateKeyFrame(),
 	}

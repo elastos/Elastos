@@ -10,7 +10,6 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
@@ -58,14 +57,16 @@ type KeyFrame struct {
 
 // StateKeyFrame holds necessary state about CR state.
 type StateKeyFrame struct {
-	CodeDIDMap         map[string]common.Uint168
-	DepositHashMap     map[common.Uint168]struct{}
-	PendingCandidates  map[common.Uint168]*Candidate
-	ActivityCandidates map[common.Uint168]*Candidate
-	CanceledCandidates map[common.Uint168]*Candidate
-	Nicknames          map[string]struct{}
-	Votes              map[string]*types.Output
-	DepositOutputs     map[string]*types.Output
+	CodeDIDMap           map[string]common.Uint168
+	DepositHashMap       map[common.Uint168]struct{}
+	PendingCandidates    map[common.Uint168]*Candidate
+	ActivityCandidates   map[common.Uint168]*Candidate
+	CanceledCandidates   map[common.Uint168]*Candidate
+	Nicknames            map[string]struct{}
+	Votes                map[string]struct{}
+	DepositOutputs       map[string]common.Fixed64
+	CRCFoundationOutputs map[string]common.Fixed64
+	CRCCommitteeOutputs  map[string]common.Fixed64
 }
 
 // ProposalState defines necessary state about an CR proposals.
@@ -301,11 +302,19 @@ func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = k.serializeOutputsMap(w, k.Votes); err != nil {
+	if err = utils.SerializeStringSet(w, k.Votes); err != nil {
 		return
 	}
 
-	return k.serializeOutputsMap(w, k.DepositOutputs)
+	if err = k.SerializeFixed64Map(w, k.DepositOutputs); err != nil {
+		return
+	}
+
+	if err = k.SerializeFixed64Map(w, k.CRCFoundationOutputs); err != nil {
+		return
+	}
+
+	return k.SerializeFixed64Map(w, k.CRCCommitteeOutputs)
 }
 
 func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
@@ -333,11 +342,19 @@ func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if k.Votes, err = k.deserializeOutputsMap(r); err != nil {
+	if k.Votes, err = utils.DeserializeStringSet(r); err != nil {
 		return
 	}
 
-	if k.DepositOutputs, err = k.deserializeOutputsMap(r); err != nil {
+	if k.DepositOutputs, err = k.DeserializeFixed64Map(r); err != nil {
+		return
+	}
+
+	if k.CRCFoundationOutputs, err = k.DeserializeFixed64Map(r); err != nil {
+		return
+	}
+
+	if k.CRCCommitteeOutputs, err = k.DeserializeFixed64Map(r); err != nil {
 		return
 	}
 	return
@@ -451,8 +468,8 @@ func (k *StateKeyFrame) deserializeCandidateMap(
 	return
 }
 
-func (s *StateKeyFrame) serializeOutputsMap(w io.Writer,
-	vmap map[string]*types.Output) (err error) {
+func (k *StateKeyFrame) SerializeFixed64Map(w io.Writer,
+	vmap map[string]common.Fixed64) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
 		return
 	}
@@ -460,51 +477,30 @@ func (s *StateKeyFrame) serializeOutputsMap(w io.Writer,
 		if err = common.WriteVarString(w, k); err != nil {
 			return
 		}
-
-		if v == nil {
-			if err = common.WriteUint8(w, 0); err != nil {
-				return
-			}
-		} else {
-			if err = common.WriteUint8(w, 1); err != nil {
-				return
-			}
-
-			if err = v.Serialize(w, types.TxVersion09); err != nil {
-				return
-			}
+		if err = v.Serialize(w); err != nil {
+			return
 		}
 	}
 	return
 }
 
-func (s *StateKeyFrame) deserializeOutputsMap(
-	r io.Reader) (vmap map[string]*types.Output, err error) {
+func (k *StateKeyFrame) DeserializeFixed64Map(
+	r io.Reader) (vmap map[string]common.Fixed64, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return
 	}
-	vmap = make(map[string]*types.Output)
+	vmap = make(map[string]common.Fixed64)
 	for i := uint64(0); i < count; i++ {
 		var k string
 		if k, err = common.ReadVarString(r); err != nil {
 			return
 		}
-
-		var exist uint8
-		if exist, err = common.ReadUint8(r); err != nil {
+		var v common.Fixed64
+		if err = v.Deserialize(r); err != nil {
 			return
 		}
-
-		if exist == 1 {
-			vote := &types.Output{}
-			if err = vote.Deserialize(r, types.TxVersion09); err != nil {
-				return
-			}
-			vmap[k] = vote
-		} else {
-			vmap[k] = nil
-		}
+		vmap[k] = v
 	}
 	return
 }
@@ -517,8 +513,10 @@ func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state.ActivityCandidates = copyCandidateMap(k.ActivityCandidates)
 	state.CanceledCandidates = copyCandidateMap(k.CanceledCandidates)
 	state.Nicknames = utils.CopyStringSet(k.Nicknames)
-	state.Votes = copyOutputsMap(k.Votes)
-	state.DepositOutputs = copyOutputsMap(k.DepositOutputs)
+	state.Votes = utils.CopyStringSet(k.Votes)
+	state.DepositOutputs = copyFixed64Map(k.DepositOutputs)
+	state.CRCFoundationOutputs = copyFixed64Map(k.DepositOutputs)
+	state.CRCCommitteeOutputs = copyFixed64Map(k.DepositOutputs)
 
 	return state
 }
@@ -751,14 +749,16 @@ func NewProposalKeyFrame() *ProposalKeyFrame {
 
 func NewStateKeyFrame() *StateKeyFrame {
 	return &StateKeyFrame{
-		CodeDIDMap:         make(map[string]common.Uint168),
-		DepositHashMap:     make(map[common.Uint168]struct{}),
-		PendingCandidates:  make(map[common.Uint168]*Candidate),
-		ActivityCandidates: make(map[common.Uint168]*Candidate),
-		CanceledCandidates: make(map[common.Uint168]*Candidate),
-		Nicknames:          make(map[string]struct{}),
-		Votes:              make(map[string]*types.Output),
-		DepositOutputs:     make(map[string]*types.Output),
+		CodeDIDMap:           make(map[string]common.Uint168),
+		DepositHashMap:       make(map[common.Uint168]struct{}),
+		PendingCandidates:    make(map[common.Uint168]*Candidate),
+		ActivityCandidates:   make(map[common.Uint168]*Candidate),
+		CanceledCandidates:   make(map[common.Uint168]*Candidate),
+		Nicknames:            make(map[string]struct{}),
+		Votes:                make(map[string]struct{}),
+		DepositOutputs:       make(map[string]common.Fixed64),
+		CRCFoundationOutputs: make(map[string]common.Fixed64),
+		CRCCommitteeOutputs:  make(map[string]common.Fixed64),
 	}
 }
 
@@ -783,15 +783,11 @@ func copyCodeAddressMap(src map[string]common.Uint168) (
 	return
 }
 
-func copyOutputsMap(src map[string]*types.Output) (dst map[string]*types.Output) {
-	dst = map[string]*types.Output{}
+func copyFixed64Map(src map[string]common.Fixed64) (dst map[string]common.Fixed64) {
+	dst = map[string]common.Fixed64{}
 	for k, v := range src {
-		if v == nil {
-			dst[k] = nil
-		} else {
-			p := *v
-			dst[k] = &p
-		}
+		p := v
+		dst[k] = p
 	}
 	return
 }
