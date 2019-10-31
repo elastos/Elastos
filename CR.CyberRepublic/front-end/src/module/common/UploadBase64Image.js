@@ -42,15 +42,18 @@ function resizeImage(img) {
 class UploadBase64Image extends BaseComponent {
   onChange = e => {
     const file = e.target.files[0]
+    if (!file) {
+      return
+    }
     // check if the uploaded file is an image
     if (file.type && !file.type.includes('image/')) {
-      message.error(I18N.get('from.CVoteForm.upload.type.error'))
-      return false
+      message.error(I18N.get('image.upload.type.error'))
+      return
     }
 
     if (file.size > 502400) {
-      message.error(I18N.get('from.CVoteForm.upload.size.error'))
-      return false
+      message.error(I18N.get('image.upload.size.error'))
+      return
     }
 
     const blobURL = URL.createObjectURL(file)

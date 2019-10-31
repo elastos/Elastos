@@ -115,6 +115,8 @@ const en = {
   'mentions.notFound': 'User not found',
   
   'meta.postedBy': 'Posted By',
+  'image.upload.type.error': 'The upload file is not an image.',
+  'image.upload.size.error': 'The maximum upload file size is less than 500KB.',
 
   'comments': 'Comments',
   'comments.posts': 'Posts',
@@ -1153,8 +1155,6 @@ const en = {
   'profile.popover.viewProfile': 'View Profile',
 
   // Module form
-  'from.CVoteForm.upload.type.error': 'The upload file is not an image.',
-  'from.CVoteForm.upload.size.error': 'The maximum upload file size is less than 500KB.',
   'from.CVoteForm.message.delete.success': 'Delete success',
   'from.CVoteForm.message.updated.success': 'Update success',
   'from.CVoteForm.message.create.success': 'Create success',

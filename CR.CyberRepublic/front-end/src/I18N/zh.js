@@ -115,6 +115,8 @@ const zh = {
   'mentions.notFound': '该用户不存在',
 
   'meta.postedBy': '发布者',
+  'image.upload.type.error': '上传的文件不是图片',
+  'image.upload.size.error': '上传的文件大小不能超过500KB',
 
   'comments': '评论',
   'comments.posts': '动态',
@@ -1117,8 +1119,6 @@ const zh = {
   'profile.popover.viewProfile': '查看个人资料',
 
   // Module form
-  'from.CVoteForm.upload.type.error': '上传的文件不是图片',
-  'from.CVoteForm.upload.size.error': '上传的文件大小不能超过500KB',
   'from.CVoteForm.message.delete.success': '删除成功',
   'from.CVoteForm.message.updated.success': '更新成功',
   'from.CVoteForm.message.create.success': '创建成功',
