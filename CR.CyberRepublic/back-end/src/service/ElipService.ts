@@ -319,6 +319,7 @@ export default class extends Base {
 
     const isVisible = rs.createdBy._id.equals(currentUserId) ||
       userRole === constant.USER_ROLE.SECRETARY ||
+      userRole === constant.USER_ROLE.ADMIN ||
       [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL].includes(
         rs.status
       )
