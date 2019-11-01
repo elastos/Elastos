@@ -316,7 +316,7 @@ export default class extends ProfilePage {
                       {_.map(FILTERS, (filter, key) => {
                         return (
                           <Select.Option key={filter} value={filter}>
-                            {key}
+                            {I18N.get(`profile.tasks.filter.${filter}`)}
                           </Select.Option>
                         )
                       })}
@@ -329,27 +329,27 @@ export default class extends ProfilePage {
                           className={(this.state.filter === FILTERS.ALL && 'selected') || ''}
                           onClick={this.clearFilters.bind(this)}
                         >
-                          All
+                          {I18N.get('profile.tasks.filter.all')}
                         </Button>
                         {this.props.is_admin && (
                           <Button
                             className={(this.state.filter === FILTERS.NEED_APPROVAL && 'selected') || ''}
                             onClick={this.setNeedApprovalFilter.bind(this)}
                           >
-                            Need Approval
+                            {I18N.get('profile.tasks.filter.need_approval')}
                           </Button>
                         )}
                         <Button
                           className={(this.state.filter === FILTERS.OWNED && 'selected') || ''}
                           onClick={this.setOwnedFilter.bind(this)}
                         >
-                          Owned
+                          {I18N.get('profile.tasks.filter.owned')}
                         </Button>
                         <Button
                           className={(this.state.filter === FILTERS.ACTIVE && 'selected') || ''}
                           onClick={this.setActiveFilter.bind(this)}
                         >
-                          Active
+                          {I18N.get('profile.tasks.filter.active')}
                         </Button>
                         <Button
                           className={
@@ -357,7 +357,7 @@ export default class extends ProfilePage {
                           }
                           onClick={this.setAppliedFilter.bind(this)}
                         >
-                          Applied
+                          {I18N.get('profile.tasks.filter.applied')}
                         </Button>
                         <Button
                           className={
@@ -365,7 +365,7 @@ export default class extends ProfilePage {
                           }
                           onClick={this.setSubscribedFilter.bind(this)}
                         >
-                          Subscribed
+                          {I18N.get('profile.tasks.filter.subscribed')}
                         </Button>
                       </Button.Group>
                     </MediaQuery>
@@ -565,7 +565,7 @@ export default class extends ProfilePage {
                     className="pull-down"
                     onClick={this.linkTaskDetail.bind(this, item.id)}
                   >
-                    View
+                    {I18N.get('profile.tasks.button.view')}
                     <div className="pull-right">
                       {this.props.page === 'LEADER' &&
                         this.getCommentStatus(item.task)}

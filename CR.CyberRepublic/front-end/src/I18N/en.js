@@ -1089,6 +1089,15 @@ const en = {
   'profile.social.header': 'Social Profile',
   'profile.portfolio': 'Portfolio',
 
+  'profile.tasks.filter.all': 'All',
+  'profile.tasks.filter.need_approval': 'Need Approval',
+  'profile.tasks.filter.owned': 'Owned',
+  'profile.tasks.filter.active': 'Active',
+  'profile.tasks.filter.applied': 'Applied',
+  'profile.tasks.filter.subscribed': 'Subscribed',
+  
+  'profile.tasks.button.view': 'View',
+
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',
   'ambassadors.form.reason.max': 'Reason too long',

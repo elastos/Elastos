@@ -1054,6 +1054,15 @@ const zh = {
   'profile.social.header': '社交账号',
   'profile.portfolio': '作品集',
 
+  'profile.tasks.filter.all': '全部',
+  'profile.tasks.filter.need_approval': '需要批准的',
+  'profile.tasks.filter.owned': '您负责的',
+  'profile.tasks.filter.active': '开发中的',
+  'profile.tasks.filter.applied': '已申请',
+  'profile.tasks.filter.subscribed': '已订阅',
+
+  'profile.tasks.button.view': '查看',
+
   // Validate Form
   'ambassadors.form.required': '必填项目',
   'ambassadors.form.reason.max': '原因太长',
