@@ -132,9 +132,8 @@ class C extends StandardPage {
   deletedElip = async () => {
     try {
       const { deleteData, data } = this.props
-      console.log(data)
       await deleteData({ id: data._id })
-      message.info(I18N.get('elip.msg.marked'))
+      message.info(I18N.get('elip.msg.deleted'))
       this.props.history.push('/elips')
     } catch (error) {
       logger.error(error)

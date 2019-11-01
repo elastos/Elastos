@@ -71,7 +71,9 @@ export default {
     submitted: '提交成功',
     rejected: '已驳回',
     approved: '已批准',
-    marked: '已标记'
+    marked: '已标记',
+    deleted: '已删除',
+    continue: '继续'
   },
   form: {
     note: {

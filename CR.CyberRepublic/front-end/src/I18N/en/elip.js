@@ -72,6 +72,7 @@ export default {
     rejected: 'Rejected successfully',
     approved: 'Approved successfully',
     marked: 'Marked successfully',
+    deleted: 'Deleted successfully',
     continue: 'Continue'
   },
   form: {
