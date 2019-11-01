@@ -440,16 +440,23 @@ class C extends StandardPage {
   }
 
   renderLabelNode() {
-    const reference = _.get(this.props.data, 'reference')
-    if (_.isEmpty(reference)) return null
-    const { _id, displayId } = reference
     const { isElip } = this.props
-    const typeText = isElip ? 'test' : I18N.get('suggestion.suggestion')
-    const linkText = `${typeText} #${displayId}`
+    const reference = isElip ? _.get(this.props.data, 'referenceElip') : _.get(this.props.data, 'reference')
+    if (_.isEmpty(reference)) return null
+    let linkText
+    let linkUrl
+    const { _id, displayId, vid } = reference
+    if (isElip) {
+      linkText = `${I18N.get('elip.elip')} #${vid}`
+      linkUrl = isElip ? `/elips/${_id}` : `/suggestion/${_id}`
+    } else {
+      linkText = `${I18N.get('suggestion.suggestion')} #${displayId}`
+      linkUrl = isElip ? `/elips/${_id}` : `/suggestion/${_id}`
+    }
     return (
       <Label>
         {`${I18N.get('council.voting.referred')} `}
-        <Link to={`/suggestion/${_id}`}>{linkText}</Link>
+        <Link to={linkUrl}>{linkText}</Link>
       </Label>
     )
   }
