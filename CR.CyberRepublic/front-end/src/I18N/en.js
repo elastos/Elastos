@@ -1098,6 +1098,14 @@ const en = {
   'profile.tasks.filter.applied': 'Applied',
   'profile.tasks.filter.subscribed': 'Subscribed',
 
+  'profile.submission.filter.all': 'All',
+  'profile.submission.filter.created': 'Created',
+  'profile.submission.filter.subscribed': 'Subscribed',
+  
+  'profile.submission.table.title': 'Title',
+  'profile.submission.table.type': 'Type',
+  'profile.submission.table.created': 'Created',
+
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',
   'ambassadors.form.reason.max': 'Reason too long',

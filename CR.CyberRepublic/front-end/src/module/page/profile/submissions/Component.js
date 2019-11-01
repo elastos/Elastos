@@ -12,6 +12,7 @@ import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
 
 import ProfilePage from '../../ProfilePage'
+import I18N from '../../../../I18N/index';
 
 const FILTERS = {
   ALL: 'all',
@@ -84,7 +85,7 @@ export default class extends ProfilePage {
 
     const columns = [
       {
-        title: 'Title',
+        title: I18N.get('profile.submission.table.title'),
         dataIndex: 'title',
         width: '75%',
         className: 'fontWeight500 allow-wrap',
@@ -100,7 +101,7 @@ export default class extends ProfilePage {
         }
       },
       {
-        title: 'Type',
+        title: I18N.get('profile.submission.table.type'),
         dataIndex: 'type',
         render: type => {
           if (type === 'FORM_EXT') {
@@ -110,7 +111,7 @@ export default class extends ProfilePage {
         }
       },
       {
-        title: 'Created',
+        title: I18N.get('profile.submission.table.created'),
         dataIndex: 'createdAt',
         className: 'right-align',
         render: createdAt => moment(createdAt).format('MMM D'),
@@ -151,7 +152,7 @@ export default class extends ProfilePage {
                       {_.map(FILTERS, (filter, key) => {
                         return (
                           <Select.Option key={filter} value={filter}>
-                            {key}
+                            {I18N.get(`profile.submission.filter.${filter}`)}
                           </Select.Option>
                         )
                       })}
@@ -165,7 +166,7 @@ export default class extends ProfilePage {
                         }
                         onClick={this.clearFilters.bind(this)}
                       >
-                        All
+                        {I18N.get('profile.submission.filter.all')}
                       </Button>
                       <Button
                         className={
@@ -173,7 +174,7 @@ export default class extends ProfilePage {
                         }
                         onClick={this.setCreatedFilter.bind(this)}
                       >
-                        Created
+                        {I18N.get('profile.submission.filter.created')}
                       </Button>
                       <Button
                         className={
@@ -181,7 +182,7 @@ export default class extends ProfilePage {
                         }
                         onClick={this.setSubscribedFilter.bind(this)}
                       >
-                        Subscribed
+                        {I18N.get('profile.submission.filter.subscribed')}
                       </Button>
                     </Button.Group>
                   </MediaQuery>

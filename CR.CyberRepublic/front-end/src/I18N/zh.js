@@ -256,7 +256,7 @@ const zh = {
   'suggestion.summary': '总结',
   'suggestion.dislikes': '踩',
   'suggestion.comments': '评论',
-  'suggestion.created': '创建的',
+  'suggestion.created': '创建日期',
   'suggestion.archived': '归档的',
   'suggestion.archive': '归档',
   'suggestion.unarchive': '取消归档',
@@ -1062,6 +1062,14 @@ const zh = {
   'profile.tasks.filter.active': '开发中的',
   'profile.tasks.filter.applied': '已申请',
   'profile.tasks.filter.subscribed': '已订阅',
+
+  'profile.submission.filter.all': '全部',
+  'profile.submission.filter.created': '已创建',
+  'profile.submission.filter.subscribed': '已订阅',
+
+  'profile.submission.table.title': '标题',
+  'profile.submission.table.type': '类型',
+  'profile.submission.table.created': '创建日期',
 
   // Validate Form
   'ambassadors.form.required': '必填项目',
