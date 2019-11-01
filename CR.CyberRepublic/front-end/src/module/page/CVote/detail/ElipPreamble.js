@@ -20,10 +20,9 @@ const Component = ({
   type,
   status,
   createdAt: created,
-  createdBy: referee,
   user
 }) => {
-  const result = {proposal, title, proposer, referee, type, status, created}
+  const result = {proposal, title, proposer, type, status, created}
   const typeMap = {
     4: I18N.get('council.voting.type.standardTrack'),
     5: I18N.get('council.voting.type.process'),
@@ -31,8 +30,7 @@ const Component = ({
   }
   const proposalValue = proposal && `#${proposal}`
   const proposerValue = <PopoverProfile owner={proposer} curUser={user} />
-  const refereeValue = <PopoverProfile owner={referee} curUser={user} />
-  const preambles = {...result, proposal: proposalValue, proposer: proposerValue, referee: refereeValue, type: typeMap[result.type], created: moment(created).format('MMM D, YYYY')}
+  const preambles = {...result, proposal: proposalValue, proposer: proposerValue, type: typeMap[result.type], created: moment(created).format('MMM D, YYYY')}
   const itemFunction = (key, value) => (
     <Item key={key}>
       <Col span={6}>
@@ -70,7 +68,6 @@ const propTypes = {
   status: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
-  createdBy: PropTypes.object.isRequired,
   user: PropTypes.object.isRequired,
 }
 
