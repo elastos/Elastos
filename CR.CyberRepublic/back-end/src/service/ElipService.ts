@@ -124,10 +124,8 @@ export default class extends Base {
       if(!constant.ELIP_TYPE[elipType]){
         elipType = _.values(constant.ELIP_TYPE)[0]
       }
-      const vid = await this.getNewVid()
       const doc: any = {
         title,
-        vid,
         elipType,
         abstract,
         specifications,
