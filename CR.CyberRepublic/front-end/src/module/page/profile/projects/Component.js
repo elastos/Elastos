@@ -7,24 +7,22 @@ import sanitizeHtml from '@/util/html'
 import '../tasks/style.scss'
 import '../../admin/admin.scss'
 import {
-  Col, Row, Icon, Form, Badge, Tooltip, Breadcrumb, Button,
-  Table, Select, Divider, List, Carousel, Avatar, Tag, Modal, Spin, Input
+  Col, Row, Icon, Badge, Tooltip, Button,
+  Select, Divider, List, Carousel, Avatar, Tag, Modal, Input
 } from 'antd'
 import {TASK_CANDIDATE_STATUS, USER_AVATAR_DEFAULT, TASK_CATEGORY} from '@/constant'
 import moment from 'moment/moment'
 import MediaQuery from 'react-responsive'
-import InfiniteScroll from 'react-infinite-scroller'
 import I18N from '@/I18N'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
-
-const FormItem = Form.Item
 
 const FILTERS = {
   ALL: 'all',
   ACTIVE: 'active',
   APPLIED: 'applied',
   OWNED: 'owned',
+  LIKED: 'liked',
   SUBSCRIBED: 'subscribed',
   CR100: 'cr100'
 }
@@ -250,9 +248,7 @@ export default class extends ProfilePage {
                 {/* Status */}
                 <div className="valign-wrapper">
                   <Tag>
-                    {I18N.get('admin.tasks.status')}
-:
-                    {' '}
+                    {I18N.get('admin.tasks.status')}:{' '}
                     {I18N.get(`taskStatus.${item.status}`)}
                   </Tag>
                 </div>
@@ -424,7 +420,7 @@ Status:
                       {_.map(FILTERS, (filter, key) => {
                         return (
                           <Select.Option key={filter} value={filter}>
-                            {key}
+                            {I18N.get(`myrepublic.projects.${filter}`)}
                           </Select.Option>
                         )
                       })}
@@ -455,12 +451,12 @@ Status:
                       <Button
                         className={(this.state.filter === FILTERS.SUBSCRIBED && 'selected') || ''}
                         onClick={this.setSubscribedFilter.bind(this)}>
-Liked
+                        {I18N.get('myrepublic.projects.liked')}
                       </Button>
                       <Button
                         className={(this.state.filter === FILTERS.CR100 && 'selected') || ''}
                         onClick={this.setCr100Filter.bind(this)}>
-CR100
+                        {I18N.get('myrepublic.projects.cr100')}
                       </Button>
                     </Button.Group>
                   </MediaQuery>

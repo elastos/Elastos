@@ -453,6 +453,8 @@ const en = {
   'myrepublic.projects.active': 'Active',
   'myrepublic.projects.applied': 'Applied',
   'myrepublic.projects.subscribed': 'Subscribed',
+  'myrepublic.projects.liked': 'Liked',
+  'myrepublic.projects.cr100': 'CR100',
   'myrepublic.projects.create': 'Create Project',
   'myrepublic.projects.create.cr100': 'Create CR100',
 

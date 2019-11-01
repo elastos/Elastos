@@ -442,6 +442,8 @@ const zh = {
   'myrepublic.projects.active': '进行中的',
   'myrepublic.projects.applied': '已申请',
   'myrepublic.projects.subscribed': '已订阅',
+  'myrepublic.projects.liked': '您喜欢的',
+  'myrepublic.projects.cr100': 'CR100',
   'myrepublic.projects.create': '创建项目',
   'myrepublic.projects.create.cr100': '创建 CR100',
 
