@@ -24,11 +24,9 @@ class C extends BaseComponent {
 
   handleSubmit(e) {
     e.preventDefault()
-    if (this.state.loading) return
-    this.setState({ loading: true })
-
     this.props.form.validateFields((err, values) => {
       if (!err) {
+        this.setState({ loading: true })
         this.props.login(values.username, values.password, this.state.persist).then(() => {
           if (_.isFunction(this.props.onHideModal)) {
             this.props.onHideModal()
