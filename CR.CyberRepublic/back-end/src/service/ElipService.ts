@@ -30,25 +30,25 @@ export default class extends Base {
       if (
         [
           constant.ELIP_STATUS.WAIT_FOR_REVIEW,
-          constant.ELIP_STATUS.SUBMITTED
+          constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
         ].includes(elip.status)
       ) {
         throw `ElipService.update - can not update a ${status} elip`
       }
       if (
-        status === constant.ELIP_STATUS.SUBMITTED &&
+        status === constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL &&
         elip.status !== constant.ELIP_STATUS.DRAFT
       ) {
         throw `ElipService.update - can not change elip status to submitted`
       }
 
       if (
-        status === constant.ELIP_STATUS.SUBMITTED &&
+        status === constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL &&
         elip.status === constant.ELIP_STATUS.DRAFT
       ) {
         const rs = await db_elip.update(
           { _id },
-          { status: constant.ELIP_STATUS.SUBMITTED }
+          { status: constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL }
         )
         this.notifySecretaries(elip, true)
         return rs
@@ -319,7 +319,7 @@ export default class extends Base {
 
     const isVisible = rs.createdBy._id.equals(currentUserId) ||
       userRole === constant.USER_ROLE.SECRETARY ||
-      [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED].includes(
+      [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL].includes(
         rs.status
       )
 
@@ -376,7 +376,7 @@ export default class extends Base {
 
     if (!this.isLoggedIn()) {
       query.status = {
-        $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED]
+        $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL]
       }
       param.filter = null
     }
@@ -387,7 +387,7 @@ export default class extends Base {
 
     if (param.filter === constant.ELIP_FILTER.SUBMITTED_BY_ME) {
       query.createdBy = currentUserId
-      query.status = constant.ELIP_STATUS.SUBMITTED
+      query.status = constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
     }
 
     if (param.filter === constant.ELIP_FILTER.WAIT_FOR_REVIEW) {
@@ -408,13 +408,26 @@ export default class extends Base {
               constant.ELIP_STATUS.WAIT_FOR_REVIEW
             ]
           }
-        },
-        {
-          status: {
-            $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED]
-          }
         }
       ]
+      if(userRole !== constant.USER_ROLE.ADMIN) {
+        query.$or.push({
+          status: {
+            $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL]
+          }
+        })
+      }else {
+        query.$or.push({
+          status: {
+            $in: [
+              constant.ELIP_STATUS.DRAFT,
+              constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL,
+              constant.ELIP_STATUS.WAIT_FOR_REVIEW,
+              constant.ELIP_STATUS.REJECTED
+            ]
+          }
+        })
+      }
     }
 
     if (param.$or && query.$or) {
