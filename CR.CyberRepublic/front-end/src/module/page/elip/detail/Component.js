@@ -149,9 +149,9 @@ class C extends StandardPage {
   }
 
   renderAnchors() {
-    const { data, reviews, isSecretary } = this.props
+    const { reviews, isSecretary } = this.props
     const reviewLink =
-      isSecretary || (this.isAuthor(data) && !_.isEmpty(reviews)) ? (
+      isSecretary || !_.isEmpty(reviews) ? (
         <Anchor.Link href="#review" title={I18N.get('elip.fields.review')} />
       ) : null
     return (
@@ -503,8 +503,8 @@ class C extends StandardPage {
   }
 
   renderReviewHistory() {
-    const { data, reviews, isSecretary } = this.props
-    if (!this.isAuthor(data) && !isSecretary) return null
+    const { reviews } = this.props
+    if (_.isEmpty(reviews)) return null
     return (
       <Row>
         <LabelCol span={3} />
