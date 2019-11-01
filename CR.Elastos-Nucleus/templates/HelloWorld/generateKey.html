@@ -1,10 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Generate API Key</title>
-</head>
-<body>
+{% extends 'Helloworld/base.html' %}
 
-</body>
-</html>
+{% block title %}Generate API Key{% endblock %}
+
+{% block content %}
+<div class="main">
+   <h1> Generate API Key</h1> <br>
+  <button onclick="displayapiKey()"> Generate API Key</button>
+</div>
+<br>
+<h1>Documentation</h1>
+<h2> Generates an API Key of Length 32 bit</h2>
+<p id="display"></p>
+<br>
+
+    <script>
+function displayapiKey() {
+  document.getElementById("display").innerHTML = {{API_KEY}};
+}
+</script>
+
+{% endblock %}
