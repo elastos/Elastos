@@ -1,6 +1,7 @@
 import React from 'react'
 import { Row, Col, Spin, Button, message, Popconfirm, Anchor } from 'antd'
 import { StickyContainer, Sticky } from 'react-sticky'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import Comments from '@/module/common/comments/Container'
@@ -18,8 +19,6 @@ import { logger } from '@/util'
 import { breakPoint } from '@/constants/breakPoint'
 import moment from 'moment/moment'
 import ReviewHistory from './ReviewHistory'
-
-const { Link } = Anchor
 
 class C extends StandardPage {
   constructor(p) {
@@ -153,32 +152,32 @@ class C extends StandardPage {
     const { data, reviews, isSecretary } = this.props
     const reviewLink =
       isSecretary || (this.isAuthor(data) && !_.isEmpty(reviews)) ? (
-        <Link href="#review" title={I18N.get('elip.fields.review')} />
+        <Anchor.Link href="#review" title={I18N.get('elip.fields.review')} />
       ) : null
     return (
       <StyledAnchor offsetTop={300}>
         <LinkGroup>
-          <Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
-          <Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
+          <Anchor.Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
+          <Anchor.Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
         </LinkGroup>
         <LinkGroup marginTop={48}>
-          <Link
+          <Anchor.Link
             href="#specifications"
             title={I18N.get('elip.fields.specifications')}
           />
-          <Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
-          <Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
+          <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
+          <Anchor.Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
         </LinkGroup>
         <LinkGroup marginTop={46}>
-          <Link
+          <Anchor.Link
             href="#backwardCompatibility"
             title={I18N.get('elip.fields.backwardCompatibility')}
           />
-          <Link
+          <Anchor.Link
             href="#referenceImplementation"
             title={I18N.get('elip.fields.referenceImplementation')}
           />
-          <Link href="#copyright" title={I18N.get('elip.fields.copyright')} />
+          <Anchor.Link href="#copyright" title={I18N.get('elip.fields.copyright')} />
         </LinkGroup>
         <LinkGroup marginTop={51}>{reviewLink}</LinkGroup>
       </StyledAnchor>
@@ -225,6 +224,7 @@ class C extends StandardPage {
   renderStickyHeader() {
     const metaNode = this.renderMeta()
     const titleNode = this.renderTitleNode()
+    const reference = this.renderLabelNode()
     const subTitleNode = this.renderSubTitle()
 
     return (
@@ -241,6 +241,7 @@ class C extends StandardPage {
               <FixedHeader>
                 {metaNode}
                 {titleNode}
+                {reference}
                 {subTitleNode}
               </FixedHeader>
             </div>
@@ -268,6 +269,7 @@ class C extends StandardPage {
     const edit = this.renderEditButton()
     const submittedProposal = this.renderSubmittedProposalButton()
     const deleteElip = this.renderDeleteElipButton()
+
     return (
       <Row type="flex" justify="start" gutter={25.5}>
         {status}
@@ -288,9 +290,9 @@ class C extends StandardPage {
       title: data.title,
       author: data.createdBy && data.createdBy.username,
       discussions: data.discussions,
-      status: I18N.get(`elip.status.${data.status}`),
       type: I18N.get(`elip.form.typeTitle.${data.elipType}`),
-      created: moment(data.createdAt).format('YYYY-MM-DD'),
+      status: I18N.get(`elip.status.${data.status}`),
+      created: moment(data.createdAt).format('MMM D, YYYY'),
       requires: data.requires,
       replaces: data.replaces,
       superseded: data.superseded
@@ -356,6 +358,20 @@ class C extends StandardPage {
           </Col>
         </Row>
       )
+    )
+  }
+
+  renderLabelNode() {
+    const reference = _.get(this.props.data, 'reference')
+    if (_.isEmpty(reference)) return null
+    const { _id, vid, status } = reference
+    const linkText = `${I18N.get('council.voting.proposal')} #${vid}`
+    return (
+      <LinkLabel style={{ border: 'none' }}>
+        {`${I18N.get('suggestion.referred')} `}
+        <Link to={`/proposals/${_id}`}>{linkText}</Link>
+        {` (${I18N.get(`cvoteStatus.${status}`)})`}
+      </LinkLabel>
     )
   }
 
@@ -558,6 +574,13 @@ const Label = styled.div`
   font-size: 11px;
   line-height: 19px;
   color: rgba(3, 30, 40, 0.4);
+`
+
+const LinkLabel = styled.span`
+  background: #F2F6FB;
+  padding: 3px 10px;
+  margin-bottom: 16px;
+  display: inline-block;
 `
 
 const Status = styled.div`

@@ -115,5 +115,6 @@ export default {
     reviewDetails: '审核详情',
     approved: '已批准！',
     rejected: '已拒绝！'
-  }
+  },
+  elip: 'Elip'
 }
