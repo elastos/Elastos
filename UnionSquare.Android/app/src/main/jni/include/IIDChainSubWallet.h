@@ -105,6 +105,7 @@ namespace Elastos {
 			 * @param inputInfo to generate DIDInfoPayload json fomat,able used to CreateIDTransaction. Content such as
 			 * {
 				"id": "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs",
+			 	"didName":"testName",
 				"operation":"create",
 				 "publicKey": [{
 				  "id": "#primary",
