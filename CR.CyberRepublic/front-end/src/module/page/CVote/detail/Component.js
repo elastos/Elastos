@@ -858,18 +858,30 @@ class C extends StandardPage {
   }
 
   showVoteYesModal = () => {
-    const { visibleYes } = this.state
+    const { visibleYes, visibleOppose, visibleAbstain } = this.state
     this.setState({ visibleYes: !visibleYes })
+    if (!visibleYes) {
+      if (visibleOppose) this.setState({ visibleOppose: !visibleOppose })
+      if (visibleAbstain) this.setState({ visibleAbstain: !visibleAbstain })
+    }
   }
 
   showVoteAbstainModal = () => {
-    const { visibleAbstain } = this.state
+    const { visibleYes, visibleOppose, visibleAbstain } = this.state
     this.setState({ visibleAbstain: !visibleAbstain })
+    if (!visibleAbstain) {
+      if (visibleYes) this.setState({ visibleYes: !visibleYes })
+      if (visibleOppose) this.setState({ visibleOppose: !visibleOppose })
+    }
   }
 
   showVoteOpposeModal = () => {
-    const { visibleOppose } = this.state
+    const { visibleYes, visibleOppose, visibleAbstain } = this.state
     this.setState({ visibleOppose: !visibleOppose })
+    if (!visibleOppose) {
+      if (visibleYes) this.setState({ visibleYes: !visibleYes })
+      if (visibleAbstain) this.setState({ visibleAbstain: !visibleAbstain })
+    }
   }
 
   completeProposal = () => {
