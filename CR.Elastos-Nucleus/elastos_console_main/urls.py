@@ -16,8 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path , include
 import hello_world
+from django.conf.urls import url
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path(r'', include('hello_world.urls')),
+    url('admin/', admin.site.urls),
+    url(r'', include('hello_world.urls')),
+    url(r'service' , include('elastos_service.urls')),
 ]
