@@ -124,7 +124,7 @@ const zh = {
   'comments.noComments': '还没有评论，',
   'comments.signIn': '注册',
   'comments.firstToPost': '抢沙发！',
-  'comments.commentsOrUpdates': '评论或更新',
+  'comments.placeholder': '说点儿什么',
   // Admin tasks
   'admin.tasks.status': '状态',
 
@@ -256,7 +256,7 @@ const zh = {
   'suggestion.summary': '总结',
   'suggestion.dislikes': '踩',
   'suggestion.comments': '评论',
-  'suggestion.created': '创建的',
+  'suggestion.created': '创建日期',
   'suggestion.archived': '归档的',
   'suggestion.archive': '归档',
   'suggestion.unarchive': '取消归档',
@@ -442,6 +442,8 @@ const zh = {
   'myrepublic.projects.active': '进行中的',
   'myrepublic.projects.applied': '已申请',
   'myrepublic.projects.subscribed': '已订阅',
+  'myrepublic.projects.liked': '您喜欢的',
+  'myrepublic.projects.cr100': 'CR100',
   'myrepublic.projects.create': '创建项目',
   'myrepublic.projects.create.cr100': '创建 CR100',
 
@@ -1056,6 +1058,21 @@ const zh = {
   'profile.skillset.header': '技能',
   'profile.social.header': '社交账号',
   'profile.portfolio': '作品集',
+
+  'profile.tasks.filter.all': '全部',
+  'profile.tasks.filter.need_approval': '需要批准的',
+  'profile.tasks.filter.owned': '您负责的',
+  'profile.tasks.filter.active': '开发中的',
+  'profile.tasks.filter.applied': '已申请',
+  'profile.tasks.filter.subscribed': '已订阅',
+
+  'profile.submission.filter.all': '全部',
+  'profile.submission.filter.created': '已创建',
+  'profile.submission.filter.subscribed': '已订阅',
+
+  'profile.submission.table.title': '标题',
+  'profile.submission.table.type': '类型',
+  'profile.submission.table.created': '创建日期',
 
   // Validate Form
   'ambassadors.form.required': '必填项目',

@@ -124,7 +124,7 @@ const en = {
   'comments.noComments': `No comments yet, `,
   'comments.signIn': 'sign in ',
   'comments.firstToPost': 'to be the first to post!',
-  'comments.commentsOrUpdates': 'Comments or updates',
+  'comments.placeholder': 'Leave a comment',
   // Admin tasks
   'admin.tasks.status': 'Status',
 
@@ -453,6 +453,8 @@ const en = {
   'myrepublic.projects.active': 'Active',
   'myrepublic.projects.applied': 'Applied',
   'myrepublic.projects.subscribed': 'Subscribed',
+  'myrepublic.projects.liked': 'Liked',
+  'myrepublic.projects.cr100': 'CR100',
   'myrepublic.projects.create': 'Create Project',
   'myrepublic.projects.create.cr100': 'Create CR100',
 
@@ -1091,6 +1093,21 @@ const en = {
   'profile.skillset.header': 'Skill Set',
   'profile.social.header': 'Social Profile',
   'profile.portfolio': 'Portfolio',
+
+  'profile.tasks.filter.all': 'All',
+  'profile.tasks.filter.need_approval': 'Need Approval',
+  'profile.tasks.filter.owned': 'Owned',
+  'profile.tasks.filter.active': 'Active',
+  'profile.tasks.filter.applied': 'Applied',
+  'profile.tasks.filter.subscribed': 'Subscribed',
+
+  'profile.submission.filter.all': 'All',
+  'profile.submission.filter.created': 'Created',
+  'profile.submission.filter.subscribed': 'Subscribed',
+
+  'profile.submission.table.title': 'Title',
+  'profile.submission.table.type': 'Type',
+  'profile.submission.table.created': 'Created',
 
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',
