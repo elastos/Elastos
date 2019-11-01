@@ -75,37 +75,6 @@ static void initVerifiableCredential(VerifiableCredential &veriffiableCredential
 }
 
 TEST_CASE("CredentialSubject test", "[CredentialSubject]") {
-	SECTION("Serialize and Deserialize test") {
-		CredentialSubject subject;
-		initCredentialSubject(subject);
-
-		ByteStream stream;
-		subject.Serialize(stream, 0);
-
-		CredentialSubject subject2;
-
-		REQUIRE(subject2.Deserialize(stream, 0));
-
-		REQUIRE(subject2.ID() == subject.ID());
-		REQUIRE(subject2.GetName() == subject.GetName());
-		REQUIRE(subject2.GetNickName() == subject.GetNickName());
-		REQUIRE(subject2.GetGender() == subject.GetGender());
-		REQUIRE(subject2.GetBirthday() == subject.GetBirthday());
-		REQUIRE(subject2.GetAvatar() == subject.GetAvatar());
-		REQUIRE(subject2.GetEmail() == subject.GetEmail());
-		REQUIRE(subject2.GetPhone() == subject.GetPhone());
-		REQUIRE(subject2.GetNation() == subject.GetNation());
-		REQUIRE(subject2.GetDescript() == subject.GetDescript());
-		REQUIRE(subject2.GetHomePage() == subject.GetHomePage());
-		REQUIRE(subject2.GetGoogleAccount() == subject.GetGoogleAccount());
-		REQUIRE(subject2.GetMicrosoftPassport() == subject.GetMicrosoftPassport());
-		REQUIRE(subject2.GetFacebook() == subject.GetFacebook());
-		REQUIRE(subject2.GetTwitter() == subject.GetTwitter());
-		REQUIRE(subject2.GetWeibo() == subject.GetWeibo());
-		REQUIRE(subject2.GetWechat() == subject.GetWechat());
-		REQUIRE(subject2.GetAlipay() == subject.GetAlipay());
-	}
-
 	SECTION("ToJson FromJson test") {
 		CredentialSubject subject;
 		initCredentialSubject(subject);

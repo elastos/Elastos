@@ -11,6 +11,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 		class CredentialSubject;
+		class VerifiableCredential;
 		class DIDInfo;
 
 		class DIDDetail {
@@ -78,13 +79,17 @@ namespace Elastos {
 			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 		private:
-			std::vector<std::string> GetVerifiableCredentialTypes(const CredentialSubject &subject);
+			std::vector<std::string> GetVerifiableCredentialTypes(const CredentialSubject &subject) const;
 
 			nlohmann::json ToDIDInfoJson(const DIDDetailPtr &didDetailPtr, bool isDetail) const;
 
 			void InitDIDList();
 
 			void InsertDID(const DIDDetailPtr &didDetailPtr);
+
+			VerifiableCredential GetSelfProclaimedCredential(const std::string &didName) const;
+
+			VerifiableCredential GetPersonalInfoCredential(const nlohmann::json &didInfo) const;
 		protected:
 			friend class MasterWallet;
 

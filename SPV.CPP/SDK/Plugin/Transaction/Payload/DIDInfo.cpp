@@ -176,6 +176,7 @@ namespace Elastos {
 
 		void CredentialSubject::init() {
 			_id = "";
+			_didName = "";
 			_name = "";
 			_nickname = "";
 			_gender = "";
@@ -184,9 +185,7 @@ namespace Elastos {
 			_email = "";
 			_phone = "";
 			_nation = "";
-
 			_descript = "";
-
 			_homePage = "";
 			_googleAccount = "";
 			_microsoftPassport = "";
@@ -204,6 +203,14 @@ namespace Elastos {
 
 		const std::string &CredentialSubject::ID() const {
 			return _id;
+		}
+
+		void CredentialSubject::SetDIDName(const std::string &didName) {
+			_didName = didName;
+		}
+
+		const std::string &CredentialSubject::GetDIDName() const {
+			return _didName;
 		}
 
 		void CredentialSubject::SetName(const std::string &name) {
@@ -342,170 +349,15 @@ namespace Elastos {
 			return _alipay;
 		}
 
-		size_t CredentialSubject::EstimateSize(uint8_t version) const {
-			ByteStream stream;
-			size_t size = 0;
-
-			size += stream.WriteVarUint(_id.size());
-			size += _id.size();
-			size += stream.WriteVarUint(_name.size());
-			size += _name.size();
-			size += stream.WriteVarUint(_nickname.size());
-			size += _nickname.size();
-			size += stream.WriteVarUint(_gender.size());
-			size += _gender.size();
-			size += stream.WriteVarUint(_birthday.size());
-			size += _birthday.size();
-			size += stream.WriteVarUint(_avatar.size());
-			size += _avatar.size();
-			size += stream.WriteVarUint(_email.size());
-			size += _email.size();
-			size += stream.WriteVarUint(_phone.size());
-			size += _phone.size();
-			size += stream.WriteVarUint(_nation.size());
-			size += _nation.size();
-			size += stream.WriteVarUint(_descript.size());
-			size += _descript.size();
-			size += stream.WriteVarUint(_homePage.size());
-			size += _homePage.size();
-			size += stream.WriteVarUint(_googleAccount.size());
-			size += _googleAccount.size();
-			size += stream.WriteVarUint(_microsoftPassport.size());
-			size += _microsoftPassport.size();
-			size += stream.WriteVarUint(_facebook.size());
-			size += _facebook.size();
-			size += stream.WriteVarUint(_twitter.size());
-			size += _twitter.size();
-			size += stream.WriteVarUint(_weibo.size());
-			size += _weibo.size();
-			size += stream.WriteVarUint(_wechat.size());
-			size += _wechat.size();
-			size += stream.WriteVarUint(_alipay.size());
-			size += _alipay.size();
-
-			return size;
-		}
-
-		void CredentialSubject::Serialize(ByteStream &stream, uint8_t version) const {
-			stream.WriteVarString(_id);
-			stream.WriteVarString(_name);
-			stream.WriteVarString(_nickname);
-			stream.WriteVarString(_gender);
-			stream.WriteVarString(_birthday);
-			stream.WriteVarString(_avatar);
-			stream.WriteVarString(_email);
-			stream.WriteVarString(_phone);
-			stream.WriteVarString(_nation);
-			stream.WriteVarString(_descript);
-			stream.WriteVarString(_homePage);
-			stream.WriteVarString(_googleAccount);
-			stream.WriteVarString(_microsoftPassport);
-			stream.WriteVarString(_facebook);
-			stream.WriteVarString(_twitter);
-			stream.WriteVarString(_weibo);
-			stream.WriteVarString(_wechat);
-			stream.WriteVarString(_alipay);
-		}
-
-		bool CredentialSubject::Deserialize(const ByteStream &stream, uint8_t version) {
-			if (!stream.ReadVarString(_id)) {
-				Log::error("CredentialSubject deserialize: id");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_name)) {
-				Log::error("CredentialSubject deserialize name");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_nickname)) {
-				Log::error("CredentialSubject deserialize nickname");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_gender)) {
-				Log::error("CredentialSubject deserialize gender");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_birthday)) {
-				Log::error("CredentialSubject deserialize birthday");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_avatar)) {
-				Log::error("CredentialSubject deserialize avatar");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_email)) {
-				Log::error("CredentialSubject deserialize email");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_phone)) {
-				Log::error("CredentialSubject deserialize phone");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_nation)) {
-				Log::error("CredentialSubject deserialize nation");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_descript)) {
-				Log::error("CredentialSubject deserialize descript");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_homePage)) {
-				Log::error("CredentialSubject deserialize homePage");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_googleAccount)) {
-				Log::error("CredentialSubject deserialize googleAccount");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_microsoftPassport)) {
-				Log::error("CredentialSubject deserialize microsoftPassport");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_facebook)) {
-				Log::error("CredentialSubject deserialize facebook");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_twitter)) {
-				Log::error("CredentialSubject deserialize twitter");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_weibo)) {
-				Log::error("CredentialSubject deserialize weibo");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_wechat)) {
-				Log::error("CredentialSubject deserialize wechat");
-				return false;
-			}
-
-			if (!stream.ReadVarString(_alipay)) {
-				Log::error("CredentialSubject deserialize alipay");
-				return false;
-			}
-
-			return true;
-		}
-
 		nlohmann::json CredentialSubject::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
 			if (_id.size() > 0) {
 				j["id"] = _id;
+			}
+
+			if (_didName.size() > 0) {
+				j["didName"] = _didName;
 			}
 
 			if (_name.size() > 0) {
@@ -587,6 +439,10 @@ namespace Elastos {
 			if (j.find("id") != j.end()) {
 				_id = j["id"].get<std::string>();
 				ErrorChecker::CheckParam(_id.find(PREFIX_DID) == std::string::npos, Error::InvalidArgument, "invalid id");
+			}
+
+			if (j.find("didName") != j.end()) {
+				_didName = j["didName"].get<std::string>();
 			}
 
 			if (j.find("name") != j.end())

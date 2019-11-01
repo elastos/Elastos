@@ -97,6 +97,10 @@ namespace Elastos {
 
 			const std::string &GetName() const;
 
+			void SetDIDName(const std::string &didName);
+
+			const std::string &GetDIDName() const;
+
 			void SetNickName(const std::string &nickName);
 
 			const std::string &GetNickName() const;
@@ -162,12 +166,6 @@ namespace Elastos {
 			const std::string &GetAlipay() const;
 
 		public:
-			virtual size_t EstimateSize(uint8_t version) const;
-
-			virtual void Serialize(ByteStream &stream, uint8_t version) const;
-
-			virtual bool Deserialize(const ByteStream &stream, uint8_t version);
-
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
@@ -176,6 +174,7 @@ namespace Elastos {
 
 		private:
 			std::string _id;
+			std::string _didName;
 			std::string _name;
 			std::string _nickname;
 			std::string _gender;
