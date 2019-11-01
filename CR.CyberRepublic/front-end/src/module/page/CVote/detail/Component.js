@@ -475,7 +475,7 @@ class C extends StandardPage {
       ]
       return (
         <div>
-          <ElipPreamble {...data} />
+          <ElipPreamble {...data} user={user}/>
           {_.map(sections, section => (
             <Part id={section} key={section}>
               <PartTitle>{I18N.get(`elip.fields.${section}`)}</PartTitle>

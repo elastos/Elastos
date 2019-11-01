@@ -4,7 +4,7 @@ import I18N from '@/I18N'
 import { Row, Col } from 'antd'
 import moment from 'moment/moment'
 import _ from 'lodash'
-import userUtil from '@/util/user'
+import PopoverProfile from '@/module/common/PopoverProfile'
 
 import styled from 'styled-components'
 import {
@@ -16,13 +16,12 @@ import {
 const Component = ({
   vid: proposal,
   title,
-  proposedBy,
   proposer,
   type,
   status,
-  referee,
   createdAt: created,
-  createdBy,
+  createdBy: referee,
+  user
 }) => {
   const result = {proposal, title, proposer, referee, type, status, created}
   const typeMap = {
@@ -31,8 +30,8 @@ const Component = ({
     6: I18N.get('council.voting.type.process'),
   }
   const proposalValue = proposal && `#${proposal}`
-  const proposerValue = `${proposedBy} <${_.get(proposer, 'email')}>`
-  const refereeValue = referee && `${userUtil.formatUsername(createdBy)} <${_.get(createdBy, 'email')}>`
+  const proposerValue = <PopoverProfile owner={proposer} curUser={user} />
+  const refereeValue = <PopoverProfile owner={referee} curUser={user} />
   const preambles = {...result, proposal: proposalValue, proposer: proposerValue, referee: refereeValue, type: typeMap[result.type], created: moment(created).format('MMM D, YYYY')}
   const itemFunction = (key, value) => (
     <Item key={key}>
@@ -67,13 +66,12 @@ const Component = ({
 const propTypes = {
   vid: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
-  proposedBy: PropTypes.string.isRequired,
   proposer: PropTypes.object.isRequired,
-  referee: PropTypes.object,
   status: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
   createdBy: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
 }
 
 Component.propTypes = propTypes
