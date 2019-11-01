@@ -605,13 +605,15 @@ public class DIDDocument: NSObject {
         let cpk: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (pk: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
             return pk
         }
-        var sigData: Data = signature.data(using: .utf8)!
+        let s = signature + "\0"
+        var sigData: Data = s.data(using: .utf8)!
         let sig: UnsafeMutablePointer<Int8> = sigData.withUnsafeMutableBytes { (csign: UnsafeMutablePointer<Int8>) -> UnsafeMutablePointer<Int8> in
             return csign
         }
         let cinputs = getVaList(inputs)
-       let re = ecdsa_verify_base64v(sig, cpk, Int32(inputs.count), cinputs)
+        let count = inputs.count - 1
+       let re = ecdsa_verify_base64v(sig, cpk, Int32(count), cinputs)
         
-        return re >= 0 ? true : false
+        return re == 0 ? true : false
     }
 }
