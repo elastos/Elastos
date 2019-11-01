@@ -124,7 +124,7 @@ const en = {
   'comments.noComments': `No comments yet, `,
   'comments.signIn': 'sign in ',
   'comments.firstToPost': 'to be the first to post!',
-  'comments.commentsOrUpdates': 'Comments or updates',
+  'comments.placeholder': 'Leave a comment',
   // Admin tasks
   'admin.tasks.status': 'Status',
 
@@ -1101,7 +1101,7 @@ const en = {
   'profile.submission.filter.all': 'All',
   'profile.submission.filter.created': 'Created',
   'profile.submission.filter.subscribed': 'Subscribed',
-  
+
   'profile.submission.table.title': 'Title',
   'profile.submission.table.type': 'Type',
   'profile.submission.table.created': 'Created',

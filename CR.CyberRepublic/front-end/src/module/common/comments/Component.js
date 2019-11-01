@@ -125,7 +125,7 @@ class C extends BaseComponent {
         style={{ width: '100%', height: 100 }}
         defaultSuggestions={allUsers}
         notFoundContent={I18N.get('mentions.notFound')}
-        placeholder={I18N.get('comments.commentsOrUpdates')}
+        placeholder={I18N.get('comments.placeholder')}
       />
     )
 
@@ -142,7 +142,7 @@ class C extends BaseComponent {
     const comment_el = (
       <TextArea
         style={{ width: '100%', height: 100 }}
-        placeholder={I18N.get('comments.commentsOrUpdates')}
+        placeholder={I18N.get('comments.placeholder')}
       />
     )
 

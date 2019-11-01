@@ -124,7 +124,7 @@ const zh = {
   'comments.noComments': '还没有评论，',
   'comments.signIn': '注册',
   'comments.firstToPost': '抢沙发！',
-  'comments.commentsOrUpdates': '评论或更新',
+  'comments.placeholder': '说点儿什么',
   // Admin tasks
   'admin.tasks.status': '状态',
 
