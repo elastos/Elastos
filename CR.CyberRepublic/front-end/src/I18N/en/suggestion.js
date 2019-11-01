@@ -30,7 +30,7 @@ export default {
   },
   btn: {
     makeIntoProposal: 'Make Into Proposal',
-    needBgInvestigation: 'Need Background Investigation',
+    needDueDiligence: 'Need Due Diligence',
     needAdvisory: 'Need Advisory'
   },
   status: {
@@ -93,18 +93,20 @@ export default {
   },
   msg: {
     consideration: 'Marked as under council consideration',
-    notify: 'Email was sent to secretary.'
-  },
-  popover: {
-    email: 'Email',
-    name: 'Name',
-    copy: 'Copy',
-    viewProfile: 'View Profile'
+    notify: 'Email was sent to secretary.',
+    archived: 'Suggestion archived, you can find it in My republic later.'
   },
   header: {
     suggestion: 'suggestion',
     crCouncil: 'cr council',
     crProposalPage: 'cr proposal page',
     approvedProposal: 'approved proposal'
+  },
+  search: {
+    number: 'Number',
+    title: 'Title',
+    abstract: 'Abstract',
+    email: 'Author email',
+    name: 'Author name'
   }
 }

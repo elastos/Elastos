@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import BaseComponent from '@/model/BaseComponent'
 import { Controlled as CodeMirror } from 'react-codemirror2'
 import 'codemirror/mode/gfm/gfm'
@@ -37,10 +38,11 @@ class Component extends BaseComponent {
 
   ord_render() {
     const { show, value } = this.state
+    const { name } = this.props
     return (
       <Wrapper>
         <Toolbar>
-          <UploadBase64Image insertImage={this.insertImage} />
+          <UploadBase64Image insertImage={this.insertImage} name={name} />
           <ToggleMarkdownPreview togglePreview={this.togglePreview} />
         </Toolbar>
         {show === false ? (
@@ -67,6 +69,10 @@ class Component extends BaseComponent {
       </Wrapper>
     )
   }
+}
+
+Component.propTypes = {
+  name: PropTypes.string.isRequired
 }
 
 export default Component

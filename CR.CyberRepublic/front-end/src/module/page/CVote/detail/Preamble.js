@@ -4,32 +4,24 @@ import moment from 'moment/moment'
 import { Row, Col } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import userUtil from '@/util/user'
-
+import PopoverProfile from '@/module/common/PopoverProfile'
 import styled from 'styled-components'
 
 const Component = ({
   vid,
   title,
-  proposedBy,
   proposer,
   type,
   status,
   createdAt,
   createdBy,
-  reference
+  reference,
+  user
 }) => {
   // header
   const headerNode = (
     <Header id="preamble">{I18N.get('proposal.fields.preamble')}</Header>
   )
-  // note
-  // const noteNode = (
-  //   <Note>
-  //     Note: For confidential purpose, no one elase including council members is
-  //     not able to access these files untill the bidding ended.
-  //   </Note>
-  // )
 
   const typeMap = {
     1: I18N.get('council.voting.type.newMotion'),
@@ -80,7 +72,7 @@ const Component = ({
         </ItemTitle>
       </Col>
       <Col span={18}>
-        <ItemText>{`${proposedBy} <${_.get(proposer, 'email')}>`}</ItemText>
+        <PopoverProfile owner={proposer} curUser={user} />
       </Col>
     </Item>
   )
@@ -93,7 +85,7 @@ const Component = ({
         </ItemTitle>
       </Col>
       <Col span={18}>
-        <ItemText>{`${userUtil.formatUsername(createdBy)} <${_.get(createdBy, 'email')}>`}</ItemText>
+        <PopoverProfile owner={createdBy} curUser={user} />
       </Col>
     </Item>
   )
@@ -122,7 +114,6 @@ const Component = ({
   return (
     <div>
       {headerNode}
-      {/* {noteNode} */}
       {idNode}
       {titleNode}
       {proposerNode}
@@ -137,7 +128,6 @@ const Component = ({
 const propTypes = {
   vid: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
-  proposedBy: PropTypes.string.isRequired,
   proposer: PropTypes.object.isRequired,
   status: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired

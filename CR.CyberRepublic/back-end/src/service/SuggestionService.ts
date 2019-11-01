@@ -108,13 +108,72 @@ export default class extends Base {
   }
 
   public async list(param: any): Promise<Object> {
-    const query = _.omit(param, ['results', 'page', 'sortBy', 'sortOrder', 'filter', 'profileListFor', 'search', 'tagsIncluded', 'referenceStatus'])
-    
+    const query = _.omit(
+      param,
+      [
+        'results', 'page', 'sortBy', 'sortOrder',
+        'filter', 'profileListFor', 'search',
+        'tagsIncluded', 'referenceStatus'
+      ]
+    )
     const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
-    
+
     if (!profileListFor) {
-      let qryTagsType: any
       query.$or = []
+      const search = _.trim(param.search)
+      const filter = param.filter
+      if (search && filter) {
+        const SEARCH_FILTERS = {
+          TITLE: 'TITLE',
+          NUMBER: 'NUMBER',
+          ABSTRACT: 'ABSTRACT',
+          EMAIL: 'EMAIL',
+          NAME: 'NAME'
+        }
+        
+        if (filter === SEARCH_FILTERS.NUMBER) {
+          query.$or = [{ displayId: parseInt(search) || 0 }]
+        }
+            
+        if (filter === SEARCH_FILTERS.TITLE) {
+          query.$or = [
+            { title: { $regex: search, $options: 'i' } }
+          ]
+        }
+
+        if (filter === SEARCH_FILTERS.ABSTRACT) {
+          query.$or = [
+            { abstract: { $regex: search, $options: 'i' } }
+          ]
+        }
+
+        if (filter === SEARCH_FILTERS.EMAIL) {
+          const db_user = this.getDBModel('User')
+          const users = await db_user.getDBInstance().find({
+            $or: [
+              { email: { $regex: search, $options: 'i' } }
+            ]
+          }).select('_id')
+          const userIds = _.map(users, (el: { _id: string }) => el._id)
+          query.$or = [{ createdBy: { $in: userIds } }]
+        }
+
+        if (filter === SEARCH_FILTERS.NAME) {
+          const db_user = this.getDBModel('User')
+          const pattern = search.split(' ').join('|')
+          const users = await db_user.getDBInstance().find({
+            $or: [
+              { username: { $regex: search, $options: 'i' } },
+              { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+              { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+            ]
+          }).select('_id')
+          const userIds = _.map(users, (el: { _id: string }) => el._id)
+          query.$or = [{ createdBy: { $in: userIds } }]
+        }
+      }
+
+      let qryTagsType: any
       if (!_.isEmpty(tagsIncluded)) {
         qryTagsType = { $in: tagsIncluded.split(',') }
         query.$or.push({ 'tags.type': qryTagsType })
@@ -407,9 +466,9 @@ export default class extends Base {
       return { success: false }
     }
     const council = userUtil.formatUsername(this.currentUser)
-    const subject = `Need background investigation on suggestion #${sugg.displayId}`
+    const subject = `Need due diligence on suggestion #${sugg.displayId}`
     const body = `
-      <p>Council member ${council} requested secretary to do background investigation on suggestion #${sugg.displayId}</p>
+      <p>Council member ${council} requested secretary to do due diligence on suggestion #${sugg.displayId}</p>
       <br />
       <p>Click the link to view the suggestion detail: <a href="${
       process.env.SERVER_URL
@@ -430,7 +489,7 @@ export default class extends Base {
       return { success: false }
     }
     const council = userUtil.formatUsername(this.currentUser)
-    const subject = `Need technical advisory on suggestion #${sugg.displayId}`
+    const subject = `Need advisory on suggestion #${sugg.displayId}`
     const body = `
       <p>Council member ${council} requested secretary to provide advisory on suggestion #${sugg.displayId}</p>
       <br />
@@ -493,8 +552,12 @@ export default class extends Base {
     const updateObject = {
       status: constant.SUGGESTION_STATUS.ARCHIVED,
     }
-    await this.model.update({ _id }, updateObject)
-    return { success: true, message: 'Ok'}
+    try {
+      await this.model.update({ _id }, updateObject)
+      return { success: true, message: 'ok' }
+    } catch (err) {
+      return { success: false, message: 'ok' }
+    }
   }
 
   public async delete(param: any): Promise<Document> {

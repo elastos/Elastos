@@ -115,5 +115,6 @@ export default {
     reviewDetails: 'Review Details',
     approved: 'Approved!',
     rejected: 'Rejected!'
-  }
+  },
+  elip: 'Elip'
 }

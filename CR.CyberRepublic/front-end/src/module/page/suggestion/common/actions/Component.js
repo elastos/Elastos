@@ -144,14 +144,12 @@ export default class extends BaseComponent {
           onClick={this.handleClick('isAbused')}
           className={`abuse-icon ${isAbused ? 'selected' : ''}`}
         />
-        {(this.props.isAdmin || isAuthor) ? (
-          <IconText
+        <IconText
           component={!!ArchiveIcon && <ArchiveIcon />}
           text={isArchived ? I18N.get('suggestion.unarchive') : I18N.get('suggestion.archive')}
           onClick={this.handleClick('isArchived')}
           className="archive-icon"
         />
-        ) : ''}
       </div>
     )
     return (

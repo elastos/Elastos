@@ -304,7 +304,7 @@ export default class extends Base {
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
       )
       .populate('reference')
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
     if (!rs) {
       throw 'ElipService.getById - invalid elip id'
     }

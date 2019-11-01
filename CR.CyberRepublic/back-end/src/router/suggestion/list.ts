@@ -27,10 +27,6 @@ export default class extends Base {
     const service = this.buildService(SuggestionService)
     const param = this.getParam()
 
-    if (param.search) {
-      param.title = { $regex: _.trim(param.search), $options: 'i' }
-    }
-
     if (param.profileListFor) {
       const currentUserId = new ObjectId(param.profileListFor)
       // make sure this is the logged in user

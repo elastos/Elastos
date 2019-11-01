@@ -29,7 +29,7 @@ export default {
   },
   btn: {
     makeIntoProposal: '发布为提案',
-    needBgInvestigation: '需要背景调查',
+    needDueDiligence: '需要尽职调查',
     needAdvisory: '需要咨询'
   },
   status: {
@@ -91,18 +91,20 @@ export default {
   },
   msg: {
     consideration: '已标记为委员会正在审议中',
-    notify: '已给秘书发送邮件'
-  },
-  popover: {
-    email: '邮箱',
-    name: '姓名',
-    copy: '复制',
-    viewProfile: '查看个人资料'
+    notify: '已给秘书发送邮件',
+    archived: '建议已归档，您可以在我的Republic下找到它'
   },
   header: {
     suggestion: '建议',
     crCouncil: 'CR 理事会',
     crProposalPage: 'CR 提案页面',
     approvedProposal: '已批准的提案'
+  },
+  search: {
+    number: '编号',
+    title: '标题',
+    abstract: '摘要',
+    email: '作者邮箱',
+    name: '作者姓名'
   }
 }

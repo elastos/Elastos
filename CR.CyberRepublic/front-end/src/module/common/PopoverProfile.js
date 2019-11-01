@@ -4,24 +4,18 @@ import _ from 'lodash'
 import I18N from '@/I18N'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import userUtil from '@/util/user'
 
-export default ({ data, meta, user }) => {
-  let name = `${_.get(data, 'createdBy.profile.firstName', '')}
-    ${_.get(data, 'createdBy.profile.lastName', '')}
-  `
-  const username = _.get(data, 'createdBy.username')
-  if (name === ' ') {
-    name = username
-  }
-  const author = data.author || name
-  const userId = _.get(data, 'createdBy._id')
-  const email = _.get(data, 'createdBy.email')
-  const isAuthor = user.current_user_id === userId
+export default ({ owner, curUser }) => {
+  const name = userUtil.formatUsername(owner)
+  const userId = _.get(owner, '_id')
+  const email = _.get(owner, 'email')
+  const isAuthor = curUser.current_user_id === userId
   const content = (
     <PopoverContent>
       <div>
         <span className="label email">
-          {I18N.get('suggestion.popover.email')}:
+          {I18N.get('profile.popover.email')}:
         </span>
         <span className="value email">{email}</span>
         <Button
@@ -35,23 +29,23 @@ export default ({ data, meta, user }) => {
             document.body.removeChild(el)
           }}
         >
-          {I18N.get('suggestion.popover.copy')}
+          {I18N.get('profile.popover.copy')}
         </Button>
       </div>
       <div>
-        <span className="label">{I18N.get('suggestion.popover.name')}:</span>
-        <span className="value">{author}</span>
+        <span className="label">{I18N.get('profile.popover.name')}:</span>
+        <span className="value">{name}</span>
       </div>
-      {(isAuthor || user.is_admin || user.is_secretary || user.is_council) && (
+      {(isAuthor || curUser.is_admin || curUser.is_secretary || curUser.is_council) && (
         <Link to={`/member/${userId}`}>
-          {I18N.get('suggestion.popover.viewProfile')}
+          {I18N.get('profile.popover.viewProfile')}
         </Link>
       )}
     </PopoverContent>
   )
   return (
     <Popover content={content} trigger="click" placement="top">
-      <ItemTextName>{meta ? author : username}</ItemTextName>
+      <ItemTextName>{name}</ItemTextName>
     </Popover>
   )
 }

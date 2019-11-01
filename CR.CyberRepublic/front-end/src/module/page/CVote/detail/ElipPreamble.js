@@ -4,6 +4,7 @@ import I18N from '@/I18N'
 import { Row, Col } from 'antd'
 import moment from 'moment/moment'
 import _ from 'lodash'
+import PopoverProfile from '@/module/common/PopoverProfile'
 
 import styled from 'styled-components'
 import {
@@ -13,24 +14,25 @@ import {
 } from './style'
 
 const Component = ({
-  vid: elip,
+  vid: proposal,
   title,
-  proposedBy: author,
-  discussions,
-  status,
+  proposer,
   type,
+  status,
   createdAt: created,
-  requires,
-  replaces,
-  superseded
+  createdBy: referee,
+  user
 }) => {
-  const result = {elip, title, author, discussions, status, type, created, requires, replaces, superseded}
+  const result = {proposal, title, proposer, referee, type, status, created}
   const typeMap = {
     4: I18N.get('council.voting.type.standardTrack'),
     5: I18N.get('council.voting.type.information'),
     6: I18N.get('council.voting.type.process'),
   }
-  const preambles = {...result, type: typeMap[result.type], created: moment(created).format('MMM D, YYYY')}
+  const proposalValue = proposal && `#${proposal}`
+  const proposerValue = <PopoverProfile owner={proposer} curUser={user} />
+  const refereeValue = <PopoverProfile owner={referee} curUser={user} />
+  const preambles = {...result, proposal: proposalValue, proposer: proposerValue, referee: refereeValue, type: typeMap[result.type], created: moment(created).format('MMM D, YYYY')}
   const itemFunction = (key, value) => (
     <Item key={key}>
       <Col span={6}>
@@ -45,7 +47,17 @@ const Component = ({
     <Part id="preamble">
       <PartTitle>{I18N.get('elip.fields.preamble')}</PartTitle>
       <PartContent className="preamble">
-        {_.map(preambles, (v, k) => !_.isEmpty(v) && itemFunction(I18N.get(`elip.fields.preambleItems.${k}`), v))}
+        {_.map(
+          preambles,
+          (v, k) =>
+            !_.isEmpty(v) &&
+            itemFunction(
+              k === 'type'
+                ? I18N.get('proposal.fields.type')
+                : I18N.get(`proposal.fields.preambleSub.${k}`),
+              v
+            )
+        )}
       </PartContent>
     </Part>
   )
@@ -54,14 +66,12 @@ const Component = ({
 const propTypes = {
   vid: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
-  proposedBy: PropTypes.string.isRequired,
-  discussions: PropTypes.string,
+  proposer: PropTypes.object.isRequired,
   status: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
-  requires: PropTypes.string,
-  replaces: PropTypes.string,
-  superseded: PropTypes.string
+  createdBy: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
 }
 
 Component.propTypes = propTypes

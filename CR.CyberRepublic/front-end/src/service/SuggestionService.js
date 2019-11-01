@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { api_request } from '@/util'
 import { logger } from '@/util'
+import I18N from '@/I18N'
 import { message } from 'antd'
 import BaseService from '../model/BaseService'
 
@@ -131,7 +132,7 @@ export default class extends BaseService {
     try {
       res = await api_request({
         path,
-        method: 'post',
+        method: 'put',
         data: doc,
       })
     } catch (error) {
@@ -240,12 +241,13 @@ export default class extends BaseService {
   // ADMIN and Author
   async archive(id) {
     const path = `${this.prefixPath}/${id}/archive`
-
     const res = await api_request({
       path,
       method: 'post',
     })
-
+    if(res.success) {
+      message.info(I18N.get('suggestion.msg.archived'))
+    }
     return res
   }
 
@@ -262,7 +264,7 @@ export default class extends BaseService {
   }
 
   // ADMIN and Council
-  async needBgInvestigation(id) {
+  async needDueDiligence(id) {
     const path = `${this.prefixPath}/${id}/investigation`
     const res = await api_request({
       path,

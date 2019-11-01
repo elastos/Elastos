@@ -159,6 +159,7 @@ class C extends BaseComponent {
         content={data[id]}
         callback={this.onTextareaChange}
         activeKey={id}
+        name={id}
       />
     )
   }

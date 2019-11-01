@@ -286,11 +286,10 @@ class C extends StandardPage {
   }
 
   renderMeta() {
-    const { data } = this.props
-    data.author = data.proposedBy
+    const { data, user } = this.props
     data.displayId = data.vid
     const postedByText = I18N.get('from.CVoteForm.label.proposedby')
-    return <MetaComponent data={data} postedByText={postedByText} />
+    return <MetaComponent data={data} postedByText={postedByText} user={user} />
   }
 
   renderAnchor() {
@@ -441,22 +440,29 @@ class C extends StandardPage {
   }
 
   renderLabelNode() {
-    const reference = _.get(this.props.data, 'reference')
-    if (_.isEmpty(reference)) return null
-    const { _id, displayId } = reference
     const { isElip } = this.props
-    const typeText = isElip ? 'test' : I18N.get('suggestion.suggestion')
-    const linkText = `${typeText} #${displayId}`
+    const reference = isElip ? _.get(this.props.data, 'referenceElip') : _.get(this.props.data, 'reference')
+    if (_.isEmpty(reference)) return null
+    let linkText
+    let linkUrl
+    const { _id, displayId, vid } = reference
+    if (isElip) {
+      linkText = `${I18N.get('elip.elip')} #${vid}`
+      linkUrl = isElip ? `/elips/${_id}` : `/suggestion/${_id}`
+    } else {
+      linkText = `${I18N.get('suggestion.suggestion')} #${displayId}`
+      linkUrl = isElip ? `/elips/${_id}` : `/suggestion/${_id}`
+    }
     return (
       <Label>
         {`${I18N.get('council.voting.referred')} `}
-        <Link to={`/suggestion/${_id}`}>{linkText}</Link>
+        <Link to={linkUrl}>{linkText}</Link>
       </Label>
     )
   }
 
   renderContent() {
-    const { data, isElip } = this.props
+    const { data, user, isElip } = this.props
     if (isElip) {
       const sections = [
         'abstract',
@@ -469,7 +475,7 @@ class C extends StandardPage {
       ]
       return (
         <div>
-          <ElipPreamble {...data} />
+          <ElipPreamble {...data} user={user}/>
           {_.map(sections, section => (
             <Part id={section} key={section}>
               <PartTitle>{I18N.get(`elip.fields.${section}`)}</PartTitle>
@@ -485,7 +491,7 @@ class C extends StandardPage {
     if (_.has(data, 'content')) return renderRichContent(data, 'content')
     return (
       <div>
-        <Preamble {...data} />
+        <Preamble {...data} user={user} />
         {renderRichContent(
           data,
           'abstract',
@@ -852,18 +858,30 @@ class C extends StandardPage {
   }
 
   showVoteYesModal = () => {
-    const { visibleYes } = this.state
+    const { visibleYes, visibleOppose, visibleAbstain } = this.state
     this.setState({ visibleYes: !visibleYes })
+    if (!visibleYes) {
+      if (visibleOppose) this.setState({ visibleOppose: !visibleOppose })
+      if (visibleAbstain) this.setState({ visibleAbstain: !visibleAbstain })
+    }
   }
 
   showVoteAbstainModal = () => {
-    const { visibleAbstain } = this.state
+    const { visibleYes, visibleOppose, visibleAbstain } = this.state
     this.setState({ visibleAbstain: !visibleAbstain })
+    if (!visibleAbstain) {
+      if (visibleYes) this.setState({ visibleYes: !visibleYes })
+      if (visibleOppose) this.setState({ visibleOppose: !visibleOppose })
+    }
   }
 
   showVoteOpposeModal = () => {
-    const { visibleOppose } = this.state
+    const { visibleYes, visibleOppose, visibleAbstain } = this.state
     this.setState({ visibleOppose: !visibleOppose })
+    if (!visibleOppose) {
+      if (visibleYes) this.setState({ visibleYes: !visibleYes })
+      if (visibleAbstain) this.setState({ visibleAbstain: !visibleAbstain })
+    }
   }
 
   completeProposal = () => {
