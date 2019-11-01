@@ -1095,8 +1095,6 @@ const en = {
   'profile.tasks.filter.active': 'Active',
   'profile.tasks.filter.applied': 'Applied',
   'profile.tasks.filter.subscribed': 'Subscribed',
-  
-  'profile.tasks.button.view': 'View',
 
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',

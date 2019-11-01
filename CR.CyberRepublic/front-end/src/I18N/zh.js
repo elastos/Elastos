@@ -1061,8 +1061,6 @@ const zh = {
   'profile.tasks.filter.applied': '已申请',
   'profile.tasks.filter.subscribed': '已订阅',
 
-  'profile.tasks.button.view': '查看',
-
   // Validate Form
   'ambassadors.form.required': '必填项目',
   'ambassadors.form.reason.max': '原因太长',

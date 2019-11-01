@@ -565,7 +565,7 @@ export default class extends ProfilePage {
                     className="pull-down"
                     onClick={this.linkTaskDetail.bind(this, item.id)}
                   >
-                    {I18N.get('profile.tasks.button.view')}
+                    {I18N.get('profile.view')}
                     <div className="pull-right">
                       {this.props.page === 'LEADER' &&
                         this.getCommentStatus(item.task)}
