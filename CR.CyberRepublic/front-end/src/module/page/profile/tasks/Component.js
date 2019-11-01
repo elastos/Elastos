@@ -8,16 +8,31 @@ import sanitizeHtml from '@/util/html'
 import './style.scss'
 import '../../admin/admin.scss'
 
-import {TASK_CANDIDATE_STATUS, USER_AVATAR_DEFAULT, TASK_CATEGORY, TASK_STATUS} from '@/constant'
-import { Col, Row, Icon, Select, Form, Badge, Tooltip, Breadcrumb,
-  Avatar, Button, Tag, Divider, Spin, List, Carousel, Input } from 'antd'
-import InfiniteScroll from 'react-infinite-scroller'
+import {
+  TASK_CANDIDATE_STATUS,
+  USER_AVATAR_DEFAULT,
+  TASK_STATUS
+} from '@/constant'
+import {
+  Col,
+  Row,
+  Icon,
+  Select,
+  Badge,
+  Tooltip,
+  Avatar,
+  Button,
+  Tag,
+  Divider,
+  List,
+  Carousel,
+  Input
+} from 'antd'
+
 import moment from 'moment/moment'
 import MediaQuery from 'react-responsive'
 import ProfilePage from '../../ProfilePage'
-import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'
-
-const FormItem = Form.Item
+import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '../../../../config/constant'
 
 const FILTERS = {
   ALL: 'all',
@@ -61,8 +76,8 @@ export default class extends ProfilePage {
   }
 
   /**
-     * Builds the query from the current state
-     */
+   * Builds the query from the current state
+   */
   getQuery() {
     const query = {
       profileListFor: this.props.currentUserId
@@ -104,8 +119,8 @@ export default class extends ProfilePage {
   }
 
   /**
-     * Refetch the data based on the current state retrieved from getQuery
-     */
+   * Refetch the data based on the current state retrieved from getQuery
+   */
   refetch() {
     const query = this.getQuery()
     this.props.getTasks(query)
@@ -156,7 +171,11 @@ export default class extends ProfilePage {
   }
 
   getOwnerCommentActions(id, data) {
-    const candidateActions = this.getCandidateCommentActions('lastSeenByOwner', id, data)
+    const candidateActions = this.getCandidateCommentActions(
+      'lastSeenByOwner',
+      id,
+      data
+    )
     const commentActions = this.getCommentActions(id, data)
 
     return (
@@ -168,79 +187,100 @@ export default class extends ProfilePage {
   }
 
   getCandidateCommentActions(seenProperty, id, data) {
-    const candidate = _.find(data.candidates, (candidate) => {
+    const candidate = _.find(data.candidates, candidate => {
       return candidate.user && candidate.user._id === this.props.currentUserId
     })
     let unread = []
 
     if (candidate) {
       const lastDate = candidate[seenProperty]
-      unread = _.filter(candidate.comments, (comment) => {
-        return !lastDate || new Date(_.first(comment).createdAt) > new Date(lastDate)
+      unread = _.filter(candidate.comments, comment => {
+        return (
+          !lastDate || new Date(_.first(comment).createdAt) > new Date(lastDate)
+        )
       })
     } else {
-      unread = _.flatten(_.map(data.candidates, (candidate) => {
-        const lastDate = candidate[seenProperty]
-        const subUnread = _.filter(candidate.comments, (comment) => {
-          return !lastDate || new Date(_.first(comment).createdAt) > new Date(lastDate)
+      unread = _.flatten(
+        _.map(data.candidates, candidate => {
+          const lastDate = candidate[seenProperty]
+          const subUnread = _.filter(candidate.comments, comment => {
+            return (
+              !lastDate ||
+              new Date(_.first(comment).createdAt) > new Date(lastDate)
+            )
+          })
+          return subUnread
         })
-        return subUnread
-      }))
+      )
     }
 
     const tooltipSuffix = unread.length > 1 ? 's' : ''
     const tooltip = `${unread.length} new message${tooltipSuffix}`
 
-    return unread.length
-      ? (
-        <Tooltip title={tooltip}>
-          <Badge dot={true} count={unread.length}>
-            <a onClick={candidate
-              ? this.linkTaskCandidateDetail.bind(this, data._id, candidate.user._id)
-              : this.linkTaskDetail.bind(this, data._id)} className="tableLink">
-              <Icon type="message"/>
-            </a>
-          </Badge>
-        </Tooltip>
-      )
-      : null
+    return unread.length ? (
+      <Tooltip title={tooltip}>
+        <Badge dot={true} count={unread.length}>
+          <a
+            onClick={
+              candidate
+                ? this.linkTaskCandidateDetail.bind(
+                    this,
+                    data._id,
+                    candidate.user._id
+                  )
+                : this.linkTaskDetail.bind(this, data._id)
+            }
+            className="tableLink"
+          >
+            <Icon type="message" />
+          </a>
+        </Badge>
+      </Tooltip>
+    ) : null
   }
 
   getCommentActions(id, data) {
-    const isOwner = data.createdBy && data.createdBy._id === this.props.currentUserId
-    const subscription = _.find(data.subscribers, (subscriber) => {
+    const isOwner =
+      data.createdBy && data.createdBy._id === this.props.currentUserId
+    const subscription = _.find(data.subscribers, subscriber => {
       return subscriber.user && subscriber.user._id === this.props.currentUserId
     })
     const lastDate = isOwner
       ? data.lastCommentSeenByOwner
       : subscription && subscription.lastSeen
 
-    const unread = _.filter(data.comments, (comment) => {
-      return !lastDate || new Date(_.first(comment).createdAt) > new Date(lastDate)
+    const unread = _.filter(data.comments, comment => {
+      return (
+        !lastDate || new Date(_.first(comment).createdAt) > new Date(lastDate)
+      )
     })
     const tooltipSuffix = unread.length > 1 ? 's' : ''
     const tooltip = `${unread.length} new message${tooltipSuffix}`
 
-    return unread.length
-      ? (
-        <Tooltip title={tooltip}>
-          <Badge dot={true} count={unread.length}>
-            <a onClick={this.linkTaskDetail.bind(this, data._id)} className="tableLink">
-              <Icon type="message"/>
-            </a>
-          </Badge>
-        </Tooltip>
-      )
-      : null
+    return unread.length ? (
+      <Tooltip title={tooltip}>
+        <Badge dot={true} count={unread.length}>
+          <a
+            onClick={this.linkTaskDetail.bind(this, data._id)}
+            className="tableLink"
+          >
+            <Icon type="message" />
+          </a>
+        </Badge>
+      </Tooltip>
+    ) : null
   }
 
-  ord_renderContent () {
-    const searchChangedHandler = (e) => {
+  ord_renderContent() {
+    const searchChangedHandler = e => {
       const search = e.target.value
-      this.setState({
-        search,
-        page: 1
-      }, this.debouncedRefetch)
+      this.setState(
+        {
+          search,
+          page: 1
+        },
+        this.debouncedRefetch
+      )
     }
 
     return (
@@ -251,15 +291,21 @@ export default class extends ProfilePage {
             <div className="p_admin_content">
               <Row>
                 <Col sm={24} md={4} className="wrap-box-navigator">
-                  <Navigator selectedItem="profileTasks"/>
+                  <Navigator selectedItem="profileTasks" />
                 </Col>
-                <Col sm={24} md={20} className="c_ProfileContainer admin-right-column wrap-box-user">
+                <Col
+                  sm={24}
+                  md={20}
+                  className="c_ProfileContainer admin-right-column wrap-box-user"
+                >
                   {(this.props.is_leader || this.props.is_admin) && (
-                  <div className="pull-right filter-group btn-create-task">
-                    <Button onClick={() => this.props.history.push('/task-create/')}>
-                      {I18N.get('profile.tasks.create.task')}
-                    </Button>
-                  </div>
+                    <div className="pull-right filter-group btn-create-task">
+                      <Button
+                        onClick={() => this.props.history.push('/task-create/')}
+                      >
+                        {I18N.get('profile.tasks.create.task')}
+                      </Button>
+                    </div>
                   )}
                   <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
                     <Select
@@ -277,80 +323,98 @@ export default class extends ProfilePage {
                     </Select>
                   </MediaQuery>
                   {!this.props.is_admin && (
-                  <MediaQuery minWidth={MIN_WIDTH_PC}>
-                    <Button.Group className="filter-group pull-left">
-                      <Button
-                                          className={(this.state.filter === FILTERS.ALL && 'selected') || ''}
-                                          onClick={this.clearFilters.bind(this)}>
-All
-                      </Button>
-                      {this.props.is_admin && (
-                      <Button
-                                              className={(this.state.filter === FILTERS.NEED_APPROVAL && 'selected') || ''}
-                                              onClick={this.setNeedApprovalFilter.bind(this)}>
-Need Approval
-                      </Button>
-                      )}
-                      <Button
-                                          className={(this.state.filter === FILTERS.OWNED && 'selected') || ''}
-                                          onClick={this.setOwnedFilter.bind(this)}>
-Owned
-                      </Button>
-                      <Button
-                                          className={(this.state.filter === FILTERS.ACTIVE && 'selected') || ''}
-                                          onClick={this.setActiveFilter.bind(this)}>
-Active
-                      </Button>
-                      <Button
-                                          className={(this.state.filter === FILTERS.APPLIED && 'selected') || ''}
-                                          onClick={this.setAppliedFilter.bind(this)}>
-Applied
-                      </Button>
-                      <Button
-                                          className={(this.state.filter === FILTERS.SUBSCRIBED && 'selected') || ''}
-                                          onClick={this.setSubscribedFilter.bind(this)}>
-Subscribed
-                      </Button>
-                    </Button.Group>
-                  </MediaQuery>
+                    <MediaQuery minWidth={MIN_WIDTH_PC}>
+                      <Button.Group className="filter-group pull-left">
+                        <Button
+                          className={(this.state.filter === FILTERS.ALL && 'selected') || ''}
+                          onClick={this.clearFilters.bind(this)}
+                        >
+                          All
+                        </Button>
+                        {this.props.is_admin && (
+                          <Button
+                            className={(this.state.filter === FILTERS.NEED_APPROVAL && 'selected') || ''}
+                            onClick={this.setNeedApprovalFilter.bind(this)}
+                          >
+                            Need Approval
+                          </Button>
+                        )}
+                        <Button
+                          className={(this.state.filter === FILTERS.OWNED && 'selected') || ''}
+                          onClick={this.setOwnedFilter.bind(this)}
+                        >
+                          Owned
+                        </Button>
+                        <Button
+                          className={(this.state.filter === FILTERS.ACTIVE && 'selected') || ''}
+                          onClick={this.setActiveFilter.bind(this)}
+                        >
+                          Active
+                        </Button>
+                        <Button
+                          className={
+                            (this.state.filter === FILTERS.APPLIED && 'selected') || ''
+                          }
+                          onClick={this.setAppliedFilter.bind(this)}
+                        >
+                          Applied
+                        </Button>
+                        <Button
+                          className={
+                            (this.state.filter === FILTERS.SUBSCRIBED && 'selected') || ''
+                          }
+                          onClick={this.setSubscribedFilter.bind(this)}
+                        >
+                          Subscribed
+                        </Button>
+                      </Button.Group>
+                    </MediaQuery>
                   )}
                   <div className="pull-right filter-group search-group">
-                    <Input defaultValue={this.state.search} onChange={searchChangedHandler.bind(this)}
-                      placeholder={I18N.get('developer.search.search.placeholder')}/>
+                    <Input
+                      defaultValue={this.state.search}
+                      onChange={searchChangedHandler.bind(this)}
+                      placeholder={I18N.get(
+                        'developer.search.search.placeholder'
+                      )}
+                    />
                   </div>
 
                   {this.props.is_admin && (
-                  <div className="pull-right status-selector">
-                    <Select
-                                            showSearch={true}
-                                            allowClear={true}
-                                            placeholder="Select a status"
-                                            defaultValue={this.state.statusFilter}
-                                            onChange={this.setStatusFilter.bind(this)}
-                                          >
-                      {_.keys(TASK_STATUS).map((taskStatus) => {
-                        return (
-                          <Select.Option key={taskStatus} value={_.capitalize(taskStatus)}>
-                            {I18N.get(`taskStatus.${taskStatus}`)}
-                          </Select.Option>
-                        )
-                      })}
-                    </Select>
-                  </div>
+                    <div className="pull-right status-selector">
+                      <Select
+                        showSearch={true}
+                        allowClear={true}
+                        placeholder="Select a status"
+                        defaultValue={this.state.statusFilter}
+                        onChange={this.setStatusFilter.bind(this)}
+                      >
+                        {_.keys(TASK_STATUS).map(taskStatus => {
+                          return (
+                            <Select.Option
+                              key={taskStatus}
+                              value={_.capitalize(taskStatus)}
+                            >
+                              {I18N.get(`taskStatus.${taskStatus}`)}
+                            </Select.Option>
+                          )
+                        })}
+                      </Select>
+                    </div>
                   )}
-                  <div className="clearfix"/>
+                  <div className="clearfix" />
                   {this.renderList()}
                 </Col>
               </Row>
               <Row>
                 <Col>
-                  <br/>
+                  <br />
                 </Col>
               </Row>
             </div>
           </div>
         </div>
-        <Footer/>
+        <Footer />
       </div>
     )
   }
@@ -375,54 +439,60 @@ Subscribed
     if (_.isEmpty(pictures)) {
       pictures.unshift(
         <div key="main">
-          <img width={188} height={188} alt="logo" src="/assets/images/Group_1685.12.svg" />
+          <img
+            width={188}
+            height={188}
+            alt="logo"
+            src="/assets/images/Group_1685.12.svg"
+          />
         </div>
       )
     }
 
     return (
       <div className="carousel-wrapper">
-        <Carousel autoplay={true}>
-          {pictures}
-        </Carousel>
+        <Carousel autoplay={true}>{pictures}</Carousel>
       </div>
     )
   }
 
   /**
-     * This purposely only loads tasks from props because we are using pagination
-     */
+   * This purposely only loads tasks from props because we are using pagination
+   */
   renderList() {
     const tasks = this.props.all_tasks
-    const description_fn = (entity) => {
+    const description_fn = entity => {
       return (
         <div>
           {entity.applicationDeadline && (
-          <div className="valign-wrapper">
-            <div className="gap-right pull-left">
-              {I18N.get('project.detail.deadline')}
-:
+            <div className="valign-wrapper">
+              <div className="gap-right pull-left">
+                {I18N.get('project.detail.deadline')}:
+              </div>
+              <div className="pull-left default-text">
+                {moment(entity.applicationDeadline).format('MMM D')}
+              </div>
             </div>
-            <div className="pull-left default-text">
-              {moment(entity.applicationDeadline).format('MMM D')}
-            </div>
-          </div>
           )}
         </div>
       )
     }
 
     const data = _.map(tasks, (task, id) => {
-      const applicationDeadline = task.applicationDeadline ? new Date(task.applicationDeadline).getTime() : Date.now()
+      const applicationDeadline = task.applicationDeadline
+        ? new Date(task.applicationDeadline).getTime()
+        : Date.now()
       return {
         href: '',
         title: task.name,
         description: description_fn(task),
         content: task.description,
-        owner: task.createdBy || {profile: {
-          firstName: '',
-          lastName: 'DELETED'
-        }},
+        owner: task.createdBy || {
+          profile: {
+            firstName: '',
+            lastName: 'DELETED'
+          }
+        },
         applicationDeadlinePassed: Date.now() > applicationDeadline,
         id: task._id,
         status: task.status,
@@ -431,8 +501,12 @@ Subscribed
     })
 
     return (
-      <List itemLayout="vertical" size="large" loading={this.props.loading || this.state.loadingMore}
-        className="with-right-box" dataSource={data}
+      <List
+        itemLayout="vertical"
+        size="large"
+        loading={this.props.loading || this.state.loadingMore}
+        className="with-right-box"
+        dataSource={data}
         pagination={{
           pageSize: this.state.results || 5,
           total: this.props.loading ? 0 : this.props.all_tasks_total,
@@ -441,86 +515,107 @@ Subscribed
         renderItem={item => (
           <div>
             <MediaQuery minWidth={MIN_WIDTH_PC}>
-              <List.Item
-                key={item.id}
-                extra={this.getCarousel(item.task)}
-              >
+              <List.Item key={item.id} extra={this.getCarousel(item.task)}>
                 <h3 className="no-margin no-padding one-line brand-color">
-                  <a onClick={this.linkTaskDetail.bind(this, item.id)}>{item.title}</a>
+                  <a onClick={this.linkTaskDetail.bind(this, item.id)}>
+                    {item.title}
+                  </a>
                 </h3>
 
                 {/* Status */}
                 <div className="valign-wrapper">
                   <Tag>
-Status:
+                    Status:
                     {item.status}
                   </Tag>
                 </div>
 
                 {item.applicationDeadlinePassed && (
-                <span className="subtitle">
-                  {I18N.get('developer.search.subtitle_prefix')}
-                  {' '}
-                  {I18N.get('developer.search.subtitle_applications')}
-                </span>
+                  <span className="subtitle">
+                    {I18N.get('developer.search.subtitle_prefix')}{' '}
+                    {I18N.get('developer.search.subtitle_applications')}
+                  </span>
                 )}
-                <h5 className="no-margin">
-                  {item.description}
-                </h5>
-                <div className="description-content ql-editor" dangerouslySetInnerHTML={{__html: sanitizeHtml(item.content)}} />
+                <h5 className="no-margin">{item.description}</h5>
+                <div
+                  className="description-content ql-editor"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(item.content)
+                  }}
+                />
                 <div className="ant-list-item-right-box">
-                  <a className="pull-up" onClick={this.linkUserDetail.bind(this, item.owner)}>
-                    <Avatar size="large" icon="user" className="pull-right" src={USER_AVATAR_DEFAULT}/>
-                    <div className="clearfix"/>
+                  <a
+                    className="pull-up"
+                    onClick={this.linkUserDetail.bind(this, item.owner)}
+                  >
+                    <Avatar
+                      size="large"
+                      icon="user"
+                      className="pull-right"
+                      src={USER_AVATAR_DEFAULT}
+                    />
+                    <div className="clearfix" />
                     <div>
-                      {item.owner.profile.firstName}
-                      {' '}
+                      {item.owner.profile.firstName}{' '}
                       {item.owner.profile.lastName}
                     </div>
                   </a>
-                  <Button type="primary" className="pull-down" onClick={this.linkTaskDetail.bind(this, item.id)}>
-                                        View
+                  <Button
+                    type="primary"
+                    className="pull-down"
+                    onClick={this.linkTaskDetail.bind(this, item.id)}
+                  >
+                    View
                     <div className="pull-right">
-                      {this.props.page === 'LEADER' && this.getCommentStatus(item.task)}
+                      {this.props.page === 'LEADER' &&
+                        this.getCommentStatus(item.task)}
                     </div>
                   </Button>
                 </div>
               </List.Item>
             </MediaQuery>
             <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
-              <List.Item
-                key={item.id}
-                className="ignore-right-box"
-              >
+              <List.Item key={item.id} className="ignore-right-box">
                 <h3 className="no-margin no-padding one-line brand-color">
-                  <a onClick={this.linkTaskDetail.bind(this, item.id)}>{item.title}</a>
+                  <a onClick={this.linkTaskDetail.bind(this, item.id)}>
+                    {item.title}
+                  </a>
                 </h3>
 
                 {/* Status */}
                 <div className="valign-wrapper">
                   <Tag>
-Status:
+                    Status:
                     {item.status}
                   </Tag>
                 </div>
 
-                <h5 className="no-margin">
-                  {item.description}
-                </h5>
+                <h5 className="no-margin">{item.description}</h5>
                 <div>
-                  <a onClick={this.linkUserDetail.bind(this, item.owner)} className="owner-container">
+                  <a
+                    onClick={this.linkUserDetail.bind(this, item.owner)}
+                    className="owner-container"
+                  >
                     <span>
-                      {item.owner.profile.firstName}
-                      {' '}
+                      {item.owner.profile.firstName}{' '}
                       {item.owner.profile.lastName}
                     </span>
-                    <Divider type="vertical"/>
-                    <Avatar size="large" icon="user" src={USER_AVATAR_DEFAULT}/>
+                    <Divider type="vertical" />
+                    <Avatar
+                      size="large"
+                      icon="user"
+                      src={USER_AVATAR_DEFAULT}
+                    />
                   </a>
-                  <Button type="primary" className="pull-right view-button" onClick={this.linkTaskDetail.bind(this, item.id)}>
-                                        View
+                  <Button
+                    type="primary"
+                    className="pull-right view-button"
+                    onClick={this.linkTaskDetail.bind(this, item.id)}
+                  >
+                    View
                     <div className="pull-right">
-                      {this.props.page === 'LEADER' && this.getCommentStatus(item.task)}
+                      {this.props.page === 'LEADER' &&
+                        this.getCommentStatus(item.task)}
                     </div>
                   </Button>
                 </div>
@@ -534,10 +629,20 @@ Status:
 
   onSelectFilter(value) {
     const handlerLookupDefault = this.clearFilters
-    const filters = [FILTERS.ACTIVE, FILTERS.APPLIED, FILTERS.SUBSCRIBED,
-      FILTERS.OWNED, FILTERS.NEED_APPROVAL]
-    const handlers = [this.setActiveFilter, this.setAppliedFilter, this.setSubscribedFilter,
-      this.setOwnedFilter, this.setNeedApprovalFilter]
+    const filters = [
+      FILTERS.ACTIVE,
+      FILTERS.APPLIED,
+      FILTERS.SUBSCRIBED,
+      FILTERS.OWNED,
+      FILTERS.NEED_APPROVAL
+    ]
+    const handlers = [
+      this.setActiveFilter,
+      this.setAppliedFilter,
+      this.setSubscribedFilter,
+      this.setOwnedFilter,
+      this.setNeedApprovalFilter
+    ]
     const handlerLookup = _.zipObject(filters, handlers)
     const handler = handlerLookup[value] || handlerLookupDefault
 
@@ -545,57 +650,77 @@ Status:
   }
 
   clearFilters() {
-    this.setState({
-      filter: FILTERS.ALL,
-      page: 1
-    }, this.refetch.bind(this))
+    this.setState(
+      {
+        filter: FILTERS.ALL,
+        page: 1
+      },
+      this.refetch.bind(this)
+    )
   }
 
   setActiveFilter() {
-    this.setState({
-      filter: FILTERS.ACTIVE,
-      page: 1
-    }, this.refetch.bind(this))
+    this.setState(
+      {
+        filter: FILTERS.ACTIVE,
+        page: 1
+      },
+      this.refetch.bind(this)
+    )
   }
 
   setAppliedFilter() {
-    this.setState({
-      filter: FILTERS.APPLIED,
-      page: 1
-    }, this.refetch.bind(this))
+    this.setState(
+      {
+        filter: FILTERS.APPLIED,
+        page: 1
+      },
+      this.refetch.bind(this)
+    )
   }
 
   setOwnedFilter() {
-    this.setState({
-      filter: FILTERS.OWNED,
-      page: 1
-    }, this.refetch.bind(this))
+    this.setState(
+      {
+        filter: FILTERS.OWNED,
+        page: 1
+      },
+      this.refetch.bind(this)
+    )
   }
 
   setSubscribedFilter() {
-    this.setState({
-      filter: FILTERS.SUBSCRIBED,
-      page: 1
-    }, this.refetch.bind(this))
+    this.setState(
+      {
+        filter: FILTERS.SUBSCRIBED,
+        page: 1
+      },
+      this.refetch.bind(this)
+    )
   }
 
   setNeedApprovalFilter() {
-    this.setState({
-      filter: FILTERS.NEED_APPROVAL,
-      page: 1
-    }, this.refetch.bind(this))
+    this.setState(
+      {
+        filter: FILTERS.NEED_APPROVAL,
+        page: 1
+      },
+      this.refetch.bind(this)
+    )
   }
 
   // TODO: write documentation on how we save the filters between pages
   setStatusFilter(status) {
-
     this.props.setFilter({
       statusFilter: status
     })
 
-    this.setState({
-      statusFilter: status
-    }, this.refetch.bind(this))
+    this.setState(
+      {
+        statusFilter: status
+      },
+      this.refetch.bind(this)
+    )
   }
 
   linkTaskDetail(taskId) {
