@@ -26,8 +26,8 @@ const Component = ({
   const result = {proposal, title, proposer, referee, type, status, created}
   const typeMap = {
     4: I18N.get('council.voting.type.standardTrack'),
-    5: I18N.get('council.voting.type.information'),
-    6: I18N.get('council.voting.type.process'),
+    5: I18N.get('council.voting.type.process'),
+    6: I18N.get('council.voting.type.information'),
   }
   const proposalValue = proposal && `#${proposal}`
   const proposerValue = <PopoverProfile owner={proposer} curUser={user} />

@@ -485,6 +485,7 @@ class C extends StandardPage {
         <Popconfirm
           title={I18N.get('elip.modal.approve')}
           onConfirm={this.approvedReview}
+          onCancel={this.showApproveModal}
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
           visible={visibleApprove}
