@@ -84,7 +84,7 @@ namespace Elastos {
 		"GenesisAddress": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
 		"ChainParameters": {
 			"Services": 0,
-			"MagicNumber": 2018102,
+			"MagicNumber": 2018112,
 			"StandardPort": 21608,
 			"TargetTimeSpan": 86400,
 			"TargetTimePerBlock": 120,
