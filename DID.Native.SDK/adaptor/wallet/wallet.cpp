@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
 #include <signal.h>
 
 #include <MasterWalletManager.h>
@@ -184,7 +185,7 @@ static void init(int argc, char *argv[])
     syncStart();
 }
 
-static void import(int argc, char *argv[])
+static void importMnemonic(int argc, char *argv[])
 {
     if (argc != 2) {
         std::cerr << "Invalid command syntax." << std::endl;
@@ -215,6 +216,51 @@ static void import(int argc, char *argv[])
     try {
         auto *masterWallet = manager->ImportWalletWithMnemonic(walletId,
                 mnemonic, "", password, false);
+        std::cout << "Master wallet '" << walletId << "' imported." << std::endl;
+
+        masterWallet->CreateSubWallet(MAIN_CHAIN);
+        std::cout << "SubWallet for '" << MAIN_CHAIN << "' created." << std::endl;
+
+        masterWallet->CreateSubWallet(ID_CHAIN);
+        std::cout << "SubWallet for '" << ID_CHAIN << "' created." << std::endl;
+
+        std::cout << "Wallet import success." << std::endl;
+    } catch (std::exception e) {
+        std::cerr << "import wallet failed: " << e.what() << std::endl;
+        return;
+    }
+
+    syncStart();
+}
+
+// import walletId keystoreFile storepass paypass
+static void importKeystore(int argc, char *argv[])
+{
+    if (argc != 5) {
+        std::cerr << "Invalid command syntax." << std::endl;
+        return;
+    }
+
+    std::string walletId = argv[1];
+    std::string keystore = argv[2];
+    std::string storepass = argv[3];
+    std::string password = argv[4];
+
+    auto ids = manager->GetAllMasterWalletID();
+    if (std::find(ids.begin(), ids.end(), walletId) != ids.end()) {
+        std::cerr << "Wallet '" << walletId << "' already exist." << std::endl;
+        return;
+    }
+
+    try {
+        char line[8192];
+        std::ifstream is;
+
+        is.open(keystore);
+        is.getline(line, sizeof(line));
+        nlohmann::json ks = nlohmann::json::parse(line);
+        auto *masterWallet = manager->ImportWalletWithKeystore(walletId,
+                ks, storepass, password);
         std::cout << "Master wallet '" << walletId << "' imported." << std::endl;
 
         masterWallet->CreateSubWallet(MAIN_CHAIN);
@@ -425,7 +471,7 @@ static void withdraw(int argc, char *argv[])
     }
 }
 
-static void exportm(int argc, char *argv[])
+static void exportMnemonic(int argc, char *argv[])
 {
     std::string walletId;
     std::string password;
@@ -444,8 +490,36 @@ static void exportm(int argc, char *argv[])
         return;
     }
 
-    auto mnemonic = manager->ExportWalletWithMnemonic(masterWallet, password);
+    auto mnemonic = masterWallet->ExportMnemonic(password);
     std::cout << "Mnemonic: " << mnemonic << std::endl;
+}
+
+// export walletId keystoreFile storepass paypass
+static void exportKeystore(int argc, char *argv[])
+{
+    if (argc != 5) {
+        std::cerr << "Invalid command syntax." << std::endl;
+        return;
+    }
+
+    std::string walletId = argv[1];
+    std::string keystore = argv[2];
+    std::string storepass = argv[3];
+    std::string password = argv[4];
+
+    auto masterWallet = manager->GetMasterWallet(walletId);
+    if (!masterWallet) {
+        std::cerr << "Can not find wallet: " << walletId << std::endl;
+        return;
+    }
+
+    auto json = masterWallet->ExportKeystore(storepass, password);
+
+    std::ofstream os;
+    os.open(keystore);
+    os << json;
+    os.close();
+    std::cout << "keystore exported." << std::endl;
 }
 
 static void verbose(int argc, char *argv[])
@@ -480,19 +554,21 @@ struct command {
     void (*function)(int argc, char *argv[]);
     const char *help;
 } commands[] = {
-    { "help",       help,                   "help [command]\n  Display available command list, or usage description for specific command." },
-    { "init",       init,                   "init walletName\n  Create a new wallet with given name." },
-    { "import",     import,                 "import walletName\n  Import wallet with given name and mnemonic." },
-    { "list",       list,                   "list\n  List all wallets." },
-    { "address",    address,                "address chainId\n  Get the revceive address for specified chainId." },
-    { "deposit",    deposit,                "deposit walletName sidechain amount password\n  Deposit to sidechain from mainchain." },
-    { "withdraw",   withdraw,               "withdraw walletName sidechain amount password\n  Withdraw from sidechain to mainchain." },
-    { "export",     exportm,                "export walletName password\n  Export mnemonic from specified wallet." },
-    { "remove",     remove,                 "remove walletName\n  Remove specified wallet."},
-    { "verbose",    verbose,                "verbose [on | off]\n Set verbose mode." },
-    { "exit",       NULL,                   "exit\n  Quit wallet." },
-    { "quit",       NULL,                   "quit\n  Quit wallet." },
-    { NULL,         NULL,                   NULL }
+    { "help",           help,                   "help [command]\n  Display available command list, or usage description for specific command." },
+    { "init",           init,                   "init walletName\n  Create a new wallet with given name." },
+    { "import",         importMnemonic,         "import walletName\n  Import wallet with given name and mnemonic." },
+    { "importkeystore", importKeystore,         "importkeystore walletName keystoreFile storepass paypass\n  Import wallet from keystore." },
+    { "list",           list,                   "list\n  List all wallets." },
+    { "address",        address,                "address chainId\n  Get the revceive address for specified chainId." },
+    { "deposit",        deposit,                "deposit walletName sidechain amount password\n  Deposit to sidechain from mainchain." },
+    { "withdraw",       withdraw,               "withdraw walletName sidechain amount password\n  Withdraw from sidechain to mainchain." },
+    { "export",         exportMnemonic,         "export walletName password\n  Export mnemonic from specified wallet." },
+    { "exportkeystore", exportKeystore,         "exportkeystore walletName keystoreFile storepass paypass\n  Export wallet to keystore." },
+    { "remove",         remove,                 "remove walletName\n  Remove specified wallet."},
+    { "verbose",        verbose,                "verbose [on | off]\n Set verbose mode." },
+    { "exit",           NULL,                   "exit\n  Quit wallet." },
+    { "quit",           NULL,                   "quit\n  Quit wallet." },
+    { NULL,             NULL,                   NULL }
 };
 
 static void help(int argc, char *argv[])
@@ -634,18 +710,35 @@ static void signalHandler(int signum)
     exit(-1);
 }
 
+static void usage(void)
+{
+    printf("SPV Wallet, a command line wallet.\n");
+    printf("Usage: wallet [OPTION]...\n");
+    printf("\n");
+    printf("  -d, --data=DIR            Wallet data directory.\n");
+    printf("  -n, --network=NETWORK     Network name or config file.\n");
+    printf("                            MainNet TestNet RegTest,\n");
+    printf("                            or config file for private network.\n");
+    printf("  -v, --verbose             Verbose output.\n");
+    printf("      --debug               Wait for debugger attach after start.\n");
+    printf("\n");
+}
+
 int main(int argc, char *argv[])
 {
+    const char *network = "MainNet";
     const char *walletRoot = NULL;
     char cmdLine[4096];
     char *cmdArgs[256];
     int numArgs;
     int waitForAttach = 0;
+    nlohmann::json netConfig;
 
     int opt;
     int idx;
     struct option options[] = {
         { "data",           required_argument,  NULL, 'd' },
+        { "network",        required_argument,  NULL, 'n' },
         { "verbose",        no_argument,        NULL, 'v' },
         { "debug",          no_argument,        NULL, 1 },
         { "help",           no_argument,        NULL, 'h' },
@@ -656,10 +749,14 @@ int main(int argc, char *argv[])
     sys_coredump_set(true);
 #endif
 
-    while ((opt = getopt_long(argc, argv, "d:vh?", options, &idx)) != -1) {
+    while ((opt = getopt_long(argc, argv, "d:n:vh?", options, &idx)) != -1) {
         switch (opt) {
         case 'd':
             walletRoot = optarg;
+            break;
+
+        case 'n':
+            network = optarg;
             break;
 
         case 'v':
@@ -673,7 +770,7 @@ int main(int argc, char *argv[])
         case 'h':
         case '?':
         default:
-            //usage();
+            usage();
             exit(-1);
         }
     }
@@ -701,7 +798,21 @@ int main(int argc, char *argv[])
         fprintf(stdout, "Wallet data directory: %s\n", walletRoot);
     }
 
-    manager = new MasterWalletManager(walletRoot);
+    if (strcmp(network, "MainNet") == 0 || strcmp(network, "TestNet") == 0 ||
+            strcmp(network, "RegTest") == 0) {
+        netConfig = nlohmann::json();
+    } else {
+        try {
+            std::ifstream in(network);
+            netConfig = nlohmann::json::parse(in);
+        } catch (...) {
+            fprintf(stderr, "Load network config '%s' failed.\n", network);
+        }
+
+        network = "PrvNet";
+    }
+
+    manager = new MasterWalletManager(walletRoot, network, netConfig);
     syncStart();
 
     while (1) {

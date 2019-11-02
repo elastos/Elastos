@@ -1,0 +1,51 @@
+{
+    "NetType": "PrvNet",
+
+    "ELA": {
+        "Index": 0,
+        "MinFee": 10000,
+        "FeePerKB": 10000,
+        "DisconnectionTime": 300,
+        "GenesisAddress": "",
+
+        "ChainParameters": {
+            "StandardPort": 10016,
+            "MagicNumber": 7630401,
+            "Services": 0,
+            "TargetTimeSpan": 86400,
+            "TargetTimePerBlock": 120,
+
+            "DNSSeeds": [
+                "3.228.99.98"
+            ],
+
+            "CheckPoints": [
+                [0, "bf47e744758c0e3420983d03d578527073cf86ed3c1e0df055c5a3ea3dc74e30", 1513936800, 575]
+            ]
+        }
+    },
+
+    "IDChain": {
+        "Index": 1,
+        "MinFee": 10000,
+        "FeePerKB": 10000,
+        "DisconnectionTime": 300,
+        "GenesisAddress": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
+
+        "ChainParameters": {
+            "StandardPort": 30115,
+            "MagicNumber": 7630404,
+            "Services": 0,
+            "TargetTimeSpan": 86400,
+            "TargetTimePerBlock": 120,
+
+            "DNSSeeds": [
+                "3.228.99.98"
+            ],
+
+            "CheckPoints": [
+                [0, "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1530360000, 575]
+            ]
+        }
+    }
+}
