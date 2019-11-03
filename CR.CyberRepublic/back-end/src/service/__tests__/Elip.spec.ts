@@ -153,8 +153,10 @@ describe('Tests for ELIP', () => {
     // A secretary
     const elipService2 = new ElipService(DB, { user: user.secretary })
     // TODO: optimize increment
-    const rs2 = await elipService2.list({ $or: [{ vid: 105 }] })
-    expect(rs2.length).to.be.equal(1)
+    // const rs2 = await elipService2.list({ $or: [{ vid: 2 }] })
+    // expect(rs2.length).to.be.equal(1)
+    const rs2 = await elipService2.list({})
+    expect(rs2.length).to.be.equal(4)
     await DB.getModel('Elip').remove({})
   })
 
