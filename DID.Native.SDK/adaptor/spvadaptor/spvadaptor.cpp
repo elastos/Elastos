@@ -8,6 +8,10 @@
 #include <IMainchainSubWallet.h>
 #include <IIDChainSubWallet.h>
 
+#include <string>
+#include <fstream>
+#include <vector>
+
 using namespace Elastos::ElaWallet;
 
 static const char *ID_CHAIN = "IDChain";
@@ -90,9 +94,28 @@ void SyncStop(IMasterWalletManager *manager, ISubWalletCallback *callback)
     }
 }
 
-SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId)
+SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
+        const char *network)
 {
-    IMasterWalletManager *manager = new MasterWalletManager(walletDir);
+    nlohmann::json netConfig;
+
+    if (strcmp(network, "MainNet") == 0 || strcmp(network, "TestNet") == 0 ||
+            strcmp(network, "RegTest") == 0) {
+        netConfig = nlohmann::json();
+    } else {
+        try {
+            std::ifstream in(network);
+            netConfig = nlohmann::json::parse(in);
+        } catch (...) {
+            // error number?
+            return NULL;
+        }
+
+        network = "PrvNet";
+    }
+
+    IMasterWalletManager *manager = new MasterWalletManager(
+            walletDir, network, netConfig);
     IIDChainSubWallet *idWallet = NULL;
 
     CURLcode rc = curl_global_init(CURL_GLOBAL_ALL);

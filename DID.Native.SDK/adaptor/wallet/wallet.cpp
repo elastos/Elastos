@@ -5,8 +5,6 @@
 #include <getopt.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <iostream>
-#include <fstream>
 #include <signal.h>
 
 #include <MasterWalletManager.h>
@@ -14,6 +12,11 @@
 #include <ISubWallet.h>
 #include <IMainchainSubWallet.h>
 #include <IIDChainSubWallet.h>
+
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <vector>
 
 using namespace Elastos::ElaWallet;
 
@@ -401,9 +404,7 @@ static void deposit(int argc, char *argv[])
         tx = mainchainSubWallet->SignTransaction(tx, password);
         tx = mainchainSubWallet->PublishTransaction(tx);
 
-        std::cout << tx["TxHash"] << std::endl;
-
-        std::cout << "Deposit transaction created success." << std::endl;
+        std::cout << "Deposit transaction " << tx["TxHash"] << " created success." << std::endl;
         std::cout << "Deposit transactions need 8 confirms!" << std::endl;
     } catch (std::exception e) {
         std::cerr << "Create deposit transaction failed: " << e.what() << std::endl;
@@ -462,10 +463,53 @@ static void withdraw(int argc, char *argv[])
         tx = sidechainSubWallet->SignTransaction(tx, password);
         tx = sidechainSubWallet->PublishTransaction(tx);
 
-        std::cout << tx << std::endl;
-
-        std::cout << "Withdraw transaction created success." << std::endl;
+        std::cout << "Withdraw transaction " << tx["TxHash"] << " created success." << std::endl;
         std::cout << "Withdraw transactions need 8 confirms!" << std::endl;
+    } catch (std::exception e) {
+        std::cerr << "Create withdraw transaction failed: " << e.what() << std::endl;
+    }
+}
+
+// transfer walletId address amount password
+static void transfer(int argc, char *argv[])
+{
+    if (argc != 5) {
+        std::cerr << "Invalid command syntax." << std::endl;
+        return;
+    }
+
+    std::string walletId = argv[1];
+    std::string address = argv[2];
+    int amount = (int)(std::stod(argv[3]) * 100000000);
+    std::string password = argv[4];
+
+    auto ids = manager->GetAllMasterWalletID();
+    if (std::find(ids.begin(), ids.end(), walletId) == ids.end()) {
+        std::cerr << "Wallet '" << walletId << "' not exist." << std::endl;
+        return;
+    }
+
+    IMainchainSubWallet *mainchainSubWallet = NULL;
+    auto masterWallet = manager->GetMasterWallet(walletId);
+    std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+    for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
+        if ((*it)->GetChainID() == MAIN_CHAIN)
+            mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(*it);
+    }
+
+    if (mainchainSubWallet == NULL) {
+        std::cerr << "Can not get mainchain wallet." << std::endl;
+        return;
+    }
+
+    try {
+        auto tx = mainchainSubWallet->CreateTransaction(
+            "", address, std::to_string(amount), "");
+
+        tx = mainchainSubWallet->SignTransaction(tx, password);
+        tx = mainchainSubWallet->PublishTransaction(tx);
+
+        std::cout << "Transaction " << tx["TxHash"] << " created success." << std::endl;
     } catch (std::exception e) {
         std::cerr << "Create withdraw transaction failed: " << e.what() << std::endl;
     }
@@ -562,6 +606,7 @@ struct command {
     { "address",        address,                "address chainId\n  Get the revceive address for specified chainId." },
     { "deposit",        deposit,                "deposit walletName sidechain amount password\n  Deposit to sidechain from mainchain." },
     { "withdraw",       withdraw,               "withdraw walletName sidechain amount password\n  Withdraw from sidechain to mainchain." },
+    { "transfer",       transfer,               "transfer walletName address amount password\n  Transter amount of ELA to address."},
     { "export",         exportMnemonic,         "export walletName password\n  Export mnemonic from specified wallet." },
     { "exportkeystore", exportKeystore,         "exportkeystore walletName keystoreFile storepass paypass\n  Export wallet to keystore." },
     { "remove",         remove,                 "remove walletName\n  Remove specified wallet."},
