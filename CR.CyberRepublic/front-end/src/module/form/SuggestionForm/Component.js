@@ -173,6 +173,8 @@ class C extends BaseComponent {
       <CodeMirrorEditor
         callback={this.onTextareaChange}
         content={initialValues[id]}
+        activeKey={id}
+        name={id}
       />
     )
   }

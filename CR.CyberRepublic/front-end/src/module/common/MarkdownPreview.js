@@ -6,7 +6,7 @@ function MarkedPreview({ content }) {
   return (
     <Wrapper
       dangerouslySetInnerHTML={{
-        __html: convertMarkdownToHtml(content || '')
+        __html: convertMarkdownToHtml(content)
       }}
     />
   )

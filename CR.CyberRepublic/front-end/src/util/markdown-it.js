@@ -29,5 +29,5 @@ const mdi = markdownIt({
   .use(deflist)
 
 export const convertMarkdownToHtml = content => {
-  return DOMPurify.sanitize(mdi.render(content))
+  return DOMPurify.sanitize(mdi.render(content || ''))
 }

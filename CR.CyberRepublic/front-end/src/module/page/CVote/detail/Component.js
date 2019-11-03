@@ -20,11 +20,7 @@ import BackLink from '@/module/shared/BackLink/Component'
 import CRPopover from '@/module/shared/Popover/Component'
 import MetaComponent from '@/module/shared/meta/Container'
 import Translation from '@/module/common/Translation/Container'
-import DraftEditor from '@/module/common/DraftEditor'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
-import { createEditorState } from 'medium-draft'
-import { convertFromHTML, ContentState, EditorState } from 'draft-js'
-import mediumDraftExporter from 'medium-draft/lib/exporter'
 import { StickyContainer, Sticky } from 'react-sticky'
 import VoteResultComponent from '../common/vote_result/Component'
 import Preamble from './Preamble'
@@ -34,6 +30,7 @@ import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
+import { convertMarkdownToHtml } from '@/util/markdown-it'
 
 import {
   Container,
@@ -61,21 +58,13 @@ const renderRichContent = (data, key, title) => {
   if (_.isArray(data)) {
     content = _.map(data, item => (
       <StyledRichContent>
-        <DraftEditor
-          value={item[key]}
-          contentType={item.contentType}
-          editorEnabled={false}
-        />
+        <MarkdownPreview content={item[key]} />
       </StyledRichContent>
     ))
   } else {
     content = (
       <StyledRichContent>
-        <DraftEditor
-          value={data[key]}
-          contentType={data.contentType}
-          editorEnabled={false}
-        />
+        <MarkdownPreview content={data[key]} />
       </StyledRichContent>
     )
   }
@@ -86,31 +75,6 @@ const renderRichContent = (data, key, title) => {
       {content}
     </div>
   )
-}
-
-const getHTML = (data, key) => {
-  const { contentType } = data
-  const content = _.get(data, key, '')
-  let editorState
-  if (!content) {
-    editorState = createEditorState()
-  } else if (contentType === 'MARKDOWN') {
-    try {
-      editorState = createEditorState(JSON.parse(content))
-    } catch(err) {}
-  }
-
-  if (!editorState) {
-    const blocksFromHTML = convertFromHTML(content)
-    const state = ContentState.createFromBlockArray(
-      blocksFromHTML.contentBlocks,
-      blocksFromHTML.entityMap
-    )
-    editorState = EditorState.createWithContent(state)
-  }
-
-  return mediumDraftExporter(editorState.getCurrentContent())
-  // return content
 }
 
 class C extends StandardPage {
@@ -157,7 +121,7 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { data, isElip } = this.props
+    const { data } = this.props
     if (!data) {
       return (
         <div className="center">
@@ -176,20 +140,8 @@ class C extends StandardPage {
     const summaryNode = this.renderSummary()
 
     // get the first line pure text of abstract
-    let abstract = ''
-    try {
-      if (!isElip && data.abstract) {
-        const result = JSON.parse(data.abstract)
-        if (result && result.blocks && result.blocks.length) {
-          abstract = result.blocks[0].text
-        }
-      } else {
-        abstract = data.abstract
-      }
-    } catch (error) {
-      logger.error(error)
-    }
-
+    let abstract = data.abstract && data.abstract.trim().split('\n')[0]
+ 
     return (
       <div>
         <Meta
@@ -260,22 +212,25 @@ class C extends StandardPage {
   renderTranslationBtn() {
     const { data } = this.props
     const { title } = data
+    const sections = [
+      'abstract',
+      'goal',
+      'motivation',
+      'plan',
+      'relevance',
+      'budget'
+    ]
+    const result = sections.map(section => {
+      return `
+        <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
+        <p>${convertMarkdownToHtml(data[section])}</p>
+      `
+    }).join('')
     const text = `
       <h3>${title}</h3>
       <br />
       <br />
-      <h2>${I18N.get('proposal.fields.abstract')}</h2>
-      <p>${getHTML(data, 'abstract')}</p>
-      <h2>${I18N.get('proposal.fields.goal')}</h2>
-      <p>${getHTML(data, 'goal')}</p>
-      <h2>${I18N.get('proposal.fields.motivation')}</h2>
-      <p>${getHTML(data, 'motivation')}</p>
-      <h2>${I18N.get('proposal.fields.plan')}</h2>
-      <p>${getHTML(data, 'plan')}</p>
-      <h2>${I18N.get('proposal.fields.relevance')}</h2>
-      <p>${getHTML(data, 'relevance')}</p>
-      <h2>${I18N.get('proposal.fields.budget')}</h2>
-      <p>${getHTML(data, 'budget')}</p>
+      ${result}
     `
 
     return (
