@@ -12,6 +12,7 @@ import deflist from 'markdown-it-deflist'
 import ins from 'markdown-it-ins'
 
 const mdi = markdownIt({
+  html: true,
   breaks: true,
   // linkify: true, // Autoconvert URL-like text to links
   typographer: true // Enable some language-neutral replacement + quotes beautification
@@ -27,6 +28,6 @@ const mdi = markdownIt({
   .use(ins)
   .use(deflist)
 
-export const convertMarkdownToHtml = (content) => {
+export const convertMarkdownToHtml = content => {
   return DOMPurify.sanitize(mdi.render(content))
 }

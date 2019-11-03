@@ -6,7 +6,7 @@ function MarkedPreview({ content }) {
   return (
     <Wrapper
       dangerouslySetInnerHTML={{
-        __html: convertMarkdownToHtml(content)
+        __html: convertMarkdownToHtml(content || '')
       }}
     />
   )
@@ -16,7 +16,7 @@ export default MarkedPreview
 
 const Wrapper = styled.div`
   color: rgba(0, 0, 0, 0.75);
-  font-size: 16px;
+  font-size: 14px;
   font-family: 'Synthese', 'Montserrat', sans-serif;
   font-variant-ligatures: common-ligatures;
   line-height: 1.8;
@@ -179,7 +179,7 @@ const Wrapper = styled.div`
 
   img {
     max-width: 100%;
-    margin: 32px auto;
+    margin: 32px 0;
     display: block;
   }
 
