@@ -396,7 +396,6 @@ func (c *ChainStore) rollbackSidechainTx(sidechainTxHash Uint256) error {
 }
 
 func (c *ChainStore) persistUnspend(b *Block) error {
-	unspentPrefix := []byte{byte(IXUnspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
 		if txn.TxType == RegisterAsset {
@@ -410,7 +409,7 @@ func (c *ChainStore) persistUnspend(b *Block) error {
 			for index, input := range txn.Inputs {
 				referTxnHash := input.Previous.TxID
 				if _, ok := unspents[referTxnHash]; !ok {
-					unspentValue, err := c.Get(append(unspentPrefix, referTxnHash.Bytes()...))
+					unspentValue, err := c.getUnspent(referTxnHash)
 					if err != nil {
 						return err
 					}
@@ -431,21 +430,34 @@ func (c *ChainStore) persistUnspend(b *Block) error {
 			}
 		}
 	}
+	err := c.putUnspent(unspents)
+	if err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func (c *ChainStore) putUnspent(unspents map[Uint256][]uint16) error {
 	for txhash, value := range unspents {
 		key := new(bytes.Buffer)
 		key.WriteByte(byte(IXUnspent))
-		txhash.Serialize(key)
+		err := txhash.Serialize(key)
+		if err != nil {
+			return err
+		}
 
 		if len(value) == 0 {
 			c.BatchDelete(key.Bytes())
 		} else {
-			unspentArray := ToByteArray(value)
-			c.BatchPut(key.Bytes(), unspentArray)
+			c.BatchPut(key.Bytes(), ToByteArray(value))
 		}
 	}
-
 	return nil
+}
+
+func (c *ChainStore) getUnspent(txHash Uint256) ([]byte, error) {
+	return c.Get(append([]byte{byte(IXUnspent)}, txHash.Bytes()...))
 }
 
 func (c *ChainStore) RollbackUnspend(b *Block) error {
@@ -478,17 +490,9 @@ func (c *ChainStore) RollbackUnspend(b *Block) error {
 		}
 	}
 
-	for txhash, value := range unspents {
-		key := new(bytes.Buffer)
-		key.WriteByte(byte(IXUnspent))
-		txhash.Serialize(key)
-
-		if len(value) == 0 {
-			c.BatchDelete(key.Bytes())
-		} else {
-			unspentArray := ToByteArray(value)
-			c.BatchPut(key.Bytes(), unspentArray)
-		}
+	err := c.putUnspent(unspents)
+	if err != nil {
+		return err
 	}
 
 	return nil
