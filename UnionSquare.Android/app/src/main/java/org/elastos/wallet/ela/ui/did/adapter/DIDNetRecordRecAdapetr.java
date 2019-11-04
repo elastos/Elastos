@@ -11,6 +11,7 @@ import android.widget.TextView;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
+import org.elastos.wallet.ela.ui.did.entity.DIDListEntity;
 import org.elastos.wallet.ela.utils.DateUtil;
 
 import java.util.Date;
@@ -23,7 +24,7 @@ import butterknife.ButterKnife;
  * 资产页面的rv
  */
 
-public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapetr.ViewHolder> {
+public class DIDNetRecordRecAdapetr extends RecyclerView.Adapter<DIDNetRecordRecAdapetr.ViewHolder> {
 
 
     public void setCommonRvListener(CommonRvListener commonRvListener) {
@@ -31,11 +32,11 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
     }
 
     private CommonRvListener commonRvListener;
-    private List<DIDInfoEntity> list;
+    private List<DIDListEntity.DIDBean> list;
 
     private Context context;
 
-    public DIDRecordRecAdapetr(Context context, List<DIDInfoEntity> list) {
+    public DIDNetRecordRecAdapetr(Context context, List<DIDListEntity.DIDBean> list) {
         this.list = list;
         this.context = context;
 
@@ -50,7 +51,7 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        DIDInfoEntity didInfoEntity = list.get(position);
+        DIDListEntity.DIDBean didInfoEntity = list.get(position);
         holder.tvDidname.setText(didInfoEntity.getDidName());
         ////Pending 确认中   Confirmed已确认  Unpublished 未发布(草稿  这个api不提供,保存草稿时候自己设置)
         switch (didInfoEntity.getStatus()) {

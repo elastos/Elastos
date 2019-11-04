@@ -1745,6 +1745,17 @@ public class MyWallet {
         }
     }
 
-
+    public BaseEntity getResolveDIDInfo(String masterWalletID, int start, int count, String did) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String info = idChainSubWallet.GetResolveDIDInfo(start, count, did);
+            return new CommmonStringEntity(SUCCESSCODE, info);
+        } catch (WalletException e) {
+            return exceptionProcess(e, formatWalletName(masterWalletID, IDChain) + "GetResolveDIDInfo");
+        }
+    }
 }
 

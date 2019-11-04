@@ -330,13 +330,14 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     }
 
     private void onGetDid(String data) {
-        if (netList != null) {
+        if (netList != null && !is) {
             for (int i = 0; i < netList.size(); i++) {
                 if (netList.get(i).getDid().equals(data)) {
                     curentNode = netList.get(i);
-                    netList.add(0, curentNode);
                     netList.remove(i);
+                    netList.add(0, curentNode);
                     is = true;
+                    break;
                 }
             }
 
@@ -359,6 +360,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     public void onRefresh(RefreshLayout refreshLayout) {
         onErrorRefreshLayout(srl);
         pageNum = 1;
+        is = false;
         presenter.getCRlist(pageNum, pageSize, "all", this);
 
     }

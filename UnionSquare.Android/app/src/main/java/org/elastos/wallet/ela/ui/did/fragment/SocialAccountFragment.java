@@ -132,7 +132,7 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
         if (infoEntities.contains(didInfo)) {
             infoEntities.remove(didInfo);
         }
-        didInfo.setIssuanceDate(new Date().getTime()/1000+"");
+        didInfo.setIssuanceDate(new Date().getTime()/1000);
         didInfo.setStatus("Unpublished");
         infoEntities.add(didInfo);
         CacheUtil.setDIDInfoList(infoEntities);
@@ -158,7 +158,7 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
                 json.remove("credentialSubject");
                 Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
                 intent.putExtra("wallet", wallet);
-                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("chainId", MyWallet.IDChain);
                 intent.putExtra("inputJson", JSON.toJSONString(json));
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
                 intent.putExtra("type", Constant.DIDSIGNUP);

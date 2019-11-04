@@ -56,7 +56,7 @@ public class PersonalInfoFragment extends BaseFragment {
     TextView tvTitleRight;
     private DIDInfoEntity didInfo;
     private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
-    private String birthday;
+    private long birthday;
     private long code;
 
     @Override
@@ -69,6 +69,10 @@ public class PersonalInfoFragment extends BaseFragment {
 
         didInfo = data.getParcelable("didInfo");
         credentialSubjectBean = didInfo.getCredentialSubject();
+        if (credentialSubjectBean == null) {
+            credentialSubjectBean = new DIDInfoEntity.CredentialSubjectBean();
+            didInfo.setCredentialSubject(credentialSubjectBean);
+        }
         if (data.getBoolean("useDraft"))
             putData();
     }
@@ -102,9 +106,9 @@ public class PersonalInfoFragment extends BaseFragment {
                     public void affireBtnClick(View view) {
                         String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
                                 + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
-                        long time = DateUtil.parseToLong(date) / 1000L;
-                        birthday = time + "";
-                        tvBirthday.setText(DateUtil.timeNYR(time, getContext()));
+                        birthday = DateUtil.parseToLong(date) / 1000L;
+
+                        tvBirthday.setText(DateUtil.timeNYR(birthday, getContext()));
                     }
                 });
                 break;
@@ -139,7 +143,7 @@ public class PersonalInfoFragment extends BaseFragment {
         credentialSubjectBean.setName(getText(etName));
         credentialSubjectBean.setNickname(getText(etNick));
         credentialSubjectBean.setGender(null == (getText(tvSex)) ? "n/a" : (getString(R.string.man).equals(getText(tvSex)) ? "male" : "female"));
-        credentialSubjectBean.setBirthday(getText(tvBirthday));
+        credentialSubjectBean.setBirthday(birthday);
         credentialSubjectBean.setAvatar(getText(etHeadurl));
         credentialSubjectBean.setEmail(getText(etEmail));
         credentialSubjectBean.setCode(getText(etCode));

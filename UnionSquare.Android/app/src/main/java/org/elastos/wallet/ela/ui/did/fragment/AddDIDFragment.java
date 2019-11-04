@@ -37,7 +37,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -67,7 +66,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     List<Wallet> wallets;
     Wallet tempWallet;
     private DIDInfoEntity didInfo;
-    private String endDate;
+    private long endDate;
     private boolean useDraft;
 
     @Override
@@ -105,20 +104,15 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
         DIDInfoEntity.PublicKeyBean publicKeyBean = new DIDInfoEntity.PublicKeyBean();
         publicKeyBean.setId("#primary");
         list.add(publicKeyBean);
-
         didInfo.setPublicKey(list);
-        DIDInfoEntity.CredentialSubjectBean credentialSubjectBean = new DIDInfoEntity.CredentialSubjectBean();
-        didInfo.setCredentialSubject(credentialSubjectBean);
-
-
     }
 
     private void setData() {
-        didInfo.getCredentialSubject().setId(getText(tvDid));
         didInfo.setId(getText(tvDid));
+        didInfo.setWalletId(tempWallet.getWalletId());
         didInfo.getPublicKey().get(0).setPublicKey(getText(tvDidpk));
         didInfo.setExpires(endDate);
-        didInfo.getCredentialSubject().setDidName(getText(etDidname));
+        didInfo.setDidName(getText(etDidname));
     }
 
     @OnClick({R.id.rl_selectwallet, R.id.rl_outdate, R.id.tv_next})
@@ -136,7 +130,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     break;
                 }
 
-                if (TextUtils.isEmpty(endDate)) {
+                if (endDate == 0) {
                     showToast(getString(R.string.plzselctoutdate));
                     break;
                 }
@@ -173,9 +167,9 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     public void affireBtnClick(View view) {
                         String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
                                 + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
-                        long time = DateUtil.parseToLong(date) / 1000;
-                        endDate = time + "";
-                        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(time, getContext()));
+                        endDate = DateUtil.parseToLong(date) / 1000;
+
+                        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(endDate, getContext()));
                     }
                 });
                 break;
@@ -211,7 +205,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
         if (infoEntities.contains(didInfo)) {
             infoEntities.remove(didInfo);
         }
-        didInfo.setIssuanceDate(new Date().getTime() / 1000 + "");
+        didInfo.setIssuanceDate(new Date().getTime() / 1000);
         didInfo.setStatus("Unpublished");
         infoEntities.add(didInfo);
         CacheUtil.setDIDInfoList(infoEntities);
@@ -288,12 +282,11 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     @Override
                     public void affireBtnClick(View view) {
                         //充填数据
-                        etDidname.setText(didInfo.getCredentialSubject().getDidName());
-                        if (!TextUtils.isEmpty(didInfo.getExpires())) {
-                            endDate = didInfo.getExpires();
+                        etDidname.setText(didInfo.getDidName());
+                        endDate = didInfo.getExpires();
+                        if (endDate != 0) {
                             tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(endDate, getContext()));
                         } else {
-                            endDate = null;
                             tvDate.setText(null);
                         }
                     }

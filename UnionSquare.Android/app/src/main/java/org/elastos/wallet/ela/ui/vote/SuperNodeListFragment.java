@@ -221,14 +221,15 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
 
     private void onGetPk(String data) {
 
-        if (netList != null) {
+        if (netList != null&&!is) {
 
             for (int i = 0; i < netList.size(); i++) {
                 if (netList.get(i).getOwnerpublickey().equals(data)) {
                     curentNode = netList.get(i);
-                    netList.add(0, curentNode);
                     netList.remove(i);
+                    netList.add(0, curentNode);
                     is = true;
+                    break;
                 }
             }
 
@@ -306,6 +307,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
         onErrorRefreshLayout(srl);
+        is=false;
         new VoteListPresenter().votelistbean("1", this);
 
     }
