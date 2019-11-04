@@ -134,8 +134,10 @@ class DIDStoreTests: XCTestCase {
                 let pkid: DIDURL = try DIDURL(did, "primary")
                 let inputs: [CVarArg] = [json, json.count]
                 let sig: String = try doc.sign(pkid, storePass, inputs)
-                let re: Bool = try doc.verify(pkid, sig, inputs)
+                var re: Bool = try doc.verify(pkid, sig, inputs)
                 XCTAssertTrue(re)
+                
+//                re = doc.ver
                 
             }
         } catch {

@@ -203,7 +203,6 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
                 let key: String = keyAndValue.0
                 let value: String = keyAndValue.1
                 
-                
                 if isDictionaryJsonString(value) {
                     orderDictionary[key] = self.handleString(String(value))
                 } else if isArrayJsonString(value) {
@@ -248,7 +247,6 @@ public struct OrderedDictionary<KeyType: Hashable, ValueType> {
                 } else {
                     tempStr = (tempStr ?? "") + String(char)
                 }
-                
             }
             return resultArray
         }

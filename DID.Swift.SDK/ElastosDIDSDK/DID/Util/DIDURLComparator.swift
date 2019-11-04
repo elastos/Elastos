@@ -4,7 +4,7 @@ class DIDURLComparator {
     
     // TODO string 判断比较
     class func DIDStringComparator(_ a: String, _ b: String) -> Bool {
-        return a.caseInsensitiveCompare(b) == ComparisonResult.orderedAscending
+        return a.compare(b) == ComparisonResult.orderedAscending
     }
     
     class func DIDOrderedDictionaryComparatorByKey(_ source: OrderedDictionary<String, Any>) -> OrderedDictionary<String, Any> {
@@ -40,7 +40,7 @@ class DIDURLComparator {
     class func DIDURLComparator(_ a: DIDURL, _ b: DIDURL) -> Bool {
         let aToken = a.toExternalForm()
         let bToken = b.toExternalForm()
-        return aToken.caseInsensitiveCompare(bToken) == ComparisonResult.orderedAscending
+        return aToken.compare(bToken) == ComparisonResult.orderedAscending
     }
     
     // TODO OrderDictionary 排序

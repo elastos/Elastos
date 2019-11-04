@@ -40,7 +40,7 @@ public class VerifiableCredential: DIDObject {
         // type
         var strs: Array<String> = []
         types.sort { (a, b) -> Bool in
-            return a.caseInsensitiveCompare(b) == ComparisonResult.orderedAscending
+            return a.compare(b) == ComparisonResult.orderedAscending
         }
         types.forEach{ str in
             strs.append(str)
