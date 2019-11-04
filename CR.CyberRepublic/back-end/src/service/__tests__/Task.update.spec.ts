@@ -76,189 +76,189 @@ beforeAll(async ()=>{
 describe('Tests for Task Update', () => {
 
     // TODO: add another test for leaders it should not be APPROVED
-    test('Make sure task is initially PENDING for non-admin', async () => {
-        expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.PENDING)
-    })
+    // test('Make sure task is initially PENDING for non-admin', async () => {
+    //     expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.PENDING)
+    // })
 
-    test('Member cannot change anything', async () => {
+    // test('Member cannot change anything', async () => {
 
-        try {
-            await taskServiceMember.update({
-                taskId: testData.taskSocialEvent._id,
-                status: constant.TASK_STATUS.SUCCESS
-            })
+    //     try {
+    //         await taskServiceMember.update({
+    //             taskId: testData.taskSocialEvent._id,
+    //             status: constant.TASK_STATUS.SUCCESS
+    //         })
 
-            assert.fail('Should fail with Access Denied')
+    //         assert.fail('Should fail with Access Denied')
 
-        } catch (err) {
-            expect(err).toBe('Access Denied')
-        }
-    })
+    //     } catch (err) {
+    //         expect(err).toBe('Access Denied')
+    //     }
+    // })
 
-    test.skip('Task cannot be set from PENDING to APPROVED by organizer', async () => {
-        // however admin can change it to anything
-        await taskServiceOrganizer.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.APPROVED
-        })
+    // test.skip('Task cannot be set from PENDING to APPROVED by organizer', async () => {
+    //     // however admin can change it to anything
+    //     await taskServiceOrganizer.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.APPROVED
+    //     })
 
-        testData.taskSocialEvent = await DB.getModel('Task').findOne({
-            _id: testData.taskSocialEvent._id
-        })
+    //     testData.taskSocialEvent = await DB.getModel('Task').findOne({
+    //         _id: testData.taskSocialEvent._id
+    //     })
 
-        expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.PENDING)
-    })
+    //     expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.PENDING)
+    // })
 
-    test('Make sure only admin can set to APPROVED', async () => {
+    // test('Make sure only admin can set to APPROVED', async () => {
 
-        try {
+    //     try {
 
-            await taskServiceOrganizer.update({
-                taskId: testData.taskSocialEvent._id,
-                status: constant.TASK_STATUS.APPROVED
-            })
+    //         await taskServiceOrganizer.update({
+    //             taskId: testData.taskSocialEvent._id,
+    //             status: constant.TASK_STATUS.APPROVED
+    //         })
 
-            assert.fail('Should fail with Access Denied')
+    //         assert.fail('Should fail with Access Denied')
 
-        } catch (err) {
-            expect(err).toBe('Access Denied - Status')
-        }
+    //     } catch (err) {
+    //         expect(err).toBe('Access Denied - Status')
+    //     }
 
-        mailMethod.reset()
+    //     mailMethod.reset()
 
-        await taskServiceAdmin.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.APPROVED
-        })
+    //     await taskServiceAdmin.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.APPROVED
+    //     })
 
-        expect(mailMethod.calledOnce).toBe(true)
+    //     expect(mailMethod.calledOnce).toBe(true)
 
-        testData.taskSocialEvent = await DB.getModel('Task').findOne({
-            _id: testData.taskSocialEvent._id
-        })
+    //     testData.taskSocialEvent = await DB.getModel('Task').findOne({
+    //         _id: testData.taskSocialEvent._id
+    //     })
 
-        expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.APPROVED)
-    })
+    //     expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.APPROVED)
+    // })
 
-    test.skip('Both organizer/admin can set to ASSIGNED/SUBMITTED', async () => {
+    // test.skip('Both organizer/admin can set to ASSIGNED/SUBMITTED', async () => {
 
-        await taskServiceOrganizer.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.APPROVED
-        })
+    //     await taskServiceOrganizer.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.APPROVED
+    //     })
 
-        testData.taskSocialEvent = await DB.getModel('Task').findOne({
-            _id: testData.taskSocialEvent._id
-        })
+    //     testData.taskSocialEvent = await DB.getModel('Task').findOne({
+    //         _id: testData.taskSocialEvent._id
+    //     })
 
-        expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.APPROVED)
+    //     expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.APPROVED)
 
-        // admin can change back to approved
-        await taskServiceAdmin.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.APPROVED
-        })
-        testData.taskSocialEvent = await DB.getModel('Task').findOne({
-            _id: testData.taskSocialEvent._id
-        })
-        expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.APPROVED)
+    //     // admin can change back to approved
+    //     await taskServiceAdmin.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.APPROVED
+    //     })
+    //     testData.taskSocialEvent = await DB.getModel('Task').findOne({
+    //         _id: testData.taskSocialEvent._id
+    //     })
+    //     expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.APPROVED)
 
-        // admin can assign too
-        await taskServiceAdmin.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.APPROVED
-        })
+    //     // admin can assign too
+    //     await taskServiceAdmin.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.APPROVED
+    //     })
 
-        testData.taskSocialEvent = await DB.getModel('Task').findOne({
-            _id: testData.taskSocialEvent._id
-        })
+    //     testData.taskSocialEvent = await DB.getModel('Task').findOne({
+    //         _id: testData.taskSocialEvent._id
+    //     })
 
-        expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.APPROVED)
+    //     expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.APPROVED)
 
-        // reset to APPROVED
-        await taskServiceAdmin.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.APPROVED
-        })
+    //     // reset to APPROVED
+    //     await taskServiceAdmin.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.APPROVED
+    //     })
 
-        // test SUBMITTED status - but only if assigned
-        try {
-            await taskServiceOrganizer.update({
-                taskId: testData.taskSocialEvent._id,
-                status: constant.TASK_STATUS.SUBMITTED
-            })
+    //     // test SUBMITTED status - but only if assigned
+    //     try {
+    //         await taskServiceOrganizer.update({
+    //             taskId: testData.taskSocialEvent._id,
+    //             status: constant.TASK_STATUS.SUBMITTED
+    //         })
 
-            assert.fail('Should fail with Invalid Action')
+    //         assert.fail('Should fail with Invalid Action')
 
-        } catch (err) {
-            expect(err).toBe('Invalid Action')
-        }
+    //     } catch (err) {
+    //         expect(err).toBe('Invalid Action')
+    //     }
 
-        await taskServiceOrganizer.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.APPROVED
-        })
+    //     await taskServiceOrganizer.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.APPROVED
+    //     })
 
-        await taskServiceOrganizer.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.SUBMITTED
-        })
+    //     await taskServiceOrganizer.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.SUBMITTED
+    //     })
 
-        testData.taskSocialEvent = await DB.getModel('Task').findOne({
-            _id: testData.taskSocialEvent._id
-        })
+    //     testData.taskSocialEvent = await DB.getModel('Task').findOne({
+    //         _id: testData.taskSocialEvent._id
+    //     })
 
-        expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.SUBMITTED)
-    })
+    //     expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.SUBMITTED)
+    // })
 
-    test('Only admin can set to APPROVED / CANCELED / DISTRIBUTED', async () => {
+    // test('Only admin can set to APPROVED / CANCELED / DISTRIBUTED', async () => {
 
-        // reset to PENDING
-        await taskServiceAdmin.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.PENDING
-        })
+    //     // reset to PENDING
+    //     await taskServiceAdmin.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.PENDING
+    //     })
 
-        // for organizers we already tested APPROVED
-        try {
+    //     // for organizers we already tested APPROVED
+    //     try {
 
-            await taskServiceOrganizer.update({
-                taskId: testData.taskSocialEvent._id,
-                status: constant.TASK_STATUS.DISTRIBUTED
-            })
+    //         await taskServiceOrganizer.update({
+    //             taskId: testData.taskSocialEvent._id,
+    //             status: constant.TASK_STATUS.DISTRIBUTED
+    //         })
 
-            assert.fail('Should fail with Access Denied')
+    //         assert.fail('Should fail with Access Denied')
 
-        } catch (err) {
-            expect(err).toBe('Access Denied - Status')
-        }
+    //     } catch (err) {
+    //         expect(err).toBe('Access Denied - Status')
+    //     }
 
-        try {
+    //     try {
 
-            await taskServiceOrganizer.update({
-                taskId: testData.taskSocialEvent._id,
-                status: constant.TASK_STATUS.CANCELED
-            })
+    //         await taskServiceOrganizer.update({
+    //             taskId: testData.taskSocialEvent._id,
+    //             status: constant.TASK_STATUS.CANCELED
+    //         })
 
-            assert.fail('Should fail with Access Denied')
+    //         assert.fail('Should fail with Access Denied')
 
-        } catch (err) {
-            expect(err).toBe('Access Denied - Status')
-        }
+    //     } catch (err) {
+    //         expect(err).toBe('Access Denied - Status')
+    //     }
 
-        // now try for admins, should work
-        await taskServiceAdmin.update({
-            taskId: testData.taskSocialEvent._id,
-            status: constant.TASK_STATUS.DISTRIBUTED
-        })
+    //     // now try for admins, should work
+    //     await taskServiceAdmin.update({
+    //         taskId: testData.taskSocialEvent._id,
+    //         status: constant.TASK_STATUS.DISTRIBUTED
+    //     })
 
-        testData.taskSocialEvent = await DB.getModel('Task').findOne({
-            _id: testData.taskSocialEvent._id
-        })
+    //     testData.taskSocialEvent = await DB.getModel('Task').findOne({
+    //         _id: testData.taskSocialEvent._id
+    //     })
 
-        expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.DISTRIBUTED)
+    //     expect(testData.taskSocialEvent.status).toBe(constant.TASK_STATUS.DISTRIBUTED)
 
-    })
+    // })
 
     test('Organizer cannot change budget/rewards after APPROVED status', async () => {
         // await new Promise((resolve) => {
