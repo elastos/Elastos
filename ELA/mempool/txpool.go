@@ -97,8 +97,8 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		return errCode
 	}
 	//verify transaction by pool with lock
+	defer mp.clearTemp()
 	if errCode := mp.verifyTransactionWithTxnPool(tx); errCode != Success {
-		mp.clearTemp()
 		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", tx.Hash())
 		return errCode
 	}
@@ -110,7 +110,6 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 	}
 
 	mp.commitTemp()
-	mp.clearTemp()
 
 	// Add the transaction to mem pool
 	mp.txnList[txHash] = tx
