@@ -174,8 +174,7 @@ class DURLListener: DIDURLBaseListener {
     override func exitMethod(_ ctx: DIDURLParser.MethodContext) {
         let method: String = ctx.getText()
         if (method != DID.METHOD){
-            // TODO: throw error
-            // let error = DIDError.failue("Unknown method: \(method)")
+            print("Unknown method: \(method)")
         }
         self.didURL?.did.method = DID.METHOD
     }
@@ -191,8 +190,7 @@ class DURLListener: DIDURLBaseListener {
     override func exitParamMethod(_ ctx: DIDURLParser.ParamMethodContext) {
         let method: String = ctx.getText()
         if method != DID.METHOD {
-            // TODO
-            // throw new IllegalArgumentException("Unknown parameter method: " + method);
+            print("Unknown parameter method: \(method)")
         }
     }
     

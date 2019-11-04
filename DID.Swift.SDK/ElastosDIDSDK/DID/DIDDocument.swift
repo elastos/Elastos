@@ -351,7 +351,7 @@ public class DIDDocument: NSObject {
         if expires != nil {
             dic[Constants.expires] = DateFormater.format(expires!)
         }
-        let dicString = OrderedDictionary<String, Any>.creatJsonString(dic: dic)
+        let dicString = JsonHelper.creatJsonString(dic: dic)
         
         guard path != nil else {
             return dicString
@@ -401,7 +401,7 @@ public class DIDDocument: NSObject {
         let json = try! String(contentsOf: url)
         var jsonString = json.replacingOccurrences(of: " ", with: "")
         jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-        let ordDic = OrderedDictionary<String, Any>.handleString(jsonString) as! OrderedDictionary<String, Any>
+        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
         return try parse(ordDic)
     }
     
@@ -466,7 +466,6 @@ public class DIDDocument: NSObject {
             }
             _ = addAuthenticationKey(pk)
             _ = addPublicKey(pk)
-
         }
     }
     

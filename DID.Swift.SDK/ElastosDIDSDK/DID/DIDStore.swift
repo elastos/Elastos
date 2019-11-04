@@ -121,34 +121,7 @@ public class DIDStore: NSObject {
         
         return doc
     }
-    /*
-    public DIDDocument newDid(String storepass, String hint)
-            throws DIDStoreException {
-        if (privateIdentity == null)
-            throw new DIDStoreException("DID Store not contains private identity.");
 
-        HDKey.DerivedKey key = privateIdentity.derive(lastIndex++);
-        DID did = new DID(DID.METHOD, key.getAddress());
-        PublicKey pk = new PublicKey(new DIDURL(did, "primary"),
-                Constants.defaultPublicKeyType, did, key.getPublicKeyBase58());
-
-        DIDDocument doc = new DIDDocument();
-        doc.setSubject(did);
-        doc.addPublicKey(pk);
-        doc.addAuthenticationKey(pk);
-        doc.setReadonly(true);
-
-        storeDid(doc, hint);
-
-        String encryptedKey = encryptToBase64(storepass, key.serialize());
-        storePrivateKey(did, pk.getId(), encryptedKey);
-
-        key.wipe();
-
-        return doc;
-    }
-*/
-    
     public func newDid(_ storepass: String) throws -> DIDDocument {
         return try newDid(storepass, nil)
     }

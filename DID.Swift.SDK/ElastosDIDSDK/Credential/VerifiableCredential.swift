@@ -81,7 +81,7 @@ public class VerifiableCredential: DIDObject {
         let json = try! String(contentsOf: url)
         var jsonString = json.replacingOccurrences(of: " ", with: "")
         jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
-        let ordDic = OrderedDictionary<String, Any>.handleString(jsonString) as! OrderedDictionary<String, Any>
+        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
         try vc.parse(ordDic, nil)
         return vc
     }
