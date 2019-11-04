@@ -7,11 +7,11 @@
 
 #include "ELAMerkleBlock.h"
 
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
 
-#include <Core/BRTransaction.h>
-#include <Core/BRMerkleBlock.h>
+#include <BRTransaction.h>
+#include <BRMerkleBlock.h>
 
 #include <vector>
 

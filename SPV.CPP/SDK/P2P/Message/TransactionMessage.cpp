@@ -4,15 +4,15 @@
 
 #include "TransactionMessage.h"
 
-#include <SDK/P2P/Peer.h>
-#include <SDK/P2P/PeerManager.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/IDTransaction.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
+#include <P2P/Peer.h>
+#include <P2P/PeerManager.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/IDTransaction.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
 
-#include <Core/BRTransaction.h>
-#include <Core/BRArray.h>
+#include <BRTransaction.h>
+#include <BRArray.h>
 
 namespace Elastos {
 	namespace ElaWallet {

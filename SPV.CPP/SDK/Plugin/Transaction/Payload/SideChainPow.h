@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_SIDECHAINPOW_H__
 
 #include "IPayload.h"
-#include <SDK/Common/uint256.h>
+#include <Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {

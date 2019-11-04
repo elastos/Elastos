@@ -6,17 +6,17 @@
 #include "GroupedAsset.h"
 #include "UTXO.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Plugin/Transaction/Attribute.h>
-#include <SDK/Plugin/Transaction/Program.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Plugin/Transaction/Payload/RegisterAsset.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/Asset.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/TransactionInput.h>
+#include <Plugin/Transaction/Attribute.h>
+#include <Plugin/Transaction/Program.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -4,12 +4,12 @@
 
 #include "AddressMessage.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/P2P/Peer.h>
-#include <SDK/Common/Utils.h>
+#include <Common/Log.h>
+#include <P2P/Peer.h>
+#include <Common/Utils.h>
 
-#include <Core/BRAddress.h>
-#include <Core/BRArray.h>
+#include <BRAddress.h>
+#include <BRArray.h>
 
 #include <arpa/inet.h>
 

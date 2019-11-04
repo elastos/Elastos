@@ -4,14 +4,14 @@
 
 #include "LocalStore.h"
 
-#include <SDK/Common/ByteStream.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/BIPs/BIP39.h>
-#include <SDK/WalletCore/Crypto/AES.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
+#include <Common/ByteStream.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Utils.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/BIP39.h>
+#include <WalletCore/AES.h>
+#include <WalletCore/CoinInfo.h>
+#include <WalletCore/HDKeychain.h>
 
 #include <fstream>
 

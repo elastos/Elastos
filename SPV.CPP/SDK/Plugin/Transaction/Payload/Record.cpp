@@ -4,8 +4,8 @@
 
 #include "Record.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
 
 namespace Elastos {
 	namespace ElaWallet {

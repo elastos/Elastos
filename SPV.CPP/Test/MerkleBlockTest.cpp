@@ -4,17 +4,17 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <SDK/Common/ByteStream.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Plugin/Interface/IMerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Plugin/ELAPlugin.h>
-#include <SDK/Plugin/IDPlugin.h>
+#include <Common/ByteStream.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Plugin/Interface/IMerkleBlock.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Block/SidechainMerkleBlock.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Plugin/ELAPlugin.h>
+#include <Plugin/IDPlugin.h>
 
-#include "catch.hpp"
+#include <catch.hpp>
 #include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;
@@ -22,7 +22,7 @@ using namespace Elastos::ElaWallet;
 TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 	Log::registerMultiLogger();
 
-#ifndef BUILD_SHARED_LIBS
+#ifdef SPV_ENABLE_STATIC
 	Log::info("Registering plugin ...");
 	REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 	REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);

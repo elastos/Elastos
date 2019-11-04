@@ -4,9 +4,9 @@
 
 #include "CRCProposal.h"
 
-#include <SDK/Common/hash.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
+#include <Common/hash.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -4,10 +4,10 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 #include "TestHelper.h"
 
-#include <SDK/Plugin/Transaction/Payload/CRCProposalReview.h>
+#include <Plugin/Transaction/Payload/CRCProposalReview.h>
 
 using namespace Elastos::ElaWallet;
 

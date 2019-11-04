@@ -3,9 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-#include <SDK/SpvService/BackgroundExecutor.h>
-#include <SDK/Common/Log.h>
+#include <catch.hpp>
+#include <SpvService/BackgroundExecutor.h>
+#include <Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 

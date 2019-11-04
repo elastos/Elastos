@@ -2,13 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/WalletCore/BIPs/Address.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <SDK/WalletCore/BIPs/Key.h>
-#include <SDK/WalletCore/KeyStore/BitcoreWalletClientJson.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/WalletCore/KeyStore/KeyStore.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <WalletCore/Address.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/Key.h>
+#include <WalletCore/BitcoreWalletClientJson.h>
+#include <WalletCore/CoinInfo.h>
+#include <WalletCore/KeyStore.h>
 
 #include "IAccount.h"
 #include "ISubAccount.h"

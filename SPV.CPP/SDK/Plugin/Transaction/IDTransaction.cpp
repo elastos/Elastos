@@ -3,9 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "IDTransaction.h"
-#include "SDK/Plugin/Transaction/Payload/DIDInfo.h"
-#include "SDK/Plugin/Transaction/Payload/RegisterIdentification.h"
-#include <SDK/Common/Log.h>
+#include <Plugin/Transaction/Payload/DIDInfo.h>
+#include <Plugin/Transaction/Payload/RegisterIdentification.h>
+#include <Common/Log.h>
 
 
 namespace Elastos {

@@ -5,10 +5,10 @@
 #define CATCH_CONFIG_MAIN
 
 #include <catch.hpp>
-#include <SDK/SpvService/Config.h>
-#include <SDK/Common/Log.h>
-#include <SDK/P2P/ChainParams.h>
-#include <SDK/Plugin/Registry.h>
+#include <SpvService/Config.h>
+#include <Common/Log.h>
+#include <P2P/ChainParams.h>
+#include <Plugin/Registry.h>
 
 #include <fstream>
 #include <boost/filesystem.hpp>
@@ -20,9 +20,7 @@ TEST_CASE("Config test", "[Config]") {
 
 	SECTION("MainNet") {
 		const std::string netType = CONFIG_MAINNET;
-		Config config("Data");
-		config.SetConfiguration(netType);
-		config.Load();
+		Config config(".", netType);
 		REQUIRE(config.GetNetType() == netType);
 
 		SECTION("ELA") {
@@ -130,9 +128,7 @@ TEST_CASE("Config test", "[Config]") {
 
 	SECTION("TestNet") {
 		const std::string netType = CONFIG_TESTNET;
-		Config config("Data");
-		config.SetConfiguration(netType);
-		config.Load();
+		Config config(".", netType);
 		REQUIRE(config.GetNetType() == netType);
 
 		SECTION("ELA") {
@@ -225,9 +221,7 @@ TEST_CASE("Config test", "[Config]") {
 
 	SECTION("RegTest") {
 		const std::string netType = CONFIG_REGTEST;
-		Config config("Data");
-		config.SetConfiguration(netType);
-		config.Load();
+		Config config(".", netType);
 		REQUIRE(config.GetNetType() == netType);
 
 		SECTION("ELA") {

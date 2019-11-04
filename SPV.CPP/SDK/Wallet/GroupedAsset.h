@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK__GROUPEDASSET_H__
 #define __ELASTOS_SDK__GROUPEDASSET_H__
 
-#include <SDK/Common/ElementSet.h>
-#include <SDK/Common/Lockable.h>
-#include <SDK/Account/SubAccount.h>
-#include <SDK/Common/BigInt.h>
-#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include <Common/ElementSet.h>
+#include <Common/Lockable.h>
+#include <Account/SubAccount.h>
+#include <Common/BigInt.h>
+#include <Plugin/Transaction/Payload/IPayload.h>
 
 #include <map>
 #include <boost/function.hpp>

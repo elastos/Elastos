@@ -7,16 +7,16 @@
 #include <catch.hpp>
 #include "TestHelper.h"
 
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/Attribute.h>
-#include <SDK/Plugin/Transaction/IDTransaction.h>
-#include <SDK/Plugin/Transaction/Payload/CoinBase.h>
-#include <SDK/Plugin/Transaction/Payload/DIDInfo.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <Core/BRTransaction.h>
-#include <Core/BRTransaction.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/Attribute.h>
+#include <Plugin/Transaction/IDTransaction.h>
+#include <Plugin/Transaction/Payload/CoinBase.h>
+#include <Plugin/Transaction/Payload/DIDInfo.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <BRTransaction.h>
+#include <BRTransaction.h>
 
 using namespace Elastos::ElaWallet;
 

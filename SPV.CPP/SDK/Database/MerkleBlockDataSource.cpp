@@ -4,11 +4,11 @@
 
 #include "MerkleBlockDataSource.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/ByteStream.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Plugin/Interface/IMerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
+#include <Common/Log.h>
+#include <Plugin/Registry.h>
+#include <Common/ByteStream.h>
+#include <Common/ErrorChecker.h>
+#include <Plugin/Interface/IMerkleBlock.h>
 
 #include <sstream>
 

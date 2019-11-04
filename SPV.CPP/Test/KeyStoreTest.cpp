@@ -6,14 +6,14 @@
 
 #include <catch.hpp>
 #include <nlohmann/json.hpp>
-#include <SDK/Account/Account.h>
-#include <SDK/Common/Log.h>
-#include <SDK/WalletCore/KeyStore/KeyStore.h>
-#include <SDK/WalletCore/BIPs/BIP39.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/Plugin/Transaction/Asset.h>
+#include <Account/Account.h>
+#include <Common/Log.h>
+#include <WalletCore/KeyStore.h>
+#include <WalletCore/BIP39.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/CoinInfo.h>
+#include <Plugin/Transaction/Asset.h>
 
 #include <fstream>
 #include <boost/filesystem.hpp>

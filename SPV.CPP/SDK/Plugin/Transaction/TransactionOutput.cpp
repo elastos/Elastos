@@ -4,13 +4,13 @@
 
 #include "TransactionOutput.h"
 
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/WalletCore/BIPs/Key.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <WalletCore/Key.h>
+#include <Plugin/Transaction/Asset.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
 
 #include <iostream>
 #include <cstring>

@@ -4,15 +4,15 @@
 
 #include "SubAccount.h"
 
-#include <SDK/Wallet/Wallet.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/Program.h>
-#include <SDK/Plugin/Transaction/Attribute.h>
-#include <SDK/WalletCore/BIPs/Key.h>
+#include <Wallet/Wallet.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/Program.h>
+#include <Plugin/Transaction/Attribute.h>
+#include <WalletCore/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {

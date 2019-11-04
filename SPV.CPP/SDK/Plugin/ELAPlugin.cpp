@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "ELAPlugin.h"
-#include <SDK/Plugin/Block/MerkleBlock.h>
+#include <Plugin/Block/MerkleBlock.h>
 
 namespace Elastos {
 	namespace ElaWallet {

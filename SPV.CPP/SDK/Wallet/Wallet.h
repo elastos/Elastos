@@ -5,10 +5,11 @@
 #ifndef __ELASTOS_SDK_WALLET_H__
 #define __ELASTOS_SDK_WALLET_H__
 
-#include <SDK/Common/Lockable.h>
-#include <SDK/Common/ElementSet.h>
-#include <SDK/Account/SubAccount.h>
-#include <SDK/Wallet/GroupedAsset.h>
+#include <Common/Lockable.h>
+#include <Common/ElementSet.h>
+#include <Account/SubAccount.h>
+#include <Wallet/GroupedAsset.h>
+#include <Plugin/Transaction/TransactionInput.h>
 
 #include <boost/weak_ptr.hpp>
 #include <boost/function.hpp>
@@ -16,7 +17,6 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <string>
 #include <map>
-#include <SDK/Plugin/Transaction/TransactionInput.h>
 
 #define TX_FEE_PER_KB        1000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output

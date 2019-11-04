@@ -5,12 +5,12 @@
 #ifndef __ELASTOS_SDK_SUBWALLET_H__
 #define __ELASTOS_SDK_SUBWALLET_H__
 
-#include <SDK/P2P/ChainParams.h>
-#include <SDK/SpvService/SpvService.h>
-#include <SDK/Account/SubAccount.h>
+#include <P2P/ChainParams.h>
+#include <SpvService/SpvService.h>
+#include <Account/SubAccount.h>
 
-#include <Interface/ISubWallet.h>
-#include <Interface/ISubWalletCallback.h>
+#include <ISubWallet.h>
+#include <ISubWalletCallback.h>
 
 #include <map>
 #include <boost/shared_ptr.hpp>

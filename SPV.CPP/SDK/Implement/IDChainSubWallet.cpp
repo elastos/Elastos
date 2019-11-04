@@ -5,23 +5,21 @@
 #include "IDChainSubWallet.h"
 #include "MasterWallet.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Base64.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/WalletCore/BIPs/Key.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/Plugin/Transaction/Payload/DIDInfo.h>
-#include <SDK/Plugin/Transaction/Program.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/IDTransaction.h>
-#include <SDK/Database/DIDDataStore.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Log.h>
+#include <Common/Base64.h>
+#include <Common/Utils.h>
+#include <WalletCore/CoinInfo.h>
+#include <WalletCore/Key.h>
+#include <WalletCore/Base58.h>
+#include <Plugin/Transaction/Payload/DIDInfo.h>
+#include <Plugin/Transaction/Program.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/IDTransaction.h>
+#include <Database/DIDDataStore.h>
 
 #include <set>
-#include <boost/scoped_ptr.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
 namespace Elastos {

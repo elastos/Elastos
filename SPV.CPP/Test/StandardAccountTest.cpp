@@ -4,12 +4,12 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 
-#include <SDK/Common/Utils.h>
-#include <SDK/Account/Account.h>
-#include <SDK/Common/Log.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
+#include <Common/Utils.h>
+#include <Account/Account.h>
+#include <Common/Log.h>
+#include <WalletCore/HDKeychain.h>
 
 using namespace Elastos::ElaWallet;
 

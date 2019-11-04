@@ -5,9 +5,10 @@
 #ifndef __ELASTOS_SDK_PROGRAM_H__
 #define __ELASTOS_SDK_PROGRAM_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
+#include <WalletCore/Address.h>
+
 #include <boost/shared_ptr.hpp>
-#include <SDK/WalletCore/BIPs/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -6,18 +6,18 @@
 
 #include <catch.hpp>
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Implement/MainchainSubWallet.h>
-#include <SDK/Implement/IDChainSubWallet.h>
-#include <SDK/Implement/MasterWallet.h>
-#include <SDK/Database/DatabaseManager.h>
-#include <SDK/WalletCore/Crypto/AES.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <SDK/WalletCore/BIPs/Key.h>
-#include <SDK/Wallet/UTXO.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Log.h>
+#include <Implement/MainchainSubWallet.h>
+#include <Implement/IDChainSubWallet.h>
+#include <Implement/MasterWallet.h>
+#include <Database/DatabaseManager.h>
+#include <WalletCore/AES.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/Key.h>
+#include <Wallet/UTXO.h>
 
-#include <Interface/MasterWalletManager.h>
+#include <MasterWalletManager.h>
 
 #include <climits>
 #include <boost/scoped_ptr.hpp>
@@ -27,10 +27,11 @@
 
 using namespace Elastos::ElaWallet;
 
+static const std::string __rootPath = "./";
 class TestMasterWalletManager : public MasterWalletManager {
 public:
 	TestMasterWalletManager() :
-		MasterWalletManager(MasterWalletMap(), "Data", "Data") {
+		MasterWalletManager(MasterWalletMap(), __rootPath, __rootPath) {
 		_p2pEnable = false;
 	}
 
@@ -51,10 +52,9 @@ TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	bool singleAddress = false;
 
-	boost::filesystem::remove_all(boost::filesystem::path(std::string("Data/") + masterWalletId));
-	boost::filesystem::remove_all(boost::filesystem::path(std::string("Data/") + masterWalletId2));
-	boost::filesystem::remove_all(boost::filesystem::path(std::string("Data/") + "MasterWalletId"));
-	boost::filesystem::remove_all(boost::filesystem::path(std::string("Data/") + "MasterWalletTest"));
+	boost::filesystem::remove_all(boost::filesystem::path(std::string(__rootPath) + masterWalletId));
+	boost::filesystem::remove_all(boost::filesystem::path(std::string(__rootPath) + masterWalletId2));
+	boost::filesystem::remove_all(boost::filesystem::path(std::string(__rootPath) + "MasterWalletId"));
 	boost::scoped_ptr<TestMasterWalletManager> manager(new TestMasterWalletManager());
 
 	SECTION("Normal creation") {
@@ -64,14 +64,14 @@ TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]
 		REQUIRE(masterWallet1 != nullptr);
 
 		manager->DestroyWallet(masterWalletId);
-		REQUIRE(!boost::filesystem::exists(std::string("Data/") + masterWalletId));
+		REQUIRE(!boost::filesystem::exists(std::string(__rootPath) + masterWalletId));
 	}
 
 	SECTION("Create with phrase password can be empty") {
 		IMasterWallet *masterWallet = manager->CreateMasterWallet(masterWalletId, mnemonic, "",
 																  payPassword, singleAddress);
 		manager->DestroyWallet(masterWallet->GetID());
-		REQUIRE(!boost::filesystem::exists(std::string("Data/") + masterWalletId));
+		REQUIRE(!boost::filesystem::exists(std::string(__rootPath) + masterWalletId));
 	}
 
 	REQUIRE_THROWS(manager->CreateMasterWallet("", mnemonic, phrasePassword, payPassword, singleAddress));
@@ -106,7 +106,7 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 	masterWallets = manager->GetAllMasterWallets();
 	REQUIRE(masterWallets.empty());
 
-	mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
+	mnemonic = MasterWallet::GenerateMnemonic("english", __rootPath);
 	masterWallet = manager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword, singleAddress);
 	REQUIRE(masterWallet != nullptr);
 
@@ -115,7 +115,7 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 	REQUIRE(masterWallets[0] == masterWallet);
 	REQUIRE(masterWallet->GetAllSubWallets().size() == 0);
 
-	mnemonic2 = MasterWallet::GenerateMnemonic("english", "Data");
+	mnemonic2 = MasterWallet::GenerateMnemonic("english", __rootPath);
 	masterWallet2 = manager->CreateMasterWallet(masterWalletId2, mnemonic2, phrasePassword, payPassword, singleAddress);
 	REQUIRE(masterWallet2 != nullptr);
 
@@ -124,8 +124,8 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 
 	REQUIRE_NOTHROW(manager->DestroyWallet(masterWalletId));
 	REQUIRE_NOTHROW(manager->DestroyWallet(masterWalletId2));
-	REQUIRE(!boost::filesystem::exists(std::string("Data/") + masterWalletId));
-	REQUIRE(!boost::filesystem::exists(std::string("Data/") + masterWalletId2));
+	REQUIRE(!boost::filesystem::exists(std::string(__rootPath) + masterWalletId));
+	REQUIRE(!boost::filesystem::exists(std::string(__rootPath) + masterWalletId2));
 }
 
 TEST_CASE("Wallet Import/Export method", "[Import]") {
@@ -178,11 +178,11 @@ TEST_CASE("Wallet Import/Export method", "[Import]") {
 	REQUIRE_THROWS(manager->ImportWalletWithKeystore(masterWalletId2, keystoreContent, backupPassword, payPassword));
 
 	manager->DestroyWallet(masterWalletId);
-	REQUIRE(!boost::filesystem::exists(std::string("Data/") + masterWalletId));
+	REQUIRE(!boost::filesystem::exists(std::string(__rootPath) + masterWalletId));
 }
 
 TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
-	std::string path = "Data/" + masterWalletId + "/";
+	std::string path = __rootPath + masterWalletId + "/";
 	boost::filesystem::remove_all(path);
 	boost::filesystem::create_directories(path);
 
@@ -193,7 +193,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	ls.SaveTo(path);
 
 	std::string iso = "ela1";
-	DatabaseManager dm("Data/" + masterWalletId + "/ELA.db");
+	DatabaseManager dm(__rootPath + masterWalletId + "/ELA.db");
 
 	std::string xprv = ls.GetxPrivKey();
 	bytes_t bytes = AES::DecryptCCM(xprv, payPassword);
@@ -324,7 +324,7 @@ TEST_CASE("Wallet GetBalance test", "[GetBalance]") {
 	dm.flush();
 
 	// verify wallet balance
-	TestMasterWalletManager manager("Data");
+	TestMasterWalletManager manager(__rootPath);
 	std::vector<IMasterWallet *> masterWallets = manager.GetAllMasterWallets();
 	REQUIRE(!masterWallets.empty());
 	IMasterWallet *masterWallet = nullptr;

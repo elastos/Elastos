@@ -6,9 +6,9 @@
 #include "PongMessage.h"
 #include "MempoolMessage.h"
 
-#include <SDK/Common/Utils.h>
-#include <SDK/P2P/Peer.h>
-#include <SDK/P2P/PeerManager.h>
+#include <Common/Utils.h>
+#include <P2P/Peer.h>
+#include <P2P/PeerManager.h>
 
 #include <sys/time.h>
 

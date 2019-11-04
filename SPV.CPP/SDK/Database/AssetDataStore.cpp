@@ -4,8 +4,8 @@
 
 #include "AssetDataStore.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {

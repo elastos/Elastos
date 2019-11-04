@@ -4,7 +4,7 @@
 
 #include "VersionMessage.h"
 
-#include <Core/BRTransaction.h>
+#include <BRTransaction.h>
 
 #include <sys/time.h>
 #include <cfloat>

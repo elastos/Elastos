@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "MempoolMessage.h"
-#include <SDK/P2P/Peer.h>
+#include <P2P/Peer.h>
 
 #include <sys/time.h>
 

@@ -9,11 +9,11 @@
 #include "TransactionPeerList.h"
 #include "PublishedTransaction.h"
 
-#include <SDK/Common/Lockable.h>
-#include <SDK/WalletCore/BIPs/BloomFilter.h>
-#include <SDK/Plugin/Interface/IMerkleBlock.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
+#include <Common/Lockable.h>
+#include <WalletCore/BloomFilter.h>
+#include <Plugin/Interface/IMerkleBlock.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Plugin/Registry.h>
 
 #include <string>
 #include <vector>

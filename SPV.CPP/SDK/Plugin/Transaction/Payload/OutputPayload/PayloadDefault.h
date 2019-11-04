@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_OUTPUT_PAYLOADDEFAULT_H
 #define __ELASTOS_SDK_OUTPUT_PAYLOADDEFAULT_H
 
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
+#include <Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -4,11 +4,11 @@
 
 #include "CoinBaseUTXODataStore.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Wallet/UTXO.h>
-#include <SDK/WalletCore/BIPs/Address.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Log.h>
+#include <Wallet/UTXO.h>
+#include <WalletCore/Address.h>
+#include <Plugin/Transaction/TransactionOutput.h>
 #include <cstdint>
 
 namespace Elastos {

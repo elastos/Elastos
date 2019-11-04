@@ -6,21 +6,21 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include "catch.hpp"
+#include <catch.hpp>
 
-#include <SDK/Implement/MasterWallet.h>
-#include <SDK/Implement/MainchainSubWallet.h>
-#include <SDK/Implement/SidechainSubWallet.h>
-#include <SDK/Implement/IDChainSubWallet.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/ELAPlugin.h>
-#include <SDK/Plugin/IDPlugin.h>
-#include <SDK/SpvService/Config.h>
+#include <Implement/MasterWallet.h>
+#include <Implement/MainchainSubWallet.h>
+#include <Implement/SidechainSubWallet.h>
+#include <Implement/IDChainSubWallet.h>
+#include <Plugin/Registry.h>
+#include <Plugin/ELAPlugin.h>
+#include <Plugin/IDPlugin.h>
+#include <SpvService/Config.h>
 
 using namespace Elastos::ElaWallet;
 
-static const std::string rootPath = "Data";
-#define MasterWalletTestID "MasterWalletTest"
+static const std::string rootPath = ".";
+#define MasterWalletTestID "MasterWalletID"
 #define PASSPHRASE         "passphrase"
 #define PAY_PASSWORD       "payPassword"
 
@@ -92,16 +92,14 @@ public:
 TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	Log::registerMultiLogger();
 
-#ifndef BUILD_SHARED_LIBS
+#ifdef SPV_ENABLE_STATIC
 	Log::info("Registering plugin ...");
 	REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 	REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
 #endif
 
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath));
-	config->SetConfiguration(CONFIG_MAINNET);
-	config->Load();
+	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
 
 	ISubWallet *subWallet = masterWallet->CreateSubWallet(CHAINID_MAINCHAIN);
@@ -150,9 +148,7 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 	Log::registerMultiLogger();
 
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config("Data"));
-	config->SetConfiguration(CONFIG_MAINNET);
-	config->Load();
+	ConfigPtr config(new Config(".", CONFIG_MAINNET));
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
 
 	ISubWallet *subWallet = masterWallet->CreateSubWallet(CHAINID_IDCHAIN);
@@ -182,9 +178,7 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 
 TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath));
-	config->SetConfiguration(CONFIG_MAINNET);
-	config->Load();
+	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
 
 	REQUIRE_THROWS(masterWallet->ChangePassword("wrongPassword", "newPayPassword"));
@@ -206,9 +200,7 @@ TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
 
 TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath));
-	config->SetConfiguration(CONFIG_MAINNET);
-	config->Load();
+	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
 
 	REQUIRE(masterWallet->IsAddressValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3")); //normal
@@ -224,9 +216,7 @@ TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
 
 TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath));
-	config->SetConfiguration(CONFIG_MAINNET);
-	config->Load();
+	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, PASSPHRASE, PAY_PASSWORD, config));
 
@@ -244,9 +234,7 @@ TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]")
 	Log::registerMultiLogger();
 
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath));
-	config->SetConfiguration(CONFIG_MAINNET);
-	config->Load();
+	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
 
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	boost::shared_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, PASSPHRASE, PAY_PASSWORD, config));
@@ -270,9 +258,7 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 	Log::registerMultiLogger();
 
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(rootPath));
-	config->SetConfiguration(CONFIG_MAINNET);
-	config->Load();
+	ConfigPtr config(new Config(rootPath, CONFIG_MAINNET));
 
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	boost::shared_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, PASSPHRASE, PAY_PASSWORD, config));

@@ -4,11 +4,10 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 #include "TestHelper.h"
-//#include "BRInt.h"
-#include <SDK/Common/Log.h>
-#include "SDK/Plugin/Transaction/Payload/CoinBase.h"
+#include <Common/Log.h>
+#include <Plugin/Transaction/Payload/CoinBase.h>
 
 using namespace Elastos::ElaWallet;
 

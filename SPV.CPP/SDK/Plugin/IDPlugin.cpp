@@ -4,7 +4,7 @@
 
 #include "IDPlugin.h"
 
-#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
+#include <Plugin/Block/SidechainMerkleBlock.h>
 
 namespace Elastos {
 	namespace ElaWallet {

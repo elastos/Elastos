@@ -5,11 +5,11 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 #define __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/WalletCore/BIPs/Address.h>
-#include <SDK/Common/BigInt.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
+#include <Plugin/Transaction/Asset.h>
+#include <WalletCore/Address.h>
+#include <Common/BigInt.h>
 
 #include <boost/shared_ptr.hpp>
 

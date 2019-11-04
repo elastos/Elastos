@@ -4,8 +4,8 @@
 
 #include "PeerDataSource.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
 
 #include <sstream>
 

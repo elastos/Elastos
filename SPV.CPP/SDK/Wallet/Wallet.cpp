@@ -5,22 +5,22 @@
 #include "Wallet.h"
 #include "GroupedAsset.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/WalletCore/BIPs/Key.h>
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
-#include <SDK/WalletCore/BIPs/Address.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Wallet/UTXO.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <Common/ErrorChecker.h>
+#include <WalletCore/Key.h>
+#include <WalletCore/Mnemonic.h>
+#include <WalletCore/Address.h>
+#include <WalletCore/HDKeychain.h>
+#include <Plugin/Transaction/Asset.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/TransactionInput.h>
+#include <Plugin/Transaction/Payload/RegisterAsset.h>
+#include <Plugin/Registry.h>
+#include <Wallet/UTXO.h>
 
-#include <Interface/ISubWallet.h>
+#include <ISubWallet.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/function.hpp>

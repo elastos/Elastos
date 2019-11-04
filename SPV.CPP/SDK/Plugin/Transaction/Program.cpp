@@ -5,11 +5,11 @@
 #include "Transaction.h"
 #include "Program.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/WalletCore/BIPs/Address.h>
-#include <SDK/WalletCore/BIPs/Key.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <WalletCore/Address.h>
+#include <WalletCore/Key.h>
 
 namespace Elastos {
 	namespace ElaWallet {

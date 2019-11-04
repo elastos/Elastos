@@ -7,10 +7,10 @@
 
 #include "SubWallet.h"
 
-#include <SDK/Account/SideAccount.h>
-#include <SDK/Common/uint256.h>
-#include <SDK/Database/NotifyQueue.h>
-#include <SDK/SpvService/Config.h>
+#include <Account/SideAccount.h>
+#include <Common/uint256.h>
+#include <Database/NotifyQueue.h>
+#include <SpvService/Config.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -81,12 +81,11 @@ namespace Elastos {
 			Listener *_listener;
 
 		public:
-			static SPVModulePtr Create(const uint256 &genesis_hash,
-									   const std::string &root_path) {
+			static SPVModulePtr Create(const std::string &genesis_hash, const std::string &root_path) {
 				Config cfg(root_path);
 				ChainConfigPtr chain_cfg = cfg.GetChainConfig(CHAINID_MAINCHAIN);
 				std::string db_path = root_path + "/spv_module.db";
-				SubAccountPtr sub_account = SubAccountPtr(new SideAccount(genesis_hash));
+				SubAccountPtr sub_account = SubAccountPtr(new SideAccount(uint256(genesis_hash)));
 				return SPVModulePtr(new SPVModule(CHAINID_MAINCHAIN, sub_account, db_path,
 												  chain_cfg->ChainParameters()->LastCheckpoint().Timestamp(),
 												  chain_cfg));

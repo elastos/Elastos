@@ -4,6 +4,10 @@
 
 #include "Base64.h"
 
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/buffer.h>
+
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -41,7 +45,7 @@ namespace Elastos {
 
 			bytes_t buffer(decodedLen);
 
-			bio = BIO_new_mem_buf(input.c_str(), -1);
+			bio = BIO_new_mem_buf((void *)input.c_str(), -1);
 			b64 = BIO_new(BIO_f_base64());
 			bio = BIO_push(b64, bio);
 

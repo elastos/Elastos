@@ -4,15 +4,16 @@
 
 #include "TokenchainSubWallet.h"
 #include "MasterWallet.h"
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/Plugin/Transaction/Payload/RegisterAsset.h>
-#include <SDK/Plugin/Transaction/Payload/TransferAsset.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
 
-#include <vector>
+#include <Common/ErrorChecker.h>
+#include <WalletCore/CoinInfo.h>
+#include <Plugin/Transaction/Payload/RegisterAsset.h>
+#include <Plugin/Transaction/Payload/TransferAsset.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+
 #include <map>
+#include <vector>
 #include <boost/scoped_ptr.hpp>
 
 namespace Elastos {

@@ -56,23 +56,25 @@ namespace Elastos {
 		public:
 			Config(const Config &cfg);
 
-			Config(const std::string &rootPath);
+			Config(const std::string &rootPath, const std::string &netType = "MainNet",
+				   const nlohmann::json &jsonConfig = nlohmann::json());
 
 			~Config();
 
-			Config& operator=(const Config &cfg);
+			Config &operator=(const Config &cfg);
 
 			ChainConfigPtr GetChainConfig(const std::string &id) const;
-
-			bool Load();
-
-			bool SetConfiguration(const std::string &netType, const nlohmann::json &jsonConfig = nlohmann::json());
 
 			std::vector<std::string> GetAllChainIDs() const;
 
 			std::string GetNetType() const;
 
 		private:
+
+			bool Load();
+
+			bool SetConfiguration(const std::string &netType, const nlohmann::json &jsonConfig = nlohmann::json());
+
 			bool FromJSON(const nlohmann::json &j);
 
 			bool ChangeConfig(nlohmann::json &currentConfig, const nlohmann::json &newConfig) const;

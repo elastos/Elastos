@@ -7,10 +7,10 @@
 
 #include "IAccount.h"
 
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
-#include <SDK/Common/Mstream.h>
-#include <SDK/WalletCore/BIPs/Address.h>
-#include <SDK/SpvService/LocalStore.h>
+#include <WalletCore/Mnemonic.h>
+#include <Common/Mstream.h>
+#include <WalletCore/Address.h>
+#include <SpvService/LocalStore.h>
 
 #include <nlohmann/json.hpp>
 

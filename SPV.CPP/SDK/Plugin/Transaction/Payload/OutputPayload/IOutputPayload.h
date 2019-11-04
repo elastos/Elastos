@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_IOUTPUTPAYLOAD_H__
 #define __ELASTOS_SDK_IOUTPUTPAYLOAD_H__
 
-#include <SDK/Common/ByteStream.h>
+#include <Common/ByteStream.h>
 #include <nlohmann/json.hpp>
 #include <boost/shared_ptr.hpp>
 

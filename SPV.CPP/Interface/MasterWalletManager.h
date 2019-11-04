@@ -7,14 +7,14 @@
 
 #include <map>
 
-#include "IMasterWalletManager.h"
+#include <IMasterWalletManager.h>
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class Config;
 
-		class MasterWalletManager : public IMasterWalletManager {
+		class SPV_API_PUBLIC MasterWalletManager : public IMasterWalletManager {
 		public:
 			/**
 			 * Constructor

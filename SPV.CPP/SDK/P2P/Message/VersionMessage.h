@@ -7,7 +7,7 @@
 
 #include "Message.h"
 
-#include <SDK/P2P/Peer.h>
+#include <P2P/Peer.h>
 
 namespace Elastos {
 	namespace ElaWallet {

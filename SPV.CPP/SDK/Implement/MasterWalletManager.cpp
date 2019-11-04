@@ -4,17 +4,17 @@
 
 #include "MasterWallet.h"
 
-#include <SDK/SpvService/Config.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/ELAPlugin.h>
-#include <SDK/Plugin/IDPlugin.h>
-#include <Interface/MasterWalletManager.h>
-#include <CMakeConfig.h>
+#include <SpvService/Config.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <WalletCore/Mnemonic.h>
+#include <WalletCore/Base58.h>
+#include <Plugin/Registry.h>
+#include <Plugin/ELAPlugin.h>
+#include <Plugin/IDPlugin.h>
 
+#include <MasterWalletManager.h>
+#include <CMakeConfig.h>
 
 #include <boost/filesystem.hpp>
 
@@ -43,7 +43,7 @@ namespace Elastos {
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
 			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
-#ifndef BUILD_SHARED_LIBS
+#ifdef SPV_ENABLE_STATIC
 			Log::info("Registering plugin ...");
 			REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 			REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
@@ -53,12 +53,7 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "invalid NetType");
 			}
 
-			_config = new Config(_dataPath);
-
-			_config->SetConfiguration(netType, config);
-			if (!_config->Load())
-				Log::error("load config failed");
-
+			_config = new Config(_dataPath, netType, config);
 			if (_config->GetNetType() != CONFIG_MAINNET) {
 				_dataPath = _dataPath + "/" + _config->GetNetType();
 				if (!boost::filesystem::exists(_dataPath))
@@ -86,16 +81,13 @@ namespace Elastos {
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
 			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
-#ifndef BUILD_SHARED_LIBS
+#ifdef SPV_ENABLE_STATIC
 			Log::info("Registering plugin ...");
 			REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 			REGISTER_MERKLEBLOCKPLUGIN(IDChain, getIDPluginComponent);
 #endif
 
-			_config = new Config(_dataPath);
-			_config->SetConfiguration(CONFIG_MAINNET);
-			if (!_config->Load())
-				Log::error("load config failed");
+			_config = new Config(_dataPath, CONFIG_MAINNET);
 
 			if (_config->GetNetType() != CONFIG_MAINNET)
 				_dataPath = _dataPath + "/" + _config->GetNetType();

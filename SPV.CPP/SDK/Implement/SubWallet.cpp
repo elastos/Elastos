@@ -5,18 +5,18 @@
 #include "MasterWallet.h"
 #include "SubWallet.h"
 
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Plugin/Transaction/IDTransaction.h>
-#include <SDK/Plugin/Transaction/Payload/TransferAsset.h>
-#include <SDK/Account/SubAccount.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/SpvService/Config.h>
-#include <SDK/Wallet/UTXO.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/TransactionInput.h>
+#include <Plugin/Transaction/IDTransaction.h>
+#include <Plugin/Transaction/Payload/TransferAsset.h>
+#include <Account/SubAccount.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/CoinInfo.h>
+#include <SpvService/Config.h>
+#include <Wallet/UTXO.h>
 
 #include <algorithm>
 #include <boost/scoped_ptr.hpp>

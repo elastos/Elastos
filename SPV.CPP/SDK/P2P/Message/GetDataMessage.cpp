@@ -5,9 +5,9 @@
 #include "GetDataMessage.h"
 #include "TransactionMessage.h"
 
-#include <SDK/P2P/Peer.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
+#include <P2P/Peer.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
 
 #define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
 

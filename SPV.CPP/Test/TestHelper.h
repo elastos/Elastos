@@ -7,16 +7,16 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
-#include <SDK/Plugin/Block/AuxPow.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/Attribute.h>
-#include <SDK/Plugin/Transaction/Program.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
-#include <SDK/Common/BigInt.h>
+#include <Plugin/Block/AuxPow.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/TransactionInput.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Transaction/Attribute.h>
+#include <Plugin/Transaction/Program.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
+#include <Plugin/Transaction/Payload/OutputPayload/PayloadDefault.h>
+#include <Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

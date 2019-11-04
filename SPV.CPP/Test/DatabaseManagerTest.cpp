@@ -4,18 +4,18 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 #include "TestHelper.h"
 
-#include <SDK/Database/TransactionDataStore.h>
-#include <SDK/Database/DatabaseManager.h>
-#include <SDK/SpvService/BackgroundExecutor.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Wallet/UTXO.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Plugin/ELAPlugin.h>
+#include <Database/TransactionDataStore.h>
+#include <Database/DatabaseManager.h>
+#include <SpvService/BackgroundExecutor.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Wallet/UTXO.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Plugin/ELAPlugin.h>
 
 #include <fstream>
 
@@ -96,7 +96,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	SECTION("Merkle Block test ") {
 #define TEST_MERKLEBLOCK_RECORD_CNT DEFAULT_RECORD_CNT
-#ifndef BUILD_SHARED_LIBS
+#ifdef SPV_ENABLE_STATIC
 		REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 #endif
 		static std::vector<MerkleBlockPtr> blocksToSave;
@@ -510,7 +510,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			std::vector<DIDEntity> didVerify = dm.GetAllDID();
 			REQUIRE(didVerify.size() == didToSave.size() - 1);
 
-			idx = getRandUInt8() % didToSave.size() - 1;
+			idx = getRandUInt8() % didToSave.size();
 			REQUIRE(dm.DeleteDIDByTxHash(didToSave[idx].TxHash));
 			didVerify = dm.GetAllDID();
 			REQUIRE(didVerify.size() == didToSave.size() - 2);

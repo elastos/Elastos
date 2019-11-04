@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_OUTPUT_PAYLOADVOTE_H
 #define __ELASTOS_SDK_OUTPUT_PAYLOADVOTE_H
 
-#include <SDK/Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
-#include <SDK/Common/BigInt.h>
+#include <Plugin/Transaction/Payload/OutputPayload/IOutputPayload.h>
+#include <Common/BigInt.h>
 
 #define VOTE_PRODUCER_CR_VERSION  0x01
 

@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_IDCHAINSUBWALLET_H__
 
 #include "SidechainSubWallet.h"
-#include "Interface/IIDChainSubWallet.h"
+#include "IIDChainSubWallet.h"
 
 namespace Elastos {
 	namespace ElaWallet {

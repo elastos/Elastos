@@ -20,9 +20,9 @@
 #include "Message/GetAddressMessage.h"
 #include "Message/RejectMessage.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/hash.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <Common/hash.h>
 
 #include <arpa/inet.h>
 #include <cfloat>

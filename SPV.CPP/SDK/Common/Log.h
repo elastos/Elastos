@@ -8,7 +8,7 @@
 #include <CMakeConfig.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_sinks.h>
-#include <spdlog/sinks/file_sinks.h>
+#include <spdlog/sinks/rotating_file_sink.h>
 #if defined(__ANDROID__)
 #include <spdlog/sinks/android_sink.h>
 #endif
@@ -31,7 +31,7 @@ namespace Elastos {
 
 #ifdef SPV_CONSOLE_LOG
 #if defined(__ANDROID__)
-				auto console_sink = std::make_shared<spdlog::sinks::android_sink>("spvsdk");
+				auto console_sink = std::make_shared<spdlog::sinks::android_sink_mt>("spvsdk");
 #else
 				auto console_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
 #endif
@@ -135,6 +135,8 @@ namespace Elastos {
 #define __va_first(first, ...) first
 #define __va_rest(first, ...) __VA_ARGS__
 #define ArgInfo(...) Log::info(std::string("+++ ") + __va_first(__VA_ARGS__, NULL), __va_rest(__VA_ARGS__, NULL))
+#else
+#define ArgInfo(...)
 #endif
 
 #define SPVLOG_DEBUG(...) SPDLOG_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)

@@ -5,14 +5,14 @@
 #ifndef __ELASTOS_SDK_MASTERWALLET_H__
 #define __ELASTOS_SDK_MASTERWALLET_H__
 
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
-#include <SDK/WalletCore/KeyStore/KeyStore.h>
-#include <SDK/SpvService/LocalStore.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Account/Account.h>
+#include <WalletCore/Mnemonic.h>
+#include <WalletCore/KeyStore.h>
+#include <SpvService/LocalStore.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Account/Account.h>
 
-#include <Interface/IMasterWallet.h>
+#include <IMasterWallet.h>
 
 #include <map>
 #include <boost/shared_ptr.hpp>

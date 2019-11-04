@@ -4,11 +4,10 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
-#include "TestHelper.h"
+#include <catch.hpp>
 
-#include <SDK/Common/uint256.h>
-#include <SDK/Common/Utils.h>
+#include <Common/uint256.h>
+#include <Common/Utils.h>
 
 using namespace Elastos::ElaWallet;
 

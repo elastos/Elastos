@@ -8,9 +8,6 @@
 #include "typedefs.h"
 
 #include <string>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include <openssl/buffer.h>
 
 namespace Elastos {
 	namespace ElaWallet {

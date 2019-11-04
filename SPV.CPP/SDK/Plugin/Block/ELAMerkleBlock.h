@@ -7,7 +7,7 @@
 
 #include "AuxPow.h"
 
-#include <Core/BRMerkleBlock.h>
+#include <BRMerkleBlock.h>
 
 namespace Elastos {
 	namespace ElaWallet {

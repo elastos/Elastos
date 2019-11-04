@@ -8,10 +8,10 @@
 #include "RegTestConfig.h"
 #include "PrvNetConfig.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/P2P/ChainParams.h>
-#include <SDK/Plugin/Registry.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <P2P/ChainParams.h>
+#include <Plugin/Registry.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -52,10 +52,13 @@ namespace Elastos {
 			this->operator=(cfg);
 		}
 
-		Config::Config(const std::string &rootPath) :
+		Config::Config(const std::string &rootPath, const std::string &netType, const nlohmann::json &jsonConfig) :
 			_filepath(rootPath + "/" + CONFIG_FILENAME) {
-
 			ErrorChecker::CheckPathExists(boost::filesystem::path(rootPath));
+
+			SetConfiguration(netType, jsonConfig);
+			if (!Load())
+				Log::error("load config failed");
 		}
 
 		Config::~Config() {

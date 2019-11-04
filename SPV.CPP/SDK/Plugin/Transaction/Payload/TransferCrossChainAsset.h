@@ -7,8 +7,8 @@
 
 #include "IPayload.h"
 
+#include <Common/BigInt.h>
 #include <map>
-#include <SDK/Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

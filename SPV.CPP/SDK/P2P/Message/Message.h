@@ -5,9 +5,9 @@
 #ifndef __ELASTOS_SDK_MESSAGE_H__
 #define __ELASTOS_SDK_MESSAGE_H__
 
-#include <SDK/P2P/PeerInfo.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Interface/IMerkleBlock.h>
+#include <P2P/PeerInfo.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Interface/IMerkleBlock.h>
 
 #include <string>
 #include <boost/shared_ptr.hpp>

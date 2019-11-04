@@ -1,9 +1,0 @@
-[submodule "ThirdParty/openssl/openssl"]
-	path = SPV.CPP/ThirdParty/openssl/openssl
-	url = https://github.com/openssl/openssl.git
-[submodule "ThirdParty/fruit"]
-	path = SPV.CPP/ThirdParty/fruit
-	url = https://github.com/google/fruit.git
-[submodule "ThirdParty/openssl/OpenSSL-for-iPhone"]
-	path = SPV.CPP/ThirdParty/openssl/OpenSSL-for-iPhone
-	url = https://github.com/x2on/OpenSSL-for-iPhone.git

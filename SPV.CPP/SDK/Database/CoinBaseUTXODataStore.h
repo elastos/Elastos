@@ -8,8 +8,8 @@
 #include "Sqlite.h"
 #include "TableBase.h"
 
-#include <SDK/Common/uint256.h>
-#include <SDK/Common/BigInt.h>
+#include <Common/uint256.h>
+#include <Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

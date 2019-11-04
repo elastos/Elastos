@@ -9,16 +9,16 @@
 #include "MasterWallet.h"
 #include "TokenchainSubWallet.h"
 
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/Payload/RegisterIdentification.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/WalletCore/BIPs/Mnemonic.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/Crypto/AES.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/SpvService/Config.h>
+#include <Plugin/Transaction/Asset.h>
+#include <Plugin/Transaction/Payload/RegisterIdentification.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <WalletCore/Mnemonic.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/AES.h>
+#include <WalletCore/CoinInfo.h>
+#include <SpvService/Config.h>
 #include <CMakeConfig.h>
 
 #include <vector>

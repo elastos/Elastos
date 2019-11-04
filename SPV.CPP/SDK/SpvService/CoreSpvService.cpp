@@ -4,11 +4,11 @@
 
 #include "CoreSpvService.h"
 
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/SpvService/Config.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Transaction/Asset.h>
+#include <Common/Log.h>
+#include <Common/ErrorChecker.h>
+#include <SpvService/Config.h>
 
 #include <sstream>
 

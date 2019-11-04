@@ -4,17 +4,17 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 
-#include <SDK/Account/Account.h>
-#include <SDK/Account/SubAccount.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Plugin/Transaction/Program.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/WalletCore/BIPs/BIP39.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <BIPs/Key.h>
+#include <Account/Account.h>
+#include <Account/SubAccount.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <Plugin/Transaction/Program.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <WalletCore/BIP39.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/Key.h>
 
 using namespace Elastos::ElaWallet;
 

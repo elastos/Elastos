@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_ASSETDATASTORE_H__
 
 #include "TableBase.h"
-#include <SDK/Common/BigInt.h>
+#include <Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {

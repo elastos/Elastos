@@ -10,21 +10,21 @@
 #include "Message/GetDataMessage.h"
 #include "Message/InventoryMessage.h"
 
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Block/ELAMerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/Log.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/BIPs/BloomFilter.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <SDK/Wallet/Wallet.h>
-#include <SDK/Wallet/UTXO.h>
-#include <SDK/P2P/ChainParams.h>
+#include <Plugin/Transaction/Asset.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/TransactionInput.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Plugin/Block/ELAMerkleBlock.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Common/Utils.h>
+#include <Common/Log.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/BloomFilter.h>
+#include <WalletCore/HDKeychain.h>
+#include <Wallet/Wallet.h>
+#include <Wallet/UTXO.h>
+#include <P2P/ChainParams.h>
 
 #include <netdb.h>
 #include <netinet/in.h>

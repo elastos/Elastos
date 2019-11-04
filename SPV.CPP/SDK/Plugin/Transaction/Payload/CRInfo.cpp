@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "CRInfo.h"
-#include <SDK/Common/Log.h>
+#include <Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {

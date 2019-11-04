@@ -4,9 +4,9 @@
 
 #include "NotifyQueue.h"
 
-#include <SDK/Common/ByteStream.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Log.h>
+#include <Common/ByteStream.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {

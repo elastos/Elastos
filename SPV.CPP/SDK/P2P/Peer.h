@@ -8,9 +8,9 @@
 #include "PeerInfo.h"
 #include "Message/Message.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/ElementSet.h>
-#include <SDK/Common/uint256.h>
+#include <Common/Log.h>
+#include <Common/ElementSet.h>
+#include <Common/uint256.h>
 
 #include <deque>
 #include <boost/shared_ptr.hpp>

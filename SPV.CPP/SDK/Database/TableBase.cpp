@@ -4,7 +4,7 @@
 
 #include "TableBase.h"
 
-#include <SDK/Common/Log.h>
+#include <Common/Log.h>
 
 namespace Elastos {
 	namespace ElaWallet {

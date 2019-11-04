@@ -7,9 +7,9 @@
 
 #include "Executor.h"
 
-#include <SDK/P2P/PeerManager.h>
-#include <SDK/Account/SubAccount.h>
-#include <SDK/Wallet/Wallet.h>
+#include <P2P/PeerManager.h>
+#include <Account/SubAccount.h>
+#include <Wallet/Wallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {

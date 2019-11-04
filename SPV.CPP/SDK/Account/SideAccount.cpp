@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "SideAccount.h"
-#include <SDK/Common/uint256.h>
+#include <Common/uint256.h>
 
 namespace Elastos {
 	namespace ElaWallet {

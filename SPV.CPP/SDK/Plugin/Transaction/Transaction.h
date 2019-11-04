@@ -5,8 +5,8 @@
 #ifndef __ELASTOS_SDK_TRANSACTION_H__
 #define __ELASTOS_SDK_TRANSACTION_H__
 
-#include <SDK/Plugin/Interface/ELAMessageSerializable.h>
-#include <SDK/Plugin/Transaction/Payload/IPayload.h>
+#include <Plugin/Interface/ELAMessageSerializable.h>
+#include <Plugin/Transaction/Payload/IPayload.h>
 
 #include <boost/shared_ptr.hpp>
 

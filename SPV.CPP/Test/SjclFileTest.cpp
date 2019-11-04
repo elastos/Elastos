@@ -7,11 +7,11 @@
 #include <catch.hpp>
 
 #include <nlohmann/json.hpp>
-#include <SDK/WalletCore/KeyStore/SjclFile.h>
+#include <WalletCore/SjclFile.h>
+#include <Common/Log.h>
 
 #include <fstream>
 #include <boost/filesystem.hpp>
-#include <SDK/Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 

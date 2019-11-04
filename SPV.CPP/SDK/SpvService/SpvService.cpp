@@ -5,19 +5,18 @@
 
 #include "SpvService.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Plugin/Block/MerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
-#include <SDK/Plugin/Transaction/Asset.h>
-#include <SDK/Plugin/Transaction/TransactionInput.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <SDK/Plugin/Transaction/Payload/DIDInfo.h>
-#include <SDK/Wallet/UTXO.h>
-#include <SDK/Database/DatabaseManager.h>
+#include <Common/Log.h>
+#include <Common/Utils.h>
+#include <Plugin/Block/MerkleBlock.h>
+#include <Plugin/Registry.h>
+#include <Plugin/Transaction/Asset.h>
+#include <Plugin/Transaction/TransactionInput.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+#include <Wallet/UTXO.h>
+#include <Database/DatabaseManager.h>
 
-#include <Core/BRMerkleBlock.h>
-#include <Core/BRTransaction.h>
+#include <BRMerkleBlock.h>
+#include <BRTransaction.h>
 
 #include <boost/thread.hpp>
 

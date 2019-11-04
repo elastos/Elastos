@@ -3,8 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #include "Asset.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/hash.h>
+#include <Common/Log.h>
+#include <Common/hash.h>
 
 #include <cstring>
 

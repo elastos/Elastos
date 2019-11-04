@@ -5,9 +5,9 @@
 #ifndef __ELASTOS_SDK_TOKENPLUGIN_H__
 #define __ELASTOS_SDK_TOKENPLUGIN_H__
 
-#include <SDK/Plugin/Interface/IPlugin.h>
-#include <SDK/Plugin/Block/SidechainMerkleBlock.h>
-#include <SDK/Plugin/Registry.h>
+#include <Plugin/Interface/IPlugin.h>
+#include <Plugin/Block/SidechainMerkleBlock.h>
+#include <Plugin/Registry.h>
 
 #include <fruit/fruit.h>
 

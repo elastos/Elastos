@@ -6,12 +6,12 @@
 
 #include <catch.hpp>
 
-#include <SDK/SpvService/LocalStore.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/BIPs/HDKeychain.h>
-#include <SDK/WalletCore/Crypto/AES.h>
-#include <SDK/Account/Account.h>
-#include <SDK/Common/Log.h>
+#include <SpvService/LocalStore.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/HDKeychain.h>
+#include <WalletCore/AES.h>
+#include <Account/Account.h>
+#include <Common/Log.h>
 
 #include <nlohmann/json.hpp>
 

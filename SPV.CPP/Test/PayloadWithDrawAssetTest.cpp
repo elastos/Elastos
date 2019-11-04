@@ -6,8 +6,8 @@
 
 #include <catch.hpp>
 #include "TestHelper.h"
-#include <SDK/Plugin/Transaction/Payload/WithdrawFromSideChain.h>
-#include <SDK/Common/Log.h>
+#include <Plugin/Transaction/Payload/WithdrawFromSideChain.h>
+#include <Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 

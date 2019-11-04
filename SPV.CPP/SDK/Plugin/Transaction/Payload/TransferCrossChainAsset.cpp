@@ -3,10 +3,10 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "TransferCrossChainAsset.h"
-#include <SDK/Common/Log.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/BIPs/Key.h>
-#include <SDK/WalletCore/BIPs/Address.h>
+#include <Common/Log.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/Key.h>
+#include <WalletCore/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {

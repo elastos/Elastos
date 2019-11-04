@@ -2,11 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/Base64.h>
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/WalletCore/BIPs/Base58.h>
-#include <SDK/WalletCore/BIPs/Key.h>
+#include <Common/Log.h>
+#include <Common/Base64.h>
+#include <Common/ErrorChecker.h>
+#include <WalletCore/Base58.h>
+#include <WalletCore/Key.h>
 
 #include "DIDInfo.h"
 

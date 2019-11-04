@@ -4,9 +4,9 @@
 
 #include "PongMessage.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/P2P/Peer.h>
-#include <Core/BRArray.h>
+#include <Common/Log.h>
+#include <P2P/Peer.h>
+#include <BRArray.h>
 
 #include <sys/time.h>
 

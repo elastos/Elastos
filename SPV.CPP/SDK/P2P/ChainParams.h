@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_CHAINPARAMS_H__
 #define __ELASTOS_SDK_CHAINPARAMS_H__
 
-#include <SDK/Common/uint256.h>
+#include <Common/uint256.h>
 
 #include <boost/shared_ptr.hpp>
 #include <string>

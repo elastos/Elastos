@@ -7,7 +7,7 @@
 
 #include "SubWallet.h"
 
-#include <Interface/ISidechainSubWallet.h>
+#include <ISidechainSubWallet.h>
 
 namespace Elastos {
 	namespace ElaWallet {

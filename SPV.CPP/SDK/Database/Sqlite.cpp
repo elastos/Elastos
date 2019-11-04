@@ -4,11 +4,10 @@
 
 #include "Sqlite.h"
 
-#include <SDK/Common/Log.h>
-#include <SDK/Common/typedefs.h>
+#include <Common/Log.h>
+#include <Common/typedefs.h>
 
 #include <boost/filesystem.hpp>
-//#include <boost/locale.hpp>
 
 namespace Elastos {
 	namespace ElaWallet {

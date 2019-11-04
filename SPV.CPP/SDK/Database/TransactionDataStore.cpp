@@ -4,12 +4,12 @@
 
 #include "TransactionDataStore.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Common/Log.h>
-#include <SDK/Common/uint256.h>
-#include <SDK/Plugin/Transaction/Transaction.h>
-#include <SDK/Plugin/Transaction/IDTransaction.h>
-#include <SDK/Plugin/Registry.h>
+#include <Common/ErrorChecker.h>
+#include <Common/Log.h>
+#include <Common/uint256.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/IDTransaction.h>
+#include <Plugin/Registry.h>
 
 #include <string>
 

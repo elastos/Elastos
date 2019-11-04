@@ -4,10 +4,10 @@
 
 #include "FilterLoadMessage.h"
 
-#include <SDK/P2P/Peer.h>
-#include <SDK/P2P/PeerManager.h>
-#include <SDK/WalletCore/BIPs/BloomFilter.h>
-#include <SDK/Common/ByteStream.h>
+#include <P2P/Peer.h>
+#include <P2P/PeerManager.h>
+#include <WalletCore/BloomFilter.h>
+#include <Common/ByteStream.h>
 
 namespace Elastos {
 	namespace ElaWallet {

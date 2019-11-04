@@ -5,12 +5,13 @@
 #include "SidechainSubWallet.h"
 #include "MasterWallet.h"
 
-#include <SDK/Common/ErrorChecker.h>
-#include <SDK/Plugin/Transaction/Payload/TransferCrossChainAsset.h>
-#include <SDK/SpvService/Config.h>
-#include <SDK/WalletCore/KeyStore/CoinInfo.h>
-#include <SDK/Plugin/Transaction/TransactionOutput.h>
-#include <Core/BRAddress.h>
+#include <Common/ErrorChecker.h>
+#include <Plugin/Transaction/Payload/TransferCrossChainAsset.h>
+#include <SpvService/Config.h>
+#include <WalletCore/CoinInfo.h>
+#include <Plugin/Transaction/TransactionOutput.h>
+
+#include <BRAddress.h>
 
 #include <vector>
 #include <map>

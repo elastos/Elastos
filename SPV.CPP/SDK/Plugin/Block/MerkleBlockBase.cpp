@@ -4,11 +4,11 @@
 
 #include "MerkleBlockBase.h"
 
-#include <Core/BRCrypto.h>
+#include <BRCrypto.h>
 
-#include <SDK/Common/ByteStream.h>
-#include <SDK/Common/Utils.h>
-#include <SDK/Common/hash.h>
+#include <Common/ByteStream.h>
+#include <Common/Utils.h>
+#include <Common/hash.h>
 
 namespace Elastos {
 	namespace ElaWallet {

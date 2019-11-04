@@ -4,11 +4,11 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"
+#include <catch.hpp>
 
-#include <SDK/WalletCore/BIPs/BIP39.h>
-#include <SDK/WalletCore/BIPs/WordLists/Chinese.h>
-#include <SDK/Common/Log.h>
+#include <WalletCore/BIP39.h>
+#include <WalletCore/WordLists/Chinese.h>
+#include <Common/Log.h>
 
 using namespace Elastos::ElaWallet;
 

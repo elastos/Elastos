@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_SQLITE_H__
 #define __ELASTOS_SDK_SQLITE_H__
 
-#include <SDK/Common/typedefs.h>
+#include <Common/typedefs.h>
 
 #include <sqlite3.h>
 #include <boost/filesystem.hpp>

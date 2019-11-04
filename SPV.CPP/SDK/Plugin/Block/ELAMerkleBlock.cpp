@@ -4,7 +4,7 @@
 
 #include "ELAMerkleBlock.h"
 
-#include <SDK/Common/Utils.h>
+#include <Common/Utils.h>
 
 #include <cstring>
 #include <cstdlib>
