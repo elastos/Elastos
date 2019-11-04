@@ -33,8 +33,8 @@ public class CRListAdapter extends CRListAdapterFather {
 
     @Override
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
-
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.a26ffffff));
+        super.convert(helper, bean);
         helper.setGone(R.id.view, !showCheckbox);
         helper.setText(R.id.tv_rank, "No." + (bean.getIndex() + 1));
 
@@ -120,7 +120,7 @@ public class CRListAdapter extends CRListAdapterFather {
 
             }
         });
-        super.convert(helper, bean);
+
     }
 
 

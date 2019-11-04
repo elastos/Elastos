@@ -35,8 +35,8 @@ public class CRListAdapter1 extends CRListAdapterFather {
 
     @Override
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
-
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
+        super.convert(helper, bean);
         helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial_circle);
@@ -96,7 +96,7 @@ public class CRListAdapter1 extends CRListAdapterFather {
                 });
             }
         });
-        super.convert(helper, bean);
+
     }
 
     public boolean isShowCheckbox() {
