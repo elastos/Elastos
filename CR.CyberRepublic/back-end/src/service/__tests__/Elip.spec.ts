@@ -13,25 +13,18 @@ let DB: any
 
 beforeAll(async () => {
   DB = await db.create()
-  await Promise.all([
-    DB.getModel('User').remove({
-      username: {
-        $in: [global.DB.MEMBER_USER.username, global.DB.SECRETARY_USER.username]
-      }
-    }),
-    DB.getModel('Elip').remove({}),
-    DB.getModel('Elip_Review').remove({})
-  ])
+  await DB.getModel('User').remove({
+    username: {
+      $in: [global.DB.MEMBER_USER.username, global.DB.SECRETARY_USER.username]
+    }
+  })
+  await DB.getModel('Elip').remove({})
+  await DB.getModel('Elip_Review').remove({})
 
   const userService = new UserService(DB, {})
-  const result = await Promise.all([
-    userService.registerNewUser(global.DB.MEMBER_USER),
-    userService.registerNewUser(global.DB.SECRETARY_USER),
-    userService.getDBModel('User').findOne({ role: constant.USER_ROLE.ADMIN })
-  ])
-  user.member = result[0]
-  user.member1 = result[1]
-  user.admin = result[2]
+  user.member = await userService.registerNewUser(global.DB.MEMBER_USER)
+  user.member1 = await userService.registerNewUser(global.DB.SECRETARY_USER)
+  user.admin = await userService.getDBModel('User').findOne({ role: constant.USER_ROLE.ADMIN })
 
   // add a SECRETARY role
   const adminService = new UserService(DB, {
