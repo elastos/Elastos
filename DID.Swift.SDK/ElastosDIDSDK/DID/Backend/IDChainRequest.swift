@@ -86,55 +86,31 @@ class IDChainRequest: NSObject {
     }
 
     public func toJson(_ compact: Bool) -> String {
-        return ""
-    }
-    /*
-    public void toJson(Writer out, boolean compact) throws IOException {
-        JsonFactory factory = new JsonFactory();
-        JsonGenerator generator = factory.createGenerator(out);
-
-        generator.writeStartObject();
-
+        var json: OrderedDictionary<String, Any> = OrderedDictionary()
         // header
-        generator.writeFieldName(HEADER);
-        generator.writeStartObject();
-
-        generator.writeFieldName(SPECIFICATION);
-        generator.writeString(specification);
-
-        generator.writeFieldName(OPERATION);
-        generator.writeString(operation.toString());
-
-        generator.writeEndObject();
-
-        // payload
-        generator.writeFieldName(PAYLOAD);
-        generator.writeString(payload);
-
+        var dic: OrderedDictionary<String, Any> = OrderedDictionary()
+        dic[IDChainRequest.SPECIFICATION] = specification
+        dic[IDChainRequest.OPERATION] = operation.toString()
+        json[IDChainRequest.HEADER] = dic
+        
+        // playload
+        json[IDChainRequest.PAYLOAD] = payload
+        
         // signature
-        generator.writeFieldName(PROOF);
-        generator.writeStartObject();
-
-        String keyId;
-
-        if (!compact) {
-            generator.writeFieldName(KEY_TYPE);
-            generator.writeString(keyType);
-
-            keyId = signKey.toExternalForm();
-        } else {
-            keyId = "#" + signKey.getFragment();
+        var keyId: String
+        dic.removeAll(keepCapacity: 0)
+        if !compact {
+            dic[IDChainRequest.KEY_TYPE] = keyType
+            keyId = (signKey?.toExternalForm())!
         }
-
-        generator.writeFieldName(KEY_ID);
-        generator.writeString(keyId);
-
-
-        generator.writeFieldName(SIGNATURE);
-        generator.writeString(signature);
-
-        generator.writeEndObject();
-        generator.close();
+        else {
+            keyId = "#" + signKey!.fragment
+        }
+        dic[IDChainRequest.KEY_ID] = keyId
+        dic[IDChainRequest.SIGNATURE] = signature
+        json[IDChainRequest.PROOF] = dic
+        
+        let jsonString: String = JsonHelper.creatJsonString(dic: json)
+        return jsonString
     }
- */
 }
