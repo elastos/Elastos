@@ -162,28 +162,36 @@ class C extends BaseComponent {
 
   saveDraft = async (isShowMsg = false, isShowErr = false) => {
     const { edit, form, updateDraft, suggestionId } = this.props
+    if (!isShowErr) {
+      const values = form.getFieldsValue()
+      const param = { _id: edit }
+      if (suggestionId) param.suggestionId = suggestionId
 
-    form.validateFields(async (err, values) => {
-      if (err) {
-        // mark error keys
-        if (isShowErr) {
+      for (const field of ['title', ...activeKeys]) {
+        if (_.isEmpty(values[field])) {
+          return
+        }
+        param[field] = values[field]
+      }
+
+      await updateDraft(param)
+    } else {
+      form.validateFields(async (err, values) => {
+        if (err) {
           this.setState({ errKeys: _.keys(err) })
           return
         }
-      }
-      const param = {
-        _id: edit,
-        ...values
-      }
-      if (suggestionId) param.suggestionId = suggestionId
-      try {
-        await updateDraft(param)
-        if (isShowMsg) message.success(I18N.get('proposal.msg.draftSaved'))
-      } catch (error) {
-        message.error(error.message)
-        logger.error(error)
-      }
-    })
+        const param = { _id: edit, ...values }
+        if (suggestionId) param.suggestionId = suggestionId
+
+        try {
+          await updateDraft(param)
+          message.success(I18N.get('proposal.msg.draftSaved'))
+        } catch (error) {
+          logger.error(error)
+        }
+      })
+    }
   }
 
   saveDraftWithMsg = () => this.saveDraft(true, true)
