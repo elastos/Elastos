@@ -130,7 +130,7 @@ describe('Tests for ELIP', () => {
     for (let i = 0; i < 4; i++) {
       await elipMemberService.create({
         title: `title ${i}`,
-        description: `description ${i}`
+        abstract: `abstract ${i}`
       })
     }
     // ELIP's author
