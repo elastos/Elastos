@@ -1,7 +1,7 @@
 "use strict";
 
 const Web3 = require("web3");
-const web3 = new Web3("http://privnet-sidechain-eth-node:20636");
+const web3 = new Web3("http://develap-localnet-eth-node:20636");
 const ctrt = require("./ctrt");
 
 const contract = new web3.eth.Contract(ctrt.abi);

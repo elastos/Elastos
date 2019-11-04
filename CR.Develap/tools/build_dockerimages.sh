@@ -80,8 +80,8 @@ function build_docker {
     cd $CURRENT_DIR
 }
 
-build_binary_and_docker "v0.3.7" "Elastos.ELA" "ela" \
-    "cyberrepublic/elastos-mainchain-node" "yes" "v0.3.7" "yes"
+build_binary_and_docker "v0.3.8" "Elastos.ELA" "ela" \
+    "cyberrepublic/elastos-mainchain-node" "yes" "v0.3.8" "yes"
 
 build_binary_and_docker "v0.1.2" "Elastos.ELA.Arbiter" "arbitrator" \
     "cyberrepublic/elastos-arbitrator-node" "yes" "v0.1.2" "yes"
@@ -96,7 +96,7 @@ build_binary_and_docker "dev" "Elastos.ELA.SideChain.ETH" "sidechain.eth" \
     "cyberrepublic/elastos-sidechain-eth-node" "no" "dev" "yes"
 
 build_docker "sidechain/eth/oracle" "sidechain.eth.oracle" \
-    "cyberrepublic/elastos-sidechain-eth-oracle" "v0.0.1" "yes"
+    "cyberrepublic/elastos-sidechain-eth-oracle" "v0.0.2" "yes"
 
 build_binary_and_docker "9acddc6e5ce3ffa7305e618b723b66b9edf58108" "Elastos.ORG.Wallet.Service" "service.wallet" \
     "cyberrepublic/elastos-wallet-service" "yes" "" "yes"
@@ -104,10 +104,10 @@ build_binary_and_docker "9acddc6e5ce3ffa7305e618b723b66b9edf58108" "Elastos.ORG.
 build_binary_and_docker "fb82b27b884b1f5dd61f7d0b3278d5d695916b94" "Elastos.ORG.SideChain.Service" "service.sidechain" \
     "cyberrepublic/elastos-sidechain-service" "yes" "" "yes"
 
-build_binary_and_docker "d72f0570cd7990e600a1393cf35cd0907f4dbdd8" "Elastos.ORG.API.Misc" "service.misc" \
+build_binary_and_docker "99ef0ddaf4cc1a95c173a3f5acc72518279f6ae9" "Elastos.ORG.API.Misc" "service.misc" \
     "cyberrepublic/elastos-api-misc-service" "yes" "" "yes"
 
-build_binary_and_docker "257882bb7f52bda10c190a280e82b99e248fb4c6" "Elastos.ELA.Elephant.Node" "elephant" \
+build_binary_and_docker "431dba58fab8fb32d5c13dbcd95baf799be57cc9" "Elastos.ELA.Elephant.Node" "elephant" \
     "cyberrepublic/elastos-elephant-node" "yes" "" "yes"
 
 cd $CURRENT_DIR
