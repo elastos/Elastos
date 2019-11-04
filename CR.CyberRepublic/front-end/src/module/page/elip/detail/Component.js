@@ -341,7 +341,7 @@ class C extends StandardPage {
   renderComment() {
     const { data } = this.props
     return (
-      [ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED].includes(data.status) && (
+      [ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED_AS_PROPOSAL].includes(data.status) && (
         <Row style={{ marginTop: 24 }}>
           <LabelCol span={3} />
           <Col span={17}>
