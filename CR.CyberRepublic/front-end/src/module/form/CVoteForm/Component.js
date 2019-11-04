@@ -215,7 +215,8 @@ class C extends BaseComponent {
     const { lang } = this.props
     let count = 0
     if (value) {
-      count = lang === 'en' ? value.split(' ').length : value.length
+      const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
+      count = lang === 'en' ? rs.split(' ').length : rs.length
     }
     return count > WORD_LIMIT ? cb(true) : cb()
   }
@@ -389,7 +390,8 @@ class C extends BaseComponent {
     const value = form.getFieldValue('abstract')
     let count = 0
     if (value) {
-      count = lang === 'en' ? value.split(' ').length : value.length
+      const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
+      count = lang === 'en' ? rs.split(' ').length : rs.length
     }
     return (
       <CirContainer>
