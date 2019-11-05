@@ -53,29 +53,14 @@ import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key, title) => {
-  let content
-  if (_.isArray(data)) {
-    content = _.map(data, item => (
-      <StyledRichContent>
-        <MarkdownPreview content={item[key]} />
-      </StyledRichContent>
-    ))
-  } else {
-    content = (
-      <StyledRichContent>
-        <MarkdownPreview content={data[key]} />
-      </StyledRichContent>
-    )
-  }
-
-  return (
-    <div>
-      {title && <ContentTitle id={key}>{title}</ContentTitle>}
-      {content}
-    </div>
-  )
-}
+const renderRichContent = (data, key, title) => (
+  <div>
+    {title && <ContentTitle id={key}>{title}</ContentTitle>}
+    <StyledRichContent>
+      <MarkdownPreview content={data[key]} />
+    </StyledRichContent>
+  </div>
+)
 
 class C extends StandardPage {
   constructor(props) {
