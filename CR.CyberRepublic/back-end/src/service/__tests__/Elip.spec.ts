@@ -12,7 +12,6 @@ const user: any = {}
 let DB: any
 const elipMemberService: any = {},
       elipSecretaryService: any = {}
-let elipMemberId: string
 
 beforeAll(async () => {
   DB = await db.create()
@@ -47,14 +46,13 @@ beforeAll(async () => {
   elipSecretaryService = new ElipService(DB, {
     user: user.member1
   })
-  elipMemberId = user.member._id
   
 })
 
 describe('Tests for ELIP', () => {
   test('A member create an ELIP', async () => {
     const rs: any = await elipMemberService.create(global.DB.ELIP_1)
-    expect(rs.createdBy.toString()).to.be.equal(elipMemberId.toString())
+    expect(rs.createdBy.toString()).to.be.equal(user.member._id.toString())
     expect(rs.status).to.be.equal(constant.ELIP_STATUS.WAIT_FOR_REVIEW)
     await DB.getModel('Elip').remove({})
   })
