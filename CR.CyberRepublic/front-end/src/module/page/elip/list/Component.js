@@ -1,6 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
-import moment from 'moment/moment'
+import moment, { locales } from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import { Table, Row, Col, Button, Icon, Select, Input, DatePicker } from 'antd'
 import { CSVLink } from 'react-csv'
@@ -22,6 +22,7 @@ import { logger } from '@/util'
 import userUtil from '@/util/user'
 import { ReactComponent as UpIcon } from '@/assets/images/icon-up.svg'
 import { ReactComponent as DownIcon } from '@/assets/images/icon-down.svg'
+import rangePickerLocale from 'antd/es/date-picker/locale/zh_CN';
 
 const { RangePicker } = DatePicker
 
@@ -31,6 +32,7 @@ export default class extends BaseComponent {
     this.state = {
       list: [],
       search: '',
+      isVisitableFilter: false,
       filter: '',
       loading: true,
       creationDate: [],
@@ -86,6 +88,11 @@ export default class extends BaseComponent {
     this.setState({ search: search.trim() }, this.debouncedRefetch)
   }
 
+  handleFilter = () => {
+    const { isVisitableFilter } = this.state
+    this.setState( {isVisitableFilter: !isVisitableFilter} ) 
+  }
+
   handleStatusChange = (filter) => {
     this.setState({ filter })
   }
@@ -100,6 +107,29 @@ export default class extends BaseComponent {
 
   handleTypeChange = (type) => {
     this.setState({ type })
+  }
+
+  handleClearFilter = () => {
+    this.setState({ filter: '', creationDate: [], author: '', type: ''})
+  }
+
+  handleApplyFilter = () => {
+    const { filter, creationDate, author, type } = this.state 
+    const param = {
+      filter: _.isEmpty(filter) ? 'ALL' : filter,
+    }
+    if(!_.isEmpty(creationDate)){
+      const formatStr = 'YYYY-MM-DD'
+      param.startDate = moment(creationDate[0]).format(formatStr)
+      param.endDate = moment(creationDate[1]).format(formatStr)
+    }
+    if(!_.isEmpty(author)){
+      param.author = author
+    }
+    if(!_.isEmpty(type)){
+      param.type = type
+    }
+    console.log(param)
   }
 
   setFilter = (filter) => {
@@ -121,7 +151,7 @@ export default class extends BaseComponent {
 
   ord_render() {
     const { isSecretary, isLogin } = this.props
-    const { filter, creationDate, author, type } = this.state
+    const { filter, creationDate, author, type, isVisitableFilter } = this.state
     const columns = [
       {
         title: I18N.get('elip.fields.number'),
@@ -196,14 +226,20 @@ export default class extends BaseComponent {
         />
       </Col>
     )
-
+    
+    const lang = localStorage.getItem('lang') || 'en'
+    const rangePickerOptions = {}
+    if(lang === 'zh'){
+      rangePickerOptions.locale = rangePickerLocale
+    }
     const filterBtns = (
-      <Filter>
-        <FilterLabel>{I18N.get('elip.fields.filter')}</FilterLabel>
-        <UpIcon />
-        <DownIcon />
-      </Filter>
-    )
+      <FilterLabel>
+        <Row type="flex" gutter={10} align="middle" justify="start" onClick={this.handleFilter}>
+          <Col>{I18N.get("elip.fields.filter")}</Col>
+          <Col>{isVisitableFilter ? <UpIcon /> : <DownIcon />}</Col>
+        </Row>
+      </FilterLabel>
+    );
 
     const filterPanel = (
       <FilterPanel>
@@ -238,6 +274,7 @@ export default class extends BaseComponent {
                   className="filter-input"
                   onChange={this.handleCreationDateChange}
                   value={creationDate}
+                  {...rangePickerOptions}
                 />
               </FilterItem>
               <FilterItem>
@@ -270,8 +307,8 @@ export default class extends BaseComponent {
           </Col>
         </Row>
         <Row type="flex" gutter={30} justify="center" className="filter-btn">
-          <Col><FilterClearBtn>{I18N.get('elip.button.clearFilter')}</FilterClearBtn></Col>
-          <Col><Button className="cr-btn cr-btn-primary">{I18N.get('elip.button.applyFilter')}</Button></Col>
+          <Col><FilterClearBtn onClick={this.handleClearFilter}>{I18N.get('elip.button.clearFilter')}</FilterClearBtn></Col>
+          <Col><Button className="cr-btn cr-btn-primary" onClick={this.handleApplyFilter}>{I18N.get('elip.button.applyFilter')}</Button></Col>
         </Row>
       </FilterPanel>
     )
@@ -308,13 +345,14 @@ export default class extends BaseComponent {
         <Row
           type="flex"
           align="middle"
-          justify="end"
+          justify="start"
+          gutter={40}
           style={{ marginTop: 20, marginBottom: 20 }}
         >
           {searchInput}
           {isLogin && filterBtns}
         </Row>
-        {filterPanel}
+        {isVisitableFilter && filterPanel}
         <Row type="flex" align="middle" justify="end">
           {isSecretary && (
             <CSVLink data={dataCSV} style={{ marginBottom: 16 }}>

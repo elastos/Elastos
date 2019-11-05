@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { Button, Input } from 'antd'
+import { Button, Input, Col } from 'antd'
 import { breakPoint } from '@/constants/breakPoint'
 import { bg } from '@/constants/color'
 
@@ -45,9 +45,9 @@ export const Filter = styled.div`
   }
 `
 
-export const FilterLabel = styled.span`
-  padding-right: 16px;
-  color: rgba(3, 30, 40, 0.3);
+export const FilterLabel = styled(Col)`
+  color: #008D85;
+  cursor: pointer;
 `
 
 export const FilterPanel = styled.div`
