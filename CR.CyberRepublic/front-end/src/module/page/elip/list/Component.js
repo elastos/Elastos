@@ -6,7 +6,7 @@ import { Table, Row, Col, Button } from 'antd'
 import { CSVLink } from 'react-csv'
 import I18N from '@/I18N'
 import { ELIP_FILTER } from '@/constant'
-import { Container, StyledButton, StyledSearch, Filter, FilterLabel, StyledExport } from './style'
+import { Container, StyledButton, StyledSearch, Filter, FilterLabel } from './style'
 import { logger } from '@/util'
 import userUtil from '@/util/user'
 
