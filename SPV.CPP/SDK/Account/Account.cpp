@@ -514,31 +514,28 @@ namespace Elastos {
 		}
 
 		KeyStore Account::ExportKeystore(const std::string &payPasswd) const {
-			if (_localstore->Readonly()) {
-				ErrorChecker::ThrowLogicException(Error::UnsupportOperation, "Readonly wallet can not export keystore");
-			}
-
 			if (!_localstore->Readonly() && (_localstore->GetxPrivKey().empty() || _localstore->GetxPubKeyHDPM().empty())) {
 				RegenerateKey(payPasswd);
 				Init();
 			}
 
+			bytes_t bytes;
 			ElaNewWalletJson json;
-			bytes_t bytes = AES::DecryptCCM(_localstore->GetxPrivKey(), payPasswd);
-			if (bytes.empty()) {
-				json.SetxPrivKey("");
-			} else {
-				json.SetxPrivKey(Base58::CheckEncode(bytes));
-			}
+			if (!_localstore->Readonly()) {
+				bytes = AES::DecryptCCM(_localstore->GetxPrivKey(), payPasswd);
+				if (!bytes.empty()) {
+					json.SetxPrivKey(Base58::CheckEncode(bytes));
+				}
 
-			bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
-			json.SetMnemonic(std::string((char *)bytes.data(), bytes.size()));
-			if (bytes.empty()) {
-				json.SetHasPassPhrase(false);
-			}
+				bytes = AES::DecryptCCM(_localstore->GetMnemonic(), payPasswd);
+				json.SetMnemonic(std::string((char *)bytes.data(), bytes.size()));
+				if (bytes.empty()) {
+					json.SetHasPassPhrase(false);
+				}
 
-			bytes = AES::DecryptCCM(_localstore->GetRequestPrivKey(), payPasswd);
-			json.SetRequestPrivKey(bytes.getHex());
+				bytes = AES::DecryptCCM(_localstore->GetRequestPrivKey(), payPasswd);
+				json.SetRequestPrivKey(bytes.getHex());
+			}
 
 			json.SetOwnerPubKey(_localstore->GetOwnerPubKey());
 			json.SetxPubKey(_localstore->GetxPubKey());
