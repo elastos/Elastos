@@ -1,3 +1,4 @@
 Django==2.2.6
 python3==3.7.4
 virtualenv==16.7.5
+

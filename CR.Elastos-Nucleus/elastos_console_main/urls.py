@@ -18,8 +18,10 @@ from django.urls import path , include
 import hello_world
 from django.conf.urls import url
 
+
+
 urlpatterns = [
     url('admin/', admin.site.urls),
     url(r'', include('hello_world.urls')),
-    url(r'service' , include('elastos_service.urls')),
+    url(r'service' , include('elastos_service.urls'), name = 'elastos_service'),
 ]

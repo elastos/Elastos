@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{%load static%}
 <html lang="en">
 <head>
 	<style type="text/css">
@@ -37,17 +38,21 @@
 
 <body>
 	<div class="sidenav">
-            <a href="/generateKey">Generate API Key</a>
-            <a href="/fileUpload">File Upload</a>
-            <a href="/showfileContent">Show File Content</a>
-            <a href="/uploadandScan">Upload and Scan</a>
-            <a href="/verifyandshowContent">Verify and Show Content</a>
-            <a href="/scanMessage">Scan a Message</a>
-            <a href="/verifyMessage">Verify a Message</a>
-            <a href="/transferFile">Transfer File Demo</a>
-            <a href="/documentation">Documentation</a>
-            <a href="/aboutUs">About Us</a>
+            <a href="{% url 'elastos_service:generateKey' %}">Generate API Key</a>
+            <a href="/service/fileUpload">File Upload</a>
+            <a href="/service/showfileContent">Show File Content</a>
+            <a href="/service/uploadandScan">Upload and Scan</a>
+            <a href="/service/verifyandshowContent">Verify and Show Content</a>
+            <a href="/service/scanMessage">Scan a Message</a>
+            <a href="/service/verifyMessage">Verify a Message</a>
+            <a href="/service/transferFile">Transfer File Demo</a>
+            <a href="/service/documentation">Documentation</a>
+            <a href="/service/aboutUs">About Us</a>
 	</div>
+{% block content %}
+
+{% endblock %}
+
 </body>
 
 </html>

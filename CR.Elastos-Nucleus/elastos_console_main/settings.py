@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hello_world.apps.hello_worldConfig',
+    'elastos_service.apps.ElastosServiceConfig',
 ]
 
 MIDDLEWARE = [

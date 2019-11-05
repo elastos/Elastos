@@ -13,6 +13,12 @@ venv.bak/
 # pycharm
 __pycache__
 
+# VScode
+.VScode
+
+# idea
+.idea
+
 # Database
 db.sqlite3
 
