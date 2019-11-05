@@ -77,7 +77,8 @@ function convertJsonToMd(data) {
         }
         // deal with base64 image
         if (block.type === 'atomic:image') {
-          line = `![](${block.data.src})\n_${block.text.trim()}_\n`
+          const caption = block.text && block.text.trim() ? `_${block.text.trim()}_` : ''
+          line = `![](${block.data.src})\n${caption}`
         }
         // deal with todo list
         if (block.type === 'todo') {

@@ -41,8 +41,7 @@ const Wrapper = styled.div`
     margin-left: 1em;
     margin-right: 1em;
     > li {
-      margin-left: 1em;
-      margin-right: 1em;
+      margin: 0 1em 1em;
     }
   }
 
@@ -141,7 +140,7 @@ const Wrapper = styled.div`
   pre > code {
     background-color: rgba(0, 0, 0, 0.05);
     display: block;
-    padding: 0.5em;
+    padding: 1em;
     -webkit-text-size-adjust: none;
     overflow-x: auto;
     white-space: pre;
