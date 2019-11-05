@@ -3,12 +3,10 @@ import BaseComponent from '@/model/BaseComponent'
 import { Form, Input, Button, Row, Tabs, Radio } from 'antd'
 import I18N from '@/I18N'
 import _ from 'lodash'
-import { CONTENT_TYPE, ABSTRACT_MAX_WORDS } from '@/constant'
-import { convertToRaw } from 'draft-js'
-import DraftEditor from '@/module/common/DraftEditor'
+import { ABSTRACT_MAX_WORDS } from '@/constant'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 
-import 'medium-draft/lib/index.css'
 import {
   Container,
   TabPaneInner,
@@ -22,36 +20,12 @@ const { TabPane } = Tabs
 
 const WORD_LIMIT = ABSTRACT_MAX_WORDS
 const TAB_KEYS = ['type', 'abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
-const editorTransform = value => {
-  // string or object
-  let result = value
-  if (_.isObject(value)) {
-    try {
-      result = value.getCurrentContent().getPlainText()
-    } catch (error) {
-      result = value
-    }
-  }
-  return result
-}
-
-const formatValue = value => {
-  let result
-  try {
-    result = _.isString(value)
-      ? value
-      : JSON.stringify(convertToRaw(value.getCurrentContent()))
-  } catch (error) {
-    result = _.toString(value)
-  }
-  return result
-}
 
 class C extends BaseComponent {
   constructor(props) {
     super(props)
 
-    this.timer = -1;
+    this.timer = -1
     this.state = {
       loading: false,
       activeKey: TAB_KEYS[0],
@@ -61,12 +35,12 @@ class C extends BaseComponent {
 
   componentDidMount() {
     this.timer = setInterval(() => {
-      this.handleSaveDraft();
+      this.handleSaveDraft()
     }, 5000)
   }
 
   componentWillUnmount() {
-    clearInterval(this.timer);
+    clearInterval(this.timer)
   }
 
   getActiveKey(key) {
@@ -74,56 +48,51 @@ class C extends BaseComponent {
     return key
   }
 
-  handleSubmit = async e => {
+  handleSubmit = e => {
+    e.preventDefault()
     const { onSubmit, form } = this.props
     this.setState({ loading: true })
-
-    e.preventDefault()
-    form.validateFields((err, values) => {
+    form.validateFields(async (err, values) => {
       if (err) {
-        this.setState({ loading: false, errorKeys: err, activeKey: this.getActiveKey(Object.keys(err)[0]) })
+        this.setState({
+          loading: false,
+          errorKeys: err,
+          activeKey: this.getActiveKey(Object.keys(err)[0])
+        })
         return
       }
-
-      onSubmit({
-        title: values.title,
-        type: values.type,
-        abstract: formatValue(values.abstract),
-        goal: formatValue(values.goal),
-        motivation: formatValue(values.motivation),
-        relevance: formatValue(values.relevance),
-        budget: formatValue(values.budget),
-        plan: formatValue(values.plan)
-      }).finally(() => this.setState({ loading: false }))
+      await onSubmit(values)
+      this.setState({ loading: false })
     })
   }
 
   handleSaveDraft = () => {
     const { form } = this.props
     if (this.props.onSaveDraft) {
-      const values = form.getFieldsValue();
-      TAB_KEYS.forEach(key => values[key] = formatValue(values[key]))
-      this.props.onSaveDraft(values);
+      const values = form.getFieldsValue()
+      this.props.onSaveDraft(values)
     }
   }
 
   handleContinue = (e) => {
-    const { form } = this.props
     e.preventDefault()
-
+    const { form } = this.props
     form.validateFields((err, values) => {
       if (err) {
-        this.setState({ loading: false, errorKeys: err, activeKey: this.getActiveKey(Object.keys(err)[0]) })
+        this.setState({
+          loading: false, 
+          errorKeys: err, 
+          activeKey: this.getActiveKey(Object.keys(err)[0])
+        })
         return
       }
-
       const index = TAB_KEYS.findIndex(item => item === this.state.activeKey)
       if (index === TAB_KEYS.length - 1) {
         this.handleSubmit({ preventDefault: () => {} })
       } else {
         this.setState({ activeKey: TAB_KEYS[index + 1] })
       }
-    });
+    })
   }
 
   getTitleInput() {
@@ -160,10 +129,12 @@ class C extends BaseComponent {
 
   onTextareaChange = (activeKey) => {
     const { form } = this.props
-    const err = editorTransform(form.getFieldError(activeKey))
+    const err = form.getFieldError(activeKey)
     const { errorKeys } = this.state
     if (err) {
-      this.setState({ errorKeys: Object.assign({}, errorKeys, { [activeKey]: err }) })
+      this.setState({
+        errorKeys: Object.assign({}, errorKeys, { [activeKey]: err })
+      })
     } else {
       const newState = Object.assign({}, errorKeys)
       delete newState[activeKey]
@@ -175,7 +146,8 @@ class C extends BaseComponent {
     const { lang } = this.props
     let count = 0
     if (value) {
-      count = lang === 'en' ? value.split(' ').length : value.length
+      const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
+      count = lang === 'en' ? rs.split(' ').length : rs.length
     }
     return count > WORD_LIMIT ? cb(true) : cb()
   }
@@ -186,12 +158,10 @@ class C extends BaseComponent {
 
     const rules = [{
       required: true,
-      transform: editorTransform,
       message: I18N.get('suggestion.form.error.required')
-    }];
+    }]
     if (id === 'abstract') {
       rules.push({
-        transform: editorTransform,
         message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
         validator: this.validateAbstract
       })
@@ -200,7 +170,14 @@ class C extends BaseComponent {
     return getFieldDecorator(id, {
       rules,
       initialValue: initialValues[id],
-    })(<DraftEditor contentType={CONTENT_TYPE.MARKDOWN} callback={this.onTextareaChange} activeKey={id} />)
+    })(
+      <CodeMirrorEditor
+        callback={this.onTextareaChange}
+        content={initialValues[id]}
+        activeKey={id}
+        name={id}
+      />
+    )
   }
 
   renderTabText(id) {
@@ -214,11 +191,11 @@ class C extends BaseComponent {
 
   renderWordLimit() {
     const { form, lang } = this.props
-    const formValue = form.getFieldValue('abstract')
-    const value = editorTransform(formValue)
+    const value = form.getFieldValue('abstract')
     let count = 0
     if (value) {
-      count = lang === 'en' ? value.split(' ').length : value.length
+      const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
+      count = lang === 'en' ? rs.split(' ').length : rs.length
     }
     return (
       <CirContainer>

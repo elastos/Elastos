@@ -14,13 +14,9 @@ import {
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CVOTE_STATUS, ABSTRACT_MAX_WORDS } from '@/constant'
-import { convertToRaw } from 'draft-js'
-import DraftEditor from '@/module/common/DraftEditor'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
 import { logger } from '@/util'
-
-// if using webpack
-import 'medium-draft/lib/index.css'
 
 import {
   Container,
@@ -37,18 +33,6 @@ const WORD_LIMIT = ABSTRACT_MAX_WORDS
 const FormItem = Form.Item
 const { TabPane } = Tabs
 
-const transform = value => {
-  // string or object
-  let result = value
-  if (_.isObject(value)) {
-    try {
-      result = value.getCurrentContent().getPlainText()
-    } catch (error) {
-      result = value
-    }
-  }
-  return result
-}
 
 const renderTypeRadioGroup = (data, key, getFieldDecorator) => {
   const content = _.get(data, key, '1')
@@ -85,13 +69,11 @@ const renderRichEditor = (
   const rules = [
     {
       required: true,
-      transform,
       message: I18N.get('proposal.form.error.required')
     }
   ]
   if (max) {
     rules.push({
-      transform,
       message: I18N.get(`proposal.form.error.limit${max}`),
       validator: validateAbstract
     })
@@ -102,26 +84,16 @@ const renderRichEditor = (
   })
 
   const content_el = (
-    <DraftEditor
-      contentType={_.get(data, 'contentType')}
+    <CodeMirrorEditor
+      content={content}
       callback={callback}
       activeKey={key}
+      name={key}
     />
   )
   return content_fn(content_el)
 }
 
-const formatValue = value => {
-  let result
-  try {
-    result = _.isString(value)
-      ? value
-      : JSON.stringify(convertToRaw(value.getCurrentContent()))
-  } catch (error) {
-    result = _.toString(value)
-  }
-  return result
-}
 
 const activeKeys = [
   'type',
@@ -168,26 +140,9 @@ class C extends BaseComponent {
         this.setState({ errKeys: _.keys(err) })
         return
       }
-      const {
-        title,
-        type,
-        abstract,
-        goal,
-        motivation,
-        relevance,
-        budget,
-        plan
-      } = values
       const param = {
         _id: edit,
-        title,
-        type,
-        abstract: formatValue(abstract),
-        goal: formatValue(goal),
-        motivation: formatValue(motivation),
-        relevance: formatValue(relevance),
-        budget: formatValue(budget),
-        plan: formatValue(plan),
+        ...values,
         published: true
       }
       if (suggestionId) param.suggestionId = suggestionId
@@ -207,66 +162,43 @@ class C extends BaseComponent {
 
   saveDraft = async (isShowMsg = false, isShowErr = false) => {
     const { edit, form, updateDraft, suggestionId } = this.props
+    if (!isShowErr) {
+      const values = form.getFieldsValue()
+      const param = { _id: edit }
+      if (suggestionId) param.suggestionId = suggestionId
 
-    form.validateFields(async (err, values) => {
-      if (err) {
-        // mark error keys
-        if (isShowErr) {
+      for (const field of ['title', ...activeKeys]) {
+        if (_.isEmpty(values[field])) {
+          return
+        }
+        param[field] = values[field]
+      }
+
+      await updateDraft(param)
+    } else {
+      form.validateFields(async (err, values) => {
+        if (err) {
           this.setState({ errKeys: _.keys(err) })
           return
         }
-      }
-      const {
-        title,
-        type,
-        abstract,
-        goal,
-        motivation,
-        relevance,
-        budget,
-        plan
-      } = values
-      const param = {
-        _id: edit,
-        title,
-        type
-      }
-      if (suggestionId) param.suggestionId = suggestionId
+        const param = { _id: edit, ...values }
+        if (suggestionId) param.suggestionId = suggestionId
 
-      if (!_.isEmpty(transform(abstract))) {
-        param.abstract = formatValue(abstract)
-      }
-      if (!_.isEmpty(transform(goal))) {
-        param.goal = formatValue(goal)
-      }
-      if (!_.isEmpty(transform(motivation))) {
-        param.motivation = formatValue(motivation)
-      }
-      if (!_.isEmpty(transform(relevance))) {
-        param.relevance = formatValue(relevance)
-      }
-      if (!_.isEmpty(transform(budget))) {
-        param.budget = formatValue(budget)
-      }
-      if (!_.isEmpty(transform(plan))) {
-        param.plan = formatValue(plan)
-      }
-
-      try {
-        await updateDraft(param)
-        if (isShowMsg) message.success(I18N.get('proposal.msg.draftSaved'))
-      } catch (error) {
-        message.error(error.message)
-        logger.error(error)
-      }
-    })
+        try {
+          await updateDraft(param)
+          message.success(I18N.get('proposal.msg.draftSaved'))
+        } catch (error) {
+          logger.error(error)
+        }
+      })
+    }
   }
 
   saveDraftWithMsg = () => this.saveDraft(true, true)
 
   onInputChange = activeKey => {
     const { form } = this.props
-    const err = transform(form.getFieldError(activeKey))
+    const err = form.getFieldError(activeKey)
     const { errKeys } = this.state
     let errorKeys = []
     if (errKeys) errorKeys = [...errKeys]
@@ -283,7 +215,8 @@ class C extends BaseComponent {
     const { lang } = this.props
     let count = 0
     if (value) {
-      count = lang === 'en' ? value.split(' ').length : value.length
+      const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
+      count = lang === 'en' ? rs.split(' ').length : rs.length
     }
     return count > WORD_LIMIT ? cb(true) : cb()
   }
@@ -454,11 +387,11 @@ class C extends BaseComponent {
 
   renderWordLimit() {
     const { form, lang } = this.props
-    const formValue = form.getFieldValue('abstract')
-    const value = transform(formValue)
+    const value = form.getFieldValue('abstract')
     let count = 0
     if (value) {
-      count = lang === 'en' ? value.split(' ').length : value.length
+      const rs = value.replace(/\!\[image\]\(data:image\/.*\)/g, '')
+      count = lang === 'en' ? rs.split(' ').length : rs.length
     }
     return (
       <CirContainer>
