@@ -84,7 +84,7 @@ namespace Elastos {
 					const std::string &payPasswd) const;
 
 			virtual nlohmann::json GenerateUnregisterCRPayload(
-					const std::string &crPublicKey,
+					const std::string &crDID,
 					const std::string &payPasswd) const;
 
 			virtual nlohmann::json CreateRegisterCRTransaction(

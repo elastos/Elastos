@@ -14,7 +14,7 @@ using namespace Elastos::ElaWallet;
 TEST_CASE("UnregisterCRTest test", "[UnregisterCRTest]") {
 	SECTION("Serialize and deserialize") {
 		UnregisterCR unregisterCR1;
-		unregisterCR1.SetCode(getRandBytes(34));
+		unregisterCR1.SetDID(getRandUInt168());
 		unregisterCR1.SetSignature(getRandBytes(36));
 
 		ByteStream stream;
@@ -22,19 +22,19 @@ TEST_CASE("UnregisterCRTest test", "[UnregisterCRTest]") {
 
 		UnregisterCR unregisterCR2;
 		REQUIRE(unregisterCR2.Deserialize(stream, 0));
-		REQUIRE(unregisterCR2.GetCode() == unregisterCR1.GetCode());
+		REQUIRE(unregisterCR2.GetDID() == unregisterCR1.GetDID());
 		REQUIRE(unregisterCR2.GetSignature() == unregisterCR1.GetSignature());
 	}
 
 	SECTION("to json and from json") {
 		UnregisterCR unregisterCR1;
-		unregisterCR1.SetCode(getRandBytes(34));
+		unregisterCR1.SetDID(getRandUInt168());
 		unregisterCR1.SetSignature(getRandBytes(36));
 
 		UnregisterCR unregisterCR2;
 		unregisterCR2.FromJson(unregisterCR1.ToJson(0), 0);
 
-		REQUIRE(unregisterCR2.GetCode() == unregisterCR1.GetCode());
+		REQUIRE(unregisterCR2.GetDID() == unregisterCR1.GetDID());
 		REQUIRE(unregisterCR2.GetSignature() == unregisterCR1.GetSignature());
 	}
 }

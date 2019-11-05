@@ -19,7 +19,7 @@ namespace Elastos {
 //				_requestPubKey(pubkey) {}
 
 			PublicKeyRing(const std::string &pubkey, const std::string &xpub) :
-				_requestPubKey(pubkey), _xPubKey(xpub) {}
+					_xPubKey(xpub), _requestPubKey(pubkey) {}
 
 			const std::string &GetxPubKey() const { return _xPubKey; }
 

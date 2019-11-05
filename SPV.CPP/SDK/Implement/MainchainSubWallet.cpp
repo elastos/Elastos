@@ -358,7 +358,7 @@ namespace Elastos {
 
 			ErrorChecker::CheckJsonArray(publicKeys, 1, "Candidates public keys");
 			// -1 means max
-			ErrorChecker::CheckParam(bgStake <= 0, Error::Code::VoteStakeError, "Vote stake should not be zero");
+			ErrorChecker::CheckParam(bgStake <= 0 && !max, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
 			VoteContent voteContent(VoteContent::Delegate);
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
@@ -548,23 +548,18 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::GenerateUnregisterCRPayload(
-				const std::string &crPublicKey,
+				const std::string &crDID,
 				const std::string &payPasswd) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("publicKey: {}", crPublicKey);
+			ArgInfo("crDID: {}", crDID);
 			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
-			size_t pubKeyLen = crPublicKey.size() >> 1;
-			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
-			                         "Public key length should be 33 or 65 bytes");
-
-			bytes_t pubkey(crPublicKey);
-
-			Address address(PrefixStandard, pubkey);
+			Address address(crDID);
+			ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid crDID");
 
 			UnregisterCR unregisterCR;
-			unregisterCR.SetCode(address.RedeemScript());
+			unregisterCR.SetDID(address.ProgramHash());
 
 			ByteStream ostream;
 			unregisterCR.SerializeUnsigned(ostream, 0);

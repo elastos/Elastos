@@ -282,9 +282,9 @@ static void UnregisterCR(const std::string &masterWalletID, const std::string &s
 		return;
 	}
 
-	std::string pubKey = mainchainSubWallet->GetCROwnerPublicKey();
+	std::string did = mainchainSubWallet->GetCROwnerDID();
 
-	nlohmann::json payload = mainchainSubWallet->GenerateUnregisterCRPayload(pubKey, payPasswd);
+	nlohmann::json payload = mainchainSubWallet->GenerateUnregisterCRPayload(did, payPasswd);
 
 	nlohmann::json tx = mainchainSubWallet->CreateUnregisterCRTransaction("", payload, memo);
 

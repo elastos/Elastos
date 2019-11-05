@@ -173,7 +173,7 @@ TEST_CASE("Config test", "[Config]") {
 
 			const ChainParamsPtr &chainParams = chainConfig->ChainParameters();
 			REQUIRE(chainParams->StandardPort() == 21608);
-			REQUIRE(chainParams->MagicNumber() == 2018102);
+			REQUIRE(chainParams->MagicNumber() == 2018112);
 			REQUIRE(chainParams->Services() == 0);
 			REQUIRE(chainParams->TargetTimeSpan() == 86400);
 			REQUIRE(chainParams->TargetTimePerBlock() == 120);

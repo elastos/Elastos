@@ -36,9 +36,9 @@ namespace Elastos {
 			 * @return all did list of resolved in json format.
 			 * example:
 			 * params did is not empty
-			 * {"DID":[{"credentialSubject":{"alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","microsoftPassport":"MicrosoftPassport","name":"H60CZ","nation":"china","nickname":"jHo8AB","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"},"expires":"2024-02-10T17:00:00Z","id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","operation":"create","publicKey":[{"id":"#primary","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}]}],"MaxCount":1}
+			 * {"DID":[{"expires":1575104460,"id":"innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs","issuanceDate":1572516335,"operation":"update","publicKey":[{"id":"#primary","publicKey":"031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4"}],"status":"Confirmed"}],"MaxCount":1}
 			 * or params did is empty
-			 * {"DID":[{"expires":"1575104460","id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","operation":"create","issuanceDate":1575104460,status:"Pending"},{"expires":"1575104460","id":"ifUQ59wFpHUKe5NZ6gjffx48sWEBt9YgQE","operation":"create","issuanceDate":1575104460,status:"Confirmed"}],"MaxCount":2}
+			 * {"DID":[{"expires":"1575104460","id":"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww","didName":"testname","operation":"create","issuanceDate":1575104460,status:"Pending"},{"expires":"1575104460","id":"ifUQ59wFpHUKe5NZ6gjffx48sWEBt9YgQE","didName":"testname","operation":"create","issuanceDate":1575104460,status:"Confirmed"}],"MaxCount":2}
 			 */
 			virtual nlohmann::json GetResolveDIDInfo(uint32_t start, uint32_t count, const std::string &did) const = 0;
 
