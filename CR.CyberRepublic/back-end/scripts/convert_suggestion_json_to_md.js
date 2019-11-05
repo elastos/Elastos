@@ -19,6 +19,7 @@ const convertJsonToMd = require('./convert_json_to_md')
   ]
   try {
     let docs = await db_sugg.find()
+    console.log('docs.length', docs.length)
     for (const doc of docs) {
       try {
         for (const section of sections) {

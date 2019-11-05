@@ -54,7 +54,7 @@ function convertJsonToMd(data) {
               const start = el.offset
               const end = start + el.length
               if (rs.entityMap[el.key].type === 'LINK') {
-                const url = rs.entityMap[el.key].data.url
+                const url = rs.entityMap[el.key].data.url.trim()
                 const link = line.slice(start, end)
                 strs[link] = `[${link}](${url})`
               }
@@ -77,14 +77,14 @@ function convertJsonToMd(data) {
         }
         // deal with base64 image
         if (block.type === 'atomic:image') {
-          line = `![${block.text}](${block.data.src})\n`
+          line = `![](${block.data.src})\n_${block.text.trim()}_\n`
         }
         // deal with todo list
         if (block.type === 'todo') {
           if (block.data.checked === true) {
-            line = `- [ ] (${block.text})`
+            line = `- [ ] (${block.text.trim()})`
           } else {
-            line = `- [x] (${block.text})`
+            line = `- [x] (${block.text.trim()})`
           }
         }
         return line
