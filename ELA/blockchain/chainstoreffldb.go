@@ -360,3 +360,7 @@ func (c *ChainStoreFFLDB) GetTransaction(txID Uint256) (*Transaction, uint32, er
 func (c *ChainStoreFFLDB) InitIndex(chain indexers.IChain, interrupt <-chan struct{}) error {
 	return c.indexManager.Init(chain, interrupt)
 }
+
+func (c *ChainStoreFFLDB) GetUnspent(txID Uint256) ([]uint16, error) {
+	return c.indexManager.FetchUnspent(txID)
+}

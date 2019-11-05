@@ -90,4 +90,7 @@ type IFFLDBChainStore interface {
 
 	// InitIndex use to initialize the index manager
 	InitIndex(chain indexers.IChain, interrupt <-chan struct{}) error
+
+	// Get unspent by transaction hash
+	GetUnspent(txID Uint256) ([]uint16, error)
 }

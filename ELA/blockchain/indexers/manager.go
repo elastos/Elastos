@@ -508,14 +508,29 @@ func (m *Manager) FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint
 	return txn, hash, nil
 }
 
+func (m *Manager) FetchUnspent(txID common.Uint256) ([]uint16, error) {
+	var indexes []uint16
+	err := m.db.View(func(dbTx database.Tx) error {
+		var err error
+		indexes, err = dbFetchUnspentIndexEntry(dbTx, &txID)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return indexes, nil
+}
+
 // NewManager returns a new index manager with the provided indexes enabled.
 //
 // The manager returned satisfies the blockchain.IndexManager interface and thus
 // cleanly plugs into the normal blockchain processing path.
 func NewManager(db database.DB) *Manager {
-	var enabledIndexes []Indexer
 	txIndex := NewTxIndex(db)
-	enabledIndexes = append(enabledIndexes, txIndex)
+	unspentIndex := NewUnspentIndex(db)
+	var enabledIndexes []Indexer
+	enabledIndexes = append(enabledIndexes, txIndex, unspentIndex)
 	return &Manager{
 		db:             db,
 		enabledIndexes: enabledIndexes,
