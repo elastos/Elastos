@@ -3,6 +3,7 @@ import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import { Table, Row, Col, Button } from 'antd'
+import { CSVLink } from 'react-csv'
 import I18N from '@/I18N'
 import { logger } from '@/util'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
@@ -37,7 +38,7 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { canManage, isCouncil } = this.props
+    const { canManage, isCouncil, isSecretary } = this.props
     const map = {
       1: I18N.get('council.voting.type.newMotion'),
       2: I18N.get('council.voting.type.motionAgainst'),
@@ -80,18 +81,7 @@ export default class extends BaseComponent {
         title: I18N.get('council.voting.votingEndsIn'),
         dataIndex: 'proposedAt',
         key: 'endsIn',
-        render: (proposedAt, item) => {
-          if (item.status === CVOTE_STATUS.DRAFT) return null
-          // only show when status is PROPOSED
-          const endsInFloat = moment.duration(moment(proposedAt || item.createdAt).add(7, 'd').diff(moment())).as('days')
-          if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) {
-            return I18N.get('council.voting.votingEndsIn.ended')
-          }
-          if (endsInFloat > 0 && endsInFloat <= 1) {
-            return <span style={{ color: 'red' }}>{`1 ${I18N.get('council.voting.votingEndsIn.day')}`}</span>
-          }
-          return `${Math.ceil(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
-        },
+        render: (proposedAt, item) => this.renderEndsIn(item),
       },
       {
         title: I18N.get('council.voting.voteByCouncil'),
@@ -99,12 +89,12 @@ export default class extends BaseComponent {
       },
       {
         title: I18N.get('council.voting.status'),
-        render: (id, item) => I18N.get(`cvoteStatus.${item.status}`) || '',
+        render: (id, item) => this.renderStatus(item.status),
       },
       {
         title: I18N.get('council.voting.proposedAt'),
         dataIndex: 'proposedAt',
-        render: (proposedAt, doc) => doc.published && moment(proposedAt || doc.createdAt).format('MMM D, YYYY'),
+        render: (proposedAt, doc) => this.renderProposed(doc.published, proposedAt || doc.createdAt),
       },
     ]
 
@@ -182,6 +172,34 @@ export default class extends BaseComponent {
       </Col>
     )
     const { list, loading, page } = this.state
+    let dataCSV = []
+    if (isSecretary) {
+      const itemsCSV = _.map(list, v => [
+        v.vid,
+        v.title,
+        map[v.type],
+        v.proposedBy,
+        this.renderEndsInForCSV(v),
+        this.voteDataByUserForCSV(v),
+        this.renderStatus(v.status),
+        _.replace(this.renderProposed(v.published, v.proposedAt || v.createdAt) || '', ',', ' ')
+      ])
+      dataCSV = _.concat(
+        [
+          [
+            I18N.get('council.voting.number'),
+            I18N.get('council.voting.title'),
+            I18N.get('council.voting.type'),
+            I18N.get('council.voting.author'),
+            I18N.get('council.voting.votingEndsIn'),
+            I18N.get('council.voting.voteByCouncil'),
+            I18N.get('council.voting.status'),
+            I18N.get('council.voting.proposedAt')
+          ]
+        ],
+        itemsCSV
+      )
+    }
     return (
       <Container>
         {createBtn}
@@ -189,6 +207,13 @@ export default class extends BaseComponent {
           {title}
           {searchInput}
           {btns}
+        </Row>
+        <Row type="flex" align="middle" justify="end">
+          {isSecretary && (
+            <CSVLink data={dataCSV} style={{ marginBottom: 16 }}>
+              {I18N.get('elip.button.exportAsCSV')}
+            </CSVLink>
+          )}
         </Row>
         <Table
           columns={columns}
@@ -305,7 +330,47 @@ export default class extends BaseComponent {
     this.props.history.push(`/proposals/${id}/edit`)
   }
 
+  renderEndsIn = (item) => {
+    return this.renderBaseEndsIn(item)
+  }
+
+  renderEndsInForCSV = (item) => {
+    return this.renderBaseEndsIn(item, true)
+  }
+
+  renderBaseEndsIn = (item, isCSV = false) => {
+    if (item.status === CVOTE_STATUS.DRAFT) return null
+    // only show when status is PROPOSED
+    const endsInFloat = moment.duration(moment(item.proposedAt || item.createdAt).add(7, 'd').diff(moment())).as('days')
+    if (item.status !== CVOTE_STATUS.PROPOSED || endsInFloat <= 0) {
+      return I18N.get('council.voting.votingEndsIn.ended')
+    }
+    if (endsInFloat > 0 && endsInFloat <= 1) {
+      const oneDay = `1 ${I18N.get('council.voting.votingEndsIn.day')}`
+      return isCSV ? oneDay : (<span style={{ color: 'red' }}>{oneDay}</span>)
+    }
+    return `${Math.ceil(endsInFloat)} ${I18N.get('council.voting.votingEndsIn.days')}`
+  }
+
+  renderStatus = (status) => {
+    return I18N.get(`cvoteStatus.${status}`) || ''
+  }
+
+  renderProposed = (published, createdAt) => {
+    const lang = localStorage.getItem('lang') || 'en'
+    const format = lang === 'en' ? 'MMM D, YYYY' : 'YYYY-MM-DD'
+    return published && moment(createdAt).format(format)
+  }
+
   voteDataByUser = (data) => {
+    return this.baseVoteDataByUser(data)
+  }
+
+  voteDataByUserForCSV = (data) => {
+    return this.baseVoteDataByUser(data, true)
+  }
+
+  baseVoteDataByUser = (data, isCSV = false) => {
     const { vote_map: voteMap, voteResult, status } = data
     let voteArr
 
@@ -322,6 +387,6 @@ export default class extends BaseComponent {
     const percentage = supportNum * 100 / voteArr.length
     const proposalAgreed = percentage > 50
     const percentageStr = percentage.toString() && `${percentage.toFixed(1).toString()}%`
-    return <VoteStats percentage={percentageStr} values={voteArr} yes={proposalAgreed} />
+    return isCSV ? percentageStr : (<VoteStats percentage={percentageStr} values={voteArr} yes={proposalAgreed} />)
   }
 }
