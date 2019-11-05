@@ -61,7 +61,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain.crCommittee.RegisterFuncitons(nil)
+	s.Chain.crCommittee.RegisterFuncitons(nil, nil)
 
 	s.OriginalLedger = DefaultLedger
 
@@ -1911,8 +1911,8 @@ func (s *txValidatorTestSuite) TestCheckCRCAppropriationTransaction() {
 	s.Chain.chainParams.CRCCommitteeAddress = *randomUint168()
 
 	// Set CRC foundation and CRC committee amount.
-	s.Chain.crCommittee.CRCFoundationAmount = common.Fixed64(990 * 1e8)
-	s.Chain.crCommittee.CRCCommitteeAmount = common.Fixed64(10 * 1e8)
+	s.Chain.crCommittee.CRCFoundationBalance = common.Fixed64(990 * 1e8)
+	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(10 * 1e8)
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0 * 1e8)
 
 	// Create reference.
