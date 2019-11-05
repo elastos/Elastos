@@ -1269,9 +1269,9 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: String crPublickey
+    // args[2]: String crDID
     // args[3]: String payPasswd
-    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crPublickey, String payPasswd) {
+    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID, String payPasswd) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1286,7 +1286,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(crPublickey, payPasswd);
+            String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(crDID, payPasswd);
 
             KLog.a(payloadJson);
             return new CommmonStringEntity(SUCCESSCODE, payloadJson);

@@ -230,14 +230,13 @@ namespace Elastos {
 			/**
 			 * Generate payload for unregister or updating cr.
 			 *
-			 * @param crPublicKey      The public key to identify a cr. Can't change later.
-			 *                       be sent to address of this public key.
+			 * @param crDID          The id of cr will unregister
 			 * @param payPasswd      Pay password is using for signing the payload with the owner private key.
 			 *
 			 * @return               The payload in JSON format.
 			 */
 			virtual nlohmann::json GenerateUnregisterCRPayload(
-					const std::string &crPublicKey,
+					const std::string &crDID,
 					const std::string &payPasswd) const = 0;
 
 			/**

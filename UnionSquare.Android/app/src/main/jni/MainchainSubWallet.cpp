@@ -445,25 +445,25 @@ static jstring JNICALL GenerateCRInfoPayload(JNIEnv *env, jobject clazz, jlong j
 #define JNI_GenerateUnregisterCRPayload "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL GenerateUnregisterCRPayload(JNIEnv *env, jobject clazz, jlong jProxy,
-                                                   jstring jCRPublicKey,
+                                                   jstring jCRDID,
                                                    jstring jPayPasswd) {
     bool exception = false;
     std::string msgException;
     jstring payload = NULL;
 
-    const char *publicKey = env->GetStringUTFChars(jCRPublicKey, NULL);
+    const char *crDID = env->GetStringUTFChars(jCRDID, NULL);
     const char *payPasswd = env->GetStringUTFChars(jPayPasswd, NULL);
 
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
-        nlohmann::json payloadJson = wallet->GenerateUnregisterCRPayload(publicKey, payPasswd);
+        nlohmann::json payloadJson = wallet->GenerateUnregisterCRPayload(crDID, payPasswd);
         payload = env->NewStringUTF(payloadJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
         msgException = e.what();
     }
 
-    env->ReleaseStringUTFChars(jCRPublicKey, publicKey);
+    env->ReleaseStringUTFChars(jCRDID, crDID);
     env->ReleaseStringUTFChars(jPayPasswd, payPasswd);
 
     if (exception) {
