@@ -22,13 +22,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	// blockDbNamePrefix is the prefix for the block database name.  The
-	// database type is appended to this value to form the full block
-	// database name.
-	blockDbNamePrefix = "blocks"
-)
-
 var (
 	unspentIndexReferTx1    = common.Uint256{1}
 	unspentIndexReferTx2    = common.Uint256{2}
@@ -192,6 +185,13 @@ func TestUnspentIndex_DisconnectBlock(t *testing.T) {
 		return nil
 	})
 }
+
+const (
+	// blockDbNamePrefix is the prefix for the block database name.  The
+	// database type is appended to this value to form the full block
+	// database name.
+	blockDbNamePrefix = "blocks"
+)
 
 // dbPath returns the path to the block database given a database type.
 func blockDbPath(dataPath, dbType string) string {
