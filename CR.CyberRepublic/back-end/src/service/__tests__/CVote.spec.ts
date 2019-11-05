@@ -14,8 +14,8 @@ const sinon = require('sinon')
 const user: any = {}
 let DB, mailMethod
 let suggestion
-let suggestionService: any = {}
-let cvoteMemberService: any = {},
+const suggestionService: any = {}
+const cvoteMemberService: any = {},
       cvoteCouncilService: any = {},
       cvoteAdminService: any = {}
 

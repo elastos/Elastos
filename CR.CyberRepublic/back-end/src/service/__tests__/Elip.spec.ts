@@ -10,7 +10,7 @@ declare var global, describe, test, beforeAll
 
 const user: any = {}
 let DB: any
-let elipMemberService: any = {},
+const elipMemberService: any = {},
       elipSecretaryService: any = {}
 let elipMemberId: string
 
@@ -137,7 +137,7 @@ describe('Tests for ELIP', () => {
     const rs = await elipMemberService.list({
       filter: constant.ELIP_FILTER.WAIT_FOR_REVIEW
     })
-    // expect(rs.length).to.be.equal(4)
+    expect(rs.length).to.be.equal(4)
     // A guest
     const elipService1 = new ElipService(DB, {})
     const rs1 = await elipService1.list({})
