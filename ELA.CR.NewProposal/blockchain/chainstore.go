@@ -771,6 +771,44 @@ func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint25
 	return uxtoUnspents, nil
 }
 
+func (c *ChainStore) GetBalanceFromProgramHashAndHeight(programHash Uint168,
+	assetid Uint256, height uint32) (Fixed64, error) {
+
+	var balance Fixed64
+	prefix := []byte{byte(IXUnspentUTXO)}
+	prefix = append(prefix, programHash.Bytes()...)
+	prefix = append(prefix, assetid.Bytes()...)
+	for i := uint32(0); i <= height; i++ {
+		key := bytes.NewBuffer(prefix)
+		if err := WriteUint32(key, i); err != nil {
+			return 0, err
+		}
+
+		data, err := c.Get(key.Bytes())
+		if err != nil {
+			return 0, err
+		}
+		r := bytes.NewReader(data)
+		listNum, err := ReadVarUint(r, 0)
+		if err != nil {
+			return 0, err
+		}
+
+		// read unspent list in store
+		for i := 0; i < int(listNum); i++ {
+			uu := new(UTXO)
+			err := uu.Deserialize(r)
+			if err != nil {
+				break
+			}
+
+			balance += uu.Value
+		}
+	}
+
+	return balance, nil
+}
+
 func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid Uint256, height uint32, unspents []*UTXO) error {
 	prefix := []byte{byte(IXUnspentUTXO)}
 	prefix = append(prefix, programHash.Bytes()...)

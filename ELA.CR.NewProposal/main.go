@@ -213,7 +213,8 @@ func startNode(c *cli.Context, st *settings) {
 			blockchain.CalculateTxsFee(block)
 			return block, nil
 		}, chain.UTXOCache.GetTxReference)
-	committee.RegisterFuncitons(chain.UTXOCache.GetTxReference)
+	committee.RegisterFuncitons(chain.UTXOCache.GetTxReference,
+		chainStore.GetBalanceFromProgramHashAndHeight)
 
 	routesCfg := &routes.Config{TimeSource: chain.TimeSource}
 	if act != nil {
