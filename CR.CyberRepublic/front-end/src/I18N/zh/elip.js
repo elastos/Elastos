@@ -64,7 +64,8 @@ export default {
     yes: '赞成',
     oppose: '反对',
     abstain: '弃权',
-    delete: '删除'
+    delete: '删除',
+    exportAsCSV: '导出CSV文件'
   },
   msg: {
     updated: '更新成功',

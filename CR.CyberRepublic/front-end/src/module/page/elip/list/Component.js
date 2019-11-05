@@ -3,9 +3,10 @@ import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
 import { Table, Row, Col, Button } from 'antd'
+import { CSVLink } from 'react-csv'
 import I18N from '@/I18N'
 import { ELIP_FILTER } from '@/constant'
-import { Container, StyledButton, StyledSearch, Filter, FilterLabel } from './style'
+import { Container, StyledButton, StyledSearch, Filter, FilterLabel, StyledExport } from './style'
 import { logger } from '@/util'
 import userUtil from '@/util/user'
 
@@ -71,6 +72,19 @@ export default class extends BaseComponent {
     this.setState({ filter }, this.refetch)
   }
 
+  renderAuthor = (createdBy) => {
+    return userUtil.formatUsername(createdBy)
+  }
+
+  renderStatus = (status) => {
+    return I18N.get(`elip.status.${status}`) || ''
+  }
+
+  renderCreatedAt = (createdAt) => {
+    const lang = localStorage.getItem('lang') || 'en'
+    return lang === 'en' ? moment(createdAt).format('MMM D, YYYY') : moment(createdAt).format('YYYY-MM-DD')
+  }
+
   ord_render() {
     const { isSecretary, isLogin } = this.props
     const columns = [
@@ -102,17 +116,17 @@ export default class extends BaseComponent {
       {
         title: I18N.get('elip.fields.author'),
         dataIndex: 'createdBy',
-        render: createdBy => userUtil.formatUsername(createdBy)
+        render: createdBy => this.renderAuthor(createdBy)
       },
       {
         title: I18N.get('elip.fields.status'),
         dataIndex: 'status',
-        render: status => I18N.get(`elip.status.${status}`) || ''
+        render: status => this.renderStatus(status)
       },
       {
         title: I18N.get('elip.fields.createdAt'),
         dataIndex: 'createdAt',
-        render: createdAt => moment(createdAt).format('MMM D, YYYY')
+        render: createdAt => this.renderCreatedAt(createdAt)
       }
     ]
 
@@ -189,6 +203,28 @@ export default class extends BaseComponent {
     )
 
     const { list, loading } = this.state
+    let dataCSV = []
+    if (isSecretary) {
+      const itemsCSV = _.map(list, v => [
+        v.vid,
+        v.title,
+        this.renderAuthor(v.createdBy),
+        this.renderStatus(v.status),
+        _.replace(this.renderCreatedAt(v.createdAt), ',', ' ')
+      ])
+      dataCSV = _.concat(
+        [
+          [
+            I18N.get('elip.fields.number'),
+            I18N.get('elip.fields.title'),
+            I18N.get('elip.fields.author'),
+            I18N.get('elip.fields.status'),
+            I18N.get('elip.fields.createdAt')
+          ]
+        ],
+        itemsCSV
+      )
+    }
     return (
       <Container>
         <Row type="flex" align="middle" justify="space-between">
@@ -203,6 +239,13 @@ export default class extends BaseComponent {
         >
           {searchInput}
           {isLogin && filterBtns}
+        </Row>
+        <Row type="flex" align="middle" justify="end">
+          {isSecretary && (
+            <CSVLink data={dataCSV} style={{ marginBottom: 16 }}>
+              {I18N.get('elip.button.exportAsCSV')}
+            </CSVLink>
+          )}
         </Row>
         <Table
           columns={columns}

@@ -64,7 +64,8 @@ export default {
     yes: 'Vote Yes',
     oppose: 'Oppose with a Reason',
     abstain: 'Abstain',
-    delete: 'Delete'
+    delete: 'Delete',
+    exportAsCSV: 'Export as CSV'
   },
   msg: {
     updated: 'Updated successfully',
