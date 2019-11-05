@@ -22,7 +22,7 @@ const (
 var (
 	// unspentIndexKey is the key of the unspent index and the db bucket used
 	// to house it.
-	unspentIndexKey = []byte("txbyhashidx")
+	unspentIndexKey = []byte("unspentbyhashidx")
 )
 
 func toByteArray(source []uint16) []byte {
@@ -102,6 +102,12 @@ func putUnspent(dbTx database.Tx, unspents map[common.Uint256][]uint16) error {
 // it supports querying all unspent index by their tx hash.
 type UnspentIndex struct {
 	db database.DB
+}
+
+// Init initializes the hash-based unspent index. This is part of the Indexer
+// interface.
+func (idx *UnspentIndex) Init() error {
+	return nil // Nothing to do.
 }
 
 // Key returns the database key to use for the index as a byte slice.

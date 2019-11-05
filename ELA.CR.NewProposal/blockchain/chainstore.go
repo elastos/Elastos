@@ -172,6 +172,31 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 	if len(txn.Inputs) == 0 {
 		return false
 	}
+	for i := 0; i < len(txn.Inputs); i++ {
+		txID := txn.Inputs[i].Previous.TxID
+		unspents, err := c.GetFFLDB().GetUnspent(txID)
+		if err != nil {
+			return true
+		}
+		findFlag := false
+		for k := 0; k < len(unspents); k++ {
+			if unspents[k] == txn.Inputs[i].Previous.Index {
+				findFlag = true
+				break
+			}
+		}
+		if !findFlag {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c *ChainStore) isDoubleSpend(txn *Transaction) bool {
+	if len(txn.Inputs) == 0 {
+		return false
+	}
 
 	unspentPrefix := []byte{byte(IXUnspent)}
 	for i := 0; i < len(txn.Inputs); i++ {
@@ -489,9 +514,6 @@ func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	if err := c.RollbackUnspendUTXOs(b); err != nil {
 		return err
 	}
-	if err := c.RollbackUnspend(b); err != nil {
-		return err
-	}
 	if err := c.RollbackConfirm(b); err != nil {
 		return err
 	}
@@ -519,9 +541,6 @@ func (c *ChainStore) persist(b *Block, node *BlockNode,
 		return err
 	}
 	if err := c.persistUTXOs(b); err != nil {
-		return err
-	}
-	if err := c.persistUnspend(b); err != nil {
 		return err
 	}
 	if err := c.persistConfirm(confirm); err != nil {
