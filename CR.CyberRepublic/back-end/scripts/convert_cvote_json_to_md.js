@@ -20,21 +20,27 @@ const convertJsonToMd = require('./convert_json_to_md')
   try {
     let docs = await db_cvote.find()
     console.log('docs.length', docs.length)
+    let count = 0
     for (const doc of docs) {
       try {
+        let obj = {}
         for (const section of sections) {
           if (doc[section]) {
             const md = convertJsonToMd(doc[section])
             if (md) {
-              doc[section] = md
+              obj[section] = md
             }
           }
         }
-        await doc.save()
+        if (Object.keys(obj).length) {
+          await db_cvote.update({ _id: doc._id }, { $set: obj })
+        }
       } catch (err) {
+        count = count + 1
         console.log(`cvote ${doc._id} error`, err)
       }
     }
+    console.log('total errors', count)
   } catch (err) {
     console.error(err)
     process.exit(1)

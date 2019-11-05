@@ -65,7 +65,7 @@ function convertJsonToMd(data) {
             line = line.replace(key, strs[key])
           }
 
-          line = `\n${types[block.type]}${line}\n`
+          line = `${types[block.type]}${line}\n`
         }
         // deal with hr
         if (block.type === 'atomic' && block.text === '-') {
