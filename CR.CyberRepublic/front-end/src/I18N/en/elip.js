@@ -36,7 +36,10 @@ export default {
       requires: 'Requires',
       replaces: 'Replaces',
       superseded: 'Superseded-By'
-    }
+    },
+    filter: 'Filters',
+    elipStatus: 'Elip Status',
+    creationDate: 'Creation Date'
   },
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: 'SUBMIT FOR REVIEW',
@@ -65,7 +68,9 @@ export default {
     oppose: 'Oppose with a Reason',
     abstain: 'Abstain',
     delete: 'Delete',
-    exportAsCSV: 'Export as CSV'
+    exportAsCSV: 'Export as CSV',
+    clearFilter: 'Clear Filter',
+    applyFilter: 'Apply Filter'
   },
   msg: {
     updated: 'Updated successfully',
