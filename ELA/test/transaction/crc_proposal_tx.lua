@@ -31,6 +31,7 @@ local cr_pubkey = getPublicKey()
 local proposal_type = getProposalType()
 local draft_data = getDraftData()
 local budgets = getBudgets()
+local recipient = getToAddr()
 
 if fee == 0
     then
@@ -46,12 +47,18 @@ if draft_data == "" then
     return
 end
 
+if recipient == "" then
+    print("recipient is nil, should use --to to set it.")
+    return
+end
+
 if next(budgets) == nil then
     print("budgets is nil, should use --budgets to set it.")
     return
 end
 
 print("fee:", fee)
+print("recipient", recipient)
 print("public key:", cr_pubkey)
 print("proposal type:", proposal_type)
 print("draft proposal data:", draft_data)
@@ -62,9 +69,9 @@ for i, v in pairs(budgets) do
 end
 print("-----------------------")
 
--- crc proposal payload: crPublickey, proposalType, draftData, budgets, wallet
-local cp_payload =crcproposal.new(cr_pubkey, proposal_type, draft_data, budgets, wallet)
-
+-- crc proposal payload: crPublickey, proposalType, draftData, budgets, recipient, wallet
+local cp_payload =crcproposal.new(cr_pubkey, proposal_type, draft_data, budgets,
+        recipient, wallet)
 print(cp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime

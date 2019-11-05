@@ -121,6 +121,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(table)
 		return 1
 	}
+
 	L.Register("getWallet", getWallet)
 	L.Register("getPassword", getPassword)
 	L.Register("getDepositAddr", getDepositAddr)
@@ -157,6 +158,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	ledgerPrivkey := c.String("ledgerprivatekey")
 	newLedgerPrivkey := c.String("newledgerprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
+	recipient := c.String("recipient")
 
 	getProposalType := func(L *lua.LState) int {
 		L.Push(lua.LNumber(proposalType))
@@ -220,6 +222,10 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(secretaryGeneralPrivkey))
 		return 1
 	}
+	getRecipient := func(L *lua.LState) int {
+		L.Push(lua.LString(recipient))
+		return 1
+	}
 
 	L.Register("getProposalType", getProposalType)
 	L.Register("getDraftData", getDraftData)
@@ -235,6 +241,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getLedgerPrivkey", getLedgerPrivkey)
 	L.Register("getNewLedgerPrivkey", getNewLedgerPrivkey)
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
+	L.Register("getRecipient", getRecipient)
 }
 
 func scriptAction(c *cli.Context) error {
