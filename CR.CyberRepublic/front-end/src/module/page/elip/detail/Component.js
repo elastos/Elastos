@@ -1,5 +1,5 @@
 import React from 'react'
-import { Row, Col, Spin, Button, message, Popconfirm, Anchor } from 'antd'
+import { Row, Col, Spin, Button, message, Popconfirm, Anchor, Icon } from 'antd'
 import { StickyContainer, Sticky } from 'react-sticky'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -15,6 +15,7 @@ import MetaComponent from '@/module/shared/meta/Container'
 import CRPopover from '@/module/shared/Popover/Component'
 import { ELIP_STATUS, ELIP_REVIEW_STATUS } from '@/constant'
 import { text } from '@/constants/color'
+import { ReactComponent as EditIcon } from '@/assets/images/icon-edit.svg'
 import { logger } from '@/util'
 import { breakPoint } from '@/constants/breakPoint'
 import moment from 'moment/moment'
@@ -393,14 +394,14 @@ class C extends StandardPage {
 
     if (!isEditable) return null
 
-    const btnStyle =
-      ELIP_STATUS.DRAFT === data.status ? 'cr-btn-black' : 'cr-btn-primary'
     return (
       <Col>
         <Button
           onClick={() => this.props.history.push(`/elips/${data._id}/edit`)}
-          className={`cr-btn ${btnStyle}`}
+          className="cr-btn"
+          style={{ display: 'flex', justifyContent: 'center' }}
         >
+          <EditIcon style={{ marginRight: 8 }} />
           {I18N.get('elip.button.edit')}
         </Button>
       </Col>
@@ -485,10 +486,10 @@ class C extends StandardPage {
         <Popconfirm
           title={I18N.get('elip.modal.approve')}
           onConfirm={this.approvedReview}
-          onCancel={this.showApproveModal}
           okText={I18N.get('.yes')}
           cancelText={I18N.get('.no')}
           visible={visibleApprove}
+          onVisibleChange={this.showApproveModal}
         >
           <Button
             className="cr-btn cr-btn-primary"
