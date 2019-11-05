@@ -2,13 +2,28 @@ import React from 'react'
 import _ from 'lodash'
 import moment from 'moment/moment'
 import BaseComponent from '@/model/BaseComponent'
-import { Table, Row, Col, Button } from 'antd'
+import { Table, Row, Col, Button, Icon, Select, Input, DatePicker } from 'antd'
 import { CSVLink } from 'react-csv'
 import I18N from '@/I18N'
-import { ELIP_FILTER } from '@/constant'
-import { Container, StyledButton, StyledSearch, Filter, FilterLabel } from './style'
+import { ELIP_STATUS, ELIP_TYPE } from '@/constant'
+import {
+  Container,
+  StyledButton,
+  StyledSearch,
+  Filter,
+  FilterLabel,
+  FilterPanel,
+  FilterContent,
+  FilterItem,
+  FilterItemLabel,
+  FilterClearBtn
+} from './style'
 import { logger } from '@/util'
 import userUtil from '@/util/user'
+import { ReactComponent as UpIcon } from '@/assets/images/icon-up.svg'
+import { ReactComponent as DownIcon } from '@/assets/images/icon-down.svg'
+
+const { RangePicker } = DatePicker
 
 export default class extends BaseComponent {
   constructor(props) {
@@ -16,8 +31,11 @@ export default class extends BaseComponent {
     this.state = {
       list: [],
       search: '',
-      filter: 'ALL',
-      loading: true
+      filter: '',
+      loading: true,
+      creationDate: [],
+      author: '',
+      type: ''
     }
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
@@ -68,6 +86,22 @@ export default class extends BaseComponent {
     this.setState({ search: search.trim() }, this.debouncedRefetch)
   }
 
+  handleStatusChange = (filter) => {
+    this.setState({ filter })
+  }
+
+  handleCreationDateChange = (creationDate) => {
+    this.setState({ creationDate })
+  }
+
+  handleAuthorChange = (e) => {
+    this.setState({ author: e.target.value })
+  }
+
+  handleTypeChange = (type) => {
+    this.setState({ type })
+  }
+
   setFilter = (filter) => {
     this.setState({ filter }, this.refetch)
   }
@@ -87,6 +121,7 @@ export default class extends BaseComponent {
 
   ord_render() {
     const { isSecretary, isLogin } = this.props
+    const { filter, creationDate, author, type } = this.state
     const columns = [
       {
         title: I18N.get('elip.fields.number'),
@@ -162,44 +197,83 @@ export default class extends BaseComponent {
       </Col>
     )
 
-    const filterBtnGroup = (
-      <Button.Group className="filter-group">
-        <StyledButton
-          className={(this.state.filter === ELIP_FILTER.ALL && 'selected') || ''}
-          onClick={() => this.setFilter(ELIP_FILTER.ALL)}
-        >
-          {I18N.get('elip.filter.ALL')}
-        </StyledButton>
-        <StyledButton
-          className={(this.state.filter === ELIP_FILTER.DRAFT && 'selected') || ''}
-          onClick={() => this.setFilter(ELIP_FILTER.DRAFT)}
-        >
-          {I18N.get('elip.filter.DRAFT')}
-        </StyledButton>
-        {isLogin && (
-          <StyledButton
-            className={(this.state.filter === ELIP_FILTER.SUBMITTED_BY_ME && 'selected') || ''}
-            onClick={() => this.setFilter(ELIP_FILTER.SUBMITTED_BY_ME)}
-          >
-            {I18N.get('elip.filter.SUBMITTED_BY_ME')}
-          </StyledButton>
-        )}
-        {isSecretary && (
-          <StyledButton
-            className={(this.state.filter === ELIP_FILTER.WAIT_FOR_REVIEW && 'selected') || ''}
-            onClick={() => this.setFilter(ELIP_FILTER.WAIT_FOR_REVIEW)}
-          >
-            {I18N.get('elip.filter.WAIT_FOR_REVIEW')}
-          </StyledButton>
-        )}
-      </Button.Group>
-    )
-
     const filterBtns = (
       <Filter>
-        <FilterLabel>{`${I18N.get('elip.show')}: `}</FilterLabel>
-        {filterBtnGroup}
+        <FilterLabel>{I18N.get('elip.fields.filter')}</FilterLabel>
+        <UpIcon />
+        <DownIcon />
       </Filter>
+    )
+
+    const filterPanel = (
+      <FilterPanel>
+        <Row type="flex" gutter={10} className="filter">
+          <Col span={12} className="filter-panel">
+            <FilterContent>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('elip.fields.elipStatus')}
+                </FilterItemLabel>
+                <Select
+                  className="filter-input"
+                  value={filter}
+                  onChange={this.handleStatusChange}
+                >
+                  {_.map(ELIP_STATUS, value => (
+                    <Select.Option key={value} value={value}>
+                      {I18N.get(`elip.status.${value}`)}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FilterItem>
+            </FilterContent>
+          </Col>
+          <Col span={12} className="filter-panel">
+            <FilterContent>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('elip.fields.creationDate')}
+                </FilterItemLabel>
+                <RangePicker
+                  className="filter-input"
+                  onChange={this.handleCreationDateChange}
+                  value={creationDate}
+                />
+              </FilterItem>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('elip.fields.author')}
+                </FilterItemLabel>
+                <Input
+                  className="filter-input"
+                  value={author}
+                  onChange={this.handleAuthorChange}
+                />
+              </FilterItem>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('elip.fields.elipType')}
+                </FilterItemLabel>
+                <Select
+                  className="filter-input"
+                  value={type}
+                  onChange={this.handleTypeChange}
+                >
+                  {_.map(ELIP_TYPE, value => (
+                    <Select.Option key={value} value={value}>
+                      {I18N.get(`elip.form.typeTitle.${value}`)}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FilterItem>
+            </FilterContent>
+          </Col>
+        </Row>
+        <Row type="flex" gutter={30} justify="center" className="filter-btn">
+          <Col><FilterClearBtn>{I18N.get('elip.button.clearFilter')}</FilterClearBtn></Col>
+          <Col><Button className="cr-btn cr-btn-primary">{I18N.get('elip.button.applyFilter')}</Button></Col>
+        </Row>
+      </FilterPanel>
     )
 
     const { list, loading } = this.state
@@ -240,6 +314,7 @@ export default class extends BaseComponent {
           {searchInput}
           {isLogin && filterBtns}
         </Row>
+        {filterPanel}
         <Row type="flex" align="middle" justify="end">
           {isSecretary && (
             <CSVLink data={dataCSV} style={{ marginBottom: 16 }}>
