@@ -929,8 +929,9 @@ func newCRCProposal(L *lua.LState) int {
 	proposalType := L.ToInt64(2)
 	draftDataStr := L.ToString(3)
 	budgetsTable := L.ToTable(4)
+	recipientStr := L.ToString(5)
 	needSign := true
-	client, err := checkClient(L, 5)
+	client, err := checkClient(L, 6)
 	if err != nil {
 		needSign = false
 	}
@@ -966,6 +967,11 @@ func newCRCProposal(L *lua.LState) int {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
+	recipient, err := common.Uint168FromAddress(recipientStr)
+	if err != nil {
+		fmt.Println("wrong cr proposal ELA recipient")
+		os.Exit(1)
+	}
 	crcProposal := &payload.CRCProposal{
 		ProposalType:     payload.CRCProposalType(proposalType),
 		SponsorPublicKey: publicKey,
@@ -973,6 +979,7 @@ func newCRCProposal(L *lua.LState) int {
 		DraftHash:        common.Hash(draftData),
 		DraftData:        draftData,
 		Budgets:          budgets,
+		Recipient:        *recipient,
 	}
 
 	if needSign {
