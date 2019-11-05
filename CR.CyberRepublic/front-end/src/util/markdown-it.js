@@ -14,7 +14,7 @@ import ins from 'markdown-it-ins'
 const mdi = markdownIt({
   html: true,
   breaks: true,
-  // linkify: true, // Autoconvert URL-like text to links
+  linkify: true, // Autoconvert URL-like text to links
   typographer: true // Enable some language-neutral replacement + quotes beautification
 })
   .use(markdownItMermaid)
