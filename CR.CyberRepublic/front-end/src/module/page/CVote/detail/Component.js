@@ -196,7 +196,16 @@ class C extends StandardPage {
 
   renderTranslationBtn() {
     const { data } = this.props
-    const { title } = data
+    const { title, content } = data
+    let text = ''
+    if (content) {
+      text = `<h3>${title}</h3> ${content}`
+      return (
+        <div style={{ marginTop: 20 }}>
+          <Translation text={text} />
+        </div>
+      )
+    }
     const sections = [
       'abstract',
       'goal',
@@ -211,13 +220,7 @@ class C extends StandardPage {
         <p>${convertMarkdownToHtml(data[section])}</p>
       `
     }).join('')
-    const text = `
-      <h3>${title}</h3>
-      <br />
-      <br />
-      ${result}
-    `
-
+    text = `<h3>${title}</h3> ${result}`
     return (
       <div style={{ marginTop: 20 }}>
         <Translation text={text} />
