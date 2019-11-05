@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA/account"
 	"sort"
 	"sync"
 
@@ -26,7 +27,9 @@ type Committee struct {
 	params  *config.Params
 	manager *ProposalManager
 
-	getCheckpoint func(height uint32) *Checkpoint
+	getCheckpoint                      func(height uint32) *Checkpoint
+	getBalanceFromProgramHashAndHeight func(programHash common.Uint168,
+		assetid common.Uint256, height uint32) (common.Fixed64, error)
 }
 
 func (c *Committee) GetState() *State {
@@ -165,8 +168,10 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		return
 	}
 
-	// If reached the voting start height, record the last voting start
-	// height.
+	// Get CRC foundation and committee balance at CRVotingStartHeight.
+	c.tryInitCRCRelatedAddressBalance(block.Height)
+
+	// If reached the voting start height, record the last voting start height.
 	c.recordLastVotingStartHeight(block.Height)
 
 	// If in election period and not in voting period, deal with TransferAsset
@@ -203,6 +208,18 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 func (c *Committee) createCRCAppropriationTransaction() error {
 	// todo create CR appropriation transaction and send to txpool.
 	return nil
+}
+
+func (c *Committee) tryInitCRCRelatedAddressBalance(height uint32) {
+	if height == c.params.CRVotingStartHeight {
+		c.CRCFoundationBalance, _ = c.getBalanceFromProgramHashAndHeight(
+			c.params.CRCFoundation, *account.SystemAssetID, height)
+		c.CRCCommitteeBalance, _ = c.getBalanceFromProgramHashAndHeight(
+			c.params.CRCCommitteeAddress, *account.SystemAssetID, height)
+		log.Infof("at %d CR voting start height, balance of CRC "+
+			"foundation is %s, balance of CRC committee address is %s",
+			height, c.CRCFoundationBalance, c.CRCCommitteeBalance)
+	}
 }
 
 func (c *Committee) recordLastVotingStartHeight(height uint32) {
@@ -293,15 +310,15 @@ func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32
 	for _, input := range tx.Inputs {
 		if amount, ok := foundationInputsAmounts[input.Previous.ReferKey()]; ok {
 			history.Append(height, func() {
-				c.CRCFoundationAmount -= amount
+				c.CRCFoundationBalance -= amount
 			}, func() {
-				c.CRCFoundationAmount += amount
+				c.CRCFoundationBalance += amount
 			})
 		} else if amount, ok := committeeInputsAmounts[input.Previous.ReferKey()]; ok {
 			history.Append(height, func() {
-				c.CRCCommitteeAmount -= amount
+				c.CRCCommitteeBalance -= amount
 			}, func() {
-				c.CRCCommitteeAmount += amount
+				c.CRCCommitteeBalance += amount
 			})
 		}
 	}
@@ -309,15 +326,15 @@ func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32
 	for _, output := range tx.Outputs {
 		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
 			history.Append(height, func() {
-				c.CRCFoundationAmount += output.Value
+				c.CRCFoundationBalance += output.Value
 			}, func() {
-				c.CRCFoundationAmount -= output.Value
+				c.CRCFoundationBalance -= output.Value
 			})
 		} else if output.ProgramHash.IsEqual(c.params.CRCCommitteeAddress) {
 			history.Append(height, func() {
-				c.CRCCommitteeAmount += output.Value
+				c.CRCCommitteeBalance += output.Value
 			}, func() {
-				c.CRCCommitteeAmount -= output.Value
+				c.CRCCommitteeBalance -= output.Value
 			})
 		}
 	}
@@ -505,7 +522,9 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 }
 
 func (c *Committee) RegisterFuncitons(getTxReference func(tx *types.Transaction) (
-	map[*types.Input]*types.Output, error)) {
+	map[*types.Input]*types.Output, error),
+	getBalanceFromProgramHashAndHeight func(programHash common.Uint168,
+		assetID common.Uint256, height uint32) (common.Fixed64, error)) {
 	c.state.RegisterFunctions(&FunctionsConfig{
 		TryStartVotingPeriod:    c.tryStartVotingPeriod,
 		ProcessImpeachment:      c.processImpeachment,
@@ -514,6 +533,7 @@ func (c *Committee) RegisterFuncitons(getTxReference func(tx *types.Transaction)
 		GetHistoryMember:        c.getHistoryMember,
 		GetTxReference:          getTxReference,
 	})
+	c.getBalanceFromProgramHashAndHeight = getBalanceFromProgramHashAndHeight
 }
 
 func NewCommittee(params *config.Params) *Committee {

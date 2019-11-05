@@ -50,8 +50,8 @@ type KeyFrame struct {
 	LastVotingStartHeight  uint32
 	InElectionPeriod       bool
 	NeedAppropriation      bool
-	CRCFoundationAmount    common.Fixed64
-	CRCCommitteeAmount     common.Fixed64
+	CRCFoundationBalance   common.Fixed64
+	CRCCommitteeBalance    common.Fixed64
 	CRCCommitteeUsedAmount common.Fixed64
 }
 
@@ -204,7 +204,7 @@ func (k *KeyFrame) Serialize(w io.Writer) (err error) {
 
 	return common.WriteElements(w, k.LastCommitteeHeight,
 		k.LastVotingStartHeight, k.InElectionPeriod, k.NeedAppropriation,
-		k.CRCFoundationAmount, k.CRCCommitteeAmount, k.CRCCommitteeUsedAmount)
+		k.CRCFoundationBalance, k.CRCCommitteeBalance, k.CRCCommitteeUsedAmount)
 }
 
 func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
@@ -218,7 +218,7 @@ func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
 
 	err = common.ReadElements(r, &k.LastCommitteeHeight,
 		&k.LastVotingStartHeight, &k.InElectionPeriod, &k.NeedAppropriation,
-		&k.CRCFoundationAmount, &k.CRCCommitteeAmount, &k.CRCCommitteeUsedAmount)
+		&k.CRCFoundationBalance, &k.CRCCommitteeBalance, &k.CRCCommitteeUsedAmount)
 	return
 }
 
