@@ -15,9 +15,6 @@ const user: any = {}
 let DB, mailMethod
 let suggestion
 const suggestionService: any = {}
-const cvoteMemberService: any = {},
-      cvoteCouncilService: any = {},
-      cvoteAdminService: any = {}
 
 beforeAll(async () => {
   DB = await db.create()
@@ -58,17 +55,6 @@ beforeAll(async () => {
   user.council = await userService
     .getDBModel('User')
     .findOne({ _id: council._id })
-
-  //
-  cvoteCouncilService = new CVoteService(DB, {
-    user: user.council
-  })
-  cvoteMemberService = new CVoteService(DB, {
-    user: user.member
-  })
-  cvoteAdminService = new CVoteService(DB, {
-    user: user.admin
-  })
 
   // create suggestion service
   suggestionService.council = new SuggestionService(DB, {
@@ -118,7 +104,11 @@ describe('Tests for CVote', () => {
   //   })
 
   test('council attempt to create a proposal should pass', async () => {
-    const rs: any = await cvoteCouncilService.create(
+    const cvoteService = new CVoteService(DB, {
+      user: user.council
+    })
+
+    const rs: any = await cvoteService.create(
       Object.assign(global.DB.CVOTE_1, {
         createdBy: user.council._id
       })
@@ -133,8 +123,12 @@ describe('Tests for CVote', () => {
   })
 
   test('member attempt to list unpublished proposals should fail', async () => {
+    const cvoteService = new CVoteService(DB, {
+      user: user.member
+    })
+
     try {
-      const rs: any = await cvoteMemberService.list({
+      const rs: any = await cvoteService.list({
         published: false
       })
     } catch (err) {
@@ -144,7 +138,7 @@ describe('Tests for CVote', () => {
     }
 
     try {
-      const rs: any = await cvoteMemberService.list({})
+      const rs: any = await cvoteService.list({})
     } catch (err) {
       expect(err).to.be.equal(
         'cvoteservice.list - unpublished proposals only visible to council/secretary'
@@ -153,8 +147,12 @@ describe('Tests for CVote', () => {
   })
 
   test('admin attempt to publish a proposal should fail', async () => {
+    const cvoteService = new CVoteService(DB, {
+      user: user.admin
+    })
+
     try {
-      const rs: any = await cvoteAdminService.update({
+      const rs: any = await cvoteService.update({
         published: true
       })
     } catch (err) {
@@ -163,7 +161,11 @@ describe('Tests for CVote', () => {
   })
 
   test('council attempt to update a proposal should pass', async () => {
-    const updateRs: any = await cvoteCouncilService.update({
+    const cvoteService = new CVoteService(DB, {
+      user: user.council
+    })
+
+    const updateRs: any = await cvoteService.update({
       _id: cvote1._id,
       published: true
     })
@@ -182,7 +184,7 @@ describe('Tests for CVote', () => {
       budget: `${uuidVal} - budget`,
       plan: `${uuidVal} - plan`
     }
-    const updateRs2: any = await cvoteCouncilService.update(updateObj)
+    const updateRs2: any = await cvoteService.update(updateObj)
 
     expect(updateRs2.title).to.equal(global.DB.CVOTE_1.title)
     expect(updateRs2.abstract).to.equal(updateObj.abstract)
@@ -196,7 +198,11 @@ describe('Tests for CVote', () => {
   // TODO: council changing vote of other member should fail
 
   test('member attempt to list published proposals should pass', async () => {
-    const rs: any = await cvoteMemberService.list({
+    const cvoteService = new CVoteService(DB, {
+      user: user.member
+    })
+
+    const rs: any = await cvoteService.list({
       published: true
     })
 
@@ -206,7 +212,11 @@ describe('Tests for CVote', () => {
   test('council attempt to make suggestion to proposal should pass', async () => {
     // get suggestion
     // create proposal with suggestion info
-    const rs: any = await cvoteCouncilService.create(
+    const cvoteService = new CVoteService(DB, {
+      user: user.council
+    })
+
+    const rs: any = await cvoteService.create(
       Object.assign(global.DB.CVOTE_1, {
         createdBy: user.council._id,
         suggestionId: suggestion._id
@@ -222,13 +232,16 @@ describe('Tests for CVote', () => {
   })
 
   test('council attempt to delete a draft proposal should pass', async () => {
+    const cvoteService = new CVoteService(DB, {
+      user: user.council
+    })
     // find a draft proposal document
     const cvote = await DB.getModel('CVote').findOne({
       status: constant.CVOTE_STATUS.DRAFT
     })
     // make sure the draft proposal exists
     expect(cvote.status).to.be.equal(constant.CVOTE_STATUS.DRAFT)
-    const rs: any = await cvoteCouncilService.deleteDraft({
+    const rs: any = await cvoteService.deleteDraft({
       _id: cvote._id
     })
     expect(rs.deletedCount).to.be.equal(1)
