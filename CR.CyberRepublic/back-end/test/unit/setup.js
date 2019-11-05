@@ -3,7 +3,7 @@ const {constant} = require('../../src/constant')
 
 global.DB = {
     MEMBER_USER : {
-        username: 'test_member',
+        username: `test_member`,
         password: 'ebp12345',
         email: 'clarence+test_member@elastosjs.com',
         firstName: 'Hello',
@@ -12,7 +12,7 @@ global.DB = {
         city: 'Vancouver'
     },
     ORGANIZER_USER : {
-        username: 'test_organizer',
+        username: `test_organizer`,
         password: 'ebp12345',
         email: 'clarence+test_organizer@elastosjs.com',
         firstName: 'Clarence',
@@ -22,7 +22,7 @@ global.DB = {
     },
     COUNCIL_USER: {
         // _id: {"$oid": '5b28be2784f6f900350d30b9'},
-        username: 'kevinzhang',
+        username: `kevinzhang`,
         password: 'ebp12345',
         email: 'clarence+kevinzhang@elastosjs.com',
         firstName: 'Kevin',
@@ -31,7 +31,7 @@ global.DB = {
         city: 'Fremont'
     },
     SECRETARY_USER: {
-        username: 'rebeccazhu',
+        username: `rebeccazhu`,
         password: 'ebp12345',
         email: 'rebeccazhu@elastosjs.com',
         firstName: 'Rebecca',
