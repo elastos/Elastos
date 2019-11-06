@@ -3,7 +3,7 @@
         "Magic": 7630403,
         "Version": 0,
         "PrintLevel": 1,
-        "SpvPrintLevel": 4,
+        "SpvPrintLevel": 1,
         "MaxLogsSize": 0,
         "MaxPerLogSize": 0,
         "MainNode": {
@@ -29,7 +29,7 @@
                 },
                 "ExchangeRate": 1.0,
                 "GenesisBlock": "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3",
-                "MiningAddr": "ENTmN8H9WEQjiR5aZyHHSErUDb24PtgeKf",
+                "MiningAddr": "ESYtZyv2Gs34hKhweqEmP94jyNKLksAZYS",
                 "PayToAddr": "ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
                 "PowChain": true
             },
@@ -42,7 +42,7 @@
                 },
                 "ExchangeRate": 1.0,
                 "GenesisBlock":"b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
-                "MiningAddr":"EHnxz2oRXehfAy5QrCH7gqZtUZQPx7hprH",
+                "MiningAddr":"EaL4bVNu41k5jzNHmRSdaLPhR7naTHMM5g",
                 "PayToAddr":"ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
                 "PowChain":true
             },
@@ -55,7 +55,7 @@
                 },
                 "ExchangeRate": 1.0,
                 "GenesisBlock":"d73750fe6943983f7844b6b951318ff0540adf74ff513fcd69a1bbd458a5b286",
-                "MiningAddr":"EcUt3XJfTdc1APi8uiaoGPZhqPm47iixHL",
+                "MiningAddr":"EdzSp5NCHs98cN7SWZBsopcrUMkmStHgYP",
                 "PayToAddr":"ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
                 "PowChain":false
             }

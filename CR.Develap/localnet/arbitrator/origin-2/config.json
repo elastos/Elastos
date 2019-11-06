@@ -29,7 +29,7 @@
                 },
                 "ExchangeRate": 1.0,
                 "GenesisBlock": "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3",
-                "MiningAddr": "EL8Zg6LiLPaC9eDQYre3syTqv2vBBig9Nd",
+                "MiningAddr": "ESd4ixynoKZYq5YkKueeQ6ZfucxrnRzZco",
                 "PayToAddr": "ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
                 "PowChain": true
             },
@@ -42,7 +42,7 @@
                 },
                 "ExchangeRate": 1.0,
                 "GenesisBlock":"b569111dfb5e12d40be5cf09e42f7301128e9ac7ab3c6a26f24e77872b9a730e",
-                "MiningAddr":"EXPtrFJSC689BEq8xfM6EBqoXJaNGmWSkc",
+                "MiningAddr":"EUy1tGjcazKVDVygzUQpca5QpWLLAsrbwX",
                 "PayToAddr":"ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
                 "PowChain":true
             },
@@ -55,7 +55,7 @@
                 },
                 "ExchangeRate": 1.0,
                 "GenesisBlock":"d73750fe6943983f7844b6b951318ff0540adf74ff513fcd69a1bbd458a5b286",
-                "MiningAddr":"EVLZwETnLAuHi4odLyEbwfxLLHapQheRt3",
+                "MiningAddr":"EXpFWvBUHq8YpAeBPQo3DdY9bRUZXbQk7i",
                 "PayToAddr":"ETCkrXyyK4Gq3CePy5xdtVDJWkFJr3mMqJ",
                 "PowChain":false
             }
