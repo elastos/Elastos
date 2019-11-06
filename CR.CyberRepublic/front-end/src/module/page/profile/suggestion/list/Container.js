@@ -6,8 +6,6 @@ import Component from './Component'
 
 const mapState = (state) => {
   const currentUserId = state.user.current_user_id
-  // const isAdmin = state.user.role === USER_ROLE.ADMIN
-
   const suggestionState = {
     ...state.suggestion,
     dataList: state.suggestion.my_suggestions,
@@ -24,21 +22,11 @@ const mapDispatch = () => {
 
   return {
     async getList(query) {
-      return service.myList({
-        status: SUGGESTION_STATUS.ACTIVE,
-        ...query,
-      })
-    },
-
-    async loadMore(query) {
-      return service.loadMore({
-        status: SUGGESTION_STATUS.ACTIVE,
-        ...query,
-      })
+      return service.myList(query)
     },
 
     resetAll() {
-      return service.resetAll()
+      return service.resetMyList()
     },
   }
 }

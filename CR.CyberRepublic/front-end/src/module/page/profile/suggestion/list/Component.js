@@ -2,9 +2,7 @@ import React from 'react'
 import _ from 'lodash'
 import MediaQuery from 'react-responsive'
 import ProfilePage from '@/module/page/ProfilePage'
-import {
-  Col, Row, Select, Button, Table,
-} from 'antd'
+import { Col, Row, Select, Button, Table } from 'antd'
 import moment from 'moment/moment'
 import I18N from '@/I18N'
 import Footer from '@/module/layout/Footer/Container'
@@ -18,6 +16,7 @@ const FILTERS = {
   CREATED: 'createdBy',
   COMMENTED: 'commented',
   SUBSCRIBED: 'subscribed',
+  ARCHIVED: 'archived'
 }
 
 const FILTERS_TEXT = {
@@ -25,6 +24,7 @@ const FILTERS_TEXT = {
   CREATED: 'suggestion.addedByMe',
   COMMENTED: 'suggestion.commentedByMe',
   SUBSCRIBED: 'suggestion.subscribed',
+  ARCHIVED: 'suggestion.archived'
 }
 
 export default class extends ProfilePage {
@@ -35,7 +35,7 @@ export default class extends ProfilePage {
       page: 1,
       results: 10,
       showMobile: false,
-      filter: FILTERS.ALL,
+      filter: FILTERS.ALL
     }
   }
 
@@ -58,7 +58,11 @@ export default class extends ProfilePage {
       </Col>
     )
     const body = (
-      <Col sm={24} md={20} className="c_ProfileContainer admin-right-column wrap-box-user">
+      <Col
+        sm={24}
+        md={20}
+        className="c_ProfileContainer admin-right-column wrap-box-user"
+      >
         {headerNode}
         {actionsNode}
         {listNode}
@@ -80,7 +84,9 @@ export default class extends ProfilePage {
 
   renderHeader() {
     return (
-      <h2 className="title komu-a cr-title-with-icon">{this.props.header || I18N.get('profile.suggestion').toUpperCase()}</h2>
+      <h2 className="title komu-a cr-title-with-icon">
+        {this.props.header || I18N.get('profile.suggestion').toUpperCase()}
+      </h2>
     )
   }
 
@@ -90,35 +96,45 @@ export default class extends ProfilePage {
         title: <span>#</span>,
         dataIndex: 'displayId',
         sorter: (a, b) => a.displayId - b.displayId,
-        defaultSortOrder: 'descend',
-      }, {
+        defaultSortOrder: 'descend'
+      },
+      {
         title: I18N.get('suggestion.subject'),
         dataIndex: 'title',
         // width: '50%',
         className: 'fontWeight500 allow-wrap',
-        render: (title, data) => <a onClick={() => this.gotoDetail(data._id)} className="tableLink">{title}</a>,
-      }, {
+        render: (title, data) => (
+          <a onClick={() => this.gotoDetail(data._id)} className="tableLink">
+            {title}
+          </a>
+        )
+      },
+      {
         title: <span>{I18N.get('suggestion.likes')}</span>,
         dataIndex: 'likesNum',
-        sorter: (a, b) => a.likesNum - b.likesNum,
-      }, {
+        sorter: (a, b) => a.likesNum - b.likesNum
+      },
+      {
         title: <span>{I18N.get('suggestion.dislikes')}</span>,
         dataIndex: 'dislikesNum',
-        sorter: (a, b) => a.dislikesNum - b.dislikesNum,
-      }, {
+        sorter: (a, b) => a.dislikesNum - b.dislikesNum
+      },
+      {
         title: <span>{I18N.get('suggestion.comments')}</span>,
         dataIndex: 'commentsNum',
-        sorter: (a, b) => a.commentsNum - b.commentsNum,
-      }, {
+        sorter: (a, b) => a.commentsNum - b.commentsNum
+      },
+      {
         title: <span>{I18N.get('suggestion.activeness')}</span>,
         dataIndex: 'activeness',
-        sorter: (a, b) => a.activeness - b.activeness,
-      }, {
+        sorter: (a, b) => a.activeness - b.activeness
+      },
+      {
         title: <span>{I18N.get('suggestion.created')}</span>,
         dataIndex: 'createdAt',
         render: createdAt => moment(createdAt).format('MMM D'),
-        sorter: (a, b) => moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf(),
-      },
+        sorter: (a, b) => moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf()
+      }
     ]
     return columns
   }
@@ -144,9 +160,12 @@ export default class extends ProfilePage {
           <Button.Group className="filter-group">
             {_.map(FILTERS, (value, key) => (
               <Button
+                type="link"
                 key={value}
                 onClick={() => this.onFilterChanged(value)}
-                className={(this.state.filter === value && 'cr-strikethrough') || ''}
+                className={
+                  (this.state.filter === value && 'cr-strikethrough') || ''
+                }
               >
                 {I18N.get(FILTERS_TEXT[key])}
               </Button>
@@ -164,80 +183,80 @@ export default class extends ProfilePage {
     return (
       <Table
         columns={columns}
-        onRow={record => ({ onMouseEnter: event => this.setState({ currRowId: record._id }) })}
         rowKey={item => item._id}
         dataSource={dataList}
         loading={loading}
         onChange={this.onTableChanged}
         pagination={{
+          current: this.state.page,
           pageSize: this.state.results,
           total: loading ? 0 : total,
-          onChange: this.loadPage,
+          onChange: this.loadPage
         }}
       />
     )
   }
 
-    onTableChanged = (pagination, filters, sorter) => {
-      this.setState({
-        filteredInfo: filters,
-        pagination,
-      })
-    }
+  onTableChanged = (pagination, filters, sorter) => {
+    this.setState({
+      filteredInfo: filters,
+      pagination
+    })
+  }
 
+  // TODO
+  onSortByChanged = sortBy => this.setState({ sortBy }, this.refetch)
+
+  onFilterChanged = filter => this.setState({ filter, page: 1 }, this.refetch)
+
+  /**
+   * Builds the query from the current state
+   */
+  getQuery = () => {
+    const { currentUserId: profileListFor } = this.props
+    const { filter, page, results } = this.state
+    const query = {
+      profileListFor,
+      filter,
+      page,
+      results
+    }
     // TODO
-    onSortByChanged = sortBy => this.setState({ sortBy }, this.refetch)
-
-    onFilterChanged = filter => this.setState({ filter }, this.refetch)
-
-    /**
-     * Builds the query from the current state
-     */
-    getQuery = () => {
-      const { currentUserId: profileListFor } = this.props
-      const { filter, page, results } = this.state
-      const query = {
-        profileListFor,
-        filter,
-        page,
-        results,
-      }
-      // TODO
-      if (this.state.sortBy) {
-        query.sortBy = this.state.sortBy
-      }
-
-      return query
+    if (this.state.sortBy) {
+      query.sortBy = this.state.sortBy
     }
 
-    /**
-     * Refetch the data based on the current state retrieved from getQuery
-     */
-    refetch = () => {
-      const query = this.getQuery()
-      this.props.getList(query)
+    return query
+  }
+
+  /**
+   * Refetch the data based on the current state retrieved from getQuery
+   */
+  refetch = () => {
+    const query = this.getQuery()
+    this.props.getList(query)
+  }
+
+  loadPage = async page => {
+    const query = {
+      ...this.getQuery(),
+      page,
+      results: this.state.results
     }
 
-    loadPage = async (page) => {
-      const query = {
-        ...this.getQuery(),
-        page,
-        results: this.state.results,
-      }
+    this.setState({ loadingMore: true })
 
-      this.setState({ loadingMore: true })
-
-      try {
-        await this.props.loadMore(query)
-        this.setState({ page })
-      } catch (e) {
-        // Do not update page in state if the call fails
-      }
-
-      this.setState({ loadingMore: false })
+    try {
+      await this.props.getList(query)
+      this.setState({ page })
+    } catch (e) {
+      // Do not update page in state if the call fails
     }
 
-    gotoDetail(id) {
-      this.props.history.push(`/suggestion/${id}`)
-    }
+    this.setState({ loadingMore: false })
+  }
+
+  gotoDetail(id) {
+    this.props.history.push(`/suggestion/${id}`)
+  }
 }

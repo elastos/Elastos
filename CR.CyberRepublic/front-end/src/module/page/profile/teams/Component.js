@@ -162,7 +162,7 @@ export default class extends ProfilePage {
                       {_.map(FILTERS, (filter, key) => {
                         return (
                           <Select.Option key={filter} value={filter}>
-                            {key}
+                            {I18N.get(`myrepublic.teams.${filter}`)}
                           </Select.Option>
                         )
                       })}
@@ -287,7 +287,13 @@ export default class extends ProfilePage {
                 <Divider type="vertical"/>
                 <Avatar size="large" icon="user" src={ownerProfile.avatar}/>
               </a>
-              <Button type="primary" className="pull-right" onClick={this.linkTeamDetail.bind(this, item.id)}>View</Button>
+              <Button
+                type="primary"
+                className="pull-right"
+                onClick={this.linkTeamDetail.bind(this, item.id)}
+              >
+                {I18N.get('profile.view')}
+              </Button>
             </div>
           </List.Item>
         </MediaQuery>

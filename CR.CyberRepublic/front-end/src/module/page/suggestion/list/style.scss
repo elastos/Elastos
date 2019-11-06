@@ -2,21 +2,17 @@
 @import "@/style/color";
 
 .p_SuggestionList {
-
-  .header-actions-container {
-    margin-bottom: 40px;
-  }
   .ant-btn {
     border: 0;
     border-radius: 0;
   }
-  .btn-create-suggestion .ant-btn {
+  .btn-create-suggestion.ant-btn {
     background: $cr_btn_primary;
     color: white;
     cursor: pointer;
   }
 
-  .btn-view-archived .ant-btn {
+  .btn-view-archived.ant-btn {
     background: $bg_lighter_gray;
     color: $text_dark_gray;
     margin-right: 12px;
@@ -24,7 +20,8 @@
     cursor: pointer;
   }
 
-  .ant-btn-group > .ant-btn:first-child:not(:last-child), .ant-btn-group > span:first-child:not(:last-child) > .ant-btn {
+  .ant-btn-group > .ant-btn:first-child:not(:last-child),
+  .ant-btn-group > span:first-child:not(:last-child) > .ant-btn {
     border-radius: 0;
   }
   .list-container {
@@ -32,7 +29,7 @@
   }
   .item-container {
     padding: 30px 0 15px;
-
+    
     @media only screen and (max-width: $mobile-width) {
       padding-bottom: 8px;
     }

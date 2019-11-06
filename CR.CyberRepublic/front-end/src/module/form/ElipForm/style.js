@@ -101,3 +101,79 @@ export const Status = styled.div`
     font-size: 14px;
   }
 `
+export const Text = styled.div`
+  text-align: center;
+`
+export const TabText = styled.span`
+  ${props => props.hasErr && `
+    color: red;
+  `}
+`
+export const TabPaneInner = styled.div`
+  margin: 40px;
+`
+export const Note = styled.div`
+  margin-bottom: 15px;
+`
+export const RadioCardPanel = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+`
+export const RadioCardItem = styled.div`
+    border: 1px solid #CCCCCC;
+    box-sizing: border-box;
+    margin-right: 20px;
+    :last-child {
+      margin-right: 0px;
+    }
+    &.small-label {
+      width: 27%;
+    }
+    &.large-label {
+      width: 39%;
+    }
+    &.radio-card-check {
+      border-color: #008D85;
+      background-color: rgba(29, 233, 182, 0.1);
+    }
+    @media only screen and (max-width: 1200px) {
+      margin-right: 0px;
+      margin-bottom: 20px;
+      :last-child {
+        margin-bottom: 0px;
+      }
+      &.small-label {
+        width: 85%;
+      }
+      &.large-label {
+        width: 85%;
+      }
+    }
+    @media only screen and (max-width: ${breakPoint.mobile}) {
+      &.small-label {
+        width: 95%;
+      }
+      &.large-label {
+        width: 95%;
+      }
+    }
+`
+export const RadioCardLabel = styled.label`
+    display: inline-block;
+    cursor: pointer;
+    padding: 30px;
+`
+export const RadioCardSpan = styled.span`
+  .ant-typography {
+    font-family: Synthese;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .radio-card-check {
+    font-weight: bold;
+    font-size: 25px;
+    color: #008D85;
+  }
+`

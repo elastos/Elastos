@@ -113,14 +113,18 @@ const en = {
   'login.success': 'Login Successful',
 
   'mentions.notFound': 'User not found',
+  
+  'meta.postedBy': 'Posted By',
+  'image.upload.type.error': 'The upload file is not an image.',
+  'image.upload.size.error': 'The maximum upload file size is less than 500KB.',
 
-  comments: 'Comments',
+  'comments': 'Comments',
   'comments.posts': 'Posts',
   'comments.post': 'Post',
   'comments.noComments': `No comments yet, `,
   'comments.signIn': 'sign in ',
   'comments.firstToPost': 'to be the first to post!',
-  'comments.commentsOrUpdates': 'Comments or updates',
+  'comments.placeholder': 'Leave a comment',
   // Admin tasks
   'admin.tasks.status': 'Status',
 
@@ -223,7 +227,6 @@ const en = {
   'suggestion.suggestion': 'Suggestion',
   'suggestion.referred': 'Referred in',
   'suggestion.title': 'Suggestions',
-  'suggestion.listTitle': 'Suggestions',
   'suggestion.add': 'Add a Suggestion',
   'suggestion.sort': 'Sort by',
   'suggestion.likes': 'Most Popular',
@@ -450,6 +453,8 @@ const en = {
   'myrepublic.projects.active': 'Active',
   'myrepublic.projects.applied': 'Applied',
   'myrepublic.projects.subscribed': 'Subscribed',
+  'myrepublic.projects.liked': 'Liked',
+  'myrepublic.projects.cr100': 'CR100',
   'myrepublic.projects.create': 'Create Project',
   'myrepublic.projects.create.cr100': 'Create CR100',
 
@@ -744,6 +749,9 @@ const en = {
   'council.voting.type.newMotion': 'New Motion',
   'council.voting.type.motionAgainst': 'Motion Against',
   'council.voting.type.anythingElse': 'Anything Else',
+  'council.voting.type.standardTrack': 'Standards Tracking ELIP',
+  'council.voting.type.information': 'Information ELIP',
+  'council.voting.type.process': 'Process ELIP',
   'council.voting.type.support': 'Yes',
   'council.voting.type.reject': 'No',
   'council.voting.type.abstention': 'Abstained',
@@ -1086,6 +1094,21 @@ const en = {
   'profile.social.header': 'Social Profile',
   'profile.portfolio': 'Portfolio',
 
+  'profile.tasks.filter.all': 'All',
+  'profile.tasks.filter.need_approval': 'Need Approval',
+  'profile.tasks.filter.owned': 'Owned',
+  'profile.tasks.filter.active': 'Active',
+  'profile.tasks.filter.applied': 'Applied',
+  'profile.tasks.filter.subscribed': 'Subscribed',
+
+  'profile.submission.filter.all': 'All',
+  'profile.submission.filter.created': 'Created',
+  'profile.submission.filter.subscribed': 'Subscribed',
+
+  'profile.submission.table.title': 'Title',
+  'profile.submission.table.type': 'Type',
+  'profile.submission.table.created': 'Created',
+
   // Validate Form
   'ambassadors.form.required': 'This must be filled out',
   'ambassadors.form.reason.max': 'Reason too long',
@@ -1146,9 +1169,12 @@ const en = {
   'profile.detail.yes': 'Yes',
   'profile.detail.no': 'No',
 
+  'profile.popover.email': 'Email',
+  'profile.popover.name': 'Name',
+  'profile.popover.copy': 'Copy',
+  'profile.popover.viewProfile': 'View Profile',
+
   // Module form
-  'from.CVoteForm.upload.type.error': 'The upload file is not an image.',
-  'from.CVoteForm.upload.size.error': 'The maximum upload file size is less than 500KB.',
   'from.CVoteForm.message.delete.success': 'Delete success',
   'from.CVoteForm.message.updated.success': 'Update success',
   'from.CVoteForm.message.create.success': 'Create success',

@@ -8,20 +8,17 @@ import {
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery, logger } from '@/util'
-import StandardPage from '../../StandardPage'
+import StandardPage from '@/module/page/StandardPage'
 import Footer from '@/module/layout/Footer/Container'
-import MySuggestion from '../my_list/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import TagsContainer from '../common/tags/Container'
-import suggestionImg from '@/assets/images/SuggestionToProposal.png'
-import suggestionZhImg from '@/assets/images/SuggestionToProposal.zh.png'
-import { SUGGESTION_STATUS, CONTENT_TYPE, SUGGESTION_TAG_TYPE } from '@/constant'
+import { SUGGESTION_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
-import DraftEditor from '@/module/common/DraftEditor'
-import MediaQuery from 'react-responsive'
-import { LG_WIDTH } from '@/config/constant'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
+import PageHeader from './PageHeader'
+import SearchBox from './SearchBox'
 
 import './style.scss'
 
@@ -38,7 +35,6 @@ const DEFAULT_SORT = SORT_BY.createdAt
  * we do some different things such as only loading the data from the server
  */
 export default class extends StandardPage {
-
   constructor(props) {
     super(props)
 
@@ -55,7 +51,10 @@ export default class extends StandardPage {
       showMobile: false,
       results: 10,
       total: 0,
+      search: '',
+      filter: ''
     }
+    this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
 
   componentDidMount() {
@@ -67,14 +66,13 @@ export default class extends StandardPage {
     this.props.resetAll()
   }
 
+
   ord_renderContent() {
     const headerNode = this.renderHeader()
-    const addButtonNode = this.renderAddButton()
-    const viewArchivedButtonNode = this.renderArchivedButton()
-    const actionsNode = this.renderHeaderActions()
     const filterNode = this.renderFilters()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
+    const sortActionsNode = this.renderSortActions()
 
     return (
       <div>
@@ -82,55 +80,51 @@ export default class extends StandardPage {
           {headerNode}
         </div>
         <SuggestionContainer className="p_SuggestionList">
-          <MediaQuery maxWidth={LG_WIDTH}>
-            {this.state.showArchived === false ? (
-              <Row>
-                <Col>
-                  {addButtonNode}
-                  {viewArchivedButtonNode}
-                </Col>
-              </Row>
-            ) :
-              <Row/>
-            }
-            <Row>
-              <Col>
-                <br />
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                {actionsNode}
-                {filterNode}
-                {listNode}
-              </Col>
-            </Row>
-            <Row/>
-          </MediaQuery>
-          <MediaQuery minWidth={LG_WIDTH + 1}>
-            <Row gutter={24}>
-              <Col span={16}>{actionsNode}</Col>
-              <Col span={8}>
-                {addButtonNode}
-                {viewArchivedButtonNode}
-              </Col>
-            </Row>
-            <Row gutter={24}>
-              <Col span={24}>
-                {filterNode}
-              </Col>
-            </Row>
-            <Row gutter={24}>
-              <Col span={24}>
-                {listNode}
-              </Col>
-            </Row>
-          </MediaQuery>
+          <Row
+            type="flex"
+            justify="space-between"
+            align="middle"
+            style={{margin: '24px 0 48px'}}
+          >
+            <Col xs={24} sm={12} style={{ paddingTop: 24 }}>
+              <SearchBox search={this.handleSearch} value={this.state.search} />
+            </Col>
+            <Col xs={24} sm={12} style={{textAlign: 'right', paddingTop: 24}}>
+              <Button onClick={this.toggleArchivedList} className="btn-view-archived">
+                {this.state.showArchived === false ?
+                  I18N.get('suggestion.viewArchived') :
+                  I18N.get('suggestion.viewAll')
+                }
+              </Button>
+              <Button onClick={this.showCreateForm} className="btn-create-suggestion">
+                {I18N.get('suggestion.add')}
+              </Button>
+            </Col>
+          </Row>
+          <Row
+            type="flex"
+            justify="space-between"
+            align="middle"
+            style={{ borderBottom: '1px solid #E5E5E5'}}
+          >
+            <Col md={24} xl={18} style={{ paddingBottom: 24 }}>{filterNode}</Col>
+            <Col md={24} xl={6} style={{ paddingBottom: 24, textAlign: 'right' }}>{sortActionsNode}</Col>
+          </Row>
+          
+          <Row gutter={24} style={{marginTop: 32}}>
+            <Col span={24}>
+              {listNode}
+            </Col>
+          </Row>
           {createForm}
         </SuggestionContainer>
         <Footer />
       </div>
     )
+  }
+
+  handleSearch = (filter, search) => {
+    this.setState({ search, filter }, this.debouncedRefetch)
   }
 
   onFormSubmit = async (param) => {
@@ -203,41 +197,37 @@ export default class extends StandardPage {
 
         <HeaderDiagramContainer>
           <SuggestionContainer>
-            <img src={I18N.getLang() === 'zh' ? suggestionZhImg : suggestionImg}/>
+            <PageHeader />
+            <HeaderDesc>
+              {I18N.get('suggestion.intro.1')}
+              <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
+              {I18N.get('suggestion.intro.1.1')}
+              <br />
+              <br />
+              {I18N.get('suggestion.intro.3')}
+              {localStorage.getItem('lang') === 'en' ? (
+                <a
+                  href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
+                  target="_blank"
+                >
+                  https://www.cyberrepublic.org/docs/#/guide/suggestions
+              </a>
+              ) : (
+                  <a
+                    href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
+                    target="_blank"
+                  >
+                    https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
+              </a>
+                )}
+            </HeaderDesc>
           </SuggestionContainer>
         </HeaderDiagramContainer>
-
-        <SuggestionContainer>
-          <HeaderDesc>
-            {I18N.get('suggestion.intro.1')}
-            <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
-            {I18N.get('suggestion.intro.1.1')}
-            <br/>
-            <br/>
-            {I18N.get('suggestion.intro.3')}
-            {localStorage.getItem('lang') === 'en' ? (
-              <a
-                href="https://www.cyberrepublic.org/docs/#/guide/suggestions"
-                target="_blank"
-              >
-                https://www.cyberrepublic.org/docs/#/guide/suggestions
-              </a>
-            ) : (
-              <a
-                href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
-                target="_blank"
-              >
-                https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
-              </a>
-            )}
-          </HeaderDesc>
-        </SuggestionContainer>
       </div>
     )
   }
 
-  // list header
-  renderHeaderActions() {
+  renderSortActions() {
     const SORT_BY_TEXT = {
       createdAt: I18N.get('suggestion.new'),
       likesNum: I18N.get('suggestion.likes'),
@@ -246,97 +236,47 @@ export default class extends StandardPage {
     }
     const sortBy = this.props.sortBy || DEFAULT_SORT
     return (
-      <div className="header-actions-container">
-        <div>
-          <h2 className="title komu-a">
-            {this.state.showArchived === false ?
-              I18N.get('suggestion.listTitle').toUpperCase() :
-              I18N.get('suggestion.archived').toUpperCase()
-            }
-          </h2>
-        </div>
-        <MediaQuery maxWidth={LG_WIDTH}>
-          {I18N.get('suggestion.sort')}: &nbsp;
-          <Select
-            name="type"
-            style={{width: 200}}
-            onChange={this.onSortByChanged}
-            value={sortBy}
-          >
-            {_.map(SORT_BY, value => (
-              <Select.Option key={value} value={value}>
-                {SORT_BY_TEXT[value]}
-              </Select.Option>
-            ))}
-          </Select>
-        </MediaQuery>
-        <MediaQuery minWidth={LG_WIDTH + 1}>
-          {I18N.get('suggestion.sort')}: &nbsp;
-          <Button.Group className="filter-group">
-            {_.map(SORT_BY, value => (
-              <Button
-                key={value}
-                onClick={() => this.onSortByChanged(value)}
-                className={(sortBy === value && 'cr-strikethrough') || ''}
-              >
-                {SORT_BY_TEXT[value]}
-              </Button>
-            ))}
-          </Button.Group>
-        </MediaQuery>
+      <div>
+        {I18N.get('suggestion.sort')}: {' '}
+        <Select
+          name="type"
+          style={{width: 200, marginLeft: 16}}
+          onChange={this.onSortByChanged}
+          value={sortBy}
+        >
+          {_.map(SORT_BY, value => (
+            <Select.Option key={value} value={value}>
+              {SORT_BY_TEXT[value]}
+            </Select.Option>
+          ))}
+        </Select>
       </div>
     )
   }
 
-  renderAddButton() {
-    return (
-      <AddButtonContainer className="pull-right filter-group btn-create-suggestion">
-        <Button onClick={this.showCreateForm}>
-          {I18N.get('suggestion.add')}
-        </Button>
-      </AddButtonContainer>
-    )
-  }
-
-  renderArchivedButton() {
-    return (
-      <AddButtonContainer className="pull-right filter-group btn-view-archived">
-        <Button onClick={this.toggleArchivedList}>
-          {this.state.showArchived === false ?
-            I18N.get('suggestion.viewArchived') :
-            I18N.get('suggestion.viewAll')
-          }
-        </Button>
-      </AddButtonContainer>
-    )
-  }
-
   renderFilters() {
-
     const {
       tagsIncluded: {
         infoNeeded,
         underConsideration
       }
     } = this.props
-
+    
     return (
-      <Row>
-        <Col sm={24} md={3}>
-          <span>
-            {I18N.get('suggestion.tag.show')}:
-          </span>
+      <Row type="flex" align="middle">
+        <Col xs={24} sm={24} md={2}>
+          {I18N.get('suggestion.tag.show')}:
         </Col>
-        <Col sm={24} md={7}>
-          <Checkbox defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange}/>
+        <Col xs={24} sm={24} md={7}>
+          <Checkbox defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange} />
           <CheckboxText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</CheckboxText>
         </Col>
-        <Col sm={24} md={7}>
-          <Checkbox defaultChecked={infoNeeded} onChange={this.onInfoNeededChange}/>
+        <Col xs={24} sm={24} md={7}>
+          <Checkbox defaultChecked={infoNeeded} onChange={this.onInfoNeededChange} />
           <CheckboxText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</CheckboxText>
         </Col>
-        <Col sm={24} md={7}>
-          <Checkbox defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange}/>
+        <Col xs={24} sm={24} md={7}>
+          <Checkbox defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange} />
           <CheckboxText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</CheckboxText>
         </Col>
       </Row>
@@ -407,7 +347,7 @@ export default class extends StandardPage {
         {title}
         {tagsNode}
         <ShortDesc>
-          <DraftEditor value={data.abstract} editorEnabled={false} contentType={CONTENT_TYPE.MARKDOWN} />
+          <MarkdownPreview content={data.abstract} />
           {_.isArray(data.link) && (data.link.map((link) => {
             return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
           }))}
@@ -442,8 +382,6 @@ export default class extends StandardPage {
 
   renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
 
-  renderMySuggestion = () => <MySuggestion />
-
   onSortByChanged = async (sortBy) => {
     await this.props.onSortByChanged(sortBy)
     await this.refetch()
@@ -455,7 +393,7 @@ export default class extends StandardPage {
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page } = this.props
-    const { results, referenceStatus} = this.state
+    const { results, referenceStatus, search, filter } = this.state
     const query = {
       status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
@@ -492,6 +430,13 @@ export default class extends StandardPage {
       query.sortBy = sortBy
     }
 
+    if (search) {
+      query.search = search
+    }
+
+    if (filter) {
+      query.filter = filter
+    }
     return query
   }
 
@@ -529,10 +474,10 @@ export default class extends StandardPage {
 
 const HeaderDiagramContainer = styled.div`
   background-color: #162f45;
+  padding-top: 36px;
   padding-bottom: 36px;
   img {
     max-height: 250px;
-
     @media only screen and (max-width: ${breakPoint.lg}) {
       width: 100%;
     }
@@ -578,9 +523,10 @@ const ShortDesc = styled.div`
 `
 
 const HeaderDesc = styled.div`
-  width: 60%;
   font-weight: 200;
   padding: 24px 0;
+  color: #fff;
+  word-break: break-all;
 `
 
 const SuggestionContainer = styled.div`
@@ -590,10 +536,6 @@ const SuggestionContainer = styled.div`
   @media only screen and (max-width: ${breakPoint.xl}) {
     margin: 0 5%;
   }
-`
-
-const AddButtonContainer = styled.div`
-  padding-top: 24px;
 `
 
 const CheckboxText = styled.span`

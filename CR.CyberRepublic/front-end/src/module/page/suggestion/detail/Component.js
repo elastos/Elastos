@@ -21,8 +21,8 @@ import Translation from '@/module/common/Translation/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
-import { CVOTE_STATUS, SUGGESTION_TAG_TYPE, CONTENT_TYPE } from '@/constant'
-import { getHTML } from '@/util/editor'
+import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
+import { convertMarkdownToHtml } from '@/util/markdown-it'
 import { logger } from '@/util'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
@@ -30,9 +30,9 @@ import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
-import DraftEditor from '@/module/common/DraftEditor'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import TagsContainer from '../common/tags/Container'
-import PopoverProfile from '../common/PopoverProfile'
+import PopoverProfile from '@/module/common/PopoverProfile'
 import {
   Container,
   Title,
@@ -46,8 +46,7 @@ import {
   Item,
   ItemTitle,
   ItemText,
-  StyledAnchor,
-  StyledRichContent
+  StyledAnchor
 } from './style'
 
 import './style.scss'
@@ -182,9 +181,9 @@ export default class extends StandardPage {
 
   renderPreambleItem(header, value, item) {
     let text = <ItemText>{value}</ItemText>
-    const { detail, user } = this.props
+    const { detail: { createdBy }, user } = this.props
     if (item === 'username') {
-      text = <PopoverProfile data={detail} user={user} />
+      text = <PopoverProfile owner={createdBy} curUser={user} />
     }
     return (
       <Item>
@@ -257,13 +256,7 @@ export default class extends StandardPage {
             <DescLabel id={section}>
               {I18N.get(`suggestion.fields.${section}`)}
             </DescLabel>
-            <StyledRichContent>
-              <DraftEditor
-                value={detail[section]}
-                editorEnabled={false}
-                contentType={CONTENT_TYPE.MARKDOWN}
-              />
-            </StyledRichContent>
+            <MarkdownPreview content={detail[section] ? detail[section] : ''} />
           </div>
         ))}
       </div>
@@ -367,24 +360,19 @@ export default class extends StandardPage {
 
   renderTranslationBtn() {
     const { detail } = this.props
+    const sections = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
+    const result = sections.map(section => {
+      return `
+        <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
+        <p>${convertMarkdownToHtml(detail[section] ? detail[section] : '')}</p>
+      `
+    }).join('')
     const text = `
       <h3>${detail.title}</h3>
       <br />
       <br />
-      <h2>${I18N.get('suggestion.fields.abstract')}</h2>
-      <p>${getHTML(detail, 'abstract')}</p>
-      <h2>${I18N.get('suggestion.fields.goal')}</h2>
-      <p>${getHTML(detail, 'goal')}</p>
-      <h2>${I18N.get('suggestion.fields.motivation')}</h2>
-      <p>${getHTML(detail, 'motivation')}</p>
-      <h2>${I18N.get('suggestion.fields.plan')}</h2>
-      <p>${getHTML(detail, 'plan')}</p>
-      <h2>${I18N.get('suggestion.fields.relevance')}</h2>
-      <p>${getHTML(detail, 'relevance')}</p>
-      <h2>${I18N.get('suggestion.fields.budget')}</h2>
-      <p>${getHTML(detail, 'budget')}</p>
+      ${result}
     `
-
     return (
       <div style={{ marginTop: 20 }}>
         <Translation text={text} />
@@ -457,6 +445,28 @@ export default class extends StandardPage {
         </StyledButton>
       </Col>
     )
+    const needDueDiligenceBtn = isCouncil && (
+      <Col xs={24} sm={8}>
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          onClick={this.needDueDiligence}
+        >
+          {I18N.get('suggestion.btn.needDueDiligence')}
+        </StyledButton>
+      </Col>
+    )
+    const needAdvisoryBtn = isCouncil && (
+      <Col xs={24} sm={8}>
+        <StyledButton
+          type="ebp"
+          className="cr-btn cr-btn-default"
+          onClick={this.needAdvisory}
+        >
+          {I18N.get('suggestion.btn.needAdvisory')}
+        </StyledButton>
+      </Col>
+    )
 
     const res = (
       <BtnGroup>
@@ -464,6 +474,10 @@ export default class extends StandardPage {
           {considerBtn}
           {needMoreInfoBtn}
           {createFormBtn}
+        </Row>
+        <Row type="flex" justify="start">
+          {needDueDiligenceBtn}
+          {needAdvisoryBtn}
         </Row>
       </BtnGroup>
     )
@@ -605,5 +619,17 @@ export default class extends StandardPage {
       this.setState({ proposeLoading: false })
       logger.error(error)
     }
+  }
+
+  needDueDiligence = async () => {
+    const { _id } = this.props.detail
+    await this.props.needDueDiligence(_id)
+    message.success(I18N.get('suggestion.msg.notify'))
+  }
+
+  needAdvisory = async () => {
+    const { _id } = this.props.detail
+    await this.props.needAdvisory(_id)
+    message.success(I18N.get('suggestion.msg.notify'))
   }
 }

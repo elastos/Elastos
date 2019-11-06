@@ -114,13 +114,17 @@ const zh = {
 
   'mentions.notFound': '该用户不存在',
 
-  comments: '评论',
+  'meta.postedBy': '发布者',
+  'image.upload.type.error': '上传的文件不是图片',
+  'image.upload.size.error': '上传的文件大小不能超过500KB',
+
+  'comments': '评论',
   'comments.posts': '动态',
   'comments.post': '发言',
   'comments.noComments': '还没有评论，',
   'comments.signIn': '注册',
   'comments.firstToPost': '抢沙发！',
-  'comments.commentsOrUpdates': '评论或更新',
+  'comments.placeholder': '说点儿什么',
   // Admin tasks
   'admin.tasks.status': '状态',
 
@@ -221,7 +225,6 @@ const zh = {
   'suggestion.suggestion': '建议',
   'suggestion.referred': '引用在',
   'suggestion.title': '建议',
-  'suggestion.listTitle': '建议',
   'suggestion.add': '添加建议',
   'suggestion.sort': '排序方式',
   'suggestion.likes': '点赞量',
@@ -253,7 +256,7 @@ const zh = {
   'suggestion.summary': '总结',
   'suggestion.dislikes': '踩',
   'suggestion.comments': '评论',
-  'suggestion.created': '创建的',
+  'suggestion.created': '创建日期',
   'suggestion.archived': '归档的',
   'suggestion.archive': '归档',
   'suggestion.unarchive': '取消归档',
@@ -439,6 +442,8 @@ const zh = {
   'myrepublic.projects.active': '进行中的',
   'myrepublic.projects.applied': '已申请',
   'myrepublic.projects.subscribed': '已订阅',
+  'myrepublic.projects.liked': '您喜欢的',
+  'myrepublic.projects.cr100': 'CR100',
   'myrepublic.projects.create': '创建项目',
   'myrepublic.projects.create.cr100': '创建 CR100',
 
@@ -720,6 +725,9 @@ const zh = {
   'council.voting.type.newMotion': '新动议',
   'council.voting.type.motionAgainst': '反对动议',
   'council.voting.type.anythingElse': '其它事宜',
+  'council.voting.type.standardTrack': '标准跟踪 ELIP',
+  'council.voting.type.information': '信息 ELIP',
+  'council.voting.type.process': '流程 ELIP',
   'council.voting.type.support': '赞成',
   'council.voting.type.reject': '否决',
   'council.voting.type.abstention': '弃权',
@@ -1051,6 +1059,21 @@ const zh = {
   'profile.social.header': '社交账号',
   'profile.portfolio': '作品集',
 
+  'profile.tasks.filter.all': '全部',
+  'profile.tasks.filter.need_approval': '需要批准的',
+  'profile.tasks.filter.owned': '您负责的',
+  'profile.tasks.filter.active': '开发中的',
+  'profile.tasks.filter.applied': '已申请',
+  'profile.tasks.filter.subscribed': '已订阅',
+
+  'profile.submission.filter.all': '全部',
+  'profile.submission.filter.created': '已创建',
+  'profile.submission.filter.subscribed': '已订阅',
+
+  'profile.submission.table.title': '标题',
+  'profile.submission.table.type': '类型',
+  'profile.submission.table.created': '创建日期',
+
   // Validate Form
   'ambassadors.form.required': '必填项目',
   'ambassadors.form.reason.max': '原因太长',
@@ -1110,9 +1133,12 @@ const zh = {
   'profile.detail.yes': '是',
   'profile.detail.no': '否',
 
+  'profile.popover.email': '邮箱',
+  'profile.popover.name': '姓名',
+  'profile.popover.copy': '复制',
+  'profile.popover.viewProfile': '查看个人资料',
+
   // Module form
-  'from.CVoteForm.upload.type.error': '上传的文件不是图片',
-  'from.CVoteForm.upload.size.error': '上传的文件大小不能超过500KB',
   'from.CVoteForm.message.delete.success': '删除成功',
   'from.CVoteForm.message.updated.success': '更新成功',
   'from.CVoteForm.message.create.success': '创建成功',

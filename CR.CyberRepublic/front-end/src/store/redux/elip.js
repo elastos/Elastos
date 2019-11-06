@@ -9,7 +9,8 @@ class ElipRedux extends BaseRedux {
     return {
       loading: false,
       data: undefined,
-      detail: {}
+      detail: {},
+      reviews: []
     }
   }
 }

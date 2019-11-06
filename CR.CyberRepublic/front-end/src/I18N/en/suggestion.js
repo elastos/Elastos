@@ -1,4 +1,5 @@
 import { ABSTRACT_MAX_WORDS } from '@/constant'
+import CrProposalPageSvg from '../../module/page/suggestion/list/svg/CrProposalPageSvg';
 
 export default {
   title: {
@@ -28,7 +29,9 @@ export default {
     summary: 'Summary'
   },
   btn: {
-    makeIntoProposal: 'Make Into Proposal'
+    makeIntoProposal: 'Make Into Proposal',
+    needDueDiligence: 'Need Due Diligence',
+    needAdvisory: 'Need Advisory'
   },
   status: {
     posted: 'Posted',
@@ -37,6 +40,7 @@ export default {
     referred: 'Referred in Proposal'
   },
   form: {
+    search: 'Search Suggestions',
     button: {
       continue: 'Continue',
       cancel: 'Cancel',
@@ -88,12 +92,21 @@ export default {
     }
   },
   msg: {
-    consideration: 'Marked as under council consideration'
+    consideration: 'Marked as under council consideration',
+    notify: 'Email was sent to secretary.',
+    archived: 'Suggestion archived, you can find it in My republic later.'
   },
-  popover: {
-    email: 'Email',
-    name: 'Name',
-    copy: 'Copy',
-    viewProfile: 'View Profile'
+  header: {
+    suggestion: 'suggestion',
+    crCouncil: 'cr council',
+    crProposalPage: 'cr proposal page',
+    approvedProposal: 'approved proposal'
+  },
+  search: {
+    number: 'Number',
+    title: 'Title',
+    abstract: 'Abstract',
+    email: 'Author email',
+    name: 'Author name'
   }
 }

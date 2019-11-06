@@ -18,7 +18,10 @@ export const SUGGESTION_TYPE = {
 export const CVOTE_TYPE = {
   NEW_MOTION: '1',
   MOTION_AGAINST: '2',
-  ANYTHING_ELSE: '3'
+  ANYTHING_ELSE: '3',
+  STANDARD_TRACK: '4',
+  PROCESS: '5',
+  INFORMATIONAL: '6'
 }
 
 export const USER_ROLE = {
@@ -175,8 +178,15 @@ export const CVOTE_RESULT = {
   ABSTENTION: 'abstention',
   UNDECIDED: 'undecided'
 }
+export const ELIP_VOTE_RESULT = {
+  SUPPORT: 'support',
+  REJECT: 'reject',
+  ABSTENTION: 'abstention',
+  UNDECIDED: 'undecided'
+}
 // expiration period: 7 days
 export const CVOTE_EXPIRATION = 1000 * 60 * 60 * 24 * 7
+export const ELIP_EXPIRATION = 1000 * 60 * 60 * 24 * 7
 
 export const CONTENT_TYPE = create(['MARKDOWN', 'HTML'])
 
@@ -302,7 +312,7 @@ export const ELIP_STATUS = create([
   'WAIT_FOR_REVIEW',
   'DRAFT',
   'REJECTED',
-  'SUBMITTED'
+  'SUBMITTED_AS_PROPOSAL'
 ])
 
 export const ELIP_FILTER = create([
@@ -315,4 +325,10 @@ export const ELIP_FILTER = create([
 export const ELIP_REVIEW_STATUS = create([
   'APPROVED',
   'REJECTED'
+])
+
+export const ELIP_TYPE = create([
+    'STANDARD_TRACK',
+    'PROCESS',
+    'INFORMATIONAL'
 ])

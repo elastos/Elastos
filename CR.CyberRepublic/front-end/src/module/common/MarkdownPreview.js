@@ -1,39 +1,12 @@
 import React from 'react'
 import styled from 'styled-components'
-import DOMPurify from 'dompurify'
-import markdownIt from 'markdown-it'
-import markdownItMermaid from '@liradb2000/markdown-it-mermaid'
-import taskLists from 'markdown-it-task-lists'
-import sub from 'markdown-it-sub'
-import sup from 'markdown-it-sup'
-import footnote from 'markdown-it-footnote'
-import abbr from 'markdown-it-abbr'
-import emoji from 'markdown-it-emoji'
-import mark from 'markdown-it-mark'
-import deflist from 'markdown-it-deflist'
-import ins from 'markdown-it-ins'
-
-const mdi = markdownIt({
-  breaks: true,
-  // linkify: true, // Autoconvert URL-like text to links
-  typographer: true // Enable some language-neutral replacement + quotes beautification
-})
-  .use(markdownItMermaid)
-  .use(taskLists)
-  .use(footnote)
-  .use(sub)
-  .use(sup)
-  .use(abbr)
-  .use(emoji)
-  .use(mark)
-  .use(ins)
-  .use(deflist)
+import { convertMarkdownToHtml } from '@/util/markdown-it'
 
 function MarkedPreview({ content }) {
   return (
     <Wrapper
       dangerouslySetInnerHTML={{
-        __html: DOMPurify.sanitize(mdi.render(content))
+        __html: convertMarkdownToHtml(content)
       }}
     />
   )
@@ -43,7 +16,7 @@ export default MarkedPreview
 
 const Wrapper = styled.div`
   color: rgba(0, 0, 0, 0.75);
-  font-size: 16px;
+  font-size: 14px;
   font-family: 'Synthese', 'Montserrat', sans-serif;
   font-variant-ligatures: common-ligatures;
   line-height: 1.8;
@@ -68,8 +41,7 @@ const Wrapper = styled.div`
     margin-left: 1em;
     margin-right: 1em;
     > li {
-      margin-left: 1em;
-      margin-right: 1em;
+      margin: 0 1em 1em;
     }
   }
 
@@ -168,7 +140,7 @@ const Wrapper = styled.div`
   pre > code {
     background-color: rgba(0, 0, 0, 0.05);
     display: block;
-    padding: 0.5em;
+    padding: 1em;
     -webkit-text-size-adjust: none;
     overflow-x: auto;
     white-space: pre;
@@ -206,7 +178,7 @@ const Wrapper = styled.div`
 
   img {
     max-width: 100%;
-    margin: 32px auto;
+    margin: 32px 0;
     display: block;
   }
 

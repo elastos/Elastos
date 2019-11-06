@@ -92,8 +92,7 @@ export const BtnGroup = styled.div`
 `
 
 export const StyledButton = styled(Button)`
-  width: 200px;
-  height: 44px !important;
+  margin: 8px 0;
   > span {
     font-size: 12px !important;
     line-height: 12px !important;
@@ -152,18 +151,6 @@ export const StyledAnchor = styled(Anchor)`
       height: 0.5em;
       border-bottom: 8px solid ${text.green};
       z-index: -1;
-    }
-  }
-`
-
-export const StyledRichContent = styled.div`
-  .md-RichEditor-root {
-    padding: 0;
-    figure.md-block-image {
-      background: none;
-    }
-    figure.md-block-image figcaption .public-DraftStyleDefault-block {
-      text-align: left;
     }
   }
 `

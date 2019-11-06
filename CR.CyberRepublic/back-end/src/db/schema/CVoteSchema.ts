@@ -114,5 +114,39 @@ export const CVote = {
   reference: {
     type: Schema.Types.ObjectId,
     ref: 'suggestion'
+  },
+  referenceElip: {
+    type: Schema.Types.ObjectId,
+    ref: 'elip'
+  },
+
+  // from ELIP
+  discussionsTo: {
+    type: String
+  },
+  requires: {
+    type: String
+  },
+  replaces: {
+    type: String
+  },
+  supersededBy: {
+    type: String
+  },
+  specifications: {
+    type: String
+  },
+  rationale: {
+    type: String
+  },
+  backwardCompatibility: {
+    type: String
+  },
+  referenceImplementation: {
+    type: String
+  },
+  copyright: {
+    type: String
   }
+  
 }

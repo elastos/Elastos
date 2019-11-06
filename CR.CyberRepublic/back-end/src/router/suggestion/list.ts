@@ -9,7 +9,8 @@ const FILTERS = {
   ALL: 'all',
   CREATED: 'createdBy',
   COMMENTED: 'commented',
-  SUBSCRIBED: 'subscribed'
+  SUBSCRIBED: 'subscribed',
+  ARCHIVED: 'archived'
 }
 
 export default class extends Base {
@@ -26,12 +27,7 @@ export default class extends Base {
     const service = this.buildService(SuggestionService)
     const param = this.getParam()
 
-    if (param.search) {
-      param.title = { $regex: _.trim(param.search), $options: 'i' }
-    }
-
     if (param.profileListFor) {
-
       const currentUserId = new ObjectId(param.profileListFor)
       // make sure this is the logged in user
       if (this.session.userId !== currentUserId.toString()) {
@@ -40,13 +36,18 @@ export default class extends Base {
 
       param.$or = []
       if (_.includes([FILTERS.ALL, FILTERS.CREATED], param.filter)) {
-        param.$or.push({ 'createdBy': currentUserId })
+        param.$or.push({ createdBy: currentUserId })
       }
       if (_.includes([FILTERS.ALL, FILTERS.COMMENTED], param.filter)) {
-        param.$or.push({'comments': { $elemMatch: { $elemMatch: { 'createdBy': currentUserId }}}})
+        param.$or.push({
+          comments: { $elemMatch: { $elemMatch: { createdBy: currentUserId } } }
+        })
       }
       if (_.includes([FILTERS.ALL, FILTERS.SUBSCRIBED], param.filter)) {
         param.$or.push({ 'subscribers.user': currentUserId })
+      }
+      if (_.includes([FILTERS.ARCHIVED], param.filter)) {
+        param.$or.push({ status: 'ARCHIVED', createdBy: currentUserId })
       }
     }
 

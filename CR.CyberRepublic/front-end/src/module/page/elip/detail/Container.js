@@ -7,7 +7,11 @@ const mapState = state => ({
   user: state.user,
   currentUserId: state.user.current_user_id,
   isLogin: state.user.is_login,
-  isSecretary: state.user.is_secretary
+  isAdmin: state.user.is_admin,
+  isSecretary: state.user.is_secretary,
+  isCouncil: state.user.is_council,
+  data: state.elip.detail,
+  reviews: state.elip.reviews
 })
 
 const mapDispatch = () => {
@@ -17,11 +21,23 @@ const mapDispatch = () => {
     async getData(param) {
       return service.getData(param)
     },
+    async resetData() {
+      return service.resetData()
+    },
     async review(param) {
       return reviewService.create(param)
     },
+    async vote(param) {
+      return param
+    },
     async updateStatus(param) {
       return service.update(param)
+    },
+    async deleteData(param) {
+      return service.deleteData(param)
+    },
+    async submitAsPropose(param) {
+      return service.submitAsPropose(param)
     }
   }
 }

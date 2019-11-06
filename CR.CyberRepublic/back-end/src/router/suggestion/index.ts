@@ -14,6 +14,8 @@ import abuse from './abuse'
 import archive from './archive'
 import del from './delete'
 import editHistories from './editHistories'
+import investigation from './investigation'
+import advisory from './advisory'
 
 export default Base.setRouter([
   {
@@ -34,7 +36,7 @@ export default Base.setRouter([
   {
     path: '/:id/update',
     router: update,
-    method: 'post',
+    method: 'put',
   },
   {
     path: '/:id/addtag',
@@ -90,5 +92,15 @@ export default Base.setRouter([
     path: '/:id/editHistories',
     router: editHistories,
     method: 'get',
+  },
+  {
+    path: '/:id/investigation',
+    router: investigation,
+    method: 'post',
+  },
+  {
+    path: '/:id/advisory',
+    router: advisory,
+    method: 'post',
   }
 ])
