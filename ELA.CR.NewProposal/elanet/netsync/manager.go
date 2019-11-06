@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package netsync
 
@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -35,6 +36,10 @@ const (
 	// maxRequestedTxns is the maximum number of requested transactions
 	// hashes to store in memory.
 	maxRequestedTxns = msg.MaxInvPerMsg
+
+	// syncTimeout is the maximum allowable interval when the sync peer does not
+	// receive the block.
+	syncTimeout = time.Minute * 10
 )
 
 // zeroHash is the zero value hash (all zeros).  It is defined as a convenience.
@@ -127,6 +132,7 @@ type SyncManager struct {
 	requestedBlocks          map[common.Uint256]struct{}
 	requestedConfirmedBlocks map[common.Uint256]struct{}
 	syncPeer                 *peer.Peer
+	syncStartTime            time.Time
 	syncHeight               uint32
 	peerStates               map[*peer.Peer]*peerSyncState
 }
@@ -189,6 +195,7 @@ func (sm *SyncManager) startSync() {
 
 		sm.syncPeer = bestPeer
 		sm.syncHeight = bestPeer.Height()
+		sm.syncStartTime = time.Now()
 		bestPeer.PushGetBlocksMsg(locator, &zeroHash)
 	} else {
 		log.Warnf("No sync peer candidates available")
@@ -414,6 +421,10 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		return
 	}
 
+	if peer == sm.syncPeer {
+		sm.syncStartTime = time.Now()
+	}
+
 	if sm.syncPeer != nil && sm.chain.BestChain.Height >= sm.syncHeight {
 		sm.syncPeer = nil
 	}
@@ -429,6 +440,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 			if sm.syncPeer == nil {
 				sm.syncPeer = peer
 				sm.syncHeight = bmsg.block.Block.Height
+				sm.syncStartTime = time.Now()
 			}
 			if sm.syncPeer == peer {
 				peer.PushGetBlocksMsg(locator, orphanRoot)
@@ -491,6 +503,13 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 	// Attempt to find the final block in the inventory list.  There may
 	// not be one.
 	invVects := imsg.inv.InvList
+
+	if sm.syncPeer != nil && time.Now().After(sm.syncStartTime.Add(syncTimeout)) {
+		log.Warnf("sync peer %s has not received block for more than %d "+
+			"seconds, -- disconnecting", sm.syncPeer, syncTimeout)
+		sm.syncPeer.Disconnect()
+		sm.syncPeer = nil
+	}
 
 	// Ignore invs from peers that aren't the sync if we are not current.
 	// Helps prevent fetching a mass of orphans.
@@ -564,6 +583,7 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 				if sm.syncPeer == nil {
 					sm.syncPeer = peer
 					sm.syncHeight = sm.chain.GetOrphan(&iv.Hash).Block.Height
+					sm.syncStartTime = time.Now()
 				}
 				if sm.syncPeer == peer {
 					peer.PushGetBlocksMsg(locator, orphanRoot)
