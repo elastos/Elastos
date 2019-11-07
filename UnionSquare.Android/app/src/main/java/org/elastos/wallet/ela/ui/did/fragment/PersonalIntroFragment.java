@@ -7,7 +7,11 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
+import org.elastos.wallet.ela.utils.RxEnum;
+
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -21,7 +25,7 @@ public class PersonalIntroFragment extends BaseFragment {
     @BindView(R.id.et_intro)
     EditText etIntro;
     private DIDInfoEntity didInfo;
-    private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
+    private CredentialSubjectBean credentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -31,13 +35,15 @@ public class PersonalIntroFragment extends BaseFragment {
     @Override
     protected void setExtraData(Bundle data) {
         didInfo = data.getParcelable("didInfo");
-        credentialSubjectBean = didInfo.getCredentialSubject();
+        credentialSubjectBean = data.getParcelable("credentialSubjectBean");
         if (data.getBoolean("useDraft"))
             putData();
     }
 
     private void putData() {
-        etIntro.setText(credentialSubjectBean.getDescript());
+        CredentialSubjectBean.Intro intro = credentialSubjectBean.getIntro();
+        if (intro != null)
+            etIntro.setText(intro.getIntroduction());
     }
 
 
@@ -53,7 +59,7 @@ public class PersonalIntroFragment extends BaseFragment {
         switch (view.getId()) {
             case R.id.tv_title_right:
             case R.id.tv_next:
-                credentialSubjectBean.setDescript(getText(etIntro));
+                setData();
                 start(SocialAccountFragment.class, getArguments());
                 break;
 
@@ -61,5 +67,24 @@ public class PersonalIntroFragment extends BaseFragment {
         }
     }
 
+    private void setData() {
+        CredentialSubjectBean.Intro intro = credentialSubjectBean.getIntro();
+        if (getText(etIntro) != null) {
+            if (intro == null) {
+                intro = new CredentialSubjectBean.Intro();
+                credentialSubjectBean.setIntro(intro);
+            }
+            intro.setIntroduction(getText(etIntro));
+            intro.setEditTime(new Date().getTime() / 1000);
+        } else {
+            credentialSubjectBean.setIntro(null);
+        }
+    }
+    @Override
+    public boolean onBackPressedSupport() {
+        setData();
+        return super.onBackPressedSupport();
 
+
+    }
 }

@@ -12,7 +12,7 @@ public class DIDListPresenter extends NewPresenterAbstract {
 
 
     public void getResolveDIDInfo(String walletId, int start, int count, String did, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getResolveDIDInfo");
+        Observer observer = createObserver(baseFragment, "getResolveDIDInfo", walletId);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

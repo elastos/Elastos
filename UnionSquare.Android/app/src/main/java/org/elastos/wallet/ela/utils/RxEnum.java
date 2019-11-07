@@ -62,7 +62,8 @@ public enum RxEnum {
     TOSIGN,//生成待签名交易
 
     //did
-    KEEPDRAFT//保存草稿
+    KEEPDRAFT,//保存草稿
+    RETURCER//返回cerdential数据
 
    /* enum Type {
         CoinBase, // 创币交易

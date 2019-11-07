@@ -109,7 +109,7 @@ public class TransferActivity extends BaseActivity {
                 //转账
                 llRate.setVisibility(View.GONE);
                 break;
-            case Constant.SUPERNODESIGN:
+            case Constant.SUPERNODEVOTE:
             case Constant.CRVOTE:
                 //超级节点投票  cr投票
                 llRate.setVisibility(View.GONE);

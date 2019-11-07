@@ -76,7 +76,7 @@ public class DIDRecordRecAdapetr extends RecyclerView.Adapter<DIDRecordRecAdapet
                     break;
                 }
                 holder.tvStatus.setText(context.getString(R.string.validdate) + DateUtil.timeNYR(didInfoEntity.getIssuanceDate(), context)
-                        + "至" + DateUtil.timeNYR(didInfoEntity.getExpires(), context));
+                        +context.getString(R.string.to) + DateUtil.timeNYR(didInfoEntity.getExpires(), context));
 
                 break;
         }

@@ -6,6 +6,7 @@ import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
@@ -62,4 +63,20 @@ public class CacheUtil {
         CacheDiskUtils.getInstance(file).put("DIDInfoList", (Serializable) list, CacheDiskUtils.DAY * 360);
     }
 
+    public static CredentialSubjectBean getCredentialSubjectBean(String id) {
+        CredentialSubjectBean bean = CacheDiskUtils.getInstance(file)
+                .getParcelable(id, CredentialSubjectBean.CREATOR);
+        return bean == null ? new CredentialSubjectBean() : bean;
+
+    }
+
+    public static void setCredentialSubjectBean(String id, CredentialSubjectBean credentialSubjectBean) {
+        if (credentialSubjectBean == null) {
+            return;
+        }
+        if (credentialSubjectBean.getSocial() != null || credentialSubjectBean.getInfo() != null || credentialSubjectBean.getIntro() != null) {
+            CacheDiskUtils.getInstance(file)
+                    .put(id, credentialSubjectBean, CacheDiskUtils.DAY * 360);
+        }
+    }
 }

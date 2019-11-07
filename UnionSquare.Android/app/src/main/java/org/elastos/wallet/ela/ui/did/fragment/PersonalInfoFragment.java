@@ -1,6 +1,7 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -8,10 +9,12 @@ import android.widget.TextView;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -55,9 +58,9 @@ public class PersonalInfoFragment extends BaseFragment {
     @BindView(R.id.tv_title_right)
     TextView tvTitleRight;
     private DIDInfoEntity didInfo;
-    private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
+    private CredentialSubjectBean credentialSubjectBean;
     private long birthday;
-    private long code;
+    private String areaCode;
 
     @Override
     protected int getLayoutId() {
@@ -68,13 +71,13 @@ public class PersonalInfoFragment extends BaseFragment {
     protected void setExtraData(Bundle data) {
 
         didInfo = data.getParcelable("didInfo");
-        credentialSubjectBean = didInfo.getCredentialSubject();
-        if (credentialSubjectBean == null) {
-            credentialSubjectBean = new DIDInfoEntity.CredentialSubjectBean();
-            didInfo.setCredentialSubject(credentialSubjectBean);
-        }
-        if (data.getBoolean("useDraft"))
+
+        if (data.getBoolean("useDraft")) {
+            credentialSubjectBean = CacheUtil.getCredentialSubjectBean(didInfo.getId());
             putData();
+        } else {
+            credentialSubjectBean = new CredentialSubjectBean();
+        }
     }
 
     @Override
@@ -119,46 +122,71 @@ public class PersonalInfoFragment extends BaseFragment {
             case R.id.tv_title_right:
             case R.id.tv_next:
                 setData();
-                start(PersonalIntroFragment.class, getArguments());
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("credentialSubjectBean", credentialSubjectBean);
+                bundle.putAll(getArguments());
+                start(PersonalIntroFragment.class, bundle);
                 break;
-
-
         }
     }
 
     private void putData() {
-        etName.setText(credentialSubjectBean.getName());
-        etNick.setText(credentialSubjectBean.getNickname());
-        tvSex.setText(("n/a".equals(credentialSubjectBean.getGender()) || credentialSubjectBean.getGender() == null) ? null : (credentialSubjectBean.getGender().equals("male") ? getString(R.string.man) : getString(R.string.woman)));
-        birthday = credentialSubjectBean.getBirthday();
-        tvBirthday.setText(DateUtil.time(birthday, getContext()));
-        etHeadurl.setText(credentialSubjectBean.getAvatar());
-        etEmail.setText(credentialSubjectBean.getEmail());
-        etCode.setText(credentialSubjectBean.getCode());
-        etPhone.setText(credentialSubjectBean.getPhone());
-        tvArea.setText(AppUtlis.getLoc(getContext(), credentialSubjectBean.getNation()));
+        CredentialSubjectBean.Info info = credentialSubjectBean.getInfo();
+        if (info != null) {
+            etName.setText(info.getName());
+            etNick.setText(info.getNickname());
+            tvSex.setText(("n/a".equals(info.getGender()) || info.getGender() == null) ? null : (info.getGender().equals("male") ? getString(R.string.man) : getString(R.string.woman)));
+            birthday = info.getBirthday();
+            tvBirthday.setText(DateUtil.timeNYR(birthday, getContext()));
+            etHeadurl.setText(info.getAvatar());
+            etEmail.setText(info.getEmail());
+            etCode.setText(info.getPhoneCode());
+            etPhone.setText(info.getPhone());
+            tvArea.setText(AppUtlis.getLoc(getContext(), info.getNation()));
+        }
     }
 
     private void setData() {
-        credentialSubjectBean.setName(getText(etName));
-        credentialSubjectBean.setNickname(getText(etNick));
-        credentialSubjectBean.setGender(null == (getText(tvSex)) ? "n/a" : (getString(R.string.man).equals(getText(tvSex)) ? "male" : "female"));
-        credentialSubjectBean.setBirthday(birthday);
-        credentialSubjectBean.setAvatar(getText(etHeadurl));
-        credentialSubjectBean.setEmail(getText(etEmail));
-        credentialSubjectBean.setCode(getText(etCode));
-        credentialSubjectBean.setPhone(getText(etPhone));
-        credentialSubjectBean.setNation(code + "");
+        CredentialSubjectBean.Info info = credentialSubjectBean.getInfo();
+        if (info == null) {
+            info = new CredentialSubjectBean.Info();
+
+        }
+        info.setEditTime(new Date().getTime() / 1000);
+        info.setName(getText(etName));
+        info.setNickname(getText(etNick));
+        info.setGender(null == (getText(tvSex)) ? null : (getString(R.string.man).equals(getText(tvSex)) ? "male" : "female"));
+        info.setBirthday(birthday);
+        info.setAvatar(getText(etHeadurl));
+        info.setEmail(getText(etEmail));
+        info.setPhoneCode(getText(etCode));
+        info.setPhone(getText(etPhone));
+        info.setNation(areaCode);
+        if (info.isEmpty()) {
+            credentialSubjectBean.setInfo(null);
+        } else {
+            info.setEditTime(new Date().getTime() / 1000);
+            credentialSubjectBean.setInfo(info);
+        }
+
 
     }
 
+    @Override
+    public boolean onBackPressedSupport() {
+        setData();
+        post(RxEnum.RETURCER.ordinal(), "", credentialSubjectBean);
+        return super.onBackPressedSupport();
+
+
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
         if (integer == RxEnum.AREA.ordinal()) {
             Area area = (Area) result.getObj();
-            code = area.getCode();
+            areaCode = area.getCode() + "";
             int Language = new SPUtil(getContext()).getLanguage();
             String name;
             if (Language == 0) {

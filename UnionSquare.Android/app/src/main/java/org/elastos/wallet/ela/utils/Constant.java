@@ -10,10 +10,11 @@ public class Constant {
     public static final String INNER = "inner";//油钱包列表打开
     public static final String SIDEWITHDRAW = "sideWithdraw";//侧链充值
     public static final String TRANFER = "transfer";//普通充值
-    public static final String SUPERNODESIGN = "supernodevote";//超级节点参选
+    public static final String SUPERNODESIGN = "supernodesign";//超级节点参选注册
     public static final String CRSIGNUP = "crsignup";//cr注册
     public static final String DIDSIGNUP = "didsignup";//did注册
     public static final String CRVOTE = "crvote";//cr投票
+    public static final String SUPERNODEVOTE = "nodecrvote";//cr投票
     public static final String UPDATENODEINFO= "updatenodeinfo";//超级节点更新参选信息
     public static final String CRUPDATE= "crupdate";//cr更新参选信息
     public static final String UNREGISTERSUPRRNODE= "unregistersupernode";//超级节点注销

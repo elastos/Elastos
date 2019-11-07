@@ -14,17 +14,17 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.main.MainFragment;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
-import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -61,9 +61,8 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
     TextView tvPublic;
     @BindView(R.id.tv_keep)
     TextView tvKeep;
-    Wallet wallet;
     private DIDInfoEntity didInfo;
-    private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
+    private CredentialSubjectBean credentialSubjectBean;
 
     @Override
     protected int getLayoutId() {
@@ -73,8 +72,7 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
     @Override
     protected void setExtraData(Bundle data) {
         didInfo = data.getParcelable("didInfo");
-        credentialSubjectBean = didInfo.getCredentialSubject();
-        wallet = data.getParcelable("wallet");
+        credentialSubjectBean = data.getParcelable("credentialSubjectBean");
         if (data.getBoolean("useDraft"))
             putData();
     }
@@ -87,26 +85,38 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
     }
 
     private void putData() {
-        etHomepage.setText(credentialSubjectBean.getHomePage());
-        etGoogle.setText(credentialSubjectBean.getGoogleAccount());
-        etMircrosoft.setText(credentialSubjectBean.getMicrosoftPassport());
-        etFacebook.setText(credentialSubjectBean.getFacebook());
-        etTwitter.setText(credentialSubjectBean.getTwitter());
-        etWebo.setText(credentialSubjectBean.getWeibo());
-        etWechat.setText(credentialSubjectBean.getWechat());
-        etAlipay.setText(credentialSubjectBean.getAlipay());
+        CredentialSubjectBean.Social social = credentialSubjectBean.getSocial();
+        if (social != null) {
+            etHomepage.setText(social.getHomePage());
+            etGoogle.setText(social.getGoogleAccount());
+            etMircrosoft.setText(social.getMicrosoftPassport());
+            etFacebook.setText(social.getFacebook());
+            etTwitter.setText(social.getTwitter());
+            etWebo.setText(social.getWeibo());
+            etWechat.setText(social.getWechat());
+            etAlipay.setText(social.getAlipay());
+        }
     }
 
     private void setData() {
-        credentialSubjectBean.setHomePage(getText(etHomepage));
-        credentialSubjectBean.setGoogleAccount(getText(etGoogle));
-        credentialSubjectBean.setMicrosoftPassport(getText(etMircrosoft));
-        credentialSubjectBean.setFacebook(getText(etFacebook));
-        credentialSubjectBean.setTwitter(getText(etTwitter));
-        credentialSubjectBean.setWeibo(getText(etWebo));
-        credentialSubjectBean.setWechat(getText(etWechat));
-        credentialSubjectBean.setAlipay(getText(etAlipay));
-
+        CredentialSubjectBean.Social social = credentialSubjectBean.getSocial();
+        if (social == null) {
+            social = new CredentialSubjectBean.Social();
+        }
+        social.setHomePage(getText(etHomepage));
+        social.setGoogleAccount(getText(etGoogle));
+        social.setMicrosoftPassport(getText(etMircrosoft));
+        social.setFacebook(getText(etFacebook));
+        social.setTwitter(getText(etTwitter));
+        social.setWeibo(getText(etWebo));
+        social.setWechat(getText(etWechat));
+        social.setAlipay(getText(etAlipay));
+        if (social.isEmpty()) {
+            credentialSubjectBean.setInfo(null);
+        } else {
+            social.setEditTime(new Date().getTime() / 1000);
+            credentialSubjectBean.setSocial(social);
+        }
 
     }
 
@@ -114,11 +124,15 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_public:
+
                 setData();
-                new CRSignUpPresenter().getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+                CacheUtil.setCredentialSubjectBean(didInfo.getId(), credentialSubjectBean);
+                new CRSignUpPresenter().getFee(didInfo.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
                 break;
             case R.id.tv_keep:
-                setData();
+               setData();
+                CacheUtil.setCredentialSubjectBean(didInfo.getId(), credentialSubjectBean);
+
                 keep();
                 toDIDListFragment();
                 break;
@@ -132,11 +146,11 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
         if (infoEntities.contains(didInfo)) {
             infoEntities.remove(didInfo);
         }
-        didInfo.setIssuanceDate(new Date().getTime()/1000);
+        didInfo.setIssuanceDate(new Date().getTime() / 1000);
         didInfo.setStatus("Unpublished");
         infoEntities.add(didInfo);
         CacheUtil.setDIDInfoList(infoEntities);
-        post(RxEnum.KEEPDRAFT.ordinal(), null, null);
+        post(RxEnum.KEEPDRAFT.ordinal(), null, infoEntities);
         showToast(getString(R.string.keepsucess));
     }
 
@@ -157,7 +171,7 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
                 JSONObject json = (JSONObject) JSON.toJSON(didInfo);
                 json.remove("credentialSubject");
                 Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
-                intent.putExtra("wallet", wallet);
+                intent.putExtra("wallet", new RealmUtil().queryUserWallet(didInfo.getWalletId()));
                 intent.putExtra("chainId", MyWallet.IDChain);
                 intent.putExtra("inputJson", JSON.toJSONString(json));
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
@@ -175,9 +189,18 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
             new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
                 @Override
                 public void affireBtnClick(View view) {
+                    //删除这个草稿?//todo
                     toDIDListFragment();
                 }
             });
         }
+    }
+
+    @Override
+    public boolean onBackPressedSupport() {
+        setData();
+        return super.onBackPressedSupport();
+
+
     }
 }

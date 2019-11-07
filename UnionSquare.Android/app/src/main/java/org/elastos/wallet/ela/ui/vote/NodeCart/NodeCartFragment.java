@@ -458,7 +458,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("attributes", data);
-                intent.putExtra("type", Constant.SUPERNODESIGN);
+                intent.putExtra("type", Constant.SUPERNODEVOTE);
                 startActivity(intent);
                 break;
 

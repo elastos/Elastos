@@ -22,6 +22,7 @@ import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
+import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.utils.CacheUtil;
@@ -75,7 +76,33 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     }
 
     @Override
-    protected void initInjector() {
+    protected void setExtraData(Bundle data) {
+
+        useDraft = data.getBoolean("useDraft");
+        if (useDraft) {
+            didInfo = data.getParcelable("didInfo");
+            tempWallet = new RealmUtil().queryUserWallet(didInfo.getWalletId());
+            putData();
+        } else {
+            didInfo = new DIDInfoEntity();
+            didInfo.setOperation("create");
+            List<DIDInfoEntity.PublicKeyBean> list = new ArrayList<>();
+            DIDInfoEntity.PublicKeyBean publicKeyBean = new DIDInfoEntity.PublicKeyBean();
+            publicKeyBean.setId("#primary");
+            list.add(publicKeyBean);
+            didInfo.setPublicKey(list);
+        }
+    }
+
+    private void putData() {
+        etDidname.setEnabled(false);
+        rlSelectwallet.setVisibility(View.GONE);
+        etDidname.setText(didInfo.getDidName());
+        tvWalletname.setText(tempWallet.getWalletName());
+        tvDid.setText(didInfo.getId());
+        tvDidpk.setText(didInfo.getPublicKey().get(0).getPublicKey());
+        endDate = didInfo.getExpires();
+        tvDate.setText(DateUtil.timeNYR(endDate, getContext()));
 
     }
 
@@ -98,13 +125,6 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
         registReceiver();
 
 
-        didInfo = new DIDInfoEntity();
-        didInfo.setOperation("create");
-        List<DIDInfoEntity.PublicKeyBean> list = new ArrayList<>();
-        DIDInfoEntity.PublicKeyBean publicKeyBean = new DIDInfoEntity.PublicKeyBean();
-        publicKeyBean.setId("#primary");
-        list.add(publicKeyBean);
-        didInfo.setPublicKey(list);
     }
 
     private void setData() {
@@ -139,7 +159,6 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("didInfo", didInfo);
                 bundle.putBoolean("useDraft", useDraft);
-                bundle.putParcelable("wallet", tempWallet);
                 start(PersonalInfoFragment.class, bundle);
                 break;
             case R.id.rl_selectwallet:
@@ -189,6 +208,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                         public void affireBtnClick(View view) {
                             setData();
                             //保存草稿
+                            CacheUtil.setCredentialSubjectBean(didInfo.getId(), credentialSubjectBean);
                             keep();
                             getBaseActivity().pop();
                         }
@@ -209,7 +229,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
         didInfo.setStatus("Unpublished");
         infoEntities.add(didInfo);
         CacheUtil.setDIDInfoList(infoEntities);
-        post(RxEnum.KEEPDRAFT.ordinal(), null, null);
+        post(RxEnum.KEEPDRAFT.ordinal(), null, infoEntities);
         showToast(getString(R.string.keepsucess));
     }
 
@@ -242,18 +262,15 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
             case "getDIDByPublicKey":
                 String did = ((CommmonStringEntity) baseEntity).getData();
                 tvDid.setText(did);
-                //查询草稿
-                ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
-                for (DIDInfoEntity didInfoEntity : infoEntities) {
-                    if (didInfoEntity.getId().equals(did)) {
-                        //草稿里有此did
-                        didInfo = didInfoEntity;
-                        useDraft = true;
-                        showOpenDraftWarm();
-                        break;
+                    ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
+                    for (DIDInfoEntity didInfoEntity : infoEntities) {
+                        if (didInfoEntity.getId().equals(did)) {
+                            //草稿里有此did
+                            didInfo = didInfoEntity;
+                            showOpenDraftWarm();
+                            break;
                     }
                 }
-
                 break;
         }
 
@@ -282,6 +299,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     @Override
                     public void affireBtnClick(View view) {
                         //充填数据
+                        useDraft = true;
                         etDidname.setText(didInfo.getDidName());
                         endDate = didInfo.getExpires();
                         if (endDate != 0) {
@@ -293,15 +311,20 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 });
     }
 
+    private CredentialSubjectBean credentialSubjectBean;
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
 
         if (integer == RxEnum.UPDATAPROPERTY.ordinal()) {
-            //子钱包改变  创建或删除
             presenter.getAllSubWallets(tempWallet.getWalletId(), this);
+        }
+        if (integer == RxEnum.RETURCER.ordinal()) {
+            credentialSubjectBean = (CredentialSubjectBean) result.getObj();
         }
 
 
     }
+
 }
