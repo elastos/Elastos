@@ -8,12 +8,12 @@ import (
 	"fmt"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
-	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
 
 	"github.com/elastos/Elastos.ELA/common"
 	ela "github.com/elastos/Elastos.ELA/core/types"
@@ -81,6 +81,7 @@ func (s *HttpService) GetRawTransaction(param http.Params) (interface{}, error) 
 	if err != nil {
 		return nil, newError(InvalidParams)
 	}
+	var header interfaces.Header
 	tx, height, err := s.cfg.Chain.GetTransaction(hash)
 	if err != nil {
 		//try to find transaction in transaction pool.
@@ -88,14 +89,15 @@ func (s *HttpService) GetRawTransaction(param http.Params) (interface{}, error) 
 		if tx == nil {
 			return nil, newError(UnknownTransaction)
 		}
-	}
-	bHash, err := s.cfg.Chain.GetBlockHash(height)
-	if err != nil {
-		return nil, newError(UnknownTransaction)
-	}
-	header, err := s.cfg.Chain.GetHeader(bHash)
-	if err != nil {
-		return nil, newError(UnknownTransaction)
+	} else {
+		bHash, err := s.cfg.Chain.GetBlockHash(height)
+		if err != nil {
+			return nil, newError(UnknownTransaction)
+		}
+		header, err = s.cfg.Chain.GetHeader(bHash)
+		if err != nil {
+			return nil, newError(UnknownTransaction)
+		}
 	}
 
 	verbose, ok := param.Bool("verbose")
