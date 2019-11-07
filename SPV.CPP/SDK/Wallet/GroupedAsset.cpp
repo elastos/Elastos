@@ -155,6 +155,7 @@ namespace Elastos {
 			BigInt totalInputAmount;
 			bool lastUTXOPending = false;
 			UTXOPtr firstInput;
+			BigInt totalOutputAmount;
 
 			ErrorChecker::CheckCondition(max && voteContent.GetType() == VoteContent::CRC, Error::InvalidArgument,
 										 "Unsupport max for CRC vote");
@@ -178,6 +179,7 @@ namespace Elastos {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid vote content type");
 			}
 
+			totalOutputAmount = newVoteMaxAmount;
 			VoteContentArray oldVoteContent;
 			std::vector<BigInt> oldVoteAmount;
 			_parent->Lock();
@@ -218,6 +220,9 @@ namespace Elastos {
 					}
 				}
 
+				if (oldVoteAmount.back() > totalOutputAmount)
+					totalOutputAmount = oldVoteAmount.back();
+
 				totalInputAmount += (*u)->Output()->Amount();
 
 				firstInput = *u;
@@ -235,7 +240,7 @@ namespace Elastos {
 			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
 
 			for (UTXOArray::const_iterator u = utxo2Pick.cbegin(); u != utxo2Pick.cend(); ++u) {
-				if (!max && totalInputAmount >= newVoteMaxAmount + feeAmount)
+				if (!max && totalInputAmount >= totalOutputAmount + feeAmount)
 					break;
 
 				if (_parent->IsUTXOSpending(*u)) {
@@ -275,14 +280,22 @@ namespace Elastos {
 			_parent->Unlock();
 
 			VoteContentArray newVoteContent;
-			newVoteContent.push_back(voteContent);
-
-			if (max) {
+			if (max)
 				newVoteMaxAmount = totalInputAmount - feeAmount;
-				newVoteContent.back().SetAllCandidateVotes(newVoteMaxAmount.getUint64());
+
+			newVoteContent.push_back(voteContent);
+			newVoteContent.back().SetAllCandidateVotes(newVoteMaxAmount.getUint64());
+
+			assert(oldVoteAmount.size() == oldVoteContent.size());
+			for (size_t i = 0; i < oldVoteAmount.size(); ++i) {
+				if (oldVoteAmount[i] <= totalInputAmount - feeAmount) {
+					newVoteContent.push_back(oldVoteContent[i]);
+				} else {
+					Log::warn("drop old vote content type: {} amount: {}", oldVoteContent[i].GetType(), oldVoteAmount[i].getDec());
+				}
 			}
 
-			if (totalInputAmount < feeAmount || totalInputAmount - feeAmount < newVoteMaxAmount) {
+			if (totalInputAmount < feeAmount || totalInputAmount - feeAmount < totalOutputAmount) {
 				BigInt maxAvailable(0);
 				if (totalInputAmount >= feeAmount)
 					maxAvailable = totalInputAmount - feeAmount;
@@ -297,17 +310,6 @@ namespace Elastos {
 													  maxAvailable.getDec() + " sela");
 				}
 				return nullptr;
-			}
-
-			BigInt totalOutputAmount = newVoteMaxAmount;
-
-			assert(oldVoteAmount.size() == oldVoteContent.size());
-			for (size_t i = 0; i < oldVoteAmount.size(); ++i) {
-				if (oldVoteAmount[i] <= newVoteMaxAmount) {
-					newVoteContent.push_back(oldVoteContent[i]);
-				} else {
-					Log::warn("drop old vote content type: {} amount: {}", oldVoteContent[i].GetType(), oldVoteAmount[i].getDec());
-				}
 			}
 
 			OutputPayloadPtr outputPayload = OutputPayloadPtr(new PayloadVote(newVoteContent, VOTE_PRODUCER_CR_VERSION));
