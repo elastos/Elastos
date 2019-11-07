@@ -3,7 +3,16 @@ import PropTypes from 'prop-types'
 import I18N from '@/I18N'
 import _ from 'lodash'
 
-import { Container, StyledPopover, CloseIcon, Title, StyledTextArea, Footer, Btn, DataExplain } from './style'
+import {
+  Container,
+  StyledPopover,
+  CloseIcon,
+  Title,
+  StyledTextArea,
+  Footer,
+  Btn,
+  DataExplain
+} from './style'
 
 class Component extends React.Component {
   state = {
@@ -41,13 +50,7 @@ class Component extends React.Component {
   }
 
   render() {
-    const {
-      triggeredBy,
-      visible,
-      title,
-      btnType,
-      requiredMsg
-    } = this.props
+    const { triggeredBy, visible, title, btnType, requiredMsg } = this.props
     const { emptyStatus } = this.state
     const dataExplain = emptyStatus && <DataExplain>{requiredMsg}</DataExplain>
     const content = (
@@ -61,7 +64,11 @@ class Component extends React.Component {
         />
         {dataExplain}
         <Footer>
-          <Btn type="default" onClick={this.onClick} style={{ borderRadius: 0 }}>
+          <Btn
+            type="default"
+            onClick={this.onClick}
+            style={{ borderRadius: 0 }}
+          >
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
           <Btn
@@ -90,10 +97,9 @@ const propTypes = {
   onSubmit: PropTypes.func.isRequired,
   visible: PropTypes.bool.isRequired,
   required: PropTypes.bool,
-  requiredMsg: PropTypes.string,
+  requiredMsg: PropTypes.string
 }
 
 Component.propTypes = propTypes
-
 
 export default Component
