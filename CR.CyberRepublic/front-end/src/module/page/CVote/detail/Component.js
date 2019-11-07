@@ -767,11 +767,13 @@ class C extends StandardPage {
   }
 
   async vote({ value, reason }) {
+    if (!reason.trim()) {
+      message.warn(I18N.get('from.CVoteForm.reason.required'))
+      return
+    }
     const { match, vote } = this.props
     const id = _.get(match, 'params.id')
-
     const param = { _id: id, value, reason }
-
     this.ord_loading(true)
     try {
       await vote(param)
@@ -781,7 +783,6 @@ class C extends StandardPage {
     } catch (e) {
       this.ord_loading(false)
       message.error(e.message)
-      logger.error(e)
     }
   }
 

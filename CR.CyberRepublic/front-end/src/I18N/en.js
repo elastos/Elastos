@@ -1175,6 +1175,7 @@ const en = {
   'profile.popover.viewProfile': 'View Profile',
 
   // Module form
+  'from.CVoteForm.reason.required': 'Please input the reason',
   'from.CVoteForm.message.delete.success': 'Delete success',
   'from.CVoteForm.message.updated.success': 'Update success',
   'from.CVoteForm.message.create.success': 'Create success',
