@@ -57,6 +57,7 @@ const (
 	CRCProposal         TxType = 0x25
 	CRCProposalReview   TxType = 0x26
 	CRCProposalTracking TxType = 0x27
+	CRCProposalWithdraw TxType = 0x28
 )
 
 func (self TxType) Name() string {
@@ -113,6 +114,8 @@ func (self TxType) Name() string {
 		return "CRCProposal"
 	case CRCProposalReview:
 		return "CRCProposalReview"
+	case CRCProposalWithdraw:
+		return "CRCProposalWithdraw"
 	case CRCProposalTracking:
 		return "CRCProposalTracking"
 	default:
@@ -358,6 +361,10 @@ func (tx *Transaction) IsUpdateCRTx() bool {
 	return tx.TxType == UpdateCR
 }
 
+func (tx *Transaction) IsCRCProposalWithdrawTx() bool {
+	return tx.TxType == CRCProposalWithdraw
+}
+
 func (tx *Transaction) IsCRCProposalTx() bool {
 	return tx.TxType == CRCProposal
 }
@@ -524,6 +531,8 @@ func GetPayload(txType TxType) (Payload, error) {
 		p = new(payload.CRCProposal)
 	case CRCProposalReview:
 		p = new(payload.CRCProposalReview)
+	case CRCProposalWithdraw:
+		p = new(payload.CRCProposalWithdraw)
 	case CRCProposalTracking:
 		p = new(payload.CRCProposalTracking)
 	default:
