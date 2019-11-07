@@ -1139,7 +1139,9 @@ const zh = {
   'profile.popover.viewProfile': '查看个人资料',
 
   // Module form
-  'from.CVoteForm.reason.required': '请填写理由',
+  'from.CVoteForm.reason.yes.required': '请填写赞成理由',
+  'from.CVoteForm.reason.oppose.required': '请填写反对理由',
+  'from.CVoteForm.reason.abstain.required': '请填写弃权理由',
   'from.CVoteForm.message.delete.success': '删除成功',
   'from.CVoteForm.message.updated.success': '更新成功',
   'from.CVoteForm.message.create.success': '创建成功',

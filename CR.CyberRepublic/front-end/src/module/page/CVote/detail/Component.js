@@ -70,7 +70,6 @@ class C extends StandardPage {
       persist: true,
       loading: false,
       language: LANGUAGES.english, // language for this specifc form only
-      reason: '',
       visibleYes: false,
       visibleOppose: false,
       visibleAbstain: false,
@@ -509,6 +508,8 @@ class C extends StandardPage {
         onToggle={this.showVoteYesModal}
         onSubmit={this.voteYes}
         btnType="primary"
+        required={true}
+        requiredMsg={I18N.get('from.CVoteForm.reason.yes.required')}
       />
     )
     const popOverOppose = (
@@ -518,6 +519,8 @@ class C extends StandardPage {
         onToggle={this.showVoteOpposeModal}
         onSubmit={this.voteOppose}
         btnType="danger"
+        required={true}
+        requiredMsg={I18N.get('from.CVoteForm.reason.oppose.required')}
       />
     )
     const popOverAbstain = (
@@ -526,6 +529,8 @@ class C extends StandardPage {
         visible={visibleAbstain}
         onToggle={this.showVoteAbstainModal}
         onSubmit={this.voteAbstain}
+        required={true}
+        requiredMsg={I18N.get('from.CVoteForm.reason.abstain.required')}
       />
     )
 
@@ -767,10 +772,6 @@ class C extends StandardPage {
   }
 
   async vote({ value, reason }) {
-    if (!reason.trim()) {
-      message.warn(I18N.get('from.CVoteForm.reason.required'))
-      return
-    }
     const { match, vote } = this.props
     const id = _.get(match, 'params.id')
     const param = { _id: id, value, reason }
@@ -788,17 +789,14 @@ class C extends StandardPage {
 
   voteYes = ({ reason }) => {
     this.vote({ value: CVOTE_RESULT.SUPPORT, reason })
-    this.setState({ reason: '' })
   }
 
   voteAbstain = ({ reason }) => {
     this.vote({ value: CVOTE_RESULT.ABSTENTION, reason })
-    this.setState({ reason: '' })
   }
 
   voteOppose = ({ reason }) => {
     this.vote({ value: CVOTE_RESULT.REJECT, reason })
-    this.setState({ reason: '' })
   }
 
   showVoteYesModal = () => {

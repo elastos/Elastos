@@ -1175,7 +1175,9 @@ const en = {
   'profile.popover.viewProfile': 'View Profile',
 
   // Module form
-  'from.CVoteForm.reason.required': 'Please input the reason',
+  'from.CVoteForm.reason.yes.required': 'Please input the approval reason',
+  'from.CVoteForm.reason.oppose.required': 'Please input the opposed reason',
+  'from.CVoteForm.reason.abstain.required': 'Please input the abstained reason',
   'from.CVoteForm.message.delete.success': 'Delete success',
   'from.CVoteForm.message.updated.success': 'Update success',
   'from.CVoteForm.message.create.success': 'Create success',
