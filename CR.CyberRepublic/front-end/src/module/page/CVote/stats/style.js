@@ -5,7 +5,7 @@ export const List = styled.div`
   display: flex;
 `
 export const Item = styled.div`
-  flex: 0 0 33.3%;
+  flex: 1 1 auto;
   height: 10px;
   box-sizing: border-box;
   margin-right: 1px;
