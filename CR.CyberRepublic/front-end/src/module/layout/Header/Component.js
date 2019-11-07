@@ -1,6 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import { Layout, Menu, Icon,  Modal, Dropdown } from 'antd'
+import { Layout, Menu, Icon, Modal, Dropdown } from 'antd'
 import _ from 'lodash'
 import I18N from '@/I18N'
 import MediaQuery from 'react-responsive'
@@ -17,8 +17,19 @@ const { Header } = Layout
 const { analytics, location } = window
 
 const Hamburger = () => (
-  <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fillRule="evenodd" clipRule="evenodd" d="M0 0H14V1H0V0ZM0 5H14V6H0V5ZM14 10H0V11H14V10Z" fill="black" />
+  <svg
+    width="14"
+    height="11"
+    viewBox="0 0 14 11"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M0 0H14V1H0V0ZM0 5H14V6H0V5ZM14 10H0V11H14V10Z"
+      fill="black"
+    />
   </svg>
 )
 
@@ -29,7 +40,7 @@ export default class extends BaseComponent {
     this.state = {
       affixed: false,
       popover: false,
-      completing: false,
+      completing: false
     }
   }
 
@@ -43,63 +54,44 @@ export default class extends BaseComponent {
         footer={null}
         width="70%"
       >
-        {this.state.completing
-      && (
-        <UserEditForm
-          user={this.props.user}
-          switchEditMode={this.onCompleteProfileModalCancel.bind(this)}
-          completing={true}
-        />
-      )
-        }
+        {this.state.completing && (
+          <UserEditForm
+            user={this.props.user}
+            switchEditMode={this.onCompleteProfileModalCancel.bind(this)}
+            completing={true}
+          />
+        )}
       </Modal>
     )
   }
 
   onCompleteProfileModalOk() {
     this.setState({
-      completing: false,
+      completing: false
     })
   }
 
   onCompleteProfileModalCancel() {
     this.setState({
-      completing: false,
+      completing: false
     })
   }
 
   buildAcctDropdown() {
     const isLogin = this.props.isLogin
-    const hasAdminAccess = [USER_ROLE.ADMIN, USER_ROLE.COUNCIL].includes(this.props.role)
+    const hasAdminAccess = [USER_ROLE.ADMIN, USER_ROLE.COUNCIL].includes(
+      this.props.role
+    )
 
     return (
       <Menu onClick={this.clickItem.bind(this)}>
-        {isLogin
-          ? (
-            <Menu.Item key="profile/info">
-              {I18N.get('0200')}
-            </Menu.Item>
-          )
-          : (
-            <Menu.Item key="login">
-              {I18N.get('0201')}
-            </Menu.Item>
-          )
-        }
-        {!isLogin
-          && (
-            <Menu.Item key="register">
-              {I18N.get('0202')}
-            </Menu.Item>
-          )
-        }
-        {isLogin
-          && (
-            <Menu.Item key="logout">
-              {I18N.get('0204')}
-            </Menu.Item>
-          )
-        }
+        {isLogin ? (
+          <Menu.Item key="profile/info">{I18N.get('0200')}</Menu.Item>
+        ) : (
+          <Menu.Item key="login">{I18N.get('0201')}</Menu.Item>
+        )}
+        {!isLogin && <Menu.Item key="register">{I18N.get('0202')}</Menu.Item>}
+        {isLogin && <Menu.Item key="logout">{I18N.get('0204')}</Menu.Item>}
       </Menu>
     )
   }
@@ -153,25 +145,21 @@ export default class extends BaseComponent {
   }
 
   buildHelpDropdown() {
-    const hasAdminAccess = [USER_ROLE.ADMIN, USER_ROLE.COUNCIL].includes(this.props.role)
+    const hasAdminAccess = [USER_ROLE.ADMIN, USER_ROLE.COUNCIL].includes(
+      this.props.role
+    )
 
     return (
       <Menu onClick={this.clickItem.bind(this)} className="help-menu">
-        <Menu.Item key="developer">
-          {I18N.get('0102')}
-        </Menu.Item>
+        <Menu.Item key="developer">{I18N.get('0102')}</Menu.Item>
 
         <Menu.Item key="developer/learn">
           {I18N.get('developer.learn')}
         </Menu.Item>
 
-        {this.props.isLogin
-      && (
-        <Menu.Item key="logout">
-          {I18N.get('0204')}
-        </Menu.Item>
-      )
-        }
+        {this.props.isLogin && (
+          <Menu.Item key="logout">{I18N.get('0204')}</Menu.Item>
+        )}
       </Menu>
     )
   }
@@ -190,14 +178,24 @@ export default class extends BaseComponent {
         <Menu.Item key="docs">
           {I18N.get('navigation.resources.submenu.docs')}
         </Menu.Item>
-
       </Menu>
     )
   }
 
   getSelectedKeys() {
-    let keys = _.map(['cr100', 'crcles', 'ambassadors', 'profile', 'admin',
-      'developer', 'social', 'community'], key => (((this.props.pathname || '').indexOf(`/${key}`) === 0) ? key : ''))
+    let keys = _.map(
+      [
+        'cr100',
+        'crcles',
+        'ambassadors',
+        'profile',
+        'admin',
+        'developer',
+        'social',
+        'community'
+      ],
+      key => ((this.props.pathname || '').indexOf(`/${key}`) === 0 ? key : '')
+    )
 
     if (_.includes(keys, 'admin')) {
       keys = _.union(_.without(keys, ['admin']), ['profile'])
@@ -213,17 +211,17 @@ export default class extends BaseComponent {
       <Headroom>
         <Header className="c_Header">
           <Menu
-          onClick={this.clickItem.bind(this)}
-          className="c_Header_Menu pull-left"
-          selectedKeys={this.getSelectedKeys()}
-          mode="horizontal"
-        >
+            onClick={this.clickItem.bind(this)}
+            className="c_Header_Menu pull-left"
+            selectedKeys={this.getSelectedKeys()}
+            mode="horizontal"
+          >
             <Menu.Item className="c_MenuItem logo" key="landing">
               <MediaQuery minWidth={MIN_WIDTH_PC}>
                 <img src="/assets/images/logo.svg" alt="Cyber Republic" />
               </MediaQuery>
               <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
-                <img src="/assets/images/logo-mark.svg" alt="Cyber Republic"/>
+                <img src="/assets/images/logo-mark.svg" alt="Cyber Republic" />
               </MediaQuery>
               {/* <div className="alpha-tag dsk">ALPHA</div> */}
             </Menu.Item>
@@ -232,17 +230,24 @@ export default class extends BaseComponent {
           <Menu className="c_Header_Menu c_Side_Menu pull-right">
             <Menu.Item className="c_MenuItem help no-margin" key="help">
               <MediaQuery minWidth={MIN_WIDTH_PC}>
-                <Dropdown overlay={helpDropdown} style={{marginTop: '24px'}}>
+                <Dropdown overlay={helpDropdown} style={{ marginTop: '24px' }}>
                   <a className="ant-dropdown-link">
                     <Hamburger />
                   </a>
                 </Dropdown>
               </MediaQuery>
             </Menu.Item>
-            <Menu.Item className="c_MenuItem mobile" key="mobileMenu" onClick={this.props.toggleMobileMenu}>
-              <Icon type="menu-fold" style={{fontSize: '24px'}}/>
+            <Menu.Item
+              className="c_MenuItem mobile"
+              key="mobileMenu"
+              onClick={this.props.toggleMobileMenu}
+            >
+              <Icon type="menu-fold" style={{ fontSize: '24px' }} />
             </Menu.Item>
-            <Menu.Item className="mobile-language-dropdown" style={{ marginTop: 13 }}>
+            <Menu.Item
+              className="mobile-language-dropdown"
+              style={{ marginTop: 13 }}
+            >
               <MediaQuery maxWidth={MAX_WIDTH_MOBILE}>
                 <div className="pull-right language-dropdown mobile">
                   {this.buildLanguageDropdown()}
@@ -258,12 +263,11 @@ export default class extends BaseComponent {
           </MediaQuery>
 
           <Menu
-          onClick={this.clickItem.bind(this)}
-          className="c_Header_Menu pull-right"
-          selectedKeys={this.getSelectedKeys()}
-          mode="horizontal"
-        >
-
+            onClick={this.clickItem.bind(this)}
+            className="c_Header_Menu pull-right"
+            selectedKeys={this.getSelectedKeys()}
+            mode="horizontal"
+          >
             <Menu.Item className="c_MenuItem link" key="council">
               {I18N.get('navigation.council')}
             </Menu.Item>
@@ -289,7 +293,10 @@ export default class extends BaseComponent {
             </Menu.Item>
 
             <Menu.Item className="c_MenuItem link" key="resources">
-              <Dropdown overlay={this.buildResourcesDropdown()} placement="bottomCenter">
+              <Dropdown
+                overlay={this.buildResourcesDropdown()}
+                placement="bottomCenter"
+              >
                 <a className="ant-dropdown-link">
                   {I18N.get('navigation.resources.title')}
                   {/* <Hamburger /> */}
@@ -297,17 +304,15 @@ export default class extends BaseComponent {
               </Dropdown>
             </Menu.Item>
 
-            {this.props.isLogin
-              ? (
-                <Menu.Item className="c_MenuItem link" key="profile">
-                  {I18N.get('navigation.profile')}
-                </Menu.Item>
-              ) : (
-                <Menu.Item className="c_MenuItem link" key="login">
-                  {I18N.get('0201')}
-                </Menu.Item>
-              )
-          }
+            {this.props.isLogin ? (
+              <Menu.Item className="c_MenuItem link" key="profile">
+                {I18N.get('navigation.profile')}
+              </Menu.Item>
+            ) : (
+              <Menu.Item className="c_MenuItem link" key="login">
+                {I18N.get('0201')}
+              </Menu.Item>
+            )}
           </Menu>
           <div className="clearfix" />
           {this.renderProfileToast()}
@@ -319,13 +324,13 @@ export default class extends BaseComponent {
 
   completeProfile = () => {
     this.setState({
-      completing: true,
+      completing: true
     })
   }
 
   dismissToast = () => {
     this.setState({
-      dismissed: true,
+      dismissed: true
     })
 
     localStorage.setItem('complete-profile-dismissed', true)
@@ -336,21 +341,27 @@ export default class extends BaseComponent {
   }
 
   renderProfileToast() {
-    const isShow = !this.state.dismissed
-      && !this.isPermanentlyDismissed()
-      && this.props.isLogin
-      && this.hasIncompleteProfile()
+    const isShow =
+      !this.state.dismissed &&
+      !this.isPermanentlyDismissed() &&
+      this.props.isLogin &&
+      this.hasIncompleteProfile()
 
-    return isShow && (
-      <div className="top-toast">
-        <a onClick={this.completeProfile}>
-          {I18N.get('profile.complete')}
-          <Icon type="right" style={{ marginLeft: 8 }} />
-        </a>
-        <a className="pull-right toast-close-container" onClick={this.dismissToast}>
-          <Icon type="close" />
-        </a>
-      </div>
+    return (
+      isShow && (
+        <div className="top-toast">
+          <a onClick={this.completeProfile}>
+            {I18N.get('profile.complete')}
+            <Icon type="right" style={{ marginLeft: 8 }} />
+          </a>
+          <a
+            className="pull-right toast-close-container"
+            onClick={this.dismissToast}
+          >
+            <Icon type="close" />
+          </a>
+        </div>
+      )
     )
   }
 
@@ -362,49 +373,57 @@ export default class extends BaseComponent {
       'profile.country',
       'profile.bio',
       'profile.skillset',
-      'profile.profession',
+      'profile.profession'
     ]
 
-    return !_.every(requiredProps, prop => _.has(this.props.user, prop)
-      && !_.isEmpty(_.get(this.props.user, prop)))
+    return !_.every(
+      requiredProps,
+      prop =>
+        _.has(this.props.user, prop) && !_.isEmpty(_.get(this.props.user, prop))
+    )
   }
 
-  clickItem = (e) => {
+  clickItem = e => {
     const { key } = e
     const { isLogin } = this.props
 
-    if (_.includes([
-      'landing',
-      'home',
-      'developer',
-      'developer/learn',
-      'cr100',
-      'crcles',
-      'ambassadors',
-      'social',
-      'leader',
-      'community',
-      'proposals',
-      'directory',
-      'account',
-      'tasks',
-      'login',
-      'register',
-      'signup',
-      'profile/info',
-      'how-to-earn',
-      'help',
-      'about',
-      'faq',
-      'contact',
-      'slack',
-      'suggestion',
-      'council',
-      'constitution/1',
-      'whitepaper',
-      'what-is-new',
-      'elips'
-    ], key)) {
+    if (
+      _.includes(
+        [
+          'landing',
+          'home',
+          'developer',
+          'developer/learn',
+          'cr100',
+          'crcles',
+          'ambassadors',
+          'social',
+          'leader',
+          'community',
+          'proposals',
+          'directory',
+          'account',
+          'tasks',
+          'login',
+          'register',
+          'signup',
+          'profile/info',
+          'how-to-earn',
+          'help',
+          'about',
+          'faq',
+          'contact',
+          'slack',
+          'suggestion',
+          'council',
+          'constitution/1',
+          'whitepaper',
+          'what-is-new',
+          'elips'
+        ],
+        key
+      )
+    ) {
       if (key === 'landing') {
         this.props.history.push('/')
       } else {
@@ -418,7 +437,7 @@ export default class extends BaseComponent {
       window.location.reload()
     } else if (key === 'forum') {
       analytics.track('FORUM_CLICKED', {
-        url: location.href,
+        url: location.href
       })
       if (!isLogin) {
         this.props.history.push('/login?MSG_CODE=1')
@@ -429,7 +448,7 @@ export default class extends BaseComponent {
     } else if (key === 'logout') {
       analytics.track('HEADER_CLICKED', {
         action: 'logout',
-        url: location.href,
+        url: location.href
       })
 
       Modal.confirm({
@@ -440,18 +459,17 @@ export default class extends BaseComponent {
         cancelText: I18N.get('.no'),
         onOk: () => {
           analytics.track('LOGOUT', {
-            url: location.href,
+            url: location.href
           })
           this.props.logout()
         },
-        onCancel() {
-        },
+        onCancel() {}
       })
     } else if (key === 'profile') {
       this.props.history.push('/profile/info')
     } else if (key === 'blog') {
       analytics.track('BLOG_CLICKED', {
-        url: location.href,
+        url: location.href
       })
 
       let linkToBlog = 'https://blog.cyberrepublic.org'
@@ -463,7 +481,7 @@ export default class extends BaseComponent {
       window.location.href = linkToBlog
     } else if (key === 'docs') {
       analytics.track('DOCS_CLICKED', {
-        url: location.href,
+        url: location.href
       })
 
       let linkTo = 'https://cyberrepublic.org/docs/#/'
@@ -473,13 +491,10 @@ export default class extends BaseComponent {
       }
 
       window.location.href = linkTo
-    } else if (_.includes([
-      'en',
-      'zh',
-    ], key)) {
+    } else if (_.includes(['en', 'zh'], key)) {
       analytics.track('LANGUAGE_CHANGED', {
         language: e.key,
-        url: location.href,
+        url: location.href
       })
 
       this.props.changeLanguage(e.key)
