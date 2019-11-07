@@ -75,10 +75,12 @@ type ProposalState struct {
 	RegisterHeight     uint32
 	VoteStartHeight    uint32
 
-	CurrentStage     uint8
-	TrackingCount    uint8
-	TerminatedHeight uint32
-	ProposalLeader   []byte
+	CurrentStage           uint8
+	CurrentWithdrawalStage uint8
+	TrackingCount          uint8
+	TerminatedHeight       uint32
+	ProposalLeader         []byte
+	AppropriatedStage      uint8
 }
 
 type ProposalHashSet map[common.Uint256]struct{}
