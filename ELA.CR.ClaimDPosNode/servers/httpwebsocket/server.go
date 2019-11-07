@@ -19,9 +19,9 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/servers/errors"
 
 	"github.com/gorilla/websocket"
 )
@@ -247,7 +247,7 @@ func (s *Server) handle(ss *session, bysMsg []byte, r *http.Request) bool {
 }
 
 func (s *Server) response(ss *session, resp map[string]interface{}) {
-	resp["Desc"] = errors.ErrMap[resp["Error"].(errors.ErrCode)]
+	resp["Desc"] = errors.ErrMap[resp["Error"].(errors.ServerErrCode)]
 	data, err := json.Marshal(resp)
 	if err != nil {
 		log.Error("Websocket response:", err)

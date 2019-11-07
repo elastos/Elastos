@@ -22,7 +22,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
-	. "github.com/elastos/Elastos.ELA/errors"
+	elaerr "github.com/elastos/Elastos.ELA/errors"
+	. "github.com/elastos/Elastos.ELA/servers/errors"
 )
 
 const (
@@ -93,8 +94,9 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 		existingTxIDs[txID] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := b.CheckTransactionSanity(block.Height, txn); errCode != Success {
-			return errors.New("CheckTransactionSanity failed when verifiy block")
+		if err := b.CheckTransactionSanity(block.Height, txn); err != nil {
+			return elaerr.SimpleWithMessage(elaerr.ErrBlockValidation, err,
+				"CheckTransactionSanity failed when verifiy block")
 		}
 
 		// Check for duplicate UTXO inputs in a block
@@ -246,8 +248,9 @@ func (b *BlockChain) checkTxsContext(block *Block) error {
 		}
 
 		if errCode := b.CheckTransactionContext(block.Height,
-			block.Transactions[i], references); errCode != Success {
-			return errors.New("CheckTransactionContext failed when verify block")
+			block.Transactions[i], references); errCode != nil {
+			return elaerr.SimpleWithMessage(elaerr.ErrBlockValidation, errCode,
+				"CheckTransactionContext failed when verify block")
 		}
 
 		// Calculate transaction fee

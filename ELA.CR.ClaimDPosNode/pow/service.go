@@ -26,7 +26,6 @@ import (
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
-	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 )
 
@@ -281,7 +280,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 			break
 		}
 		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references)
-		if errCode != elaerr.Success {
+		if errCode != nil {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}
