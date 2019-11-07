@@ -110,7 +110,7 @@ const en = {
   2306: 'Communities',
   'profile.suggestion': 'My Suggestions',
 
-  'login.success': 'Login Successful',
+  'login.success': 'Welcome back',
 
   'mentions.notFound': 'User not found',
   

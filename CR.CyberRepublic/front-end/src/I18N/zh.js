@@ -110,7 +110,7 @@ const zh = {
   2306: '社区',
   'profile.suggestion': '我的建议',
 
-  'login.success': '登录成功',
+  'login.success': '欢迎回来',
 
   'mentions.notFound': '该用户不存在',
 

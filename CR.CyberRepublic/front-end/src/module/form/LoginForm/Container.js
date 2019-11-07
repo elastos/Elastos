@@ -21,7 +21,7 @@ export default createContainer(Component, state => ({
         const rs = await userService.login(username.trim(), password, persist)
 
         if (rs) {
-          message.success(I18N.get('login.success'))
+          message.success(`${I18N.get('login.success')}, ${username.trim()}`)
 
           const loginRedirect = sessionStorage.getItem('loginRedirect')
           if (loginRedirect) {
