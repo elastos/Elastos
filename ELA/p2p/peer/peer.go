@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/core/types"
+	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/p2p"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 )
@@ -662,9 +663,11 @@ out:
 			// local peer is not forcibly disconnecting and the
 			// remote peer has not disconnected.
 			if p.shouldHandleIOError(err) {
-				errMsg := fmt.Sprintf("Can't read message from %s: %v", p, err)
+				elaErr := elaerr.SimpleWithMessage(elaerr.ErrP2pRejectMalformed,
+					nil, fmt.Sprintf(
+						"Can't read message from %s: %v", p, err))
 				if err != io.ErrUnexpectedEOF {
-					log.Errorf(errMsg)
+					log.Errorf(elaErr.Error())
 				}
 
 				// Push a reject message for the malformed message and wait for
@@ -674,7 +677,7 @@ out:
 				// at least that much of the message was valid, but that is not
 				// currently exposed by wire, so just used malformed for the
 				// command.
-				rejectMsg := msg.NewReject("malformed", msg.RejectMalformed, errMsg)
+				rejectMsg := msg.NewReject("malformed", elaErr)
 				// Send the message and block until it has been sent before returning.
 				doneChan := make(chan struct{}, 1)
 				p.QueueMessage(rejectMsg, doneChan)
@@ -689,8 +692,9 @@ out:
 		p.stallControl <- StallControlMsg{SCCHandlerStart, rmsg}
 		switch m := rmsg.(type) {
 		case *msg.Version:
-
-			rejectMsg := msg.NewReject(m.CMD(), msg.RejectDuplicate, "duplicate version message")
+			elaErr := elaerr.SimpleWithMessage(elaerr.ErrP2pRejectDuplicate,
+				nil, "duplicate version message")
+			rejectMsg := msg.NewReject(m.CMD(), elaErr)
 			// Send the message and block until it has been sent before returning.
 			doneChan := make(chan struct{}, 1)
 			p.QueueMessage(rejectMsg, doneChan)
@@ -978,10 +982,11 @@ func (p *Peer) readRemoteVersionMsg() error {
 
 	remoteVerMsg, ok := message.(*msg.Version)
 	if !ok {
-		errStr := "A version message must precede all others"
-		log.Error(errStr)
+		elaErr := elaerr.SimpleWithMessage(elaerr.ErrP2pRejectMalformed,
+			nil, "A version message must precede all others")
+		log.Error(elaErr)
 
-		rejectMsg := msg.NewReject(message.CMD(), msg.RejectMalformed, errStr)
+		rejectMsg := msg.NewReject(message.CMD(), elaErr)
 		return p.writeMessage(rejectMsg)
 	}
 

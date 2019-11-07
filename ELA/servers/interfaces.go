@@ -29,10 +29,10 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
-	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/pow"
+	. "github.com/elastos/Elastos.ELA/servers/errors"
 	"github.com/elastos/Elastos.ELA/wallet"
 
 	"github.com/tidwall/gjson"
@@ -569,7 +569,7 @@ func GetConfirmInfo(confirm *payload.Confirm) ConfirmInfo {
 	}
 }
 
-func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
+func getBlock(hash common.Uint256, verbose uint32) (interface{}, ServerErrCode) {
 	block, err := Chain.GetBlockByHash(hash)
 	if err != nil {
 		return "", UnknownBlock
@@ -585,7 +585,7 @@ func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
 	return GetBlockInfo(block, false), Success
 }
 
-func getConfirm(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
+func getConfirm(hash common.Uint256, verbose uint32) (interface{}, ServerErrCode) {
 	confirm, err := Store.GetConfirm(hash)
 	if err != nil {
 		return "", UnknownBlock
@@ -684,7 +684,7 @@ func SendRawTransaction(param Params) map[string]interface{} {
 	}
 
 	if err := VerifyAndSendTx(&txn); err != nil {
-		return ResponsePack(err.(ErrCode), err.Error())
+		return ResponsePack(err.(ServerErrCode), err.Error())
 	}
 
 	return ResponsePack(Success, ToReversedString(txn.Hash()))
@@ -2169,7 +2169,7 @@ func VerifyAndSendTx(tx *Transaction) error {
 	return nil
 }
 
-func ResponsePack(errCode ErrCode, result interface{}) map[string]interface{} {
+func ResponsePack(errCode ServerErrCode, result interface{}) map[string]interface{} {
 	if errCode != 0 && (result == "" || result == nil) {
 		result = ErrMap[errCode]
 	}

@@ -1,51 +1,35 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
-// Use of this source code is governed by an MIT
-// license that can be found in the LICENSE file.
-// 
-
 package errors
 
 import (
+	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestErrCode_Message(t *testing.T) {
-	errorCodeArray := []ErrCode{
-		Error,
-		Success,
-		ErrInvalidInput,
-		ErrInvalidOutput,
-		ErrAssetPrecision,
-		ErrTransactionBalance,
-		ErrAttributeProgram,
-		ErrTransactionSignature,
-		ErrTransactionPayload,
-		ErrDoubleSpend,
-		ErrTransactionDuplicate,
-		ErrSidechainTxDuplicate,
-		ErrXmitFail,
-		ErrTransactionSize,
-		ErrUnknownReferredTx,
-		ErrIneffectiveCoinbase,
-		ErrUTXOLocked,
-		ErrSideChainPowConsensus,
-		SessionExpired,
-		IllegalDataFormat,
-		PowServiceNotStarted,
-		InvalidMethod,
-		InvalidParams,
-		InvalidToken,
-		InvalidTransaction,
-		InvalidAsset,
-		UnknownTransaction,
-		UnknownAsset,
-		UnknownBlock,
-		InternalError,
-	}
-	for _, errorCode := range errorCodeArray {
-		message := errorCode.Error()
-		if message == "" {
-			t.Error(errorCode, "Should have message")
-		}
-	}
+func TestSimple(t *testing.T) {
+	err := Simple(ErrFail, nil)
+	assert.Equal(t, ErrFail, err.Code())
+	assert.Equal(t, ErrMap[ErrFail], err.Error())
+	assert.Equal(t, nil, err.InnerError())
+
+	innerErr := errors.New("inner error")
+	err = Simple(ErrFail, innerErr)
+	assert.Equal(t, ErrFail, err.Code())
+	assert.Equal(t, ErrMap[ErrFail], err.Error())
+	assert.Equal(t, innerErr, err.InnerError())
+}
+
+func TestSimpleWithMessage(t *testing.T) {
+	errMsg := "my message"
+	err := SimpleWithMessage(ErrFail, nil, errMsg)
+	assert.Equal(t, ErrFail, err.Code())
+	assert.Equal(t, errMsg, err.Error())
+	assert.Equal(t, nil, err.InnerError())
+
+	innerErr := errors.New("inner error")
+	err = SimpleWithMessage(ErrFail, innerErr, errMsg)
+	assert.Equal(t, ErrFail, err.Code())
+	assert.Equal(t, errMsg, err.Error())
+	assert.Equal(t, innerErr, err.InnerError())
 }
