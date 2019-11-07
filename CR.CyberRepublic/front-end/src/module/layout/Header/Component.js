@@ -158,7 +158,9 @@ export default class extends BaseComponent {
         </Menu.Item>
 
         {this.props.isLogin && (
-          <Menu.Item key="logout">{I18N.get('0204')}</Menu.Item>
+          <Menu.Item key="logout" style={{ color: 'red' }}>
+            {I18N.get('0204')}
+          </Menu.Item>
         )}
       </Menu>
     )
