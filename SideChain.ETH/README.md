@@ -92,7 +92,7 @@ for play-money and real-money. Unless you manually move accounts, Geth will by d
 separate the two networks and will not make any accounts available between them.*
 
 ### How to topup ELA to ETH
-* use compile [ELA-Client](https://github.com/elastos/Elastos.ELA.Client)
+* use compile [Elastos-ELA](https://github.com/elastos/Elastos.ELA)
 * create topup transaction: `./ela-cli wallet -t create --deposit eth_address(ETH address) --amount recharge_value(amount ela units) --fee recharge_fee(fee ela units)`
 * sign transaction: `./ela-cli wallet -t sign --file to_be_signed.txn -p yourpassword(your keystore password)`
 * send transaction: `./ela-cli wallet -t send --file ready_to_send.txn`
