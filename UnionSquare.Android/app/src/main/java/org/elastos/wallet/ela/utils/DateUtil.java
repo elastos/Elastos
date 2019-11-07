@@ -69,6 +69,7 @@ public class DateUtil {
     }
 
     public static String timeNYR(long time, Context context) {
+        if (time == 0) return null;
         Date dat = new Date(time * 1000L);
         int Language = new SPUtil(context).getLanguage();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -101,7 +102,7 @@ public class DateUtil {
     }
 
     public static String time(long sd, Context context) {
-
+        if (sd == 0) return null;
         Date dat = new Date(sd * 1000L);
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(dat);

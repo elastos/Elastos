@@ -45,6 +45,11 @@ android {
             applicationId "org.elastos.unionsquare.regtest"
             resValue "string", "app_name", "ELARegTest"
         }
+        PrvNet {
+            dimension "default"
+            applicationId "org.elastos.unionsquare.prvNet"
+            resValue "string", "app_name", "ELAPrvNet"
+        }
     }
 
     /*
@@ -152,7 +157,7 @@ dependencies {
     //cardview
     implementation 'com.android.support:cardview-v7:28.0.0'
     //utilcode
-    implementation 'com.blankj:utilcode:1.23.7'
+    implementation 'com.blankj:utilcode:1.25.9'
     //BottomBarLayout
     implementation 'com.github.chaychan:BottomBarLayout:1.1.2'
     //banner

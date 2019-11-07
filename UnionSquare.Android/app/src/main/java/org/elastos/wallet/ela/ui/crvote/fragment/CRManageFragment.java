@@ -272,7 +272,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     intent.putExtra("type", Constant.UNREGISTERCR);
                 }
                 intent.putExtra("chainId", MyWallet.ELA);
-                intent.putExtra("ownerPublicKey", ownerPublicKey);
+                intent.putExtra("did", did);
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
                 startActivity(intent);
                 break;

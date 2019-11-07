@@ -3,7 +3,7 @@ package org.elastos.wallet.ela.ui.main;
 import android.os.Bundle;
 import android.view.View;
 
-import com.blankj.utilcode.util.CacheDoubleUtils;
+import com.blankj.utilcode.util. CacheDiskUtils;
 import com.chaychan.library.BottomBarItem;
 import com.chaychan.library.BottomBarLayout;
 
@@ -111,7 +111,7 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
     private void initArea() {
         if (new SPUtil(getContext()).getFristLogin()) {
-            CacheDoubleUtils.getInstance().clear();
+             CacheDiskUtils.getInstance().clear();
             new SPUtil(getContext()).setFristLogin();
         }
         AppUtlis.getArea(getContext(), null);

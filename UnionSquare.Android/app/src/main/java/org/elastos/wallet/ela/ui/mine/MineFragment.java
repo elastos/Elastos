@@ -118,7 +118,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
         if (draftList.size() != 0) {
             tvDid.setVisibility(View.GONE);
         }
-        List<Wallet> wallets = realmUtil.queryUserAllWallet();
+        List<Wallet> wallets = realmUtil.queryTypeUserAllWallet(0);
         for (Wallet wallet : wallets) {
             new AddDIDPresenter().getAllSubWallets(wallet.getWalletId(), this);
 
@@ -243,9 +243,9 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
             }
         }
         if (integer == RxEnum.KEEPDRAFT.ordinal()) {
-
+            draftList = (ArrayList<DIDInfoEntity>) result.getObj();
             //保存草稿成功
-            tvDid.setText("");
+            tvDid.setVisibility(View.GONE);
         }
     }
 
@@ -328,6 +328,10 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
 
                 DIDListEntity didListEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
                 if (didListEntity != null && didListEntity.getDID() != null && didListEntity.getDID().size() > 0) {
+
+                    for (DIDListEntity.DIDBean didBean:didListEntity.getDID()){
+                        didBean.setWalletId((String) o);
+                    }
                     if (tvDid.getVisibility() == View.VISIBLE) {
                         tvDid.setVisibility(View.GONE);
                     }
