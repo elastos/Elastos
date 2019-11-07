@@ -21,7 +21,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
-	. "github.com/elastos/Elastos.ELA/errors"
+	elaerr "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/vm"
 )
@@ -59,50 +59,52 @@ type TxPool struct {
 
 //append transaction to txnpool when check ok.
 //1.check  2.check with ledger(db) 3.check with pool
-func (mp *TxPool) AppendToTxPool(tx *Transaction) error {
+func (mp *TxPool) AppendToTxPool(tx *Transaction) elaerr.ELAError {
 	mp.Lock()
 	defer mp.Unlock()
-	code := mp.appendToTxPool(tx)
-	if code != Success {
-		return code
+	err := mp.appendToTxPool(tx)
+	if err != nil {
+		return err
 	}
 
 	go events.Notify(events.ETTransactionAccepted, tx)
 	return nil
 }
 
-func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
+func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 	txHash := tx.Hash()
 
 	// Don't accept the transaction if it already exists in the pool.  This
 	// applies to orphan transactions as well.  This check is intended to
 	// be a quick check to weed out duplicates.
 	if _, ok := mp.txnList[txHash]; ok {
-		return ErrTransactionDuplicate
+		return elaerr.Simple(elaerr.ErrTxDuplicate, nil)
 	}
 
 	if tx.IsCoinBaseTx() {
 		log.Warnf("coinbase tx %s cannot be added into transaction pool", tx.Hash())
-		return ErrIneffectiveCoinbase
+		return elaerr.Simple(elaerr.ErrBlockIneffectiveCoinbase, nil)
 	}
 
 	chain := blockchain.DefaultLedger.Blockchain
 	bestHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
-	if errCode := chain.CheckTransactionSanity(bestHeight+1, tx); errCode != Success {
+	if errCode := chain.CheckTransactionSanity(bestHeight+1, tx);
+		errCode != nil {
 		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash())
 		return errCode
 	}
 	references, err := chain.UTXOCache.GetTxReference(tx)
 	if err != nil {
 		log.Warn("[CheckTransactionContext] get transaction reference failed")
-		return ErrUnknownReferredTx
+		return elaerr.Simple(elaerr.ErrTxUnknownReferredTx, nil)
 	}
-	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references); errCode != Success {
+	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references);
+		errCode != nil {
 		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash())
 		return errCode
 	}
 	//verify transaction by pool with lock
-	if errCode := mp.verifyTransactionWithTxnPool(tx); errCode != Success {
+	if errCode := mp.verifyTransactionWithTxnPool(tx); errCode != nil {
 		mp.clearTemp()
 		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", tx.Hash())
 		return errCode
@@ -111,7 +113,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 	size := tx.GetSize()
 	if mp.txnListSize+size > pact.MaxTxPoolSize {
 		log.Warn("TxPool check transactions size failed", tx.Hash())
-		return ErrTransactionPoolSize
+		return elaerr.Simple(elaerr.ErrTxPoolOverCapacity, nil)
 	}
 
 	mp.commitTemp()
@@ -121,7 +123,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 	mp.txnList[txHash] = tx
 	mp.txnListSize += size
 
-	return Success
+	return nil
 }
 
 // HaveTransaction returns if a transaction is in transaction pool by the given
@@ -323,7 +325,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 }
 
 func (mp *TxPool) getCRCProposalReviewKey(proposalReview *payload.
-	CRCProposalReview) string {
+CRCProposalReview) string {
 	return proposalReview.DID.String() + proposalReview.ProposalHash.String()
 }
 
@@ -433,7 +435,8 @@ func (mp *TxPool) GetTransaction(hash Uint256) *Transaction {
 }
 
 //verify transaction with txnpool
-func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
+func (mp *TxPool) verifyTransactionWithTxnPool(
+	txn *Transaction) elaerr.ELAError {
 	if txn.IsSideChainPowTx() {
 		// check and replace the duplicate sidechainpow tx
 		mp.replaceDuplicateSideChainPowTx(txn)
@@ -441,151 +444,168 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		// check if the withdraw transaction includes duplicate sidechain tx in pool
 		if err := mp.verifyDuplicateSidechainTx(txn); err != nil {
 			log.Warn(err)
-			return ErrSidechainTxDuplicate
+			return elaerr.Simple(elaerr.ErrTxPoolSidechainTxDuplicate, err)
 		}
 	}
 
 	// check if the transaction includes double spent UTXO inputs
 	if err := mp.verifyDoubleSpend(txn); err != nil {
 		log.Warn(err)
-		return ErrDoubleSpend
+		return elaerr.Simple(elaerr.ErrTxPoolDoubleSpend, err)
 	}
 
-	if errCode := mp.verifyProducerRelatedTx(txn); errCode != Success {
-		return errCode
+	if err := mp.verifyProducerRelatedTx(txn); err != nil {
+		return err
 	}
 
 	return mp.verifyCRRelatedTx(txn)
 }
 
 //verify producer related transaction with txnpool
-func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
+func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) elaerr.ELAError {
 	switch txn.TxType {
 	case RegisterProducer:
 		p, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
-			log.Error("register producer payload cast failed, tx:", txn.Hash())
-			return ErrProducerProcessing
+			err := fmt.Errorf(
+				"register producer payload cast failed, tx:%s", txn.Hash())
+			log.Error(err)
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateProducer(BytesToHexString(p.OwnerPublicKey),
 			BytesToHexString(p.NodePublicKey), p.NickName); err != nil {
 			log.Warn(err)
-			return ErrProducerProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolDPoSTxDuplicate, err)
 		}
 	case UpdateProducer:
 		p, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
-			log.Error("update producer payload cast failed, tx:", txn.Hash())
-			return ErrProducerProcessing
+			err := fmt.Errorf(
+				"update producer payload cast failed, tx:%s", txn.Hash())
+			log.Error(err)
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateProducer(BytesToHexString(p.OwnerPublicKey),
 			BytesToHexString(p.NodePublicKey), p.NickName); err != nil {
 			log.Warn(err)
-			return ErrProducerProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolDPoSTxDuplicate, err)
 		}
 	case CancelProducer:
 		p, ok := txn.Payload.(*payload.ProcessProducer)
 		if !ok {
-			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
-			return ErrProducerProcessing
+			err := fmt.Errorf(
+				"cancel producer payload cast failed, tx:%s", txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateOwner(BytesToHexString(p.OwnerPublicKey)); err != nil {
 			log.Warn(err)
-			return ErrProducerProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolDPoSTxDuplicate, err)
 		}
 	case ActivateProducer:
 		p, ok := txn.Payload.(*payload.ActivateProducer)
 		if !ok {
-			log.Error("activate producer payload cast failed, tx:", txn.Hash())
-			return ErrProducerProcessing
+			err := fmt.Errorf(
+				"activate producer payload cast failed, tx:%s",
+				txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateNode(BytesToHexString(p.NodePublicKey)); err != nil {
 			log.Warn(err)
-			return ErrProducerNodeProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolDPoSTxDuplicate, err)
 		}
 	case IllegalProposalEvidence, IllegalVoteEvidence, IllegalBlockEvidence,
 		IllegalSidechainEvidence, InactiveArbitrators:
 		illegalData, ok := txn.Payload.(payload.DPOSIllegalData)
 		if !ok {
-			log.Error("special tx payload cast failed, tx:", txn.Hash())
-			return ErrProducerProcessing
+			err := fmt.Errorf(
+				"special tx payload cast failed, tx:%s", txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		hash := illegalData.Hash()
 		if err := mp.verifyDuplicateSpecialTx(&hash); err != nil {
 			log.Warn(err)
-			return ErrProducerProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolDPoSTxDuplicate, err)
 		}
 	}
 
-	return Success
+	return nil
 }
 
 //verify CR related transaction with txnpool
-func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
+func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) elaerr.ELAError {
 	switch txn.TxType {
 	case RegisterCR:
 		p, ok := txn.Payload.(*payload.CRInfo)
 		if !ok {
-			log.Error("register CR payload cast failed, tx:", txn.Hash())
-			return ErrCRProcessing
+			err := fmt.Errorf(
+				"register CR payload cast failed, tx:%s", txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
-		if err := mp.verifyDuplicateCRAndProducer(p.DID, p.Code, p.NickName); err != nil {
+		if err := mp.verifyDuplicateCRAndProducer(p.DID, p.Code, p.NickName);
+			err != nil {
 			log.Warn(err)
-			return ErrCRProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	case UpdateCR:
 		p, ok := txn.Payload.(*payload.CRInfo)
 		if !ok {
-			log.Error("update CR payload cast failed, tx:", txn.Hash())
-			return ErrCRProcessing
+			err := fmt.Errorf(
+				"update CR payload cast failed, tx:%s", txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateCRAndNickname(p.DID, p.NickName); err != nil {
 			log.Warn(err)
-			return ErrCRProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	case UnregisterCR:
 		p, ok := txn.Payload.(*payload.UnregisterCR)
 		if !ok {
-			log.Error("unregister CR payload cast failed, tx:", txn.Hash())
-			return ErrCRProcessing
+			err := fmt.Errorf(
+				"unregister CR payload cast failed, tx:%s", txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateCR(p.DID); err != nil {
 			log.Warn(err)
-			return ErrCRProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	case CRCProposal:
 		p, ok := txn.Payload.(*payload.CRCProposal)
 		if !ok {
-			log.Error("CRC proposal payload cast failed, tx:", txn.Hash())
-			return ErrCRProcessing
+			err := fmt.Errorf(
+				"CRC proposal payload cast failed, tx:%s", txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateCRCProposal(p.DraftHash); err != nil {
 			log.Warn(err)
-			return ErrCRProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	case CRCProposalReview:
 		crcProposalReview, ok := txn.Payload.(*payload.CRCProposalReview)
 		if !ok {
-			log.Error("crcProposalReview  payload cast failed, tx:", txn.Hash())
-			return ErrCRProcessing
+			err := fmt.Errorf(
+				"crcProposalReview  payload cast failed, tx:%s",
+				txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateCRCProposalReview(crcProposalReview); err != nil {
 			log.Warn(err)
-			return ErrCRProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	case CRCProposalTracking:
 		cptPayload, ok := txn.Payload.(*payload.CRCProposalTracking)
 		if !ok {
-			log.Error("crcProposalTracking  payload cast failed, tx:", txn.Hash())
-			return ErrCRProcessing
+			err := fmt.Errorf(
+				"crcProposalTracking  payload cast failed, tx:%s", txn.Hash())
+			log.Warn(err)
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateCRCProposalTracking(cptPayload); err != nil {
 			log.Warn(err)
-			return ErrCRProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	}
 
-	return Success
+	return nil
 }
 
 //remove from associated map
@@ -994,12 +1014,8 @@ func (mp *TxPool) delSidechainTx(hash Uint256) {
 
 func (mp *TxPool) MaybeAcceptTransaction(tx *Transaction) error {
 	mp.Lock()
-	code := mp.appendToTxPool(tx)
-	mp.Unlock()
-	if code != Success {
-		return code
-	}
-	return nil
+	defer mp.Unlock()
+	return mp.appendToTxPool(tx)
 }
 
 func (mp *TxPool) RemoveTransaction(txn *Transaction) {

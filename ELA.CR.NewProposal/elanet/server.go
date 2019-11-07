@@ -538,7 +538,7 @@ func (sp *serverPeer) OnTxFilterLoad(_ *peer.Peer, tf *msg.TxFilterLoad) {
 // OnReject is invoked when a peer receives a reject message.
 func (sp *serverPeer) OnReject(_ *peer.Peer, msg *msg.Reject) {
 	log.Infof("%s sent a reject message Code: %s, Hash %s, Reason: %s",
-		sp, msg.Code.String(), msg.Hash.String(), msg.Reason)
+		sp, msg.RejectCode.String(), msg.Hash.String(), msg.Reason)
 }
 
 // pushTxMsg sends a tx message for the provided transaction hash to the

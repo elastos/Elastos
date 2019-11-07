@@ -295,20 +295,20 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 
 	// 3. Verify CR related tx
 	errCode := txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == elaerr.Success)
+	assert.True(t, errCode == nil)
 	txPool.commitTemp()
 
 	// 4. Verify duplicate CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx4)
-	assert.True(t, errCode == elaerr.ErrCRProcessing)
+	assert.True(t, errCode.Code() == elaerr.ErrTxPoolCRTxDuplicate)
 
 	// 5. Verify duplicate producer related tx
 	errCode = txPool.verifyProducerRelatedTx(tx5)
-	assert.True(t, errCode == elaerr.ErrProducerProcessing)
+	assert.True(t, errCode.Code() == elaerr.ErrTxPoolDPoSTxDuplicate)
 
 	// 6. Verify duplicate producer related tx
 	errCode = txPool.verifyProducerRelatedTx(tx6)
-	assert.True(t, errCode == elaerr.ErrProducerProcessing)
+	assert.True(t, errCode.Code() == elaerr.ErrTxPoolDPoSTxDuplicate)
 	txPool.clearTemp()
 
 	// 7. Clean CR related tx
@@ -318,17 +318,17 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 
 	// 8. Verify duplicate producer related tx
 	errCode = txPool.verifyProducerRelatedTx(tx5)
-	assert.True(t, errCode == elaerr.Success)
+	assert.True(t, errCode == nil)
 	txPool.commitTemp()
 
 	// 9. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == elaerr.ErrCRProcessing)
+	assert.True(t, errCode.Code() == elaerr.ErrTxPoolCRTxDuplicate)
 	txPool.clearTemp()
 
 	// 10. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx4)
-	assert.True(t, errCode == elaerr.Success)
+	assert.True(t, errCode == nil)
 	txPool.commitTemp()
 
 	// 11. Clean producer related tx
@@ -339,16 +339,16 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 
 	// 12. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx3)
-	assert.True(t, errCode == elaerr.Success)
+	assert.True(t, errCode == nil)
 
 	// 13. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx7)
-	assert.True(t, errCode == elaerr.Success)
+	assert.True(t, errCode == nil)
 	txPool.commitTemp()
 
 	// 14. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx7)
-	assert.True(t, errCode == elaerr.ErrCRProcessing)
+	assert.True(t, errCode.Code() == elaerr.ErrTxPoolCRTxDuplicate)
 }
 
 func TestTxPool_CleanSidechainTx(t *testing.T) {
@@ -515,7 +515,7 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 		"06dd00000000")
 	tx.Deserialize(bytes.NewReader(txBytes))
 	errCode := txPool.AppendToTxPool(tx)
-	assert.Equal(t, errCode, elaerr.ErrIneffectiveCoinbase)
+	assert.Equal(t, errCode.Code(), elaerr.ErrBlockIneffectiveCoinbase)
 
 }
 

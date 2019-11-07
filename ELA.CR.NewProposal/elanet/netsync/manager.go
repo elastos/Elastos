@@ -18,6 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/elanet/peer"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -327,8 +328,7 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 
 		// Convert the error into an appropriate reject message and
 		// send it.
-		code, reason := mempool.ErrToRejectErr(err)
-		peer.PushRejectMsg(p2p.CmdTx, code, reason, &txHash, false)
+		peer.PushRejectMsg(p2p.CmdTx, err, &txHash, false)
 		return
 	}
 
@@ -413,11 +413,10 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		bmsg.block.Block.Height)
 	_, isOrphan, err := sm.blockMemPool.AddDposBlock(bmsg.block)
 	if err != nil {
-		reason := fmt.Sprintf("Rejected block %v from %s: %v", blockHash,
-			peer, err)
-		log.Info(reason)
+		elaErr := errors.SimpleWithMessage(errors.ErrP2pReject, err,
+			fmt.Sprintf("Rejected block %v from %s", blockHash, peer))
 
-		peer.PushRejectMsg(p2p.CmdBlock, msg.RejectInvalid, reason, &blockHash, false)
+		peer.PushRejectMsg(p2p.CmdBlock, elaErr, &blockHash, false)
 		return
 	}
 

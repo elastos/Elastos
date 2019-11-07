@@ -10,6 +10,7 @@ import (
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/p2p"
 )
 
@@ -64,7 +65,7 @@ type Reject struct {
 
 	// RejectCode is a code indicating why the command was rejected.  It
 	// is encoded as a uint8 on the wire.
-	Code RejectCode
+	RejectCode RejectCode
 
 	// Reason is a human-readable string with specific details (over and
 	// above the reject code) about why the command was rejected.
@@ -73,14 +74,6 @@ type Reject struct {
 	// Hash identifies a specific block or transaction that was rejected
 	// and therefore only applies the MsgBlock and MsgReject messages.
 	Hash common.Uint256
-}
-
-func NewReject(cmd string, code RejectCode, reason string) *Reject {
-	return &Reject{
-		Cmd:    cmd,
-		Code:   code,
-		Reason: reason,
-	}
 }
 
 func (msg *Reject) CMD() string {
@@ -96,7 +89,7 @@ func (msg *Reject) Serialize(w io.Writer) error {
 		return err
 	}
 
-	if err := common.WriteUint8(w, uint8(msg.Code)); err != nil {
+	if err := common.WriteUint8(w, uint8(msg.RejectCode)); err != nil {
 		return err
 	}
 
@@ -117,7 +110,7 @@ func (msg *Reject) Deserialize(r io.Reader) (err error) {
 	if err != nil {
 		return err
 	}
-	msg.Code = RejectCode(code)
+	msg.RejectCode = RejectCode(code)
 
 	msg.Reason, err = common.ReadVarString(r)
 	if err != nil {
@@ -125,4 +118,41 @@ func (msg *Reject) Deserialize(r io.Reader) (err error) {
 	}
 
 	return msg.Hash.Deserialize(r)
+}
+
+func NewReject(cmd string, err errors.ELAError) *Reject {
+	var code RejectCode
+	switch err.Code() {
+	case errors.ErrP2pRejectMalformed:
+		code = RejectMalformed
+	case errors.ErrP2pRejectInvalid:
+		code = RejectInvalid
+	case errors.ErrP2pRejectObsolete:
+		code = RejectObsolete
+	case errors.ErrTxDuplicate:
+	case errors.ErrP2pRejectDuplicate:
+		code = RejectDuplicate
+	case errors.ErrP2pRejectNonstandard:
+		code = RejectNonstandard
+	case errors.ErrP2pRejectDust:
+		code = RejectDust
+	case errors.ErrTxBalance:
+	case errors.ErrP2pRejectInsufficientFee:
+		code = RejectInsufficientFee
+	case errors.ErrP2pRejectCheckpoint:
+		code = RejectCheckpoint
+	default:
+		code = RejectInvalid
+	}
+	formatter := errors.ToJsonFormatter(err)
+	reason := err.Error()
+	if str, err := formatter.Format(); err == nil {
+		reason = str
+	}
+
+	return &Reject{
+		Cmd:        cmd,
+		RejectCode: code,
+		Reason:     reason,
+	}
 }

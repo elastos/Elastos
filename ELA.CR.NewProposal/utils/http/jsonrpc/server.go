@@ -7,16 +7,15 @@ package jsonrpc
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"sync"
-
-	"crypto/sha256"
-	"crypto/subtle"
-	"encoding/base64"
 
 	"github.com/elastos/Elastos.ELA/common/log"
 	htp "github.com/elastos/Elastos.ELA/utils/http"
