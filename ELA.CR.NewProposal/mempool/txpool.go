@@ -39,6 +39,7 @@ type TxPool struct {
 	specialTxList       map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
 	crcProposals        map[Uint256]struct{}
 	crcProposalReview   map[string]struct{}
+	crcProposalWithdraw map[Uint256]struct{}
 	crcProposalTracking map[Uint256]struct{}
 	producerNicknames   map[string]struct{}
 	crNicknames         map[string]struct{}
@@ -51,6 +52,7 @@ type TxPool struct {
 	tempSpecialTxList       map[Uint256]struct{}
 	tempCRCProposals        map[Uint256]struct{}
 	tempCRCProposalReview   map[string]struct{}
+	tempCRCProposalWithdraw map[Uint256]struct{}
 	tempCRCProposalTracking map[Uint256]struct{}
 	tempProducerNicknames   map[string]struct{}
 	tempCRNicknames         map[string]struct{}
@@ -112,6 +114,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 
 	size := tx.GetSize()
 	if mp.txnListSize+size > pact.MaxTxPoolSize {
+		mp.clearTemp()
 		log.Warn("TxPool check transactions size failed", tx.Hash())
 		return elaerr.Simple(elaerr.ErrTxPoolOverCapacity, nil)
 	}
@@ -306,6 +309,13 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					key := mp.getCRCProposalReviewKey(crcProposalReview)
 					mp.delCRCProposalReview(key)
+				case CRCProposalWithdraw:
+					crcProposalWithDraw, ok := tx.Payload.(*payload.CRCProposalWithdraw)
+					if !ok {
+						log.Error("crcProposalWithDraw payload cast failed, tx:", tx.Hash())
+						continue
+					}
+					mp.delCRCProposalWithdraw(crcProposalWithDraw.ProposalHash)
 				case CRCProposalTracking:
 					cptPayload, ok := tx.Payload.(*payload.CRCProposalTracking)
 					if !ok {
@@ -591,6 +601,16 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) elaerr.ELAError {
 			log.Warn(err)
 			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
+	case CRCProposalWithdraw:
+		crcProposalWithdraw, ok := txn.Payload.(*payload.CRCProposalWithdraw)
+		if !ok {
+			log.Error("crcProposalWithdraw  payload cast failed, tx:", txn.Hash())
+			return ErrCRProcessing
+		}
+		if err := mp.verifyDuplicateCRCProposalWithdraw(crcProposalWithdraw); err != nil {
+			log.Warn(err)
+			return ErrCRProcessing
+		}
 	case CRCProposalTracking:
 		cptPayload, ok := txn.Payload.(*payload.CRCProposalTracking)
 		if !ok {
@@ -764,6 +784,16 @@ func (mp *TxPool) verifyDuplicateCRCProposal(originProposalHash Uint256) error {
 	return nil
 }
 
+func (mp *TxPool) verifyDuplicateCRCProposalWithdraw(crcProposalWithdraw *payload.CRCProposalWithdraw) error {
+	_, ok := mp.crcProposalWithdraw[crcProposalWithdraw.ProposalHash]
+	if ok {
+		return errors.New("this origin crcProposalWithdraw in being processed")
+	}
+	mp.addCRCProposalWithdraw(crcProposalWithdraw.ProposalHash)
+
+	return nil
+}
+
 func (mp *TxPool) verifyDuplicateCRCProposalReview(crcProposalReview *payload.CRCProposalReview) error {
 
 	key := mp.getCRCProposalReviewKey(crcProposalReview)
@@ -860,6 +890,14 @@ func (mp *TxPool) addCRCProposalReview(key string) {
 
 func (mp *TxPool) delCRCProposalReview(key string) {
 	delete(mp.crcProposalReview, key)
+}
+
+func (mp *TxPool) addCRCProposalWithdraw(key Uint256) {
+	mp.tempCRCProposalWithdraw[key] = struct{}{}
+}
+
+func (mp *TxPool) delCRCProposalWithdraw(key Uint256) {
+	delete(mp.crcProposalWithdraw, key)
 }
 
 func (mp *TxPool) addCRCProposalTracking(key Uint256) {
@@ -1051,6 +1089,7 @@ func (mp *TxPool) clearTemp() {
 	mp.tempCRDIDs = make(map[Uint168]struct{})
 	mp.tempCRCProposals = make(map[Uint256]struct{})
 	mp.tempCRCProposalReview = make(map[string]struct{})
+	mp.tempCRCProposalWithdraw = make(map[Uint256]struct{})
 	mp.tempCRCProposalTracking = make(map[Uint256]struct{})
 	mp.tempProducerNicknames = make(map[string]struct{})
 	mp.tempCRNicknames = make(map[string]struct{})
@@ -1087,6 +1126,9 @@ func (mp *TxPool) commitTemp() {
 	for k, v := range mp.tempCRCProposalReview {
 		mp.crcProposalReview[k] = v
 	}
+	for k, v := range mp.tempCRCProposalWithdraw {
+		mp.crcProposalWithdraw[k] = v
+	}
 }
 
 func NewTxPool(params *config.Params) *TxPool {
@@ -1103,6 +1145,7 @@ func NewTxPool(params *config.Params) *TxPool {
 		producerNicknames:       make(map[string]struct{}),
 		crNicknames:             make(map[string]struct{}),
 		crcProposalReview:       make(map[string]struct{}),
+		crcProposalWithdraw:     make(map[Uint256]struct{}),
 		crcProposalTracking:     make(map[Uint256]struct{}),
 		tempInputUTXOList:       make(map[string]*Transaction),
 		tempSidechainTxList:     make(map[Uint256]*Transaction),
@@ -1114,6 +1157,7 @@ func NewTxPool(params *config.Params) *TxPool {
 		tempProducerNicknames:   make(map[string]struct{}),
 		tempCRNicknames:         make(map[string]struct{}),
 		tempCRCProposalReview:   make(map[string]struct{}),
+		tempCRCProposalWithdraw: make(map[Uint256]struct{}),
 		tempCRCProposalTracking: make(map[Uint256]struct{}),
 	}
 }

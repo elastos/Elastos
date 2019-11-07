@@ -35,6 +35,7 @@ const (
 	luaCRCProposalName         = "crcproposal"
 	luaCRCProposalReviewName   = "crcproposalreview"
 	luaCRCProposalTrackingName = "crcproposaltracking"
+	luaCRCProposalWithdrawName = "crcproposalwithdraw"
 )
 
 func RegisterCoinBaseType(L *lua.LState) {
@@ -1227,5 +1228,85 @@ func checkCRCProposalTracking(L *lua.LState, idx int) *payload.CRCProposalTracki
 		return v
 	}
 	L.ArgError(1, "CRCProposalTracking expected")
+	return nil
+}
+
+func RegisterCRCProposalWithdrawType(L *lua.LState) {
+	mt := L.NewTypeMetatable(luaCRCProposalWithdrawName)
+	L.SetGlobal("crcproposalwithdraw", mt)
+	// static attributes
+	L.SetField(mt, "new", L.NewFunction(newCRCProposalWithdraw))
+	// methods
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(),
+		crcProposalWithdrawMethods))
+}
+
+// Constructor
+func newCRCProposalWithdraw(L *lua.LState) int {
+	fmt.Println("newCRCProposalWithdraw begin")
+
+	proposalHashString := L.ToString(1)
+	sponsorPublicKeyStr := L.ToString(2)
+	stage := L.ToInt64(3)
+	fee := L.ToInt64(4)
+
+	needSign := true
+	client, err := checkClient(L, 5)
+	if err != nil {
+		needSign = false
+	}
+	proposalHash, _ := common.Uint256FromHexString(proposalHashString)
+	sponsorPublicKey, _ := common.HexStringToBytes(sponsorPublicKeyStr)
+	crcProposalWithdraw := &payload.CRCProposalWithdraw{
+		ProposalHash:     *proposalHash,
+		SponsorPublicKey: sponsorPublicKey,
+		Stage:            uint8(stage),
+		Fee:              common.Fixed64(fee),
+	}
+	if needSign {
+		rpSignBuf := new(bytes.Buffer)
+		err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawVersion)
+		code := getCode(sponsorPublicKeyStr)
+		codeHash, _ := common.Uint160FromBytes(code)
+		fmt.Println("newCRCProposalWithdraw codeHash", common.BytesToHexString(codeHash.Bytes()))
+		acc := client.GetAccountByCodeHash(codeHash)
+		if acc == nil {
+			fmt.Println("no available account in wallet")
+			os.Exit(1)
+		}
+		rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		crcProposalWithdraw.Sign = rpSig
+	}
+
+	ud := L.NewUserData()
+	ud.Value = crcProposalWithdraw
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCProposalWithdrawName))
+	L.Push(ud)
+	fmt.Println("newCRCProposalWithdraw end")
+	return 1
+}
+
+var crcProposalWithdrawMethods = map[string]lua.LGFunction{
+	"get": crcProposalWithdrawGet,
+}
+
+// Getter and setter for the Person#Name
+func crcProposalWithdrawGet(L *lua.LState) int {
+	p := checkCRCProposalWithdraw(L, 1)
+	fmt.Println(p)
+
+	return 0
+}
+
+func checkCRCProposalWithdraw(L *lua.LState, idx int) *payload.CRCProposalWithdraw {
+	ud := L.CheckUserData(idx)
+	if v, ok := ud.Value.(*payload.CRCProposalWithdraw); ok {
+		return v
+	}
+	L.ArgError(1, "CRCProposalWithdraw expected")
 	return nil
 }

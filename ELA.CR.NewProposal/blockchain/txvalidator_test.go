@@ -2179,6 +2179,149 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalReviewTransaction() {
 	delete(s.Chain.crCommittee.GetProposalManager().Proposals, crcProposalReview.ProposalHash)
 }
 
+func (s *txValidatorTestSuite) getCRCProposalWithdrawTx(crPublicKeyStr,
+	crPrivateKeyStr string, stage uint8, recipient,
+	commitee *common.Uint168, recipAmout, commiteAmout common.Fixed64) *types.
+	Transaction {
+
+	privateKey1, _ := common.HexStringToBytes(crPrivateKeyStr)
+	pkBytes, _ := common.HexStringToBytes(crPublicKeyStr)
+
+	txn := new(types.Transaction)
+	txn.TxType = types.CRCProposalWithdraw
+	txn.Version = types.TxVersionDefault
+	crcProposalWithdraw := &payload.CRCProposalWithdraw{
+		ProposalHash:     *randomUint256(),
+		SponsorPublicKey: pkBytes,
+		Stage:            stage,
+		Fee:              common.Fixed64(1),
+	}
+
+	signBuf := new(bytes.Buffer)
+	crcProposalWithdraw.SerializeUnsigned(signBuf, payload.CRCProposalReviewVersion)
+	sig, _ := crypto.Sign(privateKey1, signBuf.Bytes())
+	crcProposalWithdraw.Sign = sig
+
+	txn.Inputs = []*types.Input{
+		{
+			Previous: types.OutPoint{
+				TxID:  common.EmptyHash,
+				Index: math.MaxUint16,
+			},
+			Sequence: math.MaxUint32,
+		},
+	}
+	txn.Outputs = []*types.Output{
+		{
+			AssetID:     config.ELAAssetID,
+			ProgramHash: *recipient,
+			Value:       recipAmout,
+		},
+		{
+			AssetID:     config.ELAAssetID,
+			ProgramHash: *commitee,
+			Value:       commiteAmout,
+		},
+	}
+
+	txn.Payload = crcProposalWithdraw
+	txn.Programs = []*program.Program{&program.Program{
+		Code:      getCode(crPublicKeyStr),
+		Parameter: nil,
+	}}
+	return txn
+}
+
+func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+
+	RecipientAddress := "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
+	CRCCommitteeAddress := "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	Recipient, _ := common.Uint168FromAddress(RecipientAddress)
+	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
+	pk1Bytes, _ := common.HexStringToBytes(publicKeyStr1)
+	ela := common.Fixed64(10000000)
+
+	references := make(map[*types.Input]*types.Output)
+	references[&types.Input{}] = &types.Output{
+		ProgramHash: *randomUint168(),
+		Value:       common.Fixed64(60 * ela),
+	}
+	CRCCommitteeAddressU168, _ := common.Uint168FromAddress(CRCCommitteeAddress)
+	s.Chain.chainParams.CRCAddress = *CRCCommitteeAddressU168
+
+	// stage = 1 ok
+	txn := s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 1,
+		Recipient, CRCCommitteeAddressU168, 9*ela, 50*ela)
+	crcProposalWithdraw, _ := txn.Payload.(*payload.CRCProposalWithdraw)
+	propState := &crstate.ProposalState{
+		Status: crstate.VoterAgreed,
+		Proposal: payload.CRCProposal{
+
+			SponsorPublicKey: pk1Bytes,
+			Recipient:        *Recipient,
+			Budgets:          []common.Fixed64{10 * ela, 20 * ela, 30 * ela},
+		},
+		CurrentStage:           2,
+		CurrentWithdrawalStage: 0,
+	}
+	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
+		ProposalHash] = propState
+	err := s.Chain.checkTransactionOutput(tenureHeight, txn)
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.NoError(err)
+
+	//CRCProposalWithdraw Stage wrong too small
+	txn.Payload.(*payload.CRCProposalWithdraw).Stage = 0
+	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.EqualError(err, "CRCProposalWithdraw Stage wrong too small")
+
+	//CRCProposalWithdraw Stage wrong too big
+	txn.Payload.(*payload.CRCProposalWithdraw).Stage = 2
+	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.EqualError(err, "CRCProposalWithdraw Stage wrong too big")
+
+	//stage =2 ok
+	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 2,
+		Recipient, CRCCommitteeAddressU168, 19*ela, 40*ela)
+	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
+	propState.CurrentWithdrawalStage = 1
+	propState.CurrentStage = 3
+	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
+		ProposalHash] = propState
+	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.NoError(err)
+
+	//stage =3 ok
+	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 3,
+		Recipient, CRCCommitteeAddressU168, 29*ela, 30*ela)
+	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
+	propState.CurrentWithdrawalStage = 2
+	propState.CurrentStage = 4
+	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
+		ProposalHash] = propState
+	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.NoError(err)
+
+	//len(txn.Outputs) ==0 transaction has no outputs
+	rightOutPuts := txn.Outputs
+	txn.Outputs = []*types.Output{}
+	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
+	s.EqualError(err, "transaction has no outputs")
+
+	//txn.Outputs[1].ProgramHash !=CRCComitteeAddresss
+	txn.Outputs = rightOutPuts
+	txn.Outputs[1].ProgramHash = *Recipient
+	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
+	s.EqualError(err, "txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
+
+}
+
 func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"

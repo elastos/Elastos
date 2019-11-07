@@ -209,6 +209,26 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 	}
 }
 
+func (p *ProposalManager) CanWithdrawalAmount(hash common.Uint256) common.Fixed64 {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	propState := p.getProposal(hash)
+	if propState == nil {
+		return common.Fixed64(0)
+	}
+	amout := common.Fixed64(0)
+
+	//Budgets slice index from 0---n-1
+	//stage   user  index from 1---n
+	//so i from propState.CurrentWithdrawalStage+1-1 to CurrentStage-1-1
+	start := propState.CurrentWithdrawalStage
+	end := propState.CurrentStage - 2
+	for i := start; i <= end; i++ {
+		amout += propState.Proposal.Budgets[i]
+	}
+	return amout
+}
+
 // transferCRAgreedState will transfer CRAgreed state by votes' reject amount.
 func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 	height uint32, history *utils.History) {
@@ -224,8 +244,10 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 	} else {
 		history.Append(height, func() {
 			proposal.Status = VoterAgreed
+			proposal.CurrentStage = 2
 		}, func() {
 			proposal.Status = CRAgreed
+			proposal.CurrentStage = 1
 		})
 	}
 }
@@ -307,13 +329,15 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		return
 	}
 	proposalState := &ProposalState{
-		Status:             Registered,
-		Proposal:           *proposal,
-		TxHash:             tx.Hash(),
-		RegisterHeight:     height,
-		CRVotes:            map[common.Uint168]payload.VoteResult{},
-		VotersRejectAmount: common.Fixed64(0),
-		ProposalLeader:     proposal.SponsorPublicKey,
+		Status:                 Registered,
+		Proposal:               *proposal,
+		TxHash:                 tx.Hash(),
+		RegisterHeight:         height,
+		CRVotes:                map[common.Uint168]payload.VoteResult{},
+		VotersRejectAmount:     common.Fixed64(0),
+		CurrentStage:           1,
+		CurrentWithdrawalStage: 0,
+		ProposalLeader:         proposal.SponsorPublicKey,
 	}
 	CRSponsorDID := proposal.CRSponsorDID
 	hash := proposal.Hash()
@@ -335,7 +359,6 @@ func getDIDByCode(code []byte) (*common.Uint168, error) {
 	return ct1.ToProgramHash(), error
 }
 
-// registerProposal will register proposal state in proposal manager
 func (p *ProposalManager) proposalReview(tx *types.Transaction,
 	height uint32, history *utils.History) {
 	proposalReview := tx.Payload.(*payload.CRCProposalReview)
@@ -348,6 +371,21 @@ func (p *ProposalManager) proposalReview(tx *types.Transaction,
 		proposalState.CRVotes[did] = proposalReview.VoteResult
 	}, func() {
 		delete(proposalState.CRVotes, did)
+	})
+}
+
+func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
+	height uint32, history *utils.History) {
+	proposalWithdraw := tx.Payload.(*payload.CRCProposalWithdraw)
+	proposalState := p.getProposal(proposalWithdraw.ProposalHash)
+	if proposalState == nil {
+		return
+	}
+
+	history.Append(height, func() {
+		proposalState.CurrentWithdrawalStage++
+	}, func() {
+		proposalState.CurrentWithdrawalStage--
 	})
 }
 
