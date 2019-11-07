@@ -1,22 +1,18 @@
-{% extends 'Helloworld/base.html' %}
-
-{% block title %}Generate API Key{% endblock %}
-
-{% block content %}
+{% extends 'Helloworld/base.html' %} {% block title %} Generate API Key
+{%endblock %} {% block content %}
 <div class="main">
-   <h1> Generate API Key</h1> <br>
-  <button onclick="displayapiKey()"> Generate API Key</button>
+  <h1>Generate API Key</h1>
+  <br />
+  <button onclick="displayapiKey()">Generate API Key</button>
 </div>
-<br>
+<br />
 <h1>Documentation</h1>
-<h2> Generates an API Key of Length 32 bit</h2>
+<h2>Generates an API Key of Length 32 bit</h2>
 <p id="display"></p>
-<br>
-{% endblock %}
-
-    <script>
-function displayapiKey() {
-  document.getElementById("display").innerHTML = "{{API Key}}";
-}
+<br />
+<script>
+  function displayapiKey() {
+    document.getElementById("display").innerHTML = "{{API_Key}}";
+  }
 </script>
-
+{% endblock %}
