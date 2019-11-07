@@ -7,40 +7,44 @@ import './style'
 import _ from 'lodash'
 import I18N from '@/I18N'
 
-import { USER_ROLE, USER_LANGUAGE } from '@/constant'
+import { USER_LANGUAGE } from '@/constant'
 
 const { analytics, location } = window
 
 export default class extends BaseComponent {
-
-  handleMenuClick (ev) {
+  handleMenuClick(ev) {
     const key = ev.key
-    const {isLogin} = this.props
+    const { isLogin } = this.props
 
-    if (_.includes([
-      'cr100',
-      'crcles',
-      'ambassadors',
-      'login',
-      'register',
-      'signup',
-      'profile/info',
-      'profile/teams',
-      'developer',
-      'developer/learn',
-      'community',
-      'help',
-      'about',
-      'faq',
-      'contact',
-      'suggestion',
-      'proposals',
-      'constitution/1',
-      'whitepaper',
-      'council',
-      'what-is-new',
-      'elips'
-    ], key)) {
+    if (
+      _.includes(
+        [
+          'cr100',
+          'crcles',
+          'ambassadors',
+          'login',
+          'register',
+          'signup',
+          'profile/info',
+          'profile/teams',
+          'developer',
+          'developer/learn',
+          'community',
+          'help',
+          'about',
+          'faq',
+          'contact',
+          'suggestion',
+          'proposals',
+          'constitution/1',
+          'whitepaper',
+          'council',
+          'what-is-new',
+          'elips'
+        ],
+        key
+      )
+    ) {
       this.props.history.push(`/${ev.key}`)
     } else if (key === 'logout') {
       Modal.confirm({
@@ -52,13 +56,13 @@ export default class extends BaseComponent {
         onOk: () => {
           this.props.logout()
         },
-        onCancel () {
-        }
+        onCancel() {}
       })
     } else if (key === 'teams') {
-      this.props.history.push('/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC')
+      this.props.history.push(
+        '/developer/search?lookingFor=TEAM&sortBy=createdAt&sortOrder=DESC'
+      )
     } else if (key === 'blog') {
-
       // eslint-disable-next-line no-undef
       analytics.track('BLOG_CLICKED', {
         url: location.href
@@ -71,9 +75,7 @@ export default class extends BaseComponent {
       }
 
       window.location.href = linkToBlog
-
     } else if (key === 'forum') {
-
       // eslint-disable-next-line no-undef
       analytics.track('FORUM_CLICKED', {
         url: location.href
@@ -85,7 +87,6 @@ export default class extends BaseComponent {
         window.open(forumLink, '_blank')
       }
     } else if (key === 'docs') {
-
       // eslint-disable-next-line no-undef
       analytics.track('DOCS_CLICKED', {
         url: location.href
@@ -98,44 +99,31 @@ export default class extends BaseComponent {
       }
 
       window.location.href = linkTo
-
     } else if (key === 'landing') {
       this.props.history.push('/')
     }
   }
 
-  ord_render () {
-
+  ord_render() {
     const isLogin = this.props.user.is_login
-    const hasAdminAccess = [USER_ROLE.ADMIN, USER_ROLE.COUNCIL].includes(this.props.user.role)
 
     // animateStyle is passed in and handled by react-motion
     return (
       <div className="c_mobileMenu" style={this.props.animateStyle}>
         <Row>
           <Col className="right-align">
-            <Icon className="closeMobileMenu" type="menu-unfold" onClick={this.props.toggleMobileMenu}/>
+            <Icon
+              className="closeMobileMenu"
+              type="menu-unfold"
+              onClick={this.props.toggleMobileMenu}
+            />
           </Col>
         </Row>
         <Row>
           <Col className="menuContainer">
-            <Menu
-              onClick={this.handleMenuClick.bind(this)}
-              mode="inline"
-            >
-              <Menu.Item key="landing">
-                {I18N.get('0012')}
-              </Menu.Item>
-              {/*
-              <Menu.Item key="teams">
-                  {I18N.get('0005')}
-              </Menu.Item>
-              <Menu.Item key="council-secretariat">
-                  {I18N.get('navigation.council')}
-              </Menu.Item> */}
-              {/* <Menu.Item key="council">
-                  {I18N.get('council.0001')}
-              </Menu.Item> */}
+            <Menu onClick={this.handleMenuClick.bind(this)} mode="inline">
+              <Menu.Item key="landing">{I18N.get('0012')}</Menu.Item>
+
               <Menu.Item key="council">
                 {I18N.get('navigation.council')}
               </Menu.Item>
@@ -148,9 +136,7 @@ export default class extends BaseComponent {
                 {I18N.get('navigation.suggestion')}
               </Menu.Item>
 
-              <Menu.Item key="elips">
-                {I18N.get('navigation.elips')}
-              </Menu.Item>
+              <Menu.Item key="elips">{I18N.get('navigation.elips')}</Menu.Item>
 
               <Menu.Item key="proposals">
                 {I18N.get('navigation.proposal')}
@@ -172,52 +158,25 @@ export default class extends BaseComponent {
         </Row>
         <Row>
           <Col className="menuContainer">
-            <Menu
-              onClick={this.handleMenuClick.bind(this)}
-              mode="inline"
-            >
+            <Menu onClick={this.handleMenuClick.bind(this)} mode="inline">
               {isLogin && (
-              <Menu.Item key="profile/info">
-                {I18N.get('0104')}
-              </Menu.Item>
+                <Menu.Item key="profile/info">{I18N.get('0104')}</Menu.Item>
               )}
               {!isLogin && (
-              <Menu.Item key="login">
-                {I18N.get('0201')}
-              </Menu.Item>
+                <Menu.Item key="login">{I18N.get('0201')}</Menu.Item>
               )}
               {!isLogin && (
-              <Menu.Item key="register">
-                {I18N.get('0202')}
-              </Menu.Item>
+                <Menu.Item key="register">{I18N.get('0202')}</Menu.Item>
               )}
               {isLogin && (
-              <Menu.Item key="logout" style={{color: 'red'}}>
-                {I18N.get('0204')}
-              </Menu.Item>
+                <Menu.Item key="logout" style={{ color: 'red' }}>
+                  {I18N.get('0204')}
+                </Menu.Item>
               )}
-            </Menu>
-          </Col>
-        </Row>
-        <Row>
-          <Col className="menuContainer">
-            <Menu
-              onClick={this.handleMenuClick.bind(this)}
-              mode="inline"
-            >
-              {/*
-                          <Menu.Item key="help">
-                              {I18N.get('0007')}
-                          </Menu.Item>
-                          <Menu.Item key="forum">
-                              {I18N.get('0011')}
-                          </Menu.Item>
-                          */}
             </Menu>
           </Col>
         </Row>
       </div>
     )
   }
-
 }
