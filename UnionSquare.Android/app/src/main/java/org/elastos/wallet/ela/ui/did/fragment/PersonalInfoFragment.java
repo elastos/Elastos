@@ -11,6 +11,8 @@ import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
+import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -21,6 +23,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -53,7 +56,8 @@ public class PersonalInfoFragment extends BaseFragment {
     TextView tvTitleRight;
     private DIDInfoEntity didInfo;
     private DIDInfoEntity.CredentialSubjectBean credentialSubjectBean;
-    private String birthday;
+    private long birthday;
+    private long code;
 
     @Override
     protected int getLayoutId() {
@@ -65,6 +69,12 @@ public class PersonalInfoFragment extends BaseFragment {
 
         didInfo = data.getParcelable("didInfo");
         credentialSubjectBean = didInfo.getCredentialSubject();
+        if (credentialSubjectBean == null) {
+            credentialSubjectBean = new DIDInfoEntity.CredentialSubjectBean();
+            didInfo.setCredentialSubject(credentialSubjectBean);
+        }
+        if (data.getBoolean("useDraft"))
+            putData();
     }
 
     @Override
@@ -94,11 +104,11 @@ public class PersonalInfoFragment extends BaseFragment {
                 new DialogUtil().showTime(getBaseActivity(), calendar.getTimeInMillis(), minData, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        String endDate = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
+                        String date = ((TextConfigDataPicker) view).getYear() + "-" + (((TextConfigDataPicker) view).getMonth() + 1)
                                 + "-" + ((TextConfigDataPicker) view).getDayOfMonth();
-                        birthday = ((TextConfigDataPicker) view).getYear() + "." + (((TextConfigDataPicker) view).getMonth() + 1)
-                                + "." + ((TextConfigDataPicker) view).getDayOfMonth();
-                        tvBirthday.setText(endDate);
+                        birthday = DateUtil.parseToLong(date) / 1000L;
+
+                        tvBirthday.setText(DateUtil.timeNYR(birthday, getContext()));
                     }
                 });
                 break;
@@ -116,6 +126,19 @@ public class PersonalInfoFragment extends BaseFragment {
         }
     }
 
+    private void putData() {
+        etName.setText(credentialSubjectBean.getName());
+        etNick.setText(credentialSubjectBean.getNickname());
+        tvSex.setText(("n/a".equals(credentialSubjectBean.getGender()) || credentialSubjectBean.getGender() == null) ? null : (credentialSubjectBean.getGender().equals("male") ? getString(R.string.man) : getString(R.string.woman)));
+        birthday = credentialSubjectBean.getBirthday();
+        tvBirthday.setText(DateUtil.time(birthday, getContext()));
+        etHeadurl.setText(credentialSubjectBean.getAvatar());
+        etEmail.setText(credentialSubjectBean.getEmail());
+        etCode.setText(credentialSubjectBean.getCode());
+        etPhone.setText(credentialSubjectBean.getPhone());
+        tvArea.setText(AppUtlis.getLoc(getContext(), credentialSubjectBean.getNation()));
+    }
+
     private void setData() {
         credentialSubjectBean.setName(getText(etName));
         credentialSubjectBean.setNickname(getText(etNick));
@@ -123,18 +146,9 @@ public class PersonalInfoFragment extends BaseFragment {
         credentialSubjectBean.setBirthday(birthday);
         credentialSubjectBean.setAvatar(getText(etHeadurl));
         credentialSubjectBean.setEmail(getText(etEmail));
-        String codePhone = null;
-        String code = getText(etCode);
-        String phone = getText(etPhone);
-        if (phone != null && code != null) {
-            codePhone = code + phone;
-        } else if (phone == null && code != null) {
-            codePhone = code;
-        } else if (phone != null) {
-            codePhone = phone;
-        }
-        credentialSubjectBean.setPhone(codePhone);
-        credentialSubjectBean.setNation(getText(tvArea));
+        credentialSubjectBean.setCode(getText(etCode));
+        credentialSubjectBean.setPhone(getText(etPhone));
+        credentialSubjectBean.setNation(code + "");
 
     }
 
@@ -144,6 +158,7 @@ public class PersonalInfoFragment extends BaseFragment {
         int integer = result.getCode();
         if (integer == RxEnum.AREA.ordinal()) {
             Area area = (Area) result.getObj();
+            code = area.getCode();
             int Language = new SPUtil(getContext()).getLanguage();
             String name;
             if (Language == 0) {

@@ -10,18 +10,32 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Contact;
+import org.elastos.wallet.ela.db.table.SubWallet;
+import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
+import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
+import org.elastos.wallet.ela.ui.did.entity.DIDListEntity;
 import org.elastos.wallet.ela.ui.did.fragment.AddDIDFragment;
 import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
+import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
+import org.elastos.wallet.ela.ui.did.presenter.DIDListPresenter;
 import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.ContactDetailFragment;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -38,7 +52,7 @@ import butterknife.OnClick;
  * tab-设置
  */
 
-public class MineFragment extends BaseFragment implements CommonRvListener {
+public class MineFragment extends BaseFragment implements CommonRvListener, NewBaseViewData {
 
 
     @BindView(R.id.statusbarutil_fake_status_bar_view)
@@ -77,6 +91,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
     private RealmUtil realmUtil;
     private List<Contact> contacts = new ArrayList<>();
     private ContactRecAdapetr adapter;
+    private ArrayList<DIDInfoEntity> draftList;
 
     @Override
     protected int getLayoutId() {
@@ -99,6 +114,15 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         llLanguge.getChildAt(sp.getLanguage()).setSelected(true);
         realmUtil = new RealmUtil();
         registReceiver();
+        draftList = CacheUtil.getDIDInfoList();
+        if (draftList.size() != 0) {
+            tvDid.setVisibility(View.GONE);
+        }
+        List<Wallet> wallets = realmUtil.queryTypeUserAllWallet(0);
+        for (Wallet wallet : wallets) {
+            new AddDIDPresenter().getAllSubWallets(wallet.getWalletId(), this);
+
+        }
     }
 
     @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english,
@@ -170,8 +194,15 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
                 ((BaseFragment) getParentFragment()).start(AboutFragment.class);
                 break;
             case R.id.rl_did:
-                ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
-                // ((BaseFragment) getParentFragment()).start(DIDListFragment.class);
+
+                if (tvDid.getVisibility() == View.VISIBLE) {
+                    ((BaseFragment) getParentFragment()).start(AddDIDFragment.class);
+                } else {
+                    Bundle bundle1 = new Bundle();
+                    bundle1.putParcelableArrayList("draftInfo", draftList);
+                    bundle1.putParcelableArrayList("netList", netList);
+                    ((BaseFragment) getParentFragment()).start(DIDListFragment.class, bundle1);
+                }
                 break;
         }
     }
@@ -210,6 +241,11 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
                 rv.setVisibility(View.VISIBLE);
                 setRecycleView();
             }
+        }
+        if (integer == RxEnum.KEEPDRAFT.ordinal()) {
+            draftList = (ArrayList<DIDInfoEntity>) result.getObj();
+            //保存草稿成功
+            tvDid.setVisibility(View.GONE);
         }
     }
 
@@ -253,9 +289,6 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         }
     }
 
-    private static final long WAIT_TIME = 2000L;
-    private long TOUCH_TIME = 0;
-
     /**
      * 处理回退事件
      *
@@ -277,5 +310,34 @@ public class MineFragment extends BaseFragment implements CommonRvListener {
         ((BaseFragment) getParentFragment()).start(contactDetailFragment);
     }
 
+    private ArrayList<DIDListEntity.DIDBean> netList = new ArrayList<>();
 
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "getAllSubWallets":
+                ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
+                for (SubWallet subWallet : subWalletListEntity.getData()) {
+                    if (subWallet.getChainId().equals(MyWallet.IDChain)) {
+                        new DIDListPresenter().getResolveDIDInfo((String) o, 0, 1, "", this);
+                        break;
+                    }
+                }
+                break;
+            case "getResolveDIDInfo":
+
+                DIDListEntity didListEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
+                if (didListEntity != null && didListEntity.getDID() != null && didListEntity.getDID().size() > 0) {
+
+                    for (DIDListEntity.DIDBean didBean:didListEntity.getDID()){
+                        didBean.setWalletId((String) o);
+                    }
+                    if (tvDid.getVisibility() == View.VISIBLE) {
+                        tvDid.setVisibility(View.GONE);
+                    }
+                    netList.addAll(didListEntity.getDID());
+                }
+                break;
+        }
+    }
 }

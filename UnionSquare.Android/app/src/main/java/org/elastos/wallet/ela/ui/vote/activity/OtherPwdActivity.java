@@ -37,6 +37,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private String type, amount, nodePublicKey, ownerPublicKey, name, url;
     private long code;
     private String inputJson;
+    private String did;
 
     @Override
     protected int getLayoutId() {
@@ -68,6 +69,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         url = data.getStringExtra("url");
         code = data.getLongExtra("code", 0);
         inputJson = data.getStringExtra("inputJson");
+        did = data.getStringExtra("did");
 
 
     }
@@ -94,15 +96,25 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         presenter.generateCRInfoPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, name, url, code, pwd, this);
                         break;
                     case Constant.UNREGISTERSUPRRNODE:
-                    case Constant.WITHDRAWSUPERNODE:
+
                         presenter.generateCancelProducerPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
                         break;
                     case Constant.UNREGISTERCR:
-                    case Constant.WITHDRAWCR:
-                        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, pwd, this);
+
+                        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, did, pwd, this);
                         break;
                     case Constant.DIDSIGNUP:
                         presenter.generateDIDInfoPayload(wallet.getWalletId(), inputJson, pwd, this);
+                        break;
+                    case Constant.WITHDRAWSUPERNODE:
+                        presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
+                                Arith.sub(Arith.mul(amount, MyWallet.RATE_S), "10000").toPlainString(), this);
+
+                        break;
+                    case Constant.WITHDRAWCR:
+                        presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
+                                Arith.sub(Arith.mul(amount, MyWallet.RATE_S), "10000").toPlainString(), "", this);
+
                         break;
 
                 }
@@ -136,24 +148,12 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 presenter.createIDTransaction(wallet.getWalletId(), ((CommmonStringEntity) baseEntity).getData(), this);
                 break;
             case "generateUnregisterCRPayload":
-                if (type.equals(Constant.WITHDRAWCR)) {
-                    //提取按钮
-                    presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            Arith.sub(Arith.mul(amount, MyWallet.RATE_S), "10000").toPlainString(), "", this);
-                } else if (type.equals(Constant.UNREGISTERCR)) {
-                    //注销按钮
-                    presenter.createUnregisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), this);
-                }
+                presenter.createUnregisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), this);
                 break;
             case "generateCancelProducerPayload":
-                if (type.equals(Constant.WITHDRAWSUPERNODE)) {
-                    //提取按钮
-                    presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                            Arith.sub(Arith.mul(amount, MyWallet.RATE_S), "10000").toPlainString(), this);
-                } else if (type.equals(Constant.UNREGISTERSUPRRNODE)) {
-                    //注销按钮
-                    presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), this);
-                }
+                //注销按钮
+                presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), this);
+
                 break;
             case "generateProducerPayload":
                 if (type.equals(Constant.SUPERNODESIGN)) {

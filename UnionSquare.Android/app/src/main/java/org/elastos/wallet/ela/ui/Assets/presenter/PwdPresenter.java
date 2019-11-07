@@ -191,12 +191,12 @@ public class PwdPresenter extends NewPresenterAbstract {
     }
 
     //cr
-    public void generateUnregisterCRPayload(String masterWalletID, String chainID, String publicKey, String payPasswd, BaseActivity baseActivity) {
+    public void generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID, String payPasswd, BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "generateUnregisterCRPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().generateUnregisterCRPayload(masterWalletID, chainID, publicKey, payPasswd);
+                return baseActivity.getMyWallet().generateUnregisterCRPayload(masterWalletID, chainID, crDID, payPasswd);
             }
         });
         subscriberObservable(observer, observable, baseActivity);

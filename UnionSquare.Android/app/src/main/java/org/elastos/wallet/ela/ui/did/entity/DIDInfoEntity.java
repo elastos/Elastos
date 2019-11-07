@@ -6,10 +6,11 @@ import android.support.annotation.Nullable;
 
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DIDInfoEntity extends BaseEntity implements Parcelable {
+public class DIDInfoEntity extends BaseEntity implements Parcelable, Serializable {
     @Override
     public boolean equals(@Nullable Object other) {
         return this.getId().equals(((DIDInfoEntity) other).getId());
@@ -27,16 +28,29 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
     /**
      * id : innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs
      * operation : create
+     * status : "Pending
      * publicKey : [{"id":"#primary","publicKey":"031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4"},{"id":"#recovery","controller":"ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}]
-     * credentialSubject : {"id":"innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs","name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019.10.12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","phone":"+8613032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"}
+     * credentialSubject : {"id":"innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs","name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019-10-12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","code":"86","phone":"13032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"}
      * expires : 2024-02-10T17:00:00Z
      */
-
+    private long issuanceDate;//编辑时间
     private String id;
-    private String operation;
+    private String didName;
+    private String walletId;
+    private String operation;//1.创建：create 2.更新，修改：update 3.注销：deactivate
+    private String status;//Pending 确认中   Confirmed已确认  Unpublished 未发布(草稿  这个api不提供,保存草稿时候自己设置)
     private CredentialSubjectBean credentialSubject;
-    private String expires;
+    private long expires;
     private List<PublicKeyBean> publicKey;
+
+
+    public long getIssuanceDate() {
+        return issuanceDate;
+    }
+
+    public void setIssuanceDate(long issuanceDate) {
+        this.issuanceDate = issuanceDate;
+    }
 
     public String getId() {
         return id;
@@ -44,6 +58,20 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
 
     public void setId(String id) {
         this.id = id;
+    }
+    public String getDidName() {
+        return didName;
+    }
+
+    public void setDidName(String didName) {
+        this.didName = didName;
+    }
+    public String getWalletId() {
+        return walletId;
+    }
+
+    public void setWalletId(String walletId) {
+        this.walletId = walletId;
     }
 
     public String getOperation() {
@@ -54,6 +82,14 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
         this.operation = operation;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public CredentialSubjectBean getCredentialSubject() {
         return credentialSubject;
     }
@@ -62,11 +98,11 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
         this.credentialSubject = credentialSubject;
     }
 
-    public String getExpires() {
+    public long getExpires() {
         return expires;
     }
 
-    public void setExpires(String expires) {
+    public void setExpires(long expires) {
         this.expires = expires;
     }
 
@@ -78,14 +114,14 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
         this.publicKey = publicKey;
     }
 
-    public static class CredentialSubjectBean implements Parcelable {
+    public static class CredentialSubjectBean implements Parcelable, Serializable {
         /**
          * id : innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs
          * name : H60CZ
          * nickname : jHo8AB
          * alipay : alipay@223.com
          * avatar : img.jpg
-         * birthday : 2019.10.12
+         * birthday : 2019-10-12
          * descript : this is simple descript
          * email : test@test.com
          * facebook : facebook
@@ -95,18 +131,17 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
          * microsoftPassport : MicrosoftPassport
          * nation : china
          * phone : +8613032454523
+         * code : 86
          * twitter : twitter
          * wechat : wechat2333
          * weibo : test@sina.com
          */
 
-        private String id;
         private String name;
-        private String didName;
         private String nickname;
         private String alipay;
         private String avatar;
-        private String birthday;
+        private long birthday;
         private String descript;
         private String email;
         private String facebook;
@@ -114,28 +149,12 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
         private String googleAccount;
         private String homePage;
         private String microsoftPassport;
-        private String nation;
+        private String nation;//使用area code
         private String phone;
+        private String code;//新增
         private String twitter;
         private String wechat;
         private String weibo;
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getDidName() {
-            return didName;
-        }
-
-        public void setDidName(String didName) {
-            this.didName = didName;
-        }
-
         public String getName() {
             return name;
         }
@@ -168,11 +187,11 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
             this.avatar = avatar;
         }
 
-        public String getBirthday() {
+        public long getBirthday() {
             return birthday;
         }
 
-        public void setBirthday(String birthday) {
+        public void setBirthday(long birthday) {
             this.birthday = birthday;
         }
 
@@ -248,6 +267,14 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
             this.phone = phone;
         }
 
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
         public String getTwitter() {
             return twitter;
         }
@@ -279,13 +306,11 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(this.id);
             dest.writeString(this.name);
-            dest.writeString(this.didName);
             dest.writeString(this.nickname);
             dest.writeString(this.alipay);
             dest.writeString(this.avatar);
-            dest.writeString(this.birthday);
+            dest.writeLong(this.birthday);
             dest.writeString(this.descript);
             dest.writeString(this.email);
             dest.writeString(this.facebook);
@@ -295,6 +320,7 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
             dest.writeString(this.microsoftPassport);
             dest.writeString(this.nation);
             dest.writeString(this.phone);
+            dest.writeString(this.code);
             dest.writeString(this.twitter);
             dest.writeString(this.wechat);
             dest.writeString(this.weibo);
@@ -304,13 +330,11 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
         }
 
         protected CredentialSubjectBean(Parcel in) {
-            this.id = in.readString();
             this.name = in.readString();
-            this.didName = in.readString();
             this.nickname = in.readString();
             this.alipay = in.readString();
             this.avatar = in.readString();
-            this.birthday = in.readString();
+            this.birthday = in.readLong();
             this.descript = in.readString();
             this.email = in.readString();
             this.facebook = in.readString();
@@ -320,6 +344,7 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
             this.microsoftPassport = in.readString();
             this.nation = in.readString();
             this.phone = in.readString();
+            this.code = in.readString();
             this.twitter = in.readString();
             this.wechat = in.readString();
             this.weibo = in.readString();
@@ -338,7 +363,7 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
         };
     }
 
-    public static class PublicKeyBean implements Parcelable {
+    public static class PublicKeyBean implements Parcelable , Serializable{
         /**
          * id : #primary
          * publicKey : 031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4
@@ -414,10 +439,14 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(this.issuanceDate);
         dest.writeString(this.id);
+        dest.writeString(this.didName);
+        dest.writeString(this.walletId);
         dest.writeString(this.operation);
+        dest.writeString(this.status);
         dest.writeParcelable(this.credentialSubject, flags);
-        dest.writeString(this.expires);
+        dest.writeLong(this.expires);
         dest.writeList(this.publicKey);
     }
 
@@ -425,10 +454,14 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable {
     }
 
     protected DIDInfoEntity(Parcel in) {
+        this.issuanceDate = in.readLong();
         this.id = in.readString();
+        this.didName = in.readString();
+        this.walletId = in.readString();
         this.operation = in.readString();
+        this.status = in.readString();
         this.credentialSubject = in.readParcelable(CredentialSubjectBean.class.getClassLoader());
-        this.expires = in.readString();
+        this.expires = in.readLong();
         this.publicKey = new ArrayList<PublicKeyBean>();
         in.readList(this.publicKey, PublicKeyBean.class.getClassLoader());
     }

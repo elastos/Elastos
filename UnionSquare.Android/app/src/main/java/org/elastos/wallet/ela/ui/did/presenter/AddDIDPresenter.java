@@ -39,7 +39,7 @@ public class AddDIDPresenter extends NewPresenterAbstract {
 
 
     public void getAllSubWallets(String walletId, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getAllSubWallets");
+        Observer observer = createObserver(baseFragment, "getAllSubWallets",walletId);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

@@ -17,6 +17,7 @@ import com.allen.library.SuperButton;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -32,14 +33,18 @@ import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
+import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -120,6 +125,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
+        registReceiver();
     }
 
 
@@ -266,7 +272,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     intent.putExtra("type", Constant.UNREGISTERCR);
                 }
                 intent.putExtra("chainId", MyWallet.ELA);
-                intent.putExtra("ownerPublicKey", ownerPublicKey);
+                intent.putExtra("did", did);
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
                 startActivity(intent);
                 break;
@@ -285,6 +291,19 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 //getdepositcoin();//获取赎回金额
                 presenter.getCRDepositcoin(did, this);
                 break;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    popBackFragment();
+                }
+            });
         }
     }
 }

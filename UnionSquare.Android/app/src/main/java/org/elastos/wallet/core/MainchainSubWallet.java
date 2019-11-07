@@ -68,8 +68,8 @@ public class MainchainSubWallet extends SubWallet {
         return GenerateCRInfoPayload(mMainchainProxy, crPublickey, nickName, url, location, payPasswd);
     }
 
-    public String GenerateUnregisterCRPayload(String crPublickey, String payPasswd) throws WalletException {
-        return GenerateUnregisterCRPayload(mMainchainProxy, crPublickey, payPasswd);
+    public String GenerateUnregisterCRPayload(String crDID, String payPasswd) throws WalletException {
+        return GenerateUnregisterCRPayload(mMainchainProxy, crDID, payPasswd);
     }
 
     public String GetCROwnerDID() throws WalletException {
@@ -153,7 +153,7 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String GenerateCRInfoPayload(long proxy, String crPublickey, String nickName, String url, long location, String payPasswd);
 
-    private native String GenerateUnregisterCRPayload(long proxy, String crPublicKey, String payPasswd);
+    private native String GenerateUnregisterCRPayload(long proxy, String crDID, String payPasswd);
 
     private native String GetCROwnerDID(long proxy);
 

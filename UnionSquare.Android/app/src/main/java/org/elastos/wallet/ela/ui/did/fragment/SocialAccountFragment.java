@@ -8,10 +8,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
@@ -19,12 +21,18 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.main.MainFragment;
-import org.elastos.wallet.ela.ui.vote.SuperNodeListFragment;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.DateUtil;
+import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -67,12 +75,26 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
         didInfo = data.getParcelable("didInfo");
         credentialSubjectBean = didInfo.getCredentialSubject();
         wallet = data.getParcelable("wallet");
+        if (data.getBoolean("useDraft"))
+            putData();
     }
+
 
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.addsocialaccount));
+        registReceiver();
+    }
 
+    private void putData() {
+        etHomepage.setText(credentialSubjectBean.getHomePage());
+        etGoogle.setText(credentialSubjectBean.getGoogleAccount());
+        etMircrosoft.setText(credentialSubjectBean.getMicrosoftPassport());
+        etFacebook.setText(credentialSubjectBean.getFacebook());
+        etTwitter.setText(credentialSubjectBean.getTwitter());
+        etWebo.setText(credentialSubjectBean.getWeibo());
+        etWechat.setText(credentialSubjectBean.getWechat());
+        etAlipay.setText(credentialSubjectBean.getAlipay());
     }
 
     private void setData() {
@@ -97,13 +119,7 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
                 break;
             case R.id.tv_keep:
                 setData();
-                ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
-                if (infoEntities.contains(didInfo)) {
-                    infoEntities.remove(didInfo);
-                }
-                infoEntities.add(didInfo);
-                CacheUtil.setDIDInfoList(infoEntities);
-                showToast(getString(R.string.keepsucess));
+                keep();
                 toDIDListFragment();
                 break;
 
@@ -111,10 +127,23 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
         }
     }
 
+    private void keep() {
+        ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
+        if (infoEntities.contains(didInfo)) {
+            infoEntities.remove(didInfo);
+        }
+        didInfo.setIssuanceDate(new Date().getTime()/1000);
+        didInfo.setStatus("Unpublished");
+        infoEntities.add(didInfo);
+        CacheUtil.setDIDInfoList(infoEntities);
+        post(RxEnum.KEEPDRAFT.ordinal(), null, null);
+        showToast(getString(R.string.keepsucess));
+    }
+
     public void toDIDListFragment() {
         Fragment DIDListFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(DIDListFragment.class.getName());
         if (DIDListFragment != null) {
-            popTo(DIDListFragment.getClass(),false);
+            popTo(DIDListFragment.getClass(), false);
         } else {
             startWithPopTo(new DIDListFragment(), MainFragment.class, false);
 
@@ -125,15 +154,30 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "getFee":
+                JSONObject json = (JSONObject) JSON.toJSON(didInfo);
+                json.remove("credentialSubject");
                 Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.IDChain);
-                intent.putExtra("inputJson", JSON.toJSONString(credentialSubjectBean));
+                intent.putExtra("inputJson", JSON.toJSONString(json));
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
                 intent.putExtra("type", Constant.DIDSIGNUP);
                 startActivity(intent);
                 break;
         }
 
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    toDIDListFragment();
+                }
+            });
+        }
     }
 }

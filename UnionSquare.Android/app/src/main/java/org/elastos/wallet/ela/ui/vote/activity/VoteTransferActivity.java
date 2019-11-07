@@ -64,8 +64,11 @@ public class VoteTransferActivity extends BaseActivity {
         amount = data.getStringExtra("amount");
         fee = data.getLongExtra("fee", MyWallet.feePerKb);
         chainId = data.getStringExtra("chainId");
+        if (chainId == null) {
+            chainId = MyWallet.ELA;
+        }
         tvAmount.setText(amount + " " + chainId);
-        tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + chainId);//0.0001
+        tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + MyWallet.ELA);//0.0001
         String type = data.getStringExtra("type");
         switch (type) {
             case Constant.CRUPDATE:
