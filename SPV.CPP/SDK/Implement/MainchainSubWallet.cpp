@@ -1175,5 +1175,46 @@ namespace Elastos {
 			return result;
 		}
 
+		nlohmann::json MainchainSubWallet::CreateImpeachmentCRCTransaction(const std::string &fromAddress,
+		                                                                   const nlohmann::json &votes,
+		                                                                   const std::string &memo) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("fromAddr: {}", fromAddress);
+			ArgInfo("votes: {}", votes.dump());
+			ArgInfo("memo: {}", memo);
+
+			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
+
+			BigInt bgStake = 0;
+
+			VoteContent voteContent(VoteContent::CRCImpeachment);
+			std::vector<CandidateVotes> candidates;
+			std::string key;
+			bytes_t candidate;
+			BigInt value;
+			for (nlohmann::json::const_iterator it = votes.cbegin(); it != votes.cend(); ++it) {
+				ErrorChecker::CheckParam(!it.value().is_string(), Error::InvalidArgument, "stake value should be big int string");
+
+				key = it.key();
+				Address didAddress(key);
+				ErrorChecker::CheckParam(!didAddress.Valid(), Error::InvalidArgument, "invalid candidate did");
+				candidate = didAddress.ProgramHash().bytes();
+
+				value.setDec(it.value().get<std::string>());
+				ErrorChecker::CheckParam(value <= 0, Error::InvalidArgument, "stake value should larger than 0");
+
+				voteContent.AddCandidate(CandidateVotes(candidate, value));
+			}
+
+			TransactionPtr tx = CreateVoteTx(voteContent, memo, false);
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+
+			ArgInfo("r => {}", result.dump());
+
+			return result;
+		}
+
 	}
 }

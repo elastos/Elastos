@@ -155,6 +155,10 @@ namespace Elastos {
 			                                                        const nlohmann::json &votes,
 			                                                        const std::string &memo);
 
+			virtual nlohmann::json CreateImpeachmentCRCTransaction(const std::string &fromAddress,
+			                                                       const nlohmann::json &votes,
+			                                                       const std::string &memo);
+
 		private:
 			PayloadPtr GenerateCRCProposalPayload(uint8_t type,
 			                                      const std::string &sponsorPublicKey,

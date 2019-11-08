@@ -175,6 +175,8 @@ namespace Elastos {
 				newVoteMaxAmount = voteContent.GetMaxVoteAmount();
 			} else if (voteContent.GetType() == VoteContent::CRCProposal) {
 				newVoteMaxAmount = voteContent.GetMaxVoteAmount();
+			} else if (voteContent.GetType() == VoteContent::CRCImpeachment) {
+				newVoteMaxAmount = voteContent.GetTotalVoteAmount();
 			} else {
 				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Invalid vote content type");
 			}
@@ -200,7 +202,7 @@ namespace Elastos {
 							continue;
 
 						oldVoteContent.push_back(vc);
-						if (vc.GetType() == VoteContent::CRC) {
+						if (vc.GetType() == VoteContent::CRC || vc.GetType() == VoteContent::CRCImpeachment) {
 							oldVoteAmount.push_back(BigInt(vc.GetTotalVoteAmount()));
 						} else if (vc.GetType() == VoteContent::Delegate || vc.GetType() == VoteContent::CRCProposal) {
 							oldVoteAmount.push_back(BigInt(vc.GetMaxVoteAmount()));
@@ -280,11 +282,11 @@ namespace Elastos {
 			_parent->Unlock();
 
 			VoteContentArray newVoteContent;
-			if (max)
-				newVoteMaxAmount = totalInputAmount - feeAmount;
-
 			newVoteContent.push_back(voteContent);
-			newVoteContent.back().SetAllCandidateVotes(newVoteMaxAmount.getUint64());
+			if (max) {
+				newVoteMaxAmount = totalInputAmount - feeAmount;
+				newVoteContent.back().SetAllCandidateVotes(newVoteMaxAmount.getUint64());
+			}
 
 			assert(oldVoteAmount.size() == oldVoteContent.size());
 			for (size_t i = 0; i < oldVoteAmount.size(); ++i) {

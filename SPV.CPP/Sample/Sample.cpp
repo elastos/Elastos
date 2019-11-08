@@ -510,6 +510,25 @@ static void CreateVoteCRProposalTransaction(const std::string &masterWalletID, c
 	PublishTransaction(mainchainSubWallet, tx);
 }
 
+static void CreateImpeachmentCRTransaction(const std::string &masterWalletID, const std::string &subWalletID) {
+	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
+	if (!subWallet)
+		return;
+
+	IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+	if (mainchainSubWallet == nullptr) {
+		logger->error("[{}:{}] is not instance of IMainchainSubWallet", masterWalletID, subWalletID);
+		return;
+	}
+
+	nlohmann::json votes = nlohmann::json::parse(
+			"{\"innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs\":\"50\",\"iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww\":\"40\"}");
+
+	nlohmann::json tx = mainchainSubWallet->CreateImpeachmentCRCTransaction("", votes, memo);
+
+	PublishTransaction(mainchainSubWallet, tx);
+}
+
 static void GetVotedList(const std::string &masterWalletID, const std::string &subWalletID) {
 	ISubWallet *subWallet = GetSubWallet(masterWalletID, subWalletID);
 	if (!subWallet)
@@ -783,7 +802,7 @@ static void ELATest() {
 	static bool combineUTXODone = true, transferDone = true, depositDone = true;
 	static bool voteDone = true, registerProducer = true, updateProducer = true, cancelProducer = true, retrieveDeposit = true;
 	static bool registerCR = true, updateCR = true, unregisterCR = true, retrieveCr = true, voteCR = true;
-	static bool createCRProposal = true, voteCRProposal = true;
+	static bool createCRProposal = true, voteCRProposal = true, impeachmentCR = true;
 
 	logger->debug("ELA {}", separator);
 	GetAllTxSummary(gMasterWalletID, gMainchainSubWalletID);
@@ -870,6 +889,11 @@ static void ELATest() {
 	if (!voteCRProposal) {
 		CreateVoteCRProposalTransaction(gMasterWalletID, gMainchainSubWalletID);
 		voteCRProposal = true;
+	}
+
+	if (!impeachmentCR) {
+		CreateImpeachmentCRTransaction(gMasterWalletID, gMainchainSubWalletID);
+		impeachmentCR = true;
 	}
 
 	logger->debug("ELA {}", separator);
