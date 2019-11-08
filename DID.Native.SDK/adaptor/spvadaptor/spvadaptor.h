@@ -7,13 +7,15 @@ extern "C" {
 
 typedef struct SpvDidAdaptor SpvDidAdaptor;
 
-SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId);
+SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId, const char *network);
 
 void SpvDidAdaptor_Destroy(SpvDidAdaptor *adaptor);
 
-int SpvDidAdaptor_createIdTransaction(SpvDidAdaptor *adaptor, const char *payload, const char *memo, const char *password);
+int SpvDidAdaptor_CreateIdTransaction(SpvDidAdaptor *adaptor, const char *payload, const char *memo, const char *password);
 
 const char *SpvDidAdaptor_Resolve(SpvDidAdaptor *adaptor, const char *did);
+
+void SpvDidAdaptor_FreeMemory(SpvDidAdaptor *adaptor, void *mem);
 
 #ifdef __cplusplus
 }

@@ -12,6 +12,8 @@
 #include <fstream>
 #include <vector>
 
+#include "spvadaptor.h"
+
 using namespace Elastos::ElaWallet;
 
 static const char *ID_CHAIN = "IDChain";
@@ -99,6 +101,12 @@ SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
 {
     nlohmann::json netConfig;
 
+    if (!walletDir || !walletId)
+        return NULL;
+
+    if (!network)
+        network = "MainNet";
+
     if (strcmp(network, "MainNet") == 0 || strcmp(network, "TestNet") == 0 ||
             strcmp(network, "RegTest") == 0) {
         netConfig = nlohmann::json();
@@ -150,7 +158,11 @@ SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
     return adaptor;
 }
 
-void SpvDidAdaptor_Destroy(SpvDidAdaptor *adaptor) {
+void SpvDidAdaptor_Destroy(SpvDidAdaptor *adaptor)
+{
+    if (!adaptor)
+        return;
+
     SyncStop(adaptor->manager, adaptor->callback);
 
     delete adaptor->callback;
@@ -160,9 +172,12 @@ void SpvDidAdaptor_Destroy(SpvDidAdaptor *adaptor) {
     curl_global_cleanup();
 }
 
-int SpvDidAdaptor_createIdTransaction(SpvDidAdaptor *adaptor,
+int SpvDidAdaptor_CreateIdTransaction(SpvDidAdaptor *adaptor,
         const char *payload, const char *memo, const char *password)
 {
+    if (!adaptor || !payload || !password)
+        return -1;
+
     try {
         auto payloadJson = nlohmann::json::parse(payload);
 
@@ -224,6 +239,9 @@ static size_t HttpResponseBodyWriteCallback(char *ptr,
 // Caller need free the pointer
 const char *SpvDidAdaptor_Resolve(SpvDidAdaptor *adaptor, const char *did)
 {
+    if (!adaptor || !did)
+        return NULL;
+
     HttpResponseBody response;
 
     // TODO: make the real URL for DID resolve
@@ -243,4 +261,11 @@ const char *SpvDidAdaptor_Resolve(SpvDidAdaptor *adaptor, const char *did)
     }
 
     return (const char *)response.data;
+}
+
+void SpvDidAdaptor_FreeMemory(SpvDidAdaptor *adaptor, void *mem)
+{
+    (void)(adaptor);
+
+    free(mem);
 }
