@@ -12,20 +12,20 @@ def generate_key(request):
                 'API_KEY':API_KEY,
             }
             print(context)
-            return render(request , "HelloWorld/generateKey.html",context)
+            return render(request, "Services/generateKey.html", context)
         else:
             return HttpResponse("failiure")
     else:
-        return render(request , "HelloWorld/generateKey.html")
+        return render(request, "Services/generateKey.html")
 
 
 def file_upload(request):
     if(request.method == 'POST'):
         headers = {'api_key' : 'KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM' }
         hash = requests.get("http://localhost:8888/api/1/console/upload" , headers = headers)
-        return render(request , "HelloWorld/fileUpload.html")
+        return render(request, "Services/fileUpload.html")
     else:
-        return render(request , "HelloWorld/fileUpload.html")
+        return render(request, "Services/fileUpload.html")
 
         
 
