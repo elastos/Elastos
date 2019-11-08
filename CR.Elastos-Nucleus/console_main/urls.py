@@ -1,4 +1,4 @@
-"""console_main URL Configuration
+"""elastos_console_main URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.2/topics/http/urls/
@@ -15,13 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-import hello_world
 from django.conf.urls import url
 
 
 urlpatterns = [
     url('admin/', admin.site.urls),
-    url(r'', include('hello_world.urls')),
-    url(r'service/', include('service.urls'), name='service'),
+    url(r'service/', include('elastos_service.urls'), name='elastos_service'),
     url(r'login/', include('login.urls'), name='login'),
 ]
