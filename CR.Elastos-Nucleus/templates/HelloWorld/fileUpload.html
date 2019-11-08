@@ -1,13 +1,10 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
-
-{% load static %}
-
-{% block content %}
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="file" name="myfile">
-    <button type="submit">Upload File</button>
-  </form>
+<!DOCTYPE html>
+{% load static %} {% block content %}
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="file" name="myfile" />
+  <button type="submit">Upload File</button>
+</form>
 
 {% endblock %}
