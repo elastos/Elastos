@@ -74,7 +74,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
             holder.etTicketnum.removeTextChangedListener((TextWatcher) holder.etTicketnum.getTag(R.id.et_ticketnum));
         }
         if (producersBean.getCurentBalance() != null) {
-            holder.etTicketnum.setText(producersBean.getCurentBalance().toEngineeringString());
+            holder.etTicketnum.setText(producersBean.getCurentBalance().toPlainString());
         }
         addTextChangedListener(holder.etTicketnum, position);
         holder.itemView.setOnClickListener(new View.OnClickListener() {

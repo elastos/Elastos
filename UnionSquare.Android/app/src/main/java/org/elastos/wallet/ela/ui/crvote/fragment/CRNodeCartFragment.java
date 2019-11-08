@@ -234,6 +234,9 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     @Override
     public void onBalance(BalanceEntity data) {
         balance = Arith.sub(Arith.div(data.getBalance(), MyWallet.RATE_S), "0.01").setScale(8, BigDecimal.ROUND_DOWN);
+        if ((balance.compareTo(new BigDecimal(0)) < 0)) {
+            balance = new BigDecimal(0);
+        }
         tvBalance.setText(getString(R.string.maxvote) + balance.toPlainString() + " ELA");
         tvAvaliable.setText(getString(R.string.available) + balance.toPlainString() + " ELA");
         mAdapter.setBalance(balance);
