@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='common',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\x06\x63ommon\"\x1a\n\nApiRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1e\n\x0b\x41piResponse\x12\x0f\n\x07message\x18\x01 \x01(\t2I\n\x06\x43ommon\x12?\n\x12GenerateAPIRequest\x12\x12.common.ApiRequest\x1a\x13.common.ApiResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\x06\x63ommon\"-\n\nApiRequest\x12\x12\n\nsecret_key\x18\x01 \x01(\t\x12\x0b\n\x03\x64id\x18\x02 \x01(\t\"F\n\x0b\x41piResponse\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x05\x32I\n\x06\x43ommon\x12?\n\x12GenerateAPIRequest\x12\x12.common.ApiRequest\x1a\x13.common.ApiResponse\"\x00\x62\x06proto3')
 )
 
 
@@ -34,8 +34,15 @@ _APIREQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='common.ApiRequest.name', index=0,
+      name='secret_key', full_name='common.ApiRequest.secret_key', index=0,
       number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='did', full_name='common.ApiRequest.did', index=1,
+      number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -53,7 +60,7 @@ _APIREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=24,
-  serialized_end=50,
+  serialized_end=69,
 )
 
 
@@ -65,9 +72,23 @@ _APIRESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='message', full_name='common.ApiResponse.message', index=0,
+      name='api_key', full_name='common.ApiResponse.api_key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='status_message', full_name='common.ApiResponse.status_message', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='status', full_name='common.ApiResponse.status', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -83,8 +104,8 @@ _APIRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=52,
-  serialized_end=82,
+  serialized_start=71,
+  serialized_end=141,
 )
 
 DESCRIPTOR.message_types_by_name['ApiRequest'] = _APIREQUEST
@@ -113,8 +134,8 @@ _COMMON = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=84,
-  serialized_end=157,
+  serialized_start=143,
+  serialized_end=216,
   methods=[
   _descriptor.MethodDescriptor(
     name='GenerateAPIRequest',
