@@ -6,7 +6,7 @@ import json
 class TestViews(TestCase):
     def test_generate_key_GET(self):
         client = Client()
-        response = client.get(reverse("elastos_service:generateKey"))
+        response = client.get(reverse("service:generateKey"))
 
         self.assertEquals(response.status_code, 200)
-        #self.assertTemplateUsed(response, 'elastos_service/generateKey.html')
+        #self.assertTemplateUsed(response, 'service/generateKey.html')

@@ -1,8 +1,9 @@
 from django.http import HttpResponse
+from django.shortcuts import render
 
 
 def landing_page(request):
-    return HttpResponse("Hello, world. You're at the Landing Page.")
+    return render(request, 'Landing Pages/landingPage.html')
 
 
 def sign_in(request):

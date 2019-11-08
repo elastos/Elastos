@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from . import views
 
-app_name = "elastos_service"
+app_name = "service"
 
 urlpatterns = [
     url(r'generateKey', views.generate_key, name="generateKey"),

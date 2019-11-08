@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+{%  load static %}
+<head>
+    <title>Console</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+         .header {
+            padding: 5px;
+            text-align: center;
+            background: #707070;
+            color: black;
+            font-size: 15px;
+            text-align: left;
+            height: 80px;
+        }
+         .dropdown {
+  float: right;
+  overflow: hidden;
+}
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.dropdown .dropbtn {
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  outline: none;
+  color: black;
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+button {
+  display: block;
+  max-width: 300px;
+  margin: auto;
+    text-align: center;
+    border-radius: 5px;
+    padding: 8px;
+    margin-left: 10px;
+}
+
+.main{
+    text-align: left;
+}
+
+.show {
+  display: block;
+}
+
+        .box {
+  width: 300px;
+  position: relative;
+  padding: 2px;
+}
+
+.box:before {
+  content: "";
+  position: absolute;
+  border: 2px solid black;
+
+  top: -4%; bottom: -11%; left: -30%; right: -30%;
+  z-index: -1;
+
+  -webkit-transform: perspective(50em) rotateX(-30deg);
+  transform: perspective(50em) rotateX(-30deg);
+}
+     </style>
+</head>
+<body>
+{% block content %}
+<div class="header">
+<img src="{% static "static/Images/Logo.png" %}" alt="Elastos Logo"/>
+    <h1>Console</h1>
+<div class="dropdown">
+  <button class="dropbtn" onclick="myFunction()">Language
+    <i class="fa fa-caret-down"></i>
+  </button>
+  <div class="dropdown-content" id="myDropdown">
+    <a href="#">English</a>
+    <a href="#">Spanish</a>
+  </div>
+  </div>
+</div>
+
+    <div class="main">
+<br> <br> <br>
+    <h2> Elastos Console Sign In</h2>
+        <hr size="4" color="black" width="300" align="left"/> <br>
+    <button style="text-align: center"> Sign In with DID</button> <br>
+    <button> Sign Up</button>
+    </div>
+
+
+    <div class="box">
+    Build Decentralized, Scalable Apps
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus sed unde voluptate non temporibus quae amet possimus dolorum quisquam atque nemo reprehenderit quasi suscipit vero cum delectus quibusdam optio asperiores.
+    </div>
+
+
+    <script>
+/* When the user clicks on the button,
+toggle between hiding and showing the dropdown content */
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(e) {
+  if (!e.target.matches('.dropbtn')) {
+  var myDropdown = document.getElementById("myDropdown");
+    if (myDropdown.classList.contains('show')) {
+      myDropdown.classList.remove('show');
+    }
+  }
+}
+</script>
+
+{% endblock %}
+
+</body>
+</html>
