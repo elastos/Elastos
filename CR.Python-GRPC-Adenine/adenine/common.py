@@ -19,8 +19,8 @@ def run():
         stub = did_pb2_grpc.DidStub(channel)
         response1 = stub.Sign(did_pb2.ApiRequest(api_key='shguBwHIVO2ziKMQi3EkHDP9V4JJb5GN', private_key='shguBwHIVO2ziKMQi3EkHDP9V4JJb5GN', message='hey'))
     
-    print("SmartWeb client received: "+response.message)
-    print("SmartWeb client received: ",response1.status)
+    print("Client received: "+response.message)
+    print("Client received: ",response1.status)
 
 
 if __name__ == '__main__':
