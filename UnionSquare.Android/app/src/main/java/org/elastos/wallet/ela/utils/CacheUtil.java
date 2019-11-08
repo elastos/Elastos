@@ -66,7 +66,11 @@ public class CacheUtil {
     public static CredentialSubjectBean getCredentialSubjectBean(String id) {
         CredentialSubjectBean bean = CacheDiskUtils.getInstance(file)
                 .getParcelable(id, CredentialSubjectBean.CREATOR);
-        return bean == null ? new CredentialSubjectBean() : bean;
+        if (bean == null) {
+            bean = new CredentialSubjectBean();
+            bean.setDid(id);
+        }
+        return bean;
 
     }
 

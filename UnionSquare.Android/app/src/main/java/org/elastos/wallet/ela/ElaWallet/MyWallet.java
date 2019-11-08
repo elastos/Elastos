@@ -63,6 +63,7 @@ public class MyWallet {
 
         mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
         String net = "MainNet";
+        String config = "";
         switch (MyApplication.chainID) {
             case 1:
                 net = "TestNet";
@@ -70,9 +71,13 @@ public class MyWallet {
             case 2:
                 net = "RegTest";
                 break;
+            case 3:
+                config = "{\"ELA\": {\"GenesisAddress\": \"\",\"ChainParameters\":{\"MagicNumber\":2018211,\"StandardPort\":41338,\"DNSSeeds\":[\"172.26.0.165\"],\"CheckPoints\":[[0,\"6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3\", 1513936800, 486801407]]}},\"IDChain\":{\"GenesisAddress\":\"XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ\",\"ChainParameters\":{\"MagicNumber\":2018202,\"StandardPort\":22608,\"DNSSeeds\":[\"node-regtest-116.eadd.co\",\"node-regtest-117.eadd.co\",\"node-regtest-118.eadd.co\",\"node-regtest-119.eadd.co\",\"node-regtest-120.eadd.co\"],\"CheckPoints\": [[0,\"56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3\", 1513936800, 486801407]]}}}";
+                net = "PrvNet";
+                break;
 
         }
-        mMasterWalletManager = new MasterWalletManager(mRootPath, net, "", "");
+        mMasterWalletManager = new MasterWalletManager(mRootPath, net, config, "");
     }
 
     private static String getTxHashBaseUrl() {

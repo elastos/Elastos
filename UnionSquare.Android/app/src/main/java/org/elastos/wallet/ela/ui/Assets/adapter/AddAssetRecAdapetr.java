@@ -67,7 +67,7 @@ public class AddAssetRecAdapetr extends RecyclerView.Adapter<AddAssetRecAdapetr.
                 public void onClick(View v) {
                     commonRvListener.onRvItemClick(v, position, data);
 
-                    v.setSelected(!v.isSelected());
+
                 }
             });
         }

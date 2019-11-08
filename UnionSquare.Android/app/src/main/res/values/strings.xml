@@ -501,4 +501,7 @@
     <string name="mainpkmanage">主管理公钥</string>
     <string name="credentialinfo">凭证信息</string>
     <string name="to">&#160;至&#160;</string>
+    <string name="noavailablewalllet">暂无可用钱包</string>
+    <string name="didregisted">DID已注册</string>
+    <string name="closeidchainornot">关闭ID侧链将无法使用DID功能，是否立即关闭？</string>
 </resources>

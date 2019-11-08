@@ -24,7 +24,9 @@ import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
+import org.elastos.wallet.ela.ui.did.entity.DIDListEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
+import org.elastos.wallet.ela.ui.did.presenter.DIDListPresenter;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -38,6 +40,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -91,6 +94,13 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
             publicKeyBean.setId("#primary");
             list.add(publicKeyBean);
             didInfo.setPublicKey(list);
+
+            wallets = new RealmUtil().queryTypeUserAllWallet(0);
+            presenter = new AddDIDPresenter();
+            for (int i = 0; i < wallets.size(); i++) {
+                presenter.getAllSubWallets1(wallets.get(i).getWalletId(), this);
+            }
+
         }
     }
 
@@ -109,21 +119,8 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.adddid));
-        wallets = new RealmUtil().queryTypeUserAllWallet(0);
-       /* Iterator<Wallet> iterator = wallets.iterator();
-        while (iterator.hasNext()) {
-            Wallet wallet = iterator.next();
-            if (wallet.getType() != 0)
-                iterator.remove();
-        }*/
-        walletNames = new String[wallets.size()];
-        for (int i = 0; i < wallets.size(); i++) {
-            walletNames[i] = wallets.get(i).getWalletName();
-        }
 
-        presenter = new AddDIDPresenter();
         registReceiver();
-
 
     }
 
@@ -162,17 +159,21 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 start(PersonalInfoFragment.class, bundle);
                 break;
             case R.id.rl_selectwallet:
+                if (wallets == null || wallets.size() == 0) {
+                    showToast(getString(R.string.noavailablewalllet));
+                }
+                walletNames = new String[wallets.size()];
+                for (int i = 0; i < wallets.size(); i++) {
+                    walletNames[i] = wallets.get(i).getWalletName();
+                }
                 new DialogUtil().showCommonSelect(getBaseActivity(), walletNames, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        tempWallet = wallets.get(((TextConfigNumberPicker) view).getValue());
-                    /*    if (AddDIDFragment.this.tempWallet != null && AddDIDFragment.this.tempWallet.getWalletId().equals(tempWallet.getWalletId())) {
-                            return;
-                        }*/
+
                         tvWalletname.setText("");
                         tvDid.setText("");
                         tvDidpk.setText("");
-                        presenter.getAllSubWallets(tempWallet.getWalletId(), AddDIDFragment.this);
+                        presenter.getAllSubWallets(wallets.get(((TextConfigNumberPicker) view).getValue()).getWalletId(), AddDIDFragment.this);
                     }
                 });
                 break;
@@ -237,15 +238,26 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "getAllSubWallets":
-                ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
-                for (SubWallet subWallet : subWalletListEntity.getData()) {
+                ISubWalletListEntity subWalletListEntity1 = (ISubWalletListEntity) baseEntity;
+                for (SubWallet subWallet : subWalletListEntity1.getData()) {
                     if (subWallet.getChainId().equals(MyWallet.IDChain)) {
-                        presenter.getAllPublicKeys(tempWallet.getWalletId(), MyWallet.IDChain, 0, 1, AddDIDFragment.this);
+                        new DIDListPresenter().getResolveDIDInfo((String) o, 0, 1, "", this);
                         return;
                     }
                 }
                 //没有对应的子钱包 需要打开idchain
-                showOpenDIDWarm(subWalletListEntity);
+                showOpenDIDWarm(subWalletListEntity1);
+                break;
+            case "getAllSubWallets1":
+                ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
+                for (SubWallet subWallet : subWalletListEntity.getData()) {
+                    //先判断有无子
+                    if (subWallet.getChainId().equals(MyWallet.IDChain)) {
+                        new DIDListPresenter().getResolveDIDInfo1((String) o, 0, 1, "", this);
+                        return;
+                    }
+                }
+
 
                 break;
             case "getAllPublicKeys":
@@ -255,21 +267,46 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 if (allPkEntity.getPublicKeys() == null || allPkEntity.getPublicKeys().size() == 0) {
                     return;
                 }
-                tvWalletname.setText(tempWallet.getWalletName());
-                tvDidpk.setText(allPkEntity.getPublicKeys().get(0));
-                presenter.getDIDByPublicKey(tempWallet.getWalletId(), allPkEntity.getPublicKeys().get(0), this);
+                for (Wallet wallet : wallets) {
+                    if (wallet.getWalletId().equals(o)) {
+                        tempWallet = wallet;
+                        tvWalletname.setText(tempWallet.getWalletName());
+                        tvDidpk.setText(allPkEntity.getPublicKeys().get(0));
+                        presenter.getDIDByPublicKey(tempWallet.getWalletId(), allPkEntity.getPublicKeys().get(0), this);
+                        return;
+                    }
+                }
                 break;
             case "getDIDByPublicKey":
                 String did = ((CommmonStringEntity) baseEntity).getData();
                 tvDid.setText(did);
-                    ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
-                    for (DIDInfoEntity didInfoEntity : infoEntities) {
-                        if (didInfoEntity.getId().equals(did)) {
-                            //草稿里有此did
-                            didInfo = didInfoEntity;
-                            showOpenDraftWarm();
-                            break;
+                ArrayList<DIDInfoEntity> infoEntities = CacheUtil.getDIDInfoList();
+                for (DIDInfoEntity didInfoEntity : infoEntities) {
+                    if (didInfoEntity.getId().equals(did)) {
+                        //草稿里有此did
+                        didInfo = didInfoEntity;
+                        showOpenDraftWarm();
+                        break;
                     }
+                }
+                break;
+            case "getResolveDIDInfo1":
+                DIDListEntity didListEntity1 = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
+                if (didListEntity1 != null && didListEntity1.getDID() != null && didListEntity1.getDID().size() > 0) {
+                    Iterator<Wallet> iterator = wallets.iterator();
+                    while (iterator.hasNext()) {
+                        Wallet wallet = iterator.next();
+                        if (wallet.getWalletId().equals(o))
+                            iterator.remove();
+                    }
+                }
+                break;
+            case "getResolveDIDInfo":
+                DIDListEntity didListEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
+                if (didListEntity != null && didListEntity.getDID() != null && didListEntity.getDID().size() > 0) {
+                    showToast(getString(R.string.didregisted));
+                } else {
+                    presenter.getAllPublicKeys((String) o, MyWallet.IDChain, 0, 1, AddDIDFragment.this);
                 }
                 break;
         }
@@ -282,10 +319,11 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     @Override
                     public void affireBtnClick(View view) {
                         Bundle bundle = new Bundle();
-                        bundle.putString("walletId", tempWallet.getWalletId());
+
                         ArrayList<String> chainIds = new ArrayList<>();
                         for (SubWallet iSubWallet : subWalletListEntity.getData()) {
                             chainIds.add(iSubWallet.getChainId());
+                            bundle.putString("walletId", iSubWallet.getBelongId());
                         }
                         bundle.putStringArrayList("chainIds", chainIds);
                         start(AddAssetFragment.class, bundle);
@@ -318,7 +356,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
         int integer = result.getCode();
 
         if (integer == RxEnum.UPDATAPROPERTY.ordinal()) {
-            presenter.getAllSubWallets(tempWallet.getWalletId(), this);
+            presenter.getAllSubWallets((String) result.getObj(), this);
         }
         if (integer == RxEnum.RETURCER.ordinal()) {
             credentialSubjectBean = (CredentialSubjectBean) result.getObj();

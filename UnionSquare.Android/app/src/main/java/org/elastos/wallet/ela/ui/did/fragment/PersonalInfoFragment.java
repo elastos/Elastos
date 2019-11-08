@@ -1,7 +1,6 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -77,6 +76,7 @@ public class PersonalInfoFragment extends BaseFragment {
             putData();
         } else {
             credentialSubjectBean = new CredentialSubjectBean();
+            credentialSubjectBean.setDid(didInfo.getId());
         }
     }
 

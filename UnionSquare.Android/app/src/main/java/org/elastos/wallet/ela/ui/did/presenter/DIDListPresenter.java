@@ -21,6 +21,16 @@ public class DIDListPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseFragment);
     }
+    public void getResolveDIDInfo1(String walletId, int start, int count, String did, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "getResolveDIDInfo1", walletId);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getResolveDIDInfo(walletId, start, count, did);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
 
 
 }

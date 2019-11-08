@@ -14,7 +14,7 @@ public class AddDIDPresenter extends NewPresenterAbstract {
 
 
     public void getAllPublicKeys(String walletId, String chainID, int start, int count, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getAllPublicKeys");
+        Observer observer = createObserver(baseFragment, "getAllPublicKeys",walletId);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
@@ -48,5 +48,14 @@ public class AddDIDPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseFragment);
     }
-
+    public void getAllSubWallets1(String walletId, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "getAllSubWallets1",walletId);
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().getAllSubWallets(walletId);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
 }
