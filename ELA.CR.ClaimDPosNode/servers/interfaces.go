@@ -1525,7 +1525,8 @@ type RpcCRCProposal struct {
 	// The hash of draft proposal.
 	DraftHash string
 	// The budget of different stages.
-	Budgets []common.Fixed64
+	Budgets   []common.Fixed64
+	Recipient string
 }
 type RpcProposalState struct {
 	Status             string                        `json:"status"`
@@ -1861,6 +1862,11 @@ func GetCRProposalState(param Params) map[string]interface{} {
 	rpcProposal.SponsorPublicKey = common.BytesToHexString(ProposalState.Proposal.SponsorPublicKey)
 	rpcProposal.Budgets = ProposalState.Proposal.Budgets
 
+	var err error
+	rpcProposal.Recipient, err = ProposalState.Proposal.Recipient.ToAddress()
+	if err != nil {
+		return ResponsePack(InternalError, "invalidate Recipient")
+	}
 	crVotes := map[string]payload.VoteResult{}
 	for k, v := range ProposalState.CRVotes {
 		crVotes[k.String()] = v

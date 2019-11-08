@@ -550,7 +550,6 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 	if !ok {
 		return errors.New("checkCRCProposalWithdrawOutput invalid payload")
 	}
-
 	proposalState := b.crCommittee.GetProposalManager().GetProposal(withdrawPayload.ProposalHash)
 	if proposalState == nil {
 		return errors.New("proposal not exist")
@@ -565,6 +564,9 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 		if txn.Outputs[1].ProgramHash != b.chainParams.CRCAddress {
 			return errors.New("txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
 		}
+	}
+	if len(txn.Outputs) > 2 {
+		return errors.New("CRCProposalWithdraw tx should not have over two output")
 	}
 	return nil
 }
@@ -826,6 +828,18 @@ func checkAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
+func (b *BlockChain) checkCRCProposalWithdrawFee(txn *Transaction,
+	fee common.Fixed64) error {
+	withdrawPayload, ok := txn.Payload.(*payload.CRCProposalWithdraw)
+	if !ok {
+		return errors.New("checkCRCProposalWithdrawFee invalid payload")
+	}
+	if fee != withdrawPayload.Fee {
+		return errors.New("transaction fee != withdrawPayload.Fee")
+	}
+	return nil
+}
+
 func (b *BlockChain) getTransactionFee(tx *Transaction,
 	references map[*Input]*Output) (common.Fixed64, error) {
 	var outputValue common.Fixed64
@@ -846,6 +860,12 @@ func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]
 	fee, err := b.getTransactionFee(tx, references)
 	if err != nil {
 		return err
+	}
+	if tx.IsCRCProposalWithdrawTx() {
+		err = b.checkCRCProposalWithdrawFee(tx, fee)
+		if err != nil {
+			return err
+		}
 	}
 	// set Fee and FeePerKB if check has passed
 	tx.Fee = fee
@@ -901,6 +921,11 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 		if len(tx.Programs) != 1 {
 			return errors.New("return CR deposit coin transactions should have one and only one program")
 		}
+	case CRCProposalWithdraw:
+		if len(tx.Programs) != 0 {
+			return errors.New("crcproposalwithdraw tx should have no programs")
+		}
+		return nil
 	}
 
 	// Check attributes
@@ -927,6 +952,9 @@ func (b *BlockChain) checkAttributeProgram(tx *Transaction,
 
 func checkTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
 	programHashes, err := GetTxProgramHashes(tx, references)
+	if tx.IsCRCProposalWithdrawTx() {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -1657,7 +1685,6 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if !ok {
 		return errors.New("invalid payload")
 	}
-
 	propMgr := b.crCommittee.GetProposalManager()
 	// Check if the proposal exist.
 	proposalState := propMgr.GetProposal(withdrawPayload.ProposalHash)
