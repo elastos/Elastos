@@ -2318,8 +2318,34 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	txn.Outputs = rightOutPuts
 	txn.Outputs[1].ProgramHash = *Recipient
 	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
+	txn.Outputs[1].ProgramHash = *CRCCommitteeAddressU168
 	s.EqualError(err, "txn.Outputs[1].ProgramHash !=CRCComitteeAddresss")
 
+	//len(txn.Outputs) >2 CRCProposalWithdraw tx should not have over two output
+	txn.Outputs = rightOutPuts
+	txn.Outputs = append(txn.Outputs, &types.Output{})
+	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
+	s.EqualError(err, "CRCProposalWithdraw tx should not have over two output")
+
+	//transaction fee != withdrawPayload.Fee
+	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 1,
+		Recipient, CRCCommitteeAddressU168, 8*ela, 50*ela)
+	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
+	propState = &crstate.ProposalState{
+		Status: crstate.VoterAgreed,
+		Proposal: payload.CRCProposal{
+
+			SponsorPublicKey: pk1Bytes,
+			Recipient:        *Recipient,
+			Budgets:          []common.Fixed64{10 * ela, 20 * ela, 30 * ela},
+		},
+		CurrentStage:           2,
+		CurrentWithdrawalStage: 0,
+	}
+	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
+		ProposalHash] = propState
+	err = s.Chain.checkTransactionFee(txn, references)
+	s.EqualError(err, "transaction fee != withdrawPayload.Fee")
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {

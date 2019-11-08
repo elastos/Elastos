@@ -299,6 +299,18 @@ var (
 		Name:  "voterrejectpercentage",
 		Usage: "defines percentage about voters reject a proposal",
 	}
+	CRCProposalHashFlag = cli.StringFlag{
+		Name:  "proposalhash",
+		Usage: "the `<proposalhash>` of the transaction",
+	}
+	CRCProposalStageFlag = cli.StringFlag{
+		Name:  "stage",
+		Usage: "the  `<stage>` of the proposal",
+	}
+	CRCCommiteeAddrFlag = cli.StringFlag{
+		Name:  "crccommiteeaddr",
+		Usage: "the  `<crccommiteeaddr>`",
+	}
 )
 
 // MoveRPCFlags finds the rpc argument and moves it to the front
