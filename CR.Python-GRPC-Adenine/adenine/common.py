@@ -7,7 +7,7 @@ from adenine.stubs import common_pb2
 from adenine.stubs import common_pb2_grpc
 
 class Common():
-    def generateAPIRequest(secret_key, did):
+    def generateAPIRequest(self, secret_key, did):
         # NOTE(gRPC Python Team): .close() is possible on a channel and should be
         # used in circumstances in which the with statement does not fit the needs
         # of the code.
