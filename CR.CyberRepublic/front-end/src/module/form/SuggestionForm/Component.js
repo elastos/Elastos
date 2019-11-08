@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { ABSTRACT_MAX_WORDS } from '@/constant'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
+import PaymentSchedule from './PaymentSchedule'
 
 import {
   Container,
@@ -265,7 +266,7 @@ class C extends BaseComponent {
             <TabPane tab={this.renderTabText('budget')} key="budget">
               <TabPaneInner>
                 <Note>{I18N.get('suggestion.form.note.budget')}</Note>
-                <FormItem>{this.getTextarea('budget')}</FormItem>
+                <PaymentSchedule />
               </TabPaneInner>
             </TabPane>
           </Tabs>
