@@ -19,3 +19,5 @@ class DidSidechain():
             print("Message: ",response.status)
             print("Public Key: ",response.pub_key)
             print("Signature: ",response.sig)
+        elif(response.status!=200):
+            print("Error Message: ",response.status_message)
