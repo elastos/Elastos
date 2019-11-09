@@ -97,8 +97,8 @@ p {
   height: 200px;
 }
 
-.h270px {
-  height: 270px;
+.h250px {
+  height: 250px;
 }
 
 .h325px {
@@ -178,7 +178,7 @@ p {
 
 .gray_on_white {
   background-color: #FAFBFD;
-  color: #C3CBD8;
+  color: #777777;
 }
 
 .darkgray_border {

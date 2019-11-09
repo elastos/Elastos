@@ -160,6 +160,8 @@ var blockchainStatus = 'No Blockchain State Requested Yet';
 
 var blockchainState = {};
 
+var blockchainLastActionHeight = 0;
+
 /** functions */
 const formatDate = (date) => {
   let month = (date.getMonth() + 1).toString();
@@ -178,6 +180,10 @@ const formatDate = (date) => {
 
 const changeNetwork = (event) => {
   currentNetworkIx = event.target.value;
+  refreshBlockchainData();
+}
+
+const refreshBlockchainData = () => {
   requestTransactionHistory();
   requestBalance();
   requestUnspentTransactionOutputs();
@@ -387,6 +393,8 @@ const sendAmountToAddressReadyCallback = (transactionJson) => {
     sendToAddressLinks.push(elt);
   }
   showCompletedTransaction();
+  setBlockchainLastActionHeight();
+  renderApp();
 }
 
 const clearSendData = () => {
@@ -774,12 +782,27 @@ const getBlockchainStateReadyCallback = (blockchainStateResponse) => {
 
   renderApp();
 }
+
 const requestBlockchainState = () => {
   const stateUrl = getStateUrl();
   blockchainState = {};
   blockchainStatus = `Blockchain State Requested ${stateUrl}`;
   getJson(stateUrl, getBlockchainStateReadyCallback, getBlockchainStateErrorCallback);
 };
+
+const getConfirmations = () => {
+  if(blockchainState.height) {
+    return blockchainState.height - blockchainLastActionHeight;
+  } else {
+    return 0;
+  }
+}
+
+const setBlockchainLastActionHeight = () => {
+  if(blockchainState.height) {
+    blockchainLastActionHeight = blockchainState.height;
+  }
+}
 
 const removeClass = (id, cl) => {
   get(id).classList.remove(cl);
@@ -1105,7 +1128,12 @@ class App extends React.Component {
                       Voting</td>
                   </tr>
                   <tr>
-                    <td className="white_on_purple h270px no_border"></td>
+                    <td id='refresh' className="white_on_purple_with_hover h20px fake_button" onClick={(e) => refreshBlockchainData()}>
+                      <img className="valign_middle" src="artwork/refresh.svg"></img>
+                      Refresh</td>
+                  </tr>
+                  <tr>
+                    <td className="white_on_purple h250px no_border"></td>
                   </tr>
                   <tr>
                     <td className="white_on_purple_with_hover h20px fake_button" onClick={(e) => showLogin()}>Logout</td>
@@ -1204,7 +1232,9 @@ class App extends React.Component {
                     <td className="black_on_white h20px darkgray_border">
                       <div className="gray_on_white ` display_inline_block">Previous Transactions ({parsedTransactionHistory.length}
                         total)</div>
-                      <div className="gray_on_white float_right display_inline_block">{blockchainState.height}&nbsp;
+                      <div className="gray_on_white float_right display_inline_block">&nbsp;{getConfirmations()}&nbsp;
+                        Confirmations</div>
+                      <div className="gray_on_white float_right display_inline_block">&nbsp;{blockchainState.height}&nbsp;
                         Blocks</div>
                       <br/>
                       <table className="w100pct black_on_offwhite no_border whitespace_nowrap">
@@ -1250,7 +1280,9 @@ class App extends React.Component {
                       <br/>
                       <div className="gray_on_white ` display_inline_block">Previous Transactions ({parsedTransactionHistory.length}
                         total)</div>
-                      <div className="gray_on_white float_right display_inline_block">{blockchainState.height}&nbsp;
+                      <div className="gray_on_white float_right display_inline_block">&nbsp;{getConfirmations()}&nbsp;
+                        Confirmations</div>
+                      <div className="gray_on_white float_right display_inline_block">&nbsp;{blockchainState.height}&nbsp;
                         Blocks</div>
                       <p></p>
                       <div className="h420px overflow_auto">

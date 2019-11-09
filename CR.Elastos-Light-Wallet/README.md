@@ -57,5 +57,4 @@ openssl sha -sha256 dist/elastos-light-wallet-1.0.0.dmg;
 don't forget testnet and mainnet config files are in github at: https://github.com/elastos/Elastos.ELA/blob/master/docs/
 
 ## todo:
-1. add block height. http://elastos.coranos.io:21334/api/v1/node/state
-2. add warning when local node is behind explorer's block height.
+1. add warning when local node is behind explorer's block height.
