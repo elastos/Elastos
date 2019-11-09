@@ -17,3 +17,5 @@ class Common():
         
         if(response.status==200):
             print("Api Key: ",response.api_key)
+        elif(response.status==400):
+            print("Api Key: ",response.status_message)
