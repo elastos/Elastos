@@ -21,6 +21,15 @@ Install virtualenv:
 $pip3 install virtualenv
 ```
 
+Clone the repository
+```
+git clone https://github.com/cyber-republic/elastos-smartweb-service.git
+```
+
+```
+cd elastos-smartweb-service
+```
+
 To get the API service running, run the following terminal commands:
 
 ```
