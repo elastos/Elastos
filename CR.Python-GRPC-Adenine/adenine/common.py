@@ -15,4 +15,5 @@ class Common():
             stub = common_pb2_grpc.CommonStub(channel)
             response = stub.GenerateAPIRequest(common_pb2.ApiRequest(secret_key=secret_key, did=did))
         
-        print("SmartWeb client received: "+response.api_key)
+        if(response.status==200):
+            print("Api Key: ",response.api_key)

@@ -12,8 +12,10 @@ class DidSidechain():
         # used in circumstances in which the with statement does not fit the needs
         # of the code.
         with grpc.insecure_channel('localhost:50051') as channel:
-
             stub = did_pb2_grpc.DidStub(channel)
             response = stub.Sign(did_pb2.ApiRequest(api_key=api_key, private_key=private_key, message=message))
-        
-        print("SmartWeb client received: ",response.status)
+
+        if(response.status==200):
+            print("Message: ",response.status)
+            print("Public Key: ",response.pub_key)
+            print("Signature: ",response.sig)
