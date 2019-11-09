@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package did;
+
+// The did sidechain service definition.
+service Did {
+  rpc Sign (ApiRequest) returns (ApiResponse) {}
+}
+
+// The request message
+message ApiRequest {
+  string api_key = 1;
+  string private_key = 2;
+  string message = 3;
+}
+
+// The response message
+message ApiResponse {
+  string message = 1;
+  string pub_key = 2;
+  string sig = 3;
+  string status_message = 4;
+  int32 status = 5;
+}
