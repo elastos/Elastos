@@ -49,7 +49,7 @@ Start the server:
 (venv) $python server.py
 ```
 
-#Additional Info:
+# Additional Info:
 Command to build protocol buffer files:
 ```
 python -m grpc_tools.protoc -I definitions --python_out=stubs --grpc_python_out=stubs definitions/common.proto
