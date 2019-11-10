@@ -315,6 +315,14 @@ var (
 		Name:  "crcappropriatepercentage",
 		Usage: "defines percentage about CRC appropriation",
 	}
+	CRCFoundationFlag = cli.StringFlag{
+		Name:  "crcfoundation",
+		Usage: "defines foundation address of CRC",
+	}
+	CRCCommitteeAddressFlag = cli.StringFlag{
+		Name:  "crccommitteeaddress",
+		Usage: "defines appropriation address of CRC committee",
+	}
 )
 
 // MoveRPCFlags finds the rpc argument and moves it to the front

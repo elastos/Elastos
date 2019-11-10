@@ -392,7 +392,7 @@ func newSettings() *settings {
 		ParamName:  "CRCAddress"})
 
 	result.Add(&settingItem{
-		Flag:         nil,
+		Flag:         cmdcom.CRCFoundationFlag,
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
@@ -407,7 +407,7 @@ func newSettings() *settings {
 		ParamName:  "CRCFoundation"})
 
 	result.Add(&settingItem{
-		Flag:         nil,
+		Flag:         cmdcom.CRCCommitteeAddressFlag,
 		DefaultValue: "",
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {

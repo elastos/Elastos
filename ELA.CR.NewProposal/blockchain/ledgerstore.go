@@ -49,8 +49,6 @@ type IChainStore interface {
 	ContainsUnspent(txID Uint256, index uint16) (bool, error)
 	GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error)
 	GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*UTXO, error)
-	GetBalanceFromProgramHashAndHeight(programHash Uint168,
-		assetid Uint256, height uint32) (Fixed64, error)
 
 	GetAssets() map[Uint256]*payload.Asset
 
