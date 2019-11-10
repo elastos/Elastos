@@ -13,11 +13,11 @@ def generate_key(request):
                 'API_KEY': API_KEY,
             }
             print(context)
-            return render(request, "HelloWorld/generateKey.html", context)
+            return render(request, "Services/generateKey.html", context)
         else:
             return HttpResponse("failiure")
     else:
-        return render(request, "HelloWorld/generateKey.html")
+        return render(request, "Services/generateKey.html")
 
 
 def file_upload(request):
@@ -25,38 +25,38 @@ def file_upload(request):
         headers = {'api_key': 'KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM'}
         hash = requests.get(
             "http://localhost:8888/api/1/console/upload", headers=headers)
-        return render(request, "HelloWorld/fileUpload.html")
+        return render(request, "Services/fileUpload.html")
     else:
-        return render(request, "HelloWorld/fileUpload.html")
+        return render(request, "Services/fileUpload.html")
 
 
 def show_file_content(request):
-    return HttpResponse("Hello, world. You're at the Show File Content.")
+    return render(request, "Services/showFileContent.html")
 
 
 def upload_and_scan(request):
-    return HttpResponse("Hello, world. You're at the Upload and Scan.")
+    return render(request, "Services/uploadAndScan.html")
 
 
 def verify_and_show_content(request):
-    return HttpResponse("Hello, world. You're at the Verify and Show Content.")
+    return render(request, "Services/verifyAndShowContent.html")
 
 
 def scan_message(request):
-    return HttpResponse("Hello, world. You're at the Scan Message.")
+    return render(request, "Services/scanMessage.html")
 
 
 def verify_message(request):
-    return HttpResponse("Hello, world. You're at the Verify Message.")
+    return render(request, "Services/verifyMessage.html")
 
 
 def transfer_file(request):
-    return HttpResponse("Hello, world. You're at the Transfer File.")
+    return render(request, "Services/transferFile.html")
 
 
 def documentation(request):
-    return HttpResponse("Hello, world. You're at the Documentation.")
+    return render(request, "Services/documentation.html")
 
 
 def about_us(request):
-    return HttpResponse("Hello, world. You're at the About Us.")
+    return render(request, "Services/aboutUs.html")

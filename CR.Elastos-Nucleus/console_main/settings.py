@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'elastos_service.apps.ElastosServiceConfig',
 ]
 
 MIDDLEWARE = [
@@ -50,7 +49,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'elastos_console_main.urls'
+ROOT_URLCONF = 'console_main.urls'
 
 TEMPLATES = [
     {
@@ -68,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'elastos_console_main.wsgi.application'
+WSGI_APPLICATION = 'console_main.wsgi.application'
 
 
 # Database

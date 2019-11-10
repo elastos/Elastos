@@ -20,6 +20,6 @@ from django.conf.urls import url
 
 urlpatterns = [
     url('admin/', admin.site.urls),
-    url(r'service/', include('elastos_service.urls'), name='elastos_service'),
-    url(r'login/', include('login.urls'), name='login'),
+    url(r'service/', include('service.urls'), name='service'),
+    url(r'', include('login.urls'), name='login'),
 ]
