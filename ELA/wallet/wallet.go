@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 
 	"github.com/elastos/Elastos.ELA/account"
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
@@ -118,7 +117,7 @@ func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
 	return w.RescanWallet()
 }
 
-func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint256][]*blockchain.UTXO,
+func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint256][]*types.UTXO,
 	error) {
 	if enableUtxoDB {
 		programHash, err := common.Uint168FromAddress(address)
@@ -134,15 +133,15 @@ func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint
 	}
 
 	coins := w.ListCoins(address)
-	utxos := make([]*blockchain.UTXO, 0)
+	utxos := make([]*types.UTXO, 0)
 	for op, coin := range coins {
-		utxos = append(utxos, &blockchain.UTXO{
+		utxos = append(utxos, &types.UTXO{
 			TxID:  op.TxID,
 			Index: uint32(op.Index),
 			Value: coin.Output.Value,
 		})
 	}
-	unspent := make(map[common.Uint256][]*blockchain.UTXO, 0)
+	unspent := make(map[common.Uint256][]*types.UTXO, 0)
 	unspent[*account.SystemAssetID] = utxos
 
 	return unspent, nil

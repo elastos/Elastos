@@ -9,10 +9,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA/account"
 	"sort"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -27,9 +27,12 @@ type Committee struct {
 	params  *config.Params
 	manager *ProposalManager
 
-	getCheckpoint                      func(height uint32) *Checkpoint
-	getBalanceFromProgramHashAndHeight func(programHash common.Uint168,
-		assetid common.Uint256, height uint32) (common.Fixed64, error)
+	getCheckpoint             func(height uint32) *Checkpoint
+	getUnspentFromProgramHash func(programHash common.Uint168,
+		assetid common.Uint256) ([]*types.UTXO, error)
+	getHeight func() uint32
+
+	recordBalanceHeight uint32
 }
 
 func (c *Committee) GetState() *State {
@@ -211,14 +214,27 @@ func (c *Committee) createCRCAppropriationTransaction() error {
 }
 
 func (c *Committee) tryInitCRCRelatedAddressBalance(height uint32) {
-	if height == c.params.CRVotingStartHeight {
-		c.CRCFoundationBalance, _ = c.getBalanceFromProgramHashAndHeight(
-			c.params.CRCFoundation, *account.SystemAssetID, height)
-		c.CRCCommitteeBalance, _ = c.getBalanceFromProgramHashAndHeight(
-			c.params.CRCCommitteeAddress, *account.SystemAssetID, height)
-		log.Infof("at %d CR voting start height, balance of CRC "+
+	if c.recordBalanceHeight == 0 {
+		utxos, _ := c.getUnspentFromProgramHash(c.params.CRCFoundation,
+			*account.SystemAssetID)
+		for _, u := range utxos {
+			c.CRCFoundationBalance += u.Value
+			op := types.NewOutPoint(u.TxID, uint16(u.Index))
+			c.state.CRCFoundationOutputs[op.ReferKey()] = u.Value
+		}
+		utxos, _ = c.getUnspentFromProgramHash(c.params.CRCCommitteeAddress,
+			*account.SystemAssetID)
+		for _, u := range utxos {
+			c.CRCCommitteeBalance += u.Value
+			op := types.NewOutPoint(u.TxID, uint16(u.Index))
+			c.state.CRCCommitteeOutputs[op.ReferKey()] = u.Value
+
+		}
+		c.recordBalanceHeight = height
+		log.Infof("record balance at height of %d, balance of CRC "+
 			"foundation is %s, balance of CRC committee address is %s",
 			height, c.CRCFoundationBalance, c.CRCCommitteeBalance)
+
 	}
 }
 
@@ -295,6 +311,9 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 
 func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32,
 	history *utils.History) {
+	if height <= c.recordBalanceHeight {
+		return
+	}
 	history.Append(height, func() {
 		c.NeedAppropriation = false
 		c.CRCCommitteeUsedAmount += tx.Outputs[0].Value
@@ -521,19 +540,25 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 	return candidates, nil
 }
 
-func (c *Committee) RegisterFuncitons(getTxReference func(tx *types.Transaction) (
-	map[*types.Input]*types.Output, error),
-	getBalanceFromProgramHashAndHeight func(programHash common.Uint168,
-		assetID common.Uint256, height uint32) (common.Fixed64, error)) {
+type CommitteeFuncsConfig struct {
+	GetTxReference func(tx *types.Transaction) (
+		map[*types.Input]*types.Output, error)
+	GetUnspentFromProgramHash func(programHash common.Uint168,
+		assetid common.Uint256) ([]*types.UTXO, error)
+	GetHeight func() uint32
+}
+
+func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
 	c.state.RegisterFunctions(&FunctionsConfig{
 		TryStartVotingPeriod:    c.tryStartVotingPeriod,
 		ProcessImpeachment:      c.processImpeachment,
 		ProcessCRCAppropriation: c.processCRCAppropriation,
 		ProcessCRCRelatedAmount: c.processCRCRelatedAmount,
 		GetHistoryMember:        c.getHistoryMember,
-		GetTxReference:          getTxReference,
+		GetTxReference:          cfg.GetTxReference,
 	})
-	c.getBalanceFromProgramHashAndHeight = getBalanceFromProgramHashAndHeight
+	c.getUnspentFromProgramHash = cfg.GetUnspentFromProgramHash
+	c.getHeight = cfg.GetHeight
 }
 
 func NewCommittee(params *config.Params) *Committee {

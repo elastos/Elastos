@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
-	mathRand "math/rand"
 	"strconv"
 	"testing"
 
@@ -654,7 +653,7 @@ func crcProposalReviewPayloadEqual(payload1 *payload.CRCProposalReview,
 func randomCRCProposalReviewPayload() *payload.CRCProposalReview {
 	return &payload.CRCProposalReview{
 		ProposalHash: *randomUint256(),
-		VoteResult:   payload.VoteResult(mathRand.Int() % 3),
+		VoteResult:   payload.VoteResult(rand.Int() % 3),
 		DID:          *randomUint168(),
 		Sign:         randomBytes(65),
 	}
