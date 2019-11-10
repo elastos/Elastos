@@ -30,6 +30,7 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	round1, expectCandidates1 := generateCandidateSuite()
 	round2, expectCandidates2 := generateCandidateSuite()
 	committee.state.StateKeyFrame = *round1
+	committee.recordBalanceHeight = config.DefaultParams.CRVotingStartHeight
 
 	// < CRCommitteeStartHeight
 	committee.ProcessBlock(&types.Block{
@@ -180,7 +181,7 @@ func TestCommittee_IsInVotingPeriod(t *testing.T) {
 
 func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
-	committee.RegisterFuncitons(nil, nil)
+	committee.RegisterFuncitons(&CommitteeFuncsConfig{})
 
 	code := randomBytes(34)
 	nickname := randomString()
@@ -189,6 +190,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 	// register candidate
 	height := config.DefaultParams.CRCommitteeStartHeight -
 		config.DefaultParams.CRVotingPeriod
+	committee.recordBalanceHeight = config.DefaultParams.CRVotingStartHeight
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: height,
@@ -244,7 +246,8 @@ func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
 		config.DefaultParams.CRCommitteeStartHeight)
 	committee := NewCommittee(&config.DefaultParams)
 	committee.KeyFrame = *keyframe
-	committee.RegisterFuncitons(nil, nil)
+	committee.RegisterFuncitons(&CommitteeFuncsConfig{})
+	committee.recordBalanceHeight = config.DefaultParams.CRVotingStartHeight
 
 	// let processing height be 6 blocks before the second voting
 	height := config.DefaultParams.CRCommitteeStartHeight + config.

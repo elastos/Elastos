@@ -61,7 +61,7 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain.crCommittee.RegisterFuncitons(nil, nil)
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{})
 
 	s.OriginalLedger = DefaultLedger
 

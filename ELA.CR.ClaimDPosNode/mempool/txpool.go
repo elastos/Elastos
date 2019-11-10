@@ -629,7 +629,7 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) elaerr.ELAError {
 	case CRCAppropriation:
 		if err := mp.verifyDuplicateCRCAppropriation(); err != nil {
 			log.Warn(err)
-			return ErrCRProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	}
 
