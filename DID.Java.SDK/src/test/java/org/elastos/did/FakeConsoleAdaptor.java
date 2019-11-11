@@ -24,7 +24,6 @@ package org.elastos.did;
 
 import java.io.IOException;
 
-import org.elastos.did.backend.DIDAdaptor;
 import org.elastos.did.util.Base64;
 
 import com.fasterxml.jackson.databind.JsonNode;

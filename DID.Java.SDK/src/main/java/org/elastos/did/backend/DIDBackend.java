@@ -23,24 +23,28 @@
 package org.elastos.did.backend;
 
 import org.elastos.did.DID;
+import org.elastos.did.DIDAdaptor;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDException;
 import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
 
-public class DIDBackend {
-	private static DIDAdaptor adaptor;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-	public static void initialize(DIDAdaptor adaptor) {
-		DIDBackend.adaptor = adaptor;
+public class DIDBackend {
+	private DIDAdaptor adaptor;
+
+	public DIDBackend(DIDAdaptor adaptor) {
+		this.adaptor = adaptor;
 	}
 
-	public static boolean create(DIDDocument doc, DIDURL signKey,
-			String passphrase) throws DIDStoreException {
+	public boolean create(DIDDocument doc, DIDURL signKey,
+			String storepass) throws DIDStoreException {
 		IDChainRequest request = new IDChainRequest(
 				IDChainRequest.Operation.CREATE, doc);
 
-		String json = request.sign(signKey, passphrase).toJson(true);
+		String json = request.sign(signKey, storepass).toJson(true);
 
 		try {
 			return adaptor.createIdTransaction(json, null);
@@ -49,25 +53,48 @@ public class DIDBackend {
 		}
 	}
 
-	public static DIDDocument resolve(DID did) throws DIDStoreException {
+	public DIDDocument resolve(DID did) throws DIDStoreException {
 		try {
-			String docJson = adaptor.resolve(did.toExternalForm());
-			if (docJson == null)
+			String res = adaptor.resolve(did.getMethodSpecificId());
+			if (res == null)
 				return null;
 
-			DIDDocument doc = DIDDocument.fromJson(docJson);
-			return doc;
-		} catch (DIDException e) {
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode node = mapper.readTree(res);
+
+			JsonNode result = node.get("result");
+			if (result.isNull()) {
+				/*
+				JsonNode error = node.get("error");
+				throw new DIDResolveException("Resolve DID error("
+						+ error.get("code").longValue() + ": "
+						+ error.get("message").textValue());
+				*/
+				return null;
+			}
+
+			if (!result.isArray() || result.size() != 1)
+				throw new DIDResolveException(
+						"Resolve DID error, unknown resolved response.");
+
+			result = result.get(0);
+			IDChainRequest request = IDChainRequest.fromJson(result);
+
+			if (!request.verify())
+				throw new DIDResolveException("Signature verify failed.");
+
+			return request.getDocument();
+		} catch (Exception e) {
 			throw new DIDStoreException("Resolve DID error.", e);
 		}
 	}
 
-	public static boolean update(DIDDocument doc, DIDURL signKey,
-			String passphrase) throws DIDStoreException {
+	public boolean update(DIDDocument doc, DIDURL signKey,
+			String storepass) throws DIDStoreException {
 		IDChainRequest request = new IDChainRequest(
 				IDChainRequest.Operation.UPDATE, doc);
 
-		String json = request.sign(signKey, passphrase).toJson(true);
+		String json = request.sign(signKey, storepass).toJson(true);
 
 		try {
 			return adaptor.createIdTransaction(json, null);
@@ -76,12 +103,12 @@ public class DIDBackend {
 		}
 	}
 
-	public static boolean deactivate(DID did, DIDURL signKey,
-			String passphrase) throws DIDStoreException {
+	public boolean deactivate(DID did, DIDURL signKey,
+			String storepass) throws DIDStoreException {
 		IDChainRequest request = new IDChainRequest(
-				IDChainRequest.Operation.CREATE, did);
+				IDChainRequest.Operation.DEACRIVATE, did);
 
-		String json = request.sign(signKey, passphrase).toJson(true);
+		String json = request.sign(signKey, storepass).toJson(true);
 
 		try {
 			return adaptor.createIdTransaction(json, null);

@@ -40,6 +40,7 @@ public abstract class DIDStore {
 
 	private static DIDStore instance;
 
+	private DIDBackend backend;
 	private	HDKey privateIdentity;
 	private int lastIndex;
 
@@ -98,13 +99,15 @@ public abstract class DIDStore {
 
 	}
 
-	public static void initialize(String type, String location, String storepass)
-			throws DIDStoreException {
+	public static void initialize(String type, String location, String storepass,
+				DIDAdaptor adaptor) throws DIDStoreException {
 		if (!type.equals("filesystem"))
 			throw new IllegalArgumentException("Unsupported store type: " + type);
 
 		instance = new FileSystemStore(location);
 		instance.initPrivateIdentity(storepass);
+
+		instance.backend = new DIDBackend(adaptor);
 	}
 
 	public static DIDStore getInstance() {
@@ -213,33 +216,44 @@ public abstract class DIDStore {
 		return newDid(storepass, null);
 	}
 
+	public boolean publishDid(DIDDocument doc, String storepass)
+			throws DIDStoreException {
+		DIDURL signKey = doc.getDefaultPublicKey();
+		return publishDid(doc, signKey, storepass);
+	}
+
 	public boolean publishDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		storeDid(doc);
-
-		return DIDBackend.create(doc, signKey, storepass);
+		return backend.create(doc, signKey, storepass);
 	}
 
 	public boolean updateDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		storeDid(doc);
 
-		return DIDBackend.update(doc, signKey, storepass);
+		return backend.update(doc, signKey, storepass);
 	}
 
 	public boolean deactivateDid(DID did, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		// TODO: how to handle locally?
 
-		return DIDBackend.deactivate(did, signKey, storepass);
+		return backend.deactivate(did, signKey, storepass);
 	}
 
 	public DIDDocument resolveDid(DID did)
 			throws DIDStoreException, MalformedDocumentException {
-		DIDDocument doc = DIDBackend.resolve(did);
+		return resolveDid(did, false);
+	}
+
+	public DIDDocument resolveDid(DID did, boolean force)
+			throws DIDStoreException, MalformedDocumentException {
+		DIDDocument doc = backend.resolve(did);
 		if (doc != null)
 			storeDid(doc);
-		else
+
+		if (doc == null && !force)
 			doc = loadDid(did);
 
 		return doc;

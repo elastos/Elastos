@@ -508,13 +508,13 @@ public class DIDDocument {
 	}
 
 	public boolean verify(String signature, byte[] ... data)
-			throws DIDStoreException {
+			throws DIDException {
 		DIDURL key = getDefaultPublicKey();
 		return verify(key, signature, data);
 	}
 
 	public boolean verify(DIDURL id, String signature, byte[] ... data)
-			throws DIDStoreException {
+			throws DIDException {
 		PublicKey pk = getPublicKey(id);
 		byte[] binkey = pk.getPublicKeyBytes();
 		byte[] sig = Base64.decode(signature);

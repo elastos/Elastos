@@ -29,13 +29,16 @@ import java.io.Writer;
 import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
+import org.elastos.did.DIDException;
 import org.elastos.did.DIDStore;
 import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
 import org.elastos.did.util.Base64;
+import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
 
 class IDChainRequest {
 	public static final String CURRENT_SPECIFICATION = "elastos/did/1.0";
@@ -117,6 +120,22 @@ class IDChainRequest {
 		return this;
 	}
 
+	boolean verify() throws DIDException {
+		String op = operation.toString();
+
+		byte[][] inputs = new byte[][] {
+			specification.getBytes(),
+			op.getBytes(),
+			payload.getBytes()
+		};
+
+		return doc.verify(signKey, signature, inputs);
+	}
+
+	DIDDocument getDocument() {
+		return doc;
+	}
+
 	public void toJson(Writer out, boolean compact) throws IOException {
 		JsonFactory factory = new JsonFactory();
 		JsonGenerator generator = factory.createGenerator(out);
@@ -174,5 +193,65 @@ class IDChainRequest {
 		}
 
 		return out.toString();
+	}
+
+	public static IDChainRequest fromJson(JsonNode node)
+			throws DIDResolveException {
+		Class<DIDResolveException> clazz = DIDResolveException.class;
+
+		JsonNode header = node.get(HEADER);
+		if (header == null)
+			throw new DIDResolveException("Missing header.");
+
+		String spec = JsonHelper.getString(header, SPECIFICATION, false,
+				null, SPECIFICATION, clazz);
+		if (!spec.equals(CURRENT_SPECIFICATION))
+			throw new DIDResolveException("Unknown DID specifiction.");
+
+		// TODO: remove this after IDSidechain fix the wrong field name.
+		String op = "Operation";
+		op = JsonHelper.getString(header, op, false,
+						null, OPERATION, clazz);
+		//String op = JsonHelper.getString(header, OPERATION, false,
+		//		null, OPERATION, clazz);
+		if (!op.contentEquals(Operation.CREATE.toString()))
+			if (!spec.equals(CURRENT_SPECIFICATION))
+				throw new DIDResolveException("Invalid DID operation verb.");
+
+		String payload = JsonHelper.getString(node, PAYLOAD, false,
+				null, PAYLOAD, clazz);
+		String docJson = new String(Base64.decode(payload,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
+		DIDDocument doc = null;
+		try {
+			doc = DIDDocument.fromJson(docJson);
+		} catch (DIDException e) {
+			throw new DIDResolveException("Invalid document payload.", e);
+		}
+
+		JsonNode proof = node.get(PROOF);
+		if (proof == null)
+			throw new DIDResolveException("Missing proof.");
+
+		String keyType = JsonHelper.getString(proof, KEY_TYPE, false,
+				null, KEY_TYPE, clazz);
+		if (!keyType.equals(Constants.defaultPublicKeyType))
+			throw new DIDResolveException("Unknown signature key type.");
+
+		DIDURL signKey = JsonHelper.getDidUrl(proof, KEY_ID, doc.getSubject(),
+				KEY_ID, clazz);
+		if (doc.getAuthenticationKey(signKey) == null)
+			throw new DIDResolveException("Unknown signature key.");
+
+		String sig = JsonHelper.getString(proof, SIGNATURE, false,
+				null, SIGNATURE, clazz);
+
+		IDChainRequest request = new IDChainRequest(Operation.CREATE, doc);
+		request.payload = payload;
+		request.keyType = keyType;
+		request.signKey = signKey;
+		request.signature = sig;
+
+		return request;
 	}
 }

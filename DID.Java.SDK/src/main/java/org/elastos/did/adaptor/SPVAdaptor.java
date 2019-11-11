@@ -1,14 +1,31 @@
 package org.elastos.did.adaptor;
 
-public class SPVAdaptor {
+import org.elastos.did.DIDAdaptor;
+import org.elastos.did.DIDException;
+
+public class SPVAdaptor implements DIDAdaptor {
 	static {
 		System.loadLibrary("spvadaptorjni");
 	}
 
-	private long handle;
+	private String walletDir;
+	private String walletId;
+	private String network;
 
-	public SPVAdaptor(String walletDir, String walletId, String network) {
-		handle = create(walletDir, walletId, network);
+	private long handle;
+	private PasswordCallback passwordCallback;
+
+	public interface PasswordCallback {
+		public String getPassword(String walletDir, String walletId);
+	}
+
+	public SPVAdaptor(String walletDir, String walletId, String network,
+			String resolver, PasswordCallback passwordCallback) {
+		handle = create(walletDir, walletId, network, resolver);
+		this.walletDir = walletDir;
+		this.walletId = walletId;
+		this.network = network;
+		this.passwordCallback = passwordCallback;
 	}
 
 	public void destroy() {
@@ -16,17 +33,8 @@ public class SPVAdaptor {
 		handle = 0;
 	}
 
-	public int createIdTransaction(String payload, String memo,
-			String password) {
-		return createIdTransaction(handle, payload, memo, password);
-	}
-
-	public String resolve(String did) {
-		return resolve(handle, did);
-	}
-
 	private final static native long create(String walletDir, String walletId,
-			String network);
+			String network, String resolver);
 
 	private final static native void destroy(long handle);
 
@@ -34,4 +42,20 @@ public class SPVAdaptor {
 			String payload, String memo, String password);
 
 	private final static native String resolve(long handle, String did);
+
+	@Override
+	public boolean createIdTransaction(String payload, String memo)
+			throws DIDException {
+		String password = passwordCallback.getPassword(walletDir, walletId);
+		if (password == null)
+			return false;
+
+		int rc = createIdTransaction(handle, payload, memo, password);
+		return rc == 0;
+	}
+
+	@Override
+	public String resolve(String did) {
+		return resolve(handle, did);
+	}
 }

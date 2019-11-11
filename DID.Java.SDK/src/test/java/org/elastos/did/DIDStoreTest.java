@@ -41,7 +41,7 @@ import java.util.Map;
 import org.elastos.credential.Issuer;
 import org.elastos.credential.VerifiableCredential;
 import org.elastos.did.DIDStore.Entry;
-import org.elastos.did.backend.DIDBackend;
+import org.elastos.did.adaptor.SPVAdaptor;
 import org.elastos.did.util.Mnemonic;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -50,18 +50,46 @@ import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DIDStoreTest {
-	private static String storeRoot = "/Users/jingyu/Temp/DIDStore";
+	private static String storeRoot = "/PATH/TO/DIDStore";
 	private static String storePass = "passwd";
 	private static String passphrase = "secret";
 	private static DIDStore store;
+	private static DIDAdaptor adaptor;
 
+	private static String walletDir = "/PATH/TO/wallet";
+	private static String walletId = "test";
+	private static String networkConfig = "/PATH/TO/privnet.json";
+	private static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
 	private static LinkedHashMap<DID, String> ids;
 
 	private static DID primaryDid;
 
+	public static void waitForDidRegisted(DID did) throws DIDException {
+		do {
+			System.out.println("Waiting for DID '" + did + "' registed.");
+
+			DIDDocument doc = store.resolveDid(did, true);
+			if (doc == null) {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException ignore) {
+				}
+			} else
+				break;
+		} while (true);
+	}
+
 	@BeforeClass
 	public static void setup() {
-		DIDBackend.initialize(new FakeConsoleAdaptor());
+		//adaptor = new FakeConsoleAdaptor();
+		adaptor = new SPVAdaptor(walletDir, walletId, networkConfig, resolver,
+				new SPVAdaptor.PasswordCallback() {
+
+					@Override
+					public String getPassword(String walletDir, String walletId) {
+						return "helloworld";
+					}
+				});
 	}
 
 	@Test
@@ -70,7 +98,7 @@ public class DIDStoreTest {
 
     	Util.deleteFile(new File(tempStoreRoot));
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adaptor);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -91,7 +119,7 @@ public class DIDStoreTest {
 	public void test00CreateEmptyStore1() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adaptor);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -104,7 +132,7 @@ public class DIDStoreTest {
 
 		Util.deleteFile(new File(tempStoreRoot));
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adaptor);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -125,7 +153,7 @@ public class DIDStoreTest {
 
     	assertTrue(tempStore.hasPrivateIdentity());
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adaptor);
 
     	tempStore = DIDStore.getInstance();
 
@@ -137,7 +165,7 @@ public class DIDStoreTest {
 	public void test10InitPrivateIdentity1() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
-		DIDStore.initialize("filesystem", tempStoreRoot, "password");
+		DIDStore.initialize("filesystem", tempStoreRoot, "password", adaptor);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -148,7 +176,7 @@ public class DIDStoreTest {
     public void test20Setup() throws DIDStoreException {
     	Util.deleteFile(new File(storeRoot));
 
-    	DIDStore.initialize("filesystem", storeRoot, storePass);
+    	DIDStore.initialize("filesystem", storeRoot, storePass, adaptor);
 
     	store = DIDStore.getInstance();
 
@@ -159,11 +187,12 @@ public class DIDStoreTest {
     }
 
 	@Test
-	public void test30CreateDID1() throws DIDStoreException {
+	public void test30CreateDID1() throws DIDException {
 		String hint = "my first did";
 
     	DIDDocument doc = store.newDid(storePass, hint);
     	primaryDid = doc.getSubject();
+    	store.publishDid(doc, storePass);
 
     	File file = new File(storeRoot + File.separator + "ids"
     			+ File.separator + doc.getSubject().getMethodSpecificId()

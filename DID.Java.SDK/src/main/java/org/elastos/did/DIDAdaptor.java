@@ -20,9 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.did.backend;
-
-import org.elastos.did.DIDException;
+package org.elastos.did;
 
 public interface DIDAdaptor {
 	public boolean createIdTransaction(String payload, String memo)
