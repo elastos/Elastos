@@ -55,7 +55,7 @@
       <a href="https://explorer.elaeth.io" target="_blank" rel="noopener"> Block Explorer </a>
       <!-- <a href="https://elaeth.io" target="_blank" rel="noopener"> Our Team </a> -->
     </p>
-    <p class="footer__desc">MyCrypto is an open-source, client-side tool for generating ether wallets, handling ERC-20 tokens, and interacting with the blockchain more easily.</p>
+    <p class="footer__desc">This project is an open-source, client-side tool for generating ether wallets, handling ERC-20 tokens, and interacting with the blockchain more easily.</p>
     <p class="footer__copyright">
       © 2019 CyberRepublic
       <span style="margin-left: 1em">
