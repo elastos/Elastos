@@ -8,7 +8,7 @@
          ng-click="setVisibility('interactView')">
           Interact with Contract
       </a>
-      or
+      /
       <a translate="NAV_DeployContract"
          ng-class="{'isActive': visibility=='deployView'}"
          ng-click="setVisibility('deployView')">
