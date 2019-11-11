@@ -49,6 +49,31 @@ class PaymentSchedule extends Component {
     })
   }
 
+  renderPaymentTable = paymentItems => {
+    return (
+      <StyledTable>
+        <StyledHead>
+          <StyledRow>
+            <th>Payment#</th>
+            <th>Amount(ELA)</th>
+            <th>Reasons</th>
+            <th>Criteria of Payment</th>
+            <th>Action</th>
+          </StyledRow>
+        </StyledHead>
+        {paymentItems.map((item, index) => (
+          <StyledRow key={index}>
+            <td>{index}</td>
+            <td>{item.amount}</td>
+            <td>{item.reason}</td>
+            <td>{item.criteria}</td>
+            <td>Action</td>
+          </StyledRow>
+        ))}
+      </StyledTable>
+    )
+  }
+
   render() {
     const { getFieldDecorator } = this.props.form
     const formItemLayout = {
@@ -62,18 +87,9 @@ class PaymentSchedule extends Component {
     }
     const { paymentItems } = this.state
     return (
-      <Wrap>
+      <Wrapper>
         <Button onClick={this.showModal}>create payment item</Button>
-        <div>
-          {paymentItems.map((item, index) => (
-            <div key={index}>
-              <span>{index}</span>
-              <span>{item.amount}</span>
-              <span>{item.reason}</span>
-              <span>{item.criteria}</span>
-            </div>
-          ))}
-        </div>
+        {paymentItems.length ? this.renderPaymentTable(paymentItems) : null}
         <Modal
           className="project-detail-nobar"
           maskClosable={false}
@@ -108,7 +124,7 @@ class PaymentSchedule extends Component {
             </Button>
           </Form>
         </Modal>
-      </Wrap>
+      </Wrapper>
     )
   }
 }
@@ -120,4 +136,29 @@ PaymentSchedule.propTypes = {
 
 export default Form.create()(PaymentSchedule)
 
-const Wrap = styled.div``
+const Wrapper = styled.div``
+
+const StyledTable = styled.table`
+  margin-top: 16px;
+  width: 100%;
+  font-size: 13px;
+`
+const StyledHead = styled.thead`
+  > tr {
+    background: #0f2631;
+  }
+  th {
+    line-height: 18px;
+    padding: 16px;
+    color: #fff;
+  }
+`
+const StyledRow = styled.tr`
+  width: 100%;
+  background: #f2f6fb;
+  > td {
+    line-height: 18px;
+    padding: 16px;
+    color: #000;
+  }
+`
