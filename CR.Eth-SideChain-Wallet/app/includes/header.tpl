@@ -10,12 +10,12 @@
 
         @@if (site === 'web' ) {
           <a class="header__brand" href="/" aria-label="Go to homepage">
-            <img src="images/logo.svg" height="53" width="190" alt="MyCrypto Logo" />
+            <img src="images/logo.svg" height="53" width="190" alt="Logo" />
           </a>
         }
         @@if (site === 'cx'  ) {
           <a class="header__brand" href="/cx-wallet.html" aria-label="Go to homepage">
-            <img src="images/logo.svg" height="48" width="166" alt="MyCrypto Logo" />
+            <img src="images/logo.svg" height="48" width="166" alt="Logo" />
           </a>
         }
 
@@ -39,7 +39,6 @@
                 <p class="small col-xs-4 text-center">Balanced</p>
                 <p class="small col-xs-4 text-right">Faster</p>
                 <p class="small" style="white-space:normal;font-weight:300;margin: 1rem 0 0;" translate="GAS_PRICE_Desc"></p>
-                <a class="small" translate="x_ReadMore" href="https://support.mycrypto.com/gas/what-is-gas-ethereum.html" target="_blank" rel="noopener noreferrer"></a>
               </div>
             </ul>
           </span>
@@ -82,7 +81,6 @@
             <ul class="dropdown-menu" ng-show="dropdown">
               <li><a ng-class="{true:'active'}[curLang=='English']"         ng-click="changeLanguage('en','English'        )"> English         </a></li>
               <li><a ng-class="{true:'active'}[curLang=='简体中文']"         ng-click="changeLanguage('zhcn','简体中文'      )"> 简体中文         </a></li>
-              <li role="separator" class="divider"></li>
             </ul>
           </span>
 
@@ -119,13 +117,6 @@
                   <a tabindex="0" aria-label="nav item: {{tab.name | translate}}" translate="{{tab.name}}"></a>
             </li>
           }
-          <li class="nav-item help">
-            <a href="https://support.mycrypto.com/" target="_blank" rel="noopener noreferrer">
-              <span translate="NAV_Help">
-                Help
-              </span>
-            </a>
-          </li>
         </ul>
       </div>
 
