@@ -3714,7 +3714,8 @@ var tabsCtrl = function ($scope, globalService, $translate, $sce) {
             key: newNode.key
         }));
         if (nodes.ensNodeTypes.indexOf($scope.curNode.type) == -1) $scope.tabNames.ens.cx = $scope.tabNames.ens.mew = false;
-        if (nodes.domainsaleNodeTypes.indexOf($scope.curNode.type) == -1) $scope.tabNames.domainsale.cx = $scope.tabNames.domainsale.mew = false;else $scope.tabNames.ens.cx = $scope.tabNames.ens.mew = true;
+        if (nodes.domainsaleNodeTypes.indexOf($scope.curNode.type) == -1) $scope.tabNames.domainsale.cx = $scope.tabNames.domainsale.mew = false;
+        // else $scope.tabNames.ens.cx = $scope.tabNames.ens.mew = true;
         ajaxReq.getCurrentBlock(function (data) {
             if (data.error) {
                 $scope.nodeIsConnected = false;
@@ -7980,7 +7981,7 @@ var globalService = function ($http, $httpParamSerializerJQLike) {
       id: 5,
       name: "NAV_Offline",
       url: "offline-transaction",
-      mew: true,
+      mew: false,
       cx: false
     },
     contracts: {
@@ -15915,7 +15916,7 @@ en.data = {
   FOOTER_4: 'Disclaimer',
 
   GAS_LIMIT_Desc: 'Gas limit is the amount of gas to send with your TX. `TX fee` = gas price * gas limit & is paid to miners for including your TX in a block. Increasing this number will not get your TX mined faster. Sending ETH = `21000`. Sending Tokens = ~`200000`.',
-  GAS_PRICE_Desc: 'Gas Price is the amount you pay per unit of gas. `TX fee = gas price * gas limit`. Higher the gas price = faster transaction, but more expensive. Check [Eth Gas Station](https://ethgasstation.info/) for gas price recommendation.',
+  GAS_PRICE_Desc: 'Gas Price is the amount you pay per unit of gas. `TX fee = gas price * gas limit`. Higher the gas price = faster transaction, but more expensive.',
 
   GEN_desc: 'If you want to generate multiple wallets, you can do so here',
   GEN_Help_1: 'Use your',
@@ -16659,7 +16660,7 @@ zhcn.data = {
   GET_ConfButton: 'I understand. Continue.',
   GEN_Label_5: 'Save Your `Private Key`. ',
   GEN_Unlock: 'Unlock your wallet to see your address',
-  GAS_PRICE_Desc: 'Gas Price is the amount you pay per unit of gas. `TX fee = gas price * gas limit`. Higher the gas price = faster transaction, but more expensive. Check [Eth Gas Station](https://ethgasstation.info/) for gas price recommendation.',
+  GAS_PRICE_Desc: 'Gas Price is the amount you pay per unit of gas. `TX fee = gas price * gas limit`. Higher the gas price = faster transaction, but more expensive.',
   GAS_LIMIT_Desc: 'Gas limit is the amount of gas to send with your TX. `TX fee` = gas price * gas limit & is paid to miners for including your TX in a block. Increasing this number will not get your TX mined faster. Sending ETH = `21000`. Sending Tokens = ~`200000`.',
   NONCE_Desc: 'The nonce is the number of transactions sent from a given address. It ensures transactions are sent in order & not more than once.',
   TXFEE_Desc: 'The TX Fee is paid to miners for including your TX in a block. Is is the `gas limit` * `gas price`. [You can convert GWEI -> ETH here](https://mycrypto.com/helpers.html)',
