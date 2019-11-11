@@ -29,6 +29,21 @@ class PaymentSchedule extends Component {
     callback()
   }
 
+  handleDelete = index => {
+    const { paymentItems } = this.state
+    this.setState(
+      {
+        paymentItems: [
+          ...paymentItems.slice(0, index),
+          ...paymentItems.slice(index + 1)
+        ]
+      },
+      () => {
+        this.changeValue(this.state.paymentItems)
+      }
+    )
+  }
+
   handleSubmit = e => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
@@ -68,7 +83,12 @@ class PaymentSchedule extends Component {
               <td>{item.amount}</td>
               <td>{item.reasons}</td>
               <td>{item.criteria}</td>
-              <td>Action</td>
+              <td>
+                <Button onClick={this.handleDelete.bind(this, index)}>
+                  delete
+                </Button>
+                <Button>edit</Button>
+              </td>
             </StyledRow>
           ))}
         </tbody>
@@ -90,7 +110,9 @@ class PaymentSchedule extends Component {
     const { paymentItems } = this.state
     return (
       <Wrapper>
-        <Button onClick={this.showModal}>{I18N.get('suggestion.budget.create')}</Button>
+        <Button onClick={this.showModal}>
+          {I18N.get('suggestion.budget.create')}
+        </Button>
         {paymentItems.length ? this.renderPaymentTable(paymentItems) : null}
         <Modal
           className="project-detail-nobar"
@@ -127,7 +149,10 @@ class PaymentSchedule extends Component {
             </FormItem>
 
             <Actions>
-              <Button className="cr-btn cr-btn-default" onClick={this.hideModal}>
+              <Button
+                className="cr-btn cr-btn-default"
+                onClick={this.hideModal}
+              >
                 {I18N.get('suggestion.cancel')}
               </Button>
               <Button className="cr-btn cr-btn-primary" htmlType="submit">
