@@ -106,5 +106,13 @@ export default {
     abstract: '摘要',
     email: '作者邮箱',
     name: '作者姓名'
+  },
+  budget: {
+    create: '创建支付项',
+    payment: '支付',
+    amount: '数量',
+    reasons: '理由',
+    criteria: '支付准则',
+    action: '操作'
   }
 }

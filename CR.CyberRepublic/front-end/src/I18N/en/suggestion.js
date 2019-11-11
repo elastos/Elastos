@@ -108,5 +108,13 @@ export default {
     abstract: 'Abstract',
     email: 'Author email',
     name: 'Author name'
+  },
+  budget: {
+    create: 'Create payment item',
+    payment: 'Payment',
+    amount: 'Amount',
+    reasons: 'Reasons',
+    criteria: 'Criteria of Payment',
+    action: 'Action'
   }
 }

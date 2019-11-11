@@ -54,22 +54,24 @@ class PaymentSchedule extends Component {
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th>Payment#</th>
-            <th>Amount(ELA)</th>
-            <th>Reasons</th>
-            <th>Criteria of Payment</th>
-            <th>Action</th>
+            <th>{I18N.get('suggestion.budget.payment')}#</th>
+            <th>{I18N.get('suggestion.budget.amount')}(ELA)</th>
+            <th>{I18N.get('suggestion.budget.reasons')}</th>
+            <th>{I18N.get('suggestion.budget.criteria')}</th>
+            <th>{I18N.get('suggestion.budget.action')}</th>
           </StyledRow>
         </StyledHead>
-        {paymentItems.map((item, index) => (
-          <StyledRow key={index}>
-            <td>{index}</td>
-            <td>{item.amount}</td>
-            <td>{item.reason}</td>
-            <td>{item.criteria}</td>
-            <td>Action</td>
-          </StyledRow>
-        ))}
+        <tbody>
+          {paymentItems.map((item, index) => (
+            <StyledRow key={index}>
+              <td>{index}</td>
+              <td>{item.amount}</td>
+              <td>{item.reasons}</td>
+              <td>{item.criteria}</td>
+              <td>Action</td>
+            </StyledRow>
+          ))}
+        </tbody>
       </StyledTable>
     )
   }
@@ -88,7 +90,7 @@ class PaymentSchedule extends Component {
     const { paymentItems } = this.state
     return (
       <Wrapper>
-        <Button onClick={this.showModal}>create payment item</Button>
+        <Button onClick={this.showModal}>{I18N.get('suggestion.budget.create')}</Button>
         {paymentItems.length ? this.renderPaymentTable(paymentItems) : null}
         <Modal
           className="project-detail-nobar"
@@ -99,29 +101,39 @@ class PaymentSchedule extends Component {
           width="70%"
         >
           <Form onSubmit={this.handleSubmit}>
-            <FormItem label="Amount" {...formItemLayout}>
+            <FormItem
+              label={`${I18N.get('suggestion.budget.amount')}(ELA)`}
+              {...formItemLayout}
+            >
               {getFieldDecorator('amount', {
                 rules: [{ required: true, message: '' }]
               })(<Input />)}
             </FormItem>
-            <FormItem label="Reason" {...formItemLayout}>
-              {getFieldDecorator('reason', {
+            <FormItem
+              label={I18N.get('suggestion.budget.reasons')}
+              {...formItemLayout}
+            >
+              {getFieldDecorator('reasons', {
                 rules: [{ required: true, message: '' }]
               })(<Input />)}
             </FormItem>
-            <FormItem label="Criteria of payment" {...formItemLayout}>
+            <FormItem
+              label={I18N.get('suggestion.budget.criteria')}
+              {...formItemLayout}
+            >
               {getFieldDecorator('criteria', {
                 rules: [{ required: true, message: '' }]
               })(<Input />)}
             </FormItem>
 
-            <Button className="cr-btn cr-btn-default" onClick={this.hideModal}>
-              {I18N.get('suggestion.cancel')}
-            </Button>
-
-            <Button className="cr-btn cr-btn-primary" htmlType="submit">
-              {I18N.get('suggestion.submit')}
-            </Button>
+            <Actions>
+              <Button className="cr-btn cr-btn-default" onClick={this.hideModal}>
+                {I18N.get('suggestion.cancel')}
+              </Button>
+              <Button className="cr-btn cr-btn-primary" htmlType="submit">
+                {I18N.get('suggestion.submit')}
+              </Button>
+            </Actions>
           </Form>
         </Modal>
       </Wrapper>
@@ -151,6 +163,15 @@ const StyledHead = styled.thead`
     line-height: 18px;
     padding: 16px;
     color: #fff;
+    &:first-child {
+      width: 80px;
+    }
+    &:nth-child(2) {
+      width: 120px;
+    }
+    &:last-child {
+      width: 120px;
+    }
   }
 `
 const StyledRow = styled.tr`
@@ -160,5 +181,12 @@ const StyledRow = styled.tr`
     line-height: 18px;
     padding: 16px;
     color: #000;
+  }
+`
+const Actions = styled.div`
+  display: flex;
+  justify-content: center;
+  > button {
+    margin: 0 8px;
   }
 `
