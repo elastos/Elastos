@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
-{%  load static %}
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+{% load static %}
 <head>
     <title>Console</title>
     <meta charset="UTF-8">
+    <link href="{% static "/css/styles.css" %}" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <style>
@@ -99,7 +100,7 @@ button {
 <body>
 {% block content %}
 <div class="header">
-<img src="{% static "static/Images/Logo.png" %}" alt="Elastos Logo"/>
+    <img src="{% static '/Images/Logo.png' %}">
     <h1>Console</h1>
 <div class="dropdown">
   <button class="dropbtn" onclick="myFunction()">Language

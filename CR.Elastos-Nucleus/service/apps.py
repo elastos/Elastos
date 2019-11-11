@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class ElastosServiceConfig(AppConfig):
+class ServiceConfig(AppConfig):
     name = 'service'

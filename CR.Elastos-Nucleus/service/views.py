@@ -60,3 +60,4 @@ def documentation(request):
 
 def about_us(request):
     return render(request, "Services/aboutUs.html")
+
