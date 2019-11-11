@@ -106,7 +106,7 @@ EOS_09                          :  'Claim EOS Tokens',
 EOS_10                          :  'Select `claimAll`.',
 
 /* Onboarding */
-ONBOARD_welcome_title           :  '欢迎使用 MyCrypto.com',
+ONBOARD_welcome_title           :  '欢迎使用亦来云以太坊侧链钱包 MyCrypto',
 ONBOARD_welcome_content__1      :  '为了你能安全地使用, 请先认真阅读本指南. 🙏',
 ONBOARD_welcome_content__2      :  '如果你不重视本指引中的警示信息, 那你的资金可能存在被盗的风险.',
 ONBOARD_welcome_content__3      :  '很抱歉, 我们也知道这样的弹窗提示很讨厌.',
