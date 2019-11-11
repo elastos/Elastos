@@ -8,6 +8,7 @@
 #include <IMainchainSubWallet.h>
 #include <IIDChainSubWallet.h>
 
+#include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -54,6 +55,7 @@ struct SpvDidAdaptor {
     IMasterWalletManager *manager;
     IIDChainSubWallet *idWallet;
     SubWalletCallback *callback;
+    char *resolver;
 };
 
 static
@@ -97,9 +99,10 @@ void SyncStop(IMasterWalletManager *manager, ISubWalletCallback *callback)
 }
 
 SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
-        const char *network)
+        const char *network, const char *resolver)
 {
     nlohmann::json netConfig;
+    char *url = NULL;
 
     if (!walletDir || !walletId)
         return NULL;
@@ -124,11 +127,26 @@ SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
 
     IMasterWalletManager *manager = new MasterWalletManager(
             walletDir, network, netConfig);
+    if (!manager)
+        return NULL;
+
+    if (resolver) {
+        url = strdup(resolver);
+        if (!url) {
+            delete manager;
+            return NULL;
+        }
+    }
+
     IIDChainSubWallet *idWallet = NULL;
 
     CURLcode rc = curl_global_init(CURL_GLOBAL_ALL);
-    if (rc != CURLE_OK)
+    if (rc != CURLE_OK) {
+        if (url)
+            free(url);
+        delete manager;
         return NULL;
+    }
 
     try {
         auto masterWallet = manager->GetMasterWallet(walletId);
@@ -141,8 +159,9 @@ SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
     }
 
     if (!idWallet) {
+        if (url)
+            free(url);
         delete manager;
-
         curl_global_cleanup();
         return NULL;
     }
@@ -151,6 +170,7 @@ SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
     SyncStart(manager, callback);
 
     SpvDidAdaptor *adaptor = new SpvDidAdaptor;
+    adaptor->resolver = url;
     adaptor->manager = manager;
     adaptor->idWallet = idWallet;
     adaptor->callback = callback;
@@ -165,6 +185,9 @@ void SpvDidAdaptor_Destroy(SpvDidAdaptor *adaptor)
 
     SyncStop(adaptor->manager, adaptor->callback);
 
+    if (adaptor->resolver)
+        free(adaptor->resolver);
+
     delete adaptor->callback;
     delete adaptor->manager;
     delete adaptor;
@@ -178,12 +201,16 @@ int SpvDidAdaptor_CreateIdTransaction(SpvDidAdaptor *adaptor,
     if (!adaptor || !payload || !password)
         return -1;
 
+    if (!memo)
+        memo = "";
+
     try {
         auto payloadJson = nlohmann::json::parse(payload);
 
         auto tx = adaptor->idWallet->CreateIDTransaction(payloadJson, memo);
-        auto signedTx = adaptor->idWallet->SignTransaction(tx, password);
-        adaptor->idWallet->PublishTransaction(signedTx);
+        tx = adaptor->idWallet->SignTransaction(tx, password);
+        tx = adaptor->idWallet->PublishTransaction(tx);
+        // std::cout << "ID Transaction: " << tx["TxHash"] << std::endl;
     } catch (...) {
         return -1;
     }
@@ -236,22 +263,74 @@ static size_t HttpResponseBodyWriteCallback(char *ptr,
     return length;
 }
 
+typedef struct HttpRequestBody {
+    size_t used;
+    size_t sz;
+    char *data;
+} HttpRequestBody;
+
+static size_t HttpRequestBodyReadCallback(void *dest, size_t size,
+        size_t nmemb, void *userdata)
+{
+    HttpRequestBody *request = (HttpRequestBody *)userdata;
+    size_t length = size * nmemb;
+    size_t bytes_copy = request->sz - request->used;
+
+    if (bytes_copy) {
+        if(bytes_copy > length)
+            bytes_copy = length;
+
+        memcpy(dest, request->data + request->used, bytes_copy);
+
+        request->used += bytes_copy;
+        return bytes_copy;
+    }
+
+    return 0;
+}
+
+#define DID_RESOLVE_REQUEST "{\"method\":\"getidtxspayloads\",\"params\":{\"id\":\"%s\",\"all\":false}}"
+
 // Caller need free the pointer
 const char *SpvDidAdaptor_Resolve(SpvDidAdaptor *adaptor, const char *did)
 {
-    if (!adaptor || !did)
+    char buffer[256];
+
+    if (!adaptor || !did || !adaptor->resolver)
         return NULL;
 
+    // TODO: max did length
+    if (strlen(did) > 64)
+        return NULL;
+
+    HttpRequestBody request;
     HttpResponseBody response;
 
-    // TODO: make the real URL for DID resolve
+    request.used = 0;
+    request.sz = sprintf(buffer, DID_RESOLVE_REQUEST, did);
+    request.data = buffer;
+
     CURL *curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
+    curl_easy_setopt(curl, CURLOPT_URL, adaptor->resolver);
+
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, HttpRequestBodyReadCallback);
+    curl_easy_setopt(curl, CURLOPT_READDATA, &request);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)request.sz);
+
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HttpResponseBodyWriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
+    // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    headers = curl_slist_append(headers, "Accept: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
     memset(&response, 0, sizeof(response));
     CURLcode rc = curl_easy_perform(curl);
+    curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
     if (rc != CURLE_OK) {
         if (response.data)

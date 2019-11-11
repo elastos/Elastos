@@ -213,10 +213,11 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 extern "C" {
 #endif
 
-SWIGEXPORT jlong JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_create(JNIEnv *jenv, jclass jcls, jstring jWalletDir, jstring jWalletId, jstring jNetwork) {
+SWIGEXPORT jlong JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_create(JNIEnv *jenv, jclass jcls, jstring jWalletDir, jstring jWalletId, jstring jNetwork, jstring jResolver) {
   char *walletDir = NULL;
   char *walletId = NULL;
   char *network = NULL;
+  char *resolver = NULL;
   unsigned long result;
   jlong jresult = 0 ;
 
@@ -251,11 +252,16 @@ SWIGEXPORT jlong JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_create(JNIEnv *
     network = (char *)(*jenv)->GetStringUTFChars(jenv, jNetwork, 0);
   }
 
-  result = (unsigned long)SpvDidAdaptor_Create((char const *)walletDir,(char const *)walletId,(char const *)network);
+  if (jResolver) {
+    resolver = (char *)(*jenv)->GetStringUTFChars(jenv, jResolver, 0);
+  }
+
+  result = (unsigned long)SpvDidAdaptor_Create((char const *)walletDir,(char const *)walletId,(char const *)network,(char const*)resolver);
 
   if (walletDir) (*jenv)->ReleaseStringUTFChars(jenv, jWalletDir, (const char *)walletDir);
   if (walletId) (*jenv)->ReleaseStringUTFChars(jenv, jWalletId, (const char *)walletId);
   if (network) (*jenv)->ReleaseStringUTFChars(jenv, jNetwork, (const char *)network);
+  if (resolver) (*jenv)->ReleaseStringUTFChars(jenv, jResolver, (const char *)resolver);
 
   if (result == 0) {
     SWIG_JavaThrowException(jenv, SWIG_JavaUnknownError, "Initialize SPV wallet failed.");
