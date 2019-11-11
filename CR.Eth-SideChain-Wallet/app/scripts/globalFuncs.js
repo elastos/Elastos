@@ -49,7 +49,7 @@ globalFuncs.errorMsgs = [
     'Wallet not found. ', // 14
     'Whoops. It doesn\'t look like a proposal with this ID exists yet or there is an error reading this proposal. ', // 15 - NOT USED
     'A wallet with this address already exists in storage. Please check your wallets page. ', // 16
-    '(error_17) Insufficient balance. Your gas limit * gas price + amount to send exceeds your current balance. Send more ETH to your account or use the "Send Entire Balance" button. If you believe this is in error, try pressing generate again. Required (d+) and got: (d+). [Learn More.](https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html)', // 17
+    '(error_17) Insufficient balance. Your gas limit * gas price + amount to send exceeds your current balance. Send more ETH to your account or use the "Send Entire Balance" button. If you believe this is in error, try pressing generate again. Required (d+) and got: (d+). [Learn More.](https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html)', // 17
     'All gas would be used on this transaction. This means you have already voted on this proposal or the debate period has ended.', // 18
     'Please enter a valid symbol', // 19
     'Not a valid ERC-20 token', // 20
@@ -67,7 +67,7 @@ globalFuncs.errorMsgs = [
     'Could not connect to the node. Refresh your page, try a different node (top-right corner), check your firewall settings. If custom node, check your configs.', // 32
     'The wallet you have unlocked does not match the owner\'s address. ', // 33
     'The name you are attempting to reveal does not match the name you have entered. ', // 34
-    'Input address is not checksummed. <a href="https://support.mycrypto.com/addresses/not-checksummed-shows-when-i-enter-an-address.html" target="_blank" rel="noopener noreferrer"> Click here to learn what this means.</a>', // 35
+    'Input address is not checksummed. <a href="https://support.wallet.elaeth.io/addresses/not-checksummed-shows-when-i-enter-an-address.html" target="_blank" rel="noopener noreferrer"> Click here to learn what this means.</a>', // 35
     'Please enter valid TX hash', // 36
     'Please enter valid hex string. Hex only contains: 0x, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, a, b, c, d, e, f', // 37
     'Offer must have either price or reserve set to more than 0', // 38
@@ -88,13 +88,13 @@ globalFuncs.successMsgs = [
 // These are translated in the translation files
 globalFuncs.gethErrors = {
     '(geth-06) Invalid sender\\.' : 'GETH_InvalidSender',
-    "(geth-08) This TX's [nonce](https://support.mycrypto.com/transactions/what-is-nonce.html) is too low\\. Try incrementing the nonce by pressing the Generate button again, or [replace the pending transaction](https://support.mycrypto.com/transactions/check-status-of-ethereum-transaction.html)\\.": "GETH_Nonce",
+    "(geth-08) This TX's [nonce](https://support.wallet.elaeth.io/transactions/what-is-nonce.html) is too low\\. Try incrementing the nonce by pressing the Generate button again, or [replace the pending transaction](https://support.wallet.elaeth.io/transactions/check-status-of-ethereum-transaction.html)\\.": "GETH_Nonce",
     '(geth-02) Gas price too low for acceptance\\. Try raising the gas price to 21 GWEI via the dropdown in top-right\\.' : 'GETH_Cheap',
-    '(geth-01) Insufficient balance\\. Your gas limit * gas price + amount to send exceeds your current balance\\. Send more ETH to your account or use the "Send Entire Balance" button\\. If you believe this is in error, try pressing generate again\\. Required (d+) WEI and got: (d+) WEI\\. [Learn More](https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html)': 'GETH_Balance',
+    '(geth-01) Insufficient balance\\. Your gas limit * gas price + amount to send exceeds your current balance\\. Send more ETH to your account or use the "Send Entire Balance" button\\. If you believe this is in error, try pressing generate again\\. Required (d+) WEI and got: (d+) WEI\\. [Learn More](https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html)': 'GETH_Balance',
     '(geth-09) Account does not exist or account balance too low\\.' : 'GETH_NonExistentAccount',
-    '(geth-04) Insufficient balance\\. Your gas limit * gas price + amount to send exceeds your current balance\\. Send more ETH to your account or use the "Send Entire Balance" button\\. If you believe this is in error, try pressing generate again\\. Required (d+) WEI and got: (d+) WEI\\. [Learn More](https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html)': 'GETH_InsufficientFunds',
+    '(geth-04) Insufficient balance\\. Your gas limit * gas price + amount to send exceeds your current balance\\. Send more ETH to your account or use the "Send Entire Balance" button\\. If you believe this is in error, try pressing generate again\\. Required (d+) WEI and got: (d+) WEI\\. [Learn More](https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html)': 'GETH_InsufficientFunds',
     '(geth-05) Intrinsic gas too low\\. Try raising the gas price to 21 GWEI via the dropdown in top-right or the gas limit to 21000 (for sending) or 200000 (for sending tokens or contracts) and try again.' : 'GETH_IntrinsicGas',
-    '(geth-03) Exceeds block gas limit\\. Transaction cost exceeds current gas limit\\. Limit: (d+) WEI, got: (d+) WEI\\. Please lower the gas limit to 21000 (for sending) or 200000 (for sending tokens or contracts) and try again\\. [Learn More](https://support.mycrypto.com/gas/what-is-gas-ethereum.html)' : 'GETH_GasLimit',
+    '(geth-03) Exceeds block gas limit\\. Transaction cost exceeds current gas limit\\. Limit: (d+) WEI, got: (d+) WEI\\. Please lower the gas limit to 21000 (for sending) or 200000 (for sending tokens or contracts) and try again\\. [Learn More](https://support.wallet.elaeth.io/gas/what-is-gas-ethereum.html)' : 'GETH_GasLimit',
     '(geth-07) Negative value\\.': 'GETH_NegativeValue'
 };
 
@@ -112,14 +112,14 @@ globalFuncs.getGethMsg = function(str) {
 
 // These are translated in the translation files
 globalFuncs.parityErrors = {
-    "A (parity-01) A transaction with the same hash was already imported. It was probably already broadcast. To avoid duplicate transactions, check your address on [etherscan.io](https://etherscan.io) & wait 10 minutes before attempting to send again. [Learn More](https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html)\\. This means it was already broadcast. Please check your address on etherscan.io & wait 10 minutes before attempting to send again to avoid duplicate transactions. <a target='_blank' rel='noopener noreferrer' href='https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html'>Learn more</a>": "PARITY_AlreadyImported",
-    "(parity-07) There is already a transaction with this [nonce](https://support.mycrypto.com/transactions/what-is-nonce.html)\\. Try incrementing the nonce by pressing the Generate button again, or [replace the pending transaction](https://support.mycrypto.com/transactions/check-status-of-ethereum-transaction.html)\\.": "PARITY_Old",
-    "(parity-04) There is another transaction with same nonce in the queue, or the transaction fee is too low\\. Try incrementing the nonce by clicking the Generate button again\\. [Learn More](https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html)\\.": "PARITY_TooCheapToReplace",
-    "(parity-06) There are too many transactions in the queue\\. Your transaction was dropped due to limit\\. Try increasing the gas price\\. [Learn More](https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html)\\.": "PARITY_LimitReached",
-    "(parity-08) TX Fee is too low\\. It does not satisfy your node's minimal fee (minimal: (d+) WEI, got: (d+) WEI)\\. Try increasing the gas price and/or gas limit\\. [Learn More](https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html)\\.": "PARITY_InsufficientGasPrice",
-    "(parity-03) Insufficient balance\\. The account you tried to send transaction from does not have enough funds\\. If you believe this is in error, try using the 'Send Entire Balance' button, or pressing generate again. Required (d+) WEI and got: (d+) WEI\\. [Learn More](https://support.mycrypto.com/transactions/transactions-not-showing-or-pending.html)\\.": "ERROR_17",
-    "(parity-02) Transaction cost exceeds current gas limit\\. Limit: (d+) WEI, got: (d+) WEI\\. Please lower the gas limit to 21000 (for sending) or 200000 (for sending tokens or contracts) and try again\\. [Learn More](https://support.mycrypto.com/gas/what-is-gas-ethereum.html)\\.": "PARITY_GasLimitExceeded",
-    "(parity-05) Supplied gas limit is beyond limit\\. Try lowering the gas limit to 21000\\. [Learn More](https://support.mycrypto.com/gas/what-is-gas-ethereum.html)\\.": "PARITY_InvalidGasLimit"
+    "A (parity-01) A transaction with the same hash was already imported. It was probably already broadcast. To avoid duplicate transactions, check your address on [etherscan.io](https://etherscan.io) & wait 10 minutes before attempting to send again. [Learn More](https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html)\\. This means it was already broadcast. Please check your address on etherscan.io & wait 10 minutes before attempting to send again to avoid duplicate transactions. <a target='_blank' rel='noopener noreferrer' href='https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html'>Learn more</a>": "PARITY_AlreadyImported",
+    "(parity-07) There is already a transaction with this [nonce](https://support.wallet.elaeth.io/transactions/what-is-nonce.html)\\. Try incrementing the nonce by pressing the Generate button again, or [replace the pending transaction](https://support.wallet.elaeth.io/transactions/check-status-of-ethereum-transaction.html)\\.": "PARITY_Old",
+    "(parity-04) There is another transaction with same nonce in the queue, or the transaction fee is too low\\. Try incrementing the nonce by clicking the Generate button again\\. [Learn More](https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html)\\.": "PARITY_TooCheapToReplace",
+    "(parity-06) There are too many transactions in the queue\\. Your transaction was dropped due to limit\\. Try increasing the gas price\\. [Learn More](https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html)\\.": "PARITY_LimitReached",
+    "(parity-08) TX Fee is too low\\. It does not satisfy your node's minimal fee (minimal: (d+) WEI, got: (d+) WEI)\\. Try increasing the gas price and/or gas limit\\. [Learn More](https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html)\\.": "PARITY_InsufficientGasPrice",
+    "(parity-03) Insufficient balance\\. The account you tried to send transaction from does not have enough funds\\. If you believe this is in error, try using the 'Send Entire Balance' button, or pressing generate again. Required (d+) WEI and got: (d+) WEI\\. [Learn More](https://support.wallet.elaeth.io/transactions/transactions-not-showing-or-pending.html)\\.": "ERROR_17",
+    "(parity-02) Transaction cost exceeds current gas limit\\. Limit: (d+) WEI, got: (d+) WEI\\. Please lower the gas limit to 21000 (for sending) or 200000 (for sending tokens or contracts) and try again\\. [Learn More](https://support.wallet.elaeth.io/gas/what-is-gas-ethereum.html)\\.": "PARITY_GasLimitExceeded",
+    "(parity-05) Supplied gas limit is beyond limit\\. Try lowering the gas limit to 21000\\. [Learn More](https://support.wallet.elaeth.io/gas/what-is-gas-ethereum.html)\\.": "PARITY_InvalidGasLimit"
 };
 globalFuncs.parityErrorMsgs = {};
 globalFuncs.getParityMsg = function(str) {
@@ -170,8 +170,8 @@ globalFuncs.stripTags = function(str) {
     return str;
 };
 globalFuncs.checkAndRedirectHTTPS = function() {
-    if (window.location.host == "http://mycrypto.com" || window.location.host == "http://www.mycrypto.com" || window.location.host == "https://www.mycrypto.com") {
-      window.location = "https://mycrypto.com/" + window.location.pathname;
+    if (window.location.host == "http://wallet.elaeth.io" || window.location.host == "http://www.wallet.elaeth.io" || window.location.host == "https://www.wallet.elaeth.io") {
+      window.location = "https://wallet.elaeth.io/" + window.location.pathname;
     }
 };
 globalFuncs.isStrongPass = function(password) {
@@ -212,7 +212,7 @@ globalFuncs.getDefaultTokensAndNetworkType =  function getDefaultTokensAndNetwor
         'rin': require('./tokens/rinkebyTokens.json')
     };
 
-    var nodeErrMsg = 'Node does not exist, contact support@mycrypto.com CODE:localstorageNodeMissing'
+    var nodeErrMsg = 'Node does not exist, contact support@wallet.elaeth.io CODE:localstorageNodeMissing'
     // localStorage selected node
     var currentNodeKey = getFromLS("curNode", nodeErrMsg).key;
     // custom nodes in local storage

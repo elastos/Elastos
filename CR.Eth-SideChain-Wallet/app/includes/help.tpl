@@ -108,7 +108,7 @@
     </div>
     <div ng-show="h2b">
       <ol>
-        <li translate="HELP_2b_Desc_1"> Go to our github: [https://github.com/MyCryptoHQ/mycrypto.com/tree/gh-pages](https://github.com/MyCryptoHQ/mycrypto.com/tree/gh-pages). </li>
+        <li translate="HELP_2b_Desc_1"> Go to our github: [https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages](https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages). </li>
         <li translate="HELP_2b_Desc_2"> Click download zip in the upper right. </li>
         <li translate="HELP_2b_Desc_3"> Move zip to an airgapped computer. </li>
         <li translate="HELP_2b_Desc_4"> Unzip it and double-click index.html. </li>
@@ -225,7 +225,7 @@
     <div ng-show="h5">
     <p translate="HELP_5_Desc_1"> You can run MyCrypto.com on your computer instead of from the GitHub servers. You can generatea a wallet completely offline and send transactions from the "Offline Transaction" page. </p>
     <ol>
-      <li translate="HELP_2b_Desc_1">Go to https://github.com/MyCryptoHQ/mycrypto.com/releases/latest:</li>
+      <li translate="HELP_2b_Desc_1">Go to https://github.com/cyber-republic/eth-sidechain-wallet/releases/latest:</li>
       <li translate="HELP_2b_Desc_2">Click the file below that looks like dist-vX.X.X.zip</li>
       <li translate="HELP_2b_Desc_3">Move zip to an airgapped computer.</li>
       <li translate="HELP_2b_Desc_4">Unzip it and double-click `index.html`.</li>
@@ -247,7 +247,7 @@
     </div>
     <div ng-show="h5cx">
     <ul>
-      <li translate="HELP_2b_Desc_1"> Go to [https://github.com/MyCryptoHQ/mycrypto.com/releases/latest](https://github.com/MyCryptoHQ/mycrypto.com/releases/latest).</li>
+      <li translate="HELP_2b_Desc_1"> Go to [https://github.com/cyber-republic/eth-sidechain-wallet/releases/latest](https://github.com/cyber-republic/eth-sidechain-wallet/releases/latest).</li>
       <li translate="HELP_5CX_Desc_2"> Download the file below that looks like `chrome-extension-vX.X.X.zip` and unzip it.</li>
       <li translate="HELP_5CX_Desc_3"> Go to Google Chrome and find you settings (in the menu in the upper right).</li>
       <li translate="HELP_5CX_Desc_4"> Click "Extensions" on the left. </li>
@@ -319,7 +319,7 @@
       <p translate="HELP_8_Desc_1">MyCrypto is not a web wallet. You don't have a login and nothing ever gets saved to our servers. It is simply an interface that allows you interact with the blockchain.</p>
       <p translate="HELP_8_Desc_2">If MyCrypto.com goes down, you would have to find another way (like geth or Ethereum Wallet / Mist) to do what we are doing. But you wouldn't have to "get" your Ether out of MyCrypto because it's not in MyCrypto. It's in whatever wallet your generated via our site.</p>
       <p translate="HELP_8_Desc_3"> You can import your unencrypted private key and your Geth/Mist Format (encrypted) files directly into geth / Ethereum Wallet / Mist very easily now. See question #10 below. </p>
-      <p translate="HELP_8_Desc_4">In addition, the likelihood of us taking MyCrypto down is slim to none. It costs us almost nothing to maintain as we aren't storing any information. If we do take the domain down, it still is, and always will be, publicly available at <a href="https://github.com/MyCryptoHQ/mycrypto.com/tree/gh-pages" target="_blank" rel="noopener noreferrer">https://github.com/MyCryptoHQ/mycrypto.com</a>. You can download the ZIP there and run it locally. </p>
+      <p translate="HELP_8_Desc_4">In addition, the likelihood of us taking MyCrypto down is slim to none. It costs us almost nothing to maintain as we aren't storing any information. If we do take the domain down, it still is, and always will be, publicly available at <a href="https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages" target="_blank" rel="noopener noreferrer">https://github.com/cyber-republic/eth-sidechain-wallet</a>. You can download the ZIP there and run it locally. </p>
     </div>
   </article>
 }
@@ -582,8 +582,8 @@
       <ul>
         <li translate="HELP_Sec_Desc_2">We've been up and running since August 2015. If you search for <a href="https://www.reddit.com/search?q=mycrypto" target="_blank" rel="noopener noreferrer" />"mycrypto" on reddit</a>, you can see numerous people who use us with great success.</li>
         <li translate="HELP_Sec_Desc_3">We aren't going to take your money or steal your private key(s). There is no malicious code on this site. In fact the "GENERATE WALLET" pages are completely client-side. That means that all the code is executed on ** your computer** and it is never saved and transmitted anywhere.</li>
-        <li translate="HELP_Sec_Desc_4"> Check the URL -- This site is being served through GitHub and you can see the source code here: <a href="https://github.com/MyCryptoHQ/mycrypto.com/tree/gh-pages" target="_blank" rel="noopener noreferrer">https://github.com/MyCryptoHQ/mycrypto.com/tree/gh-pages</a> to the domains: <a href="http://kvhnuke.github.io/etherwallet/" target="_blank" rel="noopener noreferrer">http://kvhnuke.github.io/etherwallet/</a> and <a href="https://mycrypto.com" target="_blank" rel="noopener noreferrer">https://mycrypto.com</a>. You can verify it's hosted at GitHub by using <a href="http://viewdns.info/dnsrecord/?domain=mycrypto.com" target="_blank" rel="noopener noreferrer">http://viewdns.info/dnsrecord/?domain=mycrypto.com</a> - last two A record IPs are owned by GitHub for their custom domain hosting.</li>
-        <li translate="HELP_Sec_Desc_5"> For generating wallets, you can download the <a href="https://github.com/MyCryptoHQ/mycrypto.com/tree/gh-pages">source code</a>. See #5 above.</li>
+        <li translate="HELP_Sec_Desc_4"> Check the URL -- This site is being served through GitHub and you can see the source code here: <a href="https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages" target="_blank" rel="noopener noreferrer">https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages</a> to the domains: <a href="http://kvhnuke.github.io/etherwallet/" target="_blank" rel="noopener noreferrer">http://kvhnuke.github.io/etherwallet/</a> and <a href="https://mycrypto.com" target="_blank" rel="noopener noreferrer">https://mycrypto.com</a>. You can verify it's hosted at GitHub by using <a href="http://viewdns.info/dnsrecord/?domain=mycrypto.com" target="_blank" rel="noopener noreferrer">http://viewdns.info/dnsrecord/?domain=mycrypto.com</a> - last two A record IPs are owned by GitHub for their custom domain hosting.</li>
+        <li translate="HELP_Sec_Desc_5"> For generating wallets, you can download the <a href="https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages">source code</a>. See #5 above.</li>
         <li translate="HELP_Sec_Desc_6"> Do a test run and check and see what network activity is happening. The easiest way for you to do this is to right click on the page and click "inspect element". Go to the "Network" tab. Generate a test wallet. You will see there is no network activity. You may see something happening that looks like data:image/gif and data:image/png. Those are the QR codes being generated...on your computer...by your computer. No bytes were transferred.</li>
         <li translate="HELP_Sec_Desc_8"> If you do not feel comfortable using this tool, then by all means, do not use it. We created this tool as a helpful way for people to generate wallets and make transactions without needing to dive into command line or run a full node. Again, feel free to reach out if you have concerns and we will respond as quickly as possible. Thanks! </li>
       </ul>

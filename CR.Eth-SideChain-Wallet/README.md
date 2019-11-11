@@ -1,28 +1,7 @@
-### MyCrypto
+# Elastos Ethereum Sidechain Wallet
 
-- [Web](https://mycrypto.com/)
-- [Support](https://support.mycrypto.com/)
-- [Twitter](https://twitter.com/mycrypto)
-- [Blog](https://medium.com/@mycrypto)
-- [Github](https://github.com/MyCryptoHQ)
-- [Reddit](https://www.reddit.com/r/MyCrypto)
-- [Facebook](https://www.facebook.com/MyCryptoHQ)
-- [LinkedIn](https://www.linkedin.com/company/mycrypto)
-
-
-### Download the Latest Release
-
-- [https://github.com/MyCryptoHQ/mycrypto.com/releases](https://github.com/MyCryptoHQ/mycrypto.com/releases)
-
-
-### Developers
-
-- If you would like to contribute, please look at [our new and improved React/Typescript Repo](https://github.com/MyCryptoHQ/MyCrypto)
-
-- master is the working / development branch
-
-- gh-pages contains only the smaller dist folder only and is served to MyCrypto.com
-
+- [Web](https://wallet.elaeth.io/)
+- [Github](https://github.com/cyber-republic/eth-sidechain-wallet)
 
 #### If you would like to play around with this one for whatever reason:
 

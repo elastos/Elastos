@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>MyCrypto.com</title>
-<meta property="og:title" content="MyCrypto.com: MyCrypto.com">
-<meta property="og:site_name" content="MyCrypto.com: MyCrypto.com">
-<meta name="twitter:title" content="MyCrypto.com: MyCrypto.com">
-<meta name="apple-mobile-web-app-title" content="MyCrypto.com: MyCrypto.com">
-<link href="https://mycrypto.com" rel="canonical">
-<meta content="https://mycrypto.com" property="og:url">
-<meta content="https://mycrypto.com" name="twitter:url">
+<title>Elastos Ethereum Sidechain Wallet</title>
+<meta property="og:title" content="wallet.elaeth.io: wallet.elaeth.io">
+<meta property="og:site_name" content="wallet.elaeth.io: wallet.elaeth.io">
+<meta name="twitter:title" content="wallet.elaeth.io: wallet.elaeth.io">
+<meta name="apple-mobile-web-app-title" content="wallet.elaeth.io: wallet.elaeth.io">
+<link href="https://wallet.elaeth.io" rel="canonical">
+<meta content="https://wallet.elaeth.io" property="og:url">
+<meta content="https://wallet.elaeth.io" name="twitter:url">
 <link rel="stylesheet" href="css/mycrypto-master.min.css">
 <script type="text/javascript" src="js/mycrypto-static.min.js"></script>
 <script type="text/javascript" src="js/mycrypto-master.js"></script>
@@ -30,7 +30,7 @@
 <meta name="application-name" content="MyCrypto">
 <meta name="msapplication-config" content="./images/fav/browserconfig.xml">
 <meta name="theme-color" content="#06495e">
-<meta property="og:url" content="https://mycrypto.com" />
+<meta property="og:url" content="https://wallet.elaeth.io" />
 <meta property="og:title" content="MyCrypto: free, open-source interface for interacting with the blockchain more easily." />
 <meta property="og:type" content="website">
 <meta property="og:image" content="./images/mycrypto-logo-banner.png" />
@@ -45,26 +45,20 @@
 {
 "@context": "http://schema.org",
 "@type" : "Organization",
-"name" : "MyCrypto",
-"legalName" : "MyCrypto, Inc.",
-"url" : "https://mycrypto.com/",
+"name" : "wallet.elaeth.io",
+"legalName" : "wallet.elaeth.io",
+"url" : "https://wallet.elaeth.io/",
 "contactPoint" : [{
   "@type" : "ContactPoint",
-  "email" : "support@mycrypto.com",
-  "url"   : "https://support.mycrypto.com",
+  "email" : "support@wallet.elaeth.io",
+  "url"   : "https://support.wallet.elaeth.io",
   "contactType" : "customer service"
 }],
-"logo" : "https://mycrypto.com/images/mycrypto-logo.png",
-"description": "MyCrypto is a free, open-source interface for interacting with the blockchain more easily.",
+"logo" : "https://wallet.elaeth.io/images/logo.svg",
+"description": "A free, open-source interface for interacting with the blockchain more easily.",
 "sameAs" : [
-  "https://mycrypto.com/",
-  "https://www.facebook.com/MyCryptoHQ/",
-  "https://twitter.com/mycrypto",
-  "https://medium.com/@mycrypto",
-  "https://support.mycrypto.com/",
-  "https://github.com/MyCryptoHQ",
-  "https://www.reddit.com/r/MyCrypto/",
-  "https://www.linkedin.com/company/mycrypto/"
+  "https://wallet.elaeth.io/",
+  "https://github.com/cyber-republic/eth-sidechain-wallet",
 ]
 }
 </script>
