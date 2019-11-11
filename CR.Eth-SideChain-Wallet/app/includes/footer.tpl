@@ -1,10 +1,10 @@
-<section class="pre-footer" ng-controller='footerCtrl'>
+<!-- <section class="pre-footer" ng-controller='footerCtrl'>
   <div class="container">
     <p>
       We does not hold your keys for you. We cannot access accounts, recover keys, reset passwords, nor reverse transactions. Protect your keys &amp; always check that you are on correct URL. You are responsible for your security.
     </p>
   </div>
-</section>
+</section> -->
 
 
 
@@ -55,7 +55,6 @@
       <a href="https://explorer.elaeth.io" target="_blank" rel="noopener"> Block Explorer </a>
       <!-- <a href="https://elaeth.io" target="_blank" rel="noopener"> Our Team </a> -->
     </p>
-    <p class="footer__desc">This project is an open-source, client-side tool for generating ether wallets, handling ERC-20 tokens, and interacting with the blockchain more easily.</p>
     <p class="footer__copyright">
       © 2019 CyberRepublic
       <span style="margin-left: 1em">
