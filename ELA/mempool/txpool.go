@@ -90,8 +90,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 
 	chain := blockchain.DefaultLedger.Blockchain
 	bestHeight := blockchain.DefaultLedger.Blockchain.GetHeight()
-	if errCode := chain.CheckTransactionSanity(bestHeight+1, tx);
-		errCode != nil {
+	if errCode := chain.CheckTransactionSanity(bestHeight+1, tx); errCode != nil {
 		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash())
 		return errCode
 	}
@@ -100,8 +99,7 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 		log.Warn("[CheckTransactionContext] get transaction reference failed")
 		return elaerr.Simple(elaerr.ErrTxUnknownReferredTx, nil)
 	}
-	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references);
-		errCode != nil {
+	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references); errCode != nil {
 		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash())
 		return errCode
 	}
@@ -335,7 +333,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 }
 
 func (mp *TxPool) getCRCProposalReviewKey(proposalReview *payload.
-CRCProposalReview) string {
+	CRCProposalReview) string {
 	return proposalReview.DID.String() + proposalReview.ProposalHash.String()
 }
 
@@ -551,8 +549,7 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) elaerr.ELAError {
 				"register CR payload cast failed, tx:%s", txn.Hash())
 			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
-		if err := mp.verifyDuplicateCRAndProducer(p.DID, p.Code, p.NickName);
-			err != nil {
+		if err := mp.verifyDuplicateCRAndProducer(p.DID, p.Code, p.NickName); err != nil {
 			log.Warn(err)
 			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
@@ -604,12 +601,13 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) elaerr.ELAError {
 	case CRCProposalWithdraw:
 		crcProposalWithdraw, ok := txn.Payload.(*payload.CRCProposalWithdraw)
 		if !ok {
-			log.Error("crcProposalWithdraw  payload cast failed, tx:", txn.Hash())
-			return ErrCRProcessing
+			err := fmt.Errorf(
+				"crcProposalWithdraw  payload cast failed, tx:%s", txn.Hash())
+			return elaerr.Simple(elaerr.ErrTxPoolFailure, err)
 		}
 		if err := mp.verifyDuplicateCRCProposalWithdraw(crcProposalWithdraw); err != nil {
 			log.Warn(err)
-			return ErrCRProcessing
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
 	case CRCProposalTracking:
 		cptPayload, ok := txn.Payload.(*payload.CRCProposalTracking)
