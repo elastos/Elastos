@@ -288,9 +288,6 @@
                 <li translate="ONBOARD_whymyc_content__5">
                   If you don't like the sound of this, consider using [Coinbase](https://www.coinbase.com/) or [Blockchain.info](https://blockchain.info/wallet/#/signup). They have more familiar accounts with usernames &amp; passwords.
                 </li>
-                <li translate="ONBOARD_whymyc_content__6">
-                  If you are scared but want to use MyCrypto, [get a hardware wallet](https://support.mycrypto.com/hardware-wallets/hardware-wallet-recommendations.html)! These keep your keys secure.
-                </li>
               </ul>
             </div>
           </section>
@@ -324,9 +321,6 @@
                 </li>
                 <li translate="ONBOARD_secure_1_content__3">
                   Always check the URL: `https://mycrypto.com`.
-                </li>
-                <li translate="ONBOARD_secure_1_content__4">
-                  Always make sure the URL bar has `MyCrypto, Inc.` in green.
                 </li>
                 <li translate="ONBOARD_secure_1_content__5">
                   Do not trust messages or links sent to you randomly via email, Slack, Reddit, Twitter, etc.
@@ -435,9 +429,6 @@
               <img src="./images/onboarding_icon-09.svg" width="100%" height="auto" />
             </div>
           </section>
-          <h5 class="text-center" translate="ONBOARD_secure_3_content__6">
-            [Even more Security Tips!](https://support.mycrypto.com/getting-started/protecting-yourself-and-your-funds.html)
-          </h5>
           <div class="onboarding__buttons">
             <a ng-click="setOnboardStatus(8)" class="btn btn-default">
               <span translate="ONBOARD_secure_2_title__alt_2">
@@ -457,9 +448,6 @@
           <h3 class="onboarding__title" translate="ONBOARD_final_title">
             Alright, I'm done lecturing you!
           </h3>
-          <p class="text-center" translate="ONBOARD_final_subtitle">
-            Sorry for being like this. Onwards!
-          </p>
           <br />
           <section class="row row--flex">
             <div class="col-xs-12 col-sm-4 col-xs-12 col-sm-offset-1">
@@ -467,49 +455,6 @@
             </div>
             <div class="col-xs-12 col-sm-7">
               <ul>
-                <li>
-                  <a href="https://support.mycrypto.com/hardware-wallets/hardware-wallet-recommendations.html"
-                     target="_blank" rel="noopener noreferrer" class="strong" translate="ONBOARD_final_content__2">
-                      Get a hardware wallet
-                  </a>
-                </li>
-                <li>
-                  <a href="https://support.mycrypto.com/migration/moving-from-private-key-to-metamask.html"
-                     target="_blank" rel="noopener noreferrer" class="strong" translate="ONBOARD_final_content__3">
-                    How to Set up MyCrypto + MetaMask
-                  </a>
-                </li>
-                <li>
-                  <a href="https://support.mycrypto.com/offline/running-mycrypto-locally.html"
-                     target="_blank" rel="noopener noreferrer" class="strong" translate="ONBOARD_final_content__4">
-                    How to Run MyCrypto Offline / Locally
-                  </a>
-                </li>
-                <li>
-                  <a href="https://support.mycrypto.com/migration/moving-from-private-key-to-ledger-hardware-wallet.html"
-                     target="_blank" rel="noopener noreferrer" class="strong" translate="ONBOARD_final_content__5">
-                    How to Send via Ledger hardware wallet
-                  </a>
-                </li>
-                <li>
-                  <a href="https://support.mycrypto.com/hardware-wallets/trezor-sending-to-trezor-device.html"
-                     target="_blank" rel="noopener noreferrer" class="strong" translate="ONBOARD_final_content__6">
-                    How to Send via TREZOR hardware wallet
-                  </a>
-                </li>
-                <li>
-                  <a href="https://support.mycrypto.com/migration/moving-from-private-key-to-metamask.html"
-                     target="_blank" rel="noopener noreferrer" class="strong" translate="ONBOARD_final_content__7">
-                       How to Send via MetaMask
-                  </a>
-                </li>
-                <li>
-                  <a href="https://support.mycrypto.com/"
-                     target="_blank" rel="noopener noreferrer" class="strong" translate="ONBOARD_final_content__8">
-                       Learn More or Contact Us
-                  </a>
-                </li>
-                <li>
                   <a ng-click="onboardModal.close();globalService.currentTab=globalService.tabs.sendTransaction.id"
                      class="strong">
                      <span translate="ONBOARD_final_content__9">
