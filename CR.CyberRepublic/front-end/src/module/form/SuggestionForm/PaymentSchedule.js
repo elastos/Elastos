@@ -1,17 +1,17 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, Modal, Form, Input } from 'antd'
+import { Button, Modal } from 'antd'
 import I18N from '@/I18N'
-
-const FormItem = Form.Item
+import BudgetForm from '@/module/form/BudgetForm/Container'
 
 class PaymentSchedule extends Component {
   constructor(props) {
     super(props)
     this.state = {
       visible: false,
-      paymentItems: []
+      paymentItems: [],
+      item: {}
     }
   }
 
@@ -44,24 +44,25 @@ class PaymentSchedule extends Component {
     )
   }
 
-  handleSubmit = e => {
-    e.stopPropagation() // prevent event bubbling
-    e.preventDefault()
-    const { form } = this.props
+  handleEdit = index => {
     const { paymentItems } = this.state
-    form.validateFields((err, values) => {
-      if (!err) {
-        this.setState(
-          {
-            paymentItems: [...paymentItems, values],
-            visible: false
-          },
-          () => {
-            this.changeValue(this.state.paymentItems)
-          }
-        )
-      }
+    this.setState({
+      item: { ...this.state.item, ...paymentItems[index] },
+      visible: true
     })
+  }
+
+  handleSubmit = values => {
+    const { paymentItems } = this.state
+    this.setState(
+      {
+        paymentItems: [...paymentItems, values],
+        visible: false
+      },
+      () => {
+        this.changeValue(this.state.paymentItems)
+      }
+    )
   }
 
   renderPaymentTable = paymentItems => {
@@ -79,7 +80,7 @@ class PaymentSchedule extends Component {
         <tbody>
           {paymentItems.map((item, index) => (
             <StyledRow key={index}>
-              <td>{index}</td>
+              <td>{index + 1}</td>
               <td>{item.amount}</td>
               <td>{item.reasons}</td>
               <td>{item.criteria}</td>
@@ -87,7 +88,9 @@ class PaymentSchedule extends Component {
                 <Button onClick={this.handleDelete.bind(this, index)}>
                   delete
                 </Button>
-                <Button>edit</Button>
+                <Button onClick={this.handleEdit.bind(this, index)}>
+                  edit
+                </Button>
               </td>
             </StyledRow>
           ))}
@@ -97,17 +100,7 @@ class PaymentSchedule extends Component {
   }
 
   render() {
-    const { getFieldDecorator } = this.props.form
-    const formItemLayout = {
-      labelCol: {
-        span: 24
-      },
-      wrapperCol: {
-        span: 24
-      },
-      colon: false
-    }
-    const { paymentItems } = this.state
+    const { paymentItems, item } = this.state
     return (
       <Wrapper>
         <Button onClick={this.showModal}>
@@ -122,44 +115,7 @@ class PaymentSchedule extends Component {
           footer={null}
           width="70%"
         >
-          <Form onSubmit={this.handleSubmit}>
-            <FormItem
-              label={`${I18N.get('suggestion.budget.amount')}(ELA)`}
-              {...formItemLayout}
-            >
-              {getFieldDecorator('amount', {
-                rules: [{ required: true, message: '' }]
-              })(<Input />)}
-            </FormItem>
-            <FormItem
-              label={I18N.get('suggestion.budget.reasons')}
-              {...formItemLayout}
-            >
-              {getFieldDecorator('reasons', {
-                rules: [{ required: true, message: '' }]
-              })(<Input />)}
-            </FormItem>
-            <FormItem
-              label={I18N.get('suggestion.budget.criteria')}
-              {...formItemLayout}
-            >
-              {getFieldDecorator('criteria', {
-                rules: [{ required: true, message: '' }]
-              })(<Input />)}
-            </FormItem>
-
-            <Actions>
-              <Button
-                className="cr-btn cr-btn-default"
-                onClick={this.hideModal}
-              >
-                {I18N.get('suggestion.cancel')}
-              </Button>
-              <Button className="cr-btn cr-btn-primary" htmlType="submit">
-                {I18N.get('suggestion.submit')}
-              </Button>
-            </Actions>
-          </Form>
+          <BudgetForm onSubmit={this.handleSubmit} onCancel={this.hideModal} />
         </Modal>
       </Wrapper>
     )
@@ -171,7 +127,7 @@ PaymentSchedule.propTypes = {
   callback: PropTypes.func
 }
 
-export default Form.create()(PaymentSchedule)
+export default PaymentSchedule
 
 const Wrapper = styled.div``
 
@@ -206,12 +162,5 @@ const StyledRow = styled.tr`
     line-height: 18px;
     padding: 16px;
     color: #000;
-  }
-`
-const Actions = styled.div`
-  display: flex;
-  justify-content: center;
-  > button {
-    margin: 0 8px;
   }
 `
