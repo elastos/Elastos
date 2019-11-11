@@ -10,7 +10,7 @@
         <p class="small"><a href="https://support.mycrypto.com/networks/run-your-own-node-with-mycrypto.html" target="_blank" rel="noopener noreferrer"> Instructions can be found here </a></p>
 
         <div ng-show="browserProtocol=='https:'" class="alert alert-danger small" translate="NODE_Warning">
-          Your node must be HTTPS in order to connect to it via MyCrypto.com. You can [download MyCrypto &amp; run it locally](https://support.mycrypto.com/offline/running-mycrypto-locally.html) to connect to your local node. Or, get free SSL certificate via [LetsEncrypt](https://letsencrypt.org/)</a>.
+          Your node must be HTTPS in order to connect to it via MyCrypto. You can [download MyCrypto &amp; run it locally](https://support.mycrypto.com/offline/running-mycrypto-locally.html) to connect to your local node. Or, get free SSL certificate via [LetsEncrypt](https://letsencrypt.org/)</a>.
         </div>
 
         <section class="row">

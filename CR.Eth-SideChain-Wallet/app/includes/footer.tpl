@@ -1,10 +1,7 @@
 <section class="pre-footer" ng-controller='footerCtrl'>
   <div class="container">
     <p>
-      MyCrypto.com does not hold your keys for you. We cannot access accounts, recover keys, reset passwords, nor reverse transactions. Protect your keys &amp; always check that you are on correct URL.
-      <a role="link" tabindex="0" data-toggle="modal" data-target="#disclaimerModal">
-        You are responsible for your security.
-      </a>
+      MyCrypto.com does not hold your keys for you. We cannot access accounts, recover keys, reset passwords, nor reverse transactions. Protect your keys &amp; always check that you are on correct URL. You are responsible for your security.
     </p>
   </div>
 </section>
@@ -58,24 +55,20 @@
   </div>
 
   <div class="footer__center">
-    <a href="https://mycrypto.com">
+    <a href="https://wallet.elaeth.io">
       <img class="footer__logo" src="images/logo-blue-white.svg" height="64px" width="245px" alt="MyCrypto">
     </a>
     <p class="footer__links--lg">
-      <a href="https://www.mycrypto.com" target="_blank" rel="noopener"> MyCrypto.com </a>
-      <a href="https://download.mycrypto.com" target="_blank" rel="noopener"> MyCrypto Apps </a>
-      <a href="https://support.mycrypto.com" target="_blank" rel="noopener"> Help &amp; Support </a>
-      <a href="https://about.mycrypto.com" target="_blank" rel="noopener"> Our Team </a>
-      <a href="https://about.mycrypto.com/privacy/" target="_blank" rel="noopener"> Privacy </a>
+      <a href="https://elastos.org" target="_blank" rel="noopener"> Elastos </a>
+      <a href="https://cyberrebpulic.org" target="_blank" rel="noopener"> CyberRepublic </a>
+      <a href="https://explorer.elaeth.io" target="_blank" rel="noopener"> Block Explorer </a>
+      <!-- <a href="https://elaeth.io" target="_blank" rel="noopener"> Our Team </a> -->
     </p>
-    <p class="footer__desc">MyCrypto is an open-source, client-side tool for generating ether wallets, handling ERC-20 tokens, and interacting with the blockchain more easily. Developed by and for the community since 2015, we’re focused on building awesome products that put the power in people’s hands.</p>
+    <p class="footer__desc">MyCrypto is an open-source, client-side tool for generating ether wallets, handling ERC-20 tokens, and interacting with the blockchain more easily.</p>
     <p class="footer__copyright">
-      © 2018 MyCrypto, Inc.
-      <a data-target="#disclaimerModal" data-toggle="modal" target="_blank" rel="noopener noreferrer" role="link" translate="FOOTER_4" style="margin-left: 1em;">
-        Disclaimer
-      </a>
+      © 2019 CyberRepublic
       <span style="margin-left: 1em">
-        v3.17.0
+        v1.1.0
       </span>
     </p>
   </div>
