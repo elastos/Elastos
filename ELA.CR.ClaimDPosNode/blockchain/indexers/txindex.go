@@ -6,6 +6,7 @@
 package indexers
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -285,6 +286,34 @@ func dbRemoveTxIndexEntries(dbTx database.Tx, block *types.Block) error {
 	return nil
 }
 
+// dbFetchTx looks up the passed transaction hash in the transaction index and
+// loads it from the database.
+func dbFetchTx(dbTx database.Tx, hash *common.Uint256) (*types.Transaction, *common.Uint256, error) {
+	// Look up the location of the transaction.
+	blockRegion, err := dbFetchTxIndexEntry(dbTx, hash)
+	if err != nil {
+		return nil, &common.EmptyHash, err
+	}
+	if blockRegion == nil {
+		return nil, &common.EmptyHash, fmt.Errorf("transaction %v not found", hash)
+	}
+
+	// Load the raw transaction bytes from the database.
+	txBytes, err := dbTx.FetchBlockRegion(blockRegion)
+	if err != nil {
+		return nil, &common.EmptyHash, err
+	}
+
+	// Deserialize the transaction.
+	var txn types.Transaction
+	err = txn.Deserialize(bytes.NewReader(txBytes))
+	if err != nil {
+		return nil, &common.EmptyHash, err
+	}
+
+	return &txn, blockRegion.Hash, nil
+}
+
 // TxIndex implements a transaction by hash index.  That is to say, it supports
 // querying all transactions by their hash.
 type TxIndex struct {
@@ -447,6 +476,21 @@ func (idx *TxIndex) TxBlockRegion(hash *common.Uint256) (*database.BlockRegion, 
 		return err
 	})
 	return region, err
+}
+
+func (idx *TxIndex) FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint256, error) {
+	var txn *types.Transaction
+	var hash *common.Uint256
+	err := idx.db.View(func(dbTx database.Tx) error {
+		var err error
+		txn, hash, err = dbFetchTx(dbTx, &txID)
+		return err
+	})
+	if err != nil {
+		return nil, &common.EmptyHash, err
+	}
+
+	return txn, hash, nil
 }
 
 // NewTxIndex returns a new instance of an indexer that is used to create a

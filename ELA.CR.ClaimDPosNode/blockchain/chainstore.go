@@ -511,9 +511,6 @@ func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	if err := c.RollbackTransactions(b); err != nil {
 		return err
 	}
-	if err := c.RollbackUnspendUTXOs(b); err != nil {
-		return err
-	}
 	if err := c.RollbackConfirm(b); err != nil {
 		return err
 	}
@@ -538,9 +535,6 @@ func (c *ChainStore) persist(b *Block, node *BlockNode,
 
 	c.NewBatch()
 	if err := c.PersistTransactions(b); err != nil {
-		return err
-	}
-	if err := c.persistUTXOs(b); err != nil {
 		return err
 	}
 	if err := c.persistConfirm(confirm); err != nil {

@@ -136,8 +136,8 @@ func (idx *UnspentIndex) Create(dbTx database.Tx) error {
 }
 
 // ConnectBlock is invoked by the index manager when a new block has been
-// connected to the main chain.  This indexer adds a hash-to-unspent mapping
-// for every transaction in the passed block.
+// connected to the main chain.  This indexer maintains a hash-to-unspent
+// mapping for every transaction in the passed block.
 //
 // This is part of the Indexer interface.
 func (idx *UnspentIndex) ConnectBlock(dbTx database.Tx, block *types.Block) error {
@@ -225,8 +225,8 @@ func (idx *UnspentIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) e
 }
 
 // NewUnspentIndex returns a new instance of an indexer that is used to create a
-// mapping of the hashes of all transactions in the blockchain to the respective
-// index of output which unspent in the transaction.
+// mapping of the hashes of all transactions in the blockchain to the index of
+// output which unspent in the transaction.
 //
 // It implements the Indexer interface which plugs into the IndexManager that in
 // turn is used by the blockchain package.  This allows the index to be
