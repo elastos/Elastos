@@ -601,7 +601,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	txn.Payload = rpPayload
 
 	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(publicKeyStr1),
+		Code:      getCodeByPubKeyStr(publicKeyStr1),
 		Parameter: nil,
 	}}
 
@@ -708,7 +708,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	s.EqualError(err, "there must be only one deposit address in outputs")
 }
 
-func getCode(publicKey string) []byte {
+func getCodeByPubKeyStr(publicKey string) []byte {
 	pkBytes, _ := common.HexStringToBytes(publicKey)
 	pk, _ := crypto.DecodePoint(pkBytes)
 	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
@@ -1063,7 +1063,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	txn.Payload = registerPayload
 
 	txn.Programs = []*program.Program{{
-		Code:      getCode(publicKeyStr1),
+		Code:      getCodeByPubKeyStr(publicKeyStr1),
 		Parameter: nil,
 	}}
 
@@ -1152,7 +1152,7 @@ func (s *txValidatorTestSuite) TestCheckCancelProducerTransaction() {
 	txn.Payload = cancelPayload
 
 	txn.Programs = []*program.Program{{
-		Code:      getCode(publicKeyStr1),
+		Code:      getCodeByPubKeyStr(publicKeyStr1),
 		Parameter: nil,
 	}}
 
@@ -1179,7 +1179,7 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 	txn.Payload = activatePayload
 
 	txn.Programs = []*program.Program{{
-		Code:      getCode(publicKeyStr1),
+		Code:      getCodeByPubKeyStr(publicKeyStr1),
 		Parameter: nil,
 	}}
 
@@ -1208,8 +1208,8 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 
 	txn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
 
-	code1 := getCode(publicKeyStr1)
-	code2 := getCode(publicKeyStr2)
+	code1 := getCodeByPubKeyStr(publicKeyStr1)
+	code2 := getCodeByPubKeyStr(publicKeyStr2)
 	codeStr1 := common.BytesToHexString(code1)
 
 	did1 := getDid(code1)
@@ -1393,7 +1393,7 @@ func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nick
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 
-	code1 := getCode(publicKeyStr1)
+	code1 := getCodeByPubKeyStr(publicKeyStr1)
 
 	ct1, _ := contract.CreateCRDIDContractByCode(code1)
 	did1 := ct1.ToProgramHash()
@@ -1417,7 +1417,7 @@ func (s *txValidatorTestSuite) getRegisterCRTx(publicKeyStr, privateKeyStr, nick
 	txn.Payload = crInfoPayload
 
 	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(publicKeyStr1),
+		Code:      getCodeByPubKeyStr(publicKeyStr1),
 		Parameter: nil,
 	}}
 
@@ -1491,7 +1491,7 @@ func (s *txValidatorTestSuite) getUpdateCRTx(publicKeyStr, privateKeyStr, nickNa
 	publicKeyStr1 := publicKeyStr
 	privateKeyStr1 := privateKeyStr
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
-	code1 := getCode(publicKeyStr1)
+	code1 := getCodeByPubKeyStr(publicKeyStr1)
 	ct1, _ := contract.CreateCRDIDContractByCode(code1)
 	did1 := ct1.ToProgramHash()
 
@@ -1514,7 +1514,7 @@ func (s *txValidatorTestSuite) getUpdateCRTx(publicKeyStr, privateKeyStr, nickNa
 	txn.Payload = crInfoPayload
 
 	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(publicKeyStr1),
+		Code:      getCodeByPubKeyStr(publicKeyStr1),
 		Parameter: nil,
 	}}
 	return txn
@@ -1526,7 +1526,7 @@ func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr str
 	privateKeyStr1 := privateKeyStr
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 
-	code1 := getCode(publicKeyStr1)
+	code1 := getCodeByPubKeyStr(publicKeyStr1)
 
 	txn := new(types.Transaction)
 	txn.TxType = types.UnregisterCR
@@ -1543,7 +1543,7 @@ func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr str
 	txn.Payload = unregisterCRPayload
 
 	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(publicKeyStr1),
+		Code:      getCodeByPubKeyStr(publicKeyStr1),
 		Parameter: nil,
 	}}
 	return txn
@@ -1553,7 +1553,7 @@ func (s *txValidatorTestSuite) getCRMember(publicKeyStr, privateKeyStr, nickName
 	publicKeyStr1 := publicKeyStr
 	privateKeyStr1 := privateKeyStr
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
-	code1 := getCode(publicKeyStr1)
+	code1 := getCodeByPubKeyStr(publicKeyStr1)
 	ct1, _ := contract.CreateCRDIDContractByCode(code1)
 	did1 := ct1.ToProgramHash()
 
@@ -1584,7 +1584,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr)
 
 	privateKey2, _ := common.HexStringToBytes(crPrivateKeyStr)
-	code2 := getCode(crPublicKeyStr)
+	code2 := getCodeByPubKeyStr(crPublicKeyStr)
 
 	draftData := randomBytes(10)
 	txn := new(types.Transaction)
@@ -1610,7 +1610,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 
 	txn.Payload = crcProposalPayload
 	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(publicKeyStr),
+		Code:      getCodeByPubKeyStr(publicKeyStr),
 		Parameter: nil,
 	}}
 	return txn
@@ -2109,7 +2109,7 @@ func (s *txValidatorTestSuite) getCRCProposalReviewTx(crPublicKeyStr,
 	crPrivateKeyStr string) *types.Transaction {
 
 	privateKey1, _ := common.HexStringToBytes(crPrivateKeyStr)
-	code := getCode(crPublicKeyStr)
+	code := getCodeByPubKeyStr(crPublicKeyStr)
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposalReview
 	txn.Version = types.TxVersion09
@@ -2126,7 +2126,7 @@ func (s *txValidatorTestSuite) getCRCProposalReviewTx(crPublicKeyStr,
 
 	txn.Payload = crcProposalReviewPayload
 	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(crPublicKeyStr),
+		Code:      getCodeByPubKeyStr(crPublicKeyStr),
 		Parameter: nil,
 	}}
 	return txn
@@ -2226,7 +2226,7 @@ func (s *txValidatorTestSuite) getCRCProposalWithdrawTx(crPublicKeyStr,
 
 	txn.Payload = crcProposalWithdraw
 	txn.Programs = []*program.Program{&program.Program{
-		Code:      getCode(crPublicKeyStr),
+		Code:      getCodeByPubKeyStr(crPublicKeyStr),
 		Parameter: nil,
 	}}
 	return txn
@@ -2235,13 +2235,12 @@ func (s *txValidatorTestSuite) getCRCProposalWithdrawTx(crPublicKeyStr,
 func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
 	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
-
 	RecipientAddress := "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
 	CRCCommitteeAddress := "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	Recipient, _ := common.Uint168FromAddress(RecipientAddress)
 	tenureHeight := config.DefaultParams.CRCommitteeStartHeight
 	pk1Bytes, _ := common.HexStringToBytes(publicKeyStr1)
-	ela := common.Fixed64(10000000)
+	ela := common.Fixed64(100000000)
 
 	references := make(map[*types.Input]*types.Output)
 	references[&types.Input{}] = &types.Output{
@@ -2263,8 +2262,9 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 			Recipient:        *Recipient,
 			Budgets:          []common.Fixed64{10 * ela, 20 * ela, 30 * ela},
 		},
-		CurrentStage:           2,
+		CurrentStage:           1,
 		CurrentWithdrawalStage: 0,
+		ProposalLeader:         pk1Bytes,
 	}
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
@@ -2278,18 +2278,18 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
 	s.EqualError(err, "CRCProposalWithdraw Stage wrong too small")
 
-	//CRCProposalWithdraw Stage wrong too big
+	//Stage != proposalState.CurrentStage
 	txn.Payload.(*payload.CRCProposalWithdraw).Stage = 2
 	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
 	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
-	s.EqualError(err, "CRCProposalWithdraw Stage wrong too big")
+	s.EqualError(err, "Stage != proposalState.CurrentStage")
 
 	//stage =2 ok
 	txn = s.getCRCProposalWithdrawTx(publicKeyStr1, privateKeyStr1, 2,
 		Recipient, CRCCommitteeAddressU168, 19*ela, 40*ela)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
 	propState.CurrentWithdrawalStage = 1
-	propState.CurrentStage = 3
+	propState.CurrentStage = 2
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
 	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
@@ -2301,7 +2301,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 		Recipient, CRCCommitteeAddressU168, 29*ela, 30*ela)
 	crcProposalWithdraw, _ = txn.Payload.(*payload.CRCProposalWithdraw)
 	propState.CurrentWithdrawalStage = 2
-	propState.CurrentStage = 4
+	propState.CurrentStage = 3
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
 	err = s.Chain.checkTransactionOutput(tenureHeight, txn)
@@ -2339,13 +2339,28 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalWithdrawTransaction() {
 			Recipient:        *Recipient,
 			Budgets:          []common.Fixed64{10 * ela, 20 * ela, 30 * ela},
 		},
-		CurrentStage:           2,
+		CurrentStage:           1,
 		CurrentWithdrawalStage: 0,
+		ProposalLeader:         pk1Bytes,
 	}
 	s.Chain.crCommittee.GetProposalManager().Proposals[crcProposalWithdraw.
 		ProposalHash] = propState
 	err = s.Chain.checkTransactionFee(txn, references)
 	s.EqualError(err, "transaction fee != withdrawPayload.Fee")
+
+	//withdrawAmout == 0
+	for i := 0; i < len(propState.Proposal.Budgets); i++ {
+		propState.Proposal.Budgets[i] = common.Fixed64(0)
+	}
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.EqualError(err, "withdrawAmout == 0")
+
+	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	pk2Bytes, _ := common.HexStringToBytes(publicKeyStr2)
+
+	propState.ProposalLeader = pk2Bytes
+	err = s.Chain.checkCRCProposalWithdrawTransaction(txn, references, tenureHeight)
+	s.EqualError(err, "the SponsorPublicKey is not ProposalLeader of proposal")
 }
 
 func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
@@ -2853,9 +2868,9 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		},
 	}
 	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
-	code1 := getCode(publicKey1)
-	code2 := getCode(publicKey2)
-	code3 := getCode(publicKey3)
+	code1 := getCodeByPubKeyStr(publicKey1)
+	code2 := getCodeByPubKeyStr(publicKey2)
+	code3 := getCodeByPubKeyStr(publicKey3)
 
 	candidate1, _ := common.HexStringToBytes(publicKey1)
 	candidate2, _ := common.HexStringToBytes(publicKey2)
@@ -3222,7 +3237,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRCImpeachment,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{getCode(publicKey4), 10},
+						{getCodeByPubKeyStr(publicKey4), 10},
 					},
 				},
 			},
@@ -3243,7 +3258,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRCImpeachment,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{getCode(publicKey4), 10},
+						{getCodeByPubKeyStr(publicKey4), 10},
 					},
 				},
 			},
@@ -3251,7 +3266,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.Chain.crCommittee.Members[common.Uint168{1, 2, 3}] = &crstate.CRMember{
 		Info: payload.CRInfo{
-			Code: getCode(publicKey4),
+			Code: getCodeByPubKeyStr(publicKey4),
 		},
 		MemberState: crstate.MemberElected,
 	}
@@ -3277,7 +3292,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.Chain.crCommittee.Members[common.Uint168{1, 2, 3}] = &crstate.CRMember{
 		Info: payload.CRInfo{
-			Code: getCode(publicKey4),
+			Code: getCodeByPubKeyStr(publicKey4),
 		},
 		MemberState: crstate.MemberImpeached,
 	}

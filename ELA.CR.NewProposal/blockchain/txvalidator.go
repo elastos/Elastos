@@ -216,7 +216,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		if err := b.checkCRCProposalWithdrawTransaction(txn, references,
 			blockHeight); err != nil {
 			log.Warn("[checkCRCProposalWithdrawTransaction],", err)
-			return ErrTransactionPayload
+			return elaerr.Simple(elaerr.ErrTxPayload, err)
 		}
 
 	}
@@ -841,7 +841,7 @@ func (b *BlockChain) checkCRCProposalWithdrawFee(txn *Transaction,
 }
 
 func (b *BlockChain) getTransactionFee(tx *Transaction,
-	references map[*Input]*Output) (common.Fixed64, error) {
+	references map[*Input]*Output) common.Fixed64 {
 	var outputValue common.Fixed64
 	var inputValue common.Fixed64
 	for _, output := range tx.Outputs {
@@ -850,19 +850,25 @@ func (b *BlockChain) getTransactionFee(tx *Transaction,
 	for _, output := range references {
 		inputValue += output.Value
 	}
-	if inputValue < b.chainParams.MinTransactionFee+outputValue {
-		return 0, fmt.Errorf("transaction fee not enough")
+
+	return inputValue - outputValue
+}
+
+func (b *BlockChain) isSmallThanMinTransactionFee(fee common.Fixed64) bool {
+	if fee < b.chainParams.MinTransactionFee {
+		return true
 	}
-	return inputValue - outputValue, nil
+	return false
 }
 
 func (b *BlockChain) checkTransactionFee(tx *Transaction, references map[*Input]*Output) error {
-	fee, err := b.getTransactionFee(tx, references)
-	if err != nil {
-		return err
+	fee := b.getTransactionFee(tx, references)
+	if b.isSmallThanMinTransactionFee(fee) {
+		return fmt.Errorf("transaction fee not enough")
 	}
+
 	if tx.IsCRCProposalWithdrawTx() {
-		err = b.checkCRCProposalWithdrawFee(tx, fee)
+		err := b.checkCRCProposalWithdrawFee(tx, fee)
 		if err != nil {
 			return err
 		}
@@ -1673,11 +1679,13 @@ func (b *BlockChain) checkCRCProposalReviewTransaction(txn *Transaction,
 	return checkCRTransactionSignature(crcProposalReview.Sign, crMember.Info.Code,
 		signedBuf.Bytes())
 }
-func GetCode(publicKey []byte) []byte {
+
+func getCode(publicKey []byte) []byte {
 	pk, _ := crypto.DecodePoint(publicKey)
 	redeemScript, _ := contract.CreateStandardRedeemScript(pk)
 	return redeemScript
 }
+
 func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	references map[*Input]*Output, blockHeight uint32) error {
 
@@ -1697,29 +1705,31 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if withdrawPayload.Stage <= proposalState.CurrentWithdrawalStage {
 		return errors.New("CRCProposalWithdraw Stage wrong too small")
 	}
-	if withdrawPayload.Stage >= proposalState.CurrentStage {
-		return errors.New("CRCProposalWithdraw Stage wrong too big")
+	if withdrawPayload.Stage != proposalState.CurrentStage {
+		return errors.New("Stage != proposalState.CurrentStage")
 	}
-	if !bytes.Equal(proposalState.Proposal.SponsorPublicKey, withdrawPayload.SponsorPublicKey) {
-		return errors.New("the SponsorPublicKey is not SponsorPublicKey of proposal")
+	if !bytes.Equal(proposalState.ProposalLeader, withdrawPayload.SponsorPublicKey) {
+		return errors.New("the SponsorPublicKey is not ProposalLeader of proposal")
 	}
-
-	fee, err := b.getTransactionFee(txn, references)
-	if err != nil {
-		return err
+	fee := b.getTransactionFee(txn, references)
+	if b.isSmallThanMinTransactionFee(fee) {
+		return fmt.Errorf("transaction fee not enough")
 	}
-	withdrawAmout := propMgr.CanWithdrawalAmount(withdrawPayload.ProposalHash)
-	//Recipient count + fee must equal to CanWithdrawalAmount
+	withdrawAmout := propMgr.AvailableWithdrawalAmount(withdrawPayload.ProposalHash)
+	if withdrawAmout == 0 {
+		return errors.New("withdrawAmout == 0")
+	}
+	//Recipient count + fee must equal to AvailableWithdrawalAmount
 	if txn.Outputs[0].Value+fee != withdrawAmout {
 		return errors.New("txn.Outputs[0].Value + fee != withdrawAmout ")
 	}
 
 	signedBuf := new(bytes.Buffer)
-	err = withdrawPayload.SerializeUnsigned(signedBuf, payload.CRCProposalWithdrawVersion)
+	err := withdrawPayload.SerializeUnsigned(signedBuf, payload.CRCProposalWithdrawVersion)
 	if err != nil {
 		return err
 	}
-	code := GetCode(withdrawPayload.SponsorPublicKey)
+	code := getCode(withdrawPayload.SponsorPublicKey)
 	return checkCRTransactionSignature(withdrawPayload.Sign, code, signedBuf.Bytes())
 }
 
@@ -2049,6 +2059,7 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if err = common.WriteVarBytes(signedBuf, proposal.Sign); err != nil {
 		return errors.New("invalid CR signature")
 	}
+
 	if err = checkCRTransactionSignature(proposal.CRSign, crMember.Info.Code,
 		signedBuf.Bytes()); err != nil {
 		return errors.New("CR sponsor signature check failed")

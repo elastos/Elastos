@@ -1843,7 +1843,10 @@ func GetCRProposalState(param Params) map[string]interface{} {
 			return ResponsePack(InvalidParams, "invalidate proposalhash")
 		}
 		ProposalState = Chain.GetCRCommittee().GetProposalManager().GetProposal(*ProposalHash)
-
+		if ProposalState == nil {
+			return ResponsePack(InvalidParams,
+				"proposal of this proposalhash does not exist")
+		}
 	} else {
 		DraftHashStr, ok := param.String("drafthash")
 		if !ok {
@@ -1854,7 +1857,12 @@ func GetCRProposalState(param Params) map[string]interface{} {
 			return ResponsePack(InvalidParams, "invalidate drafthash")
 		}
 		ProposalState = Chain.GetCRCommittee().GetProposalManager().GetProposalByDraftHash(*DraftHash)
+		if ProposalState == nil {
+			return ResponsePack(InvalidParams,
+				"proposal of this drafthash does not exist")
+		}
 	}
+
 	var rpcProposal RpcCRCProposal
 	rpcProposal.CRSponsorDID = ProposalState.Proposal.CRSponsorDID.String()
 	rpcProposal.DraftHash = ProposalState.Proposal.DraftHash.String()
