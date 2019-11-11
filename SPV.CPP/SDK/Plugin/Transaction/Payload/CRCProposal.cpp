@@ -97,8 +97,6 @@ namespace Elastos {
 			size += stream.WriteVarUint(_sponsorPublicKey.size());
 			size += _sponsorPublicKey.size();
 
-			size += _crSponsorDID.size();
-
 			size += _draftHash.size();
 
 			size += stream.WriteVarUint(_budgets.size());
@@ -110,6 +108,8 @@ namespace Elastos {
 			size += stream.WriteVarUint(_signature.size());
 			size += _signature.size();
 
+			size += _crSponsorDID.size();
+
 			size += stream.WriteVarUint(_crSignature.size());
 			size += _crSignature.size();
 
@@ -119,7 +119,6 @@ namespace Elastos {
 		void CRCProposal::SerializeUnsigned(ByteStream &ostream, uint8_t version) const {
 			ostream.WriteUint8(_type);
 			ostream.WriteVarBytes(_sponsorPublicKey);
-			ostream.WriteBytes(_crSponsorDID);
 			ostream.WriteBytes(_draftHash);
 			ostream.WriteVarUint(_budgets.size());
 			for (size_t i = 0; i < _budgets.size(); ++i) {
@@ -138,11 +137,6 @@ namespace Elastos {
 
 			if (!istream.ReadVarBytes(_sponsorPublicKey)) {
 				Log::error("CRCProposal DeserializeUnsigned: read sponsorPublicKey key");
-				return false;
-			}
-
-			if (!istream.ReadBytes(_crSponsorDID)) {
-				Log::error("CRCProposal DeserializeUnsigned: read sponsorDID key");
 				return false;
 			}
 
@@ -199,11 +193,18 @@ namespace Elastos {
 
 			ostream.WriteVarBytes(_signature);
 
+			ostream.WriteBytes(_crSponsorDID);
+
 			ostream.WriteVarBytes(_crSignature);
 		}
 
 		bool CRCProposal::Deserialize(const ByteStream &istream, uint8_t version) {
 			if (!DeserializeSponsorSigned(istream, version)) {
+				return false;
+			}
+
+			if (!istream.ReadBytes(_crSponsorDID)) {
+				Log::error("CRCProposal DeserializeUnsigned: read sponsorDID key");
 				return false;
 			}
 
@@ -223,7 +224,7 @@ namespace Elastos {
 			j["DraftHash"] = _draftHash.GetHex();
 			j["Budgets"] = _budgets;
 			j["Recipient"] = _recipient.GetHex();
-			j["Sgnature"] = _signature.getHex();
+			j["Signature"] = _signature.getHex();
 			j["CRSignature"] = _crSignature.getHex();
 			return j;
 		}
@@ -246,7 +247,7 @@ namespace Elastos {
 			std::string recipient = j["Recipient"].get<std::string>();
 			_recipient.SetHex(recipient);
 
-			std::string signatue = j["Sgnature"].get<std::string>();
+			std::string signatue = j["Signature"].get<std::string>();
 			_signature.setHex(signatue);
 
 			std::string crSignatre = j["CRSignature"].get<std::string>();

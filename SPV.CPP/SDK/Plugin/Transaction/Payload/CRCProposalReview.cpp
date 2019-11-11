@@ -109,7 +109,7 @@ namespace Elastos {
 			nlohmann::json j;
 			j["ProposalHash"] = _proposalHash.GetHex();
 			j["Result"] = _result;
-			j["CRDID"] = _crDID.GetHex();
+			j["DID"] = _crDID.GetHex();
 			j["Signature"] = _signature.getHex();
 			return j;
 		}
@@ -121,7 +121,7 @@ namespace Elastos {
 			uint8_t result = j["Result"].get<uint8_t>();
 			_result = (VoteResult) result;
 
-			std::string did = j["CRDID"].get<std::string>();
+			std::string did = j["DID"].get<std::string>();
 			_crDID.SetHex(did);
 
 			std::string signature = j["Signature"].get<std::string>();

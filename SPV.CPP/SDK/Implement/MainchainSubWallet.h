@@ -120,7 +120,6 @@ namespace Elastos {
 
 			virtual std::string SponsorProposalDigest(uint8_t type,
 			                                          const std::string &sponsorPublicKey,
-			                                          const std::string &crSponsorDID,
 			                                          const std::string &draftHash,
 			                                          const nlohmann::json &budgets,
 			                                          const std::string &recipient) const;
@@ -145,8 +144,7 @@ namespace Elastos {
 
 			virtual nlohmann::json GenerateCRCProposalReview(const std::string &proposalHash,
 			                                                 uint8_t voteResult,
-			                                                 const std::string &crDID,
-			                                                 const std::string &payPasswd) const;
+			                                                 const std::string &did) const;
 
 			virtual nlohmann::json CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
 			                                                          const std::string &memo);
