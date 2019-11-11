@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button, Modal, Form, Input } from 'antd'
 import I18N from '@/I18N'
@@ -22,6 +23,12 @@ class PaymentSchedule extends Component {
     this.setState({ visible: true })
   }
 
+  changeValue(value) {
+    const { onChange, callback } = this.props
+    onChange(value)
+    callback()
+  }
+
   handleSubmit = e => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
@@ -29,10 +36,15 @@ class PaymentSchedule extends Component {
     const { paymentItems } = this.state
     form.validateFields((err, values) => {
       if (!err) {
-        this.setState({
-          paymentItems: [...paymentItems, values],
-          visible: false
-        })
+        this.setState(
+          {
+            paymentItems: [...paymentItems, values],
+            visible: false
+          },
+          () => {
+            this.changeValue(this.state.paymentItems)
+          }
+        )
       }
     })
   }
@@ -91,11 +103,7 @@ class PaymentSchedule extends Component {
               {I18N.get('suggestion.cancel')}
             </Button>
 
-            <Button
-              // onClick={this.handleSubmit}
-              className="cr-btn cr-btn-primary"
-              htmlType="submit"
-            >
+            <Button className="cr-btn cr-btn-primary" htmlType="submit">
               {I18N.get('suggestion.submit')}
             </Button>
           </Form>
@@ -103,6 +111,11 @@ class PaymentSchedule extends Component {
       </Wrap>
     )
   }
+}
+
+PaymentSchedule.propTypes = {
+  onChange: PropTypes.func,
+  callback: PropTypes.func
 }
 
 export default Form.create()(PaymentSchedule)

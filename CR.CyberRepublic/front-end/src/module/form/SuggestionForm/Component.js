@@ -8,19 +8,21 @@ import CircularProgressbar from '@/module/common/CircularProgressbar'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import PaymentSchedule from './PaymentSchedule'
 
-import {
-  Container,
-  TabPaneInner,
-  Note,
-  TabText,
-  CirContainer
-} from './style'
+import { Container, TabPaneInner, Note, TabText, CirContainer } from './style'
 
 const FormItem = Form.Item
 const { TabPane } = Tabs
 
 const WORD_LIMIT = ABSTRACT_MAX_WORDS
-const TAB_KEYS = ['type', 'abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
+const TAB_KEYS = [
+  'type',
+  'abstract',
+  'goal',
+  'motivation',
+  'plan',
+  'relevance',
+  'budget'
+]
 
 class C extends BaseComponent {
   constructor(props) {
@@ -30,7 +32,7 @@ class C extends BaseComponent {
     this.state = {
       loading: false,
       activeKey: TAB_KEYS[0],
-      errorKeys: {},
+      errorKeys: {}
     }
   }
 
@@ -75,14 +77,14 @@ class C extends BaseComponent {
     }
   }
 
-  handleContinue = (e) => {
+  handleContinue = e => {
     e.preventDefault()
     const { form } = this.props
     form.validateFields((err, values) => {
       if (err) {
         this.setState({
-          loading: false, 
-          errorKeys: err, 
+          loading: false,
+          errorKeys: err,
           activeKey: this.getActiveKey(Object.keys(err)[0])
         })
         return
@@ -105,12 +107,10 @@ class C extends BaseComponent {
         { required: true, message: I18N.get('suggestion.form.error.required') }
       ],
       initialValue: initialValues.title
-    })(
-      <Input size="large" type="text" />
-    )
+    })(<Input size="large" type="text" />)
   }
 
-  getTypeRadioGroup = (key) => {
+  getTypeRadioGroup = key => {
     const { getFieldDecorator } = this.props.form
     const rules = [
       {
@@ -121,14 +121,18 @@ class C extends BaseComponent {
     return getFieldDecorator(key, {
       rules,
       initialValue: '1'
-    })(<Radio.Group>
-      <Radio value="1">{I18N.get('suggestion.form.type.newMotion')}</Radio>
-      <Radio value="2">{I18N.get('suggestion.form.type.motionAgainst')}</Radio>
-      <Radio value="3">{I18N.get('suggestion.form.type.anythingElse')}</Radio>
-    </Radio.Group>)
+    })(
+      <Radio.Group>
+        <Radio value="1">{I18N.get('suggestion.form.type.newMotion')}</Radio>
+        <Radio value="2">
+          {I18N.get('suggestion.form.type.motionAgainst')}
+        </Radio>
+        <Radio value="3">{I18N.get('suggestion.form.type.anythingElse')}</Radio>
+      </Radio.Group>
+    )
   }
 
-  onTextareaChange = (activeKey) => {
+  onTextareaChange = activeKey => {
     const { form } = this.props
     const err = form.getFieldError(activeKey)
     const { errorKeys } = this.state
@@ -157,10 +161,12 @@ class C extends BaseComponent {
     const { initialValues = {} } = this.props
     const { getFieldDecorator } = this.props.form
 
-    const rules = [{
-      required: true,
-      message: I18N.get('suggestion.form.error.required')
-    }]
+    const rules = [
+      {
+        required: true,
+        message: I18N.get('suggestion.form.error.required')
+      }
+    ]
     if (id === 'abstract') {
       rules.push({
         message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
@@ -168,10 +174,7 @@ class C extends BaseComponent {
       })
     }
 
-    return getFieldDecorator(id, {
-      rules,
-      initialValue: initialValues[id],
-    })(
+    let rc = (
       <CodeMirrorEditor
         callback={this.onTextareaChange}
         content={initialValues[id]}
@@ -179,6 +182,18 @@ class C extends BaseComponent {
         name={id}
       />
     )
+    if (id === 'budget') {
+      rc = (
+        <PaymentSchedule
+          callback={this.onTextareaChange.bind(this, 'budget')}
+        />
+      )
+    }
+
+    return getFieldDecorator(id, {
+      rules,
+      initialValue: initialValues[id]
+    })(rc)
   }
 
   renderTabText(id) {
@@ -211,8 +226,8 @@ class C extends BaseComponent {
         <Form onSubmit={this.handleSubmit}>
           <FormItem
             label={`${I18N.get('suggestion.form.fields.title')}*`}
-            labelCol={{span: 2}}
-            wrapperCol={{span: 18}}
+            labelCol={{ span: 2 }}
+            wrapperCol={{ span: 18 }}
             colon={false}
           >
             {this.getTitleInput()}
@@ -233,9 +248,7 @@ class C extends BaseComponent {
             <TabPane tab={this.renderTabText('abstract')} key="abstract">
               <TabPaneInner>
                 <Note>{I18N.get('suggestion.form.note.abstract')}</Note>
-                <FormItem>
-                  {this.getTextarea('abstract')}
-                </FormItem>
+                <FormItem>{this.getTextarea('abstract')}</FormItem>
                 {this.renderWordLimit()}
               </TabPaneInner>
             </TabPane>
@@ -266,12 +279,17 @@ class C extends BaseComponent {
             <TabPane tab={this.renderTabText('budget')} key="budget">
               <TabPaneInner>
                 <Note>{I18N.get('suggestion.form.note.budget')}</Note>
-                <PaymentSchedule />
+                <FormItem>{this.getTextarea('budget')}</FormItem>
               </TabPaneInner>
             </TabPane>
           </Tabs>
 
-          <Row gutter={8} type="flex" justify="center" style={{marginBottom: '30px'}}>
+          <Row
+            gutter={8}
+            type="flex"
+            justify="center"
+            style={{ marginBottom: '30px' }}
+          >
             <Button
               onClick={this.handleContinue}
               className="cr-btn cr-btn-black"
