@@ -36,8 +36,8 @@ nodes.customNodeObj = {
 nodes.nodeList = {
     'eth_mycrypto': {
         'name': 'ETH',
-        'blockExplorerTX': 'https://etherscan.io/tx/[[txHash]]',
-        'blockExplorerAddr': 'https://etherscan.io/address/[[address]]',
+        'blockExplorerTX': 'https://ethchain.elastos.org//tx/[[txHash]]',
+        'blockExplorerAddr': 'https://ethchain.elastos.org//address/[[address]]',
         'type': nodes.nodeTypes.ETH,
         'eip155': true,
         'chainId': 1,
@@ -48,8 +48,8 @@ nodes.nodeList = {
     },
     'eth_etherscan': {
         'name': 'ETH',
-        'blockExplorerTX': 'https://etherscan.io/tx/[[txHash]]',
-        'blockExplorerAddr': 'https://etherscan.io/address/[[address]]',
+        'blockExplorerTX': 'https://explorer.elaeth.io/tx/[[txHash]]',
+        'blockExplorerAddr': 'https://explorer.elaeth.io/address/[[address]]',
         'type': nodes.nodeTypes.ETH,
         'eip155': true,
         'chainId': 3,
