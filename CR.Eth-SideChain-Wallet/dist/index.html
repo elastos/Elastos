@@ -280,7 +280,7 @@
 
 
 
-<section class="container" style="min-height: 58%" ng-controller='viewCtrl'>
+<section class="container" style="min-height: 70%" ng-controller='viewCtrl'>
 
   <div class="tab-content" >
 
@@ -323,23 +323,6 @@
            Generate Wallet
       </a>
       <p translate="x_PasswordDesc"></p>
-      <div class="text-center">
-        <strong>
-          <a href="https://support.mycrypto.com/getting-started/creating-a-new-wallet-on-mycrypto.html"
-             target="_blank"
-             rel="noopener noreferrer"
-             translate="GEN_Help_5">
-               How to Create a Wallet
-          </a>
-          &nbsp;&nbsp;&middot;&nbsp;&nbsp;
-          <a href="https://support.mycrypto.com/getting-started/getting-started-new.html"
-             target="_blank"
-             rel="noopener noreferrer"
-             translate="GEN_Help_6">
-               Getting Started
-          </a>
-        </strong>
-      </div>
       <br>
     </section>
 
@@ -352,47 +335,6 @@
       <ul>
         <li>
           <p>
-            <strong>
-              Ledger / TREZOR / Digital Bitbox
-            </strong>:
-            <span translate="GEN_Help_1">
-              Use your
-            </span>
-            <a ng-click="globalService.currentTab=globalService.tabs.sendTransaction.id">
-              hardware wallet
-            </a>.
-            <span translate="GEN_Help_3">
-              Your device * is * your wallet.
-            </span>
-          </p>
-        </li>
-      </ul>
-
-      <ul>
-        <li>
-          <p>
-            <strong>
-              MetaMask
-            </strong>:
-            <span>
-              Access your account via the
-            </span>
-            <a ng-click="globalService.currentTab=globalService.tabs.sendTransaction.id">
-              MetaMask Extension
-            </a>.
-            <span translate="GEN_Help_MetaMask">
-              So easy! Keys stay in MetaMask, not on a phishing site! Try it today.
-            </span>
-          </p>
-        </li>
-      </ul>
-
-      <ul>
-        <li>
-          <p>
-            <strong>
-              Jaxx / imToken
-            </strong>:
             <span translate="GEN_Help_1">Use your</span>
             <a ng-click="globalService.currentTab=globalService.tabs.sendTransaction.id" translate="x_Mnemonic">
               Mnemonic Phrase
@@ -407,9 +349,6 @@
       <ul>
         <li>
           <p>
-            <strong>
-              Mist / Geth / Parity
-            </strong>:
             <span translate="GEN_Help_1">
               Use your
             </span>
@@ -3278,7 +3217,7 @@ Rate: {{swapOrder.swapRate}} {{swapOrder.swapPair}}</textarea>
          ng-click="setVisibility('interactView')">
           Interact with Contract
       </a>
-      or
+      /
       <a translate="NAV_DeployContract"
          ng-class="{'isActive': visibility=='deployView'}"
          ng-click="setVisibility('deployView')">
@@ -6883,13 +6822,13 @@ Rate: {{swapOrder.swapRate}} {{swapOrder.swapPair}}</textarea>
 
 </section>
 
-<section class="pre-footer" ng-controller='footerCtrl'>
+<!-- <section class="pre-footer" ng-controller='footerCtrl'>
   <div class="container">
     <p>
       We does not hold your keys for you. We cannot access accounts, recover keys, reset passwords, nor reverse transactions. Protect your keys &amp; always check that you are on correct URL. You are responsible for your security.
     </p>
   </div>
-</section>
+</section> -->
 
 
 
@@ -6940,7 +6879,6 @@ Rate: {{swapOrder.swapRate}} {{swapOrder.swapPair}}</textarea>
       <a href="https://explorer.elaeth.io" target="_blank" rel="noopener"> Block Explorer </a>
       <!-- <a href="https://elaeth.io" target="_blank" rel="noopener"> Our Team </a> -->
     </p>
-    <p class="footer__desc">This project is an open-source, client-side tool for generating ether wallets, handling ERC-20 tokens, and interacting with the blockchain more easily.</p>
     <p class="footer__copyright">
       © 2019 CyberRepublic
       <span style="margin-left: 1em">

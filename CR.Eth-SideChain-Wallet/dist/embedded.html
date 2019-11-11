@@ -42,7 +42,7 @@
 </header>
 
 
-  <section class="container" style="min-height: 58%" ng-controller='viewCtrl'>
+  <section class="container" style="min-height: 70%" ng-controller='viewCtrl'>
 
   <!-- tab panes -->
 
@@ -87,23 +87,6 @@
            Generate Wallet
       </a>
       <p translate="x_PasswordDesc"></p>
-      <div class="text-center">
-        <strong>
-          <a href="https://support.mycrypto.com/getting-started/creating-a-new-wallet-on-mycrypto.html"
-             target="_blank"
-             rel="noopener noreferrer"
-             translate="GEN_Help_5">
-               How to Create a Wallet
-          </a>
-          &nbsp;&nbsp;&middot;&nbsp;&nbsp;
-          <a href="https://support.mycrypto.com/getting-started/getting-started-new.html"
-             target="_blank"
-             rel="noopener noreferrer"
-             translate="GEN_Help_6">
-               Getting Started
-          </a>
-        </strong>
-      </div>
       <br>
     </section>
 
@@ -116,47 +99,6 @@
       <ul>
         <li>
           <p>
-            <strong>
-              Ledger / TREZOR / Digital Bitbox
-            </strong>:
-            <span translate="GEN_Help_1">
-              Use your
-            </span>
-            <a ng-click="globalService.currentTab=globalService.tabs.sendTransaction.id">
-              hardware wallet
-            </a>.
-            <span translate="GEN_Help_3">
-              Your device * is * your wallet.
-            </span>
-          </p>
-        </li>
-      </ul>
-
-      <ul>
-        <li>
-          <p>
-            <strong>
-              MetaMask
-            </strong>:
-            <span>
-              Access your account via the
-            </span>
-            <a ng-click="globalService.currentTab=globalService.tabs.sendTransaction.id">
-              MetaMask Extension
-            </a>.
-            <span translate="GEN_Help_MetaMask">
-              So easy! Keys stay in MetaMask, not on a phishing site! Try it today.
-            </span>
-          </p>
-        </li>
-      </ul>
-
-      <ul>
-        <li>
-          <p>
-            <strong>
-              Jaxx / imToken
-            </strong>:
             <span translate="GEN_Help_1">Use your</span>
             <a ng-click="globalService.currentTab=globalService.tabs.sendTransaction.id" translate="x_Mnemonic">
               Mnemonic Phrase
@@ -171,9 +113,6 @@
       <ul>
         <li>
           <p>
-            <strong>
-              Mist / Geth / Parity
-            </strong>:
             <span translate="GEN_Help_1">
               Use your
             </span>
