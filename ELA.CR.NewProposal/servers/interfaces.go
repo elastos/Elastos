@@ -1310,7 +1310,7 @@ func GetUnspends(param Params) map[string]interface{} {
 	type Result struct {
 		AssetID   string            `json:"AssetId"`
 		AssetName string            `json:"AssetName"`
-		Utxo      []UTXOUnspentInfo `json:"Utxo"`
+		UTXO      []UTXOUnspentInfo `json:"UTXO"`
 	}
 	var results []Result
 

@@ -90,20 +90,20 @@ var (
 	}
 
 	testUnspentIndex *UnspentIndex
-	fflDB            database.DB
+	unspentIndexDB   database.DB
 )
 
 func TestUnspentIndexInit(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	var err error
-	fflDB, err = LoadBlockDB(test.DataPath)
+	unspentIndexDB, err = LoadBlockDB(test.DataPath)
 	assert.NoError(t, err)
-	testUnspentIndex = NewUnspentIndex(fflDB)
+	testUnspentIndex = NewUnspentIndex(unspentIndexDB)
 	assert.NotEqual(t, nil, testUnspentIndex)
 	assert.Equal(t, []byte("txbyhashidx"), testUnspentIndex.Key())
 	assert.Equal(t, "unspent index", testUnspentIndex.Name())
-	_ = fflDB.Update(func(dbTx database.Tx) error {
+	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
 		err := testUnspentIndex.Create(dbTx)
 		assert.NoError(t, err)
 
@@ -125,11 +125,11 @@ func TestUnspentIndexInit(t *testing.T) {
 }
 
 func TestUnspentIndex_ConnectBlock(t *testing.T) {
-	_ = fflDB.Update(func(dbTx database.Tx) error {
+	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
 		err := testUnspentIndex.ConnectBlock(dbTx, unspentIndexBlock)
 		assert.NoError(t, err)
 
-		//input refer should be removed from unspent array
+		// input items should be removed from db
 		indexes, err := dbFetchUnspentIndexEntry(dbTx, &unspentIndexReferTx1)
 		assert.NoError(t, err)
 		assert.Equal(t, []uint16(nil), indexes)
@@ -137,7 +137,7 @@ func TestUnspentIndex_ConnectBlock(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, []uint16(nil), indexes)
 
-		// output should be added in unspent array
+		// output items should be added in db
 		coinbaseHash := unspentIndexCoinbase.Hash()
 		indexes, err = dbFetchUnspentIndexEntry(dbTx, &coinbaseHash)
 		assert.NoError(t, err)
@@ -156,11 +156,11 @@ func TestUnspentIndex_ConnectBlock(t *testing.T) {
 }
 
 func TestUnspentIndex_DisconnectBlock(t *testing.T) {
-	_ = fflDB.Update(func(dbTx database.Tx) error {
+	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
 		err := testUnspentIndex.DisconnectBlock(dbTx, unspentIndexBlock)
 		assert.NoError(t, err)
 
-		// input refer should be added in unspent array
+		// input items should be added in db
 		indexes, err := dbFetchUnspentIndexEntry(dbTx, &unspentIndexReferTx1)
 		assert.NoError(t, err)
 		assert.Equal(t, []uint16{unspentIndexReferIndex1}, indexes)
@@ -168,7 +168,7 @@ func TestUnspentIndex_DisconnectBlock(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, []uint16{unspentIndexReferIndex2}, indexes)
 
-		// output should be removed from unspent array
+		// output items should be removed from db
 		coinbaseHash := unspentIndexCoinbase.Hash()
 		indexes, err = dbFetchUnspentIndexEntry(dbTx, &coinbaseHash)
 		assert.NoError(t, err)

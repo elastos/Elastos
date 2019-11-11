@@ -87,6 +87,12 @@ type Indexer interface {
 	DisconnectBlock(database.Tx, *types.Block) error
 }
 
+type ITxStore interface {
+	// FetchTx retrieval a transaction and a block hash where it
+	// located by transaction hash
+	FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint256, error)
+}
+
 // AssertError identifies an error that indicates an internal code consistency
 // issue and should be treated as a critical and unrecoverable error.
 type AssertError string

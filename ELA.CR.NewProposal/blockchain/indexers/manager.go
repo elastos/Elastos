@@ -428,34 +428,6 @@ func (m *Manager) Init(chain IChain, interrupt <-chan struct{}) error {
 	return nil
 }
 
-// dbFetchTx looks up the passed transaction hash in the transaction index and
-// loads it from the database.
-func dbFetchTx(dbTx database.Tx, hash *common.Uint256) (*types.Transaction, *common.Uint256, error) {
-	// Look up the location of the transaction.
-	blockRegion, err := dbFetchTxIndexEntry(dbTx, hash)
-	if err != nil {
-		return nil, &common.EmptyHash, err
-	}
-	if blockRegion == nil {
-		return nil, &common.EmptyHash, fmt.Errorf("transaction %v not found", hash)
-	}
-
-	// Load the raw transaction bytes from the database.
-	txBytes, err := dbTx.FetchBlockRegion(blockRegion)
-	if err != nil {
-		return nil, &common.EmptyHash, err
-	}
-
-	// Deserialize the transaction.
-	var txn types.Transaction
-	err = txn.Deserialize(bytes.NewReader(txBytes))
-	if err != nil {
-		return nil, &common.EmptyHash, err
-	}
-
-	return &txn, blockRegion.Hash, nil
-}
-
 // ConnectBlock must be invoked when a block is extending the main chain.  It
 // keeps track of the state of each index it is managing, performs some sanity
 // checks, and invokes each indexer.
@@ -529,8 +501,9 @@ func (m *Manager) FetchUnspent(txID common.Uint256) ([]uint16, error) {
 func NewManager(db database.DB) *Manager {
 	txIndex := NewTxIndex(db)
 	unspentIndex := NewUnspentIndex(db)
+	utxoIndex := NewUtxoIndex(db, txIndex)
 	var enabledIndexes []Indexer
-	enabledIndexes = append(enabledIndexes, txIndex, unspentIndex)
+	enabledIndexes = append(enabledIndexes, txIndex, unspentIndex, utxoIndex)
 	return &Manager{
 		db:             db,
 		enabledIndexes: enabledIndexes,
