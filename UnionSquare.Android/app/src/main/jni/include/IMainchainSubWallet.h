@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "ISubWallet.h"
+#include <ISubWallet.h>
 
 #ifndef __ELASTOS_SDK_IMAINCHAINSUBWALLET_H__
 #define __ELASTOS_SDK_IMAINCHAINSUBWALLET_H__
@@ -459,6 +459,24 @@ namespace Elastos {
 			 * @return             The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateVoteCRCProposalTransaction(
+					const std::string &fromAddress,
+					const nlohmann::json &votes,
+					const std::string &memo) = 0;
+
+			/**
+			 * Create impeachment crc transaction.
+			 *
+			 * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+			 *                     Otherwise, pick UTXO from the specific address.
+			 * @param votes        CRC did and votes in JSON format. Such as:
+			 *                     {
+			 *                          "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs": "100000000",
+			 *                          "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww": "200000000"
+			 *                     }
+			 * @param memo         Remarks string. Can be empty string.
+			 * @return             The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateImpeachmentCRCTransaction(
 					const std::string &fromAddress,
 					const nlohmann::json &votes,
 					const std::string &memo) = 0;
