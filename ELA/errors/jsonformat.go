@@ -39,15 +39,15 @@ func ToJsonFormatter(err ELAError) *JsonFormatter {
 	childErr := err.InnerError()
 
 	var elaErr ELAError
-	var ok bool
 	for childErr != nil {
-		if elaErr, ok = childErr.(ELAError); ok {
+		switch this := childErr.(type) {
+		case ELAError:
+			elaErr = this
 			childErr = elaErr.InnerError()
-		} else {
+		default:
 			elaErr = SimpleWithMessage(ErrFail, nil, childErr.Error())
 			childErr = nil
 		}
-
 		next = transform(elaErr)
 		current.Inner = next
 		current = next
