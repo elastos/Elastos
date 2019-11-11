@@ -47,7 +47,7 @@ var globalService = function($http, $httpParamSerializerJQLike) {
     id: 5,
     name: "NAV_Offline",
     url:"offline-transaction",
-    mew: true,
+    mew: false,
     cx: false
   },
   contracts: {
