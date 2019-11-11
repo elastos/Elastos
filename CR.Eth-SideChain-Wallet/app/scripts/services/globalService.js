@@ -75,8 +75,8 @@ var globalService = function($http, $httpParamSerializerJQLike) {
     id: 9,
     name: "NAV_CheckTxStatus",
     url: "check-tx-status",
-    mew: true,
-    cx: true
+    mew: false,
+    cx: false
   },
   viewWalletInfo: {
     id: 10,
