@@ -26,7 +26,7 @@ type CRCProposalWithdraw struct {
 	// Which stage of money to take
 	Stage uint8
 
-	//fee count
+	//fee amount
 	Fee common.Fixed64
 
 	//signature

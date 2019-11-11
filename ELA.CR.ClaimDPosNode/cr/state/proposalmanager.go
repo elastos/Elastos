@@ -209,7 +209,7 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 	}
 }
 
-func (p *ProposalManager) CanWithdrawalAmount(hash common.Uint256) common.Fixed64 {
+func (p *ProposalManager) AvailableWithdrawalAmount(hash common.Uint256) common.Fixed64 {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 	propState := p.getProposal(hash)
@@ -220,10 +220,9 @@ func (p *ProposalManager) CanWithdrawalAmount(hash common.Uint256) common.Fixed6
 
 	//Budgets slice index from 0---n-1
 	//stage   user  index from 1---n
-	//so i from propState.CurrentWithdrawalStage+1-1 to CurrentStage-1-1
 	start := propState.CurrentWithdrawalStage
-	end := propState.CurrentStage - 2
-	for i := start; i <= end; i++ {
+	end := propState.CurrentStage
+	for i := start; i < end; i++ {
 		amout += propState.Proposal.Budgets[i]
 	}
 	return amout
@@ -244,10 +243,10 @@ func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
 	} else {
 		history.Append(height, func() {
 			proposal.Status = VoterAgreed
-			proposal.CurrentStage = 2
+			proposal.CurrentStage = 1
 		}, func() {
 			proposal.Status = CRAgreed
-			proposal.CurrentStage = 1
+			proposal.CurrentStage = 0
 		})
 	}
 }
@@ -335,7 +334,7 @@ func (p *ProposalManager) registerProposal(tx *types.Transaction,
 		RegisterHeight:         height,
 		CRVotes:                map[common.Uint168]payload.VoteResult{},
 		VotersRejectAmount:     common.Fixed64(0),
-		CurrentStage:           1,
+		CurrentStage:           0,
 		CurrentWithdrawalStage: 0,
 		ProposalLeader:         proposal.SponsorPublicKey,
 	}
@@ -376,16 +375,16 @@ func (p *ProposalManager) proposalReview(tx *types.Transaction,
 
 func (p *ProposalManager) proposalWithdraw(tx *types.Transaction,
 	height uint32, history *utils.History) {
-	proposalWithdraw := tx.Payload.(*payload.CRCProposalWithdraw)
-	proposalState := p.getProposal(proposalWithdraw.ProposalHash)
+	withdrawPayload := tx.Payload.(*payload.CRCProposalWithdraw)
+	proposalState := p.getProposal(withdrawPayload.ProposalHash)
 	if proposalState == nil {
 		return
 	}
-
+	withdrawStage := proposalState.CurrentWithdrawalStage
 	history.Append(height, func() {
-		proposalState.CurrentWithdrawalStage++
+		proposalState.CurrentWithdrawalStage = withdrawPayload.Stage
 	}, func() {
-		proposalState.CurrentWithdrawalStage--
+		proposalState.CurrentWithdrawalStage = withdrawStage
 	})
 }
 

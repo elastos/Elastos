@@ -64,6 +64,7 @@ print("-----------------------")
 
 -- crc proposal payload: crPublickey, proposalType, draftData, budgets, wallet
 local cp_payload =crcproposal.new(cr_pubkey, proposal_type, draft_data, budgets, wallet)
+
 print(cp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
