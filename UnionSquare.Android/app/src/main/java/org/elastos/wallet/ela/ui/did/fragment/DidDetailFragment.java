@@ -90,7 +90,9 @@ public class DidDetailFragment extends BaseFragment implements NewBaseViewData {
                 break;
             case R.id.tv_credentialinfo:
                 //凭证信息
-                start(CredentialFragment.class, getArguments());
+                Bundle bundle=new Bundle();
+                bundle.putString("did",didInfo.getId());
+                start(CredentialFragment.class, bundle);
                 break;
         }
     }

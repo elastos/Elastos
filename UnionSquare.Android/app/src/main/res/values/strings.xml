@@ -504,4 +504,18 @@
     <string name="noavailablewalllet">暂无可用钱包</string>
     <string name="didregisted">DID已注册</string>
     <string name="closeidchainornot">关闭ID侧链将无法使用DID功能，是否立即关闭？</string>
+    <string name="personalindo">个人信息</string>
+    <string name="personalintro">个人简介</string>
+    <string name="socialaccount">社交账号</string>
+    <string name="keeptime">保存时间：</string>
+    <string name="output">导出</string>
+    <string name="input">导入</string>
+    <string name="name">姓名</string>
+    <string name="nick">昵称</string>
+    <string name="sex">性别</string>
+    <string name="birthday">出生日期</string>
+    <string name="email">邮箱</string>
+    <string name="phonenumber">手机号</string>
+    <string name="addpersonalindo">添加个人信息</string>
+    <string name="editpersonalinfo">编辑个人信息</string>
 </resources>

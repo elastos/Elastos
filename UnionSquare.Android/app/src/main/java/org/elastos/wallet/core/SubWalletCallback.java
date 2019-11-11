@@ -140,7 +140,7 @@ public class SubWalletCallback {
 
     public void OnConnectStatusChanged(String status) {
         JSONObject jsonObject = new JSONObject();
-        Log.i(TAG, GetWalletID() + "[OnConnectStatusChanged] status=" + status );
+        //Log.i(TAG, GetWalletID() + "[OnConnectStatusChanged] status=" + status );
 
 
         try {

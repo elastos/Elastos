@@ -14,6 +14,7 @@ import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -56,6 +57,10 @@ public class PersonalInfoFragment extends BaseFragment {
     TextView tvArea;
     @BindView(R.id.tv_title_right)
     TextView tvTitleRight;
+    @BindView(R.id.tv_next)
+    TextView tvNext;
+    @BindView(R.id.tv_tip)
+    TextView tvTip;
     private DIDInfoEntity didInfo;
     private CredentialSubjectBean credentialSubjectBean;
     private long birthday;
@@ -68,22 +73,50 @@ public class PersonalInfoFragment extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-
-        didInfo = data.getParcelable("didInfo");
-
-        if (data.getBoolean("useDraft")) {
-            credentialSubjectBean = CacheUtil.getCredentialSubjectBean(didInfo.getId());
+        String type = data.getString("type");
+        if (Constant.EDITPERSONALINFO.equals(type)) {
+            //编辑did  从凭证信息进入
+            onAddPersonalInfo(data);
             putData();
+
+        } else if (Constant.ADDPERSONALINFO.equals(type)) {
+            //新增did  从凭证信息进入
+            onAddPersonalInfo(data);
         } else {
-            credentialSubjectBean = new CredentialSubjectBean();
-            credentialSubjectBean.setDid(didInfo.getId());
+            //从创建did 进入
+            tvTitleRight.setVisibility(View.VISIBLE);
+            tvTitle.setText(getString(R.string.addpersonalindo));
+            didInfo = data.getParcelable("didInfo");
+            if (data.getBoolean("useDraft")) {
+                //使用草稿
+                credentialSubjectBean = CacheUtil.getCredentialSubjectBean(didInfo.getId());
+                putData();
+            } else {
+                credentialSubjectBean = new CredentialSubjectBean(didInfo.getId());
+            }
         }
+    }
+
+    private void onAddPersonalInfo(Bundle data) {
+        credentialSubjectBean = data.getParcelable("CredentialSubjectBean");
+        tvTitle.setText(getString(R.string.editpersonalinfo));
+        tvTip.setVisibility(View.GONE);
+        tvTitleRight.setVisibility(View.GONE);
+        tvNext.setText(getString(R.string.keep));
+        tvNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setData();
+                CacheUtil.setCredentialSubjectBean(credentialSubjectBean);
+                popBackFragment();
+            }
+        });
     }
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(getString(R.string.adddid));
-        tvTitleRight.setVisibility(View.VISIBLE);
+
+
         sexs = new String[]{getString(R.string.man), getString(R.string.woman)};
     }
 
@@ -135,7 +168,7 @@ public class PersonalInfoFragment extends BaseFragment {
         if (info != null) {
             etName.setText(info.getName());
             etNick.setText(info.getNickname());
-            tvSex.setText(("n/a".equals(info.getGender()) || info.getGender() == null) ? null : (info.getGender().equals("male") ? getString(R.string.man) : getString(R.string.woman)));
+            tvSex.setText((info.getGender() == null) ? null : (info.getGender().equals("male") ? getString(R.string.man) : getString(R.string.woman)));
             birthday = info.getBirthday();
             tvBirthday.setText(DateUtil.timeNYR(birthday, getContext()));
             etHeadurl.setText(info.getAvatar());

@@ -72,6 +72,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     private DIDInfoEntity didInfo;
     private long endDate;
     private boolean useDraft;
+    private DIDListPresenter didListPresenter;
 
     @Override
     protected int getLayoutId() {
@@ -97,6 +98,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
             wallets = new RealmUtil().queryTypeUserAllWallet(0);
             presenter = new AddDIDPresenter();
+            didListPresenter = new DIDListPresenter();
             for (int i = 0; i < wallets.size(); i++) {
                 presenter.getAllSubWallets1(wallets.get(i).getWalletId(), this);
             }
@@ -119,7 +121,6 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     @Override
     protected void initView(View view) {
         tvTitle.setText(getString(R.string.adddid));
-
         registReceiver();
 
     }
@@ -209,7 +210,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                         public void affireBtnClick(View view) {
                             setData();
                             //保存草稿
-                            CacheUtil.setCredentialSubjectBean(didInfo.getId(), credentialSubjectBean);
+                            CacheUtil.setCredentialSubjectBean( credentialSubjectBean);
                             keep();
                             getBaseActivity().pop();
                         }
@@ -241,7 +242,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 ISubWalletListEntity subWalletListEntity1 = (ISubWalletListEntity) baseEntity;
                 for (SubWallet subWallet : subWalletListEntity1.getData()) {
                     if (subWallet.getChainId().equals(MyWallet.IDChain)) {
-                        new DIDListPresenter().getResolveDIDInfo((String) o, 0, 1, "", this);
+                        didListPresenter.getResolveDIDInfo((String) o, 0, 1, "", this);
                         return;
                     }
                 }
@@ -253,7 +254,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 for (SubWallet subWallet : subWalletListEntity.getData()) {
                     //先判断有无子
                     if (subWallet.getChainId().equals(MyWallet.IDChain)) {
-                        new DIDListPresenter().getResolveDIDInfo1((String) o, 0, 1, "", this);
+                        didListPresenter.getResolveDIDInfo1((String) o, 0, 1, "", this);
                         return;
                     }
                 }

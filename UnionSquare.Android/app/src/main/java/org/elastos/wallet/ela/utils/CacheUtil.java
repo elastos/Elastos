@@ -67,20 +67,24 @@ public class CacheUtil {
         CredentialSubjectBean bean = CacheDiskUtils.getInstance(file)
                 .getParcelable(id, CredentialSubjectBean.CREATOR);
         if (bean == null) {
-            bean = new CredentialSubjectBean();
+            bean = new CredentialSubjectBean(id);
+        } else if (bean.getDid() == null) {
             bean.setDid(id);
         }
+
         return bean;
 
     }
 
-    public static void setCredentialSubjectBean(String id, CredentialSubjectBean credentialSubjectBean) {
+    public static void setCredentialSubjectBean(CredentialSubjectBean credentialSubjectBean) {
         if (credentialSubjectBean == null) {
             return;
         }
         if (credentialSubjectBean.getSocial() != null || credentialSubjectBean.getInfo() != null || credentialSubjectBean.getIntro() != null) {
             CacheDiskUtils.getInstance(file)
-                    .put(id, credentialSubjectBean, CacheDiskUtils.DAY * 360);
+                    .put(credentialSubjectBean.getDid(), credentialSubjectBean, CacheDiskUtils.DAY * 360);
+        } else {
+            CacheDiskUtils.getInstance(file).remove(credentialSubjectBean.getDid());
         }
     }
 }

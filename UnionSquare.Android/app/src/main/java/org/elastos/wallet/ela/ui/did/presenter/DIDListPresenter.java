@@ -21,6 +21,16 @@ public class DIDListPresenter extends NewPresenterAbstract {
         });
         subscriberObservable(observer, observable, baseFragment);
     }
+
+    /**
+     * 为了逻辑清晰使用不同方法名处理不同位置调用后的结果
+     *
+     * @param walletId
+     * @param start
+     * @param count
+     * @param did
+     * @param baseFragment
+     */
     public void getResolveDIDInfo1(String walletId, int start, int count, String did, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "getResolveDIDInfo1", walletId);
         Observable observable = createObservable(new ObservableListener() {

@@ -126,12 +126,12 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
             case R.id.tv_public:
 
                 setData();
-                CacheUtil.setCredentialSubjectBean(didInfo.getId(), credentialSubjectBean);
+                CacheUtil.setCredentialSubjectBean( credentialSubjectBean);
                 new CRSignUpPresenter().getFee(didInfo.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
                 break;
             case R.id.tv_keep:
                setData();
-                CacheUtil.setCredentialSubjectBean(didInfo.getId(), credentialSubjectBean);
+                CacheUtil.setCredentialSubjectBean( credentialSubjectBean);
 
                 keep();
                 toDIDListFragment();

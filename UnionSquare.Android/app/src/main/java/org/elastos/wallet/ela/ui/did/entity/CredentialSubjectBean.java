@@ -23,10 +23,26 @@ public class CredentialSubjectBean implements Parcelable {
         private String phoneCode;
         private long editTime;
 
+        @Override
+        public String toString() {
+            return "Info{" +
+                    "name='" + name + '\'' +
+                    ", nickname='" + nickname + '\'' +
+                    ", gender='" + gender + '\'' +
+                    ", birthday=" + birthday +
+                    ", avatar='" + avatar + '\'' +
+                    ", nation='" + nation + '\'' +
+                    ", email='" + email + '\'' +
+                    ", phone='" + phone + '\'' +
+                    ", phoneCode='" + phoneCode + '\'' +
+                    ", editTime=" + editTime +
+                    '}';
+        }
+
         public boolean isEmpty() {
             return (TextUtils.isEmpty(name) && TextUtils.isEmpty(nickname) && TextUtils.isEmpty(gender) && birthday == 0
                     && TextUtils.isEmpty(avatar) && TextUtils.isEmpty(nation) && TextUtils.isEmpty(email)
-                    && TextUtils.isEmpty(phone) && TextUtils.isEmpty(phoneCode) && editTime == 0);
+                    && TextUtils.isEmpty(phone) && TextUtils.isEmpty(phoneCode));
         }
 
         public String getName() {
@@ -191,6 +207,14 @@ public class CredentialSubjectBean implements Parcelable {
         public Intro() {
         }
 
+        @Override
+        public String toString() {
+            return "Intro{" +
+                    "introduction='" + introduction + '\'' +
+                    ", editTime=" + editTime +
+                    '}';
+        }
+
         protected Intro(Parcel in) {
             this.introduction = in.readString();
             this.editTime = in.readLong();
@@ -210,6 +234,21 @@ public class CredentialSubjectBean implements Parcelable {
     }
 
     public static class Social implements Parcelable {
+        @Override
+        public String toString() {
+            return "Social{" +
+                    "alipay='" + alipay + '\'' +
+                    ", facebook='" + facebook + '\'' +
+                    ", googleAccount='" + googleAccount + '\'' +
+                    ", homePage='" + homePage + '\'' +
+                    ", microsoftPassport='" + microsoftPassport + '\'' +
+                    ", twitter='" + twitter + '\'' +
+                    ", wechat='" + wechat + '\'' +
+                    ", weibo='" + weibo + '\'' +
+                    ", editTime=" + editTime +
+                    '}';
+        }
+
         private String alipay;
         private String facebook;
         private String googleAccount;
@@ -219,11 +258,13 @@ public class CredentialSubjectBean implements Parcelable {
         private String wechat;
         private String weibo;
         private long editTime;
+
         public boolean isEmpty() {
             return (TextUtils.isEmpty(alipay) && TextUtils.isEmpty(facebook) && TextUtils.isEmpty(googleAccount)
                     && TextUtils.isEmpty(homePage) && TextUtils.isEmpty(microsoftPassport) && TextUtils.isEmpty(twitter)
-                    && TextUtils.isEmpty(wechat) && TextUtils.isEmpty(weibo) && editTime == 0);
+                    && TextUtils.isEmpty(wechat) && TextUtils.isEmpty(weibo));
         }
+
         public String getAlipay() {
             return alipay;
         }
@@ -387,7 +428,8 @@ public class CredentialSubjectBean implements Parcelable {
         dest.writeParcelable(this.social, flags);
     }
 
-    public CredentialSubjectBean() {
+    public CredentialSubjectBean(String did) {
+        this.did = did;
     }
 
     protected CredentialSubjectBean(Parcel in) {

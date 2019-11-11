@@ -18,7 +18,6 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
-import org.elastos.wallet.ela.db.table.Contact;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -33,7 +32,6 @@ import org.elastos.wallet.ela.ui.did.entity.DIDListEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.ui.did.presenter.DIDListPresenter;
 import org.elastos.wallet.ela.utils.CacheUtil;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -150,9 +148,9 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
 
                 DIDListEntity didListEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
                 if (didListEntity != null && didListEntity.getDID() != null && didListEntity.getDID().size() > 0) {
-                   for (DIDListEntity.DIDBean didBean:didListEntity.getDID()){
-                       didBean.setWalletId((String) o);
-                   }
+                    for (DIDListEntity.DIDBean didBean : didListEntity.getDID()) {
+                        didBean.setWalletId((String) o);
+                    }
                     netList.addAll(didListEntity.getDID());
                     setNetRecycleView();
                 }
@@ -193,13 +191,8 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
 
         Bundle bundle = new Bundle();
         if (rv1.getVisibility() == View.GONE) {
-            //网络
+            //api获取的数据
             DIDListEntity.DIDBean didBean = (DIDListEntity.DIDBean) o;
-            String status = didBean.getStatus();
-      /*      if (status.equals("Confirmed")) {
-                bundle.putParcelable("didInfo", didBean);
-                start(DidDetailFragment.class, bundle);
-            }*/
             bundle.putParcelable("didInfo", didBean);
             start(DidDetailFragment.class, bundle);
         } else {
@@ -232,6 +225,7 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
             }
         }
     }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(BusEvent result) {
         int integer = result.getCode();
