@@ -39,90 +39,9 @@
           {{ajaxReq.type}} ({{ajaxReq.blockExplorerTX.replace('/tx/[[txHash]]', '')}})
         </a>
       </li>
-      <li ng-show="ajaxReq.type == 'ETH'">
-        <a href="https://www.etherchain.org/account/{{wallet.getAddressString()}}" target="_blank" rel="noopener noreferrer">
-            ETH (etherchain.org)
-        </a>
-      </li>
-      <li ng-show="ajaxReq.type == 'ETH'">
-        <a href="https://ethplorer.io/address/{{wallet.getAddressString()}}" target="_blank" rel="noopener noreferrer">
-          Tokens (ethplorer.io)
-        </a>
-      </li>
-
 
     </ul>
   </div>
-
-
-
-
-
-
-  <!-- Slider Thingy -->
-  <!-- Hardware Wallets -->
-  <!-- <a href="https://support.mycrypto.com/getting-started/protecting-yourself-and-your-funds.html"
-     ng-show="slide==1 || ajaxReq.type!=='ETH'"
-     class="block swap--hw"
-     target="_blank" rel="noopener noreferrer">
-    <div class="col-sm-7">
-
-      <h5 class="swap__cta" ng-show="wallet.balance<=1">Learn more about protecting your funds.</h5>
-
-      <p class="swap__subhead" ng-show="wallet.balance<50 && wallet.balance>1">Welcome back</h5>
-      <h5 class="swap__cta" ng-show="wallet.balance<50 && wallet.balance>1">Are you as secure as you can be?</h5>
-
-      <p class="swap__subhead" ng-show="wallet.balance>=50">Holy cow, look at you go!</p>
-      <h5 class="swap__cta" ng-show="wallet.balance>=50">Time to beef up your security?</h5>
-    </div>
-    <div class="col-sm-5">
-      <img src="images/logo-ledger.svg" width="80" height="auto" class="swap__logo">
-      <br />
-      <img src="images/logo-trezor.svg" width="80" height="auto" class="swap__logo">
-    </div>
-  </a> -->
-
-  <!-- Coinbase -->
-  <!-- <a href="https://buy.coinbase.com?code=60c05061-3a76-57be-b1cd-a7afa97bcb8c&address={{wallet.getChecksumAddressString()}}&crypto_currency=ETH&currency=USD"
-     ng-show="ajaxReq.type=='ETH' && slide==2"
-     class="block swap--usd"
-     target="_blank" rel="noopener noreferrer">
-    <div class="col-sm-7">
-      <p class="swap__subhead" ng-show="wallet.balance<=0">Aw...you don't have any ETH</p>
-      <p class="swap__subhead" ng-show="wallet.balance>0">It's now easier to get more ETH</p>
-      <h5 class="swap__cta">Buy ETH with USD</h5>
-    </div>
-    <div class="col-sm-5">
-      <img src="images/logo-coinbase.svg" width="64" height="auto" class="swap__logo">
-      <p class="swap-flag--price">1 ETH ≈ <br /> {{wallet.usdPrice}} USD</p>
-    </div>
-  </a> -->
-
-
-
-
-
-  <!-- Shapeshift -->
-
-  <!-- <a ng-click="globalService.currentTab=globalService.tabs.swap.id"
-     ng-show="ajaxReq.type=='ETH' && slide==3" class="block swap--ss"
-     target="_blank" rel="noopener noreferrer">
-    <div class="col-sm-7">
-      <h5 class="swap__cta">Exchange coins & tokens</h5>
-    </div>
-    <div class="col-sm-5">
-      <img src="images/logo-shapeshift--blue.svg" width="100%" height="auto" class="swap__logo">
-    </div>
-  </a>
-
-  <div class="swap__nav" ng-show="ajaxReq.type=='ETH'">
-    <a ng-click="slide=1"> &bull; </a>
-    <a ng-click="slide=2"> &bull; </a>
-    <a ng-click="slide=3"> &bull; </a>
-  </div> -->
-
-
-
 
   <!-- Token Balances -->
   <div class="block token-balances">
@@ -139,14 +58,6 @@
     -->
 
     <!-- you can your Balance on Blockchain Explorer -->
-    <h5 class="u__protip">
-      <a href="https://support.mycrypto.com/tokens/adding-new-token-and-sending-custom-tokens.html"
-         rel="noopener noreferrer"
-         target="_blank">
-         How to See Your Tokens
-      </a>
-    </h5>
-
     <p>
       You can also view your Balances on
       <a ng-show="ajaxReq.type != 'CUS'"
@@ -155,13 +66,6 @@
          rel="noopener noreferrer">
           {{ajaxReq.blockExplorerTX.replace('/tx/[[txHash]]', '')}}
       </a>
-      <span ng-show="ajaxReq.type == 'ETH'"> or
-        <a href="https://ethplorer.io/address/{{wallet.getAddressString()}}"
-           target="_blank"
-           rel="noopener noreferrer">
-             ethplorer.io
-        </a>
-      </span>
     </p>
 
     <!-- Buttons -->
@@ -227,25 +131,4 @@
       </tr>
     </table>
   </div>
-
-
-
-  <!-- Equivalent Balances -->
-  <div class="block" ng-show="ajaxReq.type=='ETH'">
-    <h5 translate="sidebar_Equiv">Equivalent Values:</h5>
-    <div class="row">
-      <ul class="account-info col-xs-6">
-        <li>BTC: <span class="mono wrap">{{wallet.btcBalance | number}}</span></li>
-        <li>USD: <span class="mono wrap">{{wallet.usdBalance | currency:"$"}}</span></li>
-        <li>CHF: <span class="mono wrap">{{wallet.chfBalance | currency:" "}}</span></li>
-      </ul>
-      <ul class="account-info col-xs-6">
-        <li>REP: <span class="mono wrap">{{wallet.repBalance | number}}</span></li>
-        <li>EUR: <span class="mono wrap">{{wallet.eurBalance | currency:"€"}}</span></li>
-        <li>GBP: <span class="mono wrap">{{wallet.gbpBalance | currency:"£"}}</span></li>
-      </ul>
-    </div>
-    <p><small> These are only the equivalent values for ETH, not tokens. Sorry! </small></p>
-  </div>
-
 </aside>
