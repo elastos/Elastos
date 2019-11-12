@@ -33,6 +33,7 @@ import SocialShareButtons from '@/module/common/SocialShareButtons'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import TagsContainer from '../common/tags/Container'
 import PopoverProfile from '@/module/common/PopoverProfile'
+import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import {
   Container,
   Title,
@@ -181,7 +182,10 @@ export default class extends StandardPage {
 
   renderPreambleItem(header, value, item) {
     let text = <ItemText>{value}</ItemText>
-    const { detail: { createdBy }, user } = this.props
+    const {
+      detail: { createdBy },
+      user
+    } = this.props
     if (item === 'username') {
       text = <PopoverProfile owner={createdBy} curUser={user} />
     }
@@ -251,14 +255,26 @@ export default class extends StandardPage {
           I18N.get('suggestion.fields.preambleSub.created'),
           moment(detail.createdAt).format('MMM D, YYYY')
         )}
-        {sections.map(section => (
-          <div key={section}>
-            <DescLabel id={section}>
-              {I18N.get(`suggestion.fields.${section}`)}
-            </DescLabel>
-            <MarkdownPreview content={detail[section] ? detail[section] : ''} />
-          </div>
-        ))}
+        {sections.map(section => {
+          if (section === 'budget') {
+            return (
+              <div key={section}>
+                <DescLabel id={section}>
+                  {I18N.get(`suggestion.fields.${section}`)}
+                </DescLabel>
+                <PaymentList list={detail.budget} editable={false} />
+              </div>
+            )
+          }
+          return (
+            <div key={section}>
+              <DescLabel id={section}>
+                {I18N.get(`suggestion.fields.${section}`)}
+              </DescLabel>
+              <MarkdownPreview content={detail[section]} />
+            </div>
+          )
+        })}
       </div>
     )
   }
@@ -360,13 +376,24 @@ export default class extends StandardPage {
 
   renderTranslationBtn() {
     const { detail } = this.props
-    const sections = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
-    const result = sections.map(section => {
-      return `
-        <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
-        <p>${convertMarkdownToHtml(detail[section] ? detail[section] : '')}</p>
-      `
-    }).join('')
+    const sections = [
+      'abstract',
+      'goal',
+      'motivation',
+      'plan',
+      'relevance',
+      'budget'
+    ]
+    const result = sections
+      .map(section => {
+        if (section !== 'budget') {
+          return `
+            <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
+            <p>${convertMarkdownToHtml(detail[section])}</p>
+          `
+        }
+      })
+      .join('')
     const text = `
       <h3>${detail.title}</h3>
       <br />

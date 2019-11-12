@@ -15,7 +15,8 @@ class PaymentList extends BaseComponent {
   }
 
   ord_render() {
-    const { list } = this.props
+    const { list, editable } = this.props
+    const visible = editable === false ? editable : true
     return (
       <StyledTable>
         <StyledHead>
@@ -24,7 +25,11 @@ class PaymentList extends BaseComponent {
             <th>{I18N.get('suggestion.budget.amount')}(ELA)</th>
             <th>{I18N.get('suggestion.budget.reasons')}</th>
             <th>{I18N.get('suggestion.budget.criteria')}</th>
-            <th>{I18N.get('suggestion.budget.action')}</th>
+            {visible && (
+              <th style={{ width: 120 }}>
+                {I18N.get('suggestion.budget.action')}
+              </th>
+            )}
           </StyledRow>
         </StyledHead>
         <tbody>
@@ -34,22 +39,24 @@ class PaymentList extends BaseComponent {
               <td>{item.amount}</td>
               <td>{item.reasons}</td>
               <td>{item.criteria}</td>
-              <td>
-                <Button
-                  size="small"
-                  type="danger"
-                  shape="circle"
-                  icon="delete"
-                  onClick={this.handleDelete.bind(this, index)}
-                />
-                <Button
-                  size="small"
-                  type="primary"
-                  shape="circle"
-                  icon="edit"
-                  onClick={this.handleEdit.bind(this, index)}
-                />
-              </td>
+              {visible && (
+                <td>
+                  <Button
+                    size="small"
+                    type="danger"
+                    shape="circle"
+                    icon="delete"
+                    onClick={this.handleDelete.bind(this, index)}
+                  />
+                  <Button
+                    size="small"
+                    type="primary"
+                    shape="circle"
+                    icon="edit"
+                    onClick={this.handleEdit.bind(this, index)}
+                  />
+                </td>
+              )}
             </StyledRow>
           ))}
         </tbody>
@@ -61,7 +68,8 @@ class PaymentList extends BaseComponent {
 PaymentList.propTypes = {
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
-  list: PropTypes.array.isRequired
+  list: PropTypes.array.isRequired,
+  editable: PropTypes.bool
 }
 
 export default PaymentList
@@ -83,9 +91,6 @@ const StyledHead = styled.thead`
       width: 80px;
     }
     &:nth-child(2) {
-      width: 120px;
-    }
-    &:last-child {
       width: 120px;
     }
   }

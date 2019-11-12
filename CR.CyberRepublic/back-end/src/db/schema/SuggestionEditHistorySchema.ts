@@ -26,7 +26,7 @@ const SuggestionCore = {
   },
   link: [String],
   coverImg: String,
-  
+
   // new fields
   type: {
     type: String,
@@ -45,13 +45,12 @@ const SuggestionCore = {
     type: String
   },
   budget: {
-    type: String
+    type: Schema.Types.Mixed
   },
   plan: {
     type: String
   }
 }
-
 
 export const SuggestionEditHistory = {
   ...SuggestionCore,
