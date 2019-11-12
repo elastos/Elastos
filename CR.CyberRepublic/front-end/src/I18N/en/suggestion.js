@@ -26,7 +26,11 @@ export default {
     plan: 'Implementation Plan',
     vote: 'Vote',
     tracking: 'Tracking',
-    summary: 'Summary'
+    summary: 'Summary',
+    status: 'Suggestion Status',
+    budgetRequested: 'Budget Requested',
+    creationDate: 'Creation Date',
+    author: 'Author'
   },
   btn: {
     makeIntoProposal: 'Make Into Proposal',
