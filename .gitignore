@@ -20,9 +20,6 @@ __pycache__
 # idea
 .idea/
 
-# Database
-db.sqlite3
-
 # tools
 tools/privkey.pem
 tools/server.*
