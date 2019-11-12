@@ -1,5 +1,4 @@
 import { ABSTRACT_MAX_WORDS } from '@/constant'
-import CrProposalPageSvg from '../../module/page/suggestion/list/svg/CrProposalPageSvg';
 
 export default {
   title: {
@@ -71,7 +70,8 @@ export default {
     error: {
       required: 'This field is required',
       tooLong: 'This field is too long',
-      [`limit${ABSTRACT_MAX_WORDS}`]: `You can only type ${ABSTRACT_MAX_WORDS} words max.`
+      [`limit${ABSTRACT_MAX_WORDS}`]: `You can only type ${ABSTRACT_MAX_WORDS} words max.`,
+      isNaN: 'Please input valid amount'
     }
   },
   modal: {
@@ -108,5 +108,13 @@ export default {
     abstract: 'Abstract',
     email: 'Author email',
     name: 'Author name'
+  },
+  budget: {
+    create: 'Create payment item',
+    payment: 'Payment',
+    amount: 'Amount',
+    reasons: 'Reasons',
+    criteria: 'Criteria of Payment',
+    action: 'Action'
   }
 }
