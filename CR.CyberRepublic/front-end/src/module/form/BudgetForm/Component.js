@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import BaseComponent from '@/model/BaseComponent'
 import styled from 'styled-components'
 import { Form, Input, Button } from 'antd'
@@ -6,21 +7,14 @@ import I18N from '@/I18N'
 
 const FormItem = Form.Item
 
-class C extends BaseComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-      visible: false
-    }
-  }
-
+class BudgetForm extends BaseComponent {
   handleSubmit = e => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
-    const { form } = this.props
+    const { form, onSubmit } = this.props
     form.validateFields((err, values) => {
       if (!err) {
-        this.props.onSubmit(values)
+        onSubmit(values)
       }
     })
   }
@@ -53,7 +47,8 @@ class C extends BaseComponent {
           {...formItemLayout}
         >
           {getFieldDecorator('reasons', {
-            rules: [{ required: true, message: '' }]
+            rules: [{ required: true, message: '' }],
+            initialValue: item && item.reasons ? item.reasons : ''
           })(<Input />)}
         </FormItem>
         <FormItem
@@ -61,7 +56,8 @@ class C extends BaseComponent {
           {...formItemLayout}
         >
           {getFieldDecorator('criteria', {
-            rules: [{ required: true, message: '' }]
+            rules: [{ required: true, message: '' }],
+            initialValue: item && item.criteria ? item.criteria : ''
           })(<Input />)}
         </FormItem>
 
@@ -83,7 +79,13 @@ class C extends BaseComponent {
   }
 }
 
-export default Form.create()(C)
+BudgetForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  item: PropTypes.object
+}
+
+export default Form.create()(BudgetForm)
 
 const Actions = styled.div`
   display: flex;

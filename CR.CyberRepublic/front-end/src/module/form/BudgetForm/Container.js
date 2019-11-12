@@ -3,6 +3,6 @@ import Component from './Component'
 
 const mapState = state => ({})
 
-const mapDispatch = () => {}
+const mapDispatch = () => ({})
 
 export default createContainer(Component, mapState, mapDispatch)

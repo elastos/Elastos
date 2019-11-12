@@ -185,7 +185,8 @@ class C extends BaseComponent {
     if (id === 'budget') {
       rc = (
         <PaymentSchedule
-          callback={this.onTextareaChange.bind(this, 'budget')}
+          initialValue={initialValues.budget}
+          callback={this.onTextareaChange}
         />
       )
     }
