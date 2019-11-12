@@ -6,6 +6,7 @@ import { Form, Input, Button } from 'antd'
 import I18N from '@/I18N'
 
 const FormItem = Form.Item
+const TextArea = Input.TextArea
 
 class BudgetForm extends BaseComponent {
   handleSubmit = e => {
@@ -49,7 +50,7 @@ class BudgetForm extends BaseComponent {
           {getFieldDecorator('reasons', {
             rules: [{ required: true, message: '' }],
             initialValue: item && item.reasons ? item.reasons : ''
-          })(<Input />)}
+          })(<TextArea rows={5} />)}
         </FormItem>
         <FormItem
           label={I18N.get('suggestion.budget.criteria')}
@@ -58,7 +59,7 @@ class BudgetForm extends BaseComponent {
           {getFieldDecorator('criteria', {
             rules: [{ required: true, message: '' }],
             initialValue: item && item.criteria ? item.criteria : ''
-          })(<Input />)}
+          })(<TextArea rows={5} />)}
         </FormItem>
 
         <Actions>
