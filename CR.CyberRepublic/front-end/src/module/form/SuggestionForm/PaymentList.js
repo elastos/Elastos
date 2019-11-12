@@ -35,12 +35,20 @@ class PaymentList extends BaseComponent {
               <td>{item.reasons}</td>
               <td>{item.criteria}</td>
               <td>
-                <Button onClick={this.handleDelete.bind(this, index)}>
-                  delete
-                </Button>
-                <Button onClick={this.handleEdit.bind(this, index)}>
-                  edit
-                </Button>
+                <Button
+                  size="small"
+                  type="danger"
+                  shape="circle"
+                  icon="delete"
+                  onClick={this.handleDelete.bind(this, index)}
+                />
+                <Button
+                  size="small"
+                  type="primary"
+                  shape="circle"
+                  icon="edit"
+                  onClick={this.handleEdit.bind(this, index)}
+                />
               </td>
             </StyledRow>
           ))}
@@ -89,5 +97,8 @@ const StyledRow = styled.tr`
     line-height: 18px;
     padding: 16px;
     color: #000;
+    > button {
+      margin: 0 4px;
+    }
   }
 `
