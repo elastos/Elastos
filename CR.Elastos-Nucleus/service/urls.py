@@ -15,5 +15,4 @@ urlpatterns = [
     url(r'transferFile', views.transfer_file, name="transferFile"),
     url(r'documentation', views.documentation, name="documentation"),
     url(r'aboutUs', views.about_us, name='aboutUs'),
-    url(r'test', views.test_template),
 ]

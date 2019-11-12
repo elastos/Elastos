@@ -61,6 +61,3 @@ def documentation(request):
 
 def about_us(request):
     return render(request, "Services/aboutUs.html")
-
-def test_template(request):
-    return render(request , 'service_base.html')
