@@ -19,7 +19,7 @@ docker container stop nucleus-postgres || true && docker container rm -f nucleus
 docker run -d --name nucleus-postgres \
     -v "$PWD/server.crt:/var/lib/postgresql/server.crt:ro" \
     -v "$PWD/server.key:/var/lib/postgresql/server.key:ro" \
-    -e POSTGRES_DB=nucleus_dev                   \
+    -e POSTGRES_DB=nucleus                   \
     -e POSTGRES_USER=gmu                         \
     -e POSTGRES_PASSWORD=gmu                     \
     -p 5432:5432                                        \
