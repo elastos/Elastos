@@ -437,6 +437,7 @@ export default class extends Base {
 
     // createBy
     if(param.author && param.author.length) {
+      let search = param.author
       const db_user = this.getDBModel('User')
       const pattern = search.split(' ').join('|')
       const users = await db_user.getDBInstance().find({
