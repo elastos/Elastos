@@ -25,7 +25,14 @@ export default {
     plan: 'Implementation Plan',
     vote: 'Vote',
     tracking: 'Tracking',
-    summary: 'Summary'
+    summary: 'Summary',
+    status: 'Proposal Status',
+    budgetRequested: 'Budget Requested',
+    hasTrackingMsg: 'Has tracking message to be viewed',
+    isUnvotedByYou: 'Unvoted by You',
+    creationDate: 'Proposal Date',
+    author: 'Author',
+    endsDate: 'Ends In'
   },
   btn: {
     tracking: {

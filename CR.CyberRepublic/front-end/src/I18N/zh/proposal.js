@@ -25,7 +25,14 @@ export default {
     plan: '实施计划',
     vote: '投票',
     tracking: '跟踪',
-    summary: '总结'
+    summary: '总结',
+    status: '提案状态',
+    budgetRequested: '预算',
+    hasTrackingMsg: '有跟踪信息要查看吗',
+    isUnvotedByYou: '未被自己投票的提案',
+    creationDate: '创建日期',
+    author: '作者',
+    endsDate: '结束日期'
   },
   btn: {
     tracking: {
