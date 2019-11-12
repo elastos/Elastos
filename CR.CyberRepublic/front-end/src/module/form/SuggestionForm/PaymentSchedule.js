@@ -20,7 +20,7 @@ class PaymentSchedule extends Component {
   }
 
   showModal = () => {
-    this.setState({ visible: true })
+    this.setState({ visible: true, index: -1 })
   }
 
   changeValue(value) {
@@ -44,21 +44,24 @@ class PaymentSchedule extends Component {
     )
   }
 
-  handleEdit = (activeIndex, values) => {
-    const { paymentItems } = this.state
-    const rs = paymentItems.map((item, index) => {
-      if (index === activeIndex) {
-        return values
-      }
-      return item
-    })
-    this.setState({ paymentItems: rs }, () => {
-      this.changeValue(this.state.paymentItems)
-    })
+  handleEdit = index => {
+    this.setState({ index, visible: true })
   }
 
   handleSubmit = values => {
-    const { paymentItems } = this.state
+    const { paymentItems, index } = this.state
+    if (index >= 0) {
+      const rs = paymentItems.map((item, key) => {
+        if (index === key) {
+          return values
+        }
+        return item
+      })
+      this.setState({ paymentItems: rs, visible: false }, () => {
+        this.changeValue(this.state.paymentItems)
+      })
+      return
+    }
     this.setState(
       {
         paymentItems: [...paymentItems, values],
@@ -71,7 +74,7 @@ class PaymentSchedule extends Component {
   }
 
   render() {
-    const { paymentItems } = this.state
+    const { paymentItems, index } = this.state
     return (
       <Wrapper>
         <Button onClick={this.showModal}>
@@ -93,6 +96,7 @@ class PaymentSchedule extends Component {
         >
           {this.state.visible === true ? (
             <BudgetForm
+              item={index >= 0 ? paymentItems[index] : null}
               onSubmit={this.handleSubmit}
               onCancel={this.hideModal}
             />
@@ -105,7 +109,8 @@ class PaymentSchedule extends Component {
 
 PaymentSchedule.propTypes = {
   onChange: PropTypes.func,
-  callback: PropTypes.func
+  callback: PropTypes.func,
+  initialValue: PropTypes.array
 }
 
 export default PaymentSchedule

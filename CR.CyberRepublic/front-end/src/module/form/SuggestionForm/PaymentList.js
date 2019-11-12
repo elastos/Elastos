@@ -2,39 +2,20 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, Modal, Popover } from 'antd'
+import { Button } from 'antd'
 import I18N from '@/I18N'
-import BudgetForm from '@/module/form/BudgetForm/Container'
 
 class PaymentList extends BaseComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-      visible: false
-    }
-  }
-
-  hideModal = () => {
-    this.setState({ visible: false })
-  }
-
-  showModal = index => {
-    this.setState({ visible: true, index })
-  }
-
-  handleSubmit = values => {
-    const { index } = this.state
-    this.props.onEdit(index, values)
-    this.hideModal()
-  }
-
   handleDelete = index => {
     this.props.onDelete(index)
   }
 
+  handleEdit = index => {
+    this.props.onEdit(index)
+  }
+
   ord_render() {
     const { list } = this.props
-    const { index } = this.state
     return (
       <StyledTable>
         <StyledHead>
@@ -57,25 +38,12 @@ class PaymentList extends BaseComponent {
                 <Button onClick={this.handleDelete.bind(this, index)}>
                   delete
                 </Button>
-                <Button onClick={this.showModal.bind(this, index)}>edit</Button>
+                <Button onClick={this.handleEdit.bind(this, index)}>
+                  edit
+                </Button>
               </td>
             </StyledRow>
           ))}
-          <Modal
-            maskClosable={false}
-            visible={this.state.visible}
-            onCancel={this.hideModal}
-            footer={null}
-            width="70%"
-          >
-            {this.state.visible === true ? (
-              <BudgetForm
-                item={list[index]}
-                onSubmit={this.handleSubmit}
-                onCancel={this.hideModal}
-              />
-            ) : null}
-          </Modal>
         </tbody>
       </StyledTable>
     )
@@ -83,8 +51,9 @@ class PaymentList extends BaseComponent {
 }
 
 PaymentList.propTypes = {
-  onDelete: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired
+  onDelete: PropTypes.func,
+  onEdit: PropTypes.func,
+  list: PropTypes.array.isRequired
 }
 
 export default PaymentList
