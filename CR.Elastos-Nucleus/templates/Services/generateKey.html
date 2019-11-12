@@ -1,18 +1,26 @@
-{% extends 'Services/base.html' %} {% block title %} Generate API Key
-{%endblock %} {% block content %}
-<div class="main">
-  <h1>Generate API Key</h1>
-  <br />
-  <button onclick="displayapiKey()">Generate API Key</button>
-</div>
-<br />
-<h1>Documentation</h1>
-<h2>Generates an API Key of Length 32 bit</h2>
-<p id="display"></p>
-<br />
-<script>
-  function displayapiKey() {
-    document.getElementById("display").innerHTML = "{{API_Key}}";
-  }
-</script>
+{% extends 'service_base.html' %}
+{% load static %}
+
+{% block scripts %}
+    <script src="{% static '/javascript/generateKey.js' %}"></script>
+{% endblock %}
+
+{% block sidebarContent %}
+<p>STUFFFFF</p>
+
+{% endblock %}
+
+{% block functionContent %}
+    <button class= "btn mt-3 btn-dark " id="getKeyBtn" onclick="getAPI()">
+        Generate Key
+    </button>
+    <div class="card mt-3">
+        <div class="card-header">
+            API Key
+
+        </div>
+        <div class="card-body pt-3" id="apiKeyCard">
+            <span id="apiKey">Some Key</span>
+        </div>
+    </div>
 {% endblock %}

@@ -5,7 +5,7 @@ import requests
 
 
 def generate_key(request):
-    if(request.method == 'GET'):
+    if(request.method == 'POST'):
         r = requests.get("http://localhost:8888/api/1/common/generateAPIKey")
         if(r.status_code == 200):
             API_KEY = r.json()["API Key"]
@@ -13,7 +13,8 @@ def generate_key(request):
                 'API_KEY': API_KEY,
             }
             print(context)
-            return render(request, "Services/generateKey.html", context)
+            sent_json = json.dumps({'API_KEY':API_KEY })
+            return HttpResponse(sent_json , content_type='application/JSON')
         else:
             return HttpResponse("failiure")
     else:
@@ -61,3 +62,5 @@ def documentation(request):
 def about_us(request):
     return render(request, "Services/aboutUs.html")
 
+def test_template(request):
+    return render(request , 'service_base.html')
