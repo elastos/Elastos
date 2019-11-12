@@ -33,7 +33,6 @@ import org.elastos.did.DIDException;
 import org.elastos.did.DIDStore;
 import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
-import org.elastos.did.PublicKey;
 
 public class Issuer {
 	private DIDDocument self;

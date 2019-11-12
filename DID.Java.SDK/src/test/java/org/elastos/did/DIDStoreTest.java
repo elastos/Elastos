@@ -41,7 +41,7 @@ import java.util.Map;
 import org.elastos.credential.Issuer;
 import org.elastos.credential.VerifiableCredential;
 import org.elastos.did.DIDStore.Entry;
-import org.elastos.did.adaptor.SPVAdaptor;
+import org.elastos.did.adapter.SPVAdapter;
 import org.elastos.did.util.Mnemonic;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -50,17 +50,17 @@ import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DIDStoreTest {
-	private static String storeRoot = "/PATH/TO/DIDStore";
-	private static String storePass = "passwd";
-	private static String passphrase = "secret";
-	private static DIDStore store;
-	private static DIDAdaptor adaptor;
+    private static String storeRoot = "/PATH/TO/DIDStore";
+    private static String storePass = "passwd";
+    private static String passphrase = "secret";
+    private static DIDStore store;
+    private static DIDAdapter adapter;
 
-	private static String walletDir = "/PATH/TO/wallet";
-	private static String walletId = "test";
-	private static String networkConfig = "/PATH/TO/privnet.json";
-	private static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
-	private static LinkedHashMap<DID, String> ids;
+    private static String walletDir = "/PATH/TO/wallet";
+    private static String walletId = "test";
+    private static String networkConfig = "/PATH/TO/privnet.json";
+    private static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
+    private static LinkedHashMap<DID, String> ids;
 
 	private static DID primaryDid;
 
@@ -81,9 +81,9 @@ public class DIDStoreTest {
 
 	@BeforeClass
 	public static void setup() {
-		//adaptor = new FakeConsoleAdaptor();
-		adaptor = new SPVAdaptor(walletDir, walletId, networkConfig, resolver,
-				new SPVAdaptor.PasswordCallback() {
+		//adapter = new FakeConsoleAdapter();
+		adapter = new SPVAdapter(walletDir, walletId, networkConfig, resolver,
+				new SPVAdapter.PasswordCallback() {
 
 					@Override
 					public String getPassword(String walletDir, String walletId) {
@@ -98,7 +98,7 @@ public class DIDStoreTest {
 
     	Util.deleteFile(new File(tempStoreRoot));
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adaptor);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -119,7 +119,7 @@ public class DIDStoreTest {
 	public void test00CreateEmptyStore1() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adaptor);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -132,7 +132,7 @@ public class DIDStoreTest {
 
 		Util.deleteFile(new File(tempStoreRoot));
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adaptor);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -153,7 +153,7 @@ public class DIDStoreTest {
 
     	assertTrue(tempStore.hasPrivateIdentity());
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adaptor);
+    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adapter);
 
     	tempStore = DIDStore.getInstance();
 
@@ -165,7 +165,7 @@ public class DIDStoreTest {
 	public void test10InitPrivateIdentity1() throws DIDStoreException {
 		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
 
-		DIDStore.initialize("filesystem", tempStoreRoot, "password", adaptor);
+		DIDStore.initialize("filesystem", tempStoreRoot, "password", adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -176,7 +176,7 @@ public class DIDStoreTest {
     public void test20Setup() throws DIDStoreException {
     	Util.deleteFile(new File(storeRoot));
 
-    	DIDStore.initialize("filesystem", storeRoot, storePass, adaptor);
+    	DIDStore.initialize("filesystem", storeRoot, storePass, adapter);
 
     	store = DIDStore.getInstance();
 

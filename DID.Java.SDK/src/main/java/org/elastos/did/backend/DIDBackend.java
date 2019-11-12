@@ -23,7 +23,7 @@
 package org.elastos.did.backend;
 
 import org.elastos.did.DID;
-import org.elastos.did.DIDAdaptor;
+import org.elastos.did.DIDAdapter;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDException;
 import org.elastos.did.DIDStoreException;
@@ -33,10 +33,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DIDBackend {
-	private DIDAdaptor adaptor;
+	private DIDAdapter adapter;
 
-	public DIDBackend(DIDAdaptor adaptor) {
-		this.adaptor = adaptor;
+	public DIDBackend(DIDAdapter adapter) {
+		this.adapter = adapter;
 	}
 
 	public boolean create(DIDDocument doc, DIDURL signKey,
@@ -47,7 +47,7 @@ public class DIDBackend {
 		String json = request.sign(signKey, storepass).toJson(true);
 
 		try {
-			return adaptor.createIdTransaction(json, null);
+			return adapter.createIdTransaction(json, null);
 		} catch (DIDException e) {
 			throw new DIDStoreException("Create ID transaction error.", e);
 		}
@@ -55,7 +55,7 @@ public class DIDBackend {
 
 	public DIDDocument resolve(DID did) throws DIDStoreException {
 		try {
-			String res = adaptor.resolve(did.getMethodSpecificId());
+			String res = adapter.resolve(did.getMethodSpecificId());
 			if (res == null)
 				return null;
 
@@ -97,7 +97,7 @@ public class DIDBackend {
 		String json = request.sign(signKey, storepass).toJson(true);
 
 		try {
-			return adaptor.createIdTransaction(json, null);
+			return adapter.createIdTransaction(json, null);
 		} catch (DIDException e) {
 			throw new DIDStoreException("Create ID transaction error.", e);
 		}
@@ -111,7 +111,7 @@ public class DIDBackend {
 		String json = request.sign(signKey, storepass).toJson(true);
 
 		try {
-			return adaptor.createIdTransaction(json, null);
+			return adapter.createIdTransaction(json, null);
 		} catch (DIDException e) {
 			throw new DIDStoreException("Create ID transaction error.", e);
 		}

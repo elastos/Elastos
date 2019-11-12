@@ -22,9 +22,40 @@
 
 package org.elastos.did;
 
-public interface DIDAdaptor {
-	public boolean createIdTransaction(String payload, String memo)
-			throws DIDException;
+import java.io.IOException;
 
-	public String resolve(String did) throws DIDException;
+import org.elastos.did.util.Base64;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class FakeConsoleAdapter implements DIDAdapter {
+	@Override
+	public boolean createIdTransaction(String payload, String memo)
+			throws DIDException {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode tx = mapper.readTree(payload);
+
+			JsonNode header = tx.get("header");
+			System.out.println("Operation: " + header.get("operation").asText());
+
+			JsonNode _payload = tx.get("payload");
+			String json = new String(Base64.decode(_payload.asText(),
+					Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
+			System.out.println("        " + json);
+
+			return true;
+		} catch (IOException e) {
+			throw new MalformedDocumentException("Parse JSON document error.", e);
+		}
+	}
+
+	@Override
+	public String resolve(String did) throws DIDException {
+		System.out.println("Operation: resolve");
+		System.out.println("        " + did);
+		return null;
+	}
+
 }

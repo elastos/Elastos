@@ -100,14 +100,14 @@ public abstract class DIDStore {
 	}
 
 	public static void initialize(String type, String location, String storepass,
-				DIDAdaptor adaptor) throws DIDStoreException {
+				DIDAdapter adapter) throws DIDStoreException {
 		if (!type.equals("filesystem"))
 			throw new IllegalArgumentException("Unsupported store type: " + type);
 
 		instance = new FileSystemStore(location);
 		instance.initPrivateIdentity(storepass);
 
-		instance.backend = new DIDBackend(adaptor);
+		instance.backend = new DIDBackend(adapter);
 	}
 
 	public static DIDStore getInstance() {
