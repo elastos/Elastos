@@ -87,4 +87,10 @@ public class CacheUtil {
             CacheDiskUtils.getInstance(file).remove(credentialSubjectBean.getDid());
         }
     }
+
+    public static void remove(String key) {
+
+            CacheDiskUtils.getInstance(file).remove(key);
+
+    }
 }

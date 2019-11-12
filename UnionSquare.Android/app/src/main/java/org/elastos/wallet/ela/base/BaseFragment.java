@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.ToastUtils;
-import com.classic.common.MultipleStatusView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.footer.ClassicsFooter;
 import com.scwang.smartrefresh.layout.header.ClassicsHeader;
@@ -35,11 +34,11 @@ import org.elastos.wallet.ela.di.component.DaggerFragmentComponent;
 import org.elastos.wallet.ela.di.component.FragmentComponent;
 import org.elastos.wallet.ela.di.moudule.FragmentModule;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
+import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.greenrobot.eventbus.EventBus;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import permissions.dispatcher.NeedsPermission;
@@ -83,6 +82,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     public MyWallet getMyWallet() {
         return getBaseActivity().getWallet();
     }
+
     protected String getText(TextView et) {
         String text = et.getText().toString().trim();
         if (!TextUtils.isEmpty(text)) {
@@ -476,6 +476,16 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
             Toast.makeText(_mActivity, getString(R.string.press_exit_again), Toast.LENGTH_SHORT).show();
         }
         return true;
+    }
+
+    public void toDIDListFragment() {
+        Fragment DIDListFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(org.elastos.wallet.ela.ui.did.fragment.DIDListFragment.class.getName());
+        if (DIDListFragment != null) {
+            popTo(DIDListFragment.getClass(), false);
+        } else {
+            startWithPopTo(new DIDListFragment(), MainFragment.class, false);
+
+        }
     }
 
 }

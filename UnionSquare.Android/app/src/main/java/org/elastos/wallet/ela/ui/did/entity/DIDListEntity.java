@@ -16,7 +16,7 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
      */
 
     private int MaxCount;
-    private List<DIDBean> DID;
+    private List<DIDInfoEntity> DID;
 
     public int getMaxCount() {
         return MaxCount;
@@ -26,16 +26,16 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
         this.MaxCount = MaxCount;
     }
 
-    public List<DIDBean> getDID() {
+    public List<DIDInfoEntity> getDID() {
         return DID;
     }
 
-    public void setDID(List<DIDBean> DID) {
+    public void setDID(List<DIDInfoEntity> DID) {
         this.DID = DID;
     }
 
-    public static class DIDBean implements Parcelable {
-        /**
+   /* public static class DIDBean implements Parcelable {
+        *//**
          * didName : 舅舅家
          * expires : 1572883200
          * id : im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH
@@ -43,10 +43,10 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
          * operation : create
          * publicKey : [{"id":"#primary","publicKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331"}]
          * status : Pending
-         */
+         *//*
 
         private String didName;
-        private int expires;
+        private long expires;
         private String id;
         private int issuanceDate;
         private String operation;
@@ -62,11 +62,11 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
             this.didName = didName;
         }
 
-        public int getExpires() {
+        public long getExpires() {
             return expires;
         }
 
-        public void setExpires(int expires) {
+        public void setExpires(long expires) {
             this.expires = expires;
         }
 
@@ -119,10 +119,10 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
         }
 
         public static class PublicKeyBean implements Parcelable {
-            /**
+            *//**
              * id : #primary
              * publicKey : 02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331
-             */
+             *//*
 
             private String id;
             private String publicKey;
@@ -183,7 +183,7 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(this.didName);
-            dest.writeInt(this.expires);
+            dest.writeLong(this.expires);
             dest.writeString(this.id);
             dest.writeInt(this.issuanceDate);
             dest.writeString(this.operation);
@@ -197,7 +197,7 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
 
         protected DIDBean(Parcel in) {
             this.didName = in.readString();
-            this.expires = in.readInt();
+            this.expires = in.readLong();
             this.id = in.readString();
             this.issuanceDate = in.readInt();
             this.operation = in.readString();
@@ -218,7 +218,7 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
                 return new DIDBean[size];
             }
         };
-    }
+    }*/
 
     @Override
     public int describeContents() {
@@ -236,7 +236,7 @@ public class DIDListEntity extends BaseEntity implements Parcelable {
 
     protected DIDListEntity(Parcel in) {
         this.MaxCount = in.readInt();
-        this.DID = in.createTypedArrayList(DIDBean.CREATOR);
+        this.DID = in.createTypedArrayList(DIDInfoEntity.CREATOR);
     }
 
     public static final Parcelable.Creator<DIDListEntity> CREATOR = new Parcelable.Creator<DIDListEntity>() {

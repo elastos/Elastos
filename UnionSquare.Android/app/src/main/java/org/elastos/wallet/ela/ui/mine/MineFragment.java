@@ -310,7 +310,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
         ((BaseFragment) getParentFragment()).start(contactDetailFragment);
     }
 
-    private ArrayList<DIDListEntity.DIDBean> netList = new ArrayList<>();
+    private ArrayList<DIDInfoEntity> netList = new ArrayList<>();
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
@@ -329,7 +329,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
                 DIDListEntity didListEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
                 if (didListEntity != null && didListEntity.getDID() != null && didListEntity.getDID().size() > 0) {
 
-                    for (DIDListEntity.DIDBean didBean:didListEntity.getDID()){
+                    for (DIDInfoEntity didBean:didListEntity.getDID()){
                         didBean.setWalletId((String) o);
                     }
                     if (tvDid.getVisibility() == View.VISIBLE) {

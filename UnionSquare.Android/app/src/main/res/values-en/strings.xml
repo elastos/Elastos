@@ -523,4 +523,6 @@
     <string name="wechataccount">微信账号</string>
     <string name="alipayaccount">支付宝账号</string>
     <string name="editsocialaccount">编辑社区账号</string>
+    <string name="editdid">编辑DID</string>
+    <string name="updatepublish">更新发布</string>
 </resources>

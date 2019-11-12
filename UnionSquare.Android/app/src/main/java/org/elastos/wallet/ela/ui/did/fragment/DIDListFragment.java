@@ -37,6 +37,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -64,9 +65,10 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     private DIDRecordRecAdapetr adapter1;
     private DIDNetRecordRecAdapetr adapter;
     ArrayList<DIDInfoEntity> draftList;
-    ArrayList<DIDListEntity.DIDBean> netList;
+    ArrayList<DIDInfoEntity> netList;
     @BindView(R.id.srl)
     SmartRefreshLayout srl;
+    private List<Wallet> wallets;
 
     @Override
     protected int getLayoutId() {
@@ -83,7 +85,7 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
         netList = data.getParcelableArrayList("netList");
         if (netList == null) {
             //重新获取数据
-            List<Wallet> wallets = new RealmUtil().queryTypeUserAllWallet(0);
+            wallets = new RealmUtil().queryTypeUserAllWallet(0);
             netList = new ArrayList<>();
             for (Wallet wallet : wallets) {
                 new AddDIDPresenter().getAllSubWallets(wallet.getWalletId(), this);
@@ -148,7 +150,7 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
 
                 DIDListEntity didListEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
                 if (didListEntity != null && didListEntity.getDID() != null && didListEntity.getDID().size() > 0) {
-                    for (DIDListEntity.DIDBean didBean : didListEntity.getDID()) {
+                    for (DIDInfoEntity didBean : didListEntity.getDID()) {
                         didBean.setWalletId((String) o);
                     }
                     netList.addAll(didListEntity.getDID());
@@ -161,6 +163,15 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
     }
 
     private void setNetRecycleView() {
+        Iterator<DIDInfoEntity> iterator = netList.iterator();
+        while (iterator.hasNext()) {
+            DIDInfoEntity entity = iterator.next();
+            if (entity.getOperation().equals("deactivate") && entity.getStatus().equals("Confirmed")) {
+                iterator.remove();
+                CacheUtil.remove(entity.getId());
+            }
+
+        }
         if (adapter == null) {
             adapter = new DIDNetRecordRecAdapetr(getContext(), netList);
             rv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -192,7 +203,7 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
         Bundle bundle = new Bundle();
         if (rv1.getVisibility() == View.GONE) {
             //api获取的数据
-            DIDListEntity.DIDBean didBean = (DIDListEntity.DIDBean) o;
+            DIDInfoEntity didBean = (DIDInfoEntity) o;
             bundle.putParcelable("didInfo", didBean);
             start(DidDetailFragment.class, bundle);
         } else {
@@ -234,6 +245,14 @@ public class DIDListFragment extends BaseFragment implements NewBaseViewData, Co
             draftList.clear();
             draftList.addAll(CacheUtil.getDIDInfoList());
             setRecycleView();
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+
+            netList.clear();
+            List<Wallet> wallets = new RealmUtil().queryTypeUserAllWallet(0);
+            for (Wallet wallet : wallets) {
+                new AddDIDPresenter().getAllSubWallets(wallet.getWalletId(), this);
+            }
         }
     }
 }

@@ -2,7 +2,6 @@ package org.elastos.wallet.ela.ui.did.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -21,7 +20,6 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
-import org.elastos.wallet.ela.ui.main.MainFragment;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
@@ -158,7 +156,8 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
 
                 setData();
                 CacheUtil.setCredentialSubjectBean(credentialSubjectBean);
-                new CRSignUpPresenter().getFee(didInfo.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
+                // keep();
+                new CRSignUpPresenter().getFee(didInfo.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
                 break;
             case R.id.tv_keep:
                 setData();
@@ -185,22 +184,12 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
         showToast(getString(R.string.keepsucess));
     }
 
-    public void toDIDListFragment() {
-        Fragment DIDListFragment = getBaseActivity().getSupportFragmentManager().findFragmentByTag(DIDListFragment.class.getName());
-        if (DIDListFragment != null) {
-            popTo(DIDListFragment.getClass(), false);
-        } else {
-            startWithPopTo(new DIDListFragment(), MainFragment.class, false);
-
-        }
-    }
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
         switch (methodName) {
             case "getFee":
                 JSONObject json = (JSONObject) JSON.toJSON(didInfo);
-                json.remove("credentialSubject");
                 Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
                 intent.putExtra("wallet", new RealmUtil().queryUserWallet(didInfo.getWalletId()));
                 intent.putExtra("chainId", MyWallet.IDChain);

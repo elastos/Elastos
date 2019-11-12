@@ -1,5 +1,6 @@
 package org.elastos.wallet.ela.ui.did.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -19,15 +21,19 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
+import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
 import org.elastos.wallet.ela.ui.did.entity.DIDListEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.ui.did.presenter.DIDListPresenter;
+import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -64,6 +70,8 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     TextView tvDid;
     @BindView(R.id.tv_date)
     TextView tvDate;
+    @BindView(R.id.tv_next)
+    TextView tvNext;
     @BindView(R.id.rl_outdate)
     RelativeLayout rlOutdate;
     String[] walletNames;
@@ -73,6 +81,7 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
     private long endDate;
     private boolean useDraft;
     private DIDListPresenter didListPresenter;
+    private String type;//判断哪里进来的此页面
 
     @Override
     protected int getLayoutId() {
@@ -81,46 +90,85 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     protected void setExtraData(Bundle data) {
-
-        useDraft = data.getBoolean("useDraft");
-        if (useDraft) {
+        type = data.getString("type");
+        if (Constant.EDITDID.equals(type)) {
+            //编辑已发布的didi
+            tvTitle.setText(getString(R.string.editdid));
             didInfo = data.getParcelable("didInfo");
-            tempWallet = new RealmUtil().queryUserWallet(didInfo.getWalletId());
-            putData();
+            putNetData();
+
         } else {
-            didInfo = new DIDInfoEntity();
-            didInfo.setOperation("create");
-            List<DIDInfoEntity.PublicKeyBean> list = new ArrayList<>();
-            DIDInfoEntity.PublicKeyBean publicKeyBean = new DIDInfoEntity.PublicKeyBean();
-            publicKeyBean.setId("#primary");
-            list.add(publicKeyBean);
-            didInfo.setPublicKey(list);
+            tvTitle.setText(getString(R.string.adddid));
+            useDraft = data.getBoolean("useDraft");
+            if (useDraft) {
+                //草稿进入
+                didInfo = data.getParcelable("didInfo");
+                tempWallet = new RealmUtil().queryUserWallet(didInfo.getWalletId());
+                putData();
+            } else {
+                //创建did
+                didInfo = new DIDInfoEntity();
+                didInfo.setOperation("create");
+                List<DIDInfoEntity.PublicKeyBean> list = new ArrayList<>();
+                DIDInfoEntity.PublicKeyBean publicKeyBean = new DIDInfoEntity.PublicKeyBean();
+                publicKeyBean.setId("#primary");
+                list.add(publicKeyBean);
+                didInfo.setPublicKey(list);
 
-            wallets = new RealmUtil().queryTypeUserAllWallet(0);
-            presenter = new AddDIDPresenter();
-            didListPresenter = new DIDListPresenter();
-            for (int i = 0; i < wallets.size(); i++) {
-                presenter.getAllSubWallets1(wallets.get(i).getWalletId(), this);
+                wallets = new RealmUtil().queryTypeUserAllWallet(0);
+                presenter = new AddDIDPresenter();
+                didListPresenter = new DIDListPresenter();
+                for (int i = 0; i < wallets.size(); i++) {
+                    presenter.getAllSubWallets1(wallets.get(i).getWalletId(), this);
+                }
+
             }
-
         }
     }
 
-    private void putData() {
-        etDidname.setEnabled(false);
+    private void putNetData() {
         rlSelectwallet.setVisibility(View.GONE);
         etDidname.setText(didInfo.getDidName());
-        tvWalletname.setText(tempWallet.getWalletName());
+        tvDid.setText(didInfo.getId());
+        tvDid.setTextColor(getResources().getColor(R.color.whiter50));
+        tvDidpk.setTextColor(getResources().getColor(R.color.whiter50));
+        tvDidpk.setText(didInfo.getPublicKey().get(0).getPublicKey());
+        tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(didInfo.getExpires(), getContext()));
+        tvNext.setText(getString(R.string.updatepublish));
+        tvNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                didInfo.setOperation("update");
+                didInfo.setExpires(endDate);
+                didInfo.setDidName(getText(etDidname));
+                new CRSignUpPresenter().getFee(didInfo.getWalletId(), MyWallet.IDChain, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", AddDIDFragment.this);
+
+            }
+        });
+    }
+
+    private void putData() {
+        rlSelectwallet.setVisibility(View.GONE);
+        etDidname.setText(didInfo.getDidName());
         tvDid.setText(didInfo.getId());
         tvDidpk.setText(didInfo.getPublicKey().get(0).getPublicKey());
+        tvDid.setTextColor(getResources().getColor(R.color.whiter50));
+        tvDidpk.setTextColor(getResources().getColor(R.color.whiter50));
         endDate = didInfo.getExpires();
-        tvDate.setText(DateUtil.timeNYR(endDate, getContext()));
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        if (endDate < calendar.getTimeInMillis()/1000) {
+            endDate = 0;
+            tvDate.setText(null);
+        } else
+            tvDate.setText(getString(R.string.validtime) + DateUtil.timeNYR(endDate, getContext()));
 
     }
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(getString(R.string.adddid));
+
         registReceiver();
 
     }
@@ -180,9 +228,10 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                 break;
             case R.id.rl_outdate:
                 Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
                 long minData = calendar.getTimeInMillis();
-                int year = calendar.get(Calendar.YEAR);
-                calendar.set(Calendar.YEAR, year + 5);
+                calendar.add(Calendar.YEAR, 5);
                 new DialogUtil().showTime(getBaseActivity(), minData, calendar.getTimeInMillis(), new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
@@ -201,16 +250,19 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     public boolean onBackPressedSupport() {
+        if (Constant.EDITDID.equals(type)) {
+            return super.onBackPressedSupport();
+        }
         String didName = etDidname.getText().toString().trim();
-        String walletName = tvWalletname.getText().toString().trim();
-        if (!TextUtils.isEmpty(didName) && !TextUtils.isEmpty(walletName)) {
+        String did = tvDid.getText().toString().trim();
+        if (!TextUtils.isEmpty(didName) && !TextUtils.isEmpty(did)) {
             new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.keepeditornot),
                     getString(R.string.keep), getString(R.string.nokeep), true, new WarmPromptListener() {
                         @Override
                         public void affireBtnClick(View view) {
                             setData();
                             //保存草稿
-                            CacheUtil.setCredentialSubjectBean( credentialSubjectBean);
+                            CacheUtil.setCredentialSubjectBean(credentialSubjectBean);
                             keep();
                             getBaseActivity().pop();
                         }
@@ -310,6 +362,16 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
                     presenter.getAllPublicKeys((String) o, MyWallet.IDChain, 0, 1, AddDIDFragment.this);
                 }
                 break;
+            case "getFee":
+                JSONObject json = (JSONObject) JSON.toJSON(didInfo);
+                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent.putExtra("wallet", new RealmUtil().queryUserWallet(didInfo.getWalletId()));
+                intent.putExtra("chainId", MyWallet.IDChain);
+                intent.putExtra("inputJson", JSON.toJSONString(json));
+                intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
+                intent.putExtra("type", Constant.DIDSIGNUP);
+                startActivity(intent);
+                break;
         }
 
     }
@@ -363,7 +425,16 @@ public class AddDIDFragment extends BaseFragment implements NewBaseViewData {
             credentialSubjectBean = (CredentialSubjectBean) result.getObj();
         }
 
-
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            new DialogUtil().showTransferSucess(getBaseActivity(), new WarmPromptListener() {
+                @Override
+                public void affireBtnClick(View view) {
+                    //删除这个草稿?//todo
+                    toDIDListFragment();
+                }
+            });
+        }
     }
+
 
 }

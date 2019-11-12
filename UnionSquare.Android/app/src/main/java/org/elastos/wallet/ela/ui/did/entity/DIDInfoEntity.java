@@ -30,7 +30,6 @@ public class DIDInfoEntity extends BaseEntity implements Parcelable, Serializabl
      * operation : create
      * status : "Pending
      * publicKey : [{"id":"#primary","publicKey":"031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4"},{"id":"#recovery","controller":"ip7ntDo2metGnU8wGP4FnyKCUdbHm4BPDh","publicKey":"03d25d582c485856520c501b2e2f92934eda0232ded70cad9e51cf13968cac22cc"}]
-     * credentialSubject : {"id":"innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs","name":"H60CZ","nickname":"jHo8AB","alipay":"alipay@223.com","avatar":"img.jpg","birthday":"2019-10-12","descript":"this is simple descript","email":"test@test.com","facebook":"facebook","gender":"male","googleAccount":"google@google.com","homePage":"homePage","microsoftPassport":"MicrosoftPassport","nation":"china","code":"86","phone":"13032454523","twitter":"twitter","wechat":"wechat2333","weibo":"test@sina.com"}
      * expires : 2024-02-10T17:00:00Z
      */
     private long issuanceDate;//编辑时间 或者发布时间
