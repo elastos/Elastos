@@ -529,14 +529,15 @@ namespace Elastos {
 		}
 
 		std::string PeerManager::GetDownloadPeerName() const {
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				if (_downloadPeer) {
-					std::stringstream ss;
-					ss << _downloadPeer->GetHost() << ":" << _downloadPeer->GetPort();
-					_downloadPeerName = ss.str();
-				} else _downloadPeerName = "";
+			boost::mutex::scoped_lock scoped_lock(lock);
+			if (_downloadPeer) {
+				std::stringstream ss;
+				ss << _downloadPeer->GetHost() << ":" << _downloadPeer->GetPort();
+				_downloadPeerName = ss.str();
+			} else {
+				_downloadPeerName = "";
 			}
+
 			return _downloadPeerName;
 		}
 

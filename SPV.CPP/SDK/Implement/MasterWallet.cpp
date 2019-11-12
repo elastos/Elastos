@@ -250,7 +250,6 @@ namespace Elastos {
 			SubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this);
 			_createdWallets[chainID] = subWallet;
 			_account->Save();
-			startPeerManager(subWallet);
 
 			ArgInfo("r => create subwallet");
 			subWallet->GetBasicInfo();
@@ -403,7 +402,6 @@ namespace Elastos {
 					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 												 "Recover sub wallet error");
-					startPeerManager(subWalletImpl);
 					_createdWallets[subWalletImpl->GetInfoChainID()] = subWallet;
 
 					_account->AddSubWalletInfoList(defaultInfo);
@@ -421,7 +419,6 @@ namespace Elastos {
 					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 												 "Recover sub wallet error");
-					startPeerManager(subWalletImpl);
 					_createdWallets[subWalletImpl->GetInfoChainID()] = subWallet;
 				}
 			}

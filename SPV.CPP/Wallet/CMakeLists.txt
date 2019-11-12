@@ -39,12 +39,13 @@ include_directories(
 
 link_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/../SDK
+    ${PROJECT_INT_DIST_DIR}/lib
 )
 
-set(LIBS spvsdk)
+set(LIBS spvsdk sqlite3 crypto ssl boost_system boost_filesystem boost_thread fruit)
 
 add_executable(elawallet ${SRC})
-add_dependencies(elawallet libspvsdk)
+add_dependencies(elawallet libspvsdk libfruit boost libressl json libsqlite)
 
 target_link_libraries(elawallet ${LIBS} ${SYSTEM_LIBS})
 
