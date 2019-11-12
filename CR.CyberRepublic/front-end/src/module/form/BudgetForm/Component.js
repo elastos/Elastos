@@ -20,6 +20,11 @@ class BudgetForm extends BaseComponent {
     })
   }
 
+  validateAmount = (rule, value, cb) => {
+    const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
+    return (!isNaN(value) && reg.test(value)) || value === '' ? cb() : cb(true)
+  }
+
   ord_render() {
     const { getFieldDecorator } = this.props.form
     const { item } = this.props
@@ -39,8 +44,17 @@ class BudgetForm extends BaseComponent {
           {...formItemLayout}
         >
           {getFieldDecorator('amount', {
-            rules: [{ required: true, message: '' }],
-            initialValue: item && item.amount ? item.amount : 0
+            rules: [
+              {
+                required: true,
+                message: I18N.get('suggestion.form.error.required')
+              },
+              {
+                message: I18N.get(`suggestion.form.error.isNaN`),
+                validator: this.validateAmount
+              }
+            ],
+            initialValue: item && item.amount ? item.amount : ''
           })(<Input />)}
         </FormItem>
         <FormItem
@@ -48,7 +62,12 @@ class BudgetForm extends BaseComponent {
           {...formItemLayout}
         >
           {getFieldDecorator('reasons', {
-            rules: [{ required: true, message: '' }],
+            rules: [
+              {
+                required: true,
+                message: I18N.get('suggestion.form.error.required')
+              }
+            ],
             initialValue: item && item.reasons ? item.reasons : ''
           })(<TextArea rows={5} />)}
         </FormItem>

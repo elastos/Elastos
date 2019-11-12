@@ -70,7 +70,8 @@ export default {
     error: {
       required: '必填项',
       tooLong: '文字太长',
-      [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`
+      [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`,
+      isNaN: '请输入有效的金额',
     }
   },
   modal: {
@@ -110,9 +111,9 @@ export default {
   budget: {
     create: '创建支付项',
     payment: '支付',
-    amount: '数量',
+    amount: '金额',
     reasons: '理由',
-    criteria: '支付准则',
+    criteria: '支付标准',
     action: '操作'
   }
 }
