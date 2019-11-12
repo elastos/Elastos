@@ -1,6 +1,6 @@
 add_subdirectory(wallet)
-add_subdirectory(spvadaptor)
+add_subdirectory(spvadapter)
 
-if (ENABLE_SPVADAPTOR_JNI)
+if (ENABLE_SPVADAPTER_JNI)
     add_subdirectory(jni)
 endif()

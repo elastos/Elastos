@@ -206,14 +206,14 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 #define SWIG_contract_assert(nullreturn, expr, msg) if (!(expr)) {SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, msg); return nullreturn; } else
 
 
-#include "spvadaptor.h"
+#include "spvadapter.h"
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-SWIGEXPORT jlong JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_create(JNIEnv *jenv, jclass jcls, jstring jWalletDir, jstring jWalletId, jstring jNetwork, jstring jResolver) {
+SWIGEXPORT jlong JNICALL Java_org_elastos_did_adapter_SPVAdapter_create(JNIEnv *jenv, jclass jcls, jstring jWalletDir, jstring jWalletId, jstring jNetwork, jstring jResolver) {
   char *walletDir = NULL;
   char *walletId = NULL;
   char *network = NULL;
@@ -256,7 +256,7 @@ SWIGEXPORT jlong JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_create(JNIEnv *
     resolver = (char *)(*jenv)->GetStringUTFChars(jenv, jResolver, 0);
   }
 
-  result = (unsigned long)SpvDidAdaptor_Create((char const *)walletDir,(char const *)walletId,(char const *)network,(char const*)resolver);
+  result = (unsigned long)SpvDidAdapter_Create((char const *)walletDir,(char const *)walletId,(char const *)network,(char const*)resolver);
 
   if (walletDir) (*jenv)->ReleaseStringUTFChars(jenv, jWalletDir, (const char *)walletDir);
   if (walletId) (*jenv)->ReleaseStringUTFChars(jenv, jWalletId, (const char *)walletId);
@@ -272,15 +272,15 @@ SWIGEXPORT jlong JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_create(JNIEnv *
 }
 
 
-SWIGEXPORT void JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_destroy(JNIEnv *jenv, jclass jcls, jlong jHandle) {
+SWIGEXPORT void JNICALL Java_org_elastos_did_adapter_SPVAdapter_destroy(JNIEnv *jenv, jclass jcls, jlong jHandle) {
   (void)jenv;
   (void)jcls;
-  SpvDidAdaptor_Destroy((SpvDidAdaptor *)jHandle);
+  SpvDidAdapter_Destroy((SpvDidAdapter *)jHandle);
 }
 
 
-SWIGEXPORT jint JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_createIdTransaction(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload, jstring jMemo, jstring jPassword) {
-  SpvDidAdaptor *handle = (SpvDidAdaptor *)jHandle;
+SWIGEXPORT jint JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransaction(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload, jstring jMemo, jstring jPassword) {
+  SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
   char *payload = NULL;
   char *memo = NULL;
   char *password = NULL;
@@ -315,7 +315,7 @@ SWIGEXPORT jint JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_createIdTransact
     memo = (char *)(*jenv)->GetStringUTFChars(jenv, jMemo, 0);
   }
 
-  result = SpvDidAdaptor_CreateIdTransaction(handle,(char const *)payload,(char const *)memo,(char const *)password);
+  result = SpvDidAdapter_CreateIdTransaction(handle,(char const *)payload,(char const *)memo,(char const *)password);
 
   if (payload) (*jenv)->ReleaseStringUTFChars(jenv, jPayload, (const char *)payload);
   if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, (const char *)memo);
@@ -330,8 +330,8 @@ SWIGEXPORT jint JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_createIdTransact
 }
 
 
-SWIGEXPORT jstring JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_resolve(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jDid) {
-  SpvDidAdaptor *handle = (SpvDidAdaptor *)jHandle;
+SWIGEXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_resolve(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jDid) {
+  SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
   char *did = NULL;
   char *result = NULL;
   jstring jresult = 0;
@@ -350,12 +350,12 @@ SWIGEXPORT jstring JNICALL Java_org_elastos_did_adaptor_SPVAdaptor_resolve(JNIEn
       return 0;
   }
 
-  result = (char *)SpvDidAdaptor_Resolve(handle,(char const *)did);
+  result = (char *)SpvDidAdapter_Resolve(handle,(char const *)did);
   (*jenv)->ReleaseStringUTFChars(jenv, jDid, (const char *)did);
 
   if (result) {
     jresult = (*jenv)->NewStringUTF(jenv, (const char *)result);
-    SpvDidAdaptor_FreeMemory(handle,result);
+    SpvDidAdapter_FreeMemory(handle,result);
   } else {
     SWIG_JavaThrowException(jenv, SWIG_JavaUnknownError, "Resolve DID failed.");
     return 0;

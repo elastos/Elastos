@@ -13,7 +13,7 @@
 #include <fstream>
 #include <vector>
 
-#include "spvadaptor.h"
+#include "spvadapter.h"
 
 using namespace Elastos::ElaWallet;
 
@@ -51,7 +51,7 @@ public:
     }
 };
 
-struct SpvDidAdaptor {
+struct SpvDidAdapter {
     IMasterWalletManager *manager;
     IIDChainSubWallet *idWallet;
     SubWalletCallback *callback;
@@ -98,7 +98,7 @@ void SyncStop(IMasterWalletManager *manager, ISubWalletCallback *callback)
     }
 }
 
-SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
+SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
         const char *network, const char *resolver)
 {
     nlohmann::json netConfig;
@@ -169,36 +169,36 @@ SpvDidAdaptor *SpvDidAdaptor_Create(const char *walletDir, const char *walletId,
     SubWalletCallback *callback = new SubWalletCallback();
     SyncStart(manager, callback);
 
-    SpvDidAdaptor *adaptor = new SpvDidAdaptor;
-    adaptor->resolver = url;
-    adaptor->manager = manager;
-    adaptor->idWallet = idWallet;
-    adaptor->callback = callback;
+    SpvDidAdapter *adapter = new SpvDidAdapter;
+    adapter->resolver = url;
+    adapter->manager = manager;
+    adapter->idWallet = idWallet;
+    adapter->callback = callback;
 
-    return adaptor;
+    return adapter;
 }
 
-void SpvDidAdaptor_Destroy(SpvDidAdaptor *adaptor)
+void SpvDidAdapter_Destroy(SpvDidAdapter *adapter)
 {
-    if (!adaptor)
+    if (!adapter)
         return;
 
-    SyncStop(adaptor->manager, adaptor->callback);
+    SyncStop(adapter->manager, adapter->callback);
 
-    if (adaptor->resolver)
-        free(adaptor->resolver);
+    if (adapter->resolver)
+        free(adapter->resolver);
 
-    delete adaptor->callback;
-    delete adaptor->manager;
-    delete adaptor;
+    delete adapter->callback;
+    delete adapter->manager;
+    delete adapter;
 
     curl_global_cleanup();
 }
 
-int SpvDidAdaptor_CreateIdTransaction(SpvDidAdaptor *adaptor,
+int SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         const char *payload, const char *memo, const char *password)
 {
-    if (!adaptor || !payload || !password)
+    if (!adapter || !payload || !password)
         return -1;
 
     if (!memo)
@@ -207,9 +207,9 @@ int SpvDidAdaptor_CreateIdTransaction(SpvDidAdaptor *adaptor,
     try {
         auto payloadJson = nlohmann::json::parse(payload);
 
-        auto tx = adaptor->idWallet->CreateIDTransaction(payloadJson, memo);
-        tx = adaptor->idWallet->SignTransaction(tx, password);
-        tx = adaptor->idWallet->PublishTransaction(tx);
+        auto tx = adapter->idWallet->CreateIDTransaction(payloadJson, memo);
+        tx = adapter->idWallet->SignTransaction(tx, password);
+        tx = adapter->idWallet->PublishTransaction(tx);
         // std::cout << "ID Transaction: " << tx["TxHash"] << std::endl;
     } catch (...) {
         return -1;
@@ -292,11 +292,11 @@ static size_t HttpRequestBodyReadCallback(void *dest, size_t size,
 #define DID_RESOLVE_REQUEST "{\"method\":\"getidtxspayloads\",\"params\":{\"id\":\"%s\",\"all\":false}}"
 
 // Caller need free the pointer
-const char *SpvDidAdaptor_Resolve(SpvDidAdaptor *adaptor, const char *did)
+const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did)
 {
     char buffer[256];
 
-    if (!adaptor || !did || !adaptor->resolver)
+    if (!adapter || !did || !adapter->resolver)
         return NULL;
 
     // TODO: max did length
@@ -311,7 +311,7 @@ const char *SpvDidAdaptor_Resolve(SpvDidAdaptor *adaptor, const char *did)
     request.data = buffer;
 
     CURL *curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_URL, adaptor->resolver);
+    curl_easy_setopt(curl, CURLOPT_URL, adapter->resolver);
 
     curl_easy_setopt(curl, CURLOPT_POST, 1L);
     curl_easy_setopt(curl, CURLOPT_READFUNCTION, HttpRequestBodyReadCallback);
@@ -342,9 +342,9 @@ const char *SpvDidAdaptor_Resolve(SpvDidAdaptor *adaptor, const char *did)
     return (const char *)response.data;
 }
 
-void SpvDidAdaptor_FreeMemory(SpvDidAdaptor *adaptor, void *mem)
+void SpvDidAdapter_FreeMemory(SpvDidAdapter *adapter, void *mem)
 {
-    (void)(adaptor);
+    (void)(adapter);
 
     free(mem);
 }
