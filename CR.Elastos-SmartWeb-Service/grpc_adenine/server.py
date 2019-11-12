@@ -13,14 +13,14 @@ from grpc_adenine.stubs import common_pb2
 from grpc_adenine.stubs import common_pb2_grpc
 
 from grpc_adenine.implementations.did_sidechain import Did
-from grpc_adenine.stubs import did_pb2
-from grpc_adenine.stubs import did_pb2_grpc
+from grpc_adenine.stubs import adenine_io_pb2
+from grpc_adenine.stubs import adenine_io_pb2_grpc
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     
     common_pb2_grpc.add_CommonServicer_to_server(Common(), server)
-    did_pb2_grpc.add_DidServicer_to_server(Did(), server)
+    adenine_io_pb2_grpc.add_AdenineIoServicer_to_server(Did(), server)
     
     server.add_insecure_port('[::]:50051')
     server.start()
