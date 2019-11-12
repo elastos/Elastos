@@ -11,11 +11,11 @@ In order to install Django you also need pip and virtualenv installed. Normally,
 $ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 ```
 ```
-python get-pip.py
+python3 get-pip.py
 ```
 Now install virtualenv by running the following:
 ```
-$ pip install virtualenv
+$ pip3 install virtualenv
 ```
 ## Instructions
 First, clone the repository into the current directory:
@@ -34,15 +34,15 @@ $ source venv/bin/activate
 ```
 Now install Django and other dependencies:
 ```
-$ pip install Django
+$ pip3 install Django
 ```
 ```
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 ```
 Finally, run the server:
 ```
-runserver Python3 manage.py runserver
+python3 manage.py runserver
 ```
 The console can be viewed on the following IP Address [here]
 
-[here]: http://127.0.0.1:8000/hello
+[here]: http://127.0.0.1:8000

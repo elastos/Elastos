@@ -1,4 +1,4 @@
-Django==2.2.6
-python3==3.7.4
-virtualenv==16.7.5
+Django>=2.2.6
+virtualenv>=16.7
+requests>=2.22.0
 
