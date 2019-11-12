@@ -41,6 +41,7 @@ set(SRC
     did_getelem_test.c
     diddoc_fromjson_test.c
     diddoc_getelem_test.c
+    diddoc_arelem_test.c
     cred_fromjson_test.c
     cred_getelem_test.c
     didstore_open_test.c
@@ -109,5 +110,5 @@ install(TARGETS didtest
     ARCHIVE DESTINATION "lib"
     LIBRARY DESTINATION "lib")
 
-install(FILES qualified.json cred.json
+install(FILES qualified.json qualifiedbp.json cred.json
     DESTINATION "etc/did")

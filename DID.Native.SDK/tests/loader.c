@@ -18,6 +18,7 @@
 static size_t len = 5000;
 
 char *global_did_string;
+char *global_didbp_string;
 char *global_cred_string;
 
 int load_file(const char *config_file, Load_Type type)
@@ -32,7 +33,7 @@ int load_file(const char *config_file, Load_Type type)
     if (fd == -1)
         return -1;
 
-    if(type == Load_Doc) {
+    if (type == Load_Doc) {
         global_did_string = calloc(1, len);
         if(!global_did_string)
             return -1;
@@ -41,7 +42,18 @@ int load_file(const char *config_file, Load_Type type)
         if(rec_len == 0 || rec_len == -1)
             return -1;
     }
-    if(type == Load_Credential) {
+
+    if (type == Load_Docbp) {
+        global_didbp_string = calloc(1, len);
+        if(!global_didbp_string)
+            return -1;
+
+        rec_len = read(fd, global_didbp_string, len);
+        if(rec_len == 0 || rec_len == -1)
+            return -1;
+    }
+
+    if (type == Load_Credential) {
         global_cred_string = calloc(1, len);
         if(!global_cred_string)
             return -1;

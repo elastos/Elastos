@@ -21,11 +21,14 @@ CU_SuiteInfo* didstore_cred_op_test_suite_info(void);
 CU_SuiteInfo* didstore_new_did_test_suite_info(void);
 CU_SuiteInfo* didrequest_test_suite_info(void);
 CU_SuiteInfo* diddoc_sign_test_suite_info(void);
+CU_SuiteInfo* diddoc_arelem_test_suite_info(void);
+
 
 TestSuite suites[] = {
     { "didstore_open_test.c",                didstore_open_test_suite_info           },
     { "diddoc_fromjson_test.c",              diddoc_fromjson_test_suite_info         },
     { "diddoc_getelem_test.c",               diddoc_getelem_test_suite_info          },
+    { "diddoc_arelem_test.c",                diddoc_arelem_test_suite_info           },
     { "didstore_store_did_test.c",           didstore_store_did_test_suite_info      },
     { "didstore_did_op_test.c",              didstore_did_op_test_suite_info         },
     { "did_fromstring_test.c",               did_fromstring_test_suite_info          },

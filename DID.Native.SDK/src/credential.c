@@ -54,7 +54,7 @@ static void free_subject(Credential *cred)
 
     for (i = 0; i < cred->subject.infos.size; i++) {
         Property *prop = props[i];
-        if (prop) // CHECK: ??
+        if (!prop) // CHECK: ??
             continue;
         if (prop->key)
             free(prop->key);
@@ -69,7 +69,6 @@ static void free_subject(Credential *cred)
 ///////////////////////////////////////////////////////////////////////////
 void Credential_Destroy(Credential *cred)
 {
-    DIDURL *method;
     size_t i;
 
     if (!cred)
@@ -282,12 +281,12 @@ Credential *Credential_FromJson(const char *json, DID *did)
     return cred;
 }
 
-int Credential_SetId(Credential *cred, DIDURL *id)
+int Credential_SetId(Credential *cred, DIDURL *credid)
 {
-    if (!cred || !id || !*id->did.idstring || !*id->fragment)
+    if (!cred || !credid || !*credid->did.idstring || !*credid->fragment)
         return -1;
 
-    return DIDURL_Copy(&cred->id, id);
+    return DIDURL_Copy(&cred->id, credid);
 }
 
 int Credential_AddType(Credential *cred, const char *type)
@@ -415,12 +414,12 @@ int Credential_AddProperty(Credential *cred, const char *name, const char *value
     return (ssize_t)cred->subject.infos.size;
 }
 
-int Credential_SetProofMethod(Credential *cred, DIDURL *id)
+int Credential_SetProofMethod(Credential *cred, DIDURL *methodid)
 {
-    if (!cred || !id || !*id->fragment || !*id->did.idstring)
+    if (!cred || !methodid || !*methodid->fragment || !*methodid->did.idstring)
         return -1;
 
-    return DIDURL_Copy(&cred->proof.verificationMethod, id);
+    return DIDURL_Copy(&cred->proof.verificationMethod, methodid);
 }
 
 int Credential_SetProofType(Credential *cred, const char *type)
@@ -444,7 +443,7 @@ int Credential_SetProofSignture(Credential *cred, const char *signture)
 static int check_issuer(DID *issuer, DIDURL **defaultSignKey)
 {
     DIDDocument *doc;
-    DIDURL *pk;
+    DIDURL *key;
 
     assert(issuer);
     assert(defaultSignKey);
@@ -454,17 +453,17 @@ static int check_issuer(DID *issuer, DIDURL **defaultSignKey)
         return -1;
 
     if (!*defaultSignKey) {
-        pk = DIDDocument_GetDefaultPublicKey(doc);
-        if (!pk)
+        key = DIDDocument_GetDefaultPublicKey(doc);
+        if (!key)
             return -1;
 
-        DID_Copy(&(*defaultSignKey)->did, &pk->did);
+        DID_Copy(&(*defaultSignKey)->did, &key->did);
     }
 
-    if (!DIDDocument_GetAuthentication(doc, *defaultSignKey))
+    if (!DIDDocument_GetAuthenticationKey(doc, *defaultSignKey))
         return -1;
 
-    return DIDStore_ContainPrivatekey(issuer, *defaultSignKey) ? 0 : -1;
+    return DIDStore_ContainPrivateKey(issuer, *defaultSignKey) ? 0 : -1;
 }
 
 Credential *Credential_Issue(DID *did, const char *fragment,

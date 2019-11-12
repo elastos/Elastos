@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     CU_ErrorCode rc;
 
     const char *did_file = NULL;
+    const char *didbp_file = NULL;
     const char *cred_file = NULL;
 
     int opt;
@@ -71,6 +72,7 @@ int main(int argc, char *argv[])
 
     struct option options[] = {
         { "did",            required_argument,  NULL, 'd' },
+        { "didbp",          required_argument,  NULL, 'b'},
         { "credential",     required_argument,  NULL, 'c' },
         { "help",           no_argument,        NULL, 'h' },
         { NULL,             0,                  NULL,  0  }
@@ -80,7 +82,7 @@ int main(int argc, char *argv[])
     sys_coredump_set(true);
 #endif
 
-    while ((opt = getopt_long(argc, argv, "d:c:h:r:?", options, &idx)) != -1) {
+    while ((opt = getopt_long(argc, argv, "d:b:c:h:r:?", options, &idx)) != -1) {
         switch (opt) {
         case 'd':
             did_file = optarg;
@@ -88,6 +90,9 @@ int main(int argc, char *argv[])
         case 'c':
             cred_file = optarg;
 			break;
+        case 'b':
+            didbp_file = optarg;
+            break;
         case 'h':
         case '?':
             usage();
@@ -95,9 +100,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(did_file && load_file(did_file, Load_Doc) == -1)
+    if (did_file && load_file(did_file, Load_Doc) == -1)
         return -1;
-    if(cred_file && load_file(cred_file, Load_Credential) == -1)
+    if (didbp_file && load_file(didbp_file, Load_Docbp) == -1)
+        return -1;
+    if (cred_file && load_file(cred_file, Load_Credential) == -1)
         return -1;
 
     if (CUE_SUCCESS != CU_initialize_registry()) {

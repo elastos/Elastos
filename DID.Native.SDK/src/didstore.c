@@ -690,7 +690,7 @@ static DIDDocument *create_document(DID *did, const char *publickeybase)
     strcpy((char*)key.did.idstring, did->idstring);
     strcpy((char*)key.fragment, "primary");
 
-    if (DIDDocument_AddPublickey(document, &key, &controller, publickeybase) == -1) {
+    if (DIDDocument_AddPublicKey(document, &key, &controller, publickeybase) == -1) {
         DIDDocument_Destroy(document);
         return NULL;
     }
@@ -1097,7 +1097,7 @@ bool DIDSotre_ContainPrivateKeys(DID *did)
     return is_empty(dir_path);
 }
 
-bool DIDStore_ContainPrivatekey(DID *did, DIDURL *id)
+bool DIDStore_ContainPrivateKey(DID *did, DIDURL *id)
 {
     const char *path;
     int rc;

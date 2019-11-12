@@ -37,23 +37,23 @@ extern "C" {
 #endif
 
 #if defined(DID_STATIC)
-  #define DID_API
+    #define DID_API
 #elif defined(DID_DYNAMIC)
-  #ifdef DID_BUILD
-    #if defined(_WIN32) || defined(_WIN64)
-      #define DID_API         __declspec(dllexport)
+    #ifdef DID_BUILD
+        #if defined(_WIN32) || defined(_WIN64)
+            #define DID_API         __declspec(dllexport)
+        #else
+            #define DID_API         __attribute__((visibility("default")))
+        #endif
     #else
-      #define DID_API         __attribute__((visibility("default")))
+        #if defined(_WIN32) || defined(_WIN64)
+            #define DID_API         __declspec(dllimport)
+        #else
+            #define DID_API         __attribute__((visibility("default")))
+        #endif
     #endif
-  #else
-    #if defined(_WIN32) || defined(_WIN64)
-      #define DID_API         __declspec(dllimport)
-    #else
-      #define DID_API         __attribute__((visibility("default")))
-    #endif
-  #endif
 #else
-  #define DID_API
+    #define DID_API
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -445,8 +445,23 @@ DID_API DID* DIDDocument_GetSubject(DIDDocument *document);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_AddPublickey(DIDDocument *document, DIDURL *key,
-         DID *controller, const char *publickeybase);
+DID_API int DIDDocument_AddPublicKey(DIDDocument *document, DIDURL *keyid,
+        DID *controller, const char *publickeybase);
+
+/**
+ * \~English
+ * Remove specified public key from DID Document.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @param
+ *      key                  [in] An identifier of public key.
+ * @param
+ *      force                [in] An identifier of public key.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_RemovePublicKey(DIDDocument *document, DIDURL *keyid, bool force);
 
 /**
  * \~English
@@ -472,7 +487,8 @@ DID_API ssize_t DIDDocument_GetPublicKeysCount(DIDDocument *document);
  * @return
  *      size of public keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetPublicKeys(DIDDocument *document, PublicKey **pks, size_t size);
+DID_API ssize_t DIDDocument_GetPublicKeys(DIDDocument *document,
+        PublicKey **pks, size_t size);
 
 /**
  * \~English
@@ -486,7 +502,7 @@ DID_API ssize_t DIDDocument_GetPublicKeys(DIDDocument *document, PublicKey **pks
  *      If no error occurs, return the handle to public key.
  *      Otherwise, return NULL
  */
-DID_API PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *id);
+DID_API PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -506,7 +522,7 @@ DID_API PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *id);
  *      size of public keys selected on success, -1 if an error occurred.
  */
 DID_API ssize_t DIDDocument_SelectPublicKey(DIDDocument *document, const char *type,
-         DIDURL *id, PublicKey **pks, size_t size);
+        DIDURL *keyid, PublicKey **pks, size_t size);
 
 /**
  * \~English
@@ -539,8 +555,21 @@ DID_API DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *key,
-         DID *controller, const char *publickeybase);
+DID_API int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *keyid,
+        DID *controller, const char *publickeybase);
+
+/**
+ * \~English
+ * Remove authentication key from Authenticate.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @param
+ *      key                  [in] An identifier of public key.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_RemoveAuthenticationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -570,7 +599,7 @@ DID_API ssize_t DIDDocument_GetAuthenticationsCount(DIDDocument *document);
  *      size of authentication keys on success, -1 if an error occurred.
  */
 DID_API ssize_t DIDDocument_GetAuthentications(DIDDocument *document,
-         PublicKey **pks, size_t size);
+        PublicKey **pks, size_t size);
 
 /**
  * \~English
@@ -585,7 +614,7 @@ DID_API ssize_t DIDDocument_GetAuthentications(DIDDocument *document,
  *       If no error occurs, return the handle to public key.
  *       Otherwise, return NULL
  */
-DID_API PublicKey *DIDDocument_GetAuthentication(DIDDocument *document, DIDURL *id);
+DID_API PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -604,8 +633,8 @@ DID_API PublicKey *DIDDocument_GetAuthentication(DIDDocument *document, DIDURL *
  * @return
  *      size of authentication key selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectAuthentication(DIDDocument *document, const char *type,
-        DIDURL *id, PublicKey **pks, size_t size);
+DID_API ssize_t DIDDocument_SelectAuthenticationKey(DIDDocument *document, const char *type,
+        DIDURL *keyid, PublicKey **pks, size_t size);
 
 /**
  * \~English
@@ -625,8 +654,26 @@ DID_API ssize_t DIDDocument_SelectAuthentication(DIDDocument *document, const ch
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *key,
-         DID *controller, const char *publickeybase);
+DID_API int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid,
+        DID *controller, const char *publickeybase);
+
+/**
+ * \~English
+ * Remove authorization key from authorizate.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @param
+ *      key                  [in] An identifier of authorization key.
+ * @param
+ *      controller           [in] A controller property, identifies
+ *                              the controller of the corresponding private key.
+ * @param
+ *      publickeybase        [in] Key property depend on key type.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_RemoveAuthorizationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -653,7 +700,8 @@ DID_API ssize_t DIDDocument_GetAuthorizationsCount(DIDDocument *document);
  * @return
  *      size of authorization keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthorizations(DIDDocument *document, PublicKey **pks, size_t size);
+DID_API ssize_t DIDDocument_GetAuthorizations(DIDDocument *document,
+        PublicKey **pks, size_t size);
 
 /**
  * \~English
@@ -667,7 +715,7 @@ DID_API ssize_t DIDDocument_GetAuthorizations(DIDDocument *document, PublicKey *
  *       If no error occurs, return the handle to public key.
  *       Otherwise, return NULL
  */
-DID_API PublicKey *DIDDocument_GetAuthorization(DIDDocument *document, DIDURL *id);
+DID_API PublicKey *DIDDocument_GetAuthorizationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -686,8 +734,8 @@ DID_API PublicKey *DIDDocument_GetAuthorization(DIDDocument *document, DIDURL *i
  * @return
  *      size of authorization key selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectAuthorization(DIDDocument *document, const char *type,
-        DIDURL *id, PublicKey **pks, size_t size);
+DID_API ssize_t DIDDocument_SelectAuthorizationKey(DIDDocument *document, const char *type,
+        DIDURL *keyid, PublicKey **pks, size_t size);
 
 /**
  * \~English
@@ -702,6 +750,18 @@ DID_API ssize_t DIDDocument_SelectAuthorization(DIDDocument *document, const cha
  */
 DID_API int DIDDocument_AddCredential(DIDDocument *document, Credential *credential);
 
+/**
+ * \~English
+ * Remove specified credential from credential array.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @param
+ *      credential           [in] The handle to Credential.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_RemoveCredential(DIDDocument *document, DIDURL *credid);
 /**
  * \~English
  * Get the count of credentials.
@@ -726,7 +786,8 @@ DID_API ssize_t DIDDocument_GetCredentialsCount(DIDDocument *document);
  * @return
  *      size of credentials on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetCredentials(DIDDocument *document, Credential **creds, size_t size);
+DID_API ssize_t DIDDocument_GetCredentials(DIDDocument *document,
+        Credential **creds, size_t size);
 
 /**
  * \~English
@@ -740,7 +801,7 @@ DID_API ssize_t DIDDocument_GetCredentials(DIDDocument *document, Credential **c
  *       If no error occurs, return the handle to Credential.
  *       Otherwise, return NULL
  */
-DID_API Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *id);
+DID_API Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *credid);
 
 /**
  * \~English
@@ -760,7 +821,7 @@ DID_API Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *id)
  *      size of credentials selected, -1 if an error occurred.
  */
 DID_API ssize_t DIDDocument_SelectCredential(DIDDocument *document, const char *type,
-        DIDURL *id, Credential **creds, size_t size);
+        DIDURL *credid, Credential **creds, size_t size);
 
 /**
  * \~English
@@ -777,8 +838,25 @@ DID_API ssize_t DIDDocument_SelectCredential(DIDDocument *document, const char *
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_AddService(DIDDocument *document, DIDURL *id,
-         const char *type, const char *point);
+DID_API int DIDDocument_AddService(DIDDocument *document, DIDURL *serviceid,
+        const char *type, const char *point);
+
+/**
+ * \~English
+ * Remove specified Service to services array.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @param
+ *      id                   [in] The identifier of Service.
+ * @param
+ *      type                 [in] The type of Service.
+ * @param
+ *      point                [in] ServiceEndpoint property is a valid URI.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_RemoveService(DIDDocument *document, DIDURL *serviceid);
 
 /**
  * \~English
@@ -818,7 +896,7 @@ DID_API ssize_t DIDDocument_GetServices(DIDDocument *document, Service **service
  *       If no error occurs, return the handle to Service.
  *       Otherwise, return NULL
  */
-DID_API Service *DIDDocument_GetService(DIDDocument *document, DIDURL *id);
+DID_API Service *DIDDocument_GetService(DIDDocument *document, DIDURL *serviceid);
 
 /**
  * \~English
@@ -838,7 +916,7 @@ DID_API Service *DIDDocument_GetService(DIDDocument *document, DIDURL *id);
  *      size of services selected, -1 if an error occurred.
  */
 DID_API ssize_t DIDDocument_SelectService(DIDDocument *document, const char *type,
-       DIDURL *id, Service **services, size_t size);
+        DIDURL *serviceid, Service **services, size_t size);
 
 /**
  * \~English
@@ -881,8 +959,8 @@ DID_API int DIDDocument_SetExpires(DIDDocument *document, time_t expires);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *storepass,
-         char *sig, int count, ...);
+DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass,
+        char *sig, int count, ...);
 
 /**
  * \~English
@@ -901,8 +979,8 @@ DID_API int DIDDocument_Sign(DIDDocument *document, DIDURL *key, const char *sto
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_Verify(DIDDocument *document, DIDURL *key, char *sig,
-         int count, ...);
+DID_API int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
+        int count, ...);
 
 /**
  * \~English
@@ -954,15 +1032,6 @@ DID_API const char *PublicKey_GetType(PublicKey *publickey);
 
 /**
  * \~English
- * Destroy Public key.
- *
- * @param
- *      publickey             [in] A handle to public key.
- */
-DID_API void Publickey_Destroy(PublicKey *publickey);
-
-/**
- * \~English
  * Get identifier of Service.
  *
  * @param
@@ -996,15 +1065,6 @@ DID_API const char *Service_GetEndpoint(Service *service);
  *      Otherwise, return NULL.
  */
 DID_API const char *Service_GetType(Service *service);
-
-/**
- * \~English
- * Destroy Service.
- *
- * @param
- *      service             [in] A handle to Service.
- */
-DID_API void Service_Destroy(Service *service);
 
 /******************************************************************************
  * Credential
@@ -1219,7 +1279,7 @@ DID_API const char *Credential_GetProofSignture(Credential *cred);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int Credential_SetId(Credential *cred, DIDURL *id);
+DID_API int Credential_SetId(Credential *cred, DIDURL *credid);
 
 /**
  * \~English
@@ -1312,7 +1372,7 @@ DID_API int Credential_AddProperty(Credential *cred, const char *name, const cha
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int Credential_SetProofMethod(Credential *cred, DIDURL *id);
+DID_API int Credential_SetProofMethod(Credential *cred, DIDURL *methodid);
 
 /**
  * \~English
@@ -1371,8 +1431,8 @@ DID_API int Credential_SetProofSignture(Credential *cred, const char *signture);
  *      Otherwise, return NULL.
  */
 DID_API Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
-    DIDURL *defaultSignKey, const char **types, size_t typesize, Property **properties,
-    int size, time_t expires, const char *storepass);
+        DIDURL *defaultSignKey, const char **types, size_t typesize,
+        Property **properties, int size, time_t expires, const char *storepass);
 
 /******************************************************************************
  * DIDStore
@@ -1408,7 +1468,7 @@ DID_API int DIDStore_Open(const char *root);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_InitPrivateIdentity(const char *mnemonic,
-           const char *passphrase, const char *storepass, const int language);
+        const char *passphrase, const char *storepass, const int language);
 /**
  * \~English
  * Create new DID Document and store in the DID Store.
@@ -1441,7 +1501,7 @@ DID_API DIDDocument *DIDStore_NewDID(const char *storepass, const char *hint);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_Sign(DID *did, DIDURL *key, const char *storepass,
-         char *sig, int count, ...);
+        char *sig, int count, ...);
 
 DID_API int DIDStore_Signv(DID *did, DIDURL *key, const char *storepass,
         char *sig, int count, va_list inputs);
@@ -1569,7 +1629,7 @@ DID_API int DIDStore_StoreCredential(Credential *credential, const char *hint);
  *      If no error occurs, return the handle to Credential.
  *      Otherwise, return NULL.
  */
-DID_API Credential *DIDStore_LoadCredential(DID *did, DIDURL *id);
+DID_API Credential *DIDStore_LoadCredential(DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -1582,7 +1642,7 @@ DID_API Credential *DIDStore_LoadCredential(DID *did, DIDURL *id);
  * @return
 *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_SetCredentialHint(DID *did, DIDURL *id, const char *hint);
+DID_API int DIDStore_SetCredentialHint(DID *did, DIDURL *credid, const char *hint);
 
 /**
  * \~English
@@ -1597,7 +1657,7 @@ DID_API int DIDStore_SetCredentialHint(DID *did, DIDURL *id, const char *hint);
  *      finishing use.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDStore_GetCredentialHint(DID *did, DIDURL *id);
+DID_API const char *DIDStore_GetCredentialHint(DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -1621,7 +1681,7 @@ DID_API bool DIDStore_ContainsCredentials(DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainsCredential(DID *did, DIDURL *id);
+DID_API bool DIDStore_ContainsCredential(DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -1648,7 +1708,7 @@ DID_API void DIDStore_DeleteCredential(DID *did, DIDURL *id);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_ListCredentials(DID *did, DIDStore_GetCredHintCallback *callback,
-          void *context);
+        void *context);
 
 /**
  * \~English
@@ -1667,8 +1727,8 @@ DID_API int DIDStore_ListCredentials(DID *did, DIDStore_GetCredHintCallback *cal
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_SelectCredentials(DID *did, DIDURL *id, const char *type,
-             DIDStore_GetCredHintCallback *callback, void *context);
+DID_API int DIDStore_SelectCredentials(DID *did, DIDURL *credid, const char *type,
+        DIDStore_GetCredHintCallback *callback, void *context);
 
 /**
  * \~English
@@ -1692,7 +1752,7 @@ DID_API bool DIDSotre_ContainPrivateKeys(DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainPrivatekey(DID *did, DIDURL *id);
+DID_API bool DIDStore_ContainPrivateKey(DID *did, DIDURL *keyid);
 
 /**
  * \~English
@@ -1708,7 +1768,7 @@ DID_API bool DIDStore_ContainPrivatekey(DID *did, DIDURL *id);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDStore_StorePrivateKey(DID *did, const char *fragment,
-          const char *privatekey);
+        const char *privatekey);
 
 /**
  * \~English
@@ -1719,7 +1779,7 @@ DID_API int DIDStore_StorePrivateKey(DID *did, const char *fragment,
  * @param
  *      id                      [in] The identifier of public key.
  */
-DID_API void DIDStore_DeletePrivateKey(DID *did, DIDURL *id);
+DID_API void DIDStore_DeletePrivateKey(DID *did, DIDURL *keyid);
 
 /**
  * \~English
@@ -1735,7 +1795,7 @@ DID_API void DIDStore_DeletePrivateKey(DID *did, DIDURL *id);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey,
-            const char *storepass);
+        const char *storepass);
 
 /**
  * \~English
@@ -1751,7 +1811,7 @@ DID_API int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey,
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey,
-            const char *storepass);
+        const char *storepass);
 
 /**
  * \~English
@@ -1767,7 +1827,7 @@ DID_API int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey,
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDREQ_DeactivateDID(DID *did, DIDURL *signKey,
-            const char *storepass);
+        const char *storepass);
 
 #ifdef __cplusplus
 }

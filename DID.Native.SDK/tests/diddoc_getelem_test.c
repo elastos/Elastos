@@ -56,6 +56,7 @@ static void test_diddoc_select_publickey(void)
     CU_ASSERT_EQUAL(count, 1);
 }
 
+//authentication
 static void test_diddoc_get_authentications_count(void)
 {
     ssize_t count = DIDDocument_GetAuthenticationsCount(document);
@@ -72,7 +73,7 @@ static void test_diddoc_get_authentications(void)
 
 static void test_diddoc_get_authentication(void)
 {
-    PublicKey *pk = DIDDocument_GetAuthentication(document, &id);
+    PublicKey *pk = DIDDocument_GetAuthenticationKey(document, &id);
     CU_ASSERT_PTR_NOT_NULL(pk);
 }
 
@@ -80,7 +81,7 @@ static void test_diddoc_select_authentication(void)
 {
     PublicKey *pks[4];
 
-    ssize_t count = DIDDocument_SelectAuthentication(document, type, &id, pks, 4);
+    ssize_t count = DIDDocument_SelectAuthenticationKey(document, type, &id, pks, 4);
     CU_ASSERT_EQUAL(count, 1);
 }
 
@@ -100,7 +101,7 @@ static void test_diddoc_get_authorizations(void)
 
 static void test_diddoc_get_authorization(void)
 {
-    PublicKey *pk = DIDDocument_GetAuthorization(document, &auth_id);
+    PublicKey *pk = DIDDocument_GetAuthorizationKey(document, &auth_id);
     CU_ASSERT_PTR_NOT_NULL(pk);
 }
 
@@ -108,7 +109,7 @@ static void test_diddoc_select_authorization(void)
 {
     PublicKey *pks[4];
 
-    ssize_t count = DIDDocument_SelectAuthorization(document, type, &auth_id, pks, 4);
+    ssize_t count = DIDDocument_SelectAuthorizationKey(document, type, &auth_id, pks, 4);
     CU_ASSERT_EQUAL(count, 1);
 }
 

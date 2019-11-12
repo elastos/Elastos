@@ -20,6 +20,7 @@ static DIDDocument *document;
 static DID *did;
 static const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
 static const char *data = "abcdefghijklmnopqrstuvwxyz";
+static const char *wdata = "abc";
 static const char *storepass = "123456";
 static char signature[SIGNATURE_BYTES * 2];
 
@@ -53,6 +54,22 @@ static void test_diddoc_verify(void)
     rc = DIDDocument_Verify(document, signkey, signature, 1,
              (unsigned char*)data, strlen(data));
     CU_ASSERT_NOT_EQUAL(rc, -1);
+}
+
+static void test_diddoc_verify_by_wrong(void)
+{
+    int rc;
+    DIDURL *signkey;
+
+    signkey = DIDDocument_GetDefaultPublicKey(document);
+    if (!signkey) {
+        printf("get signkey failed.\n");
+        return;
+    }
+
+    rc = DIDDocument_Verify(document, signkey, signature, 1,
+             (unsigned char*)wdata, strlen(wdata));
+    CU_ASSERT_NOT_EQUAL(rc, 0);
 }
 
 static int diddoc_sign_test_suite_init(void)
@@ -92,9 +109,10 @@ static int diddoc_sign_test_suite_cleanup(void)
 }
 
 static CU_TestInfo cases[] = {
-    {   "test_diddoc_sign",        test_diddoc_sign      },
-    {   "test_diddoc_verify",      test_diddoc_verify    },
-    {   NULL,                      NULL                  }
+    {   "test_diddoc_sign",                 test_diddoc_sign               },
+    {   "test_diddoc_verify",               test_diddoc_verify             },
+    {   "test_diddoc_verify_by_wrong",      test_diddoc_verify_by_wrong    },
+    {   NULL,                               NULL                           }
 };
 
 static CU_SuiteInfo suite[] = {
