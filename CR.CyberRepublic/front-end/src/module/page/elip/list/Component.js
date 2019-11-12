@@ -46,13 +46,24 @@ export default class extends BaseComponent {
   }
 
   getQuery = () => {
+    const { filter, creationDate, author, type } = this.state
     const query = {}
-    query.filter = this.state.filter
+    query.filter = _.isEmpty(filter) ? 'ALL' : filter
+    if (!_.isEmpty(creationDate)) {
+      const formatStr = 'YYYY-MM-DD'
+      query.startDate = moment(creationDate[0]).format(formatStr)
+      query.endDate = moment(creationDate[1]).format(formatStr)
+    }
+    if (!_.isEmpty(author)) {
+      query.author = author
+    }
+    if (!_.isEmpty(type)) {
+      query.type = type
+    }
     const searchStr = this.state.search
     if (searchStr) {
       query.search = searchStr
     }
-
     return query
   }
 
@@ -109,26 +120,11 @@ export default class extends BaseComponent {
   }
 
   handleClearFilter = () => {
-    this.setState({ filter: '', creationDate: [], author: '', type: '' })
+    this.setState({ search: '', filter: '', creationDate: [], author: '', type: '' })
   }
 
   handleApplyFilter = () => {
-    const { filter, creationDate, author, type } = this.state
-    const param = {
-      filter: _.isEmpty(filter) ? 'ALL' : filter
-    }
-    if (!_.isEmpty(creationDate)) {
-      const formatStr = 'YYYY-MM-DD'
-      param.startDate = moment(creationDate[0]).format(formatStr)
-      param.endDate = moment(creationDate[1]).format(formatStr)
-    }
-    if (!_.isEmpty(author)) {
-      param.author = author
-    }
-    if (!_.isEmpty(type)) {
-      param.type = type
-    }
-    console.log(param)
+    this.refetch()
   }
 
   setFilter = filter => {
