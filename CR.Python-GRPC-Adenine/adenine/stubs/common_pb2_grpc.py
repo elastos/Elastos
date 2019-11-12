@@ -16,8 +16,8 @@ class CommonStub(object):
     """
     self.GenerateAPIRequest = channel.unary_unary(
         '/common.Common/GenerateAPIRequest',
-        request_serializer=common__pb2.ApiRequest.SerializeToString,
-        response_deserializer=common__pb2.ApiResponse.FromString,
+        request_serializer=common__pb2.Request.SerializeToString,
+        response_deserializer=common__pb2.Response.FromString,
         )
 
 
@@ -37,8 +37,8 @@ def add_CommonServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'GenerateAPIRequest': grpc.unary_unary_rpc_method_handler(
           servicer.GenerateAPIRequest,
-          request_deserializer=common__pb2.ApiRequest.FromString,
-          response_serializer=common__pb2.ApiResponse.SerializeToString,
+          request_deserializer=common__pb2.Request.FromString,
+          response_serializer=common__pb2.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

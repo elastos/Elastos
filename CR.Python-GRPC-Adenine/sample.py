@@ -3,13 +3,25 @@ from adenine.did_sidechain import DidSidechain
 
 def run():
     
-    common = Common()
-    print("--> Generate Api Request")
-    common.generateAPIRequest('kHDP9V4JJbwd5GN', 'qhfiueq98dqwbd')
+	common = Common()
+	print("--> Generate Api Request")
+	response = common.generate_api_request('kHDP9V4JJbwd5GN', 'qhfiueq98dqwbd')
     
-    did_sidechain =  DidSidechain()
-    print("\n--> Sign a message")
-    did_sidechain.sign('shguBwHIVOi3EkHDP9V4JJb5GN', 'shguBwHIVO2wdw3EkHDPJb5GN', 'hey')
+	if(response.status==True):
+		print("Api Key: "+response.api_key)
+	elif(response.status==False):
+		print("Error Message: "+response.status_message)
+
+    #did_sidechain =  DidSidechain()
+    #print("\n--> Sign a message")
+    #did_sidechain.sign('shguBwHIVOi3EkHDP9V4JJb5GN', 'shguBwHIVO2wdw3EkHDPJb5GN', 'hey')
+
+	#if(response.status==True):
+	#	print("Message: ",response.status)
+	#	print("Public Key: ",response.pub_key)
+	#	print("Signature: ",response.sig)
+	#elif(response.status==False):
+	#	print("Error Message: ",response.status_message)
 
 
 if __name__ == '__main__':
