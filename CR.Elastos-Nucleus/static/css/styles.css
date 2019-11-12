@@ -1,7 +1,7 @@
  .header {
             padding: 5px;
             text-align: center;
-            background: #707070;
+            background: ghostwhite;
             color: black;
             font-size: 15px;
             text-align: left;
@@ -78,10 +78,33 @@ button {
   content: "";
   position: absolute;
   border: 2px solid black;
-
   top: -4%; bottom: -11%; left: -30%; right: -30%;
   z-index: -1;
-
   -webkit-transform: perspective(50em) rotateX(-30deg);
   transform: perspective(50em) rotateX(-30deg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.column {
+  float: left;
+  width: 50%;
+  padding: 10px;
+  height: 600px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  vertical-align: middle;
 }
