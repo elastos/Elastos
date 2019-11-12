@@ -182,7 +182,11 @@ class C extends BaseComponent {
         name={id}
       />
     )
-    if (id === 'budget') {
+    if (
+      id === 'budget' &&
+      initialValues.budget &&
+      typeof initialValues.budget !== 'string'
+    ) {
       rc = (
         <PaymentSchedule
           initialValue={initialValues.budget}

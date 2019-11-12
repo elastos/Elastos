@@ -256,7 +256,7 @@ export default class extends StandardPage {
           moment(detail.createdAt).format('MMM D, YYYY')
         )}
         {sections.map(section => {
-          if (section === 'budget') {
+          if (section === 'budget' && typeof detail.budget !== 'string') {
             return (
               <div key={section}>
                 <DescLabel id={section}>
