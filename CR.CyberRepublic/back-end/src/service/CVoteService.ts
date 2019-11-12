@@ -509,7 +509,43 @@ export default class extends Base {
     if(param.budget && param.budget.length) {
       query.budget = param.budget
     }
-    
+    // has tracking
+    if(param.hasTracking) {
+      query.tracking = {
+        $and: [{
+          $ne: null
+        }, {
+          $ne: ""
+        }]
+      }
+    }
+    // unvoted by you
+    if (param.unvoted && this.isLoggedIn()) {
+      const currentUserId = _.get(this.currentUser, '_id')
+      const userRole = _.get(this.currentUser, 'role')
+      let unvotedIds = []
+      if(userRole === constant.USER_ROLE.COUNCIL) {
+        let propQuery = { status: constant.CVOTE_STATUS.PROPOSED }
+        const propList = await db_cvote.list(propQuery)
+        const unvotedList = propList.filter(function(item){
+          if(item.voteResult.find(function(it){
+            if(it.votedBy === currentUserId){
+              return true
+            }
+          })) {
+            return false
+          }else{
+            return true
+          }
+        })
+        unvotedIds = unvotedList.map(function(item){
+          return item._id
+        })
+      }
+      query._id = {
+        $in: unvotedIds
+      }
+    }
 
     if (param.$or) query.$or = param.$or
     const fields = 'vid title type proposedBy status published proposedAt createdAt voteResult vote_map'
