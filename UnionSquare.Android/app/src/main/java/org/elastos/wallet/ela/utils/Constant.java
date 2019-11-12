@@ -29,6 +29,6 @@ public class Constant {
     public static final String SERVERLIST_BASE = "http://54.223.158.189:5739/";
     public static final String SERVERLIST = "api/dposNodeRPC/getProducerNodesList";
 
-    public static final String EDITPERSONALINFO = "editPersonalonfo";//编辑did  从凭证信息进入
-    public static final String ADDPERSONALINFO = "addPersonalonfo";  //新增did  从凭证信息进入
+    public static final String EDITCREDENTIAL = "editPersonalinfo";//编辑did  从凭证信息进入三部分凭证
+    public static final String ADDCREDENTIAL = "addPersonalinfo";  //新增did  从凭证信息进入三部分凭证
 }

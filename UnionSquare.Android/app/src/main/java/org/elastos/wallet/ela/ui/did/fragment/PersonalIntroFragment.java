@@ -9,6 +9,8 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
+import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
 
 import java.util.Date;
@@ -24,6 +26,10 @@ public class PersonalIntroFragment extends BaseFragment {
     TextView tvTitleRight;
     @BindView(R.id.et_intro)
     EditText etIntro;
+    @BindView(R.id.tv_next)
+    TextView tvNext;
+    @BindView(R.id.tv_tip)
+    TextView tvTip;
     private DIDInfoEntity didInfo;
     private CredentialSubjectBean credentialSubjectBean;
 
@@ -34,10 +40,40 @@ public class PersonalIntroFragment extends BaseFragment {
 
     @Override
     protected void setExtraData(Bundle data) {
-        didInfo = data.getParcelable("didInfo");
-        credentialSubjectBean = data.getParcelable("credentialSubjectBean");
-        if (data.getBoolean("useDraft"))
+        String type = data.getString("type");
+        if (Constant.EDITCREDENTIAL.equals(type)) {
+            //编辑did  从凭证信息进入
+            onAddPartCredential(data);
             putData();
+
+        } else if (Constant.ADDCREDENTIAL.equals(type)) {
+            //新增did  从凭证信息进入
+            onAddPartCredential(data);
+        } else {
+            tvTitleRight.setVisibility(View.VISIBLE);
+            tvTitle.setText(getString(R.string.addpersonalintro));
+            didInfo = data.getParcelable("didInfo");
+            credentialSubjectBean = data.getParcelable("credentialSubjectBean");
+            if (data.getBoolean("useDraft"))
+                putData();
+        }
+    }
+
+    private void onAddPartCredential(Bundle data) {
+        credentialSubjectBean = data.getParcelable("CredentialSubjectBean");
+        tvTitle.setText(getString(R.string.editpersonalintro));
+        tvTip.setVisibility(View.GONE);
+        tvTitleRight.setVisibility(View.GONE);
+        tvNext.setText(getString(R.string.keep));
+        tvNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setData();
+                CacheUtil.setCredentialSubjectBean(credentialSubjectBean);
+                post(RxEnum.EDITPERSONALINTRO.ordinal(), null, null);
+                popTo(CredentialFragment.class, false);
+            }
+        });
     }
 
     private void putData() {
@@ -49,8 +85,8 @@ public class PersonalIntroFragment extends BaseFragment {
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(getString(R.string.addpersonalintro));
-        tvTitleRight.setVisibility(View.VISIBLE);
+
+
     }
 
 
@@ -80,6 +116,7 @@ public class PersonalIntroFragment extends BaseFragment {
             credentialSubjectBean.setIntro(null);
         }
     }
+
     @Override
     public boolean onBackPressedSupport() {
         setData();

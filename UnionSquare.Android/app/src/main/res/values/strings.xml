@@ -518,4 +518,14 @@
     <string name="phonenumber">手机号</string>
     <string name="addpersonalindo">添加个人信息</string>
     <string name="editpersonalinfo">编辑个人信息</string>
+    <string name="editpersonalintro">编辑个人简介</string>
+    <string name="pagehome">个人主页</string>
+    <string name="googleaccount">谷歌账号</string>
+    <string name="microsoftaccount">微软账号</string>
+    <string name="facebookaccount">Facebook账号</string>
+    <string name="twitteraccount">Twitter账号</string>
+    <string name="weboaccount">微博账号</string>
+    <string name="wechataccount">微信账号</string>
+    <string name="alipayaccount">支付宝账号</string>
+    <string name="editsocialaccount">编辑社区账号</string>
 </resources>

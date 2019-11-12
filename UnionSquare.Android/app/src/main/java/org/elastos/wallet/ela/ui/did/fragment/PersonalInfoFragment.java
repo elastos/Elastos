@@ -74,14 +74,14 @@ public class PersonalInfoFragment extends BaseFragment {
     @Override
     protected void setExtraData(Bundle data) {
         String type = data.getString("type");
-        if (Constant.EDITPERSONALINFO.equals(type)) {
+        if (Constant.EDITCREDENTIAL.equals(type)) {
             //编辑did  从凭证信息进入
-            onAddPersonalInfo(data);
+            onAddPartCredential(data);
             putData();
 
-        } else if (Constant.ADDPERSONALINFO.equals(type)) {
+        } else if (Constant.ADDCREDENTIAL.equals(type)) {
             //新增did  从凭证信息进入
-            onAddPersonalInfo(data);
+            onAddPartCredential(data);
         } else {
             //从创建did 进入
             tvTitleRight.setVisibility(View.VISIBLE);
@@ -97,7 +97,7 @@ public class PersonalInfoFragment extends BaseFragment {
         }
     }
 
-    private void onAddPersonalInfo(Bundle data) {
+    private void onAddPartCredential(Bundle data) {
         credentialSubjectBean = data.getParcelable("CredentialSubjectBean");
         tvTitle.setText(getString(R.string.editpersonalinfo));
         tvTip.setVisibility(View.GONE);
@@ -108,7 +108,8 @@ public class PersonalInfoFragment extends BaseFragment {
             public void onClick(View v) {
                 setData();
                 CacheUtil.setCredentialSubjectBean(credentialSubjectBean);
-                popBackFragment();
+                post(RxEnum.EDITPERSONALINFO.ordinal(), null, null);
+                popTo(CredentialFragment.class, false);
             }
         });
     }

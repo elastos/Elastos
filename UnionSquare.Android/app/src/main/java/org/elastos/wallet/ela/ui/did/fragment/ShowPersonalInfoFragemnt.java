@@ -11,12 +11,10 @@ import android.widget.TextView;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
-import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.ElectoralAffairsFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
-import org.elastos.wallet.ela.utils.Log;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -106,7 +104,7 @@ public class ShowPersonalInfoFragemnt extends BaseFragment {
         bundle.putParcelable("CredentialSubjectBean", info);
         switch (view.getId()) {
             case R.id.iv_title_right:
-                bundle.putString("type", Constant.EDITPERSONALINFO);
+                bundle.putString("type", Constant.EDITCREDENTIAL);
                 start(PersonalInfoFragment.class, bundle);
                 break;
 

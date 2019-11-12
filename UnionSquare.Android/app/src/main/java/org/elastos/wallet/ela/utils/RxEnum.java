@@ -63,8 +63,10 @@ public enum RxEnum {
 
     //did
     KEEPDRAFT,//保存草稿
-    RETURCER//返回cerdential数据
-
+    RETURCER,//返回cerdential数据
+    EDITPERSONALINFO,//编辑个人信息
+    EDITPERSONALINTRO,//编辑个人简介
+    EDITSOCIAL//编辑社交账号
    /* enum Type {
         CoinBase, // 创币交易
         RegisterAsset, // 注册资产交易

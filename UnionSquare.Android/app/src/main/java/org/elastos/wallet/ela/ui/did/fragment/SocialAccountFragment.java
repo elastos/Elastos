@@ -61,6 +61,8 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
     TextView tvPublic;
     @BindView(R.id.tv_keep)
     TextView tvKeep;
+    @BindView(R.id.tv_tip)
+    TextView tvTip;
     private DIDInfoEntity didInfo;
     private CredentialSubjectBean credentialSubjectBean;
 
@@ -71,17 +73,46 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
 
     @Override
     protected void setExtraData(Bundle data) {
-        didInfo = data.getParcelable("didInfo");
-        credentialSubjectBean = data.getParcelable("credentialSubjectBean");
-        if (data.getBoolean("useDraft"))
+        String type = data.getString("type");
+        if (Constant.EDITCREDENTIAL.equals(type)) {
+            //编辑did  从凭证信息进入
+            onAddPartCredential(data);
             putData();
+
+        } else if (Constant.ADDCREDENTIAL.equals(type)) {
+            //新增did  从凭证信息进入
+            onAddPartCredential(data);
+        } else {
+            tvTitle.setText(getString(R.string.addsocialaccount));
+            didInfo = data.getParcelable("didInfo");
+            credentialSubjectBean = data.getParcelable("credentialSubjectBean");
+            if (data.getBoolean("useDraft"))
+                putData();
+        }
     }
 
 
     @Override
     protected void initView(View view) {
-        tvTitle.setText(getString(R.string.addsocialaccount));
+
         registReceiver();
+    }
+
+    private void onAddPartCredential(Bundle data) {
+        credentialSubjectBean = data.getParcelable("CredentialSubjectBean");
+        tvTitle.setText(getString(R.string.editsocialaccount));
+        tvTip.setVisibility(View.GONE);
+        tvPublic.setVisibility(View.GONE);
+        tvKeep.setText(getString(R.string.keep));
+        tvKeep.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setData();
+                CacheUtil.setCredentialSubjectBean(credentialSubjectBean);
+                post(RxEnum.EDITSOCIAL.ordinal(), null, null);
+                popTo(CredentialFragment.class, false);
+            }
+        });
     }
 
     private void putData() {
@@ -126,12 +157,12 @@ public class SocialAccountFragment extends BaseFragment implements NewBaseViewDa
             case R.id.tv_public:
 
                 setData();
-                CacheUtil.setCredentialSubjectBean( credentialSubjectBean);
+                CacheUtil.setCredentialSubjectBean(credentialSubjectBean);
                 new CRSignUpPresenter().getFee(didInfo.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);
                 break;
             case R.id.tv_keep:
-               setData();
-                CacheUtil.setCredentialSubjectBean( credentialSubjectBean);
+                setData();
+                CacheUtil.setCredentialSubjectBean(credentialSubjectBean);
 
                 keep();
                 toDIDListFragment();
