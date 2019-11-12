@@ -119,8 +119,8 @@ const Wrapper = styled.div`
   }
 
   .upload-base64 + label figure {
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
     background-color: #008d85;
     border-radius: 50%;
     display: flex;

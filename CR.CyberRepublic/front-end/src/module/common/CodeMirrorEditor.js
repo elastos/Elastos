@@ -79,7 +79,7 @@ export default Component
 
 const Wrapper = styled.div`
   .CodeMirror {
-    min-height: 450px;
+    min-height: 200px;
     height: unset;
     border: 1px solid #d9d9d9;
   }
@@ -90,7 +90,7 @@ const Wrapper = styled.div`
   .CodeMirror-scroll {
     padding: 16px 20px 30px 20px;
     overflow: auto !important;
-    min-height: 450px;
+    min-height: 200px;
     margin-right: 0;
   }
   /* hide long long base64 string */
@@ -105,12 +105,12 @@ const Wrapper = styled.div`
 `
 const Toolbar = styled.div`
   display: flex;
-  margin-bottom: -16px;
+  margin-bottom: -24px;
   justify-content: flex-end;
 `
 
 const Preview = styled.div`
-  min-height: 450px;
+  min-height: 200px;
   padding: 20px;
   background: rgba(204, 204, 204, 0.2);
 `
