@@ -58,10 +58,10 @@ set(IOS_BITCODE_FLAG "-fembed-bitcode")
 
 if(${IOS_ARCH} STREQUAL "arm64")
     set(IOS_DEPLOYMENT_TARGET_FLAG "-miphoneos-version-min=")
-    set(IOS_ARCH_FLAGS "-arch arm64 -D__arm64__")
+    set(IOS_ARCH_FLAGS "-arch arm64 -D__arm64__ -DTARGET_PLATFORM_IOS")
 elseif(${IOS_ARCH} STREQUAL "x86_64")
     set(IOS_DEPLOYMENT_TARGET_FLAG "-mios-simulator-version-min=")
-    set(IOS_ARCH_FLAGS "-arch x86_64 -D__x86_64__")
+    set(IOS_ARCH_FLAGS "-arch x86_64 -D__x86_64__ -DTARGET_PLATFORM_IOS")
 endif()
 
 string(CONCAT _CMAKE_C_FLAGS

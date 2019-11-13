@@ -38,7 +38,15 @@ include_directories(${PROJECT_INT_DIST_DIR}/include)
 link_directories(${PROJECT_INT_DIST_DIR}/lib)
 
 set(LIBS
-    spvsdk)
+    spvsdk
+    sqlite3
+    fruit
+    spdlog
+    boost_system
+    boost_thread
+    boost_filesystem
+    ssl
+    crypto)
 
 add_executable(wallet ${SRC})
 add_dependencies(wallet libspvsdk)

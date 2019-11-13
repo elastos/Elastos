@@ -11,7 +11,7 @@ set(CONFIGURE_ARGS
     "--prefix=${PROJECT_INT_DIST_DIR}"
     "--disable-shared"
     "--enable-static"
-    "--with-ssl=${PROJECT_INT_DIST_DIR}/../deps/libspvsdk/external/src/libspvsdk-build/ThirdParty/openssl/install"
+    "--with-ssl=${PROJECT_INT_DIST_DIR}/../deps/libspvsdk/external/src/libspvsdk-build/intermediates"
     "--without-brotli"
     "--without-ldap-lib"
     "--without-lber-lib"

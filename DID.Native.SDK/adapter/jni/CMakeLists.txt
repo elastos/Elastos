@@ -28,7 +28,15 @@ set(SRC
 set(LIBS
     spvadapter-static
     spvsdk
-    curl)
+    ssl
+    crypto
+    curl
+    sqlite3
+    fruit
+    spdlog
+    boost_system
+    boost_thread
+    boost_filesystem)
 
 set(SYSTEM_LIBS
     z)

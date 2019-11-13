@@ -15,7 +15,15 @@ set(SYSTEM_LIBS
 
 set(LIBS
     curl
-    spvsdk)
+    spvsdk
+    sqlite3
+    fruit
+    spdlog
+    boost_system
+    boost_thread
+    boost_filesystem
+    ssl
+    crypto)
 
 include_directories(
     BEFORE

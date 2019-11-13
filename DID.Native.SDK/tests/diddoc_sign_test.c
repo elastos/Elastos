@@ -13,7 +13,9 @@
 #include "didrequest.h"
 #include "didstore.h"
 #include "diddocument.h"
-#include "hdkey.h"
+#include "HDkey.h"
+
+#define SIGNATURE_BYTES         64
 
 static DIDDocument *document;
 static DID *did;
