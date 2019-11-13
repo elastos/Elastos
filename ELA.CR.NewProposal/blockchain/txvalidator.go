@@ -1792,7 +1792,7 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 	switch cptPayload.ProposalTrackingType {
 	case payload.Common:
 		result = b.checkCRCProposalCommonTracking(cptPayload, proposalState)
-	case payload.Progress:
+	case payload.Progress, payload.ProgressReject:
 		result = b.checkCRCProposalProgressTracking(cptPayload, proposalState)
 	case payload.Terminated:
 		result = b.checkCRCProposalTerminatedTracking(cptPayload, proposalState)
