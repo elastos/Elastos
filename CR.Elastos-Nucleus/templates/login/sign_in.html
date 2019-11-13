@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block scripts %}
+    <script src="{% static '/javascript/elaauth.js' %}"></script>
+{% endblock %}
+
+{% block functionContent %}
+    <div class="row align-items-center justify-content-center">
+        <div class="col-md-8">
+            <div class="card-header text-center">
+                Scan the code using the Elephant Wallet
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ request.session.elephant_url }}">
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted">
+                    Waiting for phone authentication...
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -19,9 +19,11 @@ cd ..
 sleep 5
 
 # Migrate the database
-python3 manage.py makemigrations
-python3 manage.py migrate
 # Collect all static content
 echo "yes" | python3 manage.py collectstatic
+
+python3 manage.py makemigrations
+python3 manage.py migrate
+
 # Finally, run the Django server
 python3 manage.py runserver

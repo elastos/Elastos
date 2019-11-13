@@ -5,10 +5,10 @@ from . import views
 app_name = "login"
 
 urlpatterns = [
-    path('checkElaAuth', views.check_ela_auth, name="checkElaAuth"),
-    path('didCallback', views.did_callback, name="didCallback"),
+    path('check_ela_auth', views.check_ela_auth, name="check_ela_auth"),
+    path('did_callback', views.did_callback, name="did_callback"),
     path('register', views.register, name="register"),
-    path('login', views.login, name="login"),
+    path('sign_in', views.sign_in, name="sign_in"),
     path('home', views.home, name="home"),
     path('logout', views.logout, name="logout")
 ]

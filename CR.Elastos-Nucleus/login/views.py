@@ -14,8 +14,8 @@ def register(request):
     return render(request, 'login/register.html')
 
 
-def login(request):
-    return render(request, 'login/login.html')
+def sign_in(request):
+    return render(request, 'login/sign_in.html')
 
 
 def home(request):
