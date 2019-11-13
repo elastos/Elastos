@@ -115,7 +115,7 @@
     <hr />
 
     <h6>
-      <a href="https://support.mycrypto.com/ens/"
+      <a href="https://support.wallet.elaeth.io/ens/"
          target="_blank"
          rel="noopener noreferrer"
          translate="ENS_Helper_22">
@@ -124,7 +124,7 @@
 
       &nbsp;&middot;&nbsp;
 
-      <a href="https://support.mycrypto.com/ens/ens-debugging-a-bad-instruction-reveal.html"
+      <a href="https://support.wallet.elaeth.io/ens/ens-debugging-a-bad-instruction-reveal.html"
          target="_blank"
          rel="noopener noreferrer"
          translate="ENS_Helper_23">

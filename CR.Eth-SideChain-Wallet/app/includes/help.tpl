@@ -3,7 +3,7 @@
 
   <h1 translate="NAV_Help"> Help </h1>
 
-  <h3><a href="https://support.mycrypto.com/" target="_blank" rel="noopener noreferrer">
+  <h3><a href="https://support.wallet.elaeth.io/" target="_blank" rel="noopener noreferrer">
     This page is slowly being deprecated. Please check out our more up-to-date and searchable Help Center.
   </a></h3>
 
@@ -136,7 +136,7 @@
         <li translate="HELP_3_Desc_2"> Navigate to the "View Info" page. </li>
         }
         @@if (site === 'cx' )  {
-        <li translate="HELP_3_Desc_3"> Navigate to the MyCrypto.com "View Info" page. </li>
+        <li translate="HELP_3_Desc_3"> Navigate to the wallet.elaeth.io "View Info" page. </li>
         }
         <li translate="HELP_3_Desc_4"> Select your wallet file -or- your private key and unlock your wallet. </li>
         <li translate="HELP_3_Desc_5"> If the wallet is encrypted, a text box will automatically appear. Enter the password. </li>
@@ -220,19 +220,19 @@
   <article class="collapse-container">
     <div  ng-click="h5 = !h5">
       <a class="collapse-button"><span ng-show="!h5">+</span><span ng-show="h5">-</span></a>
-      <h4 translate="HELP_5_Title">5. How do I run MyCrypto.com offline/locally? </h4>
+      <h4 translate="HELP_5_Title">5. How do I run wallet.elaeth.io offline/locally? </h4>
     </div>
     <div ng-show="h5">
-    <p translate="HELP_5_Desc_1"> You can run MyCrypto.com on your computer instead of from the GitHub servers. You can generatea a wallet completely offline and send transactions from the "Offline Transaction" page. </p>
+    <p translate="HELP_5_Desc_1"> You can run wallet.elaeth.io on your computer instead of from the GitHub servers. You can generatea a wallet completely offline and send transactions from the "Offline Transaction" page. </p>
     <ol>
       <li translate="HELP_2b_Desc_1">Go to https://github.com/cyber-republic/eth-sidechain-wallet/releases/latest:</li>
       <li translate="HELP_2b_Desc_2">Click the file below that looks like dist-vX.X.X.zip</li>
       <li translate="HELP_2b_Desc_3">Move zip to an airgapped computer.</li>
       <li translate="HELP_2b_Desc_4">Unzip it and double-click `index.html`.</li>
-      <li translate="HELP_5_Desc_7">MyCrypto.com is now running entirely on your computer.</li>
+      <li translate="HELP_5_Desc_7">wallet.elaeth.io is now running entirely on your computer.</li>
     </ol>
     <p translate="HELP_5_Desc_8"> In case you are not familiar, you need to keep the entire folder in order to run the website, not just index.html. Don't touch or move anything around in the folder. If you are storing a backup of the MyCrypto repo for the future, we recommend just storing the ZIP so you can be sure the folder contents stay intact.</p>
-    <p translate="HELP_5_Desc_9"> As we are constantly updating MyCrypto.com, we recommend you periodically update your saved version of the repo. </p>
+    <p translate="HELP_5_Desc_9"> As we are constantly updating wallet.elaeth.io, we recommend you periodically update your saved version of the repo. </p>
     </div>
   </article>
 }
@@ -317,7 +317,7 @@
     </div>
     <div ng-show="h8">
       <p translate="HELP_8_Desc_1">MyCrypto is not a web wallet. You don't have a login and nothing ever gets saved to our servers. It is simply an interface that allows you interact with the blockchain.</p>
-      <p translate="HELP_8_Desc_2">If MyCrypto.com goes down, you would have to find another way (like geth or Ethereum Wallet / Mist) to do what we are doing. But you wouldn't have to "get" your Ether out of MyCrypto because it's not in MyCrypto. It's in whatever wallet your generated via our site.</p>
+      <p translate="HELP_8_Desc_2">If wallet.elaeth.io goes down, you would have to find another way (like geth or Ethereum Wallet / Mist) to do what we are doing. But you wouldn't have to "get" your Ether out of MyCrypto because it's not in MyCrypto. It's in whatever wallet your generated via our site.</p>
       <p translate="HELP_8_Desc_3"> You can import your unencrypted private key and your Geth/Mist Format (encrypted) files directly into geth / Ethereum Wallet / Mist very easily now. See question #10 below. </p>
       <p translate="HELP_8_Desc_4">In addition, the likelihood of us taking MyCrypto down is slim to none. It costs us almost nothing to maintain as we aren't storing any information. If we do take the domain down, it still is, and always will be, publicly available at <a href="https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages" target="_blank" rel="noopener noreferrer">https://github.com/cyber-republic/eth-sidechain-wallet</a>. You can download the ZIP there and run it locally. </p>
     </div>
@@ -447,10 +447,10 @@
   <article class="collapse-container">
     <div ng-click="h14 = !h14" >
       <a class="collapse-button"><span ng-show="!h14">+</span><span ng-show="h14">-</span></a>
-        <h4 translate="HELP_14_Title"> 14. Some sites randomize (seed) the private key generation via mouse movements. MyCrypto.com doesn't do this. Is the random number generation for MyCrypto safe?</h4>
+        <h4 translate="HELP_14_Title"> 14. Some sites randomize (seed) the private key generation via mouse movements. wallet.elaeth.io doesn't do this. Is the random number generation for MyCrypto safe?</h4>
       </div>
       <div ng-show="h14">
-        <p translate="HELP_14_Desc_1">While the mouse moving thing is clever and we understand why people like it, the reality is window.crypto ensures more entropy than your mouse movements. The mouse movements aren't unsafe, it's just that we (and tons of other crypto experments) believe in window.crypto. In addition, MyCrypto.com can be used on touch devices. Here's a <a href="https://www.reddit.com/r/ethereum/comments/2bilqg/note_there_is_a_paranoid_highsecurity_way_to/cj5sgrm" target="_blank" rel="noopener noreferrer">conversation between an angry redditor and Vitalik Buterin regarding mouse movements v. window.crypto</a> and here is the <a href="https://dvcs.w3.org/hg/webcrypto-api/raw-file/tip/spec/Overview.html#dfn-GlobalCrypto" target="_blank" rel="noopener noreferrer">the window.crypto w3 spec</a>.</p>
+        <p translate="HELP_14_Desc_1">While the mouse moving thing is clever and we understand why people like it, the reality is window.crypto ensures more entropy than your mouse movements. The mouse movements aren't unsafe, it's just that we (and tons of other crypto experments) believe in window.crypto. In addition, wallet.elaeth.io can be used on touch devices. Here's a <a href="https://www.reddit.com/r/ethereum/comments/2bilqg/note_there_is_a_paranoid_highsecurity_way_to/cj5sgrm" target="_blank" rel="noopener noreferrer">conversation between an angry redditor and Vitalik Buterin regarding mouse movements v. window.crypto</a> and here is the <a href="https://dvcs.w3.org/hg/webcrypto-api/raw-file/tip/spec/Overview.html#dfn-GlobalCrypto" target="_blank" rel="noopener noreferrer">the window.crypto w3 spec</a>.</p>
     </div>
   </article>
 
@@ -565,7 +565,7 @@
       <h6 translate="HELP_SecCX_Desc_3"> What information is saved? </h6>
       <p translate="HELP_SecCX_Desc_4"> The address, nickname, private key is stored in chrome.storage. The private key is encrypted using the password you set when you added the wallet. The nickname and wallet address is not encrypted. </p>
       <h6 translate="HELP_SecCX_Desc_5"> Why aren't the nickname and wallet address encrypted? </h6>
-      <p translate="HELP_SecCX_Desc_6"> If we were to encrypt these items, you would need to enter a password each time you wanted to view your account balance or view the nicknames. If this concerns you, we recommend you use MyCrypto.com instead of this Chrome Extension. </p>
+      <p translate="HELP_SecCX_Desc_6"> If we were to encrypt these items, you would need to enter a password each time you wanted to view your account balance or view the nicknames. If this concerns you, we recommend you use wallet.elaeth.io instead of this Chrome Extension. </p>
     </div>
   </article>
 }
@@ -582,7 +582,7 @@
       <ul>
         <li translate="HELP_Sec_Desc_2">We've been up and running since August 2015. If you search for <a href="https://www.reddit.com/search?q=mycrypto" target="_blank" rel="noopener noreferrer" />"mycrypto" on reddit</a>, you can see numerous people who use us with great success.</li>
         <li translate="HELP_Sec_Desc_3">We aren't going to take your money or steal your private key(s). There is no malicious code on this site. In fact the "GENERATE WALLET" pages are completely client-side. That means that all the code is executed on ** your computer** and it is never saved and transmitted anywhere.</li>
-        <li translate="HELP_Sec_Desc_4"> Check the URL -- This site is being served through GitHub and you can see the source code here: <a href="https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages" target="_blank" rel="noopener noreferrer">https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages</a> to the domains: <a href="http://kvhnuke.github.io/etherwallet/" target="_blank" rel="noopener noreferrer">http://kvhnuke.github.io/etherwallet/</a> and <a href="https://mycrypto.com" target="_blank" rel="noopener noreferrer">https://mycrypto.com</a>. You can verify it's hosted at GitHub by using <a href="http://viewdns.info/dnsrecord/?domain=mycrypto.com" target="_blank" rel="noopener noreferrer">http://viewdns.info/dnsrecord/?domain=mycrypto.com</a> - last two A record IPs are owned by GitHub for their custom domain hosting.</li>
+        <li translate="HELP_Sec_Desc_4"> Check the URL -- This site is being served through GitHub and you can see the source code here: <a href="https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages" target="_blank" rel="noopener noreferrer">https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages</a> to the domains: <a href="http://kvhnuke.github.io/etherwallet/" target="_blank" rel="noopener noreferrer">http://kvhnuke.github.io/etherwallet/</a> and <a href="https://wallet.elaeth.io" target="_blank" rel="noopener noreferrer">https://wallet.elaeth.io</a>. You can verify it's hosted at GitHub by using <a href="http://viewdns.info/dnsrecord/?domain=wallet.elaeth.io" target="_blank" rel="noopener noreferrer">http://viewdns.info/dnsrecord/?domain=wallet.elaeth.io</a> - last two A record IPs are owned by GitHub for their custom domain hosting.</li>
         <li translate="HELP_Sec_Desc_5"> For generating wallets, you can download the <a href="https://github.com/cyber-republic/eth-sidechain-wallet/tree/gh-pages">source code</a>. See #5 above.</li>
         <li translate="HELP_Sec_Desc_6"> Do a test run and check and see what network activity is happening. The easiest way for you to do this is to right click on the page and click "inspect element". Go to the "Network" tab. Generate a test wallet. You will see there is no network activity. You may see something happening that looks like data:image/gif and data:image/png. Those are the QR codes being generated...on your computer...by your computer. No bytes were transferred.</li>
         <li translate="HELP_Sec_Desc_8"> If you do not feel comfortable using this tool, then by all means, do not use it. We created this tool as a helpful way for people to generate wallets and make transactions without needing to dive into command line or run a full node. Again, feel free to reach out if you have concerns and we will respond as quickly as possible. Thanks! </li>

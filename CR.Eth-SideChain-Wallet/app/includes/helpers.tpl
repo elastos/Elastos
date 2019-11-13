@@ -618,12 +618,12 @@
       </strong>
     </li>
       <li>
-        <a href="https://support.mycrypto.com/getting-started/creating-a-new-wallet-on-mycrypto.html" target="_blank" rel="noopener noreferrer">
+        <a href="https://support.wallet.elaeth.io/getting-started/creating-a-new-wallet-on-mycrypto.html" target="_blank" rel="noopener noreferrer">
           Read this guide for more information.
         </a>
       </li>
       <li>
-        <a href="https://support.mycrypto.com/getting-started/protecting-yourself-and-your-funds.html" target="_blank" rel="noopener noreferrer">
+        <a href="https://support.wallet.elaeth.io/getting-started/protecting-yourself-and-your-funds.html" target="_blank" rel="noopener noreferrer">
           Learn how to protect yourself and your funds.
         </a>
       </li>

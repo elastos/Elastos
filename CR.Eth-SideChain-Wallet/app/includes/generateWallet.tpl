@@ -157,14 +157,14 @@
       <h2 translate="GEN_Help_4">Guides &amp; FAQ</h2>
       <ul>
         <li>
-          <a href="https://support.mycrypto.com/getting-started/backing-up-your-new-wallet.html" target="_blank" rel="noopener noreferrer">
+          <a href="https://support.wallet.elaeth.io/getting-started/backing-up-your-new-wallet.html" target="_blank" rel="noopener noreferrer">
             <strong translate="GEN_Help_13">
               How to Back Up Your Keystore File
             </strong>
           </a>
         </li>
         <li>
-          <a href="https://support.mycrypto.com/private-keys-passwords/difference-beween-private-key-and-keystore-file.html" target="_blank" rel="noopener noreferrer">
+          <a href="https://support.wallet.elaeth.io/private-keys-passwords/difference-beween-private-key-and-keystore-file.html" target="_blank" rel="noopener noreferrer">
             <strong translate="GEN_Help_14">
               What are these Different Formats?
             </strong>
@@ -228,15 +228,15 @@
         Guides &amp; FAQ
       </h2>
       <ul>
-        <li><a href="https://support.mycrypto.com/getting-started/backing-up-your-new-wallet.html" target="_blank" rel="noopener noreferrer">
+        <li><a href="https://support.wallet.elaeth.io/getting-started/backing-up-your-new-wallet.html" target="_blank" rel="noopener noreferrer">
           <strong translate="HELP_2a_Title">
             How to Save & Backup Your Wallet.
           </strong>
         </a></li>
-        <li><a href="https://support.mycrypto.com/getting-started/protecting-yourself-and-your-funds.html" target="_blank" rel="noopener noreferrer">
+        <li><a href="https://support.wallet.elaeth.io/getting-started/protecting-yourself-and-your-funds.html" target="_blank" rel="noopener noreferrer">
           <strong translate="GEN_Help_15">Preventing loss &amp; theft of your funds.</strong>
         </a></li>
-        <li><a href="https://support.mycrypto.com/private-keys-passwords/difference-beween-private-key-and-keystore-file.html" target="_blank" rel="noopener noreferrer">
+        <li><a href="https://support.wallet.elaeth.io/private-keys-passwords/difference-beween-private-key-and-keystore-file.html" target="_blank" rel="noopener noreferrer">
           <strong translate="GEN_Help_16">What are these Different Formats?</strong>
         </a></li>
       </ul>
@@ -252,7 +252,7 @@
           In case you ever forget your password.
         </li>
         <li>
-          <a href="https://support.mycrypto.com/offline/ethereum-cold-storage-with-mycrypto.html" target="_blank" rel="noopener noreferrer" translate="GEN_Help_20">Cold Storage</a>
+          <a href="https://support.wallet.elaeth.io/offline/ethereum-cold-storage-with-mycrypto.html" target="_blank" rel="noopener noreferrer" translate="GEN_Help_20">Cold Storage</a>
         </li>
       </ul>
 

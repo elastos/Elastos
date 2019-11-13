@@ -69,7 +69,7 @@
   <article class="clearfix">
     <section class="col-sm-11">
       <a class="account-help-icon"
-         href="https://support.mycrypto.com/gas/what-is-gas-ethereum.html"
+         href="https://support.wallet.elaeth.io/gas/what-is-gas-ethereum.html"
          target="_blank"
          rel="noopener noreferrer">
         <img src="images/icon-help.svg" class="help-icon" />
@@ -89,7 +89,7 @@
   <article class="clearfix">
     <section class="col-sm-11">
       <a class="account-help-icon"
-         href="https://support.mycrypto.com/gas/what-is-gas-ethereum.html"
+         href="https://support.wallet.elaeth.io/gas/what-is-gas-ethereum.html"
          target="_blank"
          rel="noopener noreferrer">
         <img src="images/icon-help.svg" class="help-icon" />
@@ -119,7 +119,7 @@
   <article class="clearfix">
     <section class="col-sm-11">
       <a class="account-help-icon"
-         href="https://support.mycrypto.com/transactions/what-is-nonce.html"
+         href="https://support.wallet.elaeth.io/transactions/what-is-nonce.html"
          target="_blank"
          rel="noopener noreferrer">
         <img src="images/icon-help.svg" class="help-icon" />
