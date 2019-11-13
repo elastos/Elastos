@@ -141,22 +141,7 @@ export default class extends StandardPage {
   }
 
   handleApplyFilter = () => {
-    const { filter, creationDate, author, type } = this.state
-    const param = {
-      filter: _.isEmpty(filter) ? 'ALL' : filter
-    }
-    if (!_.isEmpty(creationDate)) {
-      const formatStr = 'YYYY-MM-DD'
-      param.startDate = moment(creationDate[0]).format(formatStr)
-      param.endDate = moment(creationDate[1]).format(formatStr)
-    }
-    if (!_.isEmpty(author)) {
-      param.author = author
-    }
-    if (!_.isEmpty(type)) {
-      param.type = type
-    }
-    console.log(param)
+    this.refetch()
   }
 
   ord_renderContent() {
@@ -627,18 +612,24 @@ export default class extends StandardPage {
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page } = this.props
-    const { results, referenceStatus, search, filter } = this.state
+    const {
+      results,
+      referenceStatus,
+      search,
+      filter,
+      status,
+      infoNeeded,
+      underConsideration,
+      budgetRequested,
+      creationDate,
+      author,
+      type
+    } = this.state
     const query = {
       status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
       results
     }
-    const {
-      tagsIncluded: {
-        infoNeeded,
-        underConsideration
-      }
-    } = this.props
     let included = ''
 
     if (infoNeeded) {
@@ -658,6 +649,28 @@ export default class extends StandardPage {
 
     // sending a boolean to be handled by the backend
     query.referenceStatus = referenceStatus
+
+    if (!_.isEmpty(status)) {
+      query.status = status
+    }
+
+    if (!_.isEmpty(budgetRequested)) {
+      query.budget = budgetRequested
+    }
+
+    if (!_.isEmpty(creationDate)) {
+      const formatStr = 'YYYY-MM-DD'
+      query.startDate = moment(creationDate[0]).format(formatStr)
+      query.endDate = moment(creationDate[1]).format(formatStr)
+    }
+
+    if (!_.isEmpty(author)) {
+      query.author = author
+    }
+
+    if (!_.isEmpty(type)) {
+      query.type = type
+    }
 
     // TODO
     if (sortBy) {
