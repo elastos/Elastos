@@ -57,6 +57,14 @@ namespace Elastos {
 			return _issuanceTime;
 		}
 
+		void DIDDetail::SetTxTimeStamp(time_t timeStamp) {
+			_txTimeStamp = timeStamp;
+		}
+
+		time_t DIDDetail::GetTxTimeStamp() const {
+			return _txTimeStamp;
+		}
+
 		void DIDDetail::SetTxHash(const std::string &txHash) {
 			_txHash = txHash;
 		}
@@ -92,8 +100,9 @@ namespace Elastos {
 				DIDDetailPtr didDetailPtr(new DIDDetail());
 				didDetailPtr->SetDIDInfo(infoPtr);
 				didDetailPtr->SetBlockHeighht(list[i].BlockHeight);
-				didDetailPtr->SetIssuanceTime(list[i].TimeStamp);
+				didDetailPtr->SetIssuanceTime(list[i].CreateTime);
 				didDetailPtr->SetTxHash(list[i].TxHash);
+				didDetailPtr->SetTxTimeStamp(list[i].TimeStamp);
 
 				Lock();
 				InsertDID(didDetailPtr);
@@ -145,7 +154,7 @@ namespace Elastos {
 			return result;
 		}
 
-		VerifiableCredential IDChainSubWallet::GetSelfProclaimedCredential(const std::string &didName) const {
+		VerifiableCredential IDChainSubWallet::GetSelfProclaimedCredential(const std::string &did, const std::string &didName, const std::string &operation) const {
 			ErrorChecker::CheckParam(didName.empty(), Error::InvalidArgument, "invalid didName");
 
 			VerifiableCredential selfProclaimed;
@@ -159,7 +168,14 @@ namespace Elastos {
 			selfProclaimed.SetTypes(types);
 
 			std::stringstream issuerDate;
-			time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			time_t t = 0;
+			if (operation == "create") {
+				t = time(NULL);
+			} else {
+				DIDDetailPtr detailInfo = GetDIDInfo(did);
+				t = detailInfo->GetIssuanceTime();
+			}
+
 			struct tm dateTm;
 			issuerDate << std::put_time(localtime_r(&t, &dateTm), "%FT%TZ");
 			selfProclaimed.SetIssuerDate(issuerDate.str());
@@ -172,6 +188,9 @@ namespace Elastos {
 			nlohmann::json credentialSubject = didInfo["credentialSubject"];
 			ErrorChecker::CheckParam(!credentialSubject.is_object(), Error::InvalidArgument,
 			                         "invalid credentialSubject JSON");
+
+			std::string did = didInfo["id"].get<std::string>();
+			std::string operation = didInfo["operation"].get<std::string>();
 
 			VerifiableCredential verifiableCredential;
 
@@ -195,7 +214,14 @@ namespace Elastos {
 			verifiableCredential.SetTypes(types);
 
 			std::stringstream issuerDate;
-			time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			time_t t = 0;
+			if (operation == "create") {
+				t = time(NULL);
+			} else {
+				DIDDetailPtr detailInfo = GetDIDInfo(did);
+				t = detailInfo->GetIssuanceTime();
+			}
+
 			struct tm dateTm;
 			issuerDate << std::put_time(localtime_r(&t, &dateTm), "%FT%TZ");
 			verifiableCredential.SetIssuerDate(issuerDate.str());
@@ -370,7 +396,7 @@ namespace Elastos {
 
 			VerifiableCredentialArray verifiableCredentials;
 
-			VerifiableCredential selfProclaimed = GetSelfProclaimedCredential(didName);
+			VerifiableCredential selfProclaimed = GetSelfProclaimedCredential(did, didName, operation);
 			selfProclaimed.SetID(id);
 			verifiableCredentials.push_back(selfProclaimed);
 
@@ -468,6 +494,23 @@ namespace Elastos {
 			return j;
 		}
 
+		DIDDetailPtr IDChainSubWallet::GetDIDInfo(const std::string &did) const {
+			std::string id = PREFIX_DID + did;
+			size_t num = _didList.size();
+			for (size_t i = num; i > 0; --i) {
+				DIDDetailPtr detailPtr = _didList[i - 1];
+				DIDInfo *payload = dynamic_cast<DIDInfo *>(detailPtr->GetDIDInfo().get());
+				if (payload) {
+					if (payload->DIDPayload().ID() == id) {
+						return detailPtr;
+					}
+				}
+			}
+
+			Log::warn("no found did : {}", did);
+			return nullptr;
+		}
+
 		nlohmann::json IDChainSubWallet::ToDIDInfoJson(const DIDDetailPtr &didDetailPtr, bool isDetail) const {
 			nlohmann::json summary;
 
@@ -540,7 +583,16 @@ namespace Elastos {
 					didDetailPtr->SetDIDInfo(tx->GetPayloadPtr());
 					didDetailPtr->SetTxHash(tx->GetHash().GetHex());
 					didDetailPtr->SetBlockHeighht(tx->GetBlockHeight());
-					didDetailPtr->SetIssuanceTime(tx->GetTimestamp());
+					if (payload->DIDHeader().Operation() == "create") {
+						didDetailPtr->SetIssuanceTime(tx->GetTimestamp());
+					} else {
+						std::string id = payload->DIDPayload().ID();
+						std::vector<std::string> idSplited;
+						boost::algorithm::split(idSplited, id, boost::is_any_of(":"), boost::token_compress_on);
+						nlohmann::json detailInfo = GetResolveDIDInfo(0, 1, idSplited[2]);
+						uint64_t issuanceTime = detailInfo["DID"][0]["issuanceDate"].get<uint64_t>();
+						didDetailPtr->SetIssuanceTime(issuanceTime);
+					}
 
 					Lock();
 					InsertDID(didDetailPtr);
@@ -550,7 +602,8 @@ namespace Elastos {
 					didEntity.DID = payload->DIDPayload().ID();
 					didEntity.TxHash = didDetailPtr->GetTxHash();
 					didEntity.BlockHeight = didDetailPtr->GetBlockHeight();
-					didEntity.TimeStamp = didDetailPtr->GetIssuanceTime();
+					didEntity.TimeStamp = didDetailPtr->GetTxTimeStamp();
+					didEntity.CreateTime = didDetailPtr->GetIssuanceTime();
 
 					ByteStream stream;
 					didDetailPtr->GetDIDInfo()->Serialize(stream, 0);
@@ -572,7 +625,7 @@ namespace Elastos {
 					DIDDetailPtr detailPtr = _didList[j];
 					if (detailPtr->GetTxHash() == hashes[i].GetHex()) {
 						detailPtr->SetBlockHeighht(blockHeight);
-						detailPtr->SetIssuanceTime(timeStamp);
+						detailPtr->SetTxTimeStamp(timeStamp);
 						break;
 					}
 				}

@@ -456,6 +456,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				didEntity.BlockHeight = getRandUInt32();
 				didEntity.TimeStamp = getRandUInt64();
 				didEntity.TxHash = getRanduint256().GetHex();
+				didEntity.CreateTime = getRandUInt64();
 				didToSave.push_back(didEntity);
 
 				REQUIRE(dm.PutDID(ISO, didEntity));
@@ -472,6 +473,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				REQUIRE(didVerify[i].PayloadInfo == didToSave[i].PayloadInfo);
 				REQUIRE(didVerify[i].BlockHeight == didToSave[i].BlockHeight);
 				REQUIRE(didVerify[i].TimeStamp == didToSave[i].TimeStamp);
+				REQUIRE(didVerify[i].CreateTime == didToSave[i].CreateTime);
 				REQUIRE(didVerify[i].TxHash == didToSave[i].TxHash);
 			}
 
@@ -481,6 +483,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(detail.PayloadInfo == didToSave[0].PayloadInfo);
 			REQUIRE(detail.BlockHeight == didToSave[0].BlockHeight);
 			REQUIRE(detail.TimeStamp == didToSave[0].TimeStamp);
+			REQUIRE(detail.CreateTime == didToSave[0].CreateTime);
 			REQUIRE(detail.TxHash == didToSave[0].TxHash);
 		}
 
@@ -501,6 +504,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (size_t i = 0; i < verifyList.size(); ++i) {
 				REQUIRE(verifyList[i].BlockHeight == updateHeight);
 				REQUIRE(verifyList[i].TimeStamp == updateTime);
+				REQUIRE(verifyList[i].CreateTime == didList[i].CreateTime);
 			}
 		}
 

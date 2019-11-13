@@ -396,6 +396,74 @@ static void withdraw(int argc, char *argv[])
     }
 }
 
+static void createDID(int argc, char *argv[]) {
+    std::string walletId = argv[1];
+
+    std::string id;
+    std::string didName;
+    std::string operation;
+    std::string publicKey;
+    uint64_t expires;
+    nlohmann::json jsonData;
+    nlohmann::json pubKey = R"({"id":"#primary"})"_json;
+    nlohmann::json publicKeys;
+    std::string payPasswd;
+
+    std::cout << "Input id:";
+    std::cin >> id;
+
+    std::cout << "Input didName:";
+    std::cin >> didName;
+
+    std::cout << "Input operation:";
+    std::cin >> operation;
+
+    std::cout << "Input publicKey:";
+    std::cin >> publicKey;
+    pubKey["publicKey"] = publicKey;
+    publicKeys.push_back(pubKey);
+
+    std::cout << "Input expires date:";
+    std::cin >> expires;
+
+    std::cout << "Input pay password:";
+    std::cin >> payPasswd;
+
+    jsonData["id"] = id;
+    jsonData["didName"] = didName;
+    jsonData["operation"] = operation;
+    jsonData["publicKey"] = publicKeys;
+    jsonData["expires"] = expires;
+
+    IIDChainSubWallet *iidChainSubWallet = nullptr;
+    auto masterWallet = manager->GetMasterWallet(walletId);
+    std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+    for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
+        if ((*it)->GetChainID() == ID_CHAIN){
+            iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(*it);
+            break;
+        }
+    }
+
+    if (iidChainSubWallet == nullptr) {
+        std::cerr << "Can not get sidechain wallet for: " << iidChainSubWallet << std::endl;
+        return;
+    }
+
+    try {
+        nlohmann::json payload = iidChainSubWallet->GenerateDIDInfoPayload(jsonData, payPasswd);
+        nlohmann::json tx = iidChainSubWallet->CreateIDTransaction(payload, "");
+
+        nlohmann::json signedTx = iidChainSubWallet->SignTransaction(tx, payPasswd);
+	    nlohmann::json res = iidChainSubWallet->PublishTransaction(signedTx);
+        std::cout << res.dump() <<std::endl;
+
+    } catch (...) {
+        std::cerr << "Create id transaction failed." << std::endl;
+    }
+
+}
+
 static void exportm(int argc, char *argv[])
 {
     std::string walletId;
@@ -452,15 +520,16 @@ struct command {
     const char *help;
 } commands[] = {
     { "help",       help,                   "help [command]\n  Display available command list, or usage description for specific command." },
-    { "init",       init,                   "init walletName\n  Create a new wallet with given name." },
-    { "import",     import,                 "import walletName\n  Import wallet with given name and mnemonic." },
+    { "init",       init,                   "init [walletName]\n  Create a new wallet with given name." },
+    { "import",     import,                 "import [walletName]\n  Import wallet with given name and mnemonic." },
     { "list",       list,                   "list\n  List all wallets." },
-    { "address",    address,                "address chainId\n  Get the revceive address for specified chainId." },
-    { "deposit",    deposit,                "deposit walletName sidechain amount password\n  Deposit to sidechain from mainchain." },
-    { "withdraw",   withdraw,               "withdraw walletName sidechain amount password\n  Withdraw from sidechain to mainchain." },
-    { "export",     exportm,                "export walletName password\n  Export mnemonic from specified wallet." },
-    { "remove",     remove,                 "remove walletName\n  Remove specified wallet."},
+    { "address",    address,                "address [chainId]\n  Get the revceive address for specified chainId." },
+    { "deposit",    deposit,                "deposit [walletName] [sidechain] [amount] [password]\n  Deposit to sidechain from mainchain." },
+    { "withdraw",   withdraw,               "withdraw [walletName] [sidechain] [amount] [password]\n  Withdraw from sidechain to mainchain." },
+    { "export",     exportm,                "export [walletName] [password]\n  Export mnemonic from specified wallet." },
+    { "remove",     remove,                 "remove [walletName]\n  Remove specified wallet."},
     { "verbose",    verbose,                "verbose [on | off]\n Set verbose mode." },
+    { "createDID",  createDID,               "createDID [walletName]\n Create DID with IDChain"},
     { "exit",       NULL,                   "exit\n  Quit wallet." },
     { "quit",       NULL,                   "quit\n  Quit wallet." },
     { NULL,         NULL,                   NULL }

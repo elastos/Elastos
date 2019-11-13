@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.10)
 cmake_policy(VERSION 3.10)
 
 execute_process(
-	COMMAND git describe --tags --no-abbrev
+	COMMAND git describe --tags --no-abbrev --exclude "*-pre"
 	COMMAND tr -d "v\n"
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	OUTPUT_VARIABLE SPVSDK_VERSION
 )
 
 execute_process(
-	COMMAND git describe --dirty --always --tags
+	COMMAND git describe --dirty --always --tags --exclude "*-pre"
 	COMMAND tr -d "\n"
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE

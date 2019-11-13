@@ -153,8 +153,8 @@ namespace Elastos {
 				DIDEntity didEntity;
 				std::string sql;
 
-				sql = "SELECT " + DID_COLUMN_ID + ", " + DID_PAYLOAD_BUFF + ", " + BLOCK_HEIGHT + ", " + TIME_STAMP +
-				      ", " + TX_HASH + " FROM " + DID_TABLE_NAME + ";";
+				sql = "SELECT " + DID_COLUMN_ID + ", " + DID_PAYLOAD_BUFF + ", " + DID_CREATE_TIME + ", " + BLOCK_HEIGHT
+						+ ", " + TIME_STAMP + ", " + TX_HASH + " FROM " + DID_TABLE_NAME + ";";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -170,9 +170,10 @@ namespace Elastos {
 					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
 					didEntity.PayloadInfo.assign(pdata, pdata + len);
 
-					didEntity.BlockHeight = _sqlite->ColumnInt(stmt, 2);
-					didEntity.TimeStamp = _sqlite->ColumnInt64(stmt, 3);
-					didEntity.TxHash = _sqlite->ColumnText(stmt, 4);
+					didEntity.CreateTime = _sqlite->ColumnInt64(stmt, 2);
+					didEntity.BlockHeight = _sqlite->ColumnInt(stmt, 3);
+					didEntity.TimeStamp = _sqlite->ColumnInt64(stmt, 4);
+					didEntity.TxHash = _sqlite->ColumnText(stmt, 5);
 
 					didEntitys.push_back(didEntity);
 				}
@@ -231,8 +232,8 @@ namespace Elastos {
 			std::string sql;
 
 			sql = "INSERT INTO " + DID_TABLE_NAME + "(" + DID_COLUMN_ID + "," +
-			      DID_PAYLOAD_BUFF + "," + BLOCK_HEIGHT + "," + TIME_STAMP + "," + TX_HASH + "," + DID_RESERVE +
-			      ") VALUES (?, ?, ?, ?, ?, ?);";
+					DID_PAYLOAD_BUFF + "," + DID_CREATE_TIME + "," + BLOCK_HEIGHT + "," +
+					TIME_STAMP + "," + TX_HASH + "," + DID_RESERVE + ") VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -242,10 +243,11 @@ namespace Elastos {
 
 			if (!_sqlite->BindText(stmt, 1, didEntity.DID, nullptr) ||
 			    !_sqlite->BindBlob(stmt, 2, didEntity.PayloadInfo, nullptr) ||
-			    !_sqlite->BindInt(stmt, 3, didEntity.BlockHeight) ||
-			    !_sqlite->BindInt64(stmt, 4, didEntity.TimeStamp) ||
-			    !_sqlite->BindText(stmt, 5, didEntity.TxHash, nullptr) ||
-			    !_sqlite->BindText(stmt, 6, "", nullptr)) {
+			    !_sqlite->BindInt64(stmt, 3, didEntity.CreateTime) ||
+			    !_sqlite->BindInt(stmt, 4, didEntity.BlockHeight) ||
+			    !_sqlite->BindInt64(stmt, 5, didEntity.TimeStamp) ||
+			    !_sqlite->BindText(stmt, 6, didEntity.TxHash, nullptr) ||
+			    !_sqlite->BindText(stmt, 7, "", nullptr)) {
 				Log::error("bind args");
 				return false;
 			}
@@ -307,8 +309,8 @@ namespace Elastos {
 			bool found = false;
 			std::string sql;
 
-			sql = "SELECT " + DID_PAYLOAD_BUFF + ", " + BLOCK_HEIGHT + ", " + TIME_STAMP + ", " + TX_HASH +
-			      " FROM " + DID_TABLE_NAME + " WHERE " + DID_COLUMN_ID + " = ?;";
+			sql = "SELECT " + DID_PAYLOAD_BUFF + ", " + DID_CREATE_TIME + "," + BLOCK_HEIGHT + ", " + TIME_STAMP + ", "
+				+ TX_HASH + " FROM " + DID_TABLE_NAME + " WHERE " + DID_COLUMN_ID + " = ?;";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -330,9 +332,10 @@ namespace Elastos {
 				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 0);
 				didEntity.PayloadInfo.assign(pdata, pdata + len);
 
-				didEntity.BlockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 1);
-				didEntity.TimeStamp = (time_t) _sqlite->ColumnInt(stmt, 2);
-				didEntity.TxHash = _sqlite->ColumnText(stmt, 3);
+				didEntity.CreateTime = _sqlite->ColumnInt64(stmt, 1);
+				didEntity.BlockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+				didEntity.TimeStamp = (time_t) _sqlite->ColumnInt64(stmt, 3);
+				didEntity.TxHash = _sqlite->ColumnText(stmt, 4);
 			}
 
 			if (!_sqlite->Finalize(stmt)) {
@@ -352,6 +355,7 @@ namespace Elastos {
 				sql = "SELECT " +
 				      DID_COLUMN_ID + "," +
 				      DID_PAYLOAD_BUFF + "," +
+				      DID_CREATE_TIME + "," +
 				      BLOCK_HEIGHT + "," +
 				      TIME_STAMP + "," +
 				      DID_RESERVE +

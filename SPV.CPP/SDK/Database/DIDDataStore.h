@@ -17,12 +17,13 @@ namespace Elastos {
 			DIDEntity() {}
 
 			DIDEntity(const std::string &did, const bytes_t &payloadInfo, time_t timestamp, uint32_t blockHeight,
-			          const std::string &txHash) :
+			          const std::string &txHash, time_t createTime) :
 					DID(did),
 					PayloadInfo(payloadInfo),
 					TimeStamp(timestamp),
 					BlockHeight(blockHeight),
-					TxHash(txHash) {
+					TxHash(txHash),
+					CreateTime(createTime) {
 			}
 
 			std::string DID;
@@ -30,6 +31,7 @@ namespace Elastos {
 			time_t TimeStamp;
 			uint32_t BlockHeight;
 			std::string TxHash;
+			time_t CreateTime;
 		};
 
 		class DIDDataStore : public TableBase {
@@ -71,6 +73,7 @@ namespace Elastos {
 			const std::string DID_TABLE_NAME = "didTable";
 			const std::string DID_COLUMN_ID = "_id";
 			const std::string DID_PAYLOAD_BUFF = "didBuff";
+			const std::string DID_CREATE_TIME = "createTime";
 			const std::string BLOCK_HEIGHT = "blockHeight";
 			const std::string TIME_STAMP = "timeStamp";
 			const std::string TX_HASH = "txHash";
@@ -78,6 +81,7 @@ namespace Elastos {
 			const std::string DID_DATABASE_CREATE = "create table if not exists " + DID_TABLE_NAME + " (" +
 			                                        DID_COLUMN_ID + " text not null, " +
 			                                        DID_PAYLOAD_BUFF + " blob, " +
+			                                        DID_CREATE_TIME + " integer, " +
 			                                        BLOCK_HEIGHT + " integer, " +
 			                                        TIME_STAMP + " integer, " +
 			                                        TX_HASH + " text DEFAULT '', " +

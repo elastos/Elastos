@@ -28,6 +28,10 @@ namespace Elastos {
 
 			time_t GetIssuanceTime() const;
 
+			void SetTxTimeStamp(time_t timeStamp);
+
+			time_t GetTxTimeStamp() const;
+
 			void SetBlockHeighht(uint32_t blockHeight);
 
 			uint32_t GetBlockHeight() const;
@@ -40,6 +44,7 @@ namespace Elastos {
 		private:
 			PayloadPtr _didInfo;
 			time_t _issuanceTime;
+			time_t _txTimeStamp;
 			uint32_t _blockHeight;
 			std::string _txHash;
 		};
@@ -87,9 +92,11 @@ namespace Elastos {
 
 			void InsertDID(const DIDDetailPtr &didDetailPtr);
 
-			VerifiableCredential GetSelfProclaimedCredential(const std::string &didName) const;
+			VerifiableCredential GetSelfProclaimedCredential(const std::string &did, const std::string &didName, const std::string &operation) const;
 
 			VerifiableCredential GetPersonalInfoCredential(const nlohmann::json &didInfo) const;
+
+			DIDDetailPtr GetDIDInfo(const std::string &did) const;
 		protected:
 			friend class MasterWallet;
 

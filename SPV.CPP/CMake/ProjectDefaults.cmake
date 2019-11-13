@@ -24,10 +24,7 @@ else()
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -fvisibility=default")
     endif()
 
-    if(NOT (DARWIN OR IOS))
-        set(CMAKE_SHARED_LINKER_FLAGS
-            "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--exclude-libs,ALL")
-    endif()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -frtti")
 endif()
 
 set(CMAKE_CXX_FLAGS
