@@ -25,7 +25,11 @@ export default {
     plan: '实施计划',
     vote: '投票',
     tracking: '跟踪',
-    summary: '总结'
+    summary: '总结',
+    status: '建议状态',
+    budgetRequested: '预算',
+    creationDate: '创建日期',
+    author: '作者'
   },
   btn: {
     makeIntoProposal: '发布为提案',
