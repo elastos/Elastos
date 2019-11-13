@@ -494,6 +494,20 @@ func (m *Manager) FetchUnspent(txID common.Uint256) ([]uint16, error) {
 	return indexes, nil
 }
 
+func (m *Manager) FetchUTXO(programHash *common.Uint168) ([]*types.UTXO, error) {
+	var utxos []*types.UTXO
+	err := m.db.View(func(dbTx database.Tx) error {
+		var err error
+		utxos, err = dbFetchUtxoIndexEntry(dbTx, programHash)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return utxos, nil
+}
+
 // NewManager returns a new index manager with the provided indexes enabled.
 //
 // The manager returned satisfies the blockchain.IndexManager interface and thus

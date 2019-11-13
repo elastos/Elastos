@@ -93,4 +93,7 @@ type IFFLDBChainStore interface {
 
 	// Get unspent by transaction hash
 	GetUnspent(txID Uint256) ([]uint16, error)
+
+	// Get utxo by program hash
+	GetUTXO(programHash *Uint168) ([]*UTXO, error)
 }
