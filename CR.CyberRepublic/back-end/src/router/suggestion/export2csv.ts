@@ -1,6 +1,7 @@
 import Base from '../Base'
 import * as _ from 'lodash'
 import { Types } from 'mongoose'
+import json2csv from 'json2csv'
 import SuggestionService from '../../service/SuggestionService'
 
 const ObjectId = Types.ObjectId
@@ -62,8 +63,21 @@ export default class extends Base {
       }
     }
 
-    const result = await service.list(param)
+    const result = await service.export2csv(param)
 
+    const fileName = "suggestions.csv"
+    const exportData = result[0]
+    
+    let response = this.res;
+    await response.setHeader('Content-disposition',`attachment; filename=`+encodeURIComponent(fileName)+'.csv');
+    await response.writeHead(200,{'Content-Type':'text/csv;charset=utf-8'});
+
+    let csv =json2csv(exportData)
+    csv = Buffer.concat([new Buffer('\xEF\xBB\xBF','binary'),new Buffer(csv)])
+    await response.write(csv)
+    await response.write('\n')
+    await response.end();
+    
     return this.result(1, result)
   }
 }

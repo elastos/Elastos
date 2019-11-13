@@ -134,7 +134,7 @@ export default class extends Base {
         if (filter === SEARCH_FILTERS.NUMBER) {
           query.$or = [{ displayId: parseInt(search) || 0 }]
         }
-            
+        
         if (filter === SEARCH_FILTERS.TITLE) {
           query.$or = [
             { title: { $regex: search, $options: 'i' } }
@@ -220,6 +220,48 @@ export default class extends Base {
       cursor.skip(results * (page - 1)).limit(results)
     }
 
+    // status
+    if (param.status && constant.SUGGESTION_STATUS[param.status]) {
+      query.status = param.status
+    }
+    // budget
+    if (param.budget && param.budget.length) {
+      query.budget = param.budget
+    }
+    // isProposed
+    if (param.isProposed) {
+      query["reference.1"] = {
+        $exists: true
+      }
+    }
+    // startDate <  endDate
+    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      query.createdAt = {
+        $and: [
+          {$gte: new Date(param.startDate)},
+          {$lte: new Date(param.endDate)}
+        ]}
+    }
+    // author
+    if(param.author && param.author.length) {
+      let search = param.author
+      const db_user = this.getDBModel('User')
+      const pattern = search.split(' ').join('|')
+      const users = await db_user.getDBInstance().find({
+        $or: [
+          { username: { $regex: search, $options: 'i' } },
+          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+        ]
+      }).select('_id')
+      const userIds = _.map(users, (el: { _id: string }) => el._id)
+      query.createdBy = { $in: userIds }
+    }
+    // type
+    if(param.type && _.indexOf(_.values(constant.SUGGESTION_TYPE),param.type)){
+      query.type = param.type
+    }
+
     const rs = await Promise.all([
       cursor,
       this.model.getDBInstance().find(query).count()
@@ -231,6 +273,172 @@ export default class extends Base {
     }
   }
 
+  public async export2csv(param: any): Promise<Object> {
+    const query = _.omit(
+      param,
+      [
+        'results', 'page', 'sortBy', 'sortOrder',
+        'filter', 'profileListFor', 'search',
+        'tagsIncluded', 'referenceStatus'
+      ]
+    )
+    const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
+
+    if (!profileListFor) {
+      query.$or = []
+      const search = _.trim(param.search)
+      const filter = param.filter
+      if (search && filter) {
+        const SEARCH_FILTERS = {
+          TITLE: 'TITLE',
+          NUMBER: 'NUMBER',
+          ABSTRACT: 'ABSTRACT',
+          EMAIL: 'EMAIL',
+          NAME: 'NAME'
+        }
+        
+        if (filter === SEARCH_FILTERS.NUMBER) {
+          query.$or = [{ displayId: parseInt(search) || 0 }]
+        }
+        
+        if (filter === SEARCH_FILTERS.TITLE) {
+          query.$or = [
+            { title: { $regex: search, $options: 'i' } }
+          ]
+        }
+
+        if (filter === SEARCH_FILTERS.ABSTRACT) {
+          query.$or = [
+            { abstract: { $regex: search, $options: 'i' } }
+          ]
+        }
+
+        if (filter === SEARCH_FILTERS.EMAIL) {
+          const db_user = this.getDBModel('User')
+          const users = await db_user.getDBInstance().find({
+            $or: [
+              { email: { $regex: search, $options: 'i' } }
+            ]
+          }).select('_id')
+          const userIds = _.map(users, (el: { _id: string }) => el._id)
+          query.$or = [{ createdBy: { $in: userIds } }]
+        }
+
+        if (filter === SEARCH_FILTERS.NAME) {
+          const db_user = this.getDBModel('User')
+          const pattern = search.split(' ').join('|')
+          const users = await db_user.getDBInstance().find({
+            $or: [
+              { username: { $regex: search, $options: 'i' } },
+              { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+              { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+            ]
+          }).select('_id')
+          const userIds = _.map(users, (el: { _id: string }) => el._id)
+          query.$or = [{ createdBy: { $in: userIds } }]
+        }
+      }
+
+      let qryTagsType: any
+      if (!_.isEmpty(tagsIncluded)) {
+        qryTagsType = { $in: tagsIncluded.split(',') }
+        query.$or.push({ 'tags.type': qryTagsType })
+      }
+      if (referenceStatus === 'true') {
+        // if we have another tag selected we only want that tag and referenced suggestions
+        query.$or.push({ reference: { $exists: true, $ne: [] } })
+      }
+
+      if (_.isEmpty(query.$or)) delete query.$or
+      delete query['tags.type']
+    }
+
+    let cursor: any
+    // suggestions on suggestion list page
+    if (sortBy) {
+      const sortObject = {}
+      // hack to prioritize descUpdatedAt if it's createdAt
+      if (sortBy === 'createdAt') {
+        sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+      }
+      sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+
+      const excludedFields = [
+        '-comments', '-goal', '-motivation',
+        '-relevance', '-budget', '-plan',
+        '-subscribers', '-likes', '-dislikes', '-updatedAt'
+      ]
+
+      cursor = this.model.getDBInstance()
+                   .find(query, excludedFields.join(' '))
+                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+                   .sort(sortObject)
+    } else {
+      // my suggestions on profile page
+      cursor = this.model.getDBInstance()
+                   .find(query, 'title activeness commentsNum createdAt dislikesNum displayId likesNum')
+    }
+
+    /*if (param.results) {
+      const results = parseInt(param.results, 10)
+      const page = parseInt(param.page, 10)
+      cursor.skip(results * (page - 1)).limit(results)
+    }*/
+
+    // status
+    if (param.status && constant.SUGGESTION_STATUS[param.status]) {
+      query.status = param.status
+    }
+    // budget
+    if (param.budget && param.budget.length) {
+      query.budget = param.budget
+    }
+    // isProposed
+    if (param.isProposed) {
+      query["reference.1"] = {
+        $exists: true
+      }
+    }
+    // startDate <  endDate
+    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      query.createdAt = {
+        $and: [
+          {$gte: new Date(param.startDate)},
+          {$lte: new Date(param.endDate)}
+        ]}
+    }
+    // author
+    if(param.author && param.author.length) {
+      let search = param.author
+      const db_user = this.getDBModel('User')
+      const pattern = search.split(' ').join('|')
+      const users = await db_user.getDBInstance().find({
+        $or: [
+          { username: { $regex: search, $options: 'i' } },
+          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+        ]
+      }).select('_id')
+      const userIds = _.map(users, (el: { _id: string }) => el._id)
+      query.createdBy = { $in: userIds }
+    }
+    // type
+    if(param.type && _.indexOf(_.values(constant.SUGGESTION_TYPE),param.type)){
+      query.type = param.type
+    }
+
+    const rs = await Promise.all([
+      cursor,
+      this.model.getDBInstance().find(query).count()
+    ])
+
+    return {
+      list: rs[0],
+      total: rs[1]
+    }
+  }
+  
   public async show(param: any): Promise<Document> {
     const { id: _id, incViewsNum } = param
     if (incViewsNum === 'true') {
@@ -253,7 +461,15 @@ export default class extends Base {
         })
       }
     }
+    // proposed by council
+    const db_cvote = this.getDBModel('CVote')
+    const cvoteList = await db_cvote
+      .getDBInstance()
+      .findOne({ reference: { $all: [ _id ] } }, 'createdBy')
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
+    doc.proposer = cvoteList
+    
     return doc
   }
 

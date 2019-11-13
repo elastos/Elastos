@@ -2,6 +2,7 @@ import Base from '../Base'
 import create from './create'
 import update from './update'
 import list from './list'
+import export2csv from './export2csv'
 import show from './show'
 import addTag from './addTag'
 import like from './like'
@@ -26,6 +27,11 @@ export default Base.setRouter([
   {
     path: '/list',
     router: list,
+    method: 'get',
+  },
+  {
+    path: '/export2csv',
+    router: export2csv,
     method: 'get',
   },
   {
