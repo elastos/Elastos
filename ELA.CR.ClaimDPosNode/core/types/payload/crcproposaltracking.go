@@ -24,16 +24,20 @@ const (
 	// of the CRC proposal.
 	Progress CRCProposalTrackingType = 0x01
 
+	// ProgressReject indicates that the transaction is used to indicate current
+	// progress of CRC proposal verification failed.
+	ProgressReject CRCProposalTrackingType = 0x02
+
 	// Terminated indicates that the transaction is used to indicate that the
 	// CRC proposal has been terminated.
-	Terminated CRCProposalTrackingType = 0x02
+	Terminated CRCProposalTrackingType = 0x03
 
 	// ProposalLeader indicates that the transaction is used to change the person in
 	// charge of the CRC proposal.
-	ProposalLeader CRCProposalTrackingType = 0x03
+	ProposalLeader CRCProposalTrackingType = 0x04
 
 	// Appropriation indicates that the transaction is used for appropriation.
-	Appropriation CRCProposalTrackingType = 0x04
+	Appropriation CRCProposalTrackingType = 0x05
 )
 
 type CRCProposalTrackingType byte
@@ -44,6 +48,8 @@ func (pt CRCProposalTrackingType) Name() string {
 		return "Common"
 	case Progress:
 		return "Progress"
+	case ProgressReject:
+		return "ProgressReject"
 	case Terminated:
 		return "Terminated"
 	case ProposalLeader:
