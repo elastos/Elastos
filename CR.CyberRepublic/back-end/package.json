@@ -38,7 +38,7 @@
     "google-translate-api": "^2.3.0",
     "helmet": "3.9.0",
     "http-status": "1.0.1",
-    "json2csv": "^4.5.4",
+    "json2csv": "3",
     "lodash": ">=4.17.11",
     "mailgun-js": "^0.18.0",
     "moment": "^2.22.1",

@@ -1,8 +1,9 @@
 import Base from '../Base'
 import * as _ from 'lodash'
 import { Types } from 'mongoose'
-import json2csv from 'json2csv'
+const json2csv= require('json2csv')
 import SuggestionService from '../../service/SuggestionService'
+import { user as userUtil } from '../../utility'
 
 const ObjectId = Types.ObjectId
 
@@ -53,8 +54,8 @@ export default class extends Base {
     }
     if (param.search) {
       let or = [
-          { title: { $regex: _.trim(param.search), $options: 'i' } },
-          { vid: _.toNumber(_.trim(param.search)) || 0 }
+        { title: { $regex: _.trim(param.search), $options: 'i' } },
+        { vid: _.toNumber(_.trim(param.search)) || 0 }
       ]
       if(param.$or){
         param.$or = param.$or.concat(or)
@@ -66,18 +67,35 @@ export default class extends Base {
     const result = await service.export2csv(param)
 
     const fileName = "suggestions.csv"
-    const exportData = result[0]
+    let exportData = result['list']
+    exportData = exportData.map(function(it){
+      it.author = it.createdBy.username
+      let referenceId = ""
+      it.reference.map(function(refit){
+        referenceId += "" + refit.vid + '/'
+        return refit.vid
+      })
+      if(referenceId.length) {
+        it.referenceId = referenceId.substr(0, referenceId.length-1)
+      }else{
+        it.referenceId = ""
+      }
+      console.log('[referenceId]: ' + it.referenceId)
+      return it
+    })
     
     let response = this.res;
-    await response.setHeader('Content-disposition',`attachment; filename=`+encodeURIComponent(fileName)+'.csv');
-    await response.writeHead(200,{'Content-Type':'text/csv;charset=utf-8'});
+    await response.set('Content-disposition',`attachment; filename=`+encodeURIComponent(fileName)+'.csv')
+    await response.set('Content-Type', 'text/csv;charset=utf-8')
 
-    let csv =json2csv(exportData)
+    //console.log("[Data]: " + exportData)
+    let csv =json2csv({ data: exportData, fields: ['displayId', 'author', 'title', 'referenceId', 'abstract', 'createdAt', 'updatedAt']})
     csv = Buffer.concat([new Buffer('\xEF\xBB\xBF','binary'),new Buffer(csv)])
+
     await response.write(csv)
     await response.write('\n')
-    await response.end();
+    await response.end()
     
-    return this.result(1, result)
+    return null
   }
 }
