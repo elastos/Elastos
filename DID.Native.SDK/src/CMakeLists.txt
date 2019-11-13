@@ -44,6 +44,7 @@ set(SRC
     credential.c
     didstore.c
     didrequest.c
+    mnemonic.c
     ${utility-SOURCES})
 
 set(HEADERS

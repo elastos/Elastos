@@ -130,3 +130,7 @@ _DIDStore_DeletePrivateKey
 _DIDREQ_PublishDID
 _DIDREQ_UpdateDID
 _DIDREQ_DeactivateDID
+
+# Mnemonic
+_Mnemonic_Generate
+_Mnemonic_free

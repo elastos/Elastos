@@ -1829,6 +1829,32 @@ DID_API int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey,
 DID_API int DIDREQ_DeactivateDID(DID *did, DIDURL *signKey,
         const char *storepass);
 
+/**
+ * \~English
+ * Gernerate a random mnemonic.
+ *
+ * @param
+ *      language               [in] The language for DID.
+ *                             0: English; 1: French; 2: Spanish;
+ *                             3: Chinese_simplified;
+ *                             4: Chinese_traditional;
+ *                             5: Japanese.
+ * @return
+ *      mnemonic string.
+ */
+DID_API const char *Mnemonic_Generate(int language);
+
+/**
+ * \~English
+ * Free mnemonic buffer.
+ *
+ * @param
+ *      mnemonic               [in] mnemonic buffter.
+ * @return
+ *      mnemonic string.
+ */
+DID_API void Mnemonic_free(void *mnemonic);
+
 #ifdef __cplusplus
 }
 #endif
