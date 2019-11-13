@@ -1,10 +1,13 @@
-from django.urls import path
 from django.conf.urls import url
 from . import views
 
+app_name = "login"
+
 urlpatterns = [
-    path('', views.landing_page, name='landing_page'),
-    path('signin/', views.sign_in, name='sign_in'),
-    path('signup/', views.sign_up, name='sign_up'),
-    path('confirmation/', views.confirmation, name='confirmation'),
+    url(r'checkElaAuth', views.check_ela_auth, name="checkElaAuth"),
+    url(r'didCallback', views.did_callback, name="didCallback"),
+    url(r'register', views.register, name="register"),
+    url(r'login', views.login, name="login"),
+    url(r'home', views.home, name="home"),
+    url(r'logout', views.logout, name="logout")
 ]
