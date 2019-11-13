@@ -20,6 +20,7 @@ const mapState = (state) => {
     currentUserId,
     filter: state.suggestion.filter || {},
     isLogin: state.user.is_login,
+    isSecretary: state.user.is_secretary,
     user: state.user
   }
 
@@ -82,6 +83,10 @@ const mapDispatch = () => {
 
     async unsubscribe(id) {
       return commentService.unsubscribe('suggestion', id)
+    },
+
+    async exportAsCSV(query) {
+      return service.exportAsCSV(query)
     },
   }
 }

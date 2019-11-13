@@ -13,7 +13,8 @@ import {
   Spin,
   DatePicker,
   Checkbox,
-  Input
+  Input,
+  Icon
 } from 'antd'
 import rangePickerLocale from 'antd/es/date-picker/locale/zh_CN'
 import URI from 'urijs'
@@ -144,8 +145,15 @@ export default class extends StandardPage {
     this.refetch()
   }
 
+  handleExportAsCSV = () => {
+    const { exportAsCSV } = this.props
+    const query = this.getQuery()
+    exportAsCSV(query)
+  }
+
   ord_renderContent() {
     const { isVisitableFilter } = this.state
+    const { isSecretary } = this.props
     const headerNode = this.renderHeader()
     const filterNode = this.renderFilters()
     const filterPanel = this.renderFilterPanel()
@@ -191,14 +199,17 @@ export default class extends StandardPage {
               xl={6}
               style={{ paddingBottom: 24, textAlign: 'right' }}
             >
-              <Button
-                onClick={this.toggleArchivedList}
-                className="btn-view-archived"
-              >
+              <Button type="link" className="btn-link" onClick={this.toggleArchivedList}>
                 {this.state.showArchived === false
                   ? I18N.get('suggestion.viewArchived')
                   : I18N.get('suggestion.viewAll')}
               </Button>
+              {isSecretary && <SplitLabel />}
+              {isSecretary && (
+                <Button type="link" className="btn-link" onClick={this.handleExportAsCSV}>
+                  {I18N.get('elip.button.exportAsCSV')}
+                </Button>
+              )}
             </Col>
           </Row>
           <Row gutter={24} style={{ marginTop: 32 }}>
@@ -852,5 +863,12 @@ const FilterItemLabel = styled.div`
 
   :after {
     content: ':';
+  }
+`
+
+const SplitLabel = styled.span`
+  color: rgba(3, 30, 40, 0.3);
+  :after {
+    content: '|';
   }
 `
