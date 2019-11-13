@@ -189,10 +189,11 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	isVoting := c.isInVotingPeriod(block.Height)
 
 	if isVoting {
-		c.state.ProcessBlock(block, confirm)
+		c.state.ProcessBlock(block, confirm, c.CirculationAmount)
 	} else {
-		c.state.ProcessElectionBlock(block)
+		c.state.ProcessElectionBlock(block, c.CirculationAmount)
 	}
+	c.freshCirculationAmount(block.Height)
 
 	if c.shouldChange(block.Height) {
 		if c.shouldCleanHistory() {
@@ -243,25 +244,43 @@ func (c *Committee) tryInitCRCRelatedAddressBalance(height uint32) {
 	if c.recordBalanceHeight == 0 {
 		utxos, _ := c.getUnspentFromProgramHash(c.params.CRCFoundation,
 			*account.SystemAssetID)
+		var foundationBalance common.Fixed64
 		for _, u := range utxos {
-			c.CRCFoundationBalance += u.Value
+			foundationBalance += u.Value
 			op := types.NewOutPoint(u.TxID, uint16(u.Index))
 			c.state.CRCFoundationOutputs[op.ReferKey()] = u.Value
 		}
 		utxos, _ = c.getUnspentFromProgramHash(c.params.CRCCommitteeAddress,
 			*account.SystemAssetID)
+		var committeeBalance common.Fixed64
 		for _, u := range utxos {
-			c.CRCCommitteeBalance += u.Value
+			committeeBalance += u.Value
 			op := types.NewOutPoint(u.TxID, uint16(u.Index))
 			c.state.CRCCommitteeOutputs[op.ReferKey()] = u.Value
-
 		}
+		utxos, _ = c.getUnspentFromProgramHash(c.params.DestroyELAAddress,
+			*account.SystemAssetID)
+		var destroyBalance common.Fixed64
+		for _, u := range utxos {
+			destroyBalance += u.Value
+		}
+		c.CRCFoundationBalance = foundationBalance
+		c.CRCCommitteeBalance = committeeBalance
+		c.DestroyedAmount = destroyBalance
+		c.freshCirculationAmount(height)
+
 		c.recordBalanceHeight = height
 		log.Infof("record balance at height of %d, balance of CRC "+
 			"foundation is %s, balance of CRC committee address is %s",
 			height, c.CRCFoundationBalance, c.CRCCommitteeBalance)
 
 	}
+}
+
+func (c *Committee) freshCirculationAmount(height uint32) {
+	c.CirculationAmount = common.Fixed64(config.OriginIssuanceAmount) +
+		common.Fixed64(height)*c.params.RewardPerBlock -
+		c.CRCFoundationBalance - c.CRCCommitteeBalance - c.DestroyedAmount
 }
 
 func (c *Committee) recordLastVotingStartHeight(height uint32) {
@@ -310,8 +329,7 @@ func (c *Committee) tryStartVotingPeriod(height uint32) {
 
 func (c *Committee) processImpeachment(height uint32, member []byte,
 	votes common.Fixed64, history *utils.History) {
-	// todo get current circulation by calculation
-	circulation := common.Fixed64(3300 * 10000 * 100000000)
+	circulation := c.CirculationAmount
 	for _, v := range c.Members {
 		if bytes.Equal(v.Info.Code, member) {
 			penalty := v.Penalty
@@ -380,6 +398,12 @@ func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32
 				c.CRCCommitteeBalance += output.Value
 			}, func() {
 				c.CRCCommitteeBalance -= output.Value
+			})
+		} else if output.ProgramHash.IsEqual(c.params.DestroyELAAddress) {
+			history.Append(height, func() {
+				c.DestroyedAmount += output.Value
+			}, func() {
+				c.DestroyedAmount -= output.Value
 			})
 		}
 	}

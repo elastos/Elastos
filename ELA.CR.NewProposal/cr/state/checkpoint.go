@@ -43,11 +43,12 @@ func (c *Checkpoint) OnBlockSaved(block *types.DposBlock) {
 }
 
 func (c *Checkpoint) OnRollbackTo(height uint32) error {
+	keyFrame := NewKeyFrame()
 	if height < c.StartHeight() {
 		committee := &Committee{
 			state:    NewState(c.committee.params),
 			params:   c.committee.params,
-			KeyFrame: *NewKeyFrame(),
+			KeyFrame: *keyFrame,
 		}
 		c.initFromCommittee(committee)
 		c.committee.Recover(c)

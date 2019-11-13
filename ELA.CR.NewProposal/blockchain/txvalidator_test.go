@@ -2064,7 +2064,7 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 			registerCRTxn2,
 		},
 	}
-	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil, 0)
 
 	//ok nothing wrong
 	hash2, err := getDepositAddress(publicKeyStr2)
@@ -2170,7 +2170,7 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 			registerCRTxn,
 		},
 	}
-	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil, 0)
 	//ok
 	txn := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
 	err := s.Chain.checkUnRegisterCRTransaction(txn, votingHeight)
@@ -2732,7 +2732,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 				},
 			},
 		},
-	}, nil)
+	}, nil, 0)
 	height++
 	candidate := s.Chain.crCommittee.GetState().GetCandidate(*did)
 	s.True(candidate.State() == crstate.Pending, "register CR failed")
@@ -2743,7 +2743,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 				Height: height,
 			},
 			Transactions: []*types.Transaction{},
-		}, nil)
+		}, nil, 0)
 		height++
 	}
 	s.True(candidate.State() == crstate.Active, "active CR failed")
@@ -2792,7 +2792,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 				},
 			},
 		},
-	}, nil)
+	}, nil, 0)
 	height++
 	s.True(candidate.State() == crstate.Canceled, "canceled CR failed")
 
@@ -2834,7 +2834,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 		Transactions: []*types.Transaction{
 			rdTx,
 		},
-	}, nil)
+	}, nil, 0)
 	height++
 
 	// check a return cr deposit coin transaction with the amount has returned.
@@ -2966,7 +2966,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			registerCRTxn3,
 		},
 	}
-	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil, 0)
 	code1 := getCodeByPubKeyStr(publicKey1)
 	code2 := getCodeByPubKeyStr(publicKey2)
 	code3 := getCodeByPubKeyStr(publicKey3)

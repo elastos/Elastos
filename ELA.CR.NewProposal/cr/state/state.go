@@ -197,13 +197,14 @@ func (s *State) IsCRTransaction(tx *types.Transaction) bool {
 
 // ProcessBlock takes a block and it's confirm to update CR state and
 // votes accordingly.
-func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
+func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm,
+	circulation common.Fixed64) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
 	s.processTransactions(block.Transactions, block.Height)
 	if s.manager != nil {
-		s.manager.updateProposals(block.Height, s.history)
+		s.manager.updateProposals(block.Height, circulation, s.history)
 	}
 	if s.tryStartVotingPeriod != nil {
 		s.tryStartVotingPeriod(block.Height)
@@ -213,7 +214,7 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 // ProcessElectionBlock takes a block and it's confirm to update CR member state
 // and proposals accordingly, only in election period and not in voting period.
-func (s *State) ProcessElectionBlock(block *types.Block) {
+func (s *State) ProcessElectionBlock(block *types.Block, circulation common.Fixed64) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
@@ -221,7 +222,7 @@ func (s *State) ProcessElectionBlock(block *types.Block) {
 		s.processElectionTransaction(tx, block.Height)
 	}
 	if s.manager != nil {
-		s.manager.updateProposals(block.Height, s.history)
+		s.manager.updateProposals(block.Height, circulation, s.history)
 	}
 	if s.tryStartVotingPeriod != nil {
 		s.tryStartVotingPeriod(block.Height)
