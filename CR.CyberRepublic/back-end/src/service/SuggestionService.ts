@@ -370,21 +370,23 @@ export default class extends Base {
       ]
 
       cursor = this.model.getDBInstance()
-                   .find(query, excludedFields.join(' '))
+                   .find(query/*, excludedFields.join(' ')*/)
                    .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
                    .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
                    .sort(sortObject)
     } else {
       // my suggestions on profile page
       cursor = this.model.getDBInstance()
-                   .find(query, 'title activeness commentsNum createdAt dislikesNum displayId likesNum')
+                   .find(query/*, 'title activeness commentsNum createdAt dislikesNum displayId likesNum'*/)
+                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
     }
 
     /*if (param.results) {
-      const results = parseInt(param.results, 10)
-      const page = parseInt(param.page, 10)
-      cursor.skip(results * (page - 1)).limit(results)
-    }*/
+       const results = parseInt(param.results, 10)
+       const page = parseInt(param.page, 10)
+       cursor.skip(results * (page - 1)).limit(results)
+       }*/
 
     // status
     if (param.status && constant.SUGGESTION_STATUS[param.status]) {
