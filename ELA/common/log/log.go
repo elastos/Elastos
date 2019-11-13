@@ -73,7 +73,31 @@ type Logger struct {
 	logger *log.Logger
 }
 
-func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
+func NewLogger(outputPath string, level uint8, maxPerLogSizeMb,
+	maxLogsSizeMb int64) *Logger {
+	fileWriter := fileWriter(outputPath, maxPerLogSizeMb, maxLogsSizeMb)
+	logWriter := io.MultiWriter(os.Stdout, fileWriter)
+
+	return &Logger{
+		level:  level,
+		writer: logWriter,
+		logger: log.New(logWriter, "", log.Ldate|log.Lmicroseconds),
+	}
+}
+
+func NewFileLogger(outputPath string, level uint8, maxPerLogSizeMb,
+	maxLogsSizeMb int64) *Logger {
+	fileWriter := fileWriter(outputPath, maxPerLogSizeMb, maxLogsSizeMb)
+
+	return &Logger{
+		level:  level,
+		writer: fileWriter,
+		logger: log.New(fileWriter, "", log.Ldate|log.Lmicroseconds),
+	}
+}
+
+func fileWriter(outputPath string, maxPerLogSizeMb,
+	maxLogsSizeMb int64) io.Writer {
 	var perLogFileSize = defaultPerLogFileSize
 	var logsFolderSize = defaultLogsFolderSize
 
@@ -84,14 +108,7 @@ func NewLogger(outputPath string, level uint8, maxPerLogSizeMb, maxLogsSizeMb in
 		logsFolderSize = maxLogsSizeMb * elalog.MBSize
 	}
 
-	fileWriter := elalog.NewFileWriter(outputPath, perLogFileSize, logsFolderSize)
-	logWriter := io.MultiWriter(os.Stdout, fileWriter)
-
-	return &Logger{
-		level:  level,
-		writer: logWriter,
-		logger: log.New(logWriter, "", log.Ldate|log.Lmicroseconds),
-	}
+	return elalog.NewFileWriter(outputPath, perLogFileSize, logsFolderSize)
 }
 
 func NewDefault(path string, level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
