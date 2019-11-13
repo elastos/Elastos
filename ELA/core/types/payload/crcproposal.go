@@ -19,20 +19,23 @@ const (
 	// Normal indicates the normal types of proposal.
 	Normal CRCProposalType = 0x00
 
+	// ELIP indicates elastos improvement type of proposal.
+	ELIP CRCProposalType = 0x01
+
 	// Code indicates the code upgrade types of proposals.
-	Code CRCProposalType = 0x01
+	Code CRCProposalType = 0x02
 
 	// SideChain indicates the side chain related types of proposals.
-	SideChain CRCProposalType = 0x02
+	SideChain CRCProposalType = 0x03
 
 	// ChangeSponsor indicates the change proposal sponsor types of proposals.
-	ChangeSponsor CRCProposalType = 0x03
+	ChangeSponsor CRCProposalType = 0x04
 
 	// CloseProposal indicates the close proposal types of proposals.
-	CloseProposal CRCProposalType = 0x04
+	CloseProposal CRCProposalType = 0x05
 
 	// SecretaryGeneral indicates the vote secretary general types of proposals.
-	SecretaryGeneral CRCProposalType = 0x05
+	SecretaryGeneral CRCProposalType = 0x06
 )
 
 type CRCProposalType byte
@@ -41,6 +44,8 @@ func (pt CRCProposalType) Name() string {
 	switch pt {
 	case Normal:
 		return "Normal"
+	case ELIP:
+		return "ELIP"
 	case Code:
 		return "Code"
 	case SideChain:
