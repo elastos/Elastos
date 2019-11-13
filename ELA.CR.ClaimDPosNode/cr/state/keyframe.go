@@ -53,6 +53,8 @@ type KeyFrame struct {
 	CRCFoundationBalance   common.Fixed64
 	CRCCommitteeBalance    common.Fixed64
 	CRCCommitteeUsedAmount common.Fixed64
+	DestroyedAmount        common.Fixed64
+	CirculationAmount      common.Fixed64
 }
 
 // StateKeyFrame holds necessary state about CR state.
@@ -204,7 +206,8 @@ func (k *KeyFrame) Serialize(w io.Writer) (err error) {
 
 	return common.WriteElements(w, k.LastCommitteeHeight,
 		k.LastVotingStartHeight, k.InElectionPeriod, k.NeedAppropriation,
-		k.CRCFoundationBalance, k.CRCCommitteeBalance, k.CRCCommitteeUsedAmount)
+		k.CRCFoundationBalance, k.CRCCommitteeBalance, k.CRCCommitteeUsedAmount,
+		k.DestroyedAmount, k.CirculationAmount)
 }
 
 func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
@@ -218,7 +221,8 @@ func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
 
 	err = common.ReadElements(r, &k.LastCommitteeHeight,
 		&k.LastVotingStartHeight, &k.InElectionPeriod, &k.NeedAppropriation,
-		&k.CRCFoundationBalance, &k.CRCCommitteeBalance, &k.CRCCommitteeUsedAmount)
+		&k.CRCFoundationBalance, &k.CRCCommitteeBalance,
+		&k.CRCCommitteeUsedAmount, k.DestroyedAmount, k.CirculationAmount)
 	return
 }
 

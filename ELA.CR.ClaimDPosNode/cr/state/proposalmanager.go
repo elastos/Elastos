@@ -164,7 +164,7 @@ func (p *ProposalManager) getProposal(hash common.Uint256) *ProposalState {
 
 // updateProposals will update proposals' status.
 func (p *ProposalManager) updateProposals(height uint32,
-	history *utils.History) {
+	circulation common.Fixed64, history *utils.History) {
 	for k, v := range p.Proposals {
 		switch v.Status {
 		case Registered:
@@ -173,7 +173,7 @@ func (p *ProposalManager) updateProposals(height uint32,
 			}
 		case CRAgreed:
 			if p.shouldEndPublicVote(k, height) {
-				p.transferCRAgreedState(v, height, history)
+				p.transferCRAgreedState(v, height, circulation, history)
 			}
 		}
 	}
@@ -230,9 +230,7 @@ func (p *ProposalManager) AvailableWithdrawalAmount(hash common.Uint256) common.
 
 // transferCRAgreedState will transfer CRAgreed state by votes' reject amount.
 func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
-	height uint32, history *utils.History) {
-	// todo get current circulation by calculation
-	circulation := common.Fixed64(3300 * 10000 * 100000000)
+	height uint32, circulation common.Fixed64, history *utils.History) {
 	if proposal.VotersRejectAmount >= common.Fixed64(float64(circulation)*
 		p.params.VoterRejectPercentage/100.0) {
 		history.Append(height, func() {
