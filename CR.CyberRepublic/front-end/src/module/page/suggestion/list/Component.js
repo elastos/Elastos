@@ -148,7 +148,9 @@ export default class extends StandardPage {
   handleExportAsCSV = () => {
     const { exportAsCSV } = this.props
     const query = this.getQuery()
-    exportAsCSV(query)
+    exportAsCSV(query).then(response => {
+      window.location.href = URL.createObjectURL(response)
+    })
   }
 
   ord_renderContent() {
