@@ -126,6 +126,8 @@ export default {
     teamMember: '团队成员',
     role: '角色',
     responsibility: '职责',
-    moreInfo: '更多信息'
+    moreInfo: '更多信息',
+    createTeamInfo: '添加团队信息',
+    action: '操作'
   }
 }

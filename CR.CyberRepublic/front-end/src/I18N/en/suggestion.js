@@ -131,6 +131,8 @@ export default {
     teamMember: 'Team Member',
     role: 'Role',
     responsibility: 'Responsibility',
-    moreInfo: 'More Info'
+    moreInfo: 'More Info',
+    createTeamInfo: 'Create team info',
+    action: 'Action'
   }
 }

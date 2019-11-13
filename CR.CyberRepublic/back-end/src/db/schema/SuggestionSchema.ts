@@ -51,7 +51,7 @@ const SuggestionCore = {
     type: Schema.Types.Mixed
   },
   plan: {
-    type: String
+    type: Schema.Types.Mixed
   }
 }
 
