@@ -31,7 +31,7 @@ import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
 import { convertMarkdownToHtml } from '@/util/markdown-it'
-
+import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import {
   Container,
   Title,
@@ -53,14 +53,22 @@ import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key, title) => (
-  <div>
-    {title && <ContentTitle id={key}>{title}</ContentTitle>}
-    <StyledRichContent>
-      <MarkdownPreview content={data[key]} />
-    </StyledRichContent>
-  </div>
-)
+const renderRichContent = (data, key, title) => {
+  let rc
+  if (key === 'budget' && typeof data.budget !== 'string') {
+    rc = <PaymentList list={data.budget} editable={false} />
+  } else {
+    rc = <MarkdownPreview content={data[key]} />
+  }
+  return (
+    <div>
+      {title && <ContentTitle id={key}>{title}</ContentTitle>}
+      <StyledRichContent>
+        {rc}
+      </StyledRichContent>
+    </div>
+  )
+}
 
 class C extends StandardPage {
   constructor(props) {
@@ -193,12 +201,37 @@ class C extends StandardPage {
     )
   }
 
+  getBudgetHtml(budget) {
+    const lists = budget
+      .map((item, index) => {
+        return `
+          <p>
+            <span>${index + 1}</span>
+            <span>${item.amount}</span>
+            <span>${item.reasons}</span>
+            <span>${item.criteria}</span>
+          </p>
+        `
+      })
+      .join('')
+    return `
+      <div>
+        <p>
+          <span>Payment#</span>
+          <span>Amount(ELA)</span>
+          <span>Reasons</span>
+          <span>Payment of Criteria</span>
+        </p>
+        ${lists}
+      </div>
+      `
+  }
   renderTranslationBtn() {
     const { data } = this.props
     const { title, content } = data
     let text = ''
     if (content) {
-      text = `<h3>${title}</h3> ${content}`
+      text = `<h3>${title}</h3><br /><br /> ${content}`
       return (
         <div style={{ marginTop: 20 }}>
           <Translation text={text} />
@@ -214,12 +247,18 @@ class C extends StandardPage {
       'budget'
     ]
     const result = sections.map(section => {
+      if (section === 'budget' && typeof data.budget !== 'string') {
+        return `
+            <h2>${I18N.get(`proposal.fields.budget`)}</h2>
+            <p>${this.getBudgetHtml(data.budget)}</p>
+          `
+      }
       return `
-        <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
-        <p>${convertMarkdownToHtml(data[section])}</p>
-      `
+          <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
+          <p>${convertMarkdownToHtml(data[section])}</p>
+        `
     }).join('')
-    text = `<h3>${title}</h3> ${result}`
+    text = `<h3>${title}</h3><br /><br/> ${result}`
     return (
       <div style={{ marginTop: 20 }}>
         <Translation text={text} />
