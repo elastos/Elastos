@@ -2490,6 +2490,10 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "type of proposal should be known")
 
+	txn.Payload.(*payload.CRCProposal).ProposalType = 0x01
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "ELIP needs to have and only have two outputs")
+
 	// invalid proposal type
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x00
 	txn.Payload.(*payload.CRCProposal).DraftData = randomBytes(7)
