@@ -103,12 +103,7 @@
     <p ng-show="contract.name == 'Exchange ETH to ELA'">
       <p>_addr: ELA address</p>
       <p>_amount: ETH value in wei, should be >= 200000000000000(0.0002 eth)</p>
-      <p>_fee: fixed_fee + gas * gasPrice, currently suggested value is 100000000000000</p>
-      <ul>
-        <li>fixed_fee = 100000000000000 wei(10**14 wei, 0.0001 eth), this fee is fixed</li>
-        <li>gas: The gas you pay for the miners, same as Ethereum's usage, can be 0</li>
-        <li>gasPrice: 10000000000(10 GWei)</li>
-      </ul>
+      <p>_fee: The fee that sends to operator, suggested value is 100000000000000(0.0001 eth)</p>
     </p>
 
     <div ng-repeat="input in contract.functions[contract.selectedFunc.index].inputs track by $index">

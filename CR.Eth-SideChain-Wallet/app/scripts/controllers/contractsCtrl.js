@@ -200,8 +200,7 @@ var contractsCtrl = function($scope, $sce, walletService) {
         }
         $scope.tx.data = $scope.getTxData();
         if ($scope.contract.name == 'Exchange ETH to ELA' && $scope.contract.functions.length) {
-            $scope.tx.value = (Number($scope.contract.functions[0].inputs[1].value) + Number($scope.contract.functions[0].inputs[2].value)) / 10**18
-            ;
+            $scope.tx.value = ($scope.contract.functions[0].inputs[1].value) / 10**18;
         }
         $scope.tx.to = $scope.contract.address;
         $scope.sendContractModal.open();
