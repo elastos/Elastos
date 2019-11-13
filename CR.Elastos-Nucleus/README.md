@@ -37,15 +37,30 @@ Now install dependencies:
 ```
 pip3 install -r requirements.txt
 ```
+Start postgres server:
+```
+cd tools
+./postgres.sh
+cd ..
+```
 Migrate the database
 ```
 python3 manage.py makemigrations;
 python3 manage.py migrate
 ```
+Create an admin user for django admin interface:
+```
+python3 manage.py createsuperuser
+// Use "admin" & "admin" as both username/password for ease of use while developing
+```
+Collect all static content:
+```
+python3 manage.py collectstatic 
+```
 Finally, run the server:
 ```
 python3 manage.py runserver
 ```
-The console can be viewed on the following IP Address [here]
+The console can be viewed on at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
-[here]: http://127.0.0.1:8000
+You can also use the admin interface at [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin)
