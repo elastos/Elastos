@@ -124,7 +124,7 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 		Transactions: []*types.Transaction{
 			generateRegisterCR(code, did, nickname),
 		},
-	}, nil)
+	}, nil, 0)
 	assert.True(t, state.ExistCandidate(code))
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.True(t, state.ExistCandidateByNickname(nickname))
@@ -140,7 +140,7 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 		Transactions: []*types.Transaction{
 			generateUpdateCR(code, did, nickname2),
 		},
-	}, nil)
+	}, nil, 0)
 	assert.True(t, state.ExistCandidate(code))
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
@@ -156,7 +156,7 @@ func TestState_ProcessBlock_PendingUpdateThenCancel(t *testing.T) {
 		Transactions: []*types.Transaction{
 			generateUnregisterCR(code),
 		},
-	}, nil)
+	}, nil, 0)
 	assert.True(t, state.ExistCandidate(code))
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
@@ -189,7 +189,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 		Transactions: []*types.Transaction{
 			generateRegisterCR(code, did, nickname),
 		},
-	}, nil)
+	}, nil, 0)
 	height++
 	assert.True(t, state.ExistCandidate(code))
 	assert.True(t, state.ExistCandidateByDID(did))
@@ -204,7 +204,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 				Height: height,
 			},
 			Transactions: []*types.Transaction{},
-		}, nil)
+		}, nil, 0)
 		height++
 	}
 	candidate = state.GetCandidate(did)
@@ -219,7 +219,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 		Transactions: []*types.Transaction{
 			generateUpdateCR(code, did, nickname2),
 		},
-	}, nil)
+	}, nil, 0)
 	height++
 	assert.True(t, state.ExistCandidate(code))
 	assert.True(t, state.ExistCandidateByDID(did))
@@ -236,7 +236,7 @@ func TestState_ProcessBlock_PendingActiveThenCancel(t *testing.T) {
 		Transactions: []*types.Transaction{
 			generateUnregisterCR(code),
 		},
-	}, nil)
+	}, nil, 0)
 	assert.True(t, state.ExistCandidate(code))
 	assert.True(t, state.ExistCandidateByDID(did))
 	assert.False(t, state.ExistCandidateByNickname(nickname))
@@ -273,7 +273,7 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 			Transactions: []*types.Transaction{
 				generateRegisterCR(code, did, nickname),
 			},
-		}, nil)
+		}, nil, 0)
 		height++
 	}
 	assert.Equal(t, 25, len(state.GetAllCandidates()))
@@ -288,7 +288,7 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 				Height: height,
 			},
 			Transactions: []*types.Transaction{},
-		}, nil)
+		}, nil, 0)
 		height++
 	}
 	assert.Equal(t, 25, len(state.GetAllCandidates()))
@@ -327,7 +327,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 			Height: height,
 		},
 		Transactions: []*types.Transaction{voteTx},
-	}, nil)
+	}, nil, 0)
 	height++
 
 	for i, v := range activeDIDs {
@@ -351,7 +351,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 				Inputs: []*types.Input{input},
 			},
 		},
-	}, nil)
+	}, nil, 0)
 
 	for _, v := range activeDIDs {
 		did, _ := common.Uint168FromBytes(v)
@@ -392,7 +392,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 			Height: height,
 		},
 		Transactions: []*types.Transaction{registerCRTx},
-	}, nil)
+	}, nil, 0)
 	height++
 	candidate := state.GetCandidate(did)
 	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
@@ -413,7 +413,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 			Height: height,
 		},
 		Transactions: []*types.Transaction{tranferTx},
-	}, nil)
+	}, nil, 0)
 	height++
 	assert.Equal(t, common.Fixed64(300), candidate.depositAmount)
 
@@ -424,7 +424,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 				Height: height,
 			},
 			Transactions: []*types.Transaction{},
-		}, nil)
+		}, nil, 0)
 		height++
 	}
 	assert.Equal(t, Active, candidate.state)
@@ -435,7 +435,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Transactions: []*types.Transaction{
 			generateUnregisterCR(code),
 		},
-	}, nil)
+	}, nil, 0)
 	height++
 	for i := 0; i < 5; i++ {
 		state.ProcessBlock(&types.Block{
@@ -443,7 +443,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 				Height: height,
 			},
 			Transactions: []*types.Transaction{},
-		}, nil)
+		}, nil, 0)
 		height++
 	}
 	assert.Equal(t, Canceled, candidate.state)
@@ -469,7 +469,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 			Height: height,
 		},
 		Transactions: []*types.Transaction{rdTx},
-	}, nil)
+	}, nil, 0)
 	state.history.Commit(height)
 	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)
 }

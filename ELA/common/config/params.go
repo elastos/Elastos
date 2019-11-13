@@ -50,11 +50,11 @@ var (
 	// genesisTime indicates the time when ELA genesis block created.
 	genesisTime, _ = time.Parse(time.RFC3339, "2017-12-22T10:00:00Z")
 
-	// originIssuanceAmount is the origin issuance ELA amount.
-	originIssuanceAmount = 3300 * 10000 * 100000000
+	// OriginIssuanceAmount is the origin issuance ELA amount.
+	OriginIssuanceAmount = 3300 * 10000 * 100000000
 
 	// inflationPerYear is the inflation amount per year.
-	inflationPerYear = originIssuanceAmount * 4 / 100
+	inflationPerYear = OriginIssuanceAmount * 4 / 100
 
 	// bigOne is 1 represented as a big.Int.  It is defined here to avoid
 	// the overhead of creating it multiple times.
@@ -92,6 +92,13 @@ var (
 		0xac, 0x10, 0xcd, 0x77, 0x29, 0x41, 0x22,
 	}
 
+	// "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
+	destroyELAAddress = common.Uint168{
+		0x21, 0x20, 0xfe, 0xe5, 0xd7, 0xeb, 0x3e,
+		0x5c, 0x7d, 0x31, 0x97, 0xfe, 0xcf, 0x6c,
+		0x0d, 0xe3, 0x0f, 0x88, 0x9a, 0xce, 0xf7,
+	}
+
 	// ELAAssetID represents the asset ID of ELA coin.
 	ELAAssetID = elaAsset.Hash()
 
@@ -121,6 +128,7 @@ var DefaultParams = Params{
 	CRCAddress:          mainNetCRCAddress,
 	CRCFoundation:       common.Uint168{}, // todo correct me later
 	CRCCommitteeAddress: common.Uint168{}, // todo correct me later
+	DestroyELAAddress:   destroyELAAddress,
 	GenesisBlock:        GenesisBlock(&mainNetFoundation),
 
 	DPoSMagic:       2019000,
@@ -205,6 +213,7 @@ func (p *Params) TestNet() *Params {
 	copy.CRCAddress = testNetCRCAddress
 	copy.CRCFoundation = common.Uint168{}       // todo correct me later
 	copy.CRCCommitteeAddress = common.Uint168{} // todo correct me later
+	copy.DestroyELAAddress = destroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019100
 	copy.DPoSDefaultPort = 21339
@@ -263,6 +272,7 @@ func (p *Params) RegNet() *Params {
 	copy.CRCAddress = testNetCRCAddress
 	copy.CRCFoundation = common.Uint168{}       // todo correct me later
 	copy.CRCCommitteeAddress = common.Uint168{} // todo correct me later
+	copy.DestroyELAAddress = destroyELAAddress
 	copy.GenesisBlock = GenesisBlock(&testNetFoundation)
 	copy.DPoSMagic = 2019200
 	copy.DPoSDefaultPort = 22339
@@ -342,6 +352,9 @@ type Params struct {
 	// CRCCommitteeAddress defines the CR committee address which receiving
 	// appropriation from CRC foundation address.
 	CRCCommitteeAddress common.Uint168
+
+	// DestroyELAAddress defines address which receiving destroyed ELA.
+	DestroyELAAddress common.Uint168
 
 	// GenesisBlock defines the first block of the chain.
 	GenesisBlock *types.Block
