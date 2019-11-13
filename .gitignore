@@ -1,6 +1,7 @@
 package-lock.json
 node_modules/
 .DS_Store
+
 # Environments
 .env
 .venv
@@ -17,8 +18,9 @@ __pycache__
 .VScode
 
 # idea
-.idea
+.idea/
 
-# Database
-db.sqlite3
+# tools
+tools/privkey.pem
+tools/server.*
 
