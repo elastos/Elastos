@@ -155,7 +155,7 @@ func (c *ChainStore) persistUTXOs(b *Block) error {
 			if !ok {
 				elements, _ = c.GetUnspentElementFromProgramHash(programHash, assetID, curHeight)
 			}
-			elements = append(elements, &UTXO{TxID: txn.Hash(), Index: uint32(index),
+			elements = append(elements, &UTXO{TxID: txn.Hash(), Index: uint16(index),
 				Value: value})
 
 			utxos[programHash][assetID][curHeight] = elements
@@ -202,7 +202,7 @@ func (c *ChainStore) persistUTXOs(b *Block) error {
 				if !e.TxID.IsEqual(tx.Hash()) {
 					continue
 				}
-				if e.Index != uint32(index) {
+				if e.Index != index {
 					continue
 				}
 
@@ -259,7 +259,7 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 			}
 			u := UTXO{
 				TxID:  txn.Hash(),
-				Index: uint32(index),
+				Index: uint16(index),
 				Value: value,
 			}
 			var position int
@@ -301,7 +301,7 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 				}
 				u := UTXO{
 					TxID:  referTxn.Hash(),
-					Index: uint32(index),
+					Index: uint16(index),
 					Value: referTxnOutput.Value,
 				}
 				unspendUTXOs[programHash][assetID][hh] = append(unspendUTXOs[programHash][assetID][hh], &u)

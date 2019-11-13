@@ -18,7 +18,6 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
@@ -172,7 +171,7 @@ func startNode(c *cli.Context, st *settings) {
 			error) {
 			amount := common.Fixed64(0)
 			utxos, err := blockchain.DefaultLedger.Store.
-				GetUnspentFromProgramHash(programHash, config.ELAAssetID)
+				GetFFLDB().GetUTXO(&programHash)
 			if err != nil {
 				return amount, err
 			}
@@ -241,7 +240,7 @@ func startNode(c *cli.Context, st *settings) {
 
 	committee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   chain.UTXOCache.GetTxReference,
-		GetUnspentFromProgramHash:        chainStore.GetUnspentFromProgramHash,
+		GetUTXO:                          chainStore.GetFFLDB().GetUTXO,
 		GetHeight:                        chainStore.GetHeight,
 		CreateCRAppropriationTransaction: chain.CreateCRCAppropriationTransaction,
 		IsCurrent:                        server.IsCurrent,

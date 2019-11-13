@@ -58,6 +58,9 @@ type IndexManager interface {
 
 	// FetchUnspent retrieval the unspent set of transaction by its hash
 	FetchUnspent(txID common.Uint256) ([]uint16, error)
+
+	// FetchUTXO retrieval the utxo set of a account address
+	FetchUTXO(programHash *common.Uint168) ([]*types.UTXO, error)
 }
 
 // Indexer provides a generic interface for an indexer that is managed by an

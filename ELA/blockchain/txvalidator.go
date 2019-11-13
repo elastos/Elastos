@@ -1454,7 +1454,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 			return err
 		}
 
-		utxos, err := b.db.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
+		utxos, err := b.db.GetFFLDB().GetUTXO(programHash)
 		if err != nil {
 			return err
 		}

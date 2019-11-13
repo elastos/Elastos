@@ -342,12 +342,12 @@ func (b *BlockChain) createNormalOutputs(outputs []*OutputInfo, fee Fixed64,
 
 func (b *BlockChain) getUTXOsFromAddress(address Uint168) ([]*UTXO, error) {
 	var utxoSlice []*UTXO
-	unspent, err := b.db.GetUnspentsFromProgramHash(address)
+	utxos, err := b.db.GetFFLDB().GetUTXO(&address)
 	if err != nil {
 		return nil, err
 	}
 	curHeight := b.getHeight()
-	for _, utxo := range unspent[config.ELAAssetID] {
+	for _, utxo := range utxos {
 		referTxn, err := b.UTXOCache.GetTransaction(utxo.TxID)
 		if err != nil {
 			return nil, err
@@ -416,8 +416,7 @@ func (b *BlockChain) createInputs(fromAddress Uint168,
 }
 
 func (b *BlockChain) CreateCRCAppropriationTransaction() *Transaction {
-	utxos, err := b.db.GetUnspentFromProgramHash(
-		b.chainParams.CRCFoundation, *elaact.SystemAssetID)
+	utxos, err := b.db.GetFFLDB().GetUTXO(&b.chainParams.CRCFoundation)
 	if err != nil {
 		return nil
 	}
@@ -425,8 +424,7 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() *Transaction {
 	for _, u := range utxos {
 		crcFoundationBalance += u.Value
 	}
-	utxos, err = b.db.GetUnspentFromProgramHash(
-		b.chainParams.CRCCommitteeAddress, *elaact.SystemAssetID)
+	utxos, err = b.db.GetFFLDB().GetUTXO(&b.chainParams.CRCCommitteeAddress)
 	if err != nil {
 		return nil
 	}
