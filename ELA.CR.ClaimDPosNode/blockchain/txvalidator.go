@@ -36,6 +36,9 @@ const (
 
 	// MaxStringLength is the maximum length of a string field.
 	MaxStringLength = 100
+
+	// ELIPBudgetsCount indicates budgets count of ELIP.
+	ELIPBudgetsCount = 2
 )
 
 // CheckTransactionSanity verifies received single transaction
@@ -2080,6 +2083,11 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	// Check type of proposal.
 	if proposal.ProposalType.Name() == "Unknown" {
 		return errors.New("type of proposal should be known")
+	}
+
+	if proposal.ProposalType == payload.ELIP &&
+		len(proposal.Budgets) != ELIPBudgetsCount {
+		return errors.New("ELIP needs to have and only have two outputs")
 	}
 
 	// The number of the proposals of the committee can not more than 128
