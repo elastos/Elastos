@@ -60,7 +60,6 @@ export default class extends BaseComponent {
       status: '',
       budgetRequested: '',
       hasTrackingMsg: false,
-      votingStatus: '',
       isUnvotedByYou: false,
       creationDate: [],
       author: '',
@@ -127,22 +126,7 @@ export default class extends BaseComponent {
   }
 
   handleApplyFilter = () => {
-    const { filter, creationDate, author, type } = this.state
-    const param = {
-      filter: _.isEmpty(filter) ? 'ALL' : filter
-    }
-    if (!_.isEmpty(creationDate)) {
-      const formatStr = 'YYYY-MM-DD'
-      param.startDate = moment(creationDate[0]).format(formatStr)
-      param.endDate = moment(creationDate[1]).format(formatStr)
-    }
-    if (!_.isEmpty(author)) {
-      param.author = author
-    }
-    if (!_.isEmpty(type)) {
-      param.type = type
-    }
-    console.log(param)
+    this.refetch()
   }
 
   ord_render() {
@@ -429,16 +413,52 @@ export default class extends BaseComponent {
   }
 
   getQuery = () => {
+    const {
+      status,
+      budgetRequested,
+      hasTrackingMsg,
+      isUnvotedByYou,
+      creationDate,
+      author,
+      type,
+      endsDate
+    } = this.state
     const query = {}
     const voteResult =
       sessionStorage.getItem('voteResult') || this.state.voteResult
     query.voteResult = voteResult
     const searchStr =
       this.state.search || sessionStorage.getItem('proposalSearch')
+    const formatStr = 'YYYY-MM-DD'
     if (searchStr) {
       query.search = searchStr
     }
-
+    if (!_.isEmpty(status)) {
+      query.status = status
+    }
+    if (!_.isEmpty(budgetRequested)) {
+      query.budget = budgetRequested
+    }
+    if (hasTrackingMsg) {
+      query.hasTracking = hasTrackingMsg
+    }
+    if (isUnvotedByYou) {
+      query.unvoted = isUnvotedByYou
+    }
+    if (!_.isEmpty(creationDate)) {
+      query.startDate = moment(creationDate[0]).format(formatStr)
+      query.endDate = moment(creationDate[1]).format(formatStr)
+    }
+    if (!_.isEmpty(author)) {
+      query.author = author
+    }
+    if (!_.isEmpty(type)) {
+      query.type = type
+    }
+    if (!_.isEmpty(endsDate)) {
+      query.endsInStartDate = moment(endsDate[0]).format(formatStr)
+      query.endsInEndDate = moment(endsDate[1]).format(formatStr)
+    }
     return query
   }
 
