@@ -17,6 +17,7 @@ docker container stop nucleus-postgres || true && docker container rm -f nucleus
 
 # start a postgres docker container, mapping the .key and .crt into the image.
 docker run -d --name nucleus-postgres \
+    -v "$PWD/.postgres-data:/var/lib/postgresql/data"     \
     -v "$PWD/server.crt:/var/lib/postgresql/server.crt:ro" \
     -v "$PWD/server.key:/var/lib/postgresql/server.key:ro" \
     -e POSTGRES_DB=nucleus                   \

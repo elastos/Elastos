@@ -41,10 +41,10 @@ If not, you can skip to the next step of executing the automated bash script:
     ```
 - Create an admin user for django admin interface if not already:
     ```
+    // Use "admin" & "admin" as both username/password for ease of use while developing
+    python3 manage.py createsuperuser
     python3 manage.py makemigrations
     python3 manage.py migrate
-    python3 manage.py createsuperuser
-    // Use "admin" & "admin" as both username/password for ease of use while developing
     ```
 - Deactivate virtualenv
     ```

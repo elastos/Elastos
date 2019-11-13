@@ -23,4 +23,5 @@ __pycache__
 # tools
 tools/privkey.pem
 tools/server.*
+tools/.postgres-data
 
