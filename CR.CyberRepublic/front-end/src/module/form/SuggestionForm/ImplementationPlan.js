@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
 import TeamInfoSection from './TeamInfoSection'
+import I18N from '@/I18N'
 
 class ImplementationPlan extends Component {
   constructor(props) {
@@ -23,7 +24,7 @@ class ImplementationPlan extends Component {
     const { plan } = this.state
     return (
       <div>
-        <Title>Team Info</Title>
+        <Title>{I18N.get('suggestion.plan.teamInfo')}</Title>
         <TeamInfoSection
           onChange={this.changeValue}
           initialValue={plan.teamInfo}

@@ -263,6 +263,7 @@ export default class extends StandardPage {
                 <DescLabel id='plan'>
                   {I18N.get(`suggestion.fields.plan`)}
                 </DescLabel>
+                <div>{I18N.get('suggestion.plan.teamInfo')}</div>
                 <TeamInfoList list={detail.plan && detail.plan.teamInfo} editable={false} />
               </div>
             )

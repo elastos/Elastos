@@ -59,7 +59,12 @@ const renderRichContent = (data, key, title) => {
   if (key === 'budget' && typeof data.budget !== 'string') {
     rc = <PaymentList list={data.budget} editable={false} />
   } else if (key === 'plan' && typeof data.plan !== 'string'){
-    rc = <TeamInfoList list={data.plan && data.plan.teamInfo} editable={false} />
+    rc = (
+      <div>
+        <div>{I18N.get('suggestion.plan.teamInfo')}</div>
+        <TeamInfoList list={data.plan && data.plan.teamInfo} editable={false} />
+      </div>
+    )
   } else {
     rc = <MarkdownPreview content={data[key]} />
   }
