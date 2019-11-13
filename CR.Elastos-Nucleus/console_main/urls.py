@@ -16,11 +16,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import url
-from . import views
+from django.shortcuts import render
+
+
+def index(request):
+    return render(request, 'index.html')
+
 
 urlpatterns = [
     url('admin/', admin.site.urls),
-    url(r'', views.index, name="index"),
-    url(r'service/', include('service.urls'), name='service'),
-    url(r'login/', include('login.urls'), name='login'),
+    url(r'^$', index, name="index"),
+    url(r'^service/', include('service.urls'), name='service'),
+    url(r'^login/', include('login.urls'), name='login'),
 ]

@@ -2,48 +2,32 @@
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 {% load static %}
 <head>
-    <title>Console</title>
+    <title>Nucleus Console</title>
     <meta charset="UTF-8">
     <link href="{% static "/css/styles.css" %}" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 {% block content %}
     <nav style="background-color: whitesmoke; padding-bottom:10px">
     <div class="nav-wrapper">
       <a style="color:black; font-size: x-large" href="login/home.html"> <img src="{% static '/Images/Logo.png' %}" width="60" height="60" class="d-inline-block align-top" alt="Elastos logo">
-      Nucleus
+      Nucleus Console
       </a>
-      <ul class="right hide-on-med-and-down">
-        <div class="dropdown">
-  <button class="dropbtn" onclick="myFunction()">Language
-    <i class="fa fa-caret-down"></i>
-  </button>
-  <div class="dropdown-content" id="myDropdown">
-    <a href="#">English</a>
-    <a href="#">Spanish</a>
-  </div>
-  </div>
-      </ul>
     </div>
   </nav>
 
 <div class="row">
-  <div class="column" style="background-color:white;">
-    <h2> Nucleus Console Sign In</h2>
-        <hr size="20" color="black" width="580" align="left"/> <br>
-    <button style="text-align: center"> Sign In with DID</button> <br>
-    <button> Sign Up</button>
-  </div>
-  <div class="column" style="background-color:white;">
-      <br> <br> <br> <br> <br> <br> <br> <br>
-    <div class="box">
-    Build Decentralized, Scalable Apps
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus sed unde voluptate non temporibus quae amet possimus dolorum quisquam atque nemo reprehenderit quasi suscipit vero cum delectus quibusdam optio asperiores.
-    </div>
+  <div class="column">
+    <h4>Elastos - Build decentralized and scalable apps</h4>
+      <hr size="20" color="black" width="580" align="left"/> <br>
+
+    <a href="{%  url 'login' %}">
+        <button style="text-align: center">Login with Elastos DID</button>
+    </a>
   </div>
 </div>
 
