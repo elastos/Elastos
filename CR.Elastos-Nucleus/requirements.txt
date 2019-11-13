@@ -3,4 +3,4 @@ virtualenv>=16.7
 requests>=2.22.0
 psycopg2-binary>=2.8.4
 gunicorn>=20.0.0
-
+python-decouple>=3.1

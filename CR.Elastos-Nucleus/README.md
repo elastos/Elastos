@@ -37,6 +37,10 @@ Now install dependencies:
 ```
 pip3 install -r requirements.txt
 ```
+Create your environment file:
+``` 
+cp .env.example .env
+```
 Start postgres server:
 ```
 cd tools
