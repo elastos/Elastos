@@ -14,6 +14,7 @@ const FormItem = Form.Item
 const { TabPane } = Tabs
 
 const WORD_LIMIT = ABSTRACT_MAX_WORDS
+
 const TAB_KEYS = [
   'type',
   'abstract',
@@ -184,8 +185,8 @@ class C extends BaseComponent {
     )
     if (
       id === 'budget' &&
-      initialValues.budget &&
-      typeof initialValues.budget !== 'string'
+      ((initialValues.budget && typeof initialValues.budget !== 'string') ||
+        !initialValues.budget)
     ) {
       rc = (
         <PaymentSchedule
