@@ -34,6 +34,7 @@ import MarkdownPreview from '@/module/common/MarkdownPreview'
 import TagsContainer from '../common/tags/Container'
 import PopoverProfile from '@/module/common/PopoverProfile'
 import PaymentList from '@/module/form/SuggestionForm/PaymentList'
+import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import {
   Container,
   Title,
@@ -256,16 +257,28 @@ export default class extends StandardPage {
           moment(detail.createdAt).format('MMM D, YYYY')
         )}
         {sections.map(section => {
+          if (section === 'plan' && typeof detail.plan !== 'string') {
+            return (
+              <div key='plan'>
+                <DescLabel id='plan'>
+                  {I18N.get(`suggestion.fields.plan`)}
+                </DescLabel>
+                <TeamInfoList list={detail.plan && detail.plan.teamInfo} editable={false} />
+              </div>
+            )
+          }
+
           if (section === 'budget' && typeof detail.budget !== 'string') {
             return (
-              <div key={section}>
-                <DescLabel id={section}>
-                  {I18N.get(`suggestion.fields.${section}`)}
+              <div key='budget'>
+                <DescLabel id='budget'>
+                  {I18N.get('suggestion.fields.budget')}
                 </DescLabel>
                 <PaymentList list={detail.budget} editable={false} />
               </div>
             )
           }
+          
           return (
             <div key={section}>
               <DescLabel id={section}>
@@ -374,6 +387,32 @@ export default class extends StandardPage {
     })
   }
 
+  getPlanHtml(plan) {
+    const lists = plan
+      .map(item => {
+        return `
+          <p>
+            <span>${item.member}</span>
+            <span>${item.role}</span>
+            <span>${item.responsibility}</span>
+            <span>${item.info}</span>
+          </p>
+        `
+      })
+      .join('')
+    return `
+      <div>
+        <p>
+          <span>Team Member#</span>
+          <span>Role</span>
+          <span>Responsibility</span>
+          <span>More info</span>
+        </p>
+        ${lists}
+      </div>
+      `
+  }
+
   getBudgetHtml(budget) {
     const lists = budget
       .map((item, index) => {
@@ -412,6 +451,12 @@ export default class extends StandardPage {
     ]
     const result = sections
       .map(section => {
+        if (section === 'plan' && typeof detail.plan !== 'string') {
+          return `
+            <h2>${I18N.get(`suggestion.fields.plan`)}</h2>
+            <p>${this.getPlanHtml(detail.plan && detail.plan.teamInfo)}</p>
+          `
+        }
         if (section === 'budget' && typeof detail.budget !== 'string') {
           return `
             <h2>${I18N.get(`suggestion.fields.budget`)}</h2>
