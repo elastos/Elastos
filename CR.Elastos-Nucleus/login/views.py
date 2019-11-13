@@ -2,17 +2,25 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 
-def landing_page(request):
-    return render(request, 'Landing Pages/landingPage.html')
+def check_ela_auth(request):
+    return HttpResponse("check_ela_auth")
 
 
-def sign_in(request):
-    return HttpResponse("Hello, world. You're at the Sign In Page.")
+def did_callback(request):
+    return HttpResponse("did_callback")
 
 
-def sign_up(request):
-    return HttpResponse("Hello, world. You're at the Sign Up Page.")
+def register(request):
+    return render(request, 'login/register.html')
 
 
-def confirmation(request):
-    return HttpResponse("Hello, world. You're at the Confirmation Page.")
+def login(request):
+    return render(request, 'login/login.html')
+
+
+def home(request):
+    return render(request, 'login/home.html')
+
+
+def logout(request):
+    return HttpResponse("logout")

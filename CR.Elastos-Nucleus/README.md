@@ -18,52 +18,41 @@ Now install virtualenv by running the following:
 ```
 pip3 install virtualenv
 ```
-## Instructions
+## How to Run
 First, clone the repository into the current directory:
 ```
 git clone https://github.com/cyber-republic/elastos-console.git
-```
-Next create a Python virtual environment:
-```
 cd elastos-console
 ```
+If this is your first time running the django, do the following as the admin user needs to be created. 
+If not, you can skip to the next step of executing the automated bash script:
+- Create a Python virtual environment:
+    ```
+    virtualenv -p `which python3` venv
+    source venv/bin/activate
+    pip3 install -r requirements.txt
+    cp .env.example .env
+    ```
+- Start postgres server
+    ``` 
+    cd tools
+    ./postgres.sh
+    cd ..
+    ```
+- Create an admin user for django admin interface if not already:
+    ```
+    python3 manage.py makemigrations
+    python3 manage.py migrate
+    python3 manage.py createsuperuser
+    // Use "admin" & "admin" as both username/password for ease of use while developing
+    ```
+- Deactivate virtualenv
+    ```
+    deactivate
+    ```
+Run the automated script to set up everything and start Django server:
 ```
-virtualenv -p `which python3` venv
-```
-```
-source venv/bin/activate
-```
-Now install dependencies:
-```
-pip3 install -r requirements.txt
-```
-Create your environment file:
-``` 
-cp .env.example .env
-```
-Start postgres server:
-```
-cd tools
-./postgres.sh
-cd ..
-```
-Migrate the database
-```
-python3 manage.py makemigrations;
-python3 manage.py migrate
-```
-Create an admin user for django admin interface:
-```
-python3 manage.py createsuperuser
-// Use "admin" & "admin" as both username/password for ease of use while developing
-```
-Collect all static content:
-```
-python3 manage.py collectstatic 
-```
-Finally, run the server:
-```
-python3 manage.py runserver
+./run.sh
 ```
 The console can be viewed on at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
