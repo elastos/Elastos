@@ -57,3 +57,14 @@ Run the automated script to set up everything and start Django server:
 The console can be viewed on at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 You can also use the admin interface at [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin)
+
+## Debugging
+Interact with your database:
+``` 
+# Connect to postgresql database
+docker container exec -it nucleus-postgres psql -h localhost -U gmu -d nucleus
+# Look at the tables
+\dt
+# Get all items from the table 'login_didrequest'
+select * from login_didrequest;
+```

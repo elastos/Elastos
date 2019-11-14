@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', function() {
         xmlhttp.send();
     }
     function __ela_checkAuth() {
-        ajax_get('/check_ela_auth', function(data) {
+        ajax_get('/login/check_ela_auth', function(data) {
             if (data && 'redirect' in data) {
                 clearTimeout(retryTimer);
                 window.location.href = data['redirect'];
