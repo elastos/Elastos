@@ -44,7 +44,9 @@ export default {
       continue: 'Continue',
       cancel: 'Cancel',
       saveDraft: 'Save as Draft',
-      save: 'Save & Post'
+      save: 'Save & Post',
+      update: 'Update',
+      create: 'Create'
     },
     fields: {
       title: 'Title'
@@ -126,8 +128,6 @@ export default {
     teamInfo: 'Team Info',
     milestones: 'Milestones',
     publishDate: 'Publish Date',
-    version: 'Version',
-    update: 'Update',
-    create: 'Create'
+    version: 'Version'
   }
 }

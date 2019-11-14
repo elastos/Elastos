@@ -91,7 +91,9 @@ class BudgetForm extends BaseComponent {
             {I18N.get('suggestion.cancel')}
           </Button>
           <Button className="cr-btn cr-btn-primary" htmlType="submit">
-            {I18N.get('suggestion.submit')}
+            {item
+              ? I18N.get('suggestion.form.button.update')
+              : I18N.get('suggestion.form.button.create')}
           </Button>
         </Actions>
       </Form>

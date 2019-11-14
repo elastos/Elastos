@@ -44,7 +44,9 @@ export default {
       continue: '继续',
       cancel: '取消',
       saveDraft: '保存草稿',
-      save: '保存并发布'
+      save: '保存并发布',
+      update: '更新',
+      create: '创建'
     },
     fields: {
       title: '标题'
@@ -126,8 +128,6 @@ export default {
     teamInfo: '团队信息',
     milestones: '里程碑',
     publishDate: '发布日期',
-    version: '版本',
-    update: '更新',
-    create: '创建'
+    version: '版本'
   }
 }

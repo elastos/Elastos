@@ -64,8 +64,8 @@ class MilestoneForm extends BaseComponent {
         <Actions>
           <Button type="primary" htmlType="submit" size="default">
             {item
-              ? I18N.get('suggestion.plan.update')
-              : I18N.get('suggestion.plan.create')}
+              ? I18N.get('suggestion.form.button.update')
+              : I18N.get('suggestion.form.button.create')}
           </Button>
         </Actions>
       </Form>
