@@ -2,8 +2,8 @@ package mempool
 
 import (
 	"bytes"
-	"encoding/json"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"math"
 	"strings"

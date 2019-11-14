@@ -2,19 +2,18 @@ package mempool
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"encoding/base64"
 	"fmt"
-	"math/big"
 	"testing"
 
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/stretchr/testify/suite"
 
 	bc "github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/types"
+	"github.com/elastos/Elastos.ELA.SideChain.ID/types/base64url"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	types2 "github.com/elastos/Elastos.ELA.SideChain/types"
@@ -58,7 +57,7 @@ func (s *txValidatorTestSuite) TestCheckDIDOperation() {
 }
 
 const (
-	PayloadPrivateKey = "5fe87de21fa55d751583bd0d74532c3cc679caf67919261e0c9b2a56f547c38d"
+	PayloadPrivateKey = "a38aa1f5f693a13ef0cf2f1c1c0155cbcdd9386f37b0000739f8cb50af601b7b"
 	TxPrivateKey      = "5fe87de21fa55d751583bd0d74532c3cc679caf67919261e0c9b2a56f547c38d"
 	publicKeyStr1     = "035d3adebb69db5fbd8005c37d225cd2fd9ec50ec7fcb38ff7c4fcf9b90455cf5f"
 	publicKeyStr2     = "03bfd8bd2b10e887ec785360f9b329c2ae567975c784daca2f223cb19840b51914"
@@ -74,7 +73,7 @@ var didPayloadBytes = []byte(
         "publicKey":[{ "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
                        "type":"ECDSAsecp256r1",
                        "controller":"did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
-                       "publicKeyBase58":"27bqfhMew6TjL4NMz2u8b2cFCvGovaELqr19Xytt1rDmd"
+                       "publicKeyBase58":"zxt6NyoorFUFMXA8mDBULjnuH3v6iNdZm42PyG4c1YdC"
                       }
                     ],
         "authentication":["did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
@@ -102,19 +101,13 @@ func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 		FeePerKB:       0,
 	}
 	fmt.Println(tx)
-
 	data, _ := hex.DecodeString(publicKeyStr1)
+	fmt.Println(data)
+
 	fmt.Println(len(data))
 	i, _ := getDIDByPublicKey(data)
 	didAddress, _ := i.ToAddress()
 	fmt.Println("didAddress", didAddress)
-
-	bi := new(big.Int).SetBytes(data).String()
-	base58PK := base58.Encode([]byte(bi))
-
-	fmt.Println("base58PK", string(base58PK))
-	fmt.Println("len(base58PK）", len(base58PK))
-
 	err2 := s.validator.checkRegisterDID(tx)
 	s.NoError(err2)
 }
@@ -138,7 +131,7 @@ func getPayloadCreateDID() *types.PayloadDIDInfo {
 			Specification: "elastos/did/1.0",
 			Operation:     "create",
 		},
-		Payload: hex.EncodeToString(didPayloadBytes),
+		Payload: base64url.EncodeToString(didPayloadBytes),
 		Proof: types.DIDProofInfo{
 			Type:               "ECDSAsecp256r1",
 			VerificationMethod: "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#default",
@@ -147,7 +140,7 @@ func getPayloadCreateDID() *types.PayloadDIDInfo {
 	}
 
 	privateKey1, _ := common.HexStringToBytes(PayloadPrivateKey)
-	sign, _ := crypto.Sign(privateKey1, p.Data(types.DIDInfoVersion))
+	sign, _ := crypto.Sign(privateKey1, p.GetData())
 	p.Proof.Signature = base64.StdEncoding.EncodeToString(sign)
 
 	return p
