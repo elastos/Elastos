@@ -35,6 +35,8 @@ class Milestones extends Component {
 
   render() {
     const { milestones } = this.state
+    const { editable } = this.props
+    const visible = editable === false ? editable : true
     return (
       <Wrapper>
         <Timeline>
@@ -44,33 +46,39 @@ class Milestones extends Component {
                 <div>{moment(item.date).format('MMM D')}</div>
                 <div>{item.version}</div>
               </Square>
-              <Popover
-                content={
-                  <MilestoneForm
-                    item={{
-                      ...item,
-                      date: moment(item.date, 'YYYY-MM-DD'),
-                      index
-                    }}
-                    onSubmit={this.handleEdit}
-                  />
-                }
-                trigger="click"
-                placement="bottom"
-              >
+              {visible ? (
+                <Popover
+                  content={
+                    <MilestoneForm
+                      item={{
+                        ...item,
+                        date: moment(item.date, 'YYYY-MM-DD'),
+                        index
+                      }}
+                      onSubmit={this.handleEdit}
+                    />
+                  }
+                  trigger="click"
+                  placement="bottom"
+                >
+                  <Circle />
+                </Popover>
+              ) : (
                 <Circle />
-              </Popover>
+              )}
             </Milestone>
           ))}
 
-          <Action>
-            <Popover
-              content={<MilestoneForm onSubmit={this.handleSubmit} />}
-              trigger="click"
-              placement="top"
-            >
-              <Button size="small" shape="circle" icon="plus" />
-            </Popover>
+          <Action visible={visible}>
+            {visible && (
+              <Popover
+                content={<MilestoneForm onSubmit={this.handleSubmit} />}
+                trigger="click"
+                placement="top"
+              >
+                <Button size="small" shape="circle" icon="plus" />
+              </Popover>
+            )}
           </Action>
         </Timeline>
       </Wrapper>
@@ -80,7 +88,8 @@ class Milestones extends Component {
 
 Milestones.propTypes = {
   onChang: PropTypes.func,
-  initialValue: PropTypes.array
+  initialValue: PropTypes.array,
+  editable: PropTypes.bool
 }
 
 export default Milestones
@@ -125,7 +134,7 @@ const Circle = styled.div`
 `
 const Action = styled.div`
   padding-left: 110px;
-  padding-right: 150px;
+  padding-right: ${props => (props.visible === false ? '0' : '-150px')};
   border-bottom: 1px solid #ced6e3;
   position: relative;
   padding-bottom: 24px;
@@ -142,7 +151,7 @@ const Action = styled.div`
     content: '>';
     position: absolute;
     right: -2px;
-    bottom: -17px;
+    bottom: ${props => (props.visible === false ? '-8px' : '-17px')};
     color: #ced6e3;
   }
 `

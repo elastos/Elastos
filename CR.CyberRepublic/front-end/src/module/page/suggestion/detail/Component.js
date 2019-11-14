@@ -35,6 +35,7 @@ import TagsContainer from '../common/tags/Container'
 import PopoverProfile from '@/module/common/PopoverProfile'
 import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
+import Milestones from '@/module/form/SuggestionForm/Milestones'
 import {
   Container,
   Title,
@@ -259,27 +260,35 @@ export default class extends StandardPage {
         {sections.map(section => {
           if (section === 'plan' && typeof detail.plan !== 'string') {
             return (
-              <div key='plan'>
-                <DescLabel id='plan'>
+              <div key="plan">
+                <DescLabel id="plan">
                   {I18N.get(`suggestion.fields.plan`)}
                 </DescLabel>
                 <div>{I18N.get('suggestion.plan.teamInfo')}</div>
-                <TeamInfoList list={detail.plan && detail.plan.teamInfo} editable={false} />
+                <TeamInfoList
+                  list={detail.plan && detail.plan.teamInfo}
+                  editable={false}
+                />
+                <div>{I18N.get('suggestion.plan.milestones')}</div>
+                <Milestones
+                  initialValue={detail.plan && detail.plan.milestone}
+                  editable={false}
+                />
               </div>
             )
           }
 
           if (section === 'budget' && typeof detail.budget !== 'string') {
             return (
-              <div key='budget'>
-                <DescLabel id='budget'>
+              <div key="budget">
+                <DescLabel id="budget">
                   {I18N.get('suggestion.fields.budget')}
                 </DescLabel>
                 <PaymentList list={detail.budget} editable={false} />
               </div>
             )
           }
-          
+
           return (
             <div key={section}>
               <DescLabel id={section}>
