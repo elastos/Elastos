@@ -185,6 +185,7 @@
     <string name="registration_deposit">Deposit</string>
     <string name="please_enter_ticket">Enter number of votes</string>
     <string name="lack_of_balance">Insufficient balance</string>
+    <string name="transfertype1001">Vote Transaction</string>
     <string name="transfertype0">Coinbase Transaction</string>
     <string name="transfertype1">Register Asset Transaction </string>
     <string name="transfertype2">Transfer Transaction</string>
@@ -203,7 +204,24 @@
     <string name="transfertype34">CR Cancellation Transaction</string>
     <string name="transfertype35">CR Update Transaction</string>
     <string name="transfertype36">CR Deposit Retrieve Transaction</string>
-    <string name="votetrade">Vote Transaction</string>
+    <string name="sidetransfertype0">Coinbase Transaction</string>
+    <string name="sidetransfertype1">Register Asset Transaction </string>
+    <string name="sidetransfertype2">Transfer Transaction</string>
+    <string name="sidetransfertype3">Record Transaction</string>
+    <string name="sidetransfertype4">Deployment Transaction</string>
+    <string name="sidetransfertype5">Sidechain Mining Transaction</string>
+    <string name="sidetransfertype6">Sidechain Deposit Transaction</string>
+    <string name="sidetransfertype7">Sidechain withdraw Transaction</string>
+    <string name="sidetransfertype8">Cross Chain transfer Transaction</string>
+    <string name="sidetransfertype9">Node Registration Transaction</string>
+    <string name="sidetransfertype10">ID Transaction</string>
+    <string name="sidetransfertype11">Node Update Transaction</string>
+    <string name="sidetransfertype12">Deposit Retrieve Transaction</string>
+    <string name="sidetransfertype13">Unknown Transaction </string>
+    <string name="sidetransfertype33">CR Registration Transaction</string>
+    <string name="sidetransfertype34">CR Cancellation Transaction</string>
+    <string name="sidetransfertype35">CR Update Transaction</string>
+    <string name="sidetransfertype36">CR Deposit Retrieve Transaction</string>
     <string name="last_voting_record">Last Voting Record</string>
     <string name="right_to_vote_ticket">Voting Power：</string>
     <string name="vote_success">Success</string>
@@ -525,4 +543,6 @@
     <string name="editsocialaccount">编辑社区账号</string>
     <string name="editdid">编辑DID</string>
     <string name="updatepublish">更新发布</string>
+    <string name="wallet">钱包</string>
+    <string name="transation">交易</string>
 </resources>

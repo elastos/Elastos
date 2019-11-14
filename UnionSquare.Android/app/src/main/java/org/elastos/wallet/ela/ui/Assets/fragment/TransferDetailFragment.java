@@ -267,7 +267,7 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
         if (transactionsBean.getStatus().equals("Pending")) {
             tvSuretime.setText("- -");
         } else {
-            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp(),getContext()));
+            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp(), getContext()));
         }
         tvSuretimes.setText(transactionsBean.getConfirmStatus());
         tvRemark.setText(transactionsBean.getMemo());
@@ -280,20 +280,29 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
                 tvAmountTarget1.setText(NumberiUtil.maxNumberFormat(Arith.div(payloadBean.getCrossChainAmount(), MyWallet.RATE_S), 12) + " ELA");
             }
         }
-        int transferType = getContext().getResources().getIdentifier("transfertype" + transactionsBean.getType(), "string",
-                getContext().getPackageName());
-        try {
-            tvType.setText(getString(transferType));
-        } catch (Exception e) {
-            tvType.setText(getString(R.string.transfertype13));
+        int transferType;
+        if (chainId.equals(MyWallet.IDChain)) {
+            transferType = getContext().getResources().getIdentifier("sidetransfertype" + transactionsBean.getType(), "string",
+                    getContext().getPackageName());
+        } else {
+            transferType = getContext().getResources().getIdentifier("transfertype" + transactionsBean.getType(), "string",
+                    getContext().getPackageName());
         }
+
+
         List<TransferRecordDetailEntity.TransactionsBean.OutputPayloadBean> outputPayloadBeans = transactionsBean.getOutputPayload();
         if (outputPayloadBeans != null && outputPayloadBeans.size() > 0) {
             //特殊类型 投票交易
             llTicketnum.setVisibility(View.VISIBLE);
             // tvTicketnum.setText(NumberiUtil.maxNumberFormat((outputPayloadBeans.get(0).getAmount() / MyWallet.RATE) + "", 12));
             tvTicketnum.setText(NumberiUtil.maxNumberFormat(Arith.div(outputPayloadBeans.get(0).getAmount() + "", MyWallet.RATE_S), 12));
-            tvType.setText(R.string.votetrade);
+            transferType = getContext().getResources().getIdentifier("transfertype" + 1001, "string",
+                    getContext().getPackageName());
+        }
+        try {
+            tvType.setText(getString(transferType));
+        } catch (Exception e) {
+            tvType.setText(getString(R.string.transfertype13));
         }
         String output = transactionsBean.getOutputs();
 
@@ -428,13 +437,20 @@ public class TransferDetailFragment extends BaseFragment implements CommonRvList
         if (transactionsBean.getStatus().equals("Pending")) {
             tvSuretime.setText("- -");
         } else {
-            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp(),getContext()));
+            tvSuretime.setText(DateUtil.time(transactionsBean.getTimestamp(), getContext()));
         }
         tvSuretimes.setText(transactionsBean.getConfirmStatus());
         tvRemark.setVisibility(View.GONE);
 
-        int transferType = getContext().getResources().getIdentifier("transfertype" + transactionsBean.getType(), "string",
-                getContext().getPackageName());
+        int transferType;
+
+        if (chainId.equals(MyWallet.IDChain)) {
+            transferType = getContext().getResources().getIdentifier("sidetransfertype" + transactionsBean.getType(), "string",
+                    getContext().getPackageName());
+        } else {
+            transferType = getContext().getResources().getIdentifier("transfertype" + transactionsBean.getType(), "string",
+                    getContext().getPackageName());
+        }
         try {
             tvType.setText(getString(transferType));
         } catch (Exception e) {

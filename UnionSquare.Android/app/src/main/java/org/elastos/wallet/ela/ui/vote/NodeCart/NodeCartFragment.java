@@ -429,6 +429,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",1001 );
             start(SignFragment.class, bundle);
 
         }
@@ -439,6 +440,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
             bundle.putBoolean("signStatus", true);
+            bundle.putInt("transType",1001 );
             start(SignFragment.class, bundle);
 
         }
@@ -458,6 +460,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("attributes", data);
+                intent.putExtra("transType", 1001);
                 intent.putExtra("type", Constant.SUPERNODEVOTE);
                 startActivity(intent);
                 break;

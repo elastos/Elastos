@@ -207,7 +207,7 @@ public class ContactDetailFragment extends BaseFragment {
                     ClipboardUtil.copyClipboar(getBaseActivity(), walletAddr);
                 } else {
                     //显示二维码
-                    Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(walletAddr, ScreenUtil.dp2px(getContext(), 150), ScreenUtil.dp2px(getContext(), 150), Constant.TRANSFER, "ELA");
+                    Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(walletAddr, ScreenUtil.dp2px(getContext(), 150), ScreenUtil.dp2px(getContext(), 150), Constant.TRANSFER, "ELA",-1);
                     dialogUtil.showImage(getBaseActivity(), mBitmap);
                 }
 

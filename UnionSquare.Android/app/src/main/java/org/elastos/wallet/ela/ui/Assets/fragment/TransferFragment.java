@@ -165,20 +165,23 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             });
 
         }
-        if ( integer == RxEnum.TOSIGN.ordinal()) {
+        if (integer == RxEnum.TOSIGN.ordinal()) {
             //生成待签名交易
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",2 );
             start(SignFragment.class, bundle);
 
-        } if ( integer == RxEnum.SIGNSUCCESS.ordinal()) {
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
             //签名成功
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",2 );
             bundle.putBoolean("signStatus", true);
             start(SignFragment.class, bundle);
 
@@ -247,6 +250,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         intent.putExtra("chainId", chainId);
         intent.putExtra("attributes", data);
         intent.putExtra("type", Constant.TRANFER);
+        intent.putExtra("transType", 2);
         startActivity(intent);
 
     }

@@ -75,7 +75,7 @@ public class ReceiptFragment extends BaseFragment implements ReceiptViewData {
     @Override
     public void onCreateAddress(String data) {
         tvAddress.setText(data);
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 160), ScreenUtil.dp2px(getContext(), 160), Constant.TRANSFER,chainId);
+        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 160), ScreenUtil.dp2px(getContext(), 160), Constant.TRANSFER,chainId,-1);
         ivQr.setImageBitmap(mBitmap);
     }
 }

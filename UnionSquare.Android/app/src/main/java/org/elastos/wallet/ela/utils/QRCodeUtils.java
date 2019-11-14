@@ -7,7 +7,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.text.TextUtils;
 
-import com.google.gson.JsonObject;
+import com.alibaba.fastjson.JSONObject;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -384,45 +384,49 @@ public class QRCodeUtils {
      * @return 生成的二维码图片
      */
     public static List<Bitmap> createMulQrCodeBitmap(String content, int width, int height,
-                                                     int type) {
+                                                     int type, int transType) {
         List<Bitmap> bitmaps = new ArrayList<>();
         int factor = 350;
         int i = 0;
         while (i < content.length()) {
             int max = i + factor <= content.length() ? i + factor : content.length();
             String tempContent = content.substring(i, max);
-            JsonObject jsonObject = getQrJson(0, "MultiQrContent",(int) Math.ceil(content.length() / (factor * 1f))
-                    ,(int) Math.ceil(max / (factor * 1f)), tempContent, MD5Utils.md5Encode(content), type, "ELA");
-            Bitmap bitmap = createQrCodeBitmap(jsonObject.toString(), width, height);
+            String jsonObject = getQrJson(0, "MultiQrContent", (int) Math.ceil(content.length() / (factor * 1f))
+                    , (int) Math.ceil(max / (factor * 1f)), tempContent, MD5Utils.md5Encode(content), type, "ELA", transType);
+            Bitmap bitmap = createQrCodeBitmap(jsonObject, width, height);
             bitmaps.add(bitmap);
             i = max;
         }
         return bitmaps;
     }
 
-    private static JsonObject getQrJson(int version, String name, int total, int index, String data, String md5, int type, String subWallet) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("version", version);
-        jsonObject.addProperty("name", name);
-        jsonObject.addProperty("total", total);
-        jsonObject.addProperty("index", index);
-        jsonObject.addProperty("data", data);
-        jsonObject.addProperty("md5", md5);
-        JsonObject extra = new JsonObject();
-        extra.addProperty("Type", type);
+    private static String getQrJson(int version, String name, int total, int index, String data, String md5, int type, String subWallet, int transType) {
+
+        QrBean qrBean = new QrBean();
+        qrBean.setVersion(version);
+        qrBean.setName(name);
+        qrBean.setTotal(total);
+        qrBean.setIndex(index);
+        qrBean.setData(data);
+        qrBean.setMd5(md5);
+        QrBean.ExtraBean extraBean = new QrBean.ExtraBean();
+        qrBean.setExtra(extraBean);
+        extraBean.setType(type);
         if (TextUtils.isEmpty(subWallet)) {
             subWallet = "ELA";
         }
-        extra.addProperty("SubWallet", subWallet);
-        jsonObject.add("extra", extra);
-        return jsonObject;
+        extraBean.setSubWallet(subWallet);
+        extraBean.setTransType(transType);
+
+
+        return JSONObject.toJSONString(qrBean);
 
     }
 
 
-    public static Bitmap createQrCodeBitmap(String content, int width, int height, int type, String chainID) {
-        JsonObject jsonObject = getQrJson(0, "MultiQrContent", 1
-                , 1, content, MD5Utils.md5Encode(content), type, chainID);
-        return createQrCodeBitmap(jsonObject.toString(), width, height);
+    public static Bitmap createQrCodeBitmap(String content, int width, int height, int type, String chainID, int transType) {
+        String jsonObject = getQrJson(0, "MultiQrContent", 1
+                , 1, content, MD5Utils.md5Encode(content), type, chainID, transType);
+        return createQrCodeBitmap(jsonObject, width, height);
     }
 }

@@ -1,8 +1,14 @@
 package org.elastos.wallet.ela.ui.Assets;
 
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -16,6 +22,7 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
@@ -39,6 +46,8 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
 import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.Log;
+import org.elastos.wallet.ela.utils.MyUtil;
 import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
@@ -55,6 +64,8 @@ import java.util.TreeMap;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+
+import static android.content.Context.NOTIFICATION_SERVICE;
 
 /**
  * 资产首页
@@ -79,6 +90,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     private Wallet wallet;
     private CommonGetBalancePresenter commonGetBalancePresenter;
     private Map<String, List<org.elastos.wallet.ela.db.table.SubWallet>> listMap;
+    private Map<String, String> transactionMap;
 
     @Override
     protected int getLayoutId() {
@@ -105,6 +117,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         setWalletView(wallet);
         List<Wallet> wallets = realmUtil.queryUserAllWallet();
         listMap = new HashMap<>();
+        transactionMap = new HashMap<>();
         for (Wallet wallet : wallets) {
             assetsPresenter.getAllSubWallets(wallet.getWalletId(), this);
         }
@@ -195,6 +208,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                             String attribute = getData(qrBean, Constant.SIGN);
                             if (!TextUtils.isEmpty(attribute)) {
                                 bundle.putParcelable("wallet", wallet);
+                                bundle.putInt("transType", qrBean.getExtra().getTransType());
                                 bundle.putString("attributes", attribute);
                                 ((BaseFragment) getParentFragment()).start(SignFragment.class, bundle);
                             }
@@ -413,9 +427,53 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     @Override
-    public void OnTxPublished(JSONObject jsonObject) {
-        // Log.e("???", jsonObject.toString());
-        //交易成功   OnTxPublished => 19a3dda6e200416ad2c8eaa62047c1211089e594bb0cd70e788c26075fffd9bd, result: {"Code":0,"Reason":"has tx"}
+    public synchronized void OnTxPublished(JSONObject jsonObject) {
+        try {
+            String hash = jsonObject.getString("hash");
+            String transferType = transactionMap.get(hash);
+            if (transferType == null) {
+                return;
+            }
+            transactionMap.remove(hash);
+            String chainId = jsonObject.getString("ChainID");
+            try {
+                if (chainId.equals(MyWallet.IDChain)) {
+                    transferType = getString(getContext().getResources().getIdentifier("sidetransfertype" + transferType, "string",
+                            getContext().getPackageName()));
+                } else {
+                    transferType = getString(getContext().getResources().getIdentifier("transfertype" + transferType, "string",
+                            getContext().getPackageName()));
+                }
+            } catch (Exception e) {
+                transferType = getString(R.string.transfertype13);
+            }
+            String resultString = jsonObject.getString("result");
+            String masterWalletID = jsonObject.getString("MasterWalletID");
+            String walleName = realmUtil.queryUserWallet(masterWalletID).getWalletName();
+            JSONObject result = new JSONObject(resultString);
+            // int code = result.getInt("Code");
+            String reason = result.getString("Reason");
+            NotificationManager manager = (NotificationManager) getContext().getSystemService(NOTIFICATION_SERVICE);
+
+            //需添加的代码
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                String channelId = "default";
+                String channelName = "默认通知";
+                manager.createNotificationChannel(new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH));
+            }
+            Notification notification = new NotificationCompat.Builder(getContext(), "default")
+                    .setContentTitle(MyUtil.getAppName(getContext()))
+                    .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferType + reason + ".")
+                    .setWhen(System.currentTimeMillis())
+                    .setSmallIcon(R.mipmap.icon_ela)
+                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.icon_ela))
+                    .build();
+            manager.notify(1, notification);
+
+
+        } catch (Exception e) {
+            Log.i(getClass().getSimpleName(), e.getMessage());
+        }
     }
 
     @Override
@@ -530,6 +588,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (integer == RxEnum.BALANCECHANGE.ordinal()) {
             //资产改变
             setRecycleView();
+        }
+        if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
+            //交易发生出去
+
+            transactionMap.put((String) result.getObj(), result.getName());
         }
 
     }

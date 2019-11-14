@@ -129,9 +129,10 @@ public class TransferActivity extends BaseActivity {
                     case 0:
                     case 2:
                         intent = new Intent(this, PwdActivity.class);
-                        intent.putExtra("wallet", wallet);
+                        intent.putExtras(getIntent());
+                      /*  intent.putExtra("wallet", wallet);
                         intent.putExtra("chainId", chainId);
-                        intent.putExtra("attributes", attributes);
+                        intent.putExtra("attributes", attributes);*/
                         startActivity(intent);
                         break;
                     case 1:

@@ -21,6 +21,8 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -38,6 +40,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private long code;
     private String inputJson;
     private String did;
+    private int transType;
 
     @Override
     protected int getLayoutId() {
@@ -70,6 +73,9 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         code = data.getLongExtra("code", 0);
         inputJson = data.getStringExtra("inputJson");
         did = data.getStringExtra("did");
+
+        transType = data.getIntExtra("transType",13);
+
 
 
     }
@@ -133,7 +139,14 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 presenter.publishTransaction(wallet.getWalletId(), chainId, data, this);
                 break;
             case "publishTransaction":
-                post(RxEnum.TRANSFERSUCESS.ordinal(), getString(R.string.for_successful), null);
+                String hash = "";
+                try {
+                    JSONObject pulishdata = new JSONObject(data);
+                    hash = pulishdata.getString("TxHash");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                post(RxEnum.TRANSFERSUCESS.ordinal(), transType+"", hash);
                 finish();
                 break;
 

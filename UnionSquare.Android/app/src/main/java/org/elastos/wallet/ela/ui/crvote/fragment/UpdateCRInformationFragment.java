@@ -165,6 +165,7 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
                 intent.putExtra("name", name);
                 intent.putExtra("url", url);
                 intent.putExtra("code", code);
+                intent.putExtra("transType", 35);
                 startActivity(intent);
                 break;
 

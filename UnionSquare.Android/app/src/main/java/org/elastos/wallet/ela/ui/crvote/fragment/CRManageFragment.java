@@ -267,9 +267,11 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     //提取按钮
                     intent.putExtra("type", Constant.WITHDRAWCR);
                     intent.putExtra("amount", available);
+                    intent.putExtra("transType", 36);
                 } else {
                     //注销按钮
                     intent.putExtra("type", Constant.UNREGISTERCR);
+                    intent.putExtra("transType", 34);
                 }
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("did", did);

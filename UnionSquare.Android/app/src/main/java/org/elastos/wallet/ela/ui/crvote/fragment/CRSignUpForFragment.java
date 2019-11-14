@@ -189,6 +189,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
         intent.putExtra("name", name);
         intent.putExtra("url", url);
         intent.putExtra("code", code);
+        intent.putExtra("transType", 33);
 
         startActivity(intent);
     }

@@ -56,11 +56,11 @@ public class VoteTransferActivity extends BaseActivity {
         registReceiver();
     }
 
-    Intent intent;
+
 
     @Override
     protected void setExtraData(Intent data) {
-        this.intent = data;
+
         amount = data.getStringExtra("amount");
         fee = data.getLongExtra("fee", MyWallet.feePerKb);
         chainId = data.getStringExtra("chainId");
@@ -88,7 +88,7 @@ public class VoteTransferActivity extends BaseActivity {
         switch (view.getId()) {
             case R.id.tv_next:
                 Intent intent = new Intent(this, OtherPwdActivity.class);
-                intent.putExtras(this.intent);
+                intent.putExtras(getIntent());
                 startActivity(intent);
                 break;
 

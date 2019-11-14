@@ -133,6 +133,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",8 );
             start(SignFragment.class, bundle);
 
         }
@@ -143,6 +144,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
             bundle.putBoolean("signStatus", true);
+            bundle.putInt("transType",8 );
             start(SignFragment.class, bundle);
 
         }
@@ -226,6 +228,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
                 intent.putExtra("chainId", chainId);
                 intent.putExtra("attributes", data);
                 intent.putExtra("type", Constant.SIDEWITHDRAW);
+                intent.putExtra("transType", 8);
                 startActivity(intent);
                 break;
         }

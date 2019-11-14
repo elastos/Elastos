@@ -408,6 +408,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", chainId);
                 intent.putExtra("attributes", data);
+                intent.putExtra("transType",2);
                 startActivity(intent);
                 break;
             case "getAllCoinBaseTransaction":

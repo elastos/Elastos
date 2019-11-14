@@ -26,7 +26,6 @@ import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRNodeCartAdapter;
@@ -36,7 +35,6 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
@@ -317,6 +315,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                 intent.putExtra("attributes", ((CommmonStringEntity) baseEntity).getData());
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("type", Constant.CRVOTE);
+                intent.putExtra("transType",1001 );
                 startActivity(intent);
                 break;
         }
@@ -340,6 +339,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",1001 );
             start(SignFragment.class, bundle);
 
         }
@@ -350,6 +350,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
             bundle.putBoolean("signStatus", true);
+            bundle.putInt("transType",1001 );
             start(SignFragment.class, bundle);
 
         }

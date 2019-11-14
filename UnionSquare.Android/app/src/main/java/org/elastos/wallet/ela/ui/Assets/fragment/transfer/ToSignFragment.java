@@ -25,6 +25,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+/**
+ * 待用
+ */
 public class ToSignFragment extends BaseFragment {
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -82,7 +85,7 @@ public class ToSignFragment extends BaseFragment {
     public void setData(String data) {
         //encodeTransaction  加密后的结果
         List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 170)
-                , ScreenUtil.dp2px(getContext(), 170), Constant.SIGN);
+                , ScreenUtil.dp2px(getContext(), 170), Constant.SIGN,-1);
         if (images.size() == 1) {
             ivQr.setVisibility(View.VISIBLE);
             llVp.setVisibility(View.GONE);

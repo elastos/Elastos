@@ -226,9 +226,11 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                     //提取按钮
                     intent.putExtra("type", Constant.WITHDRAWSUPERNODE);
                     intent.putExtra("amount", available);
+                    intent.putExtra("transType",12);
                 } else {
                     //注销按钮
                     intent.putExtra("type", Constant.UNREGISTERSUPRRNODE);
+                    intent.putExtra("transType", 10);
                 }
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("ownerPublicKey", ownerPublicKey);

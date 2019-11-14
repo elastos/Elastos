@@ -144,6 +144,7 @@ public class DidDetailFragment extends BaseFragment implements NewBaseViewData {
                 intent.putExtra("inputJson", JSON.toJSONString(json));
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
                 intent.putExtra("type", Constant.DIDSIGNUP);
+                intent.putExtra("transType", 10);
                 startActivity(intent);
                 break;
         }

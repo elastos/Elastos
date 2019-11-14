@@ -154,6 +154,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",8 );
             start(SignFragment.class, bundle);
 
         }
@@ -163,6 +164,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",8 );
             bundle.putBoolean("signStatus", true);
             start(SignFragment.class, bundle);
 
@@ -213,6 +215,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
                 intent.putExtra("chainId", chainId);
                 intent.putExtra("attributes", data);
                 intent.putExtra("type", Constant.SIDEWITHDRAW);
+                intent.putExtra("transType", 8);
                 startActivity(intent);
                 break;
         }
