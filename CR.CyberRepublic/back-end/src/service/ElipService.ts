@@ -459,10 +459,9 @@ export default class extends Base {
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
       query.createdAt = {
-        $and: [
-          {$gte: new Date(param.startDate)},
-          {$lte: new Date(param.endDate)}
-        ]}
+        $gte: new Date(param.startDate),
+        $lte: new Date(param.endDate)
+      }
     }
 
     if (param.$or && query.$or) {

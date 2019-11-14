@@ -475,24 +475,22 @@ export default class extends Base {
       query.createdBy = { $in: userIds }
     }
     // cvoteType
-    if(param.type && constant.CVOTE_TYPE.hasOwnProperty(param.type)){
+    if(param.type && _.indexOf(_.values(constant.CVOTE_TYPE),param.type)){
       query.type = param.type
     }
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
       query.createdAt = {
-        $and: [
-          {$gte: new Date(param.startDate)},
-          {$lte: new Date(param.endDate)}
-        ]}
+          $gte: new Date(param.startDate),
+          $lte: new Date(param.endDate)
+        }
     }
     // Ends in times - 7day = startDate <  endDate
     if(param.endsInStartDate && param.endsInStartDate.length && param.endsInEndDate && param.endsInEndDate.length){
       query.createdAt = {
-        $and: [
-          {$gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000)},
-          {$lte: new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)}
-        ]}
+          $gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000),
+          $lte: new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)
+      }
       query.status = constant.CVOTE_STATUS.FINAL
     }
     // status

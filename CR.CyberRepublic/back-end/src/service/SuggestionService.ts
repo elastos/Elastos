@@ -113,7 +113,8 @@ export default class extends Base {
       [
         'results', 'page', 'sortBy', 'sortOrder',
         'filter', 'profileListFor', 'search',
-        'tagsIncluded', 'referenceStatus'
+        'tagsIncluded', 'referenceStatus',
+        'status', 'startDate', 'endDate'
       ]
     )
     const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
@@ -237,11 +238,11 @@ export default class extends Base {
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
       query.createdAt = {
-        $and: [
-          {$gte: new Date(param.startDate)},
-          {$lte: new Date(param.endDate)}
-        ]}
+        $gte: new Date(param.startDate),
+        $lte: new Date(param.endDate)
+      }
     }
+    
     // author
     if(param.author && param.author.length) {
       let search = param.author
@@ -405,11 +406,11 @@ export default class extends Base {
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
       query.createdAt = {
-        $and: [
-          {$gte: new Date(param.startDate)},
-          {$lte: new Date(param.endDate)}
-        ]}
+        $gte: new Date(param.startDate),
+        $lte: new Date(param.endDate)
+      }
     }
+    
     // author
     if(param.author && param.author.length) {
       let search = param.author
@@ -448,10 +449,20 @@ export default class extends Base {
         $inc: { viewsNum: 1, activeness: 1 }
       })
     }
-    const doc = await this.model.getDBInstance()
-      .findById(_id)
+    let doc = await this.model.getDBInstance()
+                        .findById(_id)
+                        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+                        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+
+    // proposed by council
+    const db_cvote = this.getDBModel('CVote')
+    const cvoteList = await db_cvote
+      .getDBInstance()
+      .findOne({ reference: { $all: [ _id ] } })
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+
+    doc = JSON.parse(JSON.stringify(doc))
+    doc.proposer = cvoteList.createdBy
 
     if (_.isEmpty(doc.comments)) return doc
 
@@ -463,14 +474,6 @@ export default class extends Base {
         })
       }
     }
-    // proposed by council
-    const db_cvote = this.getDBModel('CVote')
-    const cvoteList = await db_cvote
-      .getDBInstance()
-      .findOne({ reference: { $all: [ _id ] } }, 'createdBy')
-      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-
-    doc.proposer = cvoteList
     
     return doc
   }
