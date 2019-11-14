@@ -58,7 +58,7 @@ class Milestones extends Component {
                   placement="top"
                 >
                   <Square>
-                    <div>{moment(item.date).format('MMM D')}</div>
+                    <div>{moment(item.date).format('MMM D, YYYY')}</div>
                     <div>{item.version}</div>
                   </Square>
                   <Button
@@ -71,7 +71,7 @@ class Milestones extends Component {
               ) : (
                 <Fragment>
                   <Square>
-                    <div>{moment(item.date).format('MMM D')}</div>
+                    <div>{moment(item.date).format('MMM D, YYYY')}</div>
                     <div>{item.version}</div>
                   </Square>
                   <Circle />
