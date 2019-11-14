@@ -7,7 +7,7 @@ import _ from 'lodash'
 import { logger } from '@/util'
 
 export default createContainer(Component, (state) => {
-  const commentables = ['task', 'submission', 'team', 'member', 'elip']
+  const commentables = ['task', 'submission', 'team', 'member', 'elip', 'suggestion']
 
   const props = {
     currentUserId: state.user.current_user_id,
