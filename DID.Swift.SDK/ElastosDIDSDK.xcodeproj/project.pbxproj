@@ -10,20 +10,22 @@
 		11092151235ED8BD006B7F47 /* DIDUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11092150235ED8BD006B7F47 /* DIDUtil.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		110BE6DC236152100026ACC6 /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
-		111BF47E235467830043D570 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11942E42235190BD00746B87 /* libcrypto.a */; };
 		111BF47F235467830043D570 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11942E44235190E000746B87 /* libhdkey.a */; };
 		111BF480235467880043D570 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; };
 		111BF481235467880043D570 /* Antlr4.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		111BF4832354678B0043D570 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; };
 		111BF4842354678B0043D570 /* Pods_ElastosDIDSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		11508524233CC67B00EF6A8D /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11508523233CC67B00EF6A8D /* DIDAdaptor.swift */; };
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
 		116C950C234E2B6200BA9777 /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116C950B234E2B6200BA9777 /* CHDKey.swift */; };
 		116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */; };
 		116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA572360092D00BBEE4F /* TestUtils.swift */; };
+		119338CD237D3FB200C4998E /* libspvadapter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 119338C8237D3FB200C4998E /* libspvadapter.a */; };
+		119338CF237D3FB900C4998E /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 119338CE237D3FB900C4998E /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		119338D1237D3FEC00C4998E /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 119338D0237D3FEC00C4998E /* libcrypto.a */; };
+		119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D5237D41B000C4998E /* DIDAdaptor.swift */; };
+		119338D8237D41CD00C4998E /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D7237D41CD00C4998E /* SPVAdaptor.swift */; };
 		11942E402350DBCA00746B87 /* Ccrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11942E3F2350DBCA00746B87 /* Ccrypto.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		11CA2F8C23530E49009A2067 /* libcrypto.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11942E42235190BD00746B87 /* libcrypto.a */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		11CA2F8D23530E49009A2067 /* libhdkey.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11942E44235190E000746B87 /* libhdkey.a */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		11CA74B7235E06B7006E66F7 /* EcdsaSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */; };
 		11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AE235E06B7006E66F7 /* DerivedKey.swift */; };
@@ -120,7 +122,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				11CA2F8C23530E49009A2067 /* libcrypto.a in CopyFiles */,
 				11CA2F8D23530E49009A2067 /* libhdkey.a in CopyFiles */,
 				11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */,
 			);
@@ -136,14 +137,17 @@
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
 		110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FakeConsoleAdaptor.swift; path = ElastosDIDSDK/DID/Backend/FakeConsoleAdaptor.swift; sourceTree = SOURCE_ROOT; };
-		11508523233CC67B00EF6A8D /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/Backend/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		116C950B234E2B6200BA9777 /* CHDKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CHDKey.swift; sourceTree = "<group>"; };
 		116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreCreateTests.swift; sourceTree = "<group>"; };
 		116CAA572360092D00BBEE4F /* TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestUtils.swift; path = TestUtils/TestUtils.swift; sourceTree = "<group>"; };
+		119338C8237D3FB200C4998E /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libspvadapter.a; sourceTree = "<group>"; };
+		119338CE237D3FB900C4998E /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
+		119338D0237D3FEC00C4998E /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto.a; sourceTree = "<group>"; };
+		119338D5237D41B000C4998E /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
+		119338D7237D41CD00C4998E /* SPVAdaptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPVAdaptor.swift; sourceTree = "<group>"; };
 		11942E3F2350DBCA00746B87 /* Ccrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ccrypto.swift; sourceTree = "<group>"; };
-		11942E42235190BD00746B87 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto.a; sourceTree = "<group>"; };
 		11942E44235190E000746B87 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libhdkey.a; sourceTree = "<group>"; };
 		11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EcdsaSigner.swift; sourceTree = "<group>"; };
 		11CA74AE235E06B7006E66F7 /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
@@ -222,7 +226,8 @@
 			files = (
 				111BF47F235467830043D570 /* libhdkey.a in Frameworks */,
 				111BF480235467880043D570 /* Antlr4.framework in Frameworks */,
-				111BF47E235467830043D570 /* libcrypto.a in Frameworks */,
+				119338D1237D3FEC00C4998E /* libcrypto.a in Frameworks */,
+				119338CD237D3FB200C4998E /* libspvadapter.a in Frameworks */,
 				111BF4832354678B0043D570 /* Pods_ElastosDIDSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -289,9 +294,11 @@
 		116C94E8234D825B00BA9777 /* libhdkey */ = {
 			isa = PBXGroup;
 			children = (
+				119338CE237D3FB900C4998E /* spvadapter.h */,
+				119338C8237D3FB200C4998E /* libspvadapter.a */,
+				119338D0237D3FEC00C4998E /* libcrypto.a */,
 				11E2FD4B2366879A009D9943 /* HDkey.h */,
 				11E2FD4923668790009D9943 /* crypto.h */,
-				11942E42235190BD00746B87 /* libcrypto.a */,
 				11942E44235190E000746B87 /* libhdkey.a */,
 				11942E3F2350DBCA00746B87 /* Ccrypto.swift */,
 				116C950B234E2B6200BA9777 /* CHDKey.swift */,
@@ -306,6 +313,15 @@
 			);
 			name = TestUtils;
 			sourceTree = "<group>";
+		};
+		119338D2237D417600C4998E /* Adaptor */ = {
+			isa = PBXGroup;
+			children = (
+				119338D7237D41CD00C4998E /* SPVAdaptor.swift */,
+			);
+			name = Adaptor;
+			path = ElastosDIDSDK/DID/Adaptor;
+			sourceTree = SOURCE_ROOT;
 		};
 		11CA74AC235E06B7006E66F7 /* Util */ = {
 			isa = PBXGroup;
@@ -395,10 +411,12 @@
 		11F262B623260D550009C103 /* DID */ = {
 			isa = PBXGroup;
 			children = (
+				119338D2237D417600C4998E /* Adaptor */,
 				11CA74AC235E06B7006E66F7 /* Util */,
 				11F262BB23260DFD0009C103 /* Backend */,
 				1109D06D232758D500A03D56 /* Parser */,
 				A3E6D474233485DF0012CD77 /* Constants.swift */,
+				119338D5237D41B000C4998E /* DIDAdaptor.swift */,
 				A3E6D46C233485DF0012CD77 /* DID.swift */,
 				A3E6D471233485DF0012CD77 /* DIDDocument.swift */,
 				A3E6D473233485DF0012CD77 /* DIDError.swift */,
@@ -420,7 +438,6 @@
 		11F262BB23260DFD0009C103 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
-				11508523233CC67B00EF6A8D /* DIDAdaptor.swift */,
 				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
 				A3E6D45D233485BB0012CD77 /* DIDBackend.swift */,
 				A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */,
@@ -449,6 +466,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */,
+				119338CF237D3FB900C4998E /* spvadapter.h in Headers */,
 				11E2FD4A23668791009D9943 /* crypto.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -682,6 +700,7 @@
 				110BE6DC236152100026ACC6 /* FakeConsoleAdaptor.swift in Sources */,
 				A3E6D456233485AD0012CD77 /* DIDURLLexer.swift in Sources */,
 				A3E6D458233485AD0012CD77 /* DIDURLParserATN.swift in Sources */,
+				119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */,
 				A3E6D446233485800012CD77 /* Proof.swift in Sources */,
 				11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */,
 				A3E6D459233485AD0012CD77 /* DIDURLBaseListener.swift in Sources */,
@@ -701,10 +720,10 @@
 				11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */,
 				A3E6D457233485AD0012CD77 /* DIDURLLexerATN.swift in Sources */,
 				11CA74BA235E06B7006E66F7 /* HDKey.swift in Sources */,
+				119338D8237D41CD00C4998E /* SPVAdaptor.swift in Sources */,
 				A3E6D47B233485E00012CD77 /* DID.swift in Sources */,
 				A3E6D478233485E00012CD77 /* DIDObject.swift in Sources */,
 				A3E6D449233485800012CD77 /* CredentialSubject.swift in Sources */,
-				11508524233CC67B00EF6A8D /* DIDAdaptor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
