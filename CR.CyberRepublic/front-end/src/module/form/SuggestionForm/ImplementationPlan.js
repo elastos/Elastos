@@ -31,7 +31,7 @@ class ImplementationPlan extends Component {
           initialValue={plan.teamInfo}
         />
         <Title>{I18N.get('suggestion.plan.milestones')}</Title>
-        <Milestones />
+        <Milestones onChange={this.changeValue} initialValue={plan.milestone} />
       </div>
     )
   }

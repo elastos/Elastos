@@ -11,10 +11,10 @@ class MilestoneForm extends BaseComponent {
   handleSubmit = e => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
-    const { form, onSubmit } = this.props
+    const { form, onSubmit, item } = this.props
     form.validateFields((err, values) => {
       if (!err) {
-        onSubmit(values)
+        item ? onSubmit(item.index, values) : onSubmit(values)
       }
     })
   }

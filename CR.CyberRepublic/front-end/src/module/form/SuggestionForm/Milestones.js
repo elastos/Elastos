@@ -9,18 +9,29 @@ class Milestones extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      milestones: [
-        { date: '2019-6-30', version: 'Alpha version' },
-        { date: '2019-8-30', version: 'Beta version' }
-      ]
+      milestones: props.initialValue ? props.initialValue : []
     }
   }
 
-  handleVisibleChange = () => {}
+  handleSubmit = values => {
+    const { milestones } = this.state
+    this.setState({ milestones: [...milestones, values] }, () => {
+      this.props.onChange({ milestone: this.state.milestones })
+    })
+  }
 
-  handleSubmit = () => {}
-
-  handleEdit = () => {}
+  handleEdit = (index, values) => {
+    const { milestones } = this.state
+    const rs = milestones.map((item, key) => {
+      if (index === key) {
+        return values
+      }
+      return item
+    })
+    this.setState({ milestones: rs }, () => {
+      this.props.onChange({ milestone: this.state.milestones })
+    })
+  }
 
   render() {
     const { milestones } = this.state
@@ -36,13 +47,16 @@ class Milestones extends Component {
               <Popover
                 content={
                   <MilestoneForm
-                    item={{ ...item, date: moment(item.date, 'YYYY-MM-DD') }}
+                    item={{
+                      ...item,
+                      date: moment(item.date, 'YYYY-MM-DD'),
+                      index
+                    }}
                     onSubmit={this.handleEdit}
                   />
                 }
                 trigger="click"
-                placement="top"
-                onVisibleChange={this.handleVisibleChange}
+                placement="bottom"
               >
                 <Circle />
               </Popover>
@@ -54,7 +68,6 @@ class Milestones extends Component {
               content={<MilestoneForm onSubmit={this.handleSubmit} />}
               trigger="click"
               placement="top"
-              onVisibleChange={this.handleVisibleChange}
             >
               <Button size="small" shape="circle" icon="plus" />
             </Popover>
