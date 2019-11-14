@@ -40,9 +40,6 @@ import org.elastos.did.util.Mnemonic;
 import org.junit.Test;
 
 public class DIDDocumentTest {
-	private static String storeRoot = "/Users/jingyu/Temp/DIDStore";
-	private static String storePass = "passwd";
-	private static String passphrase = "secret";
 	private static DIDStore store;
 
 	@Test
@@ -112,25 +109,26 @@ public class DIDDocumentTest {
 
 	@Test
 	public void test31SignAndVerify() throws DIDException {
-		Util.deleteFile(new File(storeRoot));
-    	DIDStore.initialize("filesystem", storeRoot, storePass,
-    						new FakeConsoleAdapter());
+		Util.deleteFile(new File(TestConfig.storeRoot));
+    	DIDStore.initialize("filesystem", TestConfig.storeRoot,
+    			TestConfig.storePass, new FakeConsoleAdapter());
     	store = DIDStore.getInstance();
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	store.initPrivateIdentity(mnemonic, passphrase, storePass, true);
+    	store.initPrivateIdentity(mnemonic, TestConfig.passphrase,
+    			TestConfig.storePass, true);
 
     	LinkedHashMap<DID, String> ids = new LinkedHashMap<DID, String>(128);
     	for (int i = 0; i < 100; i++) {
     		String hint = "my did " + i;
-    		DIDDocument doc = store.newDid(storePass, hint);
+    		DIDDocument doc = store.newDid(TestConfig.storePass, hint);
 
-	    	File file = new File(storeRoot + File.separator + "ids"
+	    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + doc.getSubject().getMethodSpecificId()
 	    			+ File.separator + "document");
 	    	assertTrue(file.exists());
 	    	assertTrue(file.isFile());
 
-	    	file = new File(storeRoot + File.separator + "ids"
+	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + "."
 	    			+ doc.getSubject().getMethodSpecificId() + ".meta");
 	    	assertTrue(file.exists());
@@ -147,14 +145,14 @@ public class DIDDocumentTest {
 			String json = doc.toExternalForm(false);
 			DIDURL pkid = new DIDURL(did, "primary");
 
-			String sig = doc.sign(pkid, storePass, json.getBytes());
+			String sig = doc.sign(pkid, TestConfig.storePass, json.getBytes());
 			boolean result = doc.verify(pkid, sig, json.getBytes());
 			assertTrue(result);
 
 			result = doc.verify(pkid, sig, json.substring(1).getBytes());
 			assertFalse(result);
 
-			sig = doc.sign(storePass, json.getBytes());
+			sig = doc.sign(TestConfig.storePass, json.getBytes());
 			result = doc.verify(sig, json.getBytes());
 			assertTrue(result);
 

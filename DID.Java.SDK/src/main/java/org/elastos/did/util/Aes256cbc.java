@@ -112,7 +112,8 @@ public class Aes256cbc {
 			int offset, int length) throws GeneralSecurityException {
 		byte[] secret = encrypt(passwd, plain, offset, length);
 
-		return Base64.encodeToString(secret);
+		return Base64.encodeToString(secret,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 
 	public static String encryptToBase64(String passwd, byte[] plain, int offset)
@@ -127,7 +128,8 @@ public class Aes256cbc {
 
 	public static byte[] decryptFromBase64(String passwd, String secret)
 			throws GeneralSecurityException {
-		byte[] secretBytes =   Base64.decode(secret);
+		byte[] secretBytes =   Base64.decode(secret,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 
 		return decrypt(passwd, secretBytes);
 	}

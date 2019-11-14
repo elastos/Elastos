@@ -50,18 +50,9 @@ import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DIDStoreTest {
-    private static String storeRoot = "/PATH/TO/DIDStore";
-    private static String storePass = "passwd";
-    private static String passphrase = "secret";
     private static DIDStore store;
     private static DIDAdapter adapter;
-
-    private static String walletDir = "/PATH/TO/wallet";
-    private static String walletId = "test";
-    private static String networkConfig = "/PATH/TO/privnet.json";
-    private static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
     private static LinkedHashMap<DID, String> ids;
-
 	private static DID primaryDid;
 
 	public static void waitForDidRegisted(DID did) throws DIDException {
@@ -82,7 +73,8 @@ public class DIDStoreTest {
 	@BeforeClass
 	public static void setup() {
 		//adapter = new FakeConsoleAdapter();
-		adapter = new SPVAdapter(walletDir, walletId, networkConfig, resolver,
+		adapter = new SPVAdapter(TestConfig.walletDir, TestConfig.walletId,
+				TestConfig.networkConfig, TestConfig.resolver,
 				new SPVAdapter.PasswordCallback() {
 
 					@Override
@@ -94,21 +86,20 @@ public class DIDStoreTest {
 
 	@Test
 	public void test00CreateEmptyStore0() throws DIDStoreException {
-		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
+    	Util.deleteFile(new File(TestConfig.tempStoreRoot));
 
-    	Util.deleteFile(new File(tempStoreRoot));
-
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
+    			TestConfig.storePass, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
     	assertFalse(tempStore.hasPrivateIdentity());
 
-    	File file = new File(tempStoreRoot);
+    	File file = new File(TestConfig.tempStoreRoot);
     	assertTrue(file.exists());
     	assertTrue(file.isDirectory());
 
-    	file = new File(tempStoreRoot + File.separator + ".DIDStore");
+    	file = new File(TestConfig.tempStoreRoot + File.separator + ".DIDStore");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
@@ -117,43 +108,43 @@ public class DIDStoreTest {
 
 	@Test(expected = DIDStoreException.class)
 	public void test00CreateEmptyStore1() throws DIDStoreException {
-		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
-
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
+    			TestConfig.storePass, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
-    	tempStore.newDid(storePass, "my first did");
+    	tempStore.newDid(TestConfig.storePass, "my first did");
 	}
 
 	@Test
 	public void test10InitPrivateIdentity0() throws DIDStoreException {
-		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
+		Util.deleteFile(new File(TestConfig.tempStoreRoot));
 
-		Util.deleteFile(new File(tempStoreRoot));
-
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
+    			TestConfig.storePass, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
     	assertFalse(tempStore.hasPrivateIdentity());
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	tempStore.initPrivateIdentity(mnemonic, passphrase, storePass, true);
+    	tempStore.initPrivateIdentity(mnemonic, TestConfig.passphrase,
+    			TestConfig.storePass, true);
 
-    	File file = new File(tempStoreRoot + File.separator + "private"
+    	File file = new File(TestConfig.tempStoreRoot + File.separator + "private"
     			+ File.separator + "key");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
-    	file = new File(tempStoreRoot + File.separator + "private"
+    	file = new File(TestConfig.tempStoreRoot + File.separator + "private"
     			+ File.separator + "index");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
     	assertTrue(tempStore.hasPrivateIdentity());
 
-    	DIDStore.initialize("filesystem", tempStoreRoot, storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
+    			TestConfig.storePass, adapter);
 
     	tempStore = DIDStore.getInstance();
 
@@ -163,9 +154,8 @@ public class DIDStoreTest {
 	// Can not decrypt root private key because wrong storepass
 	@Test(expected = DIDStoreException.class)
 	public void test10InitPrivateIdentity1() throws DIDStoreException {
-		String tempStoreRoot = "/Users/jingyu/Temp/TestDIDStore";
-
-		DIDStore.initialize("filesystem", tempStoreRoot, "password", adapter);
+		DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
+				"password", adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -174,14 +164,16 @@ public class DIDStoreTest {
 
     @Test
     public void test20Setup() throws DIDStoreException {
-    	Util.deleteFile(new File(storeRoot));
+    	Util.deleteFile(new File(TestConfig.storeRoot));
 
-    	DIDStore.initialize("filesystem", storeRoot, storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.storeRoot,
+    			TestConfig.storePass, adapter);
 
     	store = DIDStore.getInstance();
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	store.initPrivateIdentity(mnemonic, passphrase, storePass, true);
+    	store.initPrivateIdentity(mnemonic, TestConfig.passphrase,
+    			TestConfig.storePass, true);
 
     	ids = new LinkedHashMap<DID, String>(128);
     }
@@ -190,17 +182,17 @@ public class DIDStoreTest {
 	public void test30CreateDID1() throws DIDException {
 		String hint = "my first did";
 
-    	DIDDocument doc = store.newDid(storePass, hint);
+    	DIDDocument doc = store.newDid(TestConfig.storePass, hint);
     	primaryDid = doc.getSubject();
-    	store.publishDid(doc, storePass);
+    	store.publishDid(doc, TestConfig.storePass);
 
-    	File file = new File(storeRoot + File.separator + "ids"
+    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + doc.getSubject().getMethodSpecificId()
     			+ File.separator + "document");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
-    	file = new File(storeRoot + File.separator + "ids"
+    	file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + "."
     			+ doc.getSubject().getMethodSpecificId() + ".meta");
     	assertTrue(file.exists());
@@ -211,15 +203,15 @@ public class DIDStoreTest {
 
 	@Test
 	public void test30CreateDID2() throws DIDStoreException {
-    	DIDDocument doc = store.newDid(storePass, null);
+    	DIDDocument doc = store.newDid(TestConfig.storePass, null);
 
-    	File file = new File(storeRoot + File.separator + "ids"
+    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + doc.getSubject().getMethodSpecificId()
     			+ File.separator + "document");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
-    	file = new File(storeRoot + File.separator + "ids"
+    	file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + "."
     			+ doc.getSubject().getMethodSpecificId() + ".meta");
     	assertFalse(file.exists());
@@ -231,15 +223,15 @@ public class DIDStoreTest {
 	public void test30CreateDID3() throws DIDStoreException {
     	for (int i = 0; i < 100; i++) {
     		String hint = "my did " + i;
-    		DIDDocument doc = store.newDid(storePass, hint);
+    		DIDDocument doc = store.newDid(TestConfig.storePass, hint);
 
-	    	File file = new File(storeRoot + File.separator + "ids"
+	    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + doc.getSubject().getMethodSpecificId()
 	    			+ File.separator + "document");
 	    	assertTrue(file.exists());
 	    	assertTrue(file.isFile());
 
-	    	file = new File(storeRoot + File.separator + "ids"
+	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + "."
 	    			+ doc.getSubject().getMethodSpecificId() + ".meta");
 	    	assertTrue(file.exists());
@@ -263,11 +255,11 @@ public class DIDStoreTest {
     		boolean deleted = store.deleteDid(did);
     		assertTrue(deleted);
 
-	    	File file = new File(storeRoot + File.separator + "ids"
+	    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + did.getMethodSpecificId());
 	    	assertFalse(file.exists());
 
-	    	file = new File(storeRoot + File.separator + "ids"
+	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + "."
 	    			+ did.getMethodSpecificId() + ".meta");
 	    	assertFalse(file.exists());
@@ -291,7 +283,7 @@ public class DIDStoreTest {
 				continue;
 
 			DIDDocument doc = store.loadDid(did);
-    		store.publishDid(doc, new DIDURL(did, "primary"), storePass);
+    		store.publishDid(doc, new DIDURL(did, "primary"), TestConfig.storePass);
     	}
 	}
 
@@ -313,7 +305,7 @@ public class DIDStoreTest {
 				.type(new String[] {"SelfProclaimedCredential", "BasicProfileCredential" })
 				.expirationDate(expire)
 				.properties(props)
-				.sign(storePass);
+				.sign(TestConfig.storePass);
 
 		DIDDocument doc = store.resolveDid(primaryDid);
 		doc.modify();
@@ -348,7 +340,7 @@ public class DIDStoreTest {
 					.type(new String[] { "BasicProfileCredential" })
 					.expirationDate(expire)
 					.properties(props)
-					.sign(storePass);
+					.sign(TestConfig.storePass);
 
 			store.storeCredential(vc, "default");
 
@@ -363,32 +355,32 @@ public class DIDStoreTest {
 				.type(new String[] { "BasicProfileCredential" })
 				.expirationDate(expire)
 				.properties(props)
-				.sign(storePass);
+				.sign(TestConfig.storePass);
 
 			store.storeCredential(vc);
 
-	    	File file = new File(storeRoot + File.separator + "ids"
+	    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + did.getMethodSpecificId() + File.separator
 	    			+ "credentials" + File.separator + "cred-1");
 	    	assertTrue(file.exists());
 	    	assertTrue(file.isFile());
 	    	assertTrue(file.length() > 0);
 
-	    	file = new File(storeRoot + File.separator + "ids"
+	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + did.getMethodSpecificId() + File.separator
 	    			+ "credentials" + File.separator + ".cred-1.meta");
 	    	assertTrue(file.exists());
 	    	assertTrue(file.isFile());
 	    	assertTrue(file.length() > 0);
 
-	    	file = new File(storeRoot + File.separator + "ids"
+	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + did.getMethodSpecificId() + File.separator
 	    			+ "credentials" + File.separator + "cred-2");
 	    	assertTrue(file.exists());
 	    	assertTrue(file.isFile());
 	    	assertTrue(file.length() > 0);
 
-	    	file = new File(storeRoot + File.separator + "ids"
+	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + did.getMethodSpecificId() + File.separator
 	    			+ "credentials" + File.separator + ".cred-2.meta");
 	    	assertFalse(file.exists());
@@ -406,22 +398,22 @@ public class DIDStoreTest {
 		deleted = store.deleteCredential(primaryDid, new DIDURL(primaryDid, "cred-3"));
 		assertFalse(deleted);
 
-    	File file = new File(storeRoot + File.separator + "ids"
+    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + primaryDid.getMethodSpecificId() + File.separator
     			+ "credentials" + File.separator + "cred-1");
     	assertFalse(file.exists());
 
-    	file = new File(storeRoot + File.separator + "ids"
+    	file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + primaryDid.getMethodSpecificId() + File.separator
     			+ "credentials" + File.separator + ".cred-1.meta");
     	assertFalse(file.exists());
 
-    	file = new File(storeRoot + File.separator + "ids"
+    	file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + primaryDid.getMethodSpecificId() + File.separator
     			+ "credentials" + File.separator + "cred-2");
     	assertFalse(file.exists());
 
-    	file = new File(storeRoot + File.separator + "ids"
+    	file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + primaryDid.getMethodSpecificId() + File.separator
     			+ "credentials" + File.separator + ".cred-2.meta");
     	assertFalse(file.exists());
@@ -466,12 +458,14 @@ public class DIDStoreTest {
 			assertEquals(id1, vc1.getId());
 			assertEquals(primaryDid, vc1.getIssuer());
 			assertEquals(did, vc1.getSubject().getId());
-			assertEquals("Elastos-" + did.getMethodSpecificId(), vc1.getSubject().getProperty("name"));
+			assertEquals("Elastos-" + did.getMethodSpecificId(),
+					vc1.getSubject().getProperty("name"));
 
 			assertEquals(id2, vc2.getId());
 			assertEquals(primaryDid, vc2.getIssuer());
 			assertEquals(did, vc2.getSubject().getId());
-			assertEquals("CyberRepublic-" + did.getMethodSpecificId(), vc2.getSubject().getProperty("name"));
+			assertEquals("CyberRepublic-" + did.getMethodSpecificId(),
+					vc2.getSubject().getProperty("name"));
 		}
 	}
 

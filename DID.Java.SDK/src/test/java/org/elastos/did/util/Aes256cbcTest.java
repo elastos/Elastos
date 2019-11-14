@@ -25,26 +25,26 @@ package org.elastos.did.util;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import java.security.GeneralSecurityException;
-
 import org.junit.Test;
 
 public class Aes256cbcTest {
 	private static final String passwd = "secret";
 	private static final String plain = "The quick brown fox jumps over the lazy dog.";
-	private static final String cipherBase64 = "TBimuq42IyD6FsoZK0AoCOt75uiL/gEepZTpgu59RYSV+NR+fqxsYfx0cyyzGacX";
+	private static final String cipherBase64 = "TBimuq42IyD6FsoZK0AoCOt75uiL_gEepZTpgu59RYSV-NR-fqxsYfx0cyyzGacX";
 
 	@Test
-	public void testEncrypt() throws GeneralSecurityException {
+	public void testEncrypt() throws Exception {
 		byte[] cipher = Aes256cbc.encrypt(passwd, plain.getBytes());
-		byte[] expected = Base64.decode(cipherBase64);
+		byte[] expected = Base64.decode(cipherBase64,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 
 		assertArrayEquals(expected, cipher);
 	}
 
 	@Test
-	public void testDecrypt() throws GeneralSecurityException {
-		byte[] cipher = Base64.decode(cipherBase64);
+	public void testDecrypt() throws Exception {
+		byte[] cipher = Base64.decode(cipherBase64,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		byte[] plainBytes = Aes256cbc.decrypt(passwd, cipher);
 		byte[] expected = plain.getBytes();
 
@@ -52,17 +52,17 @@ public class Aes256cbcTest {
 	}
 
 	@Test
-	public void testEncryptToBase64() throws GeneralSecurityException {
+	public void testEncryptToBase64() throws Exception {
 		String cipher = Aes256cbc.encryptToBase64(passwd, plain.getBytes());
 
 		assertEquals(cipherBase64, cipher);
 	}
 
 	@Test
-	public void testDecryptFromBase64() throws GeneralSecurityException {
+	public void testDecryptFromBase64() throws Exception {
 		byte[] plainBytes = Aes256cbc.decryptFromBase64(passwd, cipherBase64);
 		byte[] expected = plain.getBytes();
-
+		System.out.println(new String(plainBytes));
 		assertArrayEquals(expected, plainBytes);
 	}
 }

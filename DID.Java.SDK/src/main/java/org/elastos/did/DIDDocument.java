@@ -517,7 +517,8 @@ public class DIDDocument {
 			throws DIDException {
 		PublicKey pk = getPublicKey(id);
 		byte[] binkey = pk.getPublicKeyBytes();
-		byte[] sig = Base64.decode(signature);
+		byte[] sig = Base64.decode(signature,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 
 		return EcdsaSigner.verify(binkey, sig, data);
 	}

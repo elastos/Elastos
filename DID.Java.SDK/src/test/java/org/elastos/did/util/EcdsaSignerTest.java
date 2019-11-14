@@ -95,4 +95,22 @@ public class EcdsaSignerTest {
 
 		assertFalse(result);
 	}
+
+	@Test
+	public void testCompatibility() {
+		// TODO: Update base64 to base64url and signature
+		String input = "abcdefghijklmnopqrstuvwxyz";
+		String pkBase58 = "voHKsUjoPSJSQKWLJHWYzUfEv3NEaRUyJReoZVS6XCYM";
+		String expectedSig = "QEW+oi7buIg4eg6uRANjAdX0qm8QPdiH9aK/E4lUAiHxEo8jidb1KxryjLRgIMz5tTKx2LU/CCHkXMyeZerkeZ8=";
+
+		byte[] pk = Base58.decode(pkBase58);
+
+		byte[] _sig = Base64.decode(expectedSig);
+		byte[] sig = Arrays.copyOfRange(_sig, 1, 65);
+
+		boolean result = EcdsaSigner.verify(pk, sig, input.getBytes());
+
+		assertTrue(result);
+	}
+
 }

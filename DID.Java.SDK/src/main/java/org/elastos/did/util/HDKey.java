@@ -141,7 +141,8 @@ public class HDKey {
 		}
 
 		public String getPublicKeyBase64() {
-			return Base64.encodeToString(getPublicKeyBytes());
+			return Base64.encodeToString(getPublicKeyBytes(),
+					Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		}
 
 		public byte[] getPrivateKeyBytes() {
@@ -153,7 +154,8 @@ public class HDKey {
 		}
 
 		public String getPrivateKeyBase64() {
-			return Base64.encodeToString(getPrivateKeyBytes());
+			return Base64.encodeToString(getPrivateKeyBytes(),
+					Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		}
 
 		private static byte[] getRedeemScript(byte[] pk) {

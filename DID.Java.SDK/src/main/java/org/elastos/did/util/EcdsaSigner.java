@@ -30,18 +30,17 @@ import org.spongycastle.crypto.digests.SHA256Digest;
 import org.spongycastle.crypto.params.ECPrivateKeyParameters;
 import org.spongycastle.crypto.params.ECPublicKeyParameters;
 import org.spongycastle.crypto.signers.ECDSASigner;
-import org.spongycastle.crypto.signers.HMacDSAKCalculator;
+import org.spongycastle.crypto.signers.RandomDSAKCalculator;
 
 public class EcdsaSigner {
 	public static byte[] sign(byte[] privateKey, byte[] ... inputs) {
 		BigInteger keyInt = new BigInteger(1, privateKey);
 
-		// X9ECParameters curve = SECNamedCurves.getByName(CURVE_ALGORITHM);
 		ECPrivateKeyParameters keyParams = new ECPrivateKeyParameters(
 				keyInt, HDKey.CURVE);
 
 		ECDSASigner signer = new ECDSASigner(
-				new HMacDSAKCalculator(new SHA256Digest()));
+				new RandomDSAKCalculator());
 		signer.init(true, keyParams);
 
 		BigInteger[] rs = signer.generateSignature(sha256Digest(inputs));
@@ -66,7 +65,7 @@ public class EcdsaSigner {
 				curve.getCurve().decodePoint(publicKey), HDKey.CURVE);
 
 		ECDSASigner signer = new ECDSASigner(
-				new HMacDSAKCalculator(new SHA256Digest()));
+				new RandomDSAKCalculator());
 		signer.init(false, keyParams);
 
 		byte rb[] = new byte[sig.length / 2];

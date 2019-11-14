@@ -135,12 +135,14 @@ public abstract class DIDStore {
 			throw new DIDStoreException("Encrypt key error.", e);
 		}
 
-		return Base64.encodeToString(cipher);
+		return Base64.encodeToString(cipher,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 
 	private static byte[] decryptFromBase64(String passwd, String input)
 			throws DIDStoreException {
-		byte[] cipher = Base64.decode(input);
+		byte[] cipher = Base64.decode(input,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		try {
 			return Aes256cbc.decrypt(passwd, cipher);
 		} catch (GeneralSecurityException e) {
@@ -410,6 +412,7 @@ public abstract class DIDStore {
 
 		key.wipe();
 
-		return Base64.encodeToString(sig);
+		return Base64.encodeToString(sig,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 }
