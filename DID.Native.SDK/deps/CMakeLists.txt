@@ -10,7 +10,7 @@ add_submodule(libcrystal
 add_submodule(CUnit
     DEPENDS platform-specific)
 
-if (ENABLE_SPVADAPTOR)
+if (ENABLE_SPVADAPTER)
     add_submodule(libspvsdk
         DEPENDS platform-specific)
     # libcurl will use openssl built by libspvsdk
