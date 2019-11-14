@@ -1,9 +1,17 @@
+certifi==2019.9.11
+chardet==3.0.4
 Django>=2.2.6
-virtualenv>=16.7
-requests==2.22.0
-psycopg2-binary==2.8.4
-gunicorn==20.0.0
-python-decouple==3.1
-qrcode==6.1
-Pillow==6.2.1
+django-admin-tools==0.8.1
 -e git+https://github.com/dprog-philippe-docourt/django-qr-code.git@d8811b7e05b1beff466c7800007b603c3c1eae7f#egg=django_qr_code
+gunicorn==20.0.0
+idna==2.8
+Pillow==6.2.1
+psycopg2-binary==2.8.4
+python-decouple==3.1
+pytz==2019.3
+qrcode==6.1
+requests==2.22.0
+six==1.13.0
+sqlparse==0.3.0
+urllib3==1.25.7
+virtualenv>=16.7
