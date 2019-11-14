@@ -124,6 +124,8 @@ export default {
     createTeamInfo: '添加团队信息',
     action: '操作',
     teamInfo: '团队信息',
-    milestones: '里程碑'
+    milestones: '里程碑',
+    publishDate: '发布日期',
+    version: '版本'
   }
 }

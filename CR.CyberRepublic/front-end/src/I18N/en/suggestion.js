@@ -124,6 +124,8 @@ export default {
     createTeamInfo: 'Create team info',
     action: 'Action',
     teamInfo: 'Team Info',
-    milestones: 'Milestones'
+    milestones: 'Milestones',
+    publishDate: 'Publish Date',
+    version: 'Version'
   }
 }
