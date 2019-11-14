@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import url
+from qr_code import urls as qr_code_urls
 from . import views
 
 urlpatterns = [
@@ -23,4 +24,5 @@ urlpatterns = [
     url(r'^$', views.index, name="index"),
     url(r'^service/', include('service.urls'), name='service'),
     url(r'^login/', include('login.urls'), name='login'),
+    url(r'^qr_code/', include(qr_code_urls, namespace='qr_code')),
 ]
