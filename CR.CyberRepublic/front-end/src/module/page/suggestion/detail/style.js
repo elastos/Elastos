@@ -93,12 +93,25 @@ export const BtnGroup = styled.div`
 
 export const StyledButton = styled(Button)`
   margin: 8px 0;
+  &.cr-btn-ghost:not(:hover) {
+    opacity: 0.2;
+  }
   > span {
     font-size: 12px !important;
     line-height: 12px !important;
     display: block;
     margin-top: -4px;
   }
+`
+
+export const CreateProposalText = styled.div`
+  background: #F2F6FB;
+  text-align: center;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  font-family: Synthese;
+  font-size: 17px;
+  line-height: 24px;
 `
 
 export const IconWrap = styled.div`

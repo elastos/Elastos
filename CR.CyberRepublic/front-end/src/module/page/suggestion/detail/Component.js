@@ -46,7 +46,8 @@ import {
   Item,
   ItemTitle,
   ItemText,
-  StyledAnchor
+  StyledAnchor,
+  CreateProposalText
 } from './style'
 
 import './style.scss'
@@ -109,6 +110,7 @@ export default class extends StandardPage {
       </StyledAnchor>
     )
   }
+
   ord_renderContent() {
     const { detail } = this.props
     if (_.isEmpty(detail) || detail.loading) {
@@ -406,7 +408,9 @@ export default class extends StandardPage {
   }
 
   renderCouncilActionsNode() {
-    const { isCouncil, isAdmin } = this.props
+    const { isCouncil, isAdmin, isReference } = this.props
+
+    const makeIntoProposalPanel = this.renderMakeIntoProposalPanel()
 
     const considerBtn = (isCouncil || isAdmin) && (
       <Col xs={24} sm={8}>
@@ -433,7 +437,7 @@ export default class extends StandardPage {
         </StyledButton>
       </Col>
     )
-    const createFormBtn = isCouncil && (
+    const createFormBtn = isCouncil && !isReference && (
       <Col xs={24} sm={8}>
         <StyledButton
           type="ebp"
@@ -470,6 +474,7 @@ export default class extends StandardPage {
 
     const res = (
       <BtnGroup>
+        {makeIntoProposalPanel}
         <Row type="flex" justify="start">
           {considerBtn}
           {needMoreInfoBtn}
@@ -482,6 +487,36 @@ export default class extends StandardPage {
       </BtnGroup>
     )
     return res
+  }
+
+  renderMakeIntoProposalPanel() {
+    const { isReference } = this.props
+    if (!isReference) return null
+    const reference = _.get(this.props.detail, 'reference')
+    const { _id, vid } = _.last(reference)
+    return (
+      <Row style={{ marginBottom: 30 }}>
+        <Row type="flex" justify="center" style={{ marginBottom: 15 }}>
+          <Col xs={24} sm={8} style={{ textAlign: 'center' }}>
+            <StyledButton
+              className="cr-btn cr-btn-primary cr-btn-ghost"
+              disabled={true}
+            >
+              {I18N.get('suggestion.btn.makeIntoProposal')}
+            </StyledButton>
+          </Col>
+        </Row>
+        <Row type="flex" justify="center">
+          <Col span={24}>
+            <CreateProposalText>
+              {'xx '}
+              {I18N.get('suggestion.label.hasMadeIntoProposal')}
+              <Link to={`/proposals/${_id}`}>{` #${vid}`}</Link>
+            </CreateProposalText>
+          </Col>
+        </Row>
+      </Row>
+    )
   }
 
   renderCommentNode() {

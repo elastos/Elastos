@@ -110,5 +110,8 @@ export default {
     abstract: '摘要',
     email: '作者邮箱',
     name: '作者姓名'
+  },
+  label: {
+    hasMadeIntoProposal: '已经将此建议发布为提案'
   }
 }

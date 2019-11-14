@@ -112,5 +112,8 @@ export default {
     abstract: 'Abstract',
     email: 'Author email',
     name: 'Author name'
+  },
+  label: {
+    hasMadeIntoProposal: 'has made it into a proposal'
   }
 }
