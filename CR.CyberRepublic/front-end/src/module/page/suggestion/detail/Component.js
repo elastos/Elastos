@@ -49,7 +49,8 @@ import {
   Item,
   ItemTitle,
   ItemText,
-  StyledAnchor
+  StyledAnchor,
+  PlanSubtitle
 } from './style'
 
 import './style.scss'
@@ -264,12 +265,16 @@ export default class extends StandardPage {
                 <DescLabel id="plan">
                   {I18N.get(`suggestion.fields.plan`)}
                 </DescLabel>
-                <div>{I18N.get('suggestion.plan.teamInfo')}</div>
+                <PlanSubtitle>
+                  {I18N.get('suggestion.plan.teamInfo')}
+                </PlanSubtitle>
                 <TeamInfoList
                   list={detail.plan && detail.plan.teamInfo}
                   editable={false}
                 />
-                <div>{I18N.get('suggestion.plan.milestones')}</div>
+                <PlanSubtitle>
+                  {I18N.get('suggestion.plan.milestones')}
+                </PlanSubtitle>
                 <Milestones
                   initialValue={detail.plan && detail.plan.milestone}
                   editable={false}

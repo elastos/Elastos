@@ -76,6 +76,7 @@ export default TeamInfoList
 
 const StyledTable = styled.table`
   margin-top: 16px;
+  margin-bottom: 48px;
   width: 100%;
   font-size: 13px;
 `

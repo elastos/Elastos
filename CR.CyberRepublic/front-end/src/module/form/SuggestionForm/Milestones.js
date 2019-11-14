@@ -134,7 +134,7 @@ const Circle = styled.div`
 `
 const Action = styled.div`
   padding-left: 110px;
-  padding-right: ${props => (props.visible === false ? '0' : '-150px')};
+  padding-right: ${props => (props.visible === false ? '0' : '150px')};
   border-bottom: 1px solid #ced6e3;
   position: relative;
   padding-bottom: 24px;
