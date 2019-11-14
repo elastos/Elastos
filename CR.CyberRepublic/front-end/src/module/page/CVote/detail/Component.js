@@ -33,6 +33,7 @@ import { logger } from '@/util'
 import { convertMarkdownToHtml } from '@/util/markdown-it'
 import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
+import Milestones from '@/module/form/SuggestionForm/Milestones'
 import {
   Container,
   Title,
@@ -48,7 +49,8 @@ import {
   LinkGroup,
   Part,
   PartTitle,
-  PartContent
+  PartContent,
+  PlanSubtitle
 } from './style'
 import './style.scss'
 
@@ -61,8 +63,20 @@ const renderRichContent = (data, key, title) => {
   } else if (key === 'plan' && typeof data.plan !== 'string'){
     rc = (
       <div>
-        <div>{I18N.get('suggestion.plan.teamInfo')}</div>
-        <TeamInfoList list={data.plan && data.plan.teamInfo} editable={false} />
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.teamInfo')}
+        </PlanSubtitle>
+        <TeamInfoList
+          list={data.plan && data.plan.teamInfo}
+          editable={false}
+        />
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.milestones')}
+        </PlanSubtitle>
+        <Milestones
+          initialValue={data.plan && data.plan.milestone}
+          editable={false}
+        />
       </div>
     )
   } else {
