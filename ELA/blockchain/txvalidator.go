@@ -590,8 +590,14 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 			return errors.New("coinbase output is not enough, at least 2")
 		}
 
-		if !txn.Outputs[0].ProgramHash.IsEqual(FoundationAddress) {
-			return errors.New("First output address should be foundation address.")
+		if blockHeight >= b.chainParams.CRCommitteeStartHeight {
+			if !txn.Outputs[0].ProgramHash.IsEqual(b.chainParams.CRCFoundation) {
+				return errors.New("first output address should be CRC " +
+					"foundation address")
+			}
+		} else if !txn.Outputs[0].ProgramHash.IsEqual(FoundationAddress) {
+			return errors.New("first output address should be foundation " +
+				"address")
 		}
 
 		foundationReward := txn.Outputs[0].Value
@@ -599,7 +605,7 @@ func (b *BlockChain) checkTransactionOutput(blockHeight uint32,
 		if blockHeight < b.chainParams.PublicDPOSHeight {
 			for _, output := range txn.Outputs {
 				if output.AssetID != config.ELAAssetID {
-					return errors.New("Asset ID in coinbase is invalid")
+					return errors.New("asset ID in coinbase is invalid")
 				}
 				totalReward += output.Value
 			}

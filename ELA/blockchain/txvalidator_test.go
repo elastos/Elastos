@@ -227,7 +227,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionOutput() {
 		{AssetID: common.EmptyHash, ProgramHash: s.foundationAddress},
 	}
 	err = s.Chain.checkTransactionOutput(s.HeightVersion1, tx)
-	s.EqualError(err, "Asset ID in coinbase is invalid")
+	s.EqualError(err, "asset ID in coinbase is invalid")
 
 	// reward to foundation in coinbase = 30% (CheckTxOut version)
 	totalReward := config.DefaultParams.RewardPerBlock
