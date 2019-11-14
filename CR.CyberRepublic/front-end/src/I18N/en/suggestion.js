@@ -114,6 +114,6 @@ export default {
     name: 'Author name'
   },
   label: {
-    hasMadeIntoProposal: 'has made it into a proposal'
+    hasMadeIntoProposal: 'has made it into'
   }
 }
