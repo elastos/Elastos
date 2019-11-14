@@ -129,7 +129,7 @@ public class CarrierFileTransfer: NSObject {
             (cfileId) -> UnsafePointer<Int8>? in
             return data.withUnsafeMutableBytes() {
                 (ptr: UnsafeMutablePointer<Int8>) -> UnsafePointer<Int8>? in
-                return ela_filetransfer_get_fileid(cfiletransfer, cfileId, ptr, len)
+                return ela_filetransfer_get_filename(cfiletransfer, cfileId, ptr, len)
             }
         }
 

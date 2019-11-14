@@ -339,7 +339,7 @@ internal func ela_filetransfer_close(_ filetransfer: OpaquePointer!)
  *      otherwise, NULL value is returned. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
-@_silgen_name("ela_session_cleanup")
+@_silgen_name("ela_filetransfer_get_fileid")
 internal func ela_filetransfer_get_fileid(_ filetransfer: OpaquePointer!,
                                           _ filename: UnsafePointer<Int8>!,
                                           _ fileid: UnsafeMutablePointer<Int8>!,
