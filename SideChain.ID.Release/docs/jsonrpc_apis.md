@@ -132,15 +132,15 @@ results: id transactions' payloads information
 argument sample:
 ```json
 {
-	"method": "getidtxspayloads",
-	"params":{
-		"id":"ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
-		"getall": false
-	}
+"method": "getidtxspayloads",
+  "params":{
+  	"id": "ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
+  	"all": false
+  }
 }
 ```
 
-result sample when getall is false:
+result sample when all is false:
 
 ```json
 {
@@ -150,29 +150,13 @@ result sample when getall is false:
         {
             "header": {
                 "specification": "elastos/did/1.0",
-                "Operation": "create"
+                "operation": "update"
             },
-            "payload": "7b226964223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366222c227075626c69634b6579223a205b7b226964223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366236d61737465722d6b6579222c2274797065223a20224543445341736563703235367231222c22636f6e74726f6c6c6572223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366222c227075626c69634b6579426173653538223a20227a7874364e796f6f724655464d5841386d4442554c6a6e7548337636694e645a6d3432507947346331596443227d5d2c22617574686f72697a6174696f6e223a205b226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366225d2c2265787069726573223a2022323032302d30382d31355431373a30303a30305a227d",
+            "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0=",
             "proof": {
                 "type": "ECDSAsecp256r1",
                 "verificationMethod": "#master-key",
-                "signature": "40988247a610bdc7de1ff9d29cf011c7d5172385d69acff0c43f44f192dc2fc7217251ef0a3de47c3dc46d55e431678101ac2e32909dd9eb84036f21df0c372c"
-            },
-            "PayloadInfo": {
-                "id": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
-                "publicKey": [
-                    {
-                        "id": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf#master-key",
-                        "type": "ECDSAsecp256r1",
-                        "controller": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
-                        "publicKeyBase58": "zxt6NyoorFUFMXA8mDBULjnuH3v6iNdZm42PyG4c1YdC"
-                    }
-                ],
-                "authentication": null,
-                "authorization": [
-                    "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf"
-                ],
-                "Expires": "2020-08-15T17:00:00Z"
+                "signature": "J9UL8wmSUW+QaS5dXqcww57unN1pcqZ2zqA4up6wt1SXCvIKM4EbUDTHRsPkDR5Hhe8OUBGSXc1QkfO3Oo0Ihg=="
             }
         }
     ],
@@ -180,7 +164,7 @@ result sample when getall is false:
 }
 ```
 
-result sample when getall is true:
+result sample when all is true:
 
 ```json
 {
@@ -190,57 +174,25 @@ result sample when getall is true:
         {
             "header": {
                 "specification": "elastos/did/1.0",
-                "Operation": "update"
+                "operation": "update"
             },
-            "payload": "7b226964223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366222c227075626c69634b6579223a205b7b226964223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366236d61737465722d6b6579222c2274797065223a20224543445341736563703235367231222c22636f6e74726f6c6c6572223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366222c227075626c69634b6579426173653538223a20227a7874364e796f6f724655464d5841386d4442554c6a6e7548337636694e645a6d3432507947346331596443227d5d2c22617574686f72697a6174696f6e223a205b226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366225d2c2265787069726573223a2022323032302d30382d31355431373a30303a30305a227d",
+            "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0=",
             "proof": {
                 "type": "ECDSAsecp256r1",
                 "verificationMethod": "#master-key",
-                "signature": "4ba21e456e8c976cc575addefedb1b69b168506dbb257988fc02ae2e98576fa815201de38ed48b23f3041e77718567914d869755fa9fb889bfe087376b6bbdd1"
-            },
-            "PayloadInfo": {
-                "id": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
-                "publicKey": [
-                    {
-                        "id": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf#master-key",
-                        "type": "ECDSAsecp256r1",
-                        "controller": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
-                        "publicKeyBase58": "zxt6NyoorFUFMXA8mDBULjnuH3v6iNdZm42PyG4c1YdC"
-                    }
-                ],
-                "authentication": null,
-                "authorization": [
-                    "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf"
-                ],
-                "Expires": "2020-08-15T17:00:00Z"
+                "signature": "J9UL8wmSUW+QaS5dXqcww57unN1pcqZ2zqA4up6wt1SXCvIKM4EbUDTHRsPkDR5Hhe8OUBGSXc1QkfO3Oo0Ihg=="
             }
         },
         {
             "header": {
                 "specification": "elastos/did/1.0",
-                "Operation": "create"
+                "operation": "create"
             },
-            "payload": "7b226964223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366222c227075626c69634b6579223a205b7b226964223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366236d61737465722d6b6579222c2274797065223a20224543445341736563703235367231222c22636f6e74726f6c6c6572223a20226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366222c227075626c69634b6579426173653538223a20227a7874364e796f6f724655464d5841386d4442554c6a6e7548337636694e645a6d3432507947346331596443227d5d2c22617574686f72697a6174696f6e223a205b226469643a656c6173746f733a696661776757466d5a524c584e314a566d717058634e5275726842317a79484e6366225d2c2265787069726573223a2022323032302d30382d31355431373a30303a30305a227d",
+            "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0=",
             "proof": {
                 "type": "ECDSAsecp256r1",
                 "verificationMethod": "#master-key",
-                "signature": "40988247a610bdc7de1ff9d29cf011c7d5172385d69acff0c43f44f192dc2fc7217251ef0a3de47c3dc46d55e431678101ac2e32909dd9eb84036f21df0c372c"
-            },
-            "PayloadInfo": {
-                "id": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
-                "publicKey": [
-                    {
-                        "id": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf#master-key",
-                        "type": "ECDSAsecp256r1",
-                        "controller": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
-                        "publicKeyBase58": "zxt6NyoorFUFMXA8mDBULjnuH3v6iNdZm42PyG4c1YdC"
-                    }
-                ],
-                "authentication": null,
-                "authorization": [
-                    "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf"
-                ],
-                "Expires": "2020-08-15T17:00:00Z"
+                "signature": "HUZ421QF2lfpYgBqL3KrtlDTsuZC2vm4u11nZ89XlVqvPaTxRIfXawE1sUpSxTJSzGmOIET1eG1oO3Vneinhlw=="
             }
         }
     ],

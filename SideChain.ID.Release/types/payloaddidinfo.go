@@ -16,7 +16,7 @@ const DIDInfoVersion = 0x00
 // header of DID transaction payload
 type DIDHeaderInfo struct {
 	Specification string `json:"specification"`
-	Operation     string `json"operation"`
+	Operation     string `json:"operation"`
 }
 
 func (d *DIDHeaderInfo) Serialize(w io.Writer, version byte) error {
