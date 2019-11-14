@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-#include <malloc.h>
+#include <stdlib.h>
 
 #include "ela_did.h"
 #include "HDkey.h"

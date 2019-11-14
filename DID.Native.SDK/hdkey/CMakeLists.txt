@@ -4,7 +4,7 @@ include(ProjectDefaults)
 file( GLOB BR-SOURCES "BR/*.c" )
 
 set(SRC
-    HDKey.c
+    HDkey.c
     crypto.c
     ${BR-SOURCES})
 
