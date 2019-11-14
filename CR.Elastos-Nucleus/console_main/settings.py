@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'service.apps.ServiceConfig',
     'login.apps.LoginConfig',
-    'qr_code'
+    'qr_code',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
