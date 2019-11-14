@@ -236,9 +236,6 @@ namespace Elastos {
 			std::string publickey = j["SponsorPublicKey"].get<std::string>();
 			_sponsorPublicKey.setHex(publickey);
 
-			std::string did = j["CRSponsorDID"].get<std::string>();
-			_crSponsorDID.SetHex(did);
-
 			std::string draftHash = j["DraftHash"].get<std::string>();
 			_draftHash.SetHex(draftHash);
 
@@ -250,8 +247,15 @@ namespace Elastos {
 			std::string signatue = j["Signature"].get<std::string>();
 			_signature.setHex(signatue);
 
-			std::string crSignatre = j["CRSignature"].get<std::string>();
-			_crSignature.setHex(crSignatre);
+			if (j.find("CRSponsorDID") != j.end()) {
+				std::string did = j["CRSponsorDID"].get<std::string>();
+				_crSponsorDID.SetHex(did);
+			}
+
+			if (j.find("CRSignature") != j.end()) {
+				std::string crSignatre = j["CRSignature"].get<std::string>();
+				_crSignature.setHex(crSignatre);
+			}
 		}
 
 		CRCProposal &CRCProposal::operator=(const CRCProposal &payload) {

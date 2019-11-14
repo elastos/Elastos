@@ -919,11 +919,11 @@ namespace Elastos {
 			return jinfo;
 		}
 
-		std::string MainchainSubWallet::SponsorProposalDigest(uint8_t type,
-		                                                      const std::string &sponsorPublicKey,
-		                                                      const std::string &draftHash,
-		                                                      const nlohmann::json &budgets,
-		                                                      const std::string &recipient) const {
+		nlohmann::json MainchainSubWallet::SponsorProposalDigest(uint8_t type,
+		                                                         const std::string &sponsorPublicKey,
+		                                                         const std::string &draftHash,
+		                                                         const nlohmann::json &budgets,
+		                                                         const std::string &recipient) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("type: {}", type);
 			ArgInfo("sponsorPublicKey: {}", sponsorPublicKey);
@@ -931,74 +931,69 @@ namespace Elastos {
 			ArgInfo("budgets: {}", budgets.dump());
 			ArgInfo("recipient: {}", recipient);
 
+			nlohmann::json result;
+
 			PayloadPtr payload = GenerateCRCProposalPayload(type, sponsorPublicKey, "", draftHash, budgets,
 			                                                   recipient);
 			CRCProposal *crcProposal = static_cast<CRCProposal *>(payload.get());
+			result = crcProposal->ToJson(0);
 
 			ByteStream stream;
 			crcProposal->SerializeUnsigned(stream, 0);
 			uint256 digest(sha256(stream.GetBytes()));
 
-			ArgInfo("r => {}", digest.GetHex());
-			return digest.GetHex();
+			result["Digest"] = digest.GetHex();
+			result.erase("CRSignature");
+			result.erase("CRSponsorDID");
+
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
-		std::string MainchainSubWallet::CRSponsorProposalDigest(uint8_t type,
-		                                                        const std::string &sponsorPublicKey,
-		                                                        const std::string &crSponsorDID,
-		                                                        const std::string &draftHash,
-		                                                        const nlohmann::json &budgets,
-		                                                        const std::string &recipient,
-		                                                        const std::string &sponsorSignature) const {
+		nlohmann::json MainchainSubWallet::CRSponsorProposalDigest(const nlohmann::json &sponsorSignedProposal,
+		                                                           const std::string &crSponsorDID) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("type: {}", type);
-			ArgInfo("sponsorPublicKey: {}", sponsorPublicKey);
+			ArgInfo("sponsorSignedProposal: {}", sponsorSignedProposal.dump());
 			ArgInfo("crSponsorDID: {}", crSponsorDID);
-			ArgInfo("draftHash: {}", draftHash);
-			ArgInfo("budgets: {}", budgets.dump());
-			ArgInfo("recipient: {}", recipient);
-			ArgInfo("sponsorSignature: {}", sponsorSignature);
 
+			std::string sponsorSignature = sponsorSignedProposal["Signature"].get<std::string>();
 			ErrorChecker::CheckParam(sponsorSignature.empty(), Error::InvalidArgument, "invalid sponsorSignature");
 
-			PayloadPtr payload = GenerateCRCProposalPayload(type, sponsorPublicKey, crSponsorDID, draftHash, budgets,
-			                                                recipient, sponsorSignature);
-			CRCProposal *crcProposal = static_cast<CRCProposal *>(payload.get());
+			Address did(crSponsorDID);
+			ErrorChecker::CheckParam(!did.Valid() || !did.IsIDAddress(), Error::InvalidArgument,
+			                         "crSponsorDID is invalid");
+
+
+			CRCProposal crcProposal;
+			crcProposal.FromJson(sponsorSignedProposal, 0);
+			crcProposal.SetCRSponsorDID(did.ProgramHash());
+
+			nlohmann::json result = crcProposal.ToJson(0);
 
 			ByteStream stream;
-			crcProposal->SerializeSponsorSigned(stream, 0);
+			crcProposal.SerializeSponsorSigned(stream, 0);
 			uint256 digest(sha256(stream.GetBytes()));
 
-			ArgInfo("r => {}", digest.GetHex());
-			return digest.GetHex();
+			result["Digest"] = digest.GetHex();
+
+			ArgInfo("r => {}", result.dump());
+			return result;
 		}
 
-		nlohmann::json MainchainSubWallet::CreateCRCProposalTransaction(uint8_t type,
-		                                                                const std::string &sponsorPublicKey,
-		                                                                const std::string &crSponsorDID,
-		                                                                const std::string &draftHash,
-		                                                                const nlohmann::json &budgets,
-		                                                                const std::string &recipient,
-		                                                                const std::string &sponsorSignature,
-		                                                                const std::string &crSponsorSignature,
+		nlohmann::json MainchainSubWallet::CreateCRCProposalTransaction(nlohmann::json crSignedProposal,
 		                                                                const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("type: {}", type);
-			ArgInfo("sponsorPublicKey: {}", sponsorPublicKey);
-			ArgInfo("crSponsorDID: {}", crSponsorDID);
-			ArgInfo("draftHash: {}", draftHash);
-			ArgInfo("budgets: {}", budgets.dump());
-			ArgInfo("recipient: {}", recipient);
-			ArgInfo("sponsorSignature: {}", sponsorSignature);
-			ArgInfo("crSponsorSignature: {}", crSponsorSignature);
+			ArgInfo("crSignedProposal: {}", crSignedProposal.dump());
 			ArgInfo("memo: {}", memo);
 
+			std::string sponsorSignature = crSignedProposal["Signature"].get<std::string>();
 			ErrorChecker::CheckParam(sponsorSignature.empty(), Error::InvalidArgument, "invalid sponsorSignature");
+
+			std::string crSponsorSignature = crSignedProposal["CRSignature"].get<std::string>();
 			ErrorChecker::CheckParam(crSponsorSignature.empty(), Error::InvalidArgument, "invalid crSponsorSignature");
 
-			PayloadPtr payload = GenerateCRCProposalPayload(type, sponsorPublicKey, crSponsorDID, draftHash, budgets,
-			                                                recipient, sponsorSignature, crSponsorSignature);
-			CRCProposal *crcProposal = static_cast<CRCProposal *>(payload.get());
+			PayloadPtr payload = PayloadPtr(new CRCProposal());
+			payload->FromJson(crSignedProposal, 0);
 
 			Address receiveAddr(CreateAddress());
 			std::vector<OutputPtr> outputs;
@@ -1043,6 +1038,7 @@ namespace Elastos {
 			crcProposal->SetTpye(CRCProposal::CRCProposalType(type));
 			crcProposal->SetDraftHash(proposalHash);
 			crcProposal->SetRecipient(receiptAddress.ProgramHash());
+			crcProposal->SetSponsorPublicKey(publicKey);
 
 			std::vector<uint64_t> budgetList;
 			for (size_t i = 0; i < budgets.size(); ++i) {

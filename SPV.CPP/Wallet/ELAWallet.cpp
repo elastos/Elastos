@@ -14,6 +14,9 @@
 #include <IMainchainSubWallet.h>
 #include <IIDChainSubWallet.h>
 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+
 using namespace Elastos::ElaWallet;
 
 static const char *MAIN_CHAIN = "ELA";
@@ -464,6 +467,77 @@ static void createDID(int argc, char *argv[]) {
 
 }
 
+static void createProposal(int argc, char *argv[])
+{
+    std::string walletId = argv[1];
+    std::string payPasswd = "qqqqqqqq1";
+
+    IIDChainSubWallet *iidChainSubWallet = nullptr;
+    IMainchainSubWallet *mainchainSubWallet = nullptr;
+    auto masterWallet = manager->GetMasterWallet(walletId);
+    std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+    for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
+        if ((*it)->GetChainID() == ID_CHAIN){
+            iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(*it);
+        } else if ((*it)->GetChainID() == MAIN_CHAIN) {
+            mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(*it);
+        }
+    }
+
+    if (iidChainSubWallet == nullptr) {
+        std::cerr << "Can not get sidechain wallet for: " << iidChainSubWallet << std::endl;
+        return;
+    }
+
+    if (mainchainSubWallet == nullptr) {
+        std::cerr << "Can not get mainchain wallet for: " << mainchainSubWallet << std::endl;
+        return;
+    }
+
+    int type = 0;
+    std::string publicKey;
+    std::string draftHash;
+    std::string budgetList;
+    std::string receiptAddress;
+    std::string crSponsorDID;
+
+    std::cout << "Input sponsor public key:";
+    std::cin >> publicKey;
+    std::string sponsorDID = iidChainSubWallet->GetPublicKeyDID(publicKey);
+
+    std::cout << "Input draft hash:";
+    std::cin >> draftHash;
+
+    std::cout << "Input budget list, split by ,:";
+    std::cin >> budgetList;
+    std::vector<std::string> budgets;
+    boost::algorithm::split(budgets, budgetList, boost::is_any_of(","), boost::token_compress_on);
+
+    std::cout << "Input receipt address:";
+    std::cin >> receiptAddress;
+
+    nlohmann::json proposal = mainchainSubWallet->SponsorProposalDigest(type, publicKey, draftHash, budgets, receiptAddress);
+    std::string digest = proposal["Digest"].get<std::string>();
+
+    std::string sponsorSignature = iidChainSubWallet->SignDigest(sponsorDID, digest, payPasswd);
+    proposal["Signature"] = sponsorSignature;
+
+    std::cout << "Input cr did:";
+    std::cin >> crSponsorDID;
+
+    proposal = mainchainSubWallet->CRSponsorProposalDigest(proposal, crSponsorDID);
+    digest = proposal["Digest"].get<std::string>();
+
+    std::string crSignature = iidChainSubWallet->SignDigest(crSponsorDID, digest,  payPasswd);
+    proposal["CRSignature"] = crSignature;
+
+    nlohmann::json tx = mainchainSubWallet->CreateCRCProposalTransaction(proposal, "");
+
+    nlohmann::json signedTx = mainchainSubWallet->SignTransaction(tx, payPasswd);
+    nlohmann::json res = mainchainSubWallet->PublishTransaction(signedTx);
+    std::cout << res.dump() <<std::endl;
+}
+
 static void exportm(int argc, char *argv[])
 {
     std::string walletId;
@@ -529,7 +603,8 @@ struct command {
     { "export",     exportm,                "export [walletName] [password]\n  Export mnemonic from specified wallet." },
     { "remove",     remove,                 "remove [walletName]\n  Remove specified wallet."},
     { "verbose",    verbose,                "verbose [on | off]\n Set verbose mode." },
-    { "createDID",  createDID,               "createDID [walletName]\n Create DID with IDChain"},
+    { "createDID",  createDID,              "createDID [walletName]\n Create DID with IDChain"},
+    { "proposal",   createProposal,         "proposal [walletName]\n Create CRC proposal transaction."},
     { "exit",       NULL,                   "exit\n  Quit wallet." },
     { "quit",       NULL,                   "quit\n  Quit wallet." },
     { NULL,         NULL,                   NULL }

@@ -118,28 +118,16 @@ namespace Elastos {
 
 			virtual nlohmann::json GetVoteInfo(const std::string &type) const;
 
-			virtual std::string SponsorProposalDigest(uint8_t type,
-			                                          const std::string &sponsorPublicKey,
-			                                          const std::string &draftHash,
-			                                          const nlohmann::json &budgets,
-			                                          const std::string &recipient) const;
+			virtual nlohmann::json SponsorProposalDigest(uint8_t type,
+			                                             const std::string &sponsorPublicKey,
+			                                             const std::string &draftHash,
+			                                             const nlohmann::json &budgets,
+			                                             const std::string &recipient) const;
 
-			virtual std::string CRSponsorProposalDigest(uint8_t type,
-			                                            const std::string &sponsorPublicKey,
-			                                            const std::string &crSponsorDID,
-			                                            const std::string &draftHash,
-			                                            const nlohmann::json &budgets,
-			                                            const std::string &recipient,
-			                                            const std::string &sponsorSignature) const;
+			virtual nlohmann::json CRSponsorProposalDigest(const nlohmann::json &sponsorSignedProposal,
+			                                               const std::string &crSponsorDID) const;
 
-			virtual nlohmann::json CreateCRCProposalTransaction(uint8_t type,
-			                                                    const std::string &sponsorPublicKey,
-			                                                    const std::string &crSponsorDID,
-			                                                    const std::string &draftHash,
-			                                                    const nlohmann::json &budgets,
-			                                                    const std::string &recipient,
-			                                                    const std::string &sponsorSignature,
-			                                                    const std::string &crSponsorSignature,
+			virtual nlohmann::json CreateCRCProposalTransaction(nlohmann::json crSignedProposal,
 			                                                    const std::string &memo);
 
 			virtual nlohmann::json GenerateCRCProposalReview(const std::string &proposalHash,
