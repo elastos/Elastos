@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package pow
 
@@ -109,15 +109,19 @@ func (pow *Service) GetDefaultTxVersion(height uint32) types.TransactionVersion 
 	return v
 }
 
-func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, error) {
+func (pow *Service) CreateCoinbaseTx(minerAddr string, height uint32) (*types.Transaction, error) {
+	crRewardAddr := pow.chainParams.Foundation
+	if height >= pow.chainParams.CRCommitteeStartHeight {
+		crRewardAddr = pow.chainParams.CRCFoundation
+	}
+
 	minerProgramHash, err := common.Uint168FromAddress(minerAddr)
 	if err != nil {
 		return nil, err
 	}
 
-	currentHeight := pow.chain.GetHeight() + 1
 	tx := &types.Transaction{
-		Version:        pow.GetDefaultTxVersion(currentHeight),
+		Version:        pow.GetDefaultTxVersion(height),
 		TxType:         types.CoinBase,
 		PayloadVersion: payload.CoinBaseVersion,
 		Payload: &payload.CoinBase{
@@ -136,7 +140,7 @@ func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, erro
 			{
 				AssetID:     config.ELAAssetID,
 				Value:       0,
-				ProgramHash: pow.chainParams.Foundation,
+				ProgramHash: crRewardAddr,
 				Type:        types.OTNone,
 				Payload:     &outputpayload.DefaultOutput{},
 			},
@@ -149,7 +153,7 @@ func (pow *Service) CreateCoinbaseTx(minerAddr string) (*types.Transaction, erro
 			},
 		},
 		Attributes: []*types.Attribute{},
-		LockTime:   currentHeight,
+		LockTime:   height,
 	}
 
 	nonce := make([]byte, 8)
@@ -216,7 +220,7 @@ func (pow *Service) distributeDPOSReward(coinBaseTx *types.Transaction,
 func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	bestChain := pow.chain.BestChain
 	nextBlockHeight := bestChain.Height + 1
-	coinBaseTx, err := pow.CreateCoinbaseTx(minerAddr)
+	coinBaseTx, err := pow.CreateCoinbaseTx(minerAddr, nextBlockHeight)
 	if err != nil {
 		return nil, err
 	}
