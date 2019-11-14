@@ -44,7 +44,7 @@ class MilestoneForm extends BaseComponent {
                 message: I18N.get('suggestion.form.error.required')
               }
             ],
-            initialValue: item && item.date ? item.date : ''
+            initialValue: item && item.date
           })(<DatePicker />)}
         </FormItem>
         <FormItem
@@ -58,20 +58,14 @@ class MilestoneForm extends BaseComponent {
                 message: I18N.get('suggestion.form.error.required')
               }
             ],
-            initialValue: item && item.version ? item.version : ''
+            initialValue: item && item.version
           })(<Input />)}
         </FormItem>
         <Actions>
-          <Button
-            className="cr-btn cr-btn-default"
-            onClick={() => {
-              this.props.onCancel()
-            }}
-          >
-            {I18N.get('suggestion.cancel')}
-          </Button>
-          <Button className="cr-btn cr-btn-primary" htmlType="submit">
-            {I18N.get('suggestion.submit')}
+          <Button type="primary" htmlType="submit" size="default">
+            {item
+              ? I18N.get('suggestion.plan.update')
+              : I18N.get('suggestion.plan.create')}
           </Button>
         </Actions>
       </Form>
@@ -81,7 +75,6 @@ class MilestoneForm extends BaseComponent {
 
 MilestoneForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
   item: PropTypes.object
 }
 

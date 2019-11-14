@@ -126,6 +126,8 @@ export default {
     teamInfo: '团队信息',
     milestones: '里程碑',
     publishDate: '发布日期',
-    version: '版本'
+    version: '版本',
+    update: '更新',
+    create: '创建'
   }
 }

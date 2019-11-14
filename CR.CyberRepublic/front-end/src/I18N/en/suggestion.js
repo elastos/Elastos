@@ -126,6 +126,8 @@ export default {
     teamInfo: 'Team Info',
     milestones: 'Milestones',
     publishDate: 'Publish Date',
-    version: 'Version'
+    version: 'Version',
+    update: 'Update',
+    create: 'Create'
   }
 }

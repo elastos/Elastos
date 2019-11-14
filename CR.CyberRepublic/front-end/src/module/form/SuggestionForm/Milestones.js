@@ -1,19 +1,26 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button } from 'antd'
-import I18N from '@/I18N'
+import { Button, Popover } from 'antd'
+import moment from 'moment'
+import MilestoneForm from '@/module/form/MilestoneForm/Container'
 
 class Milestones extends Component {
   constructor(props) {
     super(props)
     this.state = {
       milestones: [
-        { date: 'Jun 30', version: 'Alpha version' },
-        { date: 'Aug 30', version: 'Beta version' }
+        { date: '2019-6-30', version: 'Alpha version' },
+        { date: '2019-8-30', version: 'Beta version' }
       ]
     }
   }
+
+  handleVisibleChange = () => {}
+
+  handleSubmit = () => {}
+
+  handleEdit = () => {}
 
   render() {
     const { milestones } = this.state
@@ -23,14 +30,34 @@ class Milestones extends Component {
           {milestones.map((item, index) => (
             <Milestone key={index}>
               <Square>
-                <div>{item.date}</div>
+                <div>{moment(item.date).format('MMM D')}</div>
                 <div>{item.version}</div>
               </Square>
-              <Circle />
+              <Popover
+                content={
+                  <MilestoneForm
+                    item={{ ...item, date: moment(item.date, 'YYYY-MM-DD') }}
+                    onSubmit={this.handleEdit}
+                  />
+                }
+                trigger="click"
+                placement="top"
+                onVisibleChange={this.handleVisibleChange}
+              >
+                <Circle />
+              </Popover>
             </Milestone>
           ))}
+
           <Action>
-            <Button size="small" shape="circle" icon="plus" />
+            <Popover
+              content={<MilestoneForm onSubmit={this.handleSubmit} />}
+              trigger="click"
+              placement="top"
+              onVisibleChange={this.handleVisibleChange}
+            >
+              <Button size="small" shape="circle" icon="plus" />
+            </Popover>
           </Action>
         </Timeline>
       </Wrapper>
