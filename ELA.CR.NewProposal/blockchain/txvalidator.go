@@ -39,6 +39,10 @@ const (
 
 	// ELIPBudgetsCount indicates budgets count of ELIP.
 	ELIPBudgetsCount = 2
+
+	// CRCProposalBudgetsPercentage indicates the percentage of the CRC member
+	// address balance available for a single proposal budget.
+	CRCProposalBudgetsPercentage = 10
 )
 
 // CheckTransactionSanity verifies received single transaction
@@ -2088,6 +2092,18 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if proposal.ProposalType == payload.ELIP &&
 		len(proposal.Budgets) != ELIPBudgetsCount {
 		return errors.New("ELIP needs to have and only have two outputs")
+	}
+
+	// Check budgets of proposal.
+	var amount common.Fixed64
+	for _, b := range proposal.Budgets {
+		amount += b
+	}
+	if amount > b.crCommittee.CRCCommitteeBalance*CRCProposalBudgetsPercentage/100 {
+		return errors.New("budgets exceeds 10% of CRC committee balance")
+	} else if amount > b.crCommittee.CRCCommitteeBalance-
+		b.crCommittee.CRCCommitteeUsedAmount {
+		return errors.New("budgets exceeds the balance of CRC committee")
 	}
 
 	// The number of the proposals of the committee can not more than 128
