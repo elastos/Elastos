@@ -61,7 +61,12 @@ class Milestones extends Component {
                     <div>{moment(item.date).format('MMM D')}</div>
                     <div>{item.version}</div>
                   </Square>
-                  <Circle />
+                  <Button
+                    type="primary"
+                    size="small"
+                    shape="circle"
+                    icon="edit"
+                  />
                 </Popover>
               ) : (
                 <Fragment>
@@ -113,6 +118,10 @@ const Timeline = styled.div`
 const Milestone = styled.div`
   padding-right: 16px;
   border-bottom: 1px solid #ced6e3;
+  button {
+    display: block;
+    margin: 8px auto -12px;
+  }
 `
 const Square = styled.div`
   width: 150px;
