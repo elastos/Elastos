@@ -1600,7 +1600,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 		CRSponsorDID:     *getDid(code2),
 		DraftHash:        common.Hash(draftData),
 		DraftData:        draftData,
-		Budgets:          []common.Fixed64{1, 1, 1},
+		Budgets:          []common.Fixed64{1e8, 1e8, 1e8},
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -2472,6 +2472,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	memebers := make(map[common.Uint168]*crstate.CRMember)
 	memebers[member1.Info.DID] = member1
 	s.Chain.crCommittee.Members = memebers
+	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(100 * 1e8)
 
 	// ok
 	txn := s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
@@ -2490,12 +2491,24 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "type of proposal should be known")
 
+	// invalid outputs of ELIP.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x01
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "ELIP needs to have and only have two outputs")
 
-	// invalid proposal type
+	// invalid budgets.
 	txn.Payload.(*payload.CRCProposal).ProposalType = 0x00
+	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(10 * 1e8)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "budgets exceeds 10% of CRC committee balance")
+
+	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(100 * 1e8)
+	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(99 * 1e8)
+	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
+	s.EqualError(err, "budgets exceeds the balance of CRC committee")
+
+	// invalid proposal type
+	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0)
 	txn.Payload.(*payload.CRCProposal).DraftData = randomBytes(7)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "failed to check draft data hash")
