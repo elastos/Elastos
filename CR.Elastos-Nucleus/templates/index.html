@@ -1,68 +1,34 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+{% extends 'layout.html' %}
 {% load static %}
-<head>
-    <title>Console</title>
-    <meta charset="UTF-8">
-    <link href="{% static "/css/styles.css" %}" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-</head>
-<body>
-{% block content %}
-    <nav style="background-color: whitesmoke; padding-bottom:10px">
-    <div class="nav-wrapper">
-      <a style="color:black; font-size: x-large" href="login/home.html"> <img src="{% static '/Images/Logo.png' %}" width="60" height="60" class="d-inline-block align-top" alt="Elastos logo">
-      Nucleus
-      </a>
-      <ul class="right hide-on-med-and-down">
-        <div class="dropdown">
-  <button class="dropbtn" onclick="myFunction()">Language
-    <i class="fa fa-caret-down"></i>
-  </button>
-  <div class="dropdown-content" id="myDropdown">
-    <a href="#">English</a>
-    <a href="#">Spanish</a>
-  </div>
-  </div>
-      </ul>
-    </div>
-  </nav>
-
-<div class="row">
-  <div class="column" style="background-color:white;">
-    <h2> Nucleus Console Sign In</h2>
-        <hr size="20" color="black" width="580" align="left"/> <br>
-    <button style="text-align: center"> Sign In with DID</button> <br>
-    <button> Sign Up</button>
-  </div>
-  <div class="column" style="background-color:white;">
-      <br> <br> <br> <br> <br> <br> <br> <br>
-    <div class="box">
-    Build Decentralized, Scalable Apps
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus sed unde voluptate non temporibus quae amet possimus dolorum quisquam atque nemo reprehenderit quasi suscipit vero cum delectus quibusdam optio asperiores.
-    </div>
-  </div>
-</div>
-
+{% block scripts %}
     <script>
-function myFunction() {
-  document.getElementById("myDropdown").classList.toggle("show");
-}
+        function myFunction() {
+          document.getElementById("myDropdown").classList.toggle("show");
+        }
 
-window.onclick = function(e) {
-  if (!e.target.matches('.dropbtn')) {
-  var myDropdown = document.getElementById("myDropdown");
-    if (myDropdown.classList.contains('show')) {
-      myDropdown.classList.remove('show');
-    }
-  }
-}
-</script>
-
+        window.onclick = function(e) {
+          if (!e.target.matches('.dropbtn')) {
+          var myDropdown = document.getElementById("myDropdown");
+            if (myDropdown.classList.contains('show')) {
+              myDropdown.classList.remove('show');
+            }
+          }
+        }
+    </script>
 {% endblock %}
 
-</body>
-</html>
+{% block content %}
+    <div class="row align-items-center justify-content-center">
+        <div class="col-md-16">
+            <h2>Elastos - Build decentralized and scalable apps</h2>
+        </div>
+    </div>
+    <div class="row align-items-center justify-content-center">
+        <div class="col-md-16">
+            <a href="{%  url 'login:sign_in' %}">
+                <button style="text-align: center">Login with Elastos DID</button>
+            </a>
+        </div>
+    </div>
+{% endblock %}
