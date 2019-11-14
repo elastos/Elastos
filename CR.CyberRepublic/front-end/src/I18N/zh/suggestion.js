@@ -112,6 +112,6 @@ export default {
     name: '作者姓名'
   },
   label: {
-    hasMadeIntoProposal: '已经将此建议发布为提案'
+    hasMadeIntoProposal: '已经将此建议发布为'
   }
 }

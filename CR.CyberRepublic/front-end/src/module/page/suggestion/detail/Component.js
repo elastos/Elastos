@@ -24,6 +24,7 @@ import { LG_WIDTH } from '@/config/constant'
 import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import { convertMarkdownToHtml } from '@/util/markdown-it'
 import { logger } from '@/util'
+import userUtil from '@/util/user'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
 import StandardPage from '../../StandardPage'
 import ActionsContainer from '../common/actions/Container'
@@ -490,7 +491,7 @@ export default class extends StandardPage {
   }
 
   renderMakeIntoProposalPanel() {
-    const { isReference } = this.props
+    const { isReference, detail } = this.props
     if (!isReference) return null
     const reference = _.get(this.props.detail, 'reference')
     const { _id, vid } = _.last(reference)
@@ -509,9 +510,9 @@ export default class extends StandardPage {
         <Row type="flex" justify="center">
           <Col span={24}>
             <CreateProposalText>
-              {'xx '}
+              {`${userUtil.formatUsername(detail.proposer)} `}
               {I18N.get('suggestion.label.hasMadeIntoProposal')}
-              <Link to={`/proposals/${_id}`}>{` #${vid}`}</Link>
+              <Link to={`/proposals/${_id}`}>{` ${I18N.get('council.voting.proposal')} #${vid}`}</Link>
             </CreateProposalText>
           </Col>
         </Row>
