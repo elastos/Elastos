@@ -361,7 +361,7 @@ export default class extends BaseComponent {
           style={{ marginTop: 20, marginBottom: 20 }}
         >
           {searchInput}
-          {isLogin && filterBtns}
+          {filterBtns}
         </Row>
         {isVisitableFilter && filterPanel}
         <Row type="flex" align="middle" justify="end">
