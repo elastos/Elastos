@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button, Popover } from 'antd'
@@ -42,10 +42,6 @@ class Milestones extends Component {
         <Timeline>
           {milestones.map((item, index) => (
             <Milestone key={index}>
-              <Square>
-                <div>{moment(item.date).format('MMM D')}</div>
-                <div>{item.version}</div>
-              </Square>
               {visible ? (
                 <Popover
                   content={
@@ -59,12 +55,22 @@ class Milestones extends Component {
                     />
                   }
                   trigger="click"
-                  placement="bottom"
+                  placement="top"
                 >
+                  <Square>
+                    <div>{moment(item.date).format('MMM D')}</div>
+                    <div>{item.version}</div>
+                  </Square>
                   <Circle />
                 </Popover>
               ) : (
-                <Circle />
+                <Fragment>
+                  <Square>
+                    <div>{moment(item.date).format('MMM D')}</div>
+                    <div>{item.version}</div>
+                  </Square>
+                  <Circle />
+                </Fragment>
               )}
             </Milestone>
           ))}
