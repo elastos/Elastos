@@ -27,18 +27,12 @@ var (
 // index of utxo.
 func dbPutUtxoIndexEntry(dbTx database.Tx, programHash *common.Uint168, utxos []*types.UTXO) error {
 	utxoIndex := dbTx.Metadata().Bucket(utxoIndexKey)
-	var utxosWithoutZero []*types.UTXO
-	for _, utxo := range utxos {
-		if utxo.Value > 0 {
-			utxosWithoutZero = append(utxosWithoutZero, utxo)
-		}
-	}
 	w := new(bytes.Buffer)
-	count := len(utxosWithoutZero)
+	count := len(utxos)
 	if err := common.WriteVarUint(w, uint64(count)); err != nil {
 		return err
 	}
-	for _, utxo := range utxosWithoutZero {
+	for _, utxo := range utxos {
 		if err := utxo.Serialize(w); err != nil {
 			return err
 		}
@@ -118,23 +112,24 @@ func (idx *UtxoIndex) Create(dbTx database.Tx) error {
 //
 // This is part of the Indexer interface.
 func (idx *UtxoIndex) ConnectBlock(dbTx database.Tx, block *types.Block) error {
+	utxoMap := make(map[common.Uint168][]*types.UTXO)
 	for _, txn := range block.Transactions {
 		txHash := txn.Hash()
 		// output process
 		for i, output := range txn.Outputs {
-			toBeStore := make([]*types.UTXO, 0)
-			utxos, err := dbFetchUtxoIndexEntry(dbTx, &output.ProgramHash)
-			if err != nil {
-				return err
+			if output.Value == 0 {
+				continue
 			}
-			if utxos != nil {
-				toBeStore = append(toBeStore, utxos...)
+			utxos, exist := utxoMap[output.ProgramHash]
+			if !exist {
+				var err error
+				utxos, err = dbFetchUtxoIndexEntry(dbTx, &output.ProgramHash)
+				if err != nil {
+					return err
+				}
 			}
-			toBeStore = append(toBeStore, &types.UTXO{TxID: txHash, Index: uint16(i), Value: output.Value})
-			err = dbPutUtxoIndexEntry(dbTx, &output.ProgramHash, toBeStore)
-			if err != nil {
-				return err
-			}
+			utxos = append(utxos, &types.UTXO{TxID: txHash, Index: uint16(i), Value: output.Value})
+			utxoMap[output.ProgramHash] = utxos
 		}
 		if txn.IsCoinBaseTx() {
 			continue
@@ -147,9 +142,12 @@ func (idx *UtxoIndex) ConnectBlock(dbTx database.Tx, block *types.Block) error {
 			}
 			referOutput := referTx.Outputs[input.Previous.Index]
 			// find the spent items and remove it
-			utxos, err := dbFetchUtxoIndexEntry(dbTx, &referOutput.ProgramHash)
-			if err != nil {
-				return err
+			utxos, exist := utxoMap[referOutput.ProgramHash]
+			if !exist {
+				utxos, err = dbFetchUtxoIndexEntry(dbTx, &referOutput.ProgramHash)
+				if err != nil {
+					return err
+				}
 			}
 			for i, utxo := range utxos {
 				if utxo.TxID == input.Previous.TxID &&
@@ -160,10 +158,14 @@ func (idx *UtxoIndex) ConnectBlock(dbTx database.Tx, block *types.Block) error {
 					break
 				}
 			}
-			err = dbPutUtxoIndexEntry(dbTx, &referOutput.ProgramHash, utxos)
-			if err != nil {
-				return err
-			}
+			utxoMap[referOutput.ProgramHash] = utxos
+		}
+	}
+
+	for programHash, utxos := range utxoMap {
+		err := dbPutUtxoIndexEntry(dbTx, &programHash, utxos)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -176,13 +178,18 @@ func (idx *UtxoIndex) ConnectBlock(dbTx database.Tx, block *types.Block) error {
 //
 // This is part of the Indexer interface.
 func (idx *UtxoIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) error {
+	utxoMap := make(map[common.Uint168][]*types.UTXO)
 	for _, txn := range block.Transactions {
 		txHash := txn.Hash()
 		// output process
 		for index, output := range txn.Outputs {
-			utxos, err := dbFetchUtxoIndexEntry(dbTx, &output.ProgramHash)
-			if err != nil {
-				return err
+			utxos, exist := utxoMap[output.ProgramHash]
+			if !exist {
+				var err error
+				utxos, err = dbFetchUtxoIndexEntry(dbTx, &output.ProgramHash)
+				if err != nil {
+					return err
+				}
 			}
 			for i, utxo := range utxos {
 				if utxo.TxID == txHash && utxo.Index == uint16(index) {
@@ -192,10 +199,7 @@ func (idx *UtxoIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) erro
 					break
 				}
 			}
-			err = dbPutUtxoIndexEntry(dbTx, &output.ProgramHash, utxos)
-			if err != nil {
-				return err
-			}
+			utxoMap[output.ProgramHash] = utxos
 		}
 
 		// inputs process
@@ -208,23 +212,29 @@ func (idx *UtxoIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) erro
 				return err
 			}
 			referOutput := referTx.Outputs[input.Previous.Index]
-			utxos, err := dbFetchUtxoIndexEntry(dbTx, &referOutput.ProgramHash)
-			if err != nil {
-				return err
+			if referOutput.Value == 0 {
+				continue
 			}
-			toBeStore := make([]*types.UTXO, 0)
-			if utxos != nil {
-				toBeStore = append(toBeStore, utxos...)
+			utxos, exist := utxoMap[referOutput.ProgramHash]
+			if !exist {
+				utxos, err = dbFetchUtxoIndexEntry(dbTx, &referOutput.ProgramHash)
+				if err != nil {
+					return err
+				}
 			}
-			toBeStore = append(toBeStore, &types.UTXO{
+			utxos = append(utxos, &types.UTXO{
 				TxID:  input.Previous.TxID,
 				Index: input.Previous.Index,
 				Value: referOutput.Value,
 			})
-			err = dbPutUtxoIndexEntry(dbTx, &referOutput.ProgramHash, toBeStore)
-			if err != nil {
-				return err
-			}
+			utxoMap[referOutput.ProgramHash] = utxos
+		}
+	}
+
+	for programHash, utxos := range utxoMap {
+		err := dbPutUtxoIndexEntry(dbTx, &programHash, utxos)
+		if err != nil {
+			return err
 		}
 	}
 
