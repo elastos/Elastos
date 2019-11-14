@@ -123,6 +123,7 @@ export default {
     moreInfo: '更多信息',
     createTeamInfo: '添加团队信息',
     action: '操作',
-    teamInfo: '团队信息'
+    teamInfo: '团队信息',
+    milestones: '里程碑'
   }
 }

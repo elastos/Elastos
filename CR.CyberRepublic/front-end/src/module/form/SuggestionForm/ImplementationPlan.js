@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import TeamInfoSection from './TeamInfoSection'
 import I18N from '@/I18N'
+import TeamInfoSection from './TeamInfoSection'
+import Milestones from './Milestones'
 
 class ImplementationPlan extends Component {
   constructor(props) {
@@ -29,6 +30,8 @@ class ImplementationPlan extends Component {
           onChange={this.changeValue}
           initialValue={plan.teamInfo}
         />
+        <Title>{I18N.get('suggestion.plan.milestones')}</Title>
+        <Milestones />
       </div>
     )
   }

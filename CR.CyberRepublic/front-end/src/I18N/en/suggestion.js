@@ -123,6 +123,7 @@ export default {
     moreInfo: 'More Info',
     createTeamInfo: 'Create team info',
     action: 'Action',
-    teamInfo: 'Team Info'
+    teamInfo: 'Team Info',
+    milestones: 'Milestones'
   }
 }

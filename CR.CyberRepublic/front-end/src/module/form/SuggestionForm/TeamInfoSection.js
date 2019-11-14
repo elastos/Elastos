@@ -105,4 +105,6 @@ TeamInfoSection.propTypes = {
 
 export default TeamInfoSection
 
-const Wrapper = styled.div``
+const Wrapper = styled.div`
+  margin-bottom: 24px;
+`
