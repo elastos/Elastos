@@ -22,7 +22,6 @@
 
 package org.elastos.did;
 
-import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 
@@ -131,7 +130,7 @@ public abstract class DIDStore {
 		byte[] cipher;
 		try {
 			cipher = Aes256cbc.encrypt(passwd, input);
-		} catch (GeneralSecurityException e) {
+		} catch (Exception e) {
 			throw new DIDStoreException("Encrypt key error.", e);
 		}
 
@@ -145,7 +144,7 @@ public abstract class DIDStore {
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		try {
 			return Aes256cbc.decrypt(passwd, cipher);
-		} catch (GeneralSecurityException e) {
+		} catch (Exception e) {
 			throw new DIDStoreException("Decrypt key error.", e);
 		}
 	}

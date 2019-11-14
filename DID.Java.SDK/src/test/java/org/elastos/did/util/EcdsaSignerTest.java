@@ -26,9 +26,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.spongycastle.util.Arrays;
 
 public class EcdsaSignerTest {
 	private static final String plain = "The quick brown fox jumps over the lazy dog.";

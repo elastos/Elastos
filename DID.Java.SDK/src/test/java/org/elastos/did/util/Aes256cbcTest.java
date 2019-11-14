@@ -62,7 +62,7 @@ public class Aes256cbcTest {
 	public void testDecryptFromBase64() throws Exception {
 		byte[] plainBytes = Aes256cbc.decryptFromBase64(passwd, cipherBase64);
 		byte[] expected = plain.getBytes();
-		System.out.println(new String(plainBytes));
+
 		assertArrayEquals(expected, plainBytes);
 	}
 }
