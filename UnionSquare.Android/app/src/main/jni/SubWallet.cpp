@@ -131,7 +131,7 @@ static jstring JNICALL GetAllPublicKeys(JNIEnv *env, jobject clazz, jlong jSubPr
 #define JNI_GetBalanceWithAddress "(JLjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL GetBalanceWithAddress(JNIEnv *env, jobject clazz, jlong jSubProxy,
-                                           jstring jaddress) {
+                                             jstring jaddress) {
     bool exception = false;
     std::string msgException;
 
@@ -225,9 +225,9 @@ static jstring JNICALL CreateTransaction(JNIEnv *env, jobject clazz, jlong jSubP
 #define JNI_GetAllUTXOs "(JIILjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL GetAllUTXOs(JNIEnv *env, jobject clazz, jlong jSubProxy,
-                                    jint start,
-                                    jint count,
-                                    jstring jaddress) {
+                                   jint start,
+                                   jint count,
+                                   jstring jaddress) {
     bool exception = false;
     std::string msgException;
 
@@ -316,7 +316,7 @@ static jstring JNICALL SignTransaction(JNIEnv *env, jobject clazz, jlong jSubPro
 #define JNI_GetTransactionSignedInfo "(JLjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL GetTransactionSignedInfo(JNIEnv *env, jobject clazz, jlong jSubProxy,
-                                                   jstring jTransactionJson) {
+                                                jstring jTransactionJson) {
     bool exception = false;
     std::string msgException;
 
@@ -422,7 +422,7 @@ static void JNICALL SyncStart(JNIEnv *env, jobject clazz, jlong jproxy) {
 #define JNI_SyncStop "(J)V"
 
 static void JNICALL SyncStop(JNIEnv *env, jobject clazz, jlong jproxy) {
-     bool exception = false;
+    bool exception = false;
     std::string msgException;
 
     try {
@@ -468,8 +468,8 @@ static jstring JNICALL GetAllCoinBaseTransaction(JNIEnv *env, jobject clazz, jlo
 
 #define JNI_GetAssetInfo "(JLjava/lang/String;)Ljava/lang/String;"
 
-static jstring GetAssetInfo(JNIEnv *env, jobject clazz, jlong jSubProxy,
-                            jstring jassetID) {
+static jstring JNICALL GetAssetInfo(JNIEnv *env, jobject clazz, jlong jSubProxy,
+                                    jstring jassetID) {
     bool exception = false;
     std::string msgException;
     jstring info = NULL;
@@ -495,6 +495,34 @@ static jstring GetAssetInfo(JNIEnv *env, jobject clazz, jlong jSubProxy,
     return info;
 }
 
+#define JNI_SetFixedPeer "(JLjava/lang/String;I)Z"
+
+static jbyte JNICALL SetFixedPeer(JNIEnv *env, jobject clazz, jlong jSubProxy,
+                                  jstring jaddress,
+                                  jint jport) {
+    bool exception = false;
+    std::string msgException;
+    jboolean result = false;
+
+    const char *address = env->GetStringUTFChars(jaddress, NULL);
+
+    try {
+        ISubWallet *subWallet = (ISubWallet *) jSubProxy;
+        result = subWallet->SetFixedPeer(address, jport);
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jaddress, address);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
 static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetChainID),
         REGISTER_METHOD(GetBasicInfo),
@@ -515,6 +543,7 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetAllTransaction),
         REGISTER_METHOD(GetAllCoinBaseTransaction),
         REGISTER_METHOD(GetAssetInfo),
+        REGISTER_METHOD(SetFixedPeer),
         REGISTER_METHOD(SyncStart),
         REGISTER_METHOD(SyncStop)
 };

@@ -388,7 +388,6 @@ namespace Elastos {
 			 *
 			 * @param type             Proposal type, value is [0-5]
 			 * @param sponsorPublicKey Public key of sponsor
-			 * @param crSponsorDID     Did of sponsor. Such as "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
 			 * @param draftHash        The hash of draft proposal
 			 * @param budgets          The budgets of proposal every stage. Such as ["300", "33", "344"]
 			 * @param recipient        Address of budget payee. Such as "EPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv"
@@ -397,7 +396,6 @@ namespace Elastos {
 			 */
 			virtual std::string SponsorProposalDigest(uint8_t type,
 			                                          const std::string &sponsorPublicKey,
-			                                          const std::string &crSponsorDID,
 			                                          const std::string &draftHash,
 			                                          const nlohmann::json &budgets,
 			                                          const std::string &recipient) const = 0;
@@ -444,6 +442,35 @@ namespace Elastos {
 			                                                    const std::string &sponsorSignature,
 			                                                    const std::string &crSponsorSignature,
 			                                                    const std::string &memo) = 0;
+
+			/**
+			 * Generate payload for review CRC proposal.
+			 *
+			 * @param proposalHash Hash value of proposal.
+			 * @param voteResult   Opinion of the proposal. approve : 0, reject : 1, abstain : 2
+			 * @param did          DID of CR. Such as  "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7";
+			 * @return             The proposal in JSON format contains the "Digest" field to be signed and then set the "Signature" field. Such as
+			 * {
+			 *   "DID":"270589bb89afdbeac2f6788c52386bafb941a24867",
+			 *   "Digest":"01333218d8492fe59c1ee1e0830bf86bf97b37f71f73183f29a31385f3e0ba45",
+			 *   "ProposalHash":"a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+			 *   "Result":1,
+			 *   "Signature":""
+			 * }
+			 */
+			virtual nlohmann::json GenerateCRCProposalReview(const std::string &proposalHash,
+			                                                 uint8_t voteResult,
+			                                                 const std::string &did) const = 0;
+
+			/**
+			 * Create a review proposal transaction.
+			 *
+			 * @param proposalReview Generate by GenerateCRCProposalReview() and "Signature" is not empty.
+			 * @param memo           Remarks string. Can be empty string.
+			 * @return               The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
+			                                                          const std::string &memo) = 0;
 
 			/**
 			 * Create vote crc proposal transaction.

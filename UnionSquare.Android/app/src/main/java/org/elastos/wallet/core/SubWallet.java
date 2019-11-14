@@ -122,6 +122,10 @@ public class SubWallet {
         return GetAssetInfo(mInstance, assetID);
     }
 
+    public boolean SetFixedPeer(String address, int port) throws WalletException {
+        return SetFixedPeer(mInstance, address, port);
+    }
+
     public void SyncStart() throws WalletException {
         SyncStart(mInstance);
     }
@@ -182,6 +186,8 @@ public class SubWallet {
     private native String GetAllCoinBaseTransaction(long subProxy, int start, int count, String txid);
 
     private native String GetAssetInfo(long subProxy, String assetID);
+
+    private native boolean SetFixedPeer(long subProxy, String address, int port);
 
     private native void SyncStart(long proxy);
 

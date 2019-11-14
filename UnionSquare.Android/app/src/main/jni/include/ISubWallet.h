@@ -220,6 +220,14 @@ namespace Elastos {
 					const std::string &assetID) const = 0;
 
 			/**
+			 * Use fixed peer to sync
+			 * @param address IP or domain name.
+			 * @param port p2p port.
+			 * @return return true if success, otherwise false.
+			 */
+			virtual bool SetFixedPeer(const std::string &address, uint16_t port) = 0;
+
+			/**
 			 * Start sync of P2P network
 			 */
 			virtual void SyncStart() = 0;

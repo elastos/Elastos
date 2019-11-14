@@ -108,8 +108,8 @@ public class MainchainSubWallet extends SubWallet {
         return GetRegisteredCRInfo(mMainchainProxy);
     }
 
-    public String SponsorProposalDigest(byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient) throws WalletException {
-        return SponsorProposalDigest(mMainchainProxy, type, sponsorPublicKey, crSponsorDID, draftHash, budgets, recipient);
+    public String SponsorProposalDigest(byte type, String sponsorPublicKey, String draftHash, String budgets, String recipient) throws WalletException {
+        return SponsorProposalDigest(mMainchainProxy, type, sponsorPublicKey, draftHash, budgets, recipient);
     }
 
     public String CRSponsorProposalDigest(byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String signature) throws WalletException {
@@ -126,6 +126,14 @@ public class MainchainSubWallet extends SubWallet {
 
     public String CreateImpeachmentCRCTransaction(String fromAddress, String votes, String memo) throws WalletException {
         return CreateImpeachmentCRCTransaction(mMainchainProxy, fromAddress, votes, memo);
+    }
+
+    public String GenerateCRCProposalReview(String proposalHash, byte voteResult, String crDID, String payPasswd) throws WalletException {
+        return GenerateCRCProposalReview(mMainchainProxy, proposalHash, voteResult, crDID, payPasswd);
+    }
+
+    public String CreateCRCProposalReviewTransaction(String proposalHash, String proposalReview, String memo) throws WalletException {
+        return CreateCRCProposalReviewTransaction(mMainchainProxy, proposalReview, memo);
     }
 
     private native String CreateDepositTransaction(long proxy, String fromAddress, String lockedAddress, String amount,
@@ -177,7 +185,7 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String GetRegisteredCRInfo(long Proxy);
 
-    private native String SponsorProposalDigest(long Proxy, byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient);
+    private native String SponsorProposalDigest(long Proxy, byte type, String sponsorPublicKey, String draftHash, String budgets, String recipient);
 
     private native String CRSponsorProposalDigest(long Proxy, byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String signature);
 
@@ -186,5 +194,9 @@ public class MainchainSubWallet extends SubWallet {
     private native String CreateVoteCRCProposalTransaction(long Proxy, String fromAddress, String votes, String memo);
 
     private native String CreateImpeachmentCRCTransaction(long Proxy, String fromAddress, String votes, String memo);
+
+    private native String GenerateCRCProposalReview(long Proxy, String proposalHash, byte voteResult, String crDID, String payPasswd);
+
+    private native String CreateCRCProposalReviewTransaction(long Proxy, String proposalReview, String memo);
 
 }
