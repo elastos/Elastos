@@ -14,7 +14,7 @@ export default {
       creator: '创建人',
       status: '状态',
       created: '创建日期',
-      updated: '更新日期',
+      updated: '更新日期'
     },
     abstract: '摘要',
     goal: '目标',
@@ -44,10 +44,12 @@ export default {
       continue: '继续',
       cancel: '取消',
       saveDraft: '保存草稿',
-      save: '保存并发布'
+      save: '保存并发布',
+      update: '更新',
+      create: '创建'
     },
     fields: {
-      title: '标题',
+      title: '标题'
     },
     type: {
       newMotion: '新动议',
@@ -71,7 +73,7 @@ export default {
       required: '必填项',
       tooLong: '文字太长',
       [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`,
-      isNaN: '请输入有效的金额',
+      isNaN: '请输入有效的金额'
     }
   },
   modal: {
@@ -115,5 +117,17 @@ export default {
     reasons: '理由',
     criteria: '支付标准',
     action: '操作'
+  },
+  plan: {
+    teamMember: '团队成员',
+    role: '角色',
+    responsibility: '职责',
+    moreInfo: '更多信息',
+    createTeamInfo: '添加团队信息',
+    action: '操作',
+    teamInfo: '团队信息',
+    milestones: '里程碑',
+    publishDate: '发布日期',
+    version: '版本'
   }
 }

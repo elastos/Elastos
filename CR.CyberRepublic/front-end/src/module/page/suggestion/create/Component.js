@@ -20,14 +20,17 @@ export default class extends StandardPage {
     if (draftSuggestion) {
       const rs = JSON.parse(draftSuggestion)
       // deal with old budget data
-      if(rs.budget && typeof rs.budget === 'string') {
+      if (rs.budget && typeof rs.budget === 'string') {
         delete rs.budget
+      }
+      if (rs.budget && typeof rs.plan === 'string') {
+        delete rs.plan
       }
       draftSuggestion = rs
     } else {
       draftSuggestion = {}
     }
-    
+
     this.state = {
       error: null,
       draftSuggestion: draftSuggestion

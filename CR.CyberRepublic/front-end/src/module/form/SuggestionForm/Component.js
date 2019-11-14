@@ -7,6 +7,7 @@ import { ABSTRACT_MAX_WORDS } from '@/constant'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import PaymentSchedule from './PaymentSchedule'
+import ImplementationPlan from './ImplementationPlan'
 
 import { Container, TabPaneInner, Note, TabText, CirContainer } from './style'
 
@@ -175,15 +176,19 @@ class C extends BaseComponent {
       })
     }
 
-    let rc = (
-      <CodeMirrorEditor
-        callback={this.onTextareaChange}
-        content={initialValues[id]}
-        activeKey={id}
-        name={id}
-      />
-    )
+    let rc
     if (
+      id === 'plan' &&
+      ((initialValues.plan && typeof initialValues.plan !== 'string') ||
+        !initialValues.plan)
+    ) {
+      rc = (
+        <ImplementationPlan
+          initialValue={initialValues.plan}
+          callback={this.onTextareaChange}
+        />
+      )
+    } else if (
       id === 'budget' &&
       ((initialValues.budget && typeof initialValues.budget !== 'string') ||
         !initialValues.budget)
@@ -192,6 +197,15 @@ class C extends BaseComponent {
         <PaymentSchedule
           initialValue={initialValues.budget}
           callback={this.onTextareaChange}
+        />
+      )
+    } else {
+      rc = (
+        <CodeMirrorEditor
+          callback={this.onTextareaChange}
+          content={initialValues[id]}
+          activeKey={id}
+          name={id}
         />
       )
     }

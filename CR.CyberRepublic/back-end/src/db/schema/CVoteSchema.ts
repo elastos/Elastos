@@ -62,7 +62,7 @@ export const CVote = {
     type: Schema.Types.Mixed
   },
   plan: {
-    type: String
+    type: Schema.Types.Mixed
   },
   // tracking: {
   //   type: String,
@@ -148,5 +148,4 @@ export const CVote = {
   copyright: {
     type: String
   }
-  
 }

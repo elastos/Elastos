@@ -28,7 +28,7 @@ export const Title = styled.div`
   margin-top: 26px;
   margin-bottom: 8px;
   padding: 4px 8px;
- `
+`
 
 export const CoverImg = styled.img`
   width: 100%;
@@ -74,7 +74,8 @@ export const DescBody = styled.div`
     margin-bottom: 12px;
   }
 
-  ul, ol {
+  ul,
+  ol {
     margin-left: 24px;
 
     > li {
@@ -143,7 +144,7 @@ export const StyledAnchor = styled(Anchor)`
   .ant-anchor-link-active > .ant-anchor-link-title {
     color: initial;
     :after {
-      content: "";
+      content: '';
       position: absolute;
       bottom: -2px;
       left: 0;
@@ -153,4 +154,8 @@ export const StyledAnchor = styled(Anchor)`
       z-index: -1;
     }
   }
+`
+
+export const PlanSubtitle = styled.div`
+  margin: 24px 0;
 `

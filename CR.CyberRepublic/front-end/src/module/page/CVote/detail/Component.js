@@ -32,6 +32,8 @@ import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
 import { convertMarkdownToHtml } from '@/util/markdown-it'
 import PaymentList from '@/module/form/SuggestionForm/PaymentList'
+import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
+import Milestones from '@/module/form/SuggestionForm/Milestones'
 import {
   Container,
   Title,
@@ -47,7 +49,8 @@ import {
   LinkGroup,
   Part,
   PartTitle,
-  PartContent
+  PartContent,
+  PlanSubtitle
 } from './style'
 import './style.scss'
 
@@ -57,6 +60,25 @@ const renderRichContent = (data, key, title) => {
   let rc
   if (key === 'budget' && typeof data.budget !== 'string') {
     rc = <PaymentList list={data.budget} editable={false} />
+  } else if (key === 'plan' && typeof data.plan !== 'string'){
+    rc = (
+      <div>
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.teamInfo')}
+        </PlanSubtitle>
+        <TeamInfoList
+          list={data.plan && data.plan.teamInfo}
+          editable={false}
+        />
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.milestones')}
+        </PlanSubtitle>
+        <Milestones
+          initialValue={data.plan && data.plan.milestone}
+          editable={false}
+        />
+      </div>
+    )
   } else {
     rc = <MarkdownPreview content={data[key]} />
   }
@@ -201,6 +223,32 @@ class C extends StandardPage {
     )
   }
 
+  getPlanHtml(plan) {
+    const lists = plan
+      .map(item => {
+        return `
+          <p>
+            <span>${item.member}</span>
+            <span>${item.role}</span>
+            <span>${item.responsibility}</span>
+            <span>${item.info}</span>
+          </p>
+        `
+      })
+      .join('')
+    return `
+      <div>
+        <p>
+          <span>Team Member#</span>
+          <span>Role</span>
+          <span>Responsibility</span>
+          <span>More info</span>
+        </p>
+        ${lists}
+      </div>
+      `
+  }
+
   getBudgetHtml(budget) {
     const lists = budget
       .map((item, index) => {
@@ -251,6 +299,12 @@ class C extends StandardPage {
         return `
             <h2>${I18N.get(`proposal.fields.budget`)}</h2>
             <p>${this.getBudgetHtml(data.budget)}</p>
+          `
+      }
+      if (section === 'plan' && typeof data.plan !== 'string') {
+        return `
+            <h2>${I18N.get(`proposal.fields.plan`)}</h2>
+            <p>${this.getBudgetHtml(data.plan && data.plan.teamInfo)}</p>
           `
       }
       return `

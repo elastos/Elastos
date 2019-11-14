@@ -14,7 +14,7 @@ export default {
       creator: 'Creator',
       status: 'Status',
       created: 'Created',
-      updated: 'Updated',
+      updated: 'Updated'
     },
     abstract: 'Abstract',
     goal: 'Goal',
@@ -44,10 +44,12 @@ export default {
       continue: 'Continue',
       cancel: 'Cancel',
       saveDraft: 'Save as Draft',
-      save: 'Save & Post'
+      save: 'Save & Post',
+      update: 'Update',
+      create: 'Create'
     },
     fields: {
-      title: 'Title',
+      title: 'Title'
     },
     type: {
       newMotion: 'New Motion',
@@ -78,8 +80,7 @@ export default {
     addTagComment: 'Add Comment',
     confirm: 'Confirm',
     cancel: 'Cancel',
-    pleaseUpdate:
-      'Please update the Suggestion with the requested info and notify the council/community through a comment.',
+    pleaseUpdate: 'Please update the Suggestion with the requested info and notify the council/community through a comment.',
     commentsFromCouncil: 'Comments from Council/Admin:',
     consideration: 'Are you sure to mark this suggestion as under council consideration?'
   },
@@ -116,5 +117,17 @@ export default {
     reasons: 'Reasons',
     criteria: 'Criteria of Payment',
     action: 'Action'
+  },
+  plan: {
+    teamMember: 'Team Member',
+    role: 'Role',
+    responsibility: 'Responsibility',
+    moreInfo: 'More Info',
+    createTeamInfo: 'Create team info',
+    action: 'Action',
+    teamInfo: 'Team Info',
+    milestones: 'Milestones',
+    publishDate: 'Publish Date',
+    version: 'Version'
   }
 }

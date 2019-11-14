@@ -8,7 +8,7 @@ import I18N from '@/I18N'
 const FormItem = Form.Item
 const TextArea = Input.TextArea
 
-class BudgetForm extends BaseComponent {
+class TeamInfoForm extends BaseComponent {
   handleSubmit = e => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
@@ -18,11 +18,6 @@ class BudgetForm extends BaseComponent {
         onSubmit(values)
       }
     })
-  }
-
-  validateAmount = (rule, value, cb) => {
-    const reg = /^(0|[1-9][0-9]*)(\.[0-9]*)?$/
-    return (!isNaN(value) && reg.test(value)) || value === '' ? cb() : cb(true)
   }
 
   ord_render() {
@@ -40,44 +35,51 @@ class BudgetForm extends BaseComponent {
     return (
       <Form onSubmit={this.handleSubmit}>
         <FormItem
-          label={`${I18N.get('suggestion.budget.amount')}(ELA)`}
+          label={I18N.get('suggestion.plan.teamMember')}
           {...formItemLayout}
         >
-          {getFieldDecorator('amount', {
+          {getFieldDecorator('member', {
             rules: [
               {
                 required: true,
                 message: I18N.get('suggestion.form.error.required')
-              },
-              {
-                message: I18N.get(`suggestion.form.error.isNaN`),
-                validator: this.validateAmount
               }
             ],
-            initialValue: item && item.amount ? item.amount : ''
+            initialValue: item && item.member ? item.member : ''
+          })(<Input />)}
+        </FormItem>
+        <FormItem label={I18N.get('suggestion.plan.role')} {...formItemLayout}>
+          {getFieldDecorator('role', {
+            rules: [
+              {
+                required: true,
+                message: I18N.get('suggestion.form.error.required')
+              }
+            ],
+            initialValue: item && item.role ? item.role : ''
           })(<Input />)}
         </FormItem>
         <FormItem
-          label={I18N.get('suggestion.budget.reasons')}
+          label={I18N.get('suggestion.plan.responsibility')}
           {...formItemLayout}
         >
-          {getFieldDecorator('reasons', {
+          {getFieldDecorator('responsibility', {
             rules: [
               {
                 required: true,
                 message: I18N.get('suggestion.form.error.required')
               }
             ],
-            initialValue: item && item.reasons ? item.reasons : ''
+            initialValue: item && item.responsibility ? item.responsibility : ''
           })(<TextArea rows={5} />)}
         </FormItem>
         <FormItem
-          label={I18N.get('suggestion.budget.criteria')}
+          label={I18N.get('suggestion.plan.moreInfo')}
           {...formItemLayout}
         >
-          {getFieldDecorator('criteria', {
+          {getFieldDecorator('info', {
             rules: [{ required: true, message: '' }],
-            initialValue: item && item.criteria ? item.criteria : ''
+            initialValue: item && item.info ? item.info : ''
           })(<TextArea rows={5} />)}
         </FormItem>
 
@@ -101,13 +103,13 @@ class BudgetForm extends BaseComponent {
   }
 }
 
-BudgetForm.propTypes = {
+TeamInfoForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
   item: PropTypes.object
 }
 
-export default Form.create()(BudgetForm)
+export default Form.create()(TeamInfoForm)
 
 const Actions = styled.div`
   display: flex;
