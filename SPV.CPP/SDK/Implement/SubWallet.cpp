@@ -696,6 +696,13 @@ namespace Elastos {
 			_walletManager->DatabaseFlush();
 		}
 
+		bool SubWallet::SetFixedPeer(const std::string &address, uint16_t port) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("address: {}", address);
+			ArgInfo("port: {}", port);
+			return _walletManager->GetPeerManager()->SetFixedPeer(address, port);
+		}
+
 		void SubWallet::SyncStart() {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			_walletManager->SyncStart();

@@ -105,6 +105,8 @@ namespace Elastos {
 			virtual nlohmann::json GetAssetInfo(
 					const std::string &assetID) const;
 
+			virtual bool SetFixedPeer(const std::string &address, uint16_t port);
+
 			virtual void SyncStart();
 
 			virtual void SyncStop();

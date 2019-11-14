@@ -131,11 +131,7 @@ namespace Elastos {
 
 			bool GetReconnectEnableStatus() const;
 
-			void SetFixedPeer(uint128 address, uint16_t port);
-
-			void SetFixedPeers(const std::vector<PeerInfo> &peers);
-
-			bool UseFixedPeer(const std::string &node, int port);
+			bool SetFixedPeer(const std::string &address, uint16_t port);
 
 			std::string GetCurrentPeerName() const;
 
@@ -274,7 +270,6 @@ namespace Elastos {
 			bool _syncSucceeded, _needGetAddr, _enableReconnect;
 
 			std::vector<PeerInfo> _peers;
-			std::vector<PeerInfo> _fiexedPeers;
 			PeerInfo _fixedPeer;
 
 			std::vector<PeerPtr> _connectedPeers;

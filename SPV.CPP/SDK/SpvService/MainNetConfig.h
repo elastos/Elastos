@@ -25,17 +25,11 @@ namespace Elastos {
 			"TargetTimeSpan": 86400,
 			"TargetTimePerBlock": 120,
 			"DNSSeeds": [
-				"node-mainnet-002.elastos.org",
-				"node-mainnet-006.elastos.org",
-				"node-mainnet-014.elastos.org",
-				"node-mainnet-016.elastos.org",
-				"node-mainnet-021.elastos.org",
-				"node-mainnet-003.elastos.org",
-				"node-mainnet-007.elastos.org",
-				"node-mainnet-017.elastos.org",
-				"node-mainnet-022.elastos.org",
-				"node-mainnet-004.elastos.org",
-				"node-mainnet-023.elastos.org"
+				"node-mainnet-005.elastos.org",
+				"node-mainnet-010.elastos.org",
+				"node-mainnet-015.elastos.org",
+				"node-mainnet-020.elastos.org",
+				"node-mainnet-025.elastos.org"
 			],
 			"CheckPoints": [
 				[0,      "05f458a5522851622cae2bb138498dec60a8f0b233802c97a1ca41f9f214708d", 1513936800, 486801407],
@@ -122,16 +116,11 @@ namespace Elastos {
 			"TargetTimeSpan": 86400,
 			"TargetTimePerBlock": 120,
 			"DNSSeeds": [
-				"node-mainnet-026.elastos.org",
-				"node-mainnet-027.elastos.org",
-				"node-mainnet-028.elastos.org",
-				"node-mainnet-029.elastos.org",
-				"node-mainnet-030.elastos.org",
-				"node-mainnet-031.elastos.org",
-				"node-mainnet-032.elastos.org",
-				"node-mainnet-033.elastos.org",
-				"node-mainnet-034.elastos.org",
-				"node-mainnet-035.elastos.org"
+				"node-mainnet-005.elastos.org",
+				"node-mainnet-010.elastos.org",
+				"node-mainnet-015.elastos.org",
+				"node-mainnet-020.elastos.org",
+				"node-mainnet-025.elastos.org"
 			],
 			"CheckPoints": [
 				[0,      "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1530360000, 486801407],

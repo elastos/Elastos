@@ -42,10 +42,18 @@ link_directories(
     ${PROJECT_INT_DIST_DIR}/lib
 )
 
-set(LIBS spvsdk sqlite3 crypto ssl boost_system boost_filesystem boost_thread fruit)
+if (SPV_ENABLE_SHARED)
+    set(LIBS spvsdk)
+	set(ELAWALLET_DEPENDS libspvsdk)
+elseif(SPV_ENABLE_STATIC)
+    set(LIBS spvsdk sqlite3 crypto ssl boost_system boost_filesystem boost_thread fruit)
+    set(ELAWALLET_DEPENDS libspvsdk libfruit boost libressl json libsqlite)
+else()
+	message(FATAL_ERROR "libspvsdk should enable static or shared")
+endif()
 
 add_executable(elawallet ${SRC})
-add_dependencies(elawallet libspvsdk libfruit boost libressl json libsqlite)
+add_dependencies(elawallet ${ELAWALLET_DEPENDS})
 
 target_link_libraries(elawallet ${LIBS} ${SYSTEM_LIBS})
 

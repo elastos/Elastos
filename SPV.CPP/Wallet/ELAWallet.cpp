@@ -672,7 +672,7 @@ int main(int argc, char *argv[])
         fprintf(stdout, "Wallet data directory: %s\n", walletRoot);
     }
 
-    manager = new MasterWalletManager(walletRoot, "TestNet");
+    manager = new MasterWalletManager(walletRoot, "MainNet");
     syncStart();
 
     while (1) {

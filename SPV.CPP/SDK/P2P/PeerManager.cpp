@@ -487,40 +487,22 @@ namespace Elastos {
 			return progress;
 		}
 
-		void PeerManager::SetFixedPeers(const std::vector<PeerInfo> &peers) {
-			Disconnect();
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				_fiexedPeers = peers;
+		bool PeerManager::SetFixedPeer(const std::string &address, uint16_t port) {
+			std::vector<uint128> addrList = AddressLookup(address);
+			if (addrList.empty()) {
+				Log::error("invalid domain name: {}", address);
+				return false;
 			}
-		}
 
-		void PeerManager::SetFixedPeer(uint128 address, uint16_t port) {
-			Disconnect();
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
-				_maxConnectCount = (address == 0) ? PEER_MAX_CONNECTIONS : 1;
-				_fixedPeer = PeerInfo(address, port, 0, 0);
+				_maxConnectCount = (addrList[0] == 0) ? PEER_MAX_CONNECTIONS : 1;
+				_fixedPeer = PeerInfo(addrList[0], port, 0, 0);
 				_peers.clear();
-			}
-		}
-
-		bool PeerManager::UseFixedPeer(const std::string &node, int port) {
-			uint128 address;
-			uint16_t _port = (uint16_t) port;
-
-			if (!node.empty()) {
-				struct in_addr addr;
-				if (inet_pton(AF_INET, node.c_str(), &addr) != 1) return false;
-				*(uint16_t *)&address.begin()[10] = 0xffff;
-				*(uint32_t *)&address.begin()[12] = addr.s_addr;
-				if (port == 0)
-					_port = _chainParams->StandardPort();
-			} else {
-				_port = 0;
+				_needGetAddr = false;
 			}
 
-			SetFixedPeer(address, _port);
+			boost::thread workThread(boost::bind(&PeerManager::ReconnectLaster, this, 1));
 			return true;
 		}
 
@@ -790,13 +772,8 @@ namespace Elastos {
 			struct timespec ts;
 
 			_peers.clear();
-			size_t peersCount = _fiexedPeers.size();
-			if (peersCount > 0) {
-				for (int i = 0; i < peersCount; ++i) {
-					_peers.push_back(_fiexedPeers[i]);
-					_peers[i].Timestamp = now;
-				}
-			} else if (_fixedPeer.Address != 0) {
+
+			if (_fixedPeer.Address != 0) {
 				_peers.push_back(_fixedPeer);
 				_peers[0].Services = services;
 				_peers[0].Timestamp = now;
@@ -871,11 +848,11 @@ namespace Elastos {
 			if ((peer->GetServices() & _chainParams->Services()) != _chainParams->Services()) {
 				peer->warn("unsupported node type");
 				peer->Disconnect();
-			} else if ((peer->GetServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
+			} else if (!_needGetAddr && (peer->GetServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
 				peer->warn("peer->services: {} != SERVICES_NODE_NETWORK", peer->GetServices());
 				peer->warn("node doesn't carry full blocks");
 				peer->Disconnect();
-			} else if (peer->GetLastBlock() + 10 < _lastBlock->GetHeight()) {
+			} else if (!_needGetAddr && peer->GetLastBlock() + 10 < _lastBlock->GetHeight()) {
 				peer->warn("peer->lastBlock: {} !=  lastBlock->height: {}", peer->GetLastBlock(),
 						   _lastBlock->GetHeight());
 				peer->warn("node isn't synced");
@@ -919,26 +896,27 @@ namespace Elastos {
 				_reconnectStep = 1;
 				_estimatedHeight = peer->GetLastBlock();
 				_connectFailureCount = 0; // reset connect failure count
-				LoadBloomFilter(peer);
-				peer->SetCurrentBlockHeight(_lastBlock->GetHeight());
-				PublishPendingTx(peer);
 				if (_needGetAddr) {
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
-				}
+				} else {
+					LoadBloomFilter(peer);
+					peer->SetCurrentBlockHeight(_lastBlock->GetHeight());
+					PublishPendingTx(peer);
 
-				if (_lastBlock->GetHeight() < peer->GetLastBlock()) { // start blockchain sync
+					if (_lastBlock->GetHeight() < peer->GetLastBlock()) { // start blockchain sync
 
-					peer->ScheduleDisconnect(PROTOCOL_TIMEOUT); // schedule sync timeout
+						peer->ScheduleDisconnect(PROTOCOL_TIMEOUT); // schedule sync timeout
 
-					// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
-					// we do not reset connect failure count yet incase this request times out
-//					if (_lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
-						peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(GetBlockLocators(), uint256()));
-//					} else {
-//						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), uint256_ZERO));
-//					}
-				} else { // we're already synced
-					LoadMempools();
+						// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
+						// we do not reset connect failure count yet incase this request times out
+//						if (_lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
+							peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(GetBlockLocators(), uint256()));
+//						} else {
+//							peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(), uint256_ZERO));
+//						}
+					} else { // we're already synced
+						LoadMempools();
+					}
 				}
 			}
 			lock.unlock();
@@ -987,7 +965,7 @@ namespace Elastos {
 						_connectFailureCount = MAX_CONNECT_FAILURES;
 				}
 
-				if (!_isConnected && _connectFailureCount == MAX_CONNECT_FAILURES) {
+				if (!_isConnected && _connectFailureCount >= MAX_CONNECT_FAILURES) {
 					SyncStopped();
 
 					// clear out stored peers so we get a fresh list from DNS on next connect attempt
@@ -995,13 +973,11 @@ namespace Elastos {
 					txError = ENOTCONN; // trigger any pending tx publish callbacks
 					willSave = 1;
 					_needGetAddr = true;
-					peer->warn("sync failed");
+					peer->warn("sync failed too many times");
 				} else if (_enableReconnect && _connectFailureCount < MAX_CONNECT_FAILURES) {
 					peer->info("will reconnect");
 					willReconnect = true;
 				}
-
-				peer->info("failure = {}, enable reconnect = {}", _connectFailureCount, _enableReconnect);
 
 				if (willReconnect) {
 					reconnectSeconds = _reconnectStep;

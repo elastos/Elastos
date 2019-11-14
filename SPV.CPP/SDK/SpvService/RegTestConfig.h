@@ -23,9 +23,9 @@ namespace Elastos {
 			"TargetTimeSpan": 86400,
 			"TargetTimePerBlock": 120,
 			"DNSSeeds": [
-				"node-regtest-105.eadd.co",
-				"node-regtest-106.eadd.co",
-				"node-regtest-107.eadd.co"
+				"node-regtest-002.eadd.co",
+				"node-regtest-003.eadd.co",
+				"node-regtest-004.eadd.co"
 			],
 			"CheckPoints": [
 				[0,      "6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3", 1513936800, 486801407],
@@ -96,11 +96,9 @@ namespace Elastos {
 			"TargetTimeSpan": 86400,
 			"TargetTimePerBlock": 120,
 			"DNSSeeds": [
-				"node-regtest-116.eadd.co",
-				"node-regtest-117.eadd.co",
-				"node-regtest-118.eadd.co",
-				"node-regtest-119.eadd.co",
-				"node-regtest-120.eadd.co"
+				"node-regtest-002.eadd.co",
+				"node-regtest-003.eadd.co",
+				"node-regtest-004.eadd.co"
 			],
 			"CheckPoints": [
 				[0,     "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1513936800, 486801407],
