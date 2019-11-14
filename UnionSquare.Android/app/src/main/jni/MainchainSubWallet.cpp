@@ -751,12 +751,11 @@ GetRegisteredCRInfo(JNIEnv *env, jobject clazz, jlong jSubWalletProxy) {
     return info;
 }
 
-#define JNI_SponsorProposalDigest "(JBLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_SponsorProposalDigest "(JBLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL SponsorProposalDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
                                              jbyte jtype,
                                              jstring jsponsorPublickey,
-                                             jstring jcrSponsorDID,
                                              jstring jdraftHash,
                                              jstring jbudgets,
                                              jstring jrecipient) {
@@ -765,7 +764,6 @@ static jstring JNICALL SponsorProposalDigest(JNIEnv *env, jobject clazz, jlong j
     jstring result = NULL;
 
     const char *sponsorPublickey = env->GetStringUTFChars(jsponsorPublickey, NULL);
-    const char *crSponsorDID = env->GetStringUTFChars(jcrSponsorDID, NULL);
     const char *draftHash = env->GetStringUTFChars(jdraftHash, NULL);
     const char *budgets = env->GetStringUTFChars(jbudgets, NULL);
     const char *recipent = env->GetStringUTFChars(jrecipient, NULL);
@@ -773,7 +771,7 @@ static jstring JNICALL SponsorProposalDigest(JNIEnv *env, jobject clazz, jlong j
     IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
 
     try {
-        std::string digest = subWallet->SponsorProposalDigest(jtype, sponsorPublickey, crSponsorDID,
+        std::string digest = subWallet->SponsorProposalDigest(jtype, sponsorPublickey,
                                                               draftHash,
                                                               nlohmann::json::parse(budgets),
                                                               recipent);
@@ -784,7 +782,6 @@ static jstring JNICALL SponsorProposalDigest(JNIEnv *env, jobject clazz, jlong j
     }
 
     env->ReleaseStringUTFChars(jsponsorPublickey, sponsorPublickey);
-    env->ReleaseStringUTFChars(jcrSponsorDID, crSponsorDID);
     env->ReleaseStringUTFChars(jdraftHash, draftHash);
     env->ReleaseStringUTFChars(jbudgets, budgets);
     env->ReleaseStringUTFChars(jrecipient, recipent);
@@ -945,6 +942,113 @@ CreateVoteCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletPro
 
 }
 
+#define JNI_CreateImpeachmentCRCTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+CreateImpeachmentCRCTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                                jstring jfromAddress,
+                                jstring jvotes,
+                                jstring jmemo) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
+    const char *votes = env->GetStringUTFChars(jvotes, NULL);
+    const char *memo = env->GetStringUTFChars(jmemo, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->CreateImpeachmentCRCTransaction(fromAddress,
+                                                                      nlohmann::json::parse(votes),
+                                                                      memo);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jfromAddress, fromAddress);
+    env->ReleaseStringUTFChars(jvotes, votes);
+    env->ReleaseStringUTFChars(jmemo, memo);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_GenerateCRCProposalReview "(JLjava/lang/String;BLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+GenerateCRCProposalReview(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                          jstring jproposalHash,
+                          jbyte voteResult,
+                          jstring jcrDID) {
+
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *proposalHash = env->GetStringUTFChars(jproposalHash, NULL);
+    const char *crDID = env->GetStringUTFChars(jcrDID, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->GenerateCRCProposalReview(proposalHash, voteResult, crDID);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jproposalHash, proposalHash);
+    env->ReleaseStringUTFChars(jcrDID, crDID);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_CreateCRCProposalReviewTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+CreateCRCProposalReviewTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                                   jstring jproposalReview,
+                                   jstring jmemo) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *proposalReview = env->GetStringUTFChars(jproposalReview, NULL);
+    const char *memo = env->GetStringUTFChars(jmemo, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->CreateCRCProposalReviewTransaction(
+                nlohmann::json::parse(proposalReview), memo);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jproposalReview, proposalReview);
+    env->ReleaseStringUTFChars(jmemo, memo);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
 static const JNINativeMethod methods[] = {
         REGISTER_METHOD(CreateDepositTransaction),
         REGISTER_METHOD(GenerateProducerPayload),
@@ -973,6 +1077,9 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(CRSponsorProposalDigest),
         REGISTER_METHOD(CreateCRCProposalTransaction),
         REGISTER_METHOD(CreateVoteCRCProposalTransaction),
+        REGISTER_METHOD(CreateImpeachmentCRCTransaction),
+        REGISTER_METHOD(GenerateCRCProposalReview),
+        REGISTER_METHOD(CreateCRCProposalReviewTransaction),
 };
 
 jint RegisterMainchainSubWallet(JNIEnv *env, const std::string &path) {
