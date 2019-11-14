@@ -43,6 +43,12 @@ var (
 		},
 		Outputs: []*types.Output{
 			{
+				Value:       0,
+				Type:        types.OTNone,
+				Payload:     &outputpayload.DefaultOutput{},
+				ProgramHash: *referRecipient1,
+			},
+			{
 				Value:       100,
 				Type:        types.OTNone,
 				Payload:     &outputpayload.DefaultOutput{},
@@ -95,6 +101,13 @@ var (
 			{
 				Previous: types.OutPoint{
 					Index: 1,
+					TxID:  testUtxoIndexReferTx.Hash(),
+				},
+				Sequence: 0,
+			},
+			{
+				Previous: types.OutPoint{
+					Index: 2,
 					TxID:  testUtxoIndexReferTx.Hash(),
 				},
 				Sequence: 0,
@@ -177,6 +190,9 @@ func TestUTXOIndexInit(t *testing.T) {
 		utxos1 := make([]*types.UTXO, 0)
 		utxos2 := make([]*types.UTXO, 0)
 		for i, output := range testUtxoIndexReferTx.Outputs {
+			if output.Value == 0 {
+				continue
+			}
 			if output.ProgramHash.IsEqual(*referRecipient1) {
 				utxos1 = append(utxos1, &types.UTXO{
 					TxID:  testUtxoIndexReferTx.Hash(),
@@ -203,7 +219,7 @@ func TestUTXOIndexInit(t *testing.T) {
 		assert.Equal(t, []*types.UTXO{
 			{
 				TxID:  testUtxoIndexReferTx.Hash(),
-				Index: 0,
+				Index: 1,
 				Value: 100,
 			},
 		}, utxos1)
@@ -212,12 +228,12 @@ func TestUTXOIndexInit(t *testing.T) {
 		assert.Equal(t, []*types.UTXO{
 			{
 				TxID:  testUtxoIndexReferTx.Hash(),
-				Index: 1,
+				Index: 2,
 				Value: 200,
 			},
 			{
 				TxID:  testUtxoIndexReferTx.Hash(),
-				Index: 2,
+				Index: 3,
 				Value: 300,
 			},
 		}, utxos2)
@@ -240,7 +256,7 @@ func TestUtxoIndex_ConnectBlock(t *testing.T) {
 		assert.Equal(t, []*types.UTXO{
 			{
 				TxID:  testUtxoIndexReferTx.Hash(),
-				Index: 2,
+				Index: 3,
 				Value: 300,
 			},
 		}, inputUtxo2)
@@ -290,7 +306,7 @@ func TestUtxoIndex_DisconnectBlock(t *testing.T) {
 		assert.Equal(t, []*types.UTXO{
 			{
 				TxID:  testUtxoIndexReferTx.Hash(),
-				Index: 0,
+				Index: 1,
 				Value: 100,
 			},
 		}, utxos1)
@@ -299,12 +315,12 @@ func TestUtxoIndex_DisconnectBlock(t *testing.T) {
 		assert.Equal(t, []*types.UTXO{
 			{
 				TxID:  testUtxoIndexReferTx.Hash(),
-				Index: 2,
+				Index: 3,
 				Value: 300,
 			},
 			{
 				TxID:  testUtxoIndexReferTx.Hash(),
-				Index: 1,
+				Index: 2,
 				Value: 200,
 			},
 		}, utxos2)
