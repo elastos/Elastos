@@ -75,6 +75,13 @@ func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
 	}, nil
 }
 
+// payload of DID transaction
+type RpcPayloadDIDInfo struct {
+	Header  id.DIDHeaderInfo `json:"header"`
+	Payload string           `json:"payload"`
+	Proof   id.DIDProofInfo  `json:"proof"`
+}
+
 func (s *HttpService) GetIdTxsPayloads(param http.Params) (interface{}, error) {
 	idParam, ok := param.String("id")
 	if !ok {
@@ -86,7 +93,7 @@ func (s *HttpService) GetIdTxsPayloads(param http.Params) (interface{}, error) {
 	}
 	isGetAll, ok := param.Bool("all")
 	if !ok {
-		return nil, http.NewError(int(service.InvalidParams), "getall is null")
+		return nil, http.NewError(int(service.InvalidParams), "all is null")
 	}
 
 	buf := new(bytes.Buffer)
@@ -100,8 +107,9 @@ func (s *HttpService) GetIdTxsPayloads(param http.Params) (interface{}, error) {
 		return nil, http.NewError(int(service.InvalidParams), "DID is expired")
 	}
 
-	var payloadDids []id.PayloadDIDInfo
+	var rpcPayloadDids []RpcPayloadDIDInfo
 	var payloadDid id.PayloadDIDInfo
+	var rpcPayloadDid RpcPayloadDIDInfo
 
 	var didInfosByte [][]byte
 	if isGetAll {
@@ -129,9 +137,12 @@ func (s *HttpService) GetIdTxsPayloads(param http.Params) (interface{}, error) {
 			return nil, http.NewError(int(service.InvalidTransaction),
 				"payloaddid Deserialize failed")
 		}
-		payloadDids = append(payloadDids, payloadDid)
+		rpcPayloadDid.Header = payloadDid.Header
+		rpcPayloadDid.Payload = payloadDid.Payload
+		rpcPayloadDid.Proof = payloadDid.Proof
+		rpcPayloadDids = append(rpcPayloadDids, rpcPayloadDid)
 	}
-	return payloadDids, nil
+	return rpcPayloadDids, nil
 
 }
 
