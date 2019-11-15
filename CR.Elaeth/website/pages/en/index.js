@@ -37,7 +37,8 @@ class HomeSplash extends React.Component {
 
     const ProjectTitle = props => (
       <h2 className="projectTitle">
-        <img src="/img/elastosJS.svg" alt="Elastos Logo" width="25%"/>
+        {/* <img src="/img/elastosJS.svg" alt="Elastos Logo" width="25%"/> */}
+        <small>{siteConfig.title}</small>
         <small>{siteConfig.tagline}</small>
       </h2>
     );
@@ -63,11 +64,11 @@ class HomeSplash extends React.Component {
         {/* }<Logo img_src={`${baseUrl}img/undraw_monitor.svg`} /> -- */}
         <div className="inner">
           <ProjectTitle siteConfig={siteConfig} />
-          <PromoSection>
+          {/* <PromoSection>
             <Button href={docUrl('getting-started/intro.html')}>Get Started</Button>
             <Button href={docUrl('bounty/index.html')}><b>Calling Developers:</b> Port Your ETH DApp</Button>
             <Button href={docUrl('bounty/funding.html')}>Get Funded By Cyber Republic</Button>
-          </PromoSection>
+          </PromoSection> */}
         </div>
       </SplashContainer>
     );
@@ -148,11 +149,11 @@ class Index extends React.Component {
 
 <span class="normal">MetaMask</span> &#x27A1; directly works on our new RPC port at <a href="https://rpc.elaeth.io" target="_blank">https://rpc.elaeth.io</a>
 
-<span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port 
+<span class="normal">Remix</span> &#x27A1; same as above, point it at our new RPC port
 
 <span class="normal">Myetherwallet</span> &#x27A1; accessible at <a href="https://wallet.elaeth.io" target="_blank">https://wallet.elaeth.io</a>
 
-<a class="button" href=${docUrl('advanced.html')}>View Our Advanced Tutorial for Ethereum Developers</a>`,
+<a target="_blank" class="button" href="https://elastosjs.com/docs/advanced/intro">View Our Advanced Tutorial for Ethereum Developers</a>`,
           image: `${baseUrl}img/metamask-logo-eyes.png`,
           imageAlign: 'right',
         },

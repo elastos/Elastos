@@ -4,12 +4,13 @@
   background-color: $background_white;
 
   .projectTitle {
+    color: $tertiary_color;
     > img {
       padding-left: 25px;
     }
 
     > small {
-      color: $tertiary_color;
+      // color: $tertiary_color;
     }
   }
 }

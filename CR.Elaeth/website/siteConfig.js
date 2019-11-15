@@ -23,30 +23,24 @@ const users = [
  */
 
 const siteConfig = {
-  title: 'ElastosJS', // Title for your website.
-  tagline: 'Your resource for building Javascript DApps on Elastos',
-  url: 'https://elastosjs.com', // Your website URL
+  title: 'CyberRepublic ETH Task Force', // Title for your website.
+  tagline: 'Team for building Elastos Ethereum Sidechain Ecosystem',
+  url: 'https://elaeth.io', // Your website URL
   baseUrl: '/', // Base URL for your project */
   // For github.io type URLs, you would set the url and baseUrl like:
   //   url: 'https://facebook.github.io',
   //   baseUrl: '/test-site/',
 
   // Used for publishing and more
-  projectName: 'elastojs',
-  organizationName: 'elastosjs',
+  projectName: 'elaeth.io',
+  organizationName: 'elaeth.io',
   // For top-level user or org sites, the organization is still the same.
   // e.g., for the https://JoelMarcey.github.io site, it would be set like...
   //   organizationName: 'JoelMarcey'
 
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
-    {doc: 'getting-started/intro', label: 'Getting Started'},
-    {doc: 'tutorial/index', label: 'Tutorials'},
-    {doc: 'bounty/intro', label: 'Funding'},
-    // {doc: 'advanced/intro', label: 'Ethereum Developers'},
-    {doc: 'docs/index', label: 'Reference Docs'},
-    {page: 'help', label: 'Community'},
-    {blog: true, label: 'Updates'},
+    {blog: true, label: 'Blog'},
   ],
 
   // If you have users set above, you add it here:
@@ -112,7 +106,7 @@ const siteConfig = {
 
   // You may provide arbitrary config keys to be used as needed by your
   // template. For example, if you need your repo's URL...
-  repoUrl: 'https://github.com/cyber-republic/elastosjs',
+  repoUrl: 'https://github.com/cyber-republic/elaeth.io',
 };
 
 module.exports = siteConfig;
