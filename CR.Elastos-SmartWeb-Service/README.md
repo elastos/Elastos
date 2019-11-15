@@ -47,15 +47,15 @@ $source venv/bin/activate
 
 * Create a database by name 'smartweb_master'
 
-Step 3: To start the PostgreSQL Server
+* To start the PostgreSQL Server
 
 ```
 $pg_ctl -D /usr/local/var/postgres start
 ```
 
-Step 4: Execute the create table scripts at smartweb_service/grpc_adenine/database/scripts/create_table_scripts.sql
+* Execute the create table scripts at smartweb_service/grpc_adenine/database/scripts/create_table_scripts.sql
 
-Step 5: Execute the insert scripts at smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
+* Execute the insert scripts at smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
 
 
 ## Start the server:
@@ -63,13 +63,13 @@ Step 5: Execute the insert scripts at smartweb_service/grpc_adenine/database/scr
 (venv)$python grpc_adenine/server.py
 ```
 
-## Additional Info:
+### Additional Info:
 Command to build protocol buffer files:
 ```
 $python -m grpc_tools.protoc -I definitions --python_out=stubs --grpc_python_out=stubs definitions/common.proto
 ```
 
-Added shared key to environment variable:
+Add a sample shared key to environment variable on the server:
 ```
 $export SHARED_SECRET_ADENINE="kHDP9V4JJbwd5GN"
 ```
