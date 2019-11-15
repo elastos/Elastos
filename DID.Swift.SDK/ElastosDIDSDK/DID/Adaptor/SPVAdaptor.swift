@@ -48,6 +48,9 @@ class SPVAdaptor: DIDAdaptor {
     }
     
     func resolve(_ did: String) throws -> String? {
-        return nil
+       let cstr = did.withCString { cdid -> UnsafePointer<Int8> in
+            return SpvDidAdapter_Resolve(handle, cdid)
+        }
+        return String(cString: cstr)
     }
 }
