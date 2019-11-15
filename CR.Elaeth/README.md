@@ -1,6 +1,4 @@
-# ElastosJS
-
-##### Your resource for building Javascript DApps on Elastos 
+# Elaeth.io
 
 This documentation site is built on [https://docusaurus.io](https://docusaurus.io)
 
@@ -9,10 +7,7 @@ This documentation site is built on [https://docusaurus.io](https://docusaurus.i
 
 ## Transpiling SCSS files to CSS
 
-We use grunt to concat/sass the SCSS files, currently it's the default task so just 
+We use grunt to concat/sass the SCSS files, currently it's the default task so just
 run `grunt` to process your SCSS files. You can also use `grunt watch` to keep your
 CSS up to date.
 
-
-## Development Status
-*This website is currently unreleased*
