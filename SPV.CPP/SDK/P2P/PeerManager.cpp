@@ -46,9 +46,19 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::FireSyncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+		void PeerManager::FireSyncProgress(double progress, const PeerPtr &peer, const MerkleBlockPtr &block) {
+			struct timeval tv;
+			gettimeofday(&tv, NULL);
+
+			uint64_t now = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+			uint64_t milliseconds = now - peer->GetDownloadStartTime();
+			uint32_t bytesPerSecond = peer->GetDownloadBytes() * 1000 / milliseconds;
+
+			peer->ScheduleDownloadStartTime();
+			peer->SetDownloadBytes(0);
+
 			if (!_listener.expired()) {
-				_listener.lock()->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
+				_listener.lock()->syncProgress((uint32_t)(progress * 100), block->GetTimestamp(), bytesPerSecond, peer->GetHost());
 			}
 		}
 
@@ -361,6 +371,26 @@ namespace Elastos {
 			ConnectLaster(seconds);
 		}
 
+		double PeerManager::GetSyncProgressInternal(uint32_t startHeight) {
+			double progress;
+
+			if (startHeight == 0) startHeight = _syncStartHeight;
+
+			if (!_downloadPeer && _syncStartHeight == 0) {
+				progress = 0.0;
+			} else if (!_downloadPeer || _lastBlock->GetHeight() < _estimatedHeight) {
+				if (_lastBlock->GetHeight() > startHeight && _estimatedHeight > startHeight) {
+					progress = 0.1 + 0.9 * (_lastBlock->GetHeight() - startHeight) / (_estimatedHeight - startHeight);
+				} else {
+					progress = 0.05;
+				}
+			} else {
+				progress = 1.0;
+			}
+
+			return progress;
+		}
+
 		void PeerManager::Disconnect() {
 			struct timespec ts;
 			size_t peerCount = 0;
@@ -470,21 +500,8 @@ namespace Elastos {
 		}
 
 		double PeerManager::GetSyncProgress(uint32_t startHeight) {
-			double progress;
-
-			{
-				boost::mutex::scoped_lock scoped_lock(lock);
-				if (startHeight == 0) startHeight = _syncStartHeight;
-
-				if (!_downloadPeer && _syncStartHeight == 0) {
-					progress = 0.0;
-				} else if (!_downloadPeer || _lastBlock->GetHeight() < _estimatedHeight) {
-					if (_lastBlock->GetHeight() > startHeight && _estimatedHeight > startHeight) {
-						progress = 0.1 + 0.9 * (_lastBlock->GetHeight() - startHeight) / (_estimatedHeight - startHeight);
-					} else progress = 0.05;
-				} else progress = 1.0;
-			}
-			return progress;
+			boost::mutex::scoped_lock scoped_lock(lock);
+			return GetSyncProgressInternal(startHeight);
 		}
 
 		bool PeerManager::SetFixedPeer(const std::string &address, uint16_t port) {
@@ -899,6 +916,7 @@ namespace Elastos {
 				if (_needGetAddr) {
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				} else {
+					peer->ScheduleDownloadStartTime();
 					LoadBloomFilter(peer);
 					peer->SetCurrentBlockHeight(_lastBlock->GetHeight());
 					PublishPendingTx(peer);
@@ -1370,18 +1388,15 @@ namespace Elastos {
 					peer->warn("relayed invalid block");
 					PeerMisbehaving(peer);
 				} else if (block->GetPrevBlockHash() == _lastBlock->GetHash()) { // new block extends main chain
-					if ((block->GetHeight() % 500) == 0 || txHashes.size() > 0 ||
-						block->GetHeight() >= peer->GetLastBlock()) {
-						peer->info("adding block #{}, false positive rate: {}", block->GetHeight(), _fpRate);
-						if (block->GetHeight() <= _estimatedHeight)
-							FireSyncProgress(block->GetHeight(), _estimatedHeight, block->GetTimestamp());
-						else
-							FireSyncProgress(block->GetHeight(), block->GetHeight(), block->GetTimestamp());
-					}
-
 					_blocks.Insert(block);
 					_lastBlock = block;
 					_wallet->SetBlockHeight(_lastBlock->GetHeight());
+
+					if ((block->GetHeight() % 500) == 0 || txHashes.size() > 0 ||
+						block->GetHeight() >= peer->GetLastBlock()) {
+						peer->info("adding block #{}, false positive rate: {}", block->GetHeight(), _fpRate);
+						FireSyncProgress(GetSyncProgressInternal(0), peer, block);
+					}
 
 					if (txHashes.size() > 0)
 						_wallet->UpdateTransactions(txHashes, block->GetHeight(), block->GetTimestamp());

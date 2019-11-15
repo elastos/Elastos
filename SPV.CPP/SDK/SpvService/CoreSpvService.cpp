@@ -114,7 +114,7 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+		void CoreSpvService::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
 
 		}
 
@@ -198,10 +198,9 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight,
-															   time_t lastBlockTime) {
+		void WrappedExceptionPeerManagerListener::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
 			try {
-				_listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
+				_listener->syncProgress(progress, lastBlockTime, bytesPerSecond, downloadPeer);
 			} catch (const std::exception &e) {
 				Log::error("syncProgress exception: {}", e.what());
 			}
@@ -285,11 +284,10 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorPeerManagerListener::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight,
-															  time_t lastBlockTime) {
-			_executor->Execute(Runnable([this, currentHeight, estimatedHeight, lastBlockTime]() -> void {
+		void WrappedExecutorPeerManagerListener::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
+			_executor->Execute(Runnable([this, progress, lastBlockTime, bytesPerSecond, downloadPeer]() -> void {
 				try {
-					_listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
+					_listener->syncProgress(progress, lastBlockTime, bytesPerSecond, downloadPeer);
 				} catch (const std::exception &e) {
 					Log::error("syncProgress exception: {}", e.what());
 				}

@@ -179,10 +179,10 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+		void SpvService::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [&currentHeight, &estimatedHeight, &lastBlockTime](PeerManager::Listener *listener) {
-				listener->syncProgress(currentHeight, estimatedHeight, lastBlockTime);
+						  [&progress, &lastBlockTime, &bytesPerSecond, &downloadPeer](PeerManager::Listener *listener) {
+				listener->syncProgress(progress, lastBlockTime, bytesPerSecond, downloadPeer);
 			});
 		}
 

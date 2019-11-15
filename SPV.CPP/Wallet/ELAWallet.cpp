@@ -45,10 +45,10 @@ public:
             std::cout << "*** Wallet " << _walletID << " sycn started." << std::endl;
     }
 
-    virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+    virtual void OnBlockSyncProgress(const nlohmann::json &progressInfo) {
         if (verboseMode)
             std::cout << "*** Wallet " << _walletID << " syncing:"
-                    << currentBlockHeight << "/" << estimatedHeight  << std::endl;
+                    << progressInfo.dump() << std::endl;
     }
 
     virtual void OnBlockSyncStopped() {

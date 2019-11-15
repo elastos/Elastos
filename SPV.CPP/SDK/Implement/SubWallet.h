@@ -137,7 +137,7 @@ namespace Elastos {
 		protected: //implement PeerManager::Listener
 			virtual void syncStarted();
 
-			virtual void syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime);
+			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer);
 
 			// func syncStopped(_ error: BRPeerManagerError?)
 			virtual void syncStopped(const std::string &error);

@@ -151,30 +151,40 @@ namespace Elastos {
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("callback: 0x{:x}", (long)subCallback);
+			ArgInfo("callback: *");
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 
 			if (std::find(_callbacks.begin(), _callbacks.end(), subCallback) != _callbacks.end())
 				return;
+
 			_callbacks.push_back(subCallback);
 			const PeerManagerPtr &peerManager = _walletManager->GetPeerManager();
+
 			uint32_t currentHeight = peerManager->GetLastBlockHeight();
-			uint32_t estimatedHeight = peerManager->GetEstimatedBlockHeight();
 			uint32_t lastBlockTime = peerManager->GetLastBlockTimestamp();
 
+			nlohmann::json j;
+			j["Progress"] = 0;
+			j["LastBlockTime"] = lastBlockTime;
+			j["BytesPerSecond"] = 0;
+			j["DownloadPeer"] = "";
+
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&currentHeight, &estimatedHeight, &lastBlockTime](ISubWalletCallback *callback) {
-							  callback->OnBlockSyncProgress(currentHeight, estimatedHeight, lastBlockTime);
+						  [&j](ISubWalletCallback *callback) {
+							  callback->OnBlockSyncProgress(j);
 						  });
+			ArgInfo("add callback done");
 		}
 
 		void SubWallet::RemoveCallback(ISubWalletCallback *subCallback) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("callback: 0x{:x}", (long)subCallback);
+			ArgInfo("callback: *");
 			boost::mutex::scoped_lock scoped_lock(lock);
 
 			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
+
+			ArgInfo("remove callback done");
 		}
 
 		TransactionPtr SubWallet::CreateTx(uint8_t type, const PayloadPtr &payload, const std::string &fromAddress,
@@ -628,18 +638,26 @@ namespace Elastos {
 		void SubWallet::syncStarted() {
 		}
 
-		void SubWallet::syncProgress(uint32_t currentHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+		void SubWallet::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
 			struct tm tm;
 
 			localtime_r(&lastBlockTime, &tm);
-			ArgInfo("{} {} [ {} / {} ] {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(),
-					currentHeight, estimatedHeight, asctime(&tm));
+			char timeString[100] = {0};
+			strftime(timeString, sizeof(timespec), "%F %T", &tm);
+			ArgInfo("{} {} [{}] [{}] [{}%  {} Bytes / s]", _walletManager->GetWallet()->GetWalletID(), GetFunName(),
+					downloadPeer, timeString, progress, bytesPerSecond);
+
+			nlohmann::json j;
+			j["Progress"] = progress;
+			j["LastBlockTime"] = lastBlockTime;
+			j["BytesPerSecond"] = bytesPerSecond;
+			j["DownloadPeer"] = downloadPeer;
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&currentHeight, &estimatedHeight, &lastBlockTime](ISubWalletCallback *callback) {
-							  callback->OnBlockSyncProgress(currentHeight, estimatedHeight, lastBlockTime);
+						  [&j](ISubWalletCallback *callback) {
+							  callback->OnBlockSyncProgress(j);
 						  });
 		}
 

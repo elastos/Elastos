@@ -111,6 +111,14 @@ namespace Elastos {
 
 			void SetTimestamp(uint64_t timestamp);
 
+			time_t GetDownloadStartTime() const;
+
+			void ScheduleDownloadStartTime();
+
+			uint32_t GetDownloadBytes() const;
+
+			void SetDownloadBytes(uint32_t bytes);
+
 			uint64_t GetServices() const;
 
 			void SetServices(uint64_t services);
@@ -356,6 +364,8 @@ namespace Elastos {
 			std::string _useragent;
 			uint32_t _version, _lastblock, _earliestKeyTime, _currentBlockHeight;
 			double _startTime, _pingTime;
+			uint64_t _downloadStartTime; // millisecond
+			uint32_t _downloadBytes;
 			volatile double _disconnectTime, _mempoolTime;
 			bool _sentVerack, _gotVerack, _sentGetaddr, _sentFilter, _sentGetdata, _sentMempool, _sentGetblocks;
 			uint256 _lastBlockHash;

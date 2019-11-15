@@ -47,9 +47,10 @@ namespace Elastos {
 			_notify_queue.Delete(hash);
 		}
 
-		void SPVModule::syncProgress(uint32_t current_height, uint32_t best_height, time_t block_time) {
-			SpvService::syncProgress(current_height, best_height, block_time);
+		void SPVModule::syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) {
+			SpvService::syncProgress(progress, lastBlockTime, bytesPerSecond, downloadPeer);
 
+			uint32_t current_height = GetPeerManager()->GetLastBlockHeight();
 			// Get all confirmed transaction records.
 			NotifyQueue::Records records = _notify_queue.GetAllConfirmed(current_height);
 

@@ -71,8 +71,7 @@ namespace Elastos {
 
 			void onTxDeleted(const uint256 &hash, bool notify, bool rescan) override;
 
-			void syncProgress(uint32_t current_height, uint32_t best_height,
-							  time_t) override;
+			void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) override;
 
 		private:
 			const time_t MINIMUM_NOTIFY_GAP = 100; // 10 seconds.
