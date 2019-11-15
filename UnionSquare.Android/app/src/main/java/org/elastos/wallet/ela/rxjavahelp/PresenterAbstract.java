@@ -8,6 +8,7 @@ import android.widget.Toast;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
 
@@ -182,7 +183,10 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                     showTips(value);
 
                 }
-                Log.e(TAG, "onNext:" + value);
+                if (value instanceof CommmonStringWithiMethNameEntity){
+                    Log.e(TAG, "onNext:" + value.toString());
+                }else {
+                Log.e(TAG, "onNext:" + value);}
 
             }
 

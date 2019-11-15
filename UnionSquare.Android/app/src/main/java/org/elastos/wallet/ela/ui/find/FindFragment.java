@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.FindListBean;
@@ -83,6 +85,11 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
 
     @Override
     public void onRvItemClick(int position, Object o) {
+        Wallet wallet = new RealmUtil().queryDefauleWallet();
+        if (wallet.getType() == 2 || wallet.getType() == 3) {
+            showToast(getString(R.string.notsupportvoteformultwalllet));
+            return;
+        }
         if (position == 0) {
             ((BaseFragment) getParentFragment()).start(SuperNodeListFragment.class);
         } else if (position == 1) {

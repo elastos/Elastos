@@ -389,7 +389,7 @@
     <string name="exportreadonly">Export Read-Only Wallet</string>
     <string name="showmulpublickey">Multi-Sign Public Keys</string>
     <string name="connecting">Connecting...</string>
-    <string name="syncprogress">Synchronized Progress</string>
+    <string name="syncprogress">Progress：</string>
     <string name="scantocreatereadonly">Scan to create standard read-only wallet</string>
     <string name="mulsignpiblickey">Multi-Sign Public Keys</string>
     <string name="scancreatemulwallet">Scan to create multi-sign wallet</string>
@@ -418,7 +418,7 @@
     <string name="Listofcandidates">Candidate List</string>
     <string name="menberpk">Candidate Public Key</string>
     <string name="menberdid">Candidate DID</string>
-    <string name="maxvote">Maximum Voting Rights About&#160;</string>
+    <string name="maxvote">Maximum Voting Rights About：</string>
     <string name="equaldivision">Distribute Evenly</string>
     <string name="currentrank">Current Ranking：</string>
     <string name="ticketnum">Total Votes：</string>
@@ -491,4 +491,6 @@
     <string name="validdate">有效期</string>
     <string name="expired">已失效</string>
     <string name="expireddate">失效日期</string>
+    <string name="notsupportvoteformultwalllet">Do not support multi-signed wallet to participate in voting</string>
+    <string name="maxvote1">Maximum Voting Rights：</string>
 </resources>

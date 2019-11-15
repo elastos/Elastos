@@ -95,7 +95,11 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     protected void initView(View view) {
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
         srl.setOnRefreshListener(this);
         assetsPresenter = new AssetsPresenter();
         commonGetBalancePresenter = new CommonGetBalancePresenter();
@@ -110,7 +114,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         }
         registReceiver();
     }
-
 
     @OnClick({R.id.iv_title_left, R.id.iv_title_right, R.id.iv_add, R.id.tv_title, R.id.iv_scan})
     public void onViewClicked(View view) {
@@ -283,11 +286,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                         }
 
                     }
+                    assetsPresenter.syncStart(currentBelongId, newSubWallet.getChainId(), this);
                     SubWallet subWallet = realmUtil.querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
                     newSubWallet.setProgress(subWallet.getProgress());
                     newSubWallet.setSyncTime(subWallet.getSyncTime());
                     assetsPresenter.registerWalletListener(currentBelongId, newSubWallet.getChainId(), this);
                 } else {
+                    assetsPresenter.syncStart(currentBelongId, newSubWallet.getChainId(), this);
                     SubWallet subWallet = realmUtil.querySubWallet(newSubWallet.getBelongId(), newSubWallet.getChainId());
                     newSubWallet.setProgress(subWallet.getProgress());
                     newSubWallet.setSyncTime(subWallet.getSyncTime());
@@ -321,7 +326,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     @Override
     public void onRvItemClick(View view, int position, Object o) {
         Bundle bundle = new Bundle();
-        bundle.putString("ChainId", (String) o);
         bundle.putParcelable("wallet", wallet);
         for (SubWallet subWallet : listMap.get(wallet.getWalletId())) {
             if (subWallet.getChainId().equals((String) o)) {
@@ -490,6 +494,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 wallet = temp;
                 setWalletView(wallet);
                 setRecycleView();
+                if (dataMap != null && dataMap.size() > 0) {
+                    dataMap.clear();
+                }
             }
 
         }
@@ -547,7 +554,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     }
 
     private int currentType = -1;
-    private Map<Integer, String> dataMap;
+    private Map<Integer, String> dataMap;//用于存储二维码信息
 
     private String getData(QrBean qrBean, int type) {
         if (dataMap == null) {

@@ -46,6 +46,10 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
         }
     }
 
+    public void setIs(boolean is) {
+        this.is = is;
+    }
+
     @Override
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
 

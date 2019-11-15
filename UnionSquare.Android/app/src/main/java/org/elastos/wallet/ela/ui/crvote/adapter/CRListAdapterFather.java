@@ -49,6 +49,9 @@ public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.Re
         }
     }
 
+    public void setIs(boolean is) {
+        this.is = is;
+    }
 
     public boolean isShowCheckbox() {
         return showCheckbox;

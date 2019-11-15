@@ -26,7 +26,6 @@ import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
-import org.elastos.wallet.ela.ui.Assets.presenter.PwdPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRNodeCartAdapter;
@@ -234,11 +233,20 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     @Override
     public void onBalance(BalanceEntity data) {
         balance = Arith.sub(Arith.div(data.getBalance(), MyWallet.RATE_S), "0.01").setScale(8, BigDecimal.ROUND_DOWN);
-        if ((balance.compareTo(new BigDecimal(0)) < 0)) {
-            balance = new BigDecimal(0);
+        if ((balance.compareTo(new BigDecimal(1)) < 0)) {
+            //小于1
+            if ((balance.compareTo(new BigDecimal(0)) <= 0)) {
+                balance = new BigDecimal(0);
+                tvBalance.setText(getString(R.string.maxvote1) + "0 ELA");
+                tvAvaliable.setText(getString(R.string.available) + "0 ELA");
+            } else {
+                tvBalance.setText(getString(R.string.maxvote1) + "< 1 ELA");
+                tvAvaliable.setText(getString(R.string.available) + "< 1 ELA");
+            }
+        } else {
+            tvBalance.setText(getString(R.string.maxvote) + balance.intValue() + " ELA");
+            tvAvaliable.setText(getString(R.string.available) + balance.intValue() + " ELA");
         }
-        tvBalance.setText(getString(R.string.maxvote) + balance.toPlainString() + " ELA");
-        tvAvaliable.setText(getString(R.string.available) + balance.toPlainString() + " ELA");
         mAdapter.setBalance(balance);
     }
 
@@ -254,14 +262,19 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
         if (!tag) {
             tvAmount.setText(getString(R.string.totle) + "0 ELA");
-            tvAvaliable.setText(getString(R.string.available) + balance.toPlainString() + " ELA");
+            tvAvaliable.setText(getString(R.string.available) + balance.intValue() + " ELA");
         } else {
             tvAmount.setText(getString(R.string.totle) + mAdapter.getCountEla().toPlainString() + " ELA");
             BigDecimal countEla = mAdapter.getCountEla();
             if (balance.compareTo(countEla) <= 0) {
                 tvAvaliable.setText(getString(R.string.available) + "0 ELA");
             } else {
-                tvAvaliable.setText(getString(R.string.available) + balance.subtract(countEla).toPlainString() + " ELA");
+                Log.i(">>>>>>", balance.subtract(countEla).toPlainString());
+                if (balance.subtract(countEla).compareTo(new BigDecimal(1)) < 0) {
+                    tvAvaliable.setText(getString(R.string.available) + "< 1 ELA");
+                } else {
+                    tvAvaliable.setText(getString(R.string.available) + balance.subtract(countEla).intValue() + " ELA");
+                }
             }
         }
         cbSelectall.setChecked(tag);
@@ -279,10 +292,16 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     private void setOtherUI() {
         tvAmount.setText(getString(R.string.totle) + mAdapter.getCountEla().toPlainString() + " ELA");
         BigDecimal countEla = mAdapter.getCountEla();
-        if (balance.compareTo(countEla) <= 0) {
+        countEla = balance.subtract(countEla);
+        if (countEla.compareTo(new BigDecimal(0)) <= 0) {
             tvAvaliable.setText(getString(R.string.available) + "0 ELA");
         } else {
-            tvAvaliable.setText(getString(R.string.available) + balance.subtract(countEla).toPlainString() + " ELA");
+            if (countEla.compareTo(new BigDecimal(1)) < 0) {
+                tvAvaliable.setText(getString(R.string.available) + "< 1 ELA");
+            } else {
+                tvAvaliable.setText(getString(R.string.available) + countEla.intValue() + " ELA");
+            }
+
         }
     }
 
@@ -312,7 +331,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
             case "createVoteCRTransaction":
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
-                intent.putExtra("amount", tvAmount.getText().toString());
+                intent.putExtra("amount", mAdapter.getCountEla().toPlainString());
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("attributes", ((CommmonStringEntity) baseEntity).getData());
                 intent.putExtra("chainId", MyWallet.ELA);

@@ -5,7 +5,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
@@ -38,12 +38,12 @@ public class TransferActivity extends BaseActivity {
     TextView tvAmount;
     @BindView(R.id.tv_charge)
     TextView tvCharge;
-    @BindView(R.id.ll_rate)
-    LinearLayout llRate;
-    @BindView(R.id.ll_amount)
-    LinearLayout llAmount;
-    @BindView(R.id.ll_address)
-    LinearLayout llAddress;
+    @BindView(R.id.rl_rate)
+    RelativeLayout rlRate;
+    @BindView(R.id.rl_amount)
+    RelativeLayout rlAmount;
+    @BindView(R.id.rl_address)
+    RelativeLayout rlAddress;
     private Wallet wallet;
     private String chainId;
     private String amount;
@@ -107,13 +107,20 @@ public class TransferActivity extends BaseActivity {
                 break;
             case Constant.TRANFER:
                 //转账
-                llRate.setVisibility(View.GONE);
+                rlRate.setVisibility(View.GONE);
                 break;
             case Constant.SUPERNODESIGN:
             case Constant.CRVOTE:
+
                 //超级节点投票  cr投票
-                llRate.setVisibility(View.GONE);
-                llAddress.setVisibility(View.GONE);
+                rlRate.setVisibility(View.GONE);
+                rlAddress.setVisibility(View.GONE);
+                break;
+            case Constant.TOWHOL:
+                //超级节点投票  cr投票
+                rlAmount.setVisibility(View.GONE);
+                rlRate.setVisibility(View.GONE);
+                rlAddress.setVisibility(View.GONE);
                 break;
         }
     }

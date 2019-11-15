@@ -101,6 +101,13 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election), getString(R.string.voting_rules));
 
+
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         //presenter.getVotedProducerList(wallet.getWalletId(), MyWallet.ELA, this);
         srl.setOnRefreshListener(this);
         new VoteListPresenter().votelistbean("1", this);
@@ -111,7 +118,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             //获取选举状态
             new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), MyWallet.ELA, this);
         }
-
     }
 
     @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist})
@@ -180,7 +186,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     boolean is = false;//是否有自已的选举
 
 
-    private void setRecyclerview(boolean is) {
+    private void setRecyclerview() {
         if (adapter == null) {
             recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 3));
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
@@ -189,17 +195,19 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
         } else {
+            adapter.setIs(is);
             adapter.notifyDataSetChanged();
         }
     }
 
-    private void setRecyclerview1(boolean is) {
+    private void setRecyclerview1() {
         if (adapter1 == null) {
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter1 = new SuperNodeListAdapter1(this, netList, is);
             adapter1.setOnItemClickListener(this);
             recyclerview1.setAdapter(adapter1);
         } else {
+            adapter.setIs(is);
             adapter1.notifyDataSetChanged();
         }
     }
@@ -234,8 +242,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             }
 
         }
-        setRecyclerview(is );
-        setRecyclerview1(is);
+        setRecyclerview( );
+        setRecyclerview1();
     }
 
     @Override
@@ -260,8 +268,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 onGetPk(publicKey);
             }
         } else {
-            setRecyclerview(is);
-            setRecyclerview1(is);
+            setRecyclerview();
+            setRecyclerview1();
         }
 
 
