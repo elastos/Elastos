@@ -415,7 +415,7 @@ export default class extends StandardPage {
                 >
                   {_.map(SUGGESTION_STATUS, value => (
                     <Select.Option key={value} value={value}>
-                      {value}
+                      {I18N.get(`suggestion.status.${value}`)}
                     </Select.Option>
                   ))}
                 </Select>

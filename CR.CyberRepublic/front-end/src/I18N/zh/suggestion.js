@@ -1,4 +1,4 @@
-import { ABSTRACT_MAX_WORDS } from '@/constant'
+import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
 
 export default {
   title: {
@@ -40,7 +40,10 @@ export default {
     posted: '发布',
     underConsideration: '正在审议中',
     moreInfoRequired: '需要更多信息',
-    referred: '相关提案'
+    referred: '相关提案',
+    [SUGGESTION_STATUS.ACTIVE]: '活跃',
+    [SUGGESTION_STATUS.ABUSED]: '已举报',
+    [SUGGESTION_STATUS.ARCHIVED]: '已归档',
   },
   form: {
     search: '搜索建议',
