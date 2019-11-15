@@ -1,0 +1,68 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+    <head>
+     <title> Nucleus Console </title>
+     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    </head>
+{% endblock %}
+
+{% block content %}
+    <body>
+<nav style="background-color: whitesmoke; padding-bottom:10px">
+    <div class="nav-wrapper">
+       <a style="color:black; font-size: x-large" href="{%  url 'index' %}"> <img src="{% static '/images/logo.png' %}" width="60" height="60" class="d-inline-block align-top" alt="Elastos logo">
+          Nucleus Console
+          </a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a style="color:black" href="#">Languages</a></li>
+        <li><a style="color:black" href="#">Account</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div style="text-align:center;">
+            <h2>Build the Modern Internet</h2>
+        </div>
+<br> <Br>
+<div class="row">
+    <div class="col s3 m3" width="60" height="50">
+      <div class="card" style="height: 100px">
+        <div class="card-image">
+          <img src="{% static '/images/blockchain.jpg' %}">
+        </div>
+      </div>
+    </div>
+
+     <div class="col s3 m3" width="60" height="50">
+      <div class="card" style="height: 100px">
+        <div class="card-image">
+          <img src="{% static '/images/sidechain.jpg' %}">
+        </div>
+      </div>
+    </div>
+
+     <div class="col s3 m3" width="60" height="50">
+      <div class="card" style="height: 100px">
+        <div class="card-image">
+          <img src="{% static '/images/runtime.jpg' %}">
+        </div>
+      </div>
+    </div>
+
+     <div class="col s3 m3" width="60" height="50">
+      <div class="card" style="height: 100px">
+        <div class="card-image">
+          <img src="{% static '/images/carrier.jpg' %}">
+        </div>
+      </div>
+    </div>
+
+  </div>
+    </body>
+
+{% endblock %}
+
