@@ -3345,9 +3345,9 @@ Rate: {{swapOrder.swapRate}} {{swapOrder.swapPair}}</textarea>
   <!-- Write -->
   <span class="form-group" ng-show="contract.selectedFunc!=null">
     <p ng-show="contract.name == 'Exchange ETH to ELA'">
-      <p>_addr: ELA address</p>
-      <p>_amount: ETH value in wei, should be >= 200000000000000(0.0002 eth)</p>
-      <p>_fee: The fee that sends to operator, suggested value is 100000000000000(0.0001 eth)</p>
+      <p translate="CONTRACT_Interact_Addr">_addr: ELA address</p>
+      <p translate="CONTRACT_Interact_Amount">_amount: ETH value in wei, should be >= 200000000000000(0.0002 eth)</p>
+      <p translate="CONTRACT_Interact_Fee">_fee: The fee that sends to operator, suggested value is 100000000000000(0.0001 eth)</p>
     </p>
 
     <div ng-repeat="input in contract.functions[contract.selectedFunc.index].inputs track by $index">

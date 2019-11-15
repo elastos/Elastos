@@ -152,7 +152,7 @@ Wallet.prototype.getPrivateKey = function() {
 }
 Wallet.prototype.getPrivateKeyString = function() {
     if (typeof this.privKey != "undefined") {
-        return this.getPrivateKey().toString('hex')
+        return '0x' + this.getPrivateKey().toString('hex')
     } else {
         return "";
     }

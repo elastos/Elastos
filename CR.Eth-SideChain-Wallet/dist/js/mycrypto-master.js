@@ -7379,7 +7379,7 @@ Wallet.prototype.getPrivateKey = function () {
 };
 Wallet.prototype.getPrivateKeyString = function () {
     if (typeof this.privKey != "undefined") {
-        return this.getPrivateKey().toString('hex');
+        return '0x' + this.getPrivateKey().toString('hex');
     } else {
         return "";
     }
@@ -15829,6 +15829,9 @@ en.data = {
   CONTRACT_ByteCode: 'Byte Code',
   CONTRACT_Interact_CTA: 'Select a function',
   CONTRACT_Interact_Title: 'Read / Write Contract',
+  CONTRACT_Interact_Addr: '_addr: ELA address',
+  CONTRACT_Interact_Amount: '_amount: ETH value in wei, should be >= 200000000000000(0.0002 eth)',
+  CONTRACT_Interact_Fee: '_fee: The fee that sends to operator, suggested value is 100000000000000(0.0001 eth)',
   CONTRACT_Json: 'ABI / JSON Interface',
   CONTRACT_Read: 'READ',
   CONTRACT_Title: 'Contract Address',
@@ -16901,6 +16904,9 @@ zhcn.data = {
   CONTRACT_Json: 'ABI / JSON 接口 ',
   CONTRACT_Interact_Title: '读 / 写合约 ',
   CONTRACT_Interact_CTA: '选择函数 ',
+  CONTRACT_Interact_Addr: '_addr: ELA 主链地址',
+  CONTRACT_Interact_Amount: '_amount: ETH 值，单位为 wei, 值要 >= 200000000000000(0.0002 eth)',
+  CONTRACT_Interact_Fee: '_fee: 给执行人的手续费, 目前建议值 100000000000000(0.0001 eth)',
   CONTRACT_ByteCode: 'Byte Code（字节码） ',
   CONTRACT_Read: '读 ',
   CONTRACT_Write: '写 ',
