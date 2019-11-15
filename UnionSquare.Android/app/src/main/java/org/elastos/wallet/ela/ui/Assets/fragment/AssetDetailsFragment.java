@@ -353,6 +353,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             Bundle bundle = new Bundle();
             bundle.putString("attributes", attributes);
             bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",2);
             start(SignFragment.class, bundle);
 
         }

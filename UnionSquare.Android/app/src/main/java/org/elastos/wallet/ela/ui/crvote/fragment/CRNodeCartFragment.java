@@ -268,7 +268,6 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             if (balance.compareTo(countEla) <= 0) {
                 tvAvaliable.setText(getString(R.string.available) + "0 ELA");
             } else {
-                Log.i(">>>>>>", balance.subtract(countEla).toPlainString());
                 if (balance.subtract(countEla).compareTo(new BigDecimal(1)) < 0) {
                     tvAvaliable.setText(getString(R.string.available) + "< 1 ELA");
                 } else {
