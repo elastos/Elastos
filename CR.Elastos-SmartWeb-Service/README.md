@@ -46,7 +46,7 @@ $env LDFLAGS="-I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib" pip
 
 Start the server:
 ```
-(venv) $python server.py
+(venv) $python grpc_adenine/server.py
 ```
 
 # Additional Info:
