@@ -368,3 +368,7 @@ func (c *ChainStoreFFLDB) GetUnspent(txID Uint256) ([]uint16, error) {
 func (c *ChainStoreFFLDB) GetUTXO(programHash *Uint168) ([]*UTXO, error) {
 	return c.indexManager.FetchUTXO(programHash)
 }
+
+func (c *ChainStoreFFLDB) IsTx3Exist(txHash *Uint256) bool {
+	return c.indexManager.IsTx3Exist(txHash)
+}

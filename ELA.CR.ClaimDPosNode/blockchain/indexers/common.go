@@ -61,6 +61,9 @@ type IndexManager interface {
 
 	// FetchUTXO retrieval the utxo set of a account address
 	FetchUTXO(programHash *common.Uint168) ([]*types.UTXO, error)
+
+	// IsTx3Exist use to find if tx3 exist in db
+	IsTx3Exist(txHash *common.Uint256) bool
 }
 
 // Indexer provides a generic interface for an indexer that is managed by an

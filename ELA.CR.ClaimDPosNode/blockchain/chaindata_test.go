@@ -137,7 +137,7 @@ func TestChainStore_PersistUnspent(t *testing.T) {
 	assert.Equal(t, []uint16{0, 1}, unspent2)
 }
 
-func Test_ChainData_RollbackUnspent(t *testing.T) {
+func TestChainData_RollbackUnspent(t *testing.T) {
 	err := testChainDataStore.RollbackUnspend(testChainDataBlock)
 	assert.NoError(t, err)
 	err = testChainDataStore.BatchCommit()
@@ -160,6 +160,10 @@ func Test_ChainData_RollbackUnspent(t *testing.T) {
 
 	_, err = getUnspent(testChainDataTx2.Hash())
 	assert.Equal(t, "leveldb: not found", err.Error())
+}
+
+func TestChainDataEnd(t *testing.T) {
+	testChainDataStore.Close()
 }
 
 func getUnspent(txHash common.Uint256) ([]uint16, error) {
