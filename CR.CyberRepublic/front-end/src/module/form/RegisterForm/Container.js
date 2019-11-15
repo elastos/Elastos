@@ -1,60 +1,65 @@
-import {createContainer, goPath} from '@/util'
+import { createContainer, goPath } from '@/util'
 import Component from './Component'
 import UserService from '@/service/UserService'
-import {message} from 'antd'
+import { message } from 'antd'
 import { logger } from '@/util'
 
-message.config({
-  top: 100
-})
+message.config({ top: 100 })
 
 /**
  * Note at the moment we do lazy client side registration code generation
  * TODO: move this to server side
  */
-export default createContainer(Component, (state) => {
-  return {
-    ...state.user.register_form,
-    language: state.language
-  }
-}, () => {
-  const userService = new UserService()
+export default createContainer(
+  Component,
+  state => {
+    return {
+      ...state.user.register_form,
+      language: state.language
+    }
+  },
+  () => {
+    const userService = new UserService()
 
-  return {
-    async register(username, password, profile) {
-      try {
-        const rs = await userService.register(username, password, profile)
+    return {
+      async register(username, password, profile) {
+        try {
+          const rs = await userService.register(username, password, profile)
 
-        if (rs) {
-          const registerRedirect = sessionStorage.getItem('registerRedirect')
+          if (rs) {
+            const registerRedirect = sessionStorage.getItem('registerRedirect')
 
-          if (registerRedirect) {
-            return true
+            if (registerRedirect) {
+              return true
+            }
+            this.history.push('/crcles')
           }
-          this.history.push('/crcles')
-
+        } catch (err) {
+          message.error(
+            err && err.message
+              ? err.message
+              : 'Registration Failed - Please Contact Our Support'
+          )
+          logger.error(err)
         }
-      } catch (err) {
-        message.error(err && err.message ? err.message : 'Registration Failed - Please Contact Our Support')
-        logger.error(err)
-      }
-    },
+      },
 
-    async sendEmail(toUserId, formData) {
-      return userService.sendEmail(this.currentUserId, toUserId, formData)
-    },
+      async sendEmail(toUserId, formData) {
+        return userService.sendEmail(this.currentUserId, toUserId, formData)
+      },
 
-    async sendRegistrationCode(email, code) {
-      return userService.sendRegistrationCode(email, code)
-    },
+      async sendRegistrationCode(email, code) {
+        return userService.sendRegistrationCode(email, code)
+      },
 
-    async checkEmail(email) {
-      try {
-        await userService.checkEmail(email)
-        return false
-      } catch (err) {
-        return true
+      async checkEmail(email) {
+        try {
+          await userService.checkEmail(email)
+          return false
+        } catch (err) {
+          return true
+        }
       }
     }
   }
-})
+)

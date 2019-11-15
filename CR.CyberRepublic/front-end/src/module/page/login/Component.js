@@ -11,24 +11,19 @@ const MSG_CODE = {
 }
 
 export default class extends StandardPage {
-
   ord_renderContent() {
-
     const params = new URI(this.props.location.search || '').search(true)
 
     return (
       <div className="p_login ebp-wrap">
         <div className="d_box">
           <div className="side-image">
-            <img src="/assets/images/login-left-extended.svg"/>
+            <img src="/assets/images/login-left-extended.svg" />
           </div>
           <div>
-            {
-              params.MSG_CODE && (
-              <div className="login-msg">
-                {MSG_CODE[params.MSG_CODE]}
-              </div>
-              )}
+            {params.MSG_CODE && (
+              <div className="login-msg">{MSG_CODE[params.MSG_CODE]}</div>
+            )}
             <div className="side-form">
               <LoginOrRegisterForm />
             </div>
