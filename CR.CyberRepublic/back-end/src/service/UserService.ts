@@ -634,9 +634,9 @@ export default class extends Base {
         this.validate_email(email)
 
         if (await db_user.findOne({ email: email })) {
-            throw 'This email is already taken'
+            return { isExist: true }
         }
 
-        return true
+        return { isExist: false }
     }
 }

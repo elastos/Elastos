@@ -51,11 +51,9 @@ export default createContainer(
       },
 
       async checkEmail(email) {
-        try {
-          await userService.checkEmail(email)
-          return false
-        } catch (err) {
-          return true
+        const rs = await userService.checkEmail(email)
+        if (rs) {
+          return rs.isExist === true ? true : false
         }
       }
     }
