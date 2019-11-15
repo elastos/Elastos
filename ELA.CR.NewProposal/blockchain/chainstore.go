@@ -159,6 +159,10 @@ func (c *ChainStore) isTxHashDuplicate(txhash Uint256) bool {
 }
 
 func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool {
+	return c.GetFFLDB().IsTx3Exist(&sidechainTxHash)
+}
+
+func (c *ChainStore) isSidechainTxHashDuplicate(sidechainTxHash Uint256) bool {
 	prefix := []byte{byte(IXSideChainTx)}
 	_, err := c.Get(append(prefix, sidechainTxHash.Bytes()...))
 	if err != nil {

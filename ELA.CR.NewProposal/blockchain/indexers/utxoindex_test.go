@@ -336,3 +336,7 @@ func TestUtxoIndex_DisconnectBlock(t *testing.T) {
 		return nil
 	})
 }
+
+func TestUtxoIndexEnd(t *testing.T) {
+	utxoIndexDB.Close()
+}

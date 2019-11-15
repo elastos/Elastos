@@ -96,4 +96,7 @@ type IFFLDBChainStore interface {
 
 	// Get utxo by program hash
 	GetUTXO(programHash *Uint168) ([]*UTXO, error)
+
+	// IsTx3Exist use to find if tx3 exist in db
+	IsTx3Exist(txHash *Uint256) bool
 }

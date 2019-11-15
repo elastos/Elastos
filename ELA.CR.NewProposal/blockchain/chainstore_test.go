@@ -21,6 +21,7 @@ var sidechainTxHash common.Uint256
 
 func TestChainStoreInit(t *testing.T) {
 	temp, err := NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
+	assert.NoError(t, err)
 	testChainStore = temp.(*ChainStore)
 	testChainStore.NewBatch()
 	if err != nil {
@@ -109,15 +110,17 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 	}
 
 	// 4. Run IsSidechainTxHashDuplicate
-	isDuplicate := testChainStore.IsSidechainTxHashDuplicate(sidechainTxHash)
+	isDuplicate := testChainStore.isSidechainTxHashDuplicate(sidechainTxHash)
 	if !isDuplicate {
 		t.Error("Sidechain Tx hash should be checked to be duplicated")
 	}
 }
 
 func TestCheckAssetPrecision(t *testing.T) {
-	originalStore := DefaultLedger.Store
-	DefaultLedger.Store = testChainStore
+	DefaultLedger = &Ledger{
+		Blockchain: chain,
+		Store:      testChainStore,
+	}
 
 	assetStr := "b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3"
 	defaultAsset, _ := common.Uint256FromHexString(assetStr)
@@ -174,8 +177,6 @@ func TestCheckAssetPrecision(t *testing.T) {
 	}
 	err = checkAssetPrecision(tx)
 	assert.EqualError(t, err, "The precision of asset is incorrect.")
-
-	DefaultLedger.Store = originalStore
 }
 
 func TestChainStoreDone(t *testing.T) {
