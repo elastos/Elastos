@@ -251,7 +251,7 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 		if s.manager != nil {
 			s.manager.proposalReview(tx, height, s.history)
 		}
-	case types.CRCProposalAppropriation:
+	case types.CRCAppropriation:
 		s.processCRCAppropriation(tx, height, s.history)
 	}
 
@@ -561,10 +561,11 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 // program hash of transaction output.
 func (s *State) addCandidateAssert(output *types.Output, height uint32) bool {
 	if candidate := s.getCandidateByDepositHash(output.ProgramHash); candidate != nil {
+		amount := output.Value
 		s.history.Append(height, func() {
-			candidate.depositAmount += output.Value
+			candidate.depositAmount += amount
 		}, func() {
-			candidate.depositAmount -= output.Value
+			candidate.depositAmount -= amount
 		})
 		return true
 	}

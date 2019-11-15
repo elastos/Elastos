@@ -222,7 +222,7 @@ func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
 	err = common.ReadElements(r, &k.LastCommitteeHeight,
 		&k.LastVotingStartHeight, &k.InElectionPeriod, &k.NeedAppropriation,
 		&k.CRCFoundationBalance, &k.CRCCommitteeBalance,
-		&k.CRCCommitteeUsedAmount, k.DestroyedAmount, k.CirculationAmount)
+		&k.CRCCommitteeUsedAmount, &k.DestroyedAmount, &k.CirculationAmount)
 	return
 }
 

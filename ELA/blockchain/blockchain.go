@@ -445,8 +445,6 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() *Transaction {
 	outputs := []*OutputInfo{{b.chainParams.CRCCommitteeAddress,
 		&appropriationAmount}}
 
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
 	var tx *Transaction
 	tx, err = b.createTransaction(b.chainParams.CRCFoundation, Fixed64(0),
 		uint32(0), outputs...)
