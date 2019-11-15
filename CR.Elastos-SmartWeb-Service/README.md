@@ -2,7 +2,7 @@
 GRPC python implementation with SQL Alchemy
 
 
-# Setup
+## Prerequisites
 For macOS, to install python using homebrew:
 ```
 $brew install python3
@@ -18,6 +18,7 @@ Install virtualenv:
 $pip3 install virtualenv
 ```
 
+## Instructions
 Clone the repository
 ```
 $git clone https://github.com/cyber-republic/elastos-smartweb-service.git
@@ -37,14 +38,14 @@ $virtualenv -p `which python3` venv
 $source venv/bin/activate
 ```
 ```
-(venv)$ pip install -r requirements.txt
+(venv)$pip install -r requirements.txt
 ```
 
-# Setting up PostgresSQL:
+## Setting up PostgresSQL:
 
-Step 1: Install PostgreSQL server 11.5
+* Install PostgreSQL server 11.5
 
-Step 2: Create a database by name 'smartweb_master'
+* Create a database by name 'smartweb_master'
 
 Step 3: To start the PostgreSQL Server
 
@@ -57,19 +58,19 @@ Step 4: Execute the create table scripts at smartweb_service/grpc_adenine/databa
 Step 5: Execute the insert scripts at smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
 
 
-# Start the server:
+## Start the server:
 ```
-(venv) $python grpc_adenine/server.py
+(venv)$python grpc_adenine/server.py
 ```
 
-# Additional Info:
+## Additional Info:
 Command to build protocol buffer files:
 ```
-python -m grpc_tools.protoc -I definitions --python_out=stubs --grpc_python_out=stubs definitions/common.proto
+$python -m grpc_tools.protoc -I definitions --python_out=stubs --grpc_python_out=stubs definitions/common.proto
 ```
 
 Added shared key to environment variable:
 ```
-export SHARED_SECRET_ADENINE="kHDP9V4JJbwd5GN"
+$export SHARED_SECRET_ADENINE="kHDP9V4JJbwd5GN"
 ```
 
