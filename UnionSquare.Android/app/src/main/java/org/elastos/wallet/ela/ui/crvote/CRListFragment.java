@@ -90,7 +90,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     private CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode;
     private String did;
     private int pageNum = 1;
-    private final int pageSize = 20;
+    private final int pageSize = 50;
     private String totalvotes;
 
     @Override
@@ -99,13 +99,14 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     }
 
     @Override
-    protected void initInjector() {
+    protected void initView(View view) {
+        setToobar(toolbar, toolbarTitle, getString(R.string.crcvote), getString(R.string.voting_rules));
 
     }
 
     @Override
-    protected void initView(View view) {
-        setToobar(toolbar, toolbarTitle, getString(R.string.crcvote), getString(R.string.voting_rules));
+    public void onStart() {
+        super.onStart();
         //获取公钥
         presenter = new CRlistPresenter();
         //presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
@@ -270,7 +271,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     boolean is = false;//是否有自已的选举
 
 
-    private void setRecyclerview(boolean is) {
+    private void setRecyclerview() {
         if (adapter == null) {
             recyclerview.setLayoutManager(new GridLayoutManager(getContext(), 2));
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
@@ -281,18 +282,20 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             if (curentAdapter == null)
                 curentAdapter = adapter;
         } else {
+            adapter.setIs(is);
             adapter.notifyDataSetChanged();
         }
 
     }
 
-    private void setRecyclerview1(boolean is) {
+    private void setRecyclerview1() {
         if (adapter1 == null) {
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter1 = new CRListAdapter1(this, netList, is, totalvotes);
             adapter1.setOnItemClickListener(this);
             recyclerview1.setAdapter(adapter1);
         } else {
+            adapter.setIs(is);
             adapter1.notifyDataSetChanged();
         }
     }
@@ -323,8 +326,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 onGetDid(did);
             }
         } else {
-            setRecyclerview(is);
-            setRecyclerview1(is);
+            setRecyclerview();
+            setRecyclerview1();
         }
         pageNum++;
     }
@@ -342,8 +345,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             }
 
         }
-        setRecyclerview(is);
-        setRecyclerview1(is);
+        setRecyclerview();
+        setRecyclerview1();
     }
 
     private String status;

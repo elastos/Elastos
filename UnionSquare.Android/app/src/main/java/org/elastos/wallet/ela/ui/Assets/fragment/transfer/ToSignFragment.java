@@ -26,7 +26,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 /**
- * 待用
+ * 备用
  */
 public class ToSignFragment extends BaseFragment {
     @BindView(R.id.tv_title)

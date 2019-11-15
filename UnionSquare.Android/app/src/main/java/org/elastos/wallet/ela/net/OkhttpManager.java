@@ -111,7 +111,7 @@ public class OkhttpManager {
         HostnameVerifier hostnameVerifier = new HostnameVerifier() {
             @Override
             public boolean verify(String hostname, SSLSession session) {
-                Log.i("???????????", hostname);
+               // Log.i("???????????", hostname);
                 if (MyApplication.chainID > 0) {
                     return true;
                 }

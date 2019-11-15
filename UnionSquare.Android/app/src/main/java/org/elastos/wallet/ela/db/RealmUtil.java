@@ -513,6 +513,7 @@ public class RealmUtil {
             subWallet = new SubWallet();
             subWallet.setBelongId(belongId);
             subWallet.setChainId(chainId);
+            subWallet.setSyncTime("- -");
             subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
             realm.beginTransaction();
             realm.copyToRealmOrUpdate(subWallet);

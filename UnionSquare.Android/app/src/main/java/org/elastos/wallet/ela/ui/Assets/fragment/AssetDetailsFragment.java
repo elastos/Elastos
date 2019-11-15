@@ -25,10 +25,11 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.ui.Assets.activity.PwdActivity;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.adapter.TransferRecordRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.bean.TransferRecordEntity;
+import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetDetailPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
@@ -41,6 +42,7 @@ import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
 import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
+import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DateUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -108,6 +110,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
     private SubWallet subWallet;
     private AssetDetailPresenter assetDetailPresenter;
 
+
     @Override
     protected int getLayoutId() {
         initClassicsFooter();
@@ -117,10 +120,12 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     @Override
     protected void setExtraData(Bundle data) {
-        chainId = data.getString("ChainId", "ELA");
+
         wallet = data.getParcelable("wallet");
         subWallet = data.getParcelable("subWallet");
+        chainId = subWallet.getChainId();
         tvTitle.setText(chainId);
+
 
     }
 
@@ -342,6 +347,26 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
             });
 
         }
+        if (integer == RxEnum.TOSIGN.ordinal()) {
+            //生成待签名交易
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            start(SignFragment.class, bundle);
+
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
+            //签名成功
+            String attributes = (String) result.getObj();
+            Bundle bundle = new Bundle();
+            bundle.putString("attributes", attributes);
+            bundle.putParcelable("wallet", wallet);
+            bundle.putInt("transType",2);
+            bundle.putBoolean("signStatus", true);
+            start(SignFragment.class, bundle);
+
+        }
 
     }
 
@@ -404,10 +429,12 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
                 break;
             case "createCombineUTXOTransaction":
                 //零钱换整
-                Intent intent = new Intent(getActivity(), PwdActivity.class);
+                Intent intent = new Intent(getActivity(), TransferActivity.class);
+
                 intent.putExtra("wallet", wallet);
-                intent.putExtra("chainId", chainId);
                 intent.putExtra("attributes", data);
+                intent.putExtra("chainId", chainId);
+                intent.putExtra("type", Constant.TOWHOL);
                 intent.putExtra("transType",2);
                 startActivity(intent);
                 break;

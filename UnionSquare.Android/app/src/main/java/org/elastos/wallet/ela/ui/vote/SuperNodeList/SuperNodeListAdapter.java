@@ -45,6 +45,10 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
 
     }
 
+    public void setIs(boolean is) {
+        this.is = is;
+    }
+
     @Override
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.transparent));

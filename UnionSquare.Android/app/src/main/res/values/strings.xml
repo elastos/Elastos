@@ -413,7 +413,7 @@
     <string name="exportreadonly">导出只读钱包</string>
     <string name="showmulpublickey">查看多签公钥</string>
     <string name="connecting">连接中...</string>
-    <string name="syncprogress">已同步进度</string>
+    <string name="syncprogress">已同步进度：</string>
     <string name="scantocreatereadonly">扫描二维码可创建单签只读钱包</string>
     <string name="mulsignpiblickey">多签公钥</string>
     <string name="scancreatemulwallet">扫描二维码可创建多签钱包</string>
@@ -514,6 +514,8 @@
     <string name="validdate">有效期</string>
     <string name="expired">已失效</string>
     <string name="expireddate">失效日期</string>
+    <string name="notsupportvoteformultwalllet">暂不支持多签钱包参与投票</string>
+    <string name="maxvote1">最大表决权：</string>
     <string name="didinfo">DID信息</string>
     <string name="didname">DID名称</string>
     <string name="mainpkmanage">主管理公钥</string>

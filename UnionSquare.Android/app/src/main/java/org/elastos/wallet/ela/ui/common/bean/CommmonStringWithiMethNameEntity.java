@@ -28,4 +28,12 @@ public class CommmonStringWithiMethNameEntity extends BaseEntity {
     public void setMethodName(String methodName) {
         this.methodName = methodName;
     }
+
+    @Override
+    public String toString() {
+        return "CommmonStringWithiMethNameEntity{" +
+                "data='" + data + '\'' +
+                ", methodName='" + methodName + '\'' +
+                '}';
+    }
 }
