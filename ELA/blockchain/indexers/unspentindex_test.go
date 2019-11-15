@@ -101,8 +101,8 @@ func TestUnspentIndexInit(t *testing.T) {
 	assert.NoError(t, err)
 	testUnspentIndex = NewUnspentIndex(unspentIndexDB)
 	assert.NotEqual(t, nil, testUnspentIndex)
-	assert.Equal(t, []byte("txbyhashidx"), testUnspentIndex.Key())
-	assert.Equal(t, "unspent index", testUnspentIndex.Name())
+	assert.Equal(t, unspentIndexKey, testUnspentIndex.Key())
+	assert.Equal(t, unspentIndexName, testUnspentIndex.Name())
 	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
 		err := testUnspentIndex.Create(dbTx)
 		assert.NoError(t, err)
@@ -242,4 +242,8 @@ func LoadBlockDB(dataPath string) (database.DB, error) {
 
 	log.Info("Block database loaded")
 	return db, nil
+}
+
+func TestUnspentIndexEnd(t *testing.T) {
+	unspentIndexDB.Close()
 }

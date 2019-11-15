@@ -508,6 +508,16 @@ func (m *Manager) FetchUTXO(programHash *common.Uint168) ([]*types.UTXO, error) 
 	return utxos, nil
 }
 
+func (m *Manager) IsTx3Exist(txHash *common.Uint256) bool {
+	exist := false
+	_ = m.db.View(func(dbTx database.Tx) error {
+		exist = dbFetchTx3IndexEntry(dbTx, txHash)
+		return nil
+	})
+
+	return exist
+}
+
 // NewManager returns a new index manager with the provided indexes enabled.
 //
 // The manager returned satisfies the blockchain.IndexManager interface and thus
@@ -516,8 +526,9 @@ func NewManager(db database.DB) *Manager {
 	txIndex := NewTxIndex(db)
 	unspentIndex := NewUnspentIndex(db)
 	utxoIndex := NewUtxoIndex(db, txIndex)
+	tx3Index := NewTx3Index(db)
 	var enabledIndexes []Indexer
-	enabledIndexes = append(enabledIndexes, txIndex, unspentIndex, utxoIndex)
+	enabledIndexes = append(enabledIndexes, txIndex, unspentIndex, utxoIndex, tx3Index)
 	return &Manager{
 		db:             db,
 		enabledIndexes: enabledIndexes,
