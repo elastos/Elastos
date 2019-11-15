@@ -195,6 +195,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	}
 	c.freshCirculationAmount(block.Height)
 
+	// todo consider rollback
 	if c.shouldChange(block.Height) {
 		if c.shouldCleanHistory() {
 			c.HistoryMembers = make(map[common.Uint168]*CRMember)
@@ -211,9 +212,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
 		c.NeedAppropriation = true
-
-		// todo calculate used amount by current proposal.
-		c.CRCCommitteeUsedAmount = 0
+		c.resetCRCCommitteeUsedAmount()
 		c.mtx.Unlock()
 
 		if c.createCRCAppropriationTx != nil {
@@ -234,6 +233,21 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		return
 	}
 	c.mtx.Unlock()
+}
+
+func (c *Committee) resetCRCCommitteeUsedAmount() {
+	// todo add finished proposals into finished map
+	var budget common.Fixed64
+	for _, v := range c.manager.Proposals {
+		if v.Status == Finished || v.Status == CRCanceled ||
+			v.Status == VoterCanceled || v.Status == Aborted {
+			continue
+		}
+		for i := int(v.CurrentWithdrawalStage); i < len(v.Proposal.Budgets); i++ {
+			budget += v.Proposal.Budgets[i]
+		}
+	}
+	c.CRCCommitteeUsedAmount = budget
 }
 
 func (c *Committee) tryInitCRCRelatedAddressBalance() {
@@ -352,19 +366,29 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 
 func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32,
 	history *utils.History) {
-	amount := tx.Outputs[0].Value
 	history.Append(height, func() {
 		c.NeedAppropriation = false
-		c.CRCCommitteeUsedAmount += amount
 	}, func() {
 		c.NeedAppropriation = true
-		c.CRCCommitteeUsedAmount -= amount
 	})
 }
 
 func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32,
 	history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
 	committeeInputsAmounts map[string]common.Fixed64) {
+	if tx.IsCRCProposalTx() {
+		proposal := tx.Payload.(*payload.CRCProposal)
+		var budget common.Fixed64
+		for _, b := range proposal.Budgets {
+			budget += b
+		}
+		history.Append(height, func() {
+			c.CRCCommitteeUsedAmount += budget
+		}, func() {
+			c.CRCCommitteeUsedAmount -= budget
+		})
+	}
+
 	if height <= c.recordBalanceHeight {
 		return
 	}
