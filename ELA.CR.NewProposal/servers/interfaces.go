@@ -1812,7 +1812,7 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			CurrentStage:       proposal.CurrentStage,
 			TrackingCount:      proposal.TrackingCount,
 			TerminatedHeight:   proposal.TerminatedHeight,
-			ProposalLeader:     string(proposal.ProposalLeader),
+			ProposalLeader:     common.BytesToHexString(proposal.ProposalLeader),
 		}
 		RpcProposalBaseStates = append(RpcProposalBaseStates, RpcProposalBaseState)
 	}
@@ -1908,7 +1908,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		CurrentStage:          proposalState.CurrentStage,
 		TrackingCount:         proposalState.TrackingCount,
 		TerminatedHeight:      proposalState.TerminatedHeight,
-		ProposalLeader:        string(proposalState.ProposalLeader),
+		ProposalLeader:        common.BytesToHexString(proposalState.ProposalLeader),
 		AvailWithdrawalAmount: proposalMgr.AvailableWithdrawalAmount(proposalHash),
 	}
 	result := &RpcCRProposalStateInfo{RpcProposalState: RpcProposalState}
