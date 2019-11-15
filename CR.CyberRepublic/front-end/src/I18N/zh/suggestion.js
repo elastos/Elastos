@@ -100,7 +100,7 @@ export default {
   },
   header: {
     suggestion: '建议',
-    crCouncil: 'CR 理事会',
+    crCouncil: 'CR 委员会',
     crProposalPage: 'CR 提案页面',
     approvedProposal: '已批准的提案'
   },
