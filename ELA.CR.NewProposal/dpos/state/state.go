@@ -1004,10 +1004,11 @@ func (s *State) getProducerByDepositHash(hash common.Uint168) *Producer {
 // program hash of transaction output.
 func (s *State) addProducerAssert(output *types.Output, height uint32) bool {
 	if producer := s.getProducerByDepositHash(output.ProgramHash); producer != nil {
+		amount := output.Value
 		s.history.Append(height, func() {
-			producer.depositAmount += output.Value
+			producer.depositAmount += amount
 		}, func() {
-			producer.depositAmount -= output.Value
+			producer.depositAmount -= amount
 		})
 		return true
 	}
@@ -1044,10 +1045,11 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 // processVoteOutput takes a transaction output with vote payload.
 func (s *State) processVoteOutput(output *types.Output, height uint32) {
 	countByGross := func(producer *Producer) {
+		amount := output.Value
 		s.history.Append(height, func() {
-			producer.votes += output.Value
+			producer.votes += amount
 		}, func() {
-			producer.votes -= output.Value
+			producer.votes -= amount
 		})
 	}
 
@@ -1083,10 +1085,11 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 // processVoteCancel takes a previous vote output and decrease producers votes.
 func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	subtractByGross := func(producer *Producer) {
+		amount := output.Value
 		s.history.Append(height, func() {
-			producer.votes -= output.Value
+			producer.votes -= amount
 		}, func() {
-			producer.votes += output.Value
+			producer.votes += amount
 		})
 	}
 

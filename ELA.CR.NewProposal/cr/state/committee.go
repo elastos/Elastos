@@ -179,7 +179,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	}
 
 	// Get CRC foundation and committee balance at CRVotingStartHeight.
-	c.tryInitCRCRelatedAddressBalance(block.Height)
+	c.tryInitCRCRelatedAddressBalance()
 
 	// If reached the voting start height, record the last voting start height.
 	c.recordLastVotingStartHeight(block.Height)
@@ -211,6 +211,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
 		c.NeedAppropriation = true
+
 		// todo calculate used amount by current proposal.
 		c.CRCCommitteeUsedAmount = 0
 		c.mtx.Unlock()
@@ -235,13 +236,9 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	c.mtx.Unlock()
 }
 
-func (c *Committee) createCRCAppropriationTransaction() error {
-	// todo create CR appropriation transaction and send to txpool.
-	return nil
-}
-
-func (c *Committee) tryInitCRCRelatedAddressBalance(height uint32) {
+func (c *Committee) tryInitCRCRelatedAddressBalance() {
 	if c.recordBalanceHeight == 0 {
+		height := c.getHeight()
 		utxos, _ := c.getUnspentFromProgramHash(c.params.CRCFoundation,
 			*account.SystemAssetID)
 		var foundationBalance common.Fixed64
@@ -355,21 +352,22 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 
 func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32,
 	history *utils.History) {
-	if height <= c.recordBalanceHeight {
-		return
-	}
+	amount := tx.Outputs[0].Value
 	history.Append(height, func() {
 		c.NeedAppropriation = false
-		c.CRCCommitteeUsedAmount += tx.Outputs[0].Value
+		c.CRCCommitteeUsedAmount += amount
 	}, func() {
 		c.NeedAppropriation = true
-		c.CRCCommitteeUsedAmount -= tx.Outputs[0].Value
+		c.CRCCommitteeUsedAmount -= amount
 	})
 }
 
 func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32,
 	history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
 	committeeInputsAmounts map[string]common.Fixed64) {
+	if height <= c.recordBalanceHeight {
+		return
+	}
 	for _, input := range tx.Inputs {
 		if amount, ok := foundationInputsAmounts[input.Previous.ReferKey()]; ok {
 			history.Append(height, func() {
@@ -387,23 +385,24 @@ func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32
 	}
 
 	for _, output := range tx.Outputs {
+		amount := output.Value
 		if output.ProgramHash.IsEqual(c.params.CRCFoundation) {
 			history.Append(height, func() {
-				c.CRCFoundationBalance += output.Value
+				c.CRCFoundationBalance += amount
 			}, func() {
-				c.CRCFoundationBalance -= output.Value
+				c.CRCFoundationBalance -= amount
 			})
 		} else if output.ProgramHash.IsEqual(c.params.CRCCommitteeAddress) {
 			history.Append(height, func() {
-				c.CRCCommitteeBalance += output.Value
+				c.CRCCommitteeBalance += amount
 			}, func() {
-				c.CRCCommitteeBalance -= output.Value
+				c.CRCCommitteeBalance -= amount
 			})
 		} else if output.ProgramHash.IsEqual(c.params.DestroyELAAddress) {
 			history.Append(height, func() {
-				c.DestroyedAmount += output.Value
+				c.DestroyedAmount += amount
 			}, func() {
-				c.DestroyedAmount -= output.Value
+				c.DestroyedAmount -= amount
 			})
 		}
 	}
