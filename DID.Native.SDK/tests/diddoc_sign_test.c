@@ -13,8 +13,7 @@
 #include "didrequest.h"
 #include "didstore.h"
 #include "diddocument.h"
-
-#define SIGNATURE_BYTES 65
+#include "hdkey.h"
 
 static DIDDocument *document;
 static DID *did;
@@ -52,7 +51,7 @@ static void test_diddoc_verify(void)
     }
 
     rc = DIDDocument_Verify(document, signkey, signature, 1,
-             (unsigned char*)data, strlen(data));
+            (unsigned char*)data, strlen(data));
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 

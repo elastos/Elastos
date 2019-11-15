@@ -209,6 +209,18 @@ ssize_t base64_url_encode(char *base64, const uint8_t *input, size_t len)
     base64[b64_len] = 0;
     BUF_MEM_free(bufferPtr);
 
+    // To URL safe mode
+    for (char *p = base64; *p != 0; p++) {
+        if (*p == '+') {
+            *p = '-';
+        } else if (*p == '/') {
+            *p = '_';
+        } else if (*p == '=') {
+            *p = 0;
+            b64_len--;
+        }
+    }
+
     return b64_len; //success
 }
 
@@ -231,14 +243,38 @@ ssize_t base64_url_decode(uint8_t *buffer, const char *base64)
     BIO *bio, *b64;
     ssize_t len = strlen(base64);
 
-    bio = BIO_new_mem_buf((char*)base64, len);
+    //
+    char *_base64 = malloc(len + 8);
+    if (!_base64)
+        return -1;
+
+    strcpy(_base64, base64);
+
+    int l = len % 4;
+    if (l == 2) {
+        strcat(_base64, "==");
+        len += 2;
+    } else if (l == 3) {
+        strcat(_base64, "=");
+        len++;
+    }
+
+    for (char *p = _base64; *p != 0; p++) {
+        if (*p == '-')
+            *p = '+';
+        else if (*p == '_')
+            *p = '/';
+    }
+
+    bio = BIO_new_mem_buf((char*)_base64, len);
     b64 = BIO_new(BIO_f_base64());
     bio = BIO_push(b64, bio);
 
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
     len = BIO_read(bio, buffer, len);
-    assert(len == base64_decode_length(base64));
+    assert(len == base64_decode_length(_base64));
     BIO_free_all(bio);
+    free(_base64);
 
     return len; //success
 }
@@ -323,6 +359,7 @@ ssize_t sha256(uint8_t *digest, int count, ...)
 ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey, int count, va_list inputs)
 {
     uint8_t digest[SHA256_BYTES];
+    uint8_t signature[SIGNATURE_BYTES+1];
     int rc;
 
     if (!sig || !privatekey || count <= 0)
@@ -331,8 +368,13 @@ ssize_t ecdsa_signv(uint8_t *sig, uint8_t *privatekey, int count, va_list inputs
     sha256v(digest, count, inputs);
 
     // CHECKME: ECDSA65Sign_sha256 return wrong length - 32
-    rc = ECDSA65Sign_sha256(privatekey, PRIVATEKEY_BYTES, digest, sig, SIGNATURE_BYTES);
-    return rc == 32 ? SIGNATURE_BYTES : -1;
+    rc = ECDSA65Sign_sha256(privatekey, PRIVATEKEY_BYTES,
+            (const UInt256 *)digest, signature, sizeof(signature));
+    if (rc != 32)
+        return -1;
+
+    memcpy(sig, signature + 1, SIGNATURE_BYTES);
+    return SIGNATURE_BYTES;
 }
 
 ssize_t ecdsa_sign(uint8_t *sig, uint8_t *privatekey, int count, ...)
@@ -383,6 +425,7 @@ ssize_t ecdsa_sign_base64(char *sig, uint8_t *privatekey, int count, ...)
 int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs)
 {
     uint8_t digest[SHA256_BYTES];
+    uint8_t signature[SIGNATURE_BYTES+1];
     int rc;
 
     if (!sig || !publickey || count <= 0)
@@ -390,7 +433,11 @@ int ecdsa_verifyv(uint8_t *sig, uint8_t *publickey, int count, va_list inputs)
 
     sha256v(digest, count, inputs);
 
-    rc = ECDSA65Verify_sha256(publickey, PUBLICKEY_BYTES, digest, sig, SIGNATURE_BYTES);
+    signature[0] = SIGNATURE_BYTES;
+    memcpy(signature + 1, sig, SIGNATURE_BYTES);
+
+    rc = ECDSA65Verify_sha256(publickey, PUBLICKEY_BYTES,
+            (const UInt256 *)digest, signature, sizeof(signature));
     return rc == 0 ? -1 : 0;
 }
 

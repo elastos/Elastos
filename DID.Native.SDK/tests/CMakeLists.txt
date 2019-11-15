@@ -51,7 +51,8 @@ set(SRC
     didstore_cred_op_test.c
     didstore_new_did_test.c
     didrequest_test.c
-    diddoc_sign_test.c)
+    diddoc_sign_test.c
+    diddoc_base64_test.c)
 
 add_definitions(-DLIBCONFIG_STATIC)
 
@@ -63,11 +64,14 @@ endif()
 
 set(LIBS
     eladid
+    hdkey-static
+    crypto
     crystal)
 
 set(DEPS
     ela-did
     CUnit
+    hdkey
     libcrystal)
 
 if(WIN32)
@@ -93,9 +97,11 @@ endif()
 include_directories(
     .
     ../src
+    ../hdkey
     ${PROJECT_INT_DIST_DIR}/include)
 
 link_directories(
+    ../hdkey
     ${PROJECT_INT_DIST_DIR}/lib
     ${CMAKE_CURRENT_BINARY_DIR}/../src)
 
