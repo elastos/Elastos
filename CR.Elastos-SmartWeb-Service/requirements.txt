@@ -1,4 +1,5 @@
-grpcio
-grpcio-tools
-sqlalchemy_wrapper
-requests
+grpcio==1.24.3
+grpcio-tools==1.24.3
+SQLAlchemy-Wrapper==1.9.1
+requests==2.22.0
+psycopg2-binary==2.8.4
