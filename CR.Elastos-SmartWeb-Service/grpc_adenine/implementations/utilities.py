@@ -1,11 +1,11 @@
 import datetime
 import pytz
 from grpc_adenine.database import (connection as db)
-from grpc_adenine.database.user_api_relation import UserApiRelation
+from grpc_adenine.database.user_api_relation import UserApiRelations
 from sqlalchemy.sql import exists
 
 def validate_api_key(api_key):
-	result = db.query(exists().where(UserApiRelation.api_key == api_key)).scalar()
+	result = db.query(exists().where(UserApiRelations.api_key == api_key)).scalar()
 	return result
 
 def getTime():

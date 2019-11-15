@@ -1,6 +1,8 @@
 # GRPC_python
 GRPC python implementation with SQL Alchemy
 
+
+# Setup
 For macOS, to install python using homebrew:
 ```
 $brew install python3
@@ -18,13 +20,13 @@ $pip3 install virtualenv
 
 Clone the repository
 ```
-git clone https://github.com/cyber-republic/elastos-smartweb-service.git
-cd elastos-smartweb-service
+$git clone https://github.com/cyber-republic/elastos-smartweb-service.git
+$cd elastos-smartweb-service
 ```
 
 Export Path:
 ```
-export PYTHONPATH="$PYTHONPATH:/Users/rahulguna/GIT/elastos-smartweb-service/grpc_adenine/stubs/"
+$export PYTHONPATH="$PYTHONPATH:/*your_path*/elastos-smartweb-service/grpc_adenine/stubs/"
 ```
 
 To get the API service running, run the following terminal commands:
@@ -35,10 +37,27 @@ $virtualenv -p `which python3` venv
 $source venv/bin/activate
 ```
 ```
-(venv) $ pip install -r requirements.txt
+(venv)$ pip install -r requirements.txt
 ```
 
-Start the server:
+# Setting up PostgresSQL:
+
+Step 1: Install PostgreSQL server 11.5
+
+Step 2: Create a database by name 'smartweb_master'
+
+Step 3: To start the PostgreSQL Server
+
+```
+$pg_ctl -D /usr/local/var/postgres start
+```
+
+Step 4: Execute the create table scripts at smartweb_service/grpc_adenine/database/scripts/create_table_scripts.sql
+
+Step 5: Execute the insert scripts at smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
+
+
+# Start the server:
 ```
 (venv) $python grpc_adenine/server.py
 ```
