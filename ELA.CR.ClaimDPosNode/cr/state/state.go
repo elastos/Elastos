@@ -561,11 +561,10 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 // program hash of transaction output.
 func (s *State) addCandidateAssert(output *types.Output, height uint32) bool {
 	if candidate := s.getCandidateByDepositHash(output.ProgramHash); candidate != nil {
-		amount := output.Value
 		s.history.Append(height, func() {
-			candidate.depositAmount += amount
+			candidate.depositAmount += output.Value
 		}, func() {
-			candidate.depositAmount -= amount
+			candidate.depositAmount -= output.Value
 		})
 		return true
 	}

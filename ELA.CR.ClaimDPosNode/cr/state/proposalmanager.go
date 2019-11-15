@@ -411,6 +411,9 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 			proposalState.ProposalLeader = proposalTracking.NewLeaderPubKey
 		case payload.Appropriation:
 			proposalState.CurrentStage = proposalTracking.Stage
+			if int(proposalTracking.Stage) == len(proposalState.Proposal.Budgets) {
+				proposalState.Status = Finished
+			}
 		}
 	}, func() {
 		proposalState.TrackingCount--
@@ -424,6 +427,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 			proposalState.ProposalLeader = leader
 		case payload.Appropriation:
 			proposalState.CurrentStage = stage
+			proposalState.Status = status
 		}
 	})
 }
