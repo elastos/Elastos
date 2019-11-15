@@ -3,7 +3,6 @@ import Component from './Component'
 import UserService from '@/service/UserService'
 import { message } from 'antd'
 import I18N from '@/I18N'
-import { logger } from '@/util'
 
 message.config({ top: 100 })
 
@@ -36,7 +35,6 @@ export default createContainer(
           }
         } catch (err) {
           message.error(err.message)
-          logger.error(err)
           return false
         }
       }
