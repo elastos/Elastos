@@ -1,15 +1,9 @@
 
-
-
 import XCTest
 import ElastosDIDSDK
 
-
 class DIDStoreTests: XCTestCase {
     
-    let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
-    let passphrase: String = "secret"
-    let storePass: String = "passph"
     var store: DIDStore!
     var ids: Dictionary<DID, String> = [: ]
     var primaryDid: DID!
@@ -113,67 +107,7 @@ class DIDStoreTests: XCTestCase {
             print(ids)
         }
     }
-    
-    func testSignAndVerify() {
-        do {
-            // add ids
-            let hint: String = "my first did"
-            let doc: DIDDocument = try! store.newDid(storePass, hint)
-            primaryDid = doc.subject
-            let id: String = doc.subject!.methodSpecificId!
-            let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
-            XCTAssertTrue(TestUtils.existsFile(path))
-            
-            let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
-            XCTAssertTrue(TestUtils.existsFile(path2))
-            ids[doc.subject!] = hint
-            
-            try ids.keys.forEach { did in
-                let doc: DIDDocument = try store.loadDid(did)!
-                let json: String = try doc.toExternalForm(false)
-                let pkid: DIDURL = try DIDURL(did, "primary")
-                let inputs: [CVarArg] = [json, json.count]
-                let sig: String = try doc.sign(pkid, storePass, inputs)
-                var re: Bool = try doc.verify(pkid, sig, inputs)
-                XCTAssertTrue(re)
-                
-//                re = doc.ver
-                
-            }
-        } catch {
-            print(error)
-        }
-    }
-    
-    /*
-     @Test
-     public void test31SignAndVerify() throws DIDException {
-         Iterator<DID> dids = ids.keySet().iterator();
 
-         while (dids.hasNext()) {
-             DID did = dids.next();
-
-             DIDDocument doc = DIDStore.getInstance().loadDid(did);
-             String json = doc.toExternalForm(false);
-             DIDURL pkid = new DIDURL(did, "primary");
-
-             String sig = doc.sign(pkid, storePass, json.getBytes());
-             boolean result = doc.verify(pkid, sig, json.getBytes());
-             assertTrue(result);
-
-             result = doc.verify(pkid, sig, json.substring(1).getBytes());
-             assertFalse(result);
-
-             sig = doc.sign(storePass, json.getBytes());
-             result = doc.verify(sig, json.getBytes());
-             assertTrue(result);
-
-             result = doc.verify(sig, json.substring(1).getBytes());
-             assertFalse(result);
-         }
-     }
-     */
-    
     func testDeleteDID1() {
         let hint: String = "my did for deleted."
         let doc: DIDDocument = try! store.newDid(passphrase, hint)

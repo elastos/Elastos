@@ -5,9 +5,6 @@ import ElastosDIDSDK
 
 class DIDStoreCreateTests: XCTestCase {
     
-    let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
-    let passphrase: String = "secret"
-    
     override func setUp() {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }

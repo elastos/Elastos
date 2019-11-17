@@ -1,42 +1,27 @@
 import Foundation
 
-class DIDBackend: NSObject {
+public class DIDBackend: NSObject {
     
     private static var instance: DIDBackend!
-    private static var adaptor: DIDAdaptor!
-
-    private init(_ adaptor: DIDAdaptor){
-        DIDBackend.adaptor = adaptor
-        super.init()
-       }
+    private var adaptor: DIDAdaptor!
     
-    public static func createInstance(_ adaptor: DIDAdaptor) {
-        if instance == nil {
-            let didInstance = DIDBackend(adaptor)
-            DIDBackend.adaptor = adaptor
-            instance = didInstance
-        }
+    public init(_ adaptor: DIDAdaptor){
+        self.adaptor = adaptor
+        super.init()
     }
-
-    public static func sharedInstance() throws -> DIDBackend {
-        guard instance != nil else {
-            throw DIDError.failue("Please call createInstance first.")
-        }
-        return instance
-    }
-
-    public class func create(_ doc: DIDDocument, _ signKey: DIDURL, _ passphrase: String) throws -> Bool {
+    
+    public func create(_ doc: DIDDocument, _ signKey: DIDURL, _ passphrase: String) throws -> Bool {
         do {
             let request: IDChainRequest = try IDChainRequest(IDChainRequest.Operation.CREATE, doc)
             let jsonString: String = try request.sign(signKey, passphrase).toJson(true)
             
             return try adaptor.createIdTransaction(jsonString, nil)
         } catch  {
-           throw DIDError.failue("Create ID transaction error: \(error.localizedDescription).")
+            throw DIDError.failue("Create ID transaction error: \(error.localizedDescription).")
         }
     }
     
-    public class func resolve(_ did: DID) throws -> DIDDocument? {
+    public func resolve(_ did: DID) throws -> DIDDocument? {
         do {
             let docJson = try adaptor.resolve(did.toExternalForm())
             guard docJson != nil else {
@@ -49,7 +34,7 @@ class DIDBackend: NSObject {
         }
     }
     
-    public class func update(_ doc: DIDDocument, _ signKey: DIDURL, _ passphrase: String) throws -> Bool {
+    public func update(_ doc: DIDDocument, _ signKey: DIDURL, _ passphrase: String) throws -> Bool {
         do {
             let request: IDChainRequest = try IDChainRequest(IDChainRequest.Operation.UPDATE, doc)
             let jsonStr: String = try request.sign(signKey, passphrase).toJson(true)
@@ -59,7 +44,7 @@ class DIDBackend: NSObject {
         }
     }
     
-    public class func deactivate(_ did: DID, _ signKey: DIDURL, _ passphrase: String) throws -> Bool {
+    public func deactivate(_ did: DID, _ signKey: DIDURL, _ passphrase: String) throws -> Bool {
         do {
             let request: IDChainRequest = try IDChainRequest(IDChainRequest.Operation.CREATE, did)
             let jsonStr: String = try request.sign(signKey, passphrase).toJson(true)

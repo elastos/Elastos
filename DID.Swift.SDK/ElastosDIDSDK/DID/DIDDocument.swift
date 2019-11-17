@@ -373,7 +373,7 @@ public class DIDDocument: NSObject {
         return dicString
     }
     
-    public static func fromJson(_ path: String) throws -> DIDDocument {
+    public class func fromJson(_ path: String) throws -> DIDDocument {
         
         let doc: DIDDocument = DIDDocument()
 //        doc.rootPath = path
@@ -383,9 +383,16 @@ public class DIDDocument: NSObject {
         return doc
     }
     
-    public static func fromJson(_ path: URL) throws -> DIDDocument {
+    public class func fromJson(_ path: URL) throws -> DIDDocument {
         let doc: DIDDocument = DIDDocument()
         try doc.parse(url: path)
+        doc.readonly = true
+        return doc
+    }
+    
+    public class func fromJson(json: String) throws -> DIDDocument {
+        let doc: DIDDocument = DIDDocument()
+        try doc.parse(json: json)
         doc.readonly = true
         return doc
     }
@@ -399,6 +406,13 @@ public class DIDDocument: NSObject {
     
     private func parse(url: URL) throws {
         let json = try! String(contentsOf: url)
+        var jsonString = json.replacingOccurrences(of: " ", with: "")
+        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
+        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        return try parse(ordDic)
+    }
+    
+    private func parse(json: String) throws {
         var jsonString = json.replacingOccurrences(of: " ", with: "")
         jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
         let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>

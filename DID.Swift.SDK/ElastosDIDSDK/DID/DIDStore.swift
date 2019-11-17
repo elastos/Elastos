@@ -9,17 +9,19 @@ public class DIDStore: NSObject {
     private var privateIdentity: HDKey!
     private var lastIndex: Int!
     var storeRootPath: String!
+    private var backend: DIDBackend!
 
     override init() {
     }
 
-    public static func creatInstance(_ type: String, location: String, storepass: String) throws {
+    public static func creatInstance(_ type: String, location: String, storepass: String, _ adapter: DIDAdaptor) throws {
         guard type == "filesystem" else {
             throw DIDStoreError.failue("Unsupported store type:\(type)")
         }
         if instance == nil {
             instance = try FileSystemStore(location)
             _ = try instance.initPrivateIdentity(storepass)
+            instance.backend = DIDBackend(adapter)
         }
         instance.storeRootPath = location
     }
@@ -126,28 +128,38 @@ public class DIDStore: NSObject {
         return try newDid(storepass, nil)
     }
 
-    public func publishDid(_ doc: DIDDocument,_ signKey: DIDURL ,_ passphrase :String) throws -> Bool {
-        return try DIDBackend.create(doc, signKey, passphrase)
+    public func publishDid(_ doc: DIDDocument, _ storepass: String) throws -> Bool {
+        let signKey: DIDURL = doc.getDefaultPublicKey()!
+        return try publishDid(doc, signKey, storepass)
     }
 
-    public func updateDid(_ doc: DIDDocument,_ signKey: DIDURL ,_ passphrase :String) throws -> Bool {
+    public func publishDid(_ doc: DIDDocument,_ signKey: DIDURL ,_ storepass :String) throws -> Bool {
+        return try backend.create(doc, signKey, storepass)
+    }
+
+    public func updateDid(_ doc: DIDDocument,_ signKey: DIDURL ,_ storepass :String) throws -> Bool {
         try storeDid(doc)
-        return try DIDBackend.update(doc, signKey, passphrase)
+        return try backend.update(doc, signKey, storepass)
     }
 
-    public func deactivateDid(_ did: DID,_ signKey: DIDURL ,_ passphrase :String) throws -> Bool {
+    public func deactivateDid(_ did: DID,_ signKey: DIDURL ,_ storepass :String) throws -> Bool {
         // TODO: how to handle locally?
-        return try DIDBackend.deactivate(did, signKey, passphrase)
+        return try backend.deactivate(did, signKey, storepass)
     }
 
     public func resolveDid(_ did: DID) throws -> DIDDocument{
-        // TODO DIDBackend generate
-        var doc = try DIDBackend.resolve(did)
+        return try resolveDid(did, false)
+    }
+    
+    public func resolveDid(_ did: DID, _ force: Bool) throws -> DIDDocument{
+        var doc = try backend.resolve(did);
         if doc !== nil {
             try storeDid(doc!)
         }
         else {
-            doc = try loadDid(did)
+            if (doc == nil && !force){
+                doc = try loadDid(did)
+            }
         }
         return doc!
     }

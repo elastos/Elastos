@@ -85,6 +85,12 @@ class IDChainRequest: NSObject {
         return self
     }
 
+    func verify() throws -> Bool {
+        let op: String = operation.toString()
+        let inputs = [specification, op, payload]
+        return try (doc?.verify(signKey!, signature!, inputs as! [CVarArg]))!
+    }
+
     public func toJson(_ compact: Bool) -> String {
         var json: OrderedDictionary<String, Any> = OrderedDictionary()
         // header
@@ -113,4 +119,59 @@ class IDChainRequest: NSObject {
         let jsonString: String = JsonHelper.creatJsonString(dic: json)
         return jsonString
     }
+    
+    public class func fromJson(_ json: OrderedDictionary<String, Any>) throws -> IDChainRequest {
+        let header = json[HEADER] as! OrderedDictionary<String, Any>
+        if header == nil {
+            throw DIDError.failue("Missing header.")
+        }
+        let spec: String = try JsonHelper.getString(header, SPECIFICATION, false, nil, SPECIFICATION)
+        guard (spec == CURRENT_SPECIFICATION) else {
+            throw DIDError.failue("Missing header.")
+        }
+        // TODO: remove this after IDSidechain fix the wrong field name.
+        var op: String = "Operation"
+        op = try JsonHelper.getString(header, OPERATION, false, nil, OPERATION)
+        if op != Operation.CREATE.toString() {
+            guard spec == CURRENT_SPECIFICATION else {
+                throw DIDError.failue("Invalid DID operation verb.")
+            }
+        }
+        let payload: String = try JsonHelper.getString(json, PAYLOAD, false, nil, PAYLOAD)
+        
+        let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 100)
+        let cp = payload.withCString { re -> UnsafePointer<Int8> in
+            return re
+        }
+        let _ = base64_url_decode(buffer, cp)
+        let docJson: String = String(cString: buffer)
+        var doc: DIDDocument
+        var request: IDChainRequest
+        do {
+            doc = try DIDDocument.fromJson(json: docJson)
+            let proof = json[PROOF] as! OrderedDictionary<String, Any>
+            guard proof.count != 0 else {
+                throw DIDError.failue("Missing proof.")
+            }
+            let keyType: String = try JsonHelper.getString(proof, KEY_TYPE, false, nil, KEY_TYPE)
+            guard keyType == Constants.defaultPublicKeyType else {
+                throw DIDError.failue("Unknown signature key type.")
+            }
+            let signKey: DIDURL = try JsonHelper.getDidUrl(proof, KEY_ID, doc.subject!, KEY_ID)
+            guard doc.getAuthenticationKey(signKey) != nil else {
+                throw DIDError.failue("Unknown signature key.")
+            }
+            let sig: String = try JsonHelper.getString(proof, SIGNATURE, false, nil, SIGNATURE)
+            request = try IDChainRequest(Operation.CREATE, doc)
+            request.payload = payload
+            request.keyType = keyType
+            request.signKey = signKey
+            request.signature = sig
+            return request
+        } catch {
+            print(error)
+            throw DIDError.failue("\(error)")
+        }
+    }
+    
 }
