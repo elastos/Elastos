@@ -355,12 +355,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
         try {
             String MasterWalletID = jsonObject.getString("MasterWalletID");
-            long lastBlockTime = jsonObject.getLong("lastBlockTime");
+            long lastBlockTime = jsonObject.getLong("LastBlockTime");
             String ChainID = jsonObject.getString("ChainID");
-            int currentBlockHeight = jsonObject.getInt("currentBlockHeight");
-            int estimatedHeight = jsonObject.getInt("estimatedHeight");
             //同步进行中
-            int progress = (int) (1.0f * currentBlockHeight / estimatedHeight * 100);
+            int progress = jsonObject.getInt("Progress");
             List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(MasterWalletID);
             for (org.elastos.wallet.ela.db.table.SubWallet subWallet : assetList) {
                 if (ChainID.equals(subWallet.getChainId())) {

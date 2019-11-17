@@ -58,7 +58,6 @@ public class SubWalletCallback {
             jsonObject.put("confirms", confirms);
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
-            jsonObject.put("Action", "OnTransactionStatusChanged");
 
             mListener.OnTransactionStatusChanged(jsonObject);
         } catch (JSONException e) {
@@ -68,23 +67,21 @@ public class SubWalletCallback {
 
     /**
      * Callback method fired when best block chain height increased. This callback could be used to show progress.
-     *
-     * @param currentBlockHeight is the of current block when callback fired.
-     * @param estimatedHeight    is max height of blockchain.
-     * @param lastBlockTime      timestamp of the last block.
+     * @param progressInfo progress info contain detail as below:
+     * {
+     *     "Progress": 50,                    # 0% ~ 100%
+     *     "BytesPerSecond": 12345678,        # 12.345678 MByte / s
+     *     "LastBlockTime": 1573799697,       # timestamp of last block
+     *     "DownloadPeer": "127.0.0.1"        # IP address of node
+     * }
      */
-    public void OnBlockSyncProgress(int currentBlockHeight, int estimatedHeight, long lastBlockTime) {
-//        Log.i(TAG, GetWalletID() + "[OnBlockSyncProgress] (" + currentBlockHeight + "/" + estimatedHeight + ") t = " + lastBlockTime);
-        JSONObject jsonObject = new JSONObject();
+    public void OnBlockSyncProgress(String progressInfo) {
         try {
-            jsonObject.put("currentBlockHeight", currentBlockHeight);
-            jsonObject.put("estimatedHeight", estimatedHeight);
-            jsonObject.put("lastBlockTime", lastBlockTime);
-            jsonObject.put("MasterWalletID", mMasterWalletID);
-            jsonObject.put("ChainID", mSubWalletID);
-            jsonObject.put("Action", "OnBlockHeightIncreased");
+            JSONObject jProgressInfo = new JSONObject(progressInfo);
+            jProgressInfo.put("MasterWalletID", mMasterWalletID);
+            jProgressInfo.put("ChainID", mSubWalletID);
 
-            mListener.OnBlockSyncProgress(jsonObject);
+            mListener.OnBlockSyncProgress(jProgressInfo);
         } catch (JSONException e) {
             e.printStackTrace();
 
@@ -99,7 +96,6 @@ public class SubWalletCallback {
             jsonObject.put("Balance", balance);
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
-            jsonObject.put("Action", "OnBalanceChanged");
 
             mListener.OnBalanceChanged(jsonObject);
         } catch (JSONException e) {
@@ -115,7 +111,6 @@ public class SubWalletCallback {
             jsonObject.put("result", result);
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
-            jsonObject.put("Action", "OnTxPublished");
 
             mListener.OnTxPublished(jsonObject);
         } catch (JSONException e) {
@@ -131,7 +126,6 @@ public class SubWalletCallback {
             jsonObject.put("info", info);
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
-            jsonObject.put("Action", "OnAssetRegistered");
             mListener.OnAssetRegistered(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -147,7 +141,6 @@ public class SubWalletCallback {
             jsonObject.put("status", status);
             jsonObject.put("MasterWalletID", mMasterWalletID);
             jsonObject.put("ChainID", mSubWalletID);
-            jsonObject.put("Action", "OnConnectStatusChanged");
             mListener.OnConnectStatusChanged(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
