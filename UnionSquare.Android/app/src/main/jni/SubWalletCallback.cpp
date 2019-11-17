@@ -48,15 +48,15 @@ namespace Elastos {
 //            Detach();
         }
 
-        void SubWalletCallback::OnBlockSyncProgress(uint32_t currentBlockHeight,
-                                                    uint32_t estimatedHeight,
-                                                    time_t lastBlockTime) {
+        void SubWalletCallback::OnBlockSyncProgress(const nlohmann::json &progressInfo) {
             JNIEnv *env = GetEnv();
 
+            jstring info = env->NewStringUTF(progressInfo.dump().c_str());
             jclass clazz = env->GetObjectClass(_obj);
-            jmethodID methodId = env->GetMethodID(clazz, "OnBlockSyncProgress", "(IIJ)V");
-            env->CallVoidMethod(_obj, methodId, currentBlockHeight, estimatedHeight, (jlong)lastBlockTime);
+            jmethodID methodId = env->GetMethodID(clazz, "OnBlockSyncProgress", "(Ljava/lang/String;)V");
+            env->CallVoidMethod(_obj, methodId, info);
 
+            env->DeleteLocalRef(info);
             env->DeleteLocalRef(clazz);
 //            Detach();
         }

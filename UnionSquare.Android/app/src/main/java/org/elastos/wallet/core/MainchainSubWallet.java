@@ -112,12 +112,12 @@ public class MainchainSubWallet extends SubWallet {
         return SponsorProposalDigest(mMainchainProxy, type, sponsorPublicKey, draftHash, budgets, recipient);
     }
 
-    public String CRSponsorProposalDigest(byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String signature) throws WalletException {
-        return CRSponsorProposalDigest(mMainchainProxy, type, sponsorPublicKey, crSponsorDID, draftHash, budgets, recipient, signature);
+    public String CRSponsorProposalDigest(String sponsorSignedProposal, String crSponsorDID) throws WalletException {
+        return CRSponsorProposalDigest(mMainchainProxy, sponsorSignedProposal, crSponsorDID);
     }
 
-    public String CreateCRCProposalTransaction(byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String signature, String crSponsorSignature, String memo) throws WalletException {
-        return CreateCRCProposalTransaction(mMainchainProxy, type, sponsorPublicKey, crSponsorDID, draftHash, budgets, recipient, signature, crSponsorSignature, memo);
+    public String CreateCRCProposalTransaction(String crSignedProposal, String memo) throws WalletException {
+        return CreateCRCProposalTransaction(mMainchainProxy, crSignedProposal, memo);
     }
 
     public String CreateVoteCRCProposalTransaction(String fromAddress, String votes, String memo) throws WalletException {
@@ -187,9 +187,9 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String SponsorProposalDigest(long Proxy, byte type, String sponsorPublicKey, String draftHash, String budgets, String recipient);
 
-    private native String CRSponsorProposalDigest(long Proxy, byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String signature);
+    private native String CRSponsorProposalDigest(long Proxy, String sponsorSignedProposal, String crSponsorDID);
 
-    private native String CreateCRCProposalTransaction(long Proxy, byte type, String sponsorPublicKey, String crSponsorDID, String draftHash, String budgets, String recipient, String signature, String crSponsorSignature, String memo);
+    private native String CreateCRCProposalTransaction(long Proxy, String crSignedProposal, String memo);
 
     private native String CreateVoteCRCProposalTransaction(long Proxy, String fromAddress, String votes, String memo);
 
