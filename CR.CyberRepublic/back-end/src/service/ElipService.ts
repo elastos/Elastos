@@ -373,24 +373,8 @@ export default class extends Base {
     const userRole = _.get(this.currentUser, 'role')
     const query: any = {}
 
-    if (!this.isLoggedIn()) {
-      query.status = {
-        $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL]
-      }
-      param.filter = null
-    }
-
-    if (param.filter === constant.ELIP_FILTER.DRAFT) {
-      query.status = constant.ELIP_STATUS.DRAFT
-    }
-
-    if (param.filter === constant.ELIP_FILTER.SUBMITTED_BY_ME) {
-      query.createdBy = currentUserId
-      query.status = constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
-    }
-
-    if (param.filter === constant.ELIP_FILTER.WAIT_FOR_REVIEW) {
-      query.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
+    if(_.indexOf(_.values(constant.ELIP_STATUS), param.filter) >= 0) {
+      query.status = param.filter
     }
 
     if (
