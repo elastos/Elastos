@@ -8,12 +8,19 @@ import { Col, Row, Icon, Button, Spin, Table, Tag, Modal } from 'antd'
 import I18N from '@/I18N'
 import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from '@/util/html'
-import { USER_ROLE, USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
-import './style.scss'
+import {
+  USER_ROLE,
+  USER_AVATAR_DEFAULT,
+  LINKIFY_OPTION,
+  USER_ROLE_TO_TEXT
+} from '@/constant'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import _ from 'lodash'
 import linkifyStr from 'linkifyjs/string'
+import GenderSvg from '../GenderSvg'
+
+import './style.scss'
 
 export default class extends BaseComponent {
   ord_states() {
@@ -87,6 +94,7 @@ export default class extends BaseComponent {
         <div className="profile-info-container profile-info-container-mobile clearfix">
           {this.renderAvatar(true)}
           {this.renderFullName(true)}
+          {this.renderRole(true)}
           {this.renderLocation(true)}
           {this.renderLocalTime(true)}
           {this.renderSocialMedia(true)}
@@ -137,6 +145,9 @@ export default class extends BaseComponent {
             {this.renderFullName()}
             {this.renderButton()}
             <Row>
+              <Col span={24} className="profile-right-col">
+                {this.renderRole()}
+              </Col>
               <Col span={24} className="profile-right-col">
                 {this.renderGender()}
               </Col>
@@ -224,6 +235,20 @@ export default class extends BaseComponent {
     )
   }
 
+  renderRole(isMobile) {
+    const { member } = this.props
+    return (
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
+        <Icon type="user" />
+        <span>{member.role && USER_ROLE_TO_TEXT[member.role]}</span>
+      </div>
+    )
+  }
+
   renderFullName(isMobile) {
     return (
       <h1
@@ -302,7 +327,7 @@ export default class extends BaseComponent {
           isMobile ? 'profile-general-info-mobile' : ''
         }`}
       >
-        <Icon type="user" />
+        <GenderSvg />
         <span>{_.capitalize(this.props.member.profile.gender)}</span>
       </div>
     )
