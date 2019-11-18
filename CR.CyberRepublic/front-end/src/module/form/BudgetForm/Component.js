@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import BaseComponent from '@/model/BaseComponent'
 import styled from 'styled-components'
 import { Form, Input, Button } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import I18N from '@/I18N'
 
 const FormItem = Form.Item
-const TextArea = Input.TextArea
 
 class BudgetForm extends BaseComponent {
   handleSubmit = e => {
@@ -50,7 +50,7 @@ class BudgetForm extends BaseComponent {
                 message: I18N.get('suggestion.form.error.required')
               },
               {
-                message: I18N.get(`suggestion.form.error.isNaN`),
+                message: I18N.get('suggestion.form.error.isNaN'),
                 validator: this.validateAmount
               }
             ],
@@ -69,7 +69,13 @@ class BudgetForm extends BaseComponent {
               }
             ],
             initialValue: item && item.reasons ? item.reasons : ''
-          })(<TextArea rows={5} />)}
+          })(
+            <CodeMirrorEditor
+              content={item && item.reasons ? item.reasons : ''}
+              activeKey="reasons"
+              name="reasons"
+            />
+          )}
         </FormItem>
         <FormItem
           label={I18N.get('suggestion.budget.criteria')}
@@ -78,7 +84,13 @@ class BudgetForm extends BaseComponent {
           {getFieldDecorator('criteria', {
             rules: [{ required: true, message: '' }],
             initialValue: item && item.criteria ? item.criteria : ''
-          })(<TextArea rows={5} />)}
+          })(
+            <CodeMirrorEditor
+              content={item && item.criteria ? item.criteria : ''}
+              activeKey="criteria"
+              name="criteria"
+            />
+          )}
         </FormItem>
 
         <Actions>
