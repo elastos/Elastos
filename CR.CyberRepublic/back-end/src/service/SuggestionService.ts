@@ -462,10 +462,13 @@ export default class extends Base {
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
     doc = JSON.parse(JSON.stringify(doc))
-    doc.proposer = cvoteList.createdBy
+    if(cvoteList) {
+      doc.proposer = cvoteList.createdBy
+    }
 
-    if (_.isEmpty(doc.comments)) return doc
+    if (doc && _.isEmpty(doc.comments)) return doc
 
+    if(doc && doc.comments) {
     for (const comment of doc.comments) {
       for (const thread of comment) {
         await this.model.getDBInstance().populate(thread, {
@@ -473,6 +476,7 @@ export default class extends Base {
           select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
         })
       }
+    }
     }
     
     return doc
