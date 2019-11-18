@@ -12,6 +12,7 @@ class Common(common_pb2_grpc.CommonServicer):
 	def GenerateAPIRequest(self, request, context):
 		stringLength = 32
 		secret_key = os.environ['SHARED_SECRET_ADENINE']
+		
 		print db.query(exists().where(UserApiRelation.api_key == 'KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM')).scalar()
 
 		if(secret_key==request.secret_key):
