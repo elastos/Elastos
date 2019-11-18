@@ -207,12 +207,12 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 			return
 		}
 
+		c.NeedAppropriation = true
+		c.resetCRCCommitteeUsedAmount()
 		checkpoint := Checkpoint{
 			KeyFrame: c.KeyFrame,
 		}
 		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
-		c.NeedAppropriation = true
-		c.resetCRCCommitteeUsedAmount()
 		c.mtx.Unlock()
 
 		if c.createCRCAppropriationTx != nil && block.Height == c.getHeight() {
@@ -228,7 +228,6 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 					}
 				}()
 			}
-
 		}
 		return
 	}
@@ -313,10 +312,11 @@ func (c *Committee) tryStartVotingPeriod(height uint32) {
 	}
 
 	lastVotingStartHeight := c.LastVotingStartHeight
+	inElectionPeriod := c.InElectionPeriod
 	c.state.history.Append(height, func() {
 		var normalCount uint32
 		for _, m := range c.Members {
-			if m.MemberState != MemberElected {
+			if m.MemberState == MemberElected {
 				normalCount++
 			}
 		}
@@ -325,16 +325,8 @@ func (c *Committee) tryStartVotingPeriod(height uint32) {
 			c.LastVotingStartHeight = height
 		}
 	}, func() {
-		var normalCount uint32
-		for _, m := range c.Members {
-			if m.MemberState != MemberElected {
-				normalCount++
-			}
-		}
-		if normalCount >= c.params.CRAgreementCount {
-			c.InElectionPeriod = true
-			c.LastVotingStartHeight = lastVotingStartHeight
-		}
+		c.InElectionPeriod = inElectionPeriod
+		c.LastVotingStartHeight = lastVotingStartHeight
 	})
 }
 
@@ -344,6 +336,7 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 	for _, v := range c.Members {
 		if bytes.Equal(v.Info.Code, member) {
 			penalty := v.Penalty
+			memberState := v.MemberState
 			history.Append(height, func() {
 				v.ImpeachmentVotes += votes
 				if v.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
@@ -353,11 +346,8 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 				}
 			}, func() {
 				v.ImpeachmentVotes -= votes
-				if v.ImpeachmentVotes < common.Fixed64(float64(circulation)*
-					c.params.VoterRejectPercentage/100.0) {
-					v.MemberState = MemberElected
-					v.Penalty = penalty
-				}
+				v.MemberState = memberState
+				v.Penalty = penalty
 			})
 			return
 		}
