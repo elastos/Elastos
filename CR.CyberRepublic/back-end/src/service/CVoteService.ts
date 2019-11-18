@@ -475,7 +475,7 @@ export default class extends Base {
       query.createdBy = { $in: userIds }
     }
     // cvoteType
-    if(param.type && _.indexOf(_.values(constant.CVOTE_TYPE),param.type)){
+    if(param.type && _.indexOf(_.values(constant.CVOTE_TYPE), param.type) >= 0){
       query.type = param.type
     }
     // startDate <  endDate
@@ -515,33 +515,6 @@ export default class extends Base {
         }, {
           $ne: ""
         }]
-      }
-    }
-    // unvoted by you
-    if (param.unvoted && this.isLoggedIn()) {
-      const currentUserId = _.get(this.currentUser, '_id')
-      const userRole = _.get(this.currentUser, 'role')
-      let unvotedIds = []
-      if(userRole === constant.USER_ROLE.COUNCIL) {
-        let propQuery = { status: constant.CVOTE_STATUS.PROPOSED }
-        const propList = await db_cvote.list(propQuery)
-        const unvotedList = propList.filter(function(item){
-          if(item.voteResult.find(function(it){
-            if(it.votedBy === currentUserId){
-              return true
-            }
-          })) {
-            return false
-          }else{
-            return true
-          }
-        })
-        unvotedIds = unvotedList.map(function(item){
-          return item._id
-        })
-      }
-      query._id = {
-        $in: unvotedIds
       }
     }
 
