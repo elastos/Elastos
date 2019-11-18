@@ -35,12 +35,10 @@ def check_ela_auth(request):
             return JsonResponse({'authenticated': False}, status=404)
         request.session['elaDidInfo'] = data
 
-        print("1: ", data)
         request.session['name'] = data['Nickname']
         request.session['email'] = data['Email']
         request.session['did'] = data['DID']
         if DIDUser.objects.filter(did=data["DID"]).exists() is False:
-            print("2: redirecting to register page")
             redirect_url = "/login/register"
             request.session['redirect_success'] = True
         else:
