@@ -419,7 +419,7 @@ namespace Elastos {
 			std::string sourceData = headerInfo.Specification() + headerInfo.Operation() + didInfoPayload.DIDPayloadString();
 
 			std::string signature = Sign(signDID, sourceData, payPasswd);
-			DIDProofInfo didProofInfo(verificationMethod, Base64::Encode(signature));
+			DIDProofInfo didProofInfo(verificationMethod, Base64::EncodeURL(signature));
 			didInfoPayload.SetDIDProof(didProofInfo);
 
 			nlohmann::json result = didInfoPayload.ToJson(0);

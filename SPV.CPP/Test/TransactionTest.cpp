@@ -190,7 +190,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 
 TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 	nlohmann::json didPayloadJSON = R"(
-{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlmVVE1OXdGcEhVS2U1Tlo2Z2pmZng0OHNXRUJ0OVlnUUUiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJpSFVuRGZzWTh3RWY0ZnI4dm1mZ3NZN1dzOVJDTFJxd0paS0JWNVZCYzdqRyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwiZXhwaXJlcyI6IjIwMjQtMDktMzBUMDQ6MDA6MDBaIn0","proof":{"verificationMethod":"#primary","signature":"c1ux5u6ZHGC5UkPI97ZhwYWUhwFgrIAV9AMTDl9/s07BLhZ9tZn6zTh4+VdiDA6R98HjvwzAuSIkISWTxz5N/A=="}}
+{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlkOVRxdzNmNlRHcnJzTWFaQU5SWTVaREtvWlI4MXF0b1IiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJmMkVDQWJVRXpzZGlkTHd0TlhKclRIczFkQXBVeGNnR1Y3N1lCWFlwQVV0dyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwiZXhwaXJlcyI6IjIwMjQtMTEtMThUMDc6MDA6MDBaIn0","proof":{"verificationMethod":"#primary","signature":"8vrtfqfjU4ICEMVclG1KUEb4C1W4hhBnwKazYOYSDkwGF3F92Q6QkIvDjkmMwINqlYLPVXUC1hXsS6DxEDBDlw"}}
 )"_json;
 
 
@@ -215,8 +215,8 @@ TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 	REQUIRE(header.Operation() == "create");
 
 	const DIDPayloadInfo &didPayloadInfo = didInfo->DIDPayload();
-	REQUIRE(didPayloadInfo.ID() == "did:elastos:ifUQ59wFpHUKe5NZ6gjffx48sWEBt9YgQE");
+	REQUIRE(didPayloadInfo.ID() == "did:elastos:id9Tqw3f6TGrrsMaZANRY5ZDKoZR81qtoR");
 	REQUIRE(didPayloadInfo.PublicKeyInfo().size() == 1);
 	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].ID() == "#primary");
-	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "iHUnDfsY8wEf4fr8vmfgsY7Ws9RCLRqwJZKBV5VBc7jG");
+	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "f2ECAbUEzsdidLwtNXJrTHs1dApUxcgGV77YBXYpAUtw");
 }

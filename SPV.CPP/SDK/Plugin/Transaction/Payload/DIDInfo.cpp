@@ -1034,7 +1034,7 @@ namespace Elastos {
 					pubkeyID = _payloadInfo.ID() + pubkeyID;
 
 				if (proofID == pubkeyID) {
-					bytes_t signature = Base64::Decode(_proof.Signature());
+					bytes_t signature = Base64::DecodeURL(_proof.Signature());
 					bytes_t pubkey = Base58::Decode((*it).PublicKeyBase58());
 					Key key;
 					key.SetPubKey(pubkey);
