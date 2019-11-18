@@ -1,14 +1,15 @@
 import json
+import gc
 
 from random import randint
 from datetime import datetime, timedelta
 
+from django.contrib import messages
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
 
-from django.contrib.auth import login, authenticate
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from .forms import DIDUserCreationForm
@@ -16,11 +17,20 @@ from .forms import DIDUserCreationForm
 from fastecdsa.encoding.sec1 import SEC1Encoder
 from fastecdsa import ecdsa, curve
 from binascii import unhexlify
-from passlib.hash import sha256_crypt
 
 from decouple import config
 
 from .models import DIDUser, DIDRequest
+
+
+def login_required(function):
+    def wrapper(request, *args, **kw):
+        if not request.session.get('logged_in'):
+            return redirect(reverse('index'))
+        return function(request, *args, **kw)
+    wrapper.__doc__ = function.__doc__
+    wrapper.__name__ = function.__name__
+    return wrapper
 
 
 def check_ela_auth(request):
@@ -33,19 +43,17 @@ def check_ela_auth(request):
         data = json.loads(did_request_query_result.data)
         if not data["auth"]:
             return JsonResponse({'authenticated': False}, status=404)
-        request.session['elaDidInfo'] = data
 
-        print("1: ", data)
         request.session['name'] = data['Nickname']
         request.session['email'] = data['Email']
         request.session['did'] = data['DID']
         if DIDUser.objects.filter(did=data["DID"]).exists() is False:
-            print("2: redirecting to register page")
             redirect_url = "/login/register"
             request.session['redirect_success'] = True
         else:
             redirect_url = "/login/home"
             request.session['logged_in'] = True
+            messages.success(request, "Logged in successfully!")
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=404)
     return JsonResponse({'redirect': redirect_url}, status=200)
@@ -89,6 +97,8 @@ def register(request):
                                             'did': request.session['did']})
         if form.is_valid():
             form.save()
+            request.session['logged_in'] = True
+            messages.success(request, "Registered successfully!")
             return redirect(reverse('login:home'))
     else:
         form = DIDUserCreationForm(initial={'name': request.session['name'], 'email': request.session['email'],
@@ -130,9 +140,13 @@ def sign_in(request):
     return render(request, 'login/sign_in.html')
 
 
+@login_required
 def home(request):
     return render(request, 'login/home.html')
 
 
-def logout(request):
-    return HttpResponse("logout")
+def sign_out(request):
+    request.session.clear()
+    gc.collect()
+    messages.success(request, "You have been logged out!")
+    return redirect(reverse('index'))

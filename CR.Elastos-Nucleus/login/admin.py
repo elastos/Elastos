@@ -13,7 +13,7 @@ class DIDUserAdmin(UserAdmin):
     list_filter = ('email', 'name', 'did', 'date_joined', 'is_superuser', 'is_staff', 'is_active',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active')}),
+        ('Permissions', {'fields': ('is_superuser', 'is_staff', 'is_active')}),
     )
     add_fieldsets = (
         (None, {
