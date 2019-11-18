@@ -1,7 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
 import moment from 'moment/moment'
-import BaseComponent from '@/model/BaseComponent'
 import {
   Table,
   Row,
@@ -14,6 +13,7 @@ import {
 } from 'antd'
 import rangePickerLocale from 'antd/es/date-picker/locale/zh_CN'
 import { CSVLink } from 'react-csv'
+import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import { logger } from '@/util'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
@@ -426,7 +426,6 @@ export default class extends BaseComponent {
     const query = {}
     const voteResult =
       sessionStorage.getItem('voteResult') || this.state.voteResult
-    query.voteResult = voteResult
     const searchStr =
       this.state.search || sessionStorage.getItem('proposalSearch')
     const formatStr = 'YYYY-MM-DD'
@@ -443,7 +442,9 @@ export default class extends BaseComponent {
       query.hasTracking = hasTrackingMsg
     }
     if (isUnvotedByYou) {
-      query.unvoted = isUnvotedByYou
+      query.voteResult = FILTERS.UNVOTED
+    } else {
+      query.voteResult = voteResult
     }
     if (!_.isEmpty(creationDate)) {
       query.startDate = moment(creationDate[0]).format(formatStr)
