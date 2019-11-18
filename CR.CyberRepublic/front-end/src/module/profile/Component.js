@@ -7,7 +7,11 @@ import { Col, Row, Icon, Spin, Modal, Upload } from 'antd'
 import moment from 'moment-timezone'
 import { upload_file } from '@/util'
 import { getSafeUrl } from '@/util/url'
-import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
+import {
+  USER_AVATAR_DEFAULT,
+  LINKIFY_OPTION,
+  USER_ROLE_TO_TEXT
+} from '@/constant'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import linkifyStr from 'linkifyjs/string'
@@ -65,6 +69,7 @@ export default class extends BaseComponent {
         <div className="profile-info-container profile-info-container-mobile clearfix">
           {this.renderAvatar(true)}
           {this.renderFullName(true)}
+          {this.renderRole(true)}
           {this.renderLocation(true)}
           {this.renderLocalTime(true)}
           {this.renderDescription(true)}
@@ -129,6 +134,9 @@ export default class extends BaseComponent {
           <div className="profile-right pull-left">
             {this.renderFullName()}
             <Row>
+              <Col span={24} className="profile-right-col">
+                {this.renderRole()}
+              </Col>
               <Col span={24} className="profile-right-col">
                 {this.renderGender()}
               </Col>
@@ -258,6 +266,20 @@ export default class extends BaseComponent {
             )}
           </Upload>
         </div>
+      </div>
+    )
+  }
+
+  renderRole(isMobile) {
+    const { user } = this.props
+    return (
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
+        {I18N.get('profile.detail.role')}:{' '}
+        {user.role && USER_ROLE_TO_TEXT[user.role]}
       </div>
     )
   }
