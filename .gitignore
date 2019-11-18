@@ -12,3 +12,4 @@ xcuserdata
 /node_modules
 /package-lock.json
 
+/Externals/libhdkey/lib/
