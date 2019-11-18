@@ -16,6 +16,7 @@ import config from '@/config'
 import MediaQuery from 'react-responsive'
 import linkifyStr from 'linkifyjs/string'
 import sanitizeHtml from '@/util/html'
+import GenderSvg from './GenderSvg'
 
 import './style.scss'
 
@@ -278,8 +279,8 @@ export default class extends BaseComponent {
           isMobile ? 'profile-general-info-mobile' : ''
         }`}
       >
-        {I18N.get('profile.detail.role')}:{' '}
-        {user.role && USER_ROLE_TO_TEXT[user.role]}
+        <Icon type="user" />
+        <span>{user.role && USER_ROLE_TO_TEXT[user.role]}</span>
       </div>
     )
   }
@@ -318,7 +319,7 @@ export default class extends BaseComponent {
           isMobile ? 'profile-general-info-mobile' : ''
         }`}
       >
-        <Icon type="user" />
+        <GenderSvg />
         <span>{_.capitalize(this.props.user.profile.gender)}</span>
       </div>
     )
