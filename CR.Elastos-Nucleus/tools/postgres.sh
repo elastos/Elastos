@@ -11,7 +11,7 @@ openssl req -x509 -in server.req -text -key server.key -out server.crt
 
 # set postgres (alpine) user as owner of the server.key and permissions to 600
 sudo chmod 600 server.key
-sudo chown 70 server.key
+sudo chown $USER server.key
 
 docker container stop nucleus-postgres || true && docker container rm -f nucleus-postgres || true
 
