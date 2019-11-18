@@ -4,10 +4,10 @@ import secrets
 
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.utils import timezone
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
 
@@ -37,13 +37,13 @@ def login_required(function):
 def check_ela_auth(request):
     state = request.session['elaState']
     if not state:
-        return JsonResponse({'authenticated': False}, status=404)
+        return JsonResponse({'authenticated': False}, status=403)
     try:
-        recently_created_time = datetime.now() - timedelta(minutes=1)
+        recently_created_time = datetime.now(tz=timezone.now) - timedelta(minutes=1)
         did_request_query_result = DIDRequest.objects.get(state=state, created_at__gte=recently_created_time)
         data = json.loads(did_request_query_result.data)
         if not data["auth"]:
-            return JsonResponse({'authenticated': False}, status=404)
+            return JsonResponse({'authenticated': False}, status=403)
 
         request.session['name'] = data['Nickname']
         request.session['email'] = data['Email']
@@ -56,7 +56,7 @@ def check_ela_auth(request):
             request.session['logged_in'] = True
             messages.success(request, "Logged in successfully!")
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=404)
+        return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'redirect': redirect_url}, status=200)
 
 
@@ -76,7 +76,7 @@ def did_callback(request):
         if not valid:
             return JsonResponse({'message': 'Unauthorized'}, status=401)
         try:
-            recently_created_time = datetime.now() - timedelta(minutes=1)
+            recently_created_time = datetime.now(timezone.now) - timedelta(minutes=1)
             did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
                                                               created_at__gte=recently_created_time)
             if not did_request_query_result:
@@ -131,6 +131,7 @@ def sign_in(request):
 
     # Save token to the database didauth_requests
     token = {'state': random, 'data': {'auth': False}}
+
     DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
     # Purge old requests for housekeeping. If the time denoted by 'created_by'
     # is more than 2 minutes old, delete the row
