@@ -236,26 +236,6 @@ export default class extends BaseComponent {
       </Row>
     )
 
-    const filterBtnGroup = (
-      <Button.Group className="filter-group">
-        <StyledButton
-          className={
-            (this.state.voteResult === FILTERS.ALL && 'selected') || ''
-          }
-          onClick={this.clearFilters}
-        >
-          {I18N.get('council.voting.voteResult.all')}
-        </StyledButton>
-        <StyledButton
-          className={
-            (this.state.voteResult === FILTERS.UNVOTED && 'selected') || ''
-          }
-          onClick={() => this.setFilter(FILTERS.UNVOTED)}
-        >
-          {I18N.get('council.voting.voteResult.unvoted')}
-        </StyledButton>
-      </Button.Group>
-    )
     const title = (
       <Col lg={8} md={8} sm={12} xs={24}>
         <h2
@@ -278,12 +258,6 @@ export default class extends BaseComponent {
     const btns = (
       <Col lg={8} md={8} sm={12} xs={24}>
         {statusIndicator}
-        {isCouncil && (
-          <VoteFilter>
-            <span>{`${I18N.get('council.voting.voteResult.show')}: `}</span>
-            {filterBtnGroup}
-          </VoteFilter>
-        )}
       </Col>
     )
     const filterBtns = (
@@ -339,7 +313,7 @@ export default class extends BaseComponent {
         {createBtn}
         <Row
           type="flex"
-          align="middle"
+          align="bottom"
           justify="space-between"
           style={{ marginTop: 20 }}
         >
