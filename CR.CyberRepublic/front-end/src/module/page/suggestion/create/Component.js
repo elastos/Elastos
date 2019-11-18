@@ -8,19 +8,32 @@ import { LG_WIDTH } from '@/config/constant'
 import Meta from '@/module/common/Meta'
 import StandardPage from '../../StandardPage'
 
-import { Container, Title } from './style'
+import { Container } from './style'
 import './style.scss'
 
-const LOCALSTORAGE_DRAFT = 'draft-suggestion';
+const LOCALSTORAGE_DRAFT = 'draft-suggestion'
 
 export default class extends StandardPage {
   constructor(props) {
     super(props)
+    let draftSuggestion = localStorage.getItem(LOCALSTORAGE_DRAFT)
+    if (draftSuggestion) {
+      const rs = JSON.parse(draftSuggestion)
+      // deal with old budget data
+      if (rs.budget && typeof rs.budget === 'string') {
+        delete rs.budget
+      }
+      if (rs.budget && typeof rs.plan === 'string') {
+        delete rs.plan
+      }
+      draftSuggestion = rs
+    } else {
+      draftSuggestion = {}
+    }
 
-    const draftSuggestion = localStorage.getItem(LOCALSTORAGE_DRAFT);
     this.state = {
       error: null,
-      draftSuggestion: draftSuggestion ? JSON.parse(draftSuggestion) : {}
+      draftSuggestion: draftSuggestion
     }
   }
 
@@ -28,15 +41,16 @@ export default class extends StandardPage {
     this.props.history.push('/suggestion')
   }
 
-  onSubmit = (model) => {
-    return this.props.createSuggestion(model)
+  onSubmit = model => {
+    return this.props
+      .createSuggestion(model)
       .then(() => this.historyBack())
       .then(() => localStorage.removeItem(LOCALSTORAGE_DRAFT))
       .catch(err => this.setState({ error: err }))
   }
 
-  onSaveDraft = (model) => {
-    localStorage.setItem(LOCALSTORAGE_DRAFT, JSON.stringify(model));
+  onSaveDraft = model => {
+    localStorage.setItem(LOCALSTORAGE_DRAFT, JSON.stringify(model))
   }
 
   ord_renderContent() {
@@ -77,5 +91,4 @@ export default class extends StandardPage {
       </div>
     )
   }
-
 }

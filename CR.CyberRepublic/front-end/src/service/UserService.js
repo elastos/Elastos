@@ -303,12 +303,11 @@ export default class extends BaseService {
   }
 
   async checkEmail(email) {
-    await api_request({
+    const rs = await api_request({
       path: '/api/user/check-email',
       method: 'post',
-      data: {
-        email,
-      },
+      data: { email }
     })
+    return rs
   }
 }

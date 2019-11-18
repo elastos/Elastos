@@ -31,7 +31,9 @@ import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
 import { convertMarkdownToHtml } from '@/util/markdown-it'
-
+import PaymentList from '@/module/form/SuggestionForm/PaymentList'
+import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
+import Milestones from '@/module/form/SuggestionForm/Milestones'
 import {
   Container,
   Title,
@@ -47,20 +49,48 @@ import {
   LinkGroup,
   Part,
   PartTitle,
-  PartContent
+  PartContent,
+  PlanSubtitle
 } from './style'
 import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key, title) => (
-  <div>
-    {title && <ContentTitle id={key}>{title}</ContentTitle>}
-    <StyledRichContent>
-      <MarkdownPreview content={data[key]} />
-    </StyledRichContent>
-  </div>
-)
+const renderRichContent = (data, key, title) => {
+  let rc
+  if (key === 'budget' && typeof data.budget !== 'string') {
+    rc = <PaymentList list={data.budget} editable={false} />
+  } else if (key === 'plan' && typeof data.plan !== 'string'){
+    rc = (
+      <div>
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.teamInfo')}
+        </PlanSubtitle>
+        <TeamInfoList
+          list={data.plan && data.plan.teamInfo}
+          editable={false}
+        />
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.milestones')}
+        </PlanSubtitle>
+        <Milestones
+          initialValue={data.plan && data.plan.milestone}
+          editable={false}
+        />
+      </div>
+    )
+  } else {
+    rc = <MarkdownPreview content={data[key]} />
+  }
+  return (
+    <div>
+      {title && <ContentTitle id={key}>{title}</ContentTitle>}
+      <StyledRichContent>
+        {rc}
+      </StyledRichContent>
+    </div>
+  )
+}
 
 class C extends StandardPage {
   constructor(props) {
@@ -193,12 +223,63 @@ class C extends StandardPage {
     )
   }
 
+  getPlanHtml(plan) {
+    const lists = plan
+      .map(item => {
+        return `
+          <p>
+            <span>${item.member}</span>
+            <span>${item.role}</span>
+            <span>${item.responsibility}</span>
+            <span>${item.info}</span>
+          </p>
+        `
+      })
+      .join('')
+    return `
+      <div>
+        <p>
+          <span>Team Member#</span>
+          <span>Role</span>
+          <span>Responsibility</span>
+          <span>More info</span>
+        </p>
+        ${lists}
+      </div>
+      `
+  }
+
+  getBudgetHtml(budget) {
+    const lists = budget
+      .map((item, index) => {
+        return `
+          <p>
+            <span>${index + 1}</span>
+            <span>${item.amount}</span>
+            <span>${item.reasons}</span>
+            <span>${item.criteria}</span>
+          </p>
+        `
+      })
+      .join('')
+    return `
+      <div>
+        <p>
+          <span>Payment#</span>
+          <span>Amount(ELA)</span>
+          <span>Reasons</span>
+          <span>Payment of Criteria</span>
+        </p>
+        ${lists}
+      </div>
+      `
+  }
   renderTranslationBtn() {
     const { data } = this.props
     const { title, content } = data
     let text = ''
     if (content) {
-      text = `<h3>${title}</h3> ${content}`
+      text = `<h3>${title}</h3><br /><br /> ${content}`
       return (
         <div style={{ marginTop: 20 }}>
           <Translation text={text} />
@@ -214,12 +295,24 @@ class C extends StandardPage {
       'budget'
     ]
     const result = sections.map(section => {
+      if (section === 'budget' && typeof data.budget !== 'string') {
+        return `
+            <h2>${I18N.get(`proposal.fields.budget`)}</h2>
+            <p>${this.getBudgetHtml(data.budget)}</p>
+          `
+      }
+      if (section === 'plan' && typeof data.plan !== 'string') {
+        return `
+            <h2>${I18N.get(`proposal.fields.plan`)}</h2>
+            <p>${this.getBudgetHtml(data.plan && data.plan.teamInfo)}</p>
+          `
+      }
       return `
-        <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
-        <p>${convertMarkdownToHtml(data[section])}</p>
-      `
+          <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
+          <p>${convertMarkdownToHtml(data[section])}</p>
+        `
     }).join('')
-    text = `<h3>${title}</h3> ${result}`
+    text = `<h3>${title}</h3><br /><br/> ${result}`
     return (
       <div style={{ marginTop: 20 }}>
         <Translation text={text} />

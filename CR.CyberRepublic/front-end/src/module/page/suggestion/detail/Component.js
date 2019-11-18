@@ -34,6 +34,9 @@ import SocialShareButtons from '@/module/common/SocialShareButtons'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
 import TagsContainer from '../common/tags/Container'
 import PopoverProfile from '@/module/common/PopoverProfile'
+import PaymentList from '@/module/form/SuggestionForm/PaymentList'
+import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
+import Milestones from '@/module/form/SuggestionForm/Milestones'
 import {
   Container,
   Title,
@@ -48,6 +51,7 @@ import {
   ItemTitle,
   ItemText,
   StyledAnchor,
+  PlanSubtitle,
   CreateProposalText
 } from './style'
 
@@ -184,7 +188,10 @@ export default class extends StandardPage {
 
   renderPreambleItem(header, value, item) {
     let text = <ItemText>{value}</ItemText>
-    const { detail: { createdBy }, user } = this.props
+    const {
+      detail: { createdBy },
+      user
+    } = this.props
     if (item === 'username') {
       text = <PopoverProfile owner={createdBy} curUser={user} />
     }
@@ -254,14 +261,51 @@ export default class extends StandardPage {
           I18N.get('suggestion.fields.preambleSub.created'),
           moment(detail.createdAt).format('MMM D, YYYY')
         )}
-        {sections.map(section => (
-          <div key={section}>
-            <DescLabel id={section}>
-              {I18N.get(`suggestion.fields.${section}`)}
-            </DescLabel>
-            <MarkdownPreview content={detail[section] ? detail[section] : ''} />
-          </div>
-        ))}
+        {sections.map(section => {
+          if (section === 'plan' && typeof detail.plan !== 'string') {
+            return (
+              <div key="plan">
+                <DescLabel id="plan">
+                  {I18N.get(`suggestion.fields.plan`)}
+                </DescLabel>
+                <PlanSubtitle>
+                  {I18N.get('suggestion.plan.teamInfo')}
+                </PlanSubtitle>
+                <TeamInfoList
+                  list={detail.plan && detail.plan.teamInfo}
+                  editable={false}
+                />
+                <PlanSubtitle>
+                  {I18N.get('suggestion.plan.milestones')}
+                </PlanSubtitle>
+                <Milestones
+                  initialValue={detail.plan && detail.plan.milestone}
+                  editable={false}
+                />
+              </div>
+            )
+          }
+
+          if (section === 'budget' && typeof detail.budget !== 'string') {
+            return (
+              <div key="budget">
+                <DescLabel id="budget">
+                  {I18N.get('suggestion.fields.budget')}
+                </DescLabel>
+                <PaymentList list={detail.budget} editable={false} />
+              </div>
+            )
+          }
+
+          return (
+            <div key={section}>
+              <DescLabel id={section}>
+                {I18N.get(`suggestion.fields.${section}`)}
+              </DescLabel>
+              <MarkdownPreview content={detail[section]} />
+            </div>
+          )
+        })}
       </div>
     )
   }
@@ -361,15 +405,88 @@ export default class extends StandardPage {
     })
   }
 
+  getPlanHtml(plan) {
+    const lists = plan
+      .map(item => {
+        return `
+          <p>
+            <span>${item.member}</span>
+            <span>${item.role}</span>
+            <span>${item.responsibility}</span>
+            <span>${item.info}</span>
+          </p>
+        `
+      })
+      .join('')
+    return `
+      <div>
+        <p>
+          <span>Team Member#</span>
+          <span>Role</span>
+          <span>Responsibility</span>
+          <span>More info</span>
+        </p>
+        ${lists}
+      </div>
+      `
+  }
+
+  getBudgetHtml(budget) {
+    const lists = budget
+      .map((item, index) => {
+        return `
+          <p>
+            <span>${index + 1}</span>
+            <span>${item.amount}</span>
+            <span>${item.reasons}</span>
+            <span>${item.criteria}</span>
+          </p>
+        `
+      })
+      .join('')
+    return `
+      <div>
+        <p>
+          <span>Payment#</span>
+          <span>Amount(ELA)</span>
+          <span>Reasons</span>
+          <span>Payment of Criteria</span>
+        </p>
+        ${lists}
+      </div>
+      `
+  }
+
   renderTranslationBtn() {
     const { detail } = this.props
-    const sections = ['abstract', 'goal', 'motivation', 'plan', 'relevance', 'budget']
-    const result = sections.map(section => {
-      return `
-        <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
-        <p>${convertMarkdownToHtml(detail[section] ? detail[section] : '')}</p>
-      `
-    }).join('')
+    const sections = [
+      'abstract',
+      'goal',
+      'motivation',
+      'plan',
+      'relevance',
+      'budget'
+    ]
+    const result = sections
+      .map(section => {
+        if (section === 'plan' && typeof detail.plan !== 'string') {
+          return `
+            <h2>${I18N.get(`suggestion.fields.plan`)}</h2>
+            <p>${this.getPlanHtml(detail.plan && detail.plan.teamInfo)}</p>
+          `
+        }
+        if (section === 'budget' && typeof detail.budget !== 'string') {
+          return `
+            <h2>${I18N.get(`suggestion.fields.budget`)}</h2>
+            <p>${this.getBudgetHtml(detail.budget)}</p>
+          `
+        }
+        return `
+          <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
+          <p>${convertMarkdownToHtml(detail[section])}</p>
+        `
+      })
+      .join('')
     const text = `
       <h3>${detail.title}</h3>
       <br />

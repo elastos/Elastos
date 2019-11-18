@@ -59,10 +59,10 @@ export const CVote = {
     type: String
   },
   budget: {
-    type: String
+    type: Schema.Types.Mixed
   },
   plan: {
-    type: String
+    type: Schema.Types.Mixed
   },
   // tracking: {
   //   type: String,
@@ -148,5 +148,4 @@ export const CVote = {
   copyright: {
     type: String
   }
-  
 }

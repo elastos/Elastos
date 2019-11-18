@@ -568,21 +568,12 @@ export default class extends Base {
 
     public async sendRegistrationCode(param) {
         const { email, code } = param
-
         await mail.send({
             to: email,
             toName: email,
             subject: 'Your Cyber Republic registration code',
             body: `Your code: ${code}`
         })
-
-        await mail.send({
-            to: 'clarenceliu@elastos.org',
-            toName: 'clarenceliu@elastos.org',
-            subject: 'New Code Registration',
-            body: `Code: ${code} -> ${email}`
-        })
-
         return true
     }
 
@@ -643,9 +634,9 @@ export default class extends Base {
         this.validate_email(email)
 
         if (await db_user.findOne({ email: email })) {
-            throw 'This email is already taken'
+            return { isExist: true }
         }
 
-        return true
+        return { isExist: false }
     }
 }
