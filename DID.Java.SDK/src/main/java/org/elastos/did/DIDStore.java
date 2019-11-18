@@ -40,8 +40,6 @@ public abstract class DIDStore {
 	private static DIDStore instance;
 
 	private DIDBackend backend;
-	private	HDKey privateIdentity;
-	private int lastIndex;
 
 	static public class Entry<K, V> implements java.io.Serializable {
 		private static final long serialVersionUID = -4061538310957041415L;
@@ -98,13 +96,12 @@ public abstract class DIDStore {
 
 	}
 
-	public static void initialize(String type, String location, String storepass,
-				DIDAdapter adapter) throws DIDStoreException {
+	public static void initialize(String type, String location,
+			DIDAdapter adapter) throws DIDStoreException {
 		if (!type.equals("filesystem"))
 			throw new IllegalArgumentException("Unsupported store type: " + type);
 
 		instance = new FileSystemStore(location);
-		instance.initPrivateIdentity(storepass);
 
 		instance.backend = new DIDBackend(adapter);
 	}
@@ -158,39 +155,40 @@ public abstract class DIDStore {
 		if (passphrase == null)
 			passphrase = "";
 
-		privateIdentity = HDKey.fromMnemonic(mnemonic, passphrase);
-		lastIndex = 0;
+		HDKey privateIdentity = HDKey.fromMnemonic(mnemonic, passphrase);
 
 		// Save seed instead of root private key,
 		// keep compatible with Native SDK
 		String encryptedIdentity = encryptToBase64(storepass,
 				privateIdentity.getSeed());
 		storePrivateIdentity(encryptedIdentity);
-		storePrivateIdentityIndex(lastIndex);
+		storePrivateIdentityIndex(0);
+
+		privateIdentity.wipe();
+	}
+
+	public void initPrivateIdentity(String mnemonic, String passphrase,
+			String storepass) throws DIDStoreException {
+		initPrivateIdentity(mnemonic, passphrase, storepass, false);
 	}
 
 	// initialized from saved private identity from DIDStore.
-	protected boolean initPrivateIdentity(String storepass)
+	protected HDKey loadPrivateIdentity(String storepass)
 			throws DIDStoreException {
 		if (!hasPrivateIdentity())
-			return false;
+			return null;
 
 		byte[] seed = decryptFromBase64(storepass, loadPrivateIdentity());
-		privateIdentity = HDKey.fromSeed(seed);
-
-		lastIndex = 0;
-		try {
-			lastIndex = loadPrivateIdentityIndex();
-		} catch (DIDStoreException ignore) {
-		}
-
-		return true;
+		return HDKey.fromSeed(seed);
 	}
 
 	public DIDDocument newDid(String storepass, String hint)
 			throws DIDStoreException {
+		HDKey privateIdentity = loadPrivateIdentity(storepass);
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
+
+		int lastIndex = loadPrivateIdentityIndex();
 
 		HDKey.DerivedKey key = privateIdentity.derive(lastIndex++);
 		DID did = new DID(DID.METHOD, key.getAddress());
@@ -207,7 +205,9 @@ public abstract class DIDStore {
 
 		String encryptedKey = encryptToBase64(storepass, key.serialize());
 		storePrivateKey(did, pk.getId(), encryptedKey);
+		storePrivateIdentityIndex(lastIndex);
 
+		privateIdentity.wipe();
 		key.wipe();
 
 		return doc;

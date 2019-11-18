@@ -40,6 +40,10 @@ public class PublicKey extends DIDObject {
 		this.keyBase58 = keyBase58;
 	}
 
+	protected PublicKey(DIDURL id, DID controller, String keyBase58) {
+		this(id, Constants.defaultPublicKeyType, controller, keyBase58);
+	}
+
 	public DID getController() {
 		return controller;
 	}
@@ -50,6 +54,24 @@ public class PublicKey extends DIDObject {
 
 	public byte[] getPublicKeyBytes() {
 		return Base58.decode(keyBase58);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+
+		if (obj instanceof PublicKey) {
+			PublicKey ref = (PublicKey)obj;
+
+			if (getId().equals(ref.getId()) &&
+					getType().equals(ref.getType()) &&
+					getController().equals(ref.getController()) &&
+					getPublicKeyBase58().equals(ref.getPublicKeyBase58()))
+				return true;
+		}
+
+		return false;
 	}
 
 	static PublicKey fromJson(JsonNode node, DID ref)

@@ -88,8 +88,7 @@ public class DIDStoreTest {
 	public void test00CreateEmptyStore0() throws DIDStoreException {
     	Util.deleteFile(new File(TestConfig.tempStoreRoot));
 
-    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
-    			TestConfig.storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -108,8 +107,7 @@ public class DIDStoreTest {
 
 	@Test(expected = DIDStoreException.class)
 	public void test00CreateEmptyStore1() throws DIDStoreException {
-    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
-    			TestConfig.storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -120,8 +118,7 @@ public class DIDStoreTest {
 	public void test10InitPrivateIdentity0() throws DIDStoreException {
 		Util.deleteFile(new File(TestConfig.tempStoreRoot));
 
-    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
-    			TestConfig.storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -143,8 +140,7 @@ public class DIDStoreTest {
 
     	assertTrue(tempStore.hasPrivateIdentity());
 
-    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
-    			TestConfig.storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
 
     	tempStore = DIDStore.getInstance();
 
@@ -152,10 +148,9 @@ public class DIDStoreTest {
 	}
 
 	// Can not decrypt root private key because wrong storepass
-	@Test(expected = DIDStoreException.class)
+	@Test
 	public void test10InitPrivateIdentity1() throws DIDStoreException {
-		DIDStore.initialize("filesystem", TestConfig.tempStoreRoot,
-				"password", adapter);
+		DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
 
     	DIDStore tempStore = DIDStore.getInstance();
 
@@ -166,8 +161,7 @@ public class DIDStoreTest {
     public void test20Setup() throws DIDStoreException {
     	Util.deleteFile(new File(TestConfig.storeRoot));
 
-    	DIDStore.initialize("filesystem", TestConfig.storeRoot,
-    			TestConfig.storePass, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
 
     	store = DIDStore.getInstance();
 

@@ -111,7 +111,7 @@ public class DIDDocumentTest {
 	public void test31SignAndVerify() throws DIDException {
 		Util.deleteFile(new File(TestConfig.storeRoot));
     	DIDStore.initialize("filesystem", TestConfig.storeRoot,
-    			TestConfig.storePass, new FakeConsoleAdapter());
+    			new FakeConsoleAdapter());
     	store = DIDStore.getInstance();
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
     	store.initPrivateIdentity(mnemonic, TestConfig.passphrase,

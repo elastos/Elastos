@@ -305,7 +305,7 @@ public class Base64Test {
 	}
 
 	@Test
-	public void testCompatible() {
+	public void testCompatibility() {
 		for (int len = 1; len <= 256; len++) {
 			byte[] input = new byte[len];
 

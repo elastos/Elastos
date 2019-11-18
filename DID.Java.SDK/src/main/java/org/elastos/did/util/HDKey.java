@@ -41,12 +41,15 @@ import io.github.novacrypto.bip44.BIP44;
 import io.github.novacrypto.hashing.Sha256;
 
 public class HDKey {
-	final static String CURVE_ALGORITHM = "secp256r1";
-	final static X9ECParameters CURVE_PARAMS;
-	final static ECDomainParameters CURVE;
+	public static final int PUBLICKEY_BYTES = 33;
+	public static final int PRIVATEKEY_BYTES = 32;
 
-    public final static byte PADDING_IDENTITY	= 0x67;
-    public final static byte PADDING_STANDARD	= (byte)0xAD;
+	protected static final String CURVE_ALGORITHM = "secp256r1";
+	protected static X9ECParameters CURVE_PARAMS;
+	protected static ECDomainParameters CURVE;
+
+    private final static byte PADDING_IDENTITY	= 0x67;
+    private final static byte PADDING_STANDARD	= (byte)0xAD;
 
     private byte[] seed;
 	private ExtendedPrivateKey rootPrivateKey;
@@ -97,6 +100,11 @@ public class HDKey {
 				AddressIndex.DERIVATION);
 
 		return new DerivedKey(child);
+	}
+
+	public void wipe() {
+		Arrays.fill(seed, (byte)0);
+		Arrays.fill(rootPrivateKey.getKeyBytes(), (byte)0);
 	}
 
 	public static class DerivedKey {

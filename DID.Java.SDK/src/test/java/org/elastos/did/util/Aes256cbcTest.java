@@ -65,4 +65,15 @@ public class Aes256cbcTest {
 
 		assertArrayEquals(expected, plainBytes);
 	}
+
+	@Test
+	public void testCompatibility() throws Exception {
+		String plain = "brown bear what do you see";
+		String passwd = "password";
+		String base64 = "uK7mHw5JHRD2WS-BmA2b_4mUPD9WhttY9uAC_aw9Tdc";
+
+		String cipher = Aes256cbc.encryptToBase64(passwd, plain.getBytes());
+
+		assertEquals(base64, cipher);
+	}
 }

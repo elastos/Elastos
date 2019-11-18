@@ -99,19 +99,21 @@ public class EcdsaSignerTest {
 
 	@Test
 	public void testCompatibility() {
-		// TODO: Update base64 to base64url and signature
 		String input = "abcdefghijklmnopqrstuvwxyz";
 		String pkBase58 = "voHKsUjoPSJSQKWLJHWYzUfEv3NEaRUyJReoZVS6XCYM";
-		String expectedSig = "QEW+oi7buIg4eg6uRANjAdX0qm8QPdiH9aK/E4lUAiHxEo8jidb1KxryjLRgIMz5tTKx2LU/CCHkXMyeZerkeZ8=";
+		String expectedSig1 = "SlDq9rsEQJgS83ydi2cPMiwXm6SgJCuwYwx_NqpOwf5IQcbfUM574GHThnvJ5lgTeyeOwVcxbWyQxehlK3MO-A";
+		String expectedSig2 = "gm4Bx8ijQjBEFsf1Cm1mHcqSzFHquoQe235uzL3OUDJiIuFnJ49lEWn0RueIfgCZbrDEhLdxKSaNYqnBpjiR6A";
 
 		byte[] pk = Base58.decode(pkBase58);
 
-		byte[] _sig = Base64.decode(expectedSig);
-		byte[] sig = Arrays.copyOfRange(_sig, 1, 65);
-
+		byte[] sig = Base64.decode(expectedSig1,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		boolean result = EcdsaSigner.verify(pk, sig, input.getBytes());
+		assertTrue(result);
 
+		sig = Base64.decode(expectedSig2,
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+		result = EcdsaSigner.verify(pk, sig, input.getBytes());
 		assertTrue(result);
 	}
-
 }
