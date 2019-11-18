@@ -6,6 +6,8 @@ import ElastosDIDSDK
 
 class DIDDoucumentTests: XCTestCase {
     
+    var store: DIDStore!
+    
     var compactPath: String!
     var documentPath: String!
     var normalizedPath: String!
@@ -65,67 +67,41 @@ class DIDDoucumentTests: XCTestCase {
         XCTAssertEqual(str, jsonStr)
     }
     
-    /*
     func testSignAndVerify() {
         do {
-            /*
-             Util.deleteFile(new File(TestConfig.storeRoot));
-             DIDStore.initialize("filesystem", TestConfig.storeRoot,
-                     TestConfig.storePass, new FakeConsoleAdapter());
-             store = DIDStore.getInstance();
-             String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-             store.initPrivateIdentity(mnemonic, TestConfig.passphrase,
-                     TestConfig.storePass, true);
-
-             LinkedHashMap<DID, String> ids = new LinkedHashMap<DID, String>(128);
-             for (int i = 0; i < 100; i++) {
-                 String hint = "my did " + i;
-                 DIDDocument doc = store.newDid(TestConfig.storePass, hint);
-
-                 File file = new File(TestConfig.storeRoot + File.separator + "ids"
-                         + File.separator + doc.getSubject().getMethodSpecificId()
-                         + File.separator + "document");
-                 assertTrue(file.exists());
-                 assertTrue(file.isFile());
-
-                 file = new File(TestConfig.storeRoot + File.separator + "ids"
-                         + File.separator + "."
-                         + doc.getSubject().getMethodSpecificId() + ".meta");
-                 assertTrue(file.exists());
-                 assertTrue(file.isFile());
-
-                 ids.put(doc.getSubject(), hint);
-             }
-             */
-            
             // add ids
-//            TestUtils.deleteFile(tempStoreRoot)
-            DIDStore.creatInstance(<#T##type: String##String#>, location: <#T##String#>, storepass: <#T##String#>)
-            let hint: String = "my first did"
-            let doc: DIDDocument = try! store.newDid(storePass, hint)
-            primaryDid = doc.subject
-            let id: String = doc.subject!.methodSpecificId!
-            let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
-            XCTAssertTrue(TestUtils.existsFile(path))
-            
-            let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
-            XCTAssertTrue(TestUtils.existsFile(path2))
-            ids[doc.subject!] = hint
-            
+            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass, FakeConsoleAdaptor())
+            store = try DIDStore.shareInstance()
+            let mnemonic: String = HDKey.generateMnemonic(0)
+            try store.initPrivateIdentity(mnemonic, passphrase, storePass, true)
+
+            var ids: Dictionary<DID, String> = [: ]
+            for i in 0..<100 {
+                let hint: String = "my did \(i)"
+                let doc: DIDDocument = try! store.newDid(storePass, hint)
+                let id: String = doc.subject!.methodSpecificId!
+                let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
+                XCTAssertTrue(TestUtils.existsFile(path))
+                
+                let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
+                XCTAssertTrue(TestUtils.existsFile(path2))
+                ids[doc.subject!] = hint
+            }
+        
             try ids.keys.forEach { did in
                 let doc: DIDDocument = try store.loadDid(did)!
                 let json: String = try doc.toExternalForm(false)
                 let pkid: DIDURL = try DIDURL(did, "primary")
                 let inputs: [CVarArg] = [json, json.count]
                 let sig: String = try doc.sign(pkid, storePass, inputs)
-                var re: Bool = try doc.verify(pkid, sig, inputs)
+                let re: Bool = try doc.verify(pkid, sig, inputs)
                 XCTAssertTrue(re)
             }
         } catch {
             print(error)
         }
     }
-    */
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {

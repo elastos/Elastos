@@ -11,8 +11,6 @@ class DIDStoreTests: XCTestCase {
 
     override func setUp() {
         do {
-//            SPVAdapter(TestConfig.walletDir, TestConfig.walletId,
-//            TestConfig.networkConfig, TestConfig.resolver,
             let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "helloworld"})
             adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
             TestUtils.deleteFile(storePath)
