@@ -31,6 +31,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	fee := c.Float64("fee")
 	votes := c.Float64("votes")
 	toAddr := c.String("to")
+	amounts := c.String("amounts")
 	ownPubkey := c.String("ownerpublickey")
 	nodePubkey := c.String("nodepublickey")
 	host := c.String("host")
@@ -89,6 +90,10 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(toAddr))
 		return 1
 	}
+	getAmounts := func(L *lua.LState) int {
+		L.Push(lua.LString(amounts))
+		return 1
+	}
 	getOwnerPublicKey := func(L *lua.LState) int {
 		L.Push(lua.LString(ownPubkey))
 		return 1
@@ -135,6 +140,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 	L.Register("getFee", getFee)
 	L.Register("getVotes", getVotes)
 	L.Register("getToAddr", getToAddr)
+	L.Register("getAmounts", getAmounts)
 	L.Register("getOwnerPublicKey", getOwnerPublicKey)
 	L.Register("getNodePublicKey", getNodePublicKey)
 	L.Register("getHostAddr", getHostAddr)
@@ -349,6 +355,10 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "to",
 				Usage: "set the output address",
+			},
+			cli.StringFlag{
+				Name:  "amounts",
+				Usage: "set a list of amounts",
 			},
 			cli.StringFlag{
 				Name:  "ownerpublickey, opk",
