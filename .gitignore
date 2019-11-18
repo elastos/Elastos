@@ -25,3 +25,6 @@ tools/privkey.pem
 tools/server.*
 tools/.postgres-data
 
+# static files
+static/
+
