@@ -1,5 +1,7 @@
 #!/bin/bash 
 
+export PATH="/usr/local/opt/openssl/bin:$PATH"
+
 set -euo pipefail
 
 sudo rm -f privkey.pem server.crt server.key server.req
