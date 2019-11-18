@@ -3,12 +3,12 @@ import json
 from random import randint
 from datetime import datetime, timedelta
 
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
 
-from django.contrib.auth import login, authenticate
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from .forms import DIDUserCreationForm
@@ -16,7 +16,6 @@ from .forms import DIDUserCreationForm
 from fastecdsa.encoding.sec1 import SEC1Encoder
 from fastecdsa import ecdsa, curve
 from binascii import unhexlify
-from passlib.hash import sha256_crypt
 
 from decouple import config
 
@@ -33,7 +32,6 @@ def check_ela_auth(request):
         data = json.loads(did_request_query_result.data)
         if not data["auth"]:
             return JsonResponse({'authenticated': False}, status=404)
-        request.session['elaDidInfo'] = data
 
         request.session['name'] = data['Nickname']
         request.session['email'] = data['Email']
@@ -128,6 +126,7 @@ def sign_in(request):
     return render(request, 'login/sign_in.html')
 
 
+@login_required
 def home(request):
     return render(request, 'login/home.html')
 

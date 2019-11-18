@@ -101,7 +101,6 @@ DATABASES = {
 # Use Custom User
 AUTH_USER_MODEL = 'login.DIDUser'
 
-
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
@@ -119,6 +118,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# how to handle login
+LOGIN_URL = '/'
+LOGIN_REDIRECT_URL = '/login/home'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
