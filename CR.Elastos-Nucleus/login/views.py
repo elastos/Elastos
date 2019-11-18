@@ -1,9 +1,10 @@
 import json
+import gc
 
 from random import randint
 from datetime import datetime, timedelta
 
-from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.utils.http import urlencode
@@ -20,6 +21,16 @@ from binascii import unhexlify
 from decouple import config
 
 from .models import DIDUser, DIDRequest
+
+
+def login_required(function):
+    def wrapper(request, *args, **kw):
+        if not request.session.get('logged_in'):
+            return redirect(reverse('index'))
+        return function(request, *args, **kw)
+    wrapper.__doc__ = function.__doc__
+    wrapper.__name__ = function.__name__
+    return wrapper
 
 
 def check_ela_auth(request):
@@ -42,6 +53,7 @@ def check_ela_auth(request):
         else:
             redirect_url = "/login/home"
             request.session['logged_in'] = True
+            messages.success(request, "Logged in successfully!")
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=404)
     return JsonResponse({'redirect': redirect_url}, status=200)
@@ -85,6 +97,8 @@ def register(request):
                                             'did': request.session['did']})
         if form.is_valid():
             form.save()
+            request.session['logged_in'] = True
+            messages.success(request, "Registered successfully!")
             return redirect(reverse('login:home'))
     else:
         form = DIDUserCreationForm(initial={'name': request.session['name'], 'email': request.session['email'],
@@ -131,5 +145,8 @@ def home(request):
     return render(request, 'login/home.html')
 
 
-def logout(request):
-    return HttpResponse("logout")
+def sign_out(request):
+    request.session.clear()
+    gc.collect()
+    messages.success(request, "You have been logged out!")
+    return redirect(reverse('index'))
