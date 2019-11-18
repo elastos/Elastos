@@ -57,16 +57,18 @@ class Milestones extends Component {
                   trigger="click"
                   placement="top"
                 >
-                  <Square>
-                    <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                    <div>{item.version}</div>
-                  </Square>
-                  <Button
-                    type="primary"
-                    size="small"
-                    shape="circle"
-                    icon="edit"
-                  />
+                  <Popover content={item.version}>
+                    <Square>
+                      <div>{moment(item.date).format('MMM D, YYYY')}</div>
+                      <div className="square-content">{item.version}</div>
+                    </Square>
+                    <Button
+                      type="primary"
+                      size="small"
+                      shape="circle"
+                      icon="edit"
+                    />
+                  </Popover>
                 </Popover>
               ) : (
                 <Fragment>
@@ -137,6 +139,12 @@ const Square = styled.div`
     margin-bottom: 6px;
     &:last-child {
       margin-bottom: 0;
+    }
+    &.square-content {
+      width: 140px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
     }
   }
 `

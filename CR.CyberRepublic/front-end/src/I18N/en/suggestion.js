@@ -130,9 +130,9 @@ export default {
     role: 'Role',
     responsibility: 'Responsibility',
     moreInfo: 'More Info',
-    createTeamInfo: 'Create team info',
+    createTeamInfo: 'Add team member',
     action: 'Action',
-    teamInfo: 'Team Info',
+    teamInfo: 'Implementation Team',
     milestones: 'Milestones',
     publishDate: 'Publish Date',
     version: 'Version'
