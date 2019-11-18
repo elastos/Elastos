@@ -28,7 +28,7 @@ export default {
     summary: '总结',
     status: '提案状态',
     budgetRequested: '预算',
-    hasTrackingMsg: '有跟踪信息要查看吗',
+    hasTrackingMsg: '是否有跟踪信息需要审核',
     isUnvotedByYou: '未被自己投票的提案',
     creationDate: '创建日期',
     author: '作者',

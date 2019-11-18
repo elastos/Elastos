@@ -84,7 +84,7 @@ export const FilterPanel = styled.div`
     margin-bottom: 58px;
   }
   .filter-input {
-    width: 55%;
+    width: ${props => (props.isCouncil ? '55%' : '50%')};
   }
 `
 
@@ -120,7 +120,7 @@ export const FilterContent = styled.div`
 `
 
 export const FilterItemLabel = styled.div`
-  width: 40%;
+  width: ${props => (props.isCouncil ? '40%' : '25%')};;
   font-family: Synthese;
   font-size: 14px;
   line-height: 20px;

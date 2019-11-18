@@ -586,6 +586,7 @@ export default class extends BaseComponent {
       type,
       endsDate
     } = this.state
+    const { isCouncil } = this.props
     const lang = localStorage.getItem('lang') || 'en'
     const rangePickerOptions = {}
     if (lang === 'zh') {
@@ -596,13 +597,14 @@ export default class extends BaseComponent {
       2: '$100 - $1000 (USD)',
       3: '> $1000 (USD)'
     }
+    const colSpan = isCouncil ? 8 : 12
     return (
-      <FilterPanel>
+      <FilterPanel isCouncil={isCouncil}>
         <Row type="flex" gutter={10} className="filter">
-          <Col span={8} className="filter-panel">
+          <Col span={colSpan} className="filter-panel">
             <FilterContent>
               <FilterItem>
-                <FilterItemLabel>
+                <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.status')}
                 </FilterItemLabel>
                 <Select
@@ -618,7 +620,7 @@ export default class extends BaseComponent {
                 </Select>
               </FilterItem>
               <FilterItem>
-                <FilterItemLabel>
+                <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.budgetRequested')}
                 </FilterItemLabel>
                 <Select
@@ -644,23 +646,25 @@ export default class extends BaseComponent {
               </FilterItem>
             </FilterContent>
           </Col>
-          <Col span={8} className="filter-panel">
+          {isCouncil && (
+            <Col span={colSpan} className="filter-panel">
+              <FilterContent>
+                <FilterItem>
+                  <Checkbox
+                    checked={isUnvotedByYou}
+                    onChange={this.handleIsUnvotedByYouChange}
+                  />
+                  <CheckboxText>
+                    {I18N.get('proposal.fields.isUnvotedByYou')}
+                  </CheckboxText>
+                </FilterItem>
+              </FilterContent>
+            </Col>
+          )}
+          <Col span={colSpan} className="filter-panel">
             <FilterContent>
               <FilterItem>
-                <Checkbox
-                  checked={isUnvotedByYou}
-                  onChange={this.handleIsUnvotedByYouChange}
-                />
-                <CheckboxText>
-                  {I18N.get('proposal.fields.isUnvotedByYou')}
-                </CheckboxText>
-              </FilterItem>
-            </FilterContent>
-          </Col>
-          <Col span={8} className="filter-panel">
-            <FilterContent>
-              <FilterItem>
-                <FilterItemLabel>
+                <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.creationDate')}
                 </FilterItemLabel>
                 <RangePicker
@@ -671,7 +675,7 @@ export default class extends BaseComponent {
                 />
               </FilterItem>
               <FilterItem>
-                <FilterItemLabel>
+                <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.author')}
                 </FilterItemLabel>
                 <Input
@@ -681,7 +685,7 @@ export default class extends BaseComponent {
                 />
               </FilterItem>
               <FilterItem>
-                <FilterItemLabel>
+                <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.type')}
                 </FilterItemLabel>
                 <Select
@@ -697,7 +701,7 @@ export default class extends BaseComponent {
                 </Select>
               </FilterItem>
               <FilterItem>
-                <FilterItemLabel>
+                <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.endsDate')}
                 </FilterItemLabel>
                 <RangePicker

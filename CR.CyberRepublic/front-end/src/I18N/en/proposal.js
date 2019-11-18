@@ -28,7 +28,7 @@ export default {
     summary: 'Summary',
     status: 'Proposal Status',
     budgetRequested: 'Budget Requested',
-    hasTrackingMsg: 'Has tracking message to be viewed',
+    hasTrackingMsg: 'Has tracking message to be reviewed',
     isUnvotedByYou: 'Unvoted by You',
     creationDate: 'Proposal Date',
     author: 'Author',
