@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'service.apps.ServiceConfig',
     'login.apps.LoginConfig',
     'qr_code',
-    'rest_framework'
+    'django_extensions'
 ]
 
 MIDDLEWARE = [
@@ -97,6 +97,10 @@ DATABASES = {
         'PORT': config('DB_PORT'),
     }
 }
+
+# Use Custom User
+AUTH_USER_MODEL = 'login.DIDUser'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
