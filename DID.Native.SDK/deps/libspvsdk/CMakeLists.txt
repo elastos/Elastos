@@ -20,6 +20,12 @@ set(CMAKE_ARGS_INIT "${CMAKE_ARGS_INIT}"
     "-DIOS_RANLIB=${IOS_RANLIB}")
 endif()
 
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(DEBUG_OPTION "ON")
+else()
+    set(DEBUG_OPTION "OFF")
+endif()
+
 ExternalProject_Add(
     libspvsdk
 
@@ -32,7 +38,7 @@ ExternalProject_Add(
 
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${PROJECT_INT_DIST_DIR}
         -DARGUMENT_LOG_ENABLE=ON
-        -DSPDSDK_DEBUG_ON=OFF
+        -DSPDSDK_DEBUG_ON=${DEBUG_OPTION}
         -DSPV_CONSOLE_LOG=OFF
         -DSPV_BUILD_TEST_CASES=OFF
         -DSPV_BUILD_APPS=OFF
