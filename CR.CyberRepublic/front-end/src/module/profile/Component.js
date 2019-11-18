@@ -3,9 +3,7 @@ import _ from 'lodash'
 import BaseComponent from '@/model/BaseComponent'
 import UserEditForm from '@/module/form/UserEditForm/Container'
 import I18N from '@/I18N'
-import {
-  Col, Row, Icon, Popover, Button, Spin, Tabs, Tag, Modal, Upload,
-} from 'antd'
+import { Col, Row, Icon, Spin, Modal, Upload } from 'antd'
 import moment from 'moment-timezone'
 import { upload_file } from '@/util'
 import { getSafeUrl } from '@/util/url'
@@ -17,8 +15,6 @@ import sanitizeHtml from '@/util/html'
 
 import './style.scss'
 
-const TabPane = Tabs.TabPane
-
 /**
  * This has 3 views
  *
@@ -28,19 +24,22 @@ const TabPane = Tabs.TabPane
  *
  */
 export default class extends BaseComponent {
-
   constructor(props) {
     super(props)
 
     this.state = {
-      editing: false,
+      editing: false
     }
   }
 
   // TODO: add twitter, telegram, linkedIn, FB
   ord_render() {
     if (_.isEmpty(this.props.user) || this.props.user.loading) {
-      return <div className="center"><Spin size="large" /></div>
+      return (
+        <div className="center">
+          <Spin size="large" />
+        </div>
+      )
     }
 
     return (
@@ -52,9 +51,7 @@ export default class extends BaseComponent {
             </div>
           </MediaQuery>
           <MediaQuery minWidth={801}>
-            <div className="member-content">
-              {this.renderDesktop()}
-            </div>
+            <div className="member-content">{this.renderDesktop()}</div>
           </MediaQuery>
         </div>
       </div>
@@ -75,33 +72,23 @@ export default class extends BaseComponent {
 
         <div className="profile-info-container profile-info-container-mobile clearfix">
           <div className="pull-left skillset-header">
-            <h4 className="komu-a">
-              {I18N.get('profile.skillset.header')}
-            </h4>
+            <h4 className="komu-a">{I18N.get('profile.skillset.header')}</h4>
           </div>
           <div className="pull-right skillset-content">
             <Row>
-              <Col span={24}>
-                {this.renderSkillsets(true)}
-              </Col>
-              <Col span={24}>
-                {this.renderProfession(true)}
-              </Col>
+              <Col span={24}>{this.renderSkillsets(true)}</Col>
+              <Col span={24}>{this.renderProfession(true)}</Col>
             </Row>
           </div>
         </div>
 
         <div className="profile-info-container profile-info-container-mobile clearfix">
           <div className="pull-left skillset-header">
-            <h4 className="komu-a">
-              {I18N.get('profile.social.header')}
-            </h4>
+            <h4 className="komu-a">{I18N.get('profile.social.header')}</h4>
           </div>
           <div className="pull-right skillset-content">
             <Row>
-              <Col span={24}>
-                {this.renderSocialMedia(true)}
-              </Col>
+              <Col span={24}>{this.renderSocialMedia(true)}</Col>
             </Row>
           </div>
         </div>
@@ -122,15 +109,13 @@ export default class extends BaseComponent {
         footer={null}
         width="70%"
       >
-        { this.state.editing
-          && (
-            <UserEditForm
-              user={this.props.user}
-              switchEditMode={this.switchEditMode.bind(this, false)}
-              completing={false}
-            />
-          )
-        }
+        {this.state.editing && (
+          <UserEditForm
+            user={this.props.user}
+            switchEditMode={this.switchEditMode.bind(this, false)}
+            completing={false}
+          />
+        )}
       </Modal>
     )
   }
@@ -140,9 +125,7 @@ export default class extends BaseComponent {
       <div>
         {this.renderBanner()}
         <div className="profile-info-container clearfix">
-          <div className="profile-left pull-left">
-            {this.renderAvatar()}
-          </div>
+          <div className="profile-left pull-left">{this.renderAvatar()}</div>
           <div className="profile-right pull-left">
             {this.renderFullName()}
             <Row>
@@ -163,33 +146,23 @@ export default class extends BaseComponent {
 
         <div className="profile-info-container clearfix">
           <div className="pull-left skillset-header">
-            <h4 className="komu-a">
-              {I18N.get('profile.skillset.header')}
-            </h4>
+            <h4 className="komu-a">{I18N.get('profile.skillset.header')}</h4>
           </div>
           <div className="pull-right skillset-content">
             <Row>
-              <Col span={14}>
-                {this.renderSkillsets()}
-              </Col>
-              <Col span={10}>
-                {this.renderProfession()}
-              </Col>
+              <Col span={14}>{this.renderSkillsets()}</Col>
+              <Col span={10}>{this.renderProfession()}</Col>
             </Row>
           </div>
         </div>
 
         <div className="profile-info-container clearfix">
           <div className="pull-left skillset-header">
-            <h4 className="komu-a">
-              {I18N.get('profile.social.header')}
-            </h4>
+            <h4 className="komu-a">{I18N.get('profile.social.header')}</h4>
           </div>
           <div className="pull-right skillset-content">
             <Row>
-              <Col span={24}>
-                {this.renderSocialMedia()}
-              </Col>
+              <Col span={24}>{this.renderSocialMedia()}</Col>
             </Row>
           </div>
         </div>
@@ -204,7 +177,10 @@ export default class extends BaseComponent {
     return (
       <Row gutter={16} className="profile-metrics">
         <Col md={24}>
-          {this.renderMetricItem(I18N.get('profile.followers'), this.props.user.subscribers.length)}
+          {this.renderMetricItem(
+            I18N.get('profile.followers'),
+            this.props.user.subscribers.length
+          )}
         </Col>
       </Row>
     )
@@ -213,21 +189,29 @@ export default class extends BaseComponent {
   renderMetricItem(label, value) {
     return (
       <div className="item">
-        <div className="value">
-          {value}
-        </div>
-        <div className="center">
-          {label}
-        </div>
+        <div className="value">{value}</div>
+        <div className="center">{label}</div>
       </div>
     )
   }
 
   renderBanner(isMobile, url) {
     return (
-      <div className={`profile-banner ${isMobile ? 'profile-banner-mobile' : ''}`}>
-        <span style={{ backgroundImage: this.getBannerWithFallback(url || this.props.user.profile.banner) }} />
-        <Icon className="profile-edit-btn" type="edit" onClick={this.switchEditMode.bind(this)} />
+      <div
+        className={`profile-banner ${isMobile ? 'profile-banner-mobile' : ''}`}
+      >
+        <span
+          style={{
+            backgroundImage: this.getBannerWithFallback(
+              url || this.props.user.profile.banner
+            )
+          }}
+        />
+        <Icon
+          className="profile-edit-btn"
+          type="edit"
+          onClick={this.switchEditMode.bind(this)}
+        />
       </div>
     )
   }
@@ -235,23 +219,27 @@ export default class extends BaseComponent {
   renderAvatar(isMobile) {
     const p_avatar = {
       showUploadList: false,
-      customRequest: (info) => {
-        upload_file(info.file).then(async (d) => {
+      customRequest: info => {
+        upload_file(info.file).then(async d => {
           await this.props.updateUser(this.props.currentUserId, {
             profile: {
               avatar: d.url,
               avatarFilename: d.filename,
-              avatarFileType: d.type,
-            },
+              avatarFileType: d.type
+            }
           })
 
           await this.props.getCurrentUser()
         })
-      },
+      }
     }
 
     return (
-      <div className={`profile-avatar-container ${isMobile ? 'profile-avatar-container-mobile' : ''}`}>
+      <div
+        className={`profile-avatar-container ${
+          isMobile ? 'profile-avatar-container-mobile' : ''
+        }`}
+      >
         <div className="profile-avatar">
           <Upload
             name="avatar"
@@ -259,19 +247,15 @@ export default class extends BaseComponent {
             className="avatar-uploader"
             {...p_avatar}
           >
-            {this.props.avatar_loading
-              ? (
-                <div>
-                  <Icon type="loading" />
-                </div>
-              )
-              : (
-                <img src={this.getAvatarWithFallback(
-                  this.props.user.profile.avatar,
-                )}
-                />
-              )
-            }
+            {this.props.avatar_loading ? (
+              <div>
+                <Icon type="loading" />
+              </div>
+            ) : (
+              <img
+                src={this.getAvatarWithFallback(this.props.user.profile.avatar)}
+              />
+            )}
           </Upload>
         </div>
       </div>
@@ -280,7 +264,11 @@ export default class extends BaseComponent {
 
   renderFullName(isMobile) {
     return (
-      <h1 className={`komu-a profile-general-title ${isMobile ? 'profile-general-title-mobile' : ''}`}>
+      <h1
+        className={`komu-a profile-general-title ${
+          isMobile ? 'profile-general-title-mobile' : ''
+        }`}
+      >
         {this.props.user.profile.firstName}
         &nbsp;
         {this.props.user.profile.lastName}
@@ -290,22 +278,26 @@ export default class extends BaseComponent {
 
   renderLocation(isMobile) {
     return (
-      <div className={`profile-general-info ${isMobile ? 'profile-general-info-mobile' : ''}`}>
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
         <Icon type="pushpin" />
-        <span>
-          {this.getCountryName(this.props.user.profile.country)}
-        </span>
+        <span>{this.getCountryName(this.props.user.profile.country)}</span>
       </div>
     )
   }
 
   renderGender(isMobile) {
     return (
-      <div className={`profile-general-info ${isMobile ? 'profile-general-info-mobile' : ''}`}>
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
         <Icon type="user" />
-        <span>
-          {_.capitalize(this.props.user.profile.gender)}
-        </span>
+        <span>{_.capitalize(this.props.user.profile.gender)}</span>
       </div>
     )
   }
@@ -314,11 +306,7 @@ export default class extends BaseComponent {
     return (
       <div className="skillset-container">
         {_.map(this.props.user.profile.skillset || [], skillset => (
-          <div key={skillset}>
-            +
-            {' '}
-            {I18N.get(`user.skillset.${skillset}`)}
-          </div>
+          <div key={skillset}>+ {I18N.get(`user.skillset.${skillset}`)}</div>
         ))}
       </div>
     )
@@ -327,42 +315,37 @@ export default class extends BaseComponent {
   renderProfession(isMobile) {
     return (
       <div className="profession-container">
-        {this.props.user.profile.profession
-          && (
-            <div>
-              {I18N.get(`profile.profession.${this.props.user.profile.profession}`)}
-            </div>
-          )
-        }
-        {!_.isEmpty(this.props.user.profile.portfolio)
-          && (
-            <div className="portfolio-container">
-              <a href={getSafeUrl(this.props.user.profile.portfolio)} target="_blank" className="link-container">
-                <Icon type="link" />
-                {' '}
-                <span>
-                  {' '}
-                  {I18N.get('profile.portfolio')}
-                  {' '}
-                </span>
-              </a>
-            </div>
-          )
-        }
+        {this.props.user.profile.profession && (
+          <div>
+            {I18N.get(
+              `profile.profession.${this.props.user.profile.profession}`
+            )}
+          </div>
+        )}
+        {!_.isEmpty(this.props.user.profile.portfolio) && (
+          <div className="portfolio-container">
+            <a
+              href={getSafeUrl(this.props.user.profile.portfolio)}
+              target="_blank"
+              className="link-container"
+            >
+              <Icon type="link" />{' '}
+              <span> {I18N.get('profile.portfolio')} </span>
+            </a>
+          </div>
+        )}
       </div>
     )
   }
 
   getBannerWithFallback(banner) {
     return _.isEmpty(banner)
-      ? 'url(\'/assets/images/profile-banner.png\')'
+      ? "url('/assets/images/profile-banner.png')"
       : `url(${banner})`
   }
 
   getAvatarWithFallback(avatar) {
-    return _.isEmpty(avatar)
-      ? USER_AVATAR_DEFAULT
-      : avatar
+    return _.isEmpty(avatar) ? USER_AVATAR_DEFAULT : avatar
   }
 
   renderLocalTime(isMobile) {
@@ -373,12 +356,14 @@ export default class extends BaseComponent {
       : 'Unknown'
 
     return (
-      <div className={`profile-general-info ${isMobile ? 'profile-general-info-mobile' : ''}`}>
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
         <Icon type="clock-circle" />
         <span>
-          {I18N.get('profile.localTime')}
-          {' '}
-          {localTime}
+          {I18N.get('profile.localTime')} {localTime}
         </span>
       </div>
     )
@@ -388,13 +373,39 @@ export default class extends BaseComponent {
     const { profile } = this.props.user
 
     return (
-      <div className={`profile-social ${isMobile ? 'profile-social-mobile' : ''}`}>
-        {profile.telegram && <a href={getSafeUrl(profile.telegram)} target="_blank"><i className="fab fa-telegram fa-2x" /></a>}
-        {profile.twitter && <a href={getSafeUrl(profile.twitter)} target="_blank"><i className="fab fa-twitter fa-2x" /></a>}
-        {profile.facebook && <a href={getSafeUrl(profile.facebook)} target="_blank"><i className="fab fa-facebook-square fa-2x" /></a>}
-        {profile.reddit && <a href={getSafeUrl(profile.reddit)} target="_blank"><i className="fab fa-reddit fa-2x" /></a>}
-        {profile.linkedin && <a href={getSafeUrl(profile.linkedin)} target="_blank"><i className="fab fa-linkedin fa-2x" /></a>}
-        {profile.github && <a href={getSafeUrl(profile.github)} target="_blank"><i className="fab fa-github fa-2x" /></a>}
+      <div
+        className={`profile-social ${isMobile ? 'profile-social-mobile' : ''}`}
+      >
+        {profile.telegram && (
+          <a href={getSafeUrl(profile.telegram)} target="_blank">
+            <i className="fab fa-telegram fa-2x" />
+          </a>
+        )}
+        {profile.twitter && (
+          <a href={getSafeUrl(profile.twitter)} target="_blank">
+            <i className="fab fa-twitter fa-2x" />
+          </a>
+        )}
+        {profile.facebook && (
+          <a href={getSafeUrl(profile.facebook)} target="_blank">
+            <i className="fab fa-facebook-square fa-2x" />
+          </a>
+        )}
+        {profile.reddit && (
+          <a href={getSafeUrl(profile.reddit)} target="_blank">
+            <i className="fab fa-reddit fa-2x" />
+          </a>
+        )}
+        {profile.linkedin && (
+          <a href={getSafeUrl(profile.linkedin)} target="_blank">
+            <i className="fab fa-linkedin fa-2x" />
+          </a>
+        )}
+        {profile.github && (
+          <a href={getSafeUrl(profile.github)} target="_blank">
+            <i className="fab fa-github fa-2x" />
+          </a>
+        )}
       </div>
     )
   }
@@ -404,10 +415,14 @@ export default class extends BaseComponent {
     const content = linkifyStr(bio, LINKIFY_OPTION)
     return (
       <div className="profile-container">
-        {
-          this.props.user.profile.bio
-          && <div className={`profile-description ${isMobile ? 'profile-description-mobile' : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
-        }
+        {this.props.user.profile.bio && (
+          <div
+            className={`profile-description ${
+              isMobile ? 'profile-description-mobile' : ''
+            }`}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
+          />
+        )}
       </div>
     )
   }
@@ -418,7 +433,7 @@ export default class extends BaseComponent {
 
   switchEditMode() {
     this.setState({
-      editing: !this.state.editing,
+      editing: !this.state.editing
     })
   }
 }
