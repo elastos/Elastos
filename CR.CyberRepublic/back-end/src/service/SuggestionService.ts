@@ -188,39 +188,6 @@ export default class extends Base {
       delete query['tags.type']
     }
 
-    let cursor: any
-    // suggestions on suggestion list page
-    if (sortBy) {
-      const sortObject = {}
-      // hack to prioritize descUpdatedAt if it's createdAt
-      if (sortBy === 'createdAt') {
-        sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
-      }
-      sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
-
-      const excludedFields = [
-        '-comments', '-goal', '-motivation',
-        '-relevance', '-budget', '-plan',
-        '-subscribers', '-likes', '-dislikes', '-updatedAt'
-      ]
-
-      cursor = this.model.getDBInstance()
-        .find(query, excludedFields.join(' '))
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-        .sort(sortObject)
-    } else {
-      // my suggestions on profile page
-      cursor = this.model.getDBInstance()
-        .find(query, 'title activeness commentsNum createdAt dislikesNum displayId likesNum')
-    }
-
-    if (param.results) {
-      const results = parseInt(param.results, 10)
-      const page = parseInt(param.page, 10)
-      cursor.skip(results * (page - 1)).limit(results)
-    }
-
     // status
     if (param.status && constant.SUGGESTION_STATUS[param.status]) {
       query.status = param.status
@@ -261,6 +228,39 @@ export default class extends Base {
     // type
     if(param.type && _.indexOf(_.values(constant.SUGGESTION_TYPE),param.type)){
       query.type = param.type
+    }
+
+    let cursor: any
+    // suggestions on suggestion list page
+    if (sortBy) {
+      const sortObject = {}
+      // hack to prioritize descUpdatedAt if it's createdAt
+      if (sortBy === 'createdAt') {
+        sortObject['descUpdatedAt'] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+      }
+      sortObject[sortBy] = _.get(constant.SORT_ORDER, sortOrder, constant.SORT_ORDER.DESC)
+
+      const excludedFields = [
+        '-comments', '-goal', '-motivation',
+        '-relevance', '-budget', '-plan',
+        '-subscribers', '-likes', '-dislikes', '-updatedAt'
+      ]
+
+      cursor = this.model.getDBInstance()
+        .find(query, excludedFields.join(' '))
+        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+        .sort(sortObject)
+    } else {
+      // my suggestions on profile page
+      cursor = this.model.getDBInstance()
+        .find(query, 'title activeness commentsNum createdAt dislikesNum displayId likesNum')
+    }
+
+    if (param.results) {
+      const results = parseInt(param.results, 10)
+      const page = parseInt(param.page, 10)
+      cursor.skip(results * (page - 1)).limit(results)
     }
 
     const rs = await Promise.all([
