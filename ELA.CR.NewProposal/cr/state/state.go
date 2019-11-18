@@ -122,15 +122,7 @@ func (s *State) ExistCandidateByDID(did common.Uint168) (ok bool) {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 
-	if _, ok = s.PendingCandidates[did]; ok {
-		return
-	}
-
-	if _, ok = s.ActivityCandidates[did]; ok {
-		return
-	}
-
-	if _, ok = s.CanceledCandidates[did]; ok {
+	if _, ok = s.Candidates[did]; ok {
 		return
 	}
 	return
@@ -273,11 +265,11 @@ func (s *State) FinishVoting(dids []common.Uint168) *StateKeyFrame {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 	for _, v := range dids {
-		if _, ok := s.ActivityCandidates[v]; !ok {
+		if _, ok := s.Candidates[v]; !ok {
 			log.Warnf("not found active candidate %s when finish voting",
 				v.String())
 		}
-		delete(s.ActivityCandidates, v)
+		delete(s.Candidates, v)
 	}
 	s.history = utils.NewHistory(maxHistoryCapacity)
 
@@ -298,19 +290,19 @@ func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
 		func(key common.Uint168, candidate *Candidate) {
 			s.history.Append(height, func() {
 				candidate.state = Active
-				s.ActivityCandidates[key] = candidate
-				delete(s.PendingCandidates, key)
+				s.Candidates[key] = candidate
 			}, func() {
 				candidate.state = Pending
-				s.PendingCandidates[key] = candidate
-				delete(s.ActivityCandidates, key)
+				s.Candidates[key] = candidate
 			})
 		}
 
-	if len(s.PendingCandidates) > 0 {
-		for key, candidate := range s.PendingCandidates {
+	pendingCandidates := s.getCandidates(Pending)
+
+	if len(pendingCandidates) > 0 {
+		for _, candidate := range pendingCandidates {
 			if height-candidate.registerHeight+1 >= ActivateDuration {
-				activateCandidateFromPending(key, candidate)
+				activateCandidateFromPending(candidate.info.DID, candidate)
 			}
 		}
 	}
@@ -394,23 +386,23 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 			s.Nicknames[nickname] = struct{}{}
 			s.CodeDIDMap[code] = info.DID
 			s.DepositHashMap[candidate.depositHash] = struct{}{}
-			s.PendingCandidates[info.DID] = &candidate
+			s.Candidates[info.DID] = &candidate
 		}, func() {
 			delete(s.Nicknames, nickname)
 			delete(s.CodeDIDMap, code)
 			delete(s.DepositHashMap, candidate.depositHash)
-			delete(s.PendingCandidates, info.DID)
+			delete(s.Candidates, info.DID)
 		})
 	} else {
 		candidate.votes = c.votes
 		s.history.Append(height, func() {
-			delete(s.CanceledCandidates, c.Info().DID)
 			s.Nicknames[nickname] = struct{}{}
-			s.PendingCandidates[info.DID] = &candidate
+			candidate.state = Pending
+			s.Candidates[info.DID] = &candidate
 		}, func() {
-			delete(s.PendingCandidates, info.DID)
 			delete(s.Nicknames, nickname)
-			s.CanceledCandidates[c.Info().DID] = c
+			candidate.state = Canceled
+			s.Candidates[c.Info().DID] = c
 		})
 	}
 
@@ -438,22 +430,14 @@ func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
 	s.history.Append(height, func() {
 		candidate.state = Canceled
 		candidate.cancelHeight = height
-		s.CanceledCandidates[key] = candidate
-		if isPending {
-			delete(s.PendingCandidates, key)
-		} else {
-			delete(s.ActivityCandidates, key)
-		}
+		s.Candidates[key] = candidate
 		delete(s.Nicknames, candidate.info.NickName)
 	}, func() {
 		candidate.cancelHeight = 0
-		delete(s.CanceledCandidates, key)
 		if isPending {
-			candidate.state = Pending
-			s.PendingCandidates[key] = candidate
+			s.Candidates[key].state = Pending
 		} else {
-			candidate.state = Active
-			s.ActivityCandidates[key] = candidate
+			s.Candidates[key].state = Active
 		}
 		s.Nicknames[candidate.info.NickName] = struct{}{}
 	})
@@ -574,17 +558,7 @@ func (s *State) addCandidateAssert(output *types.Output, height uint32) bool {
 // getCandidateByDepositHash will try to get candidate with specified program
 // hash.
 func (s *State) getCandidateByDepositHash(hash common.Uint168) *Candidate {
-	for _, candidate := range s.PendingCandidates {
-		if candidate.depositHash.IsEqual(hash) {
-			return candidate
-		}
-	}
-	for _, candidate := range s.ActivityCandidates {
-		if candidate.depositHash.IsEqual(hash) {
-			return candidate
-		}
-	}
-	for _, candidate := range s.CanceledCandidates {
+	for _, candidate := range s.Candidates {
 		if candidate.depositHash.IsEqual(hash) {
 			return candidate
 		}
@@ -712,15 +686,7 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 }
 
 func (s *State) getCandidate(did common.Uint168) *Candidate {
-	if c, ok := s.PendingCandidates[did]; ok {
-		return c
-	}
-
-	if c, ok := s.ActivityCandidates[did]; ok {
-		return c
-	}
-
-	if c, ok := s.CanceledCandidates[did]; ok {
+	if c, ok := s.Candidates[did]; ok {
 		return c
 	}
 	return nil
@@ -735,19 +701,10 @@ func (s *State) getDIDByCode(programCode []byte) (did common.Uint168,
 
 func (s *State) getCandidates(state CandidateState) []*Candidate {
 	switch state {
-	case Pending:
-		return s.getCandidateFromMap(s.PendingCandidates, nil)
-	case Active:
-		return s.getCandidateFromMap(s.ActivityCandidates, nil)
-	case Canceled:
-		return s.getCandidateFromMap(s.CanceledCandidates,
+	case Pending, Active, Canceled, Returned:
+		return s.getCandidateFromMap(s.Candidates,
 			func(candidate *Candidate) bool {
-				return candidate.state == Canceled
-			})
-	case Returned:
-		return s.getCandidateFromMap(s.CanceledCandidates,
-			func(candidate *Candidate) bool {
-				return candidate.state == Returned
+				return candidate.state == state
 			})
 	default:
 		return []*Candidate{}

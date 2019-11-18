@@ -61,9 +61,7 @@ type KeyFrame struct {
 type StateKeyFrame struct {
 	CodeDIDMap           map[string]common.Uint168
 	DepositHashMap       map[common.Uint168]struct{}
-	PendingCandidates    map[common.Uint168]*Candidate
-	ActivityCandidates   map[common.Uint168]*Candidate
-	CanceledCandidates   map[common.Uint168]*Candidate
+	Candidates           map[common.Uint168]*Candidate
 	Nicknames            map[string]struct{}
 	Votes                map[string]struct{}
 	DepositOutputs       map[string]common.Fixed64
@@ -290,15 +288,7 @@ func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = k.serializeCandidateMap(w, k.PendingCandidates); err != nil {
-		return
-	}
-
-	if err = k.serializeCandidateMap(w, k.ActivityCandidates); err != nil {
-		return
-	}
-
-	if err = k.serializeCandidateMap(w, k.CanceledCandidates); err != nil {
+	if err = k.serializeCandidateMap(w, k.Candidates); err != nil {
 		return
 	}
 
@@ -330,15 +320,7 @@ func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if k.PendingCandidates, err = k.deserializeCandidateMap(r); err != nil {
-		return
-	}
-
-	if k.ActivityCandidates, err = k.deserializeCandidateMap(r); err != nil {
-		return
-	}
-
-	if k.CanceledCandidates, err = k.deserializeCandidateMap(r); err != nil {
+	if k.Candidates, err = k.deserializeCandidateMap(r); err != nil {
 		return
 	}
 
@@ -513,9 +495,7 @@ func (k *StateKeyFrame) DeserializeFixed64Map(
 func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state := NewStateKeyFrame()
 	state.CodeDIDMap = copyCodeAddressMap(k.CodeDIDMap)
-	state.PendingCandidates = copyCandidateMap(k.PendingCandidates)
-	state.ActivityCandidates = copyCandidateMap(k.ActivityCandidates)
-	state.CanceledCandidates = copyCandidateMap(k.CanceledCandidates)
+	state.Candidates = copyCandidateMap(k.Candidates)
 	state.Nicknames = utils.CopyStringSet(k.Nicknames)
 	state.Votes = utils.CopyStringSet(k.Votes)
 	state.DepositOutputs = copyFixed64Map(k.DepositOutputs)
@@ -755,9 +735,7 @@ func NewStateKeyFrame() *StateKeyFrame {
 	return &StateKeyFrame{
 		CodeDIDMap:           make(map[string]common.Uint168),
 		DepositHashMap:       make(map[common.Uint168]struct{}),
-		PendingCandidates:    make(map[common.Uint168]*Candidate),
-		ActivityCandidates:   make(map[common.Uint168]*Candidate),
-		CanceledCandidates:   make(map[common.Uint168]*Candidate),
+		Candidates:           make(map[common.Uint168]*Candidate),
 		Nicknames:            make(map[string]struct{}),
 		Votes:                make(map[string]struct{}),
 		DepositOutputs:       make(map[string]common.Fixed64),
