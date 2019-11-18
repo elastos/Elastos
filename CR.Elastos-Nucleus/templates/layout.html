@@ -29,6 +29,14 @@
     </nav>
 </head>
 <body>
+    <div class="django_messages">
+        {% if messages %}
+            {% for message in messages %}
+                <p class="alert alert-info">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+
     <div class=container"><br>
         {% block content %}
         {% endblock %}
