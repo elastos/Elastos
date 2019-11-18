@@ -406,6 +406,9 @@ export default class extends StandardPage {
   }
 
   getPlanHtml(plan) {
+    if (!plan) {
+      return
+    }
     const lists = plan
       .map(item => {
         return `
@@ -432,6 +435,9 @@ export default class extends StandardPage {
   }
 
   getBudgetHtml(budget) {
+    if (!budget) {
+      return
+    }
     const lists = budget
       .map((item, index) => {
         return `
@@ -469,13 +475,21 @@ export default class extends StandardPage {
     ]
     const result = sections
       .map(section => {
-        if (section === 'plan' && typeof detail.plan !== 'string') {
+        if (
+          section === 'plan' &&
+          detail.plan &&
+          typeof detail.plan !== 'string'
+        ) {
           return `
             <h2>${I18N.get(`suggestion.fields.plan`)}</h2>
-            <p>${this.getPlanHtml(detail.plan && detail.plan.teamInfo)}</p>
+            <p>${this.getPlanHtml(detail.plan.teamInfo)}</p>
           `
         }
-        if (section === 'budget' && typeof detail.budget !== 'string') {
+        if (
+          section === 'budget' &&
+          detail.budget &&
+          typeof detail.budget !== 'string'
+        ) {
           return `
             <h2>${I18N.get(`suggestion.fields.budget`)}</h2>
             <p>${this.getBudgetHtml(detail.budget)}</p>
