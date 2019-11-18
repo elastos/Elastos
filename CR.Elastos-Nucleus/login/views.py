@@ -1,9 +1,10 @@
 import json
 import gc
+import secrets
 
-from random import randint
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -112,7 +113,7 @@ def sign_in(request):
     app_id = config('ELA_APP_ID')
     app_name = config('ELA_APP_NAME')
 
-    random = randint(10000000000, 999999999999)
+    random = secrets.randbelow(999999999999)
     request.session['elaState'] = random
 
     url_params = {
@@ -137,6 +138,7 @@ def sign_in(request):
     DIDRequest.objects.filter(created_at__lte=stale_time).delete()
 
     request.session['elephant_url'] = elephant_url
+
     return render(request, 'login/sign_in.html')
 
 
