@@ -10,7 +10,7 @@ source venv/bin/activate
 pip3 install -r requirements.txt
 
 # Setup all environment variables
-cp .env.example .env
+yes | cp -rf .env.example .env
 
 # Run postgres server as a docker container
 cd tools
@@ -26,4 +26,4 @@ python3 manage.py makemigrations
 python3 manage.py migrate
 
 # Finally, run the Django server
-python3 manage.py runserver
+python3 manage.py runserver 0.0.0.0:8000
