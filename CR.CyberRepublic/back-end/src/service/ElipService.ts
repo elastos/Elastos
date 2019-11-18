@@ -398,6 +398,7 @@ export default class extends Base {
       userRole !== constant.USER_ROLE.SECRETARY &&
       param.filter === constant.ELIP_FILTER.ALL
     ) {
+      // member self
       query.$or = [
         {
           createdBy: currentUserId,
@@ -410,12 +411,17 @@ export default class extends Base {
         }
       ]
       if(userRole !== constant.USER_ROLE.ADMIN) {
+        // member
         query.$or.push({
           status: {
-            $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL]
+            $in: [
+              constant.ELIP_STATUS.DRAFT,
+              constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+            ]
           }
         })
       }else {
+        // admin
         query.$or.push({
           status: {
             $in: [
@@ -426,6 +432,35 @@ export default class extends Base {
             ]
           }
         })
+      }
+    }
+
+    // createBy
+    if(param.author && param.author.length) {
+      let search = param.author
+      const db_user = this.getDBModel('User')
+      const pattern = search.split(' ').join('|')
+      const users = await db_user.getDBInstance().find({
+        $or: [
+          { username: { $regex: search, $options: 'i' } },
+          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+        ]
+      }).select('_id')
+      const userIds = _.map(users, (el: { _id: string }) => el._id)
+      query.createdBy = { $in: userIds }
+    }
+    
+    // elipType
+    if(param.type && constant.ELIP_TYPE.hasOwnProperty(param.type)){
+      query.elipType = param.type
+    }
+
+    // startDate <  endDate
+    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      query.createdAt = {
+        $gte: new Date(param.startDate),
+        $lte: new Date(param.endDate)
       }
     }
 

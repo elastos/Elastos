@@ -1,10 +1,22 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import _ from 'lodash'
+import moment from 'moment/moment'
 import styled from 'styled-components'
 import {
-  Pagination, Modal, Button, Col, Row, Select, Spin, Checkbox
+  Pagination,
+  Modal,
+  Button,
+  Col,
+  Row,
+  Select,
+  Spin,
+  DatePicker,
+  Checkbox,
+  Input,
+  Icon
 } from 'antd'
+import rangePickerLocale from 'antd/es/date-picker/locale/zh_CN'
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery, logger } from '@/util'
@@ -17,10 +29,14 @@ import TagsContainer from '../common/tags/Container'
 import { SUGGESTION_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import { ReactComponent as UpIcon } from '@/assets/images/icon-up.svg'
+import { ReactComponent as DownIcon } from '@/assets/images/icon-down.svg'
 import PageHeader from './PageHeader'
 import SearchBox from './SearchBox'
 
 import './style.scss'
+
+const { RangePicker } = DatePicker
 
 const SORT_BY = {
   createdAt: 'createdAt',
@@ -47,12 +63,19 @@ export default class extends StandardPage {
 
       // named status since we eventually want to use a struct of statuses to filter on
       referenceStatus: false,
+      infoNeeded: false,
+      underConsideration: false,
       isDropdownActionOpen: false,
       showMobile: false,
       results: 10,
       total: 0,
       search: '',
-      filter: ''
+      filter: '',
+      status: '',
+      budgetRequested: '',
+      creationDate: [],
+      author: '',
+      type: ''
     }
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
@@ -66,55 +89,133 @@ export default class extends StandardPage {
     this.props.resetAll()
   }
 
+  handleFilter = () => {
+    const { isVisitableFilter } = this.state
+    this.setState({ isVisitableFilter: !isVisitableFilter })
+  }
+
+  handleStatusChange = status => {
+    this.setState({ status })
+  }
+
+  handleBudgetRequestedChange = budgetRequested => {
+    this.setState({ budgetRequested })
+  }
+
+  handleUnderConsiderationChange = e => {
+    this.setState({ underConsideration: e.target.checked })
+  }
+
+  handleInfoNeededChange = e => {
+    this.setState({ infoNeeded: e.target.checked })
+  }
+
+  handleReferenceStatusChange = e => {
+    this.setState({ referenceStatus: e.target.checked })
+  }
+
+  handleCreationDateChange = creationDate => {
+    this.setState({ creationDate })
+  }
+
+  handleAuthorChange = e => {
+    this.setState({ author: e.target.value })
+  }
+
+  handleTypeChange = type => {
+    this.setState({ type })
+  }
+
+  handleClearFilter = () => {
+    this.setState({
+      referenceStatus: false,
+      infoNeeded: false,
+      underConsideration: false,
+      search: '',
+      filter: '',
+      status: '',
+      budgetRequested: '',
+      creationDate: [],
+      author: '',
+      type: ''
+    })
+  }
+
+  handleApplyFilter = () => {
+    this.refetch()
+  }
+
+  handleExportAsCSV = () => {
+    const { exportAsCSV } = this.props
+    const query = this.getQuery()
+    exportAsCSV(query).then(response => {
+      window.location.href = URL.createObjectURL(response)
+    })
+  }
 
   ord_renderContent() {
+    const { isVisitableFilter } = this.state
+    const { isSecretary } = this.props
     const headerNode = this.renderHeader()
     const filterNode = this.renderFilters()
+    const filterPanel = this.renderFilterPanel()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
     const sortActionsNode = this.renderSortActions()
 
     return (
       <div>
-        <div className="suggestion-header">
-          {headerNode}
-        </div>
+        <div className="suggestion-header">{headerNode}</div>
         <SuggestionContainer className="p_SuggestionList">
           <Row
             type="flex"
             justify="space-between"
             align="middle"
-            style={{margin: '24px 0 48px'}}
+            style={{ margin: '24px 0 48px' }}
           >
             <Col xs={24} sm={12} style={{ paddingTop: 24 }}>
               <SearchBox search={this.handleSearch} value={this.state.search} />
             </Col>
-            <Col xs={24} sm={12} style={{textAlign: 'right', paddingTop: 24}}>
-              <Button onClick={this.toggleArchivedList} className="btn-view-archived">
-                {this.state.showArchived === false ?
-                  I18N.get('suggestion.viewArchived') :
-                  I18N.get('suggestion.viewAll')
-                }
-              </Button>
-              <Button onClick={this.showCreateForm} className="btn-create-suggestion">
+            {filterNode}
+            <Col xs={24} sm={8} style={{ textAlign: 'right', paddingTop: 24 }}>
+              <Button
+                onClick={this.showCreateForm}
+                className="btn-create-suggestion"
+              >
                 {I18N.get('suggestion.add')}
               </Button>
             </Col>
           </Row>
+          {isVisitableFilter && filterPanel}
           <Row
             type="flex"
             justify="space-between"
             align="middle"
-            style={{ borderBottom: '1px solid #E5E5E5'}}
+            style={{ borderBottom: '1px solid #E5E5E5' }}
           >
-            <Col md={24} xl={18} style={{ paddingBottom: 24 }}>{filterNode}</Col>
-            <Col md={24} xl={6} style={{ paddingBottom: 24, textAlign: 'right' }}>{sortActionsNode}</Col>
-          </Row>
-          
-          <Row gutter={24} style={{marginTop: 32}}>
-            <Col span={24}>
-              {listNode}
+            <Col md={24} xl={18} style={{ paddingBottom: 24 }}>
+              {sortActionsNode}
             </Col>
+            <Col
+              md={24}
+              xl={6}
+              style={{ paddingBottom: 24, textAlign: 'right' }}
+            >
+              <Button type="link" className="btn-link" onClick={this.toggleArchivedList}>
+                {this.state.showArchived === false
+                  ? I18N.get('suggestion.viewArchived')
+                  : I18N.get('suggestion.viewAll')}
+              </Button>
+              {isSecretary && <SplitLabel />}
+              {isSecretary && (
+                <Button type="link" className="btn-link" onClick={this.handleExportAsCSV}>
+                  {I18N.get('elip.button.exportAsCSV')}
+                </Button>
+              )}
+            </Col>
+          </Row>
+          <Row gutter={24} style={{ marginTop: 32 }}>
+            <Col span={24}>{listNode}</Col>
           </Row>
           {createForm}
         </SuggestionContainer>
@@ -255,31 +356,162 @@ export default class extends StandardPage {
   }
 
   renderFilters() {
-    const {
-      tagsIncluded: {
-        infoNeeded,
-        underConsideration
-      }
-    } = this.props
-    
+    const { isVisitableFilter } = this.state
     return (
-      <Row type="flex" align="middle">
-        <Col xs={24} sm={24} md={2}>
-          {I18N.get('suggestion.tag.show')}:
-        </Col>
-        <Col xs={24} sm={24} md={7}>
-          <Checkbox defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange} />
-          <CheckboxText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</CheckboxText>
-        </Col>
-        <Col xs={24} sm={24} md={7}>
-          <Checkbox defaultChecked={infoNeeded} onChange={this.onInfoNeededChange} />
-          <CheckboxText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</CheckboxText>
-        </Col>
-        <Col xs={24} sm={24} md={7}>
-          <Checkbox defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange} />
-          <CheckboxText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</CheckboxText>
-        </Col>
-      </Row>
+      <FilterLabel xs={24} sm={2} style={{ paddingTop: 24 }}>
+        <Row
+          type="flex"
+          gutter={10}
+          align="middle"
+          justify="start"
+          onClick={this.handleFilter}
+        >
+          <Col>{I18N.get('elip.fields.filter')}</Col>
+          <Col>{isVisitableFilter ? <UpIcon /> : <DownIcon />}</Col>
+        </Row>
+      </FilterLabel>
+    )
+  }
+
+  renderFilterPanel() {
+    const {
+      referenceStatus,
+      infoNeeded,
+      underConsideration,
+      status,
+      budgetRequested,
+      creationDate,
+      author,
+      type
+    } = this.state
+    const typeMap = {
+      1: I18N.get('suggestion.form.type.newMotion'),
+      2: I18N.get('suggestion.form.type.motionAgainst'),
+      3: I18N.get('suggestion.form.type.anythingElse')
+    }
+    const lang = localStorage.getItem('lang') || 'en'
+    const rangePickerOptions = {}
+    if (lang === 'zh') {
+      rangePickerOptions.locale = rangePickerLocale
+    }
+    const budgetRequestedOptions = {
+      1: '$0 - $100 (USD)',
+      2: '$100 - $1000 (USD)',
+      3: '> $1000 (USD)'
+    }
+    return (
+      <FilterPanel>
+        <Row type="flex" gutter={10} className="filter">
+          <Col span={8} className="filter-panel">
+            <FilterContent>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.status')}
+                </FilterItemLabel>
+                <Select
+                  className="filter-input"
+                  value={status}
+                  onChange={this.handleStatusChange}
+                >
+                  {_.map(SUGGESTION_STATUS, value => (
+                    <Select.Option key={value} value={value}>
+                      {I18N.get(`suggestion.status.${value}`)}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FilterItem>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.budgetRequested')}
+                </FilterItemLabel>
+                <Select
+                  className="filter-input"
+                  value={budgetRequested}
+                  onChange={this.handleBudgetRequestedChange}
+                >
+                  {_.map(budgetRequestedOptions, value => (
+                    <Select.Option key={value} value={value}>
+                      {value}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FilterItem>
+            </FilterContent>
+          </Col>
+          <Col span={8} className="filter-panel">
+            <FilterContent>
+              <FilterItem>
+                <Checkbox checked={underConsideration} onChange={this.handleUnderConsiderationChange} />
+                <CheckboxText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</CheckboxText>
+              </FilterItem>
+              <FilterItem className="filter-checkbox">
+                <Checkbox checked={infoNeeded} onChange={this.handleInfoNeededChange} />
+                <CheckboxText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</CheckboxText>
+              </FilterItem>
+              <FilterItem className="filter-checkbox">
+                <Checkbox checked={referenceStatus} onChange={this.handleReferenceStatusChange} />
+                <CheckboxText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</CheckboxText>
+              </FilterItem>
+            </FilterContent>
+          </Col>
+          <Col span={8} className="filter-panel">
+            <FilterContent>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.creationDate')}
+                </FilterItemLabel>
+                <RangePicker
+                  className="filter-input"
+                  onChange={this.handleCreationDateChange}
+                  value={creationDate}
+                  {...rangePickerOptions}
+                />
+              </FilterItem>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.author')}
+                </FilterItemLabel>
+                <Input
+                  className="filter-input"
+                  value={author}
+                  onChange={this.handleAuthorChange}
+                />
+              </FilterItem>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.type')}
+                </FilterItemLabel>
+                <Select
+                  className="filter-input"
+                  value={type}
+                  onChange={this.handleTypeChange}
+                >
+                  {_.map(typeMap, (value, key) => (
+                    <Select.Option key={key} value={key}>
+                      {value}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FilterItem>
+            </FilterContent>
+          </Col>
+        </Row>
+        <Row type="flex" gutter={30} justify="center" className="filter-btn">
+          <Col>
+            <FilterClearBtn onClick={this.handleClearFilter}>
+              {I18N.get('elip.button.clearFilter')}
+            </FilterClearBtn>
+          </Col>
+          <Col>
+            <Button
+              className="cr-btn cr-btn-primary"
+              onClick={this.handleApplyFilter}
+            >
+              {I18N.get('elip.button.applyFilter')}
+            </Button>
+          </Col>
+        </Row>
+      </FilterPanel>
     )
   }
 
@@ -393,18 +625,24 @@ export default class extends StandardPage {
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page } = this.props
-    const { results, referenceStatus, search, filter } = this.state
+    const {
+      results,
+      referenceStatus,
+      search,
+      filter,
+      status,
+      infoNeeded,
+      underConsideration,
+      budgetRequested,
+      creationDate,
+      author,
+      type
+    } = this.state
     const query = {
       status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
       results
     }
-    const {
-      tagsIncluded: {
-        infoNeeded,
-        underConsideration
-      }
-    } = this.props
     let included = ''
 
     if (infoNeeded) {
@@ -424,6 +662,28 @@ export default class extends StandardPage {
 
     // sending a boolean to be handled by the backend
     query.referenceStatus = referenceStatus
+
+    if (!_.isEmpty(status)) {
+      query.status = status
+    }
+
+    if (!_.isEmpty(budgetRequested)) {
+      query.budget = budgetRequested
+    }
+
+    if (!_.isEmpty(creationDate)) {
+      const formatStr = 'YYYY-MM-DD'
+      query.startDate = moment(creationDate[0]).format(formatStr)
+      query.endDate = moment(creationDate[1]).format(formatStr)
+    }
+
+    if (!_.isEmpty(author)) {
+      query.author = author
+    }
+
+    if (!_.isEmpty(type)) {
+      query.type = type
+    }
 
     // TODO
     if (sortBy) {
@@ -545,4 +805,72 @@ const CheckboxText = styled.span`
 const NoData = styled.div`
   text-align: center;
   padding: 25px 0;
+`
+
+const FilterLabel = styled(Col)`
+  color: #008D85;
+  cursor: pointer;
+`
+
+const FilterPanel = styled.div`
+  .filter {
+    margin-top: 20px;
+  }
+  .filter-btn {
+    margin-top: 36px;
+    margin-bottom: 58px;
+  }
+  .filter-input {
+    width: 55%;
+  }
+`
+
+const FilterClearBtn = styled.div`
+  text-align: center;
+  min-width: 155px;
+  height: 40px;
+  line-height: 40px;
+  color: rgba(3, 30, 40, 0.3);
+  cursor: pointer;
+`
+
+
+const FilterItem = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 25px;
+  padding-bottom: 10px;
+  &.filter-checkbox {
+    padding-top: 10px;
+  }
+  :first-child {
+    padding-top: 20px;
+  }
+  :last-child {
+    padding-bottom: 20px;
+  }
+`
+const FilterContent = styled.div`
+  background: #F6F9FD;
+  height: 100%;
+`
+
+const FilterItemLabel = styled.div`
+  width: 40%;
+  font-family: Synthese;
+  font-size: 14px;
+  line-height: 20px;
+  color: #000;
+
+  :after {
+    content: ':';
+  }
+`
+
+const SplitLabel = styled.span`
+  color: rgba(3, 30, 40, 0.3);
+  :after {
+    content: '|';
+  }
 `

@@ -1,4 +1,4 @@
-import { ABSTRACT_MAX_WORDS } from '@/constant'
+import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
 
 export default {
   title: {
@@ -25,7 +25,11 @@ export default {
     plan: 'Implementation Plan',
     vote: 'Vote',
     tracking: 'Tracking',
-    summary: 'Summary'
+    summary: 'Summary',
+    status: 'Suggestion Status',
+    budgetRequested: 'Budget Requested',
+    creationDate: 'Creation Date',
+    author: 'Author'
   },
   btn: {
     makeIntoProposal: 'Make Into Proposal',
@@ -36,7 +40,10 @@ export default {
     posted: 'Posted',
     underConsideration: 'Under Council Consideration',
     moreInfoRequired: 'More Info Required',
-    referred: 'Referred in Proposal'
+    referred: 'Referred in Proposal',
+    [SUGGESTION_STATUS.ACTIVE]: 'Active',
+    [SUGGESTION_STATUS.ABUSED]: 'Abused',
+    [SUGGESTION_STATUS.ARCHIVED]: 'Archived',
   },
   form: {
     search: 'Search Suggestions',
@@ -129,5 +136,8 @@ export default {
     milestones: 'Milestones',
     publishDate: 'Publish Date',
     version: 'Version'
+  },
+  label: {
+    hasMadeIntoProposal: 'has made it into'
   }
 }

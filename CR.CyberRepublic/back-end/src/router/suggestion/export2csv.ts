@@ -1,7 +1,9 @@
 import Base from '../Base'
 import * as _ from 'lodash'
 import { Types } from 'mongoose'
+const json2csv= require('json2csv')
 import SuggestionService from '../../service/SuggestionService'
+import { user as userUtil } from '../../utility'
 
 const ObjectId = Types.ObjectId
 
@@ -52,8 +54,8 @@ export default class extends Base {
     }
     if (param.search) {
       let or = [
-          { title: { $regex: _.trim(param.search), $options: 'i' } },
-          { vid: _.toNumber(_.trim(param.search)) || 0 }
+        { title: { $regex: _.trim(param.search), $options: 'i' } },
+        { vid: _.toNumber(_.trim(param.search)) || 0 }
       ]
       if(param.$or){
         param.$or = param.$or.concat(or)
@@ -62,8 +64,38 @@ export default class extends Base {
       }
     }
 
-    const result = await service.list(param)
+    const result = await service.export2csv(param)
 
-    return this.result(1, result)
+    const fileName = "suggestions.csv"
+    let exportData = result['list']
+    exportData = exportData.map(function(it){
+      it.author = it.createdBy.username
+      let referenceId = ""
+      it.reference.map(function(refit){
+        referenceId += "" + refit.vid + '/'
+        return refit.vid
+      })
+      if(referenceId.length) {
+        it.referenceId = referenceId.substr(0, referenceId.length-1)
+      }else{
+        it.referenceId = ""
+      }
+      console.log('[referenceId]: ' + it.referenceId)
+      return it
+    })
+    
+    let response = this.res;
+    await response.set('Content-disposition',`attachment; filename=`+encodeURIComponent(fileName)+'.csv')
+    await response.set('Content-Type', 'text/csv;charset=utf-8')
+
+    //console.log("[Data]: " + exportData)
+    let csv =json2csv({ data: exportData, fields: ['displayId', 'author', 'title', 'referenceId', 'abstract', 'createdAt', 'updatedAt']})
+    csv = Buffer.concat([new Buffer('\xEF\xBB\xBF','binary'),new Buffer(csv)])
+
+    await response.write(csv)
+    await response.write('\n')
+    await response.end()
+    
+    return null
   }
 }

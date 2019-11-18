@@ -10,4 +10,7 @@ export default {
     add: 'Add a Release',
     edit: 'Edit Release',
   },
+  modal: {
+    delete: '你确定要删除当前版本更新?',
+  },
 }

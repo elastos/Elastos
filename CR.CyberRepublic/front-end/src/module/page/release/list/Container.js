@@ -33,6 +33,9 @@ const mapDispatch = () => {
     resetAll() {
       return service.resetList()
     },
+    deleteData(id) {
+      return service.delete(id)
+    }
   }
 }
 

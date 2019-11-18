@@ -1,4 +1,4 @@
-import { ABSTRACT_MAX_WORDS } from '@/constant'
+import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
 
 export default {
   title: {
@@ -25,7 +25,11 @@ export default {
     plan: '实施计划',
     vote: '投票',
     tracking: '跟踪',
-    summary: '总结'
+    summary: '总结',
+    status: '建议状态',
+    budgetRequested: '预算',
+    creationDate: '创建日期',
+    author: '作者'
   },
   btn: {
     makeIntoProposal: '发布为提案',
@@ -36,7 +40,10 @@ export default {
     posted: '发布',
     underConsideration: '正在审议中',
     moreInfoRequired: '需要更多信息',
-    referred: '相关提案'
+    referred: '相关提案',
+    [SUGGESTION_STATUS.ACTIVE]: '活跃',
+    [SUGGESTION_STATUS.ABUSED]: '已举报',
+    [SUGGESTION_STATUS.ARCHIVED]: '已归档',
   },
   form: {
     search: '搜索建议',
@@ -99,7 +106,7 @@ export default {
   },
   header: {
     suggestion: '建议',
-    crCouncil: 'CR 理事会',
+    crCouncil: 'CR 委员会',
     crProposalPage: 'CR 提案页面',
     approvedProposal: '已批准的提案'
   },
@@ -129,5 +136,8 @@ export default {
     milestones: '里程碑',
     publishDate: '发布日期',
     version: '版本'
+  },
+  label: {
+    hasMadeIntoProposal: '已经将此建议发布为'
   }
 }

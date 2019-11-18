@@ -36,7 +36,10 @@ export default {
       requires: 'Requires',
       replaces: 'Replaces',
       superseded: 'Superseded-By'
-    }
+    },
+    filter: '过滤',
+    elipStatus: 'Elip 状态',
+    creationDate: '创建日期'
   },
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
@@ -64,7 +67,10 @@ export default {
     yes: '赞成',
     oppose: '反对',
     abstain: '弃权',
-    delete: '删除'
+    delete: '删除',
+    exportAsCSV: '导出CSV文件',
+    clearFilter: '重置过滤',
+    applyFilter: '应用过滤'
   },
   msg: {
     updated: '更新成功',

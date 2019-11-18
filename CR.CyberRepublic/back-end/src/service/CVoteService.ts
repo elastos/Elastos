@@ -201,8 +201,8 @@ export default class extends Base {
 
     const vid = await this.getNewVid()
     const status = published
-      ? constant.CVOTE_STATUS.PROPOSED
-      : constant.CVOTE_STATUS.DRAFT
+                 ? constant.CVOTE_STATUS.PROPOSED
+                 : constant.CVOTE_STATUS.DRAFT
 
     const doc: any = {
       title,
@@ -458,6 +458,64 @@ export default class extends Base {
       }
     } else {
       query.published = param.published
+    }
+    // createBy
+    if(param.author && param.author.length) {
+      let search = param.author
+      const db_user = this.getDBModel('User')
+      const pattern = search.split(' ').join('|')
+      const users = await db_user.getDBInstance().find({
+        $or: [
+          { username: { $regex: search, $options: 'i' } },
+          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+        ]
+      }).select('_id')
+      const userIds = _.map(users, (el: { _id: string }) => el._id)
+      query.createdBy = { $in: userIds }
+    }
+    // cvoteType
+    if(param.type && _.indexOf(_.values(constant.CVOTE_TYPE), param.type) >= 0){
+      query.type = param.type
+    }
+    // startDate <  endDate
+    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      query.createdAt = {
+          $gte: new Date(param.startDate),
+          $lte: new Date(param.endDate)
+        }
+    }
+    // Ends in times - 7day = startDate <  endDate
+    if(param.endsInStartDate && param.endsInStartDate.length && param.endsInEndDate && param.endsInEndDate.length){
+      query.createdAt = {
+          $gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000),
+          $lte: new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)
+      }
+      query.status = constant.CVOTE_STATUS.FINAL
+    }
+    // status
+    if(param.status && constant.CVOTE_STATUS[param.status]) {
+      if(query.status) {
+        query.status = {
+          $or: [query.status, param.status]
+        }
+      } else {
+        query.status = param.status
+      }
+    }
+    // budget
+    if(param.budget && param.budget.length) {
+      query.budget = param.budget
+    }
+    // has tracking
+    if(param.hasTracking) {
+      query.tracking = {
+        $and: [{
+          $ne: null
+        }, {
+          $ne: ""
+        }]
+      }
     }
 
     if (param.$or) query.$or = param.$or

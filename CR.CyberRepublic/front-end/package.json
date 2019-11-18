@@ -49,6 +49,7 @@
     "react-async-script": "^0.9.1",
     "react-circular-progressbar": "^2.0.1",
     "react-codemirror2": "^6.0.0",
+    "react-csv": "^1.1.2",
     "react-dom": "16.3.2",
     "react-flags": "^0.1.13",
     "react-geocode": "^0.1.2",

@@ -1,16 +1,14 @@
 import React from 'react'
 import _ from 'lodash'
-import StandardPage from '../../StandardPage'
-import {
-  Row, Col,
-} from 'antd'
-import I18N from '@/I18N'
+import { Row, Col, Button, Popconfirm, message } from 'antd'
 import sanitizeHtml from 'sanitize-html'
+import styled from 'styled-components'
+import StandardPage from '../../StandardPage'
+import I18N from '@/I18N'
 import Footer from '@/module/layout/Footer/Container'
 import CreateForm from '../create/Container'
 import EditForm from '../edit/Container'
 
-import styled from 'styled-components'
 import { breakPoint } from '@/constants/breakPoint'
 
 export default class extends StandardPage {
@@ -76,8 +74,24 @@ export default class extends StandardPage {
     const { isAdmin } = this.props
     const { title, desc, _id: id } = detail
     const formNode = isAdmin && (
-      <BtnContainer sm={8} xs={24}>
+      <BtnContainer sm={4} xs={24}>
         <EditForm detail={detail} />
+      </BtnContainer>
+    )
+    const deleteNode = isAdmin && (
+      <BtnContainer sm={4} xs={24}>
+        <Popconfirm
+          title={I18N.get('release.modal.delete')}
+          onConfirm={() => this.handleDelete(detail)}
+          okType="danger"
+        >
+          <StyledButton
+            loading={this.props.loading}
+            className="cr-btn cr-btn-danger"
+          >
+            {I18N.get('.delete')}
+          </StyledButton>
+        </Popconfirm>
       </BtnContainer>
     )
 
@@ -88,6 +102,7 @@ export default class extends StandardPage {
             <ItemTitle className="cr-title-with-icon">{title}</ItemTitle>
           </Col>
           {formNode}
+          {deleteNode}
         </Row>
 
         <ItemDesc className="ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(desc) }} />
@@ -106,6 +121,18 @@ export default class extends StandardPage {
     }
 
     this.ord_loading(false)
+  }
+
+  handleDelete = async (detail) => {
+    const { deleteData } = this.props
+    const id = detail._id
+    try {
+      await deleteData(id)
+      message.success(I18N.get('from.CVoteForm.message.delete.success'))
+      this.refetch()
+    } catch (e) {
+      message.error(e.message)
+    }
   }
 }
 
@@ -147,4 +174,12 @@ const ItemTitle = styled.div`
 `
 const ItemDesc = styled.div`
 
+`
+const StyledButton = styled(Button)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  > span {
+    font-size: 12px!important;
+  }
 `

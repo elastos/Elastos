@@ -10,4 +10,7 @@ export default {
     add: 'Add a Release',
     edit: 'Edit Release',
   },
+  modal: {
+    delete: 'Are you sure to delete this Release?',
+  },
 }

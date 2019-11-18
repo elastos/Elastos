@@ -282,4 +282,25 @@ export default class extends BaseService {
     })
     return res
   }
+
+  async exportAsCSV(qry) {
+    const path = `${this.prefixPath}/export2csv`
+    this.abortFetch(path)
+
+    let result
+    try {
+      result = await api_request({
+        path,
+        method: 'get',
+        data: qry,
+        headers: {
+          'Content-Type': 'text/csv'
+        },
+      })
+    } catch (e) {
+      logger.error(e)
+    }
+
+    return result
+  }
 }
