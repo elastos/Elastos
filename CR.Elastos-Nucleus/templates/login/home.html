@@ -2,12 +2,6 @@
 {% load static %}
 
 {% block content %}
-    {% if messages %}
-        {% for message in messages %}
-            <p class="alert alert-info">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
-
     <div class="col-md-12" style="...">
         <a href="{%  url 'login:sign_out' %}">
                 <button>Logout</button>
