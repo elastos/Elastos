@@ -118,7 +118,7 @@ export default {
     name: 'Author name'
   },
   budget: {
-    create: 'Create payment item',
+    create: 'Add payment item',
     payment: 'Payment',
     amount: 'Amount',
     reasons: 'Reasons',
