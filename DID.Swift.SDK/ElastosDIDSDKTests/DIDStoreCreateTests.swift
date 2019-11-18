@@ -4,7 +4,8 @@ import XCTest
 import ElastosDIDSDK
 
 class DIDStoreCreateTests: XCTestCase {
-    
+    var adapter: SPVAdaptor!
+
     override func setUp() {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -12,7 +13,9 @@ class DIDStoreCreateTests: XCTestCase {
     func test00CreateEmptyStore0() {
         TestUtils.deleteFile(storePath)
         do {
-            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePath)
+            let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "helloworld"})
+            adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
+            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePath, adapter)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             XCTAssertFalse(try! tempStore.hasPrivateIdentity())
             XCTAssertTrue(TestUtils.exists(storePath))

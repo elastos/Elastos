@@ -1,6 +1,6 @@
 import Foundation
 
-class JsonHelper {
+public class JsonHelper {
     
     class func getDid(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DID {
         

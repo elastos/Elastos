@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		11092151235ED8BD006B7F47 /* DIDUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11092150235ED8BD006B7F47 /* DIDUtil.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
-		110BE6DC236152100026ACC6 /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
 		111BF480235467880043D570 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; };
 		111BF481235467880043D570 /* Antlr4.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		111BF4832354678B0043D570 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; };
@@ -41,6 +40,7 @@
 		119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D5237D41B000C4998E /* DIDAdaptor.swift */; };
 		119338D8237D41CD00C4998E /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D7237D41CD00C4998E /* SPVAdaptor.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
+		11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		11CA74B7235E06B7006E66F7 /* EcdsaSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */; };
 		11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AE235E06B7006E66F7 /* DerivedKey.swift */; };
@@ -152,7 +152,7 @@
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
-		110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FakeConsoleAdaptor.swift; path = ElastosDIDSDK/DID/Backend/FakeConsoleAdaptor.swift; sourceTree = SOURCE_ROOT; };
+		110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FakeConsoleAdaptor.swift; path = ElastosDIDSDKTests/FakeConsoleAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		1125B5752382302800D396B6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
 		1125B57B238234FB00D396B6 /* Ccrypto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Ccrypto.swift; path = include/Ccrypto.swift; sourceTree = "<group>"; };
 		1125B57C238234FB00D396B6 /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = spvadapter.h; path = include/spvadapter.h; sourceTree = "<group>"; };
@@ -386,6 +386,7 @@
 				116CAA56236008FD00BBEE4F /* TestUtils */,
 				11CA74D1235E131B006E66F7 /* Resources */,
 				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
+				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
 				116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
@@ -538,7 +539,6 @@
 		11F262BB23260DFD0009C103 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
-				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
 				A3E6D45D233485BB0012CD77 /* DIDBackend.swift */,
 				A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */,
 			);
@@ -767,6 +767,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */,
 				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
@@ -798,7 +799,6 @@
 				A3E6D481233485E00012CD77 /* DIDPublicKey.swift in Sources */,
 				A3E6D47E233485E00012CD77 /* MalformedDocumentError.swift in Sources */,
 				1125B580238234FB00D396B6 /* Ccrypto.swift in Sources */,
-				110BE6DC236152100026ACC6 /* FakeConsoleAdaptor.swift in Sources */,
 				A3E6D456233485AD0012CD77 /* DIDURLLexer.swift in Sources */,
 				A3E6D458233485AD0012CD77 /* DIDURLParserATN.swift in Sources */,
 				119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */,

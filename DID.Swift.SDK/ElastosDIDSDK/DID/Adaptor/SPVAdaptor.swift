@@ -2,8 +2,8 @@
 
 import Foundation
 
-typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
-class SPVAdaptor: DIDAdaptor {
+public typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
+public class SPVAdaptor: DIDAdaptor {
     var walletDir: String!
     var walletId: String!
     var network: String!
@@ -32,7 +32,7 @@ class SPVAdaptor: DIDAdaptor {
         handle = nil
     }
     
-    func createIdTransaction(_ payload: String, _ memo: String?) throws -> Bool {
+    public func createIdTransaction(_ payload: String, _ memo: String?) throws -> Bool {
         let password = passwordCallback!(walletDir, walletId)
         if password == nil {
             return false
@@ -47,7 +47,7 @@ class SPVAdaptor: DIDAdaptor {
         return rc == 0
     }
     
-    func resolve(_ did: String) throws -> String? {
+    public func resolve(_ did: String) throws -> String? {
        let cstr = did.withCString { cdid -> UnsafePointer<Int8> in
             return SpvDidAdapter_Resolve(handle, cdid)
         }
