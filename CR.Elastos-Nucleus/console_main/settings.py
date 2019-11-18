@@ -101,9 +101,6 @@ DATABASES = {
 # Use Custom User
 AUTH_USER_MODEL = 'login.DIDUser'
 
-# Prevent users from regenerating the QR code over and over again
-QRCODE_INTERVAL = 1
-
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
