@@ -312,21 +312,10 @@ class C extends BaseComponent {
             {_.map(TABS, value => this.renderTabItem(value))}
           </Tabs>
           <Row
-            gutter={8}
             type="flex"
             justify="center"
             style={{ marginBottom: '30px' }}
           >
-            <Col>
-              <Button
-                onClick={this.handlePreview}
-                className="cr-btn cr-btn-default"
-                htmlType="button"
-                style={{ marginRight: 10 }}
-              >
-                {I18N.get('elip.button.preview')}
-              </Button>
-            </Col>
             <Col>
               <Button
                 loading={this.state.loading}
@@ -338,14 +327,22 @@ class C extends BaseComponent {
               </Button>
             </Col>
           </Row>
-          <Row gutter={8} type="flex" justify="center">
+          <Row gutter={10} type="flex" justify="center">
             <Col>
               <Button
                 onClick={onCancel}
                 className="cr-btn cr-btn-default"
-                style={{ marginRight: 10 }}
               >
                 {I18N.get('elip.button.cancel')}
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                onClick={this.handlePreview}
+                className="cr-btn cr-btn-default"
+                htmlType="button"
+              >
+                {I18N.get('elip.button.preview')}
               </Button>
             </Col>
             <Col>
