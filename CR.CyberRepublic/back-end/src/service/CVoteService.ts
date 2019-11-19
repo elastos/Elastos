@@ -664,9 +664,17 @@ export default class extends Base {
 
   public async getById(id): Promise<any> {
     const db_cvote = this.getDBModel('CVote')
+    // access proposal by reference number
+    const isNumber = /^\d*$/.test(id)
+    let query: any
+    if (isNumber) {
+      query = { vid: parseInt(id) }
+    } else {
+      query = { _id: id }
+    }
     const rs = await db_cvote
       .getDBInstance()
-      .findOne({ _id: id })
+      .findOne(query)
       .populate(
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
@@ -675,6 +683,9 @@ export default class extends Base {
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
       .populate('referenceElip', 'vid')
+    if (!rs) {
+      return { success: true, empty: true }
+    }
     return rs
   }
 

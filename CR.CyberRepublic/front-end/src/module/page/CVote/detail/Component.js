@@ -151,7 +151,13 @@ class C extends StandardPage {
         </div>
       )
     }
-
+    if (data && data.success && data.empty) {
+      return (
+        <div className="ebp-page">
+          <h1>{I18N.get('error.notfound')}</h1>
+        </div>
+      )
+    }
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
