@@ -252,15 +252,16 @@ class C extends BaseComponent {
 
   renderPreview() {
     const { form } = this.props
+    const { isPreview } = this.state
     const fieldsValue = form.getFieldsValue()
     return (
       <Modal
-        visible={this.state.isPreview}
+        visible={isPreview}
         onOk={this.handlePreview}
         onCancel={this.handlePreview}
         cancelButtonProps={{ style: { display: 'none' } }}
       >
-        {_.map(_.difference(TAB_KEYS, PREVIEW_EXCLUDE_KEYS), value => (
+        {isPreview && _.map(_.difference(TAB_KEYS, PREVIEW_EXCLUDE_KEYS), value => (
           <Part id={value} key={value}>
             <PartTitle>{I18N.get(`elip.fields.${value}`)}</PartTitle>
             <PartContent>
