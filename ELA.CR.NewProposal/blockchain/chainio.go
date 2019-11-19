@@ -421,7 +421,7 @@ func (b *BlockChain) initChainState() error {
 			if err != nil {
 				return err
 			}
-
+			fmt.Println("GenesisBlock ", b.chainParams.GenesisBlock.Hash())
 			curHash := header.Hash()
 			if lastNode == nil && !curHash.IsEqual(b.chainParams.GenesisBlock.Hash()) {
 				return fmt.Errorf("initChainState: Expected "+
