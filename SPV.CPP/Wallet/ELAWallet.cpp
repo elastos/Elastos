@@ -431,19 +431,13 @@ static void closew(int argc, char *argv[]) {
 // deposit walletID sidechain amount
 static void deposit(int argc, char *argv[]) {
 	if (argc != 4) {
-		std::cerr << "Invalid command syntax." << std::endl;
+		invalidCmdError();
 		return;
 	}
 
 	std::string walletID = argv[1];
 	std::string sidechain = argv[2];
 	double amount = std::stod(argv[3]) * SELA_PER_ELA;
-	std::string password;
-
-	if (0 > getPaymentPassword(password)) {
-		std::cerr << "Deposit failed!" << std::endl;
-		return;
-	}
 
 	try {
 		auto masterWallet = manager->GetMasterWallet(walletID);
@@ -474,29 +468,25 @@ static void deposit(int argc, char *argv[]) {
 		nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(
 			"", lockedAddress, std::to_string(amount), sidechainSubWallet->CreateAddress(), "");
 
+		std::string password = getpass("Enter payment password: ");
+
 		nlohmann::json signedTx = mainchainSubWallet->SignTransaction(tx, password);
 		mainchainSubWallet->PublishTransaction(signedTx);
-	} catch (...) {
-		std::cerr << "Create deposit transaction failed." << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
 	}
 }
 
-// withdraw walletID sidechain amount
+// withdraw [walletName] [sidechain] [amount]
 static void withdraw(int argc, char *argv[]) {
 	if (argc != 4) {
-		std::cerr << "Invalid command syntax." << std::endl;
+		invalidCmdError();
 		return;
 	}
 
 	std::string walletID = argv[1];
 	std::string sidechain = argv[2];
 	int amount = (int) (std::stod(argv[3]) * SELA_PER_ELA);
-	std::string password;
-
-	if (0 > getPaymentPassword(password)) {
-		std::cerr << "Withdraw failed!" << std::endl;
-		return;
-	}
 
 	try {
 		auto masterWallet = manager->GetMasterWallet(walletID);
@@ -525,10 +515,12 @@ static void withdraw(int argc, char *argv[]) {
 		nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(
 			"", std::to_string(amount), mainchainSubWallet->CreateAddress(), "");
 
+		std::string password = getpass("Enter payment password: ");
+
 		nlohmann::json signedTx = sidechainSubWallet->SignTransaction(tx, password);
 		sidechainSubWallet->PublishTransaction(signedTx);
-	} catch (...) {
-		std::cerr << "Create withdraw transaction failed." << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
 	}
 }
 
@@ -598,6 +590,39 @@ static void createDID(int argc, char *argv[]) {
 		std::cerr << "Create id transaction failed." << std::endl;
 	}
 
+}
+
+// idtx [walletName]
+static void idtx(int argc, char *argv[]) {
+	if (argc != 2) {
+		invalidCmdError();
+		return;
+	}
+
+	auto masterWallet = manager->GetMasterWallet(argv[1]);
+	if (!masterWallet) {
+		std::cerr << argv[1] << "not found" << std::endl;
+		return;
+	}
+
+	IIDChainSubWallet *subWallet = dynamic_cast<IIDChainSubWallet *>(masterWallet->GetSubWallet(ID_CHAIN));
+	if (!subWallet) {
+		std::cerr << "open '" << ID_CHAIN << "' first" << std::endl;
+		return;
+	}
+
+	std::cout << "Enter id document: ";
+	std::string iddoc;
+	std::cin >> iddoc;
+
+	try {
+		nlohmann::json tx = subWallet->CreateIDTransaction(nlohmann::json::parse(iddoc), "");
+		std::string password = getpass("Enter payment password: ");
+		nlohmann::json signedTx = subWallet->SignTransaction(tx, password);
+		subWallet->PublishTransaction(signedTx);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+	}
 }
 
 static void createProposal(int argc, char *argv[]) {
@@ -801,6 +826,7 @@ struct command {
 	{"passwd",         passwd,         "passwd    [walletName]                      Change password of specified wallet."},
 	{"remove",         remove,         "remove    [walletName]                      Remove specified wallet."},
 	{"createDID",      createDID,      "createDID [walletName]                      Create DID with IDChain."},
+	{"idtx",           idtx,           "idtx      [walletName]                      Create id transaction."},
 	{"proposal",       createProposal, "proposal  [walletName]                      Create CRC proposal transaction."},
 	{"verbose",        verbose,        "verbose   [on | off]                        Set verbose mode."},
 	{"list",           list,           "list                                        List all wallets."},

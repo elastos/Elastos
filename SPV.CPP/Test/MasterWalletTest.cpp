@@ -285,5 +285,5 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		else if (subWallets[i]->GetChainID() == CHAINID_IDCHAIN)
 			REQUIRE(dynamic_cast<IDChainSubWallet *>(subWallets[i]) != nullptr);
 	}
-	boost::filesystem::remove_all(boost::filesystem::path(std::string("Data/") + MasterWalletTestID));
+	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
 }
