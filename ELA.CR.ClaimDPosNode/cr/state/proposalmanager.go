@@ -404,6 +404,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 		switch trackingType {
 		case payload.Common:
 		case payload.Progress:
+		case payload.ProgressReject:
 		case payload.Terminated:
 			proposalState.TerminatedHeight = height
 			proposalState.Status = Aborted
@@ -420,6 +421,7 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 		switch trackingType {
 		case payload.Common:
 		case payload.Progress:
+		case payload.ProgressReject:
 		case payload.Terminated:
 			proposalState.TerminatedHeight = terminatedHeight
 			proposalState.Status = status
