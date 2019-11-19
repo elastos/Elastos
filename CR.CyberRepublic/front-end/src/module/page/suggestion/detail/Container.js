@@ -23,7 +23,7 @@ export default createContainer(Component, (state) => {
     currentUserId: state.user.current_user_id,
     isCouncil: state.user.is_council,
     isAdmin: state.user.is_admin,
-    isReference: !_.isEmpty(state.suggestion.detail.reference)
+    isReference: !_.isEmpty(state.suggestion.detail && state.suggestion.detail.reference)
   }
 }, () => {
   const service = new SuggestionService()
