@@ -1787,11 +1787,16 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 		return errors.New("proposal not exist")
 	}
 
-	// Check proposal status.
-	if proposalState.Status != crstate.VoterAgreed {
-		return errors.New("proposal status is not VoterAgreed")
+	if cptPayload.ProposalTrackingType == payload.Appropriation {
+		if proposalState.Status != crstate.VoterAgreed && proposalState.
+			Status != crstate.Finished && proposalState.Status != crstate.Aborted {
+			return errors.New("proposal status is not VoterAgreed , Finished, Aborted")
+		}
+	} else {
+		if proposalState.Status != crstate.VoterAgreed {
+			return errors.New("proposal status is not VoterAgreed")
+		}
 	}
-
 	// Check proposal tracking count.
 	if proposalState.TrackingCount >= b.chainParams.MaxProposalTrackingCount {
 		return errors.New("reached max tracking count")
