@@ -2,7 +2,6 @@
 -- Use of this source code is governed by an MIT
 -- license that can be found in the LICENSE file.
 --
-
 local m = require("api")
 
 local keystore = getWallet()
@@ -32,10 +31,10 @@ local proposal_hash = getProposalHash()
 local document_data = getDocumentData()
 local stage = getStage()
 local appropriation = getAppropriation()
-local ledger_pubkey = getLedgerPubkey()
-local ledger_privkey = getLedgerPrivkey()
-local new_ledger_pubkey = getNewLedgerPubkey()
-local new_ledger_privkey = getNewLedgerPrivkey()
+local leader_pubkey = getLeaderPubkey()
+local leader_privkey = getLeaderPrivkey()
+local new_leader_pubkey = getNewLeaderPubkey()
+local new_leader_privkey = getNewLeaderPrivkey()
 local secretary_general_privkey = getSecretaryGeneralPrivkey()
 
 if fee == 0
@@ -46,22 +45,27 @@ if proposal_hash == "" then
     print("proposal hash is nil, should use --proposalhash to set it.")
     return
 end
+
 if document_data == "" then
     print("document data is nil, should use --documentdata to set it.")
     return
 end
-if ledger_pubkey == "" then
-    print("ledger public key is nil, should use --ledgerpublickey to set it.")
+
+if leader_pubkey == "" then
+    print("leader_pubkey is nil, should use --leaderpublickey to set it.")
     return
 end
-if ledger_privkey == "" then
-    print("ledger private key is nil, should use --ledgerprivatekey to set it.")
+
+if leader_privkey == "" then
+    print("leader_privkey is nil, should use --leaderprivatekey to set it.")
     return
 end
+
 if secretary_general_privkey == "" then
     print("secretary general private key is nil, should use --secretarygeneralprivatekey to set it.")
     return
 end
+print("secretary general privkey:", secretary_general_privkey)
 
 print("fee:", fee)
 print("proposal tracking type:", proposal_tracking_type)
@@ -69,15 +73,15 @@ print("proposal hash:", proposal_hash)
 print("document data:", document_data)
 print("stage:", stage)
 print("appropriation:", appropriation)
-print("ledger pubkey:", ledger_pubkey)
-print("ledger privkey:", ledger_privkey)
-print("new ledger pubkey:", new_ledger_pubkey)
-print("new ledger privkey:", new_ledger_privkey)
+print("leader_pubkey:", leader_pubkey)
+print("leader_privkey:", leader_privkey)
+print("new_leader_pubkey:", new_leader_pubkey)
+print("new_leader_privkey:", new_leader_privkey)
 print("secretary general privkey:", secretary_general_privkey)
 
 local cp_payload =crcproposaltracking.new(proposal_tracking_type,proposal_hash,
-        document_data, stage, appropriation, ledger_pubkey, ledger_privkey,
-        new_ledger_pubkey, new_ledger_privkey, secretary_general_privkey)
+        document_data, stage, appropriation, leader_pubkey, leader_privkey,
+        new_leader_pubkey, new_leader_privkey, secretary_general_privkey)
 print(cp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime

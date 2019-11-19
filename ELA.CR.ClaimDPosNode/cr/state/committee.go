@@ -215,7 +215,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		c.resetCRCCommitteeUsedAmount()
 		c.mtx.Unlock()
 
-		if c.createCRCAppropriationTx != nil {
+		if c.createCRCAppropriationTx != nil && block.Height == c.getHeight() {
 			tx := c.createCRCAppropriationTx()
 			log.Info("create CRCAppropriation transaction:", tx.Hash())
 			if c.isCurrent != nil && c.broadcast != nil && c.

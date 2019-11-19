@@ -161,8 +161,8 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	appropriation := c.Float64("appropriation")
 	leaderPubkey := c.String("leaderpublickey")
 	newLeaderPubkey := c.String("newleaderpublickey")
-	ledgerPrivkey := c.String("ledgerprivatekey")
-	newLedgerPrivkey := c.String("newledgerprivatekey")
+	leaderPrivkey := c.String("leaderprivatekey")
+	newLeaderPrivkey := c.String("newleaderprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
 	recipient := c.String("recipient")
 
@@ -208,20 +208,20 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LNumber(appropriation))
 		return 1
 	}
-	getLedgerPubkey := func(L *lua.LState) int {
+	getLeaderPubkey := func(L *lua.LState) int {
 		L.Push(lua.LString(leaderPubkey))
 		return 1
 	}
-	getNewLedgerPubkey := func(L *lua.LState) int {
+	getNewLeaderPubkey := func(L *lua.LState) int {
 		L.Push(lua.LString(newLeaderPubkey))
 		return 1
 	}
-	getLedgerPrivkey := func(L *lua.LState) int {
-		L.Push(lua.LString(ledgerPrivkey))
+	getLeaderPrivkey := func(L *lua.LState) int {
+		L.Push(lua.LString(leaderPrivkey))
 		return 1
 	}
-	getNewLedgerPrivkey := func(L *lua.LState) int {
-		L.Push(lua.LString(newLedgerPrivkey))
+	getNewLeaderPrivkey := func(L *lua.LState) int {
+		L.Push(lua.LString(newLeaderPrivkey))
 		return 1
 	}
 	getSecretaryGeneralPrivkey := func(L *lua.LState) int {
@@ -242,10 +242,10 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getDocumentData", getDocumentData)
 	L.Register("getStage", getStage)
 	L.Register("getAppropriation", getAppropriation)
-	L.Register("getLedgerPubkey", getLedgerPubkey)
-	L.Register("getNewLedgerPubkey", getNewLedgerPubkey)
-	L.Register("getLedgerPrivkey", getLedgerPrivkey)
-	L.Register("getNewLedgerPrivkey", getNewLedgerPrivkey)
+	L.Register("getLeaderPubkey", getLeaderPubkey)
+	L.Register("getNewLeaderPubkey", getNewLeaderPubkey)
+	L.Register("getLeaderPrivkey", getLeaderPrivkey)
+	L.Register("getNewLeaderPrivkey", getNewLeaderPrivkey)
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
 	L.Register("getRecipient", getRecipient)
 }
@@ -429,20 +429,20 @@ func NewCommand() *cli.Command {
 				Usage: "set the appropriation",
 			},
 			cli.StringFlag{
-				Name:  "ledgerpublickey",
-				Usage: "set the public key of proposal ledger",
+				Name:  "leaderpublickey",
+				Usage: "set the public key of proposal leader",
 			},
 			cli.StringFlag{
-				Name:  "newledgerpublickey",
-				Usage: "set the public key of new proposal ledger",
+				Name:  "newleaderpublickey",
+				Usage: "set the public key of new proposal leader",
 			},
 			cli.StringFlag{
-				Name:  "ledgerprivatekey",
-				Usage: "set the private key of proposal ledger",
+				Name:  "leaderprivatekey",
+				Usage: "set the private key of proposal leader",
 			},
 			cli.StringFlag{
-				Name:  "newledgerprivatekey",
-				Usage: "set the private key of new proposal ledger",
+				Name:  "newleaderprivatekey",
+				Usage: "set the private key of new proposal leader",
 			},
 			cli.StringFlag{
 				Name:  "secretarygeneralprivatekey",
