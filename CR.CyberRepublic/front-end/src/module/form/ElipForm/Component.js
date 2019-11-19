@@ -1,8 +1,8 @@
 import React from 'react'
-import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Row, Tabs, Typography } from 'antd'
-import I18N from '@/I18N'
 import _ from 'lodash'
+import { Form, Input, Button, Row, Tabs, Typography } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
+import I18N from '@/I18N'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import { ELIP_TYPE } from '@/constant'
 
@@ -22,16 +22,75 @@ const { Paragraph } = Typography
 const FormItem = Form.Item
 const { TabPane } = Tabs
 
-const TAB_KEYS = [
-  'elipType',
-  'abstract',
-  'specifications',
-  'motivation',
-  'rationale',
-  'backwardCompatibility',
-  'referenceImplementation',
-  'copyright'
+const TABS = [
+  {
+    id: 'type',
+    valueKey: 'elipType',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  },
+  {
+    id: 'abstract',
+    valueKey: 'abstract',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  },
+  {
+    id: 'motivation',
+    valueKey: 'abstract',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  },
+  {
+    id: 'specification',
+    valueKey: 'specifications',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  },
+  {
+    id: 'rationale',
+    valueKey: 'rationale',
+    rules: [],
+  },
+  {
+    id: 'backwardCompatibility',
+    valueKey: 'backwardCompatibility',
+    rules: [],
+  },
+  {
+    id: 'referenceImplementation',
+    valueKey: 'referenceImplementation',
+    rules: [],
+  },
+  {
+    id: 'copyright',
+    valueKey: 'copyright',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  }
 ]
+const TAB_KEYS = _.map(TABS, value => value.id)
+
 const editorTransform = value => {
   // string or object
   let result = value
@@ -126,48 +185,54 @@ class C extends BaseComponent {
     }
   }
 
-  getTypeRadioGroup = key => {
+  getTypeRadioGroup(item) {
     const { data = {} } = this.props
     const { getFieldDecorator } = this.props.form
-    const rules = [
-      {
-        required: true,
-        message: I18N.get('elip.form.error.required')
-      }
-    ]
-    return getFieldDecorator(key, {
-      rules,
-      initialValue: data && data.elipType ? data.elipType : ELIP_TYPE.STANDARD_TRACK
-    })(<RadioCard radioKey={key} />)
+    return getFieldDecorator(item.id, {
+      rules: item.rules,
+      initialValue:
+        data && data[item.valueKey] ? data[item.valueKey] : ELIP_TYPE.STANDARD_TRACK
+    })(<RadioCard radioKey={item.id} />)
   }
 
-  getTextarea(id) {
+  getTextarea(item) {
     const { data = {} } = this.props
     const { getFieldDecorator } = this.props.form
-
-    const rules = [
-      {
-        required: true,
-        message: I18N.get('elip.form.error.required')
-      }
-    ]
-    return getFieldDecorator(id, {
-      rules,
-      initialValue: data[id]
+    return getFieldDecorator(item.id, {
+      rules: item.rules,
+      initialValue: data[item.valueKey]
     })(
       <CodeMirrorEditor
-        content={data[id]}
+        content={data[item.id]}
         callback={this.onTextareaChange}
-        activeKey={id}
-        name={id}
+        activeKey={item.id}
+        name={item.id}
       />
     )
   }
 
-  renderTabText(id) {
-    const hasError = _.has(this.state.errorKeys, id)
+  renderTabText(item) {
+    const hasError = _.has(this.state.errorKeys, item.id)
+    const requiredFlag = _.isEmpty(item.rules) ? '' : '*'
     return (
-      <TabText hasErr={hasError}>{`${I18N.get(`elip.fields.${id}`)}*`}</TabText>
+      <TabText hasErr={hasError}>{I18N.get(`elip.fields.${item.id}`) + requiredFlag}</TabText>
+    )
+  }
+
+  renderTabItem(item) {
+    let formItem
+    if (item.id === 'type') {
+      formItem = this.getTypeRadioGroup(item)
+    } else {
+      formItem = this.getTextarea(item)
+    }
+    return (
+      <TabPane tab={this.renderTabText(item)} key={item.id}>
+        <TabPaneInner>
+          <Note>{I18N.get(`elip.form.note.${item.id}`)}</Note>
+          <FormItem>{formItem}</FormItem>
+        </TabPaneInner>
+      </TabPane>
     )
   }
 
@@ -205,56 +270,8 @@ class C extends BaseComponent {
             activeKey={this.state.activeKey}
             onChange={this.onTabChange}
           >
-            <TabPane tab={this.renderTabText(TAB_KEYS[0])} key={TAB_KEYS[0]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[0]}`)}</Note>
-                <FormItem>{this.getTypeRadioGroup(TAB_KEYS[0])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[1])} key={TAB_KEYS[1]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[1]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[1])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[2])} key={TAB_KEYS[2]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[2]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[2])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[3])} key={TAB_KEYS[3]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[3]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[3])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[4])} key={TAB_KEYS[4]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[4]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[4])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[5])} key={TAB_KEYS[5]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[5]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[5])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[6])} key={TAB_KEYS[6]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[6]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[6])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[7])} key={TAB_KEYS[7]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[7]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[7])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
+            {_.map(TABS, value => this.renderTabItem(value))}
           </Tabs>
-
           <Row
             gutter={8}
             type="flex"
