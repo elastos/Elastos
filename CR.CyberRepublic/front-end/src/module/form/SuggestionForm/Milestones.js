@@ -9,8 +9,19 @@ class Milestones extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      milestones: props.initialValue ? props.initialValue : []
+      milestones: props.initialValue ? props.initialValue : [],
+      milestonesTrigger: props.initialValue
+        ? this.milestonesTrigger(props.initialValue.length)
+        : {}
     }
+  }
+
+  milestonesTrigger = size => {
+    const triggers = {}
+    for (let i = 0; i < size; i++) {
+      triggers[i] = { clicked: false, hovered: false }
+    }
+    return triggers
   }
 
   handleSubmit = values => {
@@ -33,8 +44,28 @@ class Milestones extends Component {
     })
   }
 
+  handleHoverChange = (index, visible) => {
+    const { milestonesTrigger } = this.state
+    this.setState({
+      milestonesTrigger: {
+        ...milestonesTrigger,
+        [index]: { hovered: visible, clicked: false }
+      }
+    })
+  }
+
+  handleClickChange = (index, visible) => {
+    const { milestonesTrigger } = this.state
+    this.setState({
+      milestonesTrigger: {
+        ...milestonesTrigger,
+        [index]: { clicked: visible, hovered: false }
+      }
+    })
+  }
+
   render() {
-    const { milestones } = this.state
+    const { milestones, milestonesTrigger } = this.state
     const { editable } = this.props
     const visible = editable === false ? editable : true
     return (
@@ -55,20 +86,27 @@ class Milestones extends Component {
                     />
                   }
                   trigger="click"
+                  visible={milestonesTrigger[index].clicked}
+                  onVisibleChange={isVisible => this.handleClickChange(index, isVisible)}
                   placement="top"
                 >
-                  <Popover content={item.version}>
+                  <Popover
+                    content={item.version}
+                    trigger="hover"
+                    visible={milestonesTrigger[index].hovered}
+                    onVisibleChange={isVisible => this.handleHoverChange(index, isVisible)}
+                  >
                     <Square>
                       <div>{moment(item.date).format('MMM D, YYYY')}</div>
                       <div className="square-content">{item.version}</div>
                     </Square>
-                    <Button
-                      type="primary"
-                      size="small"
-                      shape="circle"
-                      icon="edit"
-                    />
                   </Popover>
+                  <Button
+                    type="primary"
+                    size="small"
+                    shape="circle"
+                    icon="edit"
+                  />
                 </Popover>
               ) : (
                 <Fragment>
