@@ -2,7 +2,6 @@ package mempool
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -88,6 +87,20 @@ var didPayloadBytes = []byte(
         "expires" : "2023-02-10T17:00:00Z"
 	}`)
 
+var didPayloadInfoBytes = []byte(
+	`{
+	"header": {
+		"specification": "elastos/did/1.0",
+		"operation": "create"
+	},
+	"payload": "eyJpZCI6ImRpZDplbGFzdG9zOmlkOVRxdzNmNlRHcnJzTWFaQU5SWTVaREtvWlI4MXF0b1IiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJmMkVDQWJVRXpzZGlkTHd0TlhKclRIczFkQXBVeGNnR1Y3N1lCWFlwQVV0dyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwiZXhwaXJlcyI6IjIwMjQtMTEtMThUMDc6MDA6MDBaIn0",
+	"proof": {
+		"verificationMethod": "#primary",
+		"signature": "8vrtfqfjU4ICEMVclG1KUEb4C1W4hhBnwKazYOYSDkwGF3F92Q6QkIvDjkmMwINqlYLPVXUC1hXsS6DxEDBDlw"
+	}
+	}
+`)
+
 func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 	tx := &types2.Transaction{
 		TxType:         0x0a,
@@ -108,8 +121,21 @@ func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 	i, _ := getDIDByPublicKey(data)
 	didAddress, _ := i.ToAddress()
 	fmt.Println("didAddress", didAddress)
-	err2 := s.validator.checkRegisterDID(tx)
-	s.NoError(err2)
+	err := s.validator.checkRegisterDID(tx)
+	s.NoError(err)
+
+	info := new(types.PayloadDIDInfo)
+	json.Unmarshal(didPayloadInfoBytes, info)
+
+	payloadBase64, _ := base64url.DecodeString(info.Payload)
+	payloadInfo := new(types.DIDPayloadInfo)
+	json.Unmarshal(payloadBase64, payloadInfo)
+	info.PayloadInfo = payloadInfo
+
+	tx.Payload = info
+	err = s.validator.checkRegisterDID(tx)
+	s.NoError(err)
+
 }
 
 func (s *txValidatorTestSuite) TestGetIDFromUri() {
@@ -141,7 +167,7 @@ func getPayloadCreateDID() *types.PayloadDIDInfo {
 
 	privateKey1, _ := common.HexStringToBytes(PayloadPrivateKey)
 	sign, _ := crypto.Sign(privateKey1, p.GetData())
-	p.Proof.Signature = base64.StdEncoding.EncodeToString(sign)
+	p.Proof.Signature = base64url.EncodeToString(sign)
 
 	return p
 }
@@ -155,7 +181,7 @@ func getPayloadUpdateDID() *types.PayloadDIDInfo {
 			Specification: "elastos/did/1.0",
 			Operation:     "update",
 		},
-		Payload: hex.EncodeToString(didPayloadBytes),
+		Payload: base64url.EncodeToString(didPayloadBytes),
 		Proof: types.DIDProofInfo{
 			Type:               randomString(),
 			VerificationMethod: randomString(),
@@ -201,7 +227,7 @@ func getPayloadDIDInfo(id string, didOperation string) *types.PayloadDIDInfo {
 			Specification: "elastos/did/1.0",
 			Operation:     didOperation,
 		},
-		Payload: hex.EncodeToString(pBytes),
+		Payload: base64url.EncodeToString(pBytes),
 		Proof: types.DIDProofInfo{
 			Type:               "ECDSAsecp256r1",
 			VerificationMethod: "did:elastos:" + id,
