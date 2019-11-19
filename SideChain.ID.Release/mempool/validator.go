@@ -2,7 +2,6 @@ package mempool
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"math"
@@ -14,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/pact"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
+	"github.com/elastos/Elastos.ELA.SideChain.ID/types/base64url"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
@@ -376,8 +376,7 @@ func (v *validator) checkRegisterDID(txn *types.Transaction) error {
 	if err != nil {
 		return err
 	}
-	//get byte[] signatrure
-	signature, _ := base64.StdEncoding.DecodeString(payloadDidInfo.Proof.Signature)
+	signature, _ := base64url.DecodeString(payloadDidInfo.Proof.Signature)
 
 	var success bool
 	success, err = v.VerifyByVM(payloadDidInfo, code, signature)
