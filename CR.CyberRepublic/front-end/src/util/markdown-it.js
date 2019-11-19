@@ -10,6 +10,7 @@ import emoji from 'markdown-it-emoji'
 import mark from 'markdown-it-mark'
 import deflist from 'markdown-it-deflist'
 import ins from 'markdown-it-ins'
+import { getSiteUrl } from './url'
 
 const mdi = markdownIt({
   html: true,
@@ -28,6 +29,28 @@ const mdi = markdownIt({
   .use(ins)
   .use(deflist)
 
+const autolinkReferenceNumber = content => {
+  const url = getSiteUrl()
+  const patterns = [
+    {
+      regExp: /(elip)\s#(\d+)/gi,
+      subs: `$1 [#$2](${url}/elips/$2)`
+    },
+    {
+      regExp: /(提案|proposal)\s#(\d+)/gi,
+      subs: `$1 [#$2](${url}/proposals/$2)`
+    },
+    {
+      regExp: /(建议|suggestion)\s#(\d+)/gi,
+      subs: `$1 [#$2](${url}/suggestion/$2)`
+    }
+  ]
+  return patterns.reduce((rs, item) => {
+    return rs.replace(item.regExp, item.subs)
+  }, content)
+}
+
 export const convertMarkdownToHtml = content => {
-  return DOMPurify.sanitize(mdi.render(content || ''))
+  const rs = content && autolinkReferenceNumber(content)
+  return DOMPurify.sanitize(mdi.render(rs || ''))
 }
