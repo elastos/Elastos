@@ -52,7 +52,10 @@ namespace Elastos {
 
 			uint64_t now = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 			uint64_t milliseconds = now - peer->GetDownloadStartTime();
-			uint32_t bytesPerSecond = peer->GetDownloadBytes() * 1000 / milliseconds;
+			uint32_t bytesPerSecond = 0;
+
+			if (milliseconds != 0)
+				bytesPerSecond = peer->GetDownloadBytes() * 1000 / milliseconds;
 
 			peer->ScheduleDownloadStartTime();
 			peer->SetDownloadBytes(0);

@@ -528,20 +528,22 @@ namespace Elastos {
 
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.cend() &&
 				_masterWalletMap[masterWalletId] != nullptr) {
-				ArgInfo("r => get master wallet");
-				_masterWalletMap[masterWalletId]->GetBasicInfo();
 				return _masterWalletMap[masterWalletId];
 			}
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, ConfigPtr(new Config(*_config)), _dataPath,
-														  _p2pEnable,
-														  ImportFromLocalStore);
+			MasterWallet *masterWallet = nullptr;
+			try {
+				masterWallet = new MasterWallet(masterWalletId, ConfigPtr(new Config(*_config)),
+												_dataPath,
+												_p2pEnable,
+												ImportFromLocalStore);
 
-			checkRedundant(masterWallet);
-			_masterWalletMap[masterWalletId] = masterWallet;
-			masterWallet->InitSubWallets();
-
-			ArgInfo("r => {}", GetFunName());
+				checkRedundant(masterWallet);
+				_masterWalletMap[masterWalletId] = masterWallet;
+				masterWallet->InitSubWallets();
+			} catch (const std::exception &e) {
+				return nullptr;
+			}
 
 			return masterWallet;
 		}

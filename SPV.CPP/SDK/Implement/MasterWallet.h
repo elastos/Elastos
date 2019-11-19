@@ -195,7 +195,7 @@ namespace Elastos {
 			virtual void CloseAllSubWallets();
 
 		protected:
-			WalletMap _createdWallets;
+			mutable WalletMap _createdWallets;
 
 			MasterWalletInitFrom _initFrom;
 

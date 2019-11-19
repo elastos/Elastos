@@ -211,18 +211,11 @@ namespace Elastos {
 			ArgInfo("{} {}", _id, GetFunName());
 			ArgInfo("chainID: {}", chainID);
 
-			ISubWallet *subWallet = nullptr;
-
-			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
-				if (it->first == chainID) {
-					subWallet = it->second;
-					break;
-				}
+			if (_createdWallets.find(chainID) != _createdWallets.end()) {
+				return _createdWallets[chainID];
 			}
 
-			ArgInfo("r => found");
-
-			return subWallet;
+			return nullptr;
 		}
 
 		ISubWallet *MasterWallet::CreateSubWallet(const std::string &chainID) {
@@ -250,9 +243,6 @@ namespace Elastos {
 			SubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this);
 			_createdWallets[chainID] = subWallet;
 			_account->Save();
-
-			ArgInfo("r => create subwallet");
-			subWallet->GetBasicInfo();
 
 			return subWallet;
 		}
