@@ -33,27 +33,27 @@ const autolinkReferenceNumber = content => {
   const url = getSiteUrl()
   const patterns = [
     {
-      regExp: /(elip)\s+#(\d+)/gi,
+      regExp: /(elip)\s+#([1-9]{1}\d*)/gi,
       subs: `$1 [#$2](${url}/elips/$2)`
     },
     {
-      regExp: /#(\d+)\s+(elip)/gi,
+      regExp: /#([1-9]{1}\d*)\s+(elip)/gi,
       subs: `[#$1](${url}/elips/$1) $2`
     },
     {
-      regExp: /(提案|proposal)\s+#(\d+)/gi,
+      regExp: /(提案|proposal)\s+#([1-9]{1}\d*)/gi,
       subs: `$1 [#$2](${url}/proposals/$2)`
     },
     {
-      regExp: /#(\d+)\s+(提案|proposal)/gi,
+      regExp: /#([1-9]{1}\d*)\s+(提案|proposal)/gi,
       subs: `[#$1](${url}/proposals/$1) $2`
     },
     {
-      regExp: /(建议|suggestion)\s+#(\d+)/gi,
+      regExp: /(建议|suggestion)\s+#([1-9]{1}\d*)/gi,
       subs: `$1 [#$2](${url}/suggestion/$2)`
     },
     {
-      regExp: /#(\d+)\s+(建议|suggestion)/gi,
+      regExp: /#([1-9]{1}\d*)\s+(建议|suggestion)/gi,
       subs: `[#$1](${url}/suggestion/$1) $2`
     }
   ]
