@@ -12,6 +12,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/types"
+	"github.com/elastos/Elastos.ELA.SideChain.ID/types/base64url"
 	stype "github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/stretchr/testify/assert"
@@ -87,7 +88,7 @@ func TestIDChainStore_PersistDIDTx(t *testing.T) {
 		Payload: regPayload3,
 	}
 
-	// check chain store not exist did tx
+	//check chain store not exist did tx
 	_, err = idChainStore.GetDIDTxPayload(id1)
 	assert.True(t, err != nil)
 
@@ -236,7 +237,7 @@ func getRandomPayloadDid(id string) *types.PayloadDIDInfo {
 			Specification: "elastos/did/1.0",
 			Operation:     getRandomOperation(),
 		},
-		Payload: hex.EncodeToString(data),
+		Payload: base64url.EncodeToString(data),
 		Proof: types.DIDProofInfo{
 			Type:               randomString(),
 			VerificationMethod: randomString(),
