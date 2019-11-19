@@ -294,9 +294,17 @@ export default class extends Base {
 
   public async getById(id: string): Promise<any> {
     const db_elip = this.getDBModel('Elip')
+    // access ELIP by reference number
+    const isNumber = /^\d*$/.test(id)
+    let query: any
+    if (isNumber) {
+      query = { vid: parseInt(id) }
+    } else {
+      query = { _id: id }
+    }
     const rs = await db_elip
       .getDBInstance()
-      .findById({ _id: id })
+      .findOne(query)
       .populate(
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
@@ -304,12 +312,12 @@ export default class extends Base {
       .populate('reference')
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
     if (!rs) {
-      throw 'ElipService.getById - invalid elip id'
+      return { elip: { success: true, empty: true } }
     }
     const db_elip_review = this.getDBModel('Elip_Review')
     const reviews = await db_elip_review
       .getDBInstance()
-      .find({ elipId: id })
+      .find({ elipId: rs._id })
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
 
     const currentUserId = _.get(this.currentUser, '_id')
@@ -323,7 +331,7 @@ export default class extends Base {
       )
 
     if (_.isEmpty(rs.comments)) {
-      return isVisible ? { elip: rs, reviews } : {}
+      return isVisible ? { elip: rs, reviews } : { elip: { success: true, empty: true } }
     }
 
     for (const comment of rs.comments) {
@@ -339,7 +347,7 @@ export default class extends Base {
       await Promise.all(promises)
     }
 
-    return isVisible ? { elip: rs, reviews } : {}
+    return isVisible ? { elip: rs, reviews } : { elip: { success: true, empty: true } }
   }
 
   public async remove(_id : string): Promise<any> {
