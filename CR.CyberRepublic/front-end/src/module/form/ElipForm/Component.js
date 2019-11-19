@@ -1,9 +1,10 @@
 import React from 'react'
 import _ from 'lodash'
-import { Form, Input, Button, Row, Tabs, Typography } from 'antd'
+import { Form, Input, Button, Row, Tabs, Typography, Modal, Col } from 'antd'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import { ELIP_TYPE } from '@/constant'
 
 import {
@@ -15,7 +16,10 @@ import {
   RadioCardPanel,
   RadioCardItem,
   RadioCardLabel,
-  RadioCardSpan
+  RadioCardSpan,
+  Part,
+  PartTitle,
+  PartContent
 } from './style'
 
 const { Paragraph } = Typography
@@ -90,7 +94,7 @@ const TABS = [
   }
 ]
 const TAB_KEYS = _.map(TABS, value => value.id)
-
+const PREVIEW_EXCLUDE_KEYS = ['title', 'type']
 const editorTransform = value => {
   // string or object
   let result = value
@@ -111,7 +115,8 @@ class C extends BaseComponent {
     this.state = {
       loading: false,
       activeKey: TAB_KEYS[0],
-      errorKeys: {}
+      errorKeys: {},
+      isPreview: false
     }
   }
 
@@ -170,6 +175,11 @@ class C extends BaseComponent {
     })
   }
 
+  handlePreview = e => {
+    const { isPreview } = this.state
+    this.setState({ isPreview: !isPreview })
+  }
+
   onTextareaChange = activeKey => {
     const { form } = this.props
     const err = editorTransform(form.getFieldError(activeKey))
@@ -191,7 +201,9 @@ class C extends BaseComponent {
     return getFieldDecorator(item.id, {
       rules: item.rules,
       initialValue:
-        data && data[item.valueKey] ? data[item.valueKey] : ELIP_TYPE.STANDARD_TRACK
+        data && data[item.valueKey]
+          ? data[item.valueKey]
+          : ELIP_TYPE.STANDARD_TRACK
     })(<RadioCard radioKey={item.id} />)
   }
 
@@ -215,7 +227,9 @@ class C extends BaseComponent {
     const hasError = _.has(this.state.errorKeys, item.id)
     const requiredFlag = _.isEmpty(item.rules) ? '' : '*'
     return (
-      <TabText hasErr={hasError}>{I18N.get(`elip.fields.${item.id}`) + requiredFlag}</TabText>
+      <TabText hasErr={hasError}>
+        {I18N.get(`elip.fields.${item.id}`) + requiredFlag}
+      </TabText>
     )
   }
 
@@ -236,10 +250,34 @@ class C extends BaseComponent {
     )
   }
 
+  renderPreview() {
+    const { form } = this.props
+    const fieldsValue = form.getFieldsValue()
+    return (
+      <Modal
+        visible={this.state.isPreview}
+        onOk={this.handlePreview}
+        onCancel={this.handlePreview}
+        cancelButtonProps={{ style: { display: 'none' } }}
+      >
+        {_.map(_.difference(TAB_KEYS, PREVIEW_EXCLUDE_KEYS), value => (
+          <Part id={value} key={value}>
+            <PartTitle>{I18N.get(`elip.fields.${value}`)}</PartTitle>
+            <PartContent>
+              <MarkdownPreview
+                content={fieldsValue[value] ? fieldsValue[value] : ''}
+              />
+            </PartContent>
+          </Part>
+        ))}
+      </Modal>
+    )
+  }
+
   ord_render() {
     const { form, data, onCancel } = this.props
     const { getFieldDecorator } = form
-
+    const previewModal = this.renderPreview()
     return (
       <Container>
         <Form onSubmit={this.handleSubmit}>
@@ -278,34 +316,49 @@ class C extends BaseComponent {
             justify="center"
             style={{ marginBottom: '30px' }}
           >
-            <Button
-              loading={this.state.loading}
-              onClick={this.handleContinue}
-              className="cr-btn cr-btn-black"
-              htmlType="button"
-            >
-              {I18N.get('suggestion.form.button.continue')}
-            </Button>
+            <Col>
+              <Button
+                onClick={this.handlePreview}
+                className="cr-btn cr-btn-default"
+                htmlType="button"
+                style={{ marginRight: 10 }}
+              >
+                {I18N.get('elip.button.preview')}
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                loading={this.state.loading}
+                onClick={this.handleContinue}
+                className="cr-btn cr-btn-black"
+                htmlType="button"
+              >
+                {I18N.get('suggestion.form.button.continue')}
+              </Button>
+            </Col>
           </Row>
-
           <Row gutter={8} type="flex" justify="center">
-            <Button
-              onClick={onCancel}
-              className="cr-btn cr-btn-default"
-              style={{ marginRight: 10 }}
-            >
-              {I18N.get('elip.button.cancel')}
-            </Button>
-
-            <Button
-              loading={this.state.loading}
-              className="cr-btn cr-btn-primary"
-              htmlType="submit"
-            >
-              {this.props.submitName || I18N.get('elip.button.submit')}
-            </Button>
+            <Col>
+              <Button
+                onClick={onCancel}
+                className="cr-btn cr-btn-default"
+                style={{ marginRight: 10 }}
+              >
+                {I18N.get('elip.button.cancel')}
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                loading={this.state.loading}
+                className="cr-btn cr-btn-primary"
+                htmlType="submit"
+              >
+                {this.props.submitName || I18N.get('elip.button.submit')}
+              </Button>
+            </Col>
           </Row>
         </Form>
+        {previewModal}
       </Container>
     )
   }

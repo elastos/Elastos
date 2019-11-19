@@ -70,7 +70,8 @@ export default {
     delete: 'Delete',
     exportAsCSV: 'Export as CSV',
     clearFilter: 'Clear Filter',
-    applyFilter: 'Apply Filter'
+    applyFilter: 'Apply Filter',
+    preview: 'Preview'
   },
   msg: {
     updated: 'Updated successfully',

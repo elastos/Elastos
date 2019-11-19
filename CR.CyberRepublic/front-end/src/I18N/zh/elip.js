@@ -70,7 +70,8 @@ export default {
     delete: '删除',
     exportAsCSV: '导出CSV文件',
     clearFilter: '重置过滤',
-    applyFilter: '应用过滤'
+    applyFilter: '应用过滤',
+    preview: '预览'
   },
   msg: {
     updated: '更新成功',
