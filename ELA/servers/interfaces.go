@@ -1500,18 +1500,20 @@ type RpcCrMembersInfo struct {
 }
 
 type RpcProposalBaseState struct {
-	Status             string                        `json:"status"`
-	ProposalHash       string                        `json:"proposalhash"`
-	TxHash             string                        `json:"txhash"`
-	CRVotes            map[string]payload.VoteResult `json:"crvotes"`
-	VotersRejectAmount common.Fixed64                `json:"votersrejectamount"`
-	RegisterHeight     uint32                        `json:"registerHeight`
-	VoteStartHeight    uint32                        `json:"votestartheight"`
-	CurrentStage       uint8                         `json:"currentstage"`
-	TrackingCount      uint8                         `json:"trackingcount"`
-	TerminatedHeight   uint32                        `json:"terminatedheight"`
-	ProposalLeader     string                        `json:"proposalleader"`
-	Index              uint64                        `json:"index"`
+	Status                 string                        `json:"status"`
+	ProposalHash           string                        `json:"proposalhash"`
+	TxHash                 string                        `json:"txhash"`
+	CRVotes                map[string]payload.VoteResult `json:"crvotes"`
+	VotersRejectAmount     common.Fixed64                `json:"votersrejectamount"`
+	RegisterHeight         uint32                        `json:"registerHeight`
+	VoteStartHeight        uint32                        `json:"votestartheight"`
+	CurrentStage           uint8                         `json:"currentstage"`
+	CurrentWithdrawalStage uint8                         `json:"currentwithdrawalstage"`
+	TrackingCount          uint8                         `json:"trackingcount"`
+	TerminatedHeight       uint32                        `json:"terminatedheight"`
+	ProposalLeader         string                        `json:"proposalleader"`
+	AppropriatedStage      uint8                         `json:"appropriatedstage"`
+	Index                  uint64                        `json:"index"`
 }
 
 type RpcCRProposalBaseStateInfo struct {
@@ -1534,19 +1536,21 @@ type RpcCRCProposal struct {
 }
 
 type RpcProposalState struct {
-	Status                string                        `json:"status"`
-	Proposal              RpcCRCProposal                `json:"proposal"`
-	ProposalHash          string                        `json:"proposalhash"`
-	TxHash                string                        `json:"txhash"`
-	CRVotes               map[string]payload.VoteResult `json:"crvotes"`
-	VotersRejectAmount    common.Fixed64                `json:"votersrejectamount"`
-	RegisterHeight        uint32                        `json:"registerheight`
-	VoteStartHeight       uint32                        `json:"votestartheight"`
-	CurrentStage          uint8                         `json:"currentstage"`
-	TrackingCount         uint8                         `json:"trackingcount"`
-	TerminatedHeight      uint32                        `json:"terminatedheight"`
-	ProposalLeader        string                        `json:"proposalleader"`
-	AvailWithdrawalAmount common.Fixed64                `json:"availwithdrawalamount"`
+	Status                 string                        `json:"status"`
+	Proposal               RpcCRCProposal                `json:"proposal"`
+	ProposalHash           string                        `json:"proposalhash"`
+	TxHash                 string                        `json:"txhash"`
+	CRVotes                map[string]payload.VoteResult `json:"crvotes"`
+	VotersRejectAmount     common.Fixed64                `json:"votersrejectamount"`
+	RegisterHeight         uint32                        `json:"registerheight`
+	VoteStartHeight        uint32                        `json:"votestartheight"`
+	CurrentStage           uint8                         `json:"currentstage"`
+	AppropriatedStage      uint8                         `json:"appropriatedstage"`
+	TrackingCount          uint8                         `json:"trackingcount"`
+	TerminatedHeight       uint32                        `json:"terminatedheight"`
+	ProposalLeader         string                        `json:"proposalleader"`
+	CurrentWithdrawalStage uint8                         `json:"currentwithdrawalstage"`
+	AvailWithdrawalAmount  common.Fixed64                `json:"availwithdrawalamount"`
 }
 
 type RpcCRProposalStateInfo struct {
@@ -1802,17 +1806,19 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			crVotes[k.String()] = v
 		}
 		RpcProposalBaseState := RpcProposalBaseState{
-			Status:             proposal.Status.String(),
-			ProposalHash:       proposal.Proposal.Hash().String(),
-			TxHash:             proposal.TxHash.String(),
-			CRVotes:            crVotes,
-			VotersRejectAmount: proposal.VotersRejectAmount,
-			RegisterHeight:     proposal.RegisterHeight,
-			VoteStartHeight:    proposal.VoteStartHeight,
-			CurrentStage:       proposal.CurrentStage,
-			TrackingCount:      proposal.TrackingCount,
-			TerminatedHeight:   proposal.TerminatedHeight,
-			ProposalLeader:     common.BytesToHexString(proposal.ProposalLeader),
+			Status:                 proposal.Status.String(),
+			ProposalHash:           proposal.Proposal.Hash().String(),
+			TxHash:                 proposal.TxHash.String(),
+			CRVotes:                crVotes,
+			VotersRejectAmount:     proposal.VotersRejectAmount,
+			RegisterHeight:         proposal.RegisterHeight,
+			VoteStartHeight:        proposal.VoteStartHeight,
+			CurrentStage:           proposal.CurrentStage,
+			TrackingCount:          proposal.TrackingCount,
+			TerminatedHeight:       proposal.TerminatedHeight,
+			CurrentWithdrawalStage: proposal.CurrentWithdrawalStage,
+			AppropriatedStage:      proposal.AppropriatedStage,
+			ProposalLeader:         hex.EncodeToString(proposal.ProposalLeader),
 		}
 		RpcProposalBaseStates = append(RpcProposalBaseStates, RpcProposalBaseState)
 	}
@@ -1897,19 +1903,21 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		crVotes[k.String()] = v
 	}
 	RpcProposalState := RpcProposalState{
-		Status:                proposalState.Status.String(),
-		Proposal:              rpcProposal,
-		ProposalHash:          proposalHash.String(),
-		TxHash:                proposalState.TxHash.String(),
-		CRVotes:               crVotes,
-		VotersRejectAmount:    proposalState.VotersRejectAmount,
-		RegisterHeight:        proposalState.RegisterHeight,
-		VoteStartHeight:       proposalState.VoteStartHeight,
-		CurrentStage:          proposalState.CurrentStage,
-		TrackingCount:         proposalState.TrackingCount,
-		TerminatedHeight:      proposalState.TerminatedHeight,
-		ProposalLeader:        common.BytesToHexString(proposalState.ProposalLeader),
-		AvailWithdrawalAmount: proposalMgr.AvailableWithdrawalAmount(proposalHash),
+		Status:                 proposalState.Status.String(),
+		Proposal:               rpcProposal,
+		ProposalHash:           proposalHash.String(),
+		TxHash:                 proposalState.TxHash.String(),
+		CRVotes:                crVotes,
+		VotersRejectAmount:     proposalState.VotersRejectAmount,
+		RegisterHeight:         proposalState.RegisterHeight,
+		VoteStartHeight:        proposalState.VoteStartHeight,
+		CurrentStage:           proposalState.CurrentStage,
+		CurrentWithdrawalStage: proposalState.CurrentWithdrawalStage,
+		TrackingCount:          proposalState.TrackingCount,
+		TerminatedHeight:       proposalState.TerminatedHeight,
+		ProposalLeader:         hex.EncodeToString(proposalState.ProposalLeader),
+		AppropriatedStage:      proposalState.AppropriatedStage,
+		AvailWithdrawalAmount:  proposalMgr.AvailableWithdrawalAmount(proposalHash),
 	}
 	result := &RpcCRProposalStateInfo{RpcProposalState: RpcProposalState}
 	return ResponsePack(Success, result)

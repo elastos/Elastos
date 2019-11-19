@@ -1161,8 +1161,6 @@ func RegisterCRCProposalTrackingType(L *lua.LState) {
 
 // Constructor
 func newCRCProposalTracking(L *lua.LState) int {
-	fmt.Println("newCRCProposalTracking begin")
-
 	proposalTrackingType := L.ToInt64(1)
 	proposalHashStr := L.ToString(2)
 	documentDataStr := L.ToString(3)
@@ -1216,8 +1214,6 @@ func newCRCProposalTracking(L *lua.LState) int {
 	ud.Value = cPayload
 	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCProposalTrackingName))
 	L.Push(ud)
-	fmt.Println("newCRCProposalTracking end")
-
 	return 1
 }
 
