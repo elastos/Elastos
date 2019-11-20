@@ -4,12 +4,6 @@
 {% block content %}
     <div class="row align-items-center justify-content-center">
         <div class="col-md-8">
-            {% if messages %}
-                {% for message in messages %}
-                    <p class="alert alert-info">{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-
           <form method="post">
             {% csrf_token %}
             {% for field in form.visible_fields %}

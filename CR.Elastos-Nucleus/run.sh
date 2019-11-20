@@ -9,9 +9,6 @@ source venv/bin/activate
 # Install all the dependencies
 pip3 install -r requirements.txt
 
-# Setup all environment variables
-yes | cp -rf .env.example .env
-
 # Run postgres server as a docker container
 cd tools
 ./postgres.sh

@@ -57,6 +57,22 @@ If not, you can skip to the next step of executing the automated bash script:
     ```
     deactivate
     ```
+Copy the environment example file
+```
+yes | cp -rf .env.example .env
+```
+Update environment file(.env) by changing the value of the following variables
+```
+# Replace '192.168.1.23' with your own IP address(cannot be localhost)
+ALLOWED_HOSTS=.127.0.0.1, .localhost, .www.nucleusconsole.com, .nucleusconsole.com, .192.168.1.23
+# Replace '192.168.1.23' with your own IP address(cannot be localhost)
+APP_URL=http://192.168.1.23:8000
+# Replace the following values with your own SMTP server settings
+EMAIL_HOST='smtp.example.com'
+EMAIL_HOST_USER='support@example.com'
+EMAIL_HOST_PASSWORD='password'
+EMAIL_PORT=587
+```
 Run the automated script to set up everything and start Django server:
 ```
 ./run.sh
