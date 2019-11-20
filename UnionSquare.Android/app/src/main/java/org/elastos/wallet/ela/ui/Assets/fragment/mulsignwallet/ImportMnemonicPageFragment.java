@@ -99,8 +99,15 @@ public class ImportMnemonicPageFragment extends BaseFragment {
             showToastMessage(getString(R.string.keynotthesame));
             return;
         }
-        String phrasePassword = etMnemonicPwd.getText().toString().trim();
+        String phrasePassword = "";
+        if (stPws.getSwitchIsChecked()) {
+            phrasePassword = etMnemonicPwd.getText().toString().trim();
+            if (TextUtils.isEmpty(phrasePassword)) {
+                showToast(getString(R.string.please_enter_your_mnemonic_password_current_wallet));
+                return;
+            }
 
+        }
         CreateWalletBean createWalletBean = new CreateWalletBean();
         createWalletBean.setPhrasePassword(phrasePassword);
         createWalletBean.setPayPassword(payPassword);

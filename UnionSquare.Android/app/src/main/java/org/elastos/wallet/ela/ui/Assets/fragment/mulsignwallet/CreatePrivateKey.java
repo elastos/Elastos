@@ -24,7 +24,6 @@ public class CreatePrivateKey extends BaseFragment {
     SecurityEditText etWalletpws;
     @BindView(R.id.et_walletpws_next)
     SecurityEditText etWalletpwsNext;
-    Unbinder unbinder;
 
     @Override
     protected int getLayoutId() {

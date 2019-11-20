@@ -247,7 +247,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         tvDid.setText(bean.getCROwnerDID());
         if (curentNode != null) {
             tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
-            tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(curentNode.getVoterate()) * 100 + "", 5) + "%");
+            tv_zb.setText(curentNode.getVoterate() + "%");
         }
         ownerPublicKey = bean.getCROwnerPublicKey();
     }

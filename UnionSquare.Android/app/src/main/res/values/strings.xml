@@ -498,4 +498,23 @@
     <string name="expireddate">失效日期</string>
     <string name="notsupportvoteformultwalllet">暂不支持多签钱包参与投票</string>
     <string name="maxvote1">最大表决权：</string>
+    <string name="nodeconnectsetting">节点连接设置</string>
+    <string name="eletionpk">参选公钥</string>
+    <string name="electiondid">参选DID</string>
+    <string name="plzinputnickmust">请输入参选昵称（必填）</string>
+    <string name="electiondeposit">参选押金</string>
+    <string name="plzinputmainchainaddress">请输入主链提现地址</string>
+    <string name="status">状态</string>
+    <string name="ipaddress">IP地址</string>
+    <string name="speed">速度</string>
+    <string name="autoconnect">自动连接</string>
+    <string name="changerandom">随机切换</string>
+    <string name="connected">已连接</string>
+    <string name="infoformatwrong">信息格式错误</string>
+    <string name="handinput">手动输入</string>
+    <string name="plzinputnodeaddress">请输入节点地址</string>
+    <string name="currentaddressnotconnect">当前地址无法连接</string>
+    <string name="addressformarterro">地址格式错误</string>
+    <string name="pksame">公钥重复</string>
+    <string name="plzinput8walletpwd">请设置8至16位钱包密码</string>
 </resources>

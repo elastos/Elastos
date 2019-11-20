@@ -214,6 +214,7 @@
             android:layout_marginRight="@dimen/px40"
             android:src="@mipmap/asset_list_arrow" />
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/ll_showwalletpublickey"
         style="@style/settingItem_margin"
@@ -242,12 +243,42 @@
             android:layout_marginRight="@dimen/px40"
             android:src="@mipmap/asset_list_arrow" />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_nodeconect"
+        style="@style/settingItem_margin"
+        android:layout_marginTop="10dp"
+        android:background="@color/mainitembg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:text="@string/nodeconnectsetting"
+            android:textColor="@color/whiter"
+            android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="@dimen/px44"
+            android:layout_height="@dimen/px44"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="@dimen/px40"
+            android:src="@mipmap/asset_list_arrow" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/tv_delete"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginLeft="@dimen/common_margin_button"
-        android:layout_marginTop="140dp"
+        android:layout_marginTop="50dp"
         android:layout_marginRight="@dimen/common_margin_button"
         android:background="@color/mainitembg"
         android:gravity="center"

@@ -4,6 +4,39 @@ import java.io.IOException;
 import java.util.List;
 
 public class PingUtil {
+    public static boolean ping(String addr) {
+
+        if (addr.contains("//")) {
+            addr = addr.split("//")[1];
+        }
+        Process proc = null;
+        try {
+
+            String str = "ping -c 1 " + addr;
+            proc = Runtime.getRuntime().exec(str);
+
+            int result = proc.waitFor();
+
+            if (result == 0) {
+                Log.i("PingUtil", "ping成功" + addr);
+                return true;
+            } else {
+                Log.i("PingUtil", "ping失败" + addr);
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            if (proc != null)
+                proc.destroy();
+        }
+
+        return false;
+
+
+    }
 
     /**
      * 测试ping成功的时间
@@ -42,7 +75,8 @@ public class PingUtil {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            proc.destroy();
+            if (proc != null)
+                proc.destroy();
         }
 
         return 55554;

@@ -82,6 +82,8 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
         wallet = data.getParcelable("wallet");
         if (wallet != null)
             tvUpdatename.setText(wallet.getWalletName());
+
+
     }
 
     @Override
@@ -115,7 +117,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     }
 
     @OnClick({R.id.tv_delete, R.id.ll_updatename, R.id.ll_updatepwd, R.id.ll_exportkeystore, R.id.ll_exportmnemonic,
-            R.id.ll_sign, R.id.ll_exportreadonly, R.id.ll_showmulpublickey, R.id.ll_showwalletpublickey})
+            R.id.ll_sign, R.id.ll_exportreadonly, R.id.ll_showmulpublickey, R.id.ll_showwalletpublickey, R.id.ll_nodeconect})
     public void onViewClicked(View view) {
         Bundle bundle = null;
         dialogAction = null;
@@ -176,6 +178,12 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
                 bundle.putParcelable("wallet", wallet);
                 start(ShowMulWallletPublicKeyFragment.class, bundle);
                 break;
+            case R.id.ll_nodeconect:
+                //节点连接设置
+
+
+                start(NodeConnectSetFragment.class, getArguments());
+                break;
 
         }
     }
@@ -184,7 +192,7 @@ public class WallletManageFragment extends BaseFragment implements WarmPromptLis
     @Override
     public void affireBtnClick(View view) {
 //这里只见他showWarmPromptInput的确认
-        if (wallet.getType()==1||wallet.getType()==3){
+        if (wallet.getType() == 1 || wallet.getType() == 3) {
             //0 普通单签 1单签只读 2普通多签 3多签只读
             presenter.destroyWallet(wallet.getWalletId(), this);
             return;

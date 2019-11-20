@@ -3,6 +3,7 @@ package org.elastos.wallet.ela.ui.Assets;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -95,11 +96,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     protected void initView(View view) {
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
         srl.setOnRefreshListener(this);
         assetsPresenter = new AssetsPresenter();
         commonGetBalancePresenter = new CommonGetBalancePresenter();
@@ -117,7 +113,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @OnClick({R.id.iv_title_left, R.id.iv_title_right, R.id.iv_add, R.id.tv_title, R.id.iv_scan})
     public void onViewClicked(View view) {
-        Bundle bundle = null;
+        Bundle bundle;
         switch (view.getId()) {
             case R.id.iv_title_left:
             case R.id.tv_title:
@@ -128,6 +124,8 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
                 //钱包管理
                 bundle = new Bundle();
                 bundle.putParcelable("wallet", wallet);
+                bundle.putParcelableArrayList("subWallets", (ArrayList<? extends Parcelable>) listMap.get(wallet.getWalletId()));
+
                 ((BaseFragment) getParentFragment()).start(WallletManageFragment.class, bundle);
                 break;
             case R.id.iv_scan:
@@ -354,14 +352,21 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
     public synchronized void OnBlockSyncProgress(JSONObject jsonObject) {
 
         try {
+            long BytesPerSecond = jsonObject.getLong("BytesPerSecond");
+            String DownloadPeer = jsonObject.getString("DownloadPeer");
             String MasterWalletID = jsonObject.getString("MasterWalletID");
             long lastBlockTime = jsonObject.getLong("LastBlockTime");
             String ChainID = jsonObject.getString("ChainID");
             //同步进行中
             int progress = jsonObject.getInt("Progress");
             List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(MasterWalletID);
+            if (assetList == null) {
+                return;
+            }
             for (org.elastos.wallet.ela.db.table.SubWallet subWallet : assetList) {
                 if (ChainID.equals(subWallet.getChainId())) {
+                    subWallet.setBytesPerSecond(BytesPerSecond);
+                    subWallet.setDownloadPeer(DownloadPeer);
                     subWallet.setProgress(progress);
                     if (lastBlockTime != 0) {
                         // String curentTime = DateUtil.time(lastBlockTime);
@@ -399,6 +404,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String ChainID = jsonObject.getString("ChainID");
             long balance = jsonObject.getLong("Balance");
             List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(MasterWalletID);
+            if (assetList == null) {
+                return;
+            }
             for (org.elastos.wallet.ela.db.table.SubWallet assetsItemEntity : assetList) {
                 if (ChainID.equals(assetsItemEntity.getChainId())) {
                     assetsItemEntity.setBalance(balance + "");
@@ -442,6 +450,9 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String ChainID = jsonObject.getString("ChainID");
             String status = jsonObject.getString("status");
             List<org.elastos.wallet.ela.db.table.SubWallet> assetList = listMap.get(MasterWalletID);
+            if (assetList == null) {
+                return;
+            }
             for (org.elastos.wallet.ela.db.table.SubWallet subWallet : assetList) {
                 if (ChainID.equals(subWallet.getChainId())) {
                     subWallet.setFiled1(status);

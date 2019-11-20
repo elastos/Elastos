@@ -23,7 +23,7 @@ import io.realm.RealmResults;
 
 public class RealmUtil {
 
-    public static final long DB_VERSION_CODE = 4;//当前数据库版本号
+    public static final long DB_VERSION_CODE = 5;//当前数据库版本号
     public static final String DB_NAME = "DB";//BuildConfig
 
     @Inject
@@ -424,6 +424,8 @@ public class RealmUtil {
                 subWallet.setFiled1("Connecting");
                 subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
                 subWallet.setFiled2("false");
+                subWallet.setBytesPerSecond(0);
+                subWallet.setDownloadPeer(null);
                 realm.copyToRealmOrUpdate(subWallet);
             }
         }
@@ -487,7 +489,7 @@ public class RealmUtil {
         closeRealm(realm);
     }
 
-    public void updateWalletSyncTime(String belongId, String chainId, String syncTime, RealmTransactionAbs listener) {
+   /* public void updateWalletSyncTime(String belongId, String chainId, String syncTime, RealmTransactionAbs listener) {
         //更新钱包keystore
         Realm realm = getInstanceRealm();
         realm.beginTransaction();
@@ -502,7 +504,7 @@ public class RealmUtil {
         realm.commitTransaction();
         closeRealm(realm);
         listener.onSuccess();
-    }
+    }*/
 
     public SubWallet querySubWallet(String belongId, String chainId) {
         Realm realm = getInstanceRealm();
@@ -525,7 +527,7 @@ public class RealmUtil {
         return tempSubWallet;
     }
 
-    public String querySubWalletSyncTime(String belongId, String chainId) {
+   /* public String querySubWalletSyncTime(String belongId, String chainId) {
         Realm realm = getInstanceRealm();
         SubWallet subWallet = realm.where(SubWallet.class)
                 .equalTo("belongId", belongId).equalTo("chainId", chainId)
@@ -544,7 +546,7 @@ public class RealmUtil {
         String syncTime = subWallet.getSyncTime();
         closeRealm(realm);
         return syncTime;
-    }
+    }*/
 
 
 }

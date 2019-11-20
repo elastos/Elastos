@@ -58,6 +58,8 @@
 
         <activity
             android:name="org.elastos.wallet.ela.ui.Assets.activity.PwdActivity"
+            android:theme="@style/App" /><activity
+            android:name="org.elastos.wallet.ela.ui.Assets.activity.IPAddressActivity"
             android:theme="@style/App" />
 
         <activity

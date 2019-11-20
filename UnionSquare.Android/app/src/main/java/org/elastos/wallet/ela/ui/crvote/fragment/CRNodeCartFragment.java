@@ -135,6 +135,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> newlist = new ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>();
         for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
             if (list.contains(bean)) {
+                bean.setCurentBalance(null);
                 newlist.add(bean);
             }
         }

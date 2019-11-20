@@ -139,7 +139,7 @@ public class CRInformationFragment extends BaseFragment {
         tvDid.setText(bean.getDid());
         tv_addrs.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         tvUrl.setText(bean.getUrl());
-        tvZl.setText(NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
+        tvZl.setText(bean.getVoterate() + "%");
         list = CacheUtil.getCRProducerList();
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {

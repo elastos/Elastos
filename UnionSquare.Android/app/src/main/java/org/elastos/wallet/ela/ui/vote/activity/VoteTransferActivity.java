@@ -31,6 +31,8 @@ public class VoteTransferActivity extends BaseActivity {
 
     @BindView(R.id.tv_address)
     TextView tvAddress;
+    @BindView(R.id.tv_title)
+    TextView tvTitle;
     @BindView(R.id.tv_amount)
     TextView tvAmount;
     @BindView(R.id.tv_charge)
@@ -77,6 +79,10 @@ public class VoteTransferActivity extends BaseActivity {
             case Constant.UNREGISTERCR:
             case Constant.DIDSIGNUP:
                 llAmount.setVisibility(View.GONE);
+
+                break;
+            case Constant.CRSIGNUP:
+                tvTitle.setText(getString(R.string.electiondeposit));
 
                 break;
 

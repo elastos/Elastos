@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
@@ -35,7 +36,6 @@ import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
@@ -44,12 +44,10 @@ import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.security.PublicKey;
 import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class CreateMulWalletFragment extends BaseFragment implements CompoundButton.OnCheckedChangeListener, CommmonStringWithMethNameViewData, CommonCreateSubWalletViewData {
 
@@ -163,7 +161,13 @@ public class CreateMulWalletFragment extends BaseFragment implements CompoundBut
         int needItem = Integer.parseInt(tvSignnum.getText().toString().trim());
         JsonArray jsonArray = new JsonArray();
         for (String value : publicKey.values()) {
-            jsonArray.add(value);
+            JsonPrimitive valueJson = new JsonPrimitive(value);
+            if (jsonArray.contains(valueJson)) {
+                showToast(getString(R.string.pksame));
+                return;
+            } else {
+                jsonArray.add(valueJson);
+            }
         }
         masterWalletID = AppUtlis.getStringRandom(8);
         if (cbReadonly.isChecked()) {

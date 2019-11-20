@@ -5,9 +5,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.fragment.mulsignwallet.CreateMulWalletFragment;
+import org.elastos.wallet.ela.utils.Constant;
+import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 
 import butterknife.BindView;
@@ -58,7 +62,18 @@ public class ChoseCreateWalletFragment extends BaseFragment {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             Bundle bundle = new Bundle();
             bundle.putString("result", result);
-            start(CreateSignReadOnlyWalletFragment.class, bundle);
+            try {
+                QrBean qrBean = JSON.parseObject(result, QrBean.class);
+                int type = qrBean.getExtra().getType();
+                if (type != Constant.CREATEREADONLY) {
+                    showToast(getString(R.string.infoformatwrong));
+                } else {
+                    start(CreateSignReadOnlyWalletFragment.class, bundle);
+                }
+            } catch (Exception e) {
+                showToast(getString(R.string.infoformatwrong));
+            }
+
         }
 
     }

@@ -61,5 +61,14 @@ public class CacheUtil {
     public static void setDIDInfoList(List<DIDInfoEntity> list) {
         CacheDiskUtils.getInstance(file).put("DIDInfoList", (Serializable) list, CacheDiskUtils.DAY * 360);
     }
+    public static ArrayList<String> getIps() {
+        ArrayList<String> list = (ArrayList<String>) CacheDiskUtils.getInstance(file)
+                .getSerializable("ips");
+        return list == null ? new ArrayList<>() : list;
+    }
 
+    //Set<String> serverList = new HashSet<>();
+    public static void setIps(List<String> list) {
+        CacheDiskUtils.getInstance(file).put("ips", (Serializable) list, CacheDiskUtils.DAY * 360);
+    }
 }

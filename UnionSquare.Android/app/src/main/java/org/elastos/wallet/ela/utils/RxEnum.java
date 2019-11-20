@@ -62,7 +62,8 @@ public enum RxEnum {
     TOSIGN,//生成待签名交易
 
     //did
-    KEEPDRAFT//保存草稿
+    KEEPDRAFT,//保存草稿
+    IPVALID,//节点ip可用
 
    /* enum Type {
         CoinBase, // 创币交易

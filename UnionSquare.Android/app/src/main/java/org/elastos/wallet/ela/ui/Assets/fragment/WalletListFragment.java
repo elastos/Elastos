@@ -71,7 +71,7 @@ public class WalletListFragment extends BaseFragment implements CommonRvListener
         tvTitle.setText(R.string.walletlist);
         if (openType.equals("showList")) {
             ivAdd.setVisibility(View.GONE);
-            setRecycleView(realmUtil.queryUnReadOnlyUserAllWallet(), false);
+            setRecycleView(realmUtil.queryTypeUserAllWallet(0), false);
             return;
         }
         setRecycleView(realmUtil.queryUserAllWallet(), true);

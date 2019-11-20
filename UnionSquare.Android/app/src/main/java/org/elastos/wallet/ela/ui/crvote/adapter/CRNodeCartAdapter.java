@@ -19,6 +19,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
+import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -66,8 +67,8 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         holder.tvName.setText(producersBean.getNickname());
         int id = producersBean.getIndex() + 1;
         holder.tvId.setText(context.getString(R.string.currentrank) + id);
-        // holder.tvZb.setText(context.getString(R.string.vote_of) + "：" + NumberiUtil.numberFormat(Double.parseDouble(producersBean.getVoterate()) * 100 + "", 5) + "%");
-        holder.tvTicketnum.setText(context.getString(R.string.ticketnum) + producersBean.getVotes());
+        holder.tvZb.setText(context.getString(R.string.vote_of) + "：" + producersBean.getVoterate() + "%");
+        holder.tvTicketnum.setText(context.getString(R.string.ticketnum) + NumberiUtil.numberFormat(producersBean.getVotes(), 8));
         holder.tvAddress.setText(AppUtlis.getLoc(context, producersBean.getLocation() + ""));
         holder.etTicketnum.setTag(false);
         if (holder.etTicketnum.getTag(R.id.et_ticketnum) != null) {
@@ -190,9 +191,9 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         Map<String, String> checkedData = new HashMap();
         if (list != null) {
             for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : list) {
-                if (bean.isChecked() && bean.getCurentBalance() != null
+                if (bean.isChecked() && bean.getCurentBalance() != null && bean.getCurentBalance().compareTo(new BigDecimal(0))>0
                         && !TextUtils.isEmpty(bean.getCurentBalance().toPlainString())) {
-                    checkedData.put("\""+bean.getDid()+"\"", "\""+bean.getCurentBalance().multiply(new BigDecimal(MyWallet.RATE)).setScale(0, BigDecimal.ROUND_DOWN).toPlainString()+"\"");
+                    checkedData.put("\"" + bean.getDid() + "\"", "\"" + bean.getCurentBalance().multiply(new BigDecimal(MyWallet.RATE)).setScale(0, BigDecimal.ROUND_DOWN).toPlainString() + "\"");
                 }
 
             }
@@ -224,6 +225,11 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
                     return;
                 }
                 String number = s.toString().trim();
+                if (number.startsWith("0") || number.startsWith(".")) {
+                    editText.setTag(true);
+                    editText.setText(null);
+                    return;
+                }
                 if (new BigDecimal(number).compareTo(balance) > 0) {
                     number = balance.toPlainString();
                     editText.setTag(true);
