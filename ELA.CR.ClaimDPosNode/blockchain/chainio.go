@@ -219,7 +219,7 @@ func deserializeBestChainState(serializedData []byte) (bestChainState, error) {
 
 // dbStoreBlock stores the provided block in the database if it is not already
 // there. The full block data is written to fflDB.
-func dbStoreBlock(dbTx database.Tx, block *types.Block) error {
+func dbStoreBlock(dbTx database.Tx, block *types.DposBlock) error {
 	blockHash := block.Hash()
 	hasBlock, err := dbTx.HasBlock(blockHash)
 	if err != nil {
@@ -357,7 +357,7 @@ func (b *BlockChain) createChainState() error {
 		}
 
 		// Store the genesis block into the database.
-		return dbStoreBlock(dbTx, genesisBlock)
+		return dbStoreBlock(dbTx, &types.DposBlock{Block: genesisBlock})
 	})
 	return err
 }

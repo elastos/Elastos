@@ -255,20 +255,15 @@ func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
 
 			if block.Height >= bestHeight-uint32(
 				b.chainParams.GeneralArbiters+len(b.chainParams.CRCArbiters)) {
-				CalculateTxsFee(block)
+				CalculateTxsFee(block.Block)
 			}
 
-			if e = PreProcessSpecialTx(block); e != nil {
+			if e = PreProcessSpecialTx(block.Block); e != nil {
 				err = e
 				break
 			}
-			confirm, _ := b.db.GetConfirm(block.Hash())
 
-			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
-				Block:       block,
-				HaveConfirm: confirm != nil,
-				Confirm:     confirm,
-			}, nil)
+			b.chainParams.CkpManager.OnBlockSaved(block, nil)
 
 			// Notify process increase.
 			if increase != nil {
@@ -520,7 +515,11 @@ func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 
 // Get block with block hash.
 func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
-	return b.db.GetFFLDB().GetBlock(hash)
+	dposBlock, err := b.db.GetFFLDB().GetBlock(hash)
+	if err != nil {
+		return nil, err
+	}
+	return dposBlock.Block, nil
 }
 
 // Get block with block hash.
@@ -575,12 +574,7 @@ func (b *BlockChain) MainChainHasBlock(height uint32, hash *Uint256) bool {
 // Get DPOS block with block hash.
 func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
 	if block, _ := b.db.GetFFLDB().GetBlock(hash); block != nil {
-		confirm, _ := b.db.GetConfirm(hash)
-		return &DposBlock{
-			Block:       block,
-			HaveConfirm: confirm != nil,
-			Confirm:     confirm,
-		}, nil
+		return block, nil
 	}
 
 	b.orphanLock.RLock()
@@ -1118,11 +1112,9 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		if err != nil {
 			return err
 		}
-		confirm, _ := b.db.GetConfirm(*n.Hash)
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
-
 			err = b.chainParams.CkpManager.OnRollbackTo(block.Height - 1)
 			if err != nil {
 				return err
@@ -1132,7 +1124,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		log.Info("disconnect block:", block.Height)
 		DefaultLedger.Arbitrators.DumpInfo(block.Height - 1)
 
-		err = b.disconnectBlock(n, block, confirm)
+		err = b.disconnectBlock(n, block.Block, block.Confirm)
 		if err != nil {
 			return err
 		}
@@ -1250,7 +1242,11 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	// such as making blocks that never become part of the main chain or
 	// blocks that fail to connect available for further analysis.
 	err := b.db.GetFFLDB().Update(func(dbTx database.Tx) error {
-		return dbStoreBlock(dbTx, block)
+		return dbStoreBlock(dbTx, &DposBlock{
+			Block:       block,
+			HaveConfirm: confirm != nil,
+			Confirm:     confirm,
+		})
 	})
 	if err != nil {
 		return fmt.Errorf("fflDB store block failed: %s", err)

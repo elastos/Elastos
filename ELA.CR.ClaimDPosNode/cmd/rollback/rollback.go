@@ -89,7 +89,7 @@ func rollbackAction(c *cli.Context) error {
 			return err
 		}
 		fmt.Println("block hash before rollback:", block.Hash())
-		err = chainStore.RollbackBlock(block, nodes[i], nil, blockchain.CalcPastMedianTime(nodes[i-1]))
+		err = chainStore.RollbackBlock(block.Block, nodes[i], nil, blockchain.CalcPastMedianTime(nodes[i-1]))
 		if err != nil {
 			fmt.Println("rollback block failed, ", block.Height, err)
 			return err

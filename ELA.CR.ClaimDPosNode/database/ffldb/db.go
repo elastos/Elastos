@@ -1148,7 +1148,7 @@ func (tx *transaction) hasBlock(hash common.Uint256) bool {
 //   - ErrTxClosed if the transaction has already been closed
 //
 // This function is part of the database.Tx interface implementation.
-func (tx *transaction) StoreBlock(block *types.Block) error {
+func (tx *transaction) StoreBlock(block *types.DposBlock) error {
 	// Ensure transaction state is valid.
 	if err := tx.checkClosed(); err != nil {
 		return err

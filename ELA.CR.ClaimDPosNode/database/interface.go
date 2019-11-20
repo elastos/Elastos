@@ -230,7 +230,7 @@ type Tx interface {
 	//   - ErrTxClosed if the transaction has already been closed
 	//
 	// Other errors are possible depending on the implementation.
-	StoreBlock(block *types.Block) error
+	StoreBlock(block *types.DposBlock) error
 
 	// HasBlock returns whether or not a block with the given hash exists
 	// in the database.
