@@ -72,8 +72,10 @@ kill -9 419
 `````````````
 
 ## Execute the following command to create and insert values into your database 
-
+`````````````
 docker container exec -it nucleus-postgres psql -h localhost -U gmu -d smartweb_master
+
+`````````````
 
 To create tables
 
