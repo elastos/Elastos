@@ -25,10 +25,11 @@ class Milestones extends Component {
   }
 
   handleSubmit = values => {
-    const { milestones } = this.state
+    const { milestones, milestonesTrigger } = this.state
     this.setState({ milestones: [...milestones, values] }, () => {
       this.props.onChange({ milestone: this.state.milestones })
     })
+    this.setState({milestonesTrigger: {...milestonesTrigger, [milestones.length]: { clicked: false, hovered: false }}})
   }
 
   handleEdit = (index, values) => {
