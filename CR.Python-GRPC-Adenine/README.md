@@ -1,14 +1,11 @@
 # Python-gRPC-client
 This repository contains the python package for Elastos Smart Web Service.
 
-For macOS, to install python using homebrew:
-```
-$brew install python3
-```
+First, install Python3:
 
-For Linux based OS, to install python:
 ```
-$apt-get install python3
+brew install python3 // On Mac
+sudo apt-get install python3 // On Ubuntu
 ```
 
 Clone the repository
@@ -17,7 +14,12 @@ git clone https://github.com/cyber-republic/python-grpc-adenine.git
 cd python-grpc-adenine
 ```
 
+Export Path:
+```
+export PYTHONPATH="$PYTHONPATH:$PWD/adenine/stubs/"
+```
+
 Run the client:
 ```
-python sample.py
+python3 sample.py
 ```
