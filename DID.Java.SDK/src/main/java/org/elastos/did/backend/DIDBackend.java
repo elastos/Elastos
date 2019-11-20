@@ -73,7 +73,7 @@ public class DIDBackend {
 				return null;
 			}
 
-			if (!result.isArray() || result.size() != 1)
+			if (!result.isArray() || result.size() < 1)
 				throw new DIDResolveException(
 						"Resolve DID error, unknown resolved response.");
 

@@ -144,7 +144,7 @@ public class DIDDocument {
 		return subject;
 	}
 
-	void setSubject(DID subject) {
+	protected void setSubject(DID subject) {
 		this.subject = subject;
 	}
 
@@ -158,29 +158,23 @@ public class DIDDocument {
 
 	public List<PublicKey> selectPublicKey(String id, String type)
 			throws MalformedDIDURLException {
-		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return selectEntry(publicKeys, new DIDURL(id), type);
 	}
 
 	public List<PublicKey> selectPublicKey(DIDURL id, String type) {
 		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return selectEntry(publicKeys, id, type);
 	}
 
 	public PublicKey getPublicKey(String id) throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return getEntry(publicKeys, new DIDURL(id));
 	}
 
 	public PublicKey getPublicKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return getEntry(publicKeys, id);
 	}
@@ -219,7 +213,7 @@ public class DIDDocument {
 
 	public boolean addPublicKey(DIDURL id, DID controller, String pk) {
 		if (id == null || controller == null || pk == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if ( Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
 			throw new IllegalArgumentException("Invalid public key.");
@@ -230,15 +224,12 @@ public class DIDDocument {
 
 	public boolean addPublicKey(String id, String controller, String pk)
 			throws MalformedDIDURLException, MalformedDIDException {
-		if (id == null || controller == null || pk == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return addPublicKey(new DIDURL(id), new DID(controller), pk);
 	}
 
 	public boolean removePublicKey(DIDURL id, boolean force) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (readonly)
 			return false;
@@ -275,9 +266,6 @@ public class DIDDocument {
 
 	public boolean removePublicKey(String id, boolean force)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return removePublicKey(new DIDURL(id), force);
 	}
 
@@ -299,46 +287,37 @@ public class DIDDocument {
 
 	public List<PublicKey> selectAuthenticationKey(DIDURL id, String type) {
 		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return selectEntry(authentications, id, type);
 	}
 
 	public List<PublicKey> selectAuthenticationKey(String id, String type)
 			throws MalformedDIDURLException {
-		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return selectEntry(authentications, new DIDURL(id), type);
 	}
 
 	public PublicKey getAuthenticationKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return getEntry(authentications, id);
 	}
 
 	public PublicKey getAuthenticationKey(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return getEntry(authentications, new DIDURL(id));
 	}
 
 	public boolean isAuthenticationKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return getAuthenticationKey(id) != null;
 	}
 
 	public boolean isAuthenticationKey(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return getAuthenticationKey(id) != null;
 	}
 
@@ -366,7 +345,7 @@ public class DIDDocument {
 
 	public boolean addAuthenticationKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		PublicKey pk = getPublicKey(id);
 		if (pk == null)
@@ -377,15 +356,12 @@ public class DIDDocument {
 
 	public boolean addAuthenticationKey(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return addAuthenticationKey(new DIDURL(id));
 	}
 
 	public boolean addAuthenticationKey(DIDURL id, String pk) {
 		if (id == null || pk == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
 			throw new IllegalArgumentException("Invalid public key.");
@@ -396,15 +372,12 @@ public class DIDDocument {
 
 	public boolean addAuthenticationKey(String id, String pk)
 			throws MalformedDIDURLException {
-		if (id == null || pk == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return addAuthenticationKey(new DIDURL(id), pk);
 	}
 
 	public boolean removeAuthenticationKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (readonly)
 			return false;
@@ -418,9 +391,6 @@ public class DIDDocument {
 
 	public boolean removeAuthenticationKey(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return removeAuthenticationKey(new DIDURL(id));
 	}
 
@@ -434,47 +404,38 @@ public class DIDDocument {
 
 	public List<PublicKey> selectAuthorizationKey(DIDURL id, String type) {
 		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return selectEntry(authorizations, id, type);
 	}
 
 	public List<PublicKey> selectAuthorizationKey(String id, String type)
 			throws MalformedDIDURLException {
-		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return selectEntry(authorizations, new DIDURL(id), type);
 	}
 
 	public PublicKey getAuthorizationKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return getEntry(authorizations, id);
 	}
 
 	public PublicKey getAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return getEntry(authorizations, new DIDURL(id));
 	}
 
 	public boolean isAuthorizationKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return getAuthorizationKey(id) != null;
 	}
 
 	public boolean isAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
-		return getAuthorizationKey(id) != null;
+		return isAuthorizationKey(id);
 	}
 
 	protected boolean addAuthorizationKey(PublicKey pk) {
@@ -501,7 +462,7 @@ public class DIDDocument {
 
 	public boolean addAuthorizationKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		PublicKey pk = getPublicKey(id);
 		if (pk == null)
@@ -512,15 +473,12 @@ public class DIDDocument {
 
 	public boolean addAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return addAuthorizationKey(new DIDURL(id));
 	}
 
 	public boolean addAuthorizationKey(DIDURL id, DID controller, String pk) {
 		if (id == null || controller == null || pk == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
 			throw new IllegalArgumentException("Invalid public key.");
@@ -531,16 +489,13 @@ public class DIDDocument {
 
 	public boolean addAuthorizationKey(String id, String controller, String pk)
 			throws MalformedDIDURLException, MalformedDIDException {
-		if (id == null || controller == null || pk == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return addAuthorizationKey(new DIDURL(id), new DID(controller), pk);
 	}
 
 	public boolean authorizationDid(DIDURL id, DID controller, DIDURL key)
 			throws DIDException {
 		if (id == null || controller == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		// Can not authorize to self
 		if (controller.equals(getSubject()))
@@ -570,32 +525,25 @@ public class DIDDocument {
 	public boolean authorizationDid(DIDURL id, DID controller)
 			throws DIDException {
 		if (id == null || controller == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return authorizationDid(id, controller);
 	}
 
 	public boolean authorizationDid(String id, String controller, String key)
 			throws MalformedDIDURLException, MalformedDIDException, DIDException {
-		if (id == null || controller == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		DIDURL keyid = key == null ? null : new DIDURL(key);
-
 		return authorizationDid(new DIDURL(id), new DID(controller), keyid);
 	}
 
 	public boolean authorizationDid(String id, String controller)
 			throws MalformedDIDURLException, MalformedDIDException, DIDException {
-		if (id == null || controller == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return authorizationDid(id, controller, null);
 	}
 
 	public boolean removeAuthorizationKey(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (readonly)
 			return false;
@@ -605,9 +553,6 @@ public class DIDDocument {
 
 	public boolean removeAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return removeAuthorizationKey(new DIDURL(id));
 	}
 
@@ -621,37 +566,31 @@ public class DIDDocument {
 
 	public List<VerifiableCredential> selectCredential(DIDURL id, String type) {
 		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return selectEntry(credentials, id, type);
 	}
 
 	public List<VerifiableCredential> selectCredential(String id, String type)
 			throws MalformedDIDURLException {
-		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return selectEntry(credentials, new DIDURL(id), type);
 	}
 
 	public VerifiableCredential getCredential(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return getEntry(credentials, id);
 	}
 
 	public VerifiableCredential getCredential(String id)
 			throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return getEntry(credentials, new DIDURL(id));
 	}
 
 	public boolean addCredential(VerifiableCredential vc) {
 		if (vc == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (readonly)
 			return false;
@@ -674,7 +613,7 @@ public class DIDDocument {
 
 	public boolean removeCredential(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (readonly)
 			return false;
@@ -683,9 +622,6 @@ public class DIDDocument {
 	}
 
 	public boolean removeCredential(String id) throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return removeCredential(new DIDURL(id));
 	}
 
@@ -699,30 +635,24 @@ public class DIDDocument {
 
 	public List<Service> selectServices(DIDURL id, String type) {
 		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return selectEntry(services, id, type);
 	}
 
 	public List<Service> selectServices(String id, String type)
 			throws MalformedDIDURLException {
-		if (id == null && type == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return selectEntry(services, new DIDURL(id), type);
 	}
 
 	public Service getService(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return getEntry(services, id);
 	}
 
 	public Service getService(String id) throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return getEntry(services, new DIDURL(id));
 	}
 
@@ -742,8 +672,9 @@ public class DIDDocument {
 	}
 
 	public boolean addService(DIDURL id, String type, String endpoint) {
-		if (id == null || type == null || endpoint == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+		if (id == null || type == null || type.isEmpty() ||
+				endpoint == null || endpoint.isEmpty() )
+			throw new IllegalArgumentException();
 
 		Service svc = new Service(id, type, endpoint);
 		return addService(svc);
@@ -751,15 +682,12 @@ public class DIDDocument {
 
 	public boolean addService(String id, String type, String endpoint)
 			throws MalformedDIDURLException {
-		if (id == null || type == null || endpoint == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return addService(new DIDURL(id), type, endpoint);
 	}
 
 	public boolean removeService(DIDURL id) {
 		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (readonly)
 			return false;
@@ -768,9 +696,6 @@ public class DIDDocument {
 	}
 
 	public boolean removeService(String id) throws MalformedDIDURLException {
-		if (id == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return removeService(new DIDURL(id));
 	}
 
@@ -808,7 +733,7 @@ public class DIDDocument {
 		return expires;
 	}
 
-	void setReadonly(boolean readonly) {
+	protected void setReadonly(boolean readonly) {
 		this.readonly = readonly;
 	}
 
@@ -823,9 +748,6 @@ public class DIDDocument {
 
 	public String sign(String storepass, byte[] ... data)
 			throws DIDStoreException {
-		if (storepass == null || data == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		DIDURL key = getDefaultPublicKey();
 		return sign(key, storepass, data);
 	}
@@ -833,41 +755,32 @@ public class DIDDocument {
 	public String sign(DIDURL id, String storepass, byte[] ... data)
 			throws DIDStoreException {
 		if (id == null || storepass == null || data == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		return DIDStore.getInstance().sign(getSubject(), id, storepass, data);
 	}
 
 	public String sign(String id, String storepass, byte[] ... data)
 			throws MalformedDIDURLException, DIDStoreException {
-		if (id == null || storepass == null || data == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return DIDStore.getInstance().sign(getSubject(), new DIDURL(id),
 				storepass, data);
 	}
 
 	public boolean verify(String signature, byte[] ... data)
 			throws DIDException {
-		if (signature == null || data == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		DIDURL key = getDefaultPublicKey();
 		return verify(key, signature, data);
 	}
 
 	public boolean verify(String id, String signature, byte[] ... data)
 			throws MalformedDIDURLException, DIDException {
-		if (id == null || signature == null || data == null)
-			throw new IllegalArgumentException("Invalid parameter.");
-
 		return verify(new DIDURL(id), signature, data);
 	}
 
 	public boolean verify(DIDURL id, String signature, byte[] ... data)
 			throws DIDException {
-		if (id == null || signature == null || data == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+		if (id == null || signature == null || signature.isEmpty() || data == null)
+			throw new IllegalArgumentException();
 
 		PublicKey pk = getPublicKey(id);
 		byte[] binkey = pk.getPublicKeyBytes();
@@ -1056,7 +969,7 @@ public class DIDDocument {
 	public static DIDDocument fromJson(Reader reader)
 			throws MalformedDocumentException {
 		if (reader == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		DIDDocument doc = new DIDDocument();
 		doc.parse(reader);
@@ -1068,7 +981,7 @@ public class DIDDocument {
 	public static DIDDocument fromJson(InputStream in)
 			throws MalformedDocumentException {
 		if (in == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		DIDDocument doc = new DIDDocument();
 		doc.parse(in);
@@ -1080,7 +993,7 @@ public class DIDDocument {
 	public static DIDDocument fromJson(String json)
 			throws MalformedDocumentException {
 		if (json == null || json.isEmpty())
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		DIDDocument doc = new DIDDocument();
 		doc.parse(json);
@@ -1114,7 +1027,7 @@ public class DIDDocument {
 	 */
 	public void toJson(Writer out, boolean compact) throws IOException {
 		if (out == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		JsonFactory factory = new JsonFactory();
 		JsonGenerator generator = factory.createGenerator(out);
@@ -1195,7 +1108,7 @@ public class DIDDocument {
 	public void toJson(OutputStream out, String charsetName, boolean compact)
 			throws IOException {
 		if (out == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		if (charsetName == null)
 			charsetName = "UTF-8";
@@ -1205,7 +1118,7 @@ public class DIDDocument {
 
 	public void toJson(OutputStream out, boolean compact) throws IOException {
 		if (out == null)
-			throw new IllegalArgumentException("Invalid parameter.");
+			throw new IllegalArgumentException();
 
 		toJson(new OutputStreamWriter(out), compact);
 	}

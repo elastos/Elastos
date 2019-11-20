@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.did.util;
+package org.elastos.did;
 
 import java.security.SecureRandom;
 
@@ -46,6 +46,8 @@ public class Mnemonic {
 	public static final int CHINESE_SIMPLIFIED = 3;
 	public static final int CHINESE_TRADITIONAL = 4;
 	public static final int JAPANESE = 5;
+	public static final int LANGUAGE_MIN = ENGLISH;
+	public static final int LANGUAGE_MAX = JAPANESE;
 
 	private static WordList getWordList(int language) {
 		switch (language) {
@@ -73,6 +75,9 @@ public class Mnemonic {
 	}
 
 	public static String generate(int language) {
+		if (language < LANGUAGE_MIN || language > LANGUAGE_MAX)
+			throw new IllegalArgumentException();
+
 		StringBuilder mnemonic = new StringBuilder();
 
 		byte[] entropy = new byte[Words.TWELVE.byteLength()];
@@ -85,6 +90,10 @@ public class Mnemonic {
 	}
 
 	public static boolean isValid(int language, String mnemonic) {
+		if (language < LANGUAGE_MIN || language > LANGUAGE_MAX ||
+				mnemonic == null || mnemonic.isEmpty())
+			throw new IllegalArgumentException();
+
 	    try {
 			MnemonicValidator
 			.ofWordList(getWordList(language))

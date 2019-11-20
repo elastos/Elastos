@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.elastos.did.util.Mnemonic;
 import org.junit.Test;
 
 public class DIDDocumentTest {
@@ -114,8 +113,8 @@ public class DIDDocumentTest {
     			new FakeConsoleAdapter());
     	store = DIDStore.getInstance();
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	store.initPrivateIdentity(mnemonic, TestConfig.passphrase,
-    			TestConfig.storePass, true);
+    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+    			TestConfig.passphrase, TestConfig.storePass, true);
 
     	LinkedHashMap<DID, String> ids = new LinkedHashMap<DID, String>(128);
     	for (int i = 0; i < 100; i++) {

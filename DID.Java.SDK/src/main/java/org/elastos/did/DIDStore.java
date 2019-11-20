@@ -98,11 +98,14 @@ public abstract class DIDStore {
 
 	public static void initialize(String type, String location,
 			DIDAdapter adapter) throws DIDStoreException {
+		if (type == null || location == null ||
+				location.isEmpty() || adapter == null)
+			throw new IllegalArgumentException();
+
 		if (!type.equals("filesystem"))
-			throw new IllegalArgumentException("Unsupported store type: " + type);
+			throw new DIDStoreException("Unsupported store type: " + type);
 
 		instance = new FileSystemStore(location);
-
 		instance.backend = new DIDBackend(adapter);
 	}
 
@@ -147,8 +150,15 @@ public abstract class DIDStore {
 	}
 
 	// Initialize & create new private identity and save it to DIDStore.
-	public void initPrivateIdentity(String mnemonic, String passphrase,
-			String storepass, boolean force) throws DIDStoreException {
+	public void initPrivateIdentity(int language, String mnemonic,
+			String passphrase, String storepass, boolean force)
+					throws DIDStoreException {
+		if (!Mnemonic.isValid(language, mnemonic))
+			throw new IllegalArgumentException("Invalid mnemonic.");
+
+		if (storepass == null)
+			throw new IllegalArgumentException("Invalid password.");
+
 		if (hasPrivateIdentity() && !force)
 			throw new DIDStoreException("Already has private indentity.");
 
@@ -167,9 +177,9 @@ public abstract class DIDStore {
 		privateIdentity.wipe();
 	}
 
-	public void initPrivateIdentity(String mnemonic, String passphrase,
-			String storepass) throws DIDStoreException {
-		initPrivateIdentity(mnemonic, passphrase, storepass, false);
+	public void initPrivateIdentity(int language, String mnemonic,
+			String passphrase, String storepass) throws DIDStoreException {
+		initPrivateIdentity(language, mnemonic, passphrase, storepass, false);
 	}
 
 	// initialized from saved private identity from DIDStore.
@@ -184,6 +194,9 @@ public abstract class DIDStore {
 
 	public DIDDocument newDid(String storepass, String hint)
 			throws DIDStoreException {
+		if (storepass == null)
+			throw new IllegalArgumentException("Invalid password.");
+
 		HDKey privateIdentity = loadPrivateIdentity(storepass);
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
@@ -217,39 +230,90 @@ public abstract class DIDStore {
 		return newDid(storepass, null);
 	}
 
-	public boolean publishDid(DIDDocument doc, String storepass)
-			throws DIDStoreException {
-		DIDURL signKey = doc.getDefaultPublicKey();
-		return publishDid(doc, signKey, storepass);
-	}
-
 	public boolean publishDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
+		if (doc == null || storepass == null)
+			throw new IllegalArgumentException();
+
+		if (signKey == null)
+			signKey = doc.getDefaultPublicKey();
+
 		storeDid(doc);
 		return backend.create(doc, signKey, storepass);
 	}
 
+	public boolean publishDid(DIDDocument doc, String signKey, String storepass)
+			throws MalformedDIDURLException, DIDStoreException {
+		DIDURL id = signKey == null ? null : new DIDURL(signKey);
+		return publishDid(doc, id, storepass);
+	}
+
+	public boolean publishDid(DIDDocument doc, String storepass)
+			throws DIDStoreException {
+		return publishDid(doc, (DIDURL)null, storepass);
+	}
+
 	public boolean updateDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
-		storeDid(doc);
+		if (doc == null || storepass == null)
+			throw new IllegalArgumentException();
 
+		if (signKey == null)
+			signKey = doc.getDefaultPublicKey();
+
+		storeDid(doc);
 		return backend.update(doc, signKey, storepass);
+	}
+
+	public boolean updateDid(DIDDocument doc, String signKey, String storepass)
+			throws MalformedDIDURLException, DIDStoreException {
+		DIDURL id = signKey == null ? null : new DIDURL(signKey);
+		return updateDid(doc, id, storepass);
+	}
+
+	public boolean updateDid(DIDDocument doc, String storepass)
+			throws DIDStoreException {
+		return updateDid(doc, (DIDURL)null, storepass);
 	}
 
 	public boolean deactivateDid(DID did, DIDURL signKey, String storepass)
 			throws DIDStoreException {
-		// TODO: how to handle locally?
+		if (did == null || storepass == null)
+			throw new IllegalArgumentException();
+
+		if (signKey == null) {
+			try {
+				DIDDocument doc = resolveDid(did);
+				if (doc == null)
+					throw new DIDStoreException("Can not resolve DID document.");
+
+				signKey = doc.getDefaultPublicKey();
+			} catch (MalformedDocumentException e) {
+				throw new DIDStoreException(e);
+			}
+		}
 
 		return backend.deactivate(did, signKey, storepass);
+
+		// TODO: how to handle locally?
 	}
 
-	public DIDDocument resolveDid(DID did)
-			throws DIDStoreException, MalformedDocumentException {
-		return resolveDid(did, false);
+	public boolean deactivateDid(DID did, String signKey, String storepass)
+			throws MalformedDIDURLException, DIDStoreException {
+		DIDURL id = signKey == null ? null : new DIDURL(signKey);
+		return deactivateDid(did, id, storepass);
+	}
+
+	public boolean deactivateDid(DID did, String storepass)
+			throws DIDStoreException {
+		return deactivateDid(did, (DIDURL)null, storepass);
 	}
 
 	public DIDDocument resolveDid(DID did, boolean force)
 			throws DIDStoreException, MalformedDocumentException {
+		if (did == null)
+			throw new IllegalArgumentException();
+
 		DIDDocument doc = backend.resolve(did);
 		if (doc != null)
 			storeDid(doc);
@@ -260,6 +324,23 @@ public abstract class DIDStore {
 		return doc;
 	}
 
+	public DIDDocument resolveDid(String did, boolean force)
+			throws MalformedDIDException, MalformedDocumentException,
+			DIDStoreException  {
+		return resolveDid(new DID(did), force);
+	}
+
+	public DIDDocument resolveDid(DID did)
+			throws DIDStoreException, MalformedDocumentException {
+		return resolveDid(did, false);
+	}
+
+	public DIDDocument resolveDid(String did)
+			throws MalformedDIDException, MalformedDocumentException,
+			DIDStoreException  {
+		return resolveDid(did, false);
+	}
+
 	public abstract void storeDid(DIDDocument doc, String hint)
 			throws DIDStoreException;
 
@@ -267,9 +348,20 @@ public abstract class DIDStore {
 		storeDid(doc, null);
 	}
 
-	public abstract void setDidHint(DID did, String hint) throws DIDStoreException;
+	public abstract void setDidHint(DID did, String hint)
+			throws DIDStoreException;
+
+	public void setDidHint(String did, String hint)
+			throws MalformedDIDException, DIDStoreException {
+		setDidHint(new DID(did), hint);
+	}
 
 	public abstract String getDidHint(DID did) throws DIDStoreException;
+
+	public String getDidHint(String did)
+			throws MalformedDIDException, DIDStoreException {
+		return getDidHint(new DID(did));
+	}
 
 	public abstract DIDDocument loadDid(DID did)
 			throws MalformedDocumentException, DIDStoreException;
@@ -309,8 +401,20 @@ public abstract class DIDStore {
 	public abstract void setCredentialHint(DID did, DIDURL id, String hint)
 			throws DIDStoreException;
 
+	public void setCredentialHint(String did, String id, String hint)
+			throws  MalformedDIDException, MalformedDIDURLException,
+			DIDStoreException {
+		setCredentialHint(new DID(did), new DIDURL(id), hint);
+	}
+
 	public abstract String getCredentialHint(DID did, DIDURL id)
 			throws DIDStoreException;
+
+	public String getCredentialHint(String did, String id)
+			throws  MalformedDIDException, MalformedDIDURLException,
+			DIDStoreException {
+		return getCredentialHint(new DID(did), new DIDURL(id));
+	}
 
 	public abstract VerifiableCredential loadCredential(DID did, DIDURL id)
 			throws MalformedCredentialException, DIDStoreException;
@@ -396,14 +500,29 @@ public abstract class DIDStore {
 	public abstract boolean deletePrivateKey(DID did, DIDURL id)
 			throws DIDStoreException;
 
-	public void deletePrivateKey(String did, String id)
+	public boolean deletePrivateKey(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
-		deletePrivateKey(new DID(did), new DIDURL(id));
+		return deletePrivateKey(new DID(did), new DIDURL(id));
 	}
 
 	public String sign(DID did, DIDURL id, String storepass, byte[] ... data)
 			throws DIDStoreException {
+		if (did == null || storepass == null || data == null)
+			throw new IllegalArgumentException();
+
+		if (id == null) {
+			try {
+				DIDDocument doc = resolveDid(did);
+				if (doc == null)
+					throw new DIDStoreException("Can not resolve DID document.");
+
+				id = doc.getDefaultPublicKey();
+			} catch (MalformedDocumentException e) {
+				throw new DIDStoreException(e);
+			}
+		}
+
 		byte[] binKey = decryptFromBase64(storepass, loadPrivateKey(did, id));
 		HDKey.DerivedKey key = HDKey.DerivedKey.deserialize(binKey);
 
@@ -413,5 +532,10 @@ public abstract class DIDStore {
 
 		return Base64.encodeToString(sig,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+	}
+
+	public String sign(DID did, String storepass, byte[] ... data)
+			throws DIDStoreException {
+		return sign(did, null, storepass, data);
 	}
 }

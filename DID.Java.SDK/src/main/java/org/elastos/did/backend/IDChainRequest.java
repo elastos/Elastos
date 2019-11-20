@@ -208,12 +208,8 @@ class IDChainRequest {
 		if (!spec.equals(CURRENT_SPECIFICATION))
 			throw new DIDResolveException("Unknown DID specifiction.");
 
-		// TODO: remove this after IDSidechain fix the wrong field name.
-		String op = "Operation";
-		op = JsonHelper.getString(header, op, false,
-						null, OPERATION, clazz);
-		//String op = JsonHelper.getString(header, OPERATION, false,
-		//		null, OPERATION, clazz);
+		String op = JsonHelper.getString(header, OPERATION, false,
+				null, OPERATION, clazz);
 		if (!op.contentEquals(Operation.CREATE.toString()))
 			if (!spec.equals(CURRENT_SPECIFICATION))
 				throw new DIDResolveException("Invalid DID operation verb.");

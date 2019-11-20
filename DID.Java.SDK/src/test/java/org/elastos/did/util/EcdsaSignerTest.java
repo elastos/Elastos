@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
+import org.elastos.did.Mnemonic;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

@@ -37,11 +37,17 @@ public class DIDURL implements Comparable<DIDURL> {
 	private String fragment;
 
 	public DIDURL(DID id, String fragment) {
+		if (id == null)
+			throw new IllegalArgumentException();
+
 		this.did = id;
 		this.fragment = fragment;
 	}
 
 	public DIDURL(String url) throws MalformedDIDURLException {
+		if (url == null || url.isEmpty())
+			throw new IllegalArgumentException();
+
 		try {
 			ParserHelper.parse(url, false, new Listener());
 		} catch(IllegalArgumentException e) {
@@ -54,6 +60,9 @@ public class DIDURL implements Comparable<DIDURL> {
 	}
 
 	public void setDid(DID did) {
+		if (did == null)
+			throw new IllegalArgumentException();
+
 		this.did = did;
 	}
 
@@ -95,7 +104,7 @@ public class DIDURL implements Comparable<DIDURL> {
 		return parameters.containsKey(name);
 	}
 
-	void addParameter(String name, String value) {
+	protected void addParameter(String name, String value) {
 		parameters.put(name, value);
 	}
 
@@ -103,7 +112,7 @@ public class DIDURL implements Comparable<DIDURL> {
 		return path;
 	}
 
-	void setPath(String path) {
+	protected void setPath(String path) {
 		this.path = path;
 	}
 
@@ -125,7 +134,7 @@ public class DIDURL implements Comparable<DIDURL> {
 		return query.containsKey(name);
 	}
 
-	void addQueryParameter(String name, String value) {
+	protected void addQueryParameter(String name, String value) {
 		query.put(name, value);
 	}
 
@@ -133,7 +142,7 @@ public class DIDURL implements Comparable<DIDURL> {
 		return fragment;
 	}
 
-	void setFragment(String fragment) {
+	protected void setFragment(String fragment) {
 		this.fragment = fragment;
 	}
 
@@ -183,7 +192,6 @@ public class DIDURL implements Comparable<DIDURL> {
 	public int compareTo(DIDURL id) {
 		return toExternalForm().compareTo(id.toExternalForm());
 	}
-
 
 	private int mapHashCode(Map<String, String> map) {
 		int hash = 0;

@@ -40,15 +40,18 @@ public class DID implements Comparable<DID> {
 	boolean resolved;
 	Date resolveTimestamp;
 
-	DID() {
+	protected DID() {
 	}
 
-	DID(String method, String methodSpecificId) {
+	protected DID(String method, String methodSpecificId) {
 		this.method = method;
 		this.methodSpecificId = methodSpecificId;
 	}
 
 	public DID(String did) throws MalformedDIDException {
+		if (did == null || did.isEmpty())
+			throw new IllegalArgumentException();
+
 		try {
 			ParserHelper.parse(did, true, new Listener());
 		} catch(IllegalArgumentException e) {
@@ -60,7 +63,7 @@ public class DID implements Comparable<DID> {
 		return method;
 	}
 
-	void setMethod(String method) {
+	protected void setMethod(String method) {
 		this.method = method;
 	}
 
@@ -68,7 +71,7 @@ public class DID implements Comparable<DID> {
 		return methodSpecificId;
 	}
 
-	void setMethodSpecificId(String methodSpecificId) {
+	protected void setMethodSpecificId(String methodSpecificId) {
 		this.methodSpecificId = methodSpecificId;
 	}
 
@@ -109,6 +112,9 @@ public class DID implements Comparable<DID> {
 
 	@Override
 	public int compareTo(DID did) {
+		if (did == null)
+			throw new IllegalArgumentException();
+
 		int rc = method.compareTo(did.method);
 		return rc == 0 ? methodSpecificId.compareTo(did.methodSpecificId) : rc;
 	}
@@ -118,7 +124,6 @@ public class DID implements Comparable<DID> {
 			return document;
 
 		document = DIDStore.getInstance().resolveDid(this);
-
 		if (document != null)
 			resolveTimestamp = Calendar.getInstance().getTime();
 

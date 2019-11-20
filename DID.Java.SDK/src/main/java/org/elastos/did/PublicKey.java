@@ -74,7 +74,7 @@ public class PublicKey extends DIDObject {
 		return false;
 	}
 
-	static PublicKey fromJson(JsonNode node, DID ref)
+	protected static PublicKey fromJson(JsonNode node, DID ref)
 			throws MalformedDocumentException {
 		Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
 
@@ -93,7 +93,7 @@ public class PublicKey extends DIDObject {
 		return new PublicKey(id, type, controller, keyBase58);
 	}
 
-	void toJson(JsonGenerator generator, DID ref, boolean compact)
+	protected void toJson(JsonGenerator generator, DID ref, boolean compact)
 			throws IOException {
 		compact = (ref != null && compact);
 

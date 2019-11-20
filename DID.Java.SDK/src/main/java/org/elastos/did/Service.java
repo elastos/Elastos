@@ -41,7 +41,7 @@ public class Service extends DIDObject {
 		return endpoint;
 	}
 
-	static Service fromJson(JsonNode node, DID ref)
+	protected static Service fromJson(JsonNode node, DID ref)
 			throws MalformedDocumentException {
 		Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
 

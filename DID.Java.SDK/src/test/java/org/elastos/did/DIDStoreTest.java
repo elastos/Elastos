@@ -42,7 +42,6 @@ import org.elastos.credential.Issuer;
 import org.elastos.credential.VerifiableCredential;
 import org.elastos.did.DIDStore.Entry;
 import org.elastos.did.adapter.SPVAdapter;
-import org.elastos.did.util.Mnemonic;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -125,8 +124,8 @@ public class DIDStoreTest {
     	assertFalse(tempStore.hasPrivateIdentity());
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	tempStore.initPrivateIdentity(mnemonic, TestConfig.passphrase,
-    			TestConfig.storePass, true);
+    	tempStore.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+    			TestConfig.passphrase, TestConfig.storePass, true);
 
     	File file = new File(TestConfig.tempStoreRoot + File.separator + "private"
     			+ File.separator + "key");
@@ -166,8 +165,8 @@ public class DIDStoreTest {
     	store = DIDStore.getInstance();
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	store.initPrivateIdentity(mnemonic, TestConfig.passphrase,
-    			TestConfig.storePass, true);
+    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+    			TestConfig.passphrase, TestConfig.storePass, true);
 
     	ids = new LinkedHashMap<DID, String>(128);
     }
@@ -178,6 +177,7 @@ public class DIDStoreTest {
 
     	DIDDocument doc = store.newDid(TestConfig.storePass, hint);
     	primaryDid = doc.getSubject();
+
     	store.publishDid(doc, TestConfig.storePass);
 
     	File file = new File(TestConfig.storeRoot + File.separator + "ids"
