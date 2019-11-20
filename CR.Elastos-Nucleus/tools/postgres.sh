@@ -1,6 +1,9 @@
 #!/bin/bash 
 
-export PATH="/usr/local/opt/openssl/bin:$PATH"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # Mac OSX
+    export PATH="/usr/local/opt/openssl/bin:$PATH"
+fi
 
 set -euo pipefail
 
@@ -11,9 +14,15 @@ openssl req -new -text -passout pass:abcd -subj /CN=localhost -out server.req
 openssl rsa -in privkey.pem -passin pass:abcd -out server.key
 openssl req -x509 -in server.req -text -key server.key -out server.crt
 
-# set postgres (alpine) user as owner of the server.key and permissions to 600
-sudo chmod 600 server.key
-sudo chown $USER server.key
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    # linux
+    sudo chown 0:70 server.key
+    sudo chmod 640 server.key
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    # Mac OSX
+    sudo chmod 600 server.key
+    sudo chown $USER server.key
+fi
 
 docker container stop nucleus-postgres || true && docker container rm -f nucleus-postgres || true
 
