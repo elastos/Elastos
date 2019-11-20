@@ -37,7 +37,7 @@ type ChainStoreFFLDB struct {
 
 	mtx              sync.RWMutex
 	blockHashesCache []Uint256
-	blocksCache      map[Uint256]*Block
+	blocksCache      map[Uint256]*DposBlock
 }
 
 func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
@@ -51,7 +51,7 @@ func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
 		db:               fflDB,
 		indexManager:     indexManager,
 		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
-		blocksCache:      make(map[Uint256]*Block),
+		blocksCache:      make(map[Uint256]*DposBlock),
 	}
 
 	return s, nil
@@ -131,27 +131,16 @@ func (c *ChainStoreFFLDB) Close() error {
 func (c *ChainStoreFFLDB) SaveBlock(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 
-	// Insert the block into the database if it's not already there.  Even
-	// though it is possible the block will ultimately fail to connect, it
-	// has already passed all proof-of-work and validity tests which means
-	// it would be prohibitively expensive for an attacker to fill up the
-	// disk with a bunch of blocks that fail to connect.  This is necessary
-	// since it allows block download to be decoupled from the much more
-	// expensive connection logic.  It also has some other nice properties
-	// such as making blocks that never become part of the main chain or
-	// blocks that fail to connect available for further analysis.
 	err := c.db.Update(func(dbTx database.Tx) error {
-		return dbStoreBlock(dbTx, b)
+		return dbStoreBlock(dbTx, &DposBlock{
+			Block:       b,
+			HaveConfirm: confirm != nil,
+			Confirm:     confirm,
+		})
 	})
 	if err != nil {
 		return err
 	}
-
-	//// Write any block Status changes to DB before updating best state.
-	//err := b.index.flushToDB()
-	//if err != nil {
-	//	return err
-	//}
 
 	// Generate a new best state snapshot that will be used to update the
 	// database and later memory if all database updates are successful.
@@ -189,11 +178,7 @@ func (c *ChainStoreFFLDB) SaveBlock(b *Block, node *BlockNode,
 		return nil
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return c.persistConfirm(confirm)
+	return err
 }
 
 func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
@@ -244,14 +229,11 @@ func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
 
 		return nil
 	})
-	if err != nil {
-		return err
-	}
 
-	return c.rollbackConfirm(confirm)
+	return err
 }
 
-func (c *ChainStoreFFLDB) GetBlock(hash Uint256) (*Block, error) {
+func (c *ChainStoreFFLDB) GetBlock(hash Uint256) (*DposBlock, error) {
 	c.mtx.RLock()
 	if block, exist := c.blocksCache[hash]; exist {
 		c.mtx.RUnlock()
@@ -269,7 +251,7 @@ func (c *ChainStoreFFLDB) GetBlock(hash Uint256) (*Block, error) {
 		return nil, err
 	}
 
-	b := new(Block)
+	b := new(DposBlock)
 	err = b.Deserialize(bytes.NewReader(blkBytes))
 	if err != nil {
 		return nil, errors.New("failed to deserialize block")
@@ -310,22 +292,6 @@ func (c *ChainStoreFFLDB) GetHeader(hash Uint256) (*Header, error) {
 	}
 
 	return &header, nil
-}
-
-func (c *ChainStoreFFLDB) persistConfirm(confirm *payload.Confirm) error {
-	if confirm == nil {
-		return nil
-	}
-	// todo complete me
-	return nil
-}
-
-func (c *ChainStoreFFLDB) rollbackConfirm(confirm *payload.Confirm) error {
-	if confirm == nil {
-		return nil
-	}
-	// todo complete me
-	return nil
 }
 
 func (c *ChainStoreFFLDB) IsBlockInStore(hash *Uint256) bool {

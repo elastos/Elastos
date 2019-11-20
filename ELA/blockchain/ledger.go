@@ -55,7 +55,7 @@ func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + temp.String())
 	}
-	return bk, nil
+	return bk.Block, nil
 }
 
 //Get block with block hash.
@@ -64,7 +64,7 @@ func (l *Ledger) GetBlockWithHash(hash Uint256) (*Block, error) {
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
 	}
-	return bk, nil
+	return bk.Block, nil
 }
 
 //Get transaction with hash.

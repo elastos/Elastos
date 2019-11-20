@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -69,7 +69,7 @@ func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block
 			return err
 		}
 
-		anotherBlock, err := bm.Store.GetBlock(hash)
+		anotherBlock, err := bm.Store.GetFFLDB().GetBlock(hash)
 		if err != nil {
 			return err
 		}
@@ -88,11 +88,8 @@ func (bm *BlockPool) CheckConfirmedBlockOnFork(height uint32, block *types.Block
 			return err
 		}
 
-		anotherConfirm, err := bm.Store.GetConfirm(block.Hash())
-		if err != nil {
-			return err
-		}
-		compareEvidence, compareOffset, err := bm.generateBlockEvidence(anotherBlock, anotherConfirm)
+		compareEvidence, compareOffset, err := bm.generateBlockEvidence(
+			anotherBlock.Block, anotherBlock.Confirm)
 		if err != nil {
 			return err
 		}

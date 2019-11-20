@@ -210,8 +210,8 @@ func startNode(c *cli.Context, st *settings) {
 			if err != nil {
 				return nil, err
 			}
-			blockchain.CalculateTxsFee(block)
-			return block, nil
+			blockchain.CalculateTxsFee(block.Block)
+			return block.Block, nil
 		}, chain.UTXOCache.GetTxReference)
 
 	routesCfg := &routes.Config{TimeSource: chain.TimeSource}

@@ -586,17 +586,17 @@ func getBlock(hash common.Uint256, verbose uint32) (interface{}, ServerErrCode) 
 }
 
 func getConfirm(hash common.Uint256, verbose uint32) (interface{}, ServerErrCode) {
-	confirm, err := Store.GetConfirm(hash)
+	block, err := Store.GetFFLDB().GetBlock(hash)
 	if err != nil {
 		return "", UnknownBlock
 	}
 	if verbose == 0 {
 		w := new(bytes.Buffer)
-		confirm.Serialize(w)
+		block.Confirm.Serialize(w)
 		return common.BytesToHexString(w.Bytes()), Success
 	}
 
-	return GetConfirmInfo(confirm), Success
+	return GetConfirmInfo(block.Confirm), Success
 }
 
 func GetBlockByHash(param Params) map[string]interface{} {
