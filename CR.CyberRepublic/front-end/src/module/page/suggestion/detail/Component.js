@@ -117,11 +117,18 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    const { detail } = this.props
-    if (_.isEmpty(detail) || detail.loading) {
+    const { detail, loading } = this.props
+    if (loading || (!loading && _.isEmpty(detail))) {
       return (
         <div className="center">
           <Spin size="large" />
+        </div>
+      )
+    }
+    if (detail && detail.success && detail.empty) {
+      return (
+        <div className="ebp-page">
+          <h1>{I18N.get('error.notfound')}</h1>
         </div>
       )
     }

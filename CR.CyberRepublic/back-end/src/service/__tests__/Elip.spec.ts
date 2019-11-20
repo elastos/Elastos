@@ -120,7 +120,7 @@ describe('Tests for ELIP', () => {
     // A guest
     const elipService2 = new ElipService(DB, {})
     const rs2 = await elipService2.getById(elip_3._id)
-    expect(Object.keys(rs2).length).to.be.equal(0)
+    expect(rs2.elip.empty).to.be.equal(true)
 
     await DB.getModel('Elip').update(
       { _id: elip_3._id },
