@@ -44,13 +44,14 @@ cp .env.example .env
 ```
 
 ## Starting Postgres server:
-
+```````````
 cd tools
 
 ./postgres.sh
 
 pg_ctl -D /usr/local/var/postgres start
 
+```````````
 ```````````
 If you encounter an error
 
@@ -81,9 +82,13 @@ To create tables
 To insert values
 
 * Execute the contents at the location smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
-
+`````````````
 quit
 
+`````````````
+cd 
+
+`````````````
 ## Start the server:
 
 Export Path:
