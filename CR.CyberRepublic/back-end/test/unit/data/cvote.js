@@ -12,7 +12,7 @@ global.DB = Object.assign(global.DB, {
         goal: 'goal',
         motivation: 'motivation',
         relevance: 'relevance',
-        budget: 'budget',
+        // budget: [{ amount: '100', reason:'budget', criteria: 'budget'}],
         plan: 'plan',
         proposedBy: 'Kevin Zhang',
         proposer: '5d1b17c1628f5b7911d35702',

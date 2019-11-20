@@ -228,9 +228,11 @@ export default class extends Base {
       createdBy: this.currentUser._id
     }
     let amount = 0.0;
-    budget.map(function(it) {
-      amount += Number(it.amount)
-    })
+    if(budget && budget.length){
+      budget.map(function(it) {
+        amount += Number(it.amount)
+      })
+    }
     doc.budgetAmount = amount
 
     const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
@@ -591,9 +593,11 @@ export default class extends Base {
     if (budget) {
       doc.budget = budget
       let amount = 0.0;
-      budget.map(function(it) {
-        amount += Number(it.amount)
-      })
+      if(budget.length){
+        budget.map(function(it) {
+          amount += Number(it.amount)
+        })
+      }
       doc.budgetAmount = amount
     }
     if (plan) doc.plan = plan
