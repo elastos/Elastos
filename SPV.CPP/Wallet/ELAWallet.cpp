@@ -19,7 +19,7 @@
 
 using namespace Elastos::ElaWallet;
 
-#define SELA_PER_ELA 100000000
+#define SELA_PER_ELA 100000000UL
 static const char *MAIN_CHAIN = "ELA";
 static const char *ID_CHAIN = "IDChain";
 
@@ -728,7 +728,7 @@ static void _register(int argc, char *argv[]) {
 
 			std::string password = getpass("Enter payment password: ");
 			nlohmann::json payload = subWallet->GenerateCRInfoPayload(crPublicKey, nickName, url, location, password);
-			tx = subWallet->CreateRegisterCRTransaction("", payload, "5000", "");
+			tx = subWallet->CreateRegisterCRTransaction("", payload, std::to_string(5000 * SELA_PER_ELA), "");
 		} else if (registerWhat == "dpos") {
 			std::string crPublicKey = subWallet->GetCROwnerPublicKey();
 			std::string nickName, url;
@@ -745,7 +745,7 @@ static void _register(int argc, char *argv[]) {
 
 			std::string password = getpass("Enter payment password: ");
 			nlohmann::json payload = subWallet->GenerateCRInfoPayload(crPublicKey, nickName, url, location, password);
-			nlohmann::json tx = subWallet->CreateRegisterCRTransaction("", payload, "5000", "");
+			nlohmann::json tx = subWallet->CreateRegisterCRTransaction("", payload, std::to_string(5000 * SELA_PER_ELA), "");
 		} else {
 			invalidCmdError();
 			return;
@@ -851,7 +851,7 @@ static void vote(int argc, char *argv[]) {
 		}
 
 		if (voteType == "cr") {
-			std::cout << "Enter vote json list: " << std::endl;
+			std::cout << "Enter vote cr with JSON format: " << std::endl;
 			std::string voteJson;
 			std::cin >> voteJson;
 

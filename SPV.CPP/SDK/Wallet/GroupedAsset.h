@@ -69,7 +69,8 @@ namespace Elastos {
 											  const std::vector<OutputPtr> &outputs,
 											  const Address &fromAddress,
 											  const std::string &memo,
-											  bool max);
+											  bool max,
+											  bool pickVoteFirst = false);
 
 			void AddFeeForTx(TransactionPtr &tx);
 

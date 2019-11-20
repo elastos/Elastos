@@ -456,7 +456,8 @@ namespace Elastos {
 														const std::vector<OutputPtr> &outputs,
 														const Address &fromAddress,
 														const std::string &memo,
-														bool max) {
+														bool max,
+														bool pickVoteFirst) {
 			ErrorChecker::CheckLogic(outputs.empty(), Error::InvalidArgument, "outputs should not be empty");
 			ErrorChecker::CheckParam(max && outputs.size() > 1, Error::InvalidArgument,
 									 "Unsupport max for multi outputs");
@@ -486,6 +487,28 @@ namespace Elastos {
 			if (_asset->GetName() == "ELA")
 				feeAmount = CalculateFee(_parent->_feePerKb, txn->EstimateSize());
 
+			if (pickVoteFirst && totalInputAmount < totalOutputAmount + feeAmount) {
+				// voted utxo
+				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
+					if (_parent->IsUTXOSpending(*u)) {
+						lastUTXOPending = true;
+						continue;
+					}
+
+					if ((*u)->GetConfirms(_parent->_blockHeight) < 2)
+						continue;
+
+					txn->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
+					_parent->_subAccount->GetCodeAndPath((*u)->Output()->Addr(), code, path);
+					txn->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
+					totalInputAmount += (*u)->Output()->Amount();
+
+					txSize = txn->EstimateSize();
+					if (_asset->GetName() == "ELA")
+						feeAmount = CalculateFee(_parent->_feePerKb, txSize);
+				}
+			}
+
 			UTXOArray utxo2Pick(_utxos.begin(), _utxos.end());
 			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
 
@@ -511,7 +534,9 @@ namespace Elastos {
 				txSize = txn->EstimateSize();
 				if (txSize >= TX_MAX_SIZE - 1000) { // transaction size-in-bytes too large
 					_parent->Unlock();
-
+					if (!pickVoteFirst){
+						return CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max, !pickVoteFirst);
+					}
 					BigInt maxAmount = totalInputAmount - feeAmount;
 					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
 												 "Tx size too large, max available amount: " + maxAmount.getDec() + " sela");
@@ -523,7 +548,7 @@ namespace Elastos {
 					feeAmount = CalculateFee(_parent->_feePerKb, txSize);
 			}
 
-			if (max || totalInputAmount < totalOutputAmount + feeAmount) {
+			if (!pickVoteFirst && (max || totalInputAmount < totalOutputAmount + feeAmount)) {
 				// voted utxo
 				for (UTXOArray::iterator u = _utxosVote.begin(); u != _utxosVote.end(); ++u) {
 					if (_parent->IsUTXOSpending(*u)) {
