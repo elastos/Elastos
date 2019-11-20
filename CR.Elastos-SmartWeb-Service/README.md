@@ -78,9 +78,3 @@ Command to build protocol buffer files:
 cd $PWD/grpc_adenine/
 python3 -m grpc_tools.protoc -I definitions --python_out=stubs --grpc_python_out=stubs definitions/common.proto
 ```
-
-Add a sample shared key to environment variable on the server:
-```
-export SHARED_SECRET_ADENINE="kHDP9V4JJbwd5GN"
-```
-
