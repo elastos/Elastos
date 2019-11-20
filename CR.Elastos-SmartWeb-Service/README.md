@@ -84,9 +84,7 @@ To insert values
 * Execute the contents at the location smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
 `````````````
 quit
-
-`````````````
-cd 
+cd ..
 
 `````````````
 ## Start the server:
