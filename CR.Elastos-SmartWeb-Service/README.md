@@ -43,22 +43,46 @@ pip3 install -r requirements.txt
 cp .env.example .env
 ```
 
-## Setting up PostgresSQL:
+## Starting Postgres server:
 
-* Install PostgreSQL server 11.5
+cd tools
 
-* Create a database by name 'smartweb_master'
+./postgres.sh
 
-* To start the PostgreSQL Server
-
-```
 pg_ctl -D /usr/local/var/postgres start
-```
 
-* Execute the create table scripts at smartweb_service/grpc_adenine/database/scripts/create_table_scripts.sql
+```````````
+If you encounter an error
 
-* Execute the insert scripts at smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
+Try
 
+postgres -D /usr/local/var/postgres
+You might see
+
+FATAL:  lock file "postmaster.pid" already exists
+HINT:  Is another postmaster (PID 449) running in data directory "/usr/local/var/postgres"?
+Then try
+
+kill -9 PID
+example
+
+kill -9 419
+
+`````````````
+
+## Execute the following command to create and insert values into your database 
+
+docker container exec -it nucleus-postgres psql -h localhost -U gmu -d smartweb_master
+
+To create tables
+
+* Execute the contents at the location smartweb_service/grpc_adenine/database/scripts/create_table_scripts.sql 
+
+To insert values
+
+* Execute the contents at the location smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
+
+quit
 
 ## Start the server:
 
