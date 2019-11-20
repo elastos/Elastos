@@ -149,7 +149,14 @@ export default class extends Base {
     if (goal) doc.goal = goal
     if (motivation) doc.motivation = motivation
     if (relevance) doc.relevance = relevance
-    if (budget) doc.budget = budget
+    if (budget) {
+      doc.budget = budget
+      let amount = 0.0;
+      budget.map(function(it) {
+        amount += Number(it.amount)
+      })
+      doc.budgetAmount = amount
+    }
     if (plan) doc.plan = plan
 
     try {
@@ -220,6 +227,11 @@ export default class extends Base {
       proposer,
       createdBy: this.currentUser._id
     }
+    let amount = 0.0;
+    budget.map(function(it) {
+      amount += Number(it.amount)
+    })
+    doc.budgetAmount = amount
 
     const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
@@ -481,15 +493,15 @@ export default class extends Base {
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
       query.createdAt = {
-          $gte: new Date(param.startDate),
-          $lte: new Date(param.endDate)
-        }
+        $gte: new Date(param.startDate),
+        $lte: new Date(param.endDate)
+      }
     }
     // Ends in times - 7day = startDate <  endDate
     if(param.endsInStartDate && param.endsInStartDate.length && param.endsInEndDate && param.endsInEndDate.length){
       query.createdAt = {
-          $gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000),
-          $lte: new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)
+        $gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000),
+        $lte: new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)
       }
       query.status = constant.CVOTE_STATUS.FINAL
     }
@@ -504,8 +516,14 @@ export default class extends Base {
       }
     }
     // budget
-    if(param.budget && param.budget.length) {
-      query.budget = param.budget
+    if(param.budgetLow || param.budgetHigh){
+      param.budgetAmount = {}
+      if (param.budgetLow && param.budgetLow.length) {
+        query.budgetAmount['$gte'] = param.budgetLow
+      }
+      if (param.budgetHigh && param.budgetHigh.length) {
+        query.budgetAmount['$lte'] = param.budgetHigh
+      }
     }
     // has tracking
     if(param.hasTracking) {
@@ -570,7 +588,14 @@ export default class extends Base {
     if (goal) doc.goal = goal
     if (motivation) doc.motivation = motivation
     if (relevance) doc.relevance = relevance
-    if (budget) doc.budget = budget
+    if (budget) {
+      doc.budget = budget
+      let amount = 0.0;
+      budget.map(function(it) {
+        amount += Number(it.amount)
+      })
+      doc.budgetAmount = amount
+    }
     if (plan) doc.plan = plan
 
     if (willChangeToPublish) {

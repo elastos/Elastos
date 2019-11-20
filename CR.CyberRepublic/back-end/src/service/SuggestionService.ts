@@ -20,6 +20,14 @@ export default class extends Base {
       // in the sort query
       descUpdatedAt: new Date()
     }
+    let amount = 0.0;
+    if(param.budget && param.budget.length){
+      param.budget.map(function(it) {
+        amount += Number(it.amount)
+      })
+    }
+    doc.budgetAmount = amount
+    
     // save the document
     const result = await this.model.save(doc)
     await this.getDBModel('Suggestion_Edit_History').save({ ...param, suggestion: result._id })
@@ -95,6 +103,14 @@ export default class extends Base {
     }
 
     const doc = _.pick(param, BASE_FIELDS);
+    let amount = 0.0;
+    if(param.budget && param.budget.length){
+      doc.budget.map(function(it) {
+        amount += Number(it.amount)
+      })
+    }
+    doc.budgetAmount = amount
+    
     doc.descUpdatedAt = new Date()
     if (update) {
       await Promise.all([
@@ -114,7 +130,8 @@ export default class extends Base {
         'results', 'page', 'sortBy', 'sortOrder',
         'filter', 'profileListFor', 'search',
         'tagsIncluded', 'referenceStatus',
-        'status', 'startDate', 'endDate', 'author'
+        'status', 'startDate', 'endDate', 'author',
+        'budgetLow', 'budgetHigh'
       ]
     )
     const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
@@ -193,8 +210,14 @@ export default class extends Base {
       query.status = param.status
     }
     // budget
-    if (param.budget && param.budget.length) {
-      query.budget = param.budget
+    if(param.budgetLow || param.budgetHigh){
+      param.budgetAmount = {}
+      if (param.budgetLow && param.budgetLow.length) {
+        query.budgetAmount['$gte'] = param.budgetLow
+      }
+      if (param.budgetHigh && param.budgetHigh.length) {
+        query.budgetAmount['$lte'] = param.budgetHigh
+      }
     }
     // isProposed
     if (param.isProposed) {
@@ -250,14 +273,14 @@ export default class extends Base {
       ]
 
       cursor = this.model.getDBInstance()
-        .find(query, excludedFields.join(' '))
-        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
-        .sort(sortObject)
+                   .find(query, excludedFields.join(' '))
+                   .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+                   .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+                   .sort(sortObject)
     } else {
       // my suggestions on profile page
       cursor = this.model.getDBInstance()
-        .find(query, 'title activeness commentsNum createdAt dislikesNum displayId likesNum')
+                   .find(query, 'title activeness commentsNum createdAt dislikesNum displayId likesNum')
     }
 
     if (param.results) {
@@ -397,8 +420,14 @@ export default class extends Base {
       query.status = param.status
     }
     // budget
-    if (param.budget && param.budget.length) {
-      query.budget = param.budget
+    if(param.budgetLow || param.budgetHigh){
+      param.budgetAmount = {}
+      if (param.budgetLow && param.budgetLow.length) {
+        query.budgetAmount['$gte'] = param.budgetLow
+      }
+      if (param.budgetHigh && param.budgetHigh.length) {
+        query.budgetAmount['$lte'] = param.budgetHigh
+      }
     }
     // isProposed
     if (param.isProposed) {

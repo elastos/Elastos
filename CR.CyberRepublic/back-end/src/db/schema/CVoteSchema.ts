@@ -58,6 +58,9 @@ export const CVote = {
   relevance: {
     type: String
   },
+  budgetAmount: {
+    type: Number
+  },
   budget: {
     type: Schema.Types.Mixed
   },
