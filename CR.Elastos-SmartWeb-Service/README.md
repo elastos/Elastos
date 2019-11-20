@@ -64,6 +64,7 @@ Export Path:
 export PYTHONPATH="$PYTHONPATH:$PWD/grpc_adenine/stubs/"
 ```
 
+Run the following command:
 ```
 python3 grpc_adenine/server.py
 ```
