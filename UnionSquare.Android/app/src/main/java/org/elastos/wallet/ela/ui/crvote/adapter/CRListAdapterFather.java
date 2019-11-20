@@ -34,12 +34,12 @@ public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.Re
     Map<String, String> map;
     //  Set<Integer> checkPosition = new HashSet<>();//用来记录被check的position
     List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data;
-    String totalvotes;
 
-    CRListAdapterFather(int id, BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is, String totalvotes) {
+
+    CRListAdapterFather(int id, BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is) {
         super(id, data);
         this.context = context;
-        this.totalvotes = totalvotes;
+
         this.data = data;
         this.is = is;
         if (map == null) {
@@ -88,11 +88,8 @@ public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.Re
         }
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
-        if (TextUtils.isEmpty(bean.getVoterate())) {
-            String voterate = Arith.div(bean.getVotes(), totalvotes, 5).toPlainString();
-            bean.setVoterate(voterate);
-        }
-        helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
+
+        helper.setText(R.id.tv_zb, bean.getVoterate() + "%");
         helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
     }
 

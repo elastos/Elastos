@@ -116,9 +116,6 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
 
     @Override
     public void onDestorySubWallet(String data) {
-
-        SubWallet subWallet = new SubWallet();
-        subWallet.setBelongId(walletId);
         new RealmUtil().deleteSubWallet(walletId, data);
         //删除did草稿
         ArrayList<DIDInfoEntity> info = CacheUtil.getDIDInfoList();

@@ -4,15 +4,20 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -27,13 +32,14 @@ import android.widget.TextView;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseActivity;
+import org.elastos.wallet.ela.utils.adpter.TextAdapter;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener2;
 import org.elastos.wallet.ela.utils.widget.TextConfigDataPicker;
 import org.elastos.wallet.ela.utils.widget.TextConfigNumberPicker;
 
-import java.util.Calendar;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -323,7 +329,6 @@ public class DialogUtil {
                 picker.performClick();
             }
         });
-        WindowManager m = activity.getWindowManager();
         Window window = dialog.getWindow();
         window.getDecorView().setPadding(0, 0, 0, 0);
         WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
@@ -406,7 +411,7 @@ public class DialogUtil {
             }
         });*/
 
-        WindowManager m = activity.getWindowManager();
+        /*WindowManager m = activity.getWindowManager();*/
         Window window = dialog.getWindow();
         window.getDecorView().setPadding(0, 0, 0, 0);
         WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
@@ -454,5 +459,28 @@ public class DialogUtil {
             listener.affireBtnClick(contentTv);
         });
         dialog.show();
+    }
+
+    public static void showComTextPopup(EditText view, Context context, List<String> textList) {
+        int x = view.getWidth();
+        RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(context).inflate(R.layout.popup_text, null);
+        PopupWindow popupWindow = new PopupWindow(recyclerView, x, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        // 设置PopupWindow是否能响应外部点击事件
+        //popupWindow.setOutsideTouchable(true);
+        // popupWindow.setTouchable(true);
+        popupWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
+        TextAdapter adapter = new TextAdapter(textList, context);
+        adapter.setOnItemOnclickListner(new TextAdapter.OnItemClickListner() {
+            @Override
+            public void onItemClick(View v, int position, String text) {
+                view.setText(text);
+                popupWindow.dismiss();
+            }
+        });
+        recyclerView.setAdapter(adapter);
+        popupWindow.showAsDropDown(view, 0, 0);
+        //  return popupWindow;
     }
 }

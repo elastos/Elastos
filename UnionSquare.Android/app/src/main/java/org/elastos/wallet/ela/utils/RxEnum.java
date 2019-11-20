@@ -66,7 +66,9 @@ public enum RxEnum {
     RETURCER,//返回cerdential数据
     EDITPERSONALINFO,//编辑个人信息
     EDITPERSONALINTRO,//编辑个人简介
-    EDITSOCIAL//编辑社交账号
+    EDITSOCIAL,//编辑社交账号
+    IPVALID,//节点ip可用
+
    /* enum Type {
         CoinBase, // 创币交易
         RegisterAsset, // 注册资产交易

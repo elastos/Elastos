@@ -77,7 +77,7 @@ public class FirstFragment extends BaseFragment implements CommmonObjectWithMeth
             public void run() {
                 onFirst(data);
             }
-        }, 1000);
+        }, 0);
     }
 
     @Override

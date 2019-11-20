@@ -49,7 +49,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@null"
-                    android:hint="@string/please_enter_wallet_password"
+                    android:hint="@string/plzinput8walletpwd"
                     android:inputType="textPassword"
                     android:paddingBottom="@dimen/px26"
                     android:textColor="@color/qmui_config_color_white"

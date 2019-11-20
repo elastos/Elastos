@@ -90,7 +90,18 @@ public class CacheUtil {
 
     public static void remove(String key) {
 
-            CacheDiskUtils.getInstance(file).remove(key);
+        CacheDiskUtils.getInstance(file).remove(key);
 
+    }
+
+    public static ArrayList<String> getIps() {
+        ArrayList<String> list = (ArrayList<String>) CacheDiskUtils.getInstance(file)
+                .getSerializable("ips");
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    //Set<String> serverList = new HashSet<>();
+    public static void setIps(List<String> list) {
+        CacheDiskUtils.getInstance(file).put("ips", (Serializable) list, CacheDiskUtils.DAY * 360);
     }
 }

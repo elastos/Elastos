@@ -24,8 +24,8 @@ public class CRListAdapter extends CRListAdapterFather {
     private final GlideRequest<Bitmap> glideRequest;
     private SuperNodeListPresenter presenter;
 
-    public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is, String totalvotes) {
-        super(R.layout.item_cr_list, context, data, is, totalvotes);
+    public CRListAdapter(BaseFragment context, @Nullable List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data, boolean is) {
+        super(R.layout.item_cr_list, context, data, is);
         glideRequest = GlideApp.with(context).asBitmap().error(R.mipmap.found_vote_initial).placeholder(R.mipmap.found_vote_initial);
 
 

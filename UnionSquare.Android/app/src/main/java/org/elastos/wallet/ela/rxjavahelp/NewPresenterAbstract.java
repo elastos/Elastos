@@ -128,7 +128,7 @@ public class NewPresenterAbstract extends PresenterAbstract {
                     showTips(value);
 
                 }
-                Log.e(TAG, "onNext:" + value);
+                Log.e(TAG, methodName+" onNext:" + value);
 
             }
 

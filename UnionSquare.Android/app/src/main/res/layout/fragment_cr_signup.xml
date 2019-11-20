@@ -30,7 +30,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="@string/menberpk"
+                android:text="@string/eletionpk"
                 android:textColor="#ffffffff"
                 android:textSize="13sp" />
 
@@ -59,7 +59,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="@string/menberdid"
+                android:text="@string/electiondid"
                 android:textColor="#ffffffff"
                 android:textSize="13sp" />
 
@@ -83,7 +83,7 @@
             android:layout_width="match_parent"
             android:layout_height="53dp"
             android:background="@null"
-            android:hint="@string/inputdotname"
+            android:hint="@string/plzinputnickmust"
             android:inputType="text"
             android:maxLines="1" />
 

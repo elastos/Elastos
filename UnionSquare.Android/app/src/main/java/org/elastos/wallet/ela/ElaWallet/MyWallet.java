@@ -225,7 +225,7 @@ public class MyWallet {
         return null;
     }
 
-    private BaseEntity getSubWallet1(String masterWalletID, String chainID) {
+/*    private BaseEntity getSubWallet1(String masterWalletID, String chainID) {
         SubWallet subWallet = getSubWallet(masterWalletID, chainID);
         if (subWallet != null) {
             org.elastos.wallet.ela.db.table.SubWallet newSubWallet = new org.elastos.wallet.ela.db.table.SubWallet();
@@ -235,7 +235,7 @@ public class MyWallet {
             return new CommmonObjEntity(SUCCESSCODE, newSubWallet);
         }
         return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
-    }
+    }*/
 
     private IDChainSubWallet getIDChainSubWallet(String masterWalletID) {
         SubWallet subWallet = getSubWallet(masterWalletID, IDChain);
@@ -1690,6 +1690,34 @@ public class MyWallet {
             return new CommmonStringWithiMethNameEntity(SUCCESSCODE, "", "syncStart");
         } catch (WalletException e) {
             return exceptionProcess(e, "syncStart " + formatWalletName(masterWalletID, chainID));
+        }
+    }
+
+    public BaseEntity syncStop(String masterWalletID, String chainID) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+
+            subWallet.SyncStop();
+            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, "", "syncStop");
+        } catch (WalletException e) {
+            return exceptionProcess(e, "syncStop " + formatWalletName(masterWalletID, chainID));
+        }
+    }
+
+    public BaseEntity setFixedPeer(String masterWalletID, String chainID, String address, int port) {
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
+
+            }
+            return new CommmonBooleanEntity(SUCCESSCODE, subWallet.SetFixedPeer(address, port));
+        } catch (WalletException e) {
+            return exceptionProcess(e, "setFixedPeer " + formatWalletName(masterWalletID, chainID));
         }
     }
 

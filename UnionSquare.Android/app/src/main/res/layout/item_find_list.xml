@@ -17,15 +17,17 @@
         android:layout_marginBottom="24dp" />
 
     <TextView
+        android:layout_toLeftOf="@id/imageView"
         android:id="@+id/tv_up"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="43dp"
         android:textSize="21sp" />
 
     <TextView
+        android:layout_toLeftOf="@id/imageView"
         android:id="@+id/tv_down"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_up"
         android:layout_marginTop="10dp"

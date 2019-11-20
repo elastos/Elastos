@@ -60,7 +60,6 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
     private Wallet wallet = realmUtil.queryDefauleWallet();
     CRSignUpPresenter presenter;
 
-    private DialogUtil dialogUtil = new DialogUtil();
 
 
     @Override
@@ -83,7 +82,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
     }
 
 
-    String name, ownerPublicKey, did, area, url, pwd;
+    String name, ownerPublicKey, did, area, url="", pwd;
 
     @OnClick({R.id.tv_sure, R.id.ll_area})
     public void onViewClicked(View view) {
@@ -103,17 +102,17 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
                     return;
                 }
                 if (TextUtils.isEmpty(name)) {
-                    ToastUtils.showShort(getString(R.string.inputdotname));
+                    ToastUtils.showShort(getString(R.string.plzinputnickmust));
                     return;
                 }
-                if (TextUtils.isEmpty(area)) {
+               /* if (TextUtils.isEmpty(area)) {
                     ToastUtils.showShort(getString(R.string.countryregion_cannot_be_empty));
                     return;
-                }
-                if (TextUtils.isEmpty(url)) {
+                }*/
+              /*  if (TextUtils.isEmpty(url)) {
                     ToastUtils.showShort(getString(R.string.the_official_website_cannot_be_empty));
                     return;
-                }
+                }*/
 
                 //模拟交易获得手续费
                 new TransferPresenter().createTransaction(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
