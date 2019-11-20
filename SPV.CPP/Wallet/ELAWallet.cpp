@@ -828,6 +828,58 @@ static void createProposal(int argc, char *argv[]) {
 	std::cout << res.dump() << std::endl;
 }
 
+static void vote(int argc, char *argv[]) {
+	if (argc != 3) {
+		invalidCmdError();
+		return;
+	}
+
+	std::string walletName = argv[1];
+	std::string voteType = argv[2];
+
+	try {
+		auto masterWallet = manager->GetMasterWallet(walletName);
+		if (!masterWallet) {
+			std::cerr << walletName << " not found" << std::endl;
+			return;
+		}
+
+		IMainchainSubWallet *subWallet = dynamic_cast<IMainchainSubWallet *>(masterWallet->GetSubWallet(MAIN_CHAIN));
+		if (!subWallet) {
+			std::cerr << "open '" << MAIN_CHAIN << "' first" << std::endl;
+			return;
+		}
+
+		if (voteType == "cr") {
+			std::cout << "Enter vote json list: " << std::endl;
+			std::string voteJson;
+			std::cin >> voteJson;
+
+			nlohmann::json tx = subWallet->CreateVoteCRTransaction("", nlohmann::json::parse(voteJson), "");
+			signAndPublishTx(subWallet, tx);
+		} else if (voteType == "dpos") {
+			std::cout << "Enter number of votes:";
+			int64_t stake;
+			std::cin >> stake;
+			std::string num = std::to_string(stake);
+
+			std::cout << "Enter vote producer public keys with JSON format:\n";
+			std::string pubKeys;
+			std::cin >> pubKeys;
+
+			nlohmann::json tx = subWallet->CreateVoteProducerTransaction("", num, nlohmann::json::parse(pubKeys), "");
+			signAndPublishTx(subWallet, tx);
+		} else {
+			invalidCmdError();
+			return;
+		}
+
+	} catch (const std::exception &e) {
+		exceptionError(e);
+	}
+
+}
+
 // export [walletName] [mnemonic | keystore]
 static void _export(int argc, char *argv[]) {
 	if (argc != 3) {
@@ -948,6 +1000,7 @@ struct command {
 	{"idtx",     idtx,           "[walletName]                           Create id transaction."},
 	{"register", _register,      "[walletName] [cr | dpos]               Register CR or DPoS with specified wallet."},
 	{"proposal", createProposal, "[walletName]                           Create CRC proposal transaction."},
+	{"vote",     vote,           "[walletName] [cr | dpos]               Vote CR or DPoS with specified wallet."},
 	{"verbose",  verbose,        "[on | off]                             Set verbose mode."},
 	{"list",     list,           "                                       List all wallets."},
 	{"exit", NULL,               "                                       Quit wallet."},

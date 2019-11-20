@@ -211,6 +211,8 @@ namespace Elastos {
 							ErrorChecker::ThrowLogicException(Error::LastVoteConfirming, "Invalid vote content type");
 							return nullptr;
 						}
+						if (oldVoteAmount.back() > totalOutputAmount)
+							totalOutputAmount = oldVoteAmount.back();
 					}
 				} else {
 					for (const VoteContent &vc : pv->GetVoteContent()) {
@@ -218,12 +220,12 @@ namespace Elastos {
 							oldVoteContent.push_back(vc);
 							oldVoteContent.back().SetAllCandidateVotes((*u)->Output()->Amount().getUint64());
 							oldVoteAmount.push_back((*u)->Output()->Amount());
+
+							if (oldVoteAmount.back() > totalOutputAmount)
+								totalOutputAmount = oldVoteAmount.back();
 						}
 					}
 				}
-
-				if (oldVoteAmount.back() > totalOutputAmount)
-					totalOutputAmount = oldVoteAmount.back();
 
 				totalInputAmount += (*u)->Output()->Amount();
 
