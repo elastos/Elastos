@@ -60,7 +60,7 @@ namespace Elastos {
 		protected:
 			SPVModule(const std::string &wallet_id, const SubAccountPtr &sub_account,
 					  const boost::filesystem::path &db_path, time_t earliest_peer_time,
-					  const ChainConfigPtr &config);
+					  const ChainConfigPtr &config, const std::string &netType);
 
 		private:
 			// Override SpvService methods.
@@ -87,7 +87,8 @@ namespace Elastos {
 				SubAccountPtr sub_account = SubAccountPtr(new SideAccount(uint256(genesis_hash)));
 				return SPVModulePtr(new SPVModule(CHAINID_MAINCHAIN, sub_account, db_path,
 												  chain_cfg->ChainParameters()->LastCheckpoint().Timestamp(),
-												  chain_cfg));
+												  chain_cfg,
+												  cfg.GetNetType()));
 			}
 		};
 

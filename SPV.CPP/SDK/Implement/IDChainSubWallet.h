@@ -102,7 +102,8 @@ namespace Elastos {
 
 			IDChainSubWallet(const CoinInfoPtr &info,
 							 const ChainConfigPtr &config,
-							 MasterWallet *parent);
+							 MasterWallet *parent,
+							 const std::string &netType);
 
 		private:
 			std::vector<DIDDetailPtr> _didList;

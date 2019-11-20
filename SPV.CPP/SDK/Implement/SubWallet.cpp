@@ -30,7 +30,8 @@ namespace Elastos {
 
 		SubWallet::SubWallet(const CoinInfoPtr &info,
 							 const ChainConfigPtr &config,
-							 MasterWallet *parent) :
+							 MasterWallet *parent,
+							 const std::string &netType) :
 				PeerManager::Listener(),
 				_parent(parent),
 				_info(info),
@@ -42,7 +43,7 @@ namespace Elastos {
 			SubAccountPtr subAccount = SubAccountPtr(new SubAccount(_parent->_account, _config->Index()));
 			_walletManager = WalletManagerPtr(
 					new SpvService(_parent->GetID(), _info->GetChainID(), subAccount, subWalletDBPath,
-								   _info->GetEarliestPeerTime(), _config));
+								   _info->GetEarliestPeerTime(), _config, netType));
 
 			_walletManager->RegisterWalletListener(this);
 			_walletManager->RegisterPeerManagerListener(this);

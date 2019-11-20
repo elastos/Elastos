@@ -31,7 +31,8 @@ namespace Elastos {
 					  const std::string &chainID,
 					  const SubAccountPtr &subAccount,
 					  time_t earliestPeerTime,
-					  const ChainConfigPtr &config);
+					  const ChainConfigPtr &config,
+					  const std::string &netType);
 
 			virtual ~CoreSpvService();
 

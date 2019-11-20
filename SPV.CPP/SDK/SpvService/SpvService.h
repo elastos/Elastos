@@ -32,7 +32,8 @@ namespace Elastos {
 					   const SubAccountPtr &subAccount,
 					   const boost::filesystem::path &dbPath,
 					   time_t earliestPeerTime,
-					   const ChainConfigPtr &config);
+					   const ChainConfigPtr &config,
+					   const std::string &netType);
 
 			virtual ~SpvService();
 

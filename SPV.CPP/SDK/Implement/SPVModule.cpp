@@ -10,8 +10,9 @@ namespace Elastos {
 							 const SubAccountPtr &sub_account,
 							 const boost::filesystem::path &db_path,
 							 time_t earliest_peer_time,
-							 const ChainConfigPtr &config)
-			: SpvService("", wallet_id, sub_account, db_path, earliest_peer_time, config),
+							 const ChainConfigPtr &config,
+							 const std::string &netType)
+			: SpvService("", wallet_id, sub_account, db_path, earliest_peer_time, config, netType),
 			  _notify_queue(db_path) {}
 
 		SPVModule::~SPVModule() {}

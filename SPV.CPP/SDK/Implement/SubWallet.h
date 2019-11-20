@@ -166,7 +166,8 @@ namespace Elastos {
 
 			SubWallet(const CoinInfoPtr &info,
 					  const ChainConfigPtr &config,
-					  MasterWallet *parent);
+					  MasterWallet *parent,
+					  const std::string &netType);
 
 			TransactionPtr CreateTx(
 				uint8_t type,

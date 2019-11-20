@@ -185,7 +185,8 @@ namespace Elastos {
 
 			SubWallet *SubWalletFactoryMethod(const CoinInfoPtr &info,
 											  const ChainConfigPtr &config,
-											  MasterWallet *parent);
+											  MasterWallet *parent,
+											  const std::string &netType);
 			std::string GetDataPath() const;
 
 			virtual void startPeerManager(SubWallet *wallet);

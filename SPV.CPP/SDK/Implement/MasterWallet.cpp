@@ -240,7 +240,7 @@ namespace Elastos {
 			info->SetVisibleAsset(Asset::GetELAAssetID());
 
 			_account->AddSubWalletInfoList(info);
-			SubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this);
+			SubWallet *subWallet = SubWalletFactoryMethod(info, chainConfig, this, _config->GetNetType());
 			_createdWallets[chainID] = subWallet;
 			_account->Save();
 
@@ -388,7 +388,7 @@ namespace Elastos {
 					defaultInfo->SetChainID(CHAINID_MAINCHAIN);
 					defaultInfo->SetVisibleAsset(Asset::GetELAAssetID());
 
-					ISubWallet *subWallet = SubWalletFactoryMethod(defaultInfo, mainchainConfig, this);
+					ISubWallet *subWallet = SubWalletFactoryMethod(defaultInfo, mainchainConfig, this, _config->GetNetType());
 					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 												 "Recover sub wallet error");
@@ -405,7 +405,7 @@ namespace Elastos {
 						continue;
 					}
 
-					ISubWallet *subWallet = SubWalletFactoryMethod(info[i], chainConfig, this);
+					ISubWallet *subWallet = SubWalletFactoryMethod(info[i], chainConfig, this, _config->GetNetType());
 					SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 					ErrorChecker::CheckCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 												 "Recover sub wallet error");
@@ -415,7 +415,7 @@ namespace Elastos {
 		}
 
 		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfoPtr &info, const ChainConfigPtr &config,
-														MasterWallet *parent) {
+														MasterWallet *parent, const std::string &netType) {
 
 			if (_initFrom == CreateNormal) {
 				Log::info("Create new master wallet");
@@ -445,11 +445,11 @@ namespace Elastos {
 			Log::info("{}:{} Ealiest peer time: {}", _id, info->GetChainID(), info->GetEarliestPeerTime());
 
 			if (info->GetChainID() == "ELA") {
-				return new MainchainSubWallet(info, config, parent);
+				return new MainchainSubWallet(info, config, parent, netType);
 			} else if (info->GetChainID() == "IDChain") {
-				return new IDChainSubWallet(info, config, parent);
+				return new IDChainSubWallet(info, config, parent, netType);
 			} else if (info->GetChainID() == "TokenChain") {
-				return new TokenchainSubWallet(info, config, parent);
+				return new TokenchainSubWallet(info, config, parent, netType);
 			} else {
 				ErrorChecker::ThrowLogicException(Error::InvalidChainID, "Invalid chain ID: " + info->GetChainID());
 			}

@@ -36,8 +36,9 @@ namespace Elastos {
 
 		MainchainSubWallet::MainchainSubWallet(const CoinInfoPtr &info,
 											   const ChainConfigPtr &config,
-											   MasterWallet *parent) :
-				SubWallet(info, config, parent) {
+											   MasterWallet *parent,
+											   const std::string &netType) :
+				SubWallet(info, config, parent, netType) {
 		}
 
 		MainchainSubWallet::~MainchainSubWallet() {

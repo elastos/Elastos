@@ -82,8 +82,9 @@ namespace Elastos {
 
 		IDChainSubWallet::IDChainSubWallet(const CoinInfoPtr &info,
 		                                   const ChainConfigPtr &config,
-		                                   MasterWallet *parent) :
-				SidechainSubWallet(info, config, parent) {
+		                                   MasterWallet *parent,
+		                                   const std::string &netType) :
+				SidechainSubWallet(info, config, parent, netType) {
 
 			InitDIDList();
 		}

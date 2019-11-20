@@ -159,7 +159,8 @@ namespace Elastos {
 
 			MainchainSubWallet(const CoinInfoPtr &info,
 							   const ChainConfigPtr &config,
-							   MasterWallet *parent);
+							   MasterWallet *parent,
+							   const std::string &netType);
 
 			TransactionPtr CreateVoteTx(const VoteContent &voteContent, const std::string &memo, bool max);
 		};

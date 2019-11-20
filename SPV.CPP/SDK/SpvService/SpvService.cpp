@@ -33,10 +33,11 @@ namespace Elastos {
 							   const SubAccountPtr &subAccount,
 							   const boost::filesystem::path &dbPath,
 							   time_t earliestPeerTime,
-							   const ChainConfigPtr &config) :
+							   const ChainConfigPtr &config,
+							   const std::string &netType) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(new DatabaseManager(dbPath)) {
-			Init(walletID, chainID, subAccount, earliestPeerTime, config);
+			Init(walletID, chainID, subAccount, earliestPeerTime, config, netType);
 		}
 
 		SpvService::~SpvService() {

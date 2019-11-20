@@ -47,7 +47,8 @@ namespace Elastos {
 
 			TokenchainSubWallet(const CoinInfoPtr &info,
 							   const ChainConfigPtr &config,
-							   MasterWallet *parent);
+							   MasterWallet *parent,
+							   const std::string &netType);
 
 		};
 

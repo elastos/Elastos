@@ -23,7 +23,8 @@ namespace Elastos {
 								  const std::string &chainID,
 								  const SubAccountPtr &subAccount,
 								  time_t earliestPeerTime,
-								  const ChainConfigPtr &config) {
+								  const ChainConfigPtr &config,
+								  const std::string &netType) {
 
 			if (chainID != CHAINID_MAINCHAIN &&
 				chainID != CHAINID_IDCHAIN &&
@@ -43,7 +44,8 @@ namespace Elastos {
 						loadBlocks(chainID),
 						loadPeers(),
 						createPeerManagerListener(),
-						chainID));
+						chainID,
+						netType));
 			}
 
 			if (_wallet == nullptr) {

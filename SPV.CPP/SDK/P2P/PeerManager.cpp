@@ -131,11 +131,13 @@ namespace Elastos {
 								 const std::vector<MerkleBlockPtr> &blocks,
 								 const std::vector<PeerInfo> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
-								 const std::string &chainID) :
+								 const std::string &chainID,
+								 const std::string &netType) :
 				_wallet(wallet),
 				_lastBlock(nullptr),
 				_lastOrphan(nullptr),
 				_chainID(chainID),
+				_netType(netType),
 				_chainParams(params),
 
 				_syncSucceeded(false),
@@ -164,6 +166,10 @@ namespace Elastos {
 			if (peers.size() == 0) {
 				_needGetAddr = true;
 			} else {
+				_needGetAddr = false;
+			}
+
+			if (netType == "PrvNet") {
 				_needGetAddr = false;
 			}
 

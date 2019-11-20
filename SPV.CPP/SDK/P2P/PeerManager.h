@@ -80,7 +80,8 @@ namespace Elastos {
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
 						const boost::shared_ptr<Listener> &listener,
-						const std::string &chainID);
+						const std::string &chainID,
+						const std::string &netType);
 
 			~PeerManager();
 
@@ -292,6 +293,7 @@ namespace Elastos {
 			std::vector<uint256> _publishedTxHashes;
 
 			std::string _chainID;
+			std::string _netType;
 			WalletPtr _wallet;
 			ChainParamsPtr _chainParams;
 
