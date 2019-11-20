@@ -288,26 +288,19 @@ namespace Elastos {
 			}
 		}
 
-		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
-			ErrorChecker::CheckParam(wallet == nullptr, Error::Wallet, "Destroy wallet can't be null");
-			ErrorChecker::CheckParam(_createdWallets.empty(), Error::Wallet, "There is no sub wallet in this wallet.");
-
-			SubWallet *subWallet = dynamic_cast<SubWallet *>(wallet);
+		void MasterWallet::DestroyWallet(const std::string &chainID) {
 			ArgInfo("{} {}", _id, GetFunName());
-			ArgInfo("subWallet: {}", subWallet->GetInfoChainID());
+			ArgInfo("chainID: {}", chainID);
 
-			if (_createdWallets.find(subWallet->GetInfoChainID()) == _createdWallets.end())
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Sub wallet did not created");
+			if (_createdWallets.find(chainID) == _createdWallets.end())
+				ErrorChecker::ThrowParamException(Error::InvalidArgument, "chainID not found");
 
-			if (_createdWallets[subWallet->GetInfoChainID()] != wallet)
-				ErrorChecker::ThrowParamException(Error::InvalidArgument, "Sub wallet does not belong to this master wallet");
-
+			SubWallet *subWallet = dynamic_cast<SubWallet *>(_createdWallets[chainID]);
 			_account->RemoveSubWalletInfo(subWallet->_info);
 			_account->Save();
 
 			stopPeerManager(subWallet);
-			WalletMap::iterator it = _createdWallets.find(subWallet->GetInfoChainID());
-			_createdWallets.erase(it);
+			_createdWallets.erase(chainID);
 
 			delete subWallet;
 			subWallet = nullptr;

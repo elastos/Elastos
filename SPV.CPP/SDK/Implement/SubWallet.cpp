@@ -35,7 +35,8 @@ namespace Elastos {
 				PeerManager::Listener(),
 				_parent(parent),
 				_info(info),
-				_config(config) {
+				_config(config),
+				_callback(nullptr) {
 
 			fs::path subWalletDBPath = _parent->GetDataPath();
 			subWalletDBPath /= _info->GetChainID() + DB_FILE_EXTENSION;
@@ -156,34 +157,33 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 
-			if (std::find(_callbacks.begin(), _callbacks.end(), subCallback) != _callbacks.end())
-				return;
+			if (_callback != nullptr) {
+				Log::warn("{} callback registered, ignore", _walletManager->GetWallet()->GetWalletID());
+			} else {
+				_callback = subCallback;
 
-			_callbacks.push_back(subCallback);
-			const PeerManagerPtr &peerManager = _walletManager->GetPeerManager();
+				const PeerManagerPtr &peerManager = _walletManager->GetPeerManager();
 
-			uint32_t currentHeight = peerManager->GetLastBlockHeight();
-			uint32_t lastBlockTime = peerManager->GetLastBlockTimestamp();
+				uint32_t currentHeight = peerManager->GetLastBlockHeight();
+				uint32_t lastBlockTime = peerManager->GetLastBlockTimestamp();
+				uint32_t progress = (uint32_t)(peerManager->GetSyncProgress(0) * 100);
 
-			nlohmann::json j;
-			j["Progress"] = 0;
-			j["LastBlockTime"] = lastBlockTime;
-			j["BytesPerSecond"] = 0;
-			j["DownloadPeer"] = "";
+				nlohmann::json j;
+				j["Progress"] = progress;
+				j["LastBlockTime"] = lastBlockTime;
+				j["BytesPerSecond"] = 0;
+				j["DownloadPeer"] = "";
 
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&j](ISubWalletCallback *callback) {
-							  callback->OnBlockSyncProgress(j);
-						  });
-			ArgInfo("add callback done");
+				_callback->OnBlockSyncProgress(j);
+				ArgInfo("add callback done");
+			}
 		}
 
-		void SubWallet::RemoveCallback(ISubWalletCallback *subCallback) {
+		void SubWallet::RemoveCallback() {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			ArgInfo("callback: *");
 			boost::mutex::scoped_lock scoped_lock(lock);
 
-			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
+			_callback = nullptr;
 
 			ArgInfo("remove callback done");
 		}
@@ -525,10 +525,11 @@ namespace Elastos {
 			ArgInfo("{} {} Balance: {}", _walletManager->GetWallet()->GetWalletID(), GetFunName(), balance.getDec());
 			boost::mutex::scoped_lock scoped_lock(lock);
 
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&assetID, &balance](ISubWalletCallback *callback) {
-							  callback->OnBalanceChanged(assetID.GetHex(), balance.getDec());
-						  });
+			if (_callback) {
+				_callback->OnBalanceChanged(assetID.GetHex(), balance.getDec());
+			} else {
+				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
+			}
 		}
 
 		void SubWallet::onCoinBaseTxAdded(const UTXOPtr &cb) {
@@ -600,10 +601,13 @@ namespace Elastos {
 					_walletManager->GetWallet()->GetWalletID(), GetFunName(),
 					asset->GetName(), amount, controller.GetHex());
 
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&asset, &amount, &controller](ISubWalletCallback *callback) {
-							  callback->OnAssetRegistered(asset->GetHash().GetHex(), asset->ToJson());
-			});
+			boost::mutex::scoped_lock scoped_lock(lock);
+
+			if (_callback) {
+				_callback->OnAssetRegistered(asset->GetHash().GetHex(), asset->ToJson());
+			} else {
+				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
+			}
 		}
 
 		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &tx, const std::string &addressOrTxid) const {
@@ -644,7 +648,7 @@ namespace Elastos {
 
 			localtime_r(&lastBlockTime, &tm);
 			char timeString[100] = {0};
-			strftime(timeString, sizeof(timespec), "%F %T", &tm);
+			strftime(timeString, sizeof(timeString), "%F %T", &tm);
 			ArgInfo("{} {} [{}] [{}] [{}%  {} Bytes / s]", _walletManager->GetWallet()->GetWalletID(), GetFunName(),
 					downloadPeer, timeString, progress, bytesPerSecond);
 
@@ -656,10 +660,11 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&j](ISubWalletCallback *callback) {
-							  callback->OnBlockSyncProgress(j);
-						  });
+			if (_callback) {
+				_callback->OnBlockSyncProgress(j);
+			} else {
+				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
+			}
 		}
 
 		void SubWallet::syncStopped(const std::string &error) {
@@ -673,9 +678,11 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scoped_lock(lock);
 
-			std::for_each(_callbacks.begin(), _callbacks.end(), [&hash, &result](ISubWalletCallback *callback) {
-				callback->OnTxPublished(hash, result);
-			});
+			if (_callback) {
+				_callback->OnTxPublished(hash, result);
+			} else {
+				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
+			}
 		}
 
 		void SubWallet::connectStatusChanged(const std::string &status) {
@@ -683,19 +690,22 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scopedLock(lock);
 
-			std::for_each(_callbacks.begin(), _callbacks.end(), [&status](ISubWalletCallback *callback) {
-				callback->OnConnectStatusChanged(status);
-			});
+			if (_callback) {
+				_callback->OnConnectStatusChanged(status);
+			} else {
+				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
+			}
 		}
 
 		void SubWallet::fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
 													 const nlohmann::json &desc, uint32_t confirms) {
 			boost::mutex::scoped_lock scoped_lock(lock);
 
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&txid, &status, &desc, confirms](ISubWalletCallback *callback) {
-							  callback->OnTransactionStatusChanged(txid.GetHex(), status, desc, confirms);
-						  });
+			if (_callback) {
+				_callback->OnTransactionStatusChanged(txid.GetHex(), status, desc, confirms);
+			} else {
+				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
+			}
 		}
 
 		const CoinInfoPtr &SubWallet::GetCoinInfo() const {

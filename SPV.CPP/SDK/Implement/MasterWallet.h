@@ -83,7 +83,7 @@ namespace Elastos {
 
 			virtual bool VerifyPayPassword(const std::string &payPasswd) const;
 
-			virtual void DestroyWallet(ISubWallet *wallet);
+			virtual void DestroyWallet(const std::string &chainID);
 
 			virtual nlohmann::json GetPubKeyInfo() const;
 

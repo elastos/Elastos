@@ -351,8 +351,6 @@ namespace Elastos {
 														  timestamp, CreateMultiSign);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletID] = masterWallet;
-			ArgInfo("r => create multi sign wallet");
-			masterWallet->GetBasicInfo();
 			return masterWallet;
 		}
 
@@ -365,9 +363,6 @@ namespace Elastos {
 			}
 
 			ArgInfo("r => all master wallet count: {}", result.size());
-
-			for (int i = 0; i < result.size(); ++i)
-				result[i]->GetBasicInfo();
 
 			return result;
 		};
@@ -565,11 +560,9 @@ namespace Elastos {
 			if (hasRedundant) {
 				Log::info("{} Destroying redundant wallet", masterWallet->GetWalletID());
 
-				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
-				for (int i = 0; i < subWallets.size(); ++i) {
-					masterWallet->DestroyWallet(subWallets[i]);
-				}
+				_masterWalletMap.erase(masterWallet->GetWalletID());
 
+				masterWallet->CloseAllSubWallets();
 				if (masterWallet->_initFrom == ImportFromLocalStore) {
 					boost::filesystem::path filepath = _dataPath;
 					filepath /= LOCAL_STORE_FILE;

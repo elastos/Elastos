@@ -109,7 +109,7 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	REQUIRE(mainchainSubWallet != nullptr);
 	SidechainSubWallet *sidechainSubWallet = dynamic_cast<SidechainSubWallet *>(subWallet);
 	REQUIRE(sidechainSubWallet == nullptr);
-	masterWallet->DestroyWallet(subWallet);
+	REQUIRE_NOTHROW(masterWallet->DestroyWallet(CHAINID_MAINCHAIN));
 
 	subWallet = masterWallet->CreateSubWallet(CHAINID_IDCHAIN);
 	normalSubWallet = dynamic_cast<SubWallet *>(subWallet);
@@ -118,7 +118,8 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	REQUIRE(idChainSubWallet != nullptr);
 	mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
 	REQUIRE(mainchainSubWallet == nullptr);
-	masterWallet->DestroyWallet(subWallet);
+	REQUIRE_NOTHROW(masterWallet->DestroyWallet(CHAINID_IDCHAIN));
+	REQUIRE_THROWS(masterWallet->DestroyWallet(CHAINID_IDCHAIN));
 
 	std::vector<std::string> chainIDs = masterWallet->GetSupportedChains();
 	for (int i = 0; i < chainIDs.size(); ++i) {
@@ -135,44 +136,12 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	ISubWallet *subWallet2 = masterWallet->CreateSubWallet(CHAINID_MAINCHAIN);
 	REQUIRE(subWallet2 != nullptr);
 	REQUIRE(subWallet != subWallet2);
-	masterWallet->DestroyWallet(subWallet);
-	masterWallet->DestroyWallet(subWallet2);
+	REQUIRE_NOTHROW(masterWallet->DestroyWallet(CHAINID_IDCHAIN));
+	REQUIRE_NOTHROW(masterWallet->DestroyWallet(CHAINID_MAINCHAIN));
 
 	REQUIRE_THROWS(masterWallet->CreateSubWallet(""));
 	REQUIRE_THROWS(masterWallet->CreateSubWallet(
 		"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"));
-	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-}
-
-TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
-	Log::registerMultiLogger();
-
-	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
-	ConfigPtr config(new Config(".", CONFIG_MAINNET));
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
-
-	ISubWallet *subWallet = masterWallet->CreateSubWallet(CHAINID_IDCHAIN);
-	ISubWallet *subWallet1 = masterWallet->CreateSubWallet(CHAINID_MAINCHAIN);
-	REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
-	REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet1));
-
-	subWallet = masterWallet->CreateSubWallet(CHAINID_IDCHAIN);
-	masterWallet->DestroyWallet(subWallet);
-	std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
-	REQUIRE(subWallets.size() == 0);
-	REQUIRE_THROWS(masterWallet->DestroyWallet(subWallet));
-
-	REQUIRE_THROWS(masterWallet->DestroyWallet(nullptr));
-
-	boost::scoped_ptr<TestMasterWallet> masterWallet1(new TestMasterWallet(PASSPHRASE, PAY_PASSWORD, config));
-	ISubWallet *subWallet2 = masterWallet1->CreateSubWallet(CHAINID_MAINCHAIN);
-	ISubWallet *subWallet3 = masterWallet->CreateSubWallet(CHAINID_MAINCHAIN);
-
-	REQUIRE_THROWS(masterWallet->DestroyWallet(subWallet2));
-
-	REQUIRE_NOTHROW(masterWallet1->DestroyWallet(subWallet2));
-	REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet3));
-
 	boost::filesystem::remove_all(boost::filesystem::path(rootPath + "/" + MasterWalletTestID));
 }
 

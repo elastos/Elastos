@@ -69,7 +69,7 @@ namespace Elastos {
 
 			virtual void AddCallback(ISubWalletCallback *subCallback);
 
-			virtual void RemoveCallback(ISubWalletCallback *subCallback);
+			virtual void RemoveCallback();
 
 			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,
@@ -196,7 +196,7 @@ namespace Elastos {
 
 		protected:
 			WalletManagerPtr _walletManager;
-			std::vector<ISubWalletCallback *> _callbacks;
+			ISubWalletCallback * _callback;
 			MasterWallet *_parent;
 			CoinInfoPtr _info;
 			ChainConfigPtr _config;
