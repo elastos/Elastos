@@ -347,7 +347,7 @@ func rollbackTo(targetHeight uint32, params *config.Params) {
 		if parentNode, ok := chain.LookupNodeInIndex(blockNode.ParentHash); ok {
 			blockNode.Parent = parentNode
 		}
-		err := chain.db.RollbackBlock(block, blockNode, confirm, CalcPastMedianTime(blockNode.Parent))
+		err := chain.db.RollbackBlock(block.Block, blockNode, confirm, CalcPastMedianTime(blockNode.Parent))
 		if err != nil {
 			fmt.Println("roll back block failed, ", err)
 		}

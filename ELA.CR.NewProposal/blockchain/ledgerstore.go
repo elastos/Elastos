@@ -72,7 +72,7 @@ type IFFLDBChainStore interface {
 		confirm *payload.Confirm, medianTimePast time.Time) error
 
 	// Get block from file db.
-	GetBlock(hash Uint256) (*Block, error)
+	GetBlock(hash Uint256) (*DposBlock, error)
 
 	// Get block header from file db.
 	GetHeader(hash Uint256) (*Header, error)
