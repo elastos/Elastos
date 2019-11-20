@@ -289,7 +289,7 @@ export default class extends BaseComponent {
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel>
-                  {I18N.get('elip.fields.elipType')}
+                  {I18N.get('elip.fields.type')}
                 </FilterItemLabel>
                 <Select
                   className="filter-input"
