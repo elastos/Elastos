@@ -5,7 +5,7 @@ def run():
     
 	common = Common()
 	print("--> Generate Api Request")
-	response = common.generate_api_request('kHDP9V4JJbwd5GN', 'qhfiueq98dqwbd')
+	response = common.generate_api_request('7XDnFBdHafpPyIC4nrtuJ5EUYVqdEKjW', 'qhfiueq98dqwbd')
     
 	if(response.status==True):
 		print("Api Key: "+response.api_key)
