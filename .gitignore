@@ -24,6 +24,8 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.DS_Store
+.idea
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -50,27 +52,6 @@ coverage.xml
 # Translations
 *.mo
 *.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
 
 # pyenv
 .python-version
@@ -102,4 +83,3 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-.DS_Store
