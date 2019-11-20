@@ -114,7 +114,7 @@ export default class extends Base {
         'results', 'page', 'sortBy', 'sortOrder',
         'filter', 'profileListFor', 'search',
         'tagsIncluded', 'referenceStatus',
-        'status', 'startDate', 'endDate'
+        'status', 'startDate', 'endDate', 'author'
       ]
     )
     const { sortBy, sortOrder, tagsIncluded, referenceStatus, profileListFor } = param
@@ -209,7 +209,8 @@ export default class extends Base {
         $lte: new Date(param.endDate)
       }
     }
-    
+
+    console.log("[Author]" + param.author)
     // author
     if(param.author && param.author.length) {
       let search = param.author
@@ -223,7 +224,9 @@ export default class extends Base {
         ]
       }).select('_id')
       const userIds = _.map(users, (el: { _id: string }) => el._id)
+      console.log("[Author.IDS]" + userIds)
       query.createdBy = { $in: userIds }
+      console.log("[Query]" + JSON.stringify(query))
     }
     // type
     if(param.type && _.indexOf(_.values(constant.SUGGESTION_TYPE),param.type)){
