@@ -39,6 +39,9 @@ source venv/bin/activate
 ```
 pip3 install -r requirements.txt
 ```
+```
+cp .env.example .env
+```
 
 ## Setting up PostgresSQL:
 
