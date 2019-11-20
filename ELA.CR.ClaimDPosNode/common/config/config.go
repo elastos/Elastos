@@ -60,8 +60,9 @@ type Configuration struct {
 	PublicDPOSHeight            uint32            `json:"PublicDPOSHeight"`
 	EnableActivateIllegalHeight uint32            `json:"EnableActivateIllegalHeight"`
 	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
+	VoteStatisticsHeight        uint32            `json:"VoteStatisticsHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
-	MaxBlockSize                uint32            `json"MaxBlockSize"`
+	MaxBlockSize                uint32            `json:"MaxBlockSize"`
 }
 
 // DPoSConfiguration defines the DPoS consensus parameters.

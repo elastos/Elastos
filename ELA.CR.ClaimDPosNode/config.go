@@ -133,8 +133,11 @@ func loadConfigParams(cfg *config.Configuration) (*config.Configuration, error) 
 			cfg.EnableActivateIllegalHeight
 	}
 	if cfg.CheckRewardHeight > 0 {
-		activeNetParams.CheckRewardHeight =
-			cfg.CheckRewardHeight
+		activeNetParams.CheckRewardHeight = cfg.CheckRewardHeight
+	}
+
+	if cfg.VoteStatisticsHeight > 0 {
+		activeNetParams.VoteStatisticsHeight = cfg.VoteStatisticsHeight
 	}
 
 	// When arbiter service enabled, IP address must be set.
