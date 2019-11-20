@@ -49,8 +49,6 @@ cd tools
 
 ./postgres.sh
 
-pg_ctl -D /usr/local/var/postgres start
-
 ```````````
 ```````````
 If you encounter an error
