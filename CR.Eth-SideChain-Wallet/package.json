@@ -31,7 +31,7 @@
     "idna-uts46": "^1.0.1",
     "install": "^0.10.1",
     "marked": "^0.3.6",
-    "open": "0.0.5",
+    "open": "6.0.0",
     "scryptsy": "^2.0.0",
     "string-format": "^0.5.0",
     "utf8": "^2.1.2",
