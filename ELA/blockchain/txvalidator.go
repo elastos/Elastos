@@ -1737,8 +1737,10 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if proposalState == nil {
 		return errors.New("proposal not exist")
 	}
-	if proposalState.Status != crstate.VoterAgreed {
-		return errors.New("proposal status is not VoterAgreed")
+	if proposalState.Status != crstate.VoterAgreed &&
+		proposalState.Status != crstate.Finished &&
+		proposalState.Status != crstate.Aborted {
+		return errors.New("proposal status is not VoterAgreed , Finished, or Aborted")
 	}
 	if withdrawPayload.Stage <= proposalState.CurrentWithdrawalStage {
 		return errors.New("CRCProposalWithdraw Stage wrong too small")
