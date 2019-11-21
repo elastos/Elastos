@@ -211,7 +211,7 @@ export default class extends Base {
     }
     // budget
     if(param.budgetLow || param.budgetHigh){
-      param.budgetAmount = {}
+      query.budgetAmount = {}
       if (param.budgetLow && param.budgetLow.length) {
         query.budgetAmount['$gte'] = param.budgetLow
       }
@@ -421,7 +421,7 @@ export default class extends Base {
     }
     // budget
     if(param.budgetLow || param.budgetHigh){
-      param.budgetAmount = {}
+      query.budgetAmount = {}
       if (param.budgetLow && param.budgetLow.length) {
         query.budgetAmount['$gte'] = param.budgetLow
       }
