@@ -32,7 +32,7 @@ public:
     virtual void OnBlockSyncStarted() {
     }
 
-    virtual void OnBlockSyncProgress(uint32_t currentBlockHeight, uint32_t estimatedHeight, time_t lastBlockTime) {
+    virtual void OnBlockSyncProgress(const nlohmann::json &progressInfo) {
     }
 
     virtual void OnBlockSyncStopped() {
@@ -84,7 +84,7 @@ void SyncStop(IMasterWalletManager *manager, ISubWalletCallback *callback)
         for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
             try {
                 (*it)->SyncStop();
-                (*it)->RemoveCallback(callback);
+                (*it)->RemoveCallback();
             } catch (...) {
                 // ignore
             }
