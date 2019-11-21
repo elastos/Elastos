@@ -47,6 +47,12 @@ const FILTERS = {
   UNVOTED: CVOTE_RESULT.UNDECIDED
 }
 
+const BUDGET_REQUESTED_OPTIONS = {
+  1: { value: '$0 - $100 (USD)', budgetLow: 0, budgetHigh: 100 },
+  2: { value: '$100 - $1000 (USD)', budgetLow: 100, budgetHigh: 1000 },
+  3: { value: '> $1000 (USD)', budgetLow: 1000 }
+}
+
 export default class extends BaseComponent {
   constructor(p) {
     super(p)
@@ -138,7 +144,7 @@ export default class extends BaseComponent {
       5: I18N.get('council.voting.type.process'),
       6: I18N.get('council.voting.type.information')
     }
-    const { canManage, isCouncil, isSecretary } = this.props
+    const { canManage, isSecretary } = this.props
     const { isVisitableFilter } = this.state
 
     const columns = [
@@ -409,8 +415,12 @@ export default class extends BaseComponent {
     if (!_.isEmpty(status)) {
       query.status = status
     }
-    if (!_.isEmpty(budgetRequested)) {
-      query.budget = budgetRequested
+    if (!_.isEmpty(budgetRequested) && budgetRequested > 0) {
+      const budget = BUDGET_REQUESTED_OPTIONS[budgetRequested]
+      query.budgetLow = budget.budgetLow
+      if (budget.budgetHigh) {
+        query.budgetHigh = budget.budgetHigh
+      }
     }
     if (hasTrackingMsg) {
       query.hasTracking = hasTrackingMsg
@@ -592,11 +602,6 @@ export default class extends BaseComponent {
     if (lang === 'zh') {
       rangePickerOptions.locale = rangePickerLocale
     }
-    const budgetRequestedOptions = {
-      1: '$0 - $100 (USD)',
-      2: '$100 - $1000 (USD)',
-      3: '> $1000 (USD)'
-    }
     const colSpan = isCouncil ? 8 : 12
     return (
       <FilterPanel isCouncil={isCouncil}>
@@ -628,9 +633,9 @@ export default class extends BaseComponent {
                   value={budgetRequested}
                   onChange={this.handleBudgetRequestedChange}
                 >
-                  {_.map(budgetRequestedOptions, value => (
-                    <Select.Option key={value} value={value}>
-                      {value}
+                  {_.map(BUDGET_REQUESTED_OPTIONS, (item, key) => (
+                    <Select.Option key={key} value={key}>
+                      {item.value}
                     </Select.Option>
                   ))}
                 </Select>

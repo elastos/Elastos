@@ -46,6 +46,12 @@ const SORT_BY = {
 }
 const DEFAULT_SORT = SORT_BY.createdAt
 
+const BUDGET_REQUESTED_OPTIONS = {
+  1: { value: '$0 - $100 (USD)', budgetLow: 0, budgetHigh: 100 },
+  2: { value: '$100 - $1000 (USD)', budgetLow: 100, budgetHigh: 1000 },
+  3: { value: '> $1000 (USD)', budgetLow: 1000 }
+}
+
 /**
  * This uses new features such as infinite scroll and pagination, therefore
  * we do some different things such as only loading the data from the server
@@ -394,11 +400,6 @@ export default class extends StandardPage {
     if (lang === 'zh') {
       rangePickerOptions.locale = rangePickerLocale
     }
-    const budgetRequestedOptions = {
-      1: '$0 - $100 (USD)',
-      2: '$100 - $1000 (USD)',
-      3: '> $1000 (USD)'
-    }
     return (
       <FilterPanel>
         <Row type="flex" gutter={10} className="filter">
@@ -429,9 +430,9 @@ export default class extends StandardPage {
                   value={budgetRequested}
                   onChange={this.handleBudgetRequestedChange}
                 >
-                  {_.map(budgetRequestedOptions, value => (
-                    <Select.Option key={value} value={value}>
-                      {value}
+                  {_.map(BUDGET_REQUESTED_OPTIONS, (item, key) => (
+                    <Select.Option key={key} value={key}>
+                      {item.value}
                     </Select.Option>
                   ))}
                 </Select>
@@ -667,8 +668,12 @@ export default class extends StandardPage {
       query.status = status
     }
 
-    if (!_.isEmpty(budgetRequested)) {
-      query.budget = budgetRequested
+    if (!_.isEmpty(budgetRequested) && budgetRequested > 0) {
+      const budget = BUDGET_REQUESTED_OPTIONS[budgetRequested]
+      query.budgetLow = budget.budgetLow
+      if (budget.budgetHigh) {
+        query.budgetHigh = budget.budgetHigh
+      }
     }
 
     if (!_.isEmpty(creationDate)) {
