@@ -140,7 +140,7 @@ func (c *Committee) GetAllHistoryMembers() []*CRMember {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	return getCRMembers(c.HistoryMembers)
+	return getHistoryMembers(c.HistoryMembers)
 }
 
 func (c *Committee) GetMembersCodes() [][]byte {
@@ -198,7 +198,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	// todo consider rollback
 	if c.shouldChange(block.Height) {
 		if c.shouldCleanHistory() {
-			c.HistoryMembers = make(map[common.Uint168]*CRMember)
+			c.HistoryMembers = make(map[uint64]map[common.Uint168]*CRMember)
 		}
 		committeeDIDs, err := c.changeCommitteeMembers(block.Height)
 		if err != nil {
@@ -430,9 +430,11 @@ func (c *Committee) GetHistoryMember(code []byte) *CRMember {
 }
 
 func (c *Committee) getHistoryMember(code []byte) *CRMember {
-	for _, m := range c.HistoryMembers {
-		if bytes.Equal(m.Info.Code, code) {
-			return m
+	for _, v := range c.HistoryMembers {
+		for _, m := range v {
+			if bytes.Equal(m.Info.Code, code) {
+				return m
+			}
 		}
 	}
 	return nil
@@ -515,25 +517,31 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 	}
 
 	// Record history members.
+	if _, ok := c.HistoryMembers[c.state.CurrentSession]; !ok {
+		c.HistoryMembers[c.state.CurrentSession] =
+			make(map[common.Uint168]*CRMember)
+	}
 	for _, m := range c.Members {
 		m.Penalty = c.getMemberPenalty(height, m)
-		c.HistoryMembers[m.Info.DID] = m
+		c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = m
 	}
 
 	result := make([]common.Uint168, 0, c.params.CRMemberCount)
 	c.Members = make(map[common.Uint168]*CRMember, c.params.CRMemberCount)
 	c.manager.Proposals = make(map[common.Uint256]*ProposalState)
 	c.manager.ProposalHashs = make(map[common.Uint168]ProposalHashSet)
+	c.state.Nicknames = map[string]struct{}{}
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
 		c.Members[candidates[i].info.DID] = c.generateMember(candidates[i])
 		result = append(result, candidates[i].info.DID)
 	}
 
+	// Record history candidates.
+	if _, ok := c.state.HistoryCandidates[c.state.CurrentSession]; !ok {
+		c.state.HistoryCandidates[c.state.CurrentSession] =
+			make(map[common.Uint168]*Candidate)
+	}
 	for k, v := range c.state.Candidates {
-		if _, ok := c.state.HistoryCandidates[c.state.CurrentSession]; !ok {
-			c.state.HistoryCandidates[c.state.CurrentSession] =
-				make(map[common.Uint168]*Candidate)
-		}
 		c.state.HistoryCandidates[c.state.CurrentSession][k] = v
 	}
 
