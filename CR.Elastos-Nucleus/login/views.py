@@ -54,9 +54,15 @@ def check_ela_auth(request):
             redirect_url = "/login/register"
             request.session['redirect_success'] = True
         else:
-            redirect_url = "/login/home"
-            request.session['logged_in'] = True
-            messages.success(request, "Logged in successfully!")
+            user = DIDUser.objects.get(did=data["DID"])
+            if user.is_active is False:
+                redirect_url = "/login/register"
+                DIDUser.objects.get(did=data["DID"]).delete()
+                messages.success(request, "This DID did not finish the registration process. Please re-register again")
+            else:
+                redirect_url = "/login/home"
+                request.session['logged_in'] = True
+                messages.success(request, "Logged in successfully!")
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'redirect': redirect_url}, status=200)
