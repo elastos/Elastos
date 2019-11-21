@@ -103,8 +103,8 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		}
 	}
 
-	return candidatesMapEqual(first.Candidates, second.Candidates)
-
+	return candidatesMapEqual(first.Candidates, second.Candidates) &&
+		candidatesHistoryMapEqual(first.HistoryCandidates, second.HistoryCandidates)
 }
 
 func candidatesMapEqual(first map[common.Uint168]*Candidate,
@@ -119,6 +119,19 @@ func candidatesMapEqual(first map[common.Uint168]*Candidate,
 		}
 
 		if !candidateEqual(v, v2) {
+			return false
+		}
+	}
+	return true
+}
+
+func candidatesHistoryMapEqual(first map[uint64]map[common.Uint168]*Candidate,
+	second map[uint64]map[common.Uint168]*Candidate) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	for k, v := range first {
+		if !candidatesMapEqual(v, second[k]) {
 			return false
 		}
 	}
@@ -207,6 +220,11 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 		frame.CodeDIDMap[common.BytesToHexString(code)] = did
 		frame.Candidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
+	}
+	frame.HistoryCandidates[1] = make(map[common.Uint168]*Candidate)
+	for i := 0; i < size; i++ {
+		candidate := randomCandidate()
+		frame.HistoryCandidates[1][candidate.info.DID] = candidate
 	}
 	for i := 0; i < size; i++ {
 		frame.Votes[randomString()] = struct{}{}
