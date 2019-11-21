@@ -45,7 +45,7 @@ type CRMember struct {
 // StateKeyFrame holds necessary state about CR committee.
 type KeyFrame struct {
 	Members                map[common.Uint168]*CRMember
-	HistoryMembers         map[common.Uint168]*CRMember
+	HistoryMembers         map[uint64]map[common.Uint168]*CRMember
 	LastCommitteeHeight    uint32
 	LastVotingStartHeight  uint32
 	InElectionPeriod       bool
@@ -195,38 +195,38 @@ func (c *CRMember) Deserialize(r io.Reader) (err error) {
 	return c.DepositHash.Deserialize(r)
 }
 
-func (k *KeyFrame) Serialize(w io.Writer) (err error) {
-	if err = k.serializeMembersMap(w, k.Members); err != nil {
+func (kf *KeyFrame) Serialize(w io.Writer) (err error) {
+	if err = kf.serializeMembersMap(w, kf.Members); err != nil {
 		return
 	}
 
-	if err = k.serializeMembersMap(w, k.HistoryMembers); err != nil {
+	if err = kf.serializeHistoryMembersMap(w, kf.HistoryMembers); err != nil {
 		return
 	}
 
-	return common.WriteElements(w, k.LastCommitteeHeight,
-		k.LastVotingStartHeight, k.InElectionPeriod, k.NeedAppropriation,
-		k.CRCFoundationBalance, k.CRCCommitteeBalance, k.CRCCommitteeUsedAmount,
-		k.DestroyedAmount, k.CirculationAmount)
+	return common.WriteElements(w, kf.LastCommitteeHeight,
+		kf.LastVotingStartHeight, kf.InElectionPeriod, kf.NeedAppropriation,
+		kf.CRCFoundationBalance, kf.CRCCommitteeBalance, kf.CRCCommitteeUsedAmount,
+		kf.DestroyedAmount, kf.CirculationAmount)
 }
 
-func (k *KeyFrame) Deserialize(r io.Reader) (err error) {
-	if k.Members, err = k.deserializeMembersMap(r); err != nil {
+func (kf *KeyFrame) Deserialize(r io.Reader) (err error) {
+	if kf.Members, err = kf.deserializeMembersMap(r); err != nil {
 		return
 	}
 
-	if k.HistoryMembers, err = k.deserializeMembersMap(r); err != nil {
+	if kf.HistoryMembers, err = kf.deserializeHistoryMembersMap(r); err != nil {
 		return
 	}
 
-	err = common.ReadElements(r, &k.LastCommitteeHeight,
-		&k.LastVotingStartHeight, &k.InElectionPeriod, &k.NeedAppropriation,
-		&k.CRCFoundationBalance, &k.CRCCommitteeBalance,
-		&k.CRCCommitteeUsedAmount, &k.DestroyedAmount, &k.CirculationAmount)
+	err = common.ReadElements(r, &kf.LastCommitteeHeight,
+		&kf.LastVotingStartHeight, &kf.InElectionPeriod, &kf.NeedAppropriation,
+		&kf.CRCFoundationBalance, &kf.CRCCommitteeBalance,
+		&kf.CRCCommitteeUsedAmount, &kf.DestroyedAmount, &kf.CirculationAmount)
 	return
 }
 
-func (k *KeyFrame) serializeMembersMap(w io.Writer,
+func (kf *KeyFrame) serializeMembersMap(w io.Writer,
 	mmap map[common.Uint168]*CRMember) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(mmap))); err != nil {
 		return
@@ -243,7 +243,25 @@ func (k *KeyFrame) serializeMembersMap(w io.Writer,
 	return
 }
 
-func (k *KeyFrame) deserializeMembersMap(
+func (kf *KeyFrame) serializeHistoryMembersMap(w io.Writer,
+	hmap map[uint64]map[common.Uint168]*CRMember) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(hmap))); err != nil {
+		return
+	}
+	for k, v := range hmap {
+		if err = common.WriteVarUint(w, k); err != nil {
+			return
+		}
+
+		if err = kf.serializeMembersMap(w, v); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (kf *KeyFrame) deserializeMembersMap(
 	r io.Reader) (mmap map[common.Uint168]*CRMember, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -264,19 +282,42 @@ func (k *KeyFrame) deserializeMembersMap(
 	return
 }
 
-func (k *KeyFrame) Snapshot() *KeyFrame {
+func (kf *KeyFrame) deserializeHistoryMembersMap(
+	r io.Reader) (hmap map[uint64]map[common.Uint168]*CRMember, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	hmap = make(map[uint64]map[common.Uint168]*CRMember)
+	for i := uint64(0); i < count; i++ {
+		var k uint64
+		k, err = common.ReadVarUint(r, 0)
+		if err != nil {
+			return
+		}
+		var cmap map[common.Uint168]*CRMember
+		cmap, err = kf.deserializeMembersMap(r)
+		if err != nil {
+			return
+		}
+		hmap[k] = cmap
+	}
+	return
+}
+
+func (kf *KeyFrame) Snapshot() *KeyFrame {
 	frame := NewKeyFrame()
-	frame.LastCommitteeHeight = k.LastCommitteeHeight
-	frame.LastVotingStartHeight = k.LastVotingStartHeight
-	frame.InElectionPeriod = k.InElectionPeriod
-	frame.Members = copyMembersMap(k.Members)
+	frame.LastCommitteeHeight = kf.LastCommitteeHeight
+	frame.LastVotingStartHeight = kf.LastVotingStartHeight
+	frame.InElectionPeriod = kf.InElectionPeriod
+	frame.Members = copyMembersMap(kf.Members)
 	return frame
 }
 
 func NewKeyFrame() *KeyFrame {
 	return &KeyFrame{
 		Members:             make(map[common.Uint168]*CRMember, 0),
-		HistoryMembers:      make(map[common.Uint168]*CRMember, 0),
+		HistoryMembers:      make(map[uint64]map[common.Uint168]*CRMember, 0),
 		LastCommitteeHeight: 0,
 	}
 }
@@ -452,11 +493,11 @@ func (kf *StateKeyFrame) serializeCandidateMap(w io.Writer,
 }
 
 func (kf *StateKeyFrame) serializeHistoryCandidateMap(w io.Writer,
-	hcmap map[uint64]map[common.Uint168]*Candidate) (err error) {
-	if err = common.WriteVarUint(w, uint64(len(hcmap))); err != nil {
+	hmap map[uint64]map[common.Uint168]*Candidate) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(hmap))); err != nil {
 		return
 	}
-	for k, v := range hcmap {
+	for k, v := range hmap {
 		if err = common.WriteVarUint(w, k); err != nil {
 			return
 		}
@@ -491,12 +532,12 @@ func (kf *StateKeyFrame) deserializeCandidateMap(
 }
 
 func (kf *StateKeyFrame) deserializeHistoryCandidateMap(
-	r io.Reader) (hcmap map[uint64]map[common.Uint168]*Candidate, err error) {
+	r io.Reader) (hmap map[uint64]map[common.Uint168]*Candidate, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return
 	}
-	hcmap = make(map[uint64]map[common.Uint168]*Candidate)
+	hmap = make(map[uint64]map[common.Uint168]*Candidate)
 	for i := uint64(0); i < count; i++ {
 		var k uint64
 		k, err = common.ReadVarUint(r, 0)
@@ -508,7 +549,7 @@ func (kf *StateKeyFrame) deserializeHistoryCandidateMap(
 		if err != nil {
 			return
 		}
-		hcmap[k] = cmap
+		hmap[k] = cmap
 	}
 	return
 }
@@ -840,6 +881,17 @@ func getCRMembers(src map[common.Uint168]*CRMember) []*CRMember {
 	for _, v := range src {
 		m := *v
 		dst = append(dst, &m)
+	}
+	return dst
+}
+
+func getHistoryMembers(src map[uint64]map[common.Uint168]*CRMember) []*CRMember {
+	dst := make([]*CRMember, 0, len(src))
+	for _, v := range src {
+		for _, m := range v {
+			m := *m
+			dst = append(dst, &m)
+		}
 	}
 	return dst
 }
