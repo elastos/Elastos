@@ -70,7 +70,8 @@ namespace Elastos {
 			bool ContainTxHash(const std::string &txHash) const;
 
 		private:
-			const std::string DID_TABLE_NAME = "didTable";
+			const std::string DID_OLD_TABLE_NAME = "didTable";
+			const std::string DID_TABLE_NAME = "didNewdTable";
 			const std::string DID_COLUMN_ID = "_id";
 			const std::string DID_PAYLOAD_BUFF = "didBuff";
 			const std::string DID_CREATE_TIME = "createTime";

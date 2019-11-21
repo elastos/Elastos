@@ -10,10 +10,12 @@ namespace Elastos {
 	namespace ElaWallet {
 		DIDDataStore::DIDDataStore(Sqlite *sqlite) : TableBase(sqlite) {
 			InitializeTable(DID_DATABASE_CREATE);
+			InitializeTable("drop table if exists " + DID_OLD_TABLE_NAME + ";");
 		}
 
 		DIDDataStore::DIDDataStore(SqliteTransactionType type, Sqlite *sqlite) : TableBase(type, sqlite) {
 			InitializeTable(DID_DATABASE_CREATE);
+			InitializeTable("drop table if exists " + DID_OLD_TABLE_NAME + ";");
 		}
 
 		DIDDataStore::~DIDDataStore() {
