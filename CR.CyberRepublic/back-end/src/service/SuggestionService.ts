@@ -474,43 +474,58 @@ export default class extends Base {
     }
   }
   
-  public async show(param: any): Promise<Document> {
+  public async show(param: any): Promise<any> {
     const { id: _id, incViewsNum } = param
+    // access suggestion info by reference number
+    const isNumber = /^\d*$/.test(_id)
+    let query: any
+    if (isNumber) {
+      query = { displayId: parseInt(_id) }
+    } else {
+      query = { _id }
+    }
+
     if (incViewsNum === 'true') {
-      await this.model.findOneAndUpdate({ _id }, {
+      await this.model.findOneAndUpdate(query, {
         $inc: { viewsNum: 1, activeness: 1 }
       })
     }
+
     let doc = await this.model.getDBInstance()
-                        .findById(_id)
-                        .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
-                        .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+      .findOne(query)
+      .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
+      .populate('reference', constant.DB_SELECTED_FIELDS.CVOTE.ID_STATUS)
+
+    if (!doc) {
+      return { success: true, empty: true }
+    }
 
     // proposed by council
     const db_cvote = this.getDBModel('CVote')
+
     const cvoteList = await db_cvote
       .getDBInstance()
-      .findOne({ reference: { $all: [ _id ] } })
+      .findOne({ reference: { $all: [doc._id] } })
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
 
     doc = JSON.parse(JSON.stringify(doc))
-    if(cvoteList) {
+    if (cvoteList) {
       doc.proposer = cvoteList.createdBy
     }
 
     if (doc && _.isEmpty(doc.comments)) return doc
 
-    if(doc && doc.comments) {
-    for (const comment of doc.comments) {
-      for (const thread of comment) {
-        await this.model.getDBInstance().populate(thread, {
-          path: 'createdBy',
-          select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
-        })
+    if (doc && doc.comments) {
+      for (const comment of doc.comments) {
+        for (const thread of comment) {
+          await this.model.getDBInstance().populate(thread, {
+            path: 'createdBy',
+            select: `${constant.DB_SELECTED_FIELDS.USER.NAME} profile.avatar`
+          })
+        }
       }
     }
-    }
-    
+
     return doc
   }
 

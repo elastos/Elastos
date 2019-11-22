@@ -52,12 +52,19 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { data } = this.props
-    if (_.isEmpty(data)) {
+    const { data, loading } = this.props
+    if (loading || (!loading && _.isEmpty(data))) {
       return (
         <StyledSpin>
           <Spin />
         </StyledSpin>
+      )
+    }
+    if (data && data.success && data.empty) {
+      return (
+        <div className="ebp-page">
+          <h1>{I18N.get('error.notfound')}</h1>
+        </div>
       )
     }
 

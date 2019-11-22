@@ -58,23 +58,31 @@ const { TextArea } = Input
 
 const renderRichContent = (data, key, title) => {
   let rc
-  if (key === 'budget' && typeof data.budget !== 'string') {
+  if (
+    key === 'budget' &&
+    data.budget &&
+    typeof data.budget !== 'string'
+  ) {
     rc = <PaymentList list={data.budget} editable={false} />
-  } else if (key === 'plan' && typeof data.plan !== 'string'){
+  } else if (
+    key === 'plan' &&
+    data.plan &&
+    typeof data.plan !== 'string'
+  ) {
     rc = (
       <div>
         <PlanSubtitle>
           {I18N.get('suggestion.plan.teamInfo')}
         </PlanSubtitle>
         <TeamInfoList
-          list={data.plan && data.plan.teamInfo}
+          list={data.plan.teamInfo}
           editable={false}
         />
         <PlanSubtitle>
           {I18N.get('suggestion.plan.milestones')}
         </PlanSubtitle>
         <Milestones
-          initialValue={data.plan && data.plan.milestone}
+          initialValue={data.plan.milestone}
           editable={false}
         />
       </div>
@@ -143,7 +151,13 @@ class C extends StandardPage {
         </div>
       )
     }
-
+    if (data && data.success && data.empty) {
+      return (
+        <div className="ebp-page">
+          <h1>{I18N.get('error.notfound')}</h1>
+        </div>
+      )
+    }
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -224,6 +238,9 @@ class C extends StandardPage {
   }
 
   getPlanHtml(plan) {
+    if (!plan) {
+      return
+    }
     const lists = plan
       .map(item => {
         return `
@@ -250,6 +267,9 @@ class C extends StandardPage {
   }
 
   getBudgetHtml(budget) {
+    if (!budget) {
+      return
+    }
     const lists = budget
       .map((item, index) => {
         return `
@@ -275,7 +295,7 @@ class C extends StandardPage {
       `
   }
   renderTranslationBtn() {
-    const { data } = this.props
+    const { data, isElip } = this.props
     const { title, content } = data
     let text = ''
     if (content) {
@@ -286,32 +306,60 @@ class C extends StandardPage {
         </div>
       )
     }
-    const sections = [
-      'abstract',
-      'goal',
-      'motivation',
-      'plan',
-      'relevance',
-      'budget'
-    ]
-    const result = sections.map(section => {
-      if (section === 'budget' && typeof data.budget !== 'string') {
+    let sections, result
+    if (isElip) {
+      sections = [
+        'abstract',
+        'specifications',
+        'motivation',
+        'rationale',
+        'backwardCompatibility',
+        'referenceImplementation',
+        'copyright'
+      ]
+      result = sections.map(section => {
         return `
+          <h2>${I18N.get(`elip.fields.${section}`)}</h2>
+          <p>${convertMarkdownToHtml(data[section])}</p>
+        `
+      }).join('')
+    } else {
+      sections = [
+        'abstract',
+        'goal',
+        'motivation',
+        'plan',
+        'relevance',
+        'budget'
+      ]
+      result = sections.map(section => {
+        if (
+          section === 'budget' &&
+          data.budget &&
+          typeof data.budget !== 'string'
+        ) {
+          return `
             <h2>${I18N.get(`proposal.fields.budget`)}</h2>
             <p>${this.getBudgetHtml(data.budget)}</p>
           `
-      }
-      if (section === 'plan' && typeof data.plan !== 'string') {
-        return `
+        }
+        if (
+          section === 'plan' &&
+          data.plan &&
+          typeof data.plan !== 'string'
+        ) {
+          return `
             <h2>${I18N.get(`proposal.fields.plan`)}</h2>
-            <p>${this.getBudgetHtml(data.plan && data.plan.teamInfo)}</p>
+            <p>${this.getPlanHtml(data.plan.teamInfo)}</p>
           `
-      }
-      return `
+        }
+        return `
           <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
           <p>${convertMarkdownToHtml(data[section])}</p>
         `
-    }).join('')
+      }).join('')
+    }
+
     text = `<h3>${title}</h3><br /><br/> ${result}`
     return (
       <div style={{ marginTop: 20 }}>

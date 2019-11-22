@@ -285,7 +285,10 @@ export default [
     path: '/suggestion/history/:id',
     page: SuggestionEditHistoryPage,
   },
-
+  {
+    path: '/suggestions/:id',
+    page: SuggestionDetailPage,
+  },
   /*
    ********************************************************************************
    * ELIP page

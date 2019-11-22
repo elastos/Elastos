@@ -4,35 +4,38 @@ import UserContactForm from '@/module/form/UserContactForm/Container'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import moment from 'moment-timezone'
 import Comments from '@/module/common/comments/Container'
-import {
-  Col, Row, Tabs, Icon, Button, Spin, Table, Tooltip, Tag, Modal,
-} from 'antd'
+import { Col, Row, Icon, Button, Spin, Table, Tag, Modal } from 'antd'
 import I18N from '@/I18N'
 import { getSafeUrl } from '@/util/url'
 import sanitizeHtml from '@/util/html'
 import {
-  TASK_CATEGORY, TASK_TYPE, TASK_STATUS, TASK_CANDIDATE_STATUS,
-  USER_ROLE, USER_AVATAR_DEFAULT, TEAM_TYPE, LINKIFY_OPTION,
+  USER_ROLE,
+  USER_AVATAR_DEFAULT,
+  LINKIFY_OPTION,
+  USER_ROLE_TO_TEXT
 } from '@/constant'
-import './style.scss'
 import config from '@/config'
 import MediaQuery from 'react-responsive'
 import _ from 'lodash'
 import linkifyStr from 'linkifyjs/string'
+import GenderSvg from '../GenderSvg'
 
-const TabPane = Tabs.TabPane
-const dateTimeFormat = 'MMM D, YYYY - h:mma (Z [GMT])'
+import './style.scss'
 
 export default class extends BaseComponent {
   ord_states() {
     return {
-      showUserInfo: null,
+      showUserInfo: null
     }
   }
 
   async componentDidMount() {
-    this.props.getMember(this.props.match.params.userId || this.props.currentUserId)
-    this.props.getUserTeams(this.props.match.params.userId || this.props.currentUserId)
+    this.props.getMember(
+      this.props.match.params.userId || this.props.currentUserId
+    )
+    this.props.getUserTeams(
+      this.props.match.params.userId || this.props.currentUserId
+    )
     // this.props.getTasks(this.props.match.params.userId || this.props.currentUserId)
   }
 
@@ -64,9 +67,7 @@ export default class extends BaseComponent {
           </div>
         </MediaQuery>
         <MediaQuery minWidth={801}>
-          <div className="member-content">
-            {this.renderDesktop()}
-          </div>
+          <div className="member-content">{this.renderDesktop()}</div>
         </MediaQuery>
         <Modal
           className="profile-overview-popup-modal"
@@ -74,15 +75,13 @@ export default class extends BaseComponent {
           onCancel={this.handleCancelProfilePopup.bind(this)}
           footer={null}
         >
-          { this.state.showUserInfo
-            && (
-              <ProfilePopup
-                close={this.handleCancelProfilePopup.bind(this)}
-                member={this.state.showUserInfo}
-                showSendMessage={true}
-              />
-            )
-          }
+          {this.state.showUserInfo && (
+            <ProfilePopup
+              close={this.handleCancelProfilePopup.bind(this)}
+              member={this.state.showUserInfo}
+              showSendMessage={true}
+            />
+          )}
         </Modal>
       </div>
     )
@@ -95,6 +94,7 @@ export default class extends BaseComponent {
         <div className="profile-info-container profile-info-container-mobile clearfix">
           {this.renderAvatar(true)}
           {this.renderFullName(true)}
+          {this.renderRole(true)}
           {this.renderLocation(true)}
           {this.renderLocalTime(true)}
           {this.renderSocialMedia(true)}
@@ -120,7 +120,11 @@ export default class extends BaseComponent {
 
   renderSkillsets(isMobile) {
     return (
-      <div className={`profile-skillset-info ${isMobile ? 'profile-skillset-info-mobile' : ''}`}>
+      <div
+        className={`profile-skillset-info ${
+          isMobile ? 'profile-skillset-info-mobile' : ''
+        }`}
+      >
         {_.map(this.props.member.profile.skillset || [], skillset => (
           <Tag color="blue" key={skillset}>
             {I18N.get(`user.skillset.${skillset}`)}
@@ -136,13 +140,14 @@ export default class extends BaseComponent {
         {this.renderBanner()}
 
         <div className="profile-info-container clearfix">
-          <div className="profile-left pull-left">
-            {this.renderAvatar()}
-          </div>
+          <div className="profile-left pull-left">{this.renderAvatar()}</div>
           <div className="profile-right pull-left">
             {this.renderFullName()}
             {this.renderButton()}
             <Row>
+              <Col span={24} className="profile-right-col">
+                {this.renderRole()}
+              </Col>
               <Col span={24} className="profile-right-col">
                 {this.renderGender()}
               </Col>
@@ -160,33 +165,23 @@ export default class extends BaseComponent {
 
         <div className="profile-info-container clearfix">
           <div className="pull-left skillset-header">
-            <h4 className="komu-a">
-              {I18N.get('profile.skillset.header')}
-            </h4>
+            <h4 className="komu-a">{I18N.get('profile.skillset.header')}</h4>
           </div>
           <div className="pull-right skillset-content">
             <Row>
-              <Col span={14}>
-                {this.renderSkillsets()}
-              </Col>
-              <Col span={10}>
-                {this.renderProfession()}
-              </Col>
+              <Col span={14}>{this.renderSkillsets()}</Col>
+              <Col span={10}>{this.renderProfession()}</Col>
             </Row>
           </div>
         </div>
 
         <div className="profile-info-container clearfix">
           <div className="pull-left skillset-header">
-            <h4 className="komu-a">
-              {I18N.get('profile.social.header')}
-            </h4>
+            <h4 className="komu-a">{I18N.get('profile.social.header')}</h4>
           </div>
           <div className="pull-right skillset-content">
             <Row>
-              <Col span={24}>
-                {this.renderSocialMedia()}
-              </Col>
+              <Col span={24}>{this.renderSocialMedia()}</Col>
             </Row>
           </div>
         </div>
@@ -210,27 +205,59 @@ export default class extends BaseComponent {
 
   renderBanner(isMobile) {
     return (
-      <div className={`profile-banner ${isMobile ? 'profile-banner-mobile' : ''}`}>
-        <span style={{ backgroundImage: this.getBannerWithFallback(this.props.member.profile.banner) }} />
+      <div
+        className={`profile-banner ${isMobile ? 'profile-banner-mobile' : ''}`}
+      >
+        <span
+          style={{
+            backgroundImage: this.getBannerWithFallback(
+              this.props.member.profile.banner
+            )
+          }}
+        />
       </div>
     )
   }
 
   renderAvatar(isMobile) {
     return (
-      <div className={`profile-avatar-container ${isMobile ? 'profile-avatar-container-mobile' : ''}`}>
+      <div
+        className={`profile-avatar-container ${
+          isMobile ? 'profile-avatar-container-mobile' : ''
+        }`}
+      >
         <div className="profile-avatar">
-          <img src={this.getAvatarWithFallback(this.props.member.profile.avatar)} />
+          <img
+            src={this.getAvatarWithFallback(this.props.member.profile.avatar)}
+          />
         </div>
+      </div>
+    )
+  }
+
+  renderRole(isMobile) {
+    const { member } = this.props
+    return (
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
+        <Icon type="user" />
+        <span>{member.role && USER_ROLE_TO_TEXT[member.role]}</span>
       </div>
     )
   }
 
   renderFullName(isMobile) {
     return (
-      <h1 className={`komu-a profile-general-title ${isMobile ? 'profile-general-title-mobile' : ''}`}>
+      <h1
+        className={`komu-a profile-general-title ${
+          isMobile ? 'profile-general-title-mobile' : ''
+        }`}
+      >
         {this.props.member.profile.firstName}
-&nbsp;
+        &nbsp;
         {this.props.member.profile.lastName}
       </h1>
     )
@@ -238,7 +265,9 @@ export default class extends BaseComponent {
 
   renderButton(isMobile) {
     return (
-      <div className={`profile-button ${isMobile ? 'profile-button-mobile' : ''}`}>
+      <div
+        className={`profile-button ${isMobile ? 'profile-button-mobile' : ''}`}
+      >
         {this.renderSendMessage()}
         {this.renderFollow()}
       </div>
@@ -267,34 +296,39 @@ export default class extends BaseComponent {
 
     return (
       <a onClick={clickHandler.bind(this)}>
-        {this.props.subscribing
-          ? <Icon type="loading" />
-          : isFollowing
-            ? <Icon type="star" />
-            : <Icon type="star-o" />
-        }
+        {this.props.subscribing ? (
+          <Icon type="loading" />
+        ) : isFollowing ? (
+          <Icon type="star" />
+        ) : (
+          <Icon type="star-o" />
+        )}
       </a>
     )
   }
 
   renderLocation(isMobile) {
     return (
-      <div className={`profile-general-info ${isMobile ? 'profile-general-info-mobile' : ''}`}>
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
         <Icon type="pushpin" />
-        <span>
-          {this.getCountryName(this.props.member.profile.country)}
-        </span>
+        <span>{this.getCountryName(this.props.member.profile.country)}</span>
       </div>
     )
   }
 
   renderGender(isMobile) {
     return (
-      <div className={`profile-general-info ${isMobile ? 'profile-general-info-mobile' : ''}`}>
-        <Icon type="user" />
-        <span>
-          {_.capitalize(this.props.member.profile.gender)}
-        </span>
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
+        <GenderSvg />
+        <span>{_.capitalize(this.props.member.profile.gender)}</span>
       </div>
     )
   }
@@ -302,37 +336,37 @@ export default class extends BaseComponent {
   renderProfession(isMobile) {
     return (
       <div className="profession-container">
-        {this.props.member.profile.profession
-          && (
-            <div>
-              {I18N.get(`profile.profession.${this.props.member.profile.profession}`)}
-            </div>
-          )
-        }
-        {!_.isEmpty(this.props.member.profile.portfolio)
-          && (
-            <div className="portfolio-container">
-              <a href={getSafeUrl(this.props.member.profile.portfolio)} target="_blank" className="link-container">
-                <Icon type="link" />
-              </a>
-              {I18N.get('profile.portfolio')}
-            </div>
-          )
-        }
+        {this.props.member.profile.profession && (
+          <div>
+            {I18N.get(
+              `profile.profession.${this.props.member.profile.profession}`
+            )}
+          </div>
+        )}
+        {!_.isEmpty(this.props.member.profile.portfolio) && (
+          <div className="portfolio-container">
+            <a
+              href={getSafeUrl(this.props.member.profile.portfolio)}
+              target="_blank"
+              className="link-container"
+            >
+              <Icon type="link" />
+            </a>
+            {I18N.get('profile.portfolio')}
+          </div>
+        )}
       </div>
     )
   }
 
   getBannerWithFallback(banner) {
     return _.isEmpty(banner)
-      ? 'url(\'/assets/images/profile-banner.png\')'
+      ? "url('/assets/images/profile-banner.png')"
       : `url(${banner})`
   }
 
   getAvatarWithFallback(avatar) {
-    return _.isEmpty(avatar)
-      ? USER_AVATAR_DEFAULT
-      : avatar
+    return _.isEmpty(avatar) ? USER_AVATAR_DEFAULT : avatar
   }
 
   renderLocalTime(isMobile) {
@@ -343,13 +377,13 @@ export default class extends BaseComponent {
       : 'Unknown'
 
     return (
-      <div className={`profile-general-info ${isMobile ? 'profile-general-info-mobile' : ''}`}>
+      <div
+        className={`profile-general-info ${
+          isMobile ? 'profile-general-info-mobile' : ''
+        }`}
+      >
         <Icon type="clock-circle" />
-        <span>
-                    Local time
-          {' '}
-          {localTime}
-        </span>
+        <span>Local time {localTime}</span>
       </div>
     )
   }
@@ -358,13 +392,39 @@ export default class extends BaseComponent {
     const { profile } = this.props.member
 
     return (
-      <div className={`profile-social ${isMobile ? 'profile-social-mobile' : ''}`}>
-        {profile.telegram && <a href={getSafeUrl(profile.telegram)} target="_blank"><i className="fab fa-telegram fa-2x" /></a>}
-        {profile.twitter && <a href={getSafeUrl(profile.twitter)} target="_blank"><i className="fab fa-twitter fa-2x" /></a>}
-        {profile.facebook && <a href={getSafeUrl(profile.facebook)} target="_blank"><i className="fab fa-facebook-square fa-2x" /></a>}
-        {profile.reddit && <a href={getSafeUrl(profile.reddit)} target="_blank"><i className="fab fa-reddit fa-2x" /></a>}
-        {profile.linkedin && <a href={getSafeUrl(profile.linkedin)} target="_blank"><i className="fab fa-linkedin fa-2x" /></a>}
-        {profile.github && <a href={getSafeUrl(profile.github)} target="_blank"><i className="fab fa-github fa-2x" /></a>}
+      <div
+        className={`profile-social ${isMobile ? 'profile-social-mobile' : ''}`}
+      >
+        {profile.telegram && (
+          <a href={getSafeUrl(profile.telegram)} target="_blank">
+            <i className="fab fa-telegram fa-2x" />
+          </a>
+        )}
+        {profile.twitter && (
+          <a href={getSafeUrl(profile.twitter)} target="_blank">
+            <i className="fab fa-twitter fa-2x" />
+          </a>
+        )}
+        {profile.facebook && (
+          <a href={getSafeUrl(profile.facebook)} target="_blank">
+            <i className="fab fa-facebook-square fa-2x" />
+          </a>
+        )}
+        {profile.reddit && (
+          <a href={getSafeUrl(profile.reddit)} target="_blank">
+            <i className="fab fa-reddit fa-2x" />
+          </a>
+        )}
+        {profile.linkedin && (
+          <a href={getSafeUrl(profile.linkedin)} target="_blank">
+            <i className="fab fa-linkedin fa-2x" />
+          </a>
+        )}
+        {profile.github && (
+          <a href={getSafeUrl(profile.github)} target="_blank">
+            <i className="fab fa-github fa-2x" />
+          </a>
+        )}
       </div>
     )
   }
@@ -374,10 +434,14 @@ export default class extends BaseComponent {
     const content = linkifyStr(bio, LINKIFY_OPTION)
     return (
       <div>
-        {
-          this.props.member.profile.bio
-          && <div className={`profile-description ${isMobile ? 'profile-description-mobile' : ''}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
-        }
+        {this.props.member.profile.bio && (
+          <div
+            className={`profile-description ${
+              isMobile ? 'profile-description-mobile' : ''
+            }`}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
+          />
+        )}
       </div>
     )
   }
@@ -387,11 +451,10 @@ export default class extends BaseComponent {
       <Row>
         <Col span={24}>
           {!this.props.is_login ? (
-            <div>
-              {I18N.get('profile.detail.requiredlogin')}
-            </div>
-          ) : <UserContactForm recipient={this.props.member} />
-          }
+            <div>{I18N.get('profile.detail.requiredlogin')}</div>
+          ) : (
+            <UserContactForm recipient={this.props.member} />
+          )}
         </Col>
       </Row>
     )
@@ -402,72 +465,67 @@ export default class extends BaseComponent {
       _id: team._id,
       type: 'Team',
       name: team.name,
-      date: team.updatedAt,
+      date: team.updatedAt
     }))
     const circles = _.map(this.props.member.circles, circle => ({
       _id: circle._id,
       type: 'Circle',
       name: circle.name,
-      date: circle.updatedAt,
+      date: circle.updatedAt
     }))
     const projects = _.map(this.props.tasks, task => ({
       _id: task._id,
       type: _.capitalize(task.type),
       name: task.name,
-      date: task.updatedAt,
+      date: task.updatedAt
     }))
     const data = _.concat(teams, circles, projects)
-    const columns = [{
-      title: I18N.get('profile.detail.columns.type'),
-      key: 'type',
-      width: 150,
-      render: entry => (
-        <div key={entry._id}>
-          {entry.type}
-        </div>
-      ),
-    }, {
-      title: I18N.get('profile.detail.columns.name'),
-      key: 'name',
-      width: 350,
-      render: entry => (
-        <div key={entry._id}>
-          {entry.name}
-        </div>
-      ),
-    }, {
-      title: I18N.get('profile.detail.columns.date'),
-      key: 'date',
-      width: 200,
-      render: entry => (
-        <div key={entry._id}>
-          {moment(entry.date).format('MM/DD/YYYY')}
-        </div>
-      ),
-    }, {
-      title: '',
-      key: 'view',
-      width: 100,
-      render: entry => (
-        <Button
-          key={entry._id}
-          className="cr-btn"
-          onClick={() => {
-            if (entry.type === 'Team') {
-              this.linkTeamDetail(entry._id)
-            } else if (entry.type === 'Circle') {
-              this.linkCircleDetail(entry._id)
-            } else if (entry.type === 'CR100') {
-              this.linkCR100Detail((entry._id))
-            } else {
-              this.linkProjectDetail((entry._id))
-            }
-          }}
-        >
-          {I18N.get('profile.view')}
-        </Button>
-      ),
-    }]
+    const columns = [
+      {
+        title: I18N.get('profile.detail.columns.type'),
+        key: 'type',
+        width: 150,
+        render: entry => <div key={entry._id}>{entry.type}</div>
+      },
+      {
+        title: I18N.get('profile.detail.columns.name'),
+        key: 'name',
+        width: 350,
+        render: entry => <div key={entry._id}>{entry.name}</div>
+      },
+      {
+        title: I18N.get('profile.detail.columns.date'),
+        key: 'date',
+        width: 200,
+        render: entry => (
+          <div key={entry._id}>{moment(entry.date).format('MM/DD/YYYY')}</div>
+        )
+      },
+      {
+        title: '',
+        key: 'view',
+        width: 100,
+        render: entry => (
+          <Button
+            key={entry._id}
+            className="cr-btn"
+            onClick={() => {
+              if (entry.type === 'Team') {
+                this.linkTeamDetail(entry._id)
+              } else if (entry.type === 'Circle') {
+                this.linkCircleDetail(entry._id)
+              } else if (entry.type === 'CR100') {
+                this.linkCR100Detail(entry._id)
+              } else {
+                this.linkProjectDetail(entry._id)
+              }
+            }}
+          >
+            {I18N.get('profile.view')}
+          </Button>
+        )
+      }
+    ]
     return (
       <div className="projects-tasks">
         <div className="pt-header">
@@ -493,7 +551,11 @@ export default class extends BaseComponent {
   isUserSubscribed() {
     const curDetail = this.props.member
     const subscribers = curDetail.subscribers || []
-    return !!_.find(subscribers, subscriber => subscriber.user && subscriber.user._id === this.props.currentUserId)
+    return !!_.find(
+      subscribers,
+      subscriber =>
+        subscriber.user && subscriber.user._id === this.props.currentUserId
+    )
   }
 
   followUser() {
@@ -522,13 +584,13 @@ export default class extends BaseComponent {
 
   linkProfilePopup() {
     this.setState({
-      showUserInfo: this.props.member,
+      showUserInfo: this.props.member
     })
   }
 
   handleCancelProfilePopup() {
     this.setState({
-      showUserInfo: null,
+      showUserInfo: null
     })
   }
 }
