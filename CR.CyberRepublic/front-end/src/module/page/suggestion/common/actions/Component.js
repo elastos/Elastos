@@ -1,6 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
-import { Popover, Icon, Anchor } from 'antd'
+import { Popover, Icon } from 'antd'
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery } from '@/util'
@@ -16,9 +16,7 @@ import { ReactComponent as ArchiveIcon } from '@/assets/images/icon-archive.svg'
 
 import './style.scss'
 
-const IconText = ({
-  component, text, onClick, className = '',
-}) => (
+const IconText = ({ component, text, onClick, className = '' }) => (
   <div className={`cr-icon-group ${className}`} onClick={onClick}>
     <span>{component}</span>
     <span style={{ marginLeft: 16 }}>{text}</span>
@@ -26,19 +24,26 @@ const IconText = ({
 )
 
 export default class extends BaseComponent {
-
   constructor(props) {
-
     super(props)
     const {
-      currentUserId, data: {
-        likesNum, dislikesNum, likes, dislikes, subscribers, abusedStatus, status
-      },
+      currentUserId,
+      data: {
+        likesNum,
+        dislikesNum,
+        likes,
+        dislikes,
+        subscribers,
+        abusedStatus,
+        status
+      }
     } = this.props
     const isLiked = _.includes(likes, currentUserId)
     const isDisliked = _.includes(dislikes, currentUserId)
-    const isSubscribed = _.findIndex(subscribers,
-      subscriber => subscriber.user === currentUserId) !== -1
+    const isSubscribed = _.findIndex(
+        subscribers,
+        subscriber => subscriber.user === currentUserId
+      ) !== -1
     const isAbused = abusedStatus === SUGGESTION_ABUSED_STATUS.REPORTED
     const isArchived = status === SUGGESTION_STATUS.ARCHIVED
 
@@ -56,7 +61,11 @@ export default class extends BaseComponent {
   }
 
   componentDidMount() {
-    const { location: { search }, isLogin, data: { _id } } = this.props
+    const {
+      location: { search },
+      isLogin,
+      data: { _id }
+    } = this.props
     const uri = URI(search || '')
     const { action } = URI.parseQuery(search || '')
 
@@ -66,11 +75,11 @@ export default class extends BaseComponent {
   }
 
   ord_render() {
-    const { data: { commentsNum, viewsNum, _id } } = this.props
-    const popoverActions = this.renderPopover()
     const {
-      isLiked, isDisliked, likesNum, dislikesNum,
-    } = this.state
+      data: { commentsNum, viewsNum, _id }
+    } = this.props
+    const popoverActions = this.renderPopover()
+    const { isLiked, isDisliked, likesNum, dislikesNum } = this.state
     const likeClass = isLiked ? 'selected' : ''
     const dislikeClass = isDisliked ? 'selected' : ''
     const likeNode = (
@@ -90,7 +99,7 @@ export default class extends BaseComponent {
         className={dislikeClass}
       />
     )
-   
+
     const commentNode = (
       <div className="cr-icon-group">
         <Link to={`/suggestion/${_id}/#comments`}>
@@ -122,8 +131,10 @@ export default class extends BaseComponent {
 
   renderPopover() {
     const { isSubscribed, isAbused, isArchived } = this.state
-    const { currentUserId, data: { createdBy } } = this.props
-    const isAuthor = currentUserId === createdBy._id
+    const {
+      currentUserId,
+      data: { createdBy }
+    } = this.props
     const content = (
       <div className="popover-actions">
         <IconText
@@ -146,7 +157,9 @@ export default class extends BaseComponent {
         />
         <IconText
           component={!!ArchiveIcon && <ArchiveIcon />}
-          text={isArchived ? I18N.get('suggestion.unarchive') : I18N.get('suggestion.archive')}
+          text={
+            isArchived ? I18N.get('suggestion.unarchive') : I18N.get('suggestion.archive')
+          }
           onClick={this.handleClick('isArchived')}
           className="archive-icon"
         />
@@ -160,10 +173,15 @@ export default class extends BaseComponent {
   }
 
   getActionParams(action) {
-
     // these are the actual action calls on Container
     const {
-      like, dislike, subscribe, unsubscribe, reportAbuse, markArchived, data: { _id },
+      like,
+      dislike,
+      subscribe,
+      unsubscribe,
+      reportAbuse,
+      markArchived,
+      data: { _id }
     } = this.props
     const unsubOrSub = this.state.isSubscribed ? unsubscribe : subscribe
     const actionMapping = {
@@ -176,30 +194,39 @@ export default class extends BaseComponent {
     const params = {
       callback: actionMapping[action],
       param: _id,
-      state: action,
+      state: action
     }
     return params
   }
 
   gotoEditHistory = () => {
-    const { data: { _id, editHistory }, history, saveEditHistory } = this.props
+    const {
+      data: { _id, editHistory },
+      history,
+      saveEditHistory
+    } = this.props
     saveEditHistory(editHistory)
     history.push(`/suggestion/history/${_id}`)
   }
 
   // high order function to return a debounce function with param
-  handleClick = (action) => _.debounce(() => {
-    this.handleClickWithoutDebounce(action)
-  }, 300)
+  handleClick = action =>
+    _.debounce(() => {
+      this.handleClickWithoutDebounce(action)
+    }, 300)
 
   // use setState to change UI state for better UX
-  handleClickWithoutDebounce = async (action) => {
-
+  handleClickWithoutDebounce = async action => {
     // callback is a function defined in getActionParams
     const { callback, param, state } = this.getActionParams(action)
     const { refetch, isLogin, history } = this.props
     const {
-      isLiked, isDisliked, isAbused, likesNum, dislikesNum, isArchived
+      isLiked,
+      isDisliked,
+      isAbused,
+      likesNum,
+      dislikesNum,
+      isArchived
     } = this.state
 
     if (!isLogin) {
@@ -209,9 +236,11 @@ export default class extends BaseComponent {
       return
     }
 
-    if ((state === 'isAbused' && isAbused)
-        || (state === 'isLiked' && isDisliked)
-        || (state === 'isDisliked' && isLiked)) {
+    if (
+      (state === 'isAbused' && isAbused) ||
+      (state === 'isLiked' && isDisliked) ||
+      (state === 'isDisliked' && isLiked)
+    ) {
       return
     }
     try {
@@ -225,7 +254,9 @@ export default class extends BaseComponent {
           this.setState({ likesNum: isLiked ? likesCount : likesNum + 1 })
         } else if (state === 'isDisliked') {
           const dislikesCount = dislikesNum > 0 ? dislikesNum - 1 : 0
-          this.setState({ dislikesNum: isDisliked ? dislikesCount : dislikesNum + 1 })
+          this.setState({
+            dislikesNum: isDisliked ? dislikesCount : dislikesNum + 1
+          })
         } else if (state === 'isArchived') {
           this.listRefetch()
         }
