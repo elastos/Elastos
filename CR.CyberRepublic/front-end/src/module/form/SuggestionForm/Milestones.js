@@ -88,26 +88,30 @@ class Milestones extends Component {
                   }
                   trigger="click"
                   visible={milestonesTrigger[index].clicked}
-                  onVisibleChange={isVisible => this.handleClickChange(index, isVisible)}
+                  onVisibleChange={isVisible =>
+                    this.handleClickChange(index, isVisible)
+                  }
                   placement="top"
                 >
                   <Popover
                     content={item.version}
                     trigger="hover"
                     visible={milestonesTrigger[index].hovered}
-                    onVisibleChange={isVisible => this.handleHoverChange(index, isVisible)}
+                    onVisibleChange={isVisible =>
+                      this.handleHoverChange(index, isVisible)
+                    }
                   >
                     <Square>
                       <div>{moment(item.date).format('MMM D, YYYY')}</div>
                       <div className="square-content">{item.version}</div>
                     </Square>
+                    <Button
+                      type="primary"
+                      size="small"
+                      shape="circle"
+                      icon="edit"
+                    />
                   </Popover>
-                  <Button
-                    type="primary"
-                    size="small"
-                    shape="circle"
-                    icon="edit"
-                  />
                 </Popover>
               ) : (
                 <Fragment>
