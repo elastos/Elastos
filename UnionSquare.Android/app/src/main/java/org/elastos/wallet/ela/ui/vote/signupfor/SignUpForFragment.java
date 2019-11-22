@@ -76,7 +76,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         presenter = new SignUpPresenter();
         //获取公钥
         presenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
-        EventBus.getDefault().register(this);
+        registReceiver();
     }
 
     public static SignUpForFragment newInstance() {

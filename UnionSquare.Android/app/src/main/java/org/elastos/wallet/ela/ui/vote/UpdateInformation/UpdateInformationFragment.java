@@ -77,7 +77,7 @@ public class UpdateInformationFragment extends BaseFragment implements NewBaseVi
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.update_information));
-        EventBus.getDefault().register(this);
+        registReceiver();
     }
 
     @Override

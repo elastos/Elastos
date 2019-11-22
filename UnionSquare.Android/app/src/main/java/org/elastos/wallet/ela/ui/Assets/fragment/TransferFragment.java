@@ -92,7 +92,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         tvTitle.setText(getString(R.string.transfer));
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
-        EventBus.getDefault().register(this);
+        registReceiver();
         presenter = new TransferPresenter();
        /* stUtxo.setOnSuperTextViewClickListener(new SuperTextView.OnSuperTextViewClickListener() {
             @Override
@@ -165,7 +165,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             });
 
         }
-        if ( integer == RxEnum.TOSIGN.ordinal()) {
+        if (integer == RxEnum.TOSIGN.ordinal()) {
             //生成待签名交易
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
@@ -173,7 +173,8 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             bundle.putParcelable("wallet", wallet);
             start(SignFragment.class, bundle);
 
-        } if ( integer == RxEnum.SIGNSUCCESS.ordinal()) {
+        }
+        if (integer == RxEnum.SIGNSUCCESS.ordinal()) {
             //签名成功
             String attributes = (String) result.getObj();
             Bundle bundle = new Bundle();
