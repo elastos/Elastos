@@ -387,11 +387,7 @@ namespace Elastos {
 				std::string sql;
 
 				sql = "SELECT " +
-					  TX_COLUMN_ID + "," +
-					  TX_BUFF + "," +
-					  TX_BLOCK_HEIGHT + "," +
-					  TX_TIME_STAMP + "," +
-					  TX_ISO +
+					  TX_COLUMN_ID +
 					  " FROM " + TX_TABLE_NAME +
 					  " WHERE " + TX_COLUMN_ID + " = ?;";
 

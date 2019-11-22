@@ -2,36 +2,37 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PeerDataSource.h"
+#include "PeerBlackList.h"
 
 #include <Common/Log.h>
 #include <Common/ErrorChecker.h>
 
-#include <sstream>
-
 namespace Elastos {
 	namespace ElaWallet {
 
-		PeerDataSource::PeerDataSource(Sqlite *sqlite) :
+		PeerBlackList::PeerBlackList(Sqlite *sqlite) :
 			TableBase(sqlite) {
-			InitializeTable(PEER_DATABASE_CREATE);
+			InitializeTable(_tableCreateSql);
 		}
 
-		PeerDataSource::PeerDataSource(SqliteTransactionType type, Sqlite *sqlite) :
+		PeerBlackList::PeerBlackList(SqliteTransactionType type, Sqlite *sqlite) :
 			TableBase(type, sqlite) {
-			InitializeTable(PEER_DATABASE_CREATE);
+			InitializeTable(_tableCreateSql);
 		}
 
-		PeerDataSource::~PeerDataSource() {
+		PeerBlackList::~PeerBlackList() {
 		}
 
-		bool PeerDataSource::PutPeer(const PeerEntity &peerEntity) {
+		bool PeerBlackList::PutPeer(const PeerEntity &peerEntity) {
+			if (Contain(peerEntity))
+				return true;
+
 			return DoTransaction([&peerEntity, this]() {
 				return this->PutPeerInternal(peerEntity);
 			});
 		}
 
-		bool PeerDataSource::PutPeers(const std::vector<PeerEntity> &peerEntities) {
+		bool PeerBlackList::PutPeers(const std::vector<PeerEntity> &peerEntities) {
 			if (peerEntities.empty())
 				return true;
 
@@ -45,11 +46,11 @@ namespace Elastos {
 			});
 		}
 
-		bool PeerDataSource::PutPeerInternal(const PeerEntity &peerEntity) {
+		bool PeerBlackList::PutPeerInternal(const PeerEntity &peerEntity) {
 			std::string sql;
 
-			sql = "INSERT INTO " + PEER_TABLE_NAME + " (" + PEER_ADDRESS + "," + PEER_PORT + "," +
-				  PEER_TIMESTAMP + "," + PEER_ISO + ") VALUES (?, ?, ?, ?);";
+			sql = "INSERT INTO " + _peerBlackListTable + " (" + _address + "," + _port + "," +
+				  _timestamp + ") VALUES (?, ?, ?);";
 
 			sqlite3_stmt *stmt;
 			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -59,8 +60,7 @@ namespace Elastos {
 
 			if (!_sqlite->BindBlob(stmt, 1, peerEntity.address.begin(), peerEntity.address.size(), nullptr) ||
 				!_sqlite->BindInt(stmt, 2, peerEntity.port) ||
-				!_sqlite->BindInt64(stmt, 3, peerEntity.timeStamp) ||
-				!_sqlite->BindText(stmt, 4, "", nullptr)) {
+				!_sqlite->BindInt64(stmt, 3, peerEntity.timeStamp)) {
 				Log::error("bind args");
 				return false;
 			}
@@ -78,11 +78,11 @@ namespace Elastos {
 			return true;
 		}
 
-		bool PeerDataSource::DeletePeer(const PeerEntity &peerEntity) {
+		bool PeerBlackList::DeletePeer(const PeerEntity &peerEntity) {
 			return DoTransaction([&peerEntity, this]() {
 				std::string sql;
 
-				sql = "DELETE FROM " + PEER_TABLE_NAME + " WHERE " + PEER_ADDRESS + " = ? AND " + PEER_PORT + " = ?;";
+				sql = "DELETE FROM " + _peerBlackListTable + " WHERE " + _address + " = ? AND " + _port + " = ?;";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -110,10 +110,10 @@ namespace Elastos {
 			});
 		}
 
-		bool PeerDataSource::DeleteAllPeers() {
+		bool PeerBlackList::DeleteAllPeers() {
 			return DoTransaction([this]() {
 
-				std::string sql = "DELETE FROM " + PEER_TABLE_NAME + ";";
+				std::string sql = "DELETE FROM " + _peerBlackListTable + ";";
 
 				if (!_sqlite->exec(sql, nullptr, nullptr)) {
 					Log::error("exec sql: {}", sql);
@@ -124,17 +124,17 @@ namespace Elastos {
 			});
 		}
 
-		bool PeerDataSource::Contain(const PeerEntity &entity) const {
+		bool PeerBlackList::Contain(const PeerEntity &entity) const {
 			bool contain = false;
 
 			DoTransaction([&entity, &contain, this]() {
 				std::string sql;
 
 				sql = "SELECT " +
-					  PEER_ADDRESS + "," +
-					  PEER_PORT +
-					  " FROM " + PEER_TABLE_NAME +
-					  " WHERE " + PEER_ADDRESS + " = ? AND " + PEER_PORT + " = ?;";
+					  _address + "," +
+					  _port +
+					  " FROM " + _peerBlackListTable +
+					  " WHERE " + _address + " = ? AND " + _port + " = ?;";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -163,15 +163,15 @@ namespace Elastos {
 			return contain;
 		}
 
-		std::vector<PeerEntity> PeerDataSource::GetAllPeers() const {
+		std::vector<PeerEntity> PeerBlackList::GetAllPeers() const {
 			std::vector<PeerEntity> peers;
 
 			DoTransaction([&peers, this]() {
 				PeerEntity peer;
 				std::string sql;
 
-				sql = "SELECT " + PEER_COLUMN_ID + ", " + PEER_ADDRESS + ", " + PEER_PORT + ", " +
-					  PEER_TIMESTAMP + " FROM " + PEER_TABLE_NAME + ";";
+				sql = "SELECT " + _columnID + ", " + _address + ", " + _port + ", " +
+					  _timestamp + " FROM " + _peerBlackListTable + ";";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -210,17 +210,17 @@ namespace Elastos {
 			return peers;
 		}
 
-		void PeerDataSource::flush() {
+		void PeerBlackList::flush() {
 			_sqlite->flush();
 		}
 
-		size_t PeerDataSource::GetAllPeersCount() const {
+		size_t PeerBlackList::GetAllPeersCount() const {
 			size_t count = 0;
 
 			DoTransaction([&count, this]() {
 				std::string sql;
 
-				sql = "SELECT COUNT(" + PEER_COLUMN_ID + ") AS nums FROM " + PEER_TABLE_NAME + ";";
+				sql = "SELECT COUNT(" + _columnID + ") AS nums FROM " + _peerBlackListTable + ";";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {

@@ -240,12 +240,22 @@ namespace Elastos {
 				peerEntity.timeStamp = peers[i].Timestamp;
 				peerEntityList.push_back(peerEntity);
 			}
-			_databaseManager->PutPeers(ISO, peerEntityList);
+			_databaseManager->PutPeers(peerEntityList);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &peers](PeerManager::Listener *listener) {
 							  listener->savePeers(replace, peers);
 						  });
+		}
+
+		void SpvService::saveBlackPeer(const PeerInfo &peer) {
+			PeerEntity entity;
+			entity.address = peer.Address;
+			entity.port = peer.Port;
+			entity.timeStamp = peer.Timestamp;
+
+			_databaseManager->PutBlackPeer(entity);
+			_databaseManager->DeletePeer(entity);
 		}
 
 		void SpvService::saveDIDInfo(const DIDEntity &didEntity) {
@@ -316,10 +326,22 @@ namespace Elastos {
 		std::vector<PeerInfo> SpvService::loadPeers() {
 			std::vector<PeerInfo> peers;
 
-			std::vector<PeerEntity> peersEntity = _databaseManager->GetAllPeers(ISO);
+			std::vector<PeerEntity> peersEntity = _databaseManager->GetAllPeers();
 
 			for (size_t i = 0; i < peersEntity.size(); ++i) {
 				peers.push_back(PeerInfo(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp));
+			}
+
+			return peers;
+		}
+
+		std::set<PeerInfo> SpvService::loadBlackPeers() {
+			std::set<PeerInfo> peers;
+
+			std::vector<PeerEntity> entity = _databaseManager->GetAllBlackPeers();
+
+			for (size_t i = 0; i < entity.size(); ++i) {
+				peers.insert(PeerInfo(entity[i].address, entity[i].port, entity[i].timeStamp));
 			}
 
 			return peers;

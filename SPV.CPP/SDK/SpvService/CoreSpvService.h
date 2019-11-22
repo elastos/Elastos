@@ -76,6 +76,8 @@ namespace Elastos {
 
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
 
+			virtual void saveBlackPeer(const PeerInfo &peer);
+
 			virtual bool networkIsReachable();
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
@@ -90,6 +92,8 @@ namespace Elastos {
 			virtual std::vector<MerkleBlockPtr> loadBlocks(const std::string &chainID);
 
 			virtual std::vector<PeerInfo> loadPeers();
+
+			virtual std::set<PeerInfo> loadBlackPeers();
 
 			virtual std::vector<AssetPtr> loadAssets();
 
@@ -130,6 +134,8 @@ namespace Elastos {
 
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
 
+			virtual void saveBlackPeer(const PeerInfo &peer);
+
 			virtual bool networkIsReachable();
 
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
@@ -159,6 +165,8 @@ namespace Elastos {
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
+
+			virtual void saveBlackPeer(const PeerInfo &peer);
 
 			virtual bool networkIsReachable();
 

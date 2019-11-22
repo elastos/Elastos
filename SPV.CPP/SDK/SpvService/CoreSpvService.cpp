@@ -43,6 +43,7 @@ namespace Elastos {
 						config->DisconnectionTime(),
 						loadBlocks(chainID),
 						loadPeers(),
+						loadBlackPeers(),
 						createPeerManagerListener(),
 						chainID,
 						netType));
@@ -134,7 +135,9 @@ namespace Elastos {
 		}
 
 		void CoreSpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
+		}
 
+		void CoreSpvService::saveBlackPeer(const PeerInfo &peer) {
 		}
 
 		bool CoreSpvService::networkIsReachable() {
@@ -154,22 +157,22 @@ namespace Elastos {
 		}
 
 		std::vector<TransactionPtr> CoreSpvService::loadTransactions(const std::string &chainID) {
-			//todo complete me
 			return std::vector<TransactionPtr>();
 		}
 
 		std::vector<MerkleBlockPtr> CoreSpvService::loadBlocks(const std::string &chainID) {
-			//todo complete me
 			return std::vector<MerkleBlockPtr>();
 		}
 
 		std::vector<PeerInfo> CoreSpvService::loadPeers() {
-			//todo complete me
 			return std::vector<PeerInfo>();
 		}
 
+		std::set<PeerInfo> CoreSpvService::loadBlackPeers() {
+			return std::set<PeerInfo>();
+		}
+
 		std::vector<AssetPtr> CoreSpvService::loadAssets() {
-			// todo complete me
 			return std::vector<AssetPtr>();
 		}
 
@@ -233,13 +236,19 @@ namespace Elastos {
 			}
 		}
 
-		void
-		WrappedExceptionPeerManagerListener::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
-
+		void WrappedExceptionPeerManagerListener::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 			try {
 				_listener->savePeers(replace, peers);
 			} catch (const std::exception &e) {
 				Log::error("savePeers exception: {}", e.what());
+			}
+		}
+
+		void WrappedExceptionPeerManagerListener::saveBlackPeer(const PeerInfo &peer) {
+			try {
+				_listener->saveBlackPeer(peer);
+			} catch (const std::exception &e) {
+				Log::error("saveBlockPeer exception: {}", e.what());
 			}
 		}
 
@@ -336,8 +345,17 @@ namespace Elastos {
 			}));
 		}
 
-		bool WrappedExecutorPeerManagerListener::networkIsReachable() {
+		void WrappedExecutorPeerManagerListener::saveBlackPeer(const PeerInfo &peer) {
+			_executor->Execute(Runnable([this, peer]() -> void {
+				try {
+					_listener->saveBlackPeer(peer);
+				} catch (const std::exception &e) {
+					Log::error("saveBlackPeer exception: {}", e.what());
+				}
+			}));
+		}
 
+		bool WrappedExecutorPeerManagerListener::networkIsReachable() {
 			bool result = true;
 			_executor->Execute(Runnable([this, result]() -> void {
 				try {
@@ -350,7 +368,6 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::txPublished(const std::string &hash, const nlohmann::json &result) {
-
 			_executor->Execute(Runnable([this, hash, result]() -> void {
 				try {
 					_listener->txPublished(hash, result);

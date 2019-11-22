@@ -35,6 +35,8 @@ namespace Elastos {
 
 			bool operator==(const PeerInfo &info) const;
 
+			bool operator<(const PeerInfo &info) const;
+
 			bool operator!=(const PeerInfo &info) const;
 
 			size_t GetHash() const;

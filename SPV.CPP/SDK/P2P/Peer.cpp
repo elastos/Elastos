@@ -422,6 +422,9 @@ namespace Elastos {
 				}
 			}
 
+			if (_socket == -1)
+				error = 0;
+
 			socket = _socket;
 			_socket = -1;
 			_status = Peer::Disconnected;

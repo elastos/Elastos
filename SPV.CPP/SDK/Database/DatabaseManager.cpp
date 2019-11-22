@@ -11,6 +11,7 @@ namespace Elastos {
 			_path(path),
 			_sqlite(path),
 			_peerDataSource(&_sqlite),
+			_peerBlackList(&_sqlite),
 			_coinbaseDataStore(&_sqlite),
 			_transactionDataStore(&_sqlite),
 			_assetDataStore(&_sqlite),
@@ -91,28 +92,48 @@ namespace Elastos {
 			return _transactionDataStore.DeleteTxByHashes(hashes);
 		}
 
-		bool DatabaseManager::PutPeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return _peerDataSource.PutPeer(iso, peerEntity);
+		bool DatabaseManager::PutPeer(const PeerEntity &peerEntity) {
+			return _peerDataSource.PutPeer(peerEntity);
 		}
 
-		bool DatabaseManager::PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
-			return _peerDataSource.PutPeers(iso, peerEntities);
+		bool DatabaseManager::PutPeers(const std::vector<PeerEntity> &peerEntities) {
+			return _peerDataSource.PutPeers(peerEntities);
 		}
 
-		bool DatabaseManager::DeletePeer(const std::string &iso, const PeerEntity &peerEntity) {
-			return _peerDataSource.DeletePeer(iso, peerEntity);
+		bool DatabaseManager::DeletePeer(const PeerEntity &peerEntity) {
+			return _peerDataSource.DeletePeer(peerEntity);
 		}
 
 		bool DatabaseManager::DeleteAllPeers() {
 			return _peerDataSource.DeleteAllPeers();
 		}
 
-		std::vector<PeerEntity> DatabaseManager::GetAllPeers(const std::string &iso) const {
-			return _peerDataSource.GetAllPeers(iso);
+		std::vector<PeerEntity> DatabaseManager::GetAllPeers() const {
+			return _peerDataSource.GetAllPeers();
 		}
 
-		size_t DatabaseManager::GetAllPeersCount(const std::string &iso) const {
-			return _peerDataSource.GetAllPeersCount(iso);
+		bool DatabaseManager::DeleteBlackPeer(const PeerEntity &entity) {
+			return _peerBlackList.DeletePeer(entity);
+		}
+
+		bool DatabaseManager::DeleteAllBlackPeers() {
+			return _peerBlackList.DeleteAllPeers();
+		}
+
+		std::vector<PeerEntity> DatabaseManager::GetAllBlackPeers() const {
+			return _peerBlackList.GetAllPeers();
+		}
+
+		bool DatabaseManager::PutBlackPeer(const PeerEntity &entity) {
+			return _peerBlackList.PutPeer(entity);
+		}
+
+		bool DatabaseManager::PutBlackPeers(const std::vector<PeerEntity> &entitys) {
+			return _peerBlackList.PutPeers(entitys);
+		}
+
+		size_t DatabaseManager::GetAllPeersCount() const {
+			return _peerDataSource.GetAllPeersCount();
 		}
 
 		bool DatabaseManager::PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr) {

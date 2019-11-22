@@ -8,6 +8,7 @@
 #include "MerkleBlockDataSource.h"
 #include "TransactionDataStore.h"
 #include "PeerDataSource.h"
+#include "PeerBlackList.h"
 #include "AssetDataStore.h"
 #include "CoinBaseUTXODataStore.h"
 #include "DIDDataStore.h"
@@ -47,12 +48,18 @@ namespace Elastos {
 			bool DeleteTxByHashes(const std::vector<uint256> &hashes);
 
 			// Peer's database interface
-			bool PutPeer(const std::string &iso, const PeerEntity &peerEntity);
-			bool PutPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
-			bool DeletePeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool PutPeer(const PeerEntity &peerEntity);
+			bool PutPeers(const std::vector<PeerEntity> &peerEntities);
+			bool DeletePeer(const PeerEntity &peerEntity);
 			bool DeleteAllPeers();
-			size_t GetAllPeersCount(const std::string &iso) const;
-			std::vector<PeerEntity> GetAllPeers(const std::string &iso) const;
+			size_t GetAllPeersCount() const;
+			std::vector<PeerEntity> GetAllPeers() const;
+			// Peer's black list
+			bool PutBlackPeer(const PeerEntity &entity);
+			bool PutBlackPeers(const std::vector<PeerEntity> &entitys);
+			bool DeleteBlackPeer(const PeerEntity &entity);
+			bool DeleteAllBlackPeers();
+			std::vector<PeerEntity> GetAllBlackPeers() const;
 
 			// MerkleBlock's database interface
 			bool PutMerkleBlock(const std::string &iso, const MerkleBlockPtr &blockPtr);
@@ -86,6 +93,7 @@ namespace Elastos {
 			boost::filesystem::path _path;
 			Sqlite                	_sqlite;
 			PeerDataSource        	_peerDataSource;
+			PeerBlackList           _peerBlackList;
 			CoinBaseUTXODataStore   _coinbaseDataStore;
 			TransactionDataStore  	_transactionDataStore;
 			MerkleBlockDataSource 	_merkleBlockDataSource;

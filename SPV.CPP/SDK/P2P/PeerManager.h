@@ -46,27 +46,22 @@ namespace Elastos {
 
 				virtual ~Listener() {}
 
-				// func syncStarted()
 				virtual void syncStarted() = 0;
 
 				virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer) = 0;
 
-				// func syncStopped(_ error: BRPeerManagerError?)
 				virtual void syncStopped(const std::string &error) = 0;
 
-				// func txStatusUpdate()
 				virtual void txStatusUpdate() = 0;
 
-				// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
 				virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) = 0;
 
-				// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 				virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers) = 0;
 
-				// func networkIsReachable() -> Bool}
+				virtual void saveBlackPeer(const PeerInfo &peer) = 0;
+
 				virtual bool networkIsReachable() = 0;
 
-				// Called on publishTransaction
 				virtual void txPublished(const std::string &hash, const nlohmann::json &result) = 0;
 
 				virtual void connectStatusChanged(const std::string &status) = 0;
@@ -79,6 +74,7 @@ namespace Elastos {
 						uint32_t reconnectSeconds,
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
+						const std::set<PeerInfo> &blackPeers,
 						const boost::shared_ptr<Listener> &listener,
 						const std::string &chainID,
 						const std::string &netType);
@@ -197,6 +193,8 @@ namespace Elastos {
 
 			void FireSavePeers(bool replace, const std::vector<PeerInfo> &peers);
 
+			void FireSaveBlackPeer(const PeerInfo &peer);
+
 			bool FireNetworkIsReachable();
 
 			void FireTxPublished(const uint256 &hash, int code, const std::string &reason);
@@ -273,6 +271,7 @@ namespace Elastos {
 			bool _syncSucceeded, _needGetAddr, _enableReconnect;
 
 			std::vector<PeerInfo> _peers;
+			std::set<PeerInfo> _blackPeers;
 			PeerInfo _fixedPeer;
 
 			std::vector<PeerPtr> _connectedPeers;

@@ -7,7 +7,6 @@
 #include <BRTransaction.h>
 
 #include <sys/time.h>
-#include <cfloat>
 
 #define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION   70013
@@ -42,7 +41,7 @@ namespace Elastos {
 				_peer->error("malformed version message, parse timestamp fail");
 				return false;
 			}
-			_peer->SetTimestamp(timestamp);
+//			_peer->SetTimestamp(timestamp);
 
 			uint16_t port = 0;
 			if (!stream.ReadUint16(port)) {

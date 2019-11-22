@@ -431,7 +431,7 @@ namespace Elastos {
 		}
 
 		bool Account::Equal(const AccountPtr &account) const {
-			if (GetSignType() != account->GetSignType() || Readonly() != account->Readonly())
+			if (GetSignType() != account->GetSignType())
 				return false;
 
 			if (GetSignType() == MultiSign) {

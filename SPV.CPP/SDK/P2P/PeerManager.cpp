@@ -33,7 +33,7 @@
 #include <arpa/inet.h>
 
 #define PROTOCOL_TIMEOUT      40.0
-#define MAX_CONNECT_FAILURES  40 // notify user of network problems after this many connect failures in a row
+#define MAX_CONNECT_FAILURES  1000 // notify user of network problems after this many connect failures in a row
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
 
@@ -89,6 +89,12 @@ namespace Elastos {
 			}
 		}
 
+		void PeerManager::FireSaveBlackPeer(const PeerInfo &peer) {
+			if (!_listener.expired()) {
+				_listener.lock()->saveBlackPeer(peer);
+			}
+		}
+
 		bool PeerManager::FireNetworkIsReachable() {
 			bool result = false;
 			if (!_listener.expired()) {
@@ -130,6 +136,7 @@ namespace Elastos {
 								 uint32_t reconnectSeconds,
 								 const std::vector<MerkleBlockPtr> &blocks,
 								 const std::vector<PeerInfo> &peers,
+								 const std::set<PeerInfo> &blackPeers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
 								 const std::string &chainID,
 								 const std::string &netType) :
@@ -174,6 +181,7 @@ namespace Elastos {
 			}
 
 			_peers = peers;
+			_blackPeers.insert(blackPeers.begin(), blackPeers.end());
 			SortPeers();
 
 			const std::vector<CheckPoint> &Checkpoints = params->Checkpoints();
@@ -301,6 +309,7 @@ namespace Elastos {
 
 				if (_peers.size() < _maxConnectCount ||
 					_peers[_maxConnectCount - 1].Timestamp + 3 * 24 * 60 * 60 < now) {
+					_needGetAddr = true;
 					FindPeers();
 				}
 
@@ -363,7 +372,7 @@ namespace Elastos {
 					_reconnectService, boost::posix_time::seconds(seconds)));
 			}
 
-			SPVLOG_DEBUG("{} connect {} seconds later", GetID(), seconds);
+			Log::debug("{} connect {} seconds later", GetID(), seconds);
 			_reconnectTimer->async_wait(boost::bind(&PeerManager::AsyncConnect, this, boost::asio::placeholders::error));
 			_reconnectService.run();
 		}
@@ -867,8 +876,6 @@ namespace Elastos {
 
 			lock.lock();
 
-			if (peer->GetTimestamp() > now + 2 * 60 * 60 || peer->GetTimestamp() < now - 2 * 60 * 60)
-				peer->SetTimestamp(now); // sanity check
 
 			// TODO: XXX does this work with 0.11 pruned nodes?
 			if ((peer->GetServices() & _chainParams->Services()) != _chainParams->Services()) {
@@ -878,6 +885,7 @@ namespace Elastos {
 				peer->warn("peer->services: {} != SERVICES_NODE_NETWORK", peer->GetServices());
 				peer->warn("node doesn't carry full blocks");
 				peer->Disconnect();
+				_blackPeers.insert(peer->GetPeerInfo());
 			} else if (!_needGetAddr && peer->GetLastBlock() + 10 < _lastBlock->GetHeight()) {
 				peer->warn("peer->lastBlock: {} !=  lastBlock->height: {}", peer->GetLastBlock(),
 						   _lastBlock->GetHeight());
@@ -898,6 +906,9 @@ namespace Elastos {
 												boost::bind(&PeerManager::LoadBloomFilterDone, this, peer, _1));
 					peer->SendMessage(MSG_PING, pingParameter);
 				}
+
+				if (peer->GetTimestamp() > now + 2 * 60 * 60 || peer->GetTimestamp() < now - 2 * 60 * 60)
+					peer->SetTimestamp(now); // sanity check
 			} else { // select the peer with the lowest ping time to download the chain from if we're behind
 				// BUG: XXX a malicious peer can report a higher lastblock to make us select them as the download peer, if
 				// two peers agree on lastblock, use one of those two instead
@@ -909,6 +920,9 @@ namespace Elastos {
 						p->GetLastBlock() > peer->GetLastBlock())
 						peer = p;
 				}
+
+				if (peer->GetTimestamp() > now + 2 * 60 * 60 || peer->GetTimestamp() < now - 2 * 60 * 60)
+					peer->SetTimestamp(now); // sanity check
 
 				if (_downloadPeer) {
 					peer->info("selecting new download peer with higher reported lastblock");
@@ -954,7 +968,7 @@ namespace Elastos {
 			int willSave = 0, txError = 0;
 			TransactionPeerList *peerList;
 			uint32_t reconnectSeconds = 1;
-			bool willReconnect = false;
+			bool willReconnect = false, isBlack = false;
 			Peer::ConnectStatus status = Peer::Disconnected;
 
 			{
@@ -985,6 +999,18 @@ namespace Elastos {
 					_txRelays[i - 1].RemovePeer(peer);
 				}
 
+				if (_blackPeers.find(peer->GetPeerInfo()) != _blackPeers.end()) {
+					for (std::vector<PeerInfo>::iterator p = _peers.begin(); p != _peers.cend();) {
+						if ((*p) == peer->GetPeerInfo()) {
+							p = _peers.erase(p);
+							break;
+						} else {
+							++p;
+						}
+					}
+					isBlack = true;
+				}
+
 				if (peer == _downloadPeer) { // download peer disconnected
 					_isConnected = 0;
 					_downloadPeer = NULL;
@@ -1008,7 +1034,7 @@ namespace Elastos {
 
 				if (willReconnect) {
 					reconnectSeconds = _reconnectStep;
-					if (_reconnectStep < 10) {
+					if (_reconnectStep < 2) {
 						// doubling the step back each time
 						_reconnectStep <<= 1;
 					}
@@ -1028,8 +1054,13 @@ namespace Elastos {
 			FireConnectStatusChanged(GetConnectStatus());
 			if (willSave)
 				FireSavePeers(true, {});
+
 			if (willSave)
 				FireSyncStopped(error);
+
+			if (isBlack)
+				FireSaveBlackPeer(peer->GetPeerInfo());
+
 			FireTxStatusUpdate();
 
 			lock.lock();
@@ -1057,47 +1088,41 @@ namespace Elastos {
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				peer->info("relayed {} peer(s)", peers.size());
+				peer->info("relayed {} peer(s), {} peer(s) before save", peers.size(), _peers.size());
 
 				if (_enableReconnect && _needGetAddr) {
+					_peers.clear();
 					_needGetAddr = false;
 					willReconnect = true;
 				}
 
-				_peers.insert(_peers.end(), peers.begin(), peers.end());
-				SortPeers();
+				std::set<PeerInfo> uniquePeers;
+				uniquePeers.insert(_peers.begin(), _peers.end());
+				uniquePeers.insert(peers.begin(), peers.end());
 
-				std::vector<PeerInfo> uniquePeers;
-				bool found;
-				for (size_t i = 0; i < _peers.size(); ++i) {
-					found = false;
-					for (size_t ui = 0; ui < uniquePeers.size(); ++ui) {
-						if (_peers[i] == uniquePeers[ui]) {
-							found = true;
-							break;
-						}
-					}
-
-					if (!found) {
-						uniquePeers.push_back(_peers[i]);
+				for (const PeerInfo &p : uniquePeers) {
+					if (_blackPeers.find(p) == _blackPeers.end()) {
+						save.push_back(p);
 					}
 				}
-				_peers = uniquePeers;
+
+				std::sort(save.begin(), save.end(), [](const PeerInfo &first, const PeerInfo &second) {
+					return first.Timestamp > second.Timestamp;
+				});
 
 				// limit total to 2500 peers
-				if (_peers.size() > 2500) _peers.resize(2500);
-				peersCount = _peers.size();
+				if (save.size() > 2500) save.resize(2500);
+				peersCount = save.size();
 
 				// remove peers more than 3 hours old, or until there are only 1000 left
-				while (peers.size() > 1000 && _peers[peersCount - 1].Timestamp + 3 * 60 * 60 < now) peersCount--;
-				_peers.resize(peersCount);
-				for (size_t i = 0; i < _peers.size(); ++i) {
-					save.push_back(_peers[i]);
-				}
+				while (peersCount > 1000 && save[peersCount - 1].Timestamp + 3 * 60 * 60 < now) peersCount--;
+				save.resize(peersCount);
+
+				_peers = save;
 			}
 
-			// peer relaying is complete when we receive <1000
-			if (save.size() > 1 && save.size() < 1000) {
+			if (save.size() > 0) {
+				peer->info("save {} peer(s)", save.size());
 				FireSavePeers(true, save);
 			}
 
@@ -1939,6 +1964,7 @@ namespace Elastos {
 
 			if (success) {
 				peer->info("mempool request finished");
+				MerkleBlockPtr block;
 
 				{
 					boost::mutex::scoped_lock scopedLock(lock);
@@ -1950,11 +1976,13 @@ namespace Elastos {
 						SyncStopped();
 					}
 
+					block = _lastBlock;
 					RequestUnrelayedTx(peer);
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				}
 
 				FireTxStatusUpdate();
+				FireSyncProgress(GetSyncProgressInternal(0), peer, block);
 				if (syncFinished) FireSyncStopped(0);
 			} else peer->info("mempool request failed");
 		}

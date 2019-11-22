@@ -139,22 +139,18 @@ namespace Elastos {
 
 			virtual void syncProgress(uint32_t progress, time_t lastBlockTime, uint32_t bytesPerSecond, const std::string &downloadPeer);
 
-			// func syncStopped(_ error: BRPeerManagerError?)
 			virtual void syncStopped(const std::string &error);
 
-			// func txStatusUpdate()
 			virtual void txStatusUpdate() {}
 
-			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers) {}
 
-			// func networkIsReachable() -> Bool}
+			virtual void saveBlackPeer(const PeerInfo &peer) {}
+
 			virtual bool networkIsReachable() { return true; }
 
-			// Called on publishTransaction
 			virtual void txPublished(const std::string &hash, const nlohmann::json &result);
 
 			virtual void syncIsInactive(uint32_t time) {}

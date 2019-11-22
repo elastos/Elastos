@@ -198,12 +198,12 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 		SECTION("Peer save test") {
 			DatabaseManager dbm(DBFILE);
-			REQUIRE(dbm.PutPeers(ISO, peerToSave));
+			REQUIRE(dbm.PutPeers(peerToSave));
 		}
 
 		SECTION("Peer read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<PeerEntity> peers = dbm.GetAllPeers(ISO);
+			std::vector<PeerEntity> peers = dbm.GetAllPeers();
 			REQUIRE(peers.size() == peerToSave.size());
 			for (int i = 0; i < peers.size(); i++) {
 				REQUIRE(peers[i].address == peerToSave[i].address);
@@ -215,7 +215,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer delete test") {
 			DatabaseManager *dbm = new DatabaseManager(DBFILE);
 			REQUIRE(dbm->DeleteAllPeers());
-			std::vector<PeerEntity> peers = dbm->GetAllPeers(ISO);
+			std::vector<PeerEntity> peers = dbm->GetAllPeers();
 			REQUIRE(peers.size() == 0);
 			delete dbm;
 		}
@@ -223,13 +223,13 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer save one by one test") {
 			DatabaseManager dbm(DBFILE);
 			for (int i = 0; i < peerToSave.size(); ++i) {
-				REQUIRE(dbm.PutPeer(ISO, peerToSave[i]));
+				REQUIRE(dbm.PutPeer(peerToSave[i]));
 			}
 		}
 
 		SECTION("Peer read test") {
 			DatabaseManager dbm(DBFILE);
-			std::vector<PeerEntity> peers = dbm.GetAllPeers(ISO);
+			std::vector<PeerEntity> peers = dbm.GetAllPeers();
 			REQUIRE(peers.size() == peerToSave.size());
 			for (int i = 0; i < peers.size(); i++) {
 				REQUIRE(peers[i].address == peerToSave[i].address);
@@ -241,14 +241,90 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer delete one by one test") {
 			DatabaseManager dbm(DBFILE);
 
-			std::vector<PeerEntity> PeersBeforeDelete = dbm.GetAllPeers(ISO);
+			std::vector<PeerEntity> PeersBeforeDelete = dbm.GetAllPeers();
 			REQUIRE(PeersBeforeDelete.size() == peerToSave.size());
 
 			for (int i = 0; i < PeersBeforeDelete.size(); ++i) {
-				REQUIRE(dbm.DeletePeer(ISO, PeersBeforeDelete[i]));
+				REQUIRE(dbm.DeletePeer(PeersBeforeDelete[i]));
 			}
 
-			std::vector<PeerEntity> PeersAfterDelete = dbm.GetAllPeers(ISO);
+			std::vector<PeerEntity> PeersAfterDelete = dbm.GetAllPeers();
+			REQUIRE(0 == PeersAfterDelete.size());
+		}
+	}
+
+	SECTION("Peer black list test") {
+#define TEST_PEER_RECORD_CNT DEFAULT_RECORD_CNT
+
+		static std::vector<PeerEntity> peerToSave;
+
+		SECTION("Peer Prepare for test") {
+			for (int i = 0; i < TEST_PEER_RECORD_CNT; i++) {
+				PeerEntity peer;
+				peer.address = getRandUInt128();
+				peer.port = (uint16_t) rand();
+				peer.timeStamp = (uint64_t) rand();
+				peerToSave.push_back(peer);
+			}
+
+			REQUIRE(TEST_PEER_RECORD_CNT == peerToSave.size());
+		}
+
+		SECTION("Peer save test") {
+			DatabaseManager dbm(DBFILE);
+			REQUIRE(dbm.PutBlackPeers(peerToSave));
+		}
+
+		SECTION("Peer read test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<PeerEntity> peers = dbm.GetAllBlackPeers();
+			REQUIRE(peers.size() == peerToSave.size());
+			for (int i = 0; i < peers.size(); i++) {
+				REQUIRE(peers[i].address == peerToSave[i].address);
+				REQUIRE(peers[i].port == peerToSave[i].port);
+				REQUIRE(peers[i].timeStamp == peerToSave[i].timeStamp);
+			}
+			REQUIRE(dbm.PutBlackPeer(peers[0]));
+			REQUIRE(dbm.GetAllBlackPeers().size() == peers.size());
+		}
+
+		SECTION("Peer delete test") {
+			DatabaseManager *dbm = new DatabaseManager(DBFILE);
+			REQUIRE(dbm->DeleteAllBlackPeers());
+			std::vector<PeerEntity> peers = dbm->GetAllBlackPeers();
+			REQUIRE(peers.size() == 0);
+			delete dbm;
+		}
+
+		SECTION("Peer save one by one test") {
+			DatabaseManager dbm(DBFILE);
+			for (int i = 0; i < peerToSave.size(); ++i) {
+				REQUIRE(dbm.PutBlackPeer(peerToSave[i]));
+			}
+		}
+
+		SECTION("Peer read test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<PeerEntity> peers = dbm.GetAllBlackPeers();
+			REQUIRE(peers.size() == peerToSave.size());
+			for (int i = 0; i < peers.size(); i++) {
+				REQUIRE(peers[i].address == peerToSave[i].address);
+				REQUIRE(peers[i].port == peerToSave[i].port);
+				REQUIRE(peers[i].timeStamp == peerToSave[i].timeStamp);
+			}
+		}
+
+		SECTION("Peer delete one by one test") {
+			DatabaseManager dbm(DBFILE);
+
+			std::vector<PeerEntity> PeersBeforeDelete = dbm.GetAllBlackPeers();
+			REQUIRE(PeersBeforeDelete.size() == peerToSave.size());
+
+			for (int i = 0; i < PeersBeforeDelete.size(); ++i) {
+				REQUIRE(dbm.DeleteBlackPeer(PeersBeforeDelete[i]));
+			}
+
+			std::vector<PeerEntity> PeersAfterDelete = dbm.GetAllBlackPeers();
 			REQUIRE(0 == PeersAfterDelete.size());
 		}
 
