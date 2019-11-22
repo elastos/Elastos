@@ -37,6 +37,9 @@
 
     <!-- Title -->
     {% block title %}{% endblock %}
+
+    <!-- Custom Javascript files -->
+    {% block scripts %}{% endblock %}
   </head>
   <body>
     <!-- Header -->
@@ -139,7 +142,18 @@
     </header>
 
     <!-- Body Content -->
-    {% block content %}{% endblock %}
+    <div class="django_messages">
+      {% if messages %}
+          {% for message in messages %}
+              <p class="alert alert-info">{{ message }}</p>
+          {% endfor %}
+      {% endif %}
+    </div>
+
+    <div class=container"><br>
+      {% block content %}
+      {% endblock %}
+    </div>
 
     <!-- Footer 
     <footer class="footer mt-auto py-3">
@@ -151,15 +165,15 @@
     <footer class="footer bg-dark text-white">
       <div class="container text-center">
         <p>
-          <a class="link" href="http://www.elastos.org" target="_blank"
-            >Elastos.org</a
+          <a class="link" href="http://www.cyberrepublic.org" target="_blank"
+            >Cyberrepublic.org</a
           >
-          <a class="link" href="https://github.com/elastos/" target="_blank"
+          <a class="link" href="https://github.com/cyber-republic/" target="_blank"
             >Report</a
           >
         </p>
         <p class="copyright">
-          Copyright © 2017 Elastos Foundation. All Rights Reserved.
+          Copyright © 2019 Cyber Republic. All Rights Reserved.
         </p>
       </div>
     </footer>

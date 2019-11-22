@@ -1,6 +1,13 @@
-{% extends 'base.html' %} {% load static %} {% block scripts %}
+{% extends 'base.html' %} 
+{% load static %} 
+
+{% block scripts %}
 <script src="{% static '/javascript/elaauth.js' %}"></script>
-{% endblock %} {% load qr_code %} {% block content %}
+{% endblock %} 
+
+{% load qr_code %} 
+
+{% block content %}
 <div class="row align-items-center justify-content-center">
   <div class="col-md-8">
     <div class="card-header text-center">

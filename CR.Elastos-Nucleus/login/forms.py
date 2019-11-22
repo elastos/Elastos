@@ -15,12 +15,29 @@ class DIDUserCreationForm(UserCreationForm):
         self.fields['did'].widget.attrs['readonly'] = True
         self.fields['did'].widget.attrs['style'] = 'color: grey; background-color: lightgrey'
 
-    class Meta(UserCreationForm):
+    class Meta:
         model = DIDUser
         fields = ('email', 'name', 'did',)
 
+    def save(self, commit=True):
+        user = super(DIDUserCreationForm, self).save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.name = self.cleaned_data['name']
+        user.did = self.cleaned_data['did']
+        if commit:
+            user.save()
+        return user
+
 
 class DIDUserChangeForm(UserChangeForm):
+
+    def __init__(self, *args, **kwargs):
+        super(DIDUserChangeForm, self).__init__(*args, **kwargs)
+        self.fields['password'].required = False
+        self.fields['password'].widget = HiddenInput()
+        self.fields['did'].widget.attrs['readonly'] = True
+        self.fields['did'].widget.attrs['style'] = 'color: grey; background-color: lightgrey'
+
     class Meta:
         model = DIDUser
-        fields = ('email',)
+        fields = ('email', 'name', 'did',)
