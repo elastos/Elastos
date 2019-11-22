@@ -115,11 +115,18 @@ class Milestones extends Component {
                 </Popover>
               ) : (
                 <Fragment>
-                  <Square>
-                    <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                    <div>{item.version}</div>
-                  </Square>
-                  <Circle />
+                  <Popover
+                    content={item.version}
+                    trigger="hover"
+                    visible={milestonesTrigger[index].hovered}
+                    onVisibleChange={isVisible => this.handleHoverChange(index, isVisible)}
+                  >
+                    <Square>
+                      <div>{moment(item.date).format('MMM D, YYYY')}</div>
+                      <div className="square-content">{item.version}</div>
+                    </Square>
+                    <Circle />
+                  </Popover>
                 </Fragment>
               )}
             </Milestone>
@@ -185,6 +192,7 @@ const Square = styled.div`
     }
     &.square-content {
       width: 140px;
+      text-align: center;
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
