@@ -13,12 +13,12 @@ def generate_key(request):
                 'API_KEY': API_KEY,
             }
             print(context)
-            sent_json = json.dumps({'API_KEY':API_KEY })
-            return HttpResponse(sent_json , content_type='application/JSON')
+            sent_json = json.dumps({'API_KEY': API_KEY})
+            return HttpResponse(sent_json, content_type='application/JSON')
         else:
             return HttpResponse("failiure")
     else:
-        return render(request, "Services/generateKey.html")
+        return render(request, "services/generateKey.html")
 
 
 def file_upload(request):

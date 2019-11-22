@@ -1,19 +1,19 @@
- .header {
-            padding: 5px;
-            text-align: center;
-            background: ghostwhite;
-            color: black;
-            font-size: 15px;
-            text-align: left;
-            height: 80px;
-        }
-         .dropdown {
+/*.header {
+  padding: 5px;
+  text-align: center;
+  background: ghostwhite;
+  color: black;
+  font-size: 15px;
+  text-align: left;
+  height: 80px;
+}
+.dropdown {
   float: right;
   overflow: hidden;
 }
 body {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .dropdown .dropbtn {
@@ -31,13 +31,12 @@ body {
   margin-bottom: 20px;
 }
 
-
 .dropdown-content {
   display: none;
   position: absolute;
   background-color: #f9f9f9;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
 
@@ -54,21 +53,21 @@ button {
   display: block;
   max-width: 300px;
   margin: auto;
-    text-align: center;
-    border-radius: 5px;
-    padding: 8px;
-    margin-left: 10px;
+  text-align: center;
+  border-radius: 5px;
+  padding: 8px;
+  margin-left: 10px;
 }
 
-.main{
-    text-align: left;
+.main {
+  text-align: left;
 }
 
 .show {
   display: block;
 }
 
-        .box {
+.box {
   width: 300px;
   position: relative;
   padding: 2px;
@@ -78,7 +77,10 @@ button {
   content: "";
   position: absolute;
   border: 2px solid black;
-  top: -4%; bottom: -11%; left: -30%; right: -30%;
+  top: -4%;
+  bottom: -11%;
+  left: -30%;
+  right: -30%;
   z-index: -1;
   -webkit-transform: perspective(50em) rotateX(-30deg);
   transform: perspective(50em) rotateX(-30deg);
@@ -107,4 +109,18 @@ a {
 
 img {
   vertical-align: middle;
+}
+*/
+
+.footer {
+  color: #343a40;
+  height: 200px;
+  padding: 50px;
+  overflow: hidden;
+}
+
+.ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }

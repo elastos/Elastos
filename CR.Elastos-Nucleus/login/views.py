@@ -39,8 +39,10 @@ def check_ela_auth(request):
     if not state:
         return JsonResponse({'authenticated': False}, status=403)
     try:
-        recently_created_time = datetime.now(tz=timezone.now) - timedelta(minutes=1)
-        did_request_query_result = DIDRequest.objects.get(state=state, created_at__gte=recently_created_time)
+        recently_created_time = datetime.now(
+            tz=timezone.now) - timedelta(minutes=1)
+        did_request_query_result = DIDRequest.objects.get(
+            state=state, created_at__gte=recently_created_time)
         data = json.loads(did_request_query_result.data)
         if not data["auth"]:
             return JsonResponse({'authenticated': False}, status=403)
@@ -71,18 +73,21 @@ def did_callback(request):
         client_public_key = data['PublicKey']
 
         r, s = int(sig[:64], 16), int(sig[64:], 16)
-        public_key = SEC1Encoder.decode_public_key(unhexlify(client_public_key), curve.P256)
+        public_key = SEC1Encoder.decode_public_key(
+            unhexlify(client_public_key), curve.P256)
         valid = ecdsa.verify((r, s), response['Data'], public_key)
         if not valid:
             return JsonResponse({'message': 'Unauthorized'}, status=401)
         try:
-            recently_created_time = datetime.now(timezone.now) - timedelta(minutes=1)
+            recently_created_time = datetime.now(
+                timezone.now) - timedelta(minutes=1)
             did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
                                                               created_at__gte=recently_created_time)
             if not did_request_query_result:
                 return JsonResponse({'message': 'Unauthorized'}, status=401)
             data["auth"] = True
-            DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
+            DIDRequest.objects.filter(
+                state=data["RandomNumber"]).update(data=json.dumps(data))
         except Exception as e:
             JsonResponse({'error': str(e)}, status=404)
 
@@ -132,7 +137,8 @@ def sign_in(request):
     # Save token to the database didauth_requests
     token = {'state': random, 'data': {'auth': False}}
 
-    DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
+    DIDRequest.objects.create(
+        state=token['state'], data=json.dumps(token['data']))
     # Purge old requests for housekeeping. If the time denoted by 'created_by'
     # is more than 2 minutes old, delete the row
     stale_time = datetime.now() - timedelta(minutes=2)

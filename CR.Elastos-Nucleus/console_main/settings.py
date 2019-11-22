@@ -17,6 +17,11 @@ from qr_code.qrcode import constants
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Include scss directory for Sass processor
+SASS_PROCESSOR_INCLUDE_DIRS = [
+    os.path.join(BASE_DIR, 'static/scss'),
+]
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -31,6 +36,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 # Application definition
 
 INSTALLED_APPS = [
+    'sass_processor',
     'admin_tools',
     'admin_tools.theming',
     'admin_tools.menu',
@@ -135,11 +141,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+STATIC_ROOT = ''
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "assets"),
 ]
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'sass_processor.finders.CssFinder',
+]
+
+# Django Sass
+SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR, 'static')
+SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -159,9 +176,12 @@ CACHES = {
 # Django QR Code specific options.
 QR_CODE_CACHE_ALIAS = 'qr-code'
 QR_CODE_URL_PROTECTION = {
-    constants.TOKEN_LENGTH: 30,  # Optional random token length for URL protection. Defaults to 20.
-    constants.SIGNING_KEY: config('SIGNING_KEY'),  # Optional signing key for URL token. Uses SECRET_KEY if not defined.
-    constants.SIGNING_SALT: config('SIGNING_SALT'),  # Optional signing salt for URL token.
+    # Optional random token length for URL protection. Defaults to 20.
+    constants.TOKEN_LENGTH: 30,
+    # Optional signing key for URL token. Uses SECRET_KEY if not defined.
+    constants.SIGNING_KEY: config('SIGNING_KEY'),
+    # Optional signing salt for URL token.
+    constants.SIGNING_SALT: config('SIGNING_SALT'),
     constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False
     # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user, or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
 }

@@ -1,26 +1,19 @@
-{% extends 'service_base.html' %}
-{% load static %}
-
-{% block scripts %}
-    <script src="{% static '/javascript/generateKey.js' %}"></script>
-{% endblock %}
-
-{% block sidebarContent %}
-<p>STUFFFFF</p>
-
-{% endblock %}
-
-{% block functionContent %}
-    <button class= "btn mt-3 btn-dark " id="getKeyBtn" onclick="getAPI()">
-        Generate Key
-    </button>
-    <div class="card mt-3">
-        <div class="card-header">
-            API Key
-
-        </div>
-        <div class="card-body pt-3" id="apiKeyCard">
-            <span id="apiKey">Some Key</span>
-        </div>
-    </div>
-{% endblock %}
+{% extends "service.html" %} {% load static %} {% block scripts %}
+<script src="{% static '/javascript/generateKey.js' %}"></script>
+{% endblock %} {% block servicetitle %}
+<h5 class="card-header">Service Title</h5>
+{%endblock servicetitle %} {% block service %}
+<button class="btn mt-3 btn-dark " id="getKeyBtn" onclick="getAPI()">
+  Generate Key
+</button>
+<div class="card mt-3">
+  <div class="card-header">
+    API Key
+  </div>
+  <div class="card-body pt-3" id="apiKeyCard">
+    <span id="apiKey">Some Key</span>
+  </div>
+</div>
+{% endblock service %} {% block documentation %}
+<p>test</p>
+{% endblock documentation %}
