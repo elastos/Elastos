@@ -107,7 +107,7 @@ public class MasterWallet {
             }
         }
         wallet.RemoveCallback();
-        DestroyWallet(mInstance, wallet.GetProxy());
+        DestroyWallet(mInstance, wallet.GetChainID());
     }
 
     public String GetOwnerPublicKeyRing() throws WalletException {
@@ -184,7 +184,7 @@ public class MasterWallet {
 
     private native String GetPublicKeyRing(long instance);
 
-    private native void DestroyWallet(long instance, long subWalletProxy);
+    private native void DestroyWallet(long instance, String chainID);
 
     private native boolean IsAddressValid(long instance, String address);
 

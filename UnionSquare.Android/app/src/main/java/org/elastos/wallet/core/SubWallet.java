@@ -66,7 +66,7 @@ public class SubWallet {
     public void RemoveCallback() throws WalletException {
         if (mCallback != null) {
             Log.d(TAG, "SubWallet[" + mInstance + "] removing callback");
-            RemoveCallback(mInstance, mCallback.GetProxy());
+            RemoveCallback(mInstance);
             mCallback.Dispose();
             mCallback = null;
         } else {
@@ -161,7 +161,7 @@ public class SubWallet {
 
     private native void AddCallback(long subProxy, long subCallback);
 
-    private native void RemoveCallback(long subProxys, long subCallback);
+    private native void RemoveCallback(long subProxys);
 
     private native String CreateTransaction(long subProxy, String fromAddress, String toAddress, String amount, String memo);
 

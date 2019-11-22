@@ -139,17 +139,27 @@ static jlong JNICALL CreateSubWallet(JNIEnv *env, jobject clazz, jlong instance,
     return (jlong) subWallet;
 }
 
-#define JNI_DestroyWallet "(JJ)V"
+#define JNI_DestroyWallet "(JLjava/lang/String;)V"
 
 static void JNICALL DestroyWallet(JNIEnv *env, jobject clazz, jlong jMasterInstance,
-                                  jlong jSubWalletInstance) {
+                                  jstring jchainID) {
+    bool exception = false;
+    std::string msgException;
+
+    const char *chainID = env->GetStringUTFChars(jchainID, NULL);
+
     try {
         IMasterWallet *masterWallet = (IMasterWallet *) jMasterInstance;
-        ISubWallet *subWallet = (ISubWallet *) jSubWalletInstance;
-        masterWallet->DestroyWallet(subWallet);
+        masterWallet->DestroyWallet(chainID);
     } catch (const std::exception &e) {
-        ThrowWalletException(env, e.what());
+        exception = true;
+        msgException = e.what();
     }
+
+    env->ReleaseStringUTFChars(jchainID, chainID);
+
+    if (exception)
+        ThrowWalletException(env, msgException.c_str());
 }
 
 #define JNI_GetPubKeyInfo "(J)Ljava/lang/String;"

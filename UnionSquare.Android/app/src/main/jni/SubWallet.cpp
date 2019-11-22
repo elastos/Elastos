@@ -171,14 +171,12 @@ static void JNICALL AddCallback(JNIEnv *env, jobject clazz, jlong jSubProxy,
     }
 }
 
-#define JNI_RemoveCallback "(JJ)V"
+#define JNI_RemoveCallback "(J)V"
 
-static void JNICALL RemoveCallback(JNIEnv *env, jobject clazz, jlong jSubProxy,
-                                   jlong jSubWalletCallbackInstance) {
+static void JNICALL RemoveCallback(JNIEnv *env, jobject clazz, jlong jSubProxy) {
     try {
         ISubWallet *subWallet = (ISubWallet *) jSubProxy;
-        SubWalletCallback *subWalletCallback = (SubWalletCallback *) jSubWalletCallbackInstance;
-        subWallet->RemoveCallback(subWalletCallback);
+        subWallet->RemoveCallback();
     } catch (const std::exception &e) {
         ThrowWalletException(env, e.what());
     }
