@@ -667,6 +667,7 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 	s.tryInitProducerAssetAmounts(block.Height)
 	s.processTransactions(block.Transactions, block.Height)
+	s.ProcessVoteStatisticsBlock(block)
 
 	if confirm != nil {
 		s.countArbitratorsInactivity(block.Height, confirm)
@@ -674,6 +675,13 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 	// Commit changes here if no errors found.
 	s.history.Commit(block.Height)
+}
+
+// ProcessVoteStatisticsBlock deal with block with vote statistics error.
+func (s *State) ProcessVoteStatisticsBlock(block *types.Block) {
+	if block.Height == s.chainParams.VoteStatisticsHeight {
+		s.processTransactions(block.Transactions, block.Height)
+	}
 }
 
 // processTransactions takes the transactions and the height when they have been

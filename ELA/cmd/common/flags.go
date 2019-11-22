@@ -218,6 +218,14 @@ var (
 		Name:  "crvotingstartheight",
 		Usage: "defines the height of CR voting started",
 	}
+	CheckRewardHeightFlag = cli.StringFlag{
+		Name:  "checkrewardheight",
+		Usage: "defines the height to check reward in block",
+	}
+	VoteStatisticsHeightFlag = cli.StringFlag{
+		Name:  "votestatisticsheight",
+		Usage: "defines the height to fix vote statistics error",
+	}
 	EnableActivateIllegalHeightFlag = cli.StringFlag{
 		Name: "enableactivateillegalheight",
 		Usage: "defines the start height to enable activate illegal producer" +
