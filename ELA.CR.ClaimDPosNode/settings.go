@@ -407,6 +407,18 @@ func newSettings() *settings {
 		ParamName:    "CRVotingStartHeight"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.CheckRewardHeightFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CheckRewardHeight",
+		ParamName:    "CheckRewardHeight"})
+
+	result.Add(&settingItem{
+		Flag:         cmdcom.VoteStatisticsHeightFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "VoteStatisticsHeight",
+		ParamName:    "VoteStatisticsHeight"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.EnableActivateIllegalHeightFlag,
 		DefaultValue: uint32(0),
 		ConfigPath:   "EnableActivateIllegalHeight",
