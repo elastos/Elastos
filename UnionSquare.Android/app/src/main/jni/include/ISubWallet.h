@@ -117,9 +117,8 @@ namespace Elastos {
 
 			/**
 			 * Remove a sub wallet callback object listened to current sub wallet.
-			 * @param subCallback is a pointer who want to listen events of current sub wallet.
 			 */
-			virtual void RemoveCallback(ISubWalletCallback *subCallback) = 0;
+			virtual void RemoveCallback() = 0;
 
 			/**
 			 * Create a normal transaction and return the content of transaction in json format.

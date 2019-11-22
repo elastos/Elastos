@@ -111,9 +111,9 @@ namespace Elastos {
 
 			/**
 			 * Destroy a sub wallet created by the master wallet.
-			 * @param wallet sub wallet object, should created by the master wallet.
+			 * @param chainID chain ID of subWallet.
 			 */
-			virtual void DestroyWallet(ISubWallet *wallet) = 0;
+			virtual void DestroyWallet(const std::string &chainID) = 0;
 
 			/**
 			 * Get public key info
