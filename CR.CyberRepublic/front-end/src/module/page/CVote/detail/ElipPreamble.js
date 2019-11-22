@@ -30,7 +30,8 @@ const Component = ({
   }
   const proposalValue = proposal && `#${proposal}`
   const proposerValue = <PopoverProfile owner={proposer} curUser={user} />
-  const preambles = {...result, proposal: proposalValue, proposer: proposerValue, type: typeMap[result.type], created: moment(created).format('MMM D, YYYY')}
+  const statusValue = I18N.get(`cvoteStatus.${status}`)
+  const preambles = {...result, proposal: proposalValue, proposer: proposerValue, type: typeMap[result.type], status: statusValue, created: moment(created).format('MMM D, YYYY')}
   const itemFunction = (key, value) => (
     <Item key={key}>
       <Col span={6}>
