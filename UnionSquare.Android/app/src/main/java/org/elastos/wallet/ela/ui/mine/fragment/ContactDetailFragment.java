@@ -118,7 +118,7 @@ public class ContactDetailFragment extends BaseFragment {
                 tvAdd.setVisibility(View.GONE);
                 llEdit.setVisibility(View.VISIBLE);
                 //只有查看页面才会有这些操作
-                EventBus.getDefault().register(this);
+                registReceiver();
                 dialogUtil = new DialogUtil();
                 break;
         }

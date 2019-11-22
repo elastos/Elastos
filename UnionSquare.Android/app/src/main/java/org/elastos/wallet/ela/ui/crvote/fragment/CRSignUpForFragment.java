@@ -78,7 +78,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
         tvTitle.setText(R.string.sign_up_for);
         presenter = new CRSignUpPresenter();
         presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
-        EventBus.getDefault().register(this);
+        registReceiver();
     }
 
 

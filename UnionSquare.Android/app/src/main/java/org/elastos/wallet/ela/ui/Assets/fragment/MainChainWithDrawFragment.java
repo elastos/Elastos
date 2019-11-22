@@ -83,7 +83,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
         tvTitle.setText(getString(R.string.main_chain_withdraw));
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
-        EventBus.getDefault().register(this);
+        registReceiver();
         presenter = new SideChainPresenter();
     }
 

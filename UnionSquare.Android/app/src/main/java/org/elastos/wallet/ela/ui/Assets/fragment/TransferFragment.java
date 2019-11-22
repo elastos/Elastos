@@ -92,7 +92,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         tvTitle.setText(getString(R.string.transfer));
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
-        EventBus.getDefault().register(this);
+        registReceiver();
         presenter = new TransferPresenter();
        /* stUtxo.setOnSuperTextViewClickListener(new SuperTextView.OnSuperTextViewClickListener() {
             @Override
