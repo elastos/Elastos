@@ -142,7 +142,7 @@ class C extends BaseComponent {
         title: values.title,
         elipType: values.elipType,
         abstract: values.abstract,
-        specifications: values.specifications,
+        specifications: values.specification,
         motivation: values.motivation,
         rationale: values.rationale,
         backwardCompatibility: values.backwardCompatibility,
