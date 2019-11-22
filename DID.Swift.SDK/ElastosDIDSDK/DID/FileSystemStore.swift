@@ -178,7 +178,7 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func loadPrivateIdentity() throws -> String {
-        let path = storeRootPath + "/" + FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.INDEX_FILE
+        let path = storeRootPath + "/" + FileSystemStore.PRIVATE_DIR + "/" + FileSystemStore.HDKEY_FILE
         return try readTextFromPath(path)
     }
 

@@ -70,8 +70,8 @@ public class DIDStore: NSObject {
         guard re >= 0 else {
             throw DIDStoreError.failue("decryptFromBase64 error.")
         }
-        let str: String = String(cString: plain)
-        return str.data(using: .utf8)!
+        let data = Data(bytes: plain, count: 64)
+        return data
     }
     
     public func initPrivateIdentity(_ mnemonic: String ,_ passphrase: String, _ storepass: String, _ force: Bool ) throws {

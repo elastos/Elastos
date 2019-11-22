@@ -14,7 +14,6 @@
 		111BF4832354678B0043D570 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; };
 		111BF4842354678B0043D570 /* Pods_ElastosDIDSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1125B57A2382303600D396B6 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5752382302800D396B6 /* libz.tbd */; };
-		1125B580238234FB00D396B6 /* Ccrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1125B57B238234FB00D396B6 /* Ccrypto.swift */; };
 		1125B581238234FB00D396B6 /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57C238234FB00D396B6 /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1125B582238234FB00D396B6 /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1125B57D238234FB00D396B6 /* CHDKey.swift */; };
 		1125B583238234FB00D396B6 /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57E238234FB00D396B6 /* HDkey.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -42,12 +41,10 @@
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
 		11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		11CA74B7235E06B7006E66F7 /* EcdsaSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */; };
 		11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AE235E06B7006E66F7 /* DerivedKey.swift */; };
 		11CA74B9235E06B7006E66F7 /* DateFormater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AF235E06B7006E66F7 /* DateFormater.swift */; };
 		11CA74BA235E06B7006E66F7 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B0235E06B7006E66F7 /* HDKey.swift */; };
 		11CA74BB235E06B7006E66F7 /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B1235E06B7006E66F7 /* Base64.swift */; };
-		11CA74BC235E06B7006E66F7 /* Aes256cbc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B2235E06B7006E66F7 /* Aes256cbc.swift */; };
 		11CA74BD235E06B7006E66F7 /* JsonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B3235E06B7006E66F7 /* JsonHelper.swift */; };
 		11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */; };
 		11CA74BF235E06B7006E66F7 /* OrderedDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */; };
@@ -154,7 +151,6 @@
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
 		110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FakeConsoleAdaptor.swift; path = ElastosDIDSDKTests/FakeConsoleAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		1125B5752382302800D396B6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
-		1125B57B238234FB00D396B6 /* Ccrypto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Ccrypto.swift; path = include/Ccrypto.swift; sourceTree = "<group>"; };
 		1125B57C238234FB00D396B6 /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = spvadapter.h; path = include/spvadapter.h; sourceTree = "<group>"; };
 		1125B57D238234FB00D396B6 /* CHDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CHDKey.swift; path = include/CHDKey.swift; sourceTree = "<group>"; };
 		1125B57E238234FB00D396B6 /* HDkey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HDkey.h; path = include/HDkey.h; sourceTree = "<group>"; };
@@ -185,12 +181,10 @@
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E4237E623100C4998E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E6237E623E00C4998E /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
-		11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EcdsaSigner.swift; sourceTree = "<group>"; };
 		11CA74AE235E06B7006E66F7 /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
 		11CA74AF235E06B7006E66F7 /* DateFormater.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateFormater.swift; sourceTree = "<group>"; };
 		11CA74B0235E06B7006E66F7 /* HDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HDKey.swift; sourceTree = "<group>"; };
 		11CA74B1235E06B7006E66F7 /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base64.swift; sourceTree = "<group>"; };
-		11CA74B2235E06B7006E66F7 /* Aes256cbc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Aes256cbc.swift; sourceTree = "<group>"; };
 		11CA74B3235E06B7006E66F7 /* JsonHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonHelper.swift; sourceTree = "<group>"; };
 		11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionInt.swift; sourceTree = "<group>"; };
 		11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderedDictionary.swift; sourceTree = "<group>"; };
@@ -397,7 +391,6 @@
 		116C94E8234D825B00BA9777 /* libhdkey */ = {
 			isa = PBXGroup;
 			children = (
-				1125B57B238234FB00D396B6 /* Ccrypto.swift */,
 				1125B57D238234FB00D396B6 /* CHDKey.swift */,
 				1125B57F238234FB00D396B6 /* crypto.h */,
 				1125B57E238234FB00D396B6 /* HDkey.h */,
@@ -427,13 +420,11 @@
 		11CA74AC235E06B7006E66F7 /* Util */ = {
 			isa = PBXGroup;
 			children = (
-				11CA74AD235E06B7006E66F7 /* EcdsaSigner.swift */,
 				11092150235ED8BD006B7F47 /* DIDUtil.swift */,
 				11CA74AE235E06B7006E66F7 /* DerivedKey.swift */,
 				11CA74AF235E06B7006E66F7 /* DateFormater.swift */,
 				11CA74B0235E06B7006E66F7 /* HDKey.swift */,
 				11CA74B1235E06B7006E66F7 /* Base64.swift */,
-				11CA74B2235E06B7006E66F7 /* Aes256cbc.swift */,
 				11CA74B3235E06B7006E66F7 /* JsonHelper.swift */,
 				11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */,
 				11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */,
@@ -798,7 +789,6 @@
 				A3E6D45B233485AD0012CD77 /* ParserHelper.swift in Sources */,
 				A3E6D481233485E00012CD77 /* DIDPublicKey.swift in Sources */,
 				A3E6D47E233485E00012CD77 /* MalformedDocumentError.swift in Sources */,
-				1125B580238234FB00D396B6 /* Ccrypto.swift in Sources */,
 				A3E6D456233485AD0012CD77 /* DIDURLLexer.swift in Sources */,
 				A3E6D458233485AD0012CD77 /* DIDURLParserATN.swift in Sources */,
 				119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */,
@@ -808,7 +798,6 @@
 				11CA74C0235E06B7006E66F7 /* PathExtracter.swift in Sources */,
 				A3E6D475233485DF0012CD77 /* FileSystemStore.swift in Sources */,
 				1125B582238234FB00D396B6 /* CHDKey.swift in Sources */,
-				11CA74BC235E06B7006E66F7 /* Aes256cbc.swift in Sources */,
 				110AD2FF234E44C8006578D6 /* Base58.swift in Sources */,
 				A3E6D477233485E00012CD77 /* DIDStore.swift in Sources */,
 				A3E6D448233485800012CD77 /* Issuer.swift in Sources */,
@@ -817,7 +806,6 @@
 				11092151235ED8BD006B7F47 /* DIDUtil.swift in Sources */,
 				A3E6D453233485AD0012CD77 /* DIDURLListener.swift in Sources */,
 				A3E6D45E233485BB0012CD77 /* IDChainRequest.swift in Sources */,
-				11CA74B7235E06B7006E66F7 /* EcdsaSigner.swift in Sources */,
 				A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */,
 				11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */,
 				A3E6D457233485AD0012CD77 /* DIDURLLexerATN.swift in Sources */,

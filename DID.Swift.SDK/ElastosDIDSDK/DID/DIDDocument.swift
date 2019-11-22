@@ -618,13 +618,12 @@ public class DIDDocument: NSObject {
         let cpk: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (pk: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
             return pk
         }
-        let s = signature + "\0"
-        var sigData: Data = s.data(using: .utf8)!
+        var sigData: Data = signature.data(using: .utf8)!
         let sig: UnsafeMutablePointer<Int8> = sigData.withUnsafeMutableBytes { (csign: UnsafeMutablePointer<Int8>) -> UnsafeMutablePointer<Int8> in
             return csign
         }
         let cinputs = getVaList(inputs)
-        let count = inputs.count - 1
+        let count = inputs.count / 2
        let re = ecdsa_verify_base64v(sig, cpk, Int32(count), cinputs)
         
         return re == 0 ? true : false
