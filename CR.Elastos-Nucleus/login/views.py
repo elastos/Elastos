@@ -72,7 +72,6 @@ def check_ela_auth(request):
                 messages.success(request, "Logged in successfully!")
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
-    del request.session['elephant_url']
     return JsonResponse({'redirect': redirect_url}, status=200)
 
 
