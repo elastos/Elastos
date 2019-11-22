@@ -131,10 +131,6 @@ export default class extends BaseComponent {
 
   renderPopover() {
     const { isSubscribed, isAbused, isArchived } = this.state
-    const {
-      currentUserId,
-      data: { createdBy }
-    } = this.props
     const content = (
       <div className="popover-actions">
         <IconText
@@ -180,7 +176,7 @@ export default class extends BaseComponent {
       subscribe,
       unsubscribe,
       reportAbuse,
-      markArchived,
+      archiveOrUnarchive,
       data: { _id }
     } = this.props
     const unsubOrSub = this.state.isSubscribed ? unsubscribe : subscribe
@@ -189,12 +185,15 @@ export default class extends BaseComponent {
       isDisliked: dislike,
       isSubscribed: unsubOrSub,
       isAbused: reportAbuse,
-      isArchived: markArchived
+      isArchived: archiveOrUnarchive,
     }
     const params = {
       callback: actionMapping[action],
       param: _id,
       state: action
+    }
+    if (action === 'isArchived') {
+      params.param = { id: _id, isArchived: this.state.isArchived }
     }
     return params
   }
@@ -226,7 +225,6 @@ export default class extends BaseComponent {
       isAbused,
       likesNum,
       dislikesNum,
-      isArchived
     } = this.state
 
     if (!isLogin) {
@@ -245,7 +243,6 @@ export default class extends BaseComponent {
     }
     try {
       await callback(param)
-
       if (refetch) {
         refetch()
       } else {
