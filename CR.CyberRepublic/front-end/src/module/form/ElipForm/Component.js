@@ -140,7 +140,7 @@ class C extends BaseComponent {
 
       onSubmit({
         title: values.title,
-        elipType: values.elipType,
+        elipType: values.type,
         abstract: values.abstract,
         specifications: values.specification,
         motivation: values.motivation,
