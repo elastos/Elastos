@@ -1,44 +1,41 @@
-{% extends 'layout.html' %}
-{% load static %}
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="col-md-12" style="text-align:center;">
+  <a href="{%  url 'login:sign_out' %}">
+    <button>Logout</button>
+  </a>
+</div>
+<div class="row align-items-center justify-content-center">
+  <div class="col-md-12" style="text-align:center;">
+    <h2>Build the Modern Internet</h2>
+  </div>
 
-{% block content %}
-    <div class="col-md-12" style="...">
-        <a href="{%  url 'login:sign_out' %}">
-                <button>Logout</button>
-        </a>
+  <div class="col-md-3">
+    <div class="card" style="height: 100px">
+      <div class="card-image">
+        <img src="{% static '/images/blockchain.jpg' %}" />
+      </div>
     </div>
-    <div class="row align-items-center justify-content-center">
-        <div class="col-md-12" style="text-align:center;">
-            <h2>Build the Modern Internet</h2>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card" style="height: 100px">
-                <div class="card-image">
-                    <img src="{% static '/images/blockchain.jpg' %}">
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card" style="height: 100px">
-                <div class="card-image">
-                    <img src="{% static '/images/sidechain.jpg' %}">
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card" style="height: 100px">
-                <div class="card-image">
-                    <img src="{% static '/images/runtime.jpg' %}">
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card" style="height: 100px">
-                <div class="card-image">
-                    <img src="{% static '/images/carrier.jpg' %}">
-                </div>
-            </div>
-        </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card" style="height: 100px">
+      <div class="card-image">
+        <img src="{% static '/images/sidechain.jpg' %}" />
+      </div>
     </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card" style="height: 100px">
+      <div class="card-image">
+        <img src="{% static '/images/runtime.jpg' %}" />
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card" style="height: 100px">
+      <div class="card-image">
+        <img src="{% static '/images/carrier.jpg' %}" />
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

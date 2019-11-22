@@ -1,28 +1,26 @@
-{% extends 'layout.html' %}
-{% load static %}
-
-{% block scripts %}
-    <script src="{% static '/javascript/elaauth.js' %}"></script>
-{% endblock %}
-
-{% load qr_code %}
-
-{% block content %}
-    <div class="row align-items-center justify-content-center">
-        <div class="col-md-8">
-            <div class="card-header text-center">
-                Scan the code using Elephant Wallet from your phone<br>
-                You can download the app on both Android and iOS devices<br>
-                For more info, go to the <a href="https://elephantwallet.app/#footer" target="blank">Official Elephant Wallet App Website</a>
-            </div>
-            <div class="card-body text-center">
-                <img src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=5 version=10 image_format='png' %}">
-            </div>
-            <div class="card-body text-center">
-                <p class="text-muted">
-                    Waiting for phone authentication...
-                </p>
-            </div>
-        </div>
+{% extends 'base.html' %} {% load static %} {% block scripts %}
+<script src="{% static '/javascript/elaauth.js' %}"></script>
+{% endblock %} {% load qr_code %} {% block content %}
+<div class="row align-items-center justify-content-center">
+  <div class="col-md-8">
+    <div class="card-header text-center">
+      Scan the code using Elephant Wallet from your phone<br />
+      You can download the app on both Android and iOS devices<br />
+      For more info, go to the
+      <a href="https://elephantwallet.app/#footer" target="blank"
+        >Official Elephant Wallet App Website</a
+      >
     </div>
+    <div class="card-body text-center">
+      <img
+        src="{% qr_url_from_text request.session.elephant_url error_correction='Q' size=5 version=10 image_format='png' %}"
+      />
+    </div>
+    <div class="card-body text-center">
+      <p class="text-muted">
+        Waiting for phone authentication...
+      </p>
+    </div>
+  </div>
+</div>
 {% endblock %}

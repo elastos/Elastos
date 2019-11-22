@@ -42,15 +42,10 @@ def check_ela_auth(request):
         return JsonResponse({'authenticated': False}, status=403)
     state = request.session['elaState']
     try:
-<<<<<<< HEAD
         recently_created_time = datetime.now(
             tz=timezone.now) - timedelta(minutes=1)
         did_request_query_result = DIDRequest.objects.get(
             state=state, created_at__gte=recently_created_time)
-=======
-        recently_created_time = datetime.now() - timedelta(minutes=1)
-        did_request_query_result = DIDRequest.objects.get(state=state, created_at__gte=recently_created_time)
->>>>>>> 125fd8a0b82c39543ec06fc6e908827c1c41e594
         data = json.loads(did_request_query_result.data)
         if not data["auth"]:
             return JsonResponse({'authenticated': False}, status=403)
@@ -65,7 +60,8 @@ def check_ela_auth(request):
             if user.is_active is False:
                 redirect_url = "/login/register"
                 DIDUser.objects.get(did=data["DID"]).delete()
-                messages.success(request, "This DID did not finish the registration process. Please re-register again")
+                messages.success(
+                    request, "This DID did not finish the registration process. Please re-register again")
             else:
                 redirect_url = "/login/home"
                 request.session['logged_in'] = True
@@ -92,12 +88,10 @@ def did_callback(request):
         if not valid:
             return JsonResponse({'message': 'Unauthorized'}, status=401)
         try:
-<<<<<<< HEAD
             recently_created_time = datetime.now(
                 timezone.now) - timedelta(minutes=1)
-=======
+
             recently_created_time = datetime.now() - timedelta(minutes=1)
->>>>>>> 125fd8a0b82c39543ec06fc6e908827c1c41e594
             did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
                                                               created_at__gte=recently_created_time)
             if not did_request_query_result:
@@ -136,7 +130,8 @@ def register(request):
             )
             email.content_subtype = 'html'
             email.send()
-            messages.success(request, "Please check your email to complete your registration")
+            messages.success(
+                request, "Please check your email to complete your registration")
             return redirect(reverse('index'))
     else:
         form = DIDUserCreationForm(initial={'name': request.session['name'], 'email': request.session['email'],
