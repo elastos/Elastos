@@ -2,11 +2,17 @@
 {% load static %}
 
 {% block content %}
-    <div class="col-md-12" style="...">
+    <div class="col-md-6" style="...">
         <a href="{%  url 'login:sign_out' %}">
                 <button>Logout</button>
         </a>
     </div>
+    <div class="col-md-6" style="...">
+        <a href="{%  url 'login:edit_profile' %}">
+                <button>Edit Profile</button>
+        </a>
+    </div>
+
     <div class="row align-items-center justify-content-center">
         <div class="col-md-12" style="text-align:center;">
             <h2>Build the Modern Internet</h2>
