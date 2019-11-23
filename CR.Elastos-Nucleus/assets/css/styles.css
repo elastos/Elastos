@@ -1,122 +1,27 @@
-/*.header {
-  padding: 5px;
-  text-align: center;
-  background: ghostwhite;
-  color: black;
-  font-size: 15px;
-  text-align: left;
-  height: 80px;
-}
-.dropdown {
-  float: right;
-  overflow: hidden;
-}
-body {
-  margin: 0;
-  padding: 0;
-}
-
-.dropdown .dropbtn {
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  border: none;
-  outline: none;
-  color: black;
-  padding: 14px 16px;
-  background-color: inherit;
-  font-family: inherit;
-  margin: 0;
-  text-align: right;
-  margin-bottom: 20px;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  float: none;
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  text-align: left;
-}
-
-button {
-  display: block;
-  max-width: 300px;
-  margin: auto;
-  text-align: center;
-  border-radius: 5px;
-  padding: 8px;
-  margin-left: 10px;
-}
-
-.main {
-  text-align: left;
-}
-
-.show {
-  display: block;
-}
-
-.box {
-  width: 300px;
-  position: relative;
-  padding: 2px;
-}
-
-.box:before {
-  content: "";
-  position: absolute;
-  border: 2px solid black;
-  top: -4%;
-  bottom: -11%;
-  left: -30%;
-  right: -30%;
-  z-index: -1;
-  -webkit-transform: perspective(50em) rotateX(-30deg);
-  transform: perspective(50em) rotateX(-30deg);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-.column {
-  float: left;
-  width: 50%;
-  padding: 10px;
-  height: 600px;
-}
-
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-a {
-  text-decoration: none;
-}
-
-img {
-  vertical-align: middle;
-}
-*/
-
 .footer {
-  color: #343a40;
-  height: 200px;
-  padding: 50px;
-  overflow: hidden;
+  color: #333;
+  position: absolute;
+  width: 100%;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.footer .link {
+  padding: 10px;
+  color: #fff;
+}
+
+.footer .copyright {
+  color: #666;
+  font-size: 12px;
+}
+
+.container-fluid {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .ul {

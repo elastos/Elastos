@@ -1,19 +1,34 @@
-{% extends "service.html" %} {% load static %} {% block scripts %}
+{% extends "service.html" %} {% load static %} 
+
+{% block scripts %}
 <script src="{% static '/javascript/generateKey.js' %}"></script>
-{% endblock %} {% block servicetitle %}
-<h5 class="card-header">Service Title</h5>
-{%endblock servicetitle %} {% block service %}
+{% endblock scripts %} 
+
+{% block related %}
+<ul class="list-unstyled">
+  <li>
+    One Service
+  </li>
+  <li>
+    Another Service
+  </li>
+  <li>
+    You Get The Point
+  </li>
+</ul>
+{% endblock related %} 
+
+{% block servicetitle %}
+<h5 class="card-header">Generate API Key</h5>
+{% endblock servicetitle %} 
+
+{% block service %}
 <button class="btn mt-3 btn-dark " id="getKeyBtn" onclick="getAPI()">
   Generate Key
 </button>
-<div class="card mt-3">
-  <div class="card-header">
-    API Key
-  </div>
-  <div class="card-body pt-3" id="apiKeyCard">
-    <span id="apiKey">Some Key</span>
-  </div>
-</div>
-{% endblock service %} {% block documentation %}
+ <p class="card-text" id="apiKey">Some Key</p>
+{% endblock service %} 
+
+{% block documentation %}
 <p>test</p>
 {% endblock documentation %}

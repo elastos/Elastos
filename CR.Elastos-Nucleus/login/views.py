@@ -32,7 +32,7 @@ from .tokens import account_activation_token
 def login_required(function):
     def wrapper(request, *args, **kw):
         if not request.session.get('logged_in'):
-            return redirect(reverse('index'))
+            return redirect(reverse('login:home'))
         return function(request, *args, **kw)
 
     wrapper.__doc__ = function.__doc__
