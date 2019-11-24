@@ -14,7 +14,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function getAPI(){
+function getAPI() {
     var token = getCookie('csrftoken');
    $.ajax({
         headers: { "X-CSRFToken": token},

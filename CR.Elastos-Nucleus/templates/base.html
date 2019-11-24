@@ -101,8 +101,8 @@
             class="dropdown-menu dropdown-menu-right"
             aria-labelledby="accountDropdown"
           >
-            <a class="dropdown-item" href="#">Edit Profile</a>
-            <a class="dropdown-item" href="#">Log Out</a>
+            <a class="dropdown-item" href="{%  url 'login:edit_profile' %}">Edit Profile</a>
+            <a class="dropdown-item" href="{%  url 'login:sign_out' %}">Log Out</a>
           </div>
         </div>
       </nav>
@@ -154,8 +154,8 @@
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script
-      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      src="https://code.jquery.com/jquery-3.4.1.js" 
+      integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" 
       crossorigin="anonymous"
     ></script>
     <script
