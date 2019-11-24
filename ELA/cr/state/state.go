@@ -379,33 +379,17 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 		}
 	}
 	candidate.depositAmount = amount
-
-	c := s.getCandidate(info.DID)
-	if c == nil {
-		s.history.Append(height, func() {
-			s.Nicknames[nickname] = struct{}{}
-			s.CodeDIDMap[code] = info.DID
-			s.DepositHashMap[candidate.depositHash] = struct{}{}
-			s.Candidates[info.DID] = &candidate
-		}, func() {
-			delete(s.Nicknames, nickname)
-			delete(s.CodeDIDMap, code)
-			delete(s.DepositHashMap, candidate.depositHash)
-			delete(s.Candidates, info.DID)
-		})
-	} else {
-		candidate.votes = c.votes
-		s.history.Append(height, func() {
-			s.Nicknames[nickname] = struct{}{}
-			candidate.state = Pending
-			s.Candidates[info.DID] = &candidate
-		}, func() {
-			delete(s.Nicknames, nickname)
-			candidate.state = Canceled
-			s.Candidates[c.Info().DID] = c
-		})
-	}
-
+	s.history.Append(height, func() {
+		s.Nicknames[nickname] = struct{}{}
+		s.CodeDIDMap[code] = info.DID
+		s.DepositHashMap[candidate.depositHash] = struct{}{}
+		s.Candidates[info.DID] = &candidate
+	}, func() {
+		delete(s.Nicknames, nickname)
+		delete(s.CodeDIDMap, code)
+		delete(s.DepositHashMap, candidate.depositHash)
+		delete(s.Candidates, info.DID)
+	})
 }
 
 // updateCR handles the update CR transaction.

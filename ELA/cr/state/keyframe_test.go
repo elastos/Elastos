@@ -103,9 +103,8 @@ func stateKeyframeEqual(first *StateKeyFrame, second *StateKeyFrame) bool {
 		}
 	}
 
-	return candidatesMapEqual(first.PendingCandidates, second.PendingCandidates) &&
-		candidatesMapEqual(first.ActivityCandidates, second.ActivityCandidates) &&
-		candidatesMapEqual(first.CanceledCandidates, second.CanceledCandidates)
+	return candidatesMapEqual(first.Candidates, second.Candidates)
+
 }
 
 func candidatesMapEqual(first map[common.Uint168]*Candidate,
@@ -173,21 +172,23 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 
 	for i := 0; i < size; i++ {
 		candidate := randomCandidate()
+		candidate.state = Pending
 		nickname := candidate.Info().NickName
 		code := candidate.Info().Code
 		did := candidate.Info().DID
 		frame.CodeDIDMap[common.BytesToHexString(code)] = did
-		frame.PendingCandidates[did] = candidate
+		frame.Candidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
 	if hasPending {
 		for i := 0; i < size; i++ {
 			candidate := randomCandidate()
+			candidate.state = Active
 			code := candidate.info.Code
 			did := candidate.info.DID
 			nickname := candidate.info.NickName
 			frame.CodeDIDMap[common.BytesToHexString(code)] = did
-			frame.ActivityCandidates[did] = candidate
+			frame.Candidates[did] = candidate
 			frame.Nicknames[nickname] = struct{}{}
 		}
 	}
@@ -204,7 +205,7 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 			candidate.state = Returned
 		}
 		frame.CodeDIDMap[common.BytesToHexString(code)] = did
-		frame.CanceledCandidates[did] = candidate
+		frame.Candidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
 	for i := 0; i < size; i++ {

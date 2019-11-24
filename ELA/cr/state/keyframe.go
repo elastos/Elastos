@@ -62,6 +62,8 @@ type StateKeyFrame struct {
 	CodeDIDMap           map[string]common.Uint168
 	DepositHashMap       map[common.Uint168]struct{}
 	Candidates           map[common.Uint168]*Candidate
+	HistoryCandidates    map[uint64]map[common.Uint168]*Candidate
+	CurrentSession       uint64
 	Nicknames            map[string]struct{}
 	Votes                map[string]struct{}
 	DepositOutputs       map[string]common.Fixed64
@@ -279,74 +281,90 @@ func NewKeyFrame() *KeyFrame {
 	}
 }
 
-func (k *StateKeyFrame) Serialize(w io.Writer) (err error) {
-	if err = k.serializeCodeAddressMap(w, k.CodeDIDMap); err != nil {
+func (kf *StateKeyFrame) Serialize(w io.Writer) (err error) {
+	if err = kf.serializeCodeAddressMap(w, kf.CodeDIDMap); err != nil {
 		return
 	}
 
-	if err = k.serializeDepositDIDMap(w, k.DepositHashMap); err != nil {
+	if err = kf.serializeDepositDIDMap(w, kf.DepositHashMap); err != nil {
 		return
 	}
 
-	if err = k.serializeCandidateMap(w, k.Candidates); err != nil {
+	if err = kf.serializeCandidateMap(w, kf.Candidates); err != nil {
 		return
 	}
 
-	if err = utils.SerializeStringSet(w, k.Nicknames); err != nil {
+	if err = kf.serializeHistoryCandidateMap(w, kf.HistoryCandidates); err != nil {
 		return
 	}
 
-	if err = utils.SerializeStringSet(w, k.Votes); err != nil {
+	if err = common.WriteVarUint(w, kf.CurrentSession); err != nil {
 		return
 	}
 
-	if err = k.SerializeFixed64Map(w, k.DepositOutputs); err != nil {
+	if err = utils.SerializeStringSet(w, kf.Nicknames); err != nil {
 		return
 	}
 
-	if err = k.SerializeFixed64Map(w, k.CRCFoundationOutputs); err != nil {
+	if err = utils.SerializeStringSet(w, kf.Votes); err != nil {
 		return
 	}
 
-	return k.SerializeFixed64Map(w, k.CRCCommitteeOutputs)
+	if err = kf.SerializeFixed64Map(w, kf.DepositOutputs); err != nil {
+		return
+	}
+
+	if err = kf.SerializeFixed64Map(w, kf.CRCFoundationOutputs); err != nil {
+		return
+	}
+
+	return kf.SerializeFixed64Map(w, kf.CRCCommitteeOutputs)
 }
 
-func (k *StateKeyFrame) Deserialize(r io.Reader) (err error) {
-	if k.CodeDIDMap, err = k.deserializeCodeAddressMap(r); err != nil {
+func (kf *StateKeyFrame) Deserialize(r io.Reader) (err error) {
+	if kf.CodeDIDMap, err = kf.deserializeCodeAddressMap(r); err != nil {
 		return
 	}
 
-	if k.DepositHashMap, err = k.deserializeDepositDIDMap(r); err != nil {
+	if kf.DepositHashMap, err = kf.deserializeDepositDIDMap(r); err != nil {
 		return
 	}
 
-	if k.Candidates, err = k.deserializeCandidateMap(r); err != nil {
+	if kf.Candidates, err = kf.deserializeCandidateMap(r); err != nil {
 		return
 	}
 
-	if k.Nicknames, err = utils.DeserializeStringSet(r); err != nil {
+	if kf.HistoryCandidates, err = kf.deserializeHistoryCandidateMap(r); err != nil {
 		return
 	}
 
-	if k.Votes, err = utils.DeserializeStringSet(r); err != nil {
+	if kf.CurrentSession, err = common.ReadVarUint(r, 0); err != nil {
 		return
 	}
 
-	if k.DepositOutputs, err = k.DeserializeFixed64Map(r); err != nil {
+	if kf.Nicknames, err = utils.DeserializeStringSet(r); err != nil {
 		return
 	}
 
-	if k.CRCFoundationOutputs, err = k.DeserializeFixed64Map(r); err != nil {
+	if kf.Votes, err = utils.DeserializeStringSet(r); err != nil {
 		return
 	}
 
-	if k.CRCCommitteeOutputs, err = k.DeserializeFixed64Map(r); err != nil {
+	if kf.DepositOutputs, err = kf.DeserializeFixed64Map(r); err != nil {
+		return
+	}
+
+	if kf.CRCFoundationOutputs, err = kf.DeserializeFixed64Map(r); err != nil {
+		return
+	}
+
+	if kf.CRCCommitteeOutputs, err = kf.DeserializeFixed64Map(r); err != nil {
 		return
 	}
 	return
 }
 
-func (k *StateKeyFrame) serializeCodeAddressMap(w io.Writer,
+func (kf *StateKeyFrame) serializeCodeAddressMap(w io.Writer,
 	cmap map[string]common.Uint168) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
@@ -363,7 +381,7 @@ func (k *StateKeyFrame) serializeCodeAddressMap(w io.Writer,
 	return
 }
 
-func (k *StateKeyFrame) deserializeCodeAddressMap(r io.Reader) (
+func (kf *StateKeyFrame) deserializeCodeAddressMap(r io.Reader) (
 	cmap map[string]common.Uint168, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -385,7 +403,7 @@ func (k *StateKeyFrame) deserializeCodeAddressMap(r io.Reader) (
 	return
 }
 
-func (k *StateKeyFrame) serializeDepositDIDMap(w io.Writer,
+func (kf *StateKeyFrame) serializeDepositDIDMap(w io.Writer,
 	cmap map[common.Uint168]struct{}) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
@@ -398,7 +416,7 @@ func (k *StateKeyFrame) serializeDepositDIDMap(w io.Writer,
 	return
 }
 
-func (k *StateKeyFrame) deserializeDepositDIDMap(r io.Reader) (
+func (kf *StateKeyFrame) deserializeDepositDIDMap(r io.Reader) (
 	cmap map[common.Uint168]struct{}, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -416,7 +434,7 @@ func (k *StateKeyFrame) deserializeDepositDIDMap(r io.Reader) (
 	return
 }
 
-func (k *StateKeyFrame) serializeCandidateMap(w io.Writer,
+func (kf *StateKeyFrame) serializeCandidateMap(w io.Writer,
 	cmap map[common.Uint168]*Candidate) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
@@ -433,7 +451,25 @@ func (k *StateKeyFrame) serializeCandidateMap(w io.Writer,
 	return
 }
 
-func (k *StateKeyFrame) deserializeCandidateMap(
+func (kf *StateKeyFrame) serializeHistoryCandidateMap(w io.Writer,
+	hcmap map[uint64]map[common.Uint168]*Candidate) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(hcmap))); err != nil {
+		return
+	}
+	for k, v := range hcmap {
+		if err = common.WriteVarUint(w, k); err != nil {
+			return
+		}
+
+		if err = kf.serializeCandidateMap(w, v); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (kf *StateKeyFrame) deserializeCandidateMap(
 	r io.Reader) (cmap map[common.Uint168]*Candidate, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -454,7 +490,30 @@ func (k *StateKeyFrame) deserializeCandidateMap(
 	return
 }
 
-func (k *StateKeyFrame) SerializeFixed64Map(w io.Writer,
+func (kf *StateKeyFrame) deserializeHistoryCandidateMap(
+	r io.Reader) (hcmap map[uint64]map[common.Uint168]*Candidate, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	hcmap = make(map[uint64]map[common.Uint168]*Candidate)
+	for i := uint64(0); i < count; i++ {
+		var k uint64
+		k, err = common.ReadVarUint(r, 0)
+		if err != nil {
+			return
+		}
+		var cmap map[common.Uint168]*Candidate
+		cmap, err = kf.deserializeCandidateMap(r)
+		if err != nil {
+			return
+		}
+		hcmap[k] = cmap
+	}
+	return
+}
+
+func (kf *StateKeyFrame) SerializeFixed64Map(w io.Writer,
 	vmap map[string]common.Fixed64) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
 		return
@@ -470,7 +529,7 @@ func (k *StateKeyFrame) SerializeFixed64Map(w io.Writer,
 	return
 }
 
-func (k *StateKeyFrame) DeserializeFixed64Map(
+func (kf *StateKeyFrame) DeserializeFixed64Map(
 	r io.Reader) (vmap map[string]common.Fixed64, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
@@ -492,15 +551,15 @@ func (k *StateKeyFrame) DeserializeFixed64Map(
 }
 
 // Snapshot will create a new StateKeyFrame object and deep copy all related data.
-func (k *StateKeyFrame) Snapshot() *StateKeyFrame {
+func (kf *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state := NewStateKeyFrame()
-	state.CodeDIDMap = copyCodeAddressMap(k.CodeDIDMap)
-	state.Candidates = copyCandidateMap(k.Candidates)
-	state.Nicknames = utils.CopyStringSet(k.Nicknames)
-	state.Votes = utils.CopyStringSet(k.Votes)
-	state.DepositOutputs = copyFixed64Map(k.DepositOutputs)
-	state.CRCFoundationOutputs = copyFixed64Map(k.DepositOutputs)
-	state.CRCCommitteeOutputs = copyFixed64Map(k.DepositOutputs)
+	state.CodeDIDMap = copyCodeAddressMap(kf.CodeDIDMap)
+	state.Candidates = copyCandidateMap(kf.Candidates)
+	state.Nicknames = utils.CopyStringSet(kf.Nicknames)
+	state.Votes = utils.CopyStringSet(kf.Votes)
+	state.DepositOutputs = copyFixed64Map(kf.DepositOutputs)
+	state.CRCFoundationOutputs = copyFixed64Map(kf.DepositOutputs)
+	state.CRCCommitteeOutputs = copyFixed64Map(kf.DepositOutputs)
 
 	return state
 }
@@ -736,6 +795,8 @@ func NewStateKeyFrame() *StateKeyFrame {
 		CodeDIDMap:           make(map[string]common.Uint168),
 		DepositHashMap:       make(map[common.Uint168]struct{}),
 		Candidates:           make(map[common.Uint168]*Candidate),
+		HistoryCandidates:    make(map[uint64]map[common.Uint168]*Candidate),
+		CurrentSession:       1,
 		Nicknames:            make(map[string]struct{}),
 		Votes:                make(map[string]struct{}),
 		DepositOutputs:       make(map[string]common.Fixed64),

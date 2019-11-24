@@ -529,6 +529,15 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 		result = append(result, candidates[i].info.DID)
 	}
 
+	for k, v := range c.state.Candidates {
+		if _, ok := c.state.HistoryCandidates[c.state.CurrentSession]; !ok {
+			c.state.HistoryCandidates[c.state.CurrentSession] =
+				make(map[common.Uint168]*Candidate)
+		}
+		c.state.HistoryCandidates[c.state.CurrentSession][k] = v
+	}
+
+	c.state.CurrentSession += 1
 	c.InElectionPeriod = true
 	c.LastCommitteeHeight = height
 	return result, nil
