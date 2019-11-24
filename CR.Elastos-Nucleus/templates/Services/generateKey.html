@@ -51,11 +51,13 @@
 {% endblock servicetitle %} 
 
 {% block service %}
-<div class="row">
-  <button class="btn mt-3 btn-dark " id="getKeyBtn" onclick="getAPI()">
-  Generate Key
-  </button>
-  <p class="card-text" id="apiKey">Some Key</p>
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <button class="btn btn-secondary" type="button" id="getKeyBtn" onclick="getAPI()">
+      Generate Key
+    </button>
+  </div>
+  <input type="text" class="form-control" placeholder="Key will appear here" aria-label="apiKey" aria-describedby="getKeyBtn" readonly>
 </div>
 {% endblock service %} 
 

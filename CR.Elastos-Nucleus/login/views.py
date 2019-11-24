@@ -233,4 +233,4 @@ def sign_out(request):
     request.session.clear()
     gc.collect()
     messages.success(request, "You have been logged out!")
-    return redirect(reverse('index'))
+    return redirect(reverse('landing'))

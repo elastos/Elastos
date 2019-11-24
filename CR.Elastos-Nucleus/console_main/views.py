@@ -2,4 +2,5 @@ from django.shortcuts import render
 
 
 def landing(request):
-    return render(request, 'landing.html')
+    context = {"name": "landing"}
+    return render(request, 'landing.html', context)
