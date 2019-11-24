@@ -1,14 +1,12 @@
 {% extends "base.html" %} 
 
-{% block title %}
-<title>Service</title>
-{% endblock title %} 
-
 {% block content %}
 <!--<div class="container-fluid">-->
 <div class="row flex-xl-nowrap">
+
   <!-- Left Sidebar -->
   <div class="col-12 col-md-3 col-xl-2 bd-sidebar">
+
     <!-- Search Button-->
     <form class="bd-search d-flex align-items-center">
       <input
@@ -51,9 +49,14 @@
 
     <!-- Related Services -->
     <nav class="collapse bd-links" id="bd-docs-nav">
-      <div class="container">
-        <h3>Related services</h3>
-        {% block related %}{% endblock %}
+      <div class="bd-toc-item active">
+        <h3 class="bd-toc-link">
+          Related Services
+        </h3>
+      
+        <ul class="nav bd-sidenav">
+          {% block related %}{% endblock %}
+        </ul>
       </div>
     </nav>
   </div>
@@ -62,51 +65,10 @@
   <div class="d-none d-xl-block col-xl-2 bd-toc">
     <ul class="section-nav">
       <li class="toc-entry toc-h2">
-        <h3>Developer Docs</h3>
+        <h3>Documentation</h3>
       </li>
-      <li class="toc-entry toc-h2"><a href="#example">Example</a></li>
-      <li class="toc-entry toc-h2">
-        <a href="#multiple-targets">Multiple targets</a>
-      </li>
-      <li class="toc-entry toc-h2">
-        <a href="#accordion-example">Accordion example</a>
-      </li>
-      <li class="toc-entry toc-h2">
-        <a href="#accessibility">Accessibility</a>
-      </li>
-      <li class="toc-entry toc-h2">
-        <a href="#usage">Usage</a>
-        <ul>
-          <li class="toc-entry toc-h3">
-            <a href="#via-data-attributes">Via data attributes</a>
-          </li>
-          <li class="toc-entry toc-h3">
-            <a href="#via-javascript">Via JavaScript</a>
-          </li>
-          <li class="toc-entry toc-h3"><a href="#options">Options</a></li>
-          <li class="toc-entry toc-h3">
-            <a href="#methods">Methods</a>
-            <ul>
-              <li class="toc-entry toc-h4">
-                <a href="#collapseoptions">.collapse(options)</a>
-              </li>
-              <li class="toc-entry toc-h4">
-                <a href="#collapsetoggle">.collapse(&#39;toggle&#39;)</a>
-              </li>
-              <li class="toc-entry toc-h4">
-                <a href="#collapseshow">.collapse(&#39;show&#39;)</a>
-              </li>
-              <li class="toc-entry toc-h4">
-                <a href="#collapsehide">.collapse(&#39;hide&#39;)</a>
-              </li>
-              <li class="toc-entry toc-h4">
-                <a href="#collapsedispose">.collapse(&#39;dispose&#39;)</a>
-              </li>
-            </ul>
-          </li>
-          <li class="toc-entry toc-h3"><a href="#events">Events</a></li>
-        </ul>
-      </li>
+
+      {% block documentation %}{% endblock %}
     </ul>
   </div>
 
@@ -122,11 +84,11 @@
 
     <!-- Documentation Card -->
     <div class="card mb-4">
-      <h5 class="card-header">Documentation</h5>
+      <h5 class="card-header">Description</h5>
       <div class="card-body">
-        {% block documentation %}{% endblock %}
+        {% block description %}{% endblock %}
       </div>
-    </div>
+    </div>                                                   
 
     <!-- Code Snippet Card -->
     <div class="card">

@@ -20,44 +20,29 @@ def generate_key(request):
     else:
         return render(request, "services/generateKey.html")
 
+def upload_and_sign(request):
+    return render(request, "services/uploadAndSign.html")
 
-def file_upload(request):
-    if(request.method == 'POST'):
-        headers = {'api_key': 'KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM'}
-        hash = requests.get(
-            "http://localhost:8888/api/1/console/upload", headers=headers)
-        return render(request, "Services/fileUpload.html")
-    else:
-        return render(request, "Services/fileUpload.html")
+def verify_and_show(request):
+    return render(request, "services/verifyAndShow.html")
 
+def request_ela(request):
+    return render(request, "services/requestELA.html")
 
-def show_file_content(request):
-    return render(request, "Services/showFileContent.html")
+def vote_supernodes(request):
+    return render(request, "services/voteSupernodes.html")
 
+def run_contract(request):
+    return render(request, "services/runContract.html")
 
-def upload_and_scan(request):
-    return render(request, "Services/uploadAndScan.html")
+def save_did_data(request):
+    return render(request, "services/saveData.html")
 
-
-def verify_and_show_content(request):
-    return render(request, "Services/verifyAndShowContent.html")
-
-
-def scan_message(request):
-    return render(request, "Services/scanMessage.html")
-
-
-def verify_message(request):
-    return render(request, "Services/verifyMessage.html")
-
-
-def transfer_file(request):
-    return render(request, "Services/transferFile.html")
-
+def retrieve_did_data(request):
+    return render(request, "services/retrieveData.html")
 
 def documentation(request):
-    return render(request, "Services/documentation.html")
-
+    return render(request, "services/documentation.html")
 
 def about_us(request):
-    return render(request, "Services/aboutUs.html")
+    return render(request, "services/aboutUs.html")

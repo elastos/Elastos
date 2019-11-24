@@ -24,6 +24,11 @@
 .toc-entry {
   display: block;
 }
+.toc-entry h3 {
+  display: block;
+  padding: 0.125rem 1.5rem;
+  color: #333;
+}
 .toc-entry a {
   display: block;
   padding: 0.125rem 1.5rem;
@@ -36,7 +41,7 @@
 
 .bd-sidebar {
   order: 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  /*border-bottom: 1px solid rgba(0, 0, 0, 0.1);*/
 }
 @media (min-width: 768px) {
   .bd-sidebar {
@@ -125,7 +130,7 @@
 
 .bd-sidebar .nav > li > a {
   display: block;
-  padding: 0.25rem 1.5rem;
+  padding: 0.15rem 1.5rem;
   font-size: 90%;
   color: rgba(0, 0, 0, 0.65);
 }

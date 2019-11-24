@@ -1,12 +1,8 @@
 {% extends "service.html" %} {% load static %} 
 
 {% block title %}
-<title>Generate Key</title>
+<title>Upload and Sign</title>
 {% endblock title %} 
-
-{% block scripts %}
-<script src="{% static '/javascript/generateKey.js' %}"></script>
-{% endblock scripts %} 
 
 {% block related %}
   <li>
@@ -47,18 +43,13 @@
 {% endblock documentation %}
 
 {% block servicetitle %}
-<h5 class="card-header">Generate API Key</h5>
+<h5 class="card-header">Upload and Sign</h5>
 {% endblock servicetitle %} 
 
 {% block service %}
-<div class="row">
-  <button class="btn mt-3 btn-dark " id="getKeyBtn" onclick="getAPI()">
-  Generate Key
-  </button>
-  <p class="card-text" id="apiKey">Some Key</p>
-</div>
+<p>The Upload and Sign service goes here.</p>
 {% endblock service %} 
 
 {% block description %}
-<p>The description of the Generate API Key service goes here.</p>
+<p>The description of the Upload and Sign service goes here.</p>
 {% endblock description %}
