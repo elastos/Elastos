@@ -22,7 +22,7 @@ func TestDposArbiter_Deserialize(t *testing.T) {
 	ar2 := &dposArbiter{}
 	ar2.Deserialize(buf)
 
-	assert.True(t, producerEqual(ar1.producer, ar2.producer))
+	assert.True(t, producerEqual(&ar1.producer, &ar2.producer))
 	assert.True(t, ar1.ownerHash.IsEqual(ar2.ownerHash))
 }
 
@@ -32,9 +32,9 @@ func TestDposArbiter_Clone(t *testing.T) {
 
 	ar2 := ar1.Clone().(*dposArbiter)
 
-	assert.True(t, producerEqual(ar1.producer, ar2.producer))
+	assert.True(t, producerEqual(&ar1.producer, &ar2.producer))
 	assert.True(t, ar1.ownerHash.IsEqual(ar2.ownerHash))
 
 	ar1.producer.info.NodePublicKey[0] = ar1.producer.info.NodePublicKey[0] + 1
-	assert.False(t, producerEqual(ar1.producer, ar2.producer))
+	assert.False(t, producerEqual(&ar1.producer, &ar2.producer))
 }

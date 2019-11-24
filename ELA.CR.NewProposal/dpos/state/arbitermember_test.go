@@ -34,7 +34,7 @@ func TestArbiterMemberInterfaceDeserialize(t *testing.T) {
 	dpos1 := ar1.(*dposArbiter)
 	dpos2 := ar2.(*dposArbiter)
 	assert.Equal(t, ar1.GetType(), ar2.GetType())
-	assert.True(t, producerEqual(dpos1.producer, dpos2.producer))
+	assert.True(t, producerEqual(&dpos1.producer, &dpos2.producer))
 	assert.True(t, dpos1.ownerHash.IsEqual(dpos2.ownerHash))
 
 	// CROrigin
@@ -46,6 +46,6 @@ func TestArbiterMemberInterfaceDeserialize(t *testing.T) {
 	crOrigin1 := ar1.(*dposArbiter)
 	crOrigin2 := ar2.(*dposArbiter)
 	assert.Equal(t, ar1.GetType(), ar2.GetType())
-	assert.True(t, producerEqual(crOrigin1.producer, crOrigin2.producer))
+	assert.True(t, producerEqual(&crOrigin1.producer, &crOrigin2.producer))
 	assert.True(t, crOrigin1.ownerHash.IsEqual(crOrigin2.ownerHash))
 }
