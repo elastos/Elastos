@@ -604,6 +604,10 @@ func (a *arbitrators) IsCRCArbitrator(pk []byte) bool {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
+	return a.isCRCArbitrator(pk)
+}
+
+func (a *arbitrators) isCRCArbitrator(pk []byte) bool {
 	for _, v := range a.crcArbiters {
 		if bytes.Equal(v.GetNodePublicKey(), pk) {
 			return true
@@ -939,7 +943,7 @@ func (a *arbitrators) snapshotVotesStates() error {
 	a.NextReward.OwnerVotesInRound = make(map[common.Uint168]common.Fixed64, 0)
 	a.NextReward.TotalVotesInRound = 0
 	for _, ar := range a.nextArbitrators {
-		if !a.IsCRCArbitrator(ar.GetNodePublicKey()) {
+		if !a.isCRCArbitrator(ar.GetNodePublicKey()) {
 			producer := a.GetProducer(ar.GetNodePublicKey())
 			if producer == nil {
 				return errors.New("get producer by node public key failed")
@@ -955,7 +959,7 @@ func (a *arbitrators) snapshotVotesStates() error {
 	}
 
 	for _, ar := range a.nextCandidates {
-		if a.IsCRCArbitrator(ar.GetNodePublicKey()) {
+		if a.isCRCArbitrator(ar.GetNodePublicKey()) {
 			continue
 		}
 		producer := a.GetProducer(ar.GetNodePublicKey())

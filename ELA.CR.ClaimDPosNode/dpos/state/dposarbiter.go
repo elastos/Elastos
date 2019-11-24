@@ -15,7 +15,7 @@ import (
 
 type dposArbiter struct {
 	arType    ArbiterType
-	producer  *Producer
+	producer  Producer
 	ownerHash common.Uint168
 }
 
@@ -28,7 +28,6 @@ func (d *dposArbiter) Serialize(w io.Writer) (err error) {
 }
 
 func (d *dposArbiter) Deserialize(r io.Reader) (err error) {
-	d.producer = &Producer{}
 	if err = d.producer.Deserialize(r); err != nil {
 		return
 	}
@@ -64,7 +63,7 @@ func (d *dposArbiter) GetNodePublicKey() []byte {
 func NewDPoSArbiter(t ArbiterType, producer *Producer) (ArbiterMember, error) {
 	ar := &dposArbiter{
 		arType:   t,
-		producer: producer,
+		producer: *producer,
 	}
 	hash, err := contract.PublicKeyToStandardProgramHash(
 		producer.OwnerPublicKey())
