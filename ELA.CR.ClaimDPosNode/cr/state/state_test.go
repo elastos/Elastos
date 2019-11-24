@@ -28,21 +28,7 @@ func TestState_GetCandidatesRelated(t *testing.T) {
 	}
 
 	// get single candidate
-	for k, v := range keyFrame.PendingCandidates {
-		v2 := state.GetCandidate(k)
-		assert.True(t, candidateEqual(v, v2))
-
-		v3 := state.GetCandidate(v.info.DID)
-		assert.True(t, candidateEqual(v, v3))
-	}
-	for k, v := range keyFrame.ActivityCandidates {
-		v2 := state.GetCandidate(k)
-		assert.True(t, candidateEqual(v, v2))
-
-		v3 := state.GetCandidate(v.info.DID)
-		assert.True(t, candidateEqual(v, v3))
-	}
-	for k, v := range keyFrame.CanceledCandidates {
+	for k, v := range keyFrame.Candidates {
 		v2 := state.GetCandidate(k)
 		assert.True(t, candidateEqual(v, v2))
 
@@ -77,19 +63,7 @@ func TestState_ExistCandidateRelated(t *testing.T) {
 	assert.False(t, state.ExistCandidateByDID(common.Uint168{}))
 	assert.False(t, state.ExistCandidateByNickname(""))
 
-	for _, v := range keyFrame.PendingCandidates {
-		assert.True(t, state.ExistCandidate(v.info.Code))
-		assert.True(t, state.ExistCandidateByDID(v.info.DID))
-		assert.True(t, state.ExistCandidateByNickname(v.info.NickName))
-	}
-
-	for _, v := range keyFrame.ActivityCandidates {
-		assert.True(t, state.ExistCandidate(v.info.Code))
-		assert.True(t, state.ExistCandidateByDID(v.info.DID))
-		assert.True(t, state.ExistCandidateByNickname(v.info.NickName))
-	}
-
-	for _, v := range keyFrame.CanceledCandidates {
+	for _, v := range keyFrame.Candidates {
 		assert.True(t, state.ExistCandidate(v.info.Code))
 		assert.True(t, state.ExistCandidateByDID(v.info.DID))
 		assert.True(t, state.ExistCandidateByNickname(v.info.NickName))
@@ -308,7 +282,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	height := uint32(1)
 
 	activeDIDs := make([][]byte, 0, 5)
-	for k, v := range keyframe.ActivityCandidates {
+	for k, v := range keyframe.Candidates {
 		v.votes = 0
 		activeDIDs = append(activeDIDs, k.Bytes())
 	}

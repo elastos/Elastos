@@ -1282,10 +1282,10 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 
 	// DID already exist
 	s.Chain.crCommittee.GetState().CodeDIDMap[codeStr1] = *did1
-	s.Chain.crCommittee.GetState().ActivityCandidates[*did1] = &crstate.Candidate{}
+	s.Chain.crCommittee.GetState().Candidates[*did1] = &crstate.Candidate{}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	s.EqualError(err, "did "+did1.String()+" already exist")
-	delete(s.Chain.crCommittee.GetState().ActivityCandidates, *did1)
+	delete(s.Chain.crCommittee.GetState().Candidates, *did1)
 
 	// Give an invalid code in payload
 	txn.Payload.(*payload.CRInfo).Code = []byte{}

@@ -75,6 +75,8 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	}
 
 	// CRCommitteeStartHeight + CRDutyPeriod
+	committee.LastVotingStartHeight = config.DefaultParams.CRCommitteeStartHeight +
+		config.DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
 			Height: config.DefaultParams.CRCommitteeStartHeight +
@@ -306,8 +308,10 @@ func TestCommittee_RollbackTo_DifferenceCommittee(t *testing.T) {
 func generateCandidateSuite() (*StateKeyFrame, []*Candidate) {
 	keyFrame := randomStateKeyFrame(24, false)
 	candidates := make([]*Candidate, 0, 24)
-	for _, v := range keyFrame.ActivityCandidates {
-		candidates = append(candidates, v)
+	for _, v := range keyFrame.Candidates {
+		if v.state == Active {
+			candidates = append(candidates, v)
+		}
 	}
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].votes > candidates[j].votes
