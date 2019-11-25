@@ -112,28 +112,6 @@ class C extends BaseComponent {
     })(<Input size="large" type="text" />)
   }
 
-  getTypeRadioGroup = key => {
-    const { getFieldDecorator } = this.props.form
-    const rules = [
-      {
-        required: true,
-        message: I18N.get('suggestion.form.error.required')
-      }
-    ]
-    return getFieldDecorator(key, {
-      rules,
-      initialValue: '1'
-    })(
-      <Radio.Group>
-        <Radio value="1">{I18N.get('suggestion.form.type.newMotion')}</Radio>
-        <Radio value="2">
-          {I18N.get('suggestion.form.type.motionAgainst')}
-        </Radio>
-        <Radio value="3">{I18N.get('suggestion.form.type.anythingElse')}</Radio>
-      </Radio.Group>
-    )
-  }
-
   onTextareaChange = activeKey => {
     const { form } = this.props
     const err = form.getFieldError(activeKey)
@@ -160,9 +138,11 @@ class C extends BaseComponent {
   }
 
   getTextarea(id) {
-    const { initialValues = {} } = this.props
-    const { getFieldDecorator } = this.props.form
+    const initialValues = _.isEmpty(this.props.initialValues)
+      ? { type: '1' }
+      : this.props.initialValues
 
+    const { getFieldDecorator } = this.props.form
     const rules = [
       {
         required: true,
@@ -177,7 +157,19 @@ class C extends BaseComponent {
     }
 
     let rc
-    if (
+    if (id === 'type') {
+      rc = (
+        <Radio.Group>
+          <Radio value="1">{I18N.get('suggestion.form.type.newMotion')}</Radio>
+          <Radio value="2">
+            {I18N.get('suggestion.form.type.motionAgainst')}
+          </Radio>
+          <Radio value="3">
+            {I18N.get('suggestion.form.type.anythingElse')}
+          </Radio>
+        </Radio.Group>
+      )
+    } else if (
       id === 'plan' &&
       ((initialValues.plan && typeof initialValues.plan !== 'string') ||
         !initialValues.plan)
@@ -259,49 +251,15 @@ class C extends BaseComponent {
             activeKey={this.state.activeKey}
             onChange={this.onTabChange}
           >
-            <TabPane tab={this.renderTabText('type')} key="type">
-              <TabPaneInner>
-                <Note>{I18N.get('suggestion.form.note.type')}</Note>
-                <FormItem>{this.getTypeRadioGroup('type')}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText('abstract')} key="abstract">
-              <TabPaneInner>
-                <Note>{I18N.get('suggestion.form.note.abstract')}</Note>
-                <FormItem>{this.getTextarea('abstract')}</FormItem>
-                {this.renderWordLimit()}
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText('goal')} key="goal">
-              <TabPaneInner>
-                <Note>{I18N.get('suggestion.form.note.goal')}</Note>
-                <FormItem>{this.getTextarea('goal')}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText('motivation')} key="motivation">
-              <TabPaneInner>
-                <Note>{I18N.get('suggestion.form.note.motivation')}</Note>
-                <FormItem>{this.getTextarea('motivation')}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText('plan')} key="plan">
-              <TabPaneInner>
-                <Note>{I18N.get('suggestion.form.note.plan')}</Note>
-                <FormItem>{this.getTextarea('plan')}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText('relevance')} key="relevance">
-              <TabPaneInner>
-                <Note>{I18N.get('suggestion.form.note.relevance')}</Note>
-                <FormItem>{this.getTextarea('relevance')}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText('budget')} key="budget">
-              <TabPaneInner>
-                <Note>{I18N.get('suggestion.form.note.budget')}</Note>
-                <FormItem>{this.getTextarea('budget')}</FormItem>
-              </TabPaneInner>
-            </TabPane>
+            {TAB_KEYS.map(item => (
+              <TabPane tab={this.renderTabText(item)} key={item}>
+                <TabPaneInner>
+                  <Note>{I18N.get(`suggestion.form.note.${item}`)}</Note>
+                  <FormItem>{this.getTextarea(item)}</FormItem>
+                  {item === 'abstract' ? this.renderWordLimit() : null}
+                </TabPaneInner>
+              </TabPane>
+            ))}
           </Tabs>
 
           <Row
