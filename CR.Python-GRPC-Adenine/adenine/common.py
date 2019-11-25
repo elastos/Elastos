@@ -12,7 +12,7 @@ class Common():
         # NOTE(gRPC Python Team): .close() is possible on a channel and should be
         # used in circumstances in which the with statement does not fit the needs
         # of the code.
-        grpc_server = config('GRPC_SERVER')
+        grpc_server = "%s:%s" % (config('GRPC_SERVER_HOST'), config('GRPC_SERVER_PORT'))
         
         with grpc.insecure_channel(grpc_server) as channel:
             stub = common_pb2_grpc.CommonStub(channel)
