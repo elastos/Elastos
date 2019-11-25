@@ -54,6 +54,14 @@ namespace Elastos {
 			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 		}
 
+		void SubAccount::InitDID() {
+			if (_parent->GetSignType() != IAccount::MultiSign) {
+				_did = _externalChain;
+				for (std::vector<Address>::iterator it = _did.begin(); it != _did.end(); ++it)
+					(*it).ChangePrefix(PrefixIDChain);
+			}
+		}
+
 		bool SubAccount::IsSingleAddress() const {
 			return _parent->SingleAddress();
 		}
@@ -353,11 +361,8 @@ namespace Elastos {
 			}
 
 			if (_parent->GetSignType() != IAccount::MultiSign) {
-				for (std::vector<Address>::const_iterator it = _externalChain.cbegin();
-					 it != _externalChain.cend(); ++it) {
-					Address did = *it;
-					did.ChangePrefix(PrefixIDChain);
-					if (did == address)
+				for (std::vector<Address>::const_iterator it = _did.cbegin(); it != _did.cend(); ++it) {
+					if ((*it) == address)
 						return true;
 				}
 			}

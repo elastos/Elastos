@@ -16,6 +16,7 @@ namespace Elastos {
 
 		class UTXO;
 		typedef boost::shared_ptr<UTXO> UTXOPtr;
+		typedef std::vector<UTXOPtr> UTXOArray;
 
 		class CoinBaseUTXODataStore : public TableBase {
 		public:
@@ -35,7 +36,7 @@ namespace Elastos {
 
 			bool Update(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 
-			bool UpdateSpent(const std::vector<uint256> &txHashes);
+			bool UpdateSpent(const UTXOArray &spentUTXO);
 
 			bool Delete(const uint256 &hash);
 

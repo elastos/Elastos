@@ -49,7 +49,7 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
 
 			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
@@ -192,7 +192,7 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
 
 			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
@@ -222,7 +222,7 @@ namespace Elastos {
 
 			virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timestamp);
 
-			virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes);
+			virtual void onCoinBaseSpent(const UTXOArray &spentUTXO);
 
 			virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 

@@ -62,7 +62,7 @@ namespace Elastos {
 				virtual void onCoinBaseTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight,
 												 time_t timestamp) = 0;
 
-				virtual void onCoinBaseSpent(const std::vector<uint256> &spentHashes) = 0;
+				virtual void onCoinBaseSpent(const UTXOArray &spentUTXO) = 0;
 
 				virtual void onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) = 0;
 
@@ -224,7 +224,7 @@ namespace Elastos {
 
 			bool IsAssetUnique(const std::vector<OutputPtr> &outputs) const;
 
-			std::map<uint256, BigInt> BalanceAfterUpdatedTx(const TransactionPtr &tx);
+			std::map<uint256, BigInt> BalanceAfterUpdatedTx(const TransactionPtr &tx, UTXOArray spentCoinbase);
 
 			void BalanceAfterRemoveTx(const TransactionPtr &tx);
 
@@ -236,8 +236,6 @@ namespace Elastos {
 
 			bool IsUTXOSpending(const UTXOPtr &utxo) const;
 
-			void GetSpentCoinbase(const InputArray &inputs, std::vector<uint256> &coinbase) const;
-
 		protected:
 			void balanceChanged(const uint256 &asset, const BigInt &balance);
 
@@ -247,7 +245,7 @@ namespace Elastos {
 
 			void coinBaseTxUpdated(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
 
-			void coinBaseSpent(const std::vector<uint256> &spentHashes);
+			void coinBaseSpent(const UTXOArray &spentUTXO);
 
 			void coinBaseDeleted(const uint256 &txHash, bool notifyUser, bool recommendRescan);
 
@@ -275,7 +273,7 @@ namespace Elastos {
 			std::vector<TransactionPtr> _transactions;
 			TransactionSet _allTx;
 
-			UTXOArray _spendingOutputs;
+			UTXOSet _spendingOutputs;
 			UTXOArray _coinBaseUTXOs;
 
 			uint64_t _feePerKb;

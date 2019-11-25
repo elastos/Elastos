@@ -85,7 +85,7 @@ namespace Elastos {
 
 		}
 
-		void CoreSpvService::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+		void CoreSpvService::onCoinBaseSpent(const UTXOArray &spentUTXO) {
 
 		}
 
@@ -425,9 +425,9 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionWalletListener::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+		void WrappedExceptionWalletListener::onCoinBaseSpent(const UTXOArray &spentUTXO) {
 			try {
-				_listener->onCoinBaseSpent(spentHashes);
+				_listener->onCoinBaseSpent(spentUTXO);
 			} catch (const std::exception &e) {
 				Log::error("onCoinBaseSpent exception: {}", e.what());
 			}
@@ -536,10 +536,10 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
-			_executor->Execute(Runnable([this, spentHashes]() -> void {
+		void WrappedExecutorWalletListener::onCoinBaseSpent(const UTXOArray &spentUTXO) {
+			_executor->Execute(Runnable([this, spentUTXO]() -> void {
 				try {
-					_listener->onCoinBaseSpent(spentHashes);
+					_listener->onCoinBaseSpent(spentUTXO);
 				} catch (const std::exception &e) {
 					Log::error("onCoinBaseSpent exception: {}", e.what());
 				}

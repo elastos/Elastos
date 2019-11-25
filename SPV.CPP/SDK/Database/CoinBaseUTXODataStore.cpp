@@ -177,16 +177,17 @@ namespace Elastos {
 			});
 		}
 
-		bool CoinBaseUTXODataStore::UpdateSpent(const std::vector<uint256> &txHashes) {
-			if (txHashes.empty())
+		bool CoinBaseUTXODataStore::UpdateSpent(const UTXOArray &spentUTXO) {
+			if (spentUTXO.empty())
 				return true;
 
-			return DoTransaction([&txHashes, this]() {
+			return DoTransaction([&spentUTXO, this]() {
 				std::string sql, hash;
 
-				for (size_t i = 0; i < txHashes.size(); ++i) {
-					hash = txHashes[i].GetHex();
-					sql = "UPDATE " + _tableName + " SET " + _spent + " = ? WHERE " + _txHash + " = ?;";
+				for (size_t i = 0; i < spentUTXO.size(); ++i) {
+					hash = spentUTXO[i]->Hash().GetHex();
+					uint16_t index = spentUTXO[i]->Index();
+					sql = "UPDATE " + _tableName + " SET " + _spent + " = ? WHERE " + _txHash + " = ? AND " + _index + " = ?;";
 
 					sqlite3_stmt *stmt;
 					if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
@@ -195,7 +196,8 @@ namespace Elastos {
 					}
 
 					if (!_sqlite->BindInt(stmt, 1, 1) ||
-						!_sqlite->BindText(stmt, 2, hash, nullptr)) {
+						!_sqlite->BindText(stmt, 2, hash, nullptr) ||
+						!_sqlite->BindInt(stmt, 3, index)) {
 						Log::error("bind args");
 						return false;
 					}

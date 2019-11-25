@@ -1378,6 +1378,7 @@ static void _tx(int argc, char *argv[]) {
 				nlohmann::json tx = txJosn["Transactions"];
 				max = txJosn["MaxCount"];
 
+				printf("%d / %d\n", curPage, (max + cntPerPage) / cntPerPage);
 				char buf[100];
 				struct tm tm;
 				for (nlohmann::json::iterator it = tx.begin(); it != tx.end(); ++it) {
@@ -1385,11 +1386,87 @@ static void _tx(int argc, char *argv[]) {
 					std::string confirm = (*it)["ConfirmStatus"];
 					time_t t = (*it)["Timestamp"];
 					std::string dir = (*it)["Direction"];
-					std::string amount = (*it)["Amount"];
+					double amount = std::stod((*it)["Amount"].get<std::string>()) / SELA_PER_ELA;
 
 					localtime_r(&t, &tm);
 					strftime(buf, sizeof(buf), "%F %T", &tm);
-					printf("%s  %s  %s  %s  %s\n", txHash.c_str(), dir.c_str(), buf, amount.c_str(), confirm.c_str());
+					printf("%s  %2s  %8s  %s  %.8lf\n", txHash.c_str(), confirm.c_str(), dir.c_str(), buf, amount);
+				}
+			}
+
+			std::cout << "'n' Next Page, 'b' Previous Page, 'q' Exit: ";
+			std::getline(std::cin, cmd);
+
+			if (cmd == "n") {
+				if (curPage < (max + cntPerPage) / cntPerPage) {
+					curPage++;
+					show = true;
+				} else {
+					std::cout << "already last page" << std::endl;
+					show = false;
+				}
+			} else if (cmd == "b") {
+				if (curPage > 1) {
+					curPage--;
+					show = true;
+				} else {
+					std::cout << "already first page" << std::endl;
+					show = false;
+				}
+			} else if (cmd == "q") {
+				break;
+			} else {
+				std::cout << "invalid input" << std::endl;
+				show = false;
+			}
+		} while (cmd != "q");
+	} catch (const std::exception &e) {
+		exceptionError(e);
+	}
+}
+
+// utxo [chainID]
+static void utxo(int argc, char *argv[]) {
+	if (argc != 2) {
+		invalidCmdError();
+		return;
+	}
+
+	if (!currentWallet) {
+		std::cerr << "no wallet actived" << std::endl;
+		return;
+	}
+
+	std::string chainID = argv[1];
+	try {
+		auto subWallet = currentWallet->GetSubWallet(chainID);
+		if (!subWallet) {
+			std::cerr << chainID << " not open" << std::endl;
+			return;
+		}
+
+		int cntPerPage = 20;
+		int curPage = 1;
+		int start, max;
+		std::string cmd;
+		bool show = true;
+
+		do {
+			if (show) {
+				start = cntPerPage * (curPage - 1);
+				nlohmann::json utxoJosn = subWallet->GetAllUTXOs(start, cntPerPage, "");
+				nlohmann::json utxo = utxoJosn["UTXOs"];
+				max = utxoJosn["MaxCount"];
+
+				printf("%d / %d\n", curPage, (max + cntPerPage) / cntPerPage);
+				char buf[100];
+				struct tm tm;
+				for (nlohmann::json::iterator it = utxo.begin(); it != utxo.end(); ++it) {
+					std::string txHash = (*it)["Hash"];
+					int index = (*it)["Index"];
+					double amount = std::stod((*it)["Amount"].get<std::string>()) / SELA_PER_ELA;
+
+					printf("%s:%-5d  %.8lf\n", txHash.c_str(), index, amount);
 				}
 			}
 
@@ -1473,6 +1550,7 @@ struct command {
 	{"didsign",  didsign,        "[DID] [digest]                          Sign `digest` with private key of DID."},
 
 	{"tx",       _tx,            "[chainID]                               List all tx records."},
+	{"utxo",     utxo,           "[chainID]                               List all utxos"},
 	{"fixpeer",  fixpeer,        "[chainID] [ip] [port]                   Set fixed peer to sync."},
 	{"send",     _send,          "[chainID] [address] [amount]            Send ELA from `chainID`."},
 	{"receive",  _receive,       "[chainID]                               Get receive address of `chainID`."},

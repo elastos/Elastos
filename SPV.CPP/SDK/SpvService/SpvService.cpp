@@ -104,12 +104,12 @@ namespace Elastos {
 						  });
 		}
 
-		void SpvService::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
-			_databaseManager->UpdateSpentCoinBase(spentHashes);
+		void SpvService::onCoinBaseSpent(const UTXOArray &spentUTXO) {
+			_databaseManager->UpdateSpentCoinBase(spentUTXO);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&spentHashes](Wallet::Listener *listener) {
-							  listener->onCoinBaseSpent(spentHashes);
+						  [&spentUTXO](Wallet::Listener *listener) {
+							  listener->onCoinBaseSpent(spentUTXO);
 						  });
 		}
 

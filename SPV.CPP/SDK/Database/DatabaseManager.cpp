@@ -47,8 +47,8 @@ namespace Elastos {
 			return _coinbaseDataStore.Update(txHashes, blockHeight, timestamp);
 		}
 
-		bool DatabaseManager::UpdateSpentCoinBase(const std::vector<uint256> &txHashes) {
-			return _coinbaseDataStore.UpdateSpent(txHashes);
+		bool DatabaseManager::UpdateSpentCoinBase(const UTXOArray &spentUTXO) {
+			return _coinbaseDataStore.UpdateSpent(spentUTXO);
 		}
 
 		bool DatabaseManager::DeleteCoinBase(const uint256 &hash) {

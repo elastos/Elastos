@@ -5,6 +5,8 @@
 #ifndef __ELASTOS_SDK__GROUPEDASSET_H__
 #define __ELASTOS_SDK__GROUPEDASSET_H__
 
+#include "UTXO.h"
+
 #include <Common/ElementSet.h>
 #include <Common/Lockable.h>
 #include <Account/SubAccount.h>
@@ -21,15 +23,9 @@ namespace Elastos {
 		class Wallet;
 		class Asset;
 		class Transaction;
-		class TransactionOutput;
 		class TransactionInput;
-		class UTXO;
 		class VoteContent;
 		typedef boost::shared_ptr<Asset> AssetPtr;
-		typedef boost::shared_ptr<UTXO> UTXOPtr;
-		typedef std::vector<UTXOPtr> UTXOArray;
-		typedef boost::shared_ptr<TransactionOutput> OutputPtr;
-		typedef std::vector<OutputPtr> OutputArray;
 		typedef boost::shared_ptr<TransactionInput> InputPtr;
 		typedef std::vector<InputPtr> InputArray;
 		typedef std::vector<VoteContent> VoteContentArray;
@@ -46,9 +42,9 @@ namespace Elastos {
 
 			UTXOArray GetUTXOs(const std::string &addr) const;
 
-			const UTXOArray &GetVoteUTXO() const;
+			const UTXOSet &GetVoteUTXO() const;
 
-			const UTXOArray &GetCoinBaseUTXOs() const;
+			const UTXOSet &GetCoinBaseUTXOs() const;
 
 			BigInt GetBalance() const;
 
@@ -80,13 +76,9 @@ namespace Elastos {
 
 			bool AddCoinBaseUTXO(const UTXOPtr &o);
 
-			bool RemoveSpentUTXO(const std::vector<InputPtr> &inputs);
+			bool RemoveSpentUTXO(const std::vector<InputPtr> &inputs, UTXOArray &spentCoinbase);
 
-			bool RemoveSpentUTXO(const InputPtr &input);
-
-			bool RemoveSpentUTXO(const uint256 &hash, uint16_t n);
-
-			void GetSpentCoinbase(const InputArray &inputs, std::vector<uint256> &spentCoinbase) const;
+			bool RemoveSpentUTXO(const UTXOPtr &u, UTXOArray &spentCoinbase);
 
 			bool UpdateLockedBalance();
 
@@ -97,7 +89,7 @@ namespace Elastos {
 
 		private:
 			BigInt _balance, _balanceVote, _balanceDeposit, _balanceLocked;
-			UTXOArray _utxos, _utxosVote, _utxosCoinbase, _utxosDeposit, _utxosLocked;
+			UTXOSet _utxos, _utxosVote, _utxosCoinbase, _utxosDeposit, _utxosLocked;
 
 			AssetPtr _asset;
 

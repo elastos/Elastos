@@ -546,12 +546,12 @@ namespace Elastos {
 					   hashes.size(), blockHeight, timestamp);
 		}
 
-		void SubWallet::onCoinBaseSpent(const std::vector<uint256> &spentHashes) {
+		void SubWallet::onCoinBaseSpent(const UTXOArray &spentUTXO) {
 			ArgInfo("{} {} size: {}: [{},{} {}]",
 					   _walletManager->GetWallet()->GetWalletID(), GetFunName(),
-					   spentHashes.size(), spentHashes.front().GetHex(),
-					   (spentHashes.size() > 2 ? " ...," : ""),
-					   (spentHashes.size() > 1 ? spentHashes.back().GetHex() : ""));
+					   spentUTXO.size(), spentUTXO.front()->Hash().GetHex(),
+					   (spentUTXO.size() > 2 ? " ...," : ""),
+					   (spentUTXO.size() > 1 ? spentUTXO.back()->Hash().GetHex() : ""));
 		}
 
 		void SubWallet::onCoinBaseTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {

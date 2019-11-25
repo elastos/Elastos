@@ -6,7 +6,6 @@
 
 #include <catch.hpp>
 #include <WalletCore/Address.h>
-#include <WalletCore/Mnemonic.h>
 #include <WalletCore/HDKeychain.h>
 #include <WalletCore/BIP39.h>
 #include <Common/Log.h>

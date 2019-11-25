@@ -33,7 +33,7 @@ namespace Elastos {
 			size_t GetCoinBaseTotalCount() const;
 			std::vector<UTXOPtr> GetAllCoinBase() const;
 			bool UpdateCoinBase(const std::vector<uint256> &txHashes, uint32_t blockHeight, time_t timestamp);
-			bool UpdateSpentCoinBase(const std::vector<uint256> &txHashes);
+			bool UpdateSpentCoinBase(const UTXOArray &spentUTXO);
 			bool DeleteCoinBase(const uint256 &hash);
 
 			// Transaction's database interface
