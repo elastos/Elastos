@@ -239,14 +239,18 @@ export default class extends BaseService {
   }
 
   // ADMIN and Author
-  async archive(id) {
-    const path = `${this.prefixPath}/${id}/archive`
+  async archiveOrUnarchive(data) {
+    const path = `${this.prefixPath}/${data.id}/archive`
     const res = await api_request({
       path,
+      data,
       method: 'post',
     })
-    if(res.success) {
+    if(res.success && !data.isArchived) {
       message.info(I18N.get('suggestion.msg.archived'))
+    }
+    if (res.success && data.isArchived === true) {
+      message.info(I18N.get('suggestion.msg.unarchived'))
     }
     return res
   }

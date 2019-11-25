@@ -33,7 +33,7 @@ class TeamInfoList extends BaseComponent {
           </StyledRow>
         </StyledHead>
         <tbody>
-          {list.map((item, index) => (
+          {list && list.map((item, index) => (
             <StyledRow key={index}>
               <td>{item.member}</td>
               <td>{item.role}</td>
