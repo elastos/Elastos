@@ -15,6 +15,8 @@ set(BUILD_COMMON_ARGS
 	-j 4
 	variant=release
 	link=static
+	cflags=-fPIC
+	cxxflags=-fPIC
 	threading=multi
 	strip=on
 	--prefix=${PROJECT_INT_DIST_DIR}
@@ -81,6 +83,7 @@ ExternalProject_Add(
 	CONFIGURE_COMMAND ${CONFIGURE_CMD}
 
 	BUILD_COMMAND ${BUILD_CMD}
+	INSTALL_COMMAND ""
 )
 
 if(SPV_ENABLE_STATIC)
