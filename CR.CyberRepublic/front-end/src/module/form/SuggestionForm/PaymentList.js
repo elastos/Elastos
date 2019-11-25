@@ -1,9 +1,10 @@
 import React from 'react'
-import BaseComponent from '@/model/BaseComponent'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 
 class PaymentList extends BaseComponent {
   handleDelete = index => {
@@ -37,8 +38,12 @@ class PaymentList extends BaseComponent {
             <StyledRow key={index}>
               <td>{index + 1}</td>
               <td>{item.amount}</td>
-              <td>{item.reasons}</td>
-              <td>{item.criteria}</td>
+              <td>
+                <MarkdownPreview content={item.reasons ? item.reasons : ''} />
+              </td>
+              <td>
+                <MarkdownPreview content={item.criteria ? item.criteria : ''} />
+              </td>
               {visible && (
                 <td>
                   <Button
