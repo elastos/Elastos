@@ -53,6 +53,8 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
+			virtual bool IsValid() const;
+
 			virtual IPayload &operator=(const IPayload &payload);
 
 			CRInfo &operator=(const CRInfo &payload);

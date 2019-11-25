@@ -214,8 +214,11 @@ static int createPassphrase(std::string &passphrase) {
 	return createPassword("passphrase", passphrase, true);
 }
 
-static void signAndPublishTx(ISubWallet *subWallet, const nlohmann::json &tx) {
-	std::string password = getpass("Enter payment password: ");
+static void signAndPublishTx(ISubWallet *subWallet, const nlohmann::json &tx, const std::string &payPasswd = "") {
+	std::string password = payPasswd;
+	if (payPasswd.empty()) {
+		password = getpass("Enter payment password: ");
+	}
 	nlohmann::json signedTx = subWallet->SignTransaction(tx, password);
 	subWallet->PublishTransaction(signedTx);
 }
@@ -883,13 +886,25 @@ static void _register(int argc, char *argv[]) {
 			return;
 		}
 		nlohmann::json tx;
+		std::string password;
 
 		if (registerWhat == "cr") {
-			std::string crPublicKey = subWallet->GetCROwnerPublicKey();
-			std::string nickName, url;
+
+			IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
+			if (!iidChainSubWallet) {
+				std::cerr << "open '" << CHAINID_ID << "' first" << std::endl;
+				return;
+			}
+
+			std::string crPublicKey, nickName, url, did;
 			uint64_t location;
 
+			crPublicKey = iidChainSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
+			did = iidChainSubWallet->GetPublicKeyDID(crPublicKey);
+
 			std::cout << "DID public key: " << crPublicKey << std::endl;
+			std::cout << "DID: " << did << std::endl;
+
 			std::cout << "Enter nick name: ";
 			std::cin >> nickName;
 
@@ -899,8 +914,15 @@ static void _register(int argc, char *argv[]) {
 			std::cout << "Enter location code (example 86): ";
 			std::cin >> location;
 
-			std::string password = getpass("Enter payment password: ");
-			nlohmann::json payload = subWallet->GenerateCRInfoPayload(crPublicKey, nickName, url, location, password);
+			nlohmann::json payload = subWallet->GenerateCRInfoPayload(crPublicKey, nickName, url, location);
+
+			std::string digest = payload["Digest"].get<std::string>();
+
+			password = getpass("Enter payment password: ");
+
+			std::string signature = iidChainSubWallet->SignDigest(did, digest, password);
+			payload["Signature"] = signature;
+
 			tx = subWallet->CreateRegisterCRTransaction("", payload, convertAmount("5000"), "");
 		} else if (registerWhat == "dpos") {
 			std::string ownerPubkey = subWallet->GetOwnerPublicKey();
@@ -924,15 +946,71 @@ static void _register(int argc, char *argv[]) {
 			std::cin >> locationString;
 			location = std::stol(locationString);
 
-			std::string password = getpass("Enter payment password: ");
+			password = getpass("Enter payment password: ");
 			nlohmann::json payload = subWallet->GenerateProducerPayload(ownerPubkey, nodePubkey, nickName, url, "", location, password);
-			tx = subWallet->CreateRegisterCRTransaction("", payload, convertAmount("5000"), "");
+			tx = subWallet->CreateRegisterProducerTransaction("", payload, convertAmount("5000"), "");
 		} else {
 			invalidCmdError();
 			return;
 		}
 
-		signAndPublishTx(subWallet, tx);
+		signAndPublishTx(subWallet, tx, password);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+	}
+}
+
+// unregister [cr | dpos]
+static void unregister(int argc, char *argv[]) {
+	if (argc != 2) {
+		invalidCmdError();
+		return;
+	}
+
+	std::string registerWhat = argv[1];
+
+	try {
+		if (!currentWallet) {
+			std::cerr << "no wallet actived" << std::endl;
+			return;
+		}
+
+		IMainchainSubWallet *subWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ELA));
+		if (!subWallet) {
+			std::cerr << "open '" << CHAINID_ELA << "' first" << std::endl;
+			return;
+		}
+		nlohmann::json tx;
+		std::string password;
+
+		if (registerWhat == "cr") {
+			IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
+			if (!iidChainSubWallet) {
+				std::cerr << "open '" << CHAINID_ID << "' first" << std::endl;
+				return;
+			}
+			std::string did = iidChainSubWallet->GetAllDID(0, 1)["DID"][0];
+
+			nlohmann::json payload = subWallet->GenerateUnregisterCRPayload(did);
+			std::string digest = payload["Digest"].get<std::string>();
+
+			password = getpass("Enter payment password: ");
+
+			std::string signature = iidChainSubWallet->SignDigest(did, digest, password);
+			payload["Signature"] = signature;
+
+			tx = subWallet->CreateUnregisterCRTransaction("", payload, "");
+		} else if (registerWhat == "dpos") {
+			std::string ownerPubkey = subWallet->GetOwnerPublicKey();
+			password = getpass("Enter payment password: ");
+			nlohmann::json payload = subWallet->GenerateCancelProducerPayload(ownerPubkey, password);
+			tx = subWallet->CreateCancelProducerTransaction("", payload, "");
+		} else {
+			invalidCmdError();
+			return;
+		}
+
+		signAndPublishTx(subWallet, tx, password);
 	} catch (const std::exception &e) {
 		exceptionError(e);
 	}
@@ -1404,6 +1482,7 @@ struct command {
 	{"withdraw", withdraw,       "[chainID] [amount] [address]            Withdraw from sidechain to mainchain."},
 	{"export",   _export,        "[m[nemonic] | [k[eystore]]              Export mnemonic or keystore."},
 	{"register", _register,      "[cr | dpos]                             Register CR or DPoS with specified wallet."},
+	{"unregister", unregister,    "[cr | dpos]                            Unregister CR or DPoS with specified wallet."},
 	{"vote",     vote,           "[cr | dpos]                             CR/DPoS vote."},
 	{"verbose",  verbose,        "[on | off]                              Set verbose mode."},
 	{"exit", NULL,               "                                        Quit wallet."},

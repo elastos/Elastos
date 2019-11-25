@@ -72,20 +72,13 @@ namespace Elastos {
 
 			virtual nlohmann::json GetRegisteredProducerInfo() const;
 
-			virtual std::string GetCROwnerDID() const;
-
-			virtual std::string GetCROwnerPublicKey() const;
-
 			virtual nlohmann::json GenerateCRInfoPayload(
 					const std::string &crPublicKey,
 					const std::string &nickName,
 					const std::string &url,
-					uint64_t location,
-					const std::string &payPasswd) const;
+					uint64_t location) const;
 
-			virtual nlohmann::json GenerateUnregisterCRPayload(
-					const std::string &crDID,
-					const std::string &payPasswd) const;
+			virtual nlohmann::json GenerateUnregisterCRPayload(const std::string &crDID) const;
 
 			virtual nlohmann::json CreateRegisterCRTransaction(
 					const std::string &fromAddress,

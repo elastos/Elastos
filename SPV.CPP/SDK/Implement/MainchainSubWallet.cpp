@@ -492,36 +492,17 @@ namespace Elastos {
 			return j;
 		}
 
-		std::string MainchainSubWallet::GetCROwnerDID() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			bytes_t pubKey = _walletManager->GetWallet()->GetCROwnerPublicKey();
-			std::string addr = Address(PrefixIDChain, pubKey).String();
-
-			ArgInfo("r => {}", addr);
-			return addr;
-		}
-
-		std::string MainchainSubWallet::GetCROwnerPublicKey() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
-			std::string pubkey = _walletManager->GetWallet()->GetCROwnerPublicKey().getHex();
-			ArgInfo("r => {}", pubkey);
-			return pubkey;
-		}
-
 		nlohmann::json MainchainSubWallet::GenerateCRInfoPayload(
 				const std::string &crPublicKey,
 				const std::string &nickName,
 				const std::string &url,
-				uint64_t location,
-				const std::string &payPasswd) const {
+				uint64_t location) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("crPublicKey: {}", crPublicKey);
 			ArgInfo("nickName: {}", nickName);
 			ArgInfo("url: {}", url);
 			ArgInfo("location: {}", location);
-			ArgInfo("payPasswd: *");
 
-			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 			size_t pubKeyLen = crPublicKey.size() >> 1;
 			ErrorChecker::CheckParam(pubKeyLen != 33 && pubKeyLen != 65, Error::PubKeyLength,
 			                         "Public key length should be 33 or 65 bytes");
@@ -542,24 +523,19 @@ namespace Elastos {
 
 			ByteStream ostream;
 			crInfo.SerializeUnsigned(ostream, 0);
-			bytes_t prUnsigned = ostream.GetBytes();
-
-			crInfo.SetSignature(_walletManager->GetWallet()->SignWithCROwnerKey(prUnsigned, payPasswd));
+			uint256 digest(sha256(ostream.GetBytes()));
 
 			nlohmann::json payloadJson = crInfo.ToJson(0);
+			payloadJson["Digest"] = digest.GetHex();
 
 			ArgInfo("r => {}", payloadJson.dump());
 			return payloadJson;
 		}
 
-		nlohmann::json MainchainSubWallet::GenerateUnregisterCRPayload(
-				const std::string &crDID,
-				const std::string &payPasswd) const {
+		nlohmann::json MainchainSubWallet::GenerateUnregisterCRPayload(const std::string &crDID) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("crDID: {}", crDID);
-			ArgInfo("payPasswd: *");
 
-			ErrorChecker::CheckPassword(payPasswd, "Generate payload");
 			Address address(crDID);
 			ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid crDID");
 
@@ -568,11 +544,10 @@ namespace Elastos {
 
 			ByteStream ostream;
 			unregisterCR.SerializeUnsigned(ostream, 0);
-			bytes_t prUnsigned = ostream.GetBytes();
-
-			unregisterCR.SetSignature(_walletManager->GetWallet()->SignWithCROwnerKey(prUnsigned, payPasswd));
+			uint256 digest(sha256(ostream.GetBytes()));
 
 			nlohmann::json payloadJson = unregisterCR.ToJson(0);
+			payloadJson["Digest"] = digest.GetHex();
 
 			ArgInfo("r => {}", payloadJson.dump());
 			return payloadJson;
@@ -598,9 +573,13 @@ namespace Elastos {
 			ErrorChecker::CheckParam(bgAmount < minAmount, Error::DepositAmountInsufficient,
 			                         "cr deposit amount is insufficient");
 
+			ErrorChecker::CheckParam(payloadJSON.find("Signature") == payloadJSON.end(), Error::InvalidArgument,
+			                         "Signature can not be empty");
+
 			PayloadPtr payload = PayloadPtr(new CRInfo());
 			try {
 				payload->FromJson(payloadJSON, 0);
+				ErrorChecker::CheckParam(!payload->IsValid(), Error::InvalidArgument, "verify signature failed");
 			} catch (const nlohmann::detail::exception &e) {
 				ErrorChecker::ThrowParamException(Error::JsonFormatError,
 				                                  "Payload format err: " + std::string(e.what()));
@@ -666,6 +645,10 @@ namespace Elastos {
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJSON.dump());
 			ArgInfo("memo: {}", memo);
+
+			ErrorChecker::CheckParam(payloadJSON.find("Signature") == payloadJSON.end() ||
+			                         payloadJSON["Signature"].get<std::string>() == "",
+			                         Error::InvalidArgument, "invalied signature");
 
 			PayloadPtr payload = PayloadPtr(new UnregisterCR());
 			try {
