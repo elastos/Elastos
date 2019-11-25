@@ -590,8 +590,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			std::vector<DIDEntity> didVerify = dm.GetAllDID();
 			REQUIRE(didVerify.size() == didToSave.size() - 1);
 
-			idx = getRandUInt8() % didToSave.size();
-			REQUIRE(dm.DeleteDIDByTxHash(didToSave[idx].TxHash));
+			idx = getRandUInt8() % didVerify.size();
+			REQUIRE(dm.DeleteDIDByTxHash(didVerify[idx].TxHash));
 			didVerify = dm.GetAllDID();
 			REQUIRE(didVerify.size() == didToSave.size() - 2);
 

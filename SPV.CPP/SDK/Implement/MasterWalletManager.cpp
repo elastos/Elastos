@@ -400,7 +400,6 @@ namespace Elastos {
 			ErrorChecker::CheckParamNotEmpty(masterWalletID, "Master wallet ID");
 			ErrorChecker::CheckParam(!keystoreContent.is_object(), Error::KeyStore, "key store should be json object");
 			ErrorChecker::CheckPassword(backupPassword, "Backup");
-			ErrorChecker::CheckPassword(payPassword, "Pay");
 
 			if (_masterWalletMap.find(masterWalletID) != _masterWalletMap.end()) {
 				ArgInfo("r => already exist");
