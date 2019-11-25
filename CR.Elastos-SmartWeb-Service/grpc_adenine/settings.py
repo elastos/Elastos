@@ -1,5 +1,5 @@
 # SQLAlchemy settings
-SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:postgres@localhost:5432/smartweb_master'
+SQLALCHEMY_DATABASE_URI = 'postgresql://gmu:gmu@localhost:5434/smartweb_master'
 
 #GMU Net
 GMU_NET_IP_ADDRESS = 'http://10.192.113.16:'

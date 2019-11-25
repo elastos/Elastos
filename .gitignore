@@ -26,6 +26,7 @@ wheels/
 MANIFEST
 .DS_Store
 .idea
+.vscode/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -83,3 +84,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Postgres stuff
+tools/privkey.pem
+tools/server.*
+tools/.postgres-data

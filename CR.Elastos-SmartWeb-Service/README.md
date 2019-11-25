@@ -44,49 +44,14 @@ cp .env.example .env
 ```
 
 ## Starting Postgres server:
-```````````
+
+```
 cd tools
-
+# This script automatically runs the scripts located at grpc_adenine/database/scripts/
 ./postgres.sh
-
-```````````
-```````````
-If you encounter an error
-
-Try
-
-postgres -D /usr/local/var/postgres
-You might see
-
-FATAL:  lock file "postmaster.pid" already exists
-HINT:  Is another postmaster (PID 449) running in data directory "/usr/local/var/postgres"?
-Then try
-
-kill -9 PID
-example
-
-kill -9 419
-
-`````````````
-
-## Execute the following command to create and insert values into your database 
-`````````````
-docker container exec -it nucleus-postgres psql -h localhost -U gmu -d smartweb_master
-
-`````````````
-
-To create tables
-
-* Execute the contents at the location smartweb_service/grpc_adenine/database/scripts/create_table_scripts.sql 
-
-To insert values
-
-* Execute the contents at the location smartweb_service/grpc_adenine/database/scripts/insert_scripts.sql
-`````````````
-quit
 cd ..
+```
 
-`````````````
 ## Start the server:
 
 Export Path:
