@@ -8,7 +8,7 @@ import { mail, user as userUtil, logger } from '../utility'
 
 let tm = undefined
 
-const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
+const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'budgetAmount', 'plan'];
 const restrictedFields = {
   update: ['_id', 'createdBy', 'createdAt', 'proposedAt']
 }
@@ -521,10 +521,10 @@ export default class extends Base {
     if(param.budgetLow || param.budgetHigh){
       query.budgetAmount = {}
       if (param.budgetLow && param.budgetLow.length) {
-        query.budgetAmount['$gte'] = param.budgetLow
+        query.budgetAmount['$gte'] = parseInt(param.budgetLow)
       }
       if (param.budgetHigh && param.budgetHigh.length) {
-        query.budgetAmount['$lte'] = param.budgetHigh
+        query.budgetAmount['$lte'] = parseInt(param.budgetHigh)
       }
     }
     // has tracking
@@ -540,6 +540,7 @@ export default class extends Base {
 
     if (param.$or) query.$or = param.$or
     const fields = 'vid title type proposedBy status published proposedAt createdAt voteResult vote_map'
+    console.log("[query]" + JSON.stringify(query))
     const list = await db_cvote.list(query, {vid: -1}, 100, fields)
     return list
   }
