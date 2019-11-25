@@ -100,6 +100,7 @@ class Milestones extends Component {
                     onVisibleChange={isVisible =>
                       this.handleHoverChange(index, isVisible)
                     }
+                    overlayStyle={{width: '360px', wordWrap: 'break-word', wordBreak: 'normal'}}
                   >
                     <Square>
                       <div>{moment(item.date).format('MMM D, YYYY')}</div>
@@ -120,6 +121,7 @@ class Milestones extends Component {
                     trigger="hover"
                     visible={milestonesTrigger[index].hovered}
                     onVisibleChange={isVisible => this.handleHoverChange(index, isVisible)}
+                    overlayStyle={{width: '360px', wordWrap: 'break-word', wordBreak: 'normal'}}
                   >
                     <Square>
                       <div>{moment(item.date).format('MMM D, YYYY')}</div>
