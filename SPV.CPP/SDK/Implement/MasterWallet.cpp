@@ -516,5 +516,9 @@ namespace Elastos {
 			}
 		}
 
+		ChainConfigPtr MasterWallet::GetChainConfig(const std::string &chainID) const {
+			return _config->GetChainConfig(chainID);
+		}
+
 	}
 }

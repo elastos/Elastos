@@ -15,7 +15,6 @@ namespace Elastos {
 		"MinFee": 10000,
 		"FeePerKB": 10000,
 		"DisconnectionTime": 300,
-		"GenesisAddress": "",
 		"ChainParameters": {
 			"Services": 0,
 			"MagicNumber": 2018211,
@@ -88,7 +87,6 @@ namespace Elastos {
 		"MinFee": 10000,
 		"FeePerKB": 10000,
 		"DisconnectionTime": 300,
-		"GenesisAddress": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
 		"ChainParameters": {
 			"StandardPort": 22608,
 			"MagicNumber": 2018202,
@@ -111,7 +109,6 @@ namespace Elastos {
 		"MinFee": 10000,
 		"FeePerKB": 10000,
 		"DisconnectionTime": 300,
-		"GenesisAddress": "XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4",
 		"ChainParameters": {
 			"Services": 0,
 			"MagicNumber": 2019204,

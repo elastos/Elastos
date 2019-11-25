@@ -46,16 +46,19 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::CreateDepositTransaction(const std::string &fromAddress,
-																	const std::string &lockedAddress,
+																	const std::string &sideChainID,
 																	const std::string &amount,
 																	const std::string &sideChainAddress,
 																	const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
-			ArgInfo("lockedAddr: {}", lockedAddress);
+			ArgInfo("sideChainID: {}", sideChainID);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("sideChainAddr: {}", sideChainAddress);
 			ArgInfo("memo: {}", memo);
+
+			ErrorChecker::CheckParam(sideChainID == CHAINID_MAINCHAIN, Error::InvalidArgument, "can not be mainChain");
+
 			BigInt value;
 			value.setDec(amount);
 
@@ -68,8 +71,9 @@ namespace Elastos {
 												  "Side chain message error: " + std::string(e.what()));
 			}
 
+			ChainConfigPtr configPtr =  _parent->GetChainConfig(sideChainID);
 			std::vector<OutputPtr> outputs;
-			Address receiveAddr(lockedAddress);
+			Address receiveAddr(configPtr->GenesisAddress());
 			outputs.emplace_back(OutputPtr(new TransactionOutput(value + _config->MinFee(), receiveAddr)));
 
 			TransactionPtr tx = CreateTx(Transaction::transferCrossChainAsset, payload, fromAddress, outputs, memo);

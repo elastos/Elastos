@@ -14,7 +14,6 @@ namespace Elastos {
 		"Index": 0,
 		"MinFee": 10000,
 		"FeePerKB": 10000,
-		"GenesisAddress": "",
 		"DisconnectionTime": 300,
 		"ChainParameters": {
 			"Services": 0,
@@ -34,7 +33,6 @@ namespace Elastos {
 		"Index": 1,
 		"MinFee": 10000,
 		"FeePerKB": 10000,
-		"GenesisAddress": "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
 		"DisconnectionTime": 300,
 		"ChainParameters": {
 			"Services": 0,
@@ -55,7 +53,6 @@ namespace Elastos {
 		"MinFee": 10000,
 		"FeePerKB": 10000,
 		"DisconnectionTime": 300,
-		"GenesisAddress": "XVfmhjxGxBKgzYxyXCJTb6YmaRfWPVunj4",
 		"ChainParameters": {
 			"Services": 0,
 			"MagicNumber": 2019004,

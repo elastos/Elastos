@@ -20,7 +20,7 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateDepositTransaction(
 					const std::string &fromAddress,
-					const std::string &lockedAddress,
+					const std::string &sideChainID,
 					const std::string &amount,
 					const std::string &sideChainAddress,
 					const std::string &memo);

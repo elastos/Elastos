@@ -663,9 +663,9 @@ static void _close(int argc, char *argv[]) {
 	}
 }
 
-// deposit [chainID] [amount]
+// deposit [chainID] [amount] [address]
 static void deposit(int argc, char *argv[]) {
-	if (argc != 3) {
+	if (argc != 4) {
 		invalidCmdError();
 		return;
 	}
@@ -677,6 +677,7 @@ static void deposit(int argc, char *argv[]) {
 
 	std::string chainID = argv[1];
 	std::string amount = convertAmount(argv[2]);
+	std::string sideChainAddress = argv[3];
 
 	try {
 		if (chainID == CHAINID_ELA) {
@@ -691,17 +692,9 @@ static void deposit(int argc, char *argv[]) {
 			return;
 		}
 
-		ISidechainSubWallet *sidechainSubWallet = dynamic_cast<ISidechainSubWallet *>(currentWallet->GetSubWallet(
-			chainID));
-		if (sidechainSubWallet == NULL) {
-			std::cerr << "Can not get sidechain wallet for: " << chainID << std::endl;
-			return;
-		}
-
-		std::string lockedAddress = sidechainSubWallet->GetGenesisAddress();
 
 		nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(
-			"", lockedAddress, amount, sidechainSubWallet->CreateAddress(), "");
+			"", chainID, amount, sideChainAddress, "");
 
 		signAndPublishTx(mainchainSubWallet, tx);
 	} catch (const std::exception &e) {
@@ -709,9 +702,9 @@ static void deposit(int argc, char *argv[]) {
 	}
 }
 
-// withdraw [chainID] [amount]
+// withdraw [chainID] [amount] [address]
 static void withdraw(int argc, char *argv[]) {
-	if (argc != 3) {
+	if (argc != 4) {
 		invalidCmdError();
 		return;
 	}
@@ -723,17 +716,11 @@ static void withdraw(int argc, char *argv[]) {
 
 	std::string chainID = argv[1];
 	std::string amount = convertAmount(argv[2]);
+	std::string mainChainAddress = argv[3];
 
 	try {
 		if (chainID == CHAINID_ELA) {
 			std::cerr << "ELA is not a sidechain." << std::endl;
-			return;
-		}
-
-		IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(
-			CHAINID_ELA));
-		if (mainchainSubWallet == NULL) {
-			std::cerr << "Can not get mainchain wallet." << std::endl;
 			return;
 		}
 
@@ -745,7 +732,7 @@ static void withdraw(int argc, char *argv[]) {
 		}
 
 		nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(
-			"", amount, mainchainSubWallet->CreateAddress(), "");
+			"", amount, mainChainAddress, "");
 
 		signAndPublishTx(sidechainSubWallet, tx);
 	} catch (const std::exception &e) {
@@ -1413,8 +1400,8 @@ struct command {
 	{"receive",  _receive,       "[chainID]                               Get receive address of `chainID`."},
 	{"address",  address,        "[chainID]                               Get the revceive address of chainID."},
 	{"proposal", proposal,       "[sponsor | crsponsor]                   Sponsor sign proposal or cr sponsor create proposal tx."},
-	{"deposit",  deposit,        "[chainID] [amount]                      Deposit to sidechain from mainchain."},
-	{"withdraw", withdraw,       "[chainID] [amount]                      Withdraw from sidechain to mainchain."},
+	{"deposit",  deposit,        "[chainID] [amount] [address]            Deposit to sidechain from mainchain."},
+	{"withdraw", withdraw,       "[chainID] [amount] [address]            Withdraw from sidechain to mainchain."},
 	{"export",   _export,        "[m[nemonic] | [k[eystore]]              Export mnemonic or keystore."},
 	{"register", _register,      "[cr | dpos]                             Register CR or DPoS with specified wallet."},
 	{"vote",     vote,           "[cr | dpos]                             CR/DPoS vote."},

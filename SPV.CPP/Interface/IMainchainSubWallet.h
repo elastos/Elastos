@@ -22,8 +22,7 @@ namespace Elastos {
 			 *
 			 * @param fromAddress      If this address is empty, wallet will pick available UTXO automatically.
 			 *                         Otherwise, wallet will pick UTXO from the specific address.
-			 * @param lockedAddress    Locked address of each side chain. Can be got by
-			 *                         ISidechainSubWallet::GetGenesisAddress() of side chain instance.
+			 * @param sideChainID      Chain id of the side chain.
 			 * @param amount           The amount that will be deposit to the side chain.
 			 * @param sideChainAddress Receive address of side chain.
 			 * @memo                   Remarks string. Can be empty string.
@@ -31,7 +30,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateDepositTransaction(
 					const std::string &fromAddress,
-					const std::string &lockedAddress,
+					const std::string &sideChainID,
 					const std::string &amount,
 					const std::string &sideChainAddress,
 					const std::string &memo) = 0;

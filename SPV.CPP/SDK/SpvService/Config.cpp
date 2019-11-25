@@ -12,6 +12,7 @@
 #include <Common/ErrorChecker.h>
 #include <P2P/ChainParams.h>
 #include <Plugin/Registry.h>
+#include <WalletCore/Address.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -110,9 +111,6 @@ namespace Elastos {
 					if (chainConfigJson.find("FeePerKB") != chainConfigJson.end())
 						chainConfig->_feePerKB = chainConfigJson["FeePerKB"].get<uint64_t>();
 
-					if (chainConfigJson.find("GenesisAddress") != chainConfigJson.end())
-						chainConfig->_genesisAddress = chainConfigJson["GenesisAddress"].get<std::string>();
-
 					if (chainConfigJson.find("DisconnectionTime") != chainConfigJson.end())
 						chainConfig->_disconnectionTime = chainConfigJson["DisconnectionTime"].get<uint32_t>();
 
@@ -148,6 +146,16 @@ namespace Elastos {
 								chainParams->_checkpoints.emplace_back(height, hash, timestamp, target);
 							}
 						}
+
+						uint256 hash = chainParams->_checkpoints[0].Hash();
+						bytes_t data;
+						data.push_back(hash.size());
+						data.append(hash.bytes().data(), hash.size());
+						data.push_back(SignTypeCrossChain); // The cross chain op code.
+
+						Address address;
+						address.SetRedeemScript(PrefixCrossChain, data);
+						chainConfig->_genesisAddress = address.String();
 
 						chainConfig->_chainParameters = chainParams;
 					}
