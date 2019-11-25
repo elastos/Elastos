@@ -78,8 +78,8 @@ class IDChainRequest: NSObject {
             op,
             payload!
         ]
-        
-        self.signature = try DIDStore.shareInstance()?.sign(self.did!, key, passphrase, inputs)
+        let count = inputs.count / 3
+        self.signature = try DIDStore.shareInstance()?.sign(self.did!, key, passphrase, count, inputs)
         self.signKey = key
         self.keyType = Constants.defaultPublicKeyType
         return self
@@ -88,7 +88,8 @@ class IDChainRequest: NSObject {
     func verify() throws -> Bool {
         let op: String = operation.toString()
         let inputs = [specification, op, payload]
-        return try (doc?.verify(signKey!, signature!, inputs as! [CVarArg]))!
+        let count = inputs.count / 3
+        return try (doc?.verify(signKey!, signature!, count, inputs as! [CVarArg]))!
     }
 
     public func toJson(_ compact: Bool) -> String {

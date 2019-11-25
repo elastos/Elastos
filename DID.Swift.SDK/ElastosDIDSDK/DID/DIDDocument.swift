@@ -597,34 +597,48 @@ public class DIDDocument: NSObject {
         return try (toJson(nil, compact) ?? "")
     }
     
-    public func sign(_ storepass: String, _ inputs: [CVarArg]) throws -> String {
+    public func sign(_ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         let key: DIDURL = getDefaultPublicKey()!
-        return try sign(key, storepass, inputs)
+        return try sign(key, storepass, count, inputs)
     }
     
-    public func sign(_ id: DIDURL, _ storepass: String, _ inputs: [CVarArg]) throws -> String {
-        return try (DIDStore.shareInstance()?.sign(subject!, id, storepass, inputs))!
+    public func sign(_ id: DIDURL, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
+        return try (DIDStore.shareInstance()?.sign(subject!, id, storepass, count, inputs))!
     }
     
-    public func verify(_ signature: String, _ inputs: [CVarArg]) throws -> Bool {
+    public func verify(_ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {
         let key: DIDURL = getDefaultPublicKey()!
-        return try verify(key, signature, inputs)
+        return try verify(key, signature, count, inputs)
     }
     
-    public func verify(_ id: DIDURL, _ signature: String, _ inputs: [CVarArg]) throws -> Bool {
+    public func verify(_ id: DIDURL, _ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {
+        var cinputs: [CVarArg] = []
+        for i in 0..<inputs.count {
+            if (i % 2) == 0 {
+                let json: String = inputs[i] as! String
+                let cjson = json.withCString { re -> UnsafePointer<Int8> in
+                    return re
+                }
+                cinputs.append(cjson)
+            }
+            else {
+                let count: Int = inputs[i] as! Int
+                cinputs.append(count)
+            }
+        }
         let pk: DIDPublicKey = try getPublicKey(id)
         let pks: [UInt8] = pk.getPublicKeyBytes()
         var pkData: Data = Data(bytes: pks, count: pks.count)
         let cpk: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (pk: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
             return pk
         }
-        var sigData: Data = signature.data(using: .utf8)!
-        let sig: UnsafeMutablePointer<Int8> = sigData.withUnsafeMutableBytes { (csign: UnsafeMutablePointer<Int8>) -> UnsafeMutablePointer<Int8> in
-            return csign
+        let csignature = signature.withCString { re -> UnsafeMutablePointer<Int8> in
+            let mre = UnsafeMutablePointer<Int8>.init(mutating: re)
+            return mre
         }
-        let cinputs = getVaList(inputs)
+        let c_inputs = getVaList(cinputs)
         let count = inputs.count / 2
-       let re = ecdsa_verify_base64v(sig, cpk, Int32(count), cinputs)
+       let re = ecdsa_verify_base64v(csignature, cpk, Int32(count), c_inputs)
         
         return re == 0 ? true : false
     }

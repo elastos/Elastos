@@ -40,7 +40,8 @@ public class Issuer {
             throw DIDError.failue("No json.")
         }
         let inputs: [CVarArg] = [json, json.count]
-        let sig: String = (try DIDStore.shareInstance()?.sign(self.didDocument!.subject!, defaultSignKey, passphrase, inputs))!
+        let count = inputs.count / 2
+        let sig: String = (try DIDStore.shareInstance()?.sign(self.didDocument!.subject!, defaultSignKey, passphrase, count, inputs))!
         let proof: Proof = Proof(Constants.defaultPublicKeyType, defaultSignKey, sig)
         vc.proof = proof
         return vc

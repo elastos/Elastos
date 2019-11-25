@@ -253,12 +253,25 @@ public class DIDStore: NSObject {
         return try deletePrivateKey(DID(did), DIDURL(id))
     }
     
-    public func sign(_ did: DID, _ id: DIDURL, _ storepass: String, _ inputs: [CVarArg]) throws -> String {
+    public func sign(_ did: DID, _ id: DIDURL, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 88)
         let privatekeys: UnsafeMutablePointer<UInt8> = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id))
-        let result = getVaList(inputs)
-        let count: Int = inputs.count - 1
-        let re = ecdsa_sign_base64v(sig, privatekeys, Int32(count), result)
+        var cinputs: [CVarArg] = []
+        for i in 0..<inputs.count {
+            if (i % 2) == 0 {
+                let json: String = inputs[i] as! String
+                let cjson = json.withCString { re -> UnsafePointer<Int8> in
+                    return re
+                }
+                cinputs.append(cjson)
+            }
+            else {
+                let count: Int = inputs[i] as! Int
+                cinputs.append(count)
+            }
+        }
+        let c_inputs = getVaList(cinputs)
+        let re = ecdsa_sign_base64v(sig, privatekeys, Int32(count), c_inputs)
         guard re >= 0 else {
             throw DIDStoreError.failue("sign error.")
         }

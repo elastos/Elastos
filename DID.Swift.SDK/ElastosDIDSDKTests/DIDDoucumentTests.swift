@@ -92,26 +92,22 @@ class DIDDoucumentTests: XCTestCase {
                 let doc: DIDDocument = try store.loadDid(did)!
                 var json: String = try doc.toExternalForm(false)
                 let pkid: DIDURL = try DIDURL(did, "primary")
-                var cjson = json.withCString { re -> UnsafePointer<Int8> in
-                    return re
-                }
-                var inputs: [CVarArg] = [cjson, json.count]
-                var sig: String = try doc.sign(pkid, storePass, inputs)
-                var re: Bool = try doc.verify(pkid, sig, inputs)
+                var inputs: [CVarArg] = [json, json.count]
+                var count: Int = inputs.count / 2
+                var sig: String = try doc.sign(pkid, storePass, count, inputs)
+                var re: Bool = try doc.verify(pkid, sig, count, inputs)
                 XCTAssertTrue(re)
                 
-                sig = try doc.sign(storePass, inputs)
-                re = try doc.verify(sig, inputs)
+                sig = try doc.sign(storePass, count,inputs)
+                re = try doc.verify(sig, count,inputs)
                 XCTAssertTrue(re)
                 
                 json = String(json.suffix(json.count - 1))
-                cjson = json.withCString { re -> UnsafePointer<Int8> in
-                    return re
-                }
-                inputs = [cjson, json.count]
-                re = try doc.verify(pkid, sig, inputs)
+                inputs = [json, json.count]
+                count = inputs.count / 2
+                re = try doc.verify(pkid, sig, count, inputs)
                 XCTAssertFalse(re)
-                re = try doc.verify(sig, inputs)
+                re = try doc.verify(sig, count,inputs)
                 XCTAssertFalse(re)
             }
         } catch {
