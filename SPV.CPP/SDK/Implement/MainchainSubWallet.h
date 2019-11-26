@@ -97,6 +97,7 @@ namespace Elastos {
 					const std::string &memo);
 
 			virtual nlohmann::json CreateRetrieveCRDepositTransaction(
+					const std::string &crPublicKey,
 					const std::string &amount,
 					const std::string &memo);
 

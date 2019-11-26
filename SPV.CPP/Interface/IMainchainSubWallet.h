@@ -277,11 +277,13 @@ namespace Elastos {
 			/**
 			 * Create retrieve deposit cr transaction.
 			 *
-			 * @param amount     The available amount to be retrieved back.
-			 * @param memo       Remarks string. Can be empty string.
-			 * @return           The transaction in JSON format to be signed and published.
+			 * @param crPublicKey The public key to identify a cr.
+			 * @param amount      The available amount to be retrieved back.
+			 * @param memo        Remarks string. Can be empty string.
+			 * @return            The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRetrieveCRDepositTransaction(
+					const std::string &crPublicKey,
 					const std::string &amount,
 					const std::string &memo) = 0;
 

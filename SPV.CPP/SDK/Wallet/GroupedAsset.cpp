@@ -86,12 +86,29 @@ namespace Elastos {
 		}
 
 		nlohmann::json GroupedAsset::GetBalanceInfo() {
-			nlohmann::json info;
+			nlohmann::json info, addrBalance;
 
 			info["Balance"] = _balance.getDec();
 			info["LockedBalance"] = _balanceLocked.getDec();
 			info["DepositBalance"] = _balanceDeposit.getDec();
 			info["VotedBalance"] = _balanceVote.getDec();
+
+			UTXOArray utxo(_utxos.begin(), _utxos.end());
+			utxo.insert(utxo.end(), _utxosVote.begin(), _utxosVote.end());
+			utxo.insert(utxo.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
+			utxo.insert(utxo.end(), _utxosDeposit.begin(), _utxosDeposit.end());
+			utxo.insert(utxo.end(), _utxosLocked.begin(), _utxosLocked.end());
+
+			for (UTXOArray::iterator iter = utxo.begin(); iter != utxo.end(); ++iter) {
+				OutputPtr o = (*iter)->Output();
+				std::string addr = o->Addr().String();
+				if (addrBalance.find(addr) == addrBalance.end())
+					addrBalance[addr] = o->Amount().getDec();
+				else
+					addrBalance[addr] = (o->Amount() + BigInt(addrBalance[addr].get<std::string>(), 10)).getDec();
+			}
+
+			info["Address"] = addrBalance;
 
 			return info;
 		}

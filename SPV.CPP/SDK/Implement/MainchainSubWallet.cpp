@@ -677,6 +677,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::CreateRetrieveCRDepositTransaction(
+				const std::string &crPublicKey,
 				const std::string &amount,
 				const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
@@ -686,7 +687,8 @@ namespace Elastos {
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
-			Address fromAddress = Address(PrefixDeposit, _walletManager->GetWallet()->GetCROwnerPublicKey());
+			Address fromAddress = Address(PrefixDeposit, bytes_t(crPublicKey));
+			ErrorChecker::CheckParam(!fromAddress.Valid(), Error::InvalidArgument, "invalid crPublicKey");
 
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(CreateAddress());

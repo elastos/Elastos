@@ -363,6 +363,10 @@ static void create(int argc, char *argv[]) {
 
 		subWalletOpen(masterWallet, subWallet);
 		std::cout << "Wallet create success." << std::endl;
+
+		if (!currentWallet) {
+			currentWallet = masterWallet;
+		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
 	}
@@ -435,6 +439,10 @@ static void import(int argc, char *argv[]) {
 			return;
 		}
 
+		if (!currentWallet) {
+			currentWallet = masterWallet;
+		}
+
 		auto subWallets = masterWallet->GetAllSubWallets();
 		for (ISubWallet *subWallet : subWallets) {
 			subWalletOpen(masterWallet, subWallet);
@@ -462,6 +470,11 @@ static void remove(int argc, char *argv[]) {
 			return;
 		}
 
+		bool needUpdate = false;
+		if (masterWallet == currentWallet) {
+			needUpdate = true;
+		}
+
 		std::string password = getpass("Enter payment password: ");
 		if (!masterWallet->VerifyPayPassword(password)) {
 			std::cerr << "Wrong password!" << std::endl;
@@ -476,6 +489,16 @@ static void remove(int argc, char *argv[]) {
 
 		manager->DestroyWallet(walletName);
 		std::cout << "Wallet '" << walletName << "' removed." << std::endl;
+
+		if (needUpdate)  {
+			auto masterWallets = manager->GetAllMasterWallets();
+			if (masterWallets.size() > 0) {
+				currentWallet = masterWallets[0];
+			} else {
+				currentWallet = nullptr;
+			}
+		}
+
 	} catch (const std::exception &e) {
 		exceptionError(e);
 	}
@@ -510,7 +533,7 @@ static void list(int argc, char *argv[]) {
 				localtime_r(&lastBlockTime, &tm);
 				strftime(buf, sizeof(buf), "%F %T", &tm);
 
-				snprintf(info, sizeof(info), "%lf  [%s  %3d%%]", balance, buf, progress);
+				snprintf(info, sizeof(info), "%.8lf  [%s  %3d%%]", balance, buf, progress);
 			} else {
 				snprintf(info, sizeof(info), "--");
 			}
@@ -1016,6 +1039,65 @@ static void unregister(int argc, char *argv[]) {
 	}
 }
 
+// retrieve [cr | dpos]
+static void retrieve(int argc, char *argv[]) {
+	if (argc != 2) {
+		invalidCmdError();
+		return;
+	}
+
+	std::string registerWhat = argv[1];
+
+	try {
+		if (!currentWallet) {
+			std::cerr << "no wallet actived" << std::endl;
+			return;
+		}
+
+		IMainchainSubWallet *subWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ELA));
+		if (!subWallet) {
+			std::cerr << "open '" << CHAINID_ELA << "' first" << std::endl;
+			return;
+		}
+
+		nlohmann::json tx;
+		if (registerWhat == "cr") {
+			IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
+			if (!iidChainSubWallet) {
+				std::cerr << "open '" << CHAINID_ID << "' first" << std::endl;
+				return;
+			}
+
+			std::string crPublicKey = iidChainSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
+			std::string did = iidChainSubWallet->GetPublicKeyDID(crPublicKey);
+
+			std::cout << "DID public key: " << crPublicKey << std::endl;
+			std::cout << "DID: " << did << std::endl;
+
+			std::cout << "Enter retrieve amount: ";
+			std::string amount;
+			std::cin >> amount;
+
+			tx = subWallet->CreateRetrieveCRDepositTransaction(crPublicKey, convertAmount(amount), "");
+
+		} else if (registerWhat == "dpos") {
+
+			std::cout << "Enter retrieve amount: ";
+			std::string amount;
+			std::cin >> amount;
+
+			tx = subWallet->CreateRetrieveDepositTransaction(convertAmount(amount), "");
+		} else {
+			invalidCmdError();
+			return;
+		}
+
+		signAndPublishTx(subWallet, tx);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+	}
+}
+
 // proposal [sponsor | crsponsor]
 static void proposal(int argc, char *argv[]) {
 	if (argc != 2) {
@@ -1501,6 +1583,27 @@ static void utxo(int argc, char *argv[]) {
 	}
 }
 
+static void balance(int argc, char *argv[]) {
+	if (argc != 2) {
+		invalidCmdError();
+		return;
+	}
+
+	std::string chainID = argv[1];
+	try {
+		auto subWallet = currentWallet->GetSubWallet(chainID);
+		if (!subWallet) {
+			std::cerr << chainID << " not open" << std::endl;
+			return;
+		}
+		nlohmann::json balance = subWallet->GetBalanceInfo();
+
+		std::cout << balance.dump(4) << std::endl;
+	} catch(const std::exception &e) {
+		exceptionError(e);
+	}
+}
+
 static void verbose(int argc, char *argv[]) {
 	bool v = !verboseMode;
 
@@ -1551,6 +1654,7 @@ struct command {
 
 	{"tx",       _tx,            "[chainID]                               List all tx records."},
 	{"utxo",     utxo,           "[chainID]                               List all utxos"},
+	{"balance",  balance,        "[chainID]                               List balance info"},
 	{"fixpeer",  fixpeer,        "[chainID] [ip] [port]                   Set fixed peer to sync."},
 	{"send",     _send,          "[chainID] [address] [amount]            Send ELA from `chainID`."},
 	{"receive",  _receive,       "[chainID]                               Get receive address of `chainID`."},
@@ -1560,7 +1664,8 @@ struct command {
 	{"withdraw", withdraw,       "[chainID] [amount] [address]            Withdraw from sidechain to mainchain."},
 	{"export",   _export,        "[m[nemonic] | [k[eystore]]              Export mnemonic or keystore."},
 	{"register", _register,      "[cr | dpos]                             Register CR or DPoS with specified wallet."},
-	{"unregister", unregister,    "[cr | dpos]                            Unregister CR or DPoS with specified wallet."},
+	{"unregister", unregister,   "[cr | dpos]                             Unregister CR or DPoS with specified wallet."},
+	{"retrieve", retrieve,       "[cr | dpos]                             Retrieve Pledge with specified wallet."},
 	{"vote",     vote,           "[cr | dpos]                             CR/DPoS vote."},
 	{"verbose",  verbose,        "[on | off]                              Set verbose mode."},
 	{"exit", NULL,               "                                        Quit wallet."},
