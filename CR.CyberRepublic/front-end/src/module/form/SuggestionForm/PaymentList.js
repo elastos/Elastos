@@ -22,12 +22,12 @@ class PaymentList extends BaseComponent {
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th>{I18N.get('suggestion.budget.payment')} #</th>
-            <th>{I18N.get('suggestion.budget.amount')}(ELA)</th>
-            <th>{I18N.get('suggestion.budget.reasons')}</th>
-            <th>{I18N.get('suggestion.budget.criteria')}</th>
+            <th style={{ width: '10%' }}>{I18N.get('suggestion.budget.payment')} #</th>
+            <th style={{ width: '15%' }}>{I18N.get('suggestion.budget.amount')}(ELA)</th>
+            <th style={{ width: '35%' }}>{I18N.get('suggestion.budget.reasons')}</th>
+            <th style={{ width: '30%' }}>{I18N.get('suggestion.budget.criteria')}</th>
             {visible && (
-              <th style={{ width: 120 }}>
+              <th style={{ width: '10%' }}>
                 {I18N.get('suggestion.budget.action')}
               </th>
             )}
@@ -92,12 +92,6 @@ const StyledHead = styled.thead`
     line-height: 18px;
     padding: 16px;
     color: #fff;
-    &:first-child {
-      width: 105px;
-    }
-    &:nth-child(2) {
-      width: 120px;
-    }
   }
 `
 const StyledRow = styled.tr`
@@ -107,6 +101,7 @@ const StyledRow = styled.tr`
     line-height: 18px;
     padding: 16px;
     color: #000;
+    word-break: break-all;
     > button {
       margin: 0 4px;
     }

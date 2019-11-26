@@ -22,12 +22,12 @@ class TeamInfoList extends BaseComponent {
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th>{I18N.get('suggestion.plan.teamMember')}</th>
-            <th>{I18N.get('suggestion.plan.role')}</th>
-            <th>{I18N.get('suggestion.plan.responsibility')}</th>
-            <th>{I18N.get('suggestion.plan.moreInfo')}</th>
+            <th style={{ width: '15%' }}>{I18N.get('suggestion.plan.teamMember')}</th>
+            <th style={{ width: '15%' }}>{I18N.get('suggestion.plan.role')}</th>
+            <th style={{ width: '30%' }}>{I18N.get('suggestion.plan.responsibility')}</th>
+            <th style={{ width: '30%' }}>{I18N.get('suggestion.plan.moreInfo')}</th>
             {visible && (
-              <th style={{ width: 120 }}>
+              <th style={{ width: '10%' }}>
                 {I18N.get('suggestion.plan.action')}
               </th>
             )}
@@ -93,12 +93,7 @@ const StyledHead = styled.thead`
     line-height: 18px;
     padding: 16px;
     color: #fff;
-    &:first-child {
-      width: 150px;
-    }
-    &:nth-child(2) {
-      width: 150px;
-    }
+    width: 10%;
   }
 `
 const StyledRow = styled.tr`
@@ -108,6 +103,7 @@ const StyledRow = styled.tr`
     line-height: 18px;
     padding: 16px;
     color: #000;
+    word-break: break-all;
     > button {
       margin: 0 4px;
     }
