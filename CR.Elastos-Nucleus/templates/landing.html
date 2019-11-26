@@ -31,7 +31,9 @@
           </p>
           <div class="row mx-n2">
             <div class="col-md px-2">
-              <a href="{%  url 'login:sign_in' %}" class="btn btn-lg btn-light w-50 mb-3">Login with Elastos DID</a>
+                {% if request.session.logged_in != True %}
+                    <a href="{%  url 'login:sign_in' %}" class="btn btn-lg btn-light w-50 mb-3">Login with Elastos DID</a>
+                {% endif %}
             </div>
           </div>
         </div>
