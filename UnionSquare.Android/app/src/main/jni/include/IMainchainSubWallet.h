@@ -22,8 +22,7 @@ namespace Elastos {
 			 *
 			 * @param fromAddress      If this address is empty, wallet will pick available UTXO automatically.
 			 *                         Otherwise, wallet will pick UTXO from the specific address.
-			 * @param lockedAddress    Locked address of each side chain. Can be got by
-			 *                         ISidechainSubWallet::GetGenesisAddress() of side chain instance.
+			 * @param sideChainID      Chain id of the side chain.
 			 * @param amount           The amount that will be deposit to the side chain.
 			 * @param sideChainAddress Receive address of side chain.
 			 * @memo                   Remarks string. Can be empty string.
@@ -31,7 +30,7 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateDepositTransaction(
 					const std::string &fromAddress,
-					const std::string &lockedAddress,
+					const std::string &sideChainID,
 					const std::string &amount,
 					const std::string &sideChainAddress,
 					const std::string &memo) = 0;
@@ -193,51 +192,43 @@ namespace Elastos {
 			 * { "Status": "ReturnDeposit", "Info": null }
 			 */
 			virtual nlohmann::json GetRegisteredProducerInfo() const = 0;
-
-
 			/**
-			 * Generate payload for registering or updating cr.
+			 * Generate cr info payload digest for signature.
 			 *
 			 * @param crPublicKey    The public key to identify a cr. Can't change later.
 			 * @param nickName       Nickname of cr.
 			 * @param url            URL of cr.
 			 * @param location       Location code.
-			 * @param payPasswd      Pay password is using for signing the payload with the owner private key.
 			 *
-			 * @return               The payload in JSON format.
+			 * @return               The payload in JSON format contains the "Digest" field to be signed and then set the "Signature" field. Such as
+			 * {
+			 * 	"Code":"210370a77a257aa81f46629865eb8f3ca9cb052fcfd874e8648cfbea1fbf071b0280ac",
+			 * 	"DID":"b13bfbc6afd4e2d5227e659be5b808cbaa1c59d267",
+			 * 	"Location":86,
+			 * 	"NickName":"test",
+			 * 	"Url":"test.com",
+			 * 	"Digest":"9970b0612f9146f3f5744f7a843dfa6aac3534a6f44232e08469b212323be573",
+			 * 	"Signature":""
+			 * 	}
 			 */
 			virtual nlohmann::json GenerateCRInfoPayload(
 					const std::string &crPublicKey,
 					const std::string &nickName,
 					const std::string &url,
-					uint64_t location,
-					const std::string &payPasswd) const = 0;
+					uint64_t location) const = 0;
 
 			/**
-			 * Get cr owner DID.
-			 *
-			 * @return Owner cr DID.
-			 */
-			virtual std::string GetCROwnerDID() const = 0;
-
-			/**
-			 * Get cr owner public key.
-			 *
-			 * @return Owner cr public key.
-			 */
-			virtual std::string GetCROwnerPublicKey() const = 0;
-
-			/**
-			 * Generate payload for unregister or updating cr.
+			 * Generate unregister cr payload digest for signature.
 			 *
 			 * @param crDID          The id of cr will unregister
-			 * @param payPasswd      Pay password is using for signing the payload with the owner private key.
-			 *
-			 * @return               The payload in JSON format.
+			 * @return               The payload in JSON format contains the "Digest" field to be signed and then set the "Signature" field. Such as
+			 * {
+			 * 	"DID":"4854185275217ffcf8c97177d4ef1599810c8b8f67",
+			 * 	"Digest":"8e17a8bcacc5d70b5b312fccefc19d25d88ac6450322a846132e859509b88001",
+			 * 	"Signature":""
+			 * 	}
 			 */
-			virtual nlohmann::json GenerateUnregisterCRPayload(
-					const std::string &crDID,
-					const std::string &payPasswd) const = 0;
+			virtual nlohmann::json GenerateUnregisterCRPayload(const std::string &crDID) const = 0;
 
 			/**
 			 * Create register cr transaction.
@@ -286,11 +277,13 @@ namespace Elastos {
 			/**
 			 * Create retrieve deposit cr transaction.
 			 *
-			 * @param amount     The available amount to be retrieved back.
-			 * @param memo       Remarks string. Can be empty string.
-			 * @return           The transaction in JSON format to be signed and published.
+			 * @param crPublicKey The public key to identify a cr.
+			 * @param amount      The available amount to be retrieved back.
+			 * @param memo        Remarks string. Can be empty string.
+			 * @return            The transaction in JSON format to be signed and published.
 			 */
 			virtual nlohmann::json CreateRetrieveCRDepositTransaction(
+					const std::string &crPublicKey,
 					const std::string &amount,
 					const std::string &memo) = 0;
 
