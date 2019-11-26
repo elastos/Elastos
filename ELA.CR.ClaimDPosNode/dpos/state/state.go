@@ -461,6 +461,7 @@ func (s *State) GetIllegalProducers() []*Producer {
 	return producers
 }
 
+// GetIllegalProducers returns all inactive producers.
 func (s *State) GetInactiveProducers() []*Producer {
 	s.mtx.RLock()
 	producers := make([]*Producer, 0, len(s.InactiveProducers))

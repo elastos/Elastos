@@ -1481,16 +1481,16 @@ type RpcCrCandidatesInfo struct {
 
 //single cr member info
 type RpcCrMemberInfo struct {
-	Code             string         `json:"code"`
-	DID              string         `json:"did"`
-	NickName         string         `json:"nickname"`
-	Url              string         `json:"url"`
-	Location         uint64         `json:"location"`
-	ImpeachmentVotes common.Fixed64 `json:"impeachmentvotes"`
-	DepositAmount    string         `json:"depositamout"`
-	DepositHash      string         `json:"deposithash"`
-	Penalty          common.Fixed64 `json:"penalty"`
-	Index            uint64         `json:"index"`
+	Code             string `json:"code"`
+	DID              string `json:"did"`
+	NickName         string `json:"nickname"`
+	Url              string `json:"url"`
+	Location         uint64 `json:"location"`
+	ImpeachmentVotes string `json:"impeachmentvotes"`
+	DepositAmount    string `json:"depositamout"`
+	DepositHash      string `json:"deposithash"`
+	Penalty          string `json:"penalty"`
+	Index            uint64 `json:"index"`
 }
 
 //a group cr member info  include cr member count
@@ -1504,7 +1504,7 @@ type RpcProposalBaseState struct {
 	ProposalHash           string                        `json:"proposalhash"`
 	TxHash                 string                        `json:"txhash"`
 	CRVotes                map[string]payload.VoteResult `json:"crvotes"`
-	VotersRejectAmount     common.Fixed64                `json:"votersrejectamount"`
+	VotersRejectAmount     string                        `json:"votersrejectamount"`
 	RegisterHeight         uint32                        `json:"registerHeight`
 	VoteStartHeight        uint32                        `json:"votestartheight"`
 	CurrentStage           uint8                         `json:"currentstage"`
@@ -1541,7 +1541,7 @@ type RpcProposalState struct {
 	ProposalHash           string                        `json:"proposalhash"`
 	TxHash                 string                        `json:"txhash"`
 	CRVotes                map[string]payload.VoteResult `json:"crvotes"`
-	VotersRejectAmount     common.Fixed64                `json:"votersrejectamount"`
+	VotersRejectAmount     string                        `json:"votersrejectamount"`
 	RegisterHeight         uint32                        `json:"registerheight`
 	VoteStartHeight        uint32                        `json:"votestartheight"`
 	CurrentStage           uint8                         `json:"currentstage"`
@@ -1550,7 +1550,7 @@ type RpcProposalState struct {
 	TerminatedHeight       uint32                        `json:"terminatedheight"`
 	ProposalLeader         string                        `json:"proposalleader"`
 	CurrentWithdrawalStage uint8                         `json:"currentwithdrawalstage"`
-	AvailWithdrawalAmount  common.Fixed64                `json:"availwithdrawalamount"`
+	AvailWithdrawalAmount  string                        `json:"availwithdrawalamount"`
 }
 
 type RpcCRProposalStateInfo struct {
@@ -1727,8 +1727,9 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 	if ok {
 		s = strings.ToLower(s)
 	}
+	cm := Chain.GetCRCommittee()
 	var crMembers []*crstate.CRMember
-	crMembers = Chain.GetCRCommittee().GetAllMembers()
+	crMembers = cm.GetAllMembers()
 
 	sort.Slice(crMembers, func(i, j int) bool {
 		return crMembers[i].Info.GetCodeHash().Compare(
@@ -1745,10 +1746,10 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 			NickName:         cr.Info.NickName,
 			Url:              cr.Info.Url,
 			Location:         cr.Info.Location,
-			ImpeachmentVotes: cr.ImpeachmentVotes,
-			DepositAmount:    cr.DepositAmount.String(),
+			ImpeachmentVotes: cr.ImpeachmentVotes.String(),
+			DepositAmount:    cm.GetAvailableDepositAmount(cr.Info.DID).String(),
 			DepositHash:      cr.DepositHash.String(),
-			Penalty:          cr.Penalty,
+			Penalty:          cm.GetState().GetPenalty(cr.Info.DID).String(),
 			Index:            uint64(i),
 		}
 		rsCRMemberInfoSlice = append(rsCRMemberInfoSlice, memberInfo)
@@ -1810,7 +1811,7 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 			ProposalHash:           proposal.Proposal.Hash().String(),
 			TxHash:                 proposal.TxHash.String(),
 			CRVotes:                crVotes,
-			VotersRejectAmount:     proposal.VotersRejectAmount,
+			VotersRejectAmount:     proposal.VotersRejectAmount.String(),
 			RegisterHeight:         proposal.RegisterHeight,
 			VoteStartHeight:        proposal.VoteStartHeight,
 			CurrentStage:           proposal.CurrentStage,
@@ -1908,7 +1909,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		ProposalHash:           proposalHash.String(),
 		TxHash:                 proposalState.TxHash.String(),
 		CRVotes:                crVotes,
-		VotersRejectAmount:     proposalState.VotersRejectAmount,
+		VotersRejectAmount:     proposalState.VotersRejectAmount.String(),
 		RegisterHeight:         proposalState.RegisterHeight,
 		VoteStartHeight:        proposalState.VoteStartHeight,
 		CurrentStage:           proposalState.CurrentStage,
@@ -1917,7 +1918,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		TerminatedHeight:       proposalState.TerminatedHeight,
 		ProposalLeader:         hex.EncodeToString(proposalState.ProposalLeader),
 		AppropriatedStage:      proposalState.AppropriatedStage,
-		AvailWithdrawalAmount:  proposalMgr.AvailableWithdrawalAmount(proposalHash),
+		AvailWithdrawalAmount:  proposalMgr.AvailableWithdrawalAmount(proposalHash).String(),
 	}
 	result := &RpcCRProposalStateInfo{RpcProposalState: RpcProposalState}
 	return ResponsePack(Success, result)
@@ -2054,8 +2055,8 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "invalid did to programHash")
 	}
 
-	crState := Chain.GetCRCommittee().GetState()
-	candidate := crState.GetCandidate(*programHash)
+	crCommittee := Chain.GetCRCommittee()
+	candidate := crCommittee.GetState().GetCandidate(*programHash)
 	if candidate == nil {
 		return ResponsePack(InvalidParams, "can not find CR candidate")
 	}
@@ -2065,8 +2066,8 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 		Deducted  string `json:"deducted"`
 	}
 	return ResponsePack(Success, &depositCoin{
-		Available: candidate.DepositAmount().String(),
-		Deducted:  candidate.Penalty().String(),
+		Available: crCommittee.GetAvailableDepositAmount(*programHash).String(),
+		Deducted:  crCommittee.GetState().GetPenalty(*programHash).String(),
 	})
 }
 

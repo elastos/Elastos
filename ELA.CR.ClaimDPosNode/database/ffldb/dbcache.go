@@ -592,7 +592,7 @@ func (c *dbCache) commitTx(tx *transaction) error {
 	// the transaction to the cache.
 
 	// Since the cached keys to be added and removed use an immutable treap,
-	// a snapshot is simp ly obtaining the root of the tree under the lock
+	// a snapshot is simply obtaining the root of the tree under the lock
 	// which is used to atomically swap the root.
 	c.cacheLock.RLock()
 	newCachedKeys := c.cachedKeys

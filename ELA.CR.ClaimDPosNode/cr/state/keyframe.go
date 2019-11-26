@@ -36,9 +36,7 @@ const (
 type CRMember struct {
 	Info             payload.CRInfo
 	ImpeachmentVotes common.Fixed64
-	DepositAmount    common.Fixed64
 	DepositHash      common.Uint168
-	Penalty          common.Fixed64
 	MemberState      MemberState
 }
 
@@ -59,10 +57,16 @@ type KeyFrame struct {
 
 // StateKeyFrame holds necessary state about CR state.
 type StateKeyFrame struct {
-	CodeDIDMap           map[string]common.Uint168
-	DepositHashMap       map[common.Uint168]struct{}
-	Candidates           map[common.Uint168]*Candidate
-	HistoryCandidates    map[uint64]map[common.Uint168]*Candidate
+	CodeDIDMap        map[string]common.Uint168
+	DepositHashDIDMap map[common.Uint168]common.Uint168
+	Candidates        map[common.Uint168]*Candidate
+	HistoryCandidates map[uint64]map[common.Uint168]*Candidate
+
+	refundable       map[common.Uint168]bool
+	crcDepositAmount map[common.Uint168]common.Fixed64
+	crcPenalty       map[common.Uint168]common.Fixed64
+	crcTotalAmount   map[common.Uint168]common.Fixed64
+
 	CurrentSession       uint64
 	Nicknames            map[string]struct{}
 	Votes                map[string]struct{}
@@ -158,14 +162,6 @@ func (c *CRMember) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = common.WriteUint64(w, uint64(c.DepositAmount)); err != nil {
-		return
-	}
-
-	if err = common.WriteUint64(w, uint64(c.Penalty)); err != nil {
-		return
-	}
-
 	return c.DepositHash.Serialize(w)
 }
 
@@ -179,18 +175,6 @@ func (c *CRMember) Deserialize(r io.Reader) (err error) {
 		return
 	}
 	c.ImpeachmentVotes = common.Fixed64(votes)
-
-	var depositAmount uint64
-	if depositAmount, err = common.ReadUint64(r); err != nil {
-		return
-	}
-	c.DepositAmount = common.Fixed64(depositAmount)
-
-	var penalty uint64
-	if penalty, err = common.ReadUint64(r); err != nil {
-		return
-	}
-	c.Penalty = common.Fixed64(penalty)
 
 	return c.DepositHash.Deserialize(r)
 }
@@ -327,7 +311,7 @@ func (kf *StateKeyFrame) Serialize(w io.Writer) (err error) {
 		return
 	}
 
-	if err = kf.serializeDepositDIDMap(w, kf.DepositHashMap); err != nil {
+	if err = kf.serializeDepositDIDMap(w, kf.DepositHashDIDMap); err != nil {
 		return
 	}
 
@@ -336,6 +320,22 @@ func (kf *StateKeyFrame) Serialize(w io.Writer) (err error) {
 	}
 
 	if err = kf.serializeHistoryCandidateMap(w, kf.HistoryCandidates); err != nil {
+		return
+	}
+
+	if err = kf.serializeDIDBoolMap(w, kf.refundable); err != nil {
+		return
+	}
+
+	if err = kf.serializeDIDFixed64Map(w, kf.crcDepositAmount); err != nil {
+		return
+	}
+
+	if err = kf.serializeDIDFixed64Map(w, kf.crcPenalty); err != nil {
+		return
+	}
+
+	if err = kf.serializeDIDFixed64Map(w, kf.crcTotalAmount); err != nil {
 		return
 	}
 
@@ -367,7 +367,7 @@ func (kf *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 		return
 	}
 
-	if kf.DepositHashMap, err = kf.deserializeDepositDIDMap(r); err != nil {
+	if kf.DepositHashDIDMap, err = kf.deserializeDepositDIDMap(r); err != nil {
 		return
 	}
 
@@ -376,6 +376,22 @@ func (kf *StateKeyFrame) Deserialize(r io.Reader) (err error) {
 	}
 
 	if kf.HistoryCandidates, err = kf.deserializeHistoryCandidateMap(r); err != nil {
+		return
+	}
+
+	if kf.refundable, err = kf.deserializeDIDBoolMap(r); err != nil {
+		return
+	}
+
+	if kf.crcDepositAmount, err = kf.deserializeDIDFixed64Map(r); err != nil {
+		return
+	}
+
+	if kf.crcPenalty, err = kf.deserializeDIDFixed64Map(r); err != nil {
+		return
+	}
+
+	if kf.crcTotalAmount, err = kf.deserializeDIDFixed64Map(r); err != nil {
 		return
 	}
 
@@ -445,12 +461,15 @@ func (kf *StateKeyFrame) deserializeCodeAddressMap(r io.Reader) (
 }
 
 func (kf *StateKeyFrame) serializeDepositDIDMap(w io.Writer,
-	cmap map[common.Uint168]struct{}) (err error) {
+	cmap map[common.Uint168]common.Uint168) (err error) {
 	if err = common.WriteVarUint(w, uint64(len(cmap))); err != nil {
 		return
 	}
-	for k, _ := range cmap {
+	for k, v := range cmap {
 		if err = k.Serialize(w); err != nil {
+			return
+		}
+		if err = v.Serialize(w); err != nil {
 			return
 		}
 	}
@@ -458,19 +477,23 @@ func (kf *StateKeyFrame) serializeDepositDIDMap(w io.Writer,
 }
 
 func (kf *StateKeyFrame) deserializeDepositDIDMap(r io.Reader) (
-	cmap map[common.Uint168]struct{}, err error) {
+	cmap map[common.Uint168]common.Uint168, err error) {
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {
 		return
 	}
-	cmap = make(map[common.Uint168]struct{})
+	cmap = make(map[common.Uint168]common.Uint168)
 
 	for i := uint64(0); i < count; i++ {
 		var k common.Uint168
 		if err = k.Deserialize(r); err != nil {
 			return
 		}
-		cmap[k] = struct{}{}
+		var v common.Uint168
+		if err = v.Deserialize(r); err != nil {
+			return
+		}
+		cmap[k] = v
 	}
 	return
 }
@@ -510,6 +533,42 @@ func (kf *StateKeyFrame) serializeHistoryCandidateMap(w io.Writer,
 	return
 }
 
+func (kf *StateKeyFrame) serializeDIDBoolMap(w io.Writer,
+	vmap map[common.Uint168]bool) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
+		return
+	}
+	for k, v := range vmap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+
+		if err = common.WriteElement(w, v); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (kf *StateKeyFrame) serializeDIDFixed64Map(w io.Writer,
+	vmap map[common.Uint168]common.Fixed64) (err error) {
+	if err = common.WriteVarUint(w, uint64(len(vmap))); err != nil {
+		return
+	}
+	for k, v := range vmap {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func (kf *StateKeyFrame) deserializeCandidateMap(
 	r io.Reader) (cmap map[common.Uint168]*Candidate, err error) {
 	var count uint64
@@ -527,6 +586,48 @@ func (kf *StateKeyFrame) deserializeCandidateMap(
 			return
 		}
 		cmap[k] = candidate
+	}
+	return
+}
+
+func (kf *StateKeyFrame) deserializeDIDBoolMap(
+	r io.Reader) (vmap map[common.Uint168]bool, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	vmap = make(map[common.Uint168]bool)
+	for i := uint64(0); i < count; i++ {
+		var k common.Uint168
+		if err = k.Deserialize(r); err != nil {
+			return
+		}
+		var v bool
+		if err = common.ReadElement(r, &v); err != nil {
+			return
+		}
+		vmap[k] = v
+	}
+	return
+}
+
+func (kf *StateKeyFrame) deserializeDIDFixed64Map(
+	r io.Reader) (vmap map[common.Uint168]common.Fixed64, err error) {
+	var count uint64
+	if count, err = common.ReadVarUint(r, 0); err != nil {
+		return
+	}
+	vmap = make(map[common.Uint168]common.Fixed64)
+	for i := uint64(0); i < count; i++ {
+		var k common.Uint168
+		if err = k.Deserialize(r); err != nil {
+			return
+		}
+		v := common.Fixed64(0)
+		if err = v.Deserialize(r); err != nil {
+			return
+		}
+		vmap[k] = v
 	}
 	return
 }
@@ -595,7 +696,16 @@ func (kf *StateKeyFrame) DeserializeFixed64Map(
 func (kf *StateKeyFrame) Snapshot() *StateKeyFrame {
 	state := NewStateKeyFrame()
 	state.CodeDIDMap = copyCodeAddressMap(kf.CodeDIDMap)
+	state.DepositHashDIDMap = copyHashDIDMap(kf.DepositHashDIDMap)
 	state.Candidates = copyCandidateMap(kf.Candidates)
+	state.HistoryCandidates = copyHistoryCandidateMap(kf.HistoryCandidates)
+
+	state.refundable = copyRefundableMap(kf.refundable)
+	state.crcDepositAmount = copyDIDAmountMap(kf.crcDepositAmount)
+	state.crcPenalty = copyDIDAmountMap(kf.crcPenalty)
+	state.crcTotalAmount = copyDIDAmountMap(kf.crcTotalAmount)
+
+	state.CurrentSession = kf.CurrentSession
 	state.Nicknames = utils.CopyStringSet(kf.Nicknames)
 	state.Votes = utils.CopyStringSet(kf.Votes)
 	state.DepositOutputs = copyFixed64Map(kf.DepositOutputs)
@@ -834,9 +944,13 @@ func NewProposalKeyFrame() *ProposalKeyFrame {
 func NewStateKeyFrame() *StateKeyFrame {
 	return &StateKeyFrame{
 		CodeDIDMap:           make(map[string]common.Uint168),
-		DepositHashMap:       make(map[common.Uint168]struct{}),
+		DepositHashDIDMap:    make(map[common.Uint168]common.Uint168),
 		Candidates:           make(map[common.Uint168]*Candidate),
 		HistoryCandidates:    make(map[uint64]map[common.Uint168]*Candidate),
+		refundable:           make(map[common.Uint168]bool),
+		crcDepositAmount:     make(map[common.Uint168]common.Fixed64),
+		crcPenalty:           make(map[common.Uint168]common.Fixed64),
+		crcTotalAmount:       make(map[common.Uint168]common.Fixed64),
 		CurrentSession:       1,
 		Nicknames:            make(map[string]struct{}),
 		Votes:                make(map[string]struct{}),
@@ -853,6 +967,47 @@ func copyCandidateMap(src map[common.Uint168]*Candidate) (
 	for k, v := range src {
 		p := *v
 		dst[k] = &p
+	}
+	return
+}
+
+// copyHistoryCandidateMap copy the CR history map's key and value, and return
+// the dst map.
+func copyHistoryCandidateMap(src map[uint64]map[common.Uint168]*Candidate) (
+	dst map[uint64]map[common.Uint168]*Candidate) {
+	dst = map[uint64]map[common.Uint168]*Candidate{}
+	for k, v := range src {
+		dst[k] = copyCandidateMap(v)
+	}
+	return
+}
+
+// copyHashDIDMap copy the map's key and value, and return the dst map.
+func copyHashDIDMap(src map[common.Uint168]common.Uint168) (
+	dst map[common.Uint168]common.Uint168) {
+	dst = map[common.Uint168]common.Uint168{}
+	for k, v := range src {
+		dst[k] = v
+	}
+	return
+}
+
+// copyRefundableMap copy the map's key and value, and return the dst map.
+func copyRefundableMap(src map[common.Uint168]bool) (
+	dst map[common.Uint168]bool) {
+	dst = map[common.Uint168]bool{}
+	for k, v := range src {
+		dst[k] = v
+	}
+	return
+}
+
+// copyDIDAmountMap copy the map's key and value, and return the dst map.
+func copyDIDAmountMap(src map[common.Uint168]common.Fixed64) (
+	dst map[common.Uint168]common.Fixed64) {
+	dst = map[common.Uint168]common.Fixed64{}
+	for k, v := range src {
+		dst[k] = v
 	}
 	return
 }
