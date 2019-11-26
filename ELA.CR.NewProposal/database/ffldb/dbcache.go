@@ -535,7 +535,6 @@ func (c *dbCache) flush() error {
 //
 // This function MUST be called with the database write lock held.
 func (c *dbCache) needsFlush(tx *transaction) bool {
-	return true
 	// A flush is needed when more time has elapsed than the configured
 	// flush interval.
 	if time.Since(c.lastFlush) > c.flushInterval {

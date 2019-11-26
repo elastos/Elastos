@@ -28,7 +28,7 @@ local asset_id = m.get_asset_id()
 local fee = getFee()
 local proposal_tracking_type = getProposalTrackingType()
 local proposal_hash = getProposalHash()
-local document_data = getDocumentData()
+local document_hash = getDocumentHash()
 local stage = getStage()
 local appropriation = getAppropriation()
 local leader_pubkey = getLeaderPubkey()
@@ -46,8 +46,8 @@ if proposal_hash == "" then
     return
 end
 
-if document_data == "" then
-    print("document data is nil, should use --documentdata to set it.")
+if document_hash == "" then
+    print("document hash is nil, should use --documenthash to set it.")
     return
 end
 
@@ -70,7 +70,7 @@ print("secretary general privkey:", secretary_general_privkey)
 print("fee:", fee)
 print("proposal tracking type:", proposal_tracking_type)
 print("proposal hash:", proposal_hash)
-print("document data:", document_data)
+print("document hash:", document_hash)
 print("stage:", stage)
 print("appropriation:", appropriation)
 print("leader_pubkey:", leader_pubkey)
@@ -80,7 +80,7 @@ print("new_leader_privkey:", new_leader_privkey)
 print("secretary general privkey:", secretary_general_privkey)
 
 local cp_payload =crcproposaltracking.new(proposal_tracking_type,proposal_hash,
-        document_data, stage, appropriation, leader_pubkey, leader_privkey,
+        document_hash, stage, appropriation, leader_pubkey, leader_privkey,
         new_leader_pubkey, new_leader_privkey, secretary_general_privkey)
 print(cp_payload:get())
 
