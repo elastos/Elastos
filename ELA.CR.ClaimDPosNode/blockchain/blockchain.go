@@ -120,6 +120,10 @@ func New(db IChainStore, chainParams *config.Params, state *state.State,
 	return &chain, nil
 }
 
+func (b *BlockChain) GetDB() IChainStore {
+	return b.db
+}
+
 func (b *BlockChain) Init(interrupt <-chan struct{}) error {
 	if err := b.db.GetFFLDB().InitIndex(b, interrupt); err != nil {
 		return err
