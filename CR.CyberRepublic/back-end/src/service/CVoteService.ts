@@ -8,10 +8,7 @@ import { mail, user as userUtil, logger } from '../utility'
 
 let tm = undefined
 
-const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'budgetAmount', 'plan'];
-const restrictedFields = {
-  update: ['_id', 'createdBy', 'createdAt', 'proposedAt']
-}
+const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'budgetAmount', 'plan']
 
 export default class extends Base {
   // create a DRAFT propoal with minimal info
@@ -194,7 +191,6 @@ export default class extends Base {
     const db_cvote = this.getDBModel('CVote')
     const db_user = this.getDBModel('User')
     const db_suggestion = this.getDBModel('Suggestion')
-    const currentUserId = _.get(this.currentUser, '_id')
     const {
       title,
       published,
@@ -568,7 +564,6 @@ export default class extends Base {
   public async update(param): Promise<Document> {
     const db_user = this.getDBModel('User')
     const db_cvote = this.getDBModel('CVote')
-    const currentUserId = _.get(this.currentUser, '_id')
     const {
       _id,
       published,
@@ -598,8 +593,7 @@ export default class extends Base {
     const doc: any = {
       contentType: constant.CONTENT_TYPE.MARKDOWN
     }
-    const willChangeToPublish =
-      published === true && cur.status === constant.CVOTE_STATUS.DRAFT
+    const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 
     if (title) doc.title = title
     if (abstract) doc.abstract = abstract
