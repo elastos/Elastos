@@ -10,7 +10,6 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
-import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.AddAssetRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.presenter.AddAssetPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
@@ -26,6 +25,7 @@ import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import butterknife.BindView;
 
@@ -119,9 +119,11 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
         new RealmUtil().deleteSubWallet(walletId, data);
         //删除did草稿
         ArrayList<DIDInfoEntity> info = CacheUtil.getDIDInfoList();
-        for (DIDInfoEntity entity : info) {
+        Iterator<DIDInfoEntity> iterator = info.iterator();
+        while (iterator.hasNext()) {
+            DIDInfoEntity entity = iterator.next();
             if (entity.getWalletId().equals(walletId)) {
-                info.remove(entity);
+                iterator.remove();
             }
         }
         CacheUtil.setDIDInfoList(info);

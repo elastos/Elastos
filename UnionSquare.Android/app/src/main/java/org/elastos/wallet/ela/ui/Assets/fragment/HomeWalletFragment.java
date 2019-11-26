@@ -52,8 +52,7 @@ public class HomeWalletFragment extends BaseFragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.sb_create_wallet:
-                // start(ChoseCreateWalletFragment.class);
-                start(CreateWalletFragment.class);
+                start(ChoseCreateWalletFragment.class);
                 break;
             case R.id.sb_import_wallet:
                 start(ImportWalletFragment.newInstance());

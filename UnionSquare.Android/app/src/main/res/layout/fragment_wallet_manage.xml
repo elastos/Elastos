@@ -245,7 +245,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/ll_nodeconect"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
