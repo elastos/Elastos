@@ -18,16 +18,78 @@
 {% endblock %} 
 
 {% block content %}
-<div class="row align-items-center justify-content-center">
-  <div class="col-md-16">
-    <h2>Elastos - Build decentralized and scalable apps</h2>
-  </div>
-</div>
-<div class="row align-items-center justify-content-center">
-  <div class="col-md-16">
-    <a href="{%  url 'login:sign_in' %}">
-      <button style="text-align: center">Login with Elastos DID</button>
-    </a>
-  </div>
-</div>
+  <main class="bd-masthead" id="content" role="main" style="background-color: #0958a7;">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-6 mx-auto col-md-6 order-md-2">
+            <img src="{% static '/images/landingImage.png' %}" />
+        </div>
+        <div class="col-md-6 order-md-1 text-center text-white text-md-left pr-md-5">
+          <h1 class="mb-3 bd-text-purple-bright">Build Decentralized Apps</h1>
+          <p class="lead mb-4">
+              Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.
+          </p>
+          <div class="row mx-n2">
+            <div class="col-md px-2">
+              <a href="{%  url 'login:sign_in' %}" class="btn btn-lg btn-light w-50 mb-3">Login with Elastos DID</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <main class="bd-masthead" id="content2" role="main" style="background-color: #eff4f7;">
+      <div class="container">
+          <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
+              <div class="col-12 col-md-10 col-lg-7">
+                <div class="section-title text-center">
+                  <h2 class="font-alt">Our Mission</h2>
+                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                </div>
+              </div>
+          </div>
+          <div class="row" style="margin-top: 15px;">
+              <div class="col-12 col-md-4 ">
+                <div class="feature-box-01  sm-m-15px-t">
+                  <svg><use xlink:href="#sketching"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">Title</h5>
+                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  </div>
+                </div> <!-- feature-box-01 -->
+              </div> <!-- col -->
+              <div class="col-12 col-md-4">
+                <div class="feature-box-01 sm-m-0px-t">
+                  <svg><use xlink:href="#command_line"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">Title</h5>
+                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  </div>
+                </div> <!-- feature-box-01 -->
+              </div> <!-- col -->
+    
+              <div class="col-12 col-md-4">
+                <div class="feature-box-01">
+                  <svg><use xlink:href="#biz_discussion"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">Title</h5>
+                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  </div>
+                </div> <!-- feature-box-02 -->
+              </div> <!-- col -->
+          </div>
+      </div>
+  </main>
+  <main class="bd-masthead" id="content3" role="main" style="background-color: #ffffff;">
+      <div class="container">
+          <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
+              <div class="col-12 col-md-10 col-lg-7">
+                <div class="section-title text-center">
+                  <h2 class="font-alt">Start Developing Today</h2>
+                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                </div>
+              </div>
+            </div>
+      </div>
+  </main>
 {% endblock %}

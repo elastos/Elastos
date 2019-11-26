@@ -43,7 +43,7 @@ def login_required(function):
 def check_ela_auth(request):
     if 'elaState' not in request.session.keys():
         return JsonResponse({'authenticated': False}, status=403)
-    state = request.session['elaState']
+        state = request.session['elaState']
     try:
         recently_created_time = datetime.now() - timedelta(minutes=1)
         did_request_query_result = DIDRequest.objects.get(state=state, created_at__gte=recently_created_time)
@@ -106,7 +106,7 @@ def did_callback(request):
 
 def register(request):
     if 'redirect_success' not in request.session.keys():
-        return redirect(reverse('index'))
+        return redirect(reverse('landing'))
     if request.method == 'POST':
         form = DIDUserCreationForm(request.POST,
                                    initial={'name': request.session['name'], 'email': request.session['email'],
@@ -120,11 +120,11 @@ def register(request):
             request.session['name'] = user.name
             request.session['email'] = user.email
             messages.success(request, "Please check your email to complete your registration")
-            return redirect(reverse('index'))
+            return redirect(reverse('landing'))
     else:
         form = DIDUserCreationForm(initial={'name': request.session['name'], 'email': request.session['email'],
                                             'did': request.session['did']})
-    return render(request, 'login/register.html', {'form': form})
+    return render(request, 'login/register.html', {'form': form, 'logged_in': False})
 
 
 @login_required
@@ -153,7 +153,7 @@ def edit_profile(request):
                              "The email '%s' needs to be verified. Please check your email for confirmation link" % did_user.email)
             return redirect(reverse('login:home'))
         form = DIDUserChangeForm(instance=request.user)
-    return render(request, 'login/edit_profile.html', {'form': form})
+    return render(request, 'login/edit_profile.html', {'form': form, 'logged_in': True})
 
 
 def send_email(request, to_email, user):
@@ -220,13 +220,15 @@ def sign_in(request):
     DIDRequest.objects.filter(created_at__lte=stale_time).delete()
 
     request.session['elephant_url'] = elephant_url
+    context = {"logged_in": False}
 
-    return render(request, 'login/sign_in.html')
+    return render(request, 'login/sign_in.html', context)
 
 
 @login_required
 def home(request):
-    return render(request, 'login/home.html')
+    context = {"logged_in": True}
+    return render(request, 'login/home.html', context)
 
 
 def sign_out(request):
