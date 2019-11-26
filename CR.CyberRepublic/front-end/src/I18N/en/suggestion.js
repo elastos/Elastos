@@ -102,7 +102,8 @@ export default {
   msg: {
     consideration: 'Marked as under council consideration',
     notify: 'Email was sent to secretary.',
-    archived: 'Suggestion archived, you can find it in My republic later.'
+    archived: 'Suggestion archived successfully.',
+    unarchived: 'Suggestion unarchived successfully.'
   },
   header: {
     suggestion: 'suggestion',

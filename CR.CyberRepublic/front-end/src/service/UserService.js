@@ -230,6 +230,7 @@ export default class extends BaseService {
       this.dispatch(tasksRedux.actions.all_tasks_reset())
       sessionStorage.clear()
       localStorage.removeItem('api-token', '')
+      localStorage.removeItem('draft-suggestion', '')
       resolve(true)
     })
   }
