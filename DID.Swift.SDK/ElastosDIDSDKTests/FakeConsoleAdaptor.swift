@@ -14,7 +14,7 @@ class FakeConsoleAdaptor: DIDAdaptor {
         let cp = _payload.withCString { re -> UnsafePointer<Int8> in
             return re
         }
-//        let _ = base64_url_decode(buffer, cp)
+        //        let _ = base64_url_decode(buffer, cp)
 //        print("        \(String(cString: buffer))")
         return true
     }

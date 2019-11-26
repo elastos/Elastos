@@ -13,31 +13,16 @@
 		111BF481235467880043D570 /* Antlr4.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		111BF4832354678B0043D570 /* Pods_ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; };
 		111BF4842354678B0043D570 /* Pods_ElastosDIDSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9F12C0F4949EF44A9C5673A8 /* Pods_ElastosDIDSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1125B57A2382303600D396B6 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5752382302800D396B6 /* libz.tbd */; };
-		1125B581238234FB00D396B6 /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57C238234FB00D396B6 /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1125B582238234FB00D396B6 /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1125B57D238234FB00D396B6 /* CHDKey.swift */; };
 		1125B583238234FB00D396B6 /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57E238234FB00D396B6 /* HDkey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1125B584238234FB00D396B6 /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57F238234FB00D396B6 /* crypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1125B5952382351C00D396B6 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5912382351700D396B6 /* libboost_filesystem.a */; };
-		1125B5962382351C00D396B6 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B58F2382351700D396B6 /* libboost_system.a */; };
-		1125B5972382351C00D396B6 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5852382351700D396B6 /* libboost_thread.a */; };
-		1125B5982382351C00D396B6 /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5922382351700D396B6 /* libcjson.a */; };
 		1125B5992382351C00D396B6 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5882382351700D396B6 /* libcrypto.a */; };
-		1125B59A2382351C00D396B6 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B58B2382351700D396B6 /* libcrystal.a */; };
-		1125B59C2382351C00D396B6 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B58A2382351700D396B6 /* libcurl.a */; };
-		1125B59D2382351C00D396B6 /* libfruit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5892382351700D396B6 /* libfruit.a */; };
 		1125B59E2382351C00D396B6 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5902382351700D396B6 /* libhdkey.a */; };
-		1125B59F2382351C00D396B6 /* libspdlog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B58D2382351700D396B6 /* libspdlog.a */; };
-		1125B5A02382351C00D396B6 /* libspvadapter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B58E2382351700D396B6 /* libspvadapter.a */; };
-		1125B5A12382351C00D396B6 /* libspvsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5862382351700D396B6 /* libspvsdk.a */; };
-		1125B5A22382351C00D396B6 /* libsqlite3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5942382351800D396B6 /* libsqlite3.a */; };
-		1125B5A32382351C00D396B6 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B58C2382351700D396B6 /* libssl.a */; };
-		1125B5A42382351C00D396B6 /* libtls.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1125B5872382351700D396B6 /* libtls.a */; };
+		11267073238CDC610086740D /* SPVAdapter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11267072238CDC490086740D /* SPVAdapter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
 		116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */; };
 		116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA572360092D00BBEE4F /* TestUtils.swift */; };
 		119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D5237D41B000C4998E /* DIDAdaptor.swift */; };
-		119338D8237D41CD00C4998E /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D7237D41CD00C4998E /* SPVAdaptor.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
 		11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -53,11 +38,9 @@
 		11CA74D5235E131B006E66F7 /* normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D2235E131B006E66F7 /* normalized.json */; };
 		11CA74D6235E131B006E66F7 /* compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D3235E131B006E66F7 /* compact.json */; };
 		11CA74D7235E131B006E66F7 /* testdiddoc.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D4235E131B006E66F7 /* testdiddoc.json */; };
-		11D3C06B23815DB900875E51 /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 119338E2237E622300C4998E /* libc++.1.tbd */; };
-		11D3C06C23815DC000875E51 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 119338E4237E623100C4998E /* libc++.tbd */; };
-		11D3C06D23815DC800875E51 /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 119338E6237E623E00C4998E /* libc++abi.tbd */; };
 		11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */; };
 		11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9C623545A5700453218 /* DIDStoreTests.swift */; };
+		11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DA0796238B929F0066CC86 /* SPVAdaptor.swift */; };
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D440233485800012CD77 /* EmbeddedCredential.swift */; };
 		A3E6D446233485800012CD77 /* Proof.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D441233485800012CD77 /* Proof.swift */; };
@@ -108,6 +91,20 @@
 			remoteGlobalIDString = "Antlr4::Antlr4Tests::Product";
 			remoteInfo = Antlr4Tests;
 		};
+		11267071238CDC490086740D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1126706D238CDC490086740D /* SPVAdapter.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 11267024238CC7120086740D;
+			remoteInfo = SPVAdapter;
+		};
+		11267074238CDCBA0086740D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = "Antlr4::Antlr4";
+			remoteInfo = Antlr4;
+		};
 		1155D94C2352FACE00DF8C9D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 11F262A123260CF30009C103 /* Project object */;
@@ -136,6 +133,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				11267073238CDC610086740D /* SPVAdapter.framework in CopyFiles */,
 				11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -151,7 +149,6 @@
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
 		110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FakeConsoleAdaptor.swift; path = ElastosDIDSDKTests/FakeConsoleAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		1125B5752382302800D396B6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
-		1125B57C238234FB00D396B6 /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = spvadapter.h; path = include/spvadapter.h; sourceTree = "<group>"; };
 		1125B57D238234FB00D396B6 /* CHDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CHDKey.swift; path = include/CHDKey.swift; sourceTree = "<group>"; };
 		1125B57E238234FB00D396B6 /* HDkey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HDkey.h; path = include/HDkey.h; sourceTree = "<group>"; };
 		1125B57F238234FB00D396B6 /* crypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypto.h; path = include/crypto.h; sourceTree = "<group>"; };
@@ -171,12 +168,12 @@
 		1125B5922382351700D396B6 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = "Externals/libhdkey/lib/-iphonesimulator/libcjson.a"; sourceTree = "<group>"; };
 		1125B5932382351700D396B6 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = "Externals/libhdkey/lib/-iphonesimulator/libcunit.a"; sourceTree = "<group>"; };
 		1125B5942382351800D396B6 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = "Externals/libhdkey/lib/-iphonesimulator/libsqlite3.a"; sourceTree = "<group>"; };
+		1126706D238CDC490086740D /* SPVAdapter.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SPVAdapter.xcodeproj; path = SPVAdapter/SPVAdapter.xcodeproj; sourceTree = "<group>"; };
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreCreateTests.swift; sourceTree = "<group>"; };
 		116CAA572360092D00BBEE4F /* TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestUtils.swift; path = TestUtils/TestUtils.swift; sourceTree = "<group>"; };
 		119338D5237D41B000C4998E /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
-		119338D7237D41CD00C4998E /* SPVAdaptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPVAdaptor.swift; sourceTree = "<group>"; };
 		119338DC237E4DB800C4998E /* TestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestConfig.swift; path = TestUtils/TestConfig.swift; sourceTree = "<group>"; };
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E4237E623100C4998E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -211,6 +208,22 @@
 		11D3C06F23815E4300875E51 /* libcurl.la */ = {isa = PBXFileReference; lastKnownFileType = text; name = libcurl.la; path = Externals/libhdkey/libcurl.la; sourceTree = "<group>"; };
 		11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDDoucumentTests.swift; sourceTree = "<group>"; };
 		11D4B9C623545A5700453218 /* DIDStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreTests.swift; sourceTree = "<group>"; };
+		11DA06DD238B7B750066CC86 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = ElastosDIDSDKTests/spvadapter/lib/libspvsdk.a; sourceTree = "<group>"; };
+		11DA06DE238B7B750066CC86 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = ElastosDIDSDKTests/spvadapter/lib/libcjson.a; sourceTree = "<group>"; };
+		11DA06DF238B7B750066CC86 /* libtls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtls.a; path = ElastosDIDSDKTests/spvadapter/lib/libtls.a; sourceTree = "<group>"; };
+		11DA06E0238B7B750066CC86 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = ElastosDIDSDKTests/spvadapter/lib/libcunit.a; sourceTree = "<group>"; };
+		11DA06E1238B7B750066CC86 /* libspdlog.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspdlog.a; path = ElastosDIDSDKTests/spvadapter/lib/libspdlog.a; sourceTree = "<group>"; };
+		11DA06E2238B7B760066CC86 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ElastosDIDSDKTests/spvadapter/lib/libboost_system.a; sourceTree = "<group>"; };
+		11DA06E3238B7B760066CC86 /* libfruit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfruit.a; path = ElastosDIDSDKTests/spvadapter/lib/libfruit.a; sourceTree = "<group>"; };
+		11DA06E4238B7B760066CC86 /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvadapter.a; path = ElastosDIDSDKTests/spvadapter/lib/libspvadapter.a; sourceTree = "<group>"; };
+		11DA06E5238B7B760066CC86 /* libcrystal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrystal.a; path = ElastosDIDSDKTests/spvadapter/lib/libcrystal.a; sourceTree = "<group>"; };
+		11DA06E6238B7B760066CC86 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = ElastosDIDSDKTests/spvadapter/lib/libssl.a; sourceTree = "<group>"; };
+		11DA06E7238B7B760066CC86 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ElastosDIDSDKTests/spvadapter/lib/libboost_filesystem.a; sourceTree = "<group>"; };
+		11DA06E8238B7B760066CC86 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = ElastosDIDSDKTests/spvadapter/lib/libsqlite3.a; sourceTree = "<group>"; };
+		11DA06E9238B7B760066CC86 /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = ElastosDIDSDKTests/spvadapter/lib/libcurl.a; sourceTree = "<group>"; };
+		11DA06EA238B7B760066CC86 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ElastosDIDSDKTests/spvadapter/lib/libboost_thread.a; sourceTree = "<group>"; };
+		11DA06FE238B7C8F0066CC86 /* ElastosDIDSDKTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ElastosDIDSDKTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		11DA0796238B929F0066CC86 /* SPVAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SPVAdaptor.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -268,27 +281,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1125B59A2382351C00D396B6 /* libcrystal.a in Frameworks */,
-				1125B59F2382351C00D396B6 /* libspdlog.a in Frameworks */,
-				1125B5A32382351C00D396B6 /* libssl.a in Frameworks */,
-				1125B59D2382351C00D396B6 /* libfruit.a in Frameworks */,
-				1125B59C2382351C00D396B6 /* libcurl.a in Frameworks */,
-				1125B5952382351C00D396B6 /* libboost_filesystem.a in Frameworks */,
-				1125B5982382351C00D396B6 /* libcjson.a in Frameworks */,
-				1125B5A42382351C00D396B6 /* libtls.a in Frameworks */,
-				1125B5A12382351C00D396B6 /* libspvsdk.a in Frameworks */,
 				1125B59E2382351C00D396B6 /* libhdkey.a in Frameworks */,
-				1125B57A2382303600D396B6 /* libz.tbd in Frameworks */,
-				1125B5962382351C00D396B6 /* libboost_system.a in Frameworks */,
-				1125B5A22382351C00D396B6 /* libsqlite3.a in Frameworks */,
-				11D3C06B23815DB900875E51 /* libc++.1.tbd in Frameworks */,
-				11D3C06C23815DC000875E51 /* libc++.tbd in Frameworks */,
 				1125B5992382351C00D396B6 /* libcrypto.a in Frameworks */,
 				111BF480235467880043D570 /* Antlr4.framework in Frameworks */,
-				11D3C06D23815DC800875E51 /* libc++abi.tbd in Frameworks */,
-				1125B5A02382351C00D396B6 /* libspvadapter.a in Frameworks */,
 				111BF4832354678B0043D570 /* Pods_ElastosDIDSDK.framework in Frameworks */,
-				1125B5972382351C00D396B6 /* libboost_thread.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,9 +311,23 @@
 			isa = PBXGroup;
 			children = (
 				1125B5912382351700D396B6 /* libboost_filesystem.a */,
+				11DA06E7238B7B760066CC86 /* libboost_filesystem.a */,
 				1125B58F2382351700D396B6 /* libboost_system.a */,
 				1125B5852382351700D396B6 /* libboost_thread.a */,
+				11DA06E2238B7B760066CC86 /* libboost_system.a */,
+				11DA06EA238B7B760066CC86 /* libboost_thread.a */,
 				1125B5922382351700D396B6 /* libcjson.a */,
+				11DA06DE238B7B750066CC86 /* libcjson.a */,
+				11DA06E5238B7B760066CC86 /* libcrystal.a */,
+				11DA06E0238B7B750066CC86 /* libcunit.a */,
+				11DA06E9238B7B760066CC86 /* libcurl.a */,
+				11DA06E3238B7B760066CC86 /* libfruit.a */,
+				11DA06E1238B7B750066CC86 /* libspdlog.a */,
+				11DA06E4238B7B760066CC86 /* libspvadapter.a */,
+				11DA06DD238B7B750066CC86 /* libspvsdk.a */,
+				11DA06E8238B7B760066CC86 /* libsqlite3.a */,
+				11DA06E6238B7B760066CC86 /* libssl.a */,
+				11DA06DF238B7B750066CC86 /* libtls.a */,
 				1125B5882382351700D396B6 /* libcrypto.a */,
 				1125B58B2382351700D396B6 /* libcrystal.a */,
 				1125B5932382351700D396B6 /* libcunit.a */,
@@ -374,9 +384,18 @@
 			path = base58;
 			sourceTree = "<group>";
 		};
+		1126706E238CDC490086740D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				11267072238CDC490086740D /* SPVAdapter.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		1155D9472352FACE00DF8C9D /* ElastosDIDSDKTests */ = {
 			isa = PBXGroup;
 			children = (
+				11DA0796238B929F0066CC86 /* SPVAdaptor.swift */,
 				116CAA56236008FD00BBEE4F /* TestUtils */,
 				11CA74D1235E131B006E66F7 /* Resources */,
 				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
@@ -384,19 +403,19 @@
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
 				116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
+				11DA06FE238B7C8F0066CC86 /* ElastosDIDSDKTests-Bridging-Header.h */,
 			);
 			path = ElastosDIDSDKTests;
 			sourceTree = "<group>";
 		};
-		116C94E8234D825B00BA9777 /* libhdkey */ = {
+		116C94E8234D825B00BA9777 /* HDKey */ = {
 			isa = PBXGroup;
 			children = (
 				1125B57D238234FB00D396B6 /* CHDKey.swift */,
 				1125B57F238234FB00D396B6 /* crypto.h */,
 				1125B57E238234FB00D396B6 /* HDkey.h */,
-				1125B57C238234FB00D396B6 /* spvadapter.h */,
 			);
-			path = libhdkey;
+			path = HDKey;
 			sourceTree = "<group>";
 		};
 		116CAA56236008FD00BBEE4F /* TestUtils */ = {
@@ -407,15 +426,6 @@
 			);
 			name = TestUtils;
 			sourceTree = "<group>";
-		};
-		119338D2237D417600C4998E /* Adaptor */ = {
-			isa = PBXGroup;
-			children = (
-				119338D7237D41CD00C4998E /* SPVAdaptor.swift */,
-			);
-			name = Adaptor;
-			path = ElastosDIDSDK/DID/Adaptor;
-			sourceTree = SOURCE_ROOT;
 		};
 		11CA74AC235E06B7006E66F7 /* Util */ = {
 			isa = PBXGroup;
@@ -448,9 +458,10 @@
 		11E3F791233D121900EF35C3 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
+				1126706D238CDC490086740D /* SPVAdapter.xcodeproj */,
 				110AD2FD234E44BA006578D6 /* base58 */,
 				110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */,
-				116C94E8234D825B00BA9777 /* libhdkey */,
+				116C94E8234D825B00BA9777 /* HDKey */,
 			);
 			path = Externals;
 			sourceTree = "<group>";
@@ -503,7 +514,6 @@
 		11F262B623260D550009C103 /* DID */ = {
 			isa = PBXGroup;
 			children = (
-				119338D2237D417600C4998E /* Adaptor */,
 				11CA74AC235E06B7006E66F7 /* Util */,
 				11F262BB23260DFD0009C103 /* Backend */,
 				1109D06D232758D500A03D56 /* Parser */,
@@ -552,12 +562,18 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		11DA0703238B80CB0066CC86 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		11F262A523260CF40009C103 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				1125B583238234FB00D396B6 /* HDkey.h in Headers */,
-				1125B581238234FB00D396B6 /* spvadapter.h in Headers */,
 				11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */,
 				1125B584238234FB00D396B6 /* crypto.h in Headers */,
 			);
@@ -571,6 +587,7 @@
 			buildConfigurationList = 1155D9542352FACE00DF8C9D /* Build configuration list for PBXNativeTarget "ElastosDIDSDKTests" */;
 			buildPhases = (
 				94FC9F42C370C644F20B542E /* [CP] Check Pods Manifest.lock */,
+				11DA0703238B80CB0066CC86 /* Headers */,
 				1155D9422352FACE00DF8C9D /* Sources */,
 				1155D9432352FACE00DF8C9D /* Frameworks */,
 				1155D9442352FACE00DF8C9D /* Resources */,
@@ -601,6 +618,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				11267075238CDCBA0086740D /* PBXTargetDependency */,
 			);
 			name = ElastosDIDSDK;
 			productName = Elastos.DID.Swift.SDK;
@@ -613,12 +631,13 @@
 		11F262A123260CF30009C103 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1100;
+				LastSwiftUpdateCheck = 1120;
 				LastUpgradeCheck = 1030;
 				ORGANIZATIONNAME = elastos;
 				TargetAttributes = {
 					1155D9452352FACE00DF8C9D = {
 						CreatedOnToolsVersion = 11.0;
+						LastSwiftMigration = 1120;
 					};
 					11F262A923260CF40009C103 = {
 						CreatedOnToolsVersion = 10.3;
@@ -632,6 +651,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 11F262A023260CF30009C103;
 			productRefGroup = 11F262AB23260CF40009C103 /* Products */;
@@ -640,6 +660,10 @@
 				{
 					ProductGroup = 110AD2F1234E431D006578D6 /* Products */;
 					ProjectRef = 110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */;
+				},
+				{
+					ProductGroup = 1126706E238CDC490086740D /* Products */;
+					ProjectRef = 1126706D238CDC490086740D /* SPVAdapter.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -663,6 +687,13 @@
 			fileType = file;
 			path = Antlr4Tests.xctest;
 			remoteRef = 110AD2F9234E431D006578D6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		11267072238CDC490086740D /* SPVAdapter.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SPVAdapter.framework;
+			remoteRef = 11267071238CDC490086740D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -763,6 +794,7 @@
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
+				11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */,
 				116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -810,7 +842,6 @@
 				11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */,
 				A3E6D457233485AD0012CD77 /* DIDURLLexerATN.swift in Sources */,
 				11CA74BA235E06B7006E66F7 /* HDKey.swift in Sources */,
-				119338D8237D41CD00C4998E /* SPVAdaptor.swift in Sources */,
 				A3E6D47B233485E00012CD77 /* DID.swift in Sources */,
 				A3E6D478233485E00012CD77 /* DIDObject.swift in Sources */,
 				A3E6D449233485800012CD77 /* CredentialSubject.swift in Sources */,
@@ -820,6 +851,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		11267075238CDCBA0086740D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Antlr4;
+			targetProxy = 11267074238CDCBA0086740D /* PBXContainerItemProxy */;
+		};
 		1155D94D2352FACE00DF8C9D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 11F262A923260CF40009C103 /* ElastosDIDSDK */;
@@ -832,8 +868,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 429A93044EE210E588A08821 /* Pods-ElastosDIDSDKTests.debug.xcconfig */;
 			buildSettings = {
+				BUNDLE_LOADER = "";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = LFU7T9UYL5;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ElastosDIDSDKTests",
+				);
 				INFOPLIST_FILE = ElastosDIDSDKTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -842,11 +884,14 @@
 					"@loader_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/Externals/lib",
 					"$(inherited)",
+					"$(PROJECT_DIR)/ElastosDIDSDKTests/spvadapter/lib/",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.ElastosDIDSDKTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "ElastosDIDSDKTests/ElastosDIDSDKTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -856,8 +901,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 8FFC3EEBD8DD0BF9F21A0BB8 /* Pods-ElastosDIDSDKTests.release.xcconfig */;
 			buildSettings = {
+				BUNDLE_LOADER = "";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = LFU7T9UYL5;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ElastosDIDSDKTests",
+				);
 				INFOPLIST_FILE = ElastosDIDSDKTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -866,11 +917,13 @@
 					"@loader_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/Externals/lib",
 					"$(inherited)",
+					"$(PROJECT_DIR)/ElastosDIDSDKTests/spvadapter/lib/",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.ElastosDIDSDKTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "ElastosDIDSDKTests/ElastosDIDSDKTests-Bridging-Header.h";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -928,7 +981,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -986,7 +1039,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -1024,9 +1077,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/lib",
-					"$(PROJECT_DIR)/Externals/libhdkey",
-					"$(PROJECT_DIR)/Externals/libhdkey/lib/-iphonesimulator",
+					"$(PROJECT_DIR)/Externals/HDKey/lib/-iphonesimulator",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.ElastosDIDSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1034,6 +1085,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestHost.app/TestHost";
 			};
 			name = Debug;
 		};
@@ -1063,15 +1115,14 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/lib",
-					"$(PROJECT_DIR)/Externals/libhdkey",
-					"$(PROJECT_DIR)/Externals/libhdkey/lib/-iphonesimulator",
+					"$(PROJECT_DIR)/Externals/HDKey/lib/-iphonesimulator",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.ElastosDIDSDK;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestHost.app/TestHost";
 			};
 			name = Release;
 		};

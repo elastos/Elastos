@@ -1,8 +1,6 @@
 
-
 import XCTest
 import ElastosDIDSDK
-
 
 class DIDDoucumentTests: XCTestCase {
     

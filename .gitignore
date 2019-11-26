@@ -12,4 +12,6 @@ xcuserdata
 /node_modules
 /package-lock.json
 
-/Externals/libhdkey/lib/
+/Externals/HDKey/lib/
+/Externals/SPVAdapter/SPVAdapter/lib
+
