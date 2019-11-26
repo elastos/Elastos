@@ -14,10 +14,10 @@ class DIDStoreTests: XCTestCase {
             let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "helloworld"})
             adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
             TestUtils.deleteFile(storePath)
-            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass, adapter)
+            try DIDStore.creatInstance("filesystem", storePath, adapter)
             store = try DIDStore.shareInstance()!
             let mnemonic: String = HDKey.generateMnemonic(0)
-            try store.initPrivateIdentity(mnemonic, passphrase, storePass, true)
+            try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
         } catch {
             print(error)
         }
@@ -29,7 +29,7 @@ class DIDStoreTests: XCTestCase {
     
     func test00CreateEmptyStore1() {
         do {
-            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass, adapter)
+            try DIDStore.creatInstance("filesystem", storePath, adapter)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             _ = try tempStore.newDid(passphrase, "my first did")
         } catch {
@@ -40,19 +40,19 @@ class DIDStoreTests: XCTestCase {
     func test00InitPrivateIdentity0() {
         do {
             TestUtils.deleteFile(storePath)
-            try! DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass, adapter)
+            try DIDStore.creatInstance("filesystem", storePath, adapter)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             XCTAssertFalse(try! tempStore.hasPrivateIdentity())
             
             let mnemonic: String = HDKey.generateMnemonic(0)
-            try! tempStore.initPrivateIdentity(mnemonic, passphrase, storePass, true)
+            try! tempStore.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
             let keypath: String = storePath + "/" + "private" + "/" + "key"
             XCTAssertTrue(TestUtils.existsFile(keypath))
             let indexPath: String = storePath + "/" + "private" + "/" + "index"
             XCTAssertTrue(TestUtils.existsFile(indexPath))
             XCTAssertTrue(try! tempStore.hasPrivateIdentity())
             
-            try! DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass, adapter)
+            try DIDStore.creatInstance("filesystem", storePath, adapter)
             let tempStore2: DIDStore = try DIDStore.shareInstance()!
             XCTAssertTrue(try! tempStore2.hasPrivateIdentity())
         } catch {
@@ -62,7 +62,7 @@ class DIDStoreTests: XCTestCase {
     
     func test01InitPrivateIdentity1() {
         do {
-            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass, adapter)
+            try DIDStore.creatInstance("filesystem", storePath, adapter)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             XCTAssert(try tempStore.hasPrivateIdentity())
         } catch {
@@ -168,11 +168,11 @@ class DIDStoreTests: XCTestCase {
         issuer.vc.subject.properties = props
         _ = try issuer.sign(passphrase)
         
-        var doc2: DIDDocument = try store.resolveDid(primaryDid)
+        var doc2 = try store.resolveDid(primaryDid)!
         _ = doc2.modify()
         _ = doc2.addCredential(issuer.vc)
         try store.storeDid(doc2)
-        doc2 = try store.resolveDid(primaryDid)
+        doc2 = try store.resolveDid(primaryDid)!
         let vcId: DIDURL = try DIDURL(primaryDid, "cred-1")
         issuer.vc = try doc2.getCredential(vcId)
         

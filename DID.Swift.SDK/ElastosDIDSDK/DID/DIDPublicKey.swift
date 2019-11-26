@@ -9,6 +9,30 @@ public class DIDPublicKey: DIDObject {
         self.controller = controller
         self.keyBase58 = keyBase58
     }
+
+    init(_ id: DIDURL, _ controller: DID, _ keyBase58: String) {
+        super.init(id, Constants.defaultPublicKeyType)
+        self.controller = controller
+        self.keyBase58 = keyBase58
+    }
+//    public override func isEqual(_ object: Any?) -> Bool {
+//    }
+    /*
+     @Override
+     public boolean equals(Object obj) {
+         if (obj instanceof PublicKey) {
+             PublicKey ref = (PublicKey)obj;
+
+             if (getId().equals(ref.getId()) &&
+                     getType().equals(ref.getType()) &&
+                     getController().equals(ref.getController()) &&
+                     getPublicKeyBase58().equals(ref.getPublicKeyBase58()))
+                 return true;
+         }
+
+         return false;
+     }
+     */
     
     class public func fromJson(_ dic: OrderedDictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey{
         

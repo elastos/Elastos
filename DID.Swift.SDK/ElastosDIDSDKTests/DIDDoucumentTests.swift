@@ -68,10 +68,10 @@ class DIDDoucumentTests: XCTestCase {
     func testSignAndVerify() {
         do {
             // add ids
-            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePass, FakeConsoleAdaptor())
+            try DIDStore.creatInstance("filesystem", storePath, FakeConsoleAdaptor())
             store = try DIDStore.shareInstance()
             let mnemonic: String = HDKey.generateMnemonic(0)
-            try store.initPrivateIdentity(mnemonic, passphrase, storePass, true)
+            try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
 
             var ids: Dictionary<DID, String> = [: ]
             for i in 0..<100 {

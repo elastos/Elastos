@@ -1,11 +1,10 @@
 import Foundation
 
 public class HDKey: NSObject {
-    static let CURVE_ALGORITHM: String = "secp256r1"
+    public static let PUBLICKEY_BYTES: Int = 33
+    public static let PRIVATEKEY_BYTES: Int = 32
+    
     private var seed: Data!
-    private var subPublicKey: String!
-    private var childPrivatedKey: String!
-    private var rootPrivateKey: String!
     init(_ seed: Data) {
         self.seed = seed
     }

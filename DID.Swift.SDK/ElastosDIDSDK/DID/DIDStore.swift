@@ -6,21 +6,18 @@ public class DIDStore: NSObject {
     public static let DID_NO_PRIVATEKEY = 1
     public static let DID_ALL = 2
     private static var instance: DIDStore!
-    private var privateIdentity: HDKey!
-    private var lastIndex: Int!
     var storeRootPath: String!
     private var backend: DIDBackend!
 
     override init() {
     }
 
-    public static func creatInstance(_ type: String, location: String, storepass: String, _ adapter: DIDAdaptor) throws {
+    public static func creatInstance(_ type: String, _ location: String, _ adapter: DIDAdaptor) throws {
         guard type == "filesystem" else {
             throw DIDStoreError.failue("Unsupported store type:\(type)")
         }
         if instance == nil {
             instance = try FileSystemStore(location)
-            _ = try instance.initPrivateIdentity(storepass)
             instance.backend = DIDBackend(adapter)
         }
         instance.storeRootPath = location
@@ -74,39 +71,44 @@ public class DIDStore: NSObject {
         return data
     }
     
-    public func initPrivateIdentity(_ mnemonic: String ,_ passphrase: String, _ storepass: String, _ force: Bool ) throws {
-
+    // Initialize & create new private identity and save it to DIDStore.
+    public func initPrivateIdentity(_ language: Int,_ mnemonic: String ,_ passphrase: String, _ storepass: String, _ force: Bool ) throws {
+        // TODO: CHECK mnemonic isValid
+        
         if (try hasPrivateIdentity() && !force) {
             throw DIDStoreError.failue("Already has private indentity.")
         }
-        privateIdentity = try HDKey.fromMnemonic(mnemonic, passphrase)
-        lastIndex = 0
+        let privateIdentity: HDKey = try HDKey.fromMnemonic(mnemonic, passphrase)
 
         // Save seed instead of root private key,
         // keep compatible with Native SDK
         let seedData = privateIdentity.getSeed()
         let encryptedIdentity = try encryptToBase64(storepass, seedData)
         try storePrivateIdentity(encryptedIdentity)
-        try storePrivateIdentityIndex(lastIndex)
+        try storePrivateIdentityIndex(0)
     }
 
-    func initPrivateIdentity(_ passphrase: String) throws -> Bool {
-        if !(try hasPrivateIdentity()) {
-            return false
+    func initPrivateIdentity(_ language: Int, _ mnemonic: String, _ passphrase: String, _ storepass: String) throws -> Void {
+        try initPrivateIdentity(language, mnemonic, passphrase, storepass, false)
+    }
+    
+    func loadPrivateIdentity(_ storepass: String) throws -> HDKey? {
+        guard try hasPrivateIdentity() else {
+            return nil
         }
-        let seed: Data = try decryptFromBase64(passphrase, try loadPrivateIdentity())
-        privateIdentity = HDKey.fromSeed(seed)
-        lastIndex = 0
-        try lastIndex = loadPrivateIdentityIndex()
-        return true
+        let seed: Data = try decryptFromBase64(storepass, loadPrivateIdentity())
+        return HDKey.fromSeed(seed)
     }
     
     public func newDid(_ storepass:String, _ hint:String?) throws -> DIDDocument {
+        let privateIdentity =  try loadPrivateIdentity(storepass)
+
         guard (privateIdentity != nil) else {
             throw DIDStoreError.failue("DID Store not contains private identity.")
         }
-        let inde: Int = lastIndex
-        let key: DerivedKey = try! privateIdentity.derive(inde)
+        var lastIndex: Int = try loadPrivateIdentityIndex()
+
+        let key: DerivedKey = try! privateIdentity!.derive(lastIndex++)
         let pks: [UInt8] = try key.getPublicKeyBytes()
         let methodIdString: String = DerivedKey.getIdString(pks)
         let did: DID = DID(DID.METHOD, methodIdString)
@@ -120,6 +122,7 @@ public class DIDStore: NSObject {
         let privatekeyData: Data = try key.getPrivateKeyData()
         let encryptedKey = try encryptToBase64(storepass, privatekeyData)
         try storePrivateKey(did, pk.id, encryptedKey)
+        try storePrivateIdentityIndex(lastIndex)
         
         return doc
     }
@@ -128,40 +131,78 @@ public class DIDStore: NSObject {
         return try newDid(storepass, nil)
     }
 
-    public func publishDid(_ doc: DIDDocument, _ storepass: String) throws -> Bool {
-        let signKey: DIDURL = doc.getDefaultPublicKey()!
-        return try publishDid(doc, signKey, storepass)
-    }
-
-    public func publishDid(_ doc: DIDDocument,_ signKey: DIDURL ,_ storepass :String) throws -> Bool {
+    public func publishDid(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> Bool {
+        try storeDid(doc)
         return try backend.create(doc, signKey, storepass)
     }
 
-    public func updateDid(_ doc: DIDDocument,_ signKey: DIDURL ,_ storepass :String) throws -> Bool {
+    public func publishDid(doc: DIDDocument, signKey: String, storepass :String) throws -> Bool {
+        return try publishDid(doc, DIDURL(signKey), storepass)
+    }
+    
+    public func publishDid(_ doc: DIDDocument, _ storepass :String) throws -> Bool {
+        try storeDid(doc)
+        let signKey: DIDURL = doc.getDefaultPublicKey()!
+        return try backend.create(doc, signKey, storepass)
+    }
+
+    public func updateDid(_ doc: DIDDocument,_ signKey: DIDURL,_ storepass :String) throws -> Bool {
         try storeDid(doc)
         return try backend.update(doc, signKey, storepass)
     }
+    
+    public func updateDid(_ doc: DIDDocument,_ signKey: String,_ storepass :String) throws -> Bool {
+        return try updateDid(doc, DIDURL(signKey), storepass)
+    }
+    
+    public func updateDid(_ doc: DIDDocument, _ storepass :String) throws -> Bool {
+        try storeDid(doc)
+        let signKey: DIDURL = doc.getDefaultPublicKey()!
+        return try backend.update(doc, signKey, storepass)
+    }
 
-    public func deactivateDid(_ did: DID,_ signKey: DIDURL ,_ storepass :String) throws -> Bool {
+    public func deactivateDid(_ did: DID,_ signKey: DIDURL, _ storepass :String) throws -> Bool {
         // TODO: how to handle locally?
         return try backend.deactivate(did, signKey, storepass)
     }
-
-    public func resolveDid(_ did: DID) throws -> DIDDocument{
-        return try resolveDid(did, false)
+    
+    public func deactivateDid(_ did: DID,_ signKey: String, _ storepass :String) throws -> Bool {
+        return try deactivateDid(did, DIDURL(signKey), storepass)
     }
     
-    public func resolveDid(_ did: DID, _ force: Bool) throws -> DIDDocument{
-        var doc = try backend.resolve(did);
+    public func deactivateDid(_ did: DID, _ storepass :String) throws -> Bool {
+        do {
+            let doc = try resolveDid(did)
+            let signKey = doc!.getDefaultPublicKey()
+            return try backend.deactivate(did, signKey!, storepass)
+        } catch {
+            throw DIDError.failue("Can not resolve DID document.")
+        }
+    }
+    
+    public func resolveDid(_ did: DID, _ force: Bool) throws -> DIDDocument? {
+        var doc = try backend.resolve(did)
         if doc !== nil {
             try storeDid(doc!)
         }
         else {
-            if (doc == nil && !force){
+            if (!force){
                 doc = try loadDid(did)
             }
         }
-        return doc!
+        return doc
+    }
+    
+    public func resolveDid(_ did: String, _ force: Bool) throws -> DIDDocument? {
+        return try resolveDid(DID(did), force)
+    }
+    
+    public func resolveDid(_ did: DID) throws -> DIDDocument? {
+        return try resolveDid(did, false)
+    }
+    
+    public func resolveDid(_ did: String) throws -> DIDDocument? {
+        return try resolveDid(DID(did), false)
     }
 
     public func storeDid(_ doc: DIDDocument, _ hint: String?) throws {}
@@ -170,8 +211,16 @@ public class DIDStore: NSObject {
     }
 
     public func setDidHint(_ did: DID , _ hint:String ) throws {}
-
+    
+    public func setDidHint(_ did: String , _ hint:String ) throws {
+        try setDidHint(DID(did), hint)
+    }
+    
     public func getDidHint(_ did: DID) throws -> String { return "" }
+    
+    public func getDidHint(_ did: String) throws -> String {
+        return try getDidHint(DID(did))
+    }
 
     public func loadDid(_ did: DID) throws -> DIDDocument? { return DIDDocument() }
 
@@ -197,10 +246,19 @@ public class DIDStore: NSObject {
     public func storeCredential(_ credential: VerifiableCredential ) throws {
         return try storeCredential(credential, nil)
     }
-
+                
     public func setCredentialHint(_ did: DID, _ id: DIDURL, _ hint: String) throws {}
-    public func getCredentialHint(_ did: DID, _ id: DIDURL) throws -> String { return "" }
+    
+    public func setCredentialHint(_ did: String, _ id: String, _ hint: String) throws {
+        try setCredentialHint(DID(did), DIDURL(id), hint)
+    }
 
+    public func getCredentialHint(_ did: DID, _ id: DIDURL) throws -> String { return "" }
+    
+    public func getCredentialHint(_ did: String, _ id: String) throws -> String {
+        return try getCredentialHint(DID(did), DIDURL(id))
+    }
+    
     public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? { return VerifiableCredential() }
     public func loadCredential(_ did: String, _ id: String) throws -> VerifiableCredential? {
         return try loadCredential(DID(did), DIDURL(id))
@@ -252,10 +310,18 @@ public class DIDStore: NSObject {
     public func deletePrivateKey(_ did: String,_ id: String) throws -> Bool {
         return try deletePrivateKey(DID(did), DIDURL(id))
     }
-    
-    public func sign(_ did: DID, _ id: DIDURL, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
+
+    public func sign(_ did: DID, _ id: DIDURL?, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 88)
-        let privatekeys: UnsafeMutablePointer<UInt8> = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id))
+        var privatekeys: UnsafeMutablePointer<UInt8>
+        if id == nil {
+            let doc = try resolveDid(did)
+            let id_1 = doc!.getDefaultPublicKey()
+            privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id_1!))
+        }
+        else {
+         privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id!))
+        }
         var cinputs: [CVarArg] = []
         for i in 0..<inputs.count {
             if (i % 2) == 0 {
@@ -276,6 +342,10 @@ public class DIDStore: NSObject {
             throw DIDStoreError.failue("sign error.")
         }
         return String(cString: sig)
+    }
+    
+    public func sign(_ did: DID, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
+        return try sign(did, nil, storepass, count, inputs)
     }
 }
 

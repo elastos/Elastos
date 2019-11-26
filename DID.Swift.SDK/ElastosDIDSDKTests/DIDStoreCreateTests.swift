@@ -15,7 +15,7 @@ class DIDStoreCreateTests: XCTestCase {
         do {
             let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "helloworld"})
             adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
-            try DIDStore.creatInstance("filesystem", location: storePath, storepass: storePath, adapter)
+            try DIDStore.creatInstance("filesystem", storePath, adapter)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
             XCTAssertFalse(try! tempStore.hasPrivateIdentity())
             XCTAssertTrue(TestUtils.exists(storePath))

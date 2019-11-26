@@ -53,13 +53,13 @@ public class DID: NSObject {
         return super.isEqual(object);
     }
 
-    public func resolve() throws -> DIDDocument {
+    public func resolve() throws -> DIDDocument? {
         guard let _ = document else {
-            return document!
+            return document
         }
         document = try DIDStore.shareInstance()!.resolveDid(self)
         self.resolveTimestamp = Date()
-        return document!
+        return document
     }
 }
 

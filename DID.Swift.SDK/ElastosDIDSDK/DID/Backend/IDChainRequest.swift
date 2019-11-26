@@ -123,21 +123,17 @@ class IDChainRequest: NSObject {
     
     public class func fromJson(_ json: OrderedDictionary<String, Any>) throws -> IDChainRequest {
         let header = json[HEADER] as! OrderedDictionary<String, Any>
-        if header == nil {
-            throw DIDError.failue("Missing header.")
-        }
         let spec: String = try JsonHelper.getString(header, SPECIFICATION, false, nil, SPECIFICATION)
         guard (spec == CURRENT_SPECIFICATION) else {
             throw DIDError.failue("Missing header.")
         }
-        // TODO: remove this after IDSidechain fix the wrong field name.
-        var op: String = "Operation"
-        op = try JsonHelper.getString(header, OPERATION, false, nil, OPERATION)
+        let op: String = try JsonHelper.getString(header, OPERATION, false, nil, OPERATION)
         if op != Operation.CREATE.toString() {
             guard spec == CURRENT_SPECIFICATION else {
                 throw DIDError.failue("Invalid DID operation verb.")
             }
         }
+        
         let payload: String = try JsonHelper.getString(json, PAYLOAD, false, nil, PAYLOAD)
         
         let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 100)

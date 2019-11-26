@@ -50,10 +50,10 @@ public class DIDDocument: NSObject {
         } catch {
             throw error
         }
-        return getEntry(publicKeys, didurl)
+        return getEntry(publicKeys, didurl)!
     }
     
-    public func getPublicKey(_ id: DIDURL) throws -> DIDPublicKey {
+    public func getPublicKey(_ id: DIDURL) throws -> DIDPublicKey? {
         return getEntry(publicKeys, id)
     }
     
@@ -72,30 +72,71 @@ public class DIDDocument: NSObject {
         return didurl
     }
     
-    public func addPublicKey(_ pk: DIDPublicKey) -> Bool{
+    public func addPublicKey(_ pk: DIDPublicKey) -> Bool {
         if readonly { return false }
+        guard publicKeys[pk.id] != nil else {
+            return false
+        }
+            
         publicKeys[pk.id] = pk
         return true
     }
     
-    public func addPublicKey(_ id: String) -> Bool {
-        // TODO generate a new key pair, and add it to document
-        return false
+    public func addPublicKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
+        guard Base58.bytesFromBase58(pk).count != HDKey.PUBLICKEY_BYTES else {
+            throw DIDError.failue("Invalid public key.")
+        }
+        let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
+        return addPublicKey(key)
     }
     
-    // TODO: Add an exiting key to document!
+    public func addPublicKey(_ id: String, _ controller: String, _ pk: String) throws -> Bool {
+        return try addPublicKey(DIDURL(id), DID(controller), pk)
+    }
     
-    public func removePublicKey(_ id: DIDURL) -> Bool {
+    public func removePublicKey(_ id: DIDURL, _ force: Bool) throws -> Bool {
         if readonly { return false }
         
         // Cann't remove default public key
         if (getDefaultPublicKey()?.isEqual(id))! { return false }
+        if try isAuthenticationKey(id) {
+            if force {
+                _ = removeAuthenticationKey(id)
+            }
+            else {
+                return false
+            }
+        }
+        if try isAuthorizationKey(id) {
+            if force {
+                _ = removeAuthorizationKey(id)
+            }
+            else {
+                return false
+            }
+        }
         let removed: Bool = removeEntry(publicKeys, id)
         
         if removed {
-            // TODO: remove private key if exist
+            do {
+                try _ = DIDStore.shareInstance()?.deletePrivateKey(subject!, id)
+            } catch {
+             // TODO: CHECKME!
+            }
         }
         return removed
+    }
+
+    public func removePublicKey(_ id: String, _ force: Bool) throws -> Bool {
+        return try removePublicKey(DIDURL(id), force)
+    }
+    
+    public func removePublicKey(_ id: DIDURL) throws -> Bool {
+        return try removePublicKey(id, false)
+    }
+    
+    public func removePublicKey(_ id: String) throws -> Bool {
+        return try removePublicKey(DIDURL(id), false)
     }
     
     public func getAuthenticationKeyCount() -> Int {
@@ -119,34 +160,73 @@ public class DIDDocument: NSObject {
         return try selectEntry(authentications, didurl, type)
     }
     
-    public func getAuthenticationKey(_ id: DIDURL) -> DIDPublicKey {
+    public func getAuthenticationKey(_ id: DIDURL) -> DIDPublicKey? {
         return getEntry(authentications, id)
     }
     
     public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey {
-        return try getEntry(authentications, DIDURL(id))
+        return try getEntry(authentications, DIDURL(id))!
+    }
+
+    public func isAuthenticationKey(_ id: DIDURL) throws -> Bool {
+        return getAuthenticationKey(id) != nil
     }
     
-    public func removeAuthenticationKey(_ id: DIDURL) -> Bool {
-        guard !readonly else { return false }
-        return removeEntry(authentications, id)
-    }
-    
-    public func addAuthenticationKey(_ id: DIDURL) throws -> Bool {
-        guard !readonly else { return false }
-        let pk = try getPublicKey(id)
-        return addAuthenticationKey(pk)
+    public func isAuthenticationKey(_ id: String) throws -> Bool {
+        return try isAuthenticationKey(DIDURL(id))
     }
     
     func addAuthenticationKey(_ pk: DIDPublicKey) -> Bool {
+        // Check the controller is current DID subject
         guard !readonly && ((pk.controller?.isEqual(subject))!)  else {
             return false
         }
-        // Check the controller is current DID subject
+        // Confirm add the new pk to PublicKeys
+        _ = addPublicKey(pk)
+        guard authentications[pk.id] == nil else {
+            return false
+        }
         authentications[pk.id] = pk
         return true
     }
     
+    public func addAuthenticationKey(_ id: DIDURL) throws -> Bool {
+        let pk = try getPublicKey(id)
+        if pk == nil {
+            return false
+        }
+        return addAuthenticationKey(pk!)
+    }
+    
+    public func addAuthenticationKey(_ id: String) throws -> Bool {
+        return try addAuthenticationKey(DIDURL(id))
+    }
+    
+    public func addAuthenticationKey(_ id: DIDURL, _ pk: String) throws -> Bool {
+        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
+            throw DIDError.failue("Invalid public key.")
+        }
+        let key: DIDPublicKey = DIDPublicKey(id, subject!, pk)
+        return addAuthenticationKey(key)
+    }
+    
+    public func addAuthenticationKey(_ id: String, _ pk: String) throws -> Bool {
+        return try addAuthenticationKey(DIDURL(id), pk)
+    }
+                
+    public func removeAuthenticationKey(_ id: DIDURL) -> Bool {
+        guard !readonly else { return false }
+        // Can not remove default public key
+        if (getDefaultPublicKey()?.isEqual(id))! {
+            return false
+        }
+        return removeEntry(authentications, id)
+    }
+    
+    public func removeAuthenticationKey(_ id: String) throws -> Bool {
+        return try removeAuthenticationKey(DIDURL(id))
+    }
+
     public func getAuthorizationKeyCount() -> Int {
         return authorizations.count
     }
@@ -163,27 +243,109 @@ public class DIDDocument: NSObject {
         return try selectEntry(authentications, DIDURL(id), type)
     }
     
-    public func getAuthorizationKey(_ id: DIDURL) -> DIDPublicKey {
+    public func getAuthorizationKey(_ id: DIDURL) -> DIDPublicKey? {
         return getEntry(authentications, id)
     }
     
     public func getAuthorizationKey(_ id: String) throws -> DIDPublicKey {
-        return try getEntry(authentications, DIDURL(id))
+        return try getEntry(authentications, DIDURL(id))!
+    }
+
+    public func isAuthorizationKey(_ id: DIDURL) throws -> Bool {
+        return getAuthorizationKey(id) != nil
     }
     
-    public func addAuthorizationKey(_ id: String, _ did: DID, _ key: DIDURL) throws -> Bool {
-        guard !readonly else { return false }
-        let doc: DIDDocument = try DIDStore.shareInstance()!.resolveDid(did)
-        let refPk: DIDPublicKey = try doc.getPublicKey(key)
-        if !((refPk.controller?.isEqual(did))!) { return false }
-        let pk = try DIDPublicKey(DIDURL(subject!, id), refPk.type, did, refPk.keyBase58!)
+    public func isAuthorizationKey(_ id: String) throws -> Bool {
+        return try isAuthorizationKey(DIDURL(id))
+    }
+    
+    public func addAuthorizationKey(_ pk: DIDPublicKey) throws -> Bool {
+        if readonly { return false }
+        // Can not authorize to self
+        if (pk.controller?.isEqual(subject))! { return false }
+        // Confirm add the new pk to PublicKeys
         _ = addPublicKey(pk)
-        return addAuthorizationKey(pk)
+        if authorizations[pk.id] != nil {
+            return false
+        }
+        authorizations[pk.id] = pk
+        return true
     }
     
+    public func addAuthorizationKey(_ id: DIDURL) throws -> Bool {
+        let pk = try getPublicKey(id)
+        if pk == nil {
+            return false
+        }
+        return try addAuthorizationKey(pk!)
+    }
+    
+    public func addAuthorizationKey(_ id: String) throws -> Bool {
+       return try addAuthorizationKey(DIDURL(id))
+    }
+    
+    public func addAuthorizationKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
+        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
+            throw DIDError.failue("Invalid public key.")
+        }
+        let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
+        return try addAuthorizationKey(key)
+    }
+                
+    public func addAuthorizationKey(_ id: String, _ controller: String, _ pk: String) throws -> Bool {
+        return try addAuthorizationKey(DIDURL(id), DID(controller), pk)
+    }
+    
+    public func authorizationDid(_ id: DIDURL, _ controller: DID, _ key: DIDURL?) throws -> Bool {
+        // Can not authorize to self
+        if controller.isEqual(subject) {
+            return false
+        }
+        let doc = try controller.resolve()
+        if doc == nil { return false }
+        var k: DIDURL
+        if key == nil {
+            k = doc!.getDefaultPublicKey()!
+        }else {
+            k = key!
+        }
+        let refPk = try doc?.getPublicKey(k)
+        
+        if refPk == nil {
+            return false
+        }
+        // The public key should belongs to controller
+        if !(refPk?.controller?.isEqual(controller))! {
+            return false
+        }
+        let pk: DIDPublicKey = DIDPublicKey(id, refPk!.type, controller, refPk!.keyBase58!)
+        return try addAuthorizationKey(pk)
+    }
+    
+    public func authorizationDid(_ id: DIDURL, _ controller: DID) throws -> Bool {
+        return try authorizationDid(id, controller)
+    }
+    
+    public func authorizationDid(_ id: String, _ controller: String, _ key: String?) throws -> Bool {
+        if key != nil {
+            return try authorizationDid(DIDURL(id), DID(controller), DIDURL(key!))
+        }
+        else {
+            return try authorizationDid(DIDURL(id), DID(controller), nil)
+        }
+    }
+    
+    public func authorizationDid(_ id: String, _ controller: String) throws -> Bool {
+        return try authorizationDid(id, controller, nil)
+    }
+                
     public func removeAuthorizationKey(_ id: DIDURL) -> Bool {
         guard !readonly else { return false }
         return removeEntry(authorizations, id)
+    }
+    
+    public func removeAuthorizationKey(_ id: String) throws -> Bool {
+        return try removeAuthorizationKey(DIDURL(id))
     }
     
     public func getCredentialCount() -> Int {
@@ -203,15 +365,22 @@ public class DIDDocument: NSObject {
     }
     
     public func getCredential(_ id: String) throws -> VerifiableCredential {
-        return try getEntry(credentials, DIDURL(id))
+        return try getEntry(credentials, DIDURL(id))!
     }
     
     public func getCredential(_ id: DIDURL) throws -> VerifiableCredential {
-        return getEntry(credentials, id)
+        return getEntry(credentials, id)!
     }
     
     public func addCredential(_ vc: VerifiableCredential) -> Bool {
         guard !readonly else { return false }
+        // Check the credential belongs to current DID.
+        if vc.subject.id == subject {
+            return false
+        }
+        if credentials[vc.id] != nil {
+            return false
+        }
         let ec: EmbeddedCredential = EmbeddedCredential(vc)
         credentials[ec.id] = ec
         return true
@@ -222,6 +391,11 @@ public class DIDDocument: NSObject {
         return removeEntry(credentials, id)
     }
     
+    public func removeCredential(_ id: String) throws -> Bool {
+        
+        return try removeCredential(DIDURL(id))
+    }
+
     public func getServiceCount() -> Int {
         return services.count
     }
@@ -239,22 +413,40 @@ public class DIDDocument: NSObject {
     }
     
     public func getService(_ id: DIDURL) -> Service {
-        return getEntry(services, id)
+        return getEntry(services, id)!
     }
     
     public func getService(_ id: String) throws -> Service {
-        return try getEntry(services, DIDURL(id))
+        return try getEntry(services, DIDURL(id))!
     }
     
-    public func addService(_ id: String, _ type: String, endpoint: String) throws -> Bool {
-        let idurl: DIDURL = try DIDURL(subject!, id)
-        let svc: Service = Service(idurl, type, endpoint)
-        return addService(svc)
+    public func addService(_ svc: Service) throws -> Bool {
+        if readonly {
+            return false
+        }
+        if services[svc.id] != nil {
+            return false
+        }
+        services[svc.id] = svc
+        return true
+    }
+    
+    public func addService(_ id: DIDURL, _ type: String, _ endpoint: String) throws -> Bool {
+        let svc: Service = Service(id, type, endpoint)
+        return try addService(svc)
+    }
+    
+    public func addService(_ id: String, _ type: String, _ endpoint: String) throws -> Bool {
+        return try addService(DIDURL(id), type, endpoint)
     }
     
     public func removeService(_ id: DIDURL) -> Bool {
         guard !readonly else { return false }
         return removeEntry(services, id)
+    }
+    
+    public func removeService(_ id: String) throws -> Bool {
+        return try removeService(DIDURL(id))
     }
     
     public func setDefaultExpires() {
@@ -275,7 +467,6 @@ public class DIDDocument: NSObject {
     }
     
     public func modify() -> Bool {
-        // TODO: Check owner
         readonly = false
         return true
     }
@@ -373,7 +564,7 @@ public class DIDDocument: NSObject {
         return dicString
     }
     
-    public class func fromJson(_ path: String) throws -> DIDDocument {
+    public class func fromJson(_ path: String) throws -> DIDDocument{
         
         let doc: DIDDocument = DIDDocument()
 //        doc.rootPath = path
@@ -505,7 +696,7 @@ public class DIDDocument: NSObject {
                 let didUrl: DIDURL = try DIDURL(objString)
                 pk = publicKeys[didUrl]!
             }
-            _ = addAuthorizationKey(pk)
+            _ = try addAuthorizationKey(pk)
         }
     }
     
@@ -544,24 +735,8 @@ public class DIDDocument: NSObject {
         
         try services!.forEach { obj in
             let svc: Service = try Service.fromJson(obj, subject!)
-            _ = addService(svc)
+            _ = try addService(svc)
         }
-    }
-    
-    private func addService(_ svc: Service) -> Bool {
-        guard !readonly else { return false }
-        services[svc.id] = svc
-        return true
-    }
-    
-    private func addAuthorizationKey(_ pk: DIDPublicKey) -> Bool {
-        guard !readonly else { return false }
-        // Cann' authorize to self
-        
-        guard pk.controller != nil else { return false }
-        guard !(pk.controller?.isEqual(subject))! else { return false }
-        authorizations[pk.id] = pk
-        return true
     }
     
     private func selectEntry<T: DIDObject>(_ entries: OrderedDictionary<DIDURL, T>, _ id: DIDURL, _ type: String) throws -> Array<T>  {
@@ -584,8 +759,8 @@ public class DIDDocument: NSObject {
         return list
     }
     
-    private func getEntry<T: DIDObject>(_ entries: OrderedDictionary<DIDURL, T>, _ id: DIDURL) -> T {
-        return entries[id]!
+    private func getEntry<T: DIDObject>(_ entries: OrderedDictionary<DIDURL, T>, _ id: DIDURL) -> T? {
+        return entries[id]
     }
     
     private func removeEntry<T: DIDObject>(_ publickeys: OrderedDictionary<DIDURL, T>, _ id: DIDURL) -> Bool {
@@ -606,9 +781,18 @@ public class DIDDocument: NSObject {
         return try (DIDStore.shareInstance()?.sign(subject!, id, storepass, count, inputs))!
     }
     
+    public func sign(_ id: String, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
+        
+        return try (DIDStore.shareInstance()?.sign(subject!, DIDURL(id), storepass, count, inputs))!
+    }
+    
     public func verify(_ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {
         let key: DIDURL = getDefaultPublicKey()!
         return try verify(key, signature, count, inputs)
+    }
+    
+    public func verify(_ id: String, _ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {
+        return try verify(DIDURL(id), signature, count, inputs)
     }
     
     public func verify(_ id: DIDURL, _ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {
@@ -626,7 +810,7 @@ public class DIDDocument: NSObject {
                 cinputs.append(count)
             }
         }
-        let pk: DIDPublicKey = try getPublicKey(id)
+        let pk: DIDPublicKey = try getPublicKey(id)!
         let pks: [UInt8] = pk.getPublicKeyBytes()
         var pkData: Data = Data(bytes: pks, count: pks.count)
         let cpk: UnsafeMutablePointer<UInt8> = pkData.withUnsafeMutableBytes { (pk: UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8> in
