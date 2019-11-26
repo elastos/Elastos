@@ -80,7 +80,8 @@ export default {
       required: 'This field is required',
       tooLong: 'This field is too long',
       [`limit${ABSTRACT_MAX_WORDS}`]: `You can only type ${ABSTRACT_MAX_WORDS} words max.`,
-      isNaN: 'Please input valid amount'
+      isNaN: 'Please input valid amount',
+      plan: 'Implementation team or milestones is empty',
     }
   },
   modal: {

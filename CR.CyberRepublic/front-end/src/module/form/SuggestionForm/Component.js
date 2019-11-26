@@ -137,13 +137,23 @@ class C extends BaseComponent {
     return count > WORD_LIMIT ? cb(true) : cb()
   }
 
+  validatePlan = (rule, value, cb) => {
+    if (value && _.isEmpty(value.teamInfo)) {
+      return cb(true)
+    } else if (value && _.isEmpty(value.milestone)) {
+      return cb(true)
+    } else {
+      return cb()
+    }
+  }
+
   getTextarea(id) {
     const initialValues = _.isEmpty(this.props.initialValues)
       ? { type: '1' }
       : this.props.initialValues
 
     const { getFieldDecorator } = this.props.form
-    const rules = [
+    let rules = [
       {
         required: true,
         message: I18N.get('suggestion.form.error.required')
@@ -154,6 +164,18 @@ class C extends BaseComponent {
         message: I18N.get(`suggestion.form.error.limit${WORD_LIMIT}`),
         validator: this.validateAbstract
       })
+    }
+    if (id === 'plan') {
+      rules = [
+        {
+          required: true,
+          message: I18N.get('suggestion.form.error.required')
+        },
+        {
+          message: I18N.get(`suggestion.form.error.plan`),
+          validator: this.validatePlan
+        }
+      ]
     }
 
     let rc

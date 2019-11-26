@@ -80,7 +80,8 @@ export default {
       required: '必填项',
       tooLong: '文字太长',
       [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`,
-      isNaN: '请输入有效的金额'
+      isNaN: '请输入有效的金额',
+      plan: '实施团队或里程碑为空',
     }
   },
   modal: {
