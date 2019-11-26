@@ -153,7 +153,7 @@ class C extends BaseComponent {
       : this.props.initialValues
 
     const { getFieldDecorator } = this.props.form
-    let rules = [
+    const rules = [
       {
         required: true,
         message: I18N.get('suggestion.form.error.required')
@@ -166,16 +166,10 @@ class C extends BaseComponent {
       })
     }
     if (id === 'plan') {
-      rules = [
-        {
-          required: true,
-          message: I18N.get('suggestion.form.error.required')
-        },
-        {
-          message: I18N.get(`suggestion.form.error.plan`),
-          validator: this.validatePlan
-        }
-      ]
+      rules.push({
+        message: I18N.get(`suggestion.form.error.plan`),
+        validator: this.validatePlan
+      })
     }
 
     let rc
