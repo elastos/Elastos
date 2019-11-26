@@ -12,7 +12,7 @@ using namespace Elastos::ElaWallet;
 
 static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlong instance,
                                                 jstring jfromAddress,
-                                                jstring jlockedAddress,
+                                                jstring jsideChainID,
                                                 jstring jamount,
                                                 jstring jsideChainAddress,
                                                 jstring jmemo) {
@@ -20,7 +20,7 @@ static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlon
     std::string msgException;
 
     const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
-    const char *lockedAddress = env->GetStringUTFChars(jlockedAddress, NULL);
+    const char *sideChainID = env->GetStringUTFChars(jsideChainID, NULL);
     const char *amount = env->GetStringUTFChars(jamount, NULL);
     const char *sideChainAddress = env->GetStringUTFChars(jsideChainAddress, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
@@ -29,7 +29,7 @@ static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlon
     jstring tx = NULL;
 
     try {
-        nlohmann::json txJson = wallet->CreateDepositTransaction(fromAddress, lockedAddress, amount,
+        nlohmann::json txJson = wallet->CreateDepositTransaction(fromAddress, sideChainID, amount,
                                                                  sideChainAddress, memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
@@ -38,7 +38,7 @@ static jstring JNICALL CreateDepositTransaction(JNIEnv *env, jobject clazz, jlon
     }
 
     env->ReleaseStringUTFChars(jfromAddress, fromAddress);
-    env->ReleaseStringUTFChars(jlockedAddress, lockedAddress);
+    env->ReleaseStringUTFChars(jsideChainID, sideChainID);
     env->ReleaseStringUTFChars(jamount, amount);
     env->ReleaseStringUTFChars(jsideChainAddress, sideChainAddress);
     env->ReleaseStringUTFChars(jmemo, memo);
@@ -403,14 +403,13 @@ static jstring JNICALL GetOwnerAddress(JNIEnv *env, jobject clazz, jlong jSubWal
     return ownerAddress;
 }
 
-#define JNI_GenerateCRInfoPayload "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;)Ljava/lang/String;"
+#define JNI_GenerateCRInfoPayload "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;J)Ljava/lang/String;"
 
 static jstring JNICALL GenerateCRInfoPayload(JNIEnv *env, jobject clazz, jlong jProxy,
                                              jstring jCRPublicKey,
                                              jstring jNickName,
                                              jstring jURL,
-                                             jlong location,
-                                             jstring jPayPasswd) {
+                                             jlong location) {
     bool exception = false;
     std::string msgException;
     jstring payload = NULL;
@@ -418,12 +417,11 @@ static jstring JNICALL GenerateCRInfoPayload(JNIEnv *env, jobject clazz, jlong j
     const char *publicKey = env->GetStringUTFChars(jCRPublicKey, NULL);
     const char *nickName = env->GetStringUTFChars(jNickName, NULL);
     const char *url = env->GetStringUTFChars(jURL, NULL);
-    const char *payPasswd = env->GetStringUTFChars(jPayPasswd, NULL);
 
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json payloadJson = wallet->GenerateCRInfoPayload(publicKey, nickName, url,
-                                                                   location, payPasswd);
+                                                                   location);
         payload = env->NewStringUTF(payloadJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -433,7 +431,6 @@ static jstring JNICALL GenerateCRInfoPayload(JNIEnv *env, jobject clazz, jlong j
     env->ReleaseStringUTFChars(jCRPublicKey, publicKey);
     env->ReleaseStringUTFChars(jNickName, nickName);
     env->ReleaseStringUTFChars(jURL, url);
-    env->ReleaseStringUTFChars(jPayPasswd, payPasswd);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());
@@ -442,21 +439,18 @@ static jstring JNICALL GenerateCRInfoPayload(JNIEnv *env, jobject clazz, jlong j
     return payload;
 }
 
-#define JNI_GenerateUnregisterCRPayload "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_GenerateUnregisterCRPayload "(JLjava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL GenerateUnregisterCRPayload(JNIEnv *env, jobject clazz, jlong jProxy,
-                                                   jstring jCRDID,
-                                                   jstring jPayPasswd) {
+                                                   jstring jCRDID) {
     bool exception = false;
     std::string msgException;
     jstring payload = NULL;
 
     const char *crDID = env->GetStringUTFChars(jCRDID, NULL);
-    const char *payPasswd = env->GetStringUTFChars(jPayPasswd, NULL);
-
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
-        nlohmann::json payloadJson = wallet->GenerateUnregisterCRPayload(crDID, payPasswd);
+        nlohmann::json payloadJson = wallet->GenerateUnregisterCRPayload(crDID);
         payload = env->NewStringUTF(payloadJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -464,59 +458,12 @@ static jstring JNICALL GenerateUnregisterCRPayload(JNIEnv *env, jobject clazz, j
     }
 
     env->ReleaseStringUTFChars(jCRDID, crDID);
-    env->ReleaseStringUTFChars(jPayPasswd, payPasswd);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());
     }
 
     return payload;
-}
-
-#define JNI_GetCROwnerDID "(J)Ljava/lang/String;"
-
-static jstring JNICALL GetCROwnerDID(JNIEnv *env, jobject clazz, jlong jProxy) {
-    bool exception = false;
-    std::string msgException;
-    jstring did = NULL;
-
-    try {
-        IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
-        std::string ownerDID = wallet->GetCROwnerDID();
-        did = env->NewStringUTF(ownerDID.c_str());
-    } catch (const std::exception &e) {
-        exception = true;
-        msgException = e.what();
-    }
-
-    if (exception) {
-        ThrowWalletException(env, msgException.c_str());
-    }
-
-    return did;
-}
-
-#define JNI_GetCROwnerPublicKey "(J)Ljava/lang/String;"
-
-static jstring JNICALL GetCROwnerPublicKey(JNIEnv *env, jobject clazz, jlong jProxy) {
-    bool exception = false;
-    std::string msgException;
-    jstring publicKey = NULL;
-
-    try {
-        IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
-        std::string pubkey = wallet->GetCROwnerPublicKey();
-        publicKey = env->NewStringUTF(pubkey.c_str());
-    } catch (const std::exception &e) {
-        exception = true;
-        msgException = e.what();
-    }
-
-    if (exception) {
-        ThrowWalletException(env, msgException.c_str());
-    }
-
-    return publicKey;
 }
 
 #define JNI_CreateRegisterCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
@@ -634,14 +581,16 @@ static jstring JNICALL CreateUnregisterCRTransaction(JNIEnv *env, jobject clazz,
     return tx;
 }
 
-#define JNI_CreateRetrieveCRDepositTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateRetrieveCRDepositTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateRetrieveCRDepositTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
+                                                          jstring jcrPublicKey,
                                                           jstring jamount,
                                                           jstring jmemo) {
     bool exception = false;
     std::string msgException;
 
+    const char *crPublicKey = env->GetStringUTFChars(jcrPublicKey, NULL);
     const char *amount = env->GetStringUTFChars(jamount, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
 
@@ -649,13 +598,14 @@ static jstring JNICALL CreateRetrieveCRDepositTransaction(JNIEnv *env, jobject c
 
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
-        nlohmann::json txJson = wallet->CreateRetrieveCRDepositTransaction(amount, memo);
+        nlohmann::json txJson = wallet->CreateRetrieveCRDepositTransaction(crPublicKey, amount, memo);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
         msgException = e.what();
     }
 
+    env->ReleaseStringUTFChars(jcrPublicKey, amount);
     env->ReleaseStringUTFChars(jamount, amount);
     env->ReleaseStringUTFChars(jmemo, memo);
 
@@ -1022,8 +972,6 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(GetOwnerAddress),
         REGISTER_METHOD(GenerateCRInfoPayload),
         REGISTER_METHOD(GenerateUnregisterCRPayload),
-        REGISTER_METHOD(GetCROwnerDID),
-        REGISTER_METHOD(GetCROwnerPublicKey),
         REGISTER_METHOD(CreateRegisterCRTransaction),
         REGISTER_METHOD(CreateUpdateCRTransaction),
         REGISTER_METHOD(CreateUnregisterCRTransaction),

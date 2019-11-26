@@ -15,8 +15,8 @@ public class MainchainSubWallet extends SubWallet {
         mMainchainProxy = proxy;
     }
 
-    public String CreateDepositTransaction(String fromAddress, String lockedAddress, String amount, String sideChainAddress, String memo) throws WalletException {
-        return CreateDepositTransaction(mMainchainProxy, fromAddress, lockedAddress, amount, sideChainAddress, memo);
+    public String CreateDepositTransaction(String fromAddress, String sideChainID, String amount, String sideChainAddress, String memo) throws WalletException {
+        return CreateDepositTransaction(mMainchainProxy, fromAddress, sideChainID, amount, sideChainAddress, memo);
     }
 
     public String GenerateProducerPayload(String publicKey, String nodePublicKey, String nickName, String url, String IPAddress, long location, String payPasswd) throws WalletException {
@@ -64,20 +64,12 @@ public class MainchainSubWallet extends SubWallet {
     }
 
     public String GenerateCRInfoPayload(String crPublickey, String nickName, String url,
-                                        long location, String payPasswd) throws WalletException {
-        return GenerateCRInfoPayload(mMainchainProxy, crPublickey, nickName, url, location, payPasswd);
+                                        long location) throws WalletException {
+        return GenerateCRInfoPayload(mMainchainProxy, crPublickey, nickName, url, location);
     }
 
-    public String GenerateUnregisterCRPayload(String crDID, String payPasswd) throws WalletException {
-        return GenerateUnregisterCRPayload(mMainchainProxy, crDID, payPasswd);
-    }
-
-    public String GetCROwnerDID() throws WalletException {
-        return GetCROwnerDID(mMainchainProxy);
-    }
-
-    public String GetCROwnerPublicKey() throws WalletException {
-        return GetCROwnerPublicKey(mMainchainProxy);
+    public String GenerateUnregisterCRPayload(String crDID) throws WalletException {
+        return GenerateUnregisterCRPayload(mMainchainProxy, crDID);
     }
 
     public String CreateRegisterCRTransaction(String fromAddress, String payload, String amount, String memo) throws WalletException {
@@ -92,8 +84,8 @@ public class MainchainSubWallet extends SubWallet {
         return CreateUnregisterCRTransaction(mMainchainProxy, fromAddress, payload, memo);
     }
 
-    public String CreateRetrieveCRDepositTransaction(String amount, String memo) throws WalletException {
-        return CreateRetrieveCRDepositTransaction(mMainchainProxy, amount, memo);
+    public String CreateRetrieveCRDepositTransaction(String crPublickey, String amount, String memo) throws WalletException {
+        return CreateRetrieveCRDepositTransaction(mMainchainProxy, crPublickey, amount, memo);
     }
 
     public String CreateVoteCRTransaction(String fromAddress, String votes, String memo) throws WalletException {
@@ -136,7 +128,7 @@ public class MainchainSubWallet extends SubWallet {
         return CreateCRCProposalReviewTransaction(mMainchainProxy, proposalReview, memo);
     }
 
-    private native String CreateDepositTransaction(long proxy, String fromAddress, String lockedAddress, String amount,
+    private native String CreateDepositTransaction(long proxy, String fromAddress, String sideChainID, String amount,
                                                    String sideChainAddress, String memo);
 
     private native String GenerateProducerPayload(long proxy, String publicKey, String nodePublicKey, String nickName,
@@ -163,13 +155,9 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String GetOwnerAddress(long proxy);
 
-    private native String GenerateCRInfoPayload(long proxy, String crPublickey, String nickName, String url, long location, String payPasswd);
+    private native String GenerateCRInfoPayload(long proxy, String crPublickey, String nickName, String url, long location);
 
-    private native String GenerateUnregisterCRPayload(long proxy, String crDID, String payPasswd);
-
-    private native String GetCROwnerDID(long proxy);
-
-    private native String GetCROwnerPublicKey(long proxy);
+    private native String GenerateUnregisterCRPayload(long proxy, String crDID);
 
     private native String CreateRegisterCRTransaction(long proxy, String fromAddress, String payload, String amount, String memo);
 
@@ -177,7 +165,7 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String CreateUnregisterCRTransaction(long proxy, String fromAddress, String payload, String memo);
 
-    private native String CreateRetrieveCRDepositTransaction(long Proxy, String amount, String memo);
+    private native String CreateRetrieveCRDepositTransaction(long Proxy, String crPublickey, String amount, String memo);
 
     private native String CreateVoteCRTransaction(long Proxy, String fromAddress, String votes, String memo);
 
