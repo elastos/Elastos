@@ -509,7 +509,7 @@ export default class extends Base {
         $gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000),
         $lte: endDate
       }
-      query.status = constant.CVOTE_STATUS.FINAL
+      // query.status = constant.CVOTE_STATUS.FINAL
     }
     // status
     if(param.status && constant.CVOTE_STATUS[param.status]) {
