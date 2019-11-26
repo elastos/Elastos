@@ -56,7 +56,7 @@
           />
           <strong>Nucleus Console</strong>
         </a>
-          {% if logged_in != False %}
+          {% if request.session.logged_in == True %}
             <button
               class="navbar-toggler"
               type="button"
@@ -108,7 +108,7 @@
             </div>
           {% endif %}
         </nav>
-      {% if logged_in != False %}
+      {% if request.session.logged_in == True %}
         <div class="pos-f-t">
           <div class="collapse mx-auto" id="topbar">
             <div class="bg-primary p-2 text-center">

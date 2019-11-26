@@ -43,7 +43,7 @@ def login_required(function):
 def check_ela_auth(request):
     if 'elaState' not in request.session.keys():
         return JsonResponse({'authenticated': False}, status=403)
-        state = request.session['elaState']
+    state = request.session['elaState']
     try:
         recently_created_time = datetime.now() - timedelta(minutes=1)
         did_request_query_result = DIDRequest.objects.get(state=state, created_at__gte=recently_created_time)
@@ -67,8 +67,8 @@ def check_ela_auth(request):
                                  "The email '%s' needs to be verified. Please check your email for confirmation link" % user.email)
             else:
                 redirect_url = "/login/home"
-                request.session['logged_in'] = True
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                request.session['logged_in'] = True
                 messages.success(request, "Logged in successfully!")
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
@@ -220,15 +220,13 @@ def sign_in(request):
     DIDRequest.objects.filter(created_at__lte=stale_time).delete()
 
     request.session['elephant_url'] = elephant_url
-    context = {"logged_in": False}
 
-    return render(request, 'login/sign_in.html', context)
+    return render(request, 'login/sign_in.html')
 
 
 @login_required
 def home(request):
-    context = {"logged_in": True}
-    return render(request, 'login/home.html', context)
+    return render(request, 'login/home.html')
 
 
 def sign_out(request):
