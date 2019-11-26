@@ -151,11 +151,14 @@ export default class extends Base {
     if (relevance) doc.relevance = relevance
     if (budget) {
       doc.budget = budget
-      let amount = 0.0;
-      budget.map(function(it) {
-        amount += Number(it.amount)
-      })
-      doc.budgetAmount = amount
+      if (Array.isArray(budget)) {
+        doc.budgetAmount = budget.reduce((sum, el) => {
+          if (el && el.amount) {
+            return sum += Number(el.amount)
+          }
+          return sum
+        }, 0.0)
+      }
     }
     if (plan) doc.plan = plan
 
@@ -227,13 +230,14 @@ export default class extends Base {
       proposer,
       createdBy: this.currentUser._id
     }
-    let amount = 0.0;
-    if(budget && budget.length){
-      budget.map(function(it) {
-        amount += Number(it.amount)
-      })
+    if (budget && Array.isArray(budget)) {
+      doc.budgetAmount = budget.reduce((sum, el) => {
+        if (el && el.amount) {
+          return sum += Number(el.amount)
+        }
+        return sum
+      }, 0.0)
     }
-    doc.budgetAmount = amount
 
     const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
     if (!_.isEmpty(suggestion)) {
@@ -604,13 +608,14 @@ export default class extends Base {
     if (relevance) doc.relevance = relevance
     if (budget) {
       doc.budget = budget
-      let amount = 0.0;
-      if(budget.length){
-        budget.map(function(it) {
-          amount += Number(it.amount)
-        })
+      if (Array.isArray(budget)) {
+        doc.budgetAmount = budget.reduce((sum, el) => {
+          if (el && el.amount) {
+            return sum += Number(el.amount)
+          }
+          return sum
+        }, 0.0)
       }
-      doc.budgetAmount = amount
     }
     if (plan) doc.plan = plan
 
