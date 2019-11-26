@@ -119,8 +119,8 @@ const Wrapper = styled.div`
   }
 
   .upload-base64 + label figure {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     background-color: #008d85;
     border-radius: 50%;
     display: flex;
@@ -130,7 +130,7 @@ const Wrapper = styled.div`
 
   .upload-base64 + label svg {
     fill: #fff;
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
   }
 `

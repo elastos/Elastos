@@ -4,9 +4,9 @@ import BaseComponent from '@/model/BaseComponent'
 import styled from 'styled-components'
 import { Form, Input, Button } from 'antd'
 import I18N from '@/I18N'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 
 const FormItem = Form.Item
-const TextArea = Input.TextArea
 
 class TeamInfoForm extends BaseComponent {
   handleSubmit = e => {
@@ -59,35 +59,48 @@ class TeamInfoForm extends BaseComponent {
             initialValue: item && item.role ? item.role : ''
           })(<Input />)}
         </FormItem>
-        <FormItem
-          label={I18N.get('suggestion.plan.responsibility')}
-          {...formItemLayout}
-        >
-          {getFieldDecorator('responsibility', {
-            rules: [
-              {
-                required: true,
-                message: I18N.get('suggestion.form.error.required')
-              }
-            ],
-            initialValue: item && item.responsibility ? item.responsibility : ''
-          })(<TextArea rows={5} />)}
-        </FormItem>
-        <FormItem
-          label={I18N.get('suggestion.plan.moreInfo')}
-          {...formItemLayout}
-        >
-          {getFieldDecorator('info', {
-            rules: [
-              {
-                required: true,
-                message: I18N.get('suggestion.form.error.required')
-              }
-            ],
-            initialValue: item && item.info ? item.info : ''
-          })(<TextArea rows={5} />)}
-        </FormItem>
-
+        <StyledFormItem>
+          <FormItem
+            label={I18N.get('suggestion.plan.responsibility')}
+            {...formItemLayout}
+          >
+            {getFieldDecorator('responsibility', {
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
+              initialValue: item && item.responsibility ? item.responsibility : ''
+            })(
+              <CodeMirrorEditor
+                content={item && item.responsibility ? item.responsibility : ''}
+                name="responsibility"
+              />
+            )}
+          </FormItem>
+        </StyledFormItem>
+        <StyledFormItem>
+          <FormItem
+            label={I18N.get('suggestion.plan.moreInfo')}
+            {...formItemLayout}
+          >
+            {getFieldDecorator('info', {
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
+              initialValue: item && item.info ? item.info : ''
+            })(
+              <CodeMirrorEditor
+                content={item && item.info ? item.info : ''}
+                name="info"
+              />
+            )}
+          </FormItem>
+        </StyledFormItem>
         <Actions>
           <Button
             className="cr-btn cr-btn-default"
@@ -121,5 +134,11 @@ const Actions = styled.div`
   justify-content: center;
   > button {
     margin: 0 8px;
+  }
+`
+const StyledFormItem = styled.div`
+  .ant-col-24.ant-form-item-label {
+    padding: 0;
+    margin-bottom: -12px;
   }
 `

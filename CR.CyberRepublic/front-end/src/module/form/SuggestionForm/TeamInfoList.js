@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button } from 'antd'
 import I18N from '@/I18N'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 
 class TeamInfoList extends BaseComponent {
   handleDelete = index => {
@@ -37,8 +38,12 @@ class TeamInfoList extends BaseComponent {
             <StyledRow key={index}>
               <td>{item.member}</td>
               <td>{item.role}</td>
-              <td>{item.responsibility}</td>
-              <td>{item.info}</td>
+              <td>
+                <MarkdownPreview content={item.responsibility} />
+              </td>
+              <td>
+                <MarkdownPreview content={item.info} />
+              </td>
               {visible && (
                 <td>
                   <Button
