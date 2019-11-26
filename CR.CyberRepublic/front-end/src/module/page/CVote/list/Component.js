@@ -36,7 +36,6 @@ import {
   FilterContent,
   FilterItem,
   FilterItemLabel,
-  FilterItmeInput,
   FilterClearBtn,
   CheckboxText
 } from './style'
@@ -605,7 +604,7 @@ export default class extends BaseComponent {
     }
     const colSpan = isCouncil ? 8 : 12
     return (
-      <FilterPanel>
+      <FilterPanel isCouncil={isCouncil}>
         <Row type="flex" gutter={10} className="filter">
           <Col span={colSpan} className="filter-panel">
             <FilterContent>
@@ -613,39 +612,33 @@ export default class extends BaseComponent {
                 <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.status')}
                 </FilterItemLabel>
-                <FilterItmeInput isCouncil={isCouncil}>
-                  <Select
-                    className="filter-input"
-                    value={status}
-                    onChange={this.handleStatusChange}
-                    style={{ width: '100%' }}
-                  >
-                    {_.map(CVOTE_STATUS, value => (
-                      <Select.Option key={value} value={value}>
-                        {I18N.get(`cvoteStatus.${value}`)}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </FilterItmeInput>
+                <Select
+                  className="filter-input"
+                  value={status}
+                  onChange={this.handleStatusChange}
+                >
+                  {_.map(CVOTE_STATUS, value => (
+                    <Select.Option key={value} value={value}>
+                      {I18N.get(`cvoteStatus.${value}`)}
+                    </Select.Option>
+                  ))}
+                </Select>
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.budgetRequested')}
                 </FilterItemLabel>
-                <FilterItmeInput isCouncil={isCouncil}>
-                  <Select
-                    className="filter-input"
-                    value={budgetRequested}
-                    onChange={this.handleBudgetRequestedChange}
-                    style={{ width: '100%' }}
-                  >
-                    {_.map(BUDGET_REQUESTED_OPTIONS, (item, key) => (
-                      <Select.Option key={key} value={key}>
-                        {item.value}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </FilterItmeInput>
+                <Select
+                  className="filter-input"
+                  value={budgetRequested}
+                  onChange={this.handleBudgetRequestedChange}
+                >
+                  {_.map(BUDGET_REQUESTED_OPTIONS, (item, key) => (
+                    <Select.Option key={key} value={key}>
+                      {item.value}
+                    </Select.Option>
+                  ))}
+                </Select>
               </FilterItem>
               <FilterItem className="filter-checkbox">
                 <Checkbox
@@ -661,7 +654,7 @@ export default class extends BaseComponent {
           {isCouncil && (
             <Col span={colSpan} className="filter-panel">
               <FilterContent>
-                <FilterItem className="filter-checkbox">
+                <FilterItem>
                   <Checkbox
                     checked={isUnvotedByYou}
                     onChange={this.handleIsUnvotedByYouChange}
@@ -679,58 +672,49 @@ export default class extends BaseComponent {
                 <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.creationDate')}
                 </FilterItemLabel>
-                <FilterItmeInput isCouncil={isCouncil}>
-                  <RangePicker
-                    className="filter-input"
-                    onChange={this.handleCreationDateChange}
-                    value={creationDate}
-                    {...rangePickerOptions}
-                  />
-                </FilterItmeInput>
+                <RangePicker
+                  className="filter-input"
+                  onChange={this.handleCreationDateChange}
+                  value={creationDate}
+                  {...rangePickerOptions}
+                />
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.author')}
                 </FilterItemLabel>
-                <FilterItmeInput isCouncil={isCouncil}>
-                  <Input
-                    className="filter-input"
-                    value={author}
-                    onChange={this.handleAuthorChange}
-                  />
-                </FilterItmeInput>
+                <Input
+                  className="filter-input"
+                  value={author}
+                  onChange={this.handleAuthorChange}
+                />
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.type')}
                 </FilterItemLabel>
-                <FilterItmeInput isCouncil={isCouncil}>
-                  <Select
-                    className="filter-input"
-                    value={type}
-                    onChange={this.handleTypeChange}
-                    style={{ width: '100%' }}
-                  >
-                    {_.map(PROPOSAL_TYPE, (value, key) => (
-                      <Select.Option key={key} value={key}>
-                        {value}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </FilterItmeInput>
+                <Select
+                  className="filter-input"
+                  value={type}
+                  onChange={this.handleTypeChange}
+                >
+                  {_.map(PROPOSAL_TYPE, (value, key) => (
+                    <Select.Option key={key} value={key}>
+                      {value}
+                    </Select.Option>
+                  ))}
+                </Select>
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.endsDate')}
                 </FilterItemLabel>
-                <FilterItmeInput isCouncil={isCouncil}>
-                  <RangePicker
-                    className="filter-input"
-                    onChange={this.handleEndsDateChange}
-                    value={endsDate}
-                    {...rangePickerOptions}
-                  />
-                </FilterItmeInput>
+                <RangePicker
+                  className="filter-input"
+                  onChange={this.handleEndsDateChange}
+                  value={endsDate}
+                  {...rangePickerOptions}
+                />
               </FilterItem>
             </FilterContent>
           </Col>
