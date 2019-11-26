@@ -415,39 +415,43 @@ export default class extends StandardPage {
                 <FilterItemLabel>
                   {I18N.get('suggestion.fields.status')}
                 </FilterItemLabel>
-                <Select
-                  className="filter-input"
-                  value={status}
-                  onChange={this.handleStatusChange}
-                >
-                  {_.map(SUGGESTION_STATUS, value => (
-                    <Select.Option key={value} value={value}>
-                      {I18N.get(`suggestion.status.${value}`)}
-                    </Select.Option>
-                  ))}
-                </Select>
+                <FilterItmeInput>
+                  <Select
+                    value={status}
+                    onChange={this.handleStatusChange}
+                    style={{ width: '100%' }}
+                  >
+                    {_.map(SUGGESTION_STATUS, value => (
+                      <Select.Option key={value} value={value}>
+                        {I18N.get(`suggestion.status.${value}`)}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </FilterItmeInput>
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel>
                   {I18N.get('suggestion.fields.budgetRequested')}
                 </FilterItemLabel>
-                <Select
-                  className="filter-input"
-                  value={budgetRequested}
-                  onChange={this.handleBudgetRequestedChange}
-                >
-                  {_.map(BUDGET_REQUESTED_OPTIONS, (item, key) => (
-                    <Select.Option key={key} value={key}>
-                      {item.value}
-                    </Select.Option>
-                  ))}
-                </Select>
+                <FilterItmeInput>
+                  <Select
+                    value={budgetRequested}
+                    onChange={this.handleBudgetRequestedChange}
+                    style={{ width: '100%' }}
+                  >
+                    {_.map(BUDGET_REQUESTED_OPTIONS, (item, key) => (
+                      <Select.Option key={key} value={key}>
+                        {item.value}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </FilterItmeInput>
               </FilterItem>
             </FilterContent>
           </Col>
           <Col span={8} className="filter-panel">
             <FilterContent>
-              <FilterItem>
+              <FilterItem className="filter-checkbox">
                 <Checkbox
                   checked={underConsideration}
                   onChange={this.handleUnderConsiderationChange}
@@ -482,38 +486,39 @@ export default class extends StandardPage {
                 <FilterItemLabel>
                   {I18N.get('suggestion.fields.creationDate')}
                 </FilterItemLabel>
-                <RangePicker
-                  className="filter-input"
-                  onChange={this.handleCreationDateChange}
-                  value={creationDate}
-                  {...rangePickerOptions}
-                />
+                <FilterItmeInput>
+                  <RangePicker
+                    onChange={this.handleCreationDateChange}
+                    value={creationDate}
+                    {...rangePickerOptions}
+                  />
+                </FilterItmeInput>
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel>
                   {I18N.get('suggestion.fields.author')}
                 </FilterItemLabel>
-                <Input
-                  className="filter-input"
-                  value={author}
-                  onChange={this.handleAuthorChange}
-                />
+                <FilterItmeInput>
+                  <Input value={author} onChange={this.handleAuthorChange} />
+                </FilterItmeInput>
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel>
                   {I18N.get('suggestion.fields.type')}
                 </FilterItemLabel>
-                <Select
-                  className="filter-input"
-                  value={type}
-                  onChange={this.handleTypeChange}
-                >
-                  {_.map(typeMap, (value, key) => (
-                    <Select.Option key={key} value={key}>
-                      {value}
-                    </Select.Option>
-                  ))}
-                </Select>
+                <FilterItmeInput>
+                  <Select
+                    value={type}
+                    onChange={this.handleTypeChange}
+                    style={{ width: '100%' }}
+                  >
+                    {_.map(typeMap, (value, key) => (
+                      <Select.Option key={key} value={key}>
+                        {value}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </FilterItmeInput>
               </FilterItem>
             </FilterContent>
           </Col>
@@ -860,9 +865,6 @@ const FilterPanel = styled.div`
     margin-top: 36px;
     margin-bottom: 58px;
   }
-  .filter-input {
-    width: 55%;
-  }
 `
 
 const FilterClearBtn = styled.div`
@@ -878,9 +880,9 @@ const FilterItem = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-left: 25px;
   padding-bottom: 10px;
   &.filter-checkbox {
+    padding-left: 15px;
     padding-top: 10px;
   }
   :first-child {
@@ -897,6 +899,7 @@ const FilterContent = styled.div`
 
 const FilterItemLabel = styled.div`
   width: 40%;
+  padding-left: 15px;
   font-family: Synthese;
   font-size: 14px;
   line-height: 20px;
@@ -905,6 +908,11 @@ const FilterItemLabel = styled.div`
   :after {
     content: ':';
   }
+`
+
+const FilterItmeInput = styled.div`
+    width: 60%;
+    padding-right: 15px;
 `
 
 const SplitLabel = styled.span`

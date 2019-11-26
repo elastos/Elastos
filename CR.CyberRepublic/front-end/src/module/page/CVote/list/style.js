@@ -83,9 +83,6 @@ export const FilterPanel = styled.div`
     margin-top: 36px;
     margin-bottom: 58px;
   }
-  .filter-input {
-    width: ${props => (props.isCouncil ? '55%' : '50%')};
-  }
 `
 
 export const FilterClearBtn = styled.div`
@@ -102,9 +99,9 @@ export const FilterItem = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-left: 25px;
   padding-bottom: 10px;
   &.filter-checkbox {
+    padding-left: 15px;
     padding-top: 10px;
   }
   :first-child {
@@ -120,7 +117,8 @@ export const FilterContent = styled.div`
 `
 
 export const FilterItemLabel = styled.div`
-  width: ${props => (props.isCouncil ? '40%' : '25%')};;
+  width: ${props => (props.isCouncil ? '40%' : '30%')};
+  padding-left: ${props => (props.isCouncil ? '15px' : '25px')};;
   font-family: Synthese;
   font-size: 14px;
   line-height: 20px;
@@ -129,6 +127,11 @@ export const FilterItemLabel = styled.div`
   :after {
     content: ':';
   }
+`
+
+export const FilterItmeInput = styled.div`
+  width: ${props => (props.isCouncil ? '60%' : '50%')};
+  padding-right: 15px;
 `
 
 export const CheckboxText = styled.span`
