@@ -357,7 +357,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Outputs: []*types.Output{
 			{
 				ProgramHash: *depositCont.ToProgramHash(),
-				Value:       common.Fixed64(100),
+				Value:       common.Fixed64(6000 * 1e8),
 			},
 		},
 	}
@@ -369,7 +369,10 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 	}, nil, 0)
 	height++
 	candidate := state.GetCandidate(did)
-	assert.Equal(t, common.Fixed64(100), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(5000*1e8),
+		state.GetDepositAmount(candidate.info.DID))
+	assert.Equal(t, common.Fixed64(6000*1e8),
+		state.GetTotalAmount(candidate.info.DID))
 
 	// deposit though normal tx
 	tranferTx := &types.Transaction{
@@ -378,7 +381,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Outputs: []*types.Output{
 			{
 				ProgramHash: *depositCont.ToProgramHash(),
-				Value:       common.Fixed64(200),
+				Value:       common.Fixed64(1000*1e8),
 			},
 		},
 	}
@@ -389,7 +392,10 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Transactions: []*types.Transaction{tranferTx},
 	}, nil, 0)
 	height++
-	assert.Equal(t, common.Fixed64(300), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(5000*1e8),
+		state.GetDepositAmount(candidate.info.DID))
+	assert.Equal(t, common.Fixed64(7000*1e8),
+		state.GetTotalAmount(candidate.info.DID))
 
 	// cancel candidate
 	for i := 0; i < 4; i++ {
@@ -445,7 +451,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Transactions: []*types.Transaction{rdTx},
 	}, nil, 0)
 	state.history.Commit(height)
-	assert.Equal(t, common.Fixed64(0), candidate.depositAmount)
+	assert.Equal(t, common.Fixed64(0), state.GetDepositAmount(candidate.info.DID))
 }
 
 func mockNewVoteTx(dids [][]byte) *types.Transaction {

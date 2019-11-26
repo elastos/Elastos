@@ -30,10 +30,6 @@ import (
 )
 
 const (
-	// DepositLockupBlocks indicates how many blocks need to wait when cancel
-	// producer or CRC was triggered, and can submit return deposit coin request.
-	DepositLockupBlocks = 2160
-
 	// MaxStringLength is the maximum length of a string field.
 	MaxStringLength = 100
 
@@ -258,7 +254,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 
 	case ReturnCRDepositCoin:
 		if err := b.checkReturnCRDepositCoinTransaction(
-			txn, references, b.GetHeight(), b.crCommittee.IsInVotingPeriod); err != nil {
+			txn, references, b.GetHeight()); err != nil {
 			log.Warn("[CheckReturnDepositCoinTransaction],", err)
 			return elaerr.Simple(elaerr.ErrTxReturnDeposit, err)
 		}
@@ -2221,15 +2217,33 @@ func (b *BlockChain) additionalProducerInfoCheck(
 func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 	references map[*Input]*Output, currentHeight uint32) error {
 
-	var outputValue common.Fixed64
 	var inputValue common.Fixed64
-	for _, output := range txn.Outputs {
-		outputValue += output.Value
-	}
+	fromAddrMap := make(map[common.Uint168]struct{})
 	for _, output := range references {
 		inputValue += output.Value
+		fromAddrMap[output.ProgramHash] = struct{}{}
 	}
 
+	if len(fromAddrMap) != 1 {
+		return errors.New("UTXO should from same deposit address")
+	}
+
+	var programHash common.Uint168
+	for k := range fromAddrMap {
+		programHash = k
+	}
+
+	var changeValue common.Fixed64
+	var outputValue common.Fixed64
+	for _, output := range txn.Outputs {
+		if output.ProgramHash.IsEqual(programHash) {
+			changeValue += output.Value
+		} else {
+			outputValue += output.Value
+		}
+	}
+
+	var depositAmount common.Fixed64
 	var penalty common.Fixed64
 	for _, program := range txn.Programs {
 		p := b.state.GetProducer(program.Code[1 : len(program.Code)-1])
@@ -2239,13 +2253,15 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 		if p.State() != state.Canceled {
 			return errors.New("producer must be canceled before return deposit coin")
 		}
-		if currentHeight-p.CancelHeight() < DepositLockupBlocks {
+		if currentHeight-p.CancelHeight() < crstate.DepositLockupBlocks {
 			return errors.New("return deposit does not meet the lockup limit")
 		}
 		penalty += p.Penalty()
+		depositAmount += p.DepositAmount()
 	}
 
-	if inputValue-penalty < b.chainParams.MinTransactionFee+outputValue {
+	if inputValue-changeValue > depositAmount-penalty ||
+		outputValue >= depositAmount {
 		return fmt.Errorf("overspend deposit")
 	}
 
@@ -2253,65 +2269,52 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 }
 
 func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
-	references map[*Input]*Output, currentHeight uint32,
-	isInVotingPeriod func(height uint32) bool) error {
+	references map[*Input]*Output, currentHeight uint32) error {
 
-	var outputValue common.Fixed64
 	var inputValue common.Fixed64
-	for _, output := range txn.Outputs {
-		outputValue += output.Value
-	}
+	fromAddrMap := make(map[common.Uint168]struct{})
 	for _, output := range references {
 		inputValue += output.Value
+		fromAddrMap[output.ProgramHash] = struct{}{}
 	}
 
-	var penalty common.Fixed64
+	if len(fromAddrMap) != 1 {
+		return errors.New("UTXO should from same deposit address")
+	}
+
+	var programHash common.Uint168
+	for k := range fromAddrMap {
+		programHash = k
+	}
+
+	var changeValue common.Fixed64
+	var outputValue common.Fixed64
+	for _, output := range txn.Outputs {
+		if output.ProgramHash.IsEqual(programHash) {
+			changeValue += output.Value
+		} else {
+			outputValue += output.Value
+		}
+	}
+
+	var availableValue common.Fixed64
 	for _, program := range txn.Programs {
 		// Get candidate from code.
 		ct, err := contract.CreateCRDIDContractByCode(program.Code)
 		if err != nil {
 			return err
 		}
-		programHash := ct.ToProgramHash()
-		// todo get candidate from not voting period state.
-		c := b.crCommittee.GetState().GetCandidate(*programHash)
-		if c == nil {
-			member := b.crCommittee.GetHistoryMember(program.Code)
-			if member == nil {
-				return errors.New("signer must be CR candidate or member")
-			}
-
-			if member.MemberState == crstate.MemberReturned {
-				return errors.New("member is returned before")
-			}
-
-			penalty += member.Penalty
-			continue
+		did := ct.ToProgramHash()
+		if !b.crCommittee.GetState().IsRefundable(*did) {
+			return errors.New("signer must be refundable")
 		}
 
-		if isInVotingPeriod(currentHeight) {
-			// In voting period, state need to be canceled.
-			if c.State() != crstate.Canceled {
-				return errors.New("candidate state is not canceled")
-			}
-			// In voting period, need to wait 720*3 blocks before return
-			// deposit coin.
-			if currentHeight-c.CancelHeight() < DepositLockupBlocks {
-				return errors.New("return CR deposit does not " +
-					"meet the lockup limit")
-			}
-		} else {
-			// Not in voting period, state can be pending active or canceled
-			// and no need to wait 720*3 blocks.
-			if c.State() == crstate.Returned {
-				return errors.New("candidate is returned before")
-			}
-		}
-		penalty += c.Penalty()
+		availableValue += b.crCommittee.GetAvailableDepositAmount(*did)
 	}
 
 	// Check output amount.
-	if inputValue-penalty < b.chainParams.MinTransactionFee+outputValue {
+	if inputValue-changeValue > availableValue ||
+		outputValue >= availableValue {
 		return fmt.Errorf("candidate overspend deposit")
 	}
 

@@ -39,6 +39,7 @@ type txValidatorTestSuite struct {
 	ELA               int64
 	foundationAddress common.Uint168
 	HeightVersion1    uint32
+	CurrentHeight     uint32
 	Chain             *BlockChain
 	OriginalLedger    *Ledger
 }
@@ -62,7 +63,11 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	if err != nil {
 		s.Error(err)
 	}
-	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{})
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetHeight: func() uint32 {
+			return s.CurrentHeight
+		},
+	})
 	if err := s.Chain.Init(nil); err != nil {
 		s.Error(err)
 	}
@@ -2576,7 +2581,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 		"transaction can only use the deposit UTXO")
 }
 
-func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
+func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	height := uint32(1)
 	_, pk, _ := crypto.GenerateKeyPair()
 	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
@@ -2598,7 +2603,7 @@ func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 				Outputs: []*types.Output{
 					{
 						ProgramHash: *depositCont.ToProgramHash(),
-						Value:       common.Fixed64(5000),
+						Value:       common.Fixed64(5000 * 1e8),
 					},
 				},
 			},
@@ -2682,14 +2687,14 @@ func (s txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 		rdTx, references, 2160+canceledHeight)
 	s.EqualError(err, "overspend deposit")
 
-	// check a correct deposit coin transaction.
+	// check a correct return deposit coin transaction.
 	rdTx.Outputs[0].Value = 4999 * 100000000
 	err = s.Chain.checkReturnDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight)
 	s.NoError(err)
 }
 
-func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
+func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	height := uint32(1)
 	_, pk, _ := crypto.GenerateKeyPair()
 	cont, _ := contract.CreateStandardContract(pk)
@@ -2697,6 +2702,9 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
 	ct, _ := contract.CreateCRDIDContractByCode(code)
 	did := ct.ToProgramHash()
+
+	s.Chain.chainParams.CRVotingStartHeight = uint32(1)
+	s.Chain.chainParams.CRCommitteeStartHeight = uint32(3000)
 
 	// register CR
 	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
@@ -2714,7 +2722,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 				Outputs: []*types.Output{
 					{
 						ProgramHash: *depositCont.ToProgramHash(),
-						Value:       common.Fixed64(5000),
+						Value:       common.Fixed64(5000 * 1e8),
 					},
 				},
 			},
@@ -2734,13 +2742,6 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 		height++
 	}
 	s.True(candidate.State() == crstate.Active, "active CR failed")
-
-	isInVotingPeriod := func(height uint32) bool {
-		return true
-	}
-	notInVotingPeriod := func(height uint32) bool {
-		return false
-	}
 
 	references := make(map[*types.Input]*types.Output)
 	references[&types.Input{}] = &types.Output{
@@ -2763,8 +2764,8 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	// check a return cr deposit coin transaction when not unregistered in
 	// voting period.
 	err := s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
-	s.EqualError(err, "candidate state is not canceled")
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "signer must be refundable")
 
 	// unregister CR
 	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
@@ -2790,27 +2791,31 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 
 	// check a return cr deposit coin transaction with wrong code in voting period.
 	rdTx.Programs[0].Code = code2
+	s.CurrentHeight = 2160 + canceledHeight
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
-	s.EqualError(err, "signer must be CR candidate or member")
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "signer must be refundable")
 
 	// check a return cr deposit coin transaction when not reached the
 	// count of DepositLockupBlocks in voting period.
 	rdTx.Programs[0].Code = code
+	s.CurrentHeight = 2159 + canceledHeight
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2159+canceledHeight, isInVotingPeriod)
-	s.EqualError(err, "return CR deposit does not meet the lockup limit")
+		rdTx, references, 2159+canceledHeight)
+	s.EqualError(err, "candidate overspend deposit")
 
 	// check a return cr deposit coin transaction with wrong output amount.
 	rdTx.Outputs[0].Value = 5000 * 100000000
+	s.CurrentHeight = 2160 + canceledHeight
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2160+canceledHeight, isInVotingPeriod)
+		rdTx, references, 2160+canceledHeight)
 	s.EqualError(err, "candidate overspend deposit")
 
 	// check a correct return cr deposit coin transaction.
 	rdTx.Outputs[0].Value = 4999 * 100000000
+	s.CurrentHeight = s.Chain.chainParams.CRCommitteeStartHeight
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2160+canceledHeight, notInVotingPeriod)
+		rdTx, references, s.CurrentHeight)
 	s.NoError(err)
 
 	// return CR deposit coin.
@@ -2826,8 +2831,8 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 
 	// check a return cr deposit coin transaction with the amount has returned.
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
-		rdTx, references, 2160+canceledHeight, notInVotingPeriod)
-	s.EqualError(err, "candidate is returned before")
+		rdTx, references, 2160+canceledHeight)
+	s.EqualError(err, "signer must be refundable")
 
 }
 

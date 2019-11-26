@@ -71,8 +71,7 @@ func randomUint168() *common.Uint168 {
 
 func crMemberEqual(first *state.CRMember, second *state.CRMember) bool {
 	return crInfoEqual(&first.Info, &second.Info) &&
-		first.ImpeachmentVotes == second.ImpeachmentVotes &&
-		first.Penalty == second.Penalty
+		first.ImpeachmentVotes == second.ImpeachmentVotes
 }
 
 func crInfoEqual(first *payload.CRInfo, second *payload.CRInfo) bool {
