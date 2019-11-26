@@ -2,17 +2,7 @@
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
-
-// This benchmark is plan to profile blockchain related processing and
-// searching. The benchmark base on RegTest and chain height should higher than
-// 253582, the all data should be placed on this directory with name
-// "elastos_test". ProcessBlock sub test will load 253583 block and confirm raw
-// data, the raw data should be named "block.dat" and "confirm.dat",
-// and place in the directory "elastos_test".
-// To run this benchmark only, please type the flowing command on you command
-// line: go test -run=nonthingplease -benchonly="true" -bench=.
-
-package blockchain
+package process
 
 import (
 	"flag"
@@ -23,13 +13,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/database"
-	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/utils/test"
 )
@@ -43,7 +33,7 @@ const (
 
 var (
 	params        = config.DefaultParams.RegNet()
-	originLedger  *Ledger
+	originLedger  *blockchain.Ledger
 	originAddress common.Uint168
 
 	flagParsed    bool
@@ -54,40 +44,17 @@ var (
 	stopHash              = initStopHash()
 	randomBlockHashes     = initRandomBlockHashes()
 	continuousBlockHashes = initContinuousBlockHashes()
-	chain                 = benchBegin()
 	newChain              = newBlockChain()
 )
 
-func BenchmarkBlockChain_PersistBlocks(b *testing.B) {
-	chainStore := newChain.db.(*ChainStore)
-	for i := chainHeight - 30000; i < chainHeight; i++ {
-		blockHash, _ := DefaultLedger.Store.GetBlockHash(i)
-		block, _ := DefaultLedger.Store.GetBlock(blockHash)
-
-		chainStore.NewBatch()
-		if err := chainStore.persistTrimmedBlock(block); err != nil {
-			b.Error(err)
-		}
-		if err := chainStore.persistBlockHash(block); err != nil {
-			b.Error(err)
-		}
-		if err := chainStore.persistCurrentBlock(block); err != nil {
-			b.Error(err)
-		}
-		if err := chainStore.BatchCommit(); err != nil {
-			b.Error(err)
-		}
-	}
-}
-
 func BenchmarkBlockChain_FFLDBPersistBlocks(b *testing.B) {
-	newChain.Nodes = make([]*BlockNode, chainHeight-30000)
+	newChain.Nodes = make([]*blockchain.BlockNode, chainHeight-30000)
 	for i := chainHeight - 30000; i < chainHeight; i++ {
-		blockHash, _ := DefaultLedger.Store.GetBlockHash(i)
-		block, _ := DefaultLedger.Store.GetBlock(blockHash)
+		blockHash, _ := blockchain.DefaultLedger.Store.GetBlockHash(i)
+		block, _ := blockchain.DefaultLedger.Store.GetBlock(blockHash)
 
-		newNode := NewBlockNode(&block.Header, &blockHash)
-		if err := newChain.db.GetFFLDB().SaveBlock(block, newNode,
+		newNode := blockchain.NewBlockNode(&block.Header, &blockHash)
+		if err := newChain.GetDB().GetFFLDB().SaveBlock(block, newNode,
 			nil, time.Unix(int64(block.Timestamp), 0)); err != nil {
 			b.Error(err)
 		}
@@ -95,20 +62,10 @@ func BenchmarkBlockChain_FFLDBPersistBlocks(b *testing.B) {
 	}
 }
 
-func BenchmarkBlockChain_GetBlocks(b *testing.B) {
-	for i := chainHeight - 30000; i < chainHeight; i++ {
-		blockHash, _ := DefaultLedger.Store.GetBlockHash(i)
-		_, err := DefaultLedger.Store.GetBlock(blockHash)
-		if err != nil {
-			b.Error(err)
-		}
-	}
-}
-
 func BenchmarkBlockChain_FFLDBGetBlocks(b *testing.B) {
 	for i := chainHeight - 30000; i < chainHeight; i++ {
-		blockHash := DefaultLedger.Blockchain.Nodes[i].Hash
-		_, err := DefaultLedger.Store.GetFFLDB().GetBlock(*blockHash)
+		blockHash := blockchain.DefaultLedger.Blockchain.Nodes[i].Hash
+		_, err := blockchain.DefaultLedger.Store.GetFFLDB().GetBlock(*blockHash)
 		if err != nil {
 			b.Error(err)
 		}
@@ -117,33 +74,18 @@ func BenchmarkBlockChain_FFLDBGetBlocks(b *testing.B) {
 	time.Sleep(time.Second)
 }
 
-func BenchmarkBlockChain_GetTransactions(b *testing.B) {
-	for i := chainHeight - 30000; i < chainHeight; i++ {
-		blockHash, _ := DefaultLedger.Store.GetBlockHash(i)
-		block, err := DefaultLedger.Store.GetBlock(blockHash)
-		if err != nil {
-			b.Error(err)
-		}
-		for _, tx := range block.Transactions {
-			_, _, err := DefaultLedger.Store.GetTransaction(tx.Hash())
-			if err != nil {
-				b.Error(err)
-			}
-		}
-	}
-}
-
 func BenchmarkBlockChain_CheckBlockContext(b *testing.B) {
 	block, _ := newBlock()
 	for i := 0; i < 10; i++ {
-		if err := chain.CheckBlockContext(block, chain.BestChain); err != nil {
+		if err := newChain.CheckBlockContext(block,
+			newChain.BestChain); err != nil {
 			b.Error(err)
 		}
 	}
 }
 
 func BenchmarkBlockChain_ProcessBlock(b *testing.B) {
-	_, _, err := chain.ProcessBlock(newBlock())
+	_, _, err := newChain.ProcessBlock(newBlock())
 	if err != nil {
 		b.Error(err)
 	}
@@ -154,7 +96,7 @@ func BenchmarkBlockChain_ProcessBlock(b *testing.B) {
 func BenchmarkBlockChain_HaveBlock(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, v := range randomBlockHashes {
-			chain.HaveBlock(v)
+			newChain.HaveBlock(v)
 		}
 	}
 }
@@ -162,7 +104,7 @@ func BenchmarkBlockChain_HaveBlock(b *testing.B) {
 func BenchmarkBlockChain_GetDposBlockByHash(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, v := range randomBlockHashes {
-			chain.GetDposBlockByHash(*v)
+			newChain.GetDposBlockByHash(*v)
 		}
 	}
 }
@@ -173,124 +115,40 @@ func BenchmarkBlockChain_LocateBlocks(b *testing.B) {
 		for _, v := range continuousBlockHashes {
 			locator = append(locator, v)
 		}
-		chain.LocateBlocks(locator, stopHash, pact.MaxBlocksPerMsg)
+		newChain.LocateBlocks(locator, stopHash, pact.MaxBlocksPerMsg)
 	}
 }
 
 func BenchmarkBlockChain_End(b *testing.B) {
-	if chain != nil {
-		chain.db.Close()
-		chain = nil
-	}
-
 	if newChain != nil {
-		newChain.db.Close()
+		newChain.GetDB().Close()
 		newChain = nil
 	}
 
-	DefaultLedger = originLedger
-	FoundationAddress = originAddress
+	blockchain.DefaultLedger = originLedger
+	blockchain.FoundationAddress = originAddress
 }
 
-func newChainStore(dataDir string, dbDir string, genesisBlock *types.Block) (IChainStore, error) {
-	db, err := NewLevelDB(filepath.Join(dataDir, dbDir, "chain"))
-	if err != nil {
-		return nil, err
-	}
-
-	fdb, err := NewChainStoreFFLDB(filepath.Join(dataDir, dbDir))
-	if err != nil {
-		return nil, err
-	}
-
-	s := &ChainStore{
-		IStore:           db,
-		fflDB:            fdb,
-		blockHashesCache: make([]common.Uint256, 0, BlocksCacheSize),
-		blocksCache:      make(map[common.Uint256]*types.Block),
-	}
-
-	s.init(genesisBlock)
-
-	return s, nil
+func newChainStore(dataDir string, dbDir string,
+	genesisBlock *types.Block) (blockchain.IChainStore, error) {
+	return blockchain.NewChainStore(
+		filepath.Join(dataDir, dbDir, "chain"), genesisBlock)
 }
 
-func newBlockChain() *BlockChain {
+func newBlockChain() *blockchain.BlockChain {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	chainStore, err := newChainStore(test.DataPath, "ffldb", params.GenesisBlock)
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil
 	}
-	chain, err := New(chainStore, params, nil, nil)
+	chain, err := blockchain.New(chainStore, params, nil, nil)
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil
 	}
 
 	return chain
-}
-
-func benchBegin() *BlockChain {
-	if !hasWorkbenchOnlyFlag() {
-		return nil
-	}
-
-	log.NewDefault(test.NodeLogPath, 0, 0, 0)
-	log.Info("Roll back to: ", chainHeight)
-	rollbackTo(chainHeight, params)
-
-	log.Info("New chain store.")
-	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
-	if err != nil {
-		fmt.Println("create new chain store failed, ", err)
-		return nil
-	}
-
-	originAddress = FoundationAddress
-	FoundationAddress = params.Foundation
-
-	log.Info("New arbitrator.")
-	arbiters, _ := state.NewArbitrators(params, nil,
-		func(programHash common.Uint168) (common.Fixed64,
-			error) {
-			amount := common.Fixed64(0)
-			utxos, err := DefaultLedger.Store.
-				GetUnspentFromProgramHash(programHash, config.ELAAssetID)
-			if err != nil {
-				return amount, err
-			}
-			for _, utxo := range utxos {
-				amount += utxo.Value
-			}
-			return amount, nil
-		})
-	arbiters.RegisterFunction(chainStore.GetHeight, func(height uint32) (*types.Block, error) {
-		hash, err := chainStore.GetBlockHash(height)
-		if err != nil {
-			return nil, err
-		}
-		block, err := chainStore.GetBlock(hash)
-		if err != nil {
-			return nil, err
-		}
-		CalculateTxsFee(block)
-		return block, nil
-	}, DefaultLedger.Blockchain.UTXOCache.GetTxReference)
-
-	log.Info("New block chain.")
-	newChain, _ := New(chainStore, params, arbiters.State, nil)
-	originLedger = DefaultLedger
-	DefaultLedger = &Ledger{
-		Blockchain:  newChain,
-		Store:       chainStore,
-		Arbitrators: arbiters,
-	}
-
-	log.Info("Init check point.")
-	newChain.InitCheckpoint(nil, nil, nil)
-
-	return newChain
 }
 
 func newBlock() (*types.Block, *payload.Confirm) {
@@ -309,9 +167,10 @@ func newBlock() (*types.Block, *payload.Confirm) {
 	return block, confirm
 }
 
-func rollbackBlockNode(ffldb IFFLDBChainStore, header *types.Header) error {
+func rollbackBlockNode(ffldb blockchain.IFFLDBChainStore,
+	header *types.Header) error {
 	return ffldb.Update(func(dbTx database.Tx) error {
-		err := DBRemoveBlockNode(dbTx, header)
+		err := blockchain.DBRemoveBlockNode(dbTx, header)
 		if err != nil {
 			return err
 		}
@@ -320,13 +179,14 @@ func rollbackBlockNode(ffldb IFFLDBChainStore, header *types.Header) error {
 }
 
 func rollbackTo(targetHeight uint32, params *config.Params) {
-	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(test.DataPath,
+		params.GenesisBlock)
 	if err != nil {
 		fmt.Println("create chain store failed, ", err)
 	}
 	defer chainStore.Close()
 
-	chain, err := New(chainStore, params, nil, nil)
+	chain, err := blockchain.New(chainStore, params, nil, nil)
 	if err != nil {
 		fmt.Println("create blockchain failed, ", err)
 	}
@@ -337,17 +197,18 @@ func rollbackTo(targetHeight uint32, params *config.Params) {
 		fmt.Println("initialize ffldb from chain store failed, ", err)
 	}
 
-	store := chain.db.(*ChainStore)
+	store := chain.GetDB().(*blockchain.ChainStore)
 	currentHeight := uint32(len(chain.Nodes)) - 1
 	for i := currentHeight; i > targetHeight; i-- {
 		blockHash := chain.Nodes[i].Hash
-		block, _ := store.fflDB.GetBlock(*blockHash)
-		blockNode := NewBlockNode(&block.Header, blockHash)
+		block, _ := store.GetFFLDB().GetBlock(*blockHash)
+		blockNode := blockchain.NewBlockNode(&block.Header, blockHash)
 		confirm, _ := store.GetConfirm(*blockHash)
 		if parentNode, ok := chain.LookupNodeInIndex(blockNode.ParentHash); ok {
 			blockNode.Parent = parentNode
 		}
-		err := chain.db.RollbackBlock(block.Block, blockNode, confirm, CalcPastMedianTime(blockNode.Parent))
+		err := chain.GetDB().RollbackBlock(block.Block, blockNode, confirm,
+			blockchain.CalcPastMedianTime(blockNode.Parent))
 		if err != nil {
 			fmt.Println("roll back block failed, ", err)
 		}
