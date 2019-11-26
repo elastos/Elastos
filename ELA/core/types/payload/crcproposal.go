@@ -8,7 +8,6 @@ package payload
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -77,8 +76,6 @@ type CRCProposal struct {
 	SponsorPublicKey []byte
 	// The hash of draft proposal.
 	DraftHash common.Uint256
-	// The data of draft proposal.
-	DraftData []byte
 	// The budget of different stages.
 	Budgets []common.Fixed64
 	// The address of budget.
@@ -115,10 +112,6 @@ func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
 
 	if err := p.DraftHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize DraftHash")
-	}
-
-	if err := common.WriteVarBytes(w, p.DraftData); err != nil {
-		return errors.New("failed to serialize DraftData")
 	}
 
 	if err := common.WriteVarUint(w, uint64(len(p.Budgets))); err != nil {
@@ -168,10 +161,6 @@ func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
 
 	if err = p.DraftHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize DraftHash")
-	}
-	p.DraftData, err = common.ReadVarBytes(r, MaxProposalDataSize, "draftData")
-	if err != nil {
-		return fmt.Errorf("failed to deserialize DraftData %s", err)
 	}
 	var count uint64
 	if count, err = common.ReadVarUint(r, 0); err != nil {

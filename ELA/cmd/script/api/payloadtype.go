@@ -927,7 +927,8 @@ func RegisterCRCProposalType(L *lua.LState) {
 func newCRCProposal(L *lua.LState) int {
 	publicKeyStr := L.ToString(1)
 	proposalType := L.ToInt64(2)
-	draftDataStr := L.ToString(3)
+	draftHashStr := L.ToString(3)
+
 	budgetsTable := L.ToTable(4)
 	recipientStr := L.ToString(5)
 	needSign := true
@@ -935,9 +936,9 @@ func newCRCProposal(L *lua.LState) int {
 	if err != nil {
 		needSign = false
 	}
-	draftData, err := common.HexStringToBytes(draftDataStr)
+	draftHash, err := common.Uint256FromHexString(draftHashStr)
 	if err != nil {
-		fmt.Println("wrong draft proposal data")
+		fmt.Println("wrong draft proposal hash")
 		os.Exit(1)
 	}
 
@@ -976,8 +977,7 @@ func newCRCProposal(L *lua.LState) int {
 		ProposalType:     payload.CRCProposalType(proposalType),
 		SponsorPublicKey: publicKey,
 		CRSponsorDID:     *getDid(ct.Code),
-		DraftHash:        common.Hash(draftData),
-		DraftData:        draftData,
+		DraftHash:        *draftHash,
 		Budgets:          budgets,
 		Recipient:        *recipient,
 	}
@@ -1163,7 +1163,7 @@ func RegisterCRCProposalTrackingType(L *lua.LState) {
 func newCRCProposalTracking(L *lua.LState) int {
 	proposalTrackingType := L.ToInt64(1)
 	proposalHashStr := L.ToString(2)
-	documentDataStr := L.ToString(3)
+	documentHashStr := L.ToString(3)
 	stage := L.ToInt64(4)
 	appropriation := L.ToNumber(5)
 	leaderPublicKeyStr := L.ToString(6)
@@ -1171,9 +1171,8 @@ func newCRCProposalTracking(L *lua.LState) int {
 	newLeaderPublicKeyStr := L.ToString(8)
 	newLeaderPrivateKeyStr := L.ToString(9)
 	sgPrivateKeyStr := L.ToString(10)
-
 	proposalHash, _ := common.Uint256FromHexString(proposalHashStr)
-	documentData, _ := common.HexStringToBytes(documentDataStr)
+	documentHash, _ := common.Uint256FromHexString(documentHashStr)
 	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
 	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
 	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
@@ -1183,8 +1182,7 @@ func newCRCProposalTracking(L *lua.LState) int {
 	cPayload := &payload.CRCProposalTracking{
 		ProposalTrackingType: payload.CRCProposalTrackingType(proposalTrackingType),
 		ProposalHash:         *proposalHash,
-		DocumentHash:         common.Hash(documentData),
-		DocumentData:         documentData,
+		DocumentHash:         *documentHash,
 		Stage:                uint8(stage),
 		Appropriation:        common.Fixed64(appropriation * 1e8),
 		LeaderPubKey:         leaderPublicKey,
