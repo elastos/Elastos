@@ -494,16 +494,20 @@ export default class extends Base {
     }
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      let endDate = new Date(param.endDate)
+      endDate.setDate(endDate.getDate()+1)
       query.createdAt = {
         $gte: new Date(param.startDate),
-        $lte: new Date(param.endDate)
+        $lte: endDate
       }
     }
     // Ends in times - 7day = startDate <  endDate
     if(param.endsInStartDate && param.endsInStartDate.length && param.endsInEndDate && param.endsInEndDate.length){
+      let endDate = new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)
+      endDate.setDate(endDate.getDate()+1)
       query.createdAt = {
         $gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000),
-        $lte: new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)
+        $lte: endDate
       }
       query.status = constant.CVOTE_STATUS.FINAL
     }

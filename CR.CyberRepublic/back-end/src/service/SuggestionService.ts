@@ -227,9 +227,11 @@ export default class extends Base {
     }
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      let endDate = new Date(param.endDate)
+      endDate.setDate(endDate.getDate()+1)
       query.createdAt = {
         $gte: new Date(param.startDate),
-        $lte: new Date(param.endDate)
+        $lte: endDate
       }
     }
 
@@ -437,9 +439,11 @@ export default class extends Base {
     }
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      let endDate = new Date(param.endDate)
+      endDate.setDate(endDate.getDate()+1)
       query.createdAt = {
         $gte: new Date(param.startDate),
-        $lte: new Date(param.endDate)
+        $lte: endDate
       }
     }
     
