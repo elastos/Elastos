@@ -151,7 +151,7 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
 
 
                         }
-                        tvTotle.setText(getString(R.string.all) + NumberiUtil.numberFormat(Arith.div(ticketSum + "", MyWallet.RATE_S), 8) +" "+ getString(R.string.ticket));
+                        tvTotle.setText(getString(R.string.all) + NumberiUtil.numberFormat(Arith.div(ticketSum + "", MyWallet.RATE_S), 8) + " " + getString(R.string.ticket));
                         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
                         Collections.sort(keylist);
                         recyclerview.setAdapter(new MyVoteAdapter(keylist));
@@ -179,7 +179,11 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
             helper.setText(R.id.tv_ticketnum, item.ticketNum + getString(R.string.ticket));
             if (item.no == Integer.MAX_VALUE) {
                 helper.setText(R.id.tv_no, "- -");
+                helper.setTextColor(R.id.tv_no, getContext().getResources().getColor(R.color.whiter50));
+                helper.setTextColor(R.id.tv_name, getContext().getResources().getColor(R.color.whiter50));
             } else {
+                helper.setTextColor(R.id.tv_no, getContext().getResources().getColor(R.color.whiter));
+                helper.setTextColor(R.id.tv_name, getContext().getResources().getColor(R.color.whiter));
                 helper.setText(R.id.tv_no, "NO." + item.no);
 
             }
@@ -189,16 +193,17 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
     //获取名字
     private Recorder getRecord(String did, String ticketNum) {
         Recorder recorder = new Recorder();
+        recorder.no = Integer.MAX_VALUE;
+        recorder.name = getString(R.string.invalidcr);
         for (int i = 0; i < netList.size(); i++) {
+            recorder.ticketNum = ticketNum;
             if (netList.get(i).getDid().equals(did)) {
-                recorder.no = (netList.get(i).getIndex() + 1);
+                recorder.no = (i + 1);
                 recorder.name = netList.get(i).getNickname();
-                recorder.ticketNum = ticketNum;
                 return recorder;
             }
         }
-        recorder.no = Integer.MAX_VALUE;
-        recorder.name = getString(R.string.invalidcr);
+
         return recorder;
     }
 

@@ -460,7 +460,43 @@ public class DialogUtil {
         });
         dialog.show();
     }
+    public void showCommonWarmPrompt1(BaseActivity activity, String contentStr, String textSure, String textCancel, boolean pop, NewWarmPromptListener listener) {
+        Dialog dialog = getDialogs(activity, R.layout.dialog_settingtip1);
 
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
+        if (!TextUtils.isEmpty(textCancel)) {
+            tvCancel.setText(textCancel);
+        }
+        TextView contentTv = dialog.findViewById(R.id.tv_content);
+        TextView tvSure = dialog.findViewById(R.id.tv_sure);
+        if (!TextUtils.isEmpty(textSure)) {
+            tvSure.setText(textSure);
+        }
+
+
+        if (!TextUtils.isEmpty(contentStr)) {
+            contentTv.setText(Html.fromHtml(contentStr));
+        }
+
+        ivCancel.setOnClickListener(v -> {
+            listener.onCancel(tvCancel);
+            dialogDismiss(dialog);
+        });
+
+        tvCancel.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.onCancel(tvCancel);
+            if (pop)
+                activity.pop();
+        });
+
+        tvSure.setOnClickListener(v -> {
+            dialogDismiss(dialog);
+            listener.affireBtnClick(contentTv);
+        });
+        dialog.show();
+    }
     public static void showComTextPopup(EditText view, Context context, List<String> textList) {
         int x = view.getWidth();
         RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(context).inflate(R.layout.popup_text, null);

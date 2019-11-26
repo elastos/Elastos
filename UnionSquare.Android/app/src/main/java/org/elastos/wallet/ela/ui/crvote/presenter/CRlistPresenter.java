@@ -5,7 +5,6 @@ import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
-import org.json.JSONException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,17 +27,7 @@ public class CRlistPresenter extends NewPresenterAbstract {
     }
 
 
-    //获取ownerpublickey公钥
-    public void getCROwnerDID(String masterWalletID, String chainID, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getCROwnerDID");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe()  {
-                return baseFragment.getMyWallet().getCROwnerDID(masterWalletID, chainID);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
+
 
     public void getCRlist(int pageNum, int pageSize, String state, BaseFragment baseFragment) {
         Map<String, Object> map = new HashMap();
@@ -47,6 +36,16 @@ public class CRlistPresenter extends NewPresenterAbstract {
         map.put("state", state);
         Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).getCRlist(map);
         Observer observer = createObserver(baseFragment, "getCRlist");
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    public void getActiveCRlist(int pageNum, int pageSize, BaseFragment baseFragment) {
+        Map<String, Object> map = new HashMap();
+        map.put("pageNum", pageNum);
+        map.put("pageSize", pageSize);
+        map.put("state", "active");
+        Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).getCRlist(map);
+        Observer observer = createObserver(baseFragment, "getActiveCRlist");
         subscriberObservable(observer, observable, baseFragment);
     }
 }

@@ -35,8 +35,16 @@ public class CRListAdapter extends CRListAdapterFather {
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
         helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.a26ffffff));
         super.convert(helper, bean);
+
         helper.setGone(R.id.view, !showCheckbox);
-        helper.setText(R.id.tv_rank, "No." + (bean.getIndex() + 1));
+        int no = helper.getLayoutPosition();
+
+        if (is && 0 == helper.getLayoutPosition()) {
+            no = pos;
+        } else if (is) {
+            no = (bean.getIndex() < data.get(0).getIndex()) ? no - 1 : no ;
+        }
+        helper.setText(R.id.tv_rank, "No." +( no + 1));
 
 
         ImageView iv = helper.getView(R.id.iv_icon);

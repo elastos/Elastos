@@ -4,7 +4,6 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -53,7 +52,8 @@ public class HomeWalletFragment extends BaseFragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.sb_create_wallet:
-                start(ChoseCreateWalletFragment.class);
+                // start(ChoseCreateWalletFragment.class);
+                start(CreateWalletFragment.class);
                 break;
             case R.id.sb_import_wallet:
                 start(ImportWalletFragment.newInstance());
@@ -82,7 +82,7 @@ public class HomeWalletFragment extends BaseFragment {
         if (Constant.INNER.equals(type)) {
             return super.onBackPressedSupport();
         } else {
-           return closeApp();
+            return closeApp();
         }
     }
 }

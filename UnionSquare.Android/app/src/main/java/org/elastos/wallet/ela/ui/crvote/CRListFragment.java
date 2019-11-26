@@ -28,28 +28,41 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
+import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
+import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.fragment.AddAssetFragment;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapter1;
 import org.elastos.wallet.ela.ui.crvote.adapter.CRListAdapterFather;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.crvote.fragment.CRAgreementFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRInformationFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRManageFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRMyVoteFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRNodeCartFragment;
 import org.elastos.wallet.ela.ui.crvote.fragment.CRSignUpForFragment;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
+import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
+import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
+import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
 import org.elastos.wallet.ela.utils.NumberiUtil;
+import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
+import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -93,7 +106,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     private String did;
     private int pageNum = 1;
     private final int pageSize = 1000;//基本没分页了
-    private String totalvotes;
+    private AddDIDPresenter addDIDPresenter;
+    private boolean click;//点击创建或者管理cr  click=true
 
     @Override
     protected int getLayoutId() {
@@ -102,21 +116,18 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
     @Override
     protected void initView(View view) {
+
         setToobar(toolbar, toolbarTitle, getString(R.string.crcvote), getString(R.string.voting_rules));
         presenter = new CRlistPresenter();
         //presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
         //获取公钥
         srl.setOnRefreshListener(this);
         srl.setOnLoadMoreListener(this);
-        presenter.getCRlist(pageNum, pageSize, "all", this);
 
-        if (wallet.getType() != 0) {
-            tv_signupfor.setVisibility(View.GONE);
-        } else {
-            //获取选举状态
-            presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
-        }
-
+        //获取选举状态
+        presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
+        addDIDPresenter = new AddDIDPresenter();
+        registReceiver();
     }
 
     @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist, R.id.iv_toselect, R.id.ll_add, R.id.cb_selectall})
@@ -177,15 +188,21 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             case R.id.tv_signupfor:
                 bundle = new Bundle();
                 bundle.putString("did", did);
-                if (tv_signupfor.getText().equals(getString(R.string.sign_up_for))) {
-                    start(CRSignUpForFragment.class, bundle);
-                } else {
-                    bundle.putString("status", status);
-                    bundle.putString("info", info);
-                    bundle.putParcelable("curentNode", curentNode);
+                if (status.equals("Unregistered")) {
+                    start(CRAgreementFragment.class);
 
-                    start(CRManageFragment.class, bundle);
+                } else {
+                    if (did != null) {
+                        bundle.putString("status", status);
+                        bundle.putString("info", info);
+                        bundle.putParcelable("curentNode", curentNode);
+                        start(CRManageFragment.class, bundle);
+                        return;
+                    }
+                    click = true;
+                    addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
                 }
+
                 break;
             case R.id.iv_swichlist:
                 //两种list切换展示
@@ -234,10 +251,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         llBottom2.setVisibility(View.GONE);
         llBottom1.setVisibility(View.VISIBLE);
         curentAdapter.setShowCheckbox(false);
-        curentAdapter.removeAllPosition();
+       /* curentAdapter.removeAllPosition();
         if (cbSelectall.isChecked()) {
             cbSelectall.setChecked(false);
-        }
+        }*/
 
     }
 
@@ -261,7 +278,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         Bundle bundle = new Bundle();
         bundle.putInt("postion", position);
         bundle.putSerializable("netList", netList);
-        bundle.putString("totalvotes", totalvotes);
+
         start(CRInformationFragment.class, bundle);
     }
 
@@ -275,12 +292,14 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
             recyclerview.addItemDecoration(decoration);
             adapter = new CRListAdapter(this, netList, is);
+            adapter.setPos(pos);
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
             if (curentAdapter == null)
                 curentAdapter = adapter;
         } else {
             adapter.setIs(is);
+            adapter.setPos(pos);
             adapter.notifyDataSetChanged();
         }
 
@@ -291,9 +310,11 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter1 = new CRListAdapter1(this, netList, is);
             adapter1.setOnItemClickListener(this);
+            adapter1.setPos(pos);
             recyclerview1.setAdapter(adapter1);
         } else {
-            adapter.setIs(is);
+            adapter1.setIs(is);
+            adapter1.setPos(pos);
             adapter1.notifyDataSetChanged();
         }
     }
@@ -310,47 +331,55 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             showToastMessage(getString(R.string.loadall));
             return;
         }
-
         if (data != null && data.size() != 0) {
             netList.addAll(data);
-            for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : data) {
-                String voterate = Arith.div(bean.getVotes(), totalvotes, 5).toPlainString();
-                voterate = NumberiUtil.numberFormat(Arith.mul(voterate, 100), 5);
-                bean.setVoterate(voterate);
-
+            //pos==-1表示未移除过 先移除  并获得移除的位置  待添加
+            if (curentNode != null && pos == -1) {
+                pos = netList.indexOf(curentNode);
+                netList.remove(curentNode);
+            }
+            //判断是否需要添加到首位
+            if (!is && curentNode != null && status.equals("Registered")) {
+                netList.add(0, curentNode);
+                is = true;
             }
         }
 
-        //0 普通单签 1单签只读 2普通多签 3多签只读
-        if (wallet.getType() == 0 || wallet.getType() == 1) {
-            //获取公钥
-            if (TextUtils.isEmpty(did)) {
-                presenter.getCROwnerDID(wallet.getWalletId(), MyWallet.ELA, this);
-            } else {
-                onGetDid(did);
-            }
-        } else {
-            setRecyclerview();
-            setRecyclerview1();
-        }
+        setRecyclerview();
+        setRecyclerview1();
+
         pageNum++;
     }
 
-    private void onGetDid(String data) {
-        if (netList != null && !is) {
-            for (int i = 0; i < netList.size(); i++) {
-                if (netList.get(i).getDid().equals(data)) {
-                    curentNode = netList.get(i);
-                    netList.remove(i);
-                    netList.add(0, curentNode);
-                    is = true;
-                    break;
+    int pos = -1;
+
+    /**
+     * 重置信息  获得当前节点详情  剔除非active数据
+     *
+     * @param list
+     * @param totalvotes
+     */
+    private void resetData(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list, String totalvotes) {
+
+        Iterator<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            //筛选当前节点
+            CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = iterator.next();
+            if (curentNode == null) {
+                if (bean.getDid().equals(did)) {
+                    curentNode = bean;
                 }
             }
+            //删除非active节点
+            if (!bean.getState().equals("Active")) {
+                iterator.remove();//date  remove 不影响netlist  date修改影响netlist
+                continue;
+            }
+            setVoterate(bean, totalvotes);
 
         }
-        setRecyclerview();
-        setRecyclerview1();
+
+
     }
 
     private String status;
@@ -363,29 +392,95 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         return drawable;
     }
 
-    @Override
-    public void onRefresh(RefreshLayout refreshLayout) {
-        onErrorRefreshLayout(srl);
-        pageNum = 1;
-        is = false;
-        presenter.getCRlist(pageNum, pageSize, "all", this);
-
-    }
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
         switch (methodName) {
-            case "getCROwnerDID":
+            case "getAllSubWallets":
+                ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
+                for (SubWallet subWallet : subWalletListEntity.getData()) {
+                    if (subWallet.getChainId().equals(MyWallet.IDChain)) {
+                        addDIDPresenter.getAllPublicKeys(wallet.getWalletId(), MyWallet.IDChain, 0, 1, CRListFragment.this);
+                        return;
+                    }
+                }
+                //没有对应的子钱包 需要打开idchain
+                showOpenDIDWarm(subWalletListEntity);
+
+                break;
+
+            case "getAllPublicKeys":
+                AllPkEntity allPkEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), AllPkEntity.class);
+
+                if (allPkEntity.getPublicKeys() == null || allPkEntity.getPublicKeys().size() == 0) {
+                    return;
+                }
+                addDIDPresenter.getDIDByPublicKey(wallet.getWalletId(), allPkEntity.getPublicKeys().get(0), this);
+                break;
+            case "getDIDByPublicKey":
                 did = ((CommmonStringEntity) baseEntity).getData();
-                onGetDid(did);
+                //无论是点击创建或者管理  还是打开页面就加载的  did肯定都为null 不为null的上层已经拦截    两种情况互斥
+                pageNum = 1;
+                if (status.equals("Unregistered") && click) {
+                    //Unregistered刚进入时候不判断是否有idchain直接加载activelist
+                    click = false;
+                    Bundle bundle = new Bundle();
+                    bundle.putString("did", did);
+                    bundle.putSerializable("netList", netList);
+                    start(CRSignUpForFragment.class, bundle);
+                } else {
+                    //如何是点击需要刷新全部数据  如果是刚打来 获得数据
+                    presenter.getCRlist(pageNum, pageSize, "all", this);
+                }
+                //如果是是点击创建或者管理  跳转相应页面
+
+                break;
+            case "getActiveCRlist":
+                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> curentList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+
+                try {
+                    String totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
+                    Iterator<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> iterator = curentList.iterator();
+                    while (iterator.hasNext()) {
+                        //筛选当前节点
+                        CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = iterator.next();
+                        setVoterate(bean, totalvotes);
+                    }
+                    onGetVoteList(curentList);
+
+
+                } catch (Exception e) {
+
+                    onGetVoteList(null);
+                }
                 break;
             case "getCRlist":
+                //非unregister并且打开了idchain才会到这来  获得所有cr
+                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> curentAllList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
                 try {
-                    totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
-                    onGetVoteList(((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo());
+                    String totalvotes = ((CRListBean) baseEntity).getData().getResult().getTotalvotes();
+                    //重置信息  获得当前节点详情  剔除非active数据
+                    resetData(curentAllList, totalvotes);
+
+                    onGetVoteList(curentAllList);
+                    if (click) {
+                        click = false;
+                        Bundle bundle = new Bundle();
+                        bundle.putString("did", did);
+
+                        if (status.equals("Unregistered")) {
+                            bundle.putSerializable("netList", netList);
+                            start(CRSignUpForFragment.class, bundle);
+                        } else {
+                            bundle.putString("status", status);
+                            bundle.putString("info", info);
+                            bundle.putParcelable("curentNode", curentNode);
+
+                            start(CRManageFragment.class, bundle);
+                        }
+                    }
                 } catch (Exception e) {
-                    totalvotes = "0";
                     onGetVoteList(null);
                 }
 
@@ -402,28 +497,101 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                             tv_signupfor.setText(getString(R.string.sign_up_for));
                             tv_signupfor.setVisibility(View.VISIBLE);
                             tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_attend), null, null);
+                            presenter.getActiveCRlist(pageNum, pageSize, this);
                             break;
                         case "ReturnDeposit":
                             tv_signupfor.setVisibility(View.GONE);
+                            addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+
                             break;
                         case "Canceled":
                         case "Registered":
                             tv_signupfor.setText(getString(R.string.electoral_affairs));
                             tv_signupfor.setVisibility(View.VISIBLE);
                             tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_management), null, null);
+                            addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
 
                             break;
 
                     }
-
                 }
                 break;
         }
     }
 
     @Override
+    public void onRefresh(RefreshLayout refreshLayout) {
+        onErrorRefreshLayout(srl);
+        pageNum = 1;
+        is = false;
+        presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
+    }
+
+    @Override
     public void onLoadMore(RefreshLayout refreshLayout) {
         onErrorRefreshLayout(srl);
-        presenter.getCRlist(pageNum, pageSize, "all", this);
+        if (did == null) {
+            presenter.getActiveCRlist(pageNum, pageSize, CRListFragment.this);
+        } else {
+            presenter.getCRlist(pageNum, pageSize, "all", this);
+        }
+
+    }
+
+    private void showOpenDIDWarm(ISubWalletListEntity subWalletListEntity) {
+        new DialogUtil().showCommonWarmPrompt1(getBaseActivity(), getString(R.string.noidchainopenornot),
+                getString(R.string.toopen), getString(R.string.cancel), false, new NewWarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("walletId", wallet.getWalletId());
+                        ArrayList<String> chainIds = new ArrayList<>();
+                        for (SubWallet iSubWallet : subWalletListEntity.getData()) {
+                            chainIds.add(iSubWallet.getChainId());
+                        }
+                        bundle.putStringArrayList("chainIds", chainIds);
+                        start(AddAssetFragment.class, bundle);
+                    }
+
+                    @Override
+                    public void onCancel(View view) {
+                        if (netList == null)//代表没请求过数据   为了避免打开注册 或者钱包管理时候重复调用
+                        {
+                            pageNum = 1;
+                            presenter.getActiveCRlist(pageNum, pageSize, CRListFragment.this);
+                        }
+                    }
+                });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(BusEvent result) {
+        int integer = result.getCode();
+
+        if (integer == RxEnum.UPDATAPROPERTY.ordinal()) {
+            //子钱包改变  创建或删除
+            addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+        }
+        if (integer == RxEnum.AGREE.ordinal()) {
+            //注册did同意了协议
+            if (did != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("did", did);
+                bundle.putSerializable("netList", netList);
+                start(CRSignUpForFragment.class, bundle);
+                return;
+            }
+            //注册cr前的判断
+            addDIDPresenter.getAllSubWallets(wallet.getWalletId(), this);
+            click = true;
+        }
+
+
+    }
+
+    private void setVoterate(CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean, String totalvotes) {
+        String voterate = Arith.div(bean.getVotes(), totalvotes, 5).toPlainString();
+        voterate = NumberiUtil.numberFormat(Arith.mul(voterate, 100), 5);
+        bean.setVoterate(voterate);
     }
 }

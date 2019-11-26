@@ -82,7 +82,7 @@ public class MyWallet {
                 baseUrl = "https://blockchain-beta.elastos.org/tx/";
                 break;
             case 2:
-                baseUrl = "https://blockchain-regtest.elastos.org/";
+                baseUrl = "https://blockchain-regtest.elastos.org/tx/";
                 break;
 
         }
