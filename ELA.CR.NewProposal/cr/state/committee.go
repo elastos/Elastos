@@ -37,7 +37,7 @@ type Committee struct {
 	isCurrent                func() bool
 	broadcast                func(msg p2p.Message)
 	appendToTxpool           func(transaction *types.Transaction) elaerr.ELAError
-	createCRCAppropriationTx func() *types.Transaction
+	createCRCAppropriationTx func() (*types.Transaction, error)
 
 	recordBalanceHeight uint32
 }
@@ -216,7 +216,15 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		c.mtx.Unlock()
 
 		if c.createCRCAppropriationTx != nil && block.Height == c.getHeight() {
-			tx := c.createCRCAppropriationTx()
+			tx, err := c.createCRCAppropriationTx()
+			if err != nil {
+				log.Error("create appropriation tx failed")
+				return
+			} else if tx == nil {
+				log.Info("no need to create appropriation")
+				c.NeedAppropriation = false
+				return
+			}
 			log.Info("create CRCAppropriation transaction:", tx.Hash())
 			if c.isCurrent != nil && c.broadcast != nil && c.
 				appendToTxpool != nil {
@@ -637,7 +645,7 @@ type CommitteeFuncsConfig struct {
 	GetUnspentFromProgramHash func(programHash common.Uint168,
 		assetid common.Uint256) ([]*types.UTXO, error)
 	GetHeight                        func() uint32
-	CreateCRAppropriationTransaction func() *types.Transaction
+	CreateCRAppropriationTransaction func() (*types.Transaction, error)
 	IsCurrent                        func() bool
 	Broadcast                        func(msg p2p.Message)
 	AppendToTxpool                   func(transaction *types.Transaction) elaerr.ELAError
