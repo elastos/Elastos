@@ -333,25 +333,30 @@ func (c *Committee) tryStartVotingPeriod(height uint32) {
 func (c *Committee) processImpeachment(height uint32, member []byte,
 	votes common.Fixed64, history *utils.History) {
 	circulation := c.CirculationAmount
+
+	var crMember *CRMember
 	for _, v := range c.Members {
-		if bytes.Equal(v.Info.Code, member) {
-			penalty := v.Penalty
-			memberState := v.MemberState
-			history.Append(height, func() {
-				v.ImpeachmentVotes += votes
-				if v.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
-					c.params.VoterRejectPercentage/100.0) {
-					v.MemberState = MemberImpeached
-					v.Penalty = c.getMemberPenalty(height, v)
-				}
-			}, func() {
-				v.ImpeachmentVotes -= votes
-				v.MemberState = memberState
-				v.Penalty = penalty
-			})
-			return
+		if bytes.Equal(crMember.Info.Code, member) {
+			crMember = v
+			break
 		}
 	}
+	oriPenalty := c.state.crcPenalty[crMember.Info.DID]
+	oriMemberState := crMember.MemberState
+	penalty := c.getMemberPenalty(height, crMember)
+	history.Append(height, func() {
+		crMember.ImpeachmentVotes += votes
+		if crMember.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
+			c.params.VoterRejectPercentage/100.0) {
+			crMember.MemberState = MemberImpeached
+			c.state.crcPenalty[crMember.Info.DID] = penalty
+		}
+	}, func() {
+		crMember.ImpeachmentVotes -= votes
+		crMember.MemberState = oriMemberState
+		c.state.crcPenalty[crMember.Info.DID] = oriPenalty
+	})
+	return
 }
 
 func (c *Committee) processCRCAppropriation(tx *types.Transaction, height uint32,
@@ -420,6 +425,15 @@ func (c *Committee) processCRCRelatedAmount(tx *types.Transaction, height uint32
 			})
 		}
 	}
+}
+
+func (c *Committee) GetAvailableDepositAmount(did common.Uint168) common.Fixed64 {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	currentHeight := c.getHeight()
+	inVoting := c.isInVotingPeriod(currentHeight)
+	return c.state.getAvailableDepositAmount(did, currentHeight, inVoting)
 }
 
 func (c *Committee) GetHistoryMember(code []byte) *CRMember {
@@ -522,7 +536,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 			make(map[common.Uint168]*CRMember)
 	}
 	for _, m := range c.Members {
-		m.Penalty = c.getMemberPenalty(height, m)
+		c.state.crcPenalty[m.Info.DID] = c.getMemberPenalty(height, m)
 		c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = m
 	}
 
@@ -556,8 +570,6 @@ func (c *Committee) generateMember(candidate *Candidate) *CRMember {
 		Info:             candidate.info,
 		ImpeachmentVotes: 0,
 		DepositHash:      candidate.depositHash,
-		DepositAmount:    candidate.depositAmount,
-		Penalty:          candidate.penalty,
 	}
 }
 
@@ -582,24 +594,23 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	notVoteProposalPenalty := MinDepositAmount * common.Fixed64(1-voteRate)
 
 	// Calculate the final penalty.
-	finalPenalty := member.Penalty + notElectionPenalty + notVoteProposalPenalty
+	penalty := c.state.crcPenalty[member.Info.DID]
+	finalPenalty := penalty + notElectionPenalty + notVoteProposalPenalty
 
 	log.Infof("member %s impeached, not election penalty: %s,"+
 		"not vote proposal penalty: %s, old penalty: %s, final penalty: %s",
 		member.Info.DID, notElectionPenalty, notVoteProposalPenalty,
-		member.Penalty, finalPenalty)
+		penalty, finalPenalty)
 
 	return finalPenalty
 }
 
 func (c *Committee) generateCandidate(height uint32, member *CRMember) *Candidate {
 	return &Candidate{
-		info:          member.Info,
-		state:         Canceled,
-		cancelHeight:  height,
-		depositAmount: member.DepositAmount,
-		depositHash:   member.DepositHash,
-		penalty:       member.Penalty,
+		info:         member.Info,
+		state:        Canceled,
+		cancelHeight: height,
+		depositHash:  member.DepositHash,
 	}
 }
 

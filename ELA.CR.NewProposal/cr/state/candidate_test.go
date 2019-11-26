@@ -34,8 +34,6 @@ func candidateEqual(first *Candidate, second *Candidate) bool {
 		first.state == second.state && first.votes == second.votes &&
 		first.registerHeight == second.registerHeight &&
 		first.cancelHeight == second.cancelHeight &&
-		first.depositAmount == second.depositAmount &&
-		first.penalty == second.penalty &&
 		first.depositHash.IsEqual(second.depositHash)
 }
 
@@ -68,7 +66,6 @@ func randomCandidate() *Candidate {
 		votes:          common.Fixed64(rand2.Int63()),
 		registerHeight: rand2.Uint32(),
 		cancelHeight:   rand2.Uint32(),
-		depositAmount:  common.Fixed64(rand2.Int63()),
 		depositHash:    *randomUint168(),
 	}
 }

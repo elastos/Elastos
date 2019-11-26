@@ -51,9 +51,7 @@ type Candidate struct {
 	votes          common.Fixed64
 	registerHeight uint32
 	cancelHeight   uint32
-	depositAmount  common.Fixed64
 	depositHash    common.Uint168
-	penalty        common.Fixed64
 }
 
 func (c *Candidate) Serialize(w io.Writer) (err error) {
@@ -74,10 +72,6 @@ func (c *Candidate) Serialize(w io.Writer) (err error) {
 	}
 
 	if err = common.WriteUint32(w, c.cancelHeight); err != nil {
-		return
-	}
-
-	if err = common.WriteUint64(w, uint64(c.depositAmount)); err != nil {
 		return
 	}
 
@@ -107,12 +101,6 @@ func (c *Candidate) Deserialize(r io.Reader) (err error) {
 
 	c.cancelHeight, err = common.ReadUint32(r)
 
-	var depositAmount uint64
-	if depositAmount, err = common.ReadUint64(r); err != nil {
-		return
-	}
-	c.depositAmount = common.Fixed64(depositAmount)
-
 	return c.depositHash.Deserialize(r)
 }
 
@@ -139,14 +127,4 @@ func (c *Candidate) RegisterHeight() uint32 {
 // RegisterHeight returns the height when the CR was unregistered.
 func (c *Candidate) CancelHeight() uint32 {
 	return c.cancelHeight
-}
-
-// Penalty returns the penalty amount of deposit coin.
-func (c *Candidate) Penalty() common.Fixed64 {
-	return c.penalty
-}
-
-// DepositAmount returns the deposit amount of the CR.
-func (c *Candidate) DepositAmount() common.Fixed64 {
-	return c.depositAmount
 }
