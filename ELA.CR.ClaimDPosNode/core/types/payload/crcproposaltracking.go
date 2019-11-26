@@ -8,7 +8,6 @@ package payload
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -73,9 +72,6 @@ type CRCProposalTracking struct {
 	// The hash of proposal tracking document.
 	DocumentHash common.Uint256
 
-	// The data of proposal document.
-	DocumentData []byte
-
 	// The stage of proposal.
 	Stage uint8
 
@@ -118,10 +114,6 @@ func (p *CRCProposalTracking) SerializeUnsigned(w io.Writer, version byte) error
 
 	if err := p.DocumentHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize DocumentHash")
-	}
-
-	if err := common.WriteVarBytes(w, p.DocumentData); err != nil {
-		return errors.New("DocumentData serialize failed")
 	}
 
 	if err := common.WriteUint8(w, p.Stage); err != nil {
@@ -176,12 +168,6 @@ func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) err
 
 	if err = p.DocumentHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize DocumentHash")
-	}
-
-	p.DocumentData, err = common.ReadVarBytes(r, MaxProposalDataSize,
-		"documentData")
-	if err != nil {
-		return fmt.Errorf("failed to deserialize DocumentData %s", err)
 	}
 
 	if p.Stage, err = common.ReadUint8(r); err != nil {

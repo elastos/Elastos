@@ -1599,7 +1599,6 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 		SponsorPublicKey: publicKey1,
 		CRSponsorDID:     *getDid(code2),
 		DraftHash:        common.Hash(draftData),
-		DraftData:        draftData,
 		Budgets:          []common.Fixed64{1e8, 1e8, 1e8},
 	}
 
@@ -1836,26 +1835,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "reached max tracking count")
 
-	// Check draft data of proposal tracking document.
-	s.Chain.crCommittee.GetProposalManager().Proposals[*proposalHash] =
-		&crstate.ProposalState{
-			Proposal: payload.CRCProposal{
-				ProposalType:     0,
-				SponsorPublicKey: leaderPubKey,
-				CRSponsorDID:     *randomUint168(),
-				DraftHash:        *randomUint256(),
-				DraftData:        randomBytes(10),
-				Budgets:          []common.Fixed64{100, 200, 300},
-				Recipient:        *recipient,
-			},
-			CurrentStage:   1,
-			TrackingCount:  1,
-			Status:         crstate.VoterAgreed,
-			ProposalLeader: leaderPubKey,
-		}
-	txn.Payload.(*payload.CRCProposalTracking).DocumentData = randomBytes(7)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "failed to check document data hash")
 }
 
 func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
@@ -1882,7 +1861,6 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 		ProposalHash:         proposalHash,
 		Stage:                stage,
 		DocumentHash:         common.Hash(documentData),
-		DocumentData:         documentData,
 		Appropriation:        appropriation,
 		LeaderPubKey:         leaderPublicKey,
 		NewLeaderPubKey:      newLeaderPublicKey,
@@ -2507,11 +2485,7 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "budgets exceeds the balance of CRC committee")
 
-	// invalid proposal type
 	s.Chain.crCommittee.CRCCommitteeUsedAmount = common.Fixed64(0)
-	txn.Payload.(*payload.CRCProposal).DraftData = randomBytes(7)
-	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
-	s.EqualError(err, "failed to check draft data hash")
 
 	// CRSign is not signed by CR member
 	txn = s.getCRCProposalTx(publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2)

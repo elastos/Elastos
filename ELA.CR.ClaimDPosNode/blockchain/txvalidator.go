@@ -1786,26 +1786,12 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 	if proposalState == nil {
 		return errors.New("proposal not exist")
 	}
-
-	if cptPayload.ProposalTrackingType == payload.Appropriation {
-		if proposalState.Status != crstate.VoterAgreed && proposalState.
-			Status != crstate.Finished && proposalState.Status != crstate.Aborted {
-			return errors.New("proposal status is not VoterAgreed , Finished, Aborted")
-		}
-	} else {
-		if proposalState.Status != crstate.VoterAgreed {
-			return errors.New("proposal status is not VoterAgreed")
-		}
+	if proposalState.Status != crstate.VoterAgreed {
+		return errors.New("proposal status is not VoterAgreed")
 	}
 	// Check proposal tracking count.
 	if proposalState.TrackingCount >= b.chainParams.MaxProposalTrackingCount {
 		return errors.New("reached max tracking count")
-	}
-
-	// Check draft data of proposal tracking document.
-	dataHash := common.Hash(cptPayload.DocumentData)
-	if !dataHash.IsEqual(cptPayload.DocumentHash) {
-		return errors.New("failed to check document data hash")
 	}
 
 	var result error
@@ -2127,13 +2113,6 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	if b.crCommittee.GetProposalManager().ExistDraft(proposal.DraftHash) {
 		return errors.New("duplicated draft proposal hash")
 	}
-
-	// Check draft data of proposal.
-	dataHash := common.Hash(proposal.DraftData)
-	if !dataHash.IsEqual(proposal.DraftHash) {
-		return errors.New("failed to check draft data hash")
-	}
-
 	// Check sponsor of proposal.
 	crMember := b.crCommittee.GetMember(proposal.CRSponsorDID)
 	if crMember == nil {
