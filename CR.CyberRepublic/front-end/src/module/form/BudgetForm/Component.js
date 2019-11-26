@@ -57,42 +57,45 @@ class BudgetForm extends BaseComponent {
             initialValue: item && item.amount ? item.amount : ''
           })(<Input />)}
         </FormItem>
-        <FormItem
-          label={I18N.get('suggestion.budget.reasons')}
-          {...formItemLayout}
-        >
-          {getFieldDecorator('reasons', {
-            rules: [
-              {
-                required: true,
-                message: I18N.get('suggestion.form.error.required')
-              }
-            ],
-            initialValue: item && item.reasons ? item.reasons : ''
-          })(
-            <CodeMirrorEditor
-              content={item && item.reasons ? item.reasons : ''}
-              activeKey="reasons"
-              name="reasons"
-            />
-          )}
-        </FormItem>
-        <FormItem
-          label={I18N.get('suggestion.budget.criteria')}
-          {...formItemLayout}
-        >
-          {getFieldDecorator('criteria', {
-            rules: [{ required: true, message: '' }],
-            initialValue: item && item.criteria ? item.criteria : ''
-          })(
-            <CodeMirrorEditor
-              content={item && item.criteria ? item.criteria : ''}
-              activeKey="criteria"
-              name="criteria"
-            />
-          )}
-        </FormItem>
-
+        <StyledFormItem>
+          <FormItem
+            label={I18N.get('suggestion.budget.reasons')}
+            {...formItemLayout}
+          >
+            {getFieldDecorator('reasons', {
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
+              initialValue: item && item.reasons ? item.reasons : ''
+            })(
+              <CodeMirrorEditor
+                content={item && item.reasons ? item.reasons : ''}
+                activeKey="reasons"
+                name="reasons"
+              />
+            )}
+          </FormItem>
+        </StyledFormItem>
+        <StyledFormItem>
+          <FormItem
+            label={I18N.get('suggestion.budget.criteria')}
+            {...formItemLayout}
+          >
+            {getFieldDecorator('criteria', {
+              rules: [{ required: true, message: '' }],
+              initialValue: item && item.criteria ? item.criteria : ''
+            })(
+              <CodeMirrorEditor
+                content={item && item.criteria ? item.criteria : ''}
+                activeKey="criteria"
+                name="criteria"
+              />
+            )}
+          </FormItem>
+        </StyledFormItem>
         <Actions>
           <Button
             className="cr-btn cr-btn-default"
@@ -126,5 +129,12 @@ const Actions = styled.div`
   justify-content: center;
   > button {
     margin: 0 8px;
+  }
+`
+
+const StyledFormItem = styled.div`
+  .ant-col-24.ant-form-item-label {
+    padding: 0;
+    margin-bottom: -12px;
   }
 `
