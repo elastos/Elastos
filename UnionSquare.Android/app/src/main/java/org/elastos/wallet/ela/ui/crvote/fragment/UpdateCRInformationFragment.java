@@ -32,7 +32,6 @@ import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -69,7 +68,7 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.update_information));
-      registReceiver();
+        registReceiver();
     }
 
     @Override
@@ -103,14 +102,14 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
                 if (TextUtils.isEmpty(ownerPublicKey)) {
                     return;
                 }
-                if (TextUtils.isEmpty(area)) {
+               /* if (TextUtils.isEmpty(area)) {
                     ToastUtils.showShort(getString(R.string.countryregion_cannot_be_empty));
                     return;
                 }
                 if (TextUtils.isEmpty(url)) {
                     ToastUtils.showShort(getString(R.string.cr_website_cannot_be_empty));
                     return;
-                }
+                }*/
 
 
                 presenter.getFee(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", "0", this);

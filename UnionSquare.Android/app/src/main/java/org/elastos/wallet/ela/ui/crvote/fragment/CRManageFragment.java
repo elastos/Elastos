@@ -23,7 +23,6 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
-import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
@@ -33,13 +32,11 @@ import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
-import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -91,6 +88,8 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     View lineIntro;
     @BindView(R.id.tv_intro)
     TextView tvIntro;
+    @BindView(R.id.tv_quit)
+    TextView tvQuit;
     @BindView(R.id.ll_intro)
     LinearLayout llIntro;
     @BindView(R.id.ll_tab)
@@ -107,7 +106,6 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     CRManagePresenter presenter;
     String status;
     private String info;
-    private String ownerPublicKey;
     private String did;
 
 
@@ -144,12 +142,13 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
             ll_xggl.setVisibility(View.GONE);
             ll_tq.setVisibility(View.VISIBLE);
+            tvQuit.setText(curentNode.getNickname() + getString(R.string.hasquit));
             JSONObject jsonObject = JSON.parseObject(info);
             long height = jsonObject.getLong("Confirms");
             if (height >= 2160) {
                 //获取赎回金额
-                new CRSignUpPresenter().getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
-            }
+                presenter.getCRDepositcoin(did, this);
+                }
         } else {
             //Registered 未注销展示选举信息
             onJustRegistered(info, curentNode);
@@ -209,8 +208,6 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
 
     }
 
-    String pwd;
-
 
     private void onJustRegistered(String data, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode) {
 
@@ -249,7 +246,6 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
             tv_zb.setText(curentNode.getVoterate() + "%");
         }
-        ownerPublicKey = bean.getCROwnerPublicKey();
     }
 
 
@@ -287,12 +283,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 sbtq.setVisibility(View.VISIBLE);
                 break;
 
-            //获取钱包owner公钥
-            case "getCROwnerPublicKey":
-                ownerPublicKey = ((CommmonStringEntity) baseEntity).getData();
-                //getdepositcoin();//获取赎回金额
-                presenter.getCRDepositcoin(did, this);
-                break;
+
         }
     }
 

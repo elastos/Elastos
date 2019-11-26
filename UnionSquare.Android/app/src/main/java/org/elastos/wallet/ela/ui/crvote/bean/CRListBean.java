@@ -13,6 +13,15 @@ import java.util.List;
 public class CRListBean extends BaseEntity {
 
 
+    @Override
+    public String toString() {
+        return "CRListBean{" +
+                "message='" + message + '\'' +
+                ", data=" + data +
+                ", exceptionMsg=" + exceptionMsg +
+                '}';
+    }
+
     /**
      * message : Query successful ^_^
      * data : {"error":null,"id":null,"jsonrpc":"2.0","result":{"crcandidatesinfo":[{"code":"2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac","did":"im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH","nickname":"raocr","url":"http://52.80.54.227:9000/","location":93,"state":"Active","votes":"0","index":0}],"totalvotes":"0","totalcounts":1}}

@@ -27,6 +27,7 @@
             android:layout_height="53dp"
             android:background="@null"
             android:hint="@string/inputdotname"
+            android:maxLength="50"
             android:inputType="text"
             android:maxLines="1" />
 
@@ -65,6 +66,7 @@
             android:background="@null"
             android:hint="@string/plzinputcrurl"
             android:maxLines="1"
+            android:maxLength="100"
             android:singleLine="true" />
 
         <View style="@style/line1" />

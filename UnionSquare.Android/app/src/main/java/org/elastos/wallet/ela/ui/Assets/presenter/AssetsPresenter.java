@@ -29,16 +29,6 @@ public class AssetsPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable);
     }
 
-    public void getAllSubWallets(String walletId, int type, BaseFragment baseFragment) {
-        Observer observer = createObserver(GetAllSubWalletsListner.class, baseFragment, type);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().getAllSubWallets(walletId);
-            }
-        });
-        subscriberObservable(observer, observable, baseFragment);
-    }
 
     public void syncStart(String walletId, String chainId, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);

@@ -1,7 +1,6 @@
 package org.elastos.wallet.ela.ui.crvote.adapter;
 
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
@@ -10,8 +9,6 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
-import org.elastos.wallet.ela.utils.Arith;
-import org.elastos.wallet.ela.utils.NumberiUtil;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -27,7 +24,7 @@ import java.util.Map;
  */
 public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean, BaseViewHolder> {
 
-
+    int pos;
     BaseFragment context;
     boolean showCheckbox;//是否展示加入购物车页面ui
     boolean is;//是否有当前钱包参选的节点
@@ -51,6 +48,11 @@ public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.Re
 
     public void setIs(boolean is) {
         this.is = is;
+    }
+
+
+    public void setPos(int pos) {
+        this.pos = pos;
     }
 
     public boolean isShowCheckbox() {
@@ -83,6 +85,7 @@ public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.Re
             helper.getView(R.id.checkbox).setEnabled(true);
         }
         helper.setChecked(R.id.checkbox, bean.isChecked());
+
         if (is && 0 == helper.getLayoutPosition()) {
             helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.blue1));
         }

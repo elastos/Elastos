@@ -8,6 +8,8 @@ public enum RxEnum {
     DELETE,//删除钱包
     FOUR,
     UPDATAPROPERTY,//增加或者删除资产
+    ADDPROPERTY,//增加资产
+    DELETEPROPERTY,//删除资产
     UPDATA_WALLET_NAME,//钱包名称
     SIX,//性别
     IDENTITY_AUTHENTICATION,//认证身份
@@ -68,6 +70,7 @@ public enum RxEnum {
     EDITPERSONALINTRO,//编辑个人简介
     EDITSOCIAL,//编辑社交账号
     IPVALID,//节点ip可用
+    AGREE,//cr注册同意协议
 
    /* enum Type {
         CoinBase, // 创币交易

@@ -45,11 +45,6 @@ public class CreateWalletFragment extends BaseFragment {
     }
 
     @Override
-    protected void initInjector() {
-        //mFragmentComponent.inject(this);
-    }
-
-    @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.createsinglewallet));
         //开启自定义键盘

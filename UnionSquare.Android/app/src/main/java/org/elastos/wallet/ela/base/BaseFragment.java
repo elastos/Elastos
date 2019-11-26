@@ -30,9 +30,6 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.di.component.DaggerFragmentComponent;
-import org.elastos.wallet.ela.di.component.FragmentComponent;
-import org.elastos.wallet.ela.di.moudule.FragmentModule;
 import org.elastos.wallet.ela.ui.Assets.fragment.HomeWalletFragment;
 import org.elastos.wallet.ela.ui.did.fragment.DIDListFragment;
 import org.elastos.wallet.ela.ui.main.MainFragment;
@@ -53,7 +50,7 @@ import permissions.dispatcher.RuntimePermissions;
  */
 @RuntimePermissions
 public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends SupportFragment implements BaseContract.Baseview {
-    protected FragmentComponent mFragmentComponent;
+
     private String requstStr = "";
     private Unbinder unbinder;
     public Context mContext;
@@ -72,7 +69,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initFragmentComponent();
+
         initInjector();
         attachView();
         mContext = getContext();
@@ -147,14 +144,6 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
             container.removeView(mRootView);
             mRootView = inflater.inflate(getLayoutId(), container, false);
         }
-    }
-
-
-    private void initFragmentComponent() {
-        mFragmentComponent = DaggerFragmentComponent.builder()
-                .applicationComponent(MyApplication.getInstance().getApplicationComponent())
-                .fragmentModule(new FragmentModule(this))
-                .build();
     }
 
 
@@ -471,6 +460,7 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
         }
         if (System.currentTimeMillis() - TOUCH_TIME < WAIT_TIME) {
             _mActivity.finish();
+            System.exit(0);
         } else {
             TOUCH_TIME = System.currentTimeMillis();
             Toast.makeText(_mActivity, getString(R.string.press_exit_again), Toast.LENGTH_SHORT).show();

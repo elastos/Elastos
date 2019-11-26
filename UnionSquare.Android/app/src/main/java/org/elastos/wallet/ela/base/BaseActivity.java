@@ -18,13 +18,8 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportActivity;
 import org.elastos.wallet.ela.bean.BusEvent;
-import org.elastos.wallet.ela.di.component.ActivityComponent;
-import org.elastos.wallet.ela.di.component.DaggerActivityComponent;
-import org.elastos.wallet.ela.di.moudule.ActivityModule;
 import org.elastos.wallet.ela.utils.StatusBarUtil;
 import org.greenrobot.eventbus.EventBus;
-
-import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -36,11 +31,6 @@ import butterknife.Unbinder;
 
 public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends SupportActivity implements BaseContract.Baseview {
 
-    @Nullable
-    @Inject
-    protected T mPresenter;
-
-    protected ActivityComponent mActivityComponent;
 
     public SmartRefreshLayout getRefreshLayout() {
         return refreshLayout;
@@ -92,7 +82,7 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initActivityComponent();
+
         setContentView(getLayoutId());
         StatusBarUtil.setColor(this, getResources().getColor(R.color.white));
         initInjector();
@@ -106,22 +96,12 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
         onBackPressed();
     }
 
-    /**
-     * 初始化ActivityComponent
-     */
-    private void initActivityComponent() {
-        mActivityComponent = DaggerActivityComponent.builder()
-                .applicationComponent(((MyApplication) getApplication()).getApplicationComponent())
-                .activityModule(new ActivityModule(this))
-                .build();
-    }
-
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbinder.unbind();
-        destroyView();
+
     }
 
 
@@ -129,19 +109,9 @@ public abstract class BaseActivity<T extends BaseContract.Basepresenter> extends
      * 贴上view
      */
     private void attachView() {
-        if (mPresenter != null) {
-            mPresenter.attachview(this);
-        }
+
     }
 
-    /**
-     * 分离view
-     */
-    private void destroyView() {
-        if (mPresenter != null) {
-            mPresenter.destroyview();
-        }
-    }
 
     @Override
     public void showLoading() {

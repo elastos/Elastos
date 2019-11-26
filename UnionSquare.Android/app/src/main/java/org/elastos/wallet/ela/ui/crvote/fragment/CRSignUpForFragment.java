@@ -21,6 +21,7 @@ import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
@@ -31,11 +32,12 @@ import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -59,7 +61,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     CRSignUpPresenter presenter;
-
+    private ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> netList;
 
 
     @Override
@@ -71,6 +73,8 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
     protected void setExtraData(Bundle data) {
         did = data.getString("did");
         tvDid.setText(did);
+        netList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
+
     }
 
     @Override
@@ -79,10 +83,11 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
         presenter = new CRSignUpPresenter();
         presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
         registReceiver();
+
     }
 
 
-    String name, ownerPublicKey, did, area, url="", pwd;
+    String name, ownerPublicKey, did, area, url = "";
 
     @OnClick({R.id.tv_sure, R.id.ll_area})
     public void onViewClicked(View view) {
@@ -94,7 +99,12 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
                 area = tvArea.getText().toString().trim();//国家地址
                 url = etUrl.getText().toString().trim();//官网
 
-
+                for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
+                    if (name.equals(bean.getNickname())) {
+                        showToast(getString(R.string.menbernameexist));
+                        return;
+                    }
+                }
                 if (TextUtils.isEmpty(ownerPublicKey)) {
                     return;
                 }
@@ -102,7 +112,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
                     return;
                 }
                 if (TextUtils.isEmpty(name)) {
-                    ToastUtils.showShort(getString(R.string.plzinputnickmust));
+                    ToastUtils.showShort(getString(R.string.menbernamenotnull));
                     return;
                 }
                /* if (TextUtils.isEmpty(area)) {
