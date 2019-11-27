@@ -69,7 +69,7 @@ public class VoteTransferActivity extends BaseActivity {
         if (chainId == null) {
             chainId = MyWallet.ELA;
         }
-        tvAmount.setText(amount + " " + chainId);
+        tvAmount.setText(amount + " " + MyWallet.ELA);
         tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S).toPlainString(), 12) + " " + MyWallet.ELA);//0.0001
         String type = data.getStringExtra("type");
         switch (type) {

@@ -108,6 +108,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     private final int pageSize = 1000;//基本没分页了
     private AddDIDPresenter addDIDPresenter;
     private boolean click;//点击创建或者管理cr  click=true
+    private String publickey;
 
     @Override
     protected int getLayoutId() {
@@ -196,6 +197,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                         bundle.putString("status", status);
                         bundle.putString("info", info);
                         bundle.putParcelable("curentNode", curentNode);
+                        bundle.putString("publickey", publickey);
                         start(CRManageFragment.class, bundle);
                         return;
                     }
@@ -416,7 +418,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 if (allPkEntity.getPublicKeys() == null || allPkEntity.getPublicKeys().size() == 0) {
                     return;
                 }
-                addDIDPresenter.getDIDByPublicKey(wallet.getWalletId(), allPkEntity.getPublicKeys().get(0), this);
+                publickey = allPkEntity.getPublicKeys().get(0);
+                addDIDPresenter.getDIDByPublicKey(wallet.getWalletId(), publickey, this);
                 break;
             case "getDIDByPublicKey":
                 did = ((CommmonStringEntity) baseEntity).getData();
@@ -428,6 +431,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     Bundle bundle = new Bundle();
                     bundle.putString("did", did);
                     bundle.putSerializable("netList", netList);
+                    bundle.putString("publickey", publickey);
                     start(CRSignUpForFragment.class, bundle);
                 } else {
                     //如何是点击需要刷新全部数据  如果是刚打来 获得数据
@@ -471,12 +475,13 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
                         if (status.equals("Unregistered")) {
                             bundle.putSerializable("netList", netList);
+                            bundle.putString("publickey", publickey);
                             start(CRSignUpForFragment.class, bundle);
                         } else {
                             bundle.putString("status", status);
                             bundle.putString("info", info);
                             bundle.putParcelable("curentNode", curentNode);
-
+                            bundle.putString("publickey", publickey);
                             start(CRManageFragment.class, bundle);
                         }
                     }
@@ -577,6 +582,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             if (did != null) {
                 Bundle bundle = new Bundle();
                 bundle.putString("did", did);
+                bundle.putString("publickey", publickey);
                 bundle.putSerializable("netList", netList);
                 start(CRSignUpForFragment.class, bundle);
                 return;

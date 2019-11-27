@@ -4,9 +4,8 @@
 
 package org.elastos.wallet.core;
 
-import org.elastos.wallet.ela.utils.Log;
-
 import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
+import org.elastos.wallet.ela.utils.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,6 +25,10 @@ public class SubWalletCallback {
         mSubWalletID = subWalletID;
         mListener = listener;
         mInstance = InitSubWalletCallback();
+    }
+
+    public void setListener(ISubWalletListener listener) {
+        mListener = listener;
     }
 
     public String GetWalletID() {
@@ -134,7 +137,7 @@ public class SubWalletCallback {
 
     public void OnConnectStatusChanged(String status) {
         JSONObject jsonObject = new JSONObject();
-        //Log.i(TAG, GetWalletID() + "[OnConnectStatusChanged] status=" + status );
+        Log.i(TAG, GetWalletID() + "[OnConnectStatusChanged] status=" + status);
 
 
         try {

@@ -23,25 +23,15 @@ public class SideChainPresenter extends PresenterAbstract {
         subscriberObservable(observer, observable);
     }
 
-    public void getGenesisAddress(String walletId, String chain, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().getGenesisAddress(walletId, chain);
-            }
-        });
-        subscriberObservable(observer, observable);
-    }
 
-    public void createDepositTransaction(String masterWalletID, String chainID, String fromAddress, String lockedAddress, String amount
-            , String sideChainAddress, String memo, boolean useVotedUTXO, BaseFragment baseFragment) {
+    public void createDepositTransaction(String masterWalletID, String chainID, String fromAddress, String sideChainID, String amount
+            , String sideChainAddress, String memo, BaseFragment baseFragment) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createDepositTransaction(masterWalletID, chainID, fromAddress, lockedAddress, amount
-                        , sideChainAddress, memo, useVotedUTXO);
+                return baseFragment.getMyWallet().createDepositTransaction(masterWalletID, chainID, fromAddress, sideChainID, amount
+                        , sideChainAddress, memo);
             }
         });
         subscriberObservable(observer, observable);

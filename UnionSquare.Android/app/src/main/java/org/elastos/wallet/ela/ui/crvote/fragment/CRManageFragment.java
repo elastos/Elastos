@@ -107,6 +107,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     String status;
     private String info;
     private String did;
+    private String ownerPublicKey;
 
 
     @Override
@@ -129,6 +130,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     protected void setExtraData(Bundle data) {
+        ownerPublicKey = data.getString("publickey");
         status = data.getString("status", "Canceled");
         did = data.getString("did", "");
         info = data.getString("info", "");
@@ -148,7 +150,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
             if (height >= 2160) {
                 //获取赎回金额
                 presenter.getCRDepositcoin(did, this);
-                }
+            }
         } else {
             //Registered 未注销展示选举信息
             onJustRegistered(info, curentNode);
@@ -264,6 +266,7 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     intent.putExtra("type", Constant.WITHDRAWCR);
                     intent.putExtra("amount", available);
                     intent.putExtra("transType", 36);
+                    intent.putExtra("ownerPublicKey", ownerPublicKey);
                 } else {
                     //注销按钮
                     intent.putExtra("type", Constant.UNREGISTERCR);
