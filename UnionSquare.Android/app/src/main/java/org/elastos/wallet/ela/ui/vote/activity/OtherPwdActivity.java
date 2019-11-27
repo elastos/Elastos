@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 
 import org.elastos.wallet.R;
@@ -24,8 +25,6 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -81,8 +80,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         inputJson = data.getStringExtra("inputJson");
         did = data.getStringExtra("did");
 
-        transType = data.getIntExtra("transType",13);
-
+        transType = data.getIntExtra("transType", 13);
 
 
     }
@@ -148,12 +146,12 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
             case "publishTransaction":
                 String hash = "";
                 try {
-                    JSONObject pulishdata = new JSONObject(data);
+                    JSONObject pulishdata = JSON.parseObject(data);
                     hash = pulishdata.getString("TxHash");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                post(RxEnum.TRANSFERSUCESS.ordinal(), transType+"", hash);
+                post(RxEnum.TRANSFERSUCESS.ordinal(), transType + "", hash);
                 finish();
                 break;
 
