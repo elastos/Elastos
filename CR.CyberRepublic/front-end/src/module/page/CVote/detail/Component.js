@@ -258,7 +258,7 @@ class C extends StandardPage {
     if (isElip) {
       sections = [
         'abstract',
-        'specifications',
+        'specification',
         'motivation',
         'rationale',
         'backwardCompatibility',
@@ -376,8 +376,8 @@ class C extends StandardPage {
         <Anchor.Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
         <LinkGroup marginTop={48}>
           <Anchor.Link
-            href="#specifications"
-            title={I18N.get('elip.fields.specifications')}
+            href="#specification"
+            title={I18N.get('elip.fields.specification')}
           />
           <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
           <Anchor.Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
@@ -497,7 +497,7 @@ class C extends StandardPage {
     if (isElip) {
       const sections = [
         'abstract',
-        'specifications',
+        'specification',
         'motivation',
         'rationale',
         'backwardCompatibility',
