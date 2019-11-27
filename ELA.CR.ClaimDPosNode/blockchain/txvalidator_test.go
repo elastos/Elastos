@@ -652,12 +652,6 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid signature in payload")
 
-	// Give an invalid url in payload
-	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = publicKey1
-	txn.Payload.(*payload.ProducerInfo).Url = ""
-	err = s.Chain.checkRegisterProducerTransaction(txn)
-	s.EqualError(err, "Field Url has invalid string length.")
-
 	// Give a mismatching deposit address
 	rpPayload.OwnerPublicKey = publicKey1
 	rpPayload.Url = "www.test.com"
@@ -1078,10 +1072,8 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	txn.Payload = updatePayload
 	s.Chain.state.ProcessBlock(block, nil)
 
-	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field NickName has invalid string length.")
-
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "field NickName has invalid string length")
 	updatePayload.NickName = "nick name"
-	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field Url has invalid string length.")
 
 	updatePayload.Url = "www.elastos.org"
 	updatePayload.OwnerPublicKey = errPublicKey
@@ -1222,26 +1214,21 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	nickName := txn.Payload.(*payload.CRInfo).NickName
 	txn.Payload.(*payload.CRInfo).NickName = ""
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field NickName has invalid string length.")
+	s.EqualError(err, "field NickName has invalid string length")
 
 	// Give an invalid NickName length more than 100 in payload
 	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field NickName has invalid string length.")
-
-	// Give an invalid url length 0 in payload
-	url := txn.Payload.(*payload.CRInfo).Url
-	txn.Payload.(*payload.CRInfo).Url = ""
-	txn.Payload.(*payload.CRInfo).NickName = nickName
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field Url has invalid string length.")
+	s.EqualError(err, "field NickName has invalid string length")
 
 	// Give an invalid url length more than 100 in payload
+	url := txn.Payload.(*payload.CRInfo).Url
+	txn.Payload.(*payload.CRInfo).NickName = nickName
 	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field Url has invalid string length.")
+	s.EqualError(err, "field Url has invalid string length")
 
 	//not in vote Period lower
 	txn.Payload.(*payload.CRInfo).Url = url
@@ -1624,28 +1611,22 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	txn.Payload.(*payload.CRInfo).NickName = ""
 	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
 	txn.Payload.(*payload.CRInfo).NickName = nickName
-	s.EqualError(err, "Field NickName has invalid string length.")
+	s.EqualError(err, "field NickName has invalid string length")
 
 	// Give an invalid NickName length more than 100 in payload
 	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
 	txn.Payload.(*payload.CRInfo).NickName = nickName
-	s.EqualError(err, "Field NickName has invalid string length.")
-
-	// Give an invalid url length 0 in payload
-	url := txn.Payload.(*payload.CRInfo).Url
-	txn.Payload.(*payload.CRInfo).Url = ""
-	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).Url = url
-	s.EqualError(err, "Field Url has invalid string length.")
+	s.EqualError(err, "field NickName has invalid string length")
 
 	// Give an invalid url length more than 100 in payload
+	url := txn.Payload.(*payload.CRInfo).Url
 	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
 	txn.Payload.(*payload.CRInfo).Url = url
-	s.EqualError(err, "Field Url has invalid string length.")
+	s.EqualError(err, "field Url has invalid string length")
 
 	// Give an invalid code in payload
 	code := txn.Payload.(*payload.CRInfo).Code
@@ -1744,9 +1725,13 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {
-	s.NoError(checkStringField("Normal", "test"))
-	s.EqualError(checkStringField("", "test"), "Field test has invalid string length.")
-	s.EqualError(checkStringField("I am more than 100, 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test"), "Field test has invalid string length.")
+	s.NoError(checkStringField("Normal", "test", false))
+	s.EqualError(checkStringField("", "test", false),
+		"field test has invalid string length")
+	s.EqualError(checkStringField("I am more than 100, 1234567890123456"+
+		"789012345678901234567890123456789012345678901234567890123456789012345"+
+		"678901234567890", "test", false), "field test"+
+		" has invalid string length")
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
