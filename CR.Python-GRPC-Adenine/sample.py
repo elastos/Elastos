@@ -1,11 +1,13 @@
 from adenine.common import Common
 from adenine.did_sidechain import DidSidechain
 
+from decouple import config
+
 def run():
     
 	common = Common()
 	print("--> Generate Api Request")
-	response = common.generate_api_request('kAE&&ZeRLJ*6j7NfbYHs38CLVQWA%A@GN6j?&#LXwWQ6@y^G2rB3BSqqnHEZAg@s', 'qhfiueq98dqwbd')
+	response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), 'qhfiueq98dqwbd')
     
 	if(response.status==True):
 		print("Api Key: "+response.api_key)
