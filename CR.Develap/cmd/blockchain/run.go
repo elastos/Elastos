@@ -244,7 +244,7 @@ func getDockerContainer(name, chainType string) (DockerContainer, error) {
 		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerPath[chainType].ConfigPath}
 		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/keystore.dat", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerPath[chainType].KeystorePath}
 		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/wait_for_mainchain.sh", CurrentDir, chainType))] = DockerContainerDataDir{false, "/arbiter/wait_for_mainchain.sh"}
-		dockerContainer.EntryPoint = strslice.StrSlice{"/bin/sh", "-c", fmt.Sprintf("./wait_for_mainchain.sh develap-localnet-mainchain-%s:%s -- ./arbiter -p 123", name, NodeDockerPath[chainType].PortMapping[Env].ContainerRPCPort)}
+		dockerContainer.EntryPoint = strslice.StrSlice{"/bin/sh", "-c", fmt.Sprintf("./wait_for_mainchain.sh develap-localnet-mainchain-%s:%s -- ./arbiter -p 123", name, NodeDockerPath["mainchain"].PortMapping[Env].ContainerRPCPort)}
 	} else if chainType == "did" || chainType == "token" {
 		dockerContainer.Volumes[filepath.FromSlash(fmt.Sprintf("%s/localnet/%s/%s/config.json", CurrentDir, chainType, name))] = DockerContainerDataDir{false, NodeDockerPath[chainType].ConfigPath}
 	}

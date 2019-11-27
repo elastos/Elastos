@@ -2,8 +2,8 @@
     "Configuration": {
         "Magic": 7630403,
         "Version": 0,
-        "PrintLevel": 1,
-        "SpvPrintLevel": 4,
+        "PrintLevel": 0,
+        "SpvPrintLevel": 0,
         "MaxLogsSize": 0,
         "MaxPerLogSize": 0,
         "MainNode": {
