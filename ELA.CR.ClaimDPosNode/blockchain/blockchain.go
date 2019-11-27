@@ -1254,11 +1254,6 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 		return fmt.Errorf("fflDB store block failed: %s", err)
 	}
 
-	b.index.SetFlags(&block.Header, statusDataStored)
-	if err := b.index.flushToDB(); err != nil {
-		return err
-	}
-
 	medianTime := CalcPastMedianTime(b.BestChain)
 	// Insert the block into the database which houses the main chain.
 	if err := b.db.SaveBlock(block, node, confirm, medianTime); err != nil {
