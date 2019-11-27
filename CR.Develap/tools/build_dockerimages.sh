@@ -2,11 +2,25 @@
 
 PRIVNET_TAG="privnet-v0.6"
 
-while getopts ":p:" opt; do
+while getopts ":p:t:i:h" opt; do
   case $opt in
+    h)
+      echo "Usage:"
+      echo "    tools/build_dockerimages.sh -h                  Display this help message."
+      echo "    tools/build_dockerimages.sh -t [yes|no]         Do we also want to put the latest private net tag to the docker images?"
+      echo "    tools/build_dockerimages.sh -p [yes|no]         Push built images to docker registry. You will need access to push to https://hub.docker.com/u/cyberrepublic to use this option."
+      echo "    tools/build_dockerimages.sh -i  [all|ela|arbitrator|sidechain.did|sidechain.token|sidechain.eth|sidechain.eth.oracle|service.wallet|service.sidechain|service.misc|elaphant]         Build a specific docker image."
+      exit 0
+    ;;
     p) DOCKER_PUSH="$OPTARG"
     ;;
-    \?) echo "Invalid option -$OPTARG" >&2
+    t) DOCKER_PUSH_TAG_PRIVNET="$OPTARG"
+    ;;
+    i) DOCKER_IMAGE_TO_BUILD="$OPTARG"
+    ;;
+    \? )
+      echo "Invalid Option: -$OPTARG" 1>&2
+      exit 1
     ;;
   esac
 done
@@ -18,12 +32,11 @@ CURRENT_DIR=$(pwd)
 
 function build_binary_and_docker {
     BRANCH="${1}"
-    REPO="${GOPATH}/src/github.com/elastos/${2}"
+    REPO="${GOPATH}/src/${2}"
     WORKDIR="${3}"
     DOCKERIMAGE="${4}"
     GITHUB_PULL="${5}"
     DOCKER_PUSH_TAG_BRANCH="${6}"
-    DOCKER_PUSH_TAG_PRIVNET="${7}"
 
     cd $REPO
     if [ "${GITHUB_PULL}" == "yes" ]
@@ -58,7 +71,6 @@ function build_docker {
     DOCKERFILE_PREFIX="${2}"
     DOCKERIMAGE="${3}"
     DOCKER_PUSH_TAG_BRANCH="${4}"
-    DOCKER_PUSH_TAG_PRIVNET="${5}"
 
     mkdir -p $TMPDIR/$DOCKERFILE_PREFIX
     cp -r $CURRENT_DIR/docker/$WORKDIR/* $TMPDIR/$DOCKERFILE_PREFIX/
@@ -79,35 +91,55 @@ function build_docker {
     fi
     cd $CURRENT_DIR
 }
-
-build_binary_and_docker "v0.3.7" "Elastos.ELA" "ela" \
-    "cyberrepublic/elastos-mainchain-node" "yes" "v0.3.7" "yes"
-
-build_binary_and_docker "v0.1.2" "Elastos.ELA.Arbiter" "arbitrator" \
-    "cyberrepublic/elastos-arbitrator-node" "yes" "v0.1.2" "yes"
-
-build_binary_and_docker "release_v0.1.3" "Elastos.ELA.SideChain.ID" "sidechain.did" \
-    "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.3" "yes"
-
-build_binary_and_docker "v0.1.2" "Elastos.ELA.SideChain.Token" "sidechain.token" \
-    "cyberrepublic/elastos-sidechain-token-node" "yes" "v0.1.2" "yes"
-
-build_binary_and_docker "dev" "Elastos.ELA.SideChain.ETH" "sidechain.eth" \
-    "cyberrepublic/elastos-sidechain-eth-node" "no" "dev" "yes"
-
-build_docker "sidechain/eth/oracle" "sidechain.eth.oracle" \
-    "cyberrepublic/elastos-sidechain-eth-oracle" "v0.0.1" "yes"
-
-build_binary_and_docker "9acddc6e5ce3ffa7305e618b723b66b9edf58108" "Elastos.ORG.Wallet.Service" "service.wallet" \
-    "cyberrepublic/elastos-wallet-service" "yes" "" "yes"
-
-build_binary_and_docker "fb82b27b884b1f5dd61f7d0b3278d5d695916b94" "Elastos.ORG.SideChain.Service" "service.sidechain" \
-    "cyberrepublic/elastos-sidechain-service" "yes" "" "yes"
-
-build_binary_and_docker "d72f0570cd7990e600a1393cf35cd0907f4dbdd8" "Elastos.ORG.API.Misc" "service.misc" \
-    "cyberrepublic/elastos-api-misc-service" "yes" "" "yes"
-
-build_binary_and_docker "257882bb7f52bda10c190a280e82b99e248fb4c6" "Elastos.ELA.Elephant.Node" "elephant" \
-    "cyberrepublic/elastos-elephant-node" "yes" "" "yes"
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "ela" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "v0.3.9" "github.com/elastos/Elastos.ELA" "ela" \
+        "cyberrepublic/elastos-mainchain-node" "yes" "v0.3.9"
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "arbitrator" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "v0.1.2" "gitlab.com/elastos/Elastos.ELA.Arbiter" "arbitrator" \
+        "cyberrepublic/elastos-arbitrator-node" "yes" "v0.1.2"
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.did" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "release_v0.1.3" "github.com/elastos/Elastos.ELA.SideChain.ID" "sidechain.did" \
+        "cyberrepublic/elastos-sidechain-did-node" "yes" "v0.1.3"
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.token" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "v0.1.2" "github.com/elastos/Elastos.ELA.SideChain.Token" "sidechain.token" \
+        "cyberrepublic/elastos-sidechain-token-node" "yes" "v0.1.2"
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.eth" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "dev" "github.com/elastos/Elastos.ELA.SideChain.ETH" "sidechain.eth" \
+        "cyberrepublic/elastos-sidechain-eth-node" "no" "dev"
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.eth.oracle" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_docker "sidechain/eth/oracle" "sidechain.eth.oracle" \
+        "cyberrepublic/elastos-sidechain-eth-oracle" "v0.0.1"
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.wallet" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "9acddc6e5ce3ffa7305e618b723b66b9edf58108" "github.com/elastos/Elastos.ORG.Wallet.Service" "service.wallet" \
+        "cyberrepublic/elastos-wallet-service" "yes" ""
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.sidechain" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "fb82b27b884b1f5dd61f7d0b3278d5d695916b94" "github.com/elastos/Elastos.ORG.SideChain.Service" "service.sidechain" \
+        "cyberrepublic/elastos-sidechain-service" "yes" ""
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.misc" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "8edec764b7d04029d52f7cdf7e98043d11366387" "github.com/elastos/Elastos.ORG.API.Misc" "service.misc" \
+        "cyberrepublic/elastos-api-misc-service" "yes" ""
+fi
+if [ "${DOCKER_IMAGE_TO_BUILD}" == "elaphant" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
+then 
+    build_binary_and_docker "8152d09342cba08707c76d0cf154ecef0e37c0c6" "github.com/elaphantapp/ElaphantNode" "elaphant" \
+        "cyberrepublic/elastos-elaphant-node" "yes" ""
+fi
 
 cd $CURRENT_DIR

@@ -1,7 +1,7 @@
 # Elastos privnet - Arbitrator - elastos.org
 # This is an official but unsupported docker image
 
-FROM golang:1.12-alpine3.10 AS builder
+FROM golang:1.13-alpine3.10 AS builder
 
 LABEL maintainer="kpachhai"
 
@@ -13,7 +13,7 @@ RUN apk add --no-cache gcc
 RUN apk add --no-cache libc-dev
 
 # copy folders
-COPY arbitrator /go/src/github.com/elastos/Elastos.ELA.Arbiter
+COPY arbitrator /go/src/gitlab.com/elastos/Elastos.ELA.Arbiter
 
 # build env
 ENV GOPATH="/go"
@@ -26,10 +26,8 @@ ENV PATH="$GOBIN:$PATH"
 RUN curl https://glide.sh/get | sh
 
 # cwd
-WORKDIR /go/src/github.com/elastos/Elastos.ELA.Arbiter
+WORKDIR /go/src/gitlab.com/elastos/Elastos.ELA.Arbiter
 
-RUN glide update
-RUN glide install
 RUN make
 
 # alpine3.10
@@ -39,7 +37,7 @@ ENV SRC_DIR="/arbiter"
 
 WORKDIR $SRC_DIR
 
-COPY --from=builder /go/src/github.com/elastos/Elastos.ELA.Arbiter/arbiter ${SRC_DIR}/arbiter
+COPY --from=builder /go/src/gitlab.com/elastos/Elastos.ELA.Arbiter/arbiter ${SRC_DIR}/arbiter
 
 RUN apk update \
     && apk add --no-cache curl ca-certificates \

@@ -1,7 +1,7 @@
 # ETH Sidechain - elastos.org
 # This is an official but unsupported docker image
 
-FROM golang:1.12-alpine3.10 AS builder
+FROM golang:1.13-alpine3.10 AS builder
 
 LABEL maintainer="kpachhai"
 
