@@ -74,7 +74,7 @@ public class DIDDocument: NSObject {
     
     public func addPublicKey(_ pk: DIDPublicKey) -> Bool {
         if readonly { return false }
-        guard publicKeys[pk.id] != nil else {
+        guard publicKeys[pk.id] == nil else {
             return false
         }
             
@@ -265,7 +265,7 @@ public class DIDDocument: NSObject {
         if (pk.controller?.isEqual(subject))! { return false }
         // Confirm add the new pk to PublicKeys
         _ = addPublicKey(pk)
-        if authorizations[pk.id] != nil {
+        guard authorizations[pk.id] == nil else {
             return false
         }
         authorizations[pk.id] = pk
@@ -323,7 +323,7 @@ public class DIDDocument: NSObject {
     }
     
     public func authorizationDid(_ id: DIDURL, _ controller: DID) throws -> Bool {
-        return try authorizationDid(id, controller)
+        return try authorizationDid(id, controller, nil)
     }
     
     public func authorizationDid(_ id: String, _ controller: String, _ key: String?) throws -> Bool {
@@ -375,10 +375,10 @@ public class DIDDocument: NSObject {
     public func addCredential(_ vc: VerifiableCredential) -> Bool {
         guard !readonly else { return false }
         // Check the credential belongs to current DID.
-        if vc.subject.id == subject {
+        if vc.subject.id != subject {
             return false
         }
-        if credentials[vc.id] != nil {
+        guard credentials[vc.id] == nil else {
             return false
         }
         let ec: EmbeddedCredential = EmbeddedCredential(vc)
@@ -424,7 +424,7 @@ public class DIDDocument: NSObject {
         if readonly {
             return false
         }
-        if services[svc.id] != nil {
+        guard services[svc.id] == nil else{
             return false
         }
         services[svc.id] = svc
