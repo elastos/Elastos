@@ -15687,7 +15687,7 @@ en.data = {
   EOS_10: 'Select `claimAll`.',
 
   /* Onboarding */
-  ONBOARD_welcome_title: 'Welcome to Elatos Ethereum Sidechain Wallet MyCrypto',
+  ONBOARD_welcome_title: 'Welcome to Elastos Ethereum Sidechain Wallet MyCrypto',
   ONBOARD_welcome_content__1: 'Please take some time to understand this for your own safety. 🙏',
   ONBOARD_welcome_content__2: 'Your funds will be stolen if you do not heed these warnings.',
   ONBOARD_welcome_content__3: 'We know this click-through stuff is annoying. We are sorry.',
