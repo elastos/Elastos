@@ -936,7 +936,7 @@ namespace Elastos {
 				_reconnectStep = 1;
 				_estimatedHeight = peer->GetLastBlock();
 				_connectFailureCount = 0; // reset connect failure count
-				if (_needGetAddr) {
+				if (_netType != "PrvNet" && _needGetAddr) {
 					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				} else {
 					peer->ScheduleDownloadStartTime();

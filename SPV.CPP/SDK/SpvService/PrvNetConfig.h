@@ -17,12 +17,12 @@ namespace Elastos {
 		"DisconnectionTime": 300,
 		"ChainParameters": {
 			"Services": 0,
-			"MagicNumber": 20190808,
-			"StandardPort": 30018,
+			"MagicNumber": 2018201,
+			"StandardPort": 10018,
 			"TargetTimeSpan": 86400,
 			"TargetTimePerBlock": 120,
 			"DNSSeeds": [
-				"172.26.0.165"
+				"172.26.0.207"
 			],
 			"CheckPoints": [
 				[0, "8df798783097be3a8f382f6537e47c7168d4bf4d741fa3fa8c48c607a06352cf", 1513936800, 486801407]
@@ -36,12 +36,12 @@ namespace Elastos {
 		"DisconnectionTime": 300,
 		"ChainParameters": {
 			"Services": 0,
-			"MagicNumber": 20190816,
-			"StandardPort": 30138,
+			"MagicNumber": 2018202,
+			"StandardPort": 10138,
 			"TargetTimeSpan": 86400,
 			"TargetTimePerBlock": 120,
 			"DNSSeeds": [
-				"172.26.0.165"
+				"172.26.0.207"
 			],
 			"CheckPoints": [
 				[0,     "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3", 1513936800, 486801407]
