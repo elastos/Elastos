@@ -50,6 +50,7 @@ public final class Constants {
 	public final static String realm = "realm";
 
 	public final static String defaultPublicKeyType = "ECDSAsecp256r1";
+	public final static String defaultPresentationType = "VerifiablePresentation";
 
 	public final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 

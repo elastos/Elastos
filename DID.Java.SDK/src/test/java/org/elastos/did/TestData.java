@@ -24,7 +24,47 @@ package org.elastos.did;
 
 import java.io.File;
 
-public final class Util {
+import org.elastos.did.adapter.SPVAdapter;
+
+public final class TestData {
+	private static DID primaryDid;
+
+	public static void setup() throws DIDStoreException {
+		//DIDAdapter adapter = new FakeConsoleAdapter();
+
+		DIDAdapter adapter = new SPVAdapter(TestConfig.walletDir,
+				TestConfig.walletId, TestConfig.networkConfig,
+				TestConfig.resolver, new SPVAdapter.PasswordCallback() {
+					@Override
+					public String getPassword(String walletDir, String walletId) {
+						return TestConfig.walletPassword;
+					}
+				});
+
+    	TestData.deleteFile(new File(TestConfig.storeRoot));
+
+    	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
+
+    	DIDStore store = DIDStore.getInstance();
+
+    	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+    			TestConfig.passphrase, TestConfig.storePass, true);
+
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass, "Primary ID");
+    	primaryDid = doc.getSubject();
+	}
+
+	public static DID getPrimaryDid() {
+		return primaryDid;
+	}
+
+	public static void cleanup() {
+		primaryDid = null;
+		TestData.deleteFile(new File(TestConfig.storeRoot));
+	}
+
 	public static void deleteFile(File file) {
 		if (file.isDirectory()) {
 			File[] children = file.listFiles();

@@ -30,41 +30,56 @@ import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDException;
-import org.elastos.did.DIDStore;
 import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
+import org.elastos.did.MalformedDIDException;
 
 public class Issuer {
 	private DIDDocument self;
-	private DIDURL defaultSignKey;
+	private DIDURL signKey;
 
-	public Issuer(DID did, DIDURL defaultSignKey)
-			throws DIDException {
-		DIDStore store = DIDStore.getInstance();
+	public Issuer(DID did, DIDURL signKey) throws DIDException {
+		if (did == null)
+			throw new IllegalArgumentException();
 
-		this.self = store.resolveDid(did);
+		this.self = did.resolve();
 		if (this.self == null)
 			throw new DIDException("Can not resolve DID.");
 
-		if (defaultSignKey == null) {
-			defaultSignKey = self.getDefaultPublicKey();
+		if (signKey == null) {
+			signKey = self.getDefaultPublicKey();
 		} else {
-			if (self.getAuthenticationKey(defaultSignKey) == null)
+			if (!self.isAuthenticationKey(signKey))
 				throw new DIDException("Invalid sign key id.");
 		}
 
-		if (!store.containsPrivateKey(did, defaultSignKey))
+		if (!self.hasPrivateKey(signKey))
 			throw new DIDException("No private key.");
 
-		this.defaultSignKey = defaultSignKey;
+		this.signKey = signKey;
 	}
 
 	public Issuer(DID did) throws DIDException {
 		this(did, null);
 	}
 
+	public DID getDid() {
+		return self.getSubject();
+	}
+
+	public DIDURL getSignKey() {
+		return signKey;
+	}
+
 	public CredentialBuilder issueFor(DID did) {
+		if (did == null)
+			throw new IllegalArgumentException();
+
 		return new CredentialBuilder(did);
+	}
+
+	public CredentialBuilder issueFor(String did) throws MalformedDIDException {
+		return issueFor(new DID(did));
 	}
 
 	public class CredentialBuilder {
@@ -78,19 +93,31 @@ public class Issuer {
 			vc.setIssuer(self.getSubject());
 		}
 
-		public CredentialBuilder id(String id) {
-			vc.setId(new DIDURL(target, id));
+		public CredentialBuilder id(DIDURL id) {
+			vc.setId(id);
 			return this;
 		}
 
-		public CredentialBuilder type(String[] type) {
+		public CredentialBuilder id(String id) {
+			return id(new DIDURL(target, id));
+		}
+
+		public CredentialBuilder type(String ... type) {
 			vc.setType(type);
 			return this;
 		}
 
-		public CredentialBuilder issuer(DID issuer) {
-			vc.setIssuer(self.getSubject());
-			return this;
+		private Calendar getMaxExpires() {
+			Calendar cal = Calendar.getInstance(Constants.UTC);
+			cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			return cal;
+		}
+
+		private void defaultExpirationDate() {
+			vc.setExpirationDate(getMaxExpires().getTime());
 		}
 
 		public CredentialBuilder expirationDate(Date expirationDate) {
@@ -99,6 +126,10 @@ public class Issuer {
 			cal.set(Calendar.MINUTE, 0);
 			cal.set(Calendar.SECOND, 0);
 			cal.set(Calendar.MILLISECOND, 0);
+
+			if (cal.after(getMaxExpires()))
+				cal = getMaxExpires();
+
 			vc.setExpirationDate(cal.getTime());
 
 			return this;
@@ -113,20 +144,31 @@ public class Issuer {
 			return this;
 		}
 
-		public VerifiableCredential sign(String passphrase)
-				throws DIDStoreException {
+		public VerifiableCredential sign(String storepass)
+				throws MalformedCredentialException, DIDStoreException {
+			if (vc.getId() == null)
+				throw new MalformedCredentialException("Missing id.");
+
+			if (vc.getTypes() == null)
+				throw new MalformedCredentialException("Missing types.");
+
+			if (vc.getSubject() == null)
+				throw new MalformedCredentialException("Missing subject.");
+
 			Calendar cal = Calendar.getInstance(Constants.UTC);
 			cal.set(Calendar.MINUTE, 0);
 			cal.set(Calendar.SECOND, 0);
 			cal.set(Calendar.MILLISECOND, 0);
 			vc.setIssuanceDate(cal.getTime());
 
+			if (vc.getExpirationDate() == null)
+				defaultExpirationDate();
+
 			String json = vc.toJsonForSign(false);
-			String sig = DIDStore.getInstance().sign(self.getSubject(),
-					defaultSignKey, passphrase, json.getBytes());
+			String sig = self.sign(signKey, storepass, json.getBytes());
 
 			VerifiableCredential.Proof proof = new VerifiableCredential.Proof(
-					Constants.defaultPublicKeyType, defaultSignKey, sig);
+					Constants.defaultPublicKeyType, signKey, sig);
 			vc.setProof(proof);
 
 			return vc;

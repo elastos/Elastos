@@ -30,12 +30,14 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.elastos.credential.MalformedCredentialException;
 import org.elastos.credential.VerifiableCredential;
 import org.elastos.did.util.Base58;
 import org.elastos.did.util.Base64;
@@ -116,8 +118,16 @@ public class DIDDocument {
 			}
 
 			if (type != null) {
-				if (!entry.getType().equals(type))
-					continue;
+				// Credential's type is a list.
+				if (entry instanceof VerifiableCredential) {
+					VerifiableCredential vc = (VerifiableCredential)entry;
+
+					if (!Arrays.asList(vc.getTypes()).contains(type))
+						continue;
+				} else {
+					if (!entry.getType().equals(type))
+						continue;
+				}
 			}
 
 			lst.add(entry);
@@ -156,12 +166,12 @@ public class DIDDocument {
 		return getEntries(publicKeys);
 	}
 
-	public List<PublicKey> selectPublicKey(String id, String type)
+	public List<PublicKey> selectPublicKeys(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(publicKeys, new DIDURL(id), type);
+		return selectEntry(publicKeys, new DIDURL(getSubject(), id), type);
 	}
 
-	public List<PublicKey> selectPublicKey(DIDURL id, String type) {
+	public List<PublicKey> selectPublicKeys(DIDURL id, String type) {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
@@ -169,7 +179,7 @@ public class DIDDocument {
 	}
 
 	public PublicKey getPublicKey(String id) throws MalformedDIDURLException {
-		return getEntry(publicKeys, new DIDURL(id));
+		return getEntry(publicKeys, new DIDURL(getSubject(), id));
 	}
 
 	public PublicKey getPublicKey(DIDURL id) {
@@ -177,6 +187,32 @@ public class DIDDocument {
 			throw new IllegalArgumentException();
 
 		return getEntry(publicKeys, id);
+	}
+
+	public boolean hasPublicKey(DIDURL id) {
+		if (id == null)
+			throw new IllegalArgumentException();
+
+		return getEntry(publicKeys, id) != null;
+	}
+
+	public boolean hasPublicKey(String id) throws MalformedDIDURLException {
+		return hasPublicKey(new DIDURL(getSubject(), id));
+	}
+
+	public boolean hasPrivateKey(DIDURL id) throws DIDStoreException {
+		if (id == null)
+			throw new IllegalArgumentException();
+
+		if (getEntry(publicKeys, id) == null)
+			return false;
+
+		return DIDStore.getInstance().containsPrivateKey(getSubject(), id);
+	}
+
+	public boolean hasPrivateKey(String id)
+			throws MalformedDIDURLException, DIDStoreException {
+		return hasPrivateKey(new DIDURL(getSubject(), id));
 	}
 
 	public DIDURL getDefaultPublicKey() {
@@ -224,7 +260,8 @@ public class DIDDocument {
 
 	public boolean addPublicKey(String id, String controller, String pk)
 			throws MalformedDIDURLException, MalformedDIDException {
-		return addPublicKey(new DIDURL(id), new DID(controller), pk);
+		return addPublicKey(new DIDURL(getSubject(), id),
+				new DID(controller), pk);
 	}
 
 	public boolean removePublicKey(DIDURL id, boolean force) {
@@ -266,7 +303,7 @@ public class DIDDocument {
 
 	public boolean removePublicKey(String id, boolean force)
 			throws MalformedDIDURLException {
-		return removePublicKey(new DIDURL(id), force);
+		return removePublicKey(new DIDURL(getSubject(), id), force);
 	}
 
 	public boolean removePublicKey(DIDURL id) {
@@ -285,16 +322,16 @@ public class DIDDocument {
 		return getEntries(authentications);
 	}
 
-	public List<PublicKey> selectAuthenticationKey(DIDURL id, String type) {
+	public List<PublicKey> selectAuthenticationKeys(DIDURL id, String type) {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
 		return selectEntry(authentications, id, type);
 	}
 
-	public List<PublicKey> selectAuthenticationKey(String id, String type)
+	public List<PublicKey> selectAuthenticationKeys(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(authentications, new DIDURL(id), type);
+		return selectEntry(authentications, new DIDURL(getSubject(), id), type);
 	}
 
 	public PublicKey getAuthenticationKey(DIDURL id) {
@@ -306,7 +343,7 @@ public class DIDDocument {
 
 	public PublicKey getAuthenticationKey(String id)
 			throws MalformedDIDURLException {
-		return getEntry(authentications, new DIDURL(id));
+		return getEntry(authentications, new DIDURL(getSubject(), id));
 	}
 
 	public boolean isAuthenticationKey(DIDURL id) {
@@ -356,7 +393,7 @@ public class DIDDocument {
 
 	public boolean addAuthenticationKey(String id)
 			throws MalformedDIDURLException {
-		return addAuthenticationKey(new DIDURL(id));
+		return addAuthenticationKey(new DIDURL(getSubject(), id));
 	}
 
 	public boolean addAuthenticationKey(DIDURL id, String pk) {
@@ -372,7 +409,7 @@ public class DIDDocument {
 
 	public boolean addAuthenticationKey(String id, String pk)
 			throws MalformedDIDURLException {
-		return addAuthenticationKey(new DIDURL(id), pk);
+		return addAuthenticationKey(new DIDURL(getSubject(), id), pk);
 	}
 
 	public boolean removeAuthenticationKey(DIDURL id) {
@@ -391,7 +428,7 @@ public class DIDDocument {
 
 	public boolean removeAuthenticationKey(String id)
 			throws MalformedDIDURLException {
-		return removeAuthenticationKey(new DIDURL(id));
+		return removeAuthenticationKey(new DIDURL(getSubject(), id));
 	}
 
 	public int getAuthorizationKeyCount() {
@@ -402,16 +439,16 @@ public class DIDDocument {
 		return getEntries(authorizations);
 	}
 
-	public List<PublicKey> selectAuthorizationKey(DIDURL id, String type) {
+	public List<PublicKey> selectAuthorizationKeys(DIDURL id, String type) {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
 		return selectEntry(authorizations, id, type);
 	}
 
-	public List<PublicKey> selectAuthorizationKey(String id, String type)
+	public List<PublicKey> selectAuthorizationKeys(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(authorizations, new DIDURL(id), type);
+		return selectEntry(authorizations, new DIDURL(getSubject(), id), type);
 	}
 
 	public PublicKey getAuthorizationKey(DIDURL id) {
@@ -423,7 +460,7 @@ public class DIDDocument {
 
 	public PublicKey getAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		return getEntry(authorizations, new DIDURL(id));
+		return getEntry(authorizations, new DIDURL(getSubject(), id));
 	}
 
 	public boolean isAuthorizationKey(DIDURL id) {
@@ -435,7 +472,7 @@ public class DIDDocument {
 
 	public boolean isAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		return isAuthorizationKey(id);
+		return isAuthorizationKey(new DIDURL(getSubject(), id));
 	}
 
 	protected boolean addAuthorizationKey(PublicKey pk) {
@@ -473,7 +510,7 @@ public class DIDDocument {
 
 	public boolean addAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		return addAuthorizationKey(new DIDURL(id));
+		return addAuthorizationKey(new DIDURL(getSubject(), id));
 	}
 
 	public boolean addAuthorizationKey(DIDURL id, DID controller, String pk) {
@@ -489,7 +526,7 @@ public class DIDDocument {
 
 	public boolean addAuthorizationKey(String id, String controller, String pk)
 			throws MalformedDIDURLException, MalformedDIDException {
-		return addAuthorizationKey(new DIDURL(id), new DID(controller), pk);
+		return addAuthorizationKey(new DIDURL(getSubject(), id), new DID(controller), pk);
 	}
 
 	public boolean authorizationDid(DIDURL id, DID controller, DIDURL key)
@@ -532,8 +569,9 @@ public class DIDDocument {
 
 	public boolean authorizationDid(String id, String controller, String key)
 			throws MalformedDIDURLException, MalformedDIDException, DIDException {
-		DIDURL keyid = key == null ? null : new DIDURL(key);
-		return authorizationDid(new DIDURL(id), new DID(controller), keyid);
+		DID controllerId = new DID(controller);
+		DIDURL keyid = key == null ? null : new DIDURL(controllerId, key);
+		return authorizationDid(new DIDURL(getSubject(), id), controllerId, keyid);
 	}
 
 	public boolean authorizationDid(String id, String controller)
@@ -553,7 +591,7 @@ public class DIDDocument {
 
 	public boolean removeAuthorizationKey(String id)
 			throws MalformedDIDURLException {
-		return removeAuthorizationKey(new DIDURL(id));
+		return removeAuthorizationKey(new DIDURL(getSubject(), id));
 	}
 
 	public int getCredentialCount() {
@@ -564,16 +602,16 @@ public class DIDDocument {
 		return getEntries(credentials);
 	}
 
-	public List<VerifiableCredential> selectCredential(DIDURL id, String type) {
+	public List<VerifiableCredential> selectCredentials(DIDURL id, String type) {
 		if (id == null && type == null)
 			throw new IllegalArgumentException();
 
 		return selectEntry(credentials, id, type);
 	}
 
-	public List<VerifiableCredential> selectCredential(String id, String type)
+	public List<VerifiableCredential> selectCredentials(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(credentials, new DIDURL(id), type);
+		return selectEntry(credentials, new DIDURL(getSubject(), id), type);
 	}
 
 	public VerifiableCredential getCredential(DIDURL id) {
@@ -585,7 +623,7 @@ public class DIDDocument {
 
 	public VerifiableCredential getCredential(String id)
 			throws MalformedDIDURLException {
-		return getEntry(credentials, new DIDURL(id));
+		return getEntry(credentials, new DIDURL(getSubject(), id));
 	}
 
 	public boolean addCredential(VerifiableCredential vc) {
@@ -622,7 +660,7 @@ public class DIDDocument {
 	}
 
 	public boolean removeCredential(String id) throws MalformedDIDURLException {
-		return removeCredential(new DIDURL(id));
+		return removeCredential(new DIDURL(getSubject(), id));
 	}
 
 	public int getServiceCount() {
@@ -642,7 +680,7 @@ public class DIDDocument {
 
 	public List<Service> selectServices(String id, String type)
 			throws MalformedDIDURLException {
-		return selectEntry(services, new DIDURL(id), type);
+		return selectEntry(services, new DIDURL(getSubject(), id), type);
 	}
 
 	public Service getService(DIDURL id) {
@@ -653,7 +691,7 @@ public class DIDDocument {
 	}
 
 	public Service getService(String id) throws MalformedDIDURLException {
-		return getEntry(services, new DIDURL(id));
+		return getEntry(services, new DIDURL(getSubject(), id));
 	}
 
 	protected boolean addService(Service svc) {
@@ -682,7 +720,7 @@ public class DIDDocument {
 
 	public boolean addService(String id, String type, String endpoint)
 			throws MalformedDIDURLException {
-		return addService(new DIDURL(id), type, endpoint);
+		return addService(new DIDURL(getSubject(), id), type, endpoint);
 	}
 
 	public boolean removeService(DIDURL id) {
@@ -696,7 +734,7 @@ public class DIDDocument {
 	}
 
 	public boolean removeService(String id) throws MalformedDIDURLException {
-		return removeService(new DIDURL(id));
+		return removeService(new DIDURL(getSubject(), id));
 	}
 
 	private Calendar getMaxExpires() {
@@ -762,8 +800,8 @@ public class DIDDocument {
 
 	public String sign(String id, String storepass, byte[] ... data)
 			throws MalformedDIDURLException, DIDStoreException {
-		return DIDStore.getInstance().sign(getSubject(), new DIDURL(id),
-				storepass, data);
+		return DIDStore.getInstance().sign(getSubject(),
+				new DIDURL(getSubject(), id), storepass, data);
 	}
 
 	public boolean verify(String signature, byte[] ... data)
@@ -774,7 +812,7 @@ public class DIDDocument {
 
 	public boolean verify(String id, String signature, byte[] ... data)
 			throws MalformedDIDURLException, DIDException {
-		return verify(new DIDURL(id), signature, data);
+		return verify(new DIDURL(getSubject(), id), signature, data);
 	}
 
 	public boolean verify(DIDURL id, String signature, byte[] ... data)

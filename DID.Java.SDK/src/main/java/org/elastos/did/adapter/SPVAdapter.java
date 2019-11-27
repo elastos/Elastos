@@ -60,10 +60,16 @@ public class SPVAdapter implements DIDAdapter {
 
 	private final static native void destroy(long handle);
 
+	private final static native boolean isAvailable(long handle);
+
 	private final static native int createIdTransaction(long handle,
 			String payload, String memo, String password);
 
 	private final static native String resolve(long handle, String did);
+
+	public boolean isAvailable() {
+		return isAvailable(handle);
+	}
 
 	@Override
 	public boolean createIdTransaction(String payload, String memo)

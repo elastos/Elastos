@@ -30,6 +30,7 @@ import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDException;
+import org.elastos.did.DIDResolveException;
 import org.elastos.did.DIDStore;
 import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
@@ -39,6 +40,7 @@ import org.elastos.did.util.JsonHelper;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 class IDChainRequest {
 	public static final String CURRENT_SPECIFICATION = "elastos/did/1.0";
@@ -229,8 +231,8 @@ class IDChainRequest {
 		if (proof == null)
 			throw new DIDResolveException("Missing proof.");
 
-		String keyType = JsonHelper.getString(proof, KEY_TYPE, false,
-				null, KEY_TYPE, clazz);
+		String keyType = JsonHelper.getString(proof, KEY_TYPE, true,
+				Constants.defaultPublicKeyType, KEY_TYPE, clazz);
 		if (!keyType.equals(Constants.defaultPublicKeyType))
 			throw new DIDResolveException("Unknown signature key type.");
 
@@ -250,4 +252,19 @@ class IDChainRequest {
 
 		return request;
 	}
+
+	public static IDChainRequest fromJson(String json)
+			throws DIDResolveException {
+		if (json == null || json.isEmpty())
+			throw new IllegalArgumentException();
+
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode node = mapper.readTree(json);
+			return fromJson(node);
+		} catch (IOException e) {
+			throw new DIDResolveException("Parse resolved result error.", e);
+		}
+	}
+
 }

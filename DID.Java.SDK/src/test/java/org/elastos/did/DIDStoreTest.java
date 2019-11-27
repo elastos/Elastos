@@ -72,6 +72,7 @@ public class DIDStoreTest {
 	@BeforeClass
 	public static void setup() {
 		//adapter = new FakeConsoleAdapter();
+
 		adapter = new SPVAdapter(TestConfig.walletDir, TestConfig.walletId,
 				TestConfig.networkConfig, TestConfig.resolver,
 				new SPVAdapter.PasswordCallback() {
@@ -81,11 +82,12 @@ public class DIDStoreTest {
 						return "helloworld";
 					}
 				});
+
 	}
 
 	@Test
 	public void test00CreateEmptyStore0() throws DIDStoreException {
-    	Util.deleteFile(new File(TestConfig.tempStoreRoot));
+    	TestData.deleteFile(new File(TestConfig.tempStoreRoot));
 
     	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
 
@@ -114,8 +116,30 @@ public class DIDStoreTest {
 	}
 
 	@Test
+	public void test00Restore() throws DIDException {
+    	TestData.deleteFile(new File(TestConfig.storeRoot));
+
+    	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
+
+    	DIDStore store = DIDStore.getInstance();
+
+    	String mnemonic = "harvest goddess absorb secret drift rail smooth eight boy fresh faculty spawn";
+
+    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+    			TestConfig.passphrase, TestConfig.storePass, true);
+
+    	store.synchronize(TestConfig.storePass);
+
+    	List<DIDStore.Entry<DID, String>> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+
+    	assertEquals(10, dids.size());
+
+    	// TODO: improve
+	}
+
+	@Test
 	public void test10InitPrivateIdentity0() throws DIDStoreException {
-		Util.deleteFile(new File(TestConfig.tempStoreRoot));
+		TestData.deleteFile(new File(TestConfig.tempStoreRoot));
 
     	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
 
@@ -158,7 +182,7 @@ public class DIDStoreTest {
 
     @Test
     public void test20Setup() throws DIDStoreException {
-    	Util.deleteFile(new File(TestConfig.storeRoot));
+    	TestData.deleteFile(new File(TestConfig.storeRoot));
 
     	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
 
@@ -282,7 +306,8 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test50IssueSelfClaimCredential1() throws DIDException {
+	public void test50IssueCredential1() throws DIDException {
+		// SelfClaim
 		Issuer issuer = new Issuer(primaryDid);
 
 		Map<String, String> props = new HashMap<String, String>();
@@ -315,7 +340,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void test50IssueSelfClaimCredential2() throws DIDException {
+	public void test50IssueCredential2() throws DIDException {
 		DID issuerDid = primaryDid;
 		Issuer issuer = new Issuer(issuerDid);
 

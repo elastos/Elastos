@@ -20,7 +20,7 @@
 
   "authentication": [
     {
-      "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#keys3",
+      "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#key3",
       "type": "ECDSAsecp256r1",
       "controller": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN",
       "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
@@ -34,7 +34,7 @@
   ],
 
   "verifiableCredential": [{
-    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#crdential-1",
+    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#credential-1",
     "type": ["SelfProclaimedCredential", "BasicProfileCredential"],
     "issuanceDate": "2019-01-01T19:20:18Z",
     "credentialSubject": {
@@ -50,7 +50,7 @@
       "signature": "pYw8XNi1..Cky6Ed="
     }
   }, {
-    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#crdential-2",
+    "id": "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN#credential-2",
     "type": ["ElastosIDteriaCredential", "InternetAccountCredential"],
     "issuer": "did:elastos:iY3PF8u1bYMujq6Z4bk2iAnmRFyD1cqbSw",
     "issuanceDate": "2019-01-01T19:20:18Z",

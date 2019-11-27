@@ -25,6 +25,7 @@ package org.elastos.did;
 import java.util.List;
 import java.util.Map;
 
+import org.elastos.credential.MalformedCredentialException;
 import org.elastos.credential.VerifiableCredential;
 import org.elastos.did.backend.DIDBackend;
 import org.elastos.did.util.Aes256cbc;
@@ -109,8 +110,15 @@ public abstract class DIDStore {
 		instance.backend = new DIDBackend(adapter);
 	}
 
-	public static DIDStore getInstance() {
+	public static DIDStore getInstance() throws DIDStoreException {
+		if (instance == null)
+			throw new DIDStoreException("Store not initialized.");
+
 		return instance;
+	}
+
+	protected DIDAdapter getAdapter() {
+		return backend.getAdapter();
 	}
 
 	public abstract boolean hasPrivateIdentity() throws DIDStoreException;
@@ -192,6 +200,41 @@ public abstract class DIDStore {
 		return HDKey.fromSeed(seed);
 	}
 
+	public void synchronize(String storepass) throws DIDStoreException  {
+		if (storepass == null)
+			throw new IllegalArgumentException("Invalid password.");
+
+		HDKey privateIdentity = loadPrivateIdentity(storepass);
+		if (privateIdentity == null)
+			throw new DIDStoreException("DID Store not contains private identity.");
+
+		int nextIndex = loadPrivateIdentityIndex();
+		int blanks = 0;
+		int i = 0;
+
+		while (i < nextIndex || blanks < 10) {
+			HDKey.DerivedKey key = privateIdentity.derive(i++);
+			DID did = new DID(DID.METHOD, key.getAddress());
+
+			DIDDocument doc = backend.resolve(did);
+			if (doc != null) {
+				// TODO: check local conflict
+				storeDid(doc);
+
+				// Save private key
+				String encryptedKey = encryptToBase64(storepass, key.serialize());
+				storePrivateKey(did, doc.getDefaultPublicKey(), encryptedKey);
+
+				if (i >= nextIndex)
+					storePrivateIdentityIndex(i);
+
+				blanks = 0;
+			} else {
+				blanks++;
+			}
+		}
+	}
+
 	public DIDDocument newDid(String storepass, String hint)
 			throws DIDStoreException {
 		if (storepass == null)
@@ -201,9 +244,9 @@ public abstract class DIDStore {
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
 
-		int lastIndex = loadPrivateIdentityIndex();
+		int nextIndex = loadPrivateIdentityIndex();
 
-		HDKey.DerivedKey key = privateIdentity.derive(lastIndex++);
+		HDKey.DerivedKey key = privateIdentity.derive(nextIndex++);
 		DID did = new DID(DID.METHOD, key.getAddress());
 		PublicKey pk = new PublicKey(new DIDURL(did, "primary"),
 				Constants.defaultPublicKeyType, did, key.getPublicKeyBase58());
@@ -218,7 +261,7 @@ public abstract class DIDStore {
 
 		String encryptedKey = encryptToBase64(storepass, key.serialize());
 		storePrivateKey(did, pk.getId(), encryptedKey);
-		storePrivateIdentityIndex(lastIndex);
+		storePrivateIdentityIndex(nextIndex);
 
 		privateIdentity.wipe();
 		key.wipe();
@@ -244,7 +287,7 @@ public abstract class DIDStore {
 
 	public boolean publishDid(DIDDocument doc, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException {
-		DIDURL id = signKey == null ? null : new DIDURL(signKey);
+		DIDURL id = signKey == null ? null : new DIDURL(doc.getSubject(), signKey);
 		return publishDid(doc, id, storepass);
 	}
 
@@ -267,7 +310,7 @@ public abstract class DIDStore {
 
 	public boolean updateDid(DIDDocument doc, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException {
-		DIDURL id = signKey == null ? null : new DIDURL(signKey);
+		DIDURL id = signKey == null ? null : new DIDURL(doc.getSubject(), signKey);
 		return updateDid(doc, id, storepass);
 	}
 
@@ -300,7 +343,7 @@ public abstract class DIDStore {
 
 	public boolean deactivateDid(DID did, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException {
-		DIDURL id = signKey == null ? null : new DIDURL(signKey);
+		DIDURL id = signKey == null ? null : new DIDURL(did, signKey);
 		return deactivateDid(did, id, storepass);
 	}
 
@@ -404,7 +447,8 @@ public abstract class DIDStore {
 	public void setCredentialHint(String did, String id, String hint)
 			throws  MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
-		setCredentialHint(new DID(did), new DIDURL(id), hint);
+		DID _did = new DID(did);
+		setCredentialHint(_did, new DIDURL(_did, id), hint);
 	}
 
 	public abstract String getCredentialHint(DID did, DIDURL id)
@@ -413,7 +457,8 @@ public abstract class DIDStore {
 	public String getCredentialHint(String did, String id)
 			throws  MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
-		return getCredentialHint(new DID(did), new DIDURL(id));
+		DID _did = new DID(did);
+		return getCredentialHint(_did, new DIDURL(_did, id));
 	}
 
 	public abstract VerifiableCredential loadCredential(DID did, DIDURL id)
@@ -422,7 +467,8 @@ public abstract class DIDStore {
 	public VerifiableCredential loadCredential(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
 			MalformedCredentialException, DIDStoreException {
-		return loadCredential(new DID(did), new DIDURL(id));
+		DID _did = new DID(did);
+		return loadCredential(_did, new DIDURL(_did, id));
 	}
 
 	public abstract boolean containsCredentials(DID did) throws DIDStoreException;
@@ -438,7 +484,8 @@ public abstract class DIDStore {
 	public boolean containsCredential(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
-		return containsCredential(new DID(did), new DIDURL(id));
+		DID _did = new DID(did);
+		return containsCredential(_did, new DIDURL(_did, id));
 	}
 
 	public abstract boolean deleteCredential(DID did, DIDURL id)
@@ -447,7 +494,8 @@ public abstract class DIDStore {
 	public boolean deleteCredential(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
-		return deleteCredential(new DID(did), new DIDURL(id));
+		DID _did = new DID(did);
+		return deleteCredential(_did, new DIDURL(_did, id));
 	}
 
 	// Return a <DIDURL, hint> tuples enumeration object
@@ -465,7 +513,8 @@ public abstract class DIDStore {
 	public List<Entry<DIDURL, String>> selectCredentials(String did, String id,
 			String[] type) throws MalformedDIDException,
 			MalformedDIDURLException, DIDStoreException {
-		return selectCredentials(new DID(did), new DIDURL(id), type);
+		DID _did = new DID(did);
+		return selectCredentials(_did, new DIDURL(_did, id), type);
 	}
 
 	public abstract boolean containsPrivateKeys(DID did)
@@ -482,7 +531,8 @@ public abstract class DIDStore {
 	public boolean containsPrivateKey(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
-		return containsPrivateKey(new DID(did), new DIDURL(id));
+		DID _did = new DID(did);
+		return containsPrivateKey(_did, new DIDURL(_did, id));
 	}
 
 	public abstract void storePrivateKey(DID did, DIDURL id, String privateKey)
@@ -491,7 +541,8 @@ public abstract class DIDStore {
 	public void storePrivateKey(String did, String id, String privateKey)
 			throws MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
-		storePrivateKey(new DID(did), new DIDURL(id), privateKey);
+		DID _did = new DID(did);
+		storePrivateKey(_did, new DIDURL(_did, id), privateKey);
 	}
 
 	protected abstract String loadPrivateKey(DID did, DIDURL id)
@@ -503,7 +554,8 @@ public abstract class DIDStore {
 	public boolean deletePrivateKey(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
-		return deletePrivateKey(new DID(did), new DIDURL(id));
+		DID _did = new DID(did);
+		return deletePrivateKey(_did, new DIDURL(_did, id));
 	}
 
 	public String sign(DID did, DIDURL id, String storepass, byte[] ... data)

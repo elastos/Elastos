@@ -30,6 +30,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -40,9 +41,10 @@ import java.util.TreeMap;
 
 import org.elastos.did.Constants;
 import org.elastos.did.DID;
+import org.elastos.did.DIDDocument;
+import org.elastos.did.DIDException;
 import org.elastos.did.DIDObject;
 import org.elastos.did.DIDURL;
-import org.elastos.did.MalformedCredentialException;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -60,6 +62,7 @@ public class VerifiableCredential extends DIDObject {
 
 	static public class CredentialSubject {
 		private DID id;
+		// TODO: use JSON object?
 		private Map<String, String> properties;
 
 		protected CredentialSubject(DID id) {
@@ -92,7 +95,7 @@ public class VerifiableCredential extends DIDObject {
 			properties.putAll(props);
 		}
 
-		static CredentialSubject fromJson(JsonNode node, DID ref)
+		protected static CredentialSubject fromJson(JsonNode node, DID ref)
 				throws MalformedCredentialException {
 			Class<MalformedCredentialException> clazz = MalformedCredentialException.class;
 
@@ -121,7 +124,7 @@ public class VerifiableCredential extends DIDObject {
 			return cs;
 		}
 
-		void toJson(JsonGenerator generator, DID ref, boolean compact)
+		protected void toJson(JsonGenerator generator, DID ref, boolean compact)
 				throws IOException {
 			compact = (ref != null && compact);
 
@@ -148,7 +151,7 @@ public class VerifiableCredential extends DIDObject {
 		private DIDURL verificationMethod;
 		private String signature;
 
-		Proof(String type, DIDURL method, String signature) {
+		protected Proof(String type, DIDURL method, String signature) {
 			this.type = type;
 			this.verificationMethod = method;
 			this.signature = signature;
@@ -166,7 +169,7 @@ public class VerifiableCredential extends DIDObject {
 	    	return signature;
 	    }
 
-		static Proof fromJson(JsonNode node, DID ref)
+		protected static Proof fromJson(JsonNode node, DID ref)
 				throws MalformedCredentialException {
 			Class<MalformedCredentialException> clazz = MalformedCredentialException.class;
 
@@ -184,7 +187,7 @@ public class VerifiableCredential extends DIDObject {
 			return new Proof(type, method, signature);
 		}
 
-		void toJson(JsonGenerator generator, DID ref, boolean compact)
+		protected void toJson(JsonGenerator generator, DID ref, boolean compact)
 				throws IOException {
 			generator.writeStartObject();
 
@@ -254,8 +257,8 @@ public class VerifiableCredential extends DIDObject {
 		return builder.toString();
 	}
 
-	public String[] getAllType() {
-		return types == null ? null : (String[])types.toArray();
+	public String[] getTypes() {
+		return types == null ? null : types.toArray(new String[0]);
 	}
 
 	protected void addType(String type) {
@@ -291,6 +294,27 @@ public class VerifiableCredential extends DIDObject {
 
 	public Date getExpirationDate() {
 		return expirationDate;
+	}
+
+	public boolean isExpired() {
+		Calendar now = Calendar.getInstance(Constants.UTC);
+		now.set(Calendar.MINUTE, 0);
+		now.set(Calendar.SECOND, 0);
+		now.set(Calendar.MILLISECOND, 0);
+
+		Calendar expireDate  = Calendar.getInstance(Constants.UTC);
+		expireDate.setTime(expirationDate);
+
+		return now.after(expireDate);
+	}
+
+	public boolean verify() throws DIDException {
+		DIDDocument issuerDoc = issuer.resolve();
+
+		String json = toJsonForSign(false);
+
+		return issuerDoc.verify(proof.getVerificationMethod(),
+				proof.getSignature(), json.getBytes());
 	}
 
 	protected void setExpirationDate(Date expirationDate) {
@@ -416,6 +440,9 @@ public class VerifiableCredential extends DIDObject {
 
 	public static VerifiableCredential fromJson(Reader reader)
 			throws MalformedCredentialException {
+		if (reader == null)
+			throw new IllegalArgumentException();
+
 		VerifiableCredential vc = new VerifiableCredential();
 		vc.parse(reader);
 
@@ -424,6 +451,9 @@ public class VerifiableCredential extends DIDObject {
 
 	public static VerifiableCredential fromJson(InputStream in)
 			throws MalformedCredentialException {
+		if (in == null)
+			throw new IllegalArgumentException();
+
 		VerifiableCredential vc = new VerifiableCredential();
 		vc.parse(in);
 
@@ -432,6 +462,9 @@ public class VerifiableCredential extends DIDObject {
 
 	public static VerifiableCredential fromJson(String json)
 			throws MalformedCredentialException {
+		if (json == null || json.isEmpty())
+			throw new IllegalArgumentException();
+
 		VerifiableCredential vc = new VerifiableCredential();
 		vc.parse(json);
 
@@ -454,6 +487,7 @@ public class VerifiableCredential extends DIDObject {
 			throws IOException {
 		toJson(generator, ref, compact, false);
 	}
+
 	/*
 	 * Normalized serialization order:
 	 *
@@ -521,12 +555,14 @@ public class VerifiableCredential extends DIDObject {
 		generator.writeEndObject();
 	}
 
-	public void toJson(Writer out, boolean compact)
-			throws IOException {
+	public void toJson(Writer out, boolean compact) throws IOException {
 		toJson(out, compact, false);
 	}
 
 	protected void toJson(Writer out, boolean compact, boolean forSign) throws IOException {
+		if (out == null)
+			throw new IllegalArgumentException();
+
 		JsonFactory factory = new JsonFactory();
 		JsonGenerator generator = factory.createGenerator(out);
 
@@ -537,10 +573,16 @@ public class VerifiableCredential extends DIDObject {
 
 	public void toJson(OutputStream out, String charsetName, boolean compact)
 			throws IOException {
+		if (out == null)
+			throw new IllegalArgumentException();
+
 		toJson(new OutputStreamWriter(out, charsetName), compact);
 	}
 
 	public void toJson(OutputStream out, boolean compact) throws IOException {
+		if (out == null)
+			throw new IllegalArgumentException();
+
 		toJson(new OutputStreamWriter(out), compact);
 	}
 

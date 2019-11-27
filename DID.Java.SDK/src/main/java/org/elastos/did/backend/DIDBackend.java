@@ -26,6 +26,7 @@ import org.elastos.did.DID;
 import org.elastos.did.DIDAdapter;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDException;
+import org.elastos.did.DIDResolveException;
 import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
 
@@ -37,6 +38,10 @@ public class DIDBackend {
 
 	public DIDBackend(DIDAdapter adapter) {
 		this.adapter = adapter;
+	}
+
+	public DIDAdapter getAdapter() {
+		return adapter;
 	}
 
 	public boolean create(DIDDocument doc, DIDURL signKey,

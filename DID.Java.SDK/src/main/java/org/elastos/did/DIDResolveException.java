@@ -22,22 +22,22 @@
 
 package org.elastos.did;
 
-public class MalformedCredentialException extends DIDException {
-	private static final long serialVersionUID = -1775184934700973122L;
+public class DIDResolveException extends DIDException {
+	private static final long serialVersionUID = 8679582737929676981L;
 
-	public MalformedCredentialException() {
+	public DIDResolveException() {
         super();
     }
 
-    public MalformedCredentialException(String message) {
+    public DIDResolveException(String message) {
         super(message);
     }
 
-    public MalformedCredentialException(String message, Throwable cause) {
+    public DIDResolveException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public MalformedCredentialException(Throwable cause) {
+    public DIDResolveException(Throwable cause) {
         super(cause);
     }
 }
