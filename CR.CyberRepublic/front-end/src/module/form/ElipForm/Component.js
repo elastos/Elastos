@@ -108,6 +108,8 @@ const editorTransform = value => {
   return result
 }
 
+const editors = {}
+
 class C extends BaseComponent {
   constructor(props) {
     super(props)
@@ -118,6 +120,10 @@ class C extends BaseComponent {
       errorKeys: {},
       isPreview: false
     }
+
+    _.forEach(TABS, (value) => {
+      editors[value.id] = null
+    })
   }
 
   getActiveKey(key) {
@@ -207,6 +213,10 @@ class C extends BaseComponent {
     })(<RadioCard radioKey={item.id} />)
   }
 
+  init(activeKey, editor) {
+    editors[activeKey] = editor
+  }
+
   getTextarea(item) {
     const { data = {} } = this.props
     const { getFieldDecorator } = this.props.form
@@ -217,8 +227,9 @@ class C extends BaseComponent {
       <CodeMirrorEditor
         content={data[item.id]}
         callback={this.onTextareaChange}
-        activeKey={item.id}
+        activeKey={this.state.activeKey}
         name={item.id}
+        init={this.init}
       />
     )
   }
@@ -308,6 +319,7 @@ class C extends BaseComponent {
             tabBarGutter={TAB_KEYS.length}
             activeKey={this.state.activeKey}
             onChange={this.onTabChange}
+            forceRender={true}
           >
             {_.map(TABS, value => this.renderTabItem(value))}
           </Tabs>
@@ -363,6 +375,9 @@ class C extends BaseComponent {
 
   onTabChange = activeKey => {
     this.setState({ activeKey })
+    setTimeout(() => {
+      editors[activeKey].focus()
+    }, 20)
   }
 }
 
