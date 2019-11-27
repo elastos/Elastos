@@ -22,6 +22,7 @@ import (
 )
 
 var (
+	referHeight        = uint32(100)
 	referRecipient1, _ = common.Uint168FromAddress("EJMzC16Eorq9CuFCGtyMrq4Jmgw9jYCHQR")
 	referRecipient2, _ = common.Uint168FromAddress("EKnWs1jyNdhzH65UST8qMo8ZpQrTpXGnLH")
 
@@ -129,7 +130,9 @@ var (
 		},
 	}
 	testUtxoIndexBlock = &types.Block{
-		Header: types.Header{},
+		Header: types.Header{
+			Height: 200,
+		},
 		Transactions: []*types.Transaction{
 			testUtxoIndexTx1,
 			testUtxoIndexTx2,
@@ -143,19 +146,21 @@ var (
 
 type TestTxStore struct {
 	transactions map[common.Uint256]*types.Transaction
+	heights      map[common.Uint256]uint32
 }
 
 func (s *TestTxStore) FetchTx(txID common.Uint256) (*types.Transaction,
-	*common.Uint256, error) {
+	uint32, error) {
 	txn, exist := s.transactions[txID]
 	if exist {
-		return txn, &common.EmptyHash, nil
+		return txn, s.heights[txID], nil
 	}
-	return nil, &common.EmptyHash, errors.New("leveldb: not found")
+	return nil, 0, errors.New("leveldb: not found")
 }
 
-func (s *TestTxStore) SetTx(txn *types.Transaction) {
+func (s *TestTxStore) SetTx(txn *types.Transaction, height uint32) {
 	s.transactions[txn.Hash()] = txn
+	s.heights[txn.Hash()] = height
 }
 
 func (s *TestTxStore) RemoveTx(txID common.Uint256) {
@@ -165,6 +170,7 @@ func (s *TestTxStore) RemoveTx(txID common.Uint256) {
 func NewTestTxStore() *TestTxStore {
 	var db TestTxStore
 	db.transactions = make(map[common.Uint256]*types.Transaction)
+	db.heights = make(map[common.Uint256]uint32)
 	return &db
 }
 
@@ -175,7 +181,7 @@ func TestUTXOIndexInit(t *testing.T) {
 	utxoIndexDB, err = LoadBlockDB(test.DataPath)
 	assert.NoError(t, err)
 	testTxStore = NewTestTxStore()
-	testTxStore.SetTx(testUtxoIndexReferTx)
+	testTxStore.SetTx(testUtxoIndexReferTx, referHeight)
 	fmt.Println("refer tx hash:", testUtxoIndexReferTx.Hash().String())
 
 	testUtxoIndex = NewUtxoIndex(utxoIndexDB, testTxStore)
@@ -208,13 +214,17 @@ func TestUTXOIndexInit(t *testing.T) {
 				})
 			}
 		}
-		err = dbPutUtxoIndexEntry(dbTx, referRecipient1, utxos1)
+		err = dbPutUtxoIndexEntry(dbTx, referRecipient1, referHeight, utxos1)
 		assert.NoError(t, err)
-		err = dbPutUtxoIndexEntry(dbTx, referRecipient2, utxos2)
+		err = dbPutUtxoIndexEntry(dbTx, referRecipient2, referHeight, utxos2)
 		assert.NoError(t, err)
 
 		// check the initialization
-		utxos1, err = dbFetchUtxoIndexEntry(dbTx, referRecipient1)
+		utxos1, err = dbFetchUtxoIndexEntryByHeight(dbTx, referRecipient1, 200)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(utxos1))
+
+		utxos1, err = dbFetchUtxoIndexEntryByHeight(dbTx, referRecipient1, referHeight)
 		assert.NoError(t, err)
 		assert.Equal(t, []*types.UTXO{
 			{
@@ -223,7 +233,7 @@ func TestUTXOIndexInit(t *testing.T) {
 				Value: 100,
 			},
 		}, utxos1)
-		utxos2, err = dbFetchUtxoIndexEntry(dbTx, referRecipient2)
+		utxos2, err = dbFetchUtxoIndexEntryByHeight(dbTx, referRecipient2, referHeight)
 		assert.NoError(t, err)
 		assert.Equal(t, []*types.UTXO{
 			{
@@ -246,7 +256,10 @@ func TestUtxoIndex_ConnectBlock(t *testing.T) {
 	_ = utxoIndexDB.Update(func(dbTx database.Tx) error {
 		err := testUtxoIndex.ConnectBlock(dbTx, testUtxoIndexBlock)
 		assert.NoError(t, err)
+		return nil
+	})
 
+	_ = utxoIndexDB.View(func(dbTx database.Tx) error {
 		// input items should be removed from db
 		inputUtxo1, err := dbFetchUtxoIndexEntry(dbTx, referRecipient1)
 		assert.NoError(t, err)
@@ -337,6 +350,6 @@ func TestUtxoIndex_DisconnectBlock(t *testing.T) {
 	})
 }
 
-func TestUtxoIndexEnd(t *testing.T) {
-	utxoIndexDB.Close()
-}
+//func TestUtxoIndexEnd(t *testing.T) {
+//	//utxoIndexDB.Close()
+//}
