@@ -1,0 +1,171 @@
+{% extends "base.html" %} 
+
+{% block content %}
+<!--<div class="container-fluid">-->
+<div class="row flex-xl-nowrap">
+
+  <!-- Left Sidebar -->
+  <div class="col-12 col-md-3 col-xl-2 bd-sidebar">
+
+    <!-- Search Button-->
+    <form class="bd-search d-flex align-items-center">
+      <input
+        type="search"
+        class="form-control"
+        id="search-input"
+        placeholder="Search..."
+        aria-label="Search for..."
+        autocomplete="off"
+        data-docs-version="4.3"
+      />
+      <button
+        class="btn btn-link bd-search-docs-toggle d-md-none p-0 ml-3"
+        type="button"
+        data-toggle="collapse"
+        data-target="#bd-docs-nav"
+        aria-controls="bd-docs-nav"
+        aria-expanded="false"
+        aria-label="Toggle docs navigation"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="30"
+          height="30"
+          viewBox="0 0 30 30"
+          role="img"
+          focusable="false"
+        >
+          <title>Menu</title>
+          <path
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="2"
+            d="M4 7h22M4 15h22M4 23h22"
+          />
+        </svg>
+      </button>
+    </form>
+
+    <!-- Related Services -->
+    <nav class="collapse bd-links" id="bd-docs-nav">
+      <div class="bd-toc-item active">
+        <h3 class="bd-toc-link">
+          Related Services
+        </h3>
+      
+        <ul class="nav bd-sidenav">
+          {% block related %}{% endblock %}
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Right Sidebar -->
+  <div class="d-none d-xl-block col-xl-2 bd-toc">
+    <ul class="section-nav">
+      <li class="toc-entry toc-h2">
+        <h3>Documentation</h3>
+      </li>
+
+      {% block documentation %}{% endblock %}
+    </ul>
+  </div>
+
+  <!-- Center Utilities -->
+  <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content" role="main">
+    <!-- Service Card -->
+    <div class="card mb-4">
+      {% block servicetitle %}{% endblock %}
+      <div class="card-body">
+        {% block service %}{% endblock %}
+      </div>
+    </div>
+
+    <!-- Documentation Card -->
+    <div class="card mb-4">
+      <h5 class="card-header">Description</h5>
+      <div class="card-body">
+        {% block description %}{% endblock %}
+      </div>
+    </div>                                                   
+
+    <!-- Code Snippet Card -->
+    <div class="card">
+      <div class="card-header">
+        <ul
+          class="nav nav-tabs card-header-tabs pull-right"
+          id="myTab"
+          role="tablist"
+        >
+          <li class="nav-item">
+            <a
+              class="nav-link active text-dark"
+              id="home-tab"
+              data-toggle="tab"
+              href="#home"
+              role="tab"
+              aria-controls="home"
+              aria-selected="true"
+              >Python</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link text-dark"
+              id="profile-tab"
+              data-toggle="tab"
+              href="#profile"
+              role="tab"
+              aria-controls="profile"
+              aria-selected="false"
+              >Java</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link text-dark"
+              id="contact-tab"
+              data-toggle="tab"
+              href="#contact"
+              role="tab"
+              aria-controls="contact"
+              aria-selected="false"
+              >Curl</a
+            >
+          </li>
+        </ul>
+      </div>
+      <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+          <div
+            class="tab-pane show active text-dark"
+            id="home"
+            role="tabpanel"
+            aria-labelledby="home-tab"
+          >
+            Python Placeholder
+          </div>
+          <div
+            class="tab-pane text-dark"
+            id="profile"
+            role="tabpanel"
+            aria-labelledby="profile-tab"
+          >
+            Java placeholder
+          </div>
+          <div
+            class="tab-pane text-dark"
+            id="contact"
+            role="tabpanel"
+            aria-labelledby="contact-tab"
+          >
+            Curl placeholder
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<!--</div>-->
+{% endblock content %}

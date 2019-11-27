@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="row align-items-center justify-content-center">
+        <div class="col-md-8">
+          <form method="post">
+            {% csrf_token %}
+            {% for field in form.visible_fields %}
+              <p>
+                {{ field.label_tag }}<br>
+                {{ field }}
+                {% if field.help_text %}
+                  <small style="color: grey">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                  <p style="color: red">{{ error }}</p>
+                {% endfor %}
+              </p>
+            {% endfor %}
+            <button type="submit">Change</button>
+          </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,70 @@
+.footer {
+  background-color: #333;
+  position: relative;
+  width: 100%;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.footer .container {
+  background-color: #333;
+}
+
+.footer .link {
+  padding: 10px;
+  color: #fff;
+}
+
+.footer .copyright {
+  color: #666;
+  font-size: 12px;
+}
+
+.container-fluid {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bd-masthead {
+  position: relative;
+  padding: 3rem;
+}
+
+.marketing .col-lg-4 {
+  margin-bottom: 1.5em;
+  text-align: center;
+}
+
+.marketing h2 {
+  font-weight: 400;
+}
+
+.marketing .col-lg-4 p {
+  margin-right: .75rem;
+  margin-left: .75rem;
+}
+
+.feature-box-01 {
+  display: block;
+  background: #fff;
+  box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  padding: 35px 28px 20px;
+  text-align: center;
+  -webkit-transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  -o-transition: all 0.3s ease 0s;
+  transition: all 0.3s ease 0s;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 30px;
+}

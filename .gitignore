@@ -1,6 +1,7 @@
 package-lock.json
 node_modules/
 .DS_Store
+
 # Environments
 .env
 .venv
@@ -13,6 +14,17 @@ venv.bak/
 # pycharm
 __pycache__
 
-# Database
-db.sqlite3
+# VScode
+.VScode
+
+# idea
+.idea/
+
+# tools
+tools/privkey.pem
+tools/server.*
+tools/.postgres-data
+
+# static files
+static/
 

@@ -1,0 +1,66 @@
+{% extends "service.html" %} {% load static %} 
+
+{% block title %}
+<title>Generate Key</title>
+{% endblock title %} 
+
+{% block scripts %}
+<script src="{% static '/javascript/generateKey.js' %}"></script>
+{% endblock scripts %} 
+
+{% block related %}
+  <li>
+    <a href="#">
+      One Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      Two Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      Red Service
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      Blue Service
+    </a>
+  </li>
+{% endblock related %}
+
+{% block documentation %}
+<li class="toc-entry toc-h2">
+    <a href="#">One Example</a>
+  </li>
+  <li class="toc-entry toc-h2">
+    <a href="#">Two Example</a>
+  </li>
+  <li class="toc-entry toc-h2">
+    <a href="#">Red Example</a>
+  </li>
+  <li class="toc-entry toc-h2">
+    <a href="#">Blue Example</a>
+  </li>
+{% endblock documentation %}
+
+{% block servicetitle %}
+<h5 class="card-header">Generate API Key</h5>
+{% endblock servicetitle %} 
+
+{% block service %}
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <button class="btn btn-secondary" type="button" id="getKeyBtn" onclick="getAPI()">
+      Generate Key
+    </button>
+  </div>
+  <input type="text" class="form-control" placeholder="Key will appear here" aria-label="apiKey" aria-describedby="getKeyBtn" readonly>
+</div>
+{% endblock service %} 
+
+{% block description %}
+<p>The description of the Generate API Key service goes here.</p>
+{% endblock description %}
