@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import BaseComponent from '@/model/BaseComponent'
 import { Controlled as CodeMirror } from 'react-codemirror2'
+import BaseComponent from '@/model/BaseComponent'
 import 'codemirror/mode/gfm/gfm'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/base16-light.css'
@@ -36,6 +36,11 @@ class Component extends BaseComponent {
     if (callback) callback(activeKey)
   }
 
+  init=(editor) => {
+    const {activeKey} = this.props
+    this.props.init(activeKey, editor)
+  }
+
   ord_render() {
     const { show, value } = this.state
     const { name } = this.props
@@ -51,13 +56,15 @@ class Component extends BaseComponent {
             options={{
               mode: 'gfm',
               theme: 'base16-light',
-              lineWrapping: true
+              lineWrapping: true,
+              autofocus: true
             }}
             onBeforeChange={(editor, data, value) => {
               this.setState({ value })
             }}
             editorDidMount={editor => {
               this.editor = editor
+              this.init(editor)
             }}
             onChange={this.onChange}
           />
