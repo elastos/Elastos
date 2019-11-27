@@ -30,7 +30,12 @@ import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
-import { convertMarkdownToHtml } from '@/util/markdown-it'
+import {
+  convertMarkdownToHtml,
+  removeImageFromMarkdown,
+  getPlanHtml,
+  getBudgetHtml
+} from '@/util/markdown-it'
 import PaymentList from '@/module/form/SuggestionForm/PaymentList'
 import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
 import Milestones from '@/module/form/SuggestionForm/Milestones'
@@ -237,63 +242,6 @@ class C extends StandardPage {
     )
   }
 
-  getPlanHtml(plan) {
-    if (!plan) {
-      return
-    }
-    const lists = plan
-      .map(item => {
-        return `
-          <p>
-            <span>${item.member}</span>
-            <span>${item.role}</span>
-            <span>${item.responsibility}</span>
-            <span>${item.info}</span>
-          </p>
-        `
-      })
-      .join('')
-    return `
-      <div>
-        <p>
-          <span>Team Member#</span>
-          <span>Role</span>
-          <span>Responsibility</span>
-          <span>More info</span>
-        </p>
-        ${lists}
-      </div>
-      `
-  }
-
-  getBudgetHtml(budget) {
-    if (!budget) {
-      return
-    }
-    const lists = budget
-      .map((item, index) => {
-        return `
-          <p>
-            <span>${index + 1}</span>
-            <span>${item.amount}</span>
-            <span>${item.reasons}</span>
-            <span>${item.criteria}</span>
-          </p>
-        `
-      })
-      .join('')
-    return `
-      <div>
-        <p>
-          <span>Payment#</span>
-          <span>Amount(ELA)</span>
-          <span>Reasons</span>
-          <span>Payment of Criteria</span>
-        </p>
-        ${lists}
-      </div>
-      `
-  }
   renderTranslationBtn() {
     const { data, isElip } = this.props
     const { title, content } = data
@@ -320,7 +268,7 @@ class C extends StandardPage {
       result = sections.map(section => {
         return `
           <h2>${I18N.get(`elip.fields.${section}`)}</h2>
-          <p>${convertMarkdownToHtml(data[section])}</p>
+          <p>${convertMarkdownToHtml(removeImageFromMarkdown(data[section]))}</p>
         `
       }).join('')
     } else {
@@ -340,7 +288,7 @@ class C extends StandardPage {
         ) {
           return `
             <h2>${I18N.get(`proposal.fields.budget`)}</h2>
-            <p>${this.getBudgetHtml(data.budget)}</p>
+            <p>${getBudgetHtml(data.budget)}</p>
           `
         }
         if (
@@ -350,12 +298,12 @@ class C extends StandardPage {
         ) {
           return `
             <h2>${I18N.get(`proposal.fields.plan`)}</h2>
-            <p>${this.getPlanHtml(data.plan.teamInfo)}</p>
+            <p>${getPlanHtml(data.plan.teamInfo)}</p>
           `
         }
         return `
           <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
-          <p>${convertMarkdownToHtml(data[section])}</p>
+          <p>${convertMarkdownToHtml(removeImageFromMarkdown(data[section]))}</p>
         `
       }).join('')
     }

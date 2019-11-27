@@ -22,7 +22,12 @@ import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import I18N from '@/I18N'
 import { LG_WIDTH } from '@/config/constant'
 import { CVOTE_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
-import { convertMarkdownToHtml } from '@/util/markdown-it'
+import {
+  convertMarkdownToHtml,
+  removeImageFromMarkdown,
+  getPlanHtml,
+  getBudgetHtml
+} from '@/util/markdown-it'
 import { logger } from '@/util'
 import userUtil from '@/util/user'
 import { ReactComponent as CommentIcon } from '@/assets/images/icon-info.svg'
@@ -412,64 +417,6 @@ export default class extends StandardPage {
     })
   }
 
-  getPlanHtml(plan) {
-    if (!plan) {
-      return
-    }
-    const lists = plan
-      .map(item => {
-        return `
-          <p>
-            <span>${item.member}</span>
-            <span>${item.role}</span>
-            <span>${item.responsibility}</span>
-            <span>${item.info}</span>
-          </p>
-        `
-      })
-      .join('')
-    return `
-      <div>
-        <p>
-          <span>Team Member#</span>
-          <span>Role</span>
-          <span>Responsibility</span>
-          <span>More info</span>
-        </p>
-        ${lists}
-      </div>
-      `
-  }
-
-  getBudgetHtml(budget) {
-    if (!budget) {
-      return
-    }
-    const lists = budget
-      .map((item, index) => {
-        return `
-          <p>
-            <span>${index + 1}</span>
-            <span>${item.amount}</span>
-            <span>${item.reasons}</span>
-            <span>${item.criteria}</span>
-          </p>
-        `
-      })
-      .join('')
-    return `
-      <div>
-        <p>
-          <span>Payment#</span>
-          <span>Amount(ELA)</span>
-          <span>Reasons</span>
-          <span>Payment of Criteria</span>
-        </p>
-        ${lists}
-      </div>
-      `
-  }
-
   renderTranslationBtn() {
     const { detail } = this.props
     const sections = [
@@ -489,7 +436,7 @@ export default class extends StandardPage {
         ) {
           return `
             <h2>${I18N.get(`suggestion.fields.plan`)}</h2>
-            <p>${this.getPlanHtml(detail.plan.teamInfo)}</p>
+            <p>${getPlanHtml(detail.plan.teamInfo)}</p>
           `
         }
         if (
@@ -499,12 +446,12 @@ export default class extends StandardPage {
         ) {
           return `
             <h2>${I18N.get(`suggestion.fields.budget`)}</h2>
-            <p>${this.getBudgetHtml(detail.budget)}</p>
+            <p>${getBudgetHtml(detail.budget)}</p>
           `
         }
         return `
           <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
-          <p>${convertMarkdownToHtml(detail[section])}</p>
+          <p>${convertMarkdownToHtml(removeImageFromMarkdown(detail[section]))}</p>
         `
       })
       .join('')

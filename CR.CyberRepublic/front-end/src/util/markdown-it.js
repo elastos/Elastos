@@ -66,3 +66,65 @@ export const convertMarkdownToHtml = content => {
   const rs = content && autolinkReferenceNumber(content)
   return DOMPurify.sanitize(mdi.render(rs || ''))
 }
+
+export const removeImageFromMarkdown = content => {
+  return content ? content.replace(/\!\[image\]\(data:image\/.*\)/g, '') : ''
+}
+
+export const getPlanHtml = plan => {
+  if (!plan) {
+    return
+  }
+  const lists = plan
+    .map(item => {
+      return `
+        <p>
+          <span>${item.member}</span>
+          <span>${item.role}</span>
+          <span>${convertMarkdownToHtml(removeImageFromMarkdown(item.responsibility))}</span>
+          <span>${convertMarkdownToHtml(removeImageFromMarkdown(item.info))}</span>
+        </p>
+      `
+    })
+    .join('')
+  return `
+    <div>
+      <p>
+        <span>Team Member#</span>
+        <span>Role</span>
+        <span>Responsibility</span>
+        <span>More info</span>
+      </p>
+      ${lists}
+    </div>
+  `
+}
+
+export const getBudgetHtml = budget => {
+  if (!budget) {
+    return
+  }
+  const lists = budget
+    .map((item, index) => {
+      return `
+        <p>
+          <span>${index + 1}</span>
+          <span>${item.amount}</span>
+          <span>${convertMarkdownToHtml(removeImageFromMarkdown(item.reasons))}</span>
+          <span>${convertMarkdownToHtml(removeImageFromMarkdown(item.criteria))}</span>
+        </p>
+      `
+    })
+    .join('')
+  return `
+    <div>
+      <p>
+        <span>Payment#</span>
+        <span>Amount(ELA)</span>
+        <span>Reasons</span>
+        <span>Payment of Criteria</span>
+      </p>
+      ${lists}
+    </div>
+  `
+}
