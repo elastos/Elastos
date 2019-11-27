@@ -12,9 +12,12 @@ class DidSidechain():
         # NOTE(gRPC Python Team): .close() is possible on a channel and should be
         # used in circumstances in which the with statement does not fit the needs
         # of the code.
-        grpc_server = "%s:%s" % (config('GRPC_SERVER_HOST'), config('GRPC_SERVER_PORT'))
+        host = config('GRPC_SERVER_HOST')
+        port = config('GRPC_SERVER_PORT')
 
-        with grpc.insecure_channel(grpc_server) as channel:
+        credentials = grpc.ssl_channel_credentials()
+
+        with grpc.secure_channel('{}:{}'.format(host, port), credentials) as channel:
             stub = adenine_io_pb2_grpc.AdenineIoStub(channel)
             req_data = 	{
         				"privateKey": private_key,
