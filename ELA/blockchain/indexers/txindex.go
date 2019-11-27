@@ -478,19 +478,28 @@ func (idx *TxIndex) TxBlockRegion(hash *common.Uint256) (*database.BlockRegion, 
 	return region, err
 }
 
-func (idx *TxIndex) FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint256, error) {
+func (idx *TxIndex) FetchTx(txID common.Uint256) (*types.Transaction, uint32, error) {
 	var txn *types.Transaction
-	var hash *common.Uint256
+	var height uint32
 	err := idx.db.View(func(dbTx database.Tx) error {
 		var err error
+		var hash *common.Uint256
 		txn, hash, err = dbFetchTx(dbTx, &txID)
+		meta := dbTx.Metadata()
+		hashIndex := meta.Bucket([]byte("hashidx"))
+		serializedHeight := hashIndex.Get(hash[:])
+		if serializedHeight == nil {
+			return fmt.Errorf("block %s is not in the main chain", hash)
+		}
+		height = byteOrder.Uint32(serializedHeight)
+
 		return err
 	})
 	if err != nil {
-		return nil, &common.EmptyHash, err
+		return nil, 0, err
 	}
 
-	return txn, hash, nil
+	return txn, height, nil
 }
 
 // NewTxIndex returns a new instance of an indexer that is used to create a

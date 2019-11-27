@@ -45,8 +45,8 @@ func (u *UTXO) Deserialize(r io.Reader) error {
 	}
 	return nil
 }
-func (uu *UTXO) Hash() common.Uint256 {
+func (u *UTXO) Hash() common.Uint256 {
 	buf := new(bytes.Buffer)
-	uu.Serialize(buf)
+	u.Serialize(buf)
 	return common.Uint256(common.Sha256D(buf.Bytes()))
 }
