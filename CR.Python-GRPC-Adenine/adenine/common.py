@@ -14,11 +14,17 @@ class Common():
         # of the code
         host = config('GRPC_SERVER_HOST')
         port = config('GRPC_SERVER_PORT')
-        
-        credentials = grpc.ssl_channel_credentials()
 
-        with grpc.secure_channel('{}:{}'.format(host, port), credentials) as channel:
-            stub = common_pb2_grpc.CommonStub(channel)
-            response = stub.GenerateAPIRequest(common_pb2.Request(secret_key=secret_key, did=did))
-            return response
-        
+        production = config('PRODUCTION', default=False, cast=bool)
+        if production == False:
+            with grpc.insecure_channel('{}:{}'.format(host, port)) as channel:
+                stub = common_pb2_grpc.CommonStub(channel)
+                response = stub.GenerateAPIRequest(common_pb2.Request(secret_key=secret_key, did=did))
+                return response
+        else:
+            credentials = grpc.ssl_channel_credentials()
+            with grpc.secure_channel('{}:{}'.format(host, port), credentials) as channel:
+                stub = common_pb2_grpc.CommonStub(channel)
+                response = stub.GenerateAPIRequest(common_pb2.Request(secret_key=secret_key, did=did))
+                return response
+

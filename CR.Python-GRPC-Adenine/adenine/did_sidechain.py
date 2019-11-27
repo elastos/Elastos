@@ -15,13 +15,23 @@ class DidSidechain():
         host = config('GRPC_SERVER_HOST')
         port = config('GRPC_SERVER_PORT')
 
-        credentials = grpc.ssl_channel_credentials()
-
-        with grpc.secure_channel('{}:{}'.format(host, port), credentials) as channel:
-            stub = adenine_io_pb2_grpc.AdenineIoStub(channel)
-            req_data = 	{
-        				"privateKey": private_key,
-        				"msg": message
-        			} 
-            response = stub.sendRequest(adenine_io_pb2.Request(api_key=api_key, input=req_data))
-            return response 
+        production = config('PRODUCTION', default=False, cast=bool)
+        if production == False:
+            with grpc.insecure_channel('{}:{}'.format(host, port)) as channel:
+                stub = adenine_io_pb2_grpc.AdenineIoStub(channel)
+                req_data = 	{
+            				"privateKey": private_key,
+            				"msg": message
+            			}
+                response = stub.sendRequest(adenine_io_pb2.Request(api_key=api_key, input=req_data))
+                return response
+        else:
+            credentials = grpc.ssl_channel_credentials()
+            with grpc.secure_channel('{}:{}'.format(host, port), credentials) as channel:
+                stub = adenine_io_pb2_grpc.AdenineIoStub(channel)
+                req_data = 	{
+            				"privateKey": private_key,
+            				"msg": message
+            			}
+                response = stub.sendRequest(adenine_io_pb2.Request(api_key=api_key, input=req_data))
+                return response
