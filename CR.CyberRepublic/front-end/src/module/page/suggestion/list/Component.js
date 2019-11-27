@@ -13,8 +13,7 @@ import {
   Spin,
   DatePicker,
   Checkbox,
-  Input,
-  Icon
+  Input
 } from 'antd'
 import rangePickerLocale from 'antd/es/date-picker/locale/zh_CN'
 import URI from 'urijs'
@@ -207,14 +206,22 @@ export default class extends StandardPage {
               xl={6}
               style={{ paddingBottom: 24, textAlign: 'right' }}
             >
-              <Button type="link" className="btn-link" onClick={this.toggleArchivedList}>
+              <Button
+                type="link"
+                className="btn-link"
+                onClick={this.toggleArchivedList}
+              >
                 {this.state.showArchived === false
                   ? I18N.get('suggestion.viewArchived')
                   : I18N.get('suggestion.viewAll')}
               </Button>
               {isSecretary && <SplitLabel />}
               {isSecretary && (
-                <Button type="link" className="btn-link" onClick={this.handleExportAsCSV}>
+                <Button
+                  type="link"
+                  className="btn-link"
+                  onClick={this.handleExportAsCSV}
+                >
                   {I18N.get('elip.button.exportAsCSV')}
                 </Button>
               )}
@@ -234,7 +241,7 @@ export default class extends StandardPage {
     this.setState({ search, filter }, this.debouncedRefetch)
   }
 
-  onFormSubmit = async (param) => {
+  onFormSubmit = async param => {
     try {
       await this.props.create(param)
       this.setState({ showForm: false })
@@ -259,9 +266,7 @@ export default class extends StandardPage {
         footer={null}
         width="70%"
       >
-        { this.state.showForm
-          && <SuggestionForm {...props} />
-        }
+        {this.state.showForm && <SuggestionForm {...props} />}
       </Modal>
     )
   }
@@ -297,8 +302,7 @@ export default class extends StandardPage {
   renderHeader() {
     return (
       <div>
-        <SuggestionContainer
-          className="title komu-a cr-title-with-icon">
+        <SuggestionContainer className="title komu-a cr-title-with-icon">
           {this.props.header || I18N.get('suggestion.title').toUpperCase()}
         </SuggestionContainer>
 
@@ -307,7 +311,9 @@ export default class extends StandardPage {
             <PageHeader />
             <HeaderDesc>
               {I18N.get('suggestion.intro.1')}
-              <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
+              <Link to="/proposals">
+                {I18N.get('suggestion.intro.1.proposals')}
+              </Link>
               {I18N.get('suggestion.intro.1.1')}
               <br />
               <br />
@@ -318,15 +324,15 @@ export default class extends StandardPage {
                   target="_blank"
                 >
                   https://www.cyberrepublic.org/docs/#/guide/suggestions
-              </a>
+                </a>
               ) : (
-                  <a
-                    href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
-                    target="_blank"
-                  >
-                    https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
-              </a>
-                )}
+                <a
+                  href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
+                  target="_blank"
+                >
+                  https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
+                </a>
+              )}
             </HeaderDesc>
           </SuggestionContainer>
         </HeaderDiagramContainer>
@@ -339,15 +345,15 @@ export default class extends StandardPage {
       createdAt: I18N.get('suggestion.new'),
       likesNum: I18N.get('suggestion.likes'),
       viewsNum: I18N.get('suggestion.mostViews'),
-      activeness: I18N.get('suggestion.activeness'),
+      activeness: I18N.get('suggestion.activeness')
     }
     const sortBy = this.props.sortBy || DEFAULT_SORT
     return (
       <div>
-        {I18N.get('suggestion.sort')}: {' '}
+        {I18N.get('suggestion.sort')}:{' '}
         <Select
           name="type"
-          style={{width: 200, marginLeft: 16}}
+          style={{ width: 200, marginLeft: 16 }}
           onChange={this.onSortByChanged}
           value={sortBy}
         >
@@ -442,16 +448,31 @@ export default class extends StandardPage {
           <Col span={8} className="filter-panel">
             <FilterContent>
               <FilterItem>
-                <Checkbox checked={underConsideration} onChange={this.handleUnderConsiderationChange} />
-                <CheckboxText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</CheckboxText>
+                <Checkbox
+                  checked={underConsideration}
+                  onChange={this.handleUnderConsiderationChange}
+                />
+                <CheckboxText>
+                  {I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}
+                </CheckboxText>
               </FilterItem>
               <FilterItem className="filter-checkbox">
-                <Checkbox checked={infoNeeded} onChange={this.handleInfoNeededChange} />
-                <CheckboxText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</CheckboxText>
+                <Checkbox
+                  checked={infoNeeded}
+                  onChange={this.handleInfoNeededChange}
+                />
+                <CheckboxText>
+                  {I18N.get('suggestion.tag.type.INFO_NEEDED')}
+                </CheckboxText>
               </FilterItem>
               <FilterItem className="filter-checkbox">
-                <Checkbox checked={referenceStatus} onChange={this.handleReferenceStatusChange} />
-                <CheckboxText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</CheckboxText>
+                <Checkbox
+                  checked={referenceStatus}
+                  onChange={this.handleReferenceStatusChange}
+                />
+                <CheckboxText>
+                  {I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}
+                </CheckboxText>
               </FilterItem>
             </FilterContent>
           </Col>
@@ -516,8 +537,8 @@ export default class extends StandardPage {
     )
   }
 
-  onInfoNeededChange = async (e) => {
-    const {onTagsIncludedChanged, tagsIncluded, changePage} = this.props
+  onInfoNeededChange = async e => {
+    const { onTagsIncludedChanged, tagsIncluded, changePage } = this.props
     tagsIncluded.infoNeeded = e.target.checked
 
     await changePage(1)
@@ -525,8 +546,8 @@ export default class extends StandardPage {
     await this.refetch()
   }
 
-  onUnderConsiderationChange = async (e) => {
-    const {onTagsIncludedChanged, tagsIncluded, changePage} = this.props
+  onUnderConsiderationChange = async e => {
+    const { onTagsIncludedChanged, tagsIncluded, changePage } = this.props
     tagsIncluded.underConsideration = e.target.checked
 
     await changePage(1)
@@ -535,19 +556,22 @@ export default class extends StandardPage {
   }
 
   // checked = boolean
-  onReferenceStatusChange = async (e) => {
-
-    const {onReferenceStatusChanged} = this.props
+  onReferenceStatusChange = async e => {
+    const { onReferenceStatusChanged } = this.props
 
     // the first onReferenceStatusChanged is the props fn from Container
-    await this.setState({referenceStatus: e.target.checked})
+    await this.setState({ referenceStatus: e.target.checked })
     await onReferenceStatusChanged(e.target.checked)
     await this.refetch()
   }
 
   renderList() {
-    const {dataList, loading} = this.props
-    const loadingNode = <div className="center"><Spin size="large"/></div>
+    const { dataList, loading } = this.props
+    const loadingNode = (
+      <div className="center">
+        <Spin size="large" />
+      </div>
+    )
     const paginationNode = this.renderPagination()
     let result = loadingNode
     if (!loading) {
@@ -560,15 +584,13 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <div className="list-container">
-          {result}
-        </div>
+        <div className="list-container">{result}</div>
         {paginationNode}
       </div>
     )
   }
 
-  renderItem = (data) => {
+  renderItem = data => {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data, this.refetch)
     const metaNode = this.renderMetaNode(data)
@@ -581,9 +603,16 @@ export default class extends StandardPage {
         {tagsNode}
         <ShortDesc>
           <MarkdownPreview content={data.abstract} />
-          {_.isArray(data.link) && (data.link.map((link) => {
-            return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
-          }))}
+          {_.isArray(data.link) &&
+            data.link.map(link => {
+              return (
+                <ItemLinkWrapper key={link}>
+                  <a target="_blank" href={link}>
+                    {link}
+                  </a>
+                </ItemLinkWrapper>
+              )
+            })}
         </ShortDesc>
 
         {actionsNode}
@@ -591,7 +620,7 @@ export default class extends StandardPage {
     )
   }
 
-  onPageChanged = (page) => {
+  onPageChanged = page => {
     const { changePage } = this.props
     changePage(page)
     this.loadPage(page)
@@ -604,18 +633,22 @@ export default class extends StandardPage {
       pageSize: results,
       total,
       current: page,
-      onChange: this.onPageChanged,
+      onChange: this.onPageChanged
     }
     return <Pagination {...props} className="cr-pagination" />
   }
 
-  renderMetaNode = detail => <MetaContainer data={detail} user={this.props.user} />
+  renderMetaNode = detail => (
+    <MetaContainer data={detail} user={this.props.user} />
+  )
 
   renderTagsNode = detail => <TagsContainer data={detail} />
 
-  renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
+  renderActionsNode = (detail, refetch) => (
+    <ActionsContainer data={detail} listRefetch={refetch} />
+  )
 
-  onSortByChanged = async (sortBy) => {
+  onSortByChanged = async sortBy => {
     await this.props.onSortByChanged(sortBy)
     await this.refetch()
   }
@@ -640,7 +673,9 @@ export default class extends StandardPage {
       type
     } = this.state
     const query = {
-      status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
+      status: this.state.showArchived
+        ? SUGGESTION_STATUS.ARCHIVED
+        : SUGGESTION_STATUS.ACTIVE,
       page,
       results
     }
@@ -713,11 +748,11 @@ export default class extends StandardPage {
     this.props.getList(query)
   }
 
-  loadPage = async (page) => {
+  loadPage = async page => {
     const query = {
       ...this.getQuery(),
       page,
-      results: this.state.results,
+      results: this.state.results
     }
 
     this.setState({ loadingMore: true })
@@ -813,7 +848,7 @@ const NoData = styled.div`
 `
 
 const FilterLabel = styled(Col)`
-  color: #008D85;
+  color: #008d85;
   cursor: pointer;
 `
 
@@ -839,7 +874,6 @@ const FilterClearBtn = styled.div`
   cursor: pointer;
 `
 
-
 const FilterItem = styled.div`
   display: flex;
   justify-content: flex-start;
@@ -857,7 +891,7 @@ const FilterItem = styled.div`
   }
 `
 const FilterContent = styled.div`
-  background: #F6F9FD;
+  background: #f6f9fd;
   height: 100%;
 `
 

@@ -29,7 +29,12 @@ class Milestones extends Component {
     this.setState({ milestones: [...milestones, values] }, () => {
       this.props.onChange({ milestone: this.state.milestones })
     })
-    this.setState({milestonesTrigger: {...milestonesTrigger, [milestones.length]: { clicked: false, hovered: false }}})
+    this.setState({
+      milestonesTrigger: {
+        ...milestonesTrigger,
+        [milestones.length]: { clicked: false, hovered: false }
+      }
+    })
   }
 
   handleEdit = (index, values) => {
@@ -72,7 +77,7 @@ class Milestones extends Component {
     return (
       <Wrapper>
         <Timeline>
-          {milestones.map((item, index) => (
+          {milestones && milestones.map((item, index) => (
             <Milestone key={index}>
               {visible ? (
                 <Popover
@@ -120,7 +125,9 @@ class Milestones extends Component {
                     content={item.version}
                     trigger="hover"
                     visible={milestonesTrigger[index].hovered}
-                    onVisibleChange={isVisible => this.handleHoverChange(index, isVisible)}
+                    onVisibleChange={isVisible =>
+                      this.handleHoverChange(index, isVisible)
+                    }
                     overlayStyle={{width: '360px', wordWrap: 'break-word', wordBreak: 'normal'}}
                   >
                     <Square>

@@ -227,9 +227,11 @@ export default class extends Base {
     }
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      let endDate = new Date(param.endDate)
+      endDate.setDate(endDate.getDate()+1)
       query.createdAt = {
         $gte: new Date(param.startDate),
-        $lte: new Date(param.endDate)
+        $lte: endDate
       }
     }
 
@@ -437,9 +439,11 @@ export default class extends Base {
     }
     // startDate <  endDate
     if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      let endDate = new Date(param.endDate)
+      endDate.setDate(endDate.getDate()+1)
       query.createdAt = {
         $gte: new Date(param.startDate),
-        $lte: new Date(param.endDate)
+        $lte: endDate
       }
     }
     
@@ -811,7 +815,7 @@ export default class extends Base {
    * Admin and Author
    */
   public async archive(param: any): Promise<object> {
-    const { id: _id } = param
+    const { id: _id, isArchived } = param
     const suggestion = await this.model.getDBInstance().findById(_id).populate('createdBy')
     if (!suggestion) {
       return
@@ -821,11 +825,18 @@ export default class extends Base {
     if (!(isAdmin || isAuthor)) {
       return
     }
-    const updateObject = {
-      status: constant.SUGGESTION_STATUS.ARCHIVED,
+    let field = {}
+    if (isArchived && isArchived === true) {
+      field = {
+        status: constant.SUGGESTION_STATUS.ACTIVE,
+      }
+    } else {
+      field = {
+        status: constant.SUGGESTION_STATUS.ARCHIVED,
+      }
     }
     try {
-      await this.model.update({ _id }, updateObject)
+      await this.model.update({ _id }, field)
       return { success: true, message: 'ok' }
     } catch (err) {
       return { success: false, message: 'ok' }
