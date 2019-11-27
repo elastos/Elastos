@@ -57,7 +57,7 @@ class IDChainRequest: NSObject {
     public init(_ op: Operation, _ doc_: DIDDocument) throws {
         specification = IDChainRequest.CURRENT_SPECIFICATION
         operation = op
-        did = doc?.subject
+        did = doc_.subject
         doc = doc_
     }
     

@@ -31,13 +31,13 @@ class DIDStoreTests: XCTestCase {
         do {
             try DIDStore.creatInstance("filesystem", storePath, adapter)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
-            _ = try tempStore.newDid(passphrase, "my first did")
+            _ = try tempStore.newDid(storePass, "my first did")
         } catch {
             print("test00CreateEmptyStore1 error: \(error)")
         }
     }
     
-    func test00InitPrivateIdentity0() {
+    func test10InitPrivateIdentity0() {
         do {
             TestUtils.deleteFile(storePath)
             try DIDStore.creatInstance("filesystem", storePath, adapter)
@@ -60,7 +60,7 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func test01InitPrivateIdentity1() {
+    func test10InitPrivateIdentity1() {
         do {
             try DIDStore.creatInstance("filesystem", storePath, adapter)
             let tempStore: DIDStore = try DIDStore.shareInstance()!
@@ -70,9 +70,9 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func testCreateDID1() {
+    func test30CreateDID1() {
         let hint: String = "my first did"
-        let doc: DIDDocument = try! store.newDid(passphrase, hint)
+        let doc: DIDDocument = try! store.newDid(storePass, hint)
         primaryDid = doc.subject
         let id: String = doc.subject!.methodSpecificId!
         let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
@@ -83,8 +83,8 @@ class DIDStoreTests: XCTestCase {
         ids[doc.subject!] = hint
     }
     
-    func testCreateDID2() {
-        let doc: DIDDocument = try! store.newDid(passphrase, nil)
+    func test30CreateDID2() {
+        let doc: DIDDocument = try! store.newDid(storePass, nil)
         let id: String = doc.subject!.methodSpecificId!
         let path: String = storePath + "/" + "ids" + "/" + id + "/document"
         XCTAssertTrue(TestUtils.existsFile(path))
@@ -93,13 +93,13 @@ class DIDStoreTests: XCTestCase {
         ids[doc.subject!] = ""
     }
     
-    func testCreateDID3() {
+    func test30CreateDID3() {
         for i in 0...100 {
             var dic: Dictionary<String, String> = [: ]
             dic["12"] = String(i)
             
             let hint: String = "my did " + String(10)
-            let doc: DIDDocument = try! store.newDid(passphrase, hint)
+            let doc: DIDDocument = try! store.newDid(storePass, hint)
             let id: String = doc.subject!.methodSpecificId!
             let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
             XCTAssertTrue(TestUtils.existsFile(path))
@@ -111,14 +111,14 @@ class DIDStoreTests: XCTestCase {
         }
     }
 
-    func testDeleteDID1() {
+    func test40DeleteDID1() {
         let hint: String = "my did for deleted."
-        let doc: DIDDocument = try! store.newDid(passphrase, hint)
+        let doc: DIDDocument = try! store.newDid(storePass, hint)
         ids[doc.subject!] = hint
         primaryDid = doc.subject
         let dids: Array<DID> = Array(ids.keys)
         dids.forEach { did in
-            if did.isEqual(primaryDid) {
+            if did == primaryDid {
                 var deleted: Bool = try! store.deleteDid(did)
                 XCTAssertTrue(deleted)
                 var path: String = storePath + "/ids/" + did.methodSpecificId!
@@ -133,25 +133,25 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func testPublishDID() {
+    func test40PublishDID() {
         let hint: String = "my did for deleted."
-        let doc: DIDDocument = try! store.newDid(passphrase, hint)
+        let doc: DIDDocument = try! store.newDid(storePass, hint)
         ids[doc.subject!] = hint
         primaryDid = doc.subject
         let dids: Array<DID> = Array(ids.keys)
         dids.forEach { did in
             do {
                 let doc: DIDDocument = try store.loadDid(did)!
-                _ = try store.publishDid(doc, DIDURL(did, "primary"), passphrase)
+                _ = try store.publishDid(doc, DIDURL(did, "primary"), storePass)
             }catch {
                 print(error)
             }
         }
     }
     
-    func testIssueSelfClaimCredential1() throws {
+    func test50IssueSelfClaimCredential1() throws {
         let hint: String = "my did for test05IssueSelfClaimCredential1."
-        let doc: DIDDocument = try! store.newDid(passphrase, hint)
+        let doc: DIDDocument = try! store.newDid(storePass, hint)
         ids[doc.subject!] = hint
         primaryDid = doc.subject
         let issuer: Issuer = try! Issuer(primaryDid, nil)
@@ -166,7 +166,7 @@ class DIDStoreTests: XCTestCase {
         issuer.vc.types = ["SelfProclaimedCredential", "BasicProfileCredential"]
         issuer.vc.expirationDate = Date()
         issuer.vc.subject.properties = props
-        _ = try issuer.sign(passphrase)
+        _ = try issuer.sign(storePass)
         
         var doc2 = try store.resolveDid(primaryDid)!
         _ = doc2.modify()

@@ -136,7 +136,7 @@ public class DIDStore: NSObject {
         return try backend.create(doc, signKey, storepass)
     }
 
-    public func publishDid(doc: DIDDocument, signKey: String, storepass :String) throws -> Bool {
+    public func publishDid(_ doc: DIDDocument, _ signKey: String, _ storepass :String) throws -> Bool {
         return try publishDid(doc, DIDURL(signKey), storepass)
     }
     
@@ -323,8 +323,9 @@ public class DIDStore: NSObject {
          privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id!))
         }
         var cinputs: [CVarArg] = []
+        let vi = inputs.count / count
         for i in 0..<inputs.count {
-            if (i % 2) == 0 {
+            if (i % vi) == 0 {
                 let json: String = inputs[i] as! String
                 let cjson = json.withCString { re -> UnsafePointer<Int8> in
                     return re
@@ -332,7 +333,7 @@ public class DIDStore: NSObject {
                 cinputs.append(cjson)
             }
             else {
-                let count: Int = inputs[i] as! Int
+                let count = inputs[i] 
                 cinputs.append(count)
             }
         }
