@@ -61,6 +61,13 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::WalletNotContainTx, "Wallet do not contain tx = " + hash);
 			}
 
+			_coinBaseUTXOs.insert(_coinBaseUTXOs.end(), cbUTXOs.begin(), cbUTXOs.end());
+
+			for (UTXOArray::iterator o = _coinBaseUTXOs.begin(); o != _coinBaseUTXOs.end(); ++o) {
+				if (!(*o)->Spent())
+					_groupedAssets[(*o)->Output()->AssetID()]->AddCoinBaseUTXO((*o));
+			}
+
 			bool needUpdate = false, movedToCoinbase = false;
 			UTXOArray spentCoinbase;
 			for (size_t i = 0; i < txns.size(); ++i) {
@@ -103,13 +110,6 @@ namespace Elastos {
 				} else {
 					needUpdate = true;
 				}
-			}
-
-			_coinBaseUTXOs.insert(_coinBaseUTXOs.end(), cbUTXOs.begin(), cbUTXOs.end());
-
-			for (UTXOArray::iterator o = _coinBaseUTXOs.begin(); o != _coinBaseUTXOs.end(); ++o) {
-				if (!(*o)->Spent())
-					_groupedAssets[(*o)->Output()->AssetID()]->AddCoinBaseUTXO((*o));
 			}
 
 			if (!spentCoinbase.empty()) {
