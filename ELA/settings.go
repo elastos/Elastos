@@ -403,6 +403,19 @@ func newSettings() *settings {
 			params.CRCFoundation = *crcFoundation
 			return nil
 		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			value, ok := i.(string)
+			if !ok {
+				return errors.New("unknown foundation address type")
+			}
+			crcFoundation, err := common.Uint168FromAddress(value)
+			if err != nil {
+				return errors.New("invalid CRC foundation")
+			}
+			params.CRCFoundation = *crcFoundation
+			return nil
+		},
 		ConfigPath: "CRCFoundation",
 		ParamName:  "CRCFoundation"})
 
@@ -412,6 +425,19 @@ func newSettings() *settings {
 		ConfigSetter: func(path string, params *config.Params,
 			conf *config.Configuration) error {
 			crcCommitteeAddress, err := common.Uint168FromAddress(conf.CRCCommitteeAddress)
+			if err != nil {
+				return errors.New("invalid CRC committee address")
+			}
+			params.CRCCommitteeAddress = *crcCommitteeAddress
+			return nil
+		},
+		CliSetter: func(i interface{}, params *config.Params,
+			conf *config.Configuration) error {
+			value, ok := i.(string)
+			if !ok {
+				return errors.New("unknown foundation address type")
+			}
+			crcCommitteeAddress, err := common.Uint168FromAddress(value)
 			if err != nil {
 				return errors.New("invalid CRC committee address")
 			}

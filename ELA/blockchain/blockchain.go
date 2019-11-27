@@ -415,11 +415,11 @@ func (b *BlockChain) createInputs(fromAddress Uint168,
 	return txInputs, changeOutputs, nil
 }
 
-func (b *BlockChain) CreateCRCAppropriationTransaction() *Transaction {
+func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 	utxos, err := b.db.GetUnspentFromProgramHash(
 		b.chainParams.CRCFoundation, *elaact.SystemAssetID)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	var crcFoundationBalance Fixed64
 	for _, u := range utxos {
@@ -428,7 +428,7 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() *Transaction {
 	utxos, err = b.db.GetUnspentFromProgramHash(
 		b.chainParams.CRCCommitteeAddress, *elaact.SystemAssetID)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	var crcCommiteeBalance Fixed64
 	for _, u := range utxos {
@@ -437,6 +437,10 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() *Transaction {
 	p := b.chainParams.CRCAppropriatePercentage
 	appropriationAmount := Fixed64(float64(crcFoundationBalance+
 		crcCommiteeBalance)*p/100.0 - float64(crcCommiteeBalance))
+
+	if appropriationAmount <= 0 {
+		return nil, nil
+	}
 	outputs := []*OutputInfo{{b.chainParams.CRCCommitteeAddress,
 		&appropriationAmount}}
 
@@ -444,9 +448,9 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() *Transaction {
 	tx, err = b.createTransaction(b.chainParams.CRCFoundation, Fixed64(0),
 		uint32(0), outputs...)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return tx
+	return tx, nil
 }
 
 func CalculateTxsFee(block *Block) {
