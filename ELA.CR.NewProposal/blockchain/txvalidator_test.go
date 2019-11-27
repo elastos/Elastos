@@ -3425,7 +3425,7 @@ func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
 	crcFoundation, _ := common.Uint168FromAddress(crAddress)
 
 	s.Chain.chainParams.CRCFoundation = *crcFoundation
-	crcCommiteeAddressStr := "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	crcCommiteeAddressStr := "ESq12oQrvGqHfTkEDYJyR9MxZj1NMnonjo"
 
 	crcCommiteeAddressHash, _ := common.Uint168FromAddress(crcCommiteeAddressStr)
 	s.Chain.chainParams.CRCCommitteeAddress = *crcCommiteeAddressHash
@@ -3484,7 +3484,7 @@ func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
 	hash := block.Hash()
 	node, _ := s.Chain.LoadBlockNode(&block.Header, &hash)
 	s.Chain.db.SaveBlock(block, node, nil, CalcPastMedianTime(node))
-	txCrcAppropriation := s.Chain.CreateCRCAppropriationTransaction()
+	txCrcAppropriation, _ := s.Chain.CreateCRCAppropriationTransaction()
 	s.NotNil(txCrcAppropriation)
 }
 
