@@ -65,7 +65,7 @@ var (
 	NetworkName    = "develap_localnet_network"
 	NodeDockerPath = map[string]DockerPath{
 		"mainchain": {
-			ImageName:    "cyberrepublic/elastos-mainchain-node:v0.3.8",
+			ImageName:    "cyberrepublic/elastos-mainchain-node:v0.3.9",
 			DataPath:     "/ela/elastos",
 			KeystorePath: "/ela/keystore.dat",
 			ConfigPath:   "/ela/config.json",
