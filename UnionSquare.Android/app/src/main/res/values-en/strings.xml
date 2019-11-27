@@ -467,7 +467,7 @@
     <string name="plzselectbirthday">Enter Birth Date</string>
     <string name="plzinputheadurl">Upload the portrait url</string>
     <string name="plzinputcode">Enter country code（e.g +86）</string>
-    <string name="man">男</string>
+    <string name="man">Male</string>
     <string name="woman">Female</string>
     <string name="plzinputinti800">Enter your bios（less than 800 words）</string>
     <string name="addpersonalintro">Add your bios</string>

@@ -20,7 +20,7 @@ import io.realm.Realm;
 public class MyApplication extends MultiDexApplication {
 
     private static MyApplication myApplication;
-    public static int chainID = 0;//  -1alpha 默认0正式  1testnet 2 regtest 小于0为mainnet的不同包名版本
+    public static int chainID = 0;//  -1alpha 默认0正式  1testnet 2 regtest 小于0为mainnet的不同包名版本 3私有链
 
     protected static MyWallet myWallet;
 
@@ -36,7 +36,7 @@ public class MyApplication extends MultiDexApplication {
         serverList.add("https://unionsquare.elastos.org");
         serverList = new SPUtil(this.getApplicationContext()).getDefaultServerList(serverList);
         REQUEST_BASE_URL = new SPUtil(this.getApplicationContext()).getDefaultServer(serverList.iterator().next());
-        Utils.init(this);
+        // Utils.init(this);
         Realm.init(getApplicationContext());
         String pachageName = getPackageName();
 
@@ -51,6 +51,11 @@ public class MyApplication extends MultiDexApplication {
         }
         if (pachageName.endsWith("regtest")) {
             chainID = 2;
+            useBugly();
+            REQUEST_BASE_URL = "https://54.223.244.60";
+        }
+        if (pachageName.endsWith("prvNet")) {
+            chainID = 3;
             useBugly();
             REQUEST_BASE_URL = "https://54.223.244.60";
         }

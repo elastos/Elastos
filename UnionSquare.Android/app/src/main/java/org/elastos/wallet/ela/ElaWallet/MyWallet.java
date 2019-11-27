@@ -63,6 +63,7 @@ public class MyWallet {
 
         mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
         String net = "MainNet";
+        String config = "";
         switch (MyApplication.chainID) {
             case 1:
                 net = "TestNet";
@@ -70,9 +71,12 @@ public class MyWallet {
             case 2:
                 net = "RegTest";
                 break;
+            case 3:
+                net = "PrvNet";
+                break;
 
         }
-        mMasterWalletManager = new MasterWalletManager(mRootPath, net, "", "");
+        mMasterWalletManager = new MasterWalletManager(mRootPath, net, config, "");
     }
 
     private static String getTxHashBaseUrl() {
@@ -698,6 +702,19 @@ public class MyWallet {
         }
     }
 
+    public BaseEntity signDigest(String masterWalletID, String did, String digest, String payPassword) {
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+                return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID));
+            }
+            String result = idChainSubWallet.SignDigest(did, digest, payPassword);
+            return new CommmonStringEntity(SUCCESSCODE, result);
+        } catch (WalletException e) {
+            return exceptionProcess(e, "signDigest " + formatWalletName(masterWalletID) + " tx");
+        }
+    }
+
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -749,8 +766,9 @@ public class MyWallet {
                 return errorProcess(errCodeInvalidSubWallet + "", "Get " + formatWalletName(masterWalletID, chainID));
             }
 
-            if (subWallet.IsCallbackRegistered()) {
+            if (subWallet.getCallback() != null) {
                 Log.d(TAG, "listener already registered, do nothing");
+                subWallet.getCallback().setListener(listener);
                 return new CommmonStringEntity(SUCCESSCODE, "listener already registered");
             }
 
@@ -772,7 +790,7 @@ public class MyWallet {
     // args[7]: boolean useVotedUTXO
     public BaseEntity createDepositTransaction(String masterWalletID, String chainID,
                                                String fromAddress, String sideChainID,
-                                               String amount, String sideChainAddress, String memo, boolean useVotedUTXO) {
+                                               String amount, String sideChainAddress, String memo) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1243,7 +1261,7 @@ public class MyWallet {
     // args[4]: String url
     // args[5]: String location
     // args[6]: String payPasswd
-    public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location, String payPasswd) {
+    public BaseEntity generateCRInfoPayload(String masterWalletID, String chainID, String crPublickey, String nickName, String url, long location) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1271,7 +1289,7 @@ public class MyWallet {
     // args[1]: String chainID
     // args[2]: String crDID
     // args[3]: String payPasswd
-    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID, String payPasswd) {
+    public BaseEntity generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1436,7 +1454,7 @@ public class MyWallet {
     // args[1]: String chainID
     // args[2]: String amount
     // args[3]: String memo
-    public BaseEntity createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String amount, String memo) {
+    public BaseEntity createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String crPublickey, String amount, String memo) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1451,7 +1469,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String tx = mainchainSubWallet.CreateRetrieveCRDepositTransaction("", amount, memo);
+            String tx = mainchainSubWallet.CreateRetrieveCRDepositTransaction(crPublickey, amount, memo);
 
             return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {

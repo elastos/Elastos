@@ -53,6 +53,10 @@ public class SubWallet {
         return mCallback != null;
     }
 
+    public SubWalletCallback getCallback() {
+        return mCallback;
+    }
+
     public void AddCallback(SubWalletCallback subCallback) throws WalletException {
         if (mCallback == null) {
             Log.d(TAG, "SubWallet[" + mInstance + "] adding callback");

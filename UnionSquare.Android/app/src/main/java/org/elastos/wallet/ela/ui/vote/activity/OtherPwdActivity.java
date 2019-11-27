@@ -7,6 +7,9 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseActivity;
@@ -38,6 +41,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     private long code;
     private String inputJson;
     private String did;
+    private JSONObject paylodJson;
 
     @Override
     protected int getLayoutId() {
@@ -63,6 +67,9 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
         type = data.getStringExtra("type");
         amount = data.getStringExtra("amount");
         chainId = data.getStringExtra("chainId");
+        if (chainId == null) {
+            chainId = MyWallet.ELA;
+        }
         nodePublicKey = data.getStringExtra("nodePublicKey");
         ownerPublicKey = data.getStringExtra("ownerPublicKey");
         name = data.getStringExtra("name");
@@ -93,7 +100,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         break;
                     case Constant.CRSIGNUP:
                     case Constant.CRUPDATE:
-                        presenter.generateCRInfoPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, name, url, code, pwd, this);
+                        presenter.generateCRInfoPayload(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey, name, url, code, this);
                         break;
                     case Constant.UNREGISTERSUPRRNODE:
 
@@ -101,7 +108,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         break;
                     case Constant.UNREGISTERCR:
 
-                        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, did, pwd, this);
+                        presenter.generateUnregisterCRPayload(wallet.getWalletId(), MyWallet.ELA, did, this);
                         break;
                     case Constant.DIDSIGNUP:
                         presenter.generateDIDInfoPayload(wallet.getWalletId(), inputJson, pwd, this);
@@ -112,7 +119,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
 
                         break;
                     case Constant.WITHDRAWCR:
-                        presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
+                        presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
                                 Arith.sub(Arith.mul(amount, MyWallet.RATE_S), "10000").toPlainString(), "", this);
 
                         break;
@@ -144,12 +151,20 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
         switch (methodName) {
+            case "signDigest":
+                paylodJson.put("Signature", ((CommmonStringEntity) baseEntity).getData());
+                if (type.equals(Constant.CRSIGNUP)) {
+                    presenter.createRegisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", paylodJson.toString(), Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
+                } else if (type.equals(Constant.CRUPDATE)) {
+                    presenter.createUpdateCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", paylodJson.toString(), "", false, this);
+                } else if (type.equals(Constant.UNREGISTERCR)) {
+                    presenter.createUnregisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", paylodJson.toString(), this);
+                }
+                break;
             case "generateDIDInfoPayload":
                 presenter.createIDTransaction(wallet.getWalletId(), ((CommmonStringEntity) baseEntity).getData(), this);
                 break;
-            case "generateUnregisterCRPayload":
-                presenter.createUnregisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), this);
-                break;
+
             case "generateCancelProducerPayload":
                 //注销按钮
                 presenter.createCancelProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), this);
@@ -166,10 +181,12 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
 
             //验证交易
             case "generateCRInfoPayload":
-                if (type.equals(Constant.CRSIGNUP)) {
-                    presenter.createRegisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
-                } else if (type.equals(Constant.CRUPDATE)) {
-                    presenter.createUpdateCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), "", false, this);
+            case "generateUnregisterCRPayload":
+                String payload = ((CommmonStringEntity) baseEntity).getData();
+                paylodJson = JSON.parseObject(payload);
+                String digest = paylodJson.getString("Digest");
+                if (type.equals(Constant.CRSIGNUP) || type.equals(Constant.CRUPDATE) || type.equals(Constant.UNREGISTERCR)) {
+                    presenter.signDigest(wallet.getWalletId(), did, digest, pwd, this);
                 }
                 break;
             //创建交易

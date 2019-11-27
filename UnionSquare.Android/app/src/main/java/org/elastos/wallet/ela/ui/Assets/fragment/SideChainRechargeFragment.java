@@ -67,7 +67,6 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
     private SideChainPresenter presenter;
     private String address;
     private String amount;
-    private String genesisAddress;
     private String chargeChain;
 
     @Override
@@ -89,9 +88,8 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
         registReceiver();
         presenter = new SideChainPresenter();
-        chargeChain = "IDChain";
+        chargeChain = MyWallet.IDChain;
         tvTochain.setText(getString(R.string.chargerto) + chargeChain);
-        presenter.getGenesisAddress(wallet.getWalletId(), chargeChain, this);
         etBalance.setFilters(new InputFilter[]{MatcherUtil.filter(4)});
     }
 
@@ -144,7 +142,6 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
             if (!chargeChain.equals(temp)) {
                 chargeChain = temp;
                 tvTochain.setText(getString(R.string.chargerto) + chargeChain);
-                presenter.getGenesisAddress(wallet.getWalletId(), chargeChain, this);
 
             }
         }
@@ -201,9 +198,6 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
     @Override
     public void onGetCommonData(String methodname, String data) {
         switch (methodname) {
-            case "getGenesisAddress":
-                genesisAddress = data;
-                break;
             case "createDepositTransaction":
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("amount", amount);
@@ -233,7 +227,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         }
         String remark = etRemark.getText().toString().trim();
         //long actualSpend = (long) (Double.parseDouble(amount) * MyWallet.RATE);
-        presenter.createDepositTransaction(wallet.getWalletId(), chainId, "", genesisAddress, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), address, remark, true, this);
+        presenter.createDepositTransaction(wallet.getWalletId(), chainId,"", chargeChain, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
 
     }
 

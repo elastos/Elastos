@@ -24,6 +24,17 @@ public class PwdPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable);
     }
 
+    public void signDigest(String walletId, String did, String digest, String pwd, BaseActivity baseActivity) {
+        Observer observer = createObserver(baseActivity, "signDigest");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseActivity.getWallet().signDigest(walletId, did, digest, pwd);
+            }
+        });
+        subscriberObservable(observer, observable, baseActivity);
+    }
+
     //步骤2
     public void publishTransaction(String walletId, String chainId, String rawTransaction, BaseActivity baseActivity) {
         Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseActivity);
@@ -115,13 +126,13 @@ public class PwdPresenter extends NewPresenterAbstract {
 
     /************************************CR**************************************/
     //验证交易
-    public void generateCRInfoPayload(String masterWalletID, String chainID, String publicKey, String nickName, String url, long location, String payPasswd
+    public void generateCRInfoPayload(String masterWalletID, String chainID, String publicKey, String nickName, String url, long location
             , BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "generateCRInfoPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location, payPasswd);
+                return baseActivity.getMyWallet().generateCRInfoPayload(masterWalletID, chainID, publicKey, nickName, url, location);
             }
         });
         subscriberObservable(observer, observable, baseActivity);
@@ -191,24 +202,24 @@ public class PwdPresenter extends NewPresenterAbstract {
     }
 
     //cr
-    public void generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID, String payPasswd, BaseActivity baseActivity) {
+    public void generateUnregisterCRPayload(String masterWalletID, String chainID, String crDID, BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "generateUnregisterCRPayload");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().generateUnregisterCRPayload(masterWalletID, chainID, crDID, payPasswd);
+                return baseActivity.getMyWallet().generateUnregisterCRPayload(masterWalletID, chainID, crDID);
             }
         });
         subscriberObservable(observer, observable, baseActivity);
     }
 
     //取回押金交易
-    public void createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String amount, String memo, BaseActivity baseActivity) {
+    public void createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String crPublickey, String amount, String memo, BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "createRetrieveCRDepositTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().createRetrieveCRDepositTransaction(masterWalletID, chainID, amount, memo);
+                return baseActivity.getMyWallet().createRetrieveCRDepositTransaction(masterWalletID, chainID, crPublickey, amount, memo);
             }
         });
         subscriberObservable(observer, observable, baseActivity);
@@ -236,7 +247,9 @@ public class PwdPresenter extends NewPresenterAbstract {
             }
         });
         subscriberObservable(observer, observable, baseActivity);
-    }public void createIDTransaction(String masterWalletID, String inputJson, BaseActivity baseActivity) {
+    }
+
+    public void createIDTransaction(String masterWalletID, String inputJson, BaseActivity baseActivity) {
         Observer observer = createObserver(baseActivity, "createIDTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override

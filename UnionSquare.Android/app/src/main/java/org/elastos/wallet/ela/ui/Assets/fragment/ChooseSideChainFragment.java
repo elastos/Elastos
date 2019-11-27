@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.ui.Assets.adapter.ChooseSideAddressRecAdapter;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
@@ -40,7 +41,7 @@ public class ChooseSideChainFragment extends BaseFragment implements CommonRvLis
     protected void initView(View view) {
         tvTitle.setText(R.string.choosesidechain);
         list = new ArrayList<>();
-        list.add("IDChain");
+        list.add(MyWallet.IDChain);
         setRecycleView();
     }
 

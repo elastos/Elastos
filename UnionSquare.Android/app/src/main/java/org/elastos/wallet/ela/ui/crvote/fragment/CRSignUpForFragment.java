@@ -71,6 +71,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
 
     @Override
     protected void setExtraData(Bundle data) {
+        tvPublickey.setText(data.getString("publickey"));
         did = data.getString("did");
         tvDid.setText(did);
         netList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
@@ -81,7 +82,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
     protected void initView(View view) {
         tvTitle.setText(R.string.sign_up_for);
         presenter = new CRSignUpPresenter();
-        presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
+
         registReceiver();
 
     }
@@ -167,7 +168,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
         // switch (methodName) {
 
         //  case "getCROwnerPublicKey":
-        tvPublickey.setText(((CommmonStringEntity) baseEntity).getData());
+
         //    break;
         //  }
     }
@@ -195,6 +196,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
         intent.putExtra("chainId", MyWallet.ELA);
         intent.putExtra("ownerPublicKey", ownerPublicKey);
         intent.putExtra("fee", fee);
+        intent.putExtra("did", did);
         intent.putExtra("name", name);
         intent.putExtra("url", url);
         intent.putExtra("code", code);
