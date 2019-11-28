@@ -450,14 +450,15 @@ namespace Elastos {
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
-			for (size_t i = 0; i < allTxs.size(); ++i) {
-				if (allTxs[i]->GetBlockHeight() == TX_UNCONFIRMED) {
+			for (std::vector<TransactionPtr>::reverse_iterator it = allTxs.rbegin(); it != allTxs.rend(); ++it) {
+				TransactionPtr tx = *it;
+				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
 					continue;
 				}
 
-				if (allTxs[i]->GetTransactionType() == Transaction::registerProducer ||
-				    allTxs[i]->GetTransactionType() == Transaction::updateProducer) {
-					const ProducerInfo *pinfo = dynamic_cast<const ProducerInfo *>(allTxs[i]->GetPayload());
+				if (tx->GetTransactionType() == Transaction::registerProducer ||
+				    tx->GetTransactionType() == Transaction::updateProducer) {
+					const ProducerInfo *pinfo = dynamic_cast<const ProducerInfo *>(tx->GetPayload());
 					if (pinfo) {
 						nlohmann::json info;
 
@@ -471,19 +472,19 @@ namespace Elastos {
 						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
-				} else if (allTxs[i]->GetTransactionType() == Transaction::cancelProducer) {
-					const CancelProducer *pc = dynamic_cast<const CancelProducer *>(allTxs[i]->GetPayload());
+				} else if (tx->GetTransactionType() == Transaction::cancelProducer) {
+					const CancelProducer *pc = dynamic_cast<const CancelProducer *>(tx->GetPayload());
 					if (pc) {
 						uint32_t lastBlockHeight = wallet->LastBlockHeight();
 
 						nlohmann::json info;
 
-						info["Confirms"] = allTxs[i]->GetConfirms(lastBlockHeight);
+						info["Confirms"] = tx->GetConfirms(lastBlockHeight);
 
 						j["Status"] = "Canceled";
 						j["Info"] = info;
 					}
-				} else if (allTxs[i]->GetTransactionType() == Transaction::returnDepositCoin) {
+				} else if (tx->GetTransactionType() == Transaction::returnDepositCoin) {
 					j["Status"] = "ReturnDeposit";
 					j["Info"] = nlohmann::json();
 				}
@@ -805,14 +806,15 @@ namespace Elastos {
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
-			for (size_t i = 0; i < allTxs.size(); ++i) {
-				if (allTxs[i]->GetBlockHeight() == TX_UNCONFIRMED) {
+			for (std::vector<TransactionPtr>::reverse_iterator it = allTxs.rbegin(); it != allTxs.rend(); ++it) {
+				TransactionPtr tx = *it;
+				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
 					continue;
 				}
 
-				if (allTxs[i]->GetTransactionType() == Transaction::registerCR ||
-					allTxs[i]->GetTransactionType() == Transaction::updateCR) {
-					const CRInfo *pinfo = dynamic_cast<const CRInfo *>(allTxs[i]->GetPayload());
+				if (tx->GetTransactionType() == Transaction::registerCR ||
+				    tx->GetTransactionType() == Transaction::updateCR) {
+					const CRInfo *pinfo = dynamic_cast<const CRInfo *>(tx->GetPayload());
 					if (pinfo) {
 						nlohmann::json info;
 						ByteStream stream(pinfo->GetCode());
@@ -829,19 +831,19 @@ namespace Elastos {
 						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
-				} else if (allTxs[i]->GetTransactionType() == Transaction::unregisterCR) {
-					const UnregisterCR *pc = dynamic_cast<const UnregisterCR *>(allTxs[i]->GetPayload());
+				} else if (tx->GetTransactionType() == Transaction::unregisterCR) {
+					const UnregisterCR *pc = dynamic_cast<const UnregisterCR *>(tx->GetPayload());
 					if (pc) {
 						uint32_t lastBlockHeight = wallet->LastBlockHeight();
 
 						nlohmann::json info;
 
-						info["Confirms"] = allTxs[i]->GetConfirms(lastBlockHeight);
+						info["Confirms"] = tx->GetConfirms(lastBlockHeight);
 
 						j["Status"] = "Canceled";
 						j["Info"] = info;
 					}
-				} else if (allTxs[i]->GetTransactionType() == Transaction::returnCRDepositCoin) {
+				} else if (tx->GetTransactionType() == Transaction::returnCRDepositCoin) {
 					j["Status"] = "ReturnDeposit";
 					j["Info"] = nlohmann::json();
 				}
