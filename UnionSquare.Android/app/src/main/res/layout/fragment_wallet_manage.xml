@@ -157,6 +157,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/ll_exportreadonly"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
@@ -187,6 +188,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/ll_showmulpublickey"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
@@ -216,6 +218,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/ll_showwalletpublickey"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
