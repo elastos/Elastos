@@ -683,11 +683,9 @@ export default class extends BaseComponent {
                 <FilterItemLabel isCouncil={isCouncil}>
                   {I18N.get('proposal.fields.author')}
                 </FilterItemLabel>
-                <Input
-                  className="filter-input"
-                  value={author}
-                  onChange={this.handleAuthorChange}
-                />
+                <div className="filter-input">
+                  <Input value={author} onChange={this.handleAuthorChange} />
+                </div>
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel isCouncil={isCouncil}>

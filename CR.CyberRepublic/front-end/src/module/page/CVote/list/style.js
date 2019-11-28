@@ -84,7 +84,8 @@ export const FilterPanel = styled.div`
     margin-bottom: 58px;
   }
   .filter-input {
-    width: ${props => (props.isCouncil ? '55%' : '50%')};
+    width: ${props => (props.isCouncil ? '60%' : '50%')};
+    ${props => (props.isCouncil ? 'padding-right: 15px;' : '')}
   }
 `
 
@@ -102,7 +103,7 @@ export const FilterItem = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-left: 25px;
+  padding-left: 15px;
   padding-bottom: 10px;
   &.filter-checkbox {
     padding-top: 10px;

@@ -493,11 +493,9 @@ export default class extends StandardPage {
                 <FilterItemLabel>
                   {I18N.get('suggestion.fields.author')}
                 </FilterItemLabel>
-                <Input
-                  className="filter-input"
-                  value={author}
-                  onChange={this.handleAuthorChange}
-                />
+                <div className="filter-input">
+                  <Input value={author} onChange={this.handleAuthorChange} />
+                </div>
               </FilterItem>
               <FilterItem>
                 <FilterItemLabel>
@@ -677,7 +675,7 @@ export default class extends StandardPage {
       results
     }
     let included = ''
-
+   
     if (this.state.showArchived) {
       query.status = SUGGESTION_STATUS.ARCHIVED
     }
@@ -862,7 +860,8 @@ const FilterPanel = styled.div`
     margin-bottom: 58px;
   }
   .filter-input {
-    width: 55%;
+    width: 60%;
+    padding-right: 15px;
   }
 `
 
@@ -879,7 +878,7 @@ const FilterItem = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-left: 25px;
+  padding-left: 15px;
   padding-bottom: 10px;
   &.filter-checkbox {
     padding-top: 10px;

@@ -92,7 +92,7 @@ export const FilterContent = styled.div`
 
 export const FilterItemLabel = styled.div`
   width: 25%;
-  padding-left: 25px;
+  padding-left: 15px;
   font-family: Synthese;
   font-size: 14px;
   line-height: 20px;
