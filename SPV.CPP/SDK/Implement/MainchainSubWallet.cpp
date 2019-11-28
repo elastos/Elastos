@@ -442,9 +442,10 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::GetRegisteredProducerInfo() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
-			std::vector<TransactionPtr> allTxs = _walletManager->GetWallet()->GetAllTransactions();
+			std::vector<TransactionPtr> allTxs = wallet->GetAllTransactions(0, wallet->GetAllTransactionCount());
 			nlohmann::json j;
 
 			j["Status"] = "Unregistered";
@@ -473,7 +474,7 @@ namespace Elastos {
 				} else if (allTxs[i]->GetTransactionType() == Transaction::cancelProducer) {
 					const CancelProducer *pc = dynamic_cast<const CancelProducer *>(allTxs[i]->GetPayload());
 					if (pc) {
-						uint32_t lastBlockHeight = _walletManager->GetWallet()->LastBlockHeight();
+						uint32_t lastBlockHeight = wallet->LastBlockHeight();
 
 						nlohmann::json info;
 
@@ -796,9 +797,10 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::GetRegisteredCRInfo() const {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
-			std::vector<TransactionPtr> allTxs = _walletManager->GetWallet()->GetAllTransactions();
+			std::vector<TransactionPtr> allTxs = wallet->GetAllTransactions(0, wallet->GetAllTransactionCount());
 			nlohmann::json j;
 
 			j["Status"] = "Unregistered";
@@ -830,7 +832,7 @@ namespace Elastos {
 				} else if (allTxs[i]->GetTransactionType() == Transaction::unregisterCR) {
 					const UnregisterCR *pc = dynamic_cast<const UnregisterCR *>(allTxs[i]->GetPayload());
 					if (pc) {
-						uint32_t lastBlockHeight = _walletManager->GetWallet()->LastBlockHeight();
+						uint32_t lastBlockHeight = wallet->LastBlockHeight();
 
 						nlohmann::json info;
 

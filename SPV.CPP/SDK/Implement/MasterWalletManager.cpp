@@ -128,7 +128,7 @@ namespace Elastos {
 																  _dataPath, _p2pEnable,
 																  ImportFromLocalStore);
 
-					checkRedundant(masterWallet);
+					//checkRedundant(masterWallet);
 					_masterWalletMap[masterWalletID] = masterWallet;
 					masterWallet->InitSubWallets();
 				}

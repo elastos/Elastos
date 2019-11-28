@@ -216,6 +216,8 @@ static int createPassphrase(std::string &passphrase) {
 
 static void signAndPublishTx(ISubWallet *subWallet, const nlohmann::json &tx, const std::string &payPasswd = "") {
 	std::string password = payPasswd;
+
+	std::cout << "Fee: " << tx["Fee"] << std::endl;
 	if (payPasswd.empty()) {
 		password = getpass("Enter payment password: ");
 	}
@@ -419,6 +421,7 @@ static void import(int argc, char *argv[]) {
 		} else if (importWhat == "keystore" || importWhat == "k") {
 			std::string keystore;
 			std::cout << "Enter keystore: ";
+			std::cin >> keystore;
 
 			std::string backupPassword = getpass("Enter backup password: ");
 
@@ -689,9 +692,9 @@ static void _close(int argc, char *argv[]) {
 	}
 }
 
-// deposit [chainID] [amount] [address]
+// deposit [amount] [address]
 static void deposit(int argc, char *argv[]) {
-	if (argc != 4) {
+	if (argc != 3) {
 		invalidCmdError();
 		return;
 	}
@@ -701,16 +704,10 @@ static void deposit(int argc, char *argv[]) {
 		return;
 	}
 
-	std::string chainID = argv[1];
-	std::string amount = convertAmount(argv[2]);
-	std::string sideChainAddress = argv[3];
+	std::string amount = convertAmount(argv[1]);
+	std::string sideChainAddress = argv[2];
 
 	try {
-		if (chainID == CHAINID_ELA) {
-			std::cerr << "ELA is not a sidechain." << std::endl;
-			return;
-		}
-
 		IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(
 			CHAINID_ELA));
 		if (mainchainSubWallet == NULL) {
@@ -718,9 +715,21 @@ static void deposit(int argc, char *argv[]) {
 			return;
 		}
 
+		std::vector<std::string> supportChainID = currentWallet->GetSupportedChains();
+		std::cout << "Support side chain ID: " << std::endl;
+		for (const std::string &chainID : supportChainID) {
+			if (chainID == mainchainSubWallet->GetChainID())
+				continue;
+			std::cout << "  " << chainID << std::endl;
+		}
+		std::cout << "Which side chain do you want to top up: ";
+		std::string chainID;
+		std::cin >> chainID;
 
 		nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(
 			"", chainID, amount, sideChainAddress, "");
+
+		std::cout << "Top up " << sideChainAddress << ":" << amount << " to " << chainID << std::endl;
 
 		signAndPublishTx(mainchainSubWallet, tx);
 	} catch (const std::exception &e) {
@@ -728,9 +737,9 @@ static void deposit(int argc, char *argv[]) {
 	}
 }
 
-// withdraw [chainID] [amount] [address]
+// withdraw [amount] [address]
 static void withdraw(int argc, char *argv[]) {
-	if (argc != 4) {
+	if (argc != 3) {
 		invalidCmdError();
 		return;
 	}
@@ -740,15 +749,22 @@ static void withdraw(int argc, char *argv[]) {
 		return;
 	}
 
-	std::string chainID = argv[1];
-	std::string amount = convertAmount(argv[2]);
-	std::string mainChainAddress = argv[3];
+	std::string amount = convertAmount(argv[1]);
+	std::string mainChainAddress = argv[2];
 
 	try {
-		if (chainID == CHAINID_ELA) {
-			std::cerr << "ELA is not a sidechain." << std::endl;
-			return;
+		std::vector<std::string> supportChainID = currentWallet->GetSupportedChains();
+		std::cout << "Support side chain ID: " << std::endl;
+		for (const std::string chainID : supportChainID) {
+			if (chainID == CHAINID_ELA)
+				continue;
+
+			std::cout << "  " << chainID << std::endl;
 		}
+
+		std::cout << "Which side chain do you want to withdraw from: ";
+		std::string chainID;
+		std::cin >> chainID;
 
 		ISidechainSubWallet *sidechainSubWallet = dynamic_cast<ISidechainSubWallet *>(currentWallet->GetSubWallet(
 			chainID));
@@ -759,6 +775,8 @@ static void withdraw(int argc, char *argv[]) {
 
 		nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(
 			"", amount, mainChainAddress, "");
+
+		std::cout << "Withdraw " << mainChainAddress << ":" << amount << " from " << chainID << std::endl;
 
 		signAndPublishTx(sidechainSubWallet, tx);
 	} catch (const std::exception &e) {
@@ -1452,11 +1470,12 @@ static void _tx(int argc, char *argv[]) {
 		int start, max;
 		std::string cmd;
 		bool show = true;
+		std::string txHash;
 
 		do {
 			if (show) {
 				start = cntPerPage * (curPage - 1);
-				nlohmann::json txJosn = subWallet->GetAllTransaction(start, cntPerPage, "");
+				nlohmann::json txJosn = subWallet->GetAllTransaction(start, cntPerPage, txHash);
 				nlohmann::json tx = txJosn["Transactions"];
 				max = txJosn["MaxCount"];
 
@@ -1464,19 +1483,24 @@ static void _tx(int argc, char *argv[]) {
 				char buf[100];
 				struct tm tm;
 				for (nlohmann::json::iterator it = tx.begin(); it != tx.end(); ++it) {
-					std::string txHash = (*it)["TxHash"];
-					std::string confirm = (*it)["ConfirmStatus"];
-					time_t t = (*it)["Timestamp"];
-					std::string dir = (*it)["Direction"];
-					double amount = std::stod((*it)["Amount"].get<std::string>()) / SELA_PER_ELA;
+					if (txHash.empty()) {
+						std::string txHash = (*it)["TxHash"];
+						std::string confirm = (*it)["ConfirmStatus"];
+						time_t t = (*it)["Timestamp"];
+						std::string dir = (*it)["Direction"];
+						double amount = std::stod((*it)["Amount"].get<std::string>()) / SELA_PER_ELA;
 
-					localtime_r(&t, &tm);
-					strftime(buf, sizeof(buf), "%F %T", &tm);
-					printf("%s  %2s  %8s  %s  %.8lf\n", txHash.c_str(), confirm.c_str(), dir.c_str(), buf, amount);
+						localtime_r(&t, &tm);
+						strftime(buf, sizeof(buf), "%F %T", &tm);
+						printf("%s  %2s  %8s  %s  %.8lf\n", txHash.c_str(), confirm.c_str(), dir.c_str(), buf, amount);
+					} else {
+						std::cout << (*it).dump(4) << std::endl;
+					}
 				}
+				txHash.clear();
 			}
 
-			std::cout << "'n' Next Page, 'b' Previous Page, 'q' Exit: ";
+			std::cout << "'txid' Detail, 'n' Next Page, 'b' Previous Page, 'q' Exit: ";
 			std::getline(std::cin, cmd);
 
 			if (cmd == "n") {
@@ -1485,7 +1509,7 @@ static void _tx(int argc, char *argv[]) {
 					show = true;
 				} else {
 					std::cout << "already last page" << std::endl;
-					show = false;
+					show = true;
 				}
 			} else if (cmd == "b") {
 				if (curPage > 1) {
@@ -1493,10 +1517,13 @@ static void _tx(int argc, char *argv[]) {
 					show = true;
 				} else {
 					std::cout << "already first page" << std::endl;
-					show = false;
+					show = true;
 				}
 			} else if (cmd == "q") {
 				break;
+			} else if (cmd.size() == 64) {
+				txHash = cmd;
+				show = true;
 			} else {
 				std::cout << "invalid input" << std::endl;
 				show = false;
@@ -1660,8 +1687,8 @@ struct command {
 	{"receive",  _receive,       "[chainID]                               Get receive address of `chainID`."},
 	{"address",  address,        "[chainID]                               Get the revceive address of chainID."},
 	{"proposal", proposal,       "[sponsor | crsponsor]                   Sponsor sign proposal or cr sponsor create proposal tx."},
-	{"deposit",  deposit,        "[chainID] [amount] [address]            Deposit to sidechain from mainchain."},
-	{"withdraw", withdraw,       "[chainID] [amount] [address]            Withdraw from sidechain to mainchain."},
+	{"deposit",  deposit,        "[amount] [address]                      Deposit to sidechain from mainchain."},
+	{"withdraw", withdraw,       "[amount] [address]                      Withdraw from sidechain to mainchain."},
 	{"export",   _export,        "[m[nemonic] | [k[eystore]]              Export mnemonic or keystore."},
 	{"register", _register,      "[cr | dpos]                             Register CR or DPoS with specified wallet."},
 	{"unregister", unregister,   "[cr | dpos]                             Unregister CR or DPoS with specified wallet."},

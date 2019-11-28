@@ -468,6 +468,11 @@ namespace Elastos {
 			return _allTx.Get(txHash);
 		}
 
+		size_t Wallet::GetAllTransactionCount() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return _transactions.size();
+		}
+
 		UTXOPtr Wallet::CoinBaseTxForHash(const uint256 &txHash) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return CoinBaseForHashInternal(txHash);
@@ -807,9 +812,15 @@ namespace Elastos {
 			return _subAccount->UnusedAddresses(gapLimit, internal);
 		}
 
-		std::vector<TransactionPtr> Wallet::GetAllTransactions() const {
+		std::vector<TransactionPtr> Wallet::GetAllTransactions(size_t start, size_t count) const {
+			std::vector<TransactionPtr> result;
+
 			boost::mutex::scoped_lock scopedLock(lock);
-			return _transactions;
+			size_t maxCount = _transactions.size();
+			for (size_t i = start; i < maxCount && result.size() < count; ++i)
+				result.push_back(_transactions[maxCount - i - 1]);
+
+			return result;
 		}
 
 		std::vector<UTXOPtr> Wallet::GetAllCoinBaseTransactions() const {

@@ -397,50 +397,37 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) const {
+		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &txid) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("start: {}", start);
 			ArgInfo("count: {}", count);
-			ArgInfo("addrOrTxID: {}", addressOrTxid);
+			ArgInfo("txid: {}", txid);
 
+			nlohmann::json j;
+			uint32_t confirms = 0;
+			std::vector<nlohmann::json> jsonList;
 			const WalletPtr &wallet = _walletManager->GetWallet();
 
-			std::vector<TransactionPtr> allTxs = wallet->GetAllTransactions();
-			size_t fullTxCount = allTxs.size();
-			size_t pageCount = count;
-			nlohmann::json j;
+			j["MaxCount"] = wallet->GetAllTransactionCount();
 
-			if (start >= fullTxCount) {
-				j["Transactions"] = {};
-				j["MaxCount"] = fullTxCount;
-
-				ArgInfo("r => {}", j.dump());
-				return j;
+			if (!txid.empty()) {
+				uint256 txHash(txid);
+				TransactionPtr tx = wallet->TransactionForHash(txHash);
+				if (tx) {
+					confirms = tx->GetConfirms(wallet->LastBlockHeight());
+					jsonList.push_back(tx->GetSummary(wallet, confirms, true));
+					j["Transactions"] = jsonList;
+				} else {
+					j["Transactions"] = {};
+				}
+			} else {
+				std::vector<TransactionPtr> txns = wallet->GetAllTransactions(start, count);
+				for (size_t i = 0; i < txns.size(); ++i) {
+					confirms = txns[i]->GetConfirms(wallet->LastBlockHeight());
+					jsonList.push_back(txns[i]->GetSummary(wallet, confirms, false));
+				}
+				j["Transactions"] = jsonList;
 			}
-
-			if (fullTxCount < start + count)
-				pageCount = fullTxCount - start;
-
-			std::vector<TransactionPtr> transactions(pageCount);
-			uint32_t realCount = 0;
-			for (long i = fullTxCount - 1 - start; i >= 0 && realCount < pageCount; --i) {
-				if (!filterByAddressOrTxId(allTxs[i], addressOrTxid))
-					continue;
-				transactions[realCount++] = allTxs[i];
-			}
-
-			std::vector<nlohmann::json> jsonList(realCount);
-			for (size_t i = 0; i < realCount; ++i) {
-				uint32_t confirms = 0;
-				uint32_t lastBlockHeight = _walletManager->GetWallet()->LastBlockHeight();
-				std::string hash = transactions[i]->GetHash().GetHex();
-
-				confirms = transactions[i]->GetConfirms(lastBlockHeight);
-
-				jsonList[i] = transactions[i]->GetSummary(_walletManager->GetWallet(), confirms, !addressOrTxid.empty());
-			}
-			j["Transactions"] = jsonList;
-			j["MaxCount"] = fullTxCount;
 
 			ArgInfo("r => {}", j.dump());
 			return j;

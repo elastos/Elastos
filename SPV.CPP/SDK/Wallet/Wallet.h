@@ -154,9 +154,11 @@ namespace Elastos {
 
 			TransactionPtr TransactionForHash(const uint256 &transactionHash);
 
+			size_t GetAllTransactionCount() const;
+
 			UTXOPtr CoinBaseTxForHash(const uint256 &txHash) const;
 
-			std::vector<TransactionPtr> GetAllTransactions() const;
+			std::vector<TransactionPtr> GetAllTransactions(size_t start, size_t count) const;
 
 			std::vector<UTXOPtr> GetAllCoinBaseTransactions() const;
 

@@ -95,7 +95,7 @@ namespace Elastos {
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
 					uint32_t count,
-					const std::string &addressOrTxid) const;
+					const std::string &txid) const;
 
 			virtual nlohmann::json GetAllCoinBaseTransaction(
 				uint32_t start,
