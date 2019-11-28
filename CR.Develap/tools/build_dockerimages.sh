@@ -98,7 +98,7 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "arbitrator" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "v0.1.2" "gitlab.com/elastos/Elastos.ELA.Arbiter" "arbitrator" \
+    build_binary_and_docker "v0.1.2" "github.com/elastos/Elastos.ELA.Arbiter" "arbitrator" \
         "cyberrepublic/elastos-arbitrator-node" "yes" "v0.1.2"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.did" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
