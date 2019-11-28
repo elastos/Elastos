@@ -1,4 +1,9 @@
-{% extends 'base.html' %} {% load static %} 
+{% extends 'base.html' %} 
+{% load static %} 
+
+{% block title %}
+  <title>Landing - Elastos Nucleus</title>
+{% endblock title %}
 
 {% block scripts %}
 <script>
@@ -18,6 +23,7 @@
 {% endblock %} 
 
 {% block content %}
+  <!-- Jumbotron -->
   <main class="bd-masthead" id="content" role="main" style="background-color: #0958a7;">
     <div class="container">
       <div class="row align-items-center">
@@ -40,51 +46,60 @@
       </div>
     </div>
   </main>
+
+  <!-- About Us Row -->
   <main class="bd-masthead" id="content2" role="main" style="background-color: #eff4f7;">
       <div class="container">
+
+          <!-- Description -->
           <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
               <div class="col-12 col-md-10 col-lg-7">
                 <div class="section-title text-center">
                   <h2 class="font-alt">Our Mission</h2>
-                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  <p>Ponec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
                 </div>
               </div>
           </div>
+
+          <!-- About Us -->
           <div class="row" style="margin-top: 15px;">
               <div class="col-12 col-md-4 ">
-                <div class="feature-box-01  sm-m-15px-t">
+                <div class="feature-box-01  sm-m-15px-t" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
                   <svg><use xlink:href="#sketching"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">Title</h5>
                     <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
                   </div>
-                </div> <!-- feature-box-01 -->
-              </div> <!-- col -->
+                </div>
+              </div>
               <div class="col-12 col-md-4">
-                <div class="feature-box-01 sm-m-0px-t">
+                <div class="feature-box-01 sm-m-0px-t" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
                   <svg><use xlink:href="#command_line"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">Title</h5>
                     <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
                   </div>
-                </div> <!-- feature-box-01 -->
-              </div> <!-- col -->
-    
+                </div>
+              </div>
               <div class="col-12 col-md-4">
-                <div class="feature-box-01">
+                <div class="feature-box-01" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">Title</h5>
                     <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
                   </div>
-                </div> <!-- feature-box-02 -->
-              </div> <!-- col -->
+                </div>
+              </div>
           </div>
       </div>
   </main>
+
+  <!-- Features Row -->
   <main class="bd-masthead" id="content3" role="main" style="background-color: #ffffff;">
       <div class="container">
-          <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
+
+            <!-- Description -->
+            <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
               <div class="col-12 col-md-10 col-lg-7">
                 <div class="section-title text-center">
                   <h2 class="font-alt">Start Developing Today</h2>
@@ -92,6 +107,46 @@
                 </div>
               </div>
             </div>
+
+            <!-- Features -->
+            <div class="row" style="margin-top: 15px;">
+              <div class="col-3">
+                <div class="feature-box-01  sm-m-15px-t">
+                  <svg><use xlink:href="#sketching"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">Title</h5>
+                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="feature-box-01 sm-m-0px-t">
+                  <svg><use xlink:href="#command_line"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">Title</h5>
+                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="feature-box-01">
+                  <svg><use xlink:href="#biz_discussion"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">Title</h5>
+                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="feature-box-01">
+                  <svg><use xlink:href="#biz_discussion"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">Title</h5>
+                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+                  </div>
+                </div>
+              </div>
+          </div>
       </div>
   </main>
 {% endblock %}

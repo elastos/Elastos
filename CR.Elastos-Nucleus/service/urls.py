@@ -12,6 +12,4 @@ urlpatterns = [
     url(r'runContract', views.run_contract, name="runContract"),
     url(r'saveDidData', views.save_did_data, name="saveDidData"),
     url(r'retrieveDidData', views.retrieve_did_data, name="retrieveDidData"),
-    url(r'documentation', views.documentation, name="documentation"),
-    url(r'aboutUs', views.about_us, name='aboutUs'),
 ]

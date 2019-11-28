@@ -40,9 +40,3 @@ def save_did_data(request):
 
 def retrieve_did_data(request):
     return render(request, "services/retrieveData.html")
-
-def documentation(request):
-    return render(request, "services/documentation.html")
-
-def about_us(request):
-    return render(request, "services/aboutUs.html")
