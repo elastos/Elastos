@@ -118,7 +118,6 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 
 func TestCheckAssetPrecision(t *testing.T) {
 	DefaultLedger = &Ledger{
-		Blockchain: chain,
 		Store:      testChainStore,
 	}
 
