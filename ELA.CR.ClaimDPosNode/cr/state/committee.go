@@ -199,6 +199,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	if c.shouldChange(block.Height) {
 		if c.shouldCleanHistory() {
 			c.HistoryMembers = make(map[uint64]map[common.Uint168]*CRMember)
+			c.state.HistoryCandidates = make(map[uint64]map[common.Uint168]*Candidate)
 		}
 		committeeDIDs, err := c.changeCommitteeMembers(block.Height)
 		if err != nil {
@@ -349,7 +350,7 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 			break
 		}
 	}
-	oriPenalty := c.state.crcPenalty[crMember.Info.DID]
+	oriPenalty := c.state.depositInfo[crMember.Info.DID].Penalty
 	oriMemberState := crMember.MemberState
 	penalty := c.getMemberPenalty(height, crMember)
 	history.Append(height, func() {
@@ -357,12 +358,12 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 		if crMember.ImpeachmentVotes >= common.Fixed64(float64(circulation)*
 			c.params.VoterRejectPercentage/100.0) {
 			crMember.MemberState = MemberImpeached
-			c.state.crcPenalty[crMember.Info.DID] = penalty
+			c.state.depositInfo[crMember.Info.DID].Penalty = penalty
 		}
 	}, func() {
 		crMember.ImpeachmentVotes -= votes
 		crMember.MemberState = oriMemberState
-		c.state.crcPenalty[crMember.Info.DID] = oriPenalty
+		c.state.depositInfo[crMember.Info.DID].Penalty = oriPenalty
 	})
 	return
 }
@@ -544,7 +545,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 			make(map[common.Uint168]*CRMember)
 	}
 	for _, m := range c.Members {
-		c.state.crcPenalty[m.Info.DID] = c.getMemberPenalty(height, m)
+		c.state.depositInfo[m.Info.DID].Penalty = c.getMemberPenalty(height, m)
 		c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = m
 	}
 
@@ -564,7 +565,9 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 			make(map[common.Uint168]*Candidate)
 	}
 	for k, v := range c.state.Candidates {
-		c.state.HistoryCandidates[c.state.CurrentSession][k] = v
+		if _, ok := c.Members[k]; !ok {
+			c.state.HistoryCandidates[c.state.CurrentSession][k] = v
+		}
 	}
 
 	c.state.CurrentSession += 1
@@ -585,7 +588,6 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	// Calculate penalty by election block count.
 	electionCount := height - c.LastCommitteeHeight
 	electionRate := float64(electionCount) / float64(c.params.CRDutyPeriod)
-	notElectionPenalty := MinDepositAmount * common.Fixed64(1-electionRate)
 
 	// Calculate penalty by vote proposal count.
 	var voteCount int
@@ -598,17 +600,19 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 		}
 	}
 	proposalsCount := len(c.manager.Proposals)
-	voteRate := float64(voteCount) / float64(proposalsCount)
-	notVoteProposalPenalty := MinDepositAmount * common.Fixed64(1-voteRate)
+	voteRate := float64(1.0)
+	if proposalsCount == 0 {
+		voteRate = float64(voteCount) / float64(proposalsCount)
+	}
 
 	// Calculate the final penalty.
-	penalty := c.state.crcPenalty[member.Info.DID]
-	finalPenalty := penalty + notElectionPenalty + notVoteProposalPenalty
+	penalty := c.state.depositInfo[member.Info.DID].Penalty
+	currentPenalty := MinDepositAmount * common.Fixed64(1-electionRate*voteRate)
+	finalPenalty := penalty + currentPenalty
 
-	log.Infof("member %s impeached, not election penalty: %s,"+
-		"not vote proposal penalty: %s, old penalty: %s, final penalty: %s",
-		member.Info.DID, notElectionPenalty, notVoteProposalPenalty,
-		penalty, finalPenalty)
+	log.Infof("member %s impeached, not election and not vote proposal"+
+		" penalty: %s, old penalty: %s, final penalty: %s",
+		member.Info.DID, currentPenalty, penalty, finalPenalty)
 
 	return finalPenalty
 }

@@ -27,8 +27,8 @@ func TestNewCRCommittee(t *testing.T) {
 
 func TestCommittee_ProcessBlock(t *testing.T) {
 	committee := NewCommittee(&config.DefaultParams)
-	round1, expectCandidates1 := generateCandidateSuite()
-	round2, expectCandidates2 := generateCandidateSuite()
+	round1, expectCandidates1, votes1 := generateCandidateSuite()
+	round2, expectCandidates2, votes2 := generateCandidateSuite()
 	committee.state.StateKeyFrame = *round1
 	committee.recordBalanceHeight = config.DefaultParams.CRVotingStartHeight
 
@@ -48,7 +48,9 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes1 := committee.GetMembersCodes()
+	sortCodeList(codes1, votes1)
 	did1 := committee.GetMembersDIDs()
+	sortDIDList(did1, votes1)
 
 	for i := 0; i < len(expectCandidates1); i++ {
 		if i > 0 {
@@ -60,6 +62,9 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 	}
 
 	// > CRCommitteeStartHeight && < CRCommitteeStartHeight + CRDutyPeriod
+	for k, v := range round1.depositInfo {
+		round2.depositInfo[k] = v
+	}
 	committee.state.StateKeyFrame = *round2
 	committee.ProcessBlock(&types.Block{
 		Header: types.Header{
@@ -68,7 +73,9 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes2 := committee.GetMembersCodes()
+	sortCodeList(codes2, votes1)
 	did2 := committee.GetMembersDIDs()
+	sortDIDList(did2, votes1)
 	for i := 0; i < len(expectCandidates1); i++ {
 		assert.True(t, existCode(expectCandidates1[i].info.Code, codes2))
 		assert.True(t, existDID(expectCandidates1[i].info.DID, did2))
@@ -84,7 +91,9 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		},
 	}, nil)
 	codes2 = committee.GetMembersCodes()
+	sortCodeList(codes2, votes2)
 	did2 = committee.GetMembersDIDs()
+	sortDIDList(did2, votes2)
 	for i := 0; i < len(expectCandidates2); i++ {
 		if i > 0 {
 			assert.True(t,
@@ -93,6 +102,20 @@ func TestCommittee_ProcessBlock(t *testing.T) {
 		assert.True(t, bytes.Equal(expectCandidates2[i].info.Code, codes2[i]))
 		assert.True(t, expectCandidates2[i].info.DID.IsEqual(did2[i]))
 	}
+}
+
+func sortCodeList(codes [][]byte, votes map[common.Uint168]common.Fixed64) {
+	sort.Slice(codes, func(i, j int) bool {
+		firstDID, _ := getDIDByCode(codes[i])
+		secondDID, _ := getDIDByCode(codes[j])
+		return votes[*firstDID] > votes[*secondDID]
+	})
+}
+
+func sortDIDList(did []common.Uint168, votes map[common.Uint168]common.Fixed64) {
+	sort.Slice(did, func(i, j int) bool {
+		return votes[did[i]] > votes[did[j]]
+	})
 }
 
 func TestCommittee_IsInVotingPeriod(t *testing.T) {
@@ -305,7 +328,7 @@ func TestCommittee_RollbackTo_DifferenceCommittee(t *testing.T) {
 	//todo complete me when check point is done
 }
 
-func generateCandidateSuite() (*StateKeyFrame, []*Candidate) {
+func generateCandidateSuite() (*StateKeyFrame, []*Candidate, map[common.Uint168]common.Fixed64) {
 	keyFrame := randomStateKeyFrame(24, false)
 	candidates := make([]*Candidate, 0, 24)
 	for _, v := range keyFrame.Candidates {
@@ -324,7 +347,13 @@ func generateCandidateSuite() (*StateKeyFrame, []*Candidate) {
 		}
 		topCandidates = append(topCandidates, v)
 	}
-	return keyFrame, topCandidates
+
+	votes := make(map[common.Uint168]common.Fixed64)
+	for _, c := range candidates {
+		votes[c.info.DID] = c.votes
+	}
+
+	return keyFrame, topCandidates, votes
 }
 
 func existCode(code []byte, codeArray [][]byte) bool {

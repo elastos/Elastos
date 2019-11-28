@@ -182,47 +182,64 @@ func randomCRMember() *CRMember {
 func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 	frame := NewStateKeyFrame()
 
-	for i := 0; i < size; i++ {
-		candidate := randomCandidate()
-		candidate.state = Pending
-		nickname := candidate.Info().NickName
-		code := candidate.Info().Code
-		did := candidate.Info().DID
-		frame.CodeDIDMap[common.BytesToHexString(code)] = did
-		frame.Candidates[did] = candidate
-		frame.Nicknames[nickname] = struct{}{}
-	}
 	if hasPending {
 		for i := 0; i < size; i++ {
 			candidate := randomCandidate()
-			candidate.state = Active
-			code := candidate.info.Code
-			did := candidate.info.DID
-			nickname := candidate.info.NickName
+			candidate.state = Pending
+			nickname := candidate.Info().NickName
+			code := candidate.Info().Code
+			did := candidate.Info().DID
 			frame.CodeDIDMap[common.BytesToHexString(code)] = did
 			frame.Candidates[did] = candidate
 			frame.Nicknames[nickname] = struct{}{}
+			frame.depositInfo[did] = &DepositInfo{
+				Refundable:    false,
+				DepositAmount: 5000 * 1e8,
+				TotalAmount:   5000 * 1e8,
+			}
 		}
 	}
 	for i := 0; i < size; i++ {
-
 		candidate := randomCandidate()
-
+		candidate.state = Active
+		code := candidate.info.Code
+		did := candidate.info.DID
+		nickname := candidate.info.NickName
+		frame.CodeDIDMap[common.BytesToHexString(code)] = did
+		frame.Candidates[did] = candidate
+		frame.Nicknames[nickname] = struct{}{}
+		frame.depositInfo[did] = &DepositInfo{
+			Refundable:    false,
+			DepositAmount: 5000 * 1e8,
+			TotalAmount:   5000 * 1e8,
+		}
+	}
+	for i := 0; i < size; i++ {
+		candidate := randomCandidate()
 		did := candidate.info.DID
 		nickname := candidate.info.NickName
 		code := candidate.info.Code
+		var refundable bool
 		if i%2 == 0 {
 			candidate.state = Canceled
+			refundable = true
 		} else {
 			candidate.state = Returned
+			refundable = false
 		}
 		frame.CodeDIDMap[common.BytesToHexString(code)] = did
 		frame.Candidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
+		frame.depositInfo[did] = &DepositInfo{
+			Refundable:    refundable,
+			DepositAmount: 5000 * 1e8,
+			TotalAmount:   5000 * 1e8,
+		}
 	}
 	frame.HistoryCandidates[1] = make(map[common.Uint168]*Candidate)
 	for i := 0; i < size; i++ {
 		candidate := randomCandidate()
+		frame.depositInfo[candidate.info.DID] = &DepositInfo{}
 		frame.HistoryCandidates[1][candidate.info.DID] = candidate
 	}
 	for i := 0; i < size; i++ {
