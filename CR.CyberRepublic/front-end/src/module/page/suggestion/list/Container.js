@@ -50,9 +50,9 @@ const mapDispatch = () => {
 
     async getList(query) {
 
-      query = Object.assign({
-        status: SUGGESTION_STATUS.ACTIVE
-      }, query)
+      // query = Object.assign({
+      //   status: SUGGESTION_STATUS.ACTIVE
+      // }, query)
 
       return service.list(query)
     },
