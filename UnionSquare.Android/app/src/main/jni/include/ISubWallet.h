@@ -189,14 +189,14 @@ namespace Elastos {
 			 * Get all qualified normal transactions sorted by descent (newest first).
 			 * @param start specify start index of all transactions list.
 			 * @param count specify count of transactions we need.
-			 * @param addressOrTxid filter word which can be an address or a transaction id, if empty all transactions shall be qualified.
+			 * @param txid transaction ID to be filtered.
 			 * @return All qualified transactions in json format.
 			 * {"MaxCount":3,"Transactions":[{"Amount":"20000","ConfirmStatus":"6+","Direction":"Received","Height":172570,"Status":"Confirmed","Timestamp":1557910458,"TxHash":"ff454532e57837cbe04f56a7e43f4209b5eb61d5d2a43a016a769c60d21125b6","Type":6},{"Amount":"10000","ConfirmStatus":"6+","Direction":"Received","Height":172569,"Status":"Confirmed","Timestamp":1557909659,"TxHash":"7253b2cefbac794b621b0080f0f5a4c27d5c91f65c83da75aad615062c42ac5a","Type":6},{"Amount":"100000","ConfirmStatus":"6+","Direction":"Received","Height":172300,"Status":"Confirmed","Timestamp":1557809019,"TxHash":"7e53bb8fe1617bdb57f7346bcf7d2e9dfa6b5d3f3524d0695046389bea79dcd9","Type":6}]}
 			 */
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
 					uint32_t count,
-					const std::string &addressOrTxid) const = 0;
+					const std::string &txid) const = 0;
 
 			/**
 			 * Get all coinbase transactions sorted by descent (newest first).
