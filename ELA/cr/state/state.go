@@ -113,31 +113,38 @@ func (s *State) GetCandidates(state CandidateState) []*Candidate {
 	return s.getCandidates(state)
 }
 
+func (s *State) Exist(did common.Uint168) bool {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	_, ok := s.depositInfo[did]
+	return ok
+}
+
 func (s *State) IsRefundable(did common.Uint168) bool {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	return s.refundable[did]
+	return s.depositInfo[did].Refundable
 }
 
 // GetTotalAmount returns total amount with specified candidate or member did.
 func (s *State) GetTotalAmount(did common.Uint168) common.Fixed64 {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	return s.crcTotalAmount[did]
+	return s.depositInfo[did].TotalAmount
 }
 
 // GetDepositAmount returns deposit amount with specified candidate or member did.
 func (s *State) GetDepositAmount(did common.Uint168) common.Fixed64 {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	return s.crcDepositAmount[did]
+	return s.depositInfo[did].DepositAmount
 }
 
 // GetPenalty returns penalty with specified candidate or member did.
 func (s *State) GetPenalty(did common.Uint168) common.Fixed64 {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	return s.crcPenalty[did]
+	return s.depositInfo[did].Penalty
 }
 
 // getAvailableDepositAmount returns available deposit amount with specified
@@ -153,9 +160,9 @@ func (s *State) getAvailableDepositAmount(did common.Uint168,
 			lockedDepositAmount = MinDepositAmount
 		}
 	}
-
-	return s.crcTotalAmount[did] - s.crcDepositAmount[did] -
-		s.crcPenalty[did] - lockedDepositAmount
+	depositInfo := s.depositInfo[did]
+	return depositInfo.TotalAmount - depositInfo.DepositAmount -
+		depositInfo.Penalty - lockedDepositAmount
 }
 
 // ExistCandidate judges if there is a candidate with specified program code.
@@ -428,16 +435,28 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 			s.DepositOutputs[op.ReferKey()] = output.Value
 		}
 	}
+
+	var firstTimeRegister bool
+	if _, ok := s.depositInfo[info.DID]; !ok {
+		firstTimeRegister = true
+	}
+
 	s.history.Append(height, func() {
-		s.crcDepositAmount[info.DID] += MinDepositAmount
-		s.crcTotalAmount[info.DID] += amount
+		if firstTimeRegister {
+			s.depositInfo[info.DID] = &DepositInfo{}
+		}
+		s.depositInfo[info.DID].DepositAmount += MinDepositAmount
+		s.depositInfo[info.DID].TotalAmount += amount
 		s.Nicknames[nickname] = struct{}{}
 		s.CodeDIDMap[code] = info.DID
 		s.DepositHashDIDMap[candidate.depositHash] = info.DID
 		s.Candidates[info.DID] = &candidate
 	}, func() {
-		s.crcDepositAmount[info.DID] -= MinDepositAmount
-		s.crcTotalAmount[info.DID] -= amount
+		s.depositInfo[info.DID].DepositAmount -= MinDepositAmount
+		s.depositInfo[info.DID].TotalAmount -= amount
+		if firstTimeRegister {
+			delete(s.depositInfo, info.DID)
+		}
 		delete(s.Nicknames, nickname)
 		delete(s.CodeDIDMap, code)
 		delete(s.DepositHashDIDMap, candidate.depositHash)
@@ -463,16 +482,16 @@ func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
 		return
 	}
 	oriState := candidate.state
-	oriRefundable := s.refundable[info.DID]
+	oriRefundable := s.depositInfo[info.DID].Refundable
 	s.history.Append(height, func() {
-		s.crcDepositAmount[info.DID] -= MinDepositAmount
-		s.refundable[info.DID] = true
+		s.depositInfo[info.DID].DepositAmount -= MinDepositAmount
+		s.depositInfo[info.DID].Refundable = true
 		candidate.cancelHeight = height
 		candidate.state = Canceled
 		delete(s.Nicknames, candidate.info.NickName)
 	}, func() {
-		s.crcDepositAmount[info.DID] += MinDepositAmount
-		s.refundable[info.DID] = oriRefundable
+		s.depositInfo[info.DID].DepositAmount += MinDepositAmount
+		s.depositInfo[info.DID].Refundable = oriRefundable
 		candidate.cancelHeight = 0
 		candidate.state = oriState
 		s.Nicknames[candidate.info.NickName] = struct{}{}
@@ -564,11 +583,11 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 
 	updateAmountAction := func(did common.Uint168) {
 		s.history.Append(height, func() {
-			s.crcTotalAmount[did] -= inputValue
-			s.refundable[did] = false
+			s.depositInfo[did].TotalAmount -= inputValue
+			s.depositInfo[did].Refundable = false
 		}, func() {
-			s.crcTotalAmount[did] += inputValue
-			s.refundable[did] = true
+			s.depositInfo[did].TotalAmount += inputValue
+			s.depositInfo[did].Refundable = true
 		})
 	}
 
@@ -596,9 +615,9 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 func (s *State) addCRCRelatedAssert(output *types.Output, height uint32) bool {
 	if did, ok := s.getDIDByDepositHash(output.ProgramHash); ok {
 		s.history.Append(height, func() {
-			s.crcTotalAmount[did] += output.Value
+			s.depositInfo[did].TotalAmount += output.Value
 		}, func() {
-			s.crcTotalAmount[did] -= output.Value
+			s.depositInfo[did].TotalAmount -= output.Value
 		})
 		return true
 	}

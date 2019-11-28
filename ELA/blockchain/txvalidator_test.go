@@ -2794,7 +2794,7 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	s.CurrentHeight = 2160 + canceledHeight
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
 		rdTx, references, 2160+canceledHeight)
-	s.EqualError(err, "signer must be refundable")
+	s.EqualError(err, "signer must be candidate or member")
 
 	// check a return cr deposit coin transaction when not reached the
 	// count of DepositLockupBlocks in voting period.

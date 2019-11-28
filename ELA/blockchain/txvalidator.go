@@ -2305,6 +2305,9 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 			return err
 		}
 		did := ct.ToProgramHash()
+		if !b.crCommittee.GetState().Exist(*did) {
+			return errors.New("signer must be candidate or member")
+		}
 		if !b.crCommittee.GetState().IsRefundable(*did) {
 			return errors.New("signer must be refundable")
 		}
