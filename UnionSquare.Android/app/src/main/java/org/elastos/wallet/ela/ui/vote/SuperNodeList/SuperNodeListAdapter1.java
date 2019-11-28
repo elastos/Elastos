@@ -13,6 +13,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.ImageBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
 import org.elastos.wallet.ela.utils.NumberiUtil;
@@ -60,7 +61,14 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
         helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
         helper.setText(R.id.tv_name, bean.getNickname());
         helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
-        helper.setText(R.id.tv_zb, NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
+        BigDecimal voterateDecimal = new BigDecimal(bean.getVoterate());
+        if (voterateDecimal.compareTo(new BigDecimal(0.01)) < 0) {
+            helper.setText(R.id.tv_zb, "< 1%");
+        } else {
+            String voterate = NumberiUtil.numberFormat(Arith.mul(voterateDecimal, 100), 2);
+            helper.setText(R.id.tv_zb, voterate + "%");
+
+        }
         helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial_circle);
@@ -98,7 +106,7 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
                 }
 
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
-               // map.put(url, imgUrl);
+                // map.put(url, imgUrl);
                 //glideRequest.load(imgUrl).into(iv1);
                 presenter.getImage(iv1, url, imgUrl, context, new NodeDotJsonViewData() {
                     @Override

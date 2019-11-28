@@ -459,9 +459,13 @@
     <string name="all">Total&#160;</string>
     <string name="cr_website_cannot_be_empty">Election URL cannot be blank</string>
     <string name="transactiondetail">Transaction Details</string>
-    <string name="findlistdown1">Contribute to the Elastos SmartWeb</string>
     <string name="findlistup2">Community Proposal</string>
+    <string name="findlistup3">CR委员会</string>
+    <string name="findlistup4">CR委员选举</string>
+    <string name="findlistdown1">Contribute to the Elastos SmartWeb</string>
     <string name="findlistdown2">Participate in Community Autonomous Operations</string>
+    <string name="findlistdown3">委员会成员信息</string>
+    <string name="findlistdown4">票选心仪的CR委员</string>
     <string name="hasquit">（Withdrawn Successfully）</string>
     <string name="cr_72">The deposit is not available for withdrawal for 72 hours after quitting</string>
     <string name="currentno">N/A</string>

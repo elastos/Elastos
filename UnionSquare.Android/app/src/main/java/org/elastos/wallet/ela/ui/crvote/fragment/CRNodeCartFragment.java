@@ -121,7 +121,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         setRecyclerView(list);
         new CommonGetBalancePresenter().getBalance(wallet.getWalletId(), MyWallet.ELA, 2, this);
 
-
+        tvAvaliable.setText(getString(R.string.available) + "0 ELA");
     }
 
 

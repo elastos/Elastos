@@ -61,6 +61,7 @@ import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -336,12 +337,11 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         if (data != null && data.size() != 0) {
             netList.addAll(data);
             //pos==-1表示未移除过 先移除  并获得移除的位置  待添加
-            if (curentNode != null && pos == -1) {
-                pos = netList.indexOf(curentNode);
+            //curentNode.getState().equals("Active") && status.equals("Registered")其他情况已经移除了
+            if (curentNode != null && curentNode.getState().equals("Active") && status.equals("Registered") && pos == -1) {
+                //curentNode还在netList中 直接contaion耗费内存
+                pos = netList.indexOf(curentNode);//获取当前位置
                 netList.remove(curentNode);
-            }
-            //判断是否需要添加到首位
-            if (!is && curentNode != null && status.equals("Registered")) {
                 netList.add(0, curentNode);
                 is = true;
             }
@@ -373,7 +373,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 }
             }
             //删除非active节点
-            if (!bean.getState().equals("Active")) {
+            if (!bean.getState().equals("Active") || !status.equals("Registered")) {
                 iterator.remove();//date  remove 不影响netlist  date修改影响netlist
                 continue;
             }
@@ -596,8 +596,14 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     }
 
     private void setVoterate(CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean, String totalvotes) {
-        String voterate = Arith.div(bean.getVotes(), totalvotes, 5).toPlainString();
-        voterate = NumberiUtil.numberFormat(Arith.mul(voterate, 100), 5);
-        bean.setVoterate(voterate);
+        BigDecimal voterateDecimal = Arith.div(bean.getVotes(), totalvotes, 5);
+        if (voterateDecimal.compareTo(new BigDecimal(0.01)) < 0) {
+            bean.setVoterate("< 1");
+        } else {
+            String voterate = NumberiUtil.numberFormat(Arith.mul(voterateDecimal, 100), 2);
+            bean.setVoterate(voterate);
+        }
+
+
     }
 }

@@ -464,9 +464,13 @@
     <string name="all">共&#160;</string>
     <string name="cr_website_cannot_be_empty">竞选网址不能为空</string>
     <string name="transactiondetail">交易详情</string>
-    <string name="findlistdown1">参与亦来云生态体系建设\n共享SmartWeb未来</string>
     <string name="findlistup2">社区提案</string>
+    <string name="findlistup3">CR委员会</string>
+    <string name="findlistup4">CR委员选举</string>
+    <string name="findlistdown1">参与亦来云生态体系建设\n共享SmartWeb未来</string>
     <string name="findlistdown2">参与社区运营共治</string>
+    <string name="findlistdown3">委员会成员信息</string>
+    <string name="findlistdown4">票选心仪的CR委员</string>
     <string name="hasquit">（已退出）</string>
     <string name="cr_72">退出参选72小时后，方可提取质押金。</string>
     <string name="currentno">暂无</string>

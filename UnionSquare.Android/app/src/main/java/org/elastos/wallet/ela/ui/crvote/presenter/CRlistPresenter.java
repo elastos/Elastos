@@ -16,7 +16,7 @@ public class CRlistPresenter extends NewPresenterAbstract {
 
 
     public void getRegisteredCRInfo(String walletId, String chainID, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getRegisteredCRInfo");
+        Observer observer = createObserver(baseFragment, "getRegisteredCRInfo",false);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

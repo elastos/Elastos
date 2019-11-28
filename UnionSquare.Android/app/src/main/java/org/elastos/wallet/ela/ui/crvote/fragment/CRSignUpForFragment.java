@@ -16,10 +16,7 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
-import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
-import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
-import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringViewData;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
@@ -45,11 +42,9 @@ import butterknife.OnClick;
 /**
  * 报名参选
  */
-public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData, CommmonStringViewData {
+public class CRSignUpForFragment extends BaseFragment implements CommmonStringViewData {
     @BindView(R.id.tv_title)
     TextView tvTitle;
-    @BindView(R.id.tv_publickey)
-    TextView tvPublickey;
     @BindView(R.id.tv_did)
     TextView tvDid;
     @BindView(R.id.et_dotname)
@@ -71,7 +66,7 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
 
     @Override
     protected void setExtraData(Bundle data) {
-        tvPublickey.setText(data.getString("publickey"));
+        ownerPublicKey = data.getString("publickey");
         did = data.getString("did");
         tvDid.setText(did);
         netList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
@@ -95,7 +90,6 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
         switch (view.getId()) {
             case R.id.tv_sure:
                 name = etDotname.getText().toString().trim();//节点名称
-                ownerPublicKey = tvPublickey.getText().toString().trim();//节点公钥
                 did = tvDid.getText().toString().trim();//节点did
                 area = tvArea.getText().toString().trim();//国家地址
                 url = etUrl.getText().toString().trim();//官网
@@ -159,18 +153,6 @@ public class CRSignUpForFragment extends BaseFragment implements NewBaseViewData
                 }
             });
         }
-    }
-
-
-    @Override
-    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-
-        // switch (methodName) {
-
-        //  case "getCROwnerPublicKey":
-
-        //    break;
-        //  }
     }
 
     @Override

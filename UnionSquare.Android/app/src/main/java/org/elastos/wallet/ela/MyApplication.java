@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 import android.webkit.WebView;
 
-import com.blankj.utilcode.util.Utils;
 import com.tencent.bugly.crashreport.CrashReport;
 
 import org.elastos.wallet.BuildConfig;
@@ -57,7 +56,7 @@ public class MyApplication extends MultiDexApplication {
         if (pachageName.endsWith("prvNet")) {
             chainID = 3;
             useBugly();
-            REQUEST_BASE_URL = "https://54.223.244.60";
+            REQUEST_BASE_URL = "http://172.26.0.207:3000";
         }
 
 

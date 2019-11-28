@@ -51,12 +51,12 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         bean1.setResouceId(R.mipmap.found_dpos_icon);
         bean1.setUpText(getString(R.string.supernode_election));
         bean1.setDownText(getString(R.string.findlistdown1));
-        FindListBean bean2 = new FindListBean();
-        bean2.setResouceId(R.mipmap.found_cr_vote);
-        bean2.setUpText(getString(R.string.findlistup2));
-        bean2.setDownText(getString(R.string.findlistdown2));
+        FindListBean bean4 = new FindListBean();
+        bean4.setResouceId(R.mipmap.found_cr_vote);
+        bean4.setUpText(getString(R.string.findlistup4));
+        bean4.setDownText(getString(R.string.findlistdown4));
         list.add(bean1);
-        list.add(bean2);
+        list.add(bean4);
         //  list.add(R.mipmap.found_card_id);
         //list.add(R.mipmap.found_card_paradrop);
 //        presenter = new FindPresenter();
