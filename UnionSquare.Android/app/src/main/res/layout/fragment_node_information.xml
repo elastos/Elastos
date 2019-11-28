@@ -178,7 +178,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dp"
                     android:layout_weight="1"
-                    android:text="@string/vote_qwtpzb"
+                    android:text="@string/vote_of"
                     android:textColor="@color/qmui_config_color_50_white"
                     android:textSize="13sp" />
 

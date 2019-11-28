@@ -125,15 +125,10 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
                 if (netList == null || netList.size() == 0) {
                     return;
                 }
-                if (data.equals("{}")) {
-                    ivType.setBackgroundResource(R.mipmap.my_vote_go_img);
-                    tvBlank.setVisibility(View.VISIBLE);
-                    recyclerview.setVisibility(View.GONE);
-                    ll_bgtp.setVisibility(View.GONE);
-                } else {
+                if (data!=null&&!data.equals("{}")&&!data.equals("null")&&!data.equals("")){
                     recyclerview.setVisibility(View.VISIBLE);
                     tvBlank.setVisibility(View.GONE);
-                    ivType.setBackgroundResource(R.mipmap.found_vote_mine_lock);
+                    ivType.setImageResource(R.mipmap.found_vote_mine_lock);
                     ll_bgtp.setVisibility(View.VISIBLE);
                     try {
                         JSONObject jsonObject = new JSONObject(data);

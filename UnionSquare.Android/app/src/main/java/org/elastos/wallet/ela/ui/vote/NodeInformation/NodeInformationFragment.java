@@ -20,6 +20,7 @@ import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.GlideApp;
@@ -27,6 +28,7 @@ import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,7 +138,13 @@ public class NodeInformationFragment extends BaseFragment {
         tv_addrs.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
         tvUrl.setText(bean.getUrl());
         if (bean.getVoterate() != null) {
-            tvZl.setText(NumberiUtil.numberFormat(Double.parseDouble(bean.getVoterate()) * 100 + "", 5) + "%");
+            BigDecimal voterateDecimal = new BigDecimal(bean.getVoterate());
+            if (voterateDecimal.compareTo(new BigDecimal(0.01)) < 0) {
+                tvZl.setText("< 1%");
+            } else {
+                String voterate = NumberiUtil.numberFormat(Arith.mul(voterateDecimal, 100), 2);
+                tvZl.setText(voterate + "%");
+            }
         }
 
         if (bean.isActive() == false) {

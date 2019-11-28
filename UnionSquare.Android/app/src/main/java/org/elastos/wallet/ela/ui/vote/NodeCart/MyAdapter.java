@@ -18,10 +18,12 @@ import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.GlideApp;
 import org.elastos.wallet.ela.utils.GlideRequest;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +79,7 @@ public class MyAdapter extends BaseAdapter {
         int sum = 0;
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
-                if (dataMap.get(i)!=null&&dataMap.get(i)) {
+                if (dataMap.get(i) != null && dataMap.get(i)) {
                     sum++;
                 }
             }
@@ -126,8 +128,13 @@ public class MyAdapter extends BaseAdapter {
             holder.cb.setChecked(dataMap.get(position));
         }
         VoteListBean.DataBean.ResultBean.ProducersBean producersBean = list.get(position);
-
-        holder.tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(producersBean.getVoterate()) * 100 + "", 5) + "%");
+        BigDecimal voterateDecimal = new BigDecimal(producersBean.getVoterate());
+        if (voterateDecimal.compareTo(new BigDecimal(0.01)) < 0) {
+            holder.tv_zb.setText("< 1%");
+        } else {
+            String voterate = NumberiUtil.numberFormat(Arith.mul(voterateDecimal, 100), 2);
+            holder.tv_zb.setText(voterate + "%");
+        }
         holder.tv_name.setText(producersBean.getNickname());
         holder.tv_address.setText(AppUtlis.getLoc(context.getContext(), producersBean.getLocation() + ""));
         int id = producersBean.getIndex() + 1;

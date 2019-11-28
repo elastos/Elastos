@@ -14,7 +14,7 @@ public class AddDIDPresenter extends NewPresenterAbstract {
 
 
     public void getAllPublicKeys(String walletId, String chainID, int start, int count, BaseFragment baseFragment) {
-        Observer observer = createObserver(baseFragment, "getAllPublicKeys");
+        Observer observer = createObserver(baseFragment, "getAllPublicKeys",false);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

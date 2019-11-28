@@ -128,7 +128,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-        tvRatio.setText(NumberiUtil.numberFormat(Double.parseDouble(data.getString("zb", "0")) * 100 + "", 5) + "%");
+        tvRatio.setText(NumberiUtil.numberFormat(Double.parseDouble(data.getString("zb", "0")) * 100 + "", 2) + "%");
         sb_suger.setProgress((int) (Double.parseDouble(data.getString("zb", "0")) * 100));
         //netList后期还承担未选择list
         netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");

@@ -38,7 +38,9 @@ public class Arith {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
         return b1.subtract(b2);
-    }public static BigDecimal sub(String v1, long v2) {
+    }
+
+    public static BigDecimal sub(String v1, long v2) {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
         return b1.subtract(b2);
@@ -60,9 +62,21 @@ public class Arith {
         BigDecimal b1 = new BigDecimal(v1);
         BigDecimal b2 = new BigDecimal(v2);
         return b1.multiply(b2);
-    }public static BigDecimal mul(Object v1, Object v2) {
-        BigDecimal b1 = new BigDecimal(v1.toString());
-        BigDecimal b2 = new BigDecimal(v2.toString());
+    }
+
+    public static BigDecimal mul(Object v1, Object v2) {
+        BigDecimal b1;
+        BigDecimal b2;
+        if (v1 instanceof BigDecimal) {
+            b1 = (BigDecimal) v1;
+        } else {
+            b1 = new BigDecimal(v1.toString());
+        }
+        if (v2 instanceof BigDecimal) {
+            b2 = (BigDecimal) v2;
+        } else {
+            b2 = new BigDecimal(v2.toString());
+        }
         return b1.multiply(b2);
     }
 

@@ -30,35 +30,6 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="@string/eletionpk"
-                android:textColor="#ffffffff"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/tv_publickey"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="3dp"
-                android:layout_weight="2"
-                android:gravity="center_vertical"
-                android:paddingTop="18dp"
-                android:paddingBottom="18dp"
-                android:textColor="#ffffffff"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <View style="@style/line1" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
                 android:text="@string/electiondid"
                 android:textColor="#ffffffff"
                 android:textSize="13sp" />

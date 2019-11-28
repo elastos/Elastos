@@ -74,8 +74,8 @@ public class CRAgreementFragment extends BaseFragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_sure:
+                pop();
                 post(RxEnum.AGREE.ordinal(), null, null);
-                popBackFragment();
                 break;
 
         }

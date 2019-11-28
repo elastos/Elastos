@@ -109,7 +109,7 @@
             android:id="@+id/tv_sure"
             style="@style/button_margin"
             android:layout_marginBottom="56dp"
-            android:text="@string/sure" />
+            android:text="@string/next" />
     </LinearLayout>
 
 
