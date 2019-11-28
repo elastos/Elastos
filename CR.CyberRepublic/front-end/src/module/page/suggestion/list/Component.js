@@ -673,13 +673,14 @@ export default class extends StandardPage {
       type
     } = this.state
     const query = {
-      status: this.state.showArchived
-        ? SUGGESTION_STATUS.ARCHIVED
-        : SUGGESTION_STATUS.ACTIVE,
       page,
       results
     }
     let included = ''
+
+    if (this.state.showArchived) {
+      query.status = SUGGESTION_STATUS.ARCHIVED
+    }
 
     if (infoNeeded) {
       included = SUGGESTION_TAG_TYPE.INFO_NEEDED
