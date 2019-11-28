@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <curl/curl.h>
 
 #include <MasterWalletManager.h>
@@ -19,10 +20,24 @@ using namespace Elastos::ElaWallet;
 
 static const char *ID_CHAIN = "IDChain";
 
+class SubWalletCallback;
+
+struct SpvDidAdapter {
+    int syncState;
+    IMasterWalletManager *manager;
+    IMasterWallet *masterWallet;
+    IIDChainSubWallet *idWallet;
+    SubWalletCallback *callback;
+    char *resolver;
+};
+
 class SubWalletCallback : public ISubWalletCallback {
+private:
+    SpvDidAdapter *adapter;
+
 public:
     ~SubWalletCallback() {}
-    SubWalletCallback() {}
+    SubWalletCallback(SpvDidAdapter *_adapter) : adapter(_adapter) {}
 
     virtual void OnTransactionStatusChanged(
         const std::string &txid,const std::string &status,
@@ -33,6 +48,8 @@ public:
     }
 
     virtual void OnBlockSyncProgress(const nlohmann::json &progressInfo) {
+        if (progressInfo["Progress"] == 100)
+            ++adapter->syncState;
     }
 
     virtual void OnBlockSyncStopped() {
@@ -51,48 +68,35 @@ public:
     }
 };
 
-struct SpvDidAdapter {
-    IMasterWalletManager *manager;
-    IIDChainSubWallet *idWallet;
-    SubWalletCallback *callback;
-    char *resolver;
-};
-
 static
-void SyncStart(IMasterWalletManager *manager, ISubWalletCallback *callback)
+void SyncStart(SpvDidAdapter *adapter)
 {
-    auto masterWallets = manager->GetAllMasterWallets();
-    for (auto it = masterWallets.begin(); it != masterWallets.end(); ++it) {
-        auto subWallets = (*it)->GetAllSubWallets();
-        for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
-            try {
-                (*it)->AddCallback(callback);
-                (*it)->SyncStart();
-            } catch (...) {
-                // ignore
-            }
+    auto subWallets = adapter->masterWallet->GetAllSubWallets();
+    for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
+        try {
+            (*it)->AddCallback(adapter->callback);
+            (*it)->SyncStart();
+        } catch (...) {
+            // ignore
         }
     }
 }
 
 static
-void SyncStop(IMasterWalletManager *manager, ISubWalletCallback *callback)
+void SyncStop(SpvDidAdapter *adapter)
 {
-    auto masterWallets = manager->GetAllMasterWallets();
-    for (auto it = masterWallets.begin(); it != masterWallets.end(); ++it) {
-        auto subWallets = (*it)->GetAllSubWallets();
-        for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
-            try {
-                (*it)->SyncStop();
-                (*it)->RemoveCallback();
-            } catch (...) {
-                // ignore
-            }
+    auto subWallets = adapter->masterWallet->GetAllSubWallets();
+    for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
+        try {
+            (*it)->SyncStop();
+            (*it)->RemoveCallback();
+        } catch (...) {
+            // ignore
         }
     }
 
     try {
-        manager->FlushData();
+        adapter->manager->FlushData();
     } catch (...) {
         // ignore
     }
@@ -102,6 +106,8 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
         const char *network, const char *resolver)
 {
     nlohmann::json netConfig;
+    IMasterWallet *masterWallet;
+    int syncState = 0;
     char *url = NULL;
 
     if (!walletDir || !walletId)
@@ -149,11 +155,13 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
     }
 
     try {
-        auto masterWallet = manager->GetMasterWallet(walletId);
+        masterWallet = manager->GetMasterWallet(walletId);
         std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
         for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
             if ((*it)->GetChainID() == ID_CHAIN)
                 idWallet = dynamic_cast<IIDChainSubWallet *>(*it);
+
+            --syncState;
         }
     } catch (...) {
     }
@@ -166,14 +174,22 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
         return NULL;
     }
 
-    SubWalletCallback *callback = new SubWalletCallback();
-    SyncStart(manager, callback);
-
     SpvDidAdapter *adapter = new SpvDidAdapter;
-    adapter->resolver = url;
+    SubWalletCallback *callback = new SubWalletCallback(adapter);
+
+    adapter->syncState = syncState;
     adapter->manager = manager;
+    adapter->masterWallet = masterWallet;
     adapter->idWallet = idWallet;
     adapter->callback = callback;
+    adapter->resolver = url;
+
+    SyncStart(adapter);
+
+    while (adapter->syncState < 0) {
+        // Waiting for sync to latest block height.
+        sleep(1);
+    }
 
     return adapter;
 }
@@ -183,7 +199,7 @@ void SpvDidAdapter_Destroy(SpvDidAdapter *adapter)
     if (!adapter)
         return;
 
-    SyncStop(adapter->manager, adapter->callback);
+    SyncStop(adapter);
 
     if (adapter->resolver)
         free(adapter->resolver);
