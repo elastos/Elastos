@@ -258,8 +258,8 @@ class C extends StandardPage {
     if (isElip) {
       sections = [
         'abstract',
-        'specification',
         'motivation',
+        'specification',
         'rationale',
         'backwardCompatibility',
         'referenceImplementation',
@@ -375,11 +375,11 @@ class C extends StandardPage {
         <Anchor.Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
         <Anchor.Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
         <LinkGroup marginTop={48}>
+          <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
           <Anchor.Link
             href="#specification"
             title={I18N.get('elip.fields.specification')}
           />
-          <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
           <Anchor.Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
         </LinkGroup>
         <LinkGroup marginTop={48}>
@@ -497,8 +497,8 @@ class C extends StandardPage {
     if (isElip) {
       const sections = [
         'abstract',
-        'specification',
         'motivation',
+        'specification',
         'rationale',
         'backwardCompatibility',
         'referenceImplementation',
