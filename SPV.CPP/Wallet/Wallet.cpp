@@ -14,14 +14,20 @@
 #include <IMainchainSubWallet.h>
 #include <IIDChainSubWallet.h>
 
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <vector>
 
 using namespace Elastos::ElaWallet;
+
+#define ERRNO_APP -255
+#define ERRNO_CMD -1
 
 #define SELA_PER_ELA 100000000UL
 static const std::string CHAINID_ELA = "ELA";
 static const std::string CHAINID_ID = "IDChain";
+static const char *walletRoot = NULL;
 
 static MasterWalletManager *manager = nullptr;
 static IMasterWallet *currentWallet = nullptr;
@@ -174,6 +180,28 @@ private:
 	std::string _chainID;
 };
 
+#define checkCurrentWallet() do { \
+	if (!currentWallet) { \
+		std::cerr << "No wallet actived" << std::endl; \
+		return ERRNO_APP; \
+	} \
+} while (0);
+
+#define checkParam(request_argc) do { \
+	if (argc != request_argc) { \
+		invalidCmdError(); \
+		return ERRNO_CMD; \
+	} \
+} while (0)
+
+#define getSubWallet(subWallet, masterWallet, chainID) do { \
+	subWallet = dynamic_cast<typeof(subWallet)>(masterWallet->GetSubWallet(chainID)); \
+	if (!subWallet) { \
+		std::cerr << chainID << " not opened" << std::endl; \
+		return ERRNO_APP; \
+	} \
+} while (0)
+
 static int createPassword(const std::string &comment, std::string &password, bool canbeEmpty) {
 	std::string prompt, p1, p2;
 
@@ -249,7 +277,7 @@ static void subWalletClose(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 	subWallet->SyncStop();
 	subWallet->RemoveCallback();
 
-	SubWalletCallback *callback = static_cast<SubWalletCallback *>(masterWalletData[walletName][chainID].GetCallback());
+	auto callback = static_cast<SubWalletCallback *>(masterWalletData[walletName][chainID].GetCallback());
 	delete callback;
 	callback = nullptr;
 
@@ -261,7 +289,7 @@ static void subWalletClose(IMasterWallet *masterWallet, ISubWallet *subWallet) {
 static void walletInit(void) {
 	auto masterWallets = manager->GetAllMasterWallets();
 	for (IMasterWallet *masterWallet : masterWallets) {
-		if (currentWallet == nullptr)
+		if (!currentWallet)
 			currentWallet = masterWallet;
 
 		auto subWallets = masterWallet->GetAllSubWallets();
@@ -281,6 +309,7 @@ static void walletCleanup(void) {
 	}
 
 	manager->FlushData();
+	currentWallet = nullptr;
 }
 
 static void invalidCmdError() {
@@ -288,20 +317,18 @@ static void invalidCmdError() {
 }
 
 static void exceptionError(const std::exception &e) {
-	std::cerr << "exception: " << e.what() << std::endl;
+	std::cerr << "Exception: " << e.what() << std::endl;
 }
 
-static void create(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
+// create [walletName]
+static int create(int argc, char *argv[]) {
+	checkParam(2);
 
 	try {
-		std::string walletID = argv[1];
-		if (nullptr != manager->GetMasterWallet(walletID)) {
-			std::cerr << "Wallet '" << walletID << "' already exist." << std::endl;
-			return;
+		std::string walletName = argv[1];
+		if (nullptr != manager->GetMasterWallet(walletName)) {
+			std::cerr << "Wallet '" << walletName << "' already exist." << std::endl;
+			return ERRNO_APP;
 		}
 
 		std::cout << "What mnemonic language would you like?" << std::endl;
@@ -342,25 +369,25 @@ static void create(int argc, char *argv[]) {
 
 		if (0 > createPassphrase(passphrase)) {
 			std::cerr << "Create failed!" << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		if (0 > createPaymentPassword(password)) {
 			std::cerr << "Create failed!" << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
-		IMasterWallet *masterWallet = manager->CreateMasterWallet(walletID,
+		IMasterWallet *masterWallet = manager->CreateMasterWallet(walletName,
 																  mnemonic, passphrase, password, false);
 		if (!masterWallet) {
 			std::cerr << "Create master wallet failed." << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(CHAINID_ELA);
 		if (!subWallet) {
 			std::cerr << "Create main chain wallet failed." << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		subWalletOpen(masterWallet, subWallet);
@@ -371,15 +398,15 @@ static void create(int argc, char *argv[]) {
 		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+
+	return 0;
 }
 
 // import [walletName] [m[nemonic] | k[eystore]]
-static void import(int argc, char *argv[]) {
-	if (argc != 3) {
-		invalidCmdError();
-		return;
-	}
+static int import(int argc, char *argv[]) {
+	checkParam(3);
 
 	std::string walletName = argv[1];
 	std::string importWhat = argv[2];
@@ -388,7 +415,7 @@ static void import(int argc, char *argv[]) {
 		IMasterWallet *masterWallet = manager->GetMasterWallet(walletName);
 		if (masterWallet) {
 			std::cerr << "Wallet '" << walletName << "' already exist." << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		if (importWhat == "mnemonic" || importWhat == "m") {
@@ -399,24 +426,24 @@ static void import(int argc, char *argv[]) {
 			std::string password, passphrase;
 			if (0 > createPassphrase(passphrase)) {
 				std::cerr << "Create failed!" << std::endl;
-				return;
+				return ERRNO_APP;
 			}
 
 			if (0 > createPaymentPassword(password)) {
 				std::cerr << "Create failed!" << std::endl;
-				return;
+				return ERRNO_APP;
 			}
 
 			masterWallet = manager->ImportWalletWithMnemonic(walletName, mnemonic, passphrase, password, false);
 			if (!masterWallet) {
 				std::cerr << "Import master wallet failed." << std::endl;
-				return;
+				return ERRNO_APP;
 			}
 
 			ISubWallet *subWallet = masterWallet->CreateSubWallet(CHAINID_ELA);
 			if (!subWallet) {
 				std::cerr << "Create main chain wallet failed." << std::endl;
-				return;
+				return ERRNO_APP;
 			}
 		} else if (importWhat == "keystore" || importWhat == "k") {
 			std::string keystore;
@@ -428,18 +455,18 @@ static void import(int argc, char *argv[]) {
 			std::string password;
 			if (0 > createPaymentPassword(password)) {
 				std::cerr << "Import wallet failed!" << std::endl;
-				return;
+				return ERRNO_APP;
 			}
 
 			masterWallet = manager->ImportWalletWithKeystore(walletName, nlohmann::json::parse(keystore),
 															 backupPassword, password);
 			if (!masterWallet) {
 				std::cerr << "Import wallet failed!" << std::endl;
-				return;
+				return ERRNO_APP;
 			}
 		} else {
 			invalidCmdError();
-			return;
+			return ERRNO_APP;
 		}
 
 		if (!currentWallet) {
@@ -454,15 +481,14 @@ static void import(int argc, char *argv[]) {
 		std::cout << "Wallet import success." << std::endl;
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // remove [walletName]
-static void remove(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
+static int remove(int argc, char *argv[]) {
+	checkParam(2);
 
 	std::string walletName = argv[1];
 
@@ -470,7 +496,7 @@ static void remove(int argc, char *argv[]) {
 		auto masterWallet = manager->GetMasterWallet(walletName);
 		if (!masterWallet) {
 			std::cerr << walletName << " not found" << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		bool needUpdate = false;
@@ -481,7 +507,7 @@ static void remove(int argc, char *argv[]) {
 		std::string password = getpass("Enter payment password: ");
 		if (!masterWallet->VerifyPayPassword(password)) {
 			std::cerr << "Wrong password!" << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		auto subWallets = masterWallet->GetAllSubWallets();
@@ -495,100 +521,108 @@ static void remove(int argc, char *argv[]) {
 
 		if (needUpdate)  {
 			auto masterWallets = manager->GetAllMasterWallets();
-			if (masterWallets.size() > 0) {
+			if (!masterWallets.empty()) {
 				currentWallet = masterWallets[0];
 			} else {
 				currentWallet = nullptr;
 			}
 		}
-
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
-static void list(int argc, char *argv[]) {
-	auto masterWallets = manager->GetAllMasterWallets();
+// list [all]
+static int list(int argc, char *argv[]) {
 	std::vector<std::string> subWalletIDList = {CHAINID_ELA, CHAINID_ID};
-
-	printf("%-20s", "WalletName");
-	for (std::string chainID : subWalletIDList)
-		printf("%50s", chainID.c_str());
-	printf("\n%s\n", SplitLine);
-
-	for (IMasterWallet *masterWallet : masterWallets) {
-		struct tm tm;
-		time_t lastBlockTime;
-		int progress;
-		double balance;
-		ISubWallet *subWallet;
-		char info[256];
-		char buf[100] = {0};
-
-		printf(" %c %-17s", masterWallet == currentWallet ? '*' : ' ', masterWallet->GetID().c_str());
-		for (std::string chainID: subWalletIDList) {
-			subWallet = masterWallet->GetSubWallet(chainID);
-			if (subWallet) {
-				balance = std::stod(subWallet->GetBalance()) / SELA_PER_ELA;
-
-				lastBlockTime = masterWalletData[masterWallet->GetID()][chainID].GetLastBlockTime();
-				progress = masterWalletData[masterWallet->GetID()][chainID].GetSyncProgress();
-				localtime_r(&lastBlockTime, &tm);
-				strftime(buf, sizeof(buf), "%F %T", &tm);
-
-				snprintf(info, sizeof(info), "%.8lf  [%s  %3d%%]", balance, buf, progress);
-			} else {
-				snprintf(info, sizeof(info), "--");
-			}
-
-			printf("%50s", info);
+	if (argc == 1) {
+		checkCurrentWallet();
+	} else if (argc >= 2) {
+		if (std::string(argv[1]) != "all") {
+			invalidCmdError();
+			return ERRNO_CMD;
 		}
-		printf("\n");
 	}
+
+	try {
+		auto masterWallets = manager->GetAllMasterWallets();
+		printf("%-20s", "WalletName");
+		for (const std::string &chainID : subWalletIDList)
+			printf("%50s", chainID.c_str());
+		printf("\n%s\n", SplitLine);
+
+		for (IMasterWallet *masterWallet : masterWallets) {
+			if (argc == 1 && currentWallet != masterWallet)
+				continue;
+
+			struct tm tm;
+			time_t lastBlockTime;
+			int progress;
+			double balance;
+			ISubWallet *subWallet;
+			char info[256];
+			char buf[100] = {0};
+
+			printf(" %c %-17s", masterWallet == currentWallet ? '*' : ' ', masterWallet->GetID().c_str());
+			for (const std::string& chainID: subWalletIDList) {
+				subWallet = masterWallet->GetSubWallet(chainID);
+				if (subWallet) {
+					balance = std::stod(subWallet->GetBalance()) / SELA_PER_ELA;
+
+					lastBlockTime = masterWalletData[masterWallet->GetID()][chainID].GetLastBlockTime();
+					progress = masterWalletData[masterWallet->GetID()][chainID].GetSyncProgress();
+					localtime_r(&lastBlockTime, &tm);
+					strftime(buf, sizeof(buf), "%F %T", &tm);
+
+					snprintf(info, sizeof(info), "%.8lf  [%s  %3d%%]", balance, buf, progress);
+				} else {
+					snprintf(info, sizeof(info), "--");
+				}
+
+				printf("%50s", info);
+			}
+			printf("\n");
+		}
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
+	return 0;
 }
 
 // switch [walletName]
-static void _switch(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
+static int _switch(int argc, char *argv[]) {
+	checkParam(2);
 
 	const std::string walletName = argv[1];
 	try {
 		auto masterWallet = manager->GetMasterWallet(walletName);
 		if (masterWallet == nullptr) {
 			std::cerr << walletName << " not found" << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		currentWallet = masterWallet;
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // address [chainID]
-static void address(int argc, char *argv[]) {
-	std::string chain;
+static int address(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
-
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
 	std::string chainID = argv[1];
 
 	try {
-		auto subWallet = currentWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << chainID << " not found" << std::endl;
-			return;
-		}
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
 
 		int cntPerPage = 20;
 		int curPage = 1;
@@ -635,176 +669,148 @@ static void address(int argc, char *argv[]) {
 		} while (cmd != "q");
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+
+	return 0;
 }
 
-// open [walletID] [chainID]
-static void _open(int argc, char *argv[]) {
-	if (argc != 3) {
-		invalidCmdError();
-		return;
-	}
+// open [chainID]
+static int _open(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
-	std::string walletName = argv[1];
-	std::string chainID = argv[2];
+	std::string chainID = argv[1];
 	try {
-		auto masterWallet = manager->GetMasterWallet(walletName);
-		if (!masterWallet) {
-			std::cerr << walletName << " not found" << std::endl;
-			return;
-		}
+		auto subWallet = currentWallet->CreateSubWallet(chainID);
 
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainID);
-
-		subWalletOpen(masterWallet, subWallet);
+		subWalletOpen(currentWallet, subWallet);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
-// close [walletID] [chainID]
-static void _close(int argc, char *argv[]) {
-	if (argc != 3) {
-		invalidCmdError();
-		return;
-	}
+// close [chainID]
+static int _close(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
-	std::string walletName = argv[1];
-	std::string chainID = argv[2];
-
+	std::string chainID = argv[1];
 	try {
-		auto masterWallet = manager->GetMasterWallet(walletName);
-		if (!masterWallet) {
-			std::cerr << walletName << " not found" << std::endl;
-			return;
-		}
-
-		auto subWallet = masterWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << chainID << " not found" << std::endl;
-			return;
-		}
-
-		subWalletClose(masterWallet, subWallet);
-		masterWallet->DestroyWallet(chainID);
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
+		subWalletClose(currentWallet, subWallet);
+		currentWallet->DestroyWallet(chainID);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // deposit [amount] [address]
-static void deposit(int argc, char *argv[]) {
-	if (argc != 3) {
-		invalidCmdError();
-		return;
-	}
-
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
+static int deposit(int argc, char *argv[]) {
+	checkParam(3);
+	checkCurrentWallet();
 
 	std::string amount = convertAmount(argv[1]);
 	std::string sideChainAddress = argv[2];
 
 	try {
-		IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(
-			CHAINID_ELA));
-		if (mainchainSubWallet == NULL) {
-			std::cerr << "Can not get mainchain wallet." << std::endl;
-			return;
-		}
+		IMainchainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
 
 		std::vector<std::string> supportChainID = currentWallet->GetSupportedChains();
-		std::cout << "Support side chain ID: " << std::endl;
-		for (const std::string &chainID : supportChainID) {
-			if (chainID == mainchainSubWallet->GetChainID())
-				continue;
-			std::cout << "  " << chainID << std::endl;
-		}
-		std::cout << "Which side chain do you want to top up: ";
-		std::string chainID;
-		std::cin >> chainID;
+		auto stripChainID = std::find(supportChainID.begin(), supportChainID.end(), CHAINID_ELA);
+		if (stripChainID != supportChainID.end())
+			supportChainID.erase(stripChainID);
 
-		nlohmann::json tx = mainchainSubWallet->CreateDepositTransaction(
+		if (supportChainID.empty()) {
+			std::cerr << "No support side chain found!" << std::endl;
+			return ERRNO_APP;
+		}
+
+		std::string chainID;
+		if (supportChainID.size() > 1) {
+			std::cout << "Support side chain ID: " << std::endl;
+			for (const std::string &id: supportChainID)
+				std::cout << "  " << id << std::endl;
+			std::cout << "Which side chain do you want to top up: ";
+			std::cin >> chainID;
+		} else {
+			chainID = supportChainID[0];
+		}
+
+		nlohmann::json tx = subWallet->CreateDepositTransaction(
 			"", chainID, amount, sideChainAddress, "");
 
 		std::cout << "Top up " << sideChainAddress << ":" << amount << " to " << chainID << std::endl;
 
-		signAndPublishTx(mainchainSubWallet, tx);
+		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // withdraw [amount] [address]
-static void withdraw(int argc, char *argv[]) {
-	if (argc != 3) {
-		invalidCmdError();
-		return;
-	}
-
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
+static int withdraw(int argc, char *argv[]) {
+	checkParam(3);
+	checkCurrentWallet();
 
 	std::string amount = convertAmount(argv[1]);
 	std::string mainChainAddress = argv[2];
 
 	try {
 		std::vector<std::string> supportChainID = currentWallet->GetSupportedChains();
-		std::cout << "Support side chain ID: " << std::endl;
-		for (const std::string chainID : supportChainID) {
-			if (chainID == CHAINID_ELA)
-				continue;
+		auto stripChainID = std::find(supportChainID.begin(), supportChainID.end(), CHAINID_ELA);
+		if (stripChainID != supportChainID.end())
+			supportChainID.erase(stripChainID);
 
-			std::cout << "  " << chainID << std::endl;
+		if (supportChainID.empty()) {
+			std::cerr << "No support side chain found!" << std::endl;
+			return ERRNO_APP;
 		}
 
-		std::cout << "Which side chain do you want to withdraw from: ";
 		std::string chainID;
-		std::cin >> chainID;
+		if (supportChainID.size() > 1) {
+			std::cout << "Support side chain ID: " << std::endl;
+			for (const std::string &id : supportChainID) {
+				std::cout << "  " << id << std::endl;
+			}
 
-		ISidechainSubWallet *sidechainSubWallet = dynamic_cast<ISidechainSubWallet *>(currentWallet->GetSubWallet(
-			chainID));
-		if (sidechainSubWallet == NULL) {
-			std::cerr << "Can not get sidechain wallet for: " << chainID << std::endl;
-			return;
+			std::cout << "Which side chain do you want to withdraw from: ";
+			std::cin >> chainID;
+		} else {
+			chainID = supportChainID[0];
 		}
 
-		nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction(
+		ISidechainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
+
+		nlohmann::json tx = subWallet->CreateWithdrawTransaction(
 			"", amount, mainChainAddress, "");
 
 		std::cout << "Withdraw " << mainChainAddress << ":" << amount << " from " << chainID << std::endl;
 
-		signAndPublishTx(sidechainSubWallet, tx);
+		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
-// diddoc [walletName]
-static void diddoc(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
-
-	std::string walletName = argv[1];
+// diddoc
+static int diddoc(int argc, char *argv[]) {
+	checkCurrentWallet();
 
 	try {
-		auto masterWallet = manager->GetMasterWallet(walletName);
-		if (!masterWallet) {
-			std::cerr << walletName << " not found" << std::endl;
-			return;
-		}
-
-		IIDChainSubWallet *subWallet = dynamic_cast<IIDChainSubWallet *>(masterWallet->GetSubWallet(CHAINID_ID));
-		if (!subWallet) {
-			std::cerr << "open '" << CHAINID_ID << "' first" << std::endl;
-			return;
-		}
+		IIDChainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ID);
 
 		std::string id;
 		std::string didName;
@@ -844,27 +850,18 @@ static void diddoc(int argc, char *argv[]) {
 		std::cout << payload.dump() << std::endl;
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // didtx
-static void didtx(int argc, char *argv[]) {
-	if (argc != 1) {
-		invalidCmdError();
-		return;
-	}
-
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
+static int didtx(int argc, char *argv[]) {
+	checkCurrentWallet();
 
 	try {
-		IIDChainSubWallet *subWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
-		if (!subWallet) {
-			std::cerr << "open '" << CHAINID_ID << "' first" << std::endl;
-			return;
-		}
+		IIDChainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ID);
 
 		std::cout << "Enter id document: ";
 		std::string didDoc;
@@ -874,74 +871,55 @@ static void didtx(int argc, char *argv[]) {
 		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // didsign [DID] [digest]
-static void didsign(int argc, char *argv[]) {
-	if (argc != 3) {
-		invalidCmdError();
-		return ;
-	}
+static int didsign(int argc, char *argv[]) {
+	checkParam(3);
+	checkCurrentWallet();
 
 	std::string did = argv[1];
 	std::string digest = argv[2];
 	try {
-		if (!currentWallet) {
-			std::cerr << "no wallet actived" << std::endl;
-			return;
-		}
-
-		IIDChainSubWallet *subWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
-		if (!subWallet) {
-			std::cerr << "open " << CHAINID_ID << " first" << std::endl;
-			return;
-		}
+		IIDChainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ID);
 
 		std::string password = getpass("Enter payment password: ");
 		std::string signature = subWallet->SignDigest(did, digest, password);
 		std::cout << signature << std::endl;
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // registercr [cr | dpos]
-static void _register(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
+static int _register(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
 	std::string registerWhat = argv[1];
 
 	try {
-		if (!currentWallet) {
-			std::cerr << "no wallet actived" << std::endl;
-			return;
-		}
+		IMainchainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
 
-		IMainchainSubWallet *subWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ELA));
-		if (!subWallet) {
-			std::cerr << "open '" << CHAINID_ELA << "' first" << std::endl;
-			return;
-		}
 		nlohmann::json tx;
 		std::string password;
 
 		if (registerWhat == "cr") {
-
-			IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
-			if (!iidChainSubWallet) {
-				std::cerr << "open '" << CHAINID_ID << "' first" << std::endl;
-				return;
-			}
+			IIDChainSubWallet *idSubWallet;
+			getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
 
 			std::string crPublicKey, nickName, url, did;
 			uint64_t location;
 
-			crPublicKey = iidChainSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
-			did = iidChainSubWallet->GetPublicKeyDID(crPublicKey);
+			crPublicKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
+			did = idSubWallet->GetPublicKeyDID(crPublicKey);
 
 			std::cout << "DID public key: " << crPublicKey << std::endl;
 			std::cout << "DID: " << did << std::endl;
@@ -961,7 +939,7 @@ static void _register(int argc, char *argv[]) {
 
 			password = getpass("Enter payment password: ");
 
-			std::string signature = iidChainSubWallet->SignDigest(did, digest, password);
+			std::string signature = idSubWallet->SignDigest(did, digest, password);
 			payload["Signature"] = signature;
 
 			tx = subWallet->CreateRegisterCRTransaction("", payload, convertAmount("5000"), "");
@@ -992,52 +970,43 @@ static void _register(int argc, char *argv[]) {
 			tx = subWallet->CreateRegisterProducerTransaction("", payload, convertAmount("5000"), "");
 		} else {
 			invalidCmdError();
-			return;
+			return ERRNO_APP;
 		}
 
 		signAndPublishTx(subWallet, tx, password);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // unregister [cr | dpos]
-static void unregister(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
+static int unregister(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
 	std::string registerWhat = argv[1];
 
 	try {
-		if (!currentWallet) {
-			std::cerr << "no wallet actived" << std::endl;
-			return;
-		}
+		IMainchainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
 
-		IMainchainSubWallet *subWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ELA));
-		if (!subWallet) {
-			std::cerr << "open '" << CHAINID_ELA << "' first" << std::endl;
-			return;
-		}
 		nlohmann::json tx;
 		std::string password;
 
 		if (registerWhat == "cr") {
-			IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
-			if (!iidChainSubWallet) {
-				std::cerr << "open '" << CHAINID_ID << "' first" << std::endl;
-				return;
-			}
-			std::string did = iidChainSubWallet->GetAllDID(0, 1)["DID"][0];
+			IIDChainSubWallet *idSubWallet;
+			getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
+
+			std::string did = idSubWallet->GetAllDID(0, 1)["DID"][0];
 
 			nlohmann::json payload = subWallet->GenerateUnregisterCRPayload(did);
 			std::string digest = payload["Digest"].get<std::string>();
 
 			password = getpass("Enter payment password: ");
 
-			std::string signature = iidChainSubWallet->SignDigest(did, digest, password);
+			std::string signature = idSubWallet->SignDigest(did, digest, password);
 			payload["Signature"] = signature;
 
 			tx = subWallet->CreateUnregisterCRTransaction("", payload, "");
@@ -1048,46 +1017,35 @@ static void unregister(int argc, char *argv[]) {
 			tx = subWallet->CreateCancelProducerTransaction("", payload, "");
 		} else {
 			invalidCmdError();
-			return;
+			return ERRNO_APP;
 		}
 
 		signAndPublishTx(subWallet, tx, password);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // retrieve [cr | dpos]
-static void retrieve(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
+static int retrieve(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
 	std::string registerWhat = argv[1];
 
 	try {
-		if (!currentWallet) {
-			std::cerr << "no wallet actived" << std::endl;
-			return;
-		}
-
-		IMainchainSubWallet *subWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ELA));
-		if (!subWallet) {
-			std::cerr << "open '" << CHAINID_ELA << "' first" << std::endl;
-			return;
-		}
+		IMainchainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
 
 		nlohmann::json tx;
 		if (registerWhat == "cr") {
-			IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
-			if (!iidChainSubWallet) {
-				std::cerr << "open '" << CHAINID_ID << "' first" << std::endl;
-				return;
-			}
+			IIDChainSubWallet *idSubWallet;
+			getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
 
-			std::string crPublicKey = iidChainSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
-			std::string did = iidChainSubWallet->GetPublicKeyDID(crPublicKey);
+			std::string crPublicKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
+			std::string did = idSubWallet->GetPublicKeyDID(crPublicKey);
 
 			std::cout << "DID public key: " << crPublicKey << std::endl;
 			std::cout << "DID: " << did << std::endl;
@@ -1107,41 +1065,29 @@ static void retrieve(int argc, char *argv[]) {
 			tx = subWallet->CreateRetrieveDepositTransaction(convertAmount(amount), "");
 		} else {
 			invalidCmdError();
-			return;
+			return ERRNO_APP;
 		}
 
 		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // proposal [sponsor | crsponsor]
-static void proposal(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
-
+static int proposal(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 	std::string what = argv[1];
 
 	try {
-		if (!currentWallet) {
-			std::cerr << "no wallet actived" << std::endl;
-			return;
-		}
+		IMainchainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
 
-		IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ELA));
-		if (!mainchainSubWallet) {
-			std::cerr << "open " << CHAINID_ELA << " first" << std::endl;
-			return;
-		}
-
-		IIDChainSubWallet *iidChainSubWallet = dynamic_cast<IIDChainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ID));
-		if (!iidChainSubWallet) {
-			std::cerr << "open " << CHAINID_ID << " first" << std::endl;
-			return;
-		}
+		IIDChainSubWallet *idSubWallet;
+		getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
 
 		if (what == "sponsor") {
 			int type = 0;
@@ -1150,10 +1096,10 @@ static void proposal(int argc, char *argv[]) {
 			std::string receiptAddress;
 			std::string crSponsorDID;
 
-			std::string sponsorPubKey = iidChainSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
+			std::string sponsorPubKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
 			std::cout << "sponsor public key: " << sponsorPubKey << std::endl;
 
-			std::string sponsorDID = iidChainSubWallet->GetPublicKeyDID(sponsorPubKey);
+			std::string sponsorDID = idSubWallet->GetPublicKeyDID(sponsorPubKey);
 			std::cout << "sponsor DID: " << sponsorDID << std::endl;
 
 			std::cout << "Enter proposal draft hash: ";
@@ -1169,12 +1115,12 @@ static void proposal(int argc, char *argv[]) {
 			std::cout << "Enter receipt address: ";
 			std::cin >> receiptAddress;
 
-			nlohmann::json proposalJson = mainchainSubWallet->SponsorProposalDigest(type, sponsorPubKey, draftHash, budgets,
+			nlohmann::json proposalJson = subWallet->SponsorProposalDigest(type, sponsorPubKey, draftHash, budgets,
 																					receiptAddress);
 			std::string digest = proposalJson["Digest"].get<std::string>();
 
 			std::string password = getpass("Enter payment password: ");
-			std::string signature = iidChainSubWallet->SignDigest(sponsorDID, digest, password);
+			std::string signature = idSubWallet->SignDigest(sponsorDID, digest, password);
 			proposalJson["Signature"] = signature;
 
 			std::cout << proposalJson.dump() << std::endl;
@@ -1185,50 +1131,41 @@ static void proposal(int argc, char *argv[]) {
 
 			nlohmann::json sponsorSignedProposal = nlohmann::json::parse(tmp);
 
-			std::string crSponsorPubKey = iidChainSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
+			std::string crSponsorPubKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
 			std::cout << "CR sponsor public key: " << crSponsorPubKey << std::endl;
-			std::string crSponsorDID = iidChainSubWallet->GetPublicKeyDID(crSponsorPubKey);
+			std::string crSponsorDID = idSubWallet->GetPublicKeyDID(crSponsorPubKey);
 			std::cout << "CR sponsor DID: " << crSponsorDID << std::endl;
 
-			nlohmann::json proposalJson = mainchainSubWallet->CRSponsorProposalDigest(sponsorSignedProposal, crSponsorDID);
+			nlohmann::json proposalJson = subWallet->CRSponsorProposalDigest(sponsorSignedProposal, crSponsorDID);
 			std::string digest = proposalJson["Digest"].get<std::string>();
 
 			std::string password = getpass("Enter payment password: ");
-			std::string signature = iidChainSubWallet->SignDigest(crSponsorDID, digest, password);
+			std::string signature = idSubWallet->SignDigest(crSponsorDID, digest, password);
 			proposalJson["CRSignature"] = signature;
 
-			nlohmann::json tx = mainchainSubWallet->CreateCRCProposalTransaction(proposalJson, "");
+			nlohmann::json tx = subWallet->CreateCRCProposalTransaction(proposalJson, "");
 
-			signAndPublishTx(mainchainSubWallet, tx);
+			signAndPublishTx(subWallet, tx);
 		} else {
 			invalidCmdError();
-			return;
+			return ERRNO_APP;
 		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // vote [cr | dpos]
-static void vote(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
-
+static int vote(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 	std::string voteType = argv[1];
 
 	try {
-		if (!currentWallet) {
-			std::cerr << "no wallet actived" << std::endl;
-			return;
-		}
-
-		IMainchainSubWallet *subWallet = dynamic_cast<IMainchainSubWallet *>(currentWallet->GetSubWallet(CHAINID_ELA));
-		if (!subWallet) {
-			std::cerr << "open '" << CHAINID_ELA << "' first" << std::endl;
-			return;
-		}
+		IMainchainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
 		nlohmann::json tx;
 		if (voteType == "cr") {
 			std::cout << "Enter vote cr with JSON format: " << std::endl;
@@ -1249,27 +1186,21 @@ static void vote(int argc, char *argv[]) {
 			tx = subWallet->CreateVoteProducerTransaction("", num, nlohmann::json::parse(pubKeys), "");
 		} else {
 			invalidCmdError();
-			return;
+			return ERRNO_APP;
 		}
 
 		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
-
+	return 0;
 }
 
 // export [mnemonic | keystore]
-static void _export(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
-
-	if (currentWallet == nullptr) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
+static int _export(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
 	std::string exportWhat = argv[1];
 
@@ -1282,7 +1213,7 @@ static void _export(int argc, char *argv[]) {
 			std::string backupPassword;
 			if (0 > createBackupPassword(backupPassword)) {
 				std::cerr << "Export keystore failed!" << std::endl;
-				return;
+				return ERRNO_APP;
 			}
 
 			std::string password = getpass("Enter payment password: ");
@@ -1290,180 +1221,139 @@ static void _export(int argc, char *argv[]) {
 			std::cout << keystore.dump(4) << std::endl;
 		} else {
 			invalidCmdError();
+			return ERRNO_APP;
 		}
 	} catch (const std::exception &e) {
-		std::cerr << "Export mnemonic error: " << e.what() << std::endl;
+		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // passwd
-static void passwd(int argc, char *argv[]) {
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
-
+static int passwd(int argc, char *argv[]) {
+	checkCurrentWallet();
 	try {
 		std::string oldPassword = getpass("Old Password: ");
 		if (!currentWallet->VerifyPayPassword(oldPassword)) {
 			std::cerr << "Wrong password" << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		std::string newPassword = getpass("New Password: ");
 		std::string newPasswordVerify = getpass("Retype New Password: ");
 		if (newPassword != newPasswordVerify) {
 			std::cerr << "Password not match" << std::endl;
-			return;
+			return ERRNO_APP;
 		}
 
 		currentWallet->ChangePassword(oldPassword, newPassword);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
-// send [chainID] [address] [amount]
-static void _send(int argc, char *argv[]) {
-	if (argc != 4) {
-		invalidCmdError();
-		return;
-	}
-
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
+// transfer [chainID] [address] [amount]
+static int transfer(int argc, char *argv[]) {
+	checkParam(4);
+	checkCurrentWallet();
 
 	std::string chainID = argv[1];
 	std::string addr = argv[2];
 	std::string amount = convertAmount(argv[3]);
 
 	try {
-		auto subWallet = currentWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << "open " << chainID << " first" << std::endl;
-			return;
-		}
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
 
 		nlohmann::json tx = subWallet->CreateTransaction("", addr, amount, "");
 		signAndPublishTx(subWallet, tx);
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // receive [chainID]
-static void _receive(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
-
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
+static int _receive(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
 	std::string chainID = argv[1];
 	try {
-		auto subWallet = currentWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << "open " << chainID << " first" << std::endl;
-			return;
-		}
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
 
 		std::cout << subWallet->CreateAddress() << std::endl;
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
-// sync [walletName] [chainID] [start | stop]
-static void _sync(int argc, char *argv[]) {
-	if (argc != 4) {
-		invalidCmdError();
-		return;
-	}
+// sync [chainID] [start | stop]
+static int _sync(int argc, char *argv[]) {
+	checkParam(3);
+	checkCurrentWallet();
 
-	std::string walletName = argv[1];
-	std::string chainID = argv[2];
-	std::string op = argv[3];
+	std::string chainID = argv[1];
+	std::string op = argv[2];
 
 	try {
-		auto masterWallet = manager->GetMasterWallet(walletName);
-		if (!masterWallet) {
-			std::cerr << walletName << " not found" << std::endl;
-			return;
-		}
-
-		auto subWallet = masterWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << chainID << " not found" << std::endl;
-			return;
-		}
-
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
 		if (op == "start") {
 			subWallet->SyncStart();
 		} else if (op == "stop") {
 			subWallet->SyncStop();
 		} else {
 			invalidCmdError();
+			return ERRNO_APP;
 		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // fixpeer [chainID] [ip] [port]
-static void fixpeer(int argc, char *argv[]) {
-	if (argc != 4) {
-		invalidCmdError();
-		return;
-	}
+static int fixpeer(int argc, char *argv[]) {
+	checkParam(4);
+	checkCurrentWallet();
 
 	try {
 		std::string chainID = argv[1];
 		std::string ip = argv[2];
 		uint16_t port = (uint16_t)std::stoi(argv[3]);
 
-		if (!currentWallet) {
-			std::cerr << "no wallet actived" << std::endl;
-			return;
-		}
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
 
-		auto subWallet = currentWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << "open " << chainID << " first" << std::endl;
-			return;
-		}
-
-		if (!subWallet->SetFixedPeer(ip, port))
+		if (!subWallet->SetFixedPeer(ip, port)) {
 			std::cerr << "set fixed peer failed" << std::endl;
+			return ERRNO_APP;
+		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // tx [chainID]
-static void _tx(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
-
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
+static int _tx(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
 	std::string chainID = argv[1];
 	try {
-		auto subWallet = currentWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << chainID << " not found" << std::endl;
-			return;
-		}
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
 
 		int cntPerPage = 20;
 		int curPage = 1;
@@ -1531,28 +1421,20 @@ static void _tx(int argc, char *argv[]) {
 		} while (cmd != "q");
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
 // utxo [chainID]
-static void utxo(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
-
-	if (!currentWallet) {
-		std::cerr << "no wallet actived" << std::endl;
-		return;
-	}
+static int utxo(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
 	std::string chainID = argv[1];
 	try {
-		auto subWallet = currentWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << chainID << " not open" << std::endl;
-			return;
-		}
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
 
 		int cntPerPage = 20;
 		int curPage = 1;
@@ -1607,36 +1489,70 @@ static void utxo(int argc, char *argv[]) {
 		} while (cmd != "q");
 	} catch (const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
-static void balance(int argc, char *argv[]) {
-	if (argc != 2) {
-		invalidCmdError();
-		return;
-	}
+// balance chainID
+static int balance(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
 
 	std::string chainID = argv[1];
 	try {
-		auto subWallet = currentWallet->GetSubWallet(chainID);
-		if (!subWallet) {
-			std::cerr << chainID << " not open" << std::endl;
-			return;
-		}
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
 		nlohmann::json balance = subWallet->GetBalanceInfo();
 
 		std::cout << balance.dump(4) << std::endl;
 	} catch(const std::exception &e) {
 		exceptionError(e);
+		return ERRNO_APP;
 	}
+	return 0;
 }
 
-static void verbose(int argc, char *argv[]) {
+// net netType
+static int net(int argc, char *argv[]) {
+	checkParam(2);
+
+	nlohmann::json netConfig;
+	std::string netType = argv[1];
+	if (netType == "PrvNet") {
+		std::string filepath;
+		std::cout << "Enter config file for private network (empty for default): ";
+		std::getline(std::cin, filepath);
+		std::cout << "filepath -> " << filepath << std::endl;
+		if (!filepath.empty()) {
+			try {
+				std::ifstream in(filepath);
+				netConfig = nlohmann::json::parse(in);
+			} catch (const std::exception &e) {
+				std::cerr << "Load network config '" << filepath << "' failed: " << e.what() << std::endl;
+				return ERRNO_APP;
+			}
+		}
+	} else if (netType != "MainNet" && netType != "TestNet" && netType != "RegTest") {
+		invalidCmdError();
+		return ERRNO_CMD;
+	}
+
+	walletCleanup();
+	delete manager;
+
+	manager = new MasterWalletManager(walletRoot, netType, netConfig);
+	walletInit();
+
+	return 0;
+}
+
+static int verbose(int argc, char *argv[]) {
 	bool v = !verboseMode;
 
 	if (argc > 2) {
 		invalidCmdError();
-		return;
+		return ERRNO_CMD;
 	}
 
 	if (argc > 1) {
@@ -1646,64 +1562,64 @@ static void verbose(int argc, char *argv[]) {
 			v = false;
 		else {
 			std::cerr << "Unknown verbse options: " << argv[1] << std::endl;
-			return;
+			return ERRNO_CMD;
 		}
 	}
 
 	std::string opt = v ? "on" : "off";
 	std::cout << "Verbose mode: " << opt << std::endl;
 	verboseMode = v;
+	return 0;
 }
 
-static void help(int argc, char *argv[]);
+static int help(int argc, char *argv[]);
 
 struct command {
 	const char *cmd;
 
-	void (*function)(int argc, char *argv[]);
+	int (*function)(int argc, char *argv[]);
 
 	const char *help;
 } commands[] = {
 	{"help",     help,           "[command]                               Display available command list, or usage description for specific command."},
-	{"create",   create,         "[walletName]                            Create a new wallet with given name."},
-	{"import",   import,         "[walletName] [m[nemonic] | [k[eystore]] Import wallet with given name and mnemonic or keystore."},
-	{"remove",   remove,         "[walletName]                            Remove specified wallet."},
-	{"open",     _open,          "[walletName] [chainID]                  Open wallet of `chainID`."},
-	{"close",    _close,         "[walletName] [chainID]                  Close wallet of `chainID`."},
-	{"sync",     _sync,          "[walletName] [chainID] [start | stop]   Start or stop sync of wallet"},
-	{"switch",   _switch,        "[walletName]                            Switch current wallet."},
-	{"list",     list,           "                                        List all wallets."},
+	{"create",   create,         "walletName                              Create a new wallet with given name."},
+	{"import",   import,         "walletName (m[nemonic] | k[eystore])    Import wallet with given name and mnemonic or keystore."},
+	{"remove",   remove,         "walletName                              Remove specified wallet."},
+	{"switch",   _switch,        "walletName                              Switch current wallet."},
+	{"list",     list,           "[all]                                   List all wallets or current wallet."},
 	{"passwd",   passwd,         "                                        Change password of wallet."},
-
 	{"diddoc",   diddoc,         "                                        Create DID document."},
 	{"didtx",    didtx,          "                                        Create DID transaction."},
-	{"didsign",  didsign,        "[DID] [digest]                          Sign `digest` with private key of DID."},
-
-	{"tx",       _tx,            "[chainID]                               List all tx records."},
-	{"utxo",     utxo,           "[chainID]                               List all utxos"},
-	{"balance",  balance,        "[chainID]                               List balance info"},
-	{"fixpeer",  fixpeer,        "[chainID] [ip] [port]                   Set fixed peer to sync."},
-	{"send",     _send,          "[chainID] [address] [amount]            Send ELA from `chainID`."},
-	{"receive",  _receive,       "[chainID]                               Get receive address of `chainID`."},
-	{"address",  address,        "[chainID]                               Get the revceive address of chainID."},
-	{"proposal", proposal,       "[sponsor | crsponsor]                   Sponsor sign proposal or cr sponsor create proposal tx."},
-	{"deposit",  deposit,        "[amount] [address]                      Deposit to sidechain from mainchain."},
-	{"withdraw", withdraw,       "[amount] [address]                      Withdraw from sidechain to mainchain."},
-	{"export",   _export,        "[m[nemonic] | [k[eystore]]              Export mnemonic or keystore."},
-	{"register", _register,      "[cr | dpos]                             Register CR or DPoS with specified wallet."},
-	{"unregister", unregister,   "[cr | dpos]                             Unregister CR or DPoS with specified wallet."},
-	{"retrieve", retrieve,       "[cr | dpos]                             Retrieve Pledge with specified wallet."},
-	{"vote",     vote,           "[cr | dpos]                             CR/DPoS vote."},
-	{"verbose",  verbose,        "[on | off]                              Set verbose mode."},
+	{"didsign",  didsign,        "DID digest                              Sign `digest` with private key of DID."},
+	{"sync",     _sync,          "chainID (start | stop)                  Start or stop sync of wallet"},
+	{"open",     _open,          "chainID                                 Open wallet of `chainID`."},
+	{"close",    _close,         "chainID                                 Close wallet of `chainID`."},
+	{"tx",       _tx,            "chainID                                 List all tx records."},
+	{"utxo",     utxo,           "chainID                                 List all utxos"},
+	{"balance",  balance,        "chainID                                 List balance info"},
+	{"fixpeer",  fixpeer,        "chainID ip port                         Set fixed peer to sync."},
+	{"transfer", transfer,       "chainID address amount                  Transfer ELA from `chainID`."},
+	{"receive",  _receive,       "chainID                                 Get receive address of `chainID`."},
+	{"address",  address,        "chainID                                 Get the revceive address of chainID."},
+	{"proposal", proposal,       "(sponsor | crsponsor)                   Sponsor sign proposal or cr sponsor create proposal tx."},
+	{"deposit",  deposit,        "amount address                          Deposit to sidechain from mainchain."},
+	{"withdraw", withdraw,       "amount address                          Withdraw from sidechain to mainchain."},
+	{"export",   _export,        "(m[nemonic] | k[eystore])               Export mnemonic or keystore."},
+	{"register", _register,      "(cr | dpos)                             Register CR or DPoS with specified wallet."},
+	{"unregister", unregister,   "(cr | dpos)                             Unregister CR or DPoS with specified wallet."},
+	{"retrieve", retrieve,       "(cr | dpos)                             Retrieve Pledge with specified wallet."},
+	{"vote",     vote,           "(cr | dpos)                             CR/DPoS vote."},
+	{"net",      net,            "netType                                 Set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
+	{"verbose",  verbose,        "(on | off)                              Set verbose mode."},
 	{"exit", NULL,               "                                        Quit wallet."},
 	{"quit", NULL,               "                                        Quit wallet."},
 	{NULL,   NULL, NULL}
 };
 
-static void help(int argc, char *argv[]) {
+static int help(int argc, char *argv[]) {
 	struct command *p;
 
-	std::cout << std::endl << "Usage: [Command] [Arguments]..." << std::endl << std::endl;
+	std::cout << std::endl << "Usage: Command [Arguments]..." << std::endl << std::endl;
 	std::cout << "Command list:" << std::endl;
 
 	if (argc == 1) {
@@ -1716,12 +1632,14 @@ static void help(int argc, char *argv[]) {
 		for (p = commands; p->cmd; p++) {
 			if (strcmp(argv[1], p->cmd) == 0) {
 				printf("  %-15s %s\n\n", p->cmd, p->help);
-				return;
+				return 0;
 			}
 		}
 
 		std::cerr << "Unknown command: " << argv[1] << std::endl;
 	}
+
+	return 0;
 }
 
 int run_cmd(int argc, char *argv[]) {
@@ -1729,7 +1647,12 @@ int run_cmd(int argc, char *argv[]) {
 
 	for (p = commands; p->cmd; p++) {
 		if (strcmp(argv[0], p->cmd) == 0) {
-			p->function(argc, argv);
+			if (-1 == p->function(argc, argv)) {
+				char *help_argv[2];
+				help_argv[0] = (char *)commands[0].cmd;
+				help_argv[1] = (char *)p->cmd;
+				help(2, help_argv);
+			}
 			return 0;
 		}
 	}
@@ -1807,7 +1730,7 @@ static const char *getWalletDir(const char *dir) {
 	struct stat st;
 
 	if (!dir) {
-		sprintf(walletDir, "%s/.elawallet", getenv("HOME"));
+		sprintf(walletDir, "%s/.wallet", getenv("HOME"));
 		dir = (const char *) walletDir;
 	}
 
@@ -1835,31 +1758,51 @@ static void signalHandler(int signum) {
 	exit(-1);
 }
 
+static void usage(void)
+{
+	printf("SPV Wallet, a command line wallet.\n");
+	printf("Usage: wallet [OPTION]...\n");
+	printf("\n");
+	printf("  -d, --data=DIR            Wallet data directory.\n");
+	printf("  -n, --network=NETWORK     Network name or config file.\n");
+	printf("                            MainNet TestNet RegTest,\n");
+	printf("                            or config file for private network.\n");
+	printf("  -v, --verbose             Verbose output.\n");
+	printf("      --debug               Wait for debugger attach after start.\n");
+	printf("\n");
+}
+
 int main(int argc, char *argv[]) {
-	const char *walletRoot = NULL;
+	const char *network = "MainNet";
 	char cmdLine[4096];
 	char *cmdArgs[512];
 	int numArgs;
 	int waitForAttach = 0;
+	nlohmann::json netConfig;
 
 	int opt;
 	int idx;
 	struct option options[] = {
-		{"data",    required_argument, NULL, 'd'},
-		{"verbose", no_argument,       NULL, 'v'},
-		{"debug",   no_argument,       NULL, 1},
-		{"help",    no_argument,       NULL, 'h'},
-		{NULL, 0,                      NULL, 0}
+		{"data",            required_argument, NULL, 'd'},
+		{"network",         required_argument, NULL, 'n' },
+		{"verbose",         no_argument,       NULL, 'v'},
+		{"debug",           no_argument,       NULL, 1},
+		{"help",            no_argument,       NULL, 'h'},
+		{NULL,              0,                 NULL, 0}
 	};
 
 #ifdef HAVE_SYS_RESOURCE_H
 	sys_coredump_set(true);
 #endif
 
-	while ((opt = getopt_long(argc, argv, "d:vh?", options, &idx)) != -1) {
+	while ((opt = getopt_long(argc, argv, "d:n:vh?", options, &idx)) != -1) {
 		switch (opt) {
 			case 'd':
 				walletRoot = optarg;
+				break;
+
+			case 'n':
+				network = optarg;
 				break;
 
 			case 'v':
@@ -1873,7 +1816,7 @@ int main(int argc, char *argv[]) {
 			case 'h':
 			case '?':
 			default:
-				//usage();
+				usage();
 				exit(-1);
 		}
 	}
@@ -1901,11 +1844,25 @@ int main(int argc, char *argv[]) {
 		fprintf(stdout, "Wallet data directory: %s\n", walletRoot);
 	}
 
-	manager = new MasterWalletManager(walletRoot, "MainNet");
+	if (strcmp(network, "MainNet") == 0 || strcmp(network, "TestNet") == 0 ||
+		strcmp(network, "RegTest") == 0) {
+		netConfig = nlohmann::json();
+	} else {
+		try {
+			std::ifstream in(network);
+			netConfig = nlohmann::json::parse(in);
+		} catch (const std::exception &e) {
+			std::cerr << "Load network config '" << network << "' failed: " << e.what() << std::endl;
+		}
+
+		network = "PrvNet";
+	}
+
+	manager = new MasterWalletManager(walletRoot, network, netConfig);
 	walletInit();
 
 	while (1) {
-		fprintf(stdout, "-> ELAWallet $ ");
+		fprintf(stdout, "-> wallet $ ");
 		fgets(cmdLine, sizeof(cmdLine), stdin);
 
 		numArgs = parseCmdLine(cmdLine, cmdArgs);

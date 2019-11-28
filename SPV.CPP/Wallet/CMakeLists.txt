@@ -26,7 +26,7 @@ if(HAVE_SYS_RESOURCE_H)
     add_definitions(-DHAVE_SYS_RESOURCE_H=1)
 endif()
 
-set(SRC ELAWallet.cpp)
+file(GLOB_RECURSE WALLET_SOURCE_FILES "*.cpp")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(SYSTEM_LIBS pthread dl)
@@ -52,12 +52,12 @@ else()
 	message(FATAL_ERROR "libspvsdk should enable static or shared")
 endif()
 
-add_executable(elawallet ${SRC})
-add_dependencies(elawallet ${ELAWALLET_DEPENDS})
+add_executable(wallet ${WALLET_SOURCE_FILES})
+add_dependencies(wallet ${ELAWALLET_DEPENDS})
 
-target_link_libraries(elawallet ${LIBS} ${SYSTEM_LIBS})
+target_link_libraries(wallet ${LIBS} ${SYSTEM_LIBS})
 
-install(TARGETS elawallet
+install(TARGETS wallet
     RUNTIME DESTINATION "bin"
     ARCHIVE DESTINATION "lib"
     LIBRARY DESTINATION "lib")
