@@ -230,6 +230,8 @@ namespace Elastos {
 
 			void BalanceAfterRemoveTx(const TransactionPtr &tx);
 
+			void AddSpendingUTXO(const InputArray &inputs);
+
 			void RemoveSpendingUTXO(const InputArray &inputs);
 
 			void InstallAssets(const std::vector<AssetPtr> &assets);

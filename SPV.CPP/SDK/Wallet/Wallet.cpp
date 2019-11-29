@@ -285,6 +285,8 @@ namespace Elastos {
 						InsertTx(tx);
 						if (tx->GetBlockHeight() != TX_UNCONFIRMED)
 							changedBalance = BalanceAfterUpdatedTx(tx, spentUTXO);
+						else
+							AddSpendingUTXO(tx->GetInputs());
 						wasAdded = true;
 					} else { // keep track of unconfirmed non-wallet tx for invalid tx checks and child-pays-for-parent fees
 						// BUG: limit total non-wallet unconfirmed tx to avoid memory exhaustion attack
@@ -1066,6 +1068,12 @@ namespace Elastos {
 				RemoveSpendingUTXO(tx->GetInputs());
 			} else {
 				// TODO: consider rollback later
+			}
+		}
+
+		void Wallet::AddSpendingUTXO(const InputArray &inputs) {
+			for (InputArray::const_iterator it = inputs.cbegin(); it != inputs.cend(); ++it) {
+				_spendingOutputs.insert(UTXOPtr(new UTXO(*it)));
 			}
 		}
 

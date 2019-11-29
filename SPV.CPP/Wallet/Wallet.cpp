@@ -776,7 +776,7 @@ static int deposit(int argc, char *argv[]) {
 			for (const std::string &id: supportChainID)
 				std::cout << "  " << id << std::endl;
 			std::cout << "Which side chain do you want to top up: ";
-			std::cin >> chainID;
+			std::getline(std::cin, chainID);
 		} else {
 			chainID = supportChainID[0];
 		}
@@ -821,7 +821,7 @@ static int withdraw(int argc, char *argv[]) {
 			}
 
 			std::cout << "Which side chain do you want to withdraw from: ";
-			std::cin >> chainID;
+			std::getline(std::cin, chainID);
 		} else {
 			chainID = supportChainID[0];
 		}
@@ -859,16 +859,16 @@ static int diddoc(int argc, char *argv[]) {
 		nlohmann::json publicKeys;
 
 		std::cout << "Enter id: ";
-		std::cin >> id;
+		std::getline(std::cin, id);
 
 		std::cout << "Enter did name: ";
-		std::cin >> didName;
+		std::getline(std::cin, didName);
 
 		std::cout << "Enter operation: ";
-		std::cin >> operation;
+		std::getline(std::cin, operation);
 
 		std::cout << "Enter public key: ";
-		std::cin >> publicKey;
+		std::getline(std::cin, publicKey);
 		pubKey["publicKey"] = publicKey;
 		publicKeys.push_back(pubKey);
 
@@ -976,10 +976,10 @@ static int _register(int argc, char *argv[]) {
 			std::cout << "DID: " << did << std::endl;
 
 			std::cout << "Enter nick name: ";
-			std::cin >> nickName;
+			std::getline(std::cin, nickName);
 
 			std::cout << "Enter url: ";
-			std::cin >> url;
+			std::getline(std::cin, url);
 
 			std::cout << "Enter location code (example 86): ";
 			std::cin >> location;
@@ -1001,20 +1001,18 @@ static int _register(int argc, char *argv[]) {
 
 			std::cout << "Owner public key: " << ownerPubkey << std::endl;
 			std::cout << "Enter node public key (empty will set to owner public key): ";
-			std::cin >> nodePubkey;
+			std::getline(std::cin, nodePubkey);
 			if (nodePubkey.empty())
 				nodePubkey = ownerPubkey;
 
 			std::cout << "Enter nick name: ";
-			std::cin >> nickName;
+			std::getline(std::cin, nickName);
 
 			std::cout << "Enter url: ";
-			std::cin >> url;
+			std::getline(std::cin, url);
 
-			std::string locationString;
 			std::cout << "Enter location code (example 86): ";
-			std::cin >> locationString;
-			location = std::stol(locationString);
+			std::cin >> location;
 
 			password = getpass("Enter payment password: ");
 			nlohmann::json payload = subWallet->GenerateProducerPayload(ownerPubkey, nodePubkey, nickName, url, "", location, password);
