@@ -21,6 +21,7 @@ import (
 const (
 	luaBlockTypeName = "block"
 	minerAddress     = "EWUSe87Qiekzpx7Xqf8RphdwNX5Z84iGEA"
+	maxTxPerBlock    = 100
 )
 
 func RegisterBlockType(L *lua.LState) {
@@ -43,7 +44,7 @@ func newBlock(L *lua.LState) int {
 		ChainParams: &config.DefaultParams,
 		TxMemPool:   m.Peer.GetTxPool(),
 	})
-	block, err := service.GenerateBlock(minerAddress)
+	block, err := service.GenerateBlock(minerAddress, maxTxPerBlock)
 	if err != nil {
 		fmt.Printf("New block error: %s \n", err.Error())
 	}

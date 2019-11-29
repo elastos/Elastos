@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"sort"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/account"
@@ -14,6 +15,8 @@ import (
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
+	"github.com/elastos/Elastos.ELA/pow"
 	"github.com/elastos/Elastos.ELA/utils/test"
 )
 
@@ -139,4 +142,79 @@ func newGenesisBlock(ac *account.Account) *types.Block {
 				Programs:   []*program.Program{},
 			}},
 	}
+}
+
+func quickGenerateBlock(pow *pow.Service, prevHash *common.Uint256,
+	txs []*types.Transaction, minerAddr string, params *config.Params,
+	height uint32) (*types.Block, error) {
+	coinBaseTx, err := pow.CreateCoinbaseTx(minerAddr, height)
+	if err != nil {
+		return nil, err
+	}
+
+	header := types.Header{
+		Version:    0,
+		Previous:   *prevHash,
+		MerkleRoot: common.EmptyHash,
+		Timestamp:  uint32(time.Now().Unix()),
+		Bits:       params.PowLimitBits,
+		Height:     height,
+		Nonce:      0,
+	}
+
+	msgBlock := &types.Block{
+		Header:       header,
+		Transactions: []*types.Transaction{},
+	}
+
+	msgBlock.Transactions = append(msgBlock.Transactions, coinBaseTx)
+	totalTxsSize := coinBaseTx.GetSize()
+	txCount := 1
+	totalTxFee := common.Fixed64(0)
+	isHighPriority := func(tx *types.Transaction) bool {
+		if tx.IsIllegalTypeTx() || tx.IsInactiveArbitrators() ||
+			tx.IsSideChainPowTx() || tx.IsUpdateVersion() ||
+			tx.IsActivateProducerTx() {
+			return true
+		}
+		return false
+	}
+
+	sort.Slice(txs, func(i, j int) bool {
+		if isHighPriority(txs[i]) {
+			return true
+		}
+		if isHighPriority(txs[j]) {
+			return false
+		}
+		return txs[i].FeePerKB > txs[j].FeePerKB
+	})
+
+	for _, tx := range txs {
+		size := totalTxsSize + tx.GetSize()
+		if size > int(pact.MaxBlockSize) {
+			continue
+		}
+		totalTxsSize = size
+
+		if !blockchain.IsFinalizedTransaction(tx, height) {
+			continue
+		}
+		msgBlock.Transactions = append(msgBlock.Transactions, tx)
+		totalTxFee += tx.Fee
+		txCount++
+	}
+
+	totalReward := totalTxFee + params.RewardPerBlock
+	pow.AssignCoinbaseTxRewards(msgBlock, totalReward)
+
+	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
+	for _, tx := range msgBlock.Transactions {
+		txHash = append(txHash, tx.Hash())
+	}
+	txRoot, _ := crypto.ComputeRoot(txHash)
+	msgBlock.Header.MerkleRoot = txRoot
+
+	log.Infof("generated block: %d", msgBlock.Height)
+	return msgBlock, err
 }
