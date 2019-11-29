@@ -678,6 +678,7 @@ func ctpPayloadEqual(payload1 *payload.CRCProposalTracking, payload2 *payload.CR
 	return payload1.ProposalTrackingType == payload2.ProposalTrackingType &&
 		payload1.ProposalHash.IsEqual(payload2.ProposalHash) &&
 		payload1.DocumentHash.IsEqual(payload2.DocumentHash) &&
+		payload1.OpinionHash.IsEqual(payload2.OpinionHash) &&
 		payload1.Stage == payload2.Stage &&
 		payload1.Appropriation == payload2.Appropriation &&
 		bytes.Equal(payload1.LeaderPubKey, payload2.LeaderPubKey) &&
@@ -841,6 +842,7 @@ func randomCRCProposalTrackingPayload() *payload.CRCProposalTracking {
 		ProposalTrackingType: payload.CRCProposalTrackingType(rand.Uint32()),
 		ProposalHash:         *randomUint256(),
 		DocumentHash:         *randomUint256(),
+		OpinionHash:          *randomUint256(),
 		Stage:                randomUint8(),
 		Appropriation:        randomFix64(),
 		LeaderPubKey:         randomBytes(33),

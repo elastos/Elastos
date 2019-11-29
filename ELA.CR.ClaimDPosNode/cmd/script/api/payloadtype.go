@@ -1171,8 +1171,17 @@ func newCRCProposalTracking(L *lua.LState) int {
 	newLeaderPublicKeyStr := L.ToString(8)
 	newLeaderPrivateKeyStr := L.ToString(9)
 	sgPrivateKeyStr := L.ToString(10)
+	opinionHashStr := L.ToString(11)
 	proposalHash, _ := common.Uint256FromHexString(proposalHashStr)
 	documentHash, _ := common.Uint256FromHexString(documentHashStr)
+	opinionHash := &common.Uint256{}
+	if opinionHashStr != "" {
+		var err error
+		opinionHash, err = common.Uint256FromHexString(opinionHashStr)
+		if err != nil {
+			return 1
+		}
+	}
 	leaderPublicKey, _ := common.HexStringToBytes(leaderPublicKeyStr)
 	leaderPrivateKey, _ := common.HexStringToBytes(leaderPrivateKeyStr)
 	newLeaderPublicKey, _ := common.HexStringToBytes(newLeaderPublicKeyStr)
@@ -1183,6 +1192,7 @@ func newCRCProposalTracking(L *lua.LState) int {
 		ProposalTrackingType: payload.CRCProposalTrackingType(proposalTrackingType),
 		ProposalHash:         *proposalHash,
 		DocumentHash:         *documentHash,
+		OpinionHash:          *opinionHash,
 		Stage:                uint8(stage),
 		Appropriation:        common.Fixed64(appropriation * 1e8),
 		LeaderPubKey:         leaderPublicKey,

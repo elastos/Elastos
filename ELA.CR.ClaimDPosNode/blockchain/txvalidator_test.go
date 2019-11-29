@@ -1858,6 +1858,7 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 	sgPrivateKey, _ := common.HexStringToBytes(sgPrivateKeyStr)
 
 	documentData := randomBytes(10)
+	opinionHash := randomBytes(10)
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposalTracking
 	txn.Version = types.TxVersion09
@@ -1866,6 +1867,7 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 		ProposalHash:         proposalHash,
 		Stage:                stage,
 		DocumentHash:         common.Hash(documentData),
+		OpinionHash:          common.Hash(opinionHash),
 		Appropriation:        appropriation,
 		LeaderPubKey:         leaderPublicKey,
 		NewLeaderPubKey:      newLeaderPublicKey,
