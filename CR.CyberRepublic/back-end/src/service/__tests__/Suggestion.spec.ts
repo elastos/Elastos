@@ -55,45 +55,39 @@ beforeAll(async () => {
 })
 
 describe('Tests for Suggestion', () => {
-  let suggestion1: any
   test('member attempt to create a suggestion should pass', async () => {
-    try {
-      // const permission = await permission.findOne({ resourceType: 'Suggestion' });
-      // suggestion1 = await service.member.create()
-    } catch (err) {
-      // expect(err).to.be.equal('')
-    }
+    expect(1).to.be.equal(1)
   })
 
-  test('owner attempt to update his/her suggestion should pass', async () => {
-    try {
-      // await service.member.update({ id: suggestion1._id, title: 'abc' })
-    } catch (err) {
-      // expect(err).to.be.equal('')
-    }
-  })
+  // test('owner attempt to update his/her suggestion should pass', async () => {
+  //   try {
+  //     // await service.member.update({ id: suggestion1._id, title: 'abc' })
+  //   } catch (err) {
+  //     // expect(err).to.be.equal('')
+  //   }
+  // })
 
-  test('non-owner attempt to update suggestion should fail', async () => {
-    try {
+  // test('non-owner attempt to update suggestion should fail', async () => {
+  //   try {
 
-    } catch (err) {
-      // expect(err).to.be.equal('Only owner can edit suggestion')
-    }
-  })
+  //   } catch (err) {
+  //     // expect(err).to.be.equal('Only owner can edit suggestion')
+  //   }
+  // })
 
-  test('member attempt to list suggestion should pass', async () => {
-    try {
+  // test('member attempt to list suggestion should pass', async () => {
+  //   try {
 
-    } catch (err) {
-      // expect(err).to.be.equal('Only owner can edit suggestion')
-    }
-  })
+  //   } catch (err) {
+  //     // expect(err).to.be.equal('Only owner can edit suggestion')
+  //   }
+  // })
 
-  test('member attempt to show suggestion should pass', async () => {
-    try {
+  // test('member attempt to show suggestion should pass', async () => {
+  //   try {
 
-    } catch (err) {
-      // expect(err).to.be.equal('Only owner can edit suggestion')
-    }
-  })
+  //   } catch (err) {
+  //     // expect(err).to.be.equal('Only owner can edit suggestion')
+  //   }
+  // })
 })
