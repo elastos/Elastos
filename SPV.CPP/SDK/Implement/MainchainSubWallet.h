@@ -139,6 +139,24 @@ namespace Elastos {
 			                                                       const nlohmann::json &votes,
 			                                                       const std::string &memo);
 
+			virtual nlohmann::json LeaderProposalTrackDigest(uint8_t type,
+			                                                 const std::string &proposalHash,
+			                                                 const std::string &documentHash,
+			                                                 uint8_t stage,
+			                                                 const std::string &appropriation,
+			                                                 const std::string &leaderPubKey,
+			                                                 const std::string &newLeaderPubKey) const;
+
+			virtual nlohmann::json
+			NewLeaderProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const;
+
+			virtual nlohmann::json
+			SecretaryGeneralProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const;
+
+			virtual nlohmann::json
+			CreateProposalTrackingTransaction(const nlohmann::json &SecretaryGeneralSignedPayload,
+			                                  const std::string &memo);
+
 		private:
 			PayloadPtr GenerateCRCProposalPayload(uint8_t type,
 			                                      const std::string &sponsorPublicKey,

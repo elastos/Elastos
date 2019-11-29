@@ -498,6 +498,102 @@ namespace Elastos {
 					const nlohmann::json &votes,
 					const std::string &memo) = 0;
 
+
+			/**
+			 * Generate proposal tracking digest for leader signature.
+			 *
+			 * @param type             Proposal tracking type, value is [0-5]. Details:
+			 * 						   common         : 0x00
+			 *						   progress       : 0x01
+			 *						   progressReject : 0x02
+			 *						   terminated     : 0x03
+			 *						   proposalLeader : 0x04
+			 *						   appropriation  : 0x05
+			 *
+			 * @param proposalHash     The hash of proposal.
+			 * @param documentHash     The hash of tracking proposal document.
+			 * @param stage            The stage of proposal.
+			 * @param appropriation    The appropriation of this stage of proposal.
+			 * @param leaderPubKey     The Public key of this proposal leader
+			 * @param newLeaderPubKey  The public key of this proposal new leader
+			 *
+			 * @return The proposal tracking payload in JSON format contains the "Digest" field to be signed and then set the "LeaderSign" field. Such as
+			*  {
+			 *  	"Appropriation":2342,
+			 *  	"DocumentHash":"7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *  	"LeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *  	"NewLeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *  	"ProposalHash":"0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *  	"Stage":52,
+			 *  	"Type":4,
+			 *  	"Digest":"27531160ac78b6073171d8a9d4c2a78261ecf1c8649822b1a536f0c15bf2d35b",
+			 *  	"LeaderSign":""
+			 *  }
+			 */
+			virtual nlohmann::json LeaderProposalTrackDigest(uint8_t type,
+			                                                 const std::string &proposalHash,
+			                                                 const std::string &documentHash,
+			                                                 uint8_t stage,
+			                                                 const std::string &appropriation,
+			                                                 const std::string &leaderPubKey,
+			                                                 const std::string &newLeaderPubKey) const = 0;
+
+			/**
+			 * Generate proposal tracking digest for new leader signature.
+			 *
+			 * @param leaderSignedProposalTracking Leader Signed proposal tracking payload.
+			 *
+			 * @return The proposal tracking payload in JSON format contains the "Digest" field to be signed and then set the "NewLeaderSign" field. Such as
+			 *  {
+			 *  	"Appropriation":2342,
+			 *  	"DocumentHash":"7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 *  	"LeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *  	"LeaderSign":"82836d2e35dcafd229375e51e66af8b862b8cccee25c86b2524a77d7f28f79972516911819845d69e9fe71b6c255e79058355331bd543c5f5d0f4194aa90242c",
+			 *  	"NewLeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 *  	"ProposalHash":"0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 *  	"Stage":52,
+			 *  	"Type":4,
+			 *  	"Digest":"33d77c7e5943ac6aa1d521c76e47315779fe16ba05a6388022bd5afd561b5790",
+			 *  	"NewLeaderSign":"",
+			 *  }
+			 */
+			virtual nlohmann::json
+			NewLeaderProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const = 0;
+
+			/**
+			 * Generate proposal tracking digest for secretaryGeneral signature.
+			 *
+			 * @param leaderSignedProposalTracking Leader Signed proposal tracking payload.
+			 *
+			 * @return The proposal tracking payload in JSON format contains the "Digest" field to be signed and then set the "SecretaryGeneralSign" field. Such as
+			 *{
+			 * 	"Appropriation":2342,
+			 * 	"DocumentHash":"7c5d2e7cfd7d4011414b5ddb3ab43e2aca247e342d064d1091644606748d7513",
+			 * 	"LeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 * 	"LeaderSign":"28e0cb3d4c7c5d19b13f5ce15fc19c636108c47ae25eaa2a9f890dde91940582d7473426100d93c09af9f98233bb0fdfa635a89d03b90e7bfeef68e1408a96b3",
+			 * 	"NewLeaderPubKey":"02c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331",
+			 * 	"NewLeaderSign":"9a24a084a6f599db9906594800b6cb077fa7995732c575d4d125c935446c93bbe594ee59e361f4d5c2142856c89c5d70c8811048bfb2f8620fbc18a06cb58109",
+			 * 	"ProposalHash":"0b5ee188b455ab5605cd452d7dda5c205563e1b30c56e93c6b9fda133f8cc4d4",
+			 * 	"Stage":52,
+			 * 	"Type":4,
+			 * 	"Digest":"70adb3e1d1f094f313cdfc4d47ff873d9b64094c03b492f38e5be0d3d61dc4df",
+			 * 	"SecretaryGeneralSign":""
+			 * }
+			 */
+			virtual nlohmann::json
+			SecretaryGeneralProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const = 0;
+
+
+			/**
+			 * Create a proposal tracking transaction.
+			 *
+			 * @param SecretaryGeneralSignedPayload Proposal tracking payload with JSON format by SecretaryGeneral signed
+			 * @param memo           Remarks string. Can be empty string.
+			 * @return               The transaction in JSON format to be signed and published.
+			 */
+			virtual nlohmann::json
+			CreateProposalTrackingTransaction(const nlohmann::json &SecretaryGeneralSignedPayload,
+			                                  const std::string &memo) = 0;
 		};
 
 	}

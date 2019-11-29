@@ -19,6 +19,7 @@
 #include <Plugin/Transaction/Payload/UnregisterCR.h>
 #include <Plugin/Transaction/Payload/CRCProposal.h>
 #include <Plugin/Transaction/Payload/CRCProposalReview.h>
+#include <Plugin/Transaction/Payload/CRCProposalTracking.h>
 #include <Plugin/Transaction/TransactionInput.h>
 #include <Plugin/Transaction/TransactionOutput.h>
 #include <SpvService/Config.h>
@@ -1206,6 +1207,179 @@ namespace Elastos {
 
 			ArgInfo("r => {}", result.dump());
 
+			return result;
+		}
+
+		nlohmann::json MainchainSubWallet::LeaderProposalTrackDigest(uint8_t type,
+		                                                             const std::string &proposalHash,
+		                                                             const std::string &documentHash,
+		                                                             uint8_t stage,
+		                                                             const std::string &appropriation,
+		                                                             const std::string &leaderPubKey,
+		                                                             const std::string &newLeaderPubKey) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("type: {}", type);
+			ArgInfo("proposalHash: {}", proposalHash);
+			ArgInfo("documentHash: {}", documentHash);
+			ArgInfo("stage: {}", stage);
+			ArgInfo("appropriation: {}", appropriation);
+			ArgInfo("leaderPubKey: {}", leaderPubKey);
+			ArgInfo("newLeaderPubKey: {}", newLeaderPubKey);
+
+			ErrorChecker::CheckParam(type >= CRCProposalTracking::maxType, Error::InvalidArgument, "type is invalid");
+
+			uint256 proposal(proposalHash);
+			ErrorChecker::CheckParam(proposal.GetHex() != proposalHash, Error::InvalidArgument, "invalid proposalHash");
+
+			uint256 document(documentHash);
+			ErrorChecker::CheckParam(document.GetHex() != documentHash, Error::InvalidArgument, "invalid documentHash");
+
+			BigInt appropriationValue;
+			appropriationValue.setDec(appropriation);
+			ErrorChecker::CheckParam(appropriationValue < 0, Error::InvalidArgument, "invalid appropriation");
+
+			Key verifyPubKey;
+			verifyPubKey.SetPubKey(leaderPubKey);
+
+			if (type == CRCProposalTracking::CRCProposalTrackingType::proposalLeader) {
+				verifyPubKey.SetPubKey(newLeaderPubKey);
+			} else {
+				ErrorChecker::CheckParam(!newLeaderPubKey.empty(), Error::InvalidArgument, "invalid newLeaderPubKey");
+			}
+
+			CRCProposalTracking tracking;
+			tracking.SetType(CRCProposalTracking::CRCProposalTrackingType(type));
+			tracking.SetProposalHash(proposal);
+			tracking.SetDocumentHash(document);
+			tracking.SetStage(stage);
+			tracking.SetAppropriation(appropriationValue.getUint64());
+			tracking.SetLeaderPubKey(leaderPubKey);
+			tracking.SetNewLeaderPubKey(newLeaderPubKey);
+
+			nlohmann::json result = tracking.ToJson(0);
+			result.erase("NewLeaderSign");
+			result.erase("SecretaryGeneralSign");
+
+			ByteStream stream;
+			tracking.SerializeUnsigned(stream, 0);
+			uint256 digest(sha256(stream.GetBytes()));
+			result["Digest"] = digest.GetHex();
+
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json
+		MainchainSubWallet::NewLeaderProposalTrackDigest(const nlohmann::json &leaderSignedProposalTracking) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("leaderSignedProposalTracking: {}", leaderSignedProposalTracking.dump());
+
+			std::string signature = leaderSignedProposalTracking["LeaderSign"].get<std::string>();
+			ErrorChecker::CheckParam(signature.empty(), Error::InvalidArgument, "no signed proposal tracking");
+
+			CRCProposalTracking tracking;
+			tracking.FromJson(leaderSignedProposalTracking, 0);
+
+			ErrorChecker::CheckParam(tracking.GetType() != CRCProposalTracking::CRCProposalTrackingType::proposalLeader,
+			                         Error::InvalidArgument, "invalid tracking type");
+
+			ByteStream stream;
+			tracking.SerializeUnsigned(stream, 0);
+			stream.WriteVarBytes(tracking.GetLeaderSign());
+
+			nlohmann::json result = tracking.ToJson(0);
+			result.erase("SecretaryGeneralSign");
+
+			uint256 digest(sha256(stream.GetBytes()));
+			result["Digest"] = digest.GetHex();
+
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json MainchainSubWallet::SecretaryGeneralProposalTrackDigest(
+				const nlohmann::json &leaderSignedProposalTracking) const {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("leaderSignedProposalTracking: {}", leaderSignedProposalTracking.dump());
+
+			ErrorChecker::CheckParam(
+					leaderSignedProposalTracking.find("LeaderSign") == leaderSignedProposalTracking.end(),
+					Error::InvalidArgument, "no signed proposal tracking");
+			std::string signature = leaderSignedProposalTracking["LeaderSign"].get<std::string>();
+			ErrorChecker::CheckParam(signature.empty(), Error::InvalidArgument, "no signed proposal tracking");
+
+			CRCProposalTracking tracking;
+			tracking.FromJson(leaderSignedProposalTracking, 0);
+
+			ByteStream stream;
+			tracking.SerializeUnsigned(stream, 0);
+			stream.WriteVarBytes(tracking.GetLeaderSign());
+
+			if (tracking.GetType() == CRCProposalTracking::CRCProposalTrackingType::proposalLeader) {
+				bytes_t newLeaderSign = tracking.GetNewLeaderSign();
+				ErrorChecker::CheckParam(newLeaderSign.empty(), Error::InvalidArgument,
+				                         "no signed proposal tracking by new leader");
+
+				ErrorChecker::CheckParam(tracking.GetNewLeaderPubKey().empty(), Error::InvalidArgument,
+				                         "new leader public key is empty");
+
+				stream.WriteVarBytes(newLeaderSign);
+			}
+
+			nlohmann::json result = tracking.ToJson(0);
+			uint256 digest(sha256(stream.GetBytes()));
+			result["Digest"] = digest.GetHex();
+
+			ArgInfo("r => {}", result.dump());
+			return result;
+		}
+
+		nlohmann::json
+		MainchainSubWallet::CreateProposalTrackingTransaction(const nlohmann::json &SecretaryGeneralSignedPayload,
+		                                  const std::string &memo) {
+			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("SecretaryGeneralSignedPayload: {}", SecretaryGeneralSignedPayload.dump());
+			ArgInfo("memo: {}", memo);
+
+			ErrorChecker::CheckParam(
+					SecretaryGeneralSignedPayload.find("LeaderSign") == SecretaryGeneralSignedPayload.end(),
+					Error::InvalidArgument, "no signed proposal tracking");
+			std::string signature = SecretaryGeneralSignedPayload["LeaderSign"].get<std::string>();
+			ErrorChecker::CheckParam(signature.empty(), Error::InvalidArgument, "no signed proposal tracking");
+
+			PayloadPtr payload = PayloadPtr(new CRCProposalTracking());
+			try {
+				payload->FromJson(SecretaryGeneralSignedPayload, 0);
+			} catch (const nlohmann::detail::exception &e) {
+				ErrorChecker::ThrowParamException(Error::JsonFormatError,
+				                                  "Payload format err: " + std::string(e.what()));
+			}
+
+			CRCProposalTracking *tracking = static_cast<CRCProposalTracking *>(payload.get());
+
+			if (tracking->GetType() == CRCProposalTracking::CRCProposalTrackingType::proposalLeader) {
+
+				ErrorChecker::CheckParam(tracking->GetNewLeaderSign().empty(), Error::InvalidArgument,
+				                         "new leader no signed proposal tracking");
+
+				ErrorChecker::CheckParam(tracking->GetNewLeaderPubKey().empty(), Error::InvalidArgument,
+				                         "new leader public key is empty");
+			}
+
+			std::vector<OutputPtr> outputs;
+			Address receiveAddr(CreateAddress());
+			outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr)));
+
+			TransactionPtr tx = CreateTx(Transaction::crcProposalTracking, payload, "", outputs, memo);
+
+			if (tx->GetOutputs().size() > 1) {
+				tx->RemoveOutput(tx->GetOutputs().front());
+				tx->FixIndex();
+			}
+
+			nlohmann::json result;
+			EncodeTx(result, tx);
+			ArgInfo("r => {}", result.dump());
 			return result;
 		}
 

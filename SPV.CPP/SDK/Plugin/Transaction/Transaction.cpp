@@ -23,6 +23,7 @@
 #include <Plugin/Transaction/Payload/UnregisterCR.h>
 #include <Plugin/Transaction/Payload/CRCProposal.h>
 #include <Plugin/Transaction/Payload/CRCProposalReview.h>
+#include <Plugin/Transaction/Payload/CRCProposalTracking.h>
 #include <Wallet/UTXO.h>
 #include <Wallet/Wallet.h>
 
@@ -888,6 +889,8 @@ namespace Elastos {
 				payload = PayloadPtr(new CRCProposal());
 			} else if (type == crcProposalReview) {
 				payload = PayloadPtr(new CRCProposalReview());
+			} else if (type == crcProposalTracking) {
+				payload = PayloadPtr(new CRCProposalTracking());
 			}
 
 			return payload;

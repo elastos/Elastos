@@ -321,7 +321,7 @@ static void exceptionError(const std::exception &e) {
 	std::cerr << "Exception: " << e.what() << std::endl;
 }
 
-// create [walletName]
+// create walletName
 static int create(int argc, char *argv[]) {
 	checkParam(2);
 
@@ -405,7 +405,7 @@ static int create(int argc, char *argv[]) {
 	return 0;
 }
 
-// import [walletName] [m[nemonic] | k[eystore]]
+// import walletName (m[nemonic] | k[eystore])
 static int import(int argc, char *argv[]) {
 	checkParam(3);
 
@@ -487,7 +487,7 @@ static int import(int argc, char *argv[]) {
 	return 0;
 }
 
-// remove [walletName]
+// remove walletName
 static int remove(int argc, char *argv[]) {
 	checkParam(2);
 
@@ -594,7 +594,7 @@ static int list(int argc, char *argv[]) {
 	return 0;
 }
 
-// switch [walletName]
+// switch walletName
 static int _switch(int argc, char *argv[]) {
 	checkParam(2);
 
@@ -614,7 +614,7 @@ static int _switch(int argc, char *argv[]) {
 	return 0;
 }
 
-// address [chainID]
+// address chainID
 static int address(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -676,7 +676,7 @@ static int address(int argc, char *argv[]) {
 	return 0;
 }
 
-// open [chainID]
+// open chainID
 static int _open(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -693,7 +693,7 @@ static int _open(int argc, char *argv[]) {
 	return 0;
 }
 
-// close [chainID]
+// close chainID
 static int _close(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -711,7 +711,7 @@ static int _close(int argc, char *argv[]) {
 	return 0;
 }
 
-// deposit [amount] [address]
+// deposit amount address
 static int deposit(int argc, char *argv[]) {
 	checkParam(3);
 	checkCurrentWallet();
@@ -757,7 +757,7 @@ static int deposit(int argc, char *argv[]) {
 	return 0;
 }
 
-// withdraw [amount] [address]
+// withdraw amount address
 static int withdraw(int argc, char *argv[]) {
 	checkParam(3);
 	checkCurrentWallet();
@@ -877,7 +877,7 @@ static int didtx(int argc, char *argv[]) {
 	return 0;
 }
 
-// didsign [DID] [digest]
+// didsign DID digest
 static int didsign(int argc, char *argv[]) {
 	checkParam(3);
 	checkCurrentWallet();
@@ -898,7 +898,7 @@ static int didsign(int argc, char *argv[]) {
 	return 0;
 }
 
-// registercr [cr | dpos]
+// registercr (cr | dpos)
 static int _register(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -982,7 +982,7 @@ static int _register(int argc, char *argv[]) {
 	return 0;
 }
 
-// unregister [cr | dpos]
+// unregister (cr | dpos)
 static int unregister(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1029,7 +1029,7 @@ static int unregister(int argc, char *argv[]) {
 	return 0;
 }
 
-// retrieve [cr | dpos]
+// retrieve (cr | dpos)
 static int retrieve(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1077,7 +1077,7 @@ static int retrieve(int argc, char *argv[]) {
 	return 0;
 }
 
-// proposal [sponsor | crsponsor]
+// proposal (sponsor | crsponsor)
 static int proposal(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1158,7 +1158,124 @@ static int proposal(int argc, char *argv[]) {
 	return 0;
 }
 
-// vote [cr | dpos]
+// tracking (leader | newLeader | secretaryGeneral)
+static int tracking(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+
+	std::string what = argv[1];
+
+	try {
+		IMainchainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
+
+		IIDChainSubWallet *idSubWallet;
+		getSubWallet(idSubWallet, currentWallet, CHAINID_ID);
+
+		if (what == "leader") {
+			int type = 0;
+			std::string proposalHash, documentHash, appropriation, leaderPubKey, newLeaderPubKey;
+			uint8_t stage;
+
+			std::cout << "Select proposal tracking type: " << std::endl;
+			std::cout << "0 (Default) :" << "common" << std::endl;
+			std::cout << "1 :" << "progress" << std::endl;
+			std::cout << "2 :" << "progressReject" << std::endl;
+			std::cout << "3 :" << "terminated" << std::endl;
+			std::cout << "4 :" << "proposalLeader" << std::endl;
+			std::cout << "5 :" << "appropriation" << std::endl;
+			std::cout << "Enter tracking type (empty for default): ";
+
+			std::string trackingType;
+			std::getline(std::cin, trackingType);
+			if (!trackingType.empty())
+				type = std::stoi(trackingType);
+
+			std::cout << "Enter proposal hash: ";
+			std::cin >> proposalHash;
+
+			std::cout << "Enter tracking document hash: ";
+			std::cin >> documentHash;
+
+			std::cout << "Enter tracking proposal stage: ";
+			std::cin >> stage;
+
+			std::cout << "Enter tracking proposal appropriation: ";
+			std::cin >> appropriation;
+
+			leaderPubKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
+			std::string leaderDID = idSubWallet->GetPublicKeyDID(leaderPubKey);
+			std::cout << "leader DID: " << leaderDID << std::endl;
+			std::cout << "leader leaderPubKey: " << leaderPubKey << std::endl;
+
+			if (type == 4) {
+				std::cout << "Enter proposal new leader public key: ";
+				std::cin >> newLeaderPubKey;
+
+				std::string newLeaderDID = idSubWallet->GetPublicKeyDID(newLeaderPubKey);
+				std::cout << "new leader DID: " << newLeaderDID << std::endl;
+			}
+
+			nlohmann::json payloadJson = subWallet->LeaderProposalTrackDigest(type, proposalHash, documentHash,
+					stage, appropriation, leaderPubKey, newLeaderPubKey);
+			std::string digest = payloadJson["Digest"].get<std::string>();
+
+			std::string password = getpass("Enter payment password: ");
+			std::string signature = idSubWallet->SignDigest(leaderDID, digest, password);
+			payloadJson["LeaderSign"] = signature;
+
+			std::cout << payloadJson.dump() << std::endl;
+		} else if (what == "newLeader") {
+			std::string tmp;
+			std::cout << "Enter leader signed proposal tracking json: " << std::endl;
+			std::cin >> tmp;
+
+			nlohmann::json leaderSignedProposalTracking = nlohmann::json::parse(tmp);
+
+			std::string newLeaderPubKey = idSubWallet->GetAllPublicKeys(0, 1)["PublicKeys"][0];
+			std::cout << "new leader of sponsor public key: " << newLeaderPubKey << std::endl;
+			std::string newLeaderDID = idSubWallet->GetPublicKeyDID(newLeaderPubKey);
+			std::cout << "New leader DID: " << newLeaderDID << std::endl;
+
+			nlohmann::json payloadJson = subWallet->NewLeaderProposalTrackDigest(leaderSignedProposalTracking);
+			std::string digest = payloadJson["Digest"].get<std::string>();
+
+			std::string password = getpass("Enter payment password: ");
+			std::string signature = idSubWallet->SignDigest(newLeaderDID, digest, password);
+			payloadJson["NewLeaderSign"] = signature;
+
+			std::cout << payloadJson.dump() << std::endl;
+		} else if (what == "secretaryGeneral") {
+			std::string tmp;
+			std::cout << "Enter leader signed proposal tracking json: " << std::endl;
+			std::cin >> tmp;
+
+			nlohmann::json leaderSignedProposalTracking = nlohmann::json::parse(tmp);
+
+			std::string did = idSubWallet->GetAllDID(0, 1)["DID"][0];
+			std::cout << "SecretaryGeneral DID: " << did << std::endl;
+
+			nlohmann::json payloadJson = subWallet->SecretaryGeneralProposalTrackDigest(leaderSignedProposalTracking);
+			std::string digest = payloadJson["Digest"].get<std::string>();
+
+			std::string password = getpass("Enter payment password: ");
+			std::string signature = idSubWallet->SignDigest(did, digest, password);
+			payloadJson["SecretaryGeneralSign"] = signature;
+
+			nlohmann::json tx = subWallet->CreateProposalTrackingTransaction(payloadJson, "");
+			signAndPublishTx(subWallet, tx, password);
+		} else {
+			invalidCmdError();
+			return ERRNO_APP;
+		}
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+	return 0;
+}
+
+// vote (cr | dpos)
 static int vote(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1198,7 +1315,7 @@ static int vote(int argc, char *argv[]) {
 	return 0;
 }
 
-// export [mnemonic | keystore]
+// export (mnemonic | keystore)
 static int _export(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1256,7 +1373,7 @@ static int passwd(int argc, char *argv[]) {
 	return 0;
 }
 
-// transfer [chainID] [address] [amount]
+// transfer chainID address amount
 static int transfer(int argc, char *argv[]) {
 	checkParam(4);
 	checkCurrentWallet();
@@ -1278,7 +1395,7 @@ static int transfer(int argc, char *argv[]) {
 	return 0;
 }
 
-// receive [chainID]
+// receive chainID
 static int _receive(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1296,7 +1413,7 @@ static int _receive(int argc, char *argv[]) {
 	return 0;
 }
 
-// sync [chainID] [start | stop]
+// sync chainID (start | stop)
 static int _sync(int argc, char *argv[]) {
 	checkParam(3);
 	checkCurrentWallet();
@@ -1322,7 +1439,7 @@ static int _sync(int argc, char *argv[]) {
 	return 0;
 }
 
-// fixpeer [chainID] [ip] [port]
+// fixpeer chainID ip port
 static int fixpeer(int argc, char *argv[]) {
 	checkParam(4);
 	checkCurrentWallet();
@@ -1427,7 +1544,7 @@ static int _tx(int argc, char *argv[]) {
 	return 0;
 }
 
-// utxo [chainID]
+// utxo chainID
 static int utxo(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1618,6 +1735,7 @@ struct command {
 	{"vote",     vote,           "(cr | dpos)                             CR/DPoS vote."},
 	{"network",  _network,       "[netType]                               Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
 	{"verbose",  verbose,        "(on | off)                              Set verbose mode."},
+	{"tracking", tracking,       "(leader | newLeader | secretaryGeneral) Leader of sponsor sign tracking proposal or secretaryGeneral create tracking proposal tx."},
 	{"exit", NULL,               "                                        Quit wallet."},
 	{"quit", NULL,               "                                        Quit wallet."},
 	{NULL,   NULL, NULL}
