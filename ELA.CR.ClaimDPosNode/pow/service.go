@@ -217,7 +217,8 @@ func (pow *Service) distributeDPOSReward(coinBaseTx *types.Transaction,
 	return pow.arbiters.GetFinalRoundChange(), nil
 }
 
-func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
+func (pow *Service) GenerateBlock(minerAddr string,
+	txPerBlock int) (*types.Block, error) {
 	bestChain := pow.chain.BestChain
 	nextBlockHeight := bestChain.Height + 1
 	coinBaseTx, err := pow.CreateCoinbaseTx(minerAddr, nextBlockHeight)
@@ -270,7 +271,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 			continue
 		}
 		totalTxsSize = size
-		if txCount >= maxTxPerBlock {
+		if txCount >= txPerBlock {
 			log.Warn("txCount reached max MaxTxPerBlock")
 			break
 		}
@@ -304,7 +305,8 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 	msgBlock.Header.MerkleRoot = txRoot
 
 	msgBlock.Header.Bits, err = pow.chain.CalcNextRequiredDifficulty(bestChain, time.Now())
-	log.Info("difficulty: ", msgBlock.Header.Bits)
+	log.Infof("block height %d with difficulty: %d",
+		msgBlock.Height, msgBlock.Header.Bits)
 
 	return msgBlock, err
 }
@@ -323,7 +325,7 @@ func (pow *Service) CreateAuxBlock(payToAddr string) (*types.Block, error) {
 		}
 
 		// Create new block with nonce = 0
-		auxBlock, err := pow.GenerateBlock(payToAddr)
+		auxBlock, err := pow.GenerateBlock(payToAddr, maxTxPerBlock)
 		if err != nil {
 			return nil, err
 		}
@@ -383,7 +385,7 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 	log.Info("<================Discrete Mining==============>\n")
 	for {
-		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, maxTxPerBlock)
 		if err != nil {
 			log.Warn("Generate block failed, ", err.Error())
 			continue
@@ -482,7 +484,7 @@ out:
 		log.Debug("<================Packing Block==============>")
 		//time.Sleep(15 * time.Second)
 
-		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
+		msgBlock, err := pow.GenerateBlock(pow.PayToAddr, maxTxPerBlock)
 		if err != nil {
 			log.Debug("generage block err", err)
 			continue

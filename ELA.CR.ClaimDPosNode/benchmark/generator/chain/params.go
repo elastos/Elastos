@@ -9,7 +9,7 @@ const (
 )
 
 type GenerationParams struct {
-	Mod GenerationMod
+	Mode GenerationMod
 
 	PrepareStartHeight uint32
 	RandomStartHeight  uint32

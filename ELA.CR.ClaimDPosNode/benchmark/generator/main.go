@@ -6,6 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/benchmark/generator/chain"
 	bencli "github.com/elastos/Elastos.ELA/benchmark/generator/cli"
+	"github.com/elastos/Elastos.ELA/utils/signal"
 
 	"github.com/urfave/cli"
 )
@@ -60,20 +61,30 @@ func generate(c *cli.Context) error {
 		return err
 	}
 
-	gen, err := chain.NewDataGen(
-		uint32(c.Uint64(bencli.HeightFlag.Name)),
-		c.String(bencli.WorkingDirFlag.Name),
-		params)
+	var interrupt = signal.NewInterrupt()
+	gen, err := chain.NewDataGen(uint32(c.Uint64(bencli.HeightFlag.Name)),
+		c.String(bencli.WorkingDirFlag.Name), interrupt.C, params)
 	if err != nil {
 		return err
 	}
 
-	return gen.Generate()
+	var exit chan error
+	go func() {
+		err := gen.Generate()
+		exit <- err
+	}()
+
+	select {
+	case err := <-exit:
+		return err
+	case <-interrupt.C:
+		return nil
+	}
 }
 
 func parseParams(c *cli.Context) (params *chain.GenerationParams, err error) {
 	params = &chain.GenerationParams{
-		Mod:                modeFromString(bencli.GenerationModeFlag.Value),
+		Mode:               modeFromString(bencli.GenerationModeFlag.Value),
 		PrepareStartHeight: uint32(bencli.PrepareStartHeightFlag.Value),
 		RandomStartHeight:  uint32(bencli.RandomStartHeightFlag.Value),
 		InputsPerBlock:     uint32(bencli.InputsPerBlockFlag.Value),
@@ -83,7 +94,7 @@ func parseParams(c *cli.Context) (params *chain.GenerationParams, err error) {
 	}
 
 	if c.IsSet(bencli.GenerationModeFlag.Name) {
-		params.Mod = modeFromString(c.String(bencli.GenerationModeFlag.Name))
+		params.Mode = modeFromString(c.String(bencli.GenerationModeFlag.Name))
 	}
 	if c.IsSet(bencli.PrepareStartHeightFlag.Name) {
 		params.PrepareStartHeight =
