@@ -27,7 +27,8 @@ using namespace Elastos::ElaWallet;
 #define SELA_PER_ELA 100000000UL
 static const std::string CHAINID_ELA = "ELA";
 static const std::string CHAINID_ID = "IDChain";
-static const char *walletRoot = NULL;
+static std::string walletRoot;
+static std::string network;
 
 static MasterWalletManager *manager = nullptr;
 static IMasterWallet *currentWallet = nullptr;
@@ -1513,36 +1514,42 @@ static int balance(int argc, char *argv[]) {
 	return 0;
 }
 
-// net netType
-static int net(int argc, char *argv[]) {
-	checkParam(2);
+// network [netType]
+static int _network(int argc, char *argv[]) {
 
-	nlohmann::json netConfig;
-	std::string netType = argv[1];
-	if (netType == "PrvNet") {
-		std::string filepath;
-		std::cout << "Enter config file for private network (empty for default): ";
-		std::getline(std::cin, filepath);
-		std::cout << "filepath -> " << filepath << std::endl;
-		if (!filepath.empty()) {
-			try {
-				std::ifstream in(filepath);
-				netConfig = nlohmann::json::parse(in);
-			} catch (const std::exception &e) {
-				std::cerr << "Load network config '" << filepath << "' failed: " << e.what() << std::endl;
-				return ERRNO_APP;
+	if (argc == 1) {
+		std::cout << "Network: " << network << std::endl;
+	} else {
+		checkParam(2);
+		nlohmann::json netConfig;
+		std::string netType = argv[1];
+		if (netType == "PrvNet") {
+			std::string filepath;
+			std::cout << "Enter config file for private network (empty for default): ";
+			std::getline(std::cin, filepath);
+			std::cout << "filepath: " << filepath << std::endl;
+			if (!filepath.empty()) {
+				try {
+					std::ifstream in(filepath);
+					netConfig = nlohmann::json::parse(in);
+				} catch (const std::exception &e) {
+					std::cerr << "Load network config '" << filepath << "' failed: " << e.what() << std::endl;
+					return ERRNO_APP;
+				}
 			}
+		} else if (netType != "MainNet" && netType != "TestNet" && netType != "RegTest") {
+			invalidCmdError();
+			return ERRNO_CMD;
 		}
-	} else if (netType != "MainNet" && netType != "TestNet" && netType != "RegTest") {
-		invalidCmdError();
-		return ERRNO_CMD;
+
+		network = netType;
+
+		walletCleanup();
+		delete manager;
+
+		manager = new MasterWalletManager(walletRoot, network, netConfig);
+		walletInit();
 	}
-
-	walletCleanup();
-	delete manager;
-
-	manager = new MasterWalletManager(walletRoot, netType, netConfig);
-	walletInit();
 
 	return 0;
 }
@@ -1609,7 +1616,7 @@ struct command {
 	{"unregister", unregister,   "(cr | dpos)                             Unregister CR or DPoS with specified wallet."},
 	{"retrieve", retrieve,       "(cr | dpos)                             Retrieve Pledge with specified wallet."},
 	{"vote",     vote,           "(cr | dpos)                             CR/DPoS vote."},
-	{"net",      net,            "netType                                 Set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
+	{"network",  _network,       "[netType]                               Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
 	{"verbose",  verbose,        "(on | off)                              Set verbose mode."},
 	{"exit", NULL,               "                                        Quit wallet."},
 	{"quit", NULL,               "                                        Quit wallet."},
@@ -1725,16 +1732,18 @@ static int mkdirs(const char *path, mode_t mode) {
 	return rc;
 }
 
-static const char *getWalletDir(const char *dir) {
-	static char walletDir[PATH_MAX];
-	struct stat st;
+static std::string getWalletDir(const std::string &dir) {
+	std::string result = dir;
 
-	if (!dir) {
-		sprintf(walletDir, "%s/.wallet", getenv("HOME"));
-		dir = (const char *) walletDir;
+	if (dir.empty()) {
+		result = getenv("HOME");
+		result += "/.wallet";
 	}
 
-	return dir;
+	if (result.back() == '/' || result.back() == '\\')
+		result.pop_back();
+
+	return result;
 }
 
 #ifdef HAVE_SYS_RESOURCE_H
@@ -1773,7 +1782,6 @@ static void usage(void)
 }
 
 int main(int argc, char *argv[]) {
-	const char *network = "MainNet";
 	char cmdLine[4096];
 	char *cmdArgs[512];
 	int numArgs;
@@ -1837,25 +1845,43 @@ int main(int argc, char *argv[]) {
 	signal(SIGHUP, signalHandler);
 
 	walletRoot = getWalletDir(walletRoot);
-	if (mkdirs(walletRoot, S_IRWXU) < 0) {
-		fprintf(stderr, "Create wallet data directory '%s' failed.\n", walletRoot);
+	if (mkdirs(walletRoot.c_str(), S_IRWXU) < 0) {
+		std::cerr << "Create wallet data directory '" << walletRoot << "' failed" << std::endl;
 		return -1;
 	} else {
-		fprintf(stdout, "Wallet data directory: %s\n", walletRoot);
+		std::cout << "Wallet data directory: " << walletRoot << std::endl;
 	}
 
-	if (strcmp(network, "MainNet") == 0 || strcmp(network, "TestNet") == 0 ||
-		strcmp(network, "RegTest") == 0) {
-		netConfig = nlohmann::json();
-	} else {
-		try {
-			std::ifstream in(network);
-			netConfig = nlohmann::json::parse(in);
-		} catch (const std::exception &e) {
-			std::cerr << "Load network config '" << network << "' failed: " << e.what() << std::endl;
+	if (!network.empty()) {
+		// user config
+		if (network == "MainNet" || network == "TestNet" || network == "RegTest") {
+			netConfig = nlohmann::json();
+		} else {
+			try {
+				std::ifstream in(network);
+				netConfig = nlohmann::json::parse(in);
+				network = "PrvNet";
+			} catch (const std::exception &e) {
+				std::cerr << "Load network config '" << network << "' failed: " << e.what() << std::endl;
+				return -1;
+			}
 		}
+	} else {
+		// load from local Config.json
+		try {
+			std::ifstream in(walletRoot + "/Config.json");
+			netConfig = nlohmann::json::parse(in);
+			network = netConfig["NetType"];
+		} catch (...) {
+			// ignore exception, use default "MainNet" as config
+			netConfig = nlohmann::json();
+			network.clear();
+		}
+	}
 
-		network = "PrvNet";
+	if (network.empty()) {
+		network = "MainNet";
+		netConfig = nlohmann::json();
 	}
 
 	manager = new MasterWalletManager(walletRoot, network, netConfig);
