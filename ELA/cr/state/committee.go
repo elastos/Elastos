@@ -601,7 +601,7 @@ func (c *Committee) getMemberPenalty(height uint32, member *CRMember) common.Fix
 	}
 	proposalsCount := len(c.manager.Proposals)
 	voteRate := float64(1.0)
-	if proposalsCount == 0 {
+	if proposalsCount != 0 {
 		voteRate = float64(voteCount) / float64(proposalsCount)
 	}
 

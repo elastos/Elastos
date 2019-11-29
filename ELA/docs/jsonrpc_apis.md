@@ -1682,7 +1682,7 @@ Request:
 {
   "method":"getblockbyheight",
   "params":{
-    "height":"5"
+    "height":5
   }
 }
 ```
@@ -1805,7 +1805,7 @@ Request:
 {
   "method":"getarbitratorgroupbyheight",
   "params":{
-    "height":"310"
+    "height":310
   }
 }
 ```
