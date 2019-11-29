@@ -72,6 +72,9 @@ type CRCProposalTracking struct {
 	// The hash of proposal tracking document.
 	DocumentHash common.Uint256
 
+	// The hash of proposal tracking opinion.
+	OpinionHash common.Uint256
+
 	// The stage of proposal.
 	Stage uint8
 
@@ -114,6 +117,10 @@ func (p *CRCProposalTracking) SerializeUnsigned(w io.Writer, version byte) error
 
 	if err := p.DocumentHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize DocumentHash")
+	}
+
+	if err := p.OpinionHash.Serialize(w); err != nil {
+		return errors.New("failed to serialize OpinionHash")
 	}
 
 	if err := common.WriteUint8(w, p.Stage); err != nil {
@@ -168,6 +175,10 @@ func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) err
 
 	if err = p.DocumentHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize DocumentHash")
+	}
+
+	if err = p.OpinionHash.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize OpinionHash")
 	}
 
 	if p.Stage, err = common.ReadUint8(r); err != nil {
