@@ -13,13 +13,6 @@
     - [秘书处](/zh/guide/secretariat.md)
     - [委员会](/zh/guide/council.md)
 
-- 章程
-
-    - [1. 章程](/zh/constitution/constitution.md)
-    - [2. 委员会创始文件](/zh/constitution/founding.md)
-    - [3. 投票规则](/zh/constitution/voting.md)
-    - [4. 委员会利益和分歧协调](/zh/constitution/conflict-of-interest.md)
-
 - 媒体资源
 
     - [设计风格指南](/zh/media/style-guide.md)
