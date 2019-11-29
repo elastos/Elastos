@@ -23,7 +23,7 @@ static const char *ID_CHAIN = "IDChain";
 class SubWalletCallback;
 
 struct SpvDidAdapter {
-    int syncState;
+    bool synced;
     IMasterWalletManager *manager;
     IMasterWallet *masterWallet;
     IIDChainSubWallet *idWallet;
@@ -49,7 +49,7 @@ public:
 
     virtual void OnBlockSyncProgress(const nlohmann::json &progressInfo) {
         if (progressInfo["Progress"] == 100)
-            ++adapter->syncState;
+            adapter->synced = true;
     }
 
     virtual void OnBlockSyncStopped() {
@@ -74,12 +74,19 @@ void SyncStart(SpvDidAdapter *adapter)
     auto subWallets = adapter->masterWallet->GetAllSubWallets();
     for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
         try {
-            (*it)->AddCallback(adapter->callback);
+           if ((*it)->GetChainID() == ID_CHAIN)
+                (*it)->AddCallback(adapter->callback);
             (*it)->SyncStart();
         } catch (...) {
             // ignore
         }
     }
+
+    while (!adapter->synced) {
+        // Waiting for sync to latest block height.
+        sleep(1);
+    }
+
 }
 
 static
@@ -88,7 +95,8 @@ void SyncStop(SpvDidAdapter *adapter)
     auto subWallets = adapter->masterWallet->GetAllSubWallets();
     for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
         try {
-            (*it)->SyncStop();
+            if ((*it)->GetChainID() == ID_CHAIN)
+               (*it)->SyncStop();
             (*it)->RemoveCallback();
         } catch (...) {
             // ignore
@@ -160,8 +168,6 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
         for (auto it = subWallets.begin(); it != subWallets.end(); ++it) {
             if ((*it)->GetChainID() == ID_CHAIN)
                 idWallet = dynamic_cast<IIDChainSubWallet *>(*it);
-
-            --syncState;
         }
     } catch (...) {
     }
@@ -177,7 +183,7 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
     SpvDidAdapter *adapter = new SpvDidAdapter;
     SubWalletCallback *callback = new SubWalletCallback(adapter);
 
-    adapter->syncState = syncState;
+    adapter->synced = false;
     adapter->manager = manager;
     adapter->masterWallet = masterWallet;
     adapter->idWallet = idWallet;
@@ -185,11 +191,6 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
     adapter->resolver = url;
 
     SyncStart(adapter);
-
-    while (adapter->syncState < 0) {
-        // Waiting for sync to latest block height.
-        sleep(1);
-    }
 
     return adapter;
 }
@@ -209,6 +210,28 @@ void SpvDidAdapter_Destroy(SpvDidAdapter *adapter)
     delete adapter;
 
     curl_global_cleanup();
+}
+
+int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter)
+{
+    if (!adapter)
+        return 0;
+
+    try {
+        auto result = adapter->idWallet->GetAllTransaction(0, 1, "");
+        auto count = result["MaxCount"];
+        if (count < 1)
+            return 1;
+
+        auto tx = result["Transactions"][0];
+        std::string confirm = tx["ConfirmStatus"];
+        if (std::stoi(confirm) > 2)
+            return 1;
+    } catch (...) {
+        return 0;
+    }
+
+    return 0;
 }
 
 int SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
@@ -306,10 +329,14 @@ static size_t HttpRequestBodyReadCallback(void *dest, size_t size,
 }
 
 #define DID_RESOLVE_REQUEST "{\"method\":\"getidtxspayloads\",\"params\":{\"id\":\"%s\",\"all\":false}}"
+#define DID_PREFIX          "did:elastos:"
+#define DID_RREFIX_LEN      12
 
 // Caller need free the pointer
 const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did)
 {
+    HttpRequestBody request;
+    HttpResponseBody response;
     char buffer[256];
 
     if (!adapter || !did || !adapter->resolver)
@@ -319,8 +346,9 @@ const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did)
     if (strlen(did) > 64)
         return NULL;
 
-    HttpRequestBody request;
-    HttpResponseBody response;
+    // skip did prefix "did:elastos:"
+    if (strncmp(did, DID_PREFIX, DID_RREFIX_LEN) == 0)
+        did += DID_RREFIX_LEN;
 
     request.used = 0;
     request.sz = sprintf(buffer, DID_RESOLVE_REQUEST, did);

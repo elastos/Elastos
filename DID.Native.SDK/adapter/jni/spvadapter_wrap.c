@@ -166,7 +166,9 @@ typedef enum {
   SWIG_JavaIllegalArgumentException,
   SWIG_JavaNullPointerException,
   SWIG_JavaDirectorPureVirtual,
-  SWIG_JavaUnknownError
+  SWIG_JavaUnknownError,
+  SWIG_DIDStoreException,
+  SWIG_DIDResolveException
 } SWIG_JavaExceptionCodes;
 
 typedef struct {
@@ -187,6 +189,8 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
     { SWIG_JavaNullPointerException, "java/lang/NullPointerException" },
     { SWIG_JavaDirectorPureVirtual, "java/lang/RuntimeException" },
     { SWIG_JavaUnknownError,  "java/lang/UnknownError" },
+    { SWIG_DIDStoreException, "org/elastos/did/DIDStoreException" },
+    { SWIG_DIDResolveException, "org/elastos/did/DIDResolveException" },
     { (SWIG_JavaExceptionCodes)0,  "java/lang/UnknownError" }
   };
   const SWIG_JavaExceptions_t *except_ptr = java_exceptions;
@@ -264,7 +268,7 @@ SWIGEXPORT jlong JNICALL Java_org_elastos_did_adapter_SPVAdapter_create(JNIEnv *
   if (resolver) (*jenv)->ReleaseStringUTFChars(jenv, jResolver, (const char *)resolver);
 
   if (result == 0) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaUnknownError, "Initialize SPV wallet failed.");
+    SWIG_JavaThrowException(jenv, SWIG_DIDStoreException, "DID adapter initialize SPV wallet failed.");
     return 0;
   }
 
@@ -278,6 +282,16 @@ SWIGEXPORT void JNICALL Java_org_elastos_did_adapter_SPVAdapter_destroy(JNIEnv *
   SpvDidAdapter_Destroy((SpvDidAdapter *)jHandle);
 }
 
+SWIGEXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_isAvailable(JNIEnv *jenv, jclass jcls, jlong jHandle) {
+  SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
+  int result;
+
+  (void)jenv;
+  (void)jcls;
+
+  result = SpvDidAdapter_IsAvailable(handle);
+  return (jboolean)(result != 0);
+}
 
 SWIGEXPORT jint JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransaction(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload, jstring jMemo, jstring jPassword) {
   SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
@@ -322,7 +336,7 @@ SWIGEXPORT jint JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransact
   if (password) (*jenv)->ReleaseStringUTFChars(jenv, jPassword, (const char *)password);
 
   if (result < 0) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaUnknownError, "Create ID teansaction failed.");
+    SWIG_JavaThrowException(jenv, SWIG_DIDStoreException, "DID adapter create ID teansaction failed.");
     return -1;
   }
 
@@ -357,7 +371,7 @@ SWIGEXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_resolve(JNIEn
     jresult = (*jenv)->NewStringUTF(jenv, (const char *)result);
     SpvDidAdapter_FreeMemory(handle,result);
   } else {
-    SWIG_JavaThrowException(jenv, SWIG_JavaUnknownError, "Resolve DID failed.");
+    SWIG_JavaThrowException(jenv, SWIG_DIDResolveException, "DID adapter try to resolve DID failed.");
     return 0;
   }
 

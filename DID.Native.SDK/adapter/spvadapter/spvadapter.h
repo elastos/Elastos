@@ -12,6 +12,8 @@ SpvDidAdapter *SpvDidAdapter_Create(const char *walletDir, const char *walletId,
 
 void SpvDidAdapter_Destroy(SpvDidAdapter *adapter);
 
+int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter);
+
 int SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         const char *payload, const char *memo, const char *password);
 
