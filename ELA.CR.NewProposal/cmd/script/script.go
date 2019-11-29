@@ -163,6 +163,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	voteResult := c.Int("voteresult")
 	proposalTrackingType := c.Int64("proposaltrackingtype")
 	documentHash := c.String("documenthash")
+	opinionHash := c.String("opinionhash")
 	stage := c.Int64("stage")
 	appropriation := c.Float64("appropriation")
 	leaderPubkey := c.String("leaderpublickey")
@@ -206,6 +207,10 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(documentHash))
 		return 1
 	}
+	getOpinionHash := func(L *lua.LState) int {
+		L.Push(lua.LString(opinionHash))
+		return 1
+	}
 	getStage := func(L *lua.LState) int {
 		L.Push(lua.LNumber(stage))
 		return 1
@@ -246,6 +251,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getVoteResult", getVoteResult)
 	L.Register("getProposalTrackingType", getProposalTrackingType)
 	L.Register("getDocumentHash", getDocumentHash)
+	L.Register("getOpinionHash", getOpinionHash)
 	L.Register("getStage", getStage)
 	L.Register("getAppropriation", getAppropriation)
 	L.Register("getLeaderPubkey", getLeaderPubkey)
@@ -417,6 +423,10 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "documenthash",
 				Usage: "set the hash of proposal tracking document",
+			},
+			cli.StringFlag{
+				Name:  "opinionhash",
+				Usage: "set the hash of proposal tracking opinion",
 			},
 			cli.Int64Flag{
 				Name:  "stage",
