@@ -4,11 +4,12 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/pow"
-	"github.com/elastos/Elastos.ELA/utils/signal"
 )
 
 type DataGen struct {
@@ -19,12 +20,13 @@ type DataGen struct {
 	params         *GenerationParams
 	pow            *pow.Service
 	txPool         *mempool.TxPool
+	prevBlockHash  common.Uint256
 	foundationAddr string
 }
 
 func (g *DataGen) Generate() (err error) {
 	var process func(height uint32) error
-	switch g.params.Mod {
+	switch g.params.Mode {
 	case Normal:
 		process = g.normalProcess
 	case Minimal:
@@ -38,6 +40,7 @@ func (g *DataGen) Generate() (err error) {
 			return
 		}
 	}
+	log.Info("generating complete!")
 	return
 }
 
@@ -79,7 +82,21 @@ func (g *DataGen) normalProcess(height uint32) (err error) {
 }
 
 func (g *DataGen) minimalProcess(height uint32) (err error) {
-	// todo store the block without check
+	var txs []*types.Transaction
+	if txs, err = g.txRepo.GenerateTxs(height); err != nil {
+		return
+	}
+
+	var block *types.Block
+	if block, err = quickGenerateBlock(g.pow, &g.prevBlockHash, txs,
+		g.foundationAddr, g.chainParams, height); err != nil {
+		return
+	}
+	g.prevBlockHash = block.Hash()
+
+	if err = g.storeData(block); err != nil {
+		return
+	}
 	return
 }
 
@@ -91,7 +108,8 @@ func (g *DataGen) generateBlock(
 		}
 	}
 
-	if block, err = g.pow.GenerateBlock(g.foundationAddr); err != nil {
+	if block, err = g.pow.GenerateBlock(g.foundationAddr,
+		int(g.params.InputsPerBlock)); err != nil {
 		return
 	}
 	g.pow.SolveBlock(block, nil)
@@ -111,16 +129,15 @@ func (g *DataGen) storeData(block *types.Block) error {
 	return nil
 }
 
-func NewDataGen(height uint32, dataDir string,
+func NewDataGen(height uint32, dataDir string, interrupt <-chan struct{},
 	params *GenerationParams) (*DataGen, error) {
 	repo, err := NewTxRepository(params)
 	if err != nil {
 		return nil, err
 	}
 
-	var interrupt = signal.NewInterrupt()
 	chainParams := generateChainParams(repo.GetFoundationAccount())
-	chain, err := newBlockChain(dataDir, chainParams, interrupt.C)
+	chain, err := newBlockChain(dataDir, chainParams, interrupt)
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +163,7 @@ func NewDataGen(height uint32, dataDir string,
 		chain:          chain,
 		txPool:         txPool,
 		foundationAddr: foundationAddr,
+		prevBlockHash:  chainParams.GenesisBlock.Hash(),
 		pow: pow.NewService(
 			&pow.Config{
 				PayToAddr:   foundationAddr,
