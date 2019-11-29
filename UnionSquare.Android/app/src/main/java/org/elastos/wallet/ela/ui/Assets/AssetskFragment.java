@@ -42,6 +42,7 @@ import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.listener.ISubWalletListener;
 import org.elastos.wallet.ela.ui.Assets.presenter.AssetsPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
@@ -180,6 +181,13 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
+                if (result.startsWith("elastos:")) {
+                    //elastos:EJQcgWDazveSy436TauPJ3R8PCYpifp6HA?amount=6666.00000000
+                    result = result.replace("elastos:", "");
+                    String[] parts = result.split("\\?");
+                    diposeElastosCaode(new TransferPresenter().analyzeElastosData(parts, wallet.getWalletId(), this), parts);
+                    return;
+                }
                 try {
                     QrBean qrBean = JSON.parseObject(result, QrBean.class);
                     int type = qrBean.getExtra().getType();
@@ -665,5 +673,22 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
         Bundle bundle = new Bundle();
         bundle.putString("result", result);
         ((BaseFragment) getParentFragment()).start(ErrorScanFragment.class, bundle);
+    }
+
+    private void diposeElastosCaode(int analyzeElastosData, String[] parts) {
+        Bundle bundle = new Bundle();
+        switch (analyzeElastosData) {
+            case 0:
+                toErroScan("elastos:" + parts[0] + (parts.length > 1 ? "" : ("?" + parts[1])));
+                break;
+            case 2:
+                bundle.putString("amount", parts[1].replace("amount=", ""));
+            case 1:
+                bundle.putParcelable("wallet", wallet);
+                bundle.putString("ChainID", MyWallet.ELA);
+                bundle.putString("address", parts[0]);
+                ((BaseFragment) getParentFragment()).start(TransferFragment.class, bundle);
+                break;
+        }
     }
 }

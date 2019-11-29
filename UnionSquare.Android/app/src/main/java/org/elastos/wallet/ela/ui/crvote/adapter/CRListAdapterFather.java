@@ -87,13 +87,13 @@ public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.Re
         helper.setChecked(R.id.checkbox, bean.isChecked());
 
         if (is && 0 == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.blue1));
+            helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.blue1));
         }
         helper.setText(R.id.tv_name, bean.getNickname());
-        helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
+        helper.setText(R.id.tv_address, AppUtlis.getLoc(mContext, bean.getLocation() + ""));
 
         helper.setText(R.id.tv_zb, bean.getVoterate() + "%");
-        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
+        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + mContext.getString(R.string.ticket));
     }
 
     /*   @Override

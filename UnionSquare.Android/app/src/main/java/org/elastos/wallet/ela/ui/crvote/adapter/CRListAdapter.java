@@ -33,7 +33,7 @@ public class CRListAdapter extends CRListAdapterFather {
 
     @Override
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
-        helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.a26ffffff));
+        helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.a26ffffff));
         super.convert(helper, bean);
 
         helper.setGone(R.id.view, !showCheckbox);
@@ -51,7 +51,7 @@ public class CRListAdapter extends CRListAdapterFather {
         iv.setImageResource(R.mipmap.found_vote_initial);
         String baseUrl = bean.getUrl();
         iv.setTag(R.id.error_tag_empty, baseUrl);
-        GlideApp.with(context).clear(iv);
+        GlideApp.with(mContext).clear(iv);
         if (baseUrl == null) {
             return;
         }
@@ -94,7 +94,7 @@ public class CRListAdapter extends CRListAdapterFather {
                     @Override
                     public void onGetImage(ImageView iv1, String url, ImageBean imageBean) {
                         if (iv1.getTag(R.id.error_tag_empty) == null || !(iv1.getTag(R.id.error_tag_empty).toString()).equals(url)) {
-                            GlideApp.with(context).clear(iv1);
+                            GlideApp.with(mContext).clear(iv1);
                             iv1.setImageResource(R.mipmap.found_vote_initial);
                             return;
                         }

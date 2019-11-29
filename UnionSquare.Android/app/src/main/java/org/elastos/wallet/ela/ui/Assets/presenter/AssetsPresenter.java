@@ -31,7 +31,7 @@ public class AssetsPresenter extends NewPresenterAbstract {
 
 
     public void syncStart(String walletId, String chainId, BaseFragment baseFragment) {
-        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment);
+        Observer observer = createObserver(CommonStringWithiMethNameListener.class, baseFragment, false);
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {

@@ -22,6 +22,7 @@ import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.SideChainPresenter;
+import org.elastos.wallet.ela.ui.Assets.presenter.TransferPresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonBooleanViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
@@ -35,7 +36,6 @@ import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -162,17 +162,24 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
         if (resultCode == RESULT_OK && requestCode == ScanQRcodeUtil.SCAN_QR_REQUEST_CODE && data != null) {
             String result = data.getStringExtra("result");//&& matcherUtil.isMatcherAddr(result)
             if (!TextUtils.isEmpty(result) /*&& matcherUtil.isMatcherAddr(result)*/) {
-                address = result;
+                if (result.startsWith("elastos:")) {
+                    //elastos:EJQcgWDazveSy436TauPJ3R8PCYpifp6HA?amount=6666.00000000
+                    result = result.replace("elastos:", "");
+                    String[] parts = result.split("\\?");
+                    diposeElastosCaode(new TransferPresenter().analyzeElastosData(parts, wallet.getWalletId(), this), parts);
+                    return;
+                }
                 try {
                     QrBean qrBean = JSON.parseObject(result, QrBean.class);
                     int type = qrBean.getExtra().getType();
                     if (type == Constant.TRANSFER) {
                         address = qrBean.getData();
+                        etPayeeaddr.setText(address);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    showToast(getString(R.string.infoformatwrong));
                 }
-                etPayeeaddr.setText(address);
             }
         }
 
@@ -234,5 +241,16 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
         }
     }
 
-
+    private void diposeElastosCaode(int analyzeElastosData, String[] parts) {
+        switch (analyzeElastosData) {
+            case 0:
+                showToast(getString(R.string.infoformatwrong));
+                break;
+            case 2:
+                etBalance.setText(parts[1].replace("amount=", ""));
+            case 1:
+                etPayeeaddr.setText(parts[0]);
+                break;
+        }
+    }
 }
