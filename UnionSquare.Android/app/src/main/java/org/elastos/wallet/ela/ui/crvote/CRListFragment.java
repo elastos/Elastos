@@ -337,11 +337,14 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         if (data != null && data.size() != 0) {
             netList.addAll(data);
             //pos==-1表示未移除过 先移除  并获得移除的位置  待添加
-            //curentNode.getState().equals("Active") && status.equals("Registered")其他情况已经移除了
-            if (curentNode != null && curentNode.getState().equals("Active") && status.equals("Registered") && pos == -1) {
+            //!curentNode.getState().equals("Active")的已经移除了
+            if (curentNode != null && curentNode.getState().equals("Active") && pos == -1) {
                 //curentNode还在netList中 直接contaion耗费内存
                 pos = netList.indexOf(curentNode);//获取当前位置
                 netList.remove(curentNode);
+            }
+            //只有active  并且Registered时候添加
+            if (!is && curentNode != null && status.equals("Registered") && curentNode.getState().equals("Active") && pos != -1) {
                 netList.add(0, curentNode);
                 is = true;
             }
@@ -373,7 +376,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 }
             }
             //删除非active节点
-            if (!bean.getState().equals("Active") || !status.equals("Registered")) {
+            if (!bean.getState().equals("Active")) {
                 iterator.remove();//date  remove 不影响netlist  date修改影响netlist
                 continue;
             }
