@@ -5,6 +5,7 @@
 #endif
 
 #include <CUnit/Basic.h>
+#include "constant.h"
 #include "loader.h"
 #include "ela_did.h"
 #include "did.h"
@@ -17,31 +18,12 @@ static DIDURL id;
 static DIDURL service_id;
 static DIDURL cred_id;
 
-/*static void test_diddoc_add_publickey(void)
-{
-    PublicKey *pk;
-    int rc;
-
-    rc = DIDDocument_AddPublicKey(document, &id, NULL,
-            "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV");
-    CU_ASSERT_NOT_EQUAL(rc, -1);
-
-    pk = DIDDocument_GetPublicKey(document, &id);
-    CU_ASSERT_PTR_NOT_NULL(pk);
-
-    rc = DIDDocument_RemovePublicKey(document, &id, true);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
-
-    pk = DIDDocument_GetPublicKey(document, &id);
-    CU_ASSERT_PTR_NULL(pk);
-}*/
-
 static void test_diddoc_add_authentication(void)
 {
     PublicKey *pk;
     int rc;
 
-    rc = DIDDocument_AddAuthenticationKey(document, &id, NULL,
+    rc = DIDDocument_AddAuthenticationKey(document, &id,
             "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
@@ -73,7 +55,7 @@ static void test_diddoc_add_publickey_and_authentication(void)
     pk = DIDDocument_GetPublicKey(document, &id);
     CU_ASSERT_PTR_NOT_NULL(pk);
 
-    rc = DIDDocument_AddAuthenticationKey(document, &id, NULL,
+    rc = DIDDocument_AddAuthenticationKey(document, &id,
             "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
@@ -123,8 +105,8 @@ static void test_diddoc_add_service(void)
     Service *service;
     int rc;
 
-    rc = DIDDocument_AddService(document, &service_id,
-            "OpenIdConnectVersion1.0Service", "https://openid.example.com/");
+    rc = DIDDocument_AddService(document, &service_id, service_type,
+            "https://openid.example.com/");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
     service = DIDDocument_GetService(document, &service_id);

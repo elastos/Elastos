@@ -8,7 +8,9 @@
 #include <CUnit/Basic.h>
 #include <limits.h>
 
+#include "constant.h"
 #include "loader.h"
+#include "didtest_adapter.h"
 #include "ela_did.h"
 #include "did.h"
 #include "diddocument.h"
@@ -18,44 +20,75 @@
 
 static DIDDocument *document;
 static DID *did;
+static DIDAdapter *adapter;
+
+static const char *getpassword(const char *walletDir, const char *walletId)
+{
+    return storepass;
+}
 
 static void test_didstore_store_did(void)
 {
     int rc;
+    DIDStore *store;
 
-    rc = DIDStore_StoreDID(document, "");
+    store = DIDStore_GetInstance();
+
+    rc = DIDStore_StoreDID(store, document, "");
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    rc = DIDStore_StoreDID(document, NULL);
+    rc = DIDStore_StoreDID(store, document, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
-    rc = DIDStore_StoreDID(document, "littlefish");
+    rc = DIDStore_StoreDID(store, document, "littlefish");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDStore_DeleteDID(did);
+    DIDStore_DeleteDID(store, did);
 }
 
 static int didstore_store_test_suite_init(void)
 {
-    char current_path[PATH_MAX];
-    document = DIDDocument_FromJson(global_did_string);
-    if(!document)
+    char _path[PATH_MAX], _dir[TEST_LEN];
+    char *storePath, *walletDir;
+    DIDStore *store;
+
+    walletDir = get_wallet_path(_dir, "/.didwallet");
+    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    if (!adapter)
         return -1;
 
-    did = DIDDocument_GetSubject(document);
-    if (!did)
-        return -1;
-
-    if(!getcwd(current_path, PATH_MAX)) {
-        printf("\nCan't get current dir.");
+    storePath = get_store_path(_path, "/servet");
+    store = DIDStore_Initialize(storePath, adapter);
+    if (!store) {
+        TestAdapter_Destroy(adapter);
         return -1;
     }
 
-    strcat(current_path, "/servet");
-    return DIDStore_Open(current_path);
+    document = DIDDocument_FromJson(global_did_string);
+    if(!document) {
+        TestAdapter_Destroy(adapter);
+        DIDStore_Deinitialize(store);
+        return -1;
+    }
+
+    did = DIDDocument_GetSubject(document);
+    if (!did) {
+        DIDDocument_Destroy(document);
+        TestAdapter_Destroy(adapter);
+        DIDStore_Deinitialize(store);
+        return -1;
+    }
+
+    return 0;
 }
 
 static int didstore_store_test_suite_cleanup(void)
 {
+    DIDStore *store;
+
+    TestAdapter_Destroy(adapter);
     DIDDocument_Destroy(document);
+
+    store = DIDStore_GetInstance();
+    DIDStore_Deinitialize(store);
     return 0;
 }
 

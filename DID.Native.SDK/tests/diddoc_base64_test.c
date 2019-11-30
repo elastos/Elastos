@@ -273,7 +273,6 @@ static void test_base64_compatible(void)
 
         base64_url_encode(base64, intput, i+1);
 
-        puts(base64);
         CU_ASSERT_STRING_EQUAL(base64output[i], base64);
     }
 }

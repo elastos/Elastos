@@ -20,79 +20,33 @@
  * SOFTWARE.
  */
 
-#ifndef __CREDENTIAL_H__
-#define __CREDENTIAL_H__
+#ifndef __DIDBACKEND_H__
+#define __DIDBACKEND_H__
 
 #include <stdio.h>
-
 #include "ela_did.h"
-#include "did.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_TYPE        64
-#define MAX_SIGN        512
+typedef struct DIDBackend {
+    DIDAdapter *adapter;
+} DIDBackend;
 
-typedef struct Property {
-    char *key;
-    char *value;
-} Property;
+DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did);
 
-typedef struct CredentialSubject {
-    DID id;
+int DIDBackend_Create(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
+        const char *storepass);
 
-    struct {
-        Property **properties;
-        size_t size;
-    } infos;
-} CredentialSubject;
+int DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
+        const char *storepass);
 
-typedef struct CredentialProof {
-    char type[MAX_TYPE];
-    DIDURL verificationMethod;
-    char signatureValue[MAX_SIGN];
-} CredentialProof;
-
-typedef struct Credential {
-    DIDURL id;
-
-    struct {
-        char **types;
-        size_t size;
-    } type;
-
-    DID issuer;
-    time_t issuanceDate;
-    time_t expirationDate;
-    CredentialSubject subject;
-    CredentialProof proof;
-} Credential;
-
-typedef struct PresentationProof {
-    char *type;
-    DIDURL *verificationMethod;
-    char *nonce;
-    char *realm;
-    char *signatureValue;
-} PresentationProof;
-
-//Verifiable Presentations
-typedef struct Presentations {
-    char *type;
-    time_t created;
-
-    struct {
-       Credential **credentials;
-       size_t size;
-    } credentials;
-
-    PresentationProof proof;
-} Presentations;
+int DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey,
+        const char *storepass);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__CREDENTIAL_H__
+#endif //__DIDBACKEND_H__

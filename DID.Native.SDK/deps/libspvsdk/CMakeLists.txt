@@ -41,8 +41,22 @@ ExternalProject_Add(
         -DSPDSDK_DEBUG_ON=${DEBUG_OPTION}
         -DSPV_CONSOLE_LOG=OFF
         -DSPV_BUILD_TEST_CASES=OFF
-        -DSPV_BUILD_APPS=OFF
+        -DSPV_BUILD_APPS=ON
         -DSPV_ENABLE_SHARED=OFF
         -DSPV_ENABLE_STATIC=ON
         ${CMAKE_ARGS_INIT}
+)
+
+
+ExternalProject_Add_Step(
+    libspvsdk
+    postinstall
+
+    COMMENT "Performing post install step for 'libspvsdk'"
+    DEPENDEES install
+
+    COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/bin
+    COMMAND cp -f
+        ${PROJECT_INT_DIST_DIR}/bin/wallet
+        ${CMAKE_INSTALL_PREFIX}/bin
 )

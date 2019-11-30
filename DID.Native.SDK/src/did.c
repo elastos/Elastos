@@ -46,7 +46,7 @@ static int parse_id_string(char *id, char *fragment, const char *idstring, DID *
 
     // Fragment only, need ref DID object
     if (*idstring == '#') {
-        if (!ref || !fragment)
+        if (!fragment || !ref)
             return -1;
 
         len = strlen(++idstring);
@@ -186,7 +186,7 @@ void DID_Destroy(DID *did)
     free(did);
 }
 
-DIDURL *DIDURL_FromString(const char *idstring)
+DIDURL *DIDURL_FromString(const char *idstring, DID *ref)
 {
     DIDURL *id;
 
@@ -197,7 +197,7 @@ DIDURL *DIDURL_FromString(const char *idstring)
     if (!id)
         return NULL;
 
-    if (parse_didurl(id, idstring, NULL) < 0) {
+    if (parse_didurl(id, idstring, ref) < 0) {
         free(id);
         return NULL;
     }
@@ -291,4 +291,18 @@ void DIDURL_Destroy(DIDURL *id)
         return;
 
     free(id);
+}
+
+DIDDocument *DID_Resolve(DID *did)
+{
+    DIDStore *store;
+
+    if (!did)
+        return NULL;
+
+    store = DIDStore_GetInstance();
+    if (!store)
+        return NULL;
+
+    return DIDStore_ResolveDID(store, did, false);
 }

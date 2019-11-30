@@ -44,6 +44,7 @@ set(SRC
     credential.c
     didstore.c
     didrequest.c
+    didbackend.c
     mnemonic.c
     ${utility-SOURCES})
 

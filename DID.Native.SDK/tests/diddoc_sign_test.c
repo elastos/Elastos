@@ -8,22 +8,28 @@
 #include <CUnit/Basic.h>
 #include <limits.h>
 
+#include "constant.h"
 #include "loader.h"
+#include "didtest_adapter.h"
 #include "ela_did.h"
-#include "didrequest.h"
 #include "didstore.h"
 #include "diddocument.h"
 #include "HDkey.h"
 
 #define SIGNATURE_BYTES         64
+#define TEST_LEN                512
 
 static DIDDocument *document;
 static DID *did;
-static const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
+static DIDAdapter *adapter;
 static const char *data = "abcdefghijklmnopqrstuvwxyz";
 static const char *wdata = "abc";
-static const char *storepass = "123456";
 static char signature[SIGNATURE_BYTES * 2];
+
+static const char *getpassword(const char *walletDir, const char *walletId)
+{
+    return storepass;
+}
 
 static void test_diddoc_sign(void)
 {
@@ -75,37 +81,58 @@ static void test_diddoc_verify_by_wrong(void)
 
 static int diddoc_sign_test_suite_init(void)
 {
-    char current_path[PATH_MAX];
     int rc;
+    char _path[PATH_MAX], _dir[TEST_LEN];
+    char *storePath, *walletDir;
+    DIDStore *store;
 
-    if(!getcwd(current_path, PATH_MAX)) {
-        printf("\nCan't get current dir.");
+    walletDir = get_wallet_path(_dir, "/.didwallet");
+    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    if (!adapter)
+        return -1;
+
+    storePath = get_store_path(_path, "/newdid");
+    store = DIDStore_Initialize(storePath, adapter);
+    if (!store) {
+        TestAdapter_Destroy(adapter);
         return -1;
     }
 
-    strcat(current_path, "/newdid");
-    if (DIDStore_Open(current_path) == -1)
+    rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, true);
+    if (rc < 0) {
+        DIDStore_Deinitialize(store);
+        TestAdapter_Destroy(adapter);
         return -1;
+    }
 
-    rc = DIDStore_InitPrivateIdentity(mnemonic, "", storepass, 0);
-    if (rc < 0)
+    document = DIDStore_NewDID(store, storepass, "littlefish");
+    if(!document) {
+        DIDStore_Deinitialize(store);
+        TestAdapter_Destroy(adapter);
         return -1;
-
-    document = DIDStore_NewDID(storepass, "littlefish");
-    if(!document)
-        return -1;
+    }
 
     did = DIDDocument_GetSubject(document);
-    if (!did)
+    if (!did) {
+        DIDDocument_Destroy(document);
+        DIDStore_Deinitialize(store);
+        TestAdapter_Destroy(adapter);
         return -1;
+    }
 
     return 0;
 }
 
 static int diddoc_sign_test_suite_cleanup(void)
 {
-    DIDStore_DeleteDID(did);
-    DIDDocument_Destroy(document);;
+    DIDStore *store;
+
+    TestAdapter_Destroy(adapter);
+    DIDDocument_Destroy(document);
+
+    store = DIDStore_GetInstance();
+    DIDStore_DeleteDID(store, did);
+    DIDStore_Deinitialize(store);
     return 0;
 }
 

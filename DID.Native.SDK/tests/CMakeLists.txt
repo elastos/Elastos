@@ -35,8 +35,10 @@ if(HAVE_SYS_RESOURCE_H)
 endif()
 
 set(SRC
+    constant.c
     loader.c
     tests.c
+    didtest_adapter.c
     did_fromstring_test.c
     did_getelem_test.c
     diddoc_fromjson_test.c
@@ -44,7 +46,7 @@ set(SRC
     diddoc_arelem_test.c
     cred_fromjson_test.c
     cred_getelem_test.c
-    didstore_open_test.c
+    didstore_initial_test.c
     didstore_store_did_test.c
     didstore_did_op_test.c
     didstore_store_cred_test.c
@@ -66,13 +68,15 @@ set(LIBS
     eladid
     hdkey-static
     crypto
-    crystal)
+    crystal
+    spvadapter-shared)
 
 set(DEPS
     ela-did
     CUnit
     hdkey
-    libcrystal)
+    libcrystal
+    spvadapter)
 
 if(WIN32)
     add_definitions(-DWIN32_LEAN_AND_MEAN
@@ -98,6 +102,7 @@ include_directories(
     .
     ../src
     ../hdkey
+    ../adapter/spvadapter
     ${PROJECT_INT_DIST_DIR}/include)
 
 link_directories(

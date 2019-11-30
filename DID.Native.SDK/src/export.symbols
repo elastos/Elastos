@@ -99,12 +99,13 @@ _Credential_SetProofSignture
 _Credential_Issue
 
 # DIDStore
-_DIDStore_Open
+_DIDStore_Initialize
+_DIDStore_Deinitialize
 _DIDStore_InitPrivateIdentity
 _DIDStore_NewDID
 _DIDStore_Sign
 _DIDStore_Signv
-_DIDStore_Resolve
+_DIDStore_ResolveDID
 _DIDStore_StoreDID
 _DIDStore_LoadDID
 _DIDStore_SetDIDHint
@@ -125,11 +126,6 @@ _DIDSotre_ContainPrivateKeys
 _DIDStore_ContainPrivateKey
 _DIDStore_StorePrivateKey
 _DIDStore_DeletePrivateKey
-
-# DIDEQ
-_DIDREQ_PublishDID
-_DIDREQ_UpdateDID
-_DIDREQ_DeactivateDID
 
 # Mnemonic
 _Mnemonic_Generate

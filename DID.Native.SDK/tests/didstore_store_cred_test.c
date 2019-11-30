@@ -8,8 +8,10 @@
 #include <CUnit/Basic.h>
 #include <limits.h>
 
+#include "constant.h"
 #include "loader.h"
 #include "ela_did.h"
+#include "didtest_adapter.h"
 #include "did.h"
 #include "didstore.h"
 #include "credential.h"
@@ -17,48 +19,56 @@
 
 #define  TEST_LEN    512
 
-static DID *did;
+static DID did;
 static Credential *credential;
+static DIDAdapter *adapter;
+
+static const char *getpassword(const char *walletDir, const char *walletId)
+{
+    return storepass;
+}
 
 static void test_didstore_store_cred(void)
 {
     int rc;
+    DIDStore *store;
 
-    rc = DIDStore_StoreCredential(credential, "me");
+    store = DIDStore_GetInstance();
+    rc = DIDStore_StoreCredential(store, credential, "me");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
-    DIDStore_DeleteCredential(did, &(credential->id));
+    DIDStore_DeleteCredential(store, &did, &(credential->id));
 }
 
 static int didstore_storecred_test_suite_init(void)
 {
-    char current_path[PATH_MAX];
-    if(!getcwd(current_path, PATH_MAX)) {
-        printf("\nCan't get current dir.");
+    char _path[PATH_MAX], _dir[TEST_LEN];
+    char *storePath, *walletDir;
+    DIDStore *store;
+    DIDDocument *doc;
+
+    walletDir = get_wallet_path(_dir, "/.didwallet");
+    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    if (!adapter)
+        return -1;
+
+    storePath = get_store_path(_path, "/servet");
+    store = DIDStore_Initialize(storePath, adapter);
+    if (!store)
+        return -1;
+
+    doc = DIDDocument_FromJson(global_did_string);
+    if(!doc) {
+        TestAdapter_Destroy(adapter);
         return -1;
     }
 
-    strcat(current_path, "/servet");
-    if(DIDStore_Open(current_path) == -1)
-        return -1;
-
-    DIDDocument *doc = DIDDocument_FromJson(global_did_string);
-    if(!doc)
-        return -1;
-
-    did = (DID*)calloc(1, sizeof(DID));
-    if (!did) {
-        DIDDocument_Destroy(doc);
-        return -1;
-    }
-
-    strcpy(did->idstring, doc->did.idstring);
-
+    DID_Copy(&did, DIDDocument_GetSubject(doc));
     DIDDocument_Destroy(doc);
 
-    credential = Credential_FromJson(global_cred_string, did);
+    credential = Credential_FromJson(global_cred_string, &did);
     if(!credential) {
-        DID_Destroy(did);
+        TestAdapter_Destroy(adapter);
         return -1;
     }
 
@@ -67,7 +77,13 @@ static int didstore_storecred_test_suite_init(void)
 
 static int didstore_storecred_test_suite_cleanup(void)
 {
-    DID_Destroy(did);
+    DIDStore *store;
+
+    TestAdapter_Destroy(adapter);
+    Credential_Destroy(credential);
+
+    store = DIDStore_GetInstance();
+    DIDStore_Deinitialize(store);
     return 0;
 }
 

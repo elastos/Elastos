@@ -20,7 +20,12 @@
  * SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "ela_did.h"
 #include "HDkey.h"
@@ -30,8 +35,8 @@ const char *Mnemonic_Generate(int language)
     return HDkey_GenerateMnemonic(language);
 }
 
-void Mnemonic_free(void *mnemonic)
+void Mnemonic_free(void *p)
 {
-    if (mnemonic)
-        free(mnemonic);
+    if (p)
+        free(p);
 }

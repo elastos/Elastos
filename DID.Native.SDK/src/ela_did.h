@@ -125,6 +125,22 @@ typedef struct CredentialEntry  CredentialEntry;
 typedef struct Property         Property;
 /**
  * \~English
+ * DIDStore is local store for specified DID.
+ */
+typedef struct DIDStore         DIDStore;
+/**
+ * \~English
+ * DIDAdapter is use for various method to create did transaction and resolve
+ * did document from chain.
+ */
+typedef struct DIDAdapter      DIDAdapter;
+
+struct DIDAdapter {
+    int (*createIdTransaction) (DIDAdapter *adapter, const char *payload, const char *memo);
+    const char* (*resolve) (DIDAdapter *adapter, const char *did);
+};
+/**
+ * \~English
  * DID list callbacks, return hint about did.
  * API need to free entry memory.
  */
@@ -145,10 +161,7 @@ typedef int DIDStore_GetCredHintCallback(CredentialEntry *entry, void *context);
  *
  * @param
  *      idstring     [in] A pointer to string including id information.
- *                        idstring has three informats:
- *                        1. did:elastos:ixxxxxxx
- *                        2. did:elastos:ixxxxxxx#xxxxx
- *                        3. #xxxxxxx
+ *                        idstring support:   did:elastos:ixxxxxxx
  * @return
  *      If no error occurs, return the pointer of DID.
  *      Otherwise, return NULL.
@@ -246,6 +259,18 @@ DID_API int DID_Copy(DID *newdid, DID *olddid);
  */
 DID_API void DID_Destroy(DID *did);
 
+/**
+ * \~English
+ * Get DID Document from chain.
+ *
+ * @param
+ *      did                      [in] The handle of DID.
+ * @return
+ *      If no error occurs, return the handle to DID Document.
+ *      Otherwise, return NULL.
+ */
+DID_API DIDDocument *DID_Resolve(DID *did);
+
 /******************************************************************************
  * DIDURL
  *****************************************************************************/
@@ -255,15 +280,15 @@ DID_API void DID_Destroy(DID *did);
  *
  * @param
  *      idstring     [in] A pointer to string including id information.
-  *                       idstring has three informats:
- *                        1. did:elastos:ixxxxxxx
- *                        2. did:elastos:ixxxxxxx#xxxxx
- *                        3. #xxxxxxx
+ *                   idstring support: 1. did:elastos:xxxxxxx#xxxxx
+ *                                     2. #xxxxxxx
+ * @param
+ *      ref          [in] A pointer to DID.
  * @return
  *      If no error occurs, return the handle to DID.
  *      Otherwise, return NULL.
  */
-DID_API DIDURL *DIDURL_FromString(const char *idstring);
+DID_API DIDURL *DIDURL_FromString(const char *idstring, DID *ref);
 
 /**
  * \~English
@@ -556,7 +581,7 @@ DID_API DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *keyid,
-        DID *controller, const char *publickeybase);
+        const char *publickeybase);
 
 /**
  * \~English
@@ -1443,15 +1468,37 @@ DID_API Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer
  *
  * @param
  *      root                 [in] The path of DIDStore's root.
+ * @param
+ *      adapter              [in] The handle to DIDAdapter.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_Open(const char *root);
+DID_API DIDStore* DIDStore_Initialize(const char *root, DIDAdapter *adapter);
+
+/**
+ * \~English
+ * Get DIDStore handle.
+ *
+ * @return
+ *      the handle.
+ */
+DID_API DIDStore* DIDStore_GetInstance(void);
+
+/**
+ * \~English
+ * Deinitialize DIDStore.
+ *
+ * @param
+ *      store                [in] The handle to DIDStore.
+ */
+DID_API void DIDStore_Deinitialize(DIDStore *store);
 
 /**
  * \~English
  * Store seed of keypair to initial user's identity.
  *
+  * @param
+ *      store                  [in] THe handle to DIDStore.
  * @param
  *      mnemonic               [in] Mnemonic for generate key.
  * @param
@@ -1467,8 +1514,9 @@ DID_API int DIDStore_Open(const char *root);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_InitPrivateIdentity(const char *mnemonic,
-        const char *passphrase, const char *storepass, const int language);
+DID_API int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
+        const char *passphrase, const char *storepass, const int language, bool force);
+
 /**
  * \~English
  * Create new DID Document and store in the DID Store.
@@ -1481,7 +1529,7 @@ DID_API int DIDStore_InitPrivateIdentity(const char *mnemonic,
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
  */
-DID_API DIDDocument *DIDStore_NewDID(const char *storepass, const char *hint);
+DID_API DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char *hint);
 
 /**
  * \~English
@@ -1500,23 +1548,11 @@ DID_API DIDDocument *DIDStore_NewDID(const char *storepass, const char *hint);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_Sign(DID *did, DIDURL *key, const char *storepass,
-        char *sig, int count, ...);
+DID_API int DIDStore_Sign(DIDStore *store, DID *did, DIDURL *key,
+        const char *storepass, char *sig, int count, ...);
 
-DID_API int DIDStore_Signv(DID *did, DIDURL *key, const char *storepass,
-        char *sig, int count, va_list inputs);
-
-/**
- * \~English
- * Resolve and store DID Document from chain.
- *
- * @param
- *      did                     [in] The handle to DID.
- * @return
- *      If no error occurs, return the handle to DID Document.
- *      Otherwise, return NULL.
- */
-DID_API DIDDocument *DIDStore_Resolve(DID *did);
+DID_API int DIDStore_Signv(DIDStore *store, DID *did, DIDURL *key,
+        const char *storepass, char *sig, int count, va_list inputs);
 
 /**
  * \~English
@@ -1529,7 +1565,7 @@ DID_API DIDDocument *DIDStore_Resolve(DID *did);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StoreDID(DIDDocument *document, const char *hint);
+DID_API int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *hint);
 
 /**
  * \~English
@@ -1541,7 +1577,7 @@ DID_API int DIDStore_StoreDID(DIDDocument *document, const char *hint);
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
  */
-DID_API DIDDocument *DIDStore_LoadDID(DID *did);
+DID_API DIDDocument *DIDStore_LoadDID(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -1554,7 +1590,7 @@ DID_API DIDDocument *DIDStore_LoadDID(DID *did);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_SetDIDHint(DID *did, const char *hint);
+DID_API int DIDStore_SetDIDHint(DIDStore *store, DID *did, const char *hint);
 
 /**
  * \~English
@@ -1567,7 +1603,7 @@ DID_API int DIDStore_SetDIDHint(DID *did, const char *hint);
  *      finishing use.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDStore_GetDIDHint(DID *did);
+DID_API const char *DIDStore_GetDIDHint(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -1578,7 +1614,7 @@ DID_API const char *DIDStore_GetDIDHint(DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainsDID(DID *did);
+DID_API bool DIDStore_ContainsDID(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -1589,7 +1625,7 @@ DID_API bool DIDStore_ContainsDID(DID *did);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API void DIDStore_DeleteDID(DID *did);
+DID_API void DIDStore_DeleteDID(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -1602,7 +1638,8 @@ DID_API void DIDStore_DeleteDID(DID *did);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ListDID(DIDStore_GetDIDHintCallback *callback, void *context);
+DID_API int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDHintCallback *callback,
+        void *context);
 
 /**
  * \~English
@@ -1615,7 +1652,8 @@ DID_API int DIDStore_ListDID(DIDStore_GetDIDHintCallback *callback, void *contex
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StoreCredential(Credential *credential, const char *hint);
+DID_API int DIDStore_StoreCredential(DIDStore *store, Credential *credential,
+        const char *hint);
 
 /**
  * \~English
@@ -1629,7 +1667,7 @@ DID_API int DIDStore_StoreCredential(Credential *credential, const char *hint);
  *      If no error occurs, return the handle to Credential.
  *      Otherwise, return NULL.
  */
-DID_API Credential *DIDStore_LoadCredential(DID *did, DIDURL *credid);
+DID_API Credential *DIDStore_LoadCredential(DIDStore *store, DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -1642,7 +1680,8 @@ DID_API Credential *DIDStore_LoadCredential(DID *did, DIDURL *credid);
  * @return
 *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_SetCredentialHint(DID *did, DIDURL *credid, const char *hint);
+DID_API int DIDStore_SetCredentialHint(DIDStore *store, DID *did, DIDURL *credid,
+        const char *hint);
 
 /**
  * \~English
@@ -1657,7 +1696,7 @@ DID_API int DIDStore_SetCredentialHint(DID *did, DIDURL *credid, const char *hin
  *      finishing use.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDStore_GetCredentialHint(DID *did, DIDURL *credid);
+DID_API const char *DIDStore_GetCredentialHint(DIDStore *store, DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -1668,7 +1707,7 @@ DID_API const char *DIDStore_GetCredentialHint(DID *did, DIDURL *credid);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainsCredentials(DID *did);
+DID_API bool DIDStore_ContainsCredentials(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -1681,7 +1720,7 @@ DID_API bool DIDStore_ContainsCredentials(DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainsCredential(DID *did, DIDURL *credid);
+DID_API bool DIDStore_ContainsCredential(DIDStore *store, DID *did, DIDURL *credid);
 
 /**
  * \~English
@@ -1692,7 +1731,7 @@ DID_API bool DIDStore_ContainsCredential(DID *did, DIDURL *credid);
  * @param
  *      id                      [in] The identifier of credential.
  */
-DID_API void DIDStore_DeleteCredential(DID *did, DIDURL *id);
+DID_API void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id);
 
 /**
  * \~English
@@ -1707,8 +1746,8 @@ DID_API void DIDStore_DeleteCredential(DID *did, DIDURL *id);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_ListCredentials(DID *did, DIDStore_GetCredHintCallback *callback,
-        void *context);
+DID_API int DIDStore_ListCredentials(DIDStore *store, DID *did,
+        DIDStore_GetCredHintCallback *callback, void *context);
 
 /**
  * \~English
@@ -1727,8 +1766,8 @@ DID_API int DIDStore_ListCredentials(DID *did, DIDStore_GetCredHintCallback *cal
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_SelectCredentials(DID *did, DIDURL *credid, const char *type,
-        DIDStore_GetCredHintCallback *callback, void *context);
+DID_API int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *credid,
+        const char *type, DIDStore_GetCredHintCallback *callback, void *context);
 
 /**
  * \~English
@@ -1739,7 +1778,7 @@ DID_API int DIDStore_SelectCredentials(DID *did, DIDURL *credid, const char *typ
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDSotre_ContainPrivateKeys(DID *did);
+DID_API bool DIDSotre_ContainPrivateKeys(DIDStore *store, DID *did);
 
 /**
  * \~English
@@ -1752,7 +1791,7 @@ DID_API bool DIDSotre_ContainPrivateKeys(DID *did);
  * @return
  *      true on success, false if an error occurred.
  */
-DID_API bool DIDStore_ContainPrivateKey(DID *did, DIDURL *keyid);
+DID_API bool DIDStore_ContainPrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
 
 /**
  * \~English
@@ -1767,7 +1806,7 @@ DID_API bool DIDStore_ContainPrivateKey(DID *did, DIDURL *keyid);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StorePrivateKey(DID *did, const char *fragment,
+DID_API int DIDStore_StorePrivateKey(DIDStore *store, DID *did, const char *fragment,
         const char *privatekey);
 
 /**
@@ -1779,12 +1818,14 @@ DID_API int DIDStore_StorePrivateKey(DID *did, const char *fragment,
  * @param
  *      id                      [in] The identifier of public key.
  */
-DID_API void DIDStore_DeletePrivateKey(DID *did, DIDURL *keyid);
+DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid);
 
 /**
  * \~English
  * Creates a DID and its associated DID Document to chain.
  *
+ * @param
+ *      store                    [in] The handle to DID Store.
  * @param
  *      document                 [in] The handle to DID Document.
  * @param
@@ -1794,8 +1835,8 @@ DID_API void DIDStore_DeletePrivateKey(DID *did, DIDURL *keyid);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey,
-        const char *storepass);
+DID_API int DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
+        DIDURL *signKey, const char *storepass);
 
 /**
  * \~English
@@ -1810,8 +1851,8 @@ DID_API int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey,
-        const char *storepass);
+DID_API int DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
+        DIDURL *signKey, const char *storepass);
 
 /**
  * \~English
@@ -1821,13 +1862,29 @@ DID_API int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey,
  *      document                 [in] The handle to DID Document.
  * @param
  *      signKey                  [in] The public key to sign.
-  * @param
+ * @param
  *      storepass                [in] Pass word to sign.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDREQ_DeactivateDID(DID *did, DIDURL *signKey,
+DID_API int DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,
         const char *storepass);
+
+/**
+ * \~English
+ * Resolve and store DID Document from chain.
+ *
+ * @param
+ *      store                    [in] The handle of DIDStore.
+ * @param
+ *      did                      [in] The handle to DID.
+ * @param
+ *      force                    [in] The handle to DID.
+ * @return
+ *      If no error occurs, return the handle to DID Document.
+ *      Otherwise, return NULL.
+ */
+DID_API DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force);
 
 /**
  * \~English
@@ -1850,10 +1907,8 @@ DID_API const char *Mnemonic_Generate(int language);
  *
  * @param
  *      mnemonic               [in] mnemonic buffter.
- * @return
- *      mnemonic string.
  */
-DID_API void Mnemonic_free(void *mnemonic);
+DID_API void Mnemonic_free(void *p);
 
 #ifdef __cplusplus
 }

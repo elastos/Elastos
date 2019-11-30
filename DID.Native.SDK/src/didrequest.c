@@ -26,6 +26,7 @@
 #include <openssl/opensslv.h>
 #include <cjson/cJSON.h>
 #include <time.h>
+#include <assert.h>
 
 #include "did.h"
 #include "common.h"
@@ -37,167 +38,205 @@
 #include "didrequest.h"
 
 static const char *spec = "elastos/did/1.0";
+static const char* operation[] = {"create", "update", "deactivate"};
 
-//fake api
-static int createIdTransaction(const char *data, char* memo)
+static int header_toJson(JsonGenerator *gen, DIDRequest *req)
 {
+    assert(gen);
+    assert(req);
+
+    CHECK(JsonGenerator_WriteStartObject(gen));
+    CHECK(JsonGenerator_WriteStringField(gen, "specification", req->header.spec));
+    CHECK(JsonGenerator_WriteStringField(gen, "operation", req->header.op));
+    CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
 
-static int header_toJson(JsonGenerator *generator, DIDRequest *req)
+static int proof_toJson(JsonGenerator *gen, DIDRequest *req)
 {
-    if (!req->proof.verificationMethod || !req->proof.signture)
+    char _method[MAX_DIDURL], *method;
+
+    assert(gen);
+    assert(req);
+
+    method = DIDURL_ToString(&req->proof.verificationMethod, _method, MAX_DIDURL, 1);
+    if (!method)
         return -1;
 
-    if ( JsonGenerator_WriteStartObject(generator) == -1 ||
-         JsonGenerator_WriteStringField(generator, "specification", req->header.spec) == -1 ||
-         JsonGenerator_WriteStringField(generator, "operation", req->header.op) == -1 ||
-         JsonGenerator_WriteEndObject(generator) == -1)
-             return -1;
-
+    CHECK(JsonGenerator_WriteStartObject(gen));
+    CHECK(JsonGenerator_WriteStringField(gen, "verificationMethod", method));
+    CHECK(JsonGenerator_WriteStringField(gen, "signature", req->proof.signature));
+    CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
 
-static int proof_toJson(JsonGenerator *generator, DIDRequest *req)
+static int didrequest_toJson_internal(JsonGenerator *gen, DIDRequest *req)
 {
-    if (!req->proof.verificationMethod || !req->proof.signture)
-        return -1;
+    assert(gen);
+    assert(req);
 
-    if ( JsonGenerator_WriteStartObject(generator) == -1 ||
-         JsonGenerator_WriteStringField(generator, "verificationMethod", req->proof.verificationMethod) == -1 ||
-         JsonGenerator_WriteStringField(generator, "signature", req->proof.signture) == -1 ||
-         JsonGenerator_WriteEndObject(generator) == -1 )
-             return -1;
-
+    CHECK(JsonGenerator_WriteStartObject(gen));
+    CHECK(JsonGenerator_WriteFieldName(gen, "header"));
+    CHECK(header_toJson(gen, req));
+    CHECK(JsonGenerator_WriteStringField(gen, "payload", req->payload));
+    CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
+    CHECK(proof_toJson(gen, req));
+    CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
 
-const char *didrequest_tojson(DIDRequest *req)
+static const char *didRequest_toJson(DIDRequest *req)
 {
-    JsonGenerator g, *generator;
+    JsonGenerator g, *gen;
 
-    if (!req)
+    assert(req);
+
+    gen = JsonGenerator_Initialize(&g);
+    if (!gen)
         return NULL;
 
-    generator = JsonGenerator_Initialize(&g);
-    if (!generator)
+    if (didrequest_toJson_internal(gen, req) < 0)
         return NULL;
 
-    if ( JsonGenerator_WriteStartObject(generator) == -1 ||
-         JsonGenerator_WriteFieldName(generator, "header") == -1 ||
-         header_toJson(generator, req)== -1 ||
-         JsonGenerator_WriteStringField(generator, "payload", req->payload) == -1 ||
-         JsonGenerator_WriteFieldName(generator, "proof") == -1 ||
-         proof_toJson(generator, req) == -1 ||
-         JsonGenerator_WriteEndObject(generator) == -1 )
-             return NULL;
-
-    return JsonGenerator_Finish(generator);
+    return JsonGenerator_Finish(gen);
 }
 
-static void didrequest_destroy(DIDRequest *req)
-{
-    if (!req)
-        return;
-
-    if (req->payload)
-        free((char*)(req->payload));
-    if (req->proof.signture)
-        free((char*)(req->proof.signture));
-
-    return;
-}
-
-static int didrequest_operate(const char *op, DID *did, DIDURL *signkey, const char *data, const char *storepass)
+const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
+        const char* data, const char *storepass)
 {
     DIDRequest req;
-    char *base64_text;
+    const char *payload;
+    const char *op;
     size_t len;
-    char id[MAX_DID];
-    int ret;
-    char signed_data[SIGNATURE_BYTES * 2 + 16];
-    const char *did_payload;
+    int rc;
+    char signature[SIGNATURE_BYTES * 2 + 16];
+    DIDStore *store;
+    const char *requestJson;
 
-    if (!op || !strlen(op) || !did || !signkey || !data || !storepass)
-        return -1;
+    if (!did || !signKey || !data || !storepass
+            || (type < RequestType_Create) && (type > RequestType_Deactivate))
+        return NULL;
 
-    len = strlen(data);
-    base64_text = (char *)alloca(len * 4 / 3 + 16);
-    base64_url_encode(base64_text, (const uint8_t *)data, len);
+    store = DIDStore_GetInstance();
+    if (!store)
+        return NULL;
 
-    ret = DIDStore_Sign(did, signkey, storepass, signed_data, 3, (unsigned char*)spec, strlen(spec),
-            (unsigned char*)op, strlen(op), (unsigned char*)base64_text, strlen(base64_text));
-    if (ret < 0)
-        return -1;
+    if (type == RequestType_Deactivate)
+        payload = data;
+    else {
+        len = strlen(data);
+        payload = (char *)malloc(len * 4 / 3 + 16);
+        base64_url_encode((char*)payload, (const uint8_t *)data, len);
+    }
 
-    req.header.spec = spec;
-    req.header.op = op;
-    req.payload = base64_text;
-    req.proof.verificationMethod = DIDURL_ToString(signkey, id, sizeof(id), 1);
-    req.proof.signture = signed_data;
+    op = operation[type];
+    rc = DIDStore_Sign(store, did, signKey, storepass, signature, 3,
+            (unsigned char*)spec, strlen(spec), (unsigned char*)op, strlen(op),
+            (unsigned char*)payload, strlen(payload));
+    if (rc < 0) {
+        free((char*)payload);
+        return NULL;
+    }
 
-    did_payload = didrequest_tojson(&req);
-    if (!did_payload)
-        return -1;
+    req.header.spec = (char*)spec;
+    req.header.op = (char*)op;
+    req.payload = payload;
+    req.proof.signature = signature;
+    DIDURL_Copy(&req.proof.verificationMethod, signKey);
 
-    ret = createIdTransaction(did_payload, NULL);
-    free((char*)did_payload);
-    return ret;
+    requestJson = didRequest_toJson(&req);
+    free((char*)payload);
+
+    return requestJson;
 }
 
-int DIDREQ_PublishDID(DIDDocument *document, DIDURL *signKey, const char *storepass)
+int DIDRequest_Verify(DIDRequest *request)
 {
-    int ret;
-    const char *doc;
-
-    if (!document || !signKey)
-        return -1;
-
-    if (DIDStore_StoreDID(document, NULL) == -1)
-        return -1;
-
-    doc = DIDDocument_ToJson(document, 1);
-    if (!doc)
-        return -1;
-
-    ret = didrequest_operate("create", &(document->did), signKey, doc, storepass);
-    free((char*)doc);
-
-    return ret;
+    return DIDDocument_Verify(request->doc, &request->proof.verificationMethod,
+            (char*)request->proof.signature, 3, (unsigned char*)request->header.spec,
+            strlen(request->header.spec), (unsigned char*)request->header.op,
+            strlen(request->header.op), (unsigned char*)request->payload,
+            strlen(request->payload));
 }
 
-int DIDREQ_UpdateDID(DIDDocument *document, DIDURL *signKey, const char *storepass)
+DIDDocument *DIDRequest_FromJson(cJSON *json)
 {
-    int ret;
-    const char *doc;
+    DIDRequest req;
+    cJSON *item, *field = NULL;
+    const char *op;
+    char *docJson;
+    DID *subject;
+    size_t len;
 
-    if (!document || !signKey)
-        return -1;
+    if (!json)
+        return NULL;
 
-    if (DIDStore_StoreDID(document, NULL) == -1)
-        return -1;
+    item = cJSON_GetObjectItem(json, "header");
+    if (!item || !cJSON_IsObject(item))
+        return NULL;
 
-    doc = DIDDocument_ToJson(document, 1);
-    if (!doc)
-        return -1;
+    field = cJSON_GetObjectItem(item, "specification");
+    if (!field || !cJSON_IsString(field) ||
+            strcmp(cJSON_GetStringValue(field), spec))
+        return NULL;
 
-    ret = didrequest_operate("update", &(document->did), signKey, doc, storepass);
-    free((char*)doc);
+    field = cJSON_GetObjectItem(item, "operation");
+    if (!field || (strcmp(cJSON_GetStringValue(field), "create") &&
+            strcmp(cJSON_GetStringValue(field), "update")))
+        return NULL;
 
-    return ret;
-}
+    strcpy(req.header.spec, spec);
+    strcpy(req.header.op, cJSON_GetStringValue(field));
 
-int DIDREQ_DeactivateDID(DID *did, DIDURL *signKey, const char *passphrase)
-{
-    char id[MAX_DID];
-    const char *string;
+    item = cJSON_GetObjectItem(json, "payload");
+    if (!item || !cJSON_IsString(item))
+        return NULL;
 
-    if (!did || !signKey)
-        return -1;
+    req.payload = cJSON_GetStringValue(item);
 
-    string = DID_ToString(did, id, sizeof(id));
-    if (!string)
-        return -1;
+    len = strlen(req.payload) + 1;
+    docJson = (char*)malloc(len);
+    len = base64_url_decode(docJson, req.payload);
+    if (len <= 0) {
+        free(docJson);
+        return NULL;
+    }
 
-    return didrequest_operate("deactivate", did, signKey, string, passphrase);
+    req.doc = DIDDocument_FromJson(docJson);
+    free(docJson);
+    if (!req.doc)
+        return NULL;
+
+    item = cJSON_GetObjectItem(json, "proof");
+    if (!item || !cJSON_IsObject(item)) {
+        DIDDocument_Destroy(req.doc);
+        return NULL;
+    }
+
+    field = cJSON_GetObjectItem(item, "verificationMethod");
+    if (!field || !cJSON_IsString(field)) {
+        DIDDocument_Destroy(req.doc);
+        return NULL;
+    }
+
+    subject = DIDDocument_GetSubject(req.doc);
+    if (parse_didurl(&req.proof.verificationMethod, cJSON_GetStringValue(field), subject) < 0) {
+        DIDDocument_Destroy(req.doc);
+        return NULL;
+    }
+
+    field = cJSON_GetObjectItem(item, "signature");
+    if (!field || !cJSON_IsString(field)) {
+        DIDDocument_Destroy(req.doc);
+        return NULL;
+    }
+
+    req.proof.signature = cJSON_GetStringValue(field);
+
+    if (DIDRequest_Verify(&req) == -1) {
+        DIDDocument_Destroy(req.doc);
+        return NULL;
+    }
+
+    return req.doc;
 }

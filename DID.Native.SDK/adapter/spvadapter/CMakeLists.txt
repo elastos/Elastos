@@ -13,6 +13,12 @@ set(HEADERS
 set(SYSTEM_LIBS
     z)
 
+if(LINUX)
+set(SYSTEM_LIBS
+    ${SYSTEM_LIBS}
+    dl)
+endif()
+
 set(LIBS
     curl
     spvsdk
@@ -28,6 +34,8 @@ set(LIBS
 include_directories(
     BEFORE
     ${PROJECT_INT_DIST_DIR}/include)
+
+add_definitions(-DDID_BUILD)
 
 if(WIN32)
     add_definitions(
@@ -66,6 +74,7 @@ endif()
 if(ENABLE_SHARED)
     add_library(spvadapter-shared SHARED ${SRC})
     add_dependencies(spvadapter-shared ${SPVADAPTER_DEPENDS})
+    target_compile_definitions(spvadapter-shared PRIVATE DID_DYNAMIC)
 
     set_target_properties(spvadapter-shared PROPERTIES
         OUTPUT_NAME spvadapter

@@ -24,28 +24,44 @@
 #define __DIDREQUEST_H__
 
 #include <stdio.h>
+#include <cjson/cJSON.h>
+
 #include "ela_did.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct DIDDocument DIDDocument;
-typedef struct DIDURL      DIDURL;
-
 typedef struct DIDRequest {
     struct {
-        const char *spec;
-        const char *op;
+        char *spec;
+        char *op;
     } header;
 
     const char *payload;
+    DIDDocument *doc;
 
     struct {
-        const char *verificationMethod;
-        const char *signture;
+        DIDURL verificationMethod;
+        const char *signature;
     } proof;
 } DIDRequest;
+
+typedef enum DIDRequest_Type
+{
+   RequestType_Create,
+   RequestType_Update,
+   RequestType_Deactivate
+} DIDRequest_Type;
+
+DIDDocument *DIDRequest_FromJson(cJSON *json);
+
+const char* DIDRequest_Sign(DIDRequest_Type type, DID *did,
+        DIDURL *signKey, const char* data, const char *storepass);
+
+int DIDRequest_Verify(DIDRequest *request);
+
+DIDDocument *DIDRequest_GetDocument(DIDRequest *request);
 
 #ifdef __cplusplus
 }

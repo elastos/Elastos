@@ -11,7 +11,7 @@
 #include "diddocument.h"
 
 static Credential *credential;
-static DID *did;
+static DID did;
 
 static const char *idstring = "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN";
 
@@ -44,8 +44,8 @@ static void test_cred_get_types(void)
 
 static void test_cred_get_issuer(void)
 {
-    DID *issuer_did = Credential_GetIssuer(credential);
-    CU_ASSERT_PTR_NOT_NULL(issuer_did);
+    DID *issuer = Credential_GetIssuer(credential);
+    CU_ASSERT_PTR_NOT_NULL(issuer);
 }
 
 static void test_cred_get_issuance_date(void)
@@ -114,17 +114,10 @@ static int cred_getelem_test_suite_init(void)
     if(!doc)
         return -1;
 
-    did = (DID*)calloc(1, sizeof(DID));
-    if (!did) {
-        DIDDocument_Destroy(doc);
-        return -1;
-    }
-
-    strcpy(did->idstring, doc->did.idstring);
-
+    DID_Copy(&did, DIDDocument_GetSubject(doc));
     DIDDocument_Destroy(doc);
 
-    credential = Credential_FromJson(global_cred_string, did);
+    credential = Credential_FromJson(global_cred_string, &did);
     if(!credential)
         return -1;
 
@@ -134,7 +127,6 @@ static int cred_getelem_test_suite_init(void)
 static int cred_getelem_test_suite_cleanup(void)
 {
     Credential_Destroy(credential);
-    DID_Destroy(did);
     return 0;
 }
 

@@ -372,7 +372,6 @@ int Parser_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType keytype)
             continue;
         }
 
-
         PublicKey *pk;
         if (Parser_PublicKey(&(document->did), pk_item, &pk) == -1)
             continue;
@@ -651,7 +650,7 @@ int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc, int compac
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "id",
         DID_ToString(&doc->did, id, sizeof(id))));
-    CHECK(JsonGenerator_WriteFieldName(gen, "publickey"));
+    CHECK(JsonGenerator_WriteFieldName(gen, "publicKey"));
     CHECK(PublicKeyArray_ToJson(gen, doc->publickeys.pks, doc->publickeys.size,
                                  compact, 0));
 
@@ -821,10 +820,11 @@ int DIDDocument_RemovePublicKey(DIDDocument *document, DIDURL *keyid, bool force
 }
 
 int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *keyid,
-                                     DID *controller, const char *publickeybase)
+        const char *publickeybase)
 {
     PublicKey **pks;
     PublicKey *pk;
+    DID *controller;
     size_t pk_size;
     size_t auth_size;
     size_t i;
@@ -857,8 +857,7 @@ int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *keyid,
         return 0;
     }
 
-    if (!controller)
-        controller = DIDDocument_GetSubject(document);
+    controller = DIDDocument_GetSubject(document);
 
     pk = create_publickey(keyid, controller, publickeybase);
     if (!pk) {
@@ -903,8 +902,11 @@ int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid,
     size_t auth_size;
     size_t i;
 
-    if (!document || !keyid || !publickeybase || !*publickeybase ||
+    if (!document || !keyid || !controller || !publickeybase || !*publickeybase ||
         strlen (publickeybase) >= MAX_PUBLICKEY_BASE58)
+        return -1;
+
+    if (DID_Equals(controller, DIDDocument_GetSubject(document)))
         return -1;
 
     pk_size = document->publickeys.size;
@@ -928,9 +930,6 @@ int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid,
         document->authorization.pks = pks;
         return 0;
     }
-
-    if (!controller)
-        controller = DIDDocument_GetSubject(document);
 
     pk = create_publickey(keyid, controller, publickeybase);
     if (pk < 0) {
@@ -1037,7 +1036,7 @@ int DIDDocument_AddService(DIDDocument *document, DIDURL *serviceid,
     strcpy(service->type, type);
     strcpy(service->endpoint, endpoint);
 
-    if (document->services.size == 0 )
+    if (document->services.size == 0)
         services = (Service**)calloc(1, sizeof(Service*));
     else
         services = (Service**)realloc(document->services.services,
@@ -1583,6 +1582,7 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass
 {
     int rc;
     va_list inputs;
+    DIDStore *store;
 
     if (!document || !storepass || !sig || count <= 0)
         return -1;
@@ -1590,8 +1590,12 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass
     if (!keyid)
         keyid = DIDDocument_GetDefaultPublicKey(document);
 
+    store = DIDStore_GetInstance();
+    if (!store)
+        return -1;
+
     va_start(inputs, count);
-    rc = DIDStore_Signv(DIDDocument_GetSubject(document), keyid, storepass,
+    rc = DIDStore_Signv(store, DIDDocument_GetSubject(document), keyid, storepass,
             sig, count, inputs);
     va_end(inputs);
 

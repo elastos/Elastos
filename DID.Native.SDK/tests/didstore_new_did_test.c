@@ -8,7 +8,9 @@
 #include <CUnit/Basic.h>
 #include <limits.h>
 
+#include "constant.h"
 #include "loader.h"
+#include "didtest_adapter.h"
 #include "ela_did.h"
 #include "did.h"
 #include "didstore.h"
@@ -16,43 +18,59 @@
 
 #define  TEST_LEN    512
 
+static DIDAdapter *adapter;
+
+static const char *getpassword(const char *walletDir, const char *walletId)
+{
+    return storepass;
+}
+
 static void test_didstore_new_did(void)
 {
     DID *did;
     int rc;
+    DIDStore *store;
 
-    const char *mnemonic = "cloth always junk crash fun exist stumble shift over benefit fun toe";
-    rc = DIDStore_InitPrivateIdentity(mnemonic, "", "", 0);
+    store = DIDStore_GetInstance();
+
+    rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", "", 0, false);
     CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
 
-    DIDDocument *document = DIDStore_NewDID("", "littlefish");
+    DIDDocument *document = DIDStore_NewDID(store, storepass, "littlefish");
     CU_ASSERT_PTR_NOT_NULL(document);
 
     did = DIDDocument_GetSubject(document);
-    DIDStore_DeleteDID(did);
+    DIDStore_DeleteDID(store, did);
     DIDDocument_Destroy(document);
 }
 
 static int didstore_new_test_suite_init(void)
 {
-    char current_path[PATH_MAX];
-    int rc;
+    char _path[PATH_MAX], _dir[TEST_LEN];
+    char *storePath, *walletDir;
+    DIDStore *store;
 
-    if(!getcwd(current_path, PATH_MAX)) {
-        printf("\nCan't get current dir.");
+    walletDir = get_wallet_path(_dir, "/.didwallet");
+    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    if (!adapter)
+        return -1;
+
+    storePath = get_store_path(_path, "/newdid");
+    store = DIDStore_Initialize(storePath, adapter);
+    if (!store) {
+        TestAdapter_Destroy(adapter);
         return -1;
     }
-
-    strcat(current_path, "/newdid");
-    rc = DIDStore_Open(current_path);
-    if (rc < 0)
-        return -1;
 
     return 0;
 }
 
 static int didstore_new_test_suite_cleanup(void)
 {
+    DIDStore *store;
+
+    store = DIDStore_GetInstance();
+    DIDStore_Deinitialize(store);
     return 0;
 }
 

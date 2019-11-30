@@ -5,6 +5,7 @@
 #endif
 
 #include <CUnit/Basic.h>
+#include "constant.h"
 #include "loader.h"
 #include "ela_did.h"
 #include "did.h"
@@ -15,9 +16,6 @@ static DIDURL id;
 static DIDURL auth_id;
 static DIDURL cred_id;
 static DIDURL service_id;
-
-static const char *type = "ECDSAsecp256r1";
-static const char *service_type = "OpenIdConnectVersion1.0Service";
 
 static void test_diddoc_get_subject(void)
 {

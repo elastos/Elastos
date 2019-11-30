@@ -34,9 +34,12 @@
 #include "didstore.h"
 #include "credential.h"
 #include "crypto.h"
+#include "didstore.h"
 
 #define PROPERTY_SIZE      50
 #define TEMP_SIZE          50
+
+typedef struct DIDStore     DIDStore;
 
 static const char *presentations_type = "VerifiablePresentation";
 static const char *proof_type = "ECDSAsecp256r1";
@@ -440,7 +443,7 @@ int Credential_SetProofSignture(Credential *cred, const char *signture)
     return 0;
 }
 
-static int check_issuer(DID *issuer, DIDURL **defaultSignKey)
+static int check_issuer(DIDStore *store, DID *issuer, DIDURL **defaultSignKey)
 {
     DIDDocument *doc;
     DIDURL *key;
@@ -448,7 +451,7 @@ static int check_issuer(DID *issuer, DIDURL **defaultSignKey)
     assert(issuer);
     assert(defaultSignKey);
 
-    doc = DIDStore_Resolve(issuer);
+    doc = DIDStore_ResolveDID(store, issuer, true);
     if (!doc)
         return -1;
 
@@ -463,7 +466,7 @@ static int check_issuer(DID *issuer, DIDURL **defaultSignKey)
     if (!DIDDocument_GetAuthenticationKey(doc, *defaultSignKey))
         return -1;
 
-    return DIDStore_ContainPrivateKey(issuer, *defaultSignKey) ? 0 : -1;
+    return DIDStore_ContainPrivateKey(store, issuer, *defaultSignKey) ? 0 : -1;
 }
 
 Credential *Credential_Issue(DID *did, const char *fragment,
@@ -477,11 +480,16 @@ Credential *Credential_Issue(DID *did, const char *fragment,
     const char *cred_data;
     int i, ret;
     char signed_data[SIGNATURE_BYTES * 2];
+    DIDStore *store;
 
     if (!did || !fragment || !*fragment || !issuer || !types || !properties || propsize > 0 || expires > 0 || !storepass)
         return NULL;
 
-    if (check_issuer(issuer, &defaultSignKey) == -1)
+    store = DIDStore_GetInstance();
+    if (!store)
+        return NULL;
+
+    if (check_issuer(store, issuer, &defaultSignKey) == -1)
         return NULL;
 
     cred = (Credential*)calloc(1, sizeof(Credential));
@@ -522,7 +530,7 @@ Credential *Credential_Issue(DID *did, const char *fragment,
         return NULL;
     }
 
-    ret = DIDStore_Sign(issuer, defaultSignKey, storepass, signed_data, 2, (uint8_t *)cred_data,
+    ret = DIDStore_Sign(store, issuer, defaultSignKey, storepass, signed_data, 2, (uint8_t *)cred_data,
                  strlen(cred_data) + 1, NULL, 0);
     if (ret == -1) {
         free((char*)cred_data);

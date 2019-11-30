@@ -32,11 +32,6 @@
 extern "C" {
 #endif
 
-typedef struct DIDURL      DIDURL;
-typedef struct DID         DID;
-typedef struct DIDDocument DIDDocument;
-typedef struct Credential  Credential;
-
 int Parser_Credentials(DIDDocument *document, cJSON *json);
 
 Credential *Parser_Credential(cJSON *json, DID *did);

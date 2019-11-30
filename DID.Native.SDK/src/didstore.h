@@ -23,13 +23,17 @@
 #ifndef __DIDSTORE_H__
 #define __DIDSTORE_H__
 
+#include <limits.h>
 #include "did.h"
+#include "didbackend.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define MAX_HINT_LEN       64
+
+typedef struct DIDBackend    DIDBackend;
 
 struct DIDEntry {
     DID did;
@@ -39,6 +43,11 @@ struct DIDEntry {
 struct CredentialEntry {
     DIDURL id;
     const char hint[MAX_HINT_LEN];
+};
+
+struct DIDStore {
+    char root[PATH_MAX];
+    DIDBackend backend;
 };
 
 #ifdef __cplusplus

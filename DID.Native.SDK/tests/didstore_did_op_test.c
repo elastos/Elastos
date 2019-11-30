@@ -9,6 +9,8 @@
 #include <limits.h>
 
 #include "loader.h"
+#include "constant.h"
+#include "didtest_adapter.h"
 #include "ela_did.h"
 #include "did.h"
 #include "didstore.h"
@@ -18,6 +20,7 @@
 
 static DIDDocument *document;
 static DID *did;
+static DIDAdapter *adapter;
 
 int get_did_hint(DIDEntry *entry, void *context)
 {
@@ -29,23 +32,38 @@ int get_did_hint(DIDEntry *entry, void *context)
     return 0;
 }
 
+static const char *getpassword(const char *walletDir, const char *walletId)
+{
+    return storepass;
+}
+
 static void test_didstore_contain_did(void)
 {
     bool rc;
+    DIDStore *store;
 
-    rc = DIDStore_ContainsDID(did);
+    store = DIDStore_GetInstance();
+    rc = DIDStore_ContainsDID(store, did);
     CU_ASSERT_NOT_EQUAL(rc, false);
 }
 
 static void test_didstore_list_did(void)
 {
-    int rc = DIDStore_ListDID(get_did_hint, NULL);
+    int rc;
+    DIDStore *store;
+
+    store = DIDStore_GetInstance();
+    rc = DIDStore_ListDID(store, get_did_hint, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 
 static void test_didstore_load_did(void)
 {
-    DIDDocument *doc = DIDStore_LoadDID(did);
+    DIDDocument *doc;
+    DIDStore *store;
+
+    store = DIDStore_GetInstance();
+    doc = DIDStore_LoadDID(store, did);
     CU_ASSERT_PTR_NOT_NULL(doc);
 
     DIDDocument_Destroy(doc);
@@ -53,42 +71,63 @@ static void test_didstore_load_did(void)
 
 static void test_didstore_delete_did(void)
 {
-    if(DIDStore_ContainsDID(did) == true) {
-        DIDStore_DeleteDID(did);
+    DIDStore *store;
+
+    store = DIDStore_GetInstance();
+    if(DIDStore_ContainsDID(store, did) == true) {
+        DIDStore_DeleteDID(store, did);
     }
 
-    bool rc = DIDStore_ContainsDID(did);
+    bool rc = DIDStore_ContainsDID(store, did);
     CU_ASSERT_NOT_EQUAL(rc, true);
 }
 
 static int didstore_did_op_test_suite_init(void)
 {
-    char current_path[PATH_MAX];
-    document = DIDDocument_FromJson(global_did_string);
-    if(!document)
+    char _path[PATH_MAX], _dir[TEST_LEN];
+    char *storePath, *walletDir;
+    DIDStore *store;
+
+    walletDir = get_wallet_path(_dir, "/.didwallet");
+    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    if (!adapter)
         return -1;
 
-    did = DIDDocument_GetSubject(document);
-    if (!did)
-        return -1;
-
-    if(!getcwd(current_path, PATH_MAX)) {
-        printf("\nCan't get current dir.");
+    storePath = get_store_path(_path, "/servet");
+    store = DIDStore_Initialize(storePath, adapter);
+    if (!store) {
+        TestAdapter_Destroy(adapter);
         return -1;
     }
 
-
-    strcat(current_path, "/servet");
-    if(DIDStore_Open(current_path) == -1)
+    document = DIDDocument_FromJson(global_did_string);
+    if(!document) {
+        TestAdapter_Destroy(adapter);
+        DIDStore_Deinitialize(store);
         return -1;
+    }
 
-    return DIDStore_StoreDID(document, "littlefish");
+    did = DIDDocument_GetSubject(document);
+    if (!did) {
+        DIDDocument_Destroy(document);
+        TestAdapter_Destroy(adapter);
+        DIDStore_Deinitialize(store);
+        return -1;
+    }
+
+    return DIDStore_StoreDID(store, document, "littlefish");
 }
 
 static int didstore_did_op_test_suite_cleanup(void)
 {
-    DIDStore_DeleteDID(did);
+    DIDStore *store;
+
+    TestAdapter_Destroy(adapter);
     DIDDocument_Destroy(document);
+
+    store = DIDStore_GetInstance();
+    DIDStore_DeleteDID(store, did);
+    DIDStore_Deinitialize(store);
     return 0;
 }
 

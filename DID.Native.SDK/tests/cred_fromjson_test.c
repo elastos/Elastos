@@ -9,11 +9,11 @@
 #include "credential.h"
 #include "diddocument.h"
 
-static DID *did;
+static DID did;
 
 static void test_cred_fromjson(void)
 {
-    Credential *credential = Credential_FromJson(global_cred_string, did);
+    Credential *credential = Credential_FromJson(global_cred_string, &did);
     CU_ASSERT_PTR_NOT_NULL_FATAL(credential);
     Credential_Destroy(credential);
 }
@@ -24,14 +24,7 @@ static int cred_fromjson_test_suite_init(void)
     if(!doc)
         return -1;
 
-    did = (DID*)calloc(1, sizeof(DID));
-    if (!did) {
-        DIDDocument_Destroy(doc);
-        return -1;
-    }
-
-    strcpy(did->idstring, doc->did.idstring);
-
+    DID_Copy(&did, DIDDocument_GetSubject(doc));
     DIDDocument_Destroy(doc);
 
     return 0;
@@ -39,7 +32,6 @@ static int cred_fromjson_test_suite_init(void)
 
 static int cred_fromjson_test_suite_cleanup(void)
 {
-    DID_Destroy(did);
     return 0;
 }
 
