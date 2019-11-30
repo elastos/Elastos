@@ -1588,10 +1588,10 @@ const zh = {
       }
     },
     contact: '联系',
-    nicola: {
-      name: 'Nicola Cedric Zimmermann',
-      intro: 'Elastos社区经理, Elastos Orchard创始成员, 常驻瑞士',
-      email: 'nicola@cyberrepublic.org'
+    alex: {
+      name: 'Alex Shipp',
+      intro: 'Alex Shipp has been active in the digital space since 2017, serving as a writer and strategist in the areas of Technical Documentation and PR & Communications. Alex arrived at Elastos in October 2018, where he has since performed on behalf of both Elastos Foundation and Cyber Republic, contributing to major technical documentation and public announcements, and attending events from Philadelphia, Pennsylvania to Irvine, California. In addition to his contributions to both organizations, Alex published Elastos\' sic parvis magna, a comprehensive piece titled Elastos: Behind the Blockchain which follows the Elastos Foundation core team on a voyage through China\'s historic Qinghai region while detailing the historical context, technical foundation, and principled vision of the project. Alongside Elastos Co-Founder Sunny Feng Han and in association with the Manhattan Project Fund, Alex is also co-authoring The Era of Quantum Wealth, a book which draws on the emerging principles of quantum mechanics to present the rising landscape of digital assets and blockchain-based infrastructure - at its heart, Elastos - as an integral component in the advancement of humankind and the preservation of human rights in the Digital Age. Already running the Quantum Wealth Supernode in Elastos\' DPoS Consensus, Alex is excited and proud to serve Elastos as a leader in joining its third line of Consensus in his role on the Cyber Republic Interim Council.',
+      email: 'ashipp37@gmail.com'
     },
     yipeng: {
       name: '苏翼鹏',

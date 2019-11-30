@@ -159,6 +159,9 @@ $maxWithContent: 860px;
           font-size: 14px;
           color: #F6F9FD;
           opacity: 0.9;
+          max-height: 150px;
+          display: block;
+          overflow: scroll;
         }
       }
     }
