@@ -19,6 +19,16 @@ class AdenineIoStub(object):
         request_serializer=adenine__io__pb2.Request.SerializeToString,
         response_deserializer=adenine__io__pb2.Response.FromString,
         )
+    self.UploadAndSign = channel.unary_unary(
+        '/adenineio.AdenineIo/UploadAndSign',
+        request_serializer=adenine__io__pb2.Request.SerializeToString,
+        response_deserializer=adenine__io__pb2.Response.FromString,
+        )
+    self.VerifyAndShow = channel.unary_unary(
+        '/adenineio.AdenineIo/VerifyAndShow',
+        request_serializer=adenine__io__pb2.Request.SerializeToString,
+        response_deserializer=adenine__io__pb2.Response.FromString,
+        )
 
 
 class AdenineIoServicer(object):
@@ -32,11 +42,35 @@ class AdenineIoServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def UploadAndSign(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def VerifyAndShow(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_AdenineIoServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'Sign': grpc.unary_unary_rpc_method_handler(
           servicer.Sign,
+          request_deserializer=adenine__io__pb2.Request.FromString,
+          response_serializer=adenine__io__pb2.Response.SerializeToString,
+      ),
+      'UploadAndSign': grpc.unary_unary_rpc_method_handler(
+          servicer.UploadAndSign,
+          request_deserializer=adenine__io__pb2.Request.FromString,
+          response_serializer=adenine__io__pb2.Response.SerializeToString,
+      ),
+      'VerifyAndShow': grpc.unary_unary_rpc_method_handler(
+          servicer.VerifyAndShow,
           request_deserializer=adenine__io__pb2.Request.FromString,
           response_serializer=adenine__io__pb2.Response.SerializeToString,
       ),
