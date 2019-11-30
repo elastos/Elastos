@@ -1,6 +1,7 @@
 from __future__ import print_function
 import logging
 
+import json
 import grpc
 from decouple import config
 
@@ -23,7 +24,7 @@ class DidSidechain():
             				"privateKey": private_key,
             				"msg": message
             			}
-                response = stub.sendRequest(adenine_io_pb2.Request(api_key=api_key, input=req_data))
+                response = stub.Sign(adenine_io_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
                 return response
         else:
             credentials = grpc.ssl_channel_credentials()
@@ -33,5 +34,5 @@ class DidSidechain():
             				"privateKey": private_key,
             				"msg": message
             			}
-                response = stub.sendRequest(adenine_io_pb2.Request(api_key=api_key, input=req_data))
+                response = stub.Sign(adenine_io_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
                 return response

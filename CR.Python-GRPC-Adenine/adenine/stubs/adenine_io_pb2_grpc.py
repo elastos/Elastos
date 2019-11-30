@@ -14,8 +14,8 @@ class AdenineIoStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.sendRequest = channel.unary_unary(
-        '/adenineio.AdenineIo/sendRequest',
+    self.Sign = channel.unary_unary(
+        '/adenineio.AdenineIo/Sign',
         request_serializer=adenine__io__pb2.Request.SerializeToString,
         response_deserializer=adenine__io__pb2.Response.FromString,
         )
@@ -25,7 +25,7 @@ class AdenineIoServicer(object):
   """The service definition.
   """
 
-  def sendRequest(self, request, context):
+  def Sign(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -35,8 +35,8 @@ class AdenineIoServicer(object):
 
 def add_AdenineIoServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'sendRequest': grpc.unary_unary_rpc_method_handler(
-          servicer.sendRequest,
+      'Sign': grpc.unary_unary_rpc_method_handler(
+          servicer.Sign,
           request_deserializer=adenine__io__pb2.Request.FromString,
           response_serializer=adenine__io__pb2.Response.SerializeToString,
       ),
