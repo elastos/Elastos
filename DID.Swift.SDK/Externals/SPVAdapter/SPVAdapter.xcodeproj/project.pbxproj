@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		11267029238CC7120086740D /* SPVAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11267027238CC7120086740D /* SPVAdapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		11267037238CCA930086740D /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11267033238CCA930086740D /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		11267049238CCACA0086740D /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267039238CCAA70086740D /* libboost_filesystem.a */; };
 		1126704A238CCACA0086740D /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126703C238CCAA70086740D /* libboost_system.a */; };
 		1126704B238CCACA0086740D /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126703D238CCAA70086740D /* libboost_thread.a */; };
@@ -30,13 +29,13 @@
 		11267062238CCC930086740D /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705E238CCC890086740D /* libc++abi.tbd */; };
 		11267064238CCCA60086740D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267063238CCC9C0086740D /* libz.tbd */; };
 		1126706C238CD6B70086740D /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267045238CCAA80086740D /* libcrypto.a */; };
+		11A6B152238F956A00D3C1F1 /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11A6B151238F956A00D3C1F1 /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		11267024238CC7120086740D /* SPVAdapter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SPVAdapter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11267027238CC7120086740D /* SPVAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPVAdapter.h; sourceTree = "<group>"; };
 		11267028238CC7120086740D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		11267033238CCA930086740D /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
 		11267039238CCAA70086740D /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = SPVAdapter/lib/libboost_filesystem.a; sourceTree = "<group>"; };
 		1126703A238CCAA70086740D /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = SPVAdapter/lib/libhdkey.a; sourceTree = "<group>"; };
 		1126703B238CCAA70086740D /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = SPVAdapter/lib/libspvsdk.a; sourceTree = "<group>"; };
@@ -59,6 +58,7 @@
 		1126705E238CCC890086740D /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
 		1126705F238CCC890086740D /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		11267063238CCC9C0086740D /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
+		11A6B151238F956A00D3C1F1 /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,7 +122,7 @@
 		1126702F238CCA930086740D /* header */ = {
 			isa = PBXGroup;
 			children = (
-				11267033238CCA930086740D /* spvadapter.h */,
+				11A6B151238F956A00D3C1F1 /* spvadapter.h */,
 				11267059238CCB4C0086740D /* CSPVAdapter.swift */,
 			);
 			path = header;
@@ -162,7 +162,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11267037238CCA930086740D /* spvadapter.h in Headers */,
+				11A6B152238F956A00D3C1F1 /* spvadapter.h in Headers */,
 				11267029238CC7120086740D /* SPVAdapter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -376,6 +376,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SPVAdapter/header",
+				);
 				INFOPLIST_FILE = SPVAdapter/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
@@ -393,7 +397,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = iphonesimulator;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "x86_64 arm64";
 			};
@@ -408,6 +412,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SPVAdapter/header",
+				);
 				INFOPLIST_FILE = SPVAdapter/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
@@ -425,7 +433,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = iphonesimulator;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "x86_64 arm64";
 			};

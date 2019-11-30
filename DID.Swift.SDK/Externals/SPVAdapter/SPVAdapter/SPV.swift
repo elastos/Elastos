@@ -23,17 +23,26 @@ public class SPV {
     public class func createIdTransaction(_ handle: OpaquePointer, _ password: String, _ payload: String, _ memo: String?) throws -> Bool {
         
         let rc = payload.withCString { cpayload -> Int32 in
-            return (memo?.withCString{ cmemo -> Int32 in
+            if memo == nil {
                 return password.withCString { cpassword -> Int32 in
-                    return SpvDidAdapter_CreateIdTransaction(handle, cpayload, cmemo, cpassword) }
-                })!
+                    let rc = SpvDidAdapter_CreateIdTransaction(handle, cpayload, nil, cpassword)
+                    return rc
+                }
+            }
+            else {
+                return (memo?.withCString{ cmemo -> Int32 in
+                    return password.withCString { cpassword -> Int32 in
+                        return SpvDidAdapter_CreateIdTransaction(handle, cpayload, cmemo, cpassword) }
+                    })!
+            }
         }
         return rc == 0
     }
     
     public class func resolve(_ handle: OpaquePointer,_ did: String) throws -> String? {
         let cstr = did.withCString { cdid -> UnsafePointer<Int8> in
-            return SpvDidAdapter_Resolve(handle, cdid)
+            let re = SpvDidAdapter_Resolve(handle, cdid)
+            return re
         }
         return String(cString: cstr)
     }

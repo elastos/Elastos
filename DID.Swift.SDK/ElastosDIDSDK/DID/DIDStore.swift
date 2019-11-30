@@ -323,20 +323,19 @@ public class DIDStore: NSObject {
          privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id!))
         }
         var cinputs: [CVarArg] = []
-        let vi = inputs.count / count
         for i in 0..<inputs.count {
-            if (i % vi) == 0 {
+            
+            if (i % 2 == 0) {
                 let json: String = inputs[i] as! String
-                let cjson = json.withCString { re -> UnsafePointer<Int8> in
-                    return re
-                }
+                let cjson = json.toUnsafePointerInt8()!
                 cinputs.append(cjson)
             }
             else {
-                let count = inputs[i] 
+                let count = inputs[i]
                 cinputs.append(count)
             }
         }
+        
         let c_inputs = getVaList(cinputs)
         let re = ecdsa_sign_base64v(sig, privatekeys, Int32(count), c_inputs)
         guard re >= 0 else {

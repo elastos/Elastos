@@ -15,33 +15,33 @@ class IDChainRequest: NSObject {
     
     enum Operation: Int {
         case CREATE = 0
-        case UPDATE
+        case UPDATE = 1
         case DEACRIVATE
         
         public func toString() -> String {
-            if self.rawValue == 2 {
+            if self.rawValue == 0 {
                 return "create"
             } else if self.rawValue == 1{
                 return "update"
             } else {
-                return "deacrivate"
+                return "deactivate"
             }
         }
     }
     
     // header
-    public var specification: String!
+    public var specification: String = ""
     public var operation: Operation!
     
     // payload
     public var did: DID?
     public var doc: DIDDocument?
-    public var payload: String?
+    public var payload: String = ""
     
     // signature
-    public var signKey: DIDURL?;
-    public var keyType: String?;
-    public var signature: String?;
+    public var signKey: DIDURL?
+    public var keyType: String = ""
+    public var signature: String = ""
     
     
     public init(_ op: Operation, _ did_: DID) throws {
@@ -63,36 +63,51 @@ class IDChainRequest: NSObject {
     
     public func sign(_ key: DIDURL, _ passphrase: String) throws -> IDChainRequest {
         // operation
-        let op: String = "\(operation ?? Operation.CREATE)"
-        
+
+        let op: String = operation.toString()
         // payload: did or doc
         if operation == Operation.DEACRIVATE {
-            payload = did?.toExternalForm()
+            payload = (did?.toExternalForm())!
         } else {
-            payload = try doc?.toExternalForm(true)
-            payload = payload?.toBase64()
+
+            payload = try (doc?.toExternalForm(true))!
+            let c_input = (payload.toUnsafePointerUInt8())!
+            payload = payload + "\0"
+            payload = String(cString: payload.toUnsafePointerUInt8()!)
+            let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: 512)
+            print(payload)
+            base64_url_encode(c_payload, c_input, payload.count)
+            payload = String(cString: c_payload)
+            print(payload)
         }
-        
-        let inputs: [String] = [
-            specification,
-            op,
-            payload!
+
+        let inputs: [CVarArg] = [
+            specification, specification.count,
+            op, op.count,
+            payload, payload.count
         ]
-        let count = inputs.count / 3
-        self.signature = try DIDStore.shareInstance()?.sign(self.did!, key, passphrase, count, inputs)
+        let count = inputs.count / 2
+
+        self.signature = try DIDStore.shareInstance()?.sign(self.did!, key, passphrase, count, inputs) ?? ""
         self.signKey = key
         self.keyType = Constants.defaultPublicKeyType
+//        try verify()
         return self
     }
 
     func verify() throws -> Bool {
         let op: String = operation.toString()
-        let inputs = [specification, op, payload]
-        let count = inputs.count / 3
-        return try (doc?.verify(signKey!, signature!, count, inputs as! [CVarArg]))!
+        let inputs: [CVarArg] = [
+            specification, specification.count,
+            op, op.count,
+            payload, payload.count,
+        ]
+        let count = inputs.count / 2
+        return try (doc?.verify(self.signKey!, signature, count, inputs ))!
     }
 
     public func toJson(_ compact: Bool) -> String {
+        
         var json: OrderedDictionary<String, Any> = OrderedDictionary()
         // header
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
@@ -106,6 +121,7 @@ class IDChainRequest: NSObject {
         // signature
         var keyId: String
         dic.removeAll(keepCapacity: 0)
+        
         if !compact {
             dic[IDChainRequest.KEY_TYPE] = keyType
             keyId = (signKey?.toExternalForm())!

@@ -10,6 +10,7 @@ public class DIDDocument: NSObject {
     public var expires: Date?
     
     public var readonly: Bool = false
+    public var cinputs: [CVarArg]?
     
     override init() {
         super.init()
@@ -800,10 +801,8 @@ public class DIDDocument: NSObject {
         for i in 0..<inputs.count {
             if (i % 2) == 0 {
                 let json: String = inputs[i] as! String
-                let cjson = json.withCString { re -> UnsafePointer<Int8> in
-                    return re
-                }
-                cinputs.append(cjson)
+                let cjson  = json.toUnsafePointerInt8()
+                cinputs.append(cjson!)
             }
             else {
                 let count: Int = inputs[i] as! Int
@@ -820,10 +819,10 @@ public class DIDDocument: NSObject {
             let mre = UnsafeMutablePointer<Int8>.init(mutating: re)
             return mre
         }
-        let c_inputs = getVaList(cinputs)
-        let count = inputs.count / 2
-       let re = ecdsa_verify_base64v(csignature, cpk, Int32(count), c_inputs)
+        self.cinputs = cinputs
+        let c_inputs = getVaList(self.cinputs!)
         
+        let re = ecdsa_verify_base64v(csignature, cpk, Int32(count), c_inputs)
         return re == 0 ? true : false
     }
 }

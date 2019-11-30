@@ -31,7 +31,8 @@ public class SPVAdaptor: DIDAdaptor {
         if password == nil {
             return false
         }
-        return try SPV.createIdTransaction(handle, password!, payload, memo)
+        let re = try SPV.createIdTransaction(handle, password!, payload, memo)
+        return re
     }
     
     public func resolve(_ did: String) throws -> String? {
