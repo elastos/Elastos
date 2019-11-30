@@ -18,25 +18,26 @@ def generate_key(request):
         else:
             return HttpResponse("failiure")
     else:
-        return render(request, "services/generateKey.html")
+        return render(request, "service/generateKey.html")
+
 
 def upload_and_sign(request):
-    return render(request, "services/uploadAndSign.html")
+    return render(request, "service/uploadAndSign.html")
 
 def verify_and_show(request):
-    return render(request, "services/verifyAndShow.html")
+    return render(request, "service/verifyAndShow.html")
 
 def request_ela(request):
-    return render(request, "services/requestELA.html")
+    return render(request, "service/requestELA.html")
 
 def vote_supernodes(request):
-    return render(request, "services/voteSupernodes.html")
+    return render(request, "service/voteSupernodes.html")
 
 def run_contract(request):
-    return render(request, "services/runContract.html")
+    return render(request, "service/runContract.html")
 
 def save_did_data(request):
-    return render(request, "services/saveData.html")
+    return render(request, "service/saveData.html")
 
 def retrieve_did_data(request):
-    return render(request, "services/retrieveData.html")
+    return render(request, "service/retrieveData.html")
