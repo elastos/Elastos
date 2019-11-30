@@ -1418,7 +1418,9 @@ class App extends React.Component {
                     </td>
                   </tr>
                   <tr id="completed-transaction">
-                  <div className="white_on_black lightgray_border bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => showTransactions()}>Show Transactions</div>
+                    <td className="black_on_white h20px darkgray_border">
+                      <div className="white_on_black lightgray_border bordered display_inline_block float_right fake_button rounded padding_5px" onClick={(e) => showTransactions()}>Show Transactions</div>
+                    </td>
                   </tr>
                   <tr id="candidate-list">
                     <td className="black_on_white h20px darkgray_border">
