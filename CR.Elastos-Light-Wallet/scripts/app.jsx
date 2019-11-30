@@ -1010,6 +1010,10 @@ const clearGlobalData = () => {
   renderApp();
 }
 
+const Version = () => {
+  return process.env.npm_package_version;
+}
+
 const LedgerMessage = () => {
   let message = '';
   if (LOG_LEDGER_POLLING) {
@@ -1085,7 +1089,8 @@ class App extends React.Component {
                   <tr>
                     <td className="black_on_offwhite h20px no_border user_select_none">
                       <img className="valign_middle" src="artwork/elastos-black-small.svg"></img>
-                      Elastos</td>
+                      Elastos <Version/>
+                      </td>
                   </tr>
                   <tr>
                     <td className="white_on_purple h20px no_border"></td>
