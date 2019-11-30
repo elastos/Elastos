@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='adenineio',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x10\x61\x64\x65nine_io.proto\x12\tadenineio\")\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\r\n\x05input\x18\x02 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\x45\n\tAdenineIo\x12\x38\n\x0bsendRequest\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x10\x61\x64\x65nine_io.proto\x12\tadenineio\")\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\r\n\x05input\x18\x02 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32>\n\tAdenineIo\x12\x31\n\x04Sign\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -135,11 +135,11 @@ _ADENINEIO = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=142,
-  serialized_end=211,
+  serialized_end=204,
   methods=[
   _descriptor.MethodDescriptor(
-    name='sendRequest',
-    full_name='adenineio.AdenineIo.sendRequest',
+    name='Sign',
+    full_name='adenineio.AdenineIo.Sign',
     index=0,
     containing_service=None,
     input_type=_REQUEST,

@@ -3,6 +3,8 @@ import string
 import json
 import requests
 import grpc
+from decouple import config
+
 from grpc_adenine import settings
 from grpc_adenine.database import (connection as db)
 from grpc_adenine.stubs import adenine_io_pb2
@@ -15,18 +17,25 @@ class Did(adenine_io_pb2_grpc.AdenineIoServicer):
 
 		#Validate the API Key
                 api_key = request.api_key
-                api_status = validate_api_key(api_key)
-                if not api_status:
-                                return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+                #api_status = validate_api_key(api_key)
+                #if not api_status:
+                #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
 
-		#Signing a message
-                api_url_base = settings.DID_SERVICE_URL + settings.DID_SERVICE_SIGN
-                headers = {'Content-type': 'application/json'}
+                PRIVATE_NET_IP_ADDRESS = config('PRIVATE_NET_IP_ADDRESS')
+                DID_SERVICE_URL = config('DID_SERVICE_URL')
+                did_api_url = PRIVATE_NET_IP_ADDRESS + DID_SERVICE_URL + settings.DID_SERVICE_SIGN
                 
-                myResponse = requests.post(api_url_base, data=json.dumps(request.input), headers=headers).json()
-                response_data = {
-                                        "message": myResponse['result']['msg'], 
-                                        "pub_key": myResponse['result']['pub'], 
-                                        "sig": myResponse['result']['sig']
-                                } 
-                return adenine_io_pb2.Response(output=response_data, status_message=myResponse['status'], status=True)
+		#Signing a message
+                headers = {'Content-type': 'application/json'}
+                myResponse = requests.post(did_api_url, data=request.input, headers=headers).json()
+                
+                status_message = ''
+                status = ''
+                if myResponse['status'] == 200:
+                        status_message = 'Success'
+                        status = True
+                else:
+                        status_message = 'Error'
+                        status = False
+
+                return adenine_io_pb2.Response(output=json.dumps(myResponse['result']), status_message=status_message, status=status)

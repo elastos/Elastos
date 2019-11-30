@@ -4,7 +4,7 @@ package adenineio;
 
 // The service definition.
 service AdenineIo {
-  rpc sendRequest (Request) returns (Response) {}
+  rpc Sign (Request) returns (Response) {}
 }
 
 // The request message
