@@ -1011,7 +1011,7 @@ const clearGlobalData = () => {
 }
 
 const Version = () => {
-  return process.env.npm_package_version;
+  return remote.app.getVersion();
 }
 
 const LedgerMessage = () => {

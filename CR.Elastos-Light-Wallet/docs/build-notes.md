@@ -35,7 +35,7 @@ ln -s /opt/local/lib/libintl.8.dylib /usr/local/opt/gettext/lib/libintl.8.dylib;
 ```
 
 macOS:
-openssl sha -sha256 <App.dmg>
+openssl dgst -sha256 <App.dmg>
 
 Windows:
 certUtil -hashfile "<App.exe>" SHA256
