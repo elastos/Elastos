@@ -5,12 +5,12 @@ from decouple import config
 import json
 
 def run():
-    
+
     #Generate API Key
 	common = Common()
 	print("--> Generate Api Request")
 	response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), 'qhfiueq98dqwbd')
-    
+
 	if(response.status==True):
 		print("Api Key: "+response.api_key)
 	elif(response.status==False):
@@ -23,20 +23,20 @@ def run():
 	#json_output1 = json.loads(response1.output)
 
 	#if(response1.status==True):
-	#	for i in json_output1 : 
-	#		print(i,':', json_output1[i]) 
+	#	for i in json_output1 :
+	#		print(i,':', json_output1[i])
 	#elif(response1.status==False):
 	#	print("Error Message: ",json_output1)
 
 	#Upload and Sign
 	console = Console()
 	print("\n--> Upload and Sign")
-	response2 = console.upload_and_sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99', '/Users/rahulguna/Downloads/sample.txt')
+	response2 = console.upload_and_sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99', './sample.txt')
 	json_output2 = json.loads(response2.output)
 
 	if(response2.status==True):
-		for i in json_output2['result'] : 
-			print(i,':', json_output2['result'][i]) 
+		for i in json_output2['result'] :
+			print(i,':', json_output2['result'][i])
 	elif(response2.status==False):
 		print("Error Message: ",response2.status_message)
 
@@ -52,7 +52,7 @@ def run():
 	response3 = console.verify_and_show('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', request_input)
 
 	if(response3.status==True):
-		print('File Content:', response3.output) 
+		print('File Content:', response3.output)
 	elif(response3.status==False):
 		print("Error Message: ",response3.status_message)
 

@@ -20,7 +20,7 @@ class Console():
         if production == False:
             with grpc.insecure_channel('{}:{}'.format(host, port)) as channel:
                 stub = adenine_io_pb2_grpc.AdenineIoStub(channel)
-                request_file = open(file, "rb") 
+                request_file = open(file, "rb")
                 file_contents = request_file.read().decode('utf-8')
                 req_data = 	{
             				    'private_key': private_key,
@@ -32,10 +32,10 @@ class Console():
             credentials = grpc.ssl_channel_credentials()
             with grpc.secure_channel('{}:{}'.format(host, port), credentials) as channel:
                 stub = adenine_io_pb2_grpc.AdenineIoStub(channel)
-                request_file = open(file, "rb") 
+                request_file = open(file, "rb")
                 file_contents = request_file.read().decode('utf-8')
                 req_data =  {
-                            "privateKey": private_key,
+                            "private_key": private_key,
                             "file": file_contents
                         }
                 response = stub.UploadAndSign(adenine_io_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
