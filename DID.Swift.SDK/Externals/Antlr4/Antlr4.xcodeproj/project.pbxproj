@@ -174,33 +174,6 @@
 		OBJ_362 /* TextChunk.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_167 /* TextChunk.swift */; };
 		OBJ_363 /* TokenTagToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_168 /* TokenTagToken.swift */; };
 		OBJ_370 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
-		OBJ_381 /* MurmurHashTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_175 /* MurmurHashTests.swift */; };
-		OBJ_382 /* ParseTreePatternMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_176 /* ParseTreePatternMatcherTests.swift */; };
-		OBJ_383 /* RuntimeMetaDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_177 /* RuntimeMetaDataTests.swift */; };
-		OBJ_384 /* StringExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_178 /* StringExtensionTests.swift */; };
-		OBJ_385 /* TokenStreamRewriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_179 /* TokenStreamRewriterTests.swift */; };
-		OBJ_386 /* TokenStreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_180 /* TokenStreamTests.swift */; };
-		OBJ_387 /* VisitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_181 /* VisitorTests.swift */; };
-		OBJ_388 /* LexerA.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_183 /* LexerA.swift */; };
-		OBJ_389 /* LexerAATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_184 /* LexerAATN.swift */; };
-		OBJ_390 /* LexerB.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_185 /* LexerB.swift */; };
-		OBJ_391 /* LexerBATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_186 /* LexerBATN.swift */; };
-		OBJ_392 /* VisitorBasicBaseListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_187 /* VisitorBasicBaseListener.swift */; };
-		OBJ_393 /* VisitorBasicBaseVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_188 /* VisitorBasicBaseVisitor.swift */; };
-		OBJ_394 /* VisitorBasicLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_189 /* VisitorBasicLexer.swift */; };
-		OBJ_395 /* VisitorBasicLexerATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_190 /* VisitorBasicLexerATN.swift */; };
-		OBJ_396 /* VisitorBasicListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_191 /* VisitorBasicListener.swift */; };
-		OBJ_397 /* VisitorBasicParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_192 /* VisitorBasicParser.swift */; };
-		OBJ_398 /* VisitorBasicParserATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_193 /* VisitorBasicParserATN.swift */; };
-		OBJ_399 /* VisitorBasicVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_194 /* VisitorBasicVisitor.swift */; };
-		OBJ_400 /* VisitorCalcBaseListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_195 /* VisitorCalcBaseListener.swift */; };
-		OBJ_401 /* VisitorCalcBaseVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_196 /* VisitorCalcBaseVisitor.swift */; };
-		OBJ_402 /* VisitorCalcLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_197 /* VisitorCalcLexer.swift */; };
-		OBJ_403 /* VisitorCalcLexerATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_198 /* VisitorCalcLexerATN.swift */; };
-		OBJ_404 /* VisitorCalcListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_199 /* VisitorCalcListener.swift */; };
-		OBJ_405 /* VisitorCalcParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_200 /* VisitorCalcParser.swift */; };
-		OBJ_406 /* VisitorCalcParserATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_201 /* VisitorCalcParserATN.swift */; };
-		OBJ_407 /* VisitorCalcVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_202 /* VisitorCalcVisitor.swift */; };
 		OBJ_409 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Antlr4::Antlr4::Product" /* Antlr4.framework */; };
 /* End PBXBuildFile section */
 
@@ -294,40 +267,9 @@
 		OBJ_167 /* TextChunk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextChunk.swift; sourceTree = "<group>"; };
 		OBJ_168 /* TokenTagToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenTagToken.swift; sourceTree = "<group>"; };
 		OBJ_17 /* CommonToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonToken.swift; sourceTree = "<group>"; };
-		OBJ_171 /* LexerA.g4 */ = {isa = PBXFileReference; lastKnownFileType = text; path = LexerA.g4; sourceTree = "<group>"; };
-		OBJ_172 /* VisitorCalc.g4 */ = {isa = PBXFileReference; lastKnownFileType = text; path = VisitorCalc.g4; sourceTree = "<group>"; };
-		OBJ_173 /* VisitorBasic.g4 */ = {isa = PBXFileReference; lastKnownFileType = text; path = VisitorBasic.g4; sourceTree = "<group>"; };
-		OBJ_174 /* LexerB.g4 */ = {isa = PBXFileReference; lastKnownFileType = text; path = LexerB.g4; sourceTree = "<group>"; };
-		OBJ_175 /* MurmurHashTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MurmurHashTests.swift; sourceTree = "<group>"; };
-		OBJ_176 /* ParseTreePatternMatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseTreePatternMatcherTests.swift; sourceTree = "<group>"; };
-		OBJ_177 /* RuntimeMetaDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeMetaDataTests.swift; sourceTree = "<group>"; };
-		OBJ_178 /* StringExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensionTests.swift; sourceTree = "<group>"; };
-		OBJ_179 /* TokenStreamRewriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenStreamRewriterTests.swift; sourceTree = "<group>"; };
 		OBJ_18 /* CommonTokenFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonTokenFactory.swift; sourceTree = "<group>"; };
-		OBJ_180 /* TokenStreamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenStreamTests.swift; sourceTree = "<group>"; };
-		OBJ_181 /* VisitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorTests.swift; sourceTree = "<group>"; };
-		OBJ_183 /* LexerA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexerA.swift; sourceTree = "<group>"; };
-		OBJ_184 /* LexerAATN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexerAATN.swift; sourceTree = "<group>"; };
-		OBJ_185 /* LexerB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexerB.swift; sourceTree = "<group>"; };
-		OBJ_186 /* LexerBATN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexerBATN.swift; sourceTree = "<group>"; };
-		OBJ_187 /* VisitorBasicBaseListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorBasicBaseListener.swift; sourceTree = "<group>"; };
-		OBJ_188 /* VisitorBasicBaseVisitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorBasicBaseVisitor.swift; sourceTree = "<group>"; };
-		OBJ_189 /* VisitorBasicLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorBasicLexer.swift; sourceTree = "<group>"; };
 		OBJ_19 /* CommonTokenStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonTokenStream.swift; sourceTree = "<group>"; };
-		OBJ_190 /* VisitorBasicLexerATN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorBasicLexerATN.swift; sourceTree = "<group>"; };
-		OBJ_191 /* VisitorBasicListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorBasicListener.swift; sourceTree = "<group>"; };
-		OBJ_192 /* VisitorBasicParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorBasicParser.swift; sourceTree = "<group>"; };
-		OBJ_193 /* VisitorBasicParserATN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorBasicParserATN.swift; sourceTree = "<group>"; };
-		OBJ_194 /* VisitorBasicVisitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorBasicVisitor.swift; sourceTree = "<group>"; };
-		OBJ_195 /* VisitorCalcBaseListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorCalcBaseListener.swift; sourceTree = "<group>"; };
-		OBJ_196 /* VisitorCalcBaseVisitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorCalcBaseVisitor.swift; sourceTree = "<group>"; };
-		OBJ_197 /* VisitorCalcLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorCalcLexer.swift; sourceTree = "<group>"; };
-		OBJ_198 /* VisitorCalcLexerATN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorCalcLexerATN.swift; sourceTree = "<group>"; };
-		OBJ_199 /* VisitorCalcListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorCalcListener.swift; sourceTree = "<group>"; };
 		OBJ_20 /* ConsoleErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleErrorListener.swift; sourceTree = "<group>"; };
-		OBJ_200 /* VisitorCalcParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorCalcParser.swift; sourceTree = "<group>"; };
-		OBJ_201 /* VisitorCalcParserATN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorCalcParserATN.swift; sourceTree = "<group>"; };
-		OBJ_202 /* VisitorCalcVisitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorCalcVisitor.swift; sourceTree = "<group>"; };
 		OBJ_206 /* boot.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = boot.py; sourceTree = "<group>"; };
 		OBJ_21 /* DefaultErrorStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultErrorStrategy.swift; sourceTree = "<group>"; };
 		OBJ_22 /* DiagnosticErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticErrorListener.swift; sourceTree = "<group>"; };
@@ -526,61 +468,6 @@
 			path = pattern;
 			sourceTree = "<group>";
 		};
-		OBJ_169 /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-				OBJ_170 /* Antlr4Tests */,
-			);
-			name = Tests;
-			sourceTree = SOURCE_ROOT;
-		};
-		OBJ_170 /* Antlr4Tests */ = {
-			isa = PBXGroup;
-			children = (
-				OBJ_171 /* LexerA.g4 */,
-				OBJ_172 /* VisitorCalc.g4 */,
-				OBJ_173 /* VisitorBasic.g4 */,
-				OBJ_174 /* LexerB.g4 */,
-				OBJ_175 /* MurmurHashTests.swift */,
-				OBJ_176 /* ParseTreePatternMatcherTests.swift */,
-				OBJ_177 /* RuntimeMetaDataTests.swift */,
-				OBJ_178 /* StringExtensionTests.swift */,
-				OBJ_179 /* TokenStreamRewriterTests.swift */,
-				OBJ_180 /* TokenStreamTests.swift */,
-				OBJ_181 /* VisitorTests.swift */,
-				OBJ_182 /* gen */,
-			);
-			name = Antlr4Tests;
-			path = Tests/Antlr4Tests;
-			sourceTree = SOURCE_ROOT;
-		};
-		OBJ_182 /* gen */ = {
-			isa = PBXGroup;
-			children = (
-				OBJ_183 /* LexerA.swift */,
-				OBJ_184 /* LexerAATN.swift */,
-				OBJ_185 /* LexerB.swift */,
-				OBJ_186 /* LexerBATN.swift */,
-				OBJ_187 /* VisitorBasicBaseListener.swift */,
-				OBJ_188 /* VisitorBasicBaseVisitor.swift */,
-				OBJ_189 /* VisitorBasicLexer.swift */,
-				OBJ_190 /* VisitorBasicLexerATN.swift */,
-				OBJ_191 /* VisitorBasicListener.swift */,
-				OBJ_192 /* VisitorBasicParser.swift */,
-				OBJ_193 /* VisitorBasicParserATN.swift */,
-				OBJ_194 /* VisitorBasicVisitor.swift */,
-				OBJ_195 /* VisitorCalcBaseListener.swift */,
-				OBJ_196 /* VisitorCalcBaseVisitor.swift */,
-				OBJ_197 /* VisitorCalcLexer.swift */,
-				OBJ_198 /* VisitorCalcLexerATN.swift */,
-				OBJ_199 /* VisitorCalcListener.swift */,
-				OBJ_200 /* VisitorCalcParser.swift */,
-				OBJ_201 /* VisitorCalcParserATN.swift */,
-				OBJ_202 /* VisitorCalcVisitor.swift */,
-			);
-			path = gen;
-			sourceTree = "<group>";
-		};
 		OBJ_203 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -666,16 +553,14 @@
 			path = atn;
 			sourceTree = "<group>";
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
 				OBJ_7 /* Sources */,
-				OBJ_169 /* Tests */,
 				OBJ_203 /* Products */,
 				OBJ_206 /* boot.py */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_7 /* Sources */ = {
@@ -805,7 +690,7 @@
 				English,
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_203 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -990,33 +875,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_381 /* MurmurHashTests.swift in Sources */,
-				OBJ_382 /* ParseTreePatternMatcherTests.swift in Sources */,
-				OBJ_383 /* RuntimeMetaDataTests.swift in Sources */,
-				OBJ_384 /* StringExtensionTests.swift in Sources */,
-				OBJ_385 /* TokenStreamRewriterTests.swift in Sources */,
-				OBJ_386 /* TokenStreamTests.swift in Sources */,
-				OBJ_387 /* VisitorTests.swift in Sources */,
-				OBJ_388 /* LexerA.swift in Sources */,
-				OBJ_389 /* LexerAATN.swift in Sources */,
-				OBJ_390 /* LexerB.swift in Sources */,
-				OBJ_391 /* LexerBATN.swift in Sources */,
-				OBJ_392 /* VisitorBasicBaseListener.swift in Sources */,
-				OBJ_393 /* VisitorBasicBaseVisitor.swift in Sources */,
-				OBJ_394 /* VisitorBasicLexer.swift in Sources */,
-				OBJ_395 /* VisitorBasicLexerATN.swift in Sources */,
-				OBJ_396 /* VisitorBasicListener.swift in Sources */,
-				OBJ_397 /* VisitorBasicParser.swift in Sources */,
-				OBJ_398 /* VisitorBasicParserATN.swift in Sources */,
-				OBJ_399 /* VisitorBasicVisitor.swift in Sources */,
-				OBJ_400 /* VisitorCalcBaseListener.swift in Sources */,
-				OBJ_401 /* VisitorCalcBaseVisitor.swift in Sources */,
-				OBJ_402 /* VisitorCalcLexer.swift in Sources */,
-				OBJ_403 /* VisitorCalcLexerATN.swift in Sources */,
-				OBJ_404 /* VisitorCalcListener.swift in Sources */,
-				OBJ_405 /* VisitorCalcParser.swift in Sources */,
-				OBJ_406 /* VisitorCalcParserATN.swift in Sources */,
-				OBJ_407 /* VisitorCalcVisitor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
