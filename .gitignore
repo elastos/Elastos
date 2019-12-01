@@ -12,6 +12,10 @@ xcuserdata
 /node_modules
 /package-lock.json
 
-/Externals/HDKey/lib/
-/Externals/SPVAdapter/SPVAdapter/lib
+/Externals/HDKey/lib/-iphoneos
+/Externals/HDKey/lib/-iphoneosimulator
+/Externals/HDKey/lib/macos
+/Externals/SPVAdapter/SPVAdapter/lib/-iphoneos
+/Externals/SPVAdapter/SPVAdapter/lib/-iphoneosimulator
+/Externals/SPVAdapter/SPVAdapter/lib/macos
 
