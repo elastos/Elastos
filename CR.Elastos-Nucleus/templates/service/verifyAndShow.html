@@ -56,9 +56,9 @@
         </a>
     {% else %}
          <form class="form-group" method="post">
-             {% csrf_token %}G
+             {% csrf_token %}
              {{ form.as_p }}
-            <button type="submit" >Sumbit</button>
+            <button type="submit" >Submit</button>
          </form>
     {% endif %}
 {% endblock service %} 

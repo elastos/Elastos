@@ -77,6 +77,11 @@ EMAIL_HOST_USER='support@example.com'
 EMAIL_HOST_PASSWORD='password'
 EMAIL_PORT=587
 ```
+Put adenine client to the python path(NOTE: This is only temporary until the library is published to pip):
+```
+rm -f venv/lib/python3.7/site-packages/adenine
+cp -r /path/to/python-grpc-adenine/adenine venv/lib/python3.7/site-packages/
+```
 Run the automated script to set up everything and start Django server:
 ```
 ./run.sh

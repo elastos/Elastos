@@ -13,7 +13,7 @@ pip3 install -r requirements.txt
 cd tools
 ./postgres.sh
 cd ..
-sleep 6
+sleep 7
 
 # Migrate the database
 # Collect all static content

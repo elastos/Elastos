@@ -1,20 +1,27 @@
-from django.forms import ModelForm
 from django import forms
-from .models import files
+from django.forms import HiddenInput
+
+from .models import UploadFile
 
 
-class UploadFile(forms.ModelForm):
-    privateKey = forms.CharField(max_length=400)
-    apiKey = forms.CharField(max_length=300)
+class UploadFileForm(forms.ModelForm):
+    private_key = forms.CharField(max_length=400)
+    api_key = forms.CharField(max_length=300)
+
+    def __init__(self, *args, **kwargs):
+        super(UploadFileForm, self).__init__(*args, **kwargs)
+        self.fields['did'].required = False
+        self.fields['did'].widget = HiddenInput()
+
     class Meta:
-        model = files
-        fields = ['name', 'uploaded_file']
+        model = UploadFile
+        fields = ['did', 'uploaded_file']
 
 
-class verifyAndShow(forms.Form):
-    Message = forms.CharField(max_length=300 , help_text="Enter the message Hash from DID")
-    Public_Key = forms.CharField(max_length=300 , help_text="Enter the public Key from DID")
-    Signature = forms.CharField(max_length=300 , help_text="Enter the signature from DID")
-    Hash = forms.CharField(max_length=300 , help_text="Enter your Hash output from HIVE")
-    Private_Key = forms.CharField(max_length=300 , help_text="Enter your private Key")
-    API_Key = forms.CharField(max_length=300 , help_text="Enter your API Key")
+class VerifyAndShowForm(forms.Form):
+    message_hash = forms.CharField(max_length=300, help_text="Enter the Message Hash from DID")
+    public_key = forms.CharField(max_length=300, help_text="Enter the Public Key from DID")
+    signature = forms.CharField(max_length=300, help_text="Enter the Signature from DID")
+    file_hash = forms.CharField(max_length=300, help_text="Enter your File Hash output from HIVE")
+    private_key = forms.CharField(max_length=300, help_text="Enter your Private Key")
+    api_key = forms.CharField(max_length=300, help_text="Enter your API Key")

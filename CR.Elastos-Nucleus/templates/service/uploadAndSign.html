@@ -50,10 +50,10 @@
 {% block service %}
     {% if output %}
         <h5 class="card-title">Response:</h5>
-        <p class="card-text">Message Hash :  {{ msg }}</p>
-        <p class="card-text">Public Key : {{ pub }}</p>
-        <p class="card-text">Signature : {{ sig }}</p>
-        <p class="card-text">Hive Hash : {{ Hash }}</p>
+        <p class="card-text">Message Hash :  {{ message_hash }}</p>
+        <p class="card-text">Public Key : {{ public_key }}</p>
+        <p class="card-text">Signature : {{ signature }}</p>
+        <p class="card-text">File Hash : {{ file_hash }}</p>
         <a href="{% url "service:uploadAndSign" %}" methods="GET">
         <button class="btn-default">
             Upload Again

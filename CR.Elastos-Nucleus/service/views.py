@@ -1,104 +1,122 @@
 import json
-import sys
-import requests
+
 from decouple import config
-from . import forms
-from . import models
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
-sys.path.append(config('ADENINE_STUBS'))
-sys.path.append(config('ADENINE'))
+from django.shortcuts import render, redirect
+from console_main.views import login_required
+from django.contrib import messages
+from django.urls import reverse
+
 from adenine.common import Common
 from adenine.console import Console
 
+from .forms import UploadFileForm, VerifyAndShowForm
+from .models import UploadFile
+
+
+@login_required
 def generate_key(request):
-    if(request.method == 'POST'):
+    if request.method == 'POST':
         common = Common()
-        userDID = request.session['did']
-        getData =  common.generate_api_request(config('SHARED_SECRET_ADENINE'), userDID)
-        if(getData.status == True):
-            API_KEY = getData.api_key
-            context = {
-                'API_KEY': API_KEY,
-            }
-            sent_json = json.dumps({'API_KEY': API_KEY})
+        did = request.session['did']
+        response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
+        if response.status:
+            api_key = response.api_key
+            sent_json = json.dumps({'API_KEY': api_key})
             return HttpResponse(sent_json, content_type='application/JSON')
         else:
-            print("Didnt get a response")
+            messages.success(request, "Could not generate an API key. Please try again")
+            return redirect(reverse('login:generateKey'))
     else:
-        return render(request, "Services/generateKey.html")
+        return render(request, "service/generateKey.html")
 
 
+@login_required
 def upload_and_sign(request):
-    if(request.method == 'POST'):
-        models.files.objects.all().delete()
-        privateKey = request.POST['privateKey']
-        apiKey = request.POST['apiKey']
-        name = request.POST['name']
-        form = forms.UploadFile(request.POST, request.FILES)
-        if(form.is_valid()):
-            form.save()
-            files = models.files.objects.get(name=name)
-            file_path = files.uploaded_file.path
-            console = Console()
-            getData = console.upload_and_sign(apiKey , config('PRIVATE_KEY') , file_path) #for development purposes only the config needs to be users private key
-            jsonData = json.loads(getData.output)
-            if(getData.status==True):
-                 models.files.objects.get(name=name).delete()
-                 msg = jsonData['result']['msg']
-                 pub = jsonData['result']['pub']
-                 sig = jsonData['result']['sig']
-                 Hash = jsonData['result']['hash']
-                 output = True
-                 return render(request, "Services/uploadAndSign.html", {"msg": msg , "pub":pub, "sig": sig, "Hash":Hash, 'output': output})
-            else:
-                return HttpResponse("grpc call didnt work")
-        else:
-            return HttpResponse("Didnt work")
-    else:
-        output = False
-        form = forms.UploadFile()
-        return render(request, "Services/uploadAndSign.html" , {'form': form , 'output':output})
+    did = request.session['did']
+    if request.method == 'POST':
+        # Purge old requests for housekeeping.
+        UploadFile.objects.filter(did=did).delete()
 
+        private_key = request.POST['private_key']
+        api_key = request.POST['api_key']
+        form = UploadFileForm(request.POST, request.FILES, initial={'did': did})
+        if form.is_valid():
+            form.save()
+            temp_file = UploadFile.objects.get(did=did)
+            file_path = temp_file.uploaded_file.path
+            console = Console()
+            response = console.upload_and_sign(api_key, private_key, file_path)
+            data = json.loads(response.output)
+            if response.status:
+                temp_file.delete()
+                message_hash = data['result']['msg']
+                public_key = data['result']['pub']
+                signature = data['result']['sig']
+                file_hash = data['result']['hash']
+                return render(request, "service/uploadAndSign.html",
+                              {"message_hash": message_hash, "public_key": public_key, "signature": signature,
+                               "file_hash": file_hash, 'output': True})
+            else:
+                messages.success(request, "File could not be uploaded. Please try again")
+                return redirect(reverse('login:uploadAndSign'))
+
+    else:
+        form = UploadFileForm(initial={'did': did})
+        return render(request, "service/uploadAndSign.html", {'form': form, 'output': False})
+
+
+@login_required
 def verify_and_show(request):
     if request.method == 'POST':
         output = True
-        msg = request.POST['Message']
-        privatekey = config('PRIVATE_KEY') #for development purposes , for deployment change it to the users private key
-        publicKey = request.POST['Public_Key']
-        Hash = request.POST['Hash']
-        sig = request.POST['Signature']
-        api = request.POST['API_Key']
+        msg = request.POST['message_hash']
+        private_key = request.POST['private_key']
+        public_key = request.POST['public_key']
+        file_hash = request.POST['file_hash']
+        signature = request.POST['signature']
+        api_key = request.POST['api_key']
         request_input = {
             "msg": msg,
-            "pub": publicKey,
-            "sig": sig,
-            "hash": Hash,
-            "private_key": privatekey
+            "pub": public_key,
+            "sig": signature,
+            "hash": file_hash,
+            "private_key": private_key
         }
         console = Console()
-        getData = console.verify_and_show(api , request_input)
-        if(getData.status == True):
-            content = getData.output
-            return render(request , 'Services/verifyAndShow.html' , {'output':output , 'content' : content})
+        response = console.verify_and_show(api_key, request_input)
+        if response.status:
+            content = response.output
+            return render(request, 'service/verifyAndShow.html', {'output': output, 'content': content})
         else:
-            return HttpResponse("File didnt Exist")
+            messages.success(request, "File could not be verified nor shown. Please try again")
+            return redirect(reverse('login:verifyAndShow'))
     else:
         output = False
-        form = forms.verifyAndShow()
-        return render(request , 'Services/verifyAndShow.html' , {'output':output  , 'form':form})
+        form = VerifyAndShowForm()
+        return render(request, 'service/verifyAndShow.html', {'output': output, 'form': form})
 
+
+@login_required
 def request_ela(request):
-    return render(request, "Services/requestELA.html")
+    return render(request, "service/requestELA.html")
 
+
+@login_required
 def vote_supernodes(request):
-    return render(request, "Services/voteSupernodes.html")
+    return render(request, "service/voteSupernodes.html")
 
+
+@login_required
 def run_contract(request):
-    return render(request, "Services/runContract.html")
+    return render(request, "service/runContract.html")
 
+
+@login_required
 def save_did_data(request):
-    return render(request, "Services/saveData.html")
+    return render(request, "service/saveData.html")
 
+
+@login_required
 def retrieve_did_data(request):
-    return render(request, "Services/retrieveData.html")
+    return render(request, "service/retrieveData.html")
