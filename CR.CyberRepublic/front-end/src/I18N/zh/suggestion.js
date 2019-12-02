@@ -38,7 +38,7 @@ export default {
   },
   status: {
     posted: '发布',
-    underConsideration: '正在审议中',
+    underConsideration: '委员会正在审议中',
     moreInfoRequired: '需要更多信息',
     referred: '相关提案',
     [SUGGESTION_STATUS.ACTIVE]: '活跃',

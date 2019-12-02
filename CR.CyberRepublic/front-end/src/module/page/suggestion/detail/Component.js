@@ -239,7 +239,7 @@ export default class extends StandardPage {
     } else if (_.some(detail.tags, tag => tag.type === 'INFO_NEEDED')) {
       status = I18N.get('suggestion.status.moreInfoRequired')
     } else if (_.some(detail.tags, tag => tag.type === 'UNDER_CONSIDERATION')) {
-      status = I18N.get('Under Council Consideration')
+      status = I18N.get('suggestion.status.underConsideration')
     }
 
     return (
