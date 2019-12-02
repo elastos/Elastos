@@ -1,32 +1,43 @@
 package chain
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/pow"
+	"github.com/elastos/Elastos.ELA/utils"
+	"github.com/elastos/Elastos.ELA/utils/signal"
+)
+
+const (
+	txRepoFile = "dategen.repo"
 )
 
 type DataGen struct {
-	height         uint32
 	txRepo         *TxRepository
 	chain          *blockchain.BlockChain
 	chainParams    *config.Params
-	params         *GenerationParams
 	pow            *pow.Service
 	txPool         *mempool.TxPool
 	prevBlockHash  common.Uint256
 	foundationAddr string
+	dataDir        string
 }
 
-func (g *DataGen) Generate() (err error) {
+func (g *DataGen) Generate(height uint32) (err error) {
 	var process func(height uint32) error
-	switch g.params.Mode {
+	switch g.txRepo.Params().Mode {
 	case Normal:
 		process = g.normalProcess
 	case Minimal:
@@ -35,7 +46,7 @@ func (g *DataGen) Generate() (err error) {
 		process = g.fastProcess
 	}
 
-	for i := uint32(1); i <= g.height; i++ {
+	for i := g.chain.GetHeight(); i <= height; i++ {
 		if err = process(i); err != nil {
 			return
 		}
@@ -109,7 +120,7 @@ func (g *DataGen) generateBlock(
 	}
 
 	if block, err = g.pow.GenerateBlock(g.foundationAddr,
-		int(g.params.InputsPerBlock)); err != nil {
+		int(g.txRepo.Params().InputsPerBlock)); err != nil {
 		return
 	}
 	g.pow.SolveBlock(block, nil)
@@ -129,13 +140,53 @@ func (g *DataGen) storeData(block *types.Block) error {
 	return nil
 }
 
-func NewDataGen(height uint32, dataDir string, interrupt <-chan struct{},
-	params *GenerationParams) (*DataGen, error) {
-	repo, err := NewTxRepository(params)
+func (g *DataGen) Save() (err error) {
+	filename := path.Join(g.dataDir, txRepoFile)
+	var file *os.File
+	file, err = os.OpenFile(filename,
+		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	buf := new(bytes.Buffer)
+	if err = g.txRepo.Serialize(buf); err != nil {
+		return
+	}
+
+	if _, err = file.Write(buf.Bytes()); err != nil {
+		return
+	}
+
+	return
+}
+
+func LoadDataGen(dataPath string) (*DataGen, error) {
+	if !utils.FileExisted(dataPath) {
+		return nil, errors.New(fmt.Sprintf("can't find file: %s", dataPath))
+	}
+	file, err := os.OpenFile(dataPath, os.O_RDONLY, 0400)
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
+	buf := new(bytes.Buffer)
+	fileData, err := ioutil.ReadAll(file)
+	buf.Write(fileData)
+
+	repo := &TxRepository{}
+	if err = repo.Deserialize(buf); err != nil {
+		return nil, err
+	}
+
+	var interrupt = signal.NewInterrupt()
+	return FromTxRepository(path.Dir(dataPath), interrupt.C, repo)
+}
+
+func FromTxRepository(dataDir string, interrupt <-chan struct{},
+	repo *TxRepository) (*DataGen, error) {
 	chainParams := generateChainParams(repo.GetFoundationAccount())
 	chain, err := newBlockChain(dataDir, chainParams, interrupt)
 	if err != nil {
@@ -157,13 +208,12 @@ func NewDataGen(height uint32, dataDir string, interrupt <-chan struct{},
 	txPool := mempool.NewTxPool(chainParams)
 	return &DataGen{
 		txRepo:         repo,
-		height:         height,
-		params:         params,
 		chainParams:    chainParams,
 		chain:          chain,
 		txPool:         txPool,
 		foundationAddr: foundationAddr,
 		prevBlockHash:  chainParams.GenesisBlock.Hash(),
+		dataDir:        dataDir,
 		pow: pow.NewService(
 			&pow.Config{
 				PayToAddr:   foundationAddr,
@@ -172,4 +222,14 @@ func NewDataGen(height uint32, dataDir string, interrupt <-chan struct{},
 				ChainParams: chainParams,
 				TxMemPool:   txPool,
 			})}, nil
+}
+
+func NewDataGen(dataDir string, interrupt <-chan struct{},
+	params *GenerationParams) (*DataGen, error) {
+	repo, err := NewTxRepository(params)
+	if err != nil {
+		return nil, err
+	}
+
+	return FromTxRepository(dataDir, interrupt, repo)
 }
