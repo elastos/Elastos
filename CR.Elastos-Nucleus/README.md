@@ -52,6 +52,11 @@ If not, you can skip to the next step of executing the automated bash script:
   ./postgres.sh
   cd ..
   ```
+- Put adenine client to the python path(NOTE: This is only temporary until the library is published to pip):
+  ```
+  rm -f venv/lib/python3.7/site-packages/adenine
+  cp -r /path/to/python-grpc-adenine/adenine venv/lib/python3.7/site-packages/
+  ```
 - Create an admin user for django admin interface if not already:
   ```
   python3 manage.py makemigrations
