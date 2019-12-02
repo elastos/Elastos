@@ -1,8 +1,8 @@
 import React from 'react'
 import { Form, Input, Button, Row, Tabs, Radio } from 'antd'
+import _ from 'lodash'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
-import _ from 'lodash'
 import { ABSTRACT_MAX_WORDS } from '@/constant'
 import CircularProgressbar from '@/module/common/CircularProgressbar'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
@@ -142,13 +142,8 @@ class C extends BaseComponent {
       return cb(true)
     } if (value && _.isEmpty(value.milestone)) {
       return cb(true)
-    } else {
-      return cb()
     }
-  }
-
-  init() {
-
+    return cb()
   }
 
   getTextarea(id) {
@@ -218,7 +213,6 @@ class C extends BaseComponent {
           content={initialValues[id]}
           activeKey={id}
           name={id}
-          init={this.init}
         />
       )
     }
@@ -235,7 +229,7 @@ class C extends BaseComponent {
       <TabText hasErr={hasError}>
         {I18N.get(`suggestion.fields.${id}`)}
 *
-</TabText>
+      </TabText>
     )
   }
 

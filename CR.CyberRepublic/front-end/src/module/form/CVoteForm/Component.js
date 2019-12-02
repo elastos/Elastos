@@ -89,7 +89,6 @@ const renderRichEditor = (
       callback={callback}
       activeKey={key}
       name={key}
-      init={() => {}}
     />
   )
   return content_fn(content_el)
