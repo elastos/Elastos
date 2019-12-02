@@ -9,6 +9,7 @@ public final class TestConfig {
 
     public final static String walletDir = "/PATH/TO/WALLET";
     public final static String walletId = "test";
+    public final static String walletPassword = "passwd";
     public final static String networkConfig = "/PATH/TO/privnet.json";
     public final static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
 }
