@@ -14,6 +14,7 @@ import {
 import rangePickerLocale from 'antd/es/date-picker/locale/zh_CN'
 import { CSVLink } from 'react-csv'
 import BaseComponent from '@/model/BaseComponent'
+import Meta from '@/module/common/Meta'
 import I18N from '@/I18N'
 import { logger } from '@/util'
 import { CVOTE_RESULT, CVOTE_STATUS } from '@/constant'
@@ -199,20 +200,18 @@ export default class extends BaseComponent {
       {
         title: I18N.get('council.voting.proposedAt'),
         dataIndex: 'proposedAt',
-        render: (proposedAt, doc) =>
-          this.renderProposed(doc.published, proposedAt || doc.createdAt)
+        render: (proposedAt, doc) => this.renderProposed(doc.published, proposedAt || doc.createdAt)
       }
     ]
 
     if (canManage) {
       columns.splice(1, 0, {
         dataIndex: 'published',
-        render: (published, item, index) =>
-          published ? (
-            <i className="fas fa-eye" />
-          ) : (
-            <i className="far fa-eye-slash" />
-          )
+        render: (published, item, index) => (published ? (
+          <i className="fas fa-eye" />
+        ) : (
+          <i className="far fa-eye-slash" />
+        ))
       })
     }
 
@@ -315,36 +314,38 @@ export default class extends BaseComponent {
       )
     }
     return (
-      <Container>
-        {createBtn}
-        <Row
+      <div>
+        <Meta title="Cyber Republic - Elastos" />
+        <Container>
+          {createBtn}
+          <Row
           type="flex"
           align="bottom"
           justify="space-between"
           style={{ marginTop: 20 }}
         >
-          {title}
-          {btns}
-        </Row>
-        <Row
+            {title}
+            {btns}
+          </Row>
+          <Row
           type="flex"
           align="middle"
           justify="start"
           gutter={40}
           style={{ marginTop: 20, marginBottom: 20 }}
         >
-          {searchInput}
-          {filterBtns}
-        </Row>
-        {isVisitableFilter && filterPanel}
-        <Row type="flex" align="middle" justify="end">
-          {isSecretary && (
+            {searchInput}
+            {filterBtns}
+          </Row>
+          {isVisitableFilter && filterPanel}
+          <Row type="flex" align="middle" justify="end">
+            {isSecretary && (
             <CSVLink data={dataCSV} style={{ marginBottom: 16 }}>
               {I18N.get('elip.button.exportAsCSV')}
             </CSVLink>
-          )}
-        </Row>
-        <Table
+            )}
+          </Row>
+          <Table
           columns={columns}
           loading={loading}
           dataSource={list}
@@ -356,8 +357,9 @@ export default class extends BaseComponent {
             onChange: this.onPageChange
           }}
         />
-        {createBtn}
-      </Container>
+          {createBtn}
+        </Container>
+      </div>
     )
   }
 
