@@ -35,5 +35,5 @@ elif [[ "$1" == "benchspec" ]]; then
 elif [[ "$1" == "benchproc" ]]; then
   go test ./benchmark/process/... -bench=. $cpuArgs $memArgs
 elif [[ "$1" == "datagen" ]]; then
-  ./ela-datagen --dir benchmark/process/elastos_test --height "$2"
+  ./ela-datagen --dir benchmark/process/elastos_test --height "$2" --mode normal --inputsperblock 200 --maxrefers 200 --minrefers 100 --addresscount 100
 fi

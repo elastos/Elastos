@@ -77,6 +77,7 @@ func generate(c *cli.Context) error {
 		}
 
 		err = gen.Save()
+		gen.Exit()
 		exit <- err
 	}()
 
