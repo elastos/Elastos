@@ -239,7 +239,10 @@ public class VerifiablePresentation {
 
 		String type = JsonHelper.getString(presentation, Constants.type,
 				false, null, "presentation type", clazz);
-		setType(type);
+		if (!type.contentEquals(Constants.defaultPresentationType))
+			throw new MalformedPresentationException("Unknown presentation type: " + type);
+		else
+			setType(type);
 
 		Date created = JsonHelper.getDate(presentation, Constants.created,
 				false, null, "presentation created date", clazz);

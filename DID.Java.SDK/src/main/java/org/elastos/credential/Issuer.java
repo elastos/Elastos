@@ -109,10 +109,10 @@ public class Issuer {
 
 		private Calendar getMaxExpires() {
 			Calendar cal = Calendar.getInstance(Constants.UTC);
+			if (vc.getIssuanceDate() != null)
+				cal.setTime(vc.getIssuanceDate());
 			cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
+
 			return cal;
 		}
 
@@ -123,12 +123,10 @@ public class Issuer {
 		public CredentialBuilder expirationDate(Date expirationDate) {
 			Calendar cal = Calendar.getInstance(Constants.UTC);
 			cal.setTime(expirationDate);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
 
-			if (cal.after(getMaxExpires()))
-				cal = getMaxExpires();
+			Calendar maxExpires = getMaxExpires();
+			if (cal.after(maxExpires))
+				cal = maxExpires;
 
 			vc.setExpirationDate(cal.getTime());
 
@@ -156,9 +154,6 @@ public class Issuer {
 				throw new MalformedCredentialException("Missing subject.");
 
 			Calendar cal = Calendar.getInstance(Constants.UTC);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
 			vc.setIssuanceDate(cal.getTime());
 
 			if (vc.getExpirationDate() == null)

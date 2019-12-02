@@ -298,9 +298,6 @@ public class VerifiableCredential extends DIDObject {
 
 	public boolean isExpired() {
 		Calendar now = Calendar.getInstance(Constants.UTC);
-		now.set(Calendar.MINUTE, 0);
-		now.set(Calendar.SECOND, 0);
-		now.set(Calendar.MILLISECOND, 0);
 
 		Calendar expireDate  = Calendar.getInstance(Constants.UTC);
 		expireDate.setTime(expirationDate);

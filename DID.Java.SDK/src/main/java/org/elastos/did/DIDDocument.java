@@ -740,9 +740,6 @@ public class DIDDocument {
 	private Calendar getMaxExpires() {
 		Calendar cal = Calendar.getInstance(Constants.UTC);
 		cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
 		return cal;
 	}
 
@@ -756,9 +753,6 @@ public class DIDDocument {
 
 		Calendar cal = Calendar.getInstance(Constants.UTC);
 		cal.setTime(expires);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
 
 		if (cal.after(getMaxExpires()))
 			return false;
