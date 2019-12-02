@@ -1,7 +1,8 @@
-{% extends "service.html" %} {% load static %} 
+{% extends "service.html" %} 
+{% load static %} 
 
 {% block title %}
-<title>Upload and Sign</title>
+<title>Upload and Sign - Elastos Nucleus</title>
 {% endblock title %} 
 
 {% block related %}
@@ -47,7 +48,24 @@
 {% endblock servicetitle %} 
 
 {% block service %}
-<p>The Upload and Sign service goes here.</p>
+    {% if output %}
+        <h5 class="card-title">Response:</h5>
+        <p class="card-text">Message Hash :  {{ message_hash }}</p>
+        <p class="card-text">Public Key : {{ public_key }}</p>
+        <p class="card-text">Signature : {{ signature }}</p>
+        <p class="card-text">File Hash : {{ file_hash }}</p>
+        <a href="{% url "service:uploadAndSign" %}" methods="GET">
+        <button class="btn-default">
+            Upload Again
+        </button>
+        </a>
+    {% else %}
+       <form  class="form-group" method="post" enctype="multipart/form-data">
+       {% csrf_token %}
+       {{ form.as_p }}
+       <button type="submit">Upload</button>
+       </form>
+    {% endif %}
 {% endblock service %} 
 
 {% block description %}

@@ -15,7 +15,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-from django.utils import timezone
 from django.utils.http import urlencode, urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
@@ -24,20 +23,10 @@ from django.utils.http import urlsafe_base64_encode
 from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes, force_text
 
+from console_main.views import login_required
 from .models import DIDUser, DIDRequest
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from .tokens import account_activation_token
-
-
-def login_required(function):
-    def wrapper(request, *args, **kw):
-        if not request.session.get('logged_in'):
-            return redirect(reverse('landing'))
-        return function(request, *args, **kw)
-
-    wrapper.__doc__ = function.__doc__
-    wrapper.__name__ = function.__name__
-    return wrapper
 
 
 def check_ela_auth(request):
@@ -124,7 +113,7 @@ def register(request):
     else:
         form = DIDUserCreationForm(initial={'name': request.session['name'], 'email': request.session['email'],
                                             'did': request.session['did']})
-    return render(request, 'login/register.html', {'form': form, 'logged_in': False})
+    return render(request, 'login/register.html', {'form': form})
 
 
 @login_required
@@ -153,7 +142,7 @@ def edit_profile(request):
                              "The email '%s' needs to be verified. Please check your email for confirmation link" % did_user.email)
             return redirect(reverse('login:home'))
         form = DIDUserChangeForm(instance=request.user)
-    return render(request, 'login/edit_profile.html', {'form': form, 'logged_in': True})
+    return render(request, 'login/edit_profile.html', {'form': form})
 
 
 def send_email(request, to_email, user):

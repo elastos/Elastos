@@ -56,7 +56,7 @@
           />
           <strong>Nucleus Console</strong>
         </a>
-          {% if request.session.logged_in == True %}
+         {% if request.session.logged_in == True %}
             <button
               class="navbar-toggler"
               type="button"
@@ -106,20 +106,24 @@
                 <a class="dropdown-item" href="{%  url 'login:sign_out' %}">Log Out</a>
               </div>
             </div>
-          {% endif %}
+             {% endif %}
         </nav>
-      {% if request.session.logged_in == True %}
+    {% if request.session.logged_in == True %}
         <div class="pos-f-t">
           <div class="collapse mx-auto" id="topbar">
             <div class="bg-primary p-2 text-center">
-              <h5 class="text-white h4">
-                Collapsed content
-              </h5>
-              <p1 class="text-white"> all of the services can be added here</p1>
+                <a class="dropdown-item" href="{%  url 'service:generateKey' %}">Generate Key</a>
+                <a class="dropdown-item" href="{%  url 'service:uploadAndSign' %}">Upload and Sign</a>
+                <a class="dropdown-item" href="{%  url 'service:verifyAndShow' %}">Verify and Show</a>
+                <a class="dropdown-item" href="{%  url 'service:requestELA' %}">Request ELA </a>
+                <a class="dropdown-item" href="{%  url 'service:voteSupernodes' %}">Vote Supernodes </a>
+                <a class="dropdown-item" href="{%  url 'service:runContract' %}">Run Contract</a>
+                <a class="dropdown-item" href="{%  url 'service:saveData' %}">Save DID Data</a>
+                <a class="dropdown-item" href="{%  url 'service:retrieveData' %}">Retrieve DID Data</a>
             </div>
           </div>
         </div>
-      {% endif %}
+    {% endif %}
     </header>
   </head>
   <body>
@@ -158,8 +162,8 @@
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script
-      src="https://code.jquery.com/jquery-3.4.1.js" 
-      integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" 
+      src="https://code.jquery.com/jquery-3.4.1.js"
+      integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
       crossorigin="anonymous"
     ></script>
     <script

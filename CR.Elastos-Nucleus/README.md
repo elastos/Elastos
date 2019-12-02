@@ -52,14 +52,6 @@ If not, you can skip to the next step of executing the automated bash script:
   ./postgres.sh
   cd ..
   ```
-  If you're on a MAC and encounter any errors, be sure to use the homebrew version of openssl by doing the following:
-  ```
-  brew install openssl
-  export PATH="/usr/local/opt/openssl/bin:$PATH" # This is a temporary solution and will not work if you switch to another terminal window
-  # If you want to make the changes permanent, do the following:
-  echo 'export PATH="/usr/local/opt/openssl/bin:$PATH"' >> ~/.bash_profile
-  . ~/.bash_profile
-  ```
 - Create an admin user for django admin interface if not already:
   ```
   python3 manage.py makemigrations
@@ -84,6 +76,11 @@ EMAIL_HOST='smtp.example.com'
 EMAIL_HOST_USER='support@example.com'
 EMAIL_HOST_PASSWORD='password'
 EMAIL_PORT=587
+```
+Put adenine client to the python path(NOTE: This is only temporary until the library is published to pip):
+```
+rm -f venv/lib/python3.7/site-packages/adenine
+cp -r /path/to/python-grpc-adenine/adenine venv/lib/python3.7/site-packages/
 ```
 Run the automated script to set up everything and start Django server:
 ```

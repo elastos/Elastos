@@ -56,7 +56,6 @@
 .feature-box-01 {
   display: block;
   background: #fff;
-  box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   padding: 35px 28px 20px;
   text-align: center;
@@ -67,4 +66,39 @@
   position: relative;
   overflow: hidden;
   margin-bottom: 30px;
+}
+
+.carousel-caption {
+  bottom: 3rem;
+  z-index: 10;
+}
+
+.carousel-item {
+  height: 32rem;
+}
+
+.carousel-item > img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  height: 32rem;
+}
+
+@media (min-width: 40em) {
+  .carousel-caption p {
+    margin-bottom: 1.25rem;
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+
+  .featurette-heading {
+    font-size: 50px;
+  }
+}
+
+@media (min-width: 62em) {
+  .featurette-heading {
+    margin-top: 7rem;
+  }
 }

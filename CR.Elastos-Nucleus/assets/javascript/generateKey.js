@@ -26,7 +26,7 @@ function getAPI() {
         dataType:'json',
         success: function (data) {
             console.log("comes in here");
-            $("#apiKey").replaceWith("<span id='apiKey'>"+data['API_KEY']+"</span>")
+            $("#apiKey").attr('value' , data['API_KEY'])
         }
    });
 }

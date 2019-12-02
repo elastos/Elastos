@@ -1,12 +1,9 @@
-{% extends "service.html" %} {% load static %} 
+{% extends "service.html" %} 
+{% load static %} 
 
 {% block title %}
-<title>Generate Key</title>
+<title>Run Contract - Elastos Nucleus</title>
 {% endblock title %} 
-
-{% block scripts %}
-<script src="{% static '/javascript/generateKey.js' %}"></script>
-{% endblock scripts %} 
 
 {% block related %}
   <li>
@@ -47,20 +44,13 @@
 {% endblock documentation %}
 
 {% block servicetitle %}
-<h5 class="card-header">Generate API Key</h5>
+<h5 class="card-header">Run Ethereum Contract</h5>
 {% endblock servicetitle %} 
 
 {% block service %}
-<div class="input-group mb-3">
-  <div class="input-group-prepend">
-    <button class="btn btn-secondary" type="button" id="getKeyBtn" onclick="getAPI()">
-      Generate Key
-    </button>
-  </div>
-  <input type="text" class="form-control" placeholder="Key will appear here" aria-label="apiKey" aria-describedby="getKeyBtn" readonly>
-</div>
+<p>The Run Ethereum Contract service goes here.</p>
 {% endblock service %} 
 
 {% block description %}
-<p>The description of the Generate API Key service goes here.</p>
+<p>The description of the Run Ethereum Contract service goes here.</p>
 {% endblock description %}
