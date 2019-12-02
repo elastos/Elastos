@@ -125,6 +125,8 @@ const zh = {
   'comments.signIn': '注册',
   'comments.firstToPost': '抢沙发！',
   'comments.placeholder': '说点儿什么',
+  'comments.posted': '您的评论已发布',
+
   // Admin tasks
   'admin.tasks.status': '状态',
 

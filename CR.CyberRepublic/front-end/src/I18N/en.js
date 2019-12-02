@@ -125,6 +125,8 @@ const en = {
   'comments.signIn': 'sign in ',
   'comments.firstToPost': 'to be the first to post!',
   'comments.placeholder': 'Leave a comment',
+  'comments.posted': 'Your comment has been posted.',
+
   // Admin tasks
   'admin.tasks.status': 'Status',
 
