@@ -1,5 +1,4 @@
 import React from 'react'
-import BaseComponent from '@/model/BaseComponent'
 import {
   Form,
   Input,
@@ -11,6 +10,7 @@ import {
   Radio,
   Popconfirm
 } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { CVOTE_STATUS, ABSTRACT_MAX_WORDS } from '@/constant'

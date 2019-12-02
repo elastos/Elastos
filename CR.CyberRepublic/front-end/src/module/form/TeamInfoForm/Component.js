@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import BaseComponent from '@/model/BaseComponent'
 import styled from 'styled-components'
 import { Form, Input, Button } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 

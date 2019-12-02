@@ -38,7 +38,7 @@ class Component extends BaseComponent {
 
   init=(editor) => {
     const {activeKey} = this.props
-    this.props.init(activeKey, editor)
+    this.props.init && this.props.init(activeKey, editor)
   }
 
   ord_render() {
