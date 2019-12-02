@@ -194,7 +194,7 @@ namespace Elastos {
 			std::vector<BigInt> oldVoteAmount;
 			_parent->Lock();
 			for (UTXOSet::const_iterator u = _utxosVote.cbegin(); u != _utxosVote.cend(); ++u) {
-				if ((*u)->GetConfirms(_parent->_blockHeight) < 2) {
+				if ((*u)->GetConfirms(_parent->_blockHeight) < 2 || _parent->IsUTXOSpending(*u)) {
 					_parent->Unlock();
 					ErrorChecker::ThrowLogicException(Error::LastVoteConfirming, "Last vote tx is pending");
 					return nullptr;

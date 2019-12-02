@@ -1592,6 +1592,59 @@ static int _tx(int argc, char *argv[]) {
 	return 0;
 }
 
+// signtx chainID
+static int signtx(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+
+	std::string chainID = argv[1];
+
+	try {
+		std::cout << "Enter tx to be signed: ";
+		std::string tx;
+		struct termios told = enableLongInput();
+		std::getline(std::cin, tx);
+		recoveryTTYSetting(&told);
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
+
+		std::string password = getpass("Enter payment password: ");
+		nlohmann::json signedTx = subWallet->SignTransaction(nlohmann::json::parse(tx), password);
+		std::cout << signedTx.dump() << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
+	return 0;
+}
+
+// publishtx chainID
+static int publishtx(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+
+	std::string chainID = argv[1];
+
+	try {
+		std::cout << "Enter tx to be published: ";
+		std::string tx;
+		struct termios told = enableLongInput();
+		std::getline(std::cin, tx);
+		recoveryTTYSetting(&told);
+		ISubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, chainID);
+
+		nlohmann::json result = subWallet->PublishTransaction(nlohmann::json::parse(tx));
+		std::cout << result.dump() << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
+	return 0;
+}
+
 // utxo chainID
 static int utxo(int argc, char *argv[]) {
 	checkParam(2);
@@ -1753,37 +1806,39 @@ struct command {
 
 	const char *help;
 } commands[] = {
-	{"help",     help,           "[command]                                        Display available command list, or usage description for specific command."},
-	{"create",   create,         "walletName                                       Create a new wallet with given name."},
-	{"import",   import,         "walletName (m[nemonic] | k[eystore]) [filePath]  Import wallet with given name and mnemonic or keystore."},
-	{"remove",   remove,         "walletName                                       Remove specified wallet."},
-	{"switch",   _switch,        "walletName                                       Switch current wallet."},
-	{"list",     list,           "[all]                                            List all wallets or current wallet."},
-	{"passwd",   passwd,         "                                                 Change password of wallet."},
-	{"diddoc",   diddoc,         "                                                 Create DID document."},
-	{"didtx",    didtx,          "[didDocFilepath]                                 Create DID transaction."},
-	{"didsign",  didsign,        "DID digest                                       Sign `digest` with private key of DID."},
-	{"sync",     _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
-	{"open",     _open,          "chainID                                          Open wallet of `chainID`."},
-	{"close",    _close,         "chainID                                          Close wallet of `chainID`."},
-	{"tx",       _tx,            "chainID                                          List all tx records."},
-	{"utxo",     utxo,           "chainID                                          List all utxos"},
-	{"balance",  balance,        "chainID                                          List balance info"},
-	{"fixpeer",  fixpeer,        "chainID ip port                                  Set fixed peer to sync."},
-	{"transfer", transfer,       "chainID address amount                           Transfer ELA from `chainID`."},
-	{"receive",  _receive,       "chainID                                          Get receive address of `chainID`."},
-	{"address",  address,        "chainID                                          Get the revceive address of chainID."},
-	{"proposal", proposal,       "(sponsor | crsponsor)                            Sponsor sign proposal or cr sponsor create proposal tx."},
-	{"deposit",  deposit,        "amount address                                   Deposit to sidechain from mainchain."},
-	{"withdraw", withdraw,       "amount address                                   Withdraw from sidechain to mainchain."},
-	{"export",   _export,        "(m[nemonic] | k[eystore])                        Export mnemonic or keystore."},
-	{"register", _register,      "(cr | dpos)                                      Register CR or DPoS with specified wallet."},
-	{"unregister", unregister,   "(cr | dpos)                                      Unregister CR or DPoS with specified wallet."},
-	{"retrieve", retrieve,       "(cr | dpos)                                      Retrieve Pledge with specified wallet."},
-	{"vote",     vote,           "(cr | dpos)                                      CR/DPoS vote."},
-	{"network",  _network,       "[netType]                                        Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
-	{"verbose",  verbose,        "(on | off)                                       Set verbose mode."},
-	{"tracking", tracking,       "(leader | newLeader | secretaryGeneral)          Leader of sponsor sign tracking proposal or secretaryGeneral create tracking proposal tx."},
+	{"help",       help,           "[command]                                        Display available command list, or usage description for specific command."},
+	{"create",     create,         "walletName                                       Create a new wallet with given name."},
+	{"import",     import,         "walletName (m[nemonic] | k[eystore]) [filePath]  Import wallet with given name and mnemonic or keystore."},
+	{"remove",     remove,         "walletName                                       Remove specified wallet."},
+	{"switch",     _switch,        "walletName                                       Switch current wallet."},
+	{"list",       list,           "[all]                                            List all wallets or current wallet."},
+	{"passwd",     passwd,         "                                                 Change password of wallet."},
+	{"diddoc",     diddoc,         "                                                 Create DID document."},
+	{"didtx",      didtx,          "[didDocFilepath]                                 Create DID transaction."},
+	{"didsign",    didsign,        "DID digest                                       Sign `digest` with private key of DID."},
+	{"sync",       _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
+	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
+	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
+	{"tx",         _tx,            "chainID                                          List all tx records."},
+	{"signtx",     signtx,         "chainID                                          Sign tx"},
+	{"publishtx",  publishtx,      "chainID                                          Publish tx"},
+	{"utxo",       utxo,           "chainID                                          List all utxos"},
+	{"balance",    balance,        "chainID                                          List balance info"},
+	{"fixpeer",    fixpeer,        "chainID ip port                                  Set fixed peer to sync."},
+	{"transfer",   transfer,       "chainID address amount                           Transfer ELA from `chainID`."},
+	{"receive",    _receive,       "chainID                                          Get receive address of `chainID`."},
+	{"address",    address,        "chainID                                          Get the revceive address of chainID."},
+	{"proposal",   proposal,       "(sponsor | crsponsor)                            Sponsor sign proposal or cr sponsor create proposal tx."},
+	{"deposit",    deposit,        "amount address                                   Deposit to sidechain from mainchain."},
+	{"withdraw",   withdraw,       "amount address                                   Withdraw from sidechain to mainchain."},
+	{"export",     _export,        "(m[nemonic] | k[eystore])                        Export mnemonic or keystore."},
+	{"register",   _register,      "(cr | dpos)                                      Register CR or DPoS with specified wallet."},
+	{"unregister", unregister,     "(cr | dpos)                                      Unregister CR or DPoS with specified wallet."},
+	{"retrieve",   retrieve,       "(cr | dpos)                                      Retrieve Pledge with specified wallet."},
+	{"vote",       vote,           "(cr | dpos)                                      CR/DPoS vote."},
+	{"network",    _network,       "[netType]                                        Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
+	{"verbose",    verbose,        "(on | off)                                       Set verbose mode."},
+	{"tracking",   tracking,       "(leader | newLeader | secretaryGeneral)          Leader of sponsor sign tracking proposal or secretaryGeneral create tracking proposal tx."},
 	{"exit", NULL,               "                                                 Quit wallet."},
 	{"quit", NULL,               "                                                 Quit wallet."},
 	{NULL,   NULL, NULL}
