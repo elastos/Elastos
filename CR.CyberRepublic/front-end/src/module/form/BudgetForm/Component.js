@@ -25,6 +25,10 @@ class BudgetForm extends BaseComponent {
     return (!isNaN(value) && reg.test(value)) || value === '' ? cb() : cb(true)
   }
 
+  init() {
+
+  }
+
   ord_render() {
     const { getFieldDecorator } = this.props.form
     const { item } = this.props
@@ -75,6 +79,7 @@ class BudgetForm extends BaseComponent {
                 content={item && item.reasons ? item.reasons : ''}
                 activeKey="reasons"
                 name="reasons"
+                init={this.init}
               />
             )}
           </FormItem>
@@ -92,6 +97,7 @@ class BudgetForm extends BaseComponent {
                 content={item && item.criteria ? item.criteria : ''}
                 activeKey="criteria"
                 name="criteria"
+                init={this.init}
               />
             )}
           </FormItem>

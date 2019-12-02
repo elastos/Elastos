@@ -1,6 +1,6 @@
 import React from 'react'
-import BaseComponent from '@/model/BaseComponent'
 import { Form, Input, Button, Row, Tabs, Radio } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import _ from 'lodash'
 import { ABSTRACT_MAX_WORDS } from '@/constant'
@@ -140,11 +140,15 @@ class C extends BaseComponent {
   validatePlan = (rule, value, cb) => {
     if (value && _.isEmpty(value.teamInfo)) {
       return cb(true)
-    } else if (value && _.isEmpty(value.milestone)) {
+    } if (value && _.isEmpty(value.milestone)) {
       return cb(true)
     } else {
       return cb()
     }
+  }
+
+  init() {
+
   }
 
   getTextarea(id) {
@@ -167,7 +171,7 @@ class C extends BaseComponent {
     }
     if (id === 'plan') {
       rules.push({
-        message: I18N.get(`suggestion.form.error.plan`),
+        message: I18N.get('suggestion.form.error.plan'),
         validator: this.validatePlan
       })
     }
@@ -214,6 +218,7 @@ class C extends BaseComponent {
           content={initialValues[id]}
           activeKey={id}
           name={id}
+          init={this.init}
         />
       )
     }
@@ -228,8 +233,9 @@ class C extends BaseComponent {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}*
-      </TabText>
+        {I18N.get(`suggestion.fields.${id}`)}
+*
+</TabText>
     )
   }
 
