@@ -957,6 +957,148 @@ CreateCRCProposalReviewTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletP
     return result;
 }
 
+#define JNI_LeaderProposalTrackDigest "(JBLjava/lang/String;Ljava/lang/String;BLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+LeaderProposalTrackDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                          jbyte jtype,
+                          jstring jproposalHash,
+                          jstring jdocumentHash,
+                          jbyte jstage,
+                          jstring jappropriation,
+                          jstring jleaderPubKey,
+                          jstring jnewLeaderPubKey) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *proposalHash = env->GetStringUTFChars(jproposalHash, NULL);
+    const char *documentHash = env->GetStringUTFChars(jdocumentHash, NULL);
+    const char *appropriation = env->GetStringUTFChars(jappropriation, NULL);
+    const char *leaderPubKey = env->GetStringUTFChars(jleaderPubKey, NULL);
+    const char *newLeaderPubKey = env->GetStringUTFChars(jnewLeaderPubKey, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->LeaderProposalTrackDigest(jtype,proposalHash, documentHash,
+                                                                jstage, appropriation, leaderPubKey,
+                                                                newLeaderPubKey);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jproposalHash, proposalHash);
+    env->ReleaseStringUTFChars(jdocumentHash, documentHash);
+    env->ReleaseStringUTFChars(jappropriation, appropriation);
+    env->ReleaseStringUTFChars(jleaderPubKey, leaderPubKey);
+    env->ReleaseStringUTFChars(jnewLeaderPubKey, newLeaderPubKey);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_NewLeaderProposalTrackDigest "(JLjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+NewLeaderProposalTrackDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+        jstring jleaderSignedProposalTracking) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *leaderSignedProposalTracking = env->GetStringUTFChars(jleaderSignedProposalTracking,
+            NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->NewLeaderProposalTrackDigest(leaderSignedProposalTracking);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jleaderSignedProposalTracking, leaderSignedProposalTracking);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_SecretaryGeneralProposalTrackDigest "(JLjava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+SecretaryGeneralProposalTrackDigest(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                             jstring jleaderSignedProposalTracking) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *leaderSignedProposalTracking = env->GetStringUTFChars(jleaderSignedProposalTracking,
+                                                                      NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->SecretaryGeneralProposalTrackDigest(leaderSignedProposalTracking);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jleaderSignedProposalTracking, leaderSignedProposalTracking);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
+#define JNI_CreateProposalTrackingTransaction "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+static jstring JNICALL
+CreateProposalTrackingTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
+                                   jstring jsecretaryGeneralSignedPayload,
+                                   jstring jmemo) {
+    bool exception = false;
+    std::string msgException;
+    jstring result = NULL;
+
+    const char *payload = env->GetStringUTFChars(jsecretaryGeneralSignedPayload, NULL);
+    const char *memo = env->GetStringUTFChars(jmemo, NULL);
+
+    IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
+
+    try {
+        nlohmann::json j = subWallet->CreateProposalTrackingTransaction(
+                nlohmann::json::parse(payload), memo);
+        result = env->NewStringUTF(j.dump().c_str());
+    } catch (const std::exception &e) {
+        exception = true;
+        msgException = e.what();
+    }
+
+    env->ReleaseStringUTFChars(jsecretaryGeneralSignedPayload, payload);
+    env->ReleaseStringUTFChars(jmemo, memo);
+
+    if (exception) {
+        ThrowWalletException(env, msgException.c_str());
+    }
+
+    return result;
+}
+
 static const JNINativeMethod methods[] = {
         REGISTER_METHOD(CreateDepositTransaction),
         REGISTER_METHOD(GenerateProducerPayload),
@@ -986,6 +1128,10 @@ static const JNINativeMethod methods[] = {
         REGISTER_METHOD(CreateImpeachmentCRCTransaction),
         REGISTER_METHOD(GenerateCRCProposalReview),
         REGISTER_METHOD(CreateCRCProposalReviewTransaction),
+        REGISTER_METHOD(LeaderProposalTrackDigest),
+        REGISTER_METHOD(NewLeaderProposalTrackDigest),
+        REGISTER_METHOD(SecretaryGeneralProposalTrackDigest),
+        REGISTER_METHOD(CreateProposalTrackingTransaction),
 };
 
 jint RegisterMainchainSubWallet(JNIEnv *env, const std::string &path) {
