@@ -6,13 +6,13 @@ app_name = "service"
 
 urlpatterns = [
 
-    url(r'generateKey', views.generate_key, name="generateKey"),
-    url(r'uploadAndSign', views.upload_and_sign, name="uploadAndSign"),
-    url(r'verifyAndShow', views.verify_and_show, name="verifyAndShow"),
-    url(r'requestELA', views.request_ela, name="requestELA"),
-    url(r'voteSupernodes', views.vote_supernodes, name="voteSupernodes"),
-    url(r'runContract', views.run_contract, name="runContract"),
-    url(r'saveDidData', views.save_did_data, name="saveData"),
-    url(r'retrieveDidData', views.retrieve_did_data, name="retrieveData"),
+    url(r'generate_key', views.generate_key, name="generate_key"),
+    url(r'upload_and_sign', views.upload_and_sign, name="upload_and_sign"),
+    url(r'verify_and_show', views.verify_and_show, name="verify_and_show"),
+    url(r'request_ela', views.request_ela, name="request_ela"),
+    url(r'vote_supernodes', views.vote_supernodes, name="vote_supernodes"),
+    url(r'run_eth_contract', views.run_eth_contract, name="run_eth_contract"),
+    url(r'save_did_data', views.save_did_data, name="save_did_data"),
+    url(r'retrieve_did_data', views.retrieve_did_data, name="retrieve_did_data"),
 
 ]
