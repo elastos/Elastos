@@ -62,15 +62,21 @@ func generate(c *cli.Context) error {
 	}
 
 	var interrupt = signal.NewInterrupt()
-	gen, err := chain.NewDataGen(uint32(c.Uint64(bencli.HeightFlag.Name)),
-		c.String(bencli.WorkingDirFlag.Name), interrupt.C, params)
+	gen, err := chain.NewDataGen(c.String(bencli.WorkingDirFlag.Name),
+		interrupt.C, params)
 	if err != nil {
 		return err
 	}
 
 	var exit chan error
 	go func() {
-		err := gen.Generate()
+		err := gen.Generate(uint32(c.Uint64(bencli.HeightFlag.Name)))
+		if err != nil {
+			exit <- err
+			return
+		}
+
+		err = gen.Save()
 		exit <- err
 	}()
 
