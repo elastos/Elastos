@@ -128,6 +128,22 @@ public class MainchainSubWallet extends SubWallet {
         return CreateCRCProposalReviewTransaction(mMainchainProxy, proposalReview, memo);
     }
 
+    public String LeaderProposalTrackDigest(byte type, String proposalHash, String documentHash, byte stage, String appropriation, String leaderPubKey, String newLeaderPubKey) {
+        return LeaderProposalTrackDigest(mMainchainProxy, type, proposalHash, documentHash, stage, appropriation, leaderPubKey, newLeaderPubKey);
+    }
+
+    public String NewLeaderProposalTrackDigest(String leaderSignedProposalTracking) {
+        return NewLeaderProposalTrackDigest(leaderSignedProposalTracking);
+    }
+
+    public String SecretaryGeneralProposalTrackDigest(String leaderSignedProposalTracking) {
+        return SecretaryGeneralProposalTrackDigest(leaderSignedProposalTracking);
+    }
+
+    public String CreateProposalTrackingTransaction(String SecretaryGeneralSignedPayload, String memo) {
+        return CreateProposalTrackingTransaction(mMainchainProxy, SecretaryGeneralSignedPayload, memo);
+    }
+
     private native String CreateDepositTransaction(long proxy, String fromAddress, String sideChainID, String amount,
                                                    String sideChainAddress, String memo);
 
@@ -186,5 +202,13 @@ public class MainchainSubWallet extends SubWallet {
     private native String GenerateCRCProposalReview(long Proxy, String proposalHash, byte voteResult, String crDID, String payPasswd);
 
     private native String CreateCRCProposalReviewTransaction(long Proxy, String proposalReview, String memo);
+
+    private native String LeaderProposalTrackDigest(long Proxy, byte type, String proposalHash, String documentHash, byte stage, String appropriation, String leaderPubKey, String newLeaderPubKey);
+
+    private native String NewLeaderProposalTrackDigest(long Proxy, String leaderSignedProposalTracking);
+
+    private native String SecretaryGeneralProposalTrackDigest(long Proxy, String leaderSignedProposalTracking);
+
+    private native String CreateProposalTrackingTransaction(long Proxy, String SecretaryGeneralSignedPayload, String memo);
 
 }
