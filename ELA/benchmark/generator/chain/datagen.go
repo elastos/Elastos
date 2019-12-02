@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path"
 	"time"
@@ -21,7 +22,8 @@ import (
 )
 
 const (
-	txRepoFile = "dategen.repo"
+	TxRepoFile    = "dategen.repo"
+	maxTxPerBlock = math.MaxUint32
 )
 
 type DataGen struct {
@@ -33,6 +35,10 @@ type DataGen struct {
 	prevBlockHash  common.Uint256
 	foundationAddr string
 	dataDir        string
+}
+
+func (g *DataGen) GetChain() *blockchain.BlockChain {
+	return g.chain
 }
 
 func (g *DataGen) Generate(height uint32) (err error) {
@@ -120,7 +126,7 @@ func (g *DataGen) generateBlock(
 	}
 
 	if block, err = g.pow.GenerateBlock(g.foundationAddr,
-		int(g.txRepo.Params().InputsPerBlock)); err != nil {
+		maxTxPerBlock); err != nil {
 		return
 	}
 	g.pow.SolveBlock(block, nil)
@@ -141,7 +147,7 @@ func (g *DataGen) storeData(block *types.Block) error {
 }
 
 func (g *DataGen) Save() (err error) {
-	filename := path.Join(g.dataDir, txRepoFile)
+	filename := path.Join(g.dataDir, TxRepoFile)
 	var file *os.File
 	file, err = os.OpenFile(filename,
 		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
@@ -160,6 +166,10 @@ func (g *DataGen) Save() (err error) {
 	}
 
 	return
+}
+
+func (g *DataGen) Exit() {
+	g.chain.GetDB().Close()
 }
 
 func LoadDataGen(dataPath string) (*DataGen, error) {
@@ -182,23 +192,26 @@ func LoadDataGen(dataPath string) (*DataGen, error) {
 	}
 
 	var interrupt = signal.NewInterrupt()
-	return FromTxRepository(path.Dir(dataPath), interrupt.C, repo)
+	return FromTxRepository(path.Dir(dataPath), interrupt.C,
+		repo, false)
 }
 
 func FromTxRepository(dataDir string, interrupt <-chan struct{},
-	repo *TxRepository) (*DataGen, error) {
+	repo *TxRepository, initFoundationUTXO bool) (*DataGen, error) {
 	chainParams := generateChainParams(repo.GetFoundationAccount())
 	chain, err := newBlockChain(dataDir, chainParams, interrupt)
 	if err != nil {
 		return nil, err
 	}
 
-	fundTx := chainParams.GenesisBlock.Transactions[0]
-	repo.SetFoundationUTXO(&types.UTXO{
-		TxID:  fundTx.Hash(),
-		Index: 0,
-		Value: fundTx.Outputs[0].Value,
-	})
+	if initFoundationUTXO {
+		fundTx := chainParams.GenesisBlock.Transactions[0]
+		repo.SetFoundationUTXO(&types.UTXO{
+			TxID:  fundTx.Hash(),
+			Index: 0,
+			Value: fundTx.Outputs[0].Value,
+		})
+	}
 
 	foundationAddr, err := repo.GetFoundationAccount().ProgramHash.ToAddress()
 	if err != nil {
@@ -231,5 +244,5 @@ func NewDataGen(dataDir string, interrupt <-chan struct{},
 		return nil, err
 	}
 
-	return FromTxRepository(dataDir, interrupt, repo)
+	return FromTxRepository(dataDir, interrupt, repo, true)
 }

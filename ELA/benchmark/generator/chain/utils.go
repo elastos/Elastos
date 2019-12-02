@@ -22,7 +22,7 @@ import (
 
 func newBlockChain(path string, params *config.Params,
 	interrupt <-chan struct{}) (*blockchain.BlockChain, error) {
-	log.NewDefault(test.NodeLogPath, 0, 0, 0)
+	log.NewDefault(test.NodeLogPath, 1, 0, 0)
 
 	committee := crstate.NewCommittee(params)
 	arbiters, err := state.NewArbitrators(
@@ -37,7 +37,11 @@ func newBlockChain(path string, params *config.Params,
 		return nil, err
 	}
 
-	if err := chain.Init(interrupt); err != nil {
+	if err = chain.Init(interrupt); err != nil {
+		return nil, err
+	}
+	if err = chain.InitFFLDBFromChainStore(interrupt, func(uint32) {},
+		func() {}, false); err != nil {
 		return nil, err
 	}
 
