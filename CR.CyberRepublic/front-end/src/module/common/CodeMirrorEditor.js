@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import BaseComponent from '@/model/BaseComponent'
 import { Controlled as CodeMirror } from 'react-codemirror2'
+import BaseComponent from '@/model/BaseComponent'
 import 'codemirror/mode/gfm/gfm'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/base16-light.css'
@@ -36,6 +36,11 @@ class Component extends BaseComponent {
     if (callback) callback(activeKey)
   }
 
+  init=(editor) => {
+    const {activeKey} = this.props
+    this.props.init(activeKey, editor)
+  }
+
   ord_render() {
     const { show, value } = this.state
     const { name } = this.props
@@ -51,13 +56,15 @@ class Component extends BaseComponent {
             options={{
               mode: 'gfm',
               theme: 'base16-light',
-              lineWrapping: true
+              lineWrapping: true,
+              autofocus: true
             }}
             onBeforeChange={(editor, data, value) => {
               this.setState({ value })
             }}
             editorDidMount={editor => {
               this.editor = editor
+              this.init(editor)
             }}
             onChange={this.onChange}
           />
@@ -79,7 +86,7 @@ export default Component
 
 const Wrapper = styled.div`
   .CodeMirror {
-    min-height: 450px;
+    min-height: 200px;
     height: unset;
     border: 1px solid #d9d9d9;
   }
@@ -90,7 +97,7 @@ const Wrapper = styled.div`
   .CodeMirror-scroll {
     padding: 16px 20px 30px 20px;
     overflow: auto !important;
-    min-height: 450px;
+    min-height: 200px;
     margin-right: 0;
   }
   /* hide long long base64 string */
@@ -105,12 +112,12 @@ const Wrapper = styled.div`
 `
 const Toolbar = styled.div`
   display: flex;
-  margin-bottom: -16px;
+  margin-bottom: -24px;
   justify-content: flex-end;
 `
 
 const Preview = styled.div`
-  min-height: 450px;
+  min-height: 200px;
   padding: 20px;
   background: rgba(204, 204, 204, 0.2);
 `

@@ -47,11 +47,14 @@ const SuggestionCore = {
   relevance: {
     type: String
   },
+  budgetAmount: {
+    type: Number
+  },
   budget: {
-    type: String
+    type: Schema.Types.Mixed
   },
   plan: {
-    type: String
+    type: Schema.Types.Mixed
   }
 }
 

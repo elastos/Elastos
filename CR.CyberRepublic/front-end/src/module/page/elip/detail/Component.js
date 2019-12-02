@@ -52,12 +52,19 @@ class C extends StandardPage {
   }
 
   ord_renderContent() {
-    const { data } = this.props
-    if (_.isEmpty(data)) {
+    const { data, loading } = this.props
+    if (loading || (!loading && _.isEmpty(data))) {
       return (
         <StyledSpin>
           <Spin />
         </StyledSpin>
+      )
+    }
+    if (data && data.success && data.empty) {
+      return (
+        <div className="ebp-page">
+          <h1>{I18N.get('error.notfound')}</h1>
+        </div>
       )
     }
 
@@ -162,11 +169,11 @@ class C extends StandardPage {
           <Anchor.Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
         </LinkGroup>
         <LinkGroup marginTop={48}>
-          <Anchor.Link
-            href="#specifications"
-            title={I18N.get('elip.fields.specifications')}
-          />
           <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
+          <Anchor.Link
+            href="#specification"
+            title={I18N.get('elip.fields.specification')}
+          />
           <Anchor.Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
         </LinkGroup>
         <LinkGroup marginTop={46}>
@@ -188,13 +195,34 @@ class C extends StandardPage {
   renderDetail() {
     const { data } = this.props
     const sections = [
-      'abstract',
-      'specifications',
-      'motivation',
-      'rationale',
-      'backwardCompatibility',
-      'referenceImplementation',
-      'copyright'
+      {
+        id: 'abstract',
+        valueKey: 'abstract'
+      },
+      {
+        id: 'motivation',
+        valueKey: 'motivation'
+      },
+      {
+        id: 'specification',
+        valueKey: 'specifications'
+      },
+      {
+        id: 'rationale',
+        valueKey: 'rationale'
+      },
+      {
+        id: 'referenceImplementation',
+        valueKey: 'referenceImplementation'
+      },
+      {
+        id: 'backwardCompatibility',
+        valueKey: 'backwardCompatibility'
+      },
+      {
+        id: 'copyright',
+        valueKey: 'copyright'
+      }
     ]
 
     const stickyHeader = this.renderStickyHeader()
@@ -208,10 +236,10 @@ class C extends StandardPage {
           {stickyHeader}
           {preamble}
           {_.map(sections, section => (
-            <Part id={section} key={section}>
-              <PartTitle>{I18N.get(`elip.fields.${section}`)}</PartTitle>
+            <Part id={section.id} key={section.id}>
+              <PartTitle>{I18N.get(`elip.fields.${section.id}`)}</PartTitle>
               <PartContent>
-                <MarkdownPreview content={data[section] ? data[section] : ''} />
+                <MarkdownPreview content={data[section.valueKey] ? data[section.valueKey] : ''} />
               </PartContent>
             </Part>
           ))}

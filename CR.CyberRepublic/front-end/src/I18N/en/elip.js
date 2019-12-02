@@ -14,10 +14,10 @@ export default {
     status: 'Status',
     createdAt: 'Created',
     description: 'Description',
-    elipType: 'Type',
+    type: 'Type',
     preamble: 'Preamble',
     abstract: 'Abstract',
-    specifications: 'Specifications',
+    specification: 'Specification',
     motivation: 'Motivation',
     rationale: 'Rationale',
     backwardCompatibility: 'Backward Compatibility',
@@ -36,7 +36,10 @@ export default {
       requires: 'Requires',
       replaces: 'Replaces',
       superseded: 'Superseded-By'
-    }
+    },
+    filter: 'Filters',
+    elipStatus: 'Elip Status',
+    creationDate: 'Creation Date'
   },
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: 'SUBMIT FOR REVIEW',
@@ -64,7 +67,11 @@ export default {
     yes: 'Vote Yes',
     oppose: 'Oppose with a Reason',
     abstain: 'Abstain',
-    delete: 'Delete'
+    delete: 'Delete',
+    exportAsCSV: 'Export as CSV',
+    clearFilter: 'Clear Filter',
+    applyFilter: 'Apply Filter',
+    preview: 'Preview'
   },
   msg: {
     updated: 'Updated successfully',
@@ -77,9 +84,9 @@ export default {
   },
   form: {
     note: {
-      elipType: 'Select ELIP Type.',
+      type: 'Select ELIP Type.',
       abstract: 'Abstract',
-      specifications: 'Specifications',
+      specification: 'Specification',
       motivation: 'Motivation',
       rationale: 'Rationale',
       backwardCompatibility: 'Backward Compatibility',

@@ -120,7 +120,7 @@ describe('Tests for ELIP', () => {
     // A guest
     const elipService2 = new ElipService(DB, {})
     const rs2 = await elipService2.getById(elip_3._id)
-    expect(Object.keys(rs2).length).to.be.equal(0)
+    expect(rs2.elip.empty).to.be.equal(true)
 
     await DB.getModel('Elip').update(
       { _id: elip_3._id },
@@ -149,7 +149,7 @@ describe('Tests for ELIP', () => {
     // A guest
     const elipService1 = new ElipService(DB, {})
     const rs1 = await elipService1.list({})
-    expect(rs1.length).to.be.equal(0)
+    expect(rs1.length).to.be.equal(4)
     // A secretary
     const elipService2 = new ElipService(DB, { user: user.secretary })
     // TODO: optimize increment

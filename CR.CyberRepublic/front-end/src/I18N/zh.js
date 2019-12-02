@@ -110,7 +110,7 @@ const zh = {
   2306: '社区',
   'profile.suggestion': '我的建议',
 
-  'login.success': '登录成功',
+  'login.success': '欢迎回来',
 
   'mentions.notFound': '该用户不存在',
 
@@ -1139,6 +1139,9 @@ const zh = {
   'profile.popover.viewProfile': '查看个人资料',
 
   // Module form
+  'from.CVoteForm.reason.yes.required': '请填写赞成理由',
+  'from.CVoteForm.reason.oppose.required': '请填写反对理由',
+  'from.CVoteForm.reason.abstain.required': '请填写弃权理由',
   'from.CVoteForm.message.delete.success': '删除成功',
   'from.CVoteForm.message.updated.success': '更新成功',
   'from.CVoteForm.message.create.success': '创建成功',

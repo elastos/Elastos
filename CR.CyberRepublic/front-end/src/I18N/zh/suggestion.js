@@ -1,4 +1,4 @@
-import { ABSTRACT_MAX_WORDS } from '@/constant'
+import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
 
 export default {
   title: {
@@ -14,7 +14,7 @@ export default {
       creator: '创建人',
       status: '状态',
       created: '创建日期',
-      updated: '更新日期',
+      updated: '更新日期'
     },
     abstract: '摘要',
     goal: '目标',
@@ -25,7 +25,11 @@ export default {
     plan: '实施计划',
     vote: '投票',
     tracking: '跟踪',
-    summary: '总结'
+    summary: '总结',
+    status: '建议状态',
+    budgetRequested: '预算',
+    creationDate: '创建日期',
+    author: '作者'
   },
   btn: {
     makeIntoProposal: '发布为提案',
@@ -36,7 +40,10 @@ export default {
     posted: '发布',
     underConsideration: '正在审议中',
     moreInfoRequired: '需要更多信息',
-    referred: '相关提案'
+    referred: '相关提案',
+    [SUGGESTION_STATUS.ACTIVE]: '活跃',
+    [SUGGESTION_STATUS.ABUSED]: '已举报',
+    [SUGGESTION_STATUS.ARCHIVED]: '已归档',
   },
   form: {
     search: '搜索建议',
@@ -44,10 +51,12 @@ export default {
       continue: '继续',
       cancel: '取消',
       saveDraft: '保存草稿',
-      save: '保存并发布'
+      save: '保存并发布',
+      update: '更新',
+      create: '创建'
     },
     fields: {
-      title: '标题',
+      title: '标题'
     },
     type: {
       newMotion: '新动议',
@@ -70,7 +79,9 @@ export default {
     error: {
       required: '必填项',
       tooLong: '文字太长',
-      [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`
+      [`limit${ABSTRACT_MAX_WORDS}`]: `不能超过${ABSTRACT_MAX_WORDS}字`,
+      isNaN: '请输入有效的金额',
+      plan: '实施团队或里程碑为空',
     }
   },
   modal: {
@@ -92,11 +103,12 @@ export default {
   msg: {
     consideration: '已标记为委员会正在审议中',
     notify: '已给秘书发送邮件',
-    archived: '建议已归档，您可以在我的Republic下找到它'
+    archived: '建议已归档',
+    unarchived: '建议已取消归档'
   },
   header: {
     suggestion: '建议',
-    crCouncil: 'CR 理事会',
+    crCouncil: 'CR 委员会',
     crProposalPage: 'CR 提案页面',
     approvedProposal: '已批准的提案'
   },
@@ -106,5 +118,28 @@ export default {
     abstract: '摘要',
     email: '作者邮箱',
     name: '作者姓名'
+  },
+  budget: {
+    create: '创建支付项',
+    payment: '支付',
+    amount: '金额',
+    reasons: '理由',
+    criteria: '支付标准',
+    action: '操作'
+  },
+  plan: {
+    teamMember: '团队成员',
+    role: '角色',
+    responsibility: '职责',
+    moreInfo: '更多信息',
+    createTeamInfo: '添加团队成员',
+    action: '操作',
+    teamInfo: '实施团队',
+    milestones: '里程碑',
+    publishDate: '发布日期',
+    version: '版本'
+  },
+  label: {
+    hasMadeIntoProposal: '已经将此建议发布为'
   }
 }

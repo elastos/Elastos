@@ -71,7 +71,7 @@ export default class extends BaseService {
 
   async delete(id) {
     this.dispatch(this.selfRedux.actions.loading_update(true))
-    const path = `${this.prefixPath}/${id}/delete`
+    const path = `${this.prefixPath}/${id}/remove`
 
     const res = await api_request({
       path,

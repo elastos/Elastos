@@ -1,5 +1,4 @@
-import { ABSTRACT_MAX_WORDS } from '@/constant'
-import CrProposalPageSvg from '../../module/page/suggestion/list/svg/CrProposalPageSvg';
+import { ABSTRACT_MAX_WORDS, SUGGESTION_STATUS } from '@/constant'
 
 export default {
   title: {
@@ -15,7 +14,7 @@ export default {
       creator: 'Creator',
       status: 'Status',
       created: 'Created',
-      updated: 'Updated',
+      updated: 'Updated'
     },
     abstract: 'Abstract',
     goal: 'Goal',
@@ -26,7 +25,11 @@ export default {
     plan: 'Implementation Plan',
     vote: 'Vote',
     tracking: 'Tracking',
-    summary: 'Summary'
+    summary: 'Summary',
+    status: 'Suggestion Status',
+    budgetRequested: 'Budget Requested',
+    creationDate: 'Creation Date',
+    author: 'Author'
   },
   btn: {
     makeIntoProposal: 'Make Into Proposal',
@@ -37,7 +40,10 @@ export default {
     posted: 'Posted',
     underConsideration: 'Under Council Consideration',
     moreInfoRequired: 'More Info Required',
-    referred: 'Referred in Proposal'
+    referred: 'Referred in Proposal',
+    [SUGGESTION_STATUS.ACTIVE]: 'Active',
+    [SUGGESTION_STATUS.ABUSED]: 'Abused',
+    [SUGGESTION_STATUS.ARCHIVED]: 'Archived',
   },
   form: {
     search: 'Search Suggestions',
@@ -45,10 +51,12 @@ export default {
       continue: 'Continue',
       cancel: 'Cancel',
       saveDraft: 'Save as Draft',
-      save: 'Save & Post'
+      save: 'Save & Post',
+      update: 'Update',
+      create: 'Create'
     },
     fields: {
-      title: 'Title',
+      title: 'Title'
     },
     type: {
       newMotion: 'New Motion',
@@ -71,15 +79,16 @@ export default {
     error: {
       required: 'This field is required',
       tooLong: 'This field is too long',
-      [`limit${ABSTRACT_MAX_WORDS}`]: `You can only type ${ABSTRACT_MAX_WORDS} words max.`
+      [`limit${ABSTRACT_MAX_WORDS}`]: `You can only type ${ABSTRACT_MAX_WORDS} words max.`,
+      isNaN: 'Please input valid amount',
+      plan: 'Implementation team or milestones is empty',
     }
   },
   modal: {
     addTagComment: 'Add Comment',
     confirm: 'Confirm',
     cancel: 'Cancel',
-    pleaseUpdate:
-      'Please update the Suggestion with the requested info and notify the council/community through a comment.',
+    pleaseUpdate: 'Please update the Suggestion with the requested info and notify the council/community through a comment.',
     commentsFromCouncil: 'Comments from Council/Admin:',
     consideration: 'Are you sure to mark this suggestion as under council consideration?'
   },
@@ -94,7 +103,8 @@ export default {
   msg: {
     consideration: 'Marked as under council consideration',
     notify: 'Email was sent to secretary.',
-    archived: 'Suggestion archived, you can find it in My republic later.'
+    archived: 'Suggestion archived successfully.',
+    unarchived: 'Suggestion unarchived successfully.'
   },
   header: {
     suggestion: 'suggestion',
@@ -108,5 +118,28 @@ export default {
     abstract: 'Abstract',
     email: 'Author email',
     name: 'Author name'
+  },
+  budget: {
+    create: 'Add payment item',
+    payment: 'Payment',
+    amount: 'Amount',
+    reasons: 'Reasons',
+    criteria: 'Criteria of Payment',
+    action: 'Action'
+  },
+  plan: {
+    teamMember: 'Team Member',
+    role: 'Role',
+    responsibility: 'Responsibility',
+    moreInfo: 'More Info',
+    createTeamInfo: 'Add team member',
+    action: 'Action',
+    teamInfo: 'Implementation Team',
+    milestones: 'Milestones',
+    publishDate: 'Publish Date',
+    version: 'Version'
+  },
+  label: {
+    hasMadeIntoProposal: 'has made it into'
   }
 }

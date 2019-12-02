@@ -294,9 +294,17 @@ export default class extends Base {
 
   public async getById(id: string): Promise<any> {
     const db_elip = this.getDBModel('Elip')
+    // access ELIP by reference number
+    const isNumber = /^\d*$/.test(id)
+    let query: any
+    if (isNumber) {
+      query = { vid: parseInt(id) }
+    } else {
+      query = { _id: id }
+    }
     const rs = await db_elip
       .getDBInstance()
-      .findById({ _id: id })
+      .findOne(query)
       .populate(
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
@@ -304,12 +312,12 @@ export default class extends Base {
       .populate('reference')
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
     if (!rs) {
-      throw 'ElipService.getById - invalid elip id'
+      return { elip: { success: true, empty: true } }
     }
     const db_elip_review = this.getDBModel('Elip_Review')
     const reviews = await db_elip_review
       .getDBInstance()
-      .find({ elipId: id })
+      .find({ elipId: rs._id })
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME)
 
     const currentUserId = _.get(this.currentUser, '_id')
@@ -323,7 +331,7 @@ export default class extends Base {
       )
 
     if (_.isEmpty(rs.comments)) {
-      return isVisible ? { elip: rs, reviews } : {}
+      return isVisible ? { elip: rs, reviews } : { elip: { success: true, empty: true } }
     }
 
     for (const comment of rs.comments) {
@@ -339,7 +347,7 @@ export default class extends Base {
       await Promise.all(promises)
     }
 
-    return isVisible ? { elip: rs, reviews } : {}
+    return isVisible ? { elip: rs, reviews } : { elip: { success: true, empty: true } }
   }
 
   public async remove(_id : string): Promise<any> {
@@ -373,24 +381,8 @@ export default class extends Base {
     const userRole = _.get(this.currentUser, 'role')
     const query: any = {}
 
-    if (!this.isLoggedIn()) {
-      query.status = {
-        $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL]
-      }
-      param.filter = null
-    }
-
-    if (param.filter === constant.ELIP_FILTER.DRAFT) {
-      query.status = constant.ELIP_STATUS.DRAFT
-    }
-
-    if (param.filter === constant.ELIP_FILTER.SUBMITTED_BY_ME) {
-      query.createdBy = currentUserId
-      query.status = constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
-    }
-
-    if (param.filter === constant.ELIP_FILTER.WAIT_FOR_REVIEW) {
-      query.status = constant.ELIP_STATUS.WAIT_FOR_REVIEW
+    if(_.indexOf(_.values(constant.ELIP_STATUS), param.filter) >= 0) {
+      query.status = param.filter
     }
 
     if (
@@ -398,6 +390,7 @@ export default class extends Base {
       userRole !== constant.USER_ROLE.SECRETARY &&
       param.filter === constant.ELIP_FILTER.ALL
     ) {
+      // member self
       query.$or = [
         {
           createdBy: currentUserId,
@@ -410,12 +403,17 @@ export default class extends Base {
         }
       ]
       if(userRole !== constant.USER_ROLE.ADMIN) {
+        // member
         query.$or.push({
           status: {
-            $in: [constant.ELIP_STATUS.DRAFT, constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL]
+            $in: [
+              constant.ELIP_STATUS.DRAFT,
+              constant.ELIP_STATUS.SUBMITTED_AS_PROPOSAL
+            ]
           }
         })
       }else {
+        // admin
         query.$or.push({
           status: {
             $in: [
@@ -426,6 +424,37 @@ export default class extends Base {
             ]
           }
         })
+      }
+    }
+
+    // createBy
+    if(param.author && param.author.length) {
+      let search = param.author
+      const db_user = this.getDBModel('User')
+      const pattern = search.split(' ').join('|')
+      const users = await db_user.getDBInstance().find({
+        $or: [
+          { username: { $regex: search, $options: 'i' } },
+          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+        ]
+      }).select('_id')
+      const userIds = _.map(users, (el: { _id: string }) => el._id)
+      query.createdBy = { $in: userIds }
+    }
+    
+    // elipType
+    if(param.type && constant.ELIP_TYPE.hasOwnProperty(param.type)){
+      query.elipType = param.type
+    }
+
+    // startDate <  endDate
+    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      let endDate = new Date(param.endDate)
+      endDate.setDate(endDate.getDate()+1)
+      query.createdAt = {
+        $gte: new Date(param.startDate),
+        $lte: endDate
       }
     }
 

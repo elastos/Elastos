@@ -1,9 +1,10 @@
 import React from 'react'
-import BaseComponent from '@/model/BaseComponent'
-import { Form, Input, Button, Row, Tabs, Typography } from 'antd'
-import I18N from '@/I18N'
 import _ from 'lodash'
+import { Form, Input, Button, Row, Tabs, Typography, Modal, Col } from 'antd'
+import BaseComponent from '@/model/BaseComponent'
+import I18N from '@/I18N'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import { ELIP_TYPE } from '@/constant'
 
 import {
@@ -15,23 +16,85 @@ import {
   RadioCardPanel,
   RadioCardItem,
   RadioCardLabel,
-  RadioCardSpan
+  RadioCardSpan,
+  Part,
+  PartTitle,
+  PartContent
 } from './style'
 
 const { Paragraph } = Typography
 const FormItem = Form.Item
 const { TabPane } = Tabs
 
-const TAB_KEYS = [
-  'elipType',
-  'abstract',
-  'specifications',
-  'motivation',
-  'rationale',
-  'backwardCompatibility',
-  'referenceImplementation',
-  'copyright'
+const TABS = [
+  {
+    id: 'type',
+    valueKey: 'elipType',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  },
+  {
+    id: 'abstract',
+    valueKey: 'abstract',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  },
+  {
+    id: 'motivation',
+    valueKey: 'abstract',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  },
+  {
+    id: 'specification',
+    valueKey: 'specifications',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  },
+  {
+    id: 'rationale',
+    valueKey: 'rationale',
+    rules: [],
+  },
+  {
+    id: 'backwardCompatibility',
+    valueKey: 'backwardCompatibility',
+    rules: [],
+  },
+  {
+    id: 'referenceImplementation',
+    valueKey: 'referenceImplementation',
+    rules: [],
+  },
+  {
+    id: 'copyright',
+    valueKey: 'copyright',
+    rules: [
+      {
+        required: true,
+        message: I18N.get('elip.form.error.required'),
+      },
+    ],
+  }
 ]
+const TAB_KEYS = _.map(TABS, value => value.id)
+const PREVIEW_EXCLUDE_KEYS = ['title', 'type']
 const editorTransform = value => {
   // string or object
   let result = value
@@ -45,6 +108,8 @@ const editorTransform = value => {
   return result
 }
 
+const editors = {}
+
 class C extends BaseComponent {
   constructor(props) {
     super(props)
@@ -52,8 +117,13 @@ class C extends BaseComponent {
     this.state = {
       loading: false,
       activeKey: TAB_KEYS[0],
-      errorKeys: {}
+      errorKeys: {},
+      isPreview: false
     }
+
+    _.forEach(TABS, (value) => {
+      editors[value.id] = null
+    })
   }
 
   getActiveKey(key) {
@@ -76,9 +146,9 @@ class C extends BaseComponent {
 
       onSubmit({
         title: values.title,
-        elipType: values.elipType,
+        elipType: values.type,
         abstract: values.abstract,
-        specifications: values.specifications,
+        specifications: values.specification,
         motivation: values.motivation,
         rationale: values.rationale,
         backwardCompatibility: values.backwardCompatibility,
@@ -111,6 +181,11 @@ class C extends BaseComponent {
     })
   }
 
+  handlePreview = e => {
+    const { isPreview } = this.state
+    this.setState({ isPreview: !isPreview })
+  }
+
   onTextareaChange = activeKey => {
     const { form } = this.props
     const err = editorTransform(form.getFieldError(activeKey))
@@ -126,55 +201,95 @@ class C extends BaseComponent {
     }
   }
 
-  getTypeRadioGroup = key => {
+  getTypeRadioGroup(item) {
     const { data = {} } = this.props
     const { getFieldDecorator } = this.props.form
-    const rules = [
-      {
-        required: true,
-        message: I18N.get('elip.form.error.required')
-      }
-    ]
-    return getFieldDecorator(key, {
-      rules,
-      initialValue: data && data.elipType ? data.elipType : ELIP_TYPE.STANDARD_TRACK
-    })(<RadioCard radioKey={key} />)
+    return getFieldDecorator(item.id, {
+      rules: item.rules,
+      initialValue:
+        data && data[item.valueKey]
+          ? data[item.valueKey]
+          : ELIP_TYPE.STANDARD_TRACK
+    })(<RadioCard radioKey={item.id} />)
   }
 
-  getTextarea(id) {
+  init(activeKey, editor) {
+    editors[activeKey] = editor
+  }
+
+  getTextarea(item) {
     const { data = {} } = this.props
     const { getFieldDecorator } = this.props.form
-
-    const rules = [
-      {
-        required: true,
-        message: I18N.get('elip.form.error.required')
-      }
-    ]
-    return getFieldDecorator(id, {
-      rules,
-      initialValue: data[id]
+    return getFieldDecorator(item.id, {
+      rules: item.rules,
+      initialValue: data[item.valueKey]
     })(
       <CodeMirrorEditor
-        content={data[id]}
+        content={data[item.id]}
         callback={this.onTextareaChange}
-        activeKey={id}
-        name={id}
+        activeKey={this.state.activeKey}
+        name={item.id}
+        init={this.init}
       />
     )
   }
 
-  renderTabText(id) {
-    const hasError = _.has(this.state.errorKeys, id)
+  renderTabText(item) {
+    const hasError = _.has(this.state.errorKeys, item.id)
+    const requiredFlag = _.isEmpty(item.rules) ? '' : '*'
     return (
-      <TabText hasErr={hasError}>{`${I18N.get(`elip.fields.${id}`)}*`}</TabText>
+      <TabText hasErr={hasError}>
+        {I18N.get(`elip.fields.${item.id}`) + requiredFlag}
+      </TabText>
+    )
+  }
+
+  renderTabItem(item) {
+    let formItem
+    if (item.id === 'type') {
+      formItem = this.getTypeRadioGroup(item)
+    } else {
+      formItem = this.getTextarea(item)
+    }
+    return (
+      <TabPane tab={this.renderTabText(item)} key={item.id}>
+        <TabPaneInner>
+          <Note>{I18N.get(`elip.form.note.${item.id}`)}</Note>
+          <FormItem>{formItem}</FormItem>
+        </TabPaneInner>
+      </TabPane>
+    )
+  }
+
+  renderPreview() {
+    const { form } = this.props
+    const { isPreview } = this.state
+    const fieldsValue = form.getFieldsValue()
+    return (
+      <Modal
+        visible={isPreview}
+        onOk={this.handlePreview}
+        onCancel={this.handlePreview}
+        cancelButtonProps={{ style: { display: 'none' } }}
+      >
+        {isPreview && _.map(_.difference(TAB_KEYS, PREVIEW_EXCLUDE_KEYS), value => (
+          <Part id={value} key={value}>
+            <PartTitle>{I18N.get(`elip.fields.${value}`)}</PartTitle>
+            <PartContent>
+              <MarkdownPreview
+                content={fieldsValue[value] ? fieldsValue[value] : ''}
+              />
+            </PartContent>
+          </Part>
+        ))}
+      </Modal>
     )
   }
 
   ord_render() {
     const { form, data, onCancel } = this.props
     const { getFieldDecorator } = form
-
+    const previewModal = this.renderPreview()
     return (
       <Container>
         <Form onSubmit={this.handleSubmit}>
@@ -204,97 +319,65 @@ class C extends BaseComponent {
             tabBarGutter={TAB_KEYS.length}
             activeKey={this.state.activeKey}
             onChange={this.onTabChange}
+            forceRender={true}
           >
-            <TabPane tab={this.renderTabText(TAB_KEYS[0])} key={TAB_KEYS[0]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[0]}`)}</Note>
-                <FormItem>{this.getTypeRadioGroup(TAB_KEYS[0])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[1])} key={TAB_KEYS[1]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[1]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[1])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[2])} key={TAB_KEYS[2]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[2]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[2])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[3])} key={TAB_KEYS[3]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[3]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[3])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[4])} key={TAB_KEYS[4]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[4]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[4])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[5])} key={TAB_KEYS[5]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[5]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[5])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[6])} key={TAB_KEYS[6]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[6]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[6])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
-            <TabPane tab={this.renderTabText(TAB_KEYS[7])} key={TAB_KEYS[7]}>
-              <TabPaneInner>
-                <Note>{I18N.get(`elip.form.note.${TAB_KEYS[7]}`)}</Note>
-                <FormItem>{this.getTextarea(TAB_KEYS[7])}</FormItem>
-              </TabPaneInner>
-            </TabPane>
+            {_.map(TABS, value => this.renderTabItem(value))}
           </Tabs>
-
           <Row
-            gutter={8}
             type="flex"
             justify="center"
             style={{ marginBottom: '30px' }}
           >
-            <Button
-              loading={this.state.loading}
-              onClick={this.handleContinue}
-              className="cr-btn cr-btn-black"
-              htmlType="button"
-            >
-              {I18N.get('suggestion.form.button.continue')}
-            </Button>
+            <Col>
+              <Button
+                loading={this.state.loading}
+                onClick={this.handleContinue}
+                className="cr-btn cr-btn-black"
+                htmlType="button"
+              >
+                {I18N.get('suggestion.form.button.continue')}
+              </Button>
+            </Col>
           </Row>
-
-          <Row gutter={8} type="flex" justify="center">
-            <Button
-              onClick={onCancel}
-              className="cr-btn cr-btn-default"
-              style={{ marginRight: 10 }}
-            >
-              {I18N.get('elip.button.cancel')}
-            </Button>
-
-            <Button
-              loading={this.state.loading}
-              className="cr-btn cr-btn-primary"
-              htmlType="submit"
-            >
-              {this.props.submitName || I18N.get('elip.button.submit')}
-            </Button>
+          <Row gutter={10} type="flex" justify="center">
+            <Col>
+              <Button
+                onClick={onCancel}
+                className="cr-btn cr-btn-default"
+              >
+                {I18N.get('elip.button.cancel')}
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                onClick={this.handlePreview}
+                className="cr-btn cr-btn-default"
+                htmlType="button"
+              >
+                {I18N.get('elip.button.preview')}
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                loading={this.state.loading}
+                className="cr-btn cr-btn-primary"
+                htmlType="submit"
+              >
+                {this.props.submitName || I18N.get('elip.button.submit')}
+              </Button>
+            </Col>
           </Row>
         </Form>
+        {previewModal}
       </Container>
     )
   }
 
   onTabChange = activeKey => {
     this.setState({ activeKey })
+    setTimeout(() => {
+      editors[activeKey].focus()
+    }, 20)
   }
 }
 

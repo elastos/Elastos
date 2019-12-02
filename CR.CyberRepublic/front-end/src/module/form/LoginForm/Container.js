@@ -3,41 +3,41 @@ import Component from './Component'
 import UserService from '@/service/UserService'
 import { message } from 'antd'
 import I18N from '@/I18N'
-import { logger } from '@/util'
 
-message.config({
-  top: 100,
-})
+message.config({ top: 100 })
 
-export default createContainer(Component, state => ({
-  ...state.user.login_form,
-  language: state.language,
-}), () => {
-  const userService = new UserService()
+export default createContainer(
+  Component,
+  state => ({
+    ...state.user.login_form,
+    language: state.language
+  }),
+  () => {
+    const userService = new UserService()
 
-  return {
-    async login(username, password, persist) {
-      try {
-        const rs = await userService.login(username.trim(), password, persist)
+    return {
+      async login(username, password, persist) {
+        try {
+          const rs = await userService.login(username.trim(), password, persist)
 
-        if (rs) {
-          message.success(I18N.get('login.success'))
+          if (rs) {
+            message.success(`${I18N.get('login.success')}, ${username.trim()}`)
 
-          const loginRedirect = sessionStorage.getItem('loginRedirect')
-          if (loginRedirect) {
-            this.history.push(loginRedirect)
-            sessionStorage.setItem('loggedIn', '1')
-            sessionStorage.setItem('loginRedirect', null)
-          } else {
-            this.history.push('/profile/info')
+            const loginRedirect = sessionStorage.getItem('loginRedirect')
+            if (loginRedirect) {
+              this.history.push(loginRedirect)
+              sessionStorage.setItem('loggedIn', '1')
+              sessionStorage.setItem('loginRedirect', null)
+            } else {
+              this.history.push('/profile/info')
+            }
+            return true
           }
-          return true
+        } catch (err) {
+          message.error(err.message)
+          return false
         }
-      } catch (err) {
-        message.error(err.message)
-        logger.error(err)
-        return false
       }
-    },
+    }
   }
-})
+)

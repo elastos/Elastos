@@ -3,7 +3,16 @@ import PropTypes from 'prop-types'
 import I18N from '@/I18N'
 import _ from 'lodash'
 
-import { Container, StyledPopover, CloseIcon, Title, StyledTextArea, Footer, Btn, DataExplain } from './style'
+import {
+  Container,
+  StyledPopover,
+  CloseIcon,
+  Title,
+  StyledTextArea,
+  Footer,
+  Btn,
+  DataExplain
+} from './style'
 
 class Component extends React.Component {
   state = {
@@ -23,6 +32,11 @@ class Component extends React.Component {
     this.setState({ reason: e.target.value })
   }
 
+  onClick = () => {
+    this.setState({ emptyStatus: false, reason: '' })
+    this.props.onToggle()
+  }
+
   onSubmit = () => {
     const { onToggle, onSubmit, required } = this.props
     const { reason } = this.state
@@ -36,27 +50,25 @@ class Component extends React.Component {
   }
 
   render() {
-    const {
-      triggeredBy,
-      onToggle,
-      visible,
-      title,
-      btnType,
-      requiredMsg
-    } = this.props
+    const { triggeredBy, visible, title, btnType, requiredMsg } = this.props
     const { emptyStatus } = this.state
     const dataExplain = emptyStatus && <DataExplain>{requiredMsg}</DataExplain>
     const content = (
       <Container>
-        <CloseIcon type="close" onClick={onToggle} />
+        <CloseIcon type="close" onClick={this.onClick} />
         <Title>{title || I18N.get('council.voting.modal.voteReason')}</Title>
         <StyledTextArea
+          value={this.state.reason}
           className={emptyStatus && 'has-error'}
           onChange={this.onReasonChanged}
         />
         {dataExplain}
         <Footer>
-          <Btn type="default" onClick={onToggle} style={{ borderRadius: 0 }}>
+          <Btn
+            type="default"
+            onClick={this.onClick}
+            style={{ borderRadius: 0 }}
+          >
             {I18N.get('council.voting.modal.cancel')}
           </Btn>
           <Btn
@@ -85,10 +97,9 @@ const propTypes = {
   onSubmit: PropTypes.func.isRequired,
   visible: PropTypes.bool.isRequired,
   required: PropTypes.bool,
-  requiredMsg: PropTypes.string,
+  requiredMsg: PropTypes.string
 }
 
 Component.propTypes = propTypes
-
 
 export default Component

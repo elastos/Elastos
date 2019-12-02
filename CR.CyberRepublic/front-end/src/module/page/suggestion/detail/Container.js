@@ -1,6 +1,7 @@
 import {
   createContainer,
 } from '@/util'
+import _ from 'lodash'
 import Component from './Component'
 import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'
@@ -21,7 +22,8 @@ export default createContainer(Component, (state) => {
     user: state.user,
     currentUserId: state.user.current_user_id,
     isCouncil: state.user.is_council,
-    isAdmin: state.user.is_admin
+    isAdmin: state.user.is_admin,
+    isReference: !_.isEmpty(state.suggestion.detail && state.suggestion.detail.reference)
   }
 }, () => {
   const service = new SuggestionService()

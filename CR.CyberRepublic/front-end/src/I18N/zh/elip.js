@@ -14,10 +14,10 @@ export default {
     status: '状态',
     createdAt: '创建日期',
     description: '描述',
-    elipType: '类型',
+    type: '类型',
     preamble: '前导',
     abstract: '摘要',
-    specifications: '规范',
+    specification: '规范',
     motivation: '动机',
     rationale: '基本原理',
     backwardCompatibility: '向后兼容性',
@@ -36,7 +36,10 @@ export default {
       requires: 'Requires',
       replaces: 'Replaces',
       superseded: 'Superseded-By'
-    }
+    },
+    filter: '过滤',
+    elipStatus: 'Elip 状态',
+    creationDate: '创建日期'
   },
   status: {
     [ELIP_STATUS.WAIT_FOR_REVIEW]: '等待审核',
@@ -64,7 +67,11 @@ export default {
     yes: '赞成',
     oppose: '反对',
     abstain: '弃权',
-    delete: '删除'
+    delete: '删除',
+    exportAsCSV: '导出CSV文件',
+    clearFilter: '重置过滤',
+    applyFilter: '应用过滤',
+    preview: '预览'
   },
   msg: {
     updated: '更新成功',
@@ -77,9 +84,9 @@ export default {
   },
   form: {
     note: {
-      elipType: '选择ELIP类型.',
+      type: '选择ELIP类型.',
       abstract: '摘要',
-      specifications: '规范',
+      specification: '规范',
       motivation: '动机',
       rationale: '基本原理',
       backwardCompatibility: '向后兼容性',

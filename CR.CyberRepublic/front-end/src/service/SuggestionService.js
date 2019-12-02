@@ -239,14 +239,18 @@ export default class extends BaseService {
   }
 
   // ADMIN and Author
-  async archive(id) {
-    const path = `${this.prefixPath}/${id}/archive`
+  async archiveOrUnarchive(data) {
+    const path = `${this.prefixPath}/${data.id}/archive`
     const res = await api_request({
       path,
+      data,
       method: 'post',
     })
-    if(res.success) {
+    if(res.success && !data.isArchived) {
       message.info(I18N.get('suggestion.msg.archived'))
+    }
+    if (res.success && data.isArchived === true) {
+      message.info(I18N.get('suggestion.msg.unarchived'))
     }
     return res
   }
@@ -281,5 +285,26 @@ export default class extends BaseService {
       method: 'post',
     })
     return res
+  }
+
+  async exportAsCSV(qry) {
+    const path = `${this.prefixPath}/export2csv`
+    this.abortFetch(path)
+
+    let result
+    try {
+      result = await api_request({
+        path,
+        method: 'get',
+        data: qry,
+        headers: {
+          'Content-Type': 'text/csv'
+        },
+      })
+    } catch (e) {
+      logger.error(e)
+    }
+
+    return result
   }
 }

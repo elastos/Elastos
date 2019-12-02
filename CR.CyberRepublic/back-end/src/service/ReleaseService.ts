@@ -1,4 +1,5 @@
 import Base from './Base'
+import { constant } from '../constant'
 import * as _ from 'lodash'
 
 export default class extends Base {
@@ -35,6 +36,22 @@ export default class extends Base {
     await this.model.update({_id: id}, {$set: doc })
 
     return await this.show({ id })
+  }
+
+  public async remove(param: any): Promise<Document> {
+    // get param
+    const { id } = param
+
+    // admin
+    const currentUserId = _.get(this.currentUser, '_id')
+    const userRole = _.get(this.currentUser, 'role')
+    if(userRole !== constant.USER_ROLE.ADMIN) {
+      throw 'ReleaseService.remove - invalid user role'
+    }
+    
+    let ret = await this.model.remove({_id: id})
+
+    return ret
   }
 
   public async list(): Promise<Object> {

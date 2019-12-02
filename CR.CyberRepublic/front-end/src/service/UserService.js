@@ -230,6 +230,7 @@ export default class extends BaseService {
       this.dispatch(tasksRedux.actions.all_tasks_reset())
       sessionStorage.clear()
       localStorage.removeItem('api-token', '')
+      localStorage.removeItem('draft-suggestion', '')
       resolve(true)
     })
   }
@@ -303,12 +304,11 @@ export default class extends BaseService {
   }
 
   async checkEmail(email) {
-    await api_request({
+    const rs = await api_request({
       path: '/api/user/check-email',
       method: 'post',
-      data: {
-        email,
-      },
+      data: { email }
     })
+    return rs
   }
 }

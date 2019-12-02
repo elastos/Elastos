@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { Button, Input } from 'antd'
+import { Button, Input, Col } from 'antd'
 import { breakPoint } from '@/constants/breakPoint'
 import { bg } from '@/constants/color'
 
@@ -45,7 +45,60 @@ export const Filter = styled.div`
   }
 `
 
-export const FilterLabel = styled.span`
-  padding-right: 16px;
+export const FilterLabel = styled(Col)`
+  color: #008D85;
+  cursor: pointer;
+`
+
+export const FilterPanel = styled.div`
+  .filter {
+    margin-top: 20px;
+  }
+  .filter-btn {
+    margin-top: 36px;
+    margin-bottom: 58px;
+  }
+  .filter-input {
+    width: 50%;
+  }
+`
+
+export const FilterClearBtn = styled.div`
+  text-align: center;
+  min-width: 155px;
+  height: 40px;
+  line-height: 40px;
   color: rgba(3, 30, 40, 0.3);
+  cursor: pointer;
+`
+
+
+export const FilterItem = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-bottom: 10px;
+  :first-child {
+    padding-top: 20px;
+  }
+  :last-child {
+    padding-bottom: 20px;
+  }
+`
+export const FilterContent = styled.div`
+  background: #F6F9FD;
+  height: 100%;
+`
+
+export const FilterItemLabel = styled.div`
+  width: 25%;
+  padding-left: 15px;
+  font-family: Synthese;
+  font-size: 14px;
+  line-height: 20px;
+  color: #000;
+
+  :after {
+    content: ':';
+  }
 `

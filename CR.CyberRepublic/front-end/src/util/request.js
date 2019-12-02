@@ -69,6 +69,17 @@ export const api_request = (opts = {}) => {
     server_url = server_url.replace(/&$/, '')
   }
 
+  if (option.headers['Content-Type'] === 'text/csv') {
+    return fetch(server_url, option).then(response => {
+
+      if (response.status === 200) {
+        return response.blob()
+      }
+
+      throw new Error(response.statusText ? response.statusText : response.type)
+    })
+  }
+
   return fetch(server_url, option).then((response) => {
 
     if (response.status === 200) {

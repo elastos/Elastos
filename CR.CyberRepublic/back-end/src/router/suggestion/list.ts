@@ -50,6 +50,17 @@ export default class extends Base {
         param.$or.push({ status: 'ARCHIVED', createdBy: currentUserId })
       }
     }
+    if (param.search) {
+      let or = [
+          { title: { $regex: _.trim(param.search), $options: 'i' } },
+          { vid: _.toNumber(_.trim(param.search)) || 0 }
+      ]
+      if(param.$or){
+        param.$or = param.$or.concat(or)
+      }else{
+        param.$or = or
+      }
+    }
 
     const result = await service.list(param)
 

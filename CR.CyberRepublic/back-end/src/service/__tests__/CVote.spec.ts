@@ -181,7 +181,7 @@ describe('Tests for CVote', () => {
       goal: `${uuidVal} - goal`,
       motivation: `${uuidVal} - motivation`,
       relevance: `${uuidVal} - relevance`,
-      budget: `${uuidVal} - budget`,
+      // budget: `${uuidVal} - budget`,
       plan: `${uuidVal} - plan`
     }
     const updateRs2: any = await cvoteService.update(updateObj)
@@ -191,7 +191,7 @@ describe('Tests for CVote', () => {
     expect(updateRs2.goal).to.equal(updateObj.goal)
     expect(updateRs2.motivation).to.equal(updateObj.motivation)
     expect(updateRs2.relevance).to.equal(updateObj.relevance)
-    expect(updateRs2.budget).to.equal(updateObj.budget)
+    // expect(updateRs2.budget).to.equal(updateObj.budget)
     expect(updateRs2.plan).to.equal(updateObj.plan)
   })
 

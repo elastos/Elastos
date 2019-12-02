@@ -30,8 +30,15 @@ import Summary from '../summary/Container'
 import Meta from '@/module/common/Meta'
 import SocialShareButtons from '@/module/common/SocialShareButtons'
 import { logger } from '@/util'
-import { convertMarkdownToHtml } from '@/util/markdown-it'
-
+import {
+  convertMarkdownToHtml,
+  removeImageFromMarkdown,
+  getPlanHtml,
+  getBudgetHtml
+} from '@/util/markdown-it'
+import PaymentList from '@/module/form/SuggestionForm/PaymentList'
+import TeamInfoList from '@/module/form/SuggestionForm/TeamInfoList'
+import Milestones from '@/module/form/SuggestionForm/Milestones'
 import {
   Container,
   Title,
@@ -47,20 +54,56 @@ import {
   LinkGroup,
   Part,
   PartTitle,
-  PartContent
+  PartContent,
+  PlanSubtitle
 } from './style'
 import './style.scss'
 
 const { TextArea } = Input
 
-const renderRichContent = (data, key, title) => (
-  <div>
-    {title && <ContentTitle id={key}>{title}</ContentTitle>}
-    <StyledRichContent>
-      <MarkdownPreview content={data[key]} />
-    </StyledRichContent>
-  </div>
-)
+const renderRichContent = (data, key, title) => {
+  let rc
+  if (
+    key === 'budget' &&
+    data.budget &&
+    typeof data.budget !== 'string'
+  ) {
+    rc = <PaymentList list={data.budget} editable={false} />
+  } else if (
+    key === 'plan' &&
+    data.plan &&
+    typeof data.plan !== 'string'
+  ) {
+    rc = (
+      <div>
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.teamInfo')}
+        </PlanSubtitle>
+        <TeamInfoList
+          list={data.plan.teamInfo}
+          editable={false}
+        />
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.milestones')}
+        </PlanSubtitle>
+        <Milestones
+          initialValue={data.plan.milestone}
+          editable={false}
+        />
+      </div>
+    )
+  } else {
+    rc = <MarkdownPreview content={data[key]} />
+  }
+  return (
+    <div>
+      {title && <ContentTitle id={key}>{title}</ContentTitle>}
+      <StyledRichContent>
+        {rc}
+      </StyledRichContent>
+    </div>
+  )
+}
 
 class C extends StandardPage {
   constructor(props) {
@@ -70,7 +113,6 @@ class C extends StandardPage {
       persist: true,
       loading: false,
       language: LANGUAGES.english, // language for this specifc form only
-      reason: '',
       visibleYes: false,
       visibleOppose: false,
       visibleAbstain: false,
@@ -114,7 +156,13 @@ class C extends StandardPage {
         </div>
       )
     }
-
+    if (data && data.success && data.empty) {
+      return (
+        <div className="ebp-page">
+          <h1>{I18N.get('error.notfound')}</h1>
+        </div>
+      )
+    }
     const anchorNode = this.renderAnchor()
     const contentNode = this.renderContent()
     const translationBtn = this.renderTranslationBtn()
@@ -195,32 +243,72 @@ class C extends StandardPage {
   }
 
   renderTranslationBtn() {
-    const { data } = this.props
+    const { data, isElip } = this.props
     const { title, content } = data
     let text = ''
     if (content) {
-      text = `<h3>${title}</h3> ${content}`
+      text = `<h3>${title}</h3><br /><br /> ${content}`
       return (
         <div style={{ marginTop: 20 }}>
           <Translation text={text} />
         </div>
       )
     }
-    const sections = [
-      'abstract',
-      'goal',
-      'motivation',
-      'plan',
-      'relevance',
-      'budget'
-    ]
-    const result = sections.map(section => {
-      return `
-        <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
-        <p>${convertMarkdownToHtml(data[section])}</p>
-      `
-    }).join('')
-    text = `<h3>${title}</h3> ${result}`
+    let sections, result
+    if (isElip) {
+      sections = [
+        'abstract',
+        'motivation',
+        'specification',
+        'rationale',
+        'backwardCompatibility',
+        'referenceImplementation',
+        'copyright'
+      ]
+      result = sections.map(section => {
+        return `
+          <h2>${I18N.get(`elip.fields.${section}`)}</h2>
+          <p>${convertMarkdownToHtml(removeImageFromMarkdown(data[section]))}</p>
+        `
+      }).join('')
+    } else {
+      sections = [
+        'abstract',
+        'goal',
+        'motivation',
+        'plan',
+        'relevance',
+        'budget'
+      ]
+      result = sections.map(section => {
+        if (
+          section === 'budget' &&
+          data.budget &&
+          typeof data.budget !== 'string'
+        ) {
+          return `
+            <h2>${I18N.get(`proposal.fields.budget`)}</h2>
+            <p>${getBudgetHtml(data.budget)}</p>
+          `
+        }
+        if (
+          section === 'plan' &&
+          data.plan &&
+          typeof data.plan !== 'string'
+        ) {
+          return `
+            <h2>${I18N.get(`proposal.fields.plan`)}</h2>
+            <p>${getPlanHtml(data.plan.teamInfo)}</p>
+          `
+        }
+        return `
+          <h2>${I18N.get(`proposal.fields.${section}`)}</h2>
+          <p>${convertMarkdownToHtml(removeImageFromMarkdown(data[section]))}</p>
+        `
+      }).join('')
+    }
+
+    text = `<h3>${title}</h3><br /><br/> ${result}`
     return (
       <div style={{ marginTop: 20 }}>
         <Translation text={text} />
@@ -287,11 +375,11 @@ class C extends StandardPage {
         <Anchor.Link href="#preamble" title={I18N.get('elip.fields.preamble')} />
         <Anchor.Link href="#abstract" title={I18N.get('elip.fields.abstract')} />
         <LinkGroup marginTop={48}>
-          <Anchor.Link
-            href="#specifications"
-            title={I18N.get('elip.fields.specifications')}
-          />
           <Anchor.Link href="#motivation" title={I18N.get('elip.fields.motivation')} />
+          <Anchor.Link
+            href="#specification"
+            title={I18N.get('elip.fields.specification')}
+          />
           <Anchor.Link href="#rationale" title={I18N.get('elip.fields.rationale')} />
         </LinkGroup>
         <LinkGroup marginTop={48}>
@@ -409,8 +497,8 @@ class C extends StandardPage {
     if (isElip) {
       const sections = [
         'abstract',
-        'specifications',
         'motivation',
+        'specification',
         'rationale',
         'backwardCompatibility',
         'referenceImplementation',
@@ -509,6 +597,8 @@ class C extends StandardPage {
         onToggle={this.showVoteYesModal}
         onSubmit={this.voteYes}
         btnType="primary"
+        required={true}
+        requiredMsg={I18N.get('from.CVoteForm.reason.yes.required')}
       />
     )
     const popOverOppose = (
@@ -518,6 +608,8 @@ class C extends StandardPage {
         onToggle={this.showVoteOpposeModal}
         onSubmit={this.voteOppose}
         btnType="danger"
+        required={true}
+        requiredMsg={I18N.get('from.CVoteForm.reason.oppose.required')}
       />
     )
     const popOverAbstain = (
@@ -526,6 +618,8 @@ class C extends StandardPage {
         visible={visibleAbstain}
         onToggle={this.showVoteAbstainModal}
         onSubmit={this.voteAbstain}
+        required={true}
+        requiredMsg={I18N.get('from.CVoteForm.reason.abstain.required')}
       />
     )
 
@@ -769,9 +863,7 @@ class C extends StandardPage {
   async vote({ value, reason }) {
     const { match, vote } = this.props
     const id = _.get(match, 'params.id')
-
     const param = { _id: id, value, reason }
-
     this.ord_loading(true)
     try {
       await vote(param)
@@ -781,23 +873,19 @@ class C extends StandardPage {
     } catch (e) {
       this.ord_loading(false)
       message.error(e.message)
-      logger.error(e)
     }
   }
 
   voteYes = ({ reason }) => {
     this.vote({ value: CVOTE_RESULT.SUPPORT, reason })
-    this.setState({ reason: '' })
   }
 
   voteAbstain = ({ reason }) => {
     this.vote({ value: CVOTE_RESULT.ABSTENTION, reason })
-    this.setState({ reason: '' })
   }
 
   voteOppose = ({ reason }) => {
     this.vote({ value: CVOTE_RESULT.REJECT, reason })
-    this.setState({ reason: '' })
   }
 
   showVoteYesModal = () => {

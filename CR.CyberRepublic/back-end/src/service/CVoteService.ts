@@ -8,10 +8,7 @@ import { mail, user as userUtil, logger } from '../utility'
 
 let tm = undefined
 
-const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'plan'];
-const restrictedFields = {
-  update: ['_id', 'createdBy', 'createdAt', 'proposedAt']
-}
+const BASE_FIELDS = ['title', 'abstract', 'goal', 'motivation', 'relevance', 'budget', 'budgetAmount', 'plan']
 
 export default class extends Base {
   // create a DRAFT propoal with minimal info
@@ -149,7 +146,17 @@ export default class extends Base {
     if (goal) doc.goal = goal
     if (motivation) doc.motivation = motivation
     if (relevance) doc.relevance = relevance
-    if (budget) doc.budget = budget
+    if (budget) {
+      doc.budget = budget
+      if (Array.isArray(budget)) {
+        doc.budgetAmount = budget.reduce((sum, el) => {
+          if (el && el.amount) {
+            return sum += Number(el.amount)
+          }
+          return sum
+        }, 0.0)
+      }
+    }
     if (plan) doc.plan = plan
 
     try {
@@ -184,7 +191,6 @@ export default class extends Base {
     const db_cvote = this.getDBModel('CVote')
     const db_user = this.getDBModel('User')
     const db_suggestion = this.getDBModel('Suggestion')
-    const currentUserId = _.get(this.currentUser, '_id')
     const {
       title,
       published,
@@ -201,8 +207,8 @@ export default class extends Base {
 
     const vid = await this.getNewVid()
     const status = published
-      ? constant.CVOTE_STATUS.PROPOSED
-      : constant.CVOTE_STATUS.DRAFT
+                 ? constant.CVOTE_STATUS.PROPOSED
+                 : constant.CVOTE_STATUS.DRAFT
 
     const doc: any = {
       title,
@@ -219,6 +225,14 @@ export default class extends Base {
       plan,
       proposer,
       createdBy: this.currentUser._id
+    }
+    if (budget && Array.isArray(budget)) {
+      doc.budgetAmount = budget.reduce((sum, el) => {
+        if (el && el.amount) {
+          return sum += Number(el.amount)
+        }
+        return sum
+      }, 0.0)
     }
 
     const suggestion = suggestionId && (await db_suggestion.findById(suggestionId))
@@ -459,9 +473,85 @@ export default class extends Base {
     } else {
       query.published = param.published
     }
+    // createBy
+    if(param.author && param.author.length) {
+      let search = param.author
+      const db_user = this.getDBModel('User')
+      const pattern = search.split(' ').join('|')
+      const users = await db_user.getDBInstance().find({
+        $or: [
+          { username: { $regex: search, $options: 'i' } },
+          { 'profile.firstName': { $regex: pattern, $options: 'i' } },
+          { 'profile.lastName': { $regex: pattern, $options: 'i' } }
+        ]
+      }).select('_id')
+      const userIds = _.map(users, (el: { _id: string }) => el._id)
+      query.createdBy = { $in: userIds }
+    }
+    // cvoteType
+    if(param.type && _.indexOf(_.values(constant.CVOTE_TYPE), param.type) >= 0){
+      query.type = param.type
+    }
+    // startDate <  endDate
+    if(param.startDate && param.startDate.length && param.endDate && param.endDate.length){
+      let endDate = new Date(param.endDate)
+      endDate.setDate(endDate.getDate()+1)
+      query.createdAt = {
+        $gte: new Date(param.startDate),
+        $lte: endDate
+      }
+    }
+    // Ends in times - 7day = startDate <  endDate
+    if(param.endsInStartDate && param.endsInStartDate.length && param.endsInEndDate && param.endsInEndDate.length){
+      let endDate = new Date(new Date(param.endsInEndDate).getTime() - 7 * 24 * 3600 * 1000)
+      endDate.setDate(endDate.getDate()+1)
+      query.createdAt = {
+        $gte: new Date(new Date(param.endsInStartDate).getTime() - 7 * 24 * 3600 * 1000),
+        $lte: endDate
+      }
+      query.status = {
+          $in: [constant.CVOTE_STATUS.PROPOSED,
+	  constant.CVOTE_STATUS.ACTIVE,
+	  constant.CVOTE_STATUS.REJECT,
+	  constant.CVOTE_STATUS.FINAL,
+	  constant.CVOTE_STATUS.DEFERRED,
+	  constant.CVOTE_STATUS.INCOMPLETED]
+	}
+    }
+    // status
+    if(param.status && constant.CVOTE_STATUS[param.status]) {
+      if(query.status) {
+        query.status = {
+          $or: [query.status, param.status]
+        }
+      } else {
+        query.status = param.status
+      }
+    }
+    // budget
+    if(param.budgetLow || param.budgetHigh){
+      query.budgetAmount = {}
+      if (param.budgetLow && param.budgetLow.length) {
+        query.budgetAmount['$gte'] = parseInt(param.budgetLow)
+      }
+      if (param.budgetHigh && param.budgetHigh.length) {
+        query.budgetAmount['$lte'] = parseInt(param.budgetHigh)
+      }
+    }
+    // has tracking
+    if(param.hasTracking) {
+      query.tracking = {
+        $and: [{
+          $ne: null
+        }, {
+          $ne: ""
+        }]
+      }
+    }
 
     if (param.$or) query.$or = param.$or
     const fields = 'vid title type proposedBy status published proposedAt createdAt voteResult vote_map'
+    console.log("[query]" + JSON.stringify(query))
     const list = await db_cvote.list(query, {vid: -1}, 100, fields)
     return list
   }
@@ -474,7 +564,6 @@ export default class extends Base {
   public async update(param): Promise<Document> {
     const db_user = this.getDBModel('User')
     const db_cvote = this.getDBModel('CVote')
-    const currentUserId = _.get(this.currentUser, '_id')
     const {
       _id,
       published,
@@ -504,15 +593,24 @@ export default class extends Base {
     const doc: any = {
       contentType: constant.CONTENT_TYPE.MARKDOWN
     }
-    const willChangeToPublish =
-      published === true && cur.status === constant.CVOTE_STATUS.DRAFT
+    const willChangeToPublish = published === true && cur.status === constant.CVOTE_STATUS.DRAFT
 
     if (title) doc.title = title
     if (abstract) doc.abstract = abstract
     if (goal) doc.goal = goal
     if (motivation) doc.motivation = motivation
     if (relevance) doc.relevance = relevance
-    if (budget) doc.budget = budget
+    if (budget) {
+      doc.budget = budget
+      if (Array.isArray(budget)) {
+        doc.budgetAmount = budget.reduce((sum, el) => {
+          if (el && el.amount) {
+            return sum += Number(el.amount)
+          }
+          return sum
+        }, 0.0)
+      }
+    }
     if (plan) doc.plan = plan
 
     if (willChangeToPublish) {
@@ -606,9 +704,17 @@ export default class extends Base {
 
   public async getById(id): Promise<any> {
     const db_cvote = this.getDBModel('CVote')
+    // access proposal by reference number
+    const isNumber = /^\d*$/.test(id)
+    let query: any
+    if (isNumber) {
+      query = { vid: parseInt(id) }
+    } else {
+      query = { _id: id }
+    }
     const rs = await db_cvote
       .getDBInstance()
-      .findOne({ _id: id })
+      .findOne(query)
       .populate(
         'voteResult.votedBy',
         constant.DB_SELECTED_FIELDS.USER.NAME_AVATAR
@@ -617,6 +723,9 @@ export default class extends Base {
       .populate('createdBy', constant.DB_SELECTED_FIELDS.USER.NAME_EMAIL)
       .populate('reference', constant.DB_SELECTED_FIELDS.SUGGESTION.ID)
       .populate('referenceElip', 'vid')
+    if (!rs) {
+      return { success: true, empty: true }
+    }
     return rs
   }
 

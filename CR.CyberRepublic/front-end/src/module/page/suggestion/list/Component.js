@@ -1,10 +1,21 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import _ from 'lodash'
+import moment from 'moment/moment'
 import styled from 'styled-components'
 import {
-  Pagination, Modal, Button, Col, Row, Select, Spin, Checkbox
+  Pagination,
+  Modal,
+  Button,
+  Col,
+  Row,
+  Select,
+  Spin,
+  DatePicker,
+  Checkbox,
+  Input
 } from 'antd'
+import rangePickerLocale from 'antd/es/date-picker/locale/zh_CN'
 import URI from 'urijs'
 import I18N from '@/I18N'
 import { loginRedirectWithQuery, logger } from '@/util'
@@ -17,10 +28,14 @@ import TagsContainer from '../common/tags/Container'
 import { SUGGESTION_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import { ReactComponent as UpIcon } from '@/assets/images/icon-up.svg'
+import { ReactComponent as DownIcon } from '@/assets/images/icon-down.svg'
 import PageHeader from './PageHeader'
 import SearchBox from './SearchBox'
 
 import './style.scss'
+
+const { RangePicker } = DatePicker
 
 const SORT_BY = {
   createdAt: 'createdAt',
@@ -29,6 +44,12 @@ const SORT_BY = {
   viewsNum: 'viewsNum'
 }
 const DEFAULT_SORT = SORT_BY.createdAt
+
+const BUDGET_REQUESTED_OPTIONS = {
+  1: { value: '$0 - $100 (USD)', budgetLow: 0, budgetHigh: 100 },
+  2: { value: '$100 - $1000 (USD)', budgetLow: 100, budgetHigh: 1000 },
+  3: { value: '> $1000 (USD)', budgetLow: 1000 }
+}
 
 /**
  * This uses new features such as infinite scroll and pagination, therefore
@@ -47,12 +68,19 @@ export default class extends StandardPage {
 
       // named status since we eventually want to use a struct of statuses to filter on
       referenceStatus: false,
+      infoNeeded: false,
+      underConsideration: false,
       isDropdownActionOpen: false,
       showMobile: false,
       results: 10,
       total: 0,
       search: '',
-      filter: ''
+      filter: '',
+      status: '',
+      budgetRequested: '',
+      creationDate: [],
+      author: '',
+      type: ''
     }
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
@@ -66,55 +94,141 @@ export default class extends StandardPage {
     this.props.resetAll()
   }
 
+  handleFilter = () => {
+    const { isVisitableFilter } = this.state
+    this.setState({ isVisitableFilter: !isVisitableFilter })
+  }
+
+  handleStatusChange = status => {
+    this.setState({ status })
+  }
+
+  handleBudgetRequestedChange = budgetRequested => {
+    this.setState({ budgetRequested })
+  }
+
+  handleUnderConsiderationChange = e => {
+    this.setState({ underConsideration: e.target.checked })
+  }
+
+  handleInfoNeededChange = e => {
+    this.setState({ infoNeeded: e.target.checked })
+  }
+
+  handleReferenceStatusChange = e => {
+    this.setState({ referenceStatus: e.target.checked })
+  }
+
+  handleCreationDateChange = creationDate => {
+    this.setState({ creationDate })
+  }
+
+  handleAuthorChange = e => {
+    this.setState({ author: e.target.value })
+  }
+
+  handleTypeChange = type => {
+    this.setState({ type })
+  }
+
+  handleClearFilter = () => {
+    this.setState({
+      referenceStatus: false,
+      infoNeeded: false,
+      underConsideration: false,
+      search: '',
+      filter: '',
+      status: '',
+      budgetRequested: '',
+      creationDate: [],
+      author: '',
+      type: ''
+    })
+  }
+
+  handleApplyFilter = () => {
+    this.refetch()
+  }
+
+  handleExportAsCSV = () => {
+    const { exportAsCSV } = this.props
+    const query = this.getQuery()
+    exportAsCSV(query).then(response => {
+      window.location.href = URL.createObjectURL(response)
+    })
+  }
 
   ord_renderContent() {
+    const { isVisitableFilter } = this.state
+    const { isSecretary } = this.props
     const headerNode = this.renderHeader()
     const filterNode = this.renderFilters()
+    const filterPanel = this.renderFilterPanel()
     const createForm = this.renderCreateForm()
     const listNode = this.renderList()
     const sortActionsNode = this.renderSortActions()
 
     return (
       <div>
-        <div className="suggestion-header">
-          {headerNode}
-        </div>
+        <div className="suggestion-header">{headerNode}</div>
         <SuggestionContainer className="p_SuggestionList">
           <Row
             type="flex"
             justify="space-between"
             align="middle"
-            style={{margin: '24px 0 48px'}}
+            style={{ margin: '24px 0 48px' }}
           >
             <Col xs={24} sm={12} style={{ paddingTop: 24 }}>
               <SearchBox search={this.handleSearch} value={this.state.search} />
             </Col>
-            <Col xs={24} sm={12} style={{textAlign: 'right', paddingTop: 24}}>
-              <Button onClick={this.toggleArchivedList} className="btn-view-archived">
-                {this.state.showArchived === false ?
-                  I18N.get('suggestion.viewArchived') :
-                  I18N.get('suggestion.viewAll')
-                }
-              </Button>
-              <Button onClick={this.showCreateForm} className="btn-create-suggestion">
+            {filterNode}
+            <Col xs={24} sm={8} style={{ textAlign: 'right', paddingTop: 24 }}>
+              <Button
+                onClick={this.showCreateForm}
+                className="btn-create-suggestion"
+              >
                 {I18N.get('suggestion.add')}
               </Button>
             </Col>
           </Row>
+          {isVisitableFilter && filterPanel}
           <Row
             type="flex"
             justify="space-between"
             align="middle"
-            style={{ borderBottom: '1px solid #E5E5E5'}}
+            style={{ borderBottom: '1px solid #E5E5E5' }}
           >
-            <Col md={24} xl={18} style={{ paddingBottom: 24 }}>{filterNode}</Col>
-            <Col md={24} xl={6} style={{ paddingBottom: 24, textAlign: 'right' }}>{sortActionsNode}</Col>
-          </Row>
-          
-          <Row gutter={24} style={{marginTop: 32}}>
-            <Col span={24}>
-              {listNode}
+            <Col md={24} xl={18} style={{ paddingBottom: 24 }}>
+              {sortActionsNode}
             </Col>
+            <Col
+              md={24}
+              xl={6}
+              style={{ paddingBottom: 24, textAlign: 'right' }}
+            >
+              <Button
+                type="link"
+                className="btn-link"
+                onClick={this.toggleArchivedList}
+              >
+                {this.state.showArchived === false
+                  ? I18N.get('suggestion.viewArchived')
+                  : I18N.get('suggestion.viewAll')}
+              </Button>
+              {isSecretary && <SplitLabel />}
+              {isSecretary && (
+                <Button
+                  type="link"
+                  className="btn-link"
+                  onClick={this.handleExportAsCSV}
+                >
+                  {I18N.get('elip.button.exportAsCSV')}
+                </Button>
+              )}
+            </Col>
+          </Row>
+          <Row gutter={24} style={{ marginTop: 32 }}>
+            <Col span={24}>{listNode}</Col>
           </Row>
           {createForm}
         </SuggestionContainer>
@@ -127,7 +241,7 @@ export default class extends StandardPage {
     this.setState({ search, filter }, this.debouncedRefetch)
   }
 
-  onFormSubmit = async (param) => {
+  onFormSubmit = async param => {
     try {
       await this.props.create(param)
       this.setState({ showForm: false })
@@ -152,9 +266,7 @@ export default class extends StandardPage {
         footer={null}
         width="70%"
       >
-        { this.state.showForm
-          && <SuggestionForm {...props} />
-        }
+        {this.state.showForm && <SuggestionForm {...props} />}
       </Modal>
     )
   }
@@ -190,8 +302,7 @@ export default class extends StandardPage {
   renderHeader() {
     return (
       <div>
-        <SuggestionContainer
-          className="title komu-a cr-title-with-icon">
+        <SuggestionContainer className="title komu-a cr-title-with-icon">
           {this.props.header || I18N.get('suggestion.title').toUpperCase()}
         </SuggestionContainer>
 
@@ -200,7 +311,9 @@ export default class extends StandardPage {
             <PageHeader />
             <HeaderDesc>
               {I18N.get('suggestion.intro.1')}
-              <Link to="/proposals">{I18N.get('suggestion.intro.1.proposals')}</Link>
+              <Link to="/proposals">
+                {I18N.get('suggestion.intro.1.proposals')}
+              </Link>
               {I18N.get('suggestion.intro.1.1')}
               <br />
               <br />
@@ -211,15 +324,15 @@ export default class extends StandardPage {
                   target="_blank"
                 >
                   https://www.cyberrepublic.org/docs/#/guide/suggestions
-              </a>
+                </a>
               ) : (
-                  <a
-                    href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
-                    target="_blank"
-                  >
-                    https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
-              </a>
-                )}
+                <a
+                  href="https://www.cyberrepublic.org/docs/#/zh/guide/suggestions"
+                  target="_blank"
+                >
+                  https://www.cyberrepublic.org/docs/#/zh/guide/suggestions
+                </a>
+              )}
             </HeaderDesc>
           </SuggestionContainer>
         </HeaderDiagramContainer>
@@ -232,15 +345,15 @@ export default class extends StandardPage {
       createdAt: I18N.get('suggestion.new'),
       likesNum: I18N.get('suggestion.likes'),
       viewsNum: I18N.get('suggestion.mostViews'),
-      activeness: I18N.get('suggestion.activeness'),
+      activeness: I18N.get('suggestion.activeness')
     }
     const sortBy = this.props.sortBy || DEFAULT_SORT
     return (
       <div>
-        {I18N.get('suggestion.sort')}: {' '}
+        {I18N.get('suggestion.sort')}:{' '}
         <Select
           name="type"
-          style={{width: 200, marginLeft: 16}}
+          style={{ width: 200, marginLeft: 16 }}
           onChange={this.onSortByChanged}
           value={sortBy}
         >
@@ -255,36 +368,175 @@ export default class extends StandardPage {
   }
 
   renderFilters() {
-    const {
-      tagsIncluded: {
-        infoNeeded,
-        underConsideration
-      }
-    } = this.props
-    
+    const { isVisitableFilter } = this.state
     return (
-      <Row type="flex" align="middle">
-        <Col xs={24} sm={24} md={2}>
-          {I18N.get('suggestion.tag.show')}:
-        </Col>
-        <Col xs={24} sm={24} md={7}>
-          <Checkbox defaultChecked={underConsideration} onChange={this.onUnderConsiderationChange} />
-          <CheckboxText>{I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}</CheckboxText>
-        </Col>
-        <Col xs={24} sm={24} md={7}>
-          <Checkbox defaultChecked={infoNeeded} onChange={this.onInfoNeededChange} />
-          <CheckboxText>{I18N.get('suggestion.tag.type.INFO_NEEDED')}</CheckboxText>
-        </Col>
-        <Col xs={24} sm={24} md={7}>
-          <Checkbox defaultChecked={this.state.referenceStatus} onChange={this.onReferenceStatusChange} />
-          <CheckboxText>{I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}</CheckboxText>
-        </Col>
-      </Row>
+      <FilterLabel xs={24} sm={2} style={{ paddingTop: 24 }}>
+        <Row
+          type="flex"
+          gutter={10}
+          align="middle"
+          justify="start"
+          onClick={this.handleFilter}
+        >
+          <Col>{I18N.get('elip.fields.filter')}</Col>
+          <Col>{isVisitableFilter ? <UpIcon /> : <DownIcon />}</Col>
+        </Row>
+      </FilterLabel>
     )
   }
 
-  onInfoNeededChange = async (e) => {
-    const {onTagsIncludedChanged, tagsIncluded, changePage} = this.props
+  renderFilterPanel() {
+    const {
+      referenceStatus,
+      infoNeeded,
+      underConsideration,
+      status,
+      budgetRequested,
+      creationDate,
+      author,
+      type
+    } = this.state
+    const typeMap = {
+      1: I18N.get('suggestion.form.type.newMotion'),
+      2: I18N.get('suggestion.form.type.motionAgainst'),
+      3: I18N.get('suggestion.form.type.anythingElse')
+    }
+    const lang = localStorage.getItem('lang') || 'en'
+    const rangePickerOptions = {}
+    if (lang === 'zh') {
+      rangePickerOptions.locale = rangePickerLocale
+    }
+    return (
+      <FilterPanel>
+        <Row type="flex" gutter={10} className="filter">
+          <Col span={8} className="filter-panel">
+            <FilterContent>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.status')}
+                </FilterItemLabel>
+                <Select
+                  className="filter-input"
+                  value={status}
+                  onChange={this.handleStatusChange}
+                >
+                  {_.map(SUGGESTION_STATUS, value => (
+                    <Select.Option key={value} value={value}>
+                      {I18N.get(`suggestion.status.${value}`)}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FilterItem>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.budgetRequested')}
+                </FilterItemLabel>
+                <Select
+                  className="filter-input"
+                  value={budgetRequested}
+                  onChange={this.handleBudgetRequestedChange}
+                >
+                  {_.map(BUDGET_REQUESTED_OPTIONS, (item, key) => (
+                    <Select.Option key={key} value={key}>
+                      {item.value}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FilterItem>
+            </FilterContent>
+          </Col>
+          <Col span={8} className="filter-panel">
+            <FilterContent>
+              <FilterItem>
+                <Checkbox
+                  checked={underConsideration}
+                  onChange={this.handleUnderConsiderationChange}
+                />
+                <CheckboxText>
+                  {I18N.get('suggestion.tag.type.UNDER_CONSIDERATION')}
+                </CheckboxText>
+              </FilterItem>
+              <FilterItem className="filter-checkbox">
+                <Checkbox
+                  checked={infoNeeded}
+                  onChange={this.handleInfoNeededChange}
+                />
+                <CheckboxText>
+                  {I18N.get('suggestion.tag.type.INFO_NEEDED')}
+                </CheckboxText>
+              </FilterItem>
+              <FilterItem className="filter-checkbox">
+                <Checkbox
+                  checked={referenceStatus}
+                  onChange={this.handleReferenceStatusChange}
+                />
+                <CheckboxText>
+                  {I18N.get('suggestion.tag.type.ADDED_TO_PROPOSAL')}
+                </CheckboxText>
+              </FilterItem>
+            </FilterContent>
+          </Col>
+          <Col span={8} className="filter-panel">
+            <FilterContent>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.creationDate')}
+                </FilterItemLabel>
+                <RangePicker
+                  className="filter-input"
+                  onChange={this.handleCreationDateChange}
+                  value={creationDate}
+                  {...rangePickerOptions}
+                />
+              </FilterItem>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.author')}
+                </FilterItemLabel>
+                <div className="filter-input">
+                  <Input value={author} onChange={this.handleAuthorChange} />
+                </div>
+              </FilterItem>
+              <FilterItem>
+                <FilterItemLabel>
+                  {I18N.get('suggestion.fields.type')}
+                </FilterItemLabel>
+                <Select
+                  className="filter-input"
+                  value={type}
+                  onChange={this.handleTypeChange}
+                >
+                  {_.map(typeMap, (value, key) => (
+                    <Select.Option key={key} value={key}>
+                      {value}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FilterItem>
+            </FilterContent>
+          </Col>
+        </Row>
+        <Row type="flex" gutter={30} justify="center" className="filter-btn">
+          <Col>
+            <FilterClearBtn onClick={this.handleClearFilter}>
+              {I18N.get('elip.button.clearFilter')}
+            </FilterClearBtn>
+          </Col>
+          <Col>
+            <Button
+              className="cr-btn cr-btn-primary"
+              onClick={this.handleApplyFilter}
+            >
+              {I18N.get('elip.button.applyFilter')}
+            </Button>
+          </Col>
+        </Row>
+      </FilterPanel>
+    )
+  }
+
+  onInfoNeededChange = async e => {
+    const { onTagsIncludedChanged, tagsIncluded, changePage } = this.props
     tagsIncluded.infoNeeded = e.target.checked
 
     await changePage(1)
@@ -292,8 +544,8 @@ export default class extends StandardPage {
     await this.refetch()
   }
 
-  onUnderConsiderationChange = async (e) => {
-    const {onTagsIncludedChanged, tagsIncluded, changePage} = this.props
+  onUnderConsiderationChange = async e => {
+    const { onTagsIncludedChanged, tagsIncluded, changePage } = this.props
     tagsIncluded.underConsideration = e.target.checked
 
     await changePage(1)
@@ -302,19 +554,22 @@ export default class extends StandardPage {
   }
 
   // checked = boolean
-  onReferenceStatusChange = async (e) => {
-
-    const {onReferenceStatusChanged} = this.props
+  onReferenceStatusChange = async e => {
+    const { onReferenceStatusChanged } = this.props
 
     // the first onReferenceStatusChanged is the props fn from Container
-    await this.setState({referenceStatus: e.target.checked})
+    await this.setState({ referenceStatus: e.target.checked })
     await onReferenceStatusChanged(e.target.checked)
     await this.refetch()
   }
 
   renderList() {
-    const {dataList, loading} = this.props
-    const loadingNode = <div className="center"><Spin size="large"/></div>
+    const { dataList, loading } = this.props
+    const loadingNode = (
+      <div className="center">
+        <Spin size="large" />
+      </div>
+    )
     const paginationNode = this.renderPagination()
     let result = loadingNode
     if (!loading) {
@@ -327,15 +582,13 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <div className="list-container">
-          {result}
-        </div>
+        <div className="list-container">{result}</div>
         {paginationNode}
       </div>
     )
   }
 
-  renderItem = (data) => {
+  renderItem = data => {
     const href = `/suggestion/${data._id}`
     const actionsNode = this.renderActionsNode(data, this.refetch)
     const metaNode = this.renderMetaNode(data)
@@ -348,9 +601,16 @@ export default class extends StandardPage {
         {tagsNode}
         <ShortDesc>
           <MarkdownPreview content={data.abstract} />
-          {_.isArray(data.link) && (data.link.map((link) => {
-            return <ItemLinkWrapper key={link}><a target="_blank" href={link}>{link}</a></ItemLinkWrapper>
-          }))}
+          {_.isArray(data.link) &&
+            data.link.map(link => {
+              return (
+                <ItemLinkWrapper key={link}>
+                  <a target="_blank" href={link}>
+                    {link}
+                  </a>
+                </ItemLinkWrapper>
+              )
+            })}
         </ShortDesc>
 
         {actionsNode}
@@ -358,7 +618,7 @@ export default class extends StandardPage {
     )
   }
 
-  onPageChanged = (page) => {
+  onPageChanged = page => {
     const { changePage } = this.props
     changePage(page)
     this.loadPage(page)
@@ -371,18 +631,22 @@ export default class extends StandardPage {
       pageSize: results,
       total,
       current: page,
-      onChange: this.onPageChanged,
+      onChange: this.onPageChanged
     }
     return <Pagination {...props} className="cr-pagination" />
   }
 
-  renderMetaNode = detail => <MetaContainer data={detail} user={this.props.user} />
+  renderMetaNode = detail => (
+    <MetaContainer data={detail} user={this.props.user} />
+  )
 
   renderTagsNode = detail => <TagsContainer data={detail} />
 
-  renderActionsNode = (detail, refetch) => <ActionsContainer data={detail} listRefetch={refetch}/>
+  renderActionsNode = (detail, refetch) => (
+    <ActionsContainer data={detail} listRefetch={refetch} />
+  )
 
-  onSortByChanged = async (sortBy) => {
+  onSortByChanged = async sortBy => {
     await this.props.onSortByChanged(sortBy)
     await this.refetch()
   }
@@ -393,19 +657,28 @@ export default class extends StandardPage {
   getQuery = () => {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     const { page } = this.props
-    const { results, referenceStatus, search, filter } = this.state
+    const {
+      results,
+      referenceStatus,
+      search,
+      filter,
+      status,
+      infoNeeded,
+      underConsideration,
+      budgetRequested,
+      creationDate,
+      author,
+      type
+    } = this.state
     const query = {
-      status: this.state.showArchived ? SUGGESTION_STATUS.ARCHIVED : SUGGESTION_STATUS.ACTIVE,
       page,
       results
     }
-    const {
-      tagsIncluded: {
-        infoNeeded,
-        underConsideration
-      }
-    } = this.props
     let included = ''
+   
+    if (this.state.showArchived) {
+      query.status = SUGGESTION_STATUS.ARCHIVED
+    }
 
     if (infoNeeded) {
       included = SUGGESTION_TAG_TYPE.INFO_NEEDED
@@ -424,6 +697,32 @@ export default class extends StandardPage {
 
     // sending a boolean to be handled by the backend
     query.referenceStatus = referenceStatus
+
+    if (!_.isEmpty(status)) {
+      query.status = status
+    }
+
+    if (!_.isEmpty(budgetRequested) && budgetRequested > 0) {
+      const budget = BUDGET_REQUESTED_OPTIONS[budgetRequested]
+      query.budgetLow = budget.budgetLow
+      if (budget.budgetHigh) {
+        query.budgetHigh = budget.budgetHigh
+      }
+    }
+
+    if (!_.isEmpty(creationDate)) {
+      const formatStr = 'YYYY-MM-DD'
+      query.startDate = moment(creationDate[0]).format(formatStr)
+      query.endDate = moment(creationDate[1]).format(formatStr)
+    }
+
+    if (!_.isEmpty(author)) {
+      query.author = author
+    }
+
+    if (!_.isEmpty(type)) {
+      query.type = type
+    }
 
     // TODO
     if (sortBy) {
@@ -448,11 +747,11 @@ export default class extends StandardPage {
     this.props.getList(query)
   }
 
-  loadPage = async (page) => {
+  loadPage = async page => {
     const query = {
       ...this.getQuery(),
       page,
-      results: this.state.results,
+      results: this.state.results
     }
 
     this.setState({ loadingMore: true })
@@ -545,4 +844,72 @@ const CheckboxText = styled.span`
 const NoData = styled.div`
   text-align: center;
   padding: 25px 0;
+`
+
+const FilterLabel = styled(Col)`
+  color: #008d85;
+  cursor: pointer;
+`
+
+const FilterPanel = styled.div`
+  .filter {
+    margin-top: 20px;
+  }
+  .filter-btn {
+    margin-top: 36px;
+    margin-bottom: 58px;
+  }
+  .filter-input {
+    width: 60%;
+    padding-right: 15px;
+  }
+`
+
+const FilterClearBtn = styled.div`
+  text-align: center;
+  min-width: 155px;
+  height: 40px;
+  line-height: 40px;
+  color: rgba(3, 30, 40, 0.3);
+  cursor: pointer;
+`
+
+const FilterItem = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 15px;
+  padding-bottom: 10px;
+  &.filter-checkbox {
+    padding-top: 10px;
+  }
+  :first-child {
+    padding-top: 20px;
+  }
+  :last-child {
+    padding-bottom: 20px;
+  }
+`
+const FilterContent = styled.div`
+  background: #f6f9fd;
+  height: 100%;
+`
+
+const FilterItemLabel = styled.div`
+  width: 40%;
+  font-family: Synthese;
+  font-size: 14px;
+  line-height: 20px;
+  color: #000;
+
+  :after {
+    content: ':';
+  }
+`
+
+const SplitLabel = styled.span`
+  color: rgba(3, 30, 40, 0.3);
+  :after {
+    content: '|';
+  }
 `

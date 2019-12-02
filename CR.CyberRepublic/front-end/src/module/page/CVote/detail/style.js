@@ -148,3 +148,6 @@ export const PartTitle = styled.h4`
 `
 
 export const PartContent = styled.div``
+export const PlanSubtitle = styled.div`
+  margin: 24px 0;
+`
