@@ -111,6 +111,7 @@ const zh = {
   'profile.suggestion': '我的建议',
 
   'login.success': '欢迎回来',
+  'logout.success': '登出成功',
 
   'mentions.notFound': '该用户不存在',
 
@@ -118,13 +119,14 @@ const zh = {
   'image.upload.type.error': '上传的文件不是图片',
   'image.upload.size.error': '上传的文件大小不能超过500KB',
 
-  'comments': '评论',
+  comments: '评论',
   'comments.posts': '动态',
   'comments.post': '发言',
   'comments.noComments': '还没有评论，',
   'comments.signIn': '注册',
   'comments.firstToPost': '抢沙发！',
   'comments.placeholder': '说点儿什么',
+  'comments.posted.success': '您的评论已提交',
   // Admin tasks
   'admin.tasks.status': '状态',
 

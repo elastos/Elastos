@@ -111,20 +111,22 @@ const en = {
   'profile.suggestion': 'My Suggestions',
 
   'login.success': 'Welcome back',
+  'logout.success': 'logout success',
 
   'mentions.notFound': 'User not found',
-  
+
   'meta.postedBy': 'Posted By',
   'image.upload.type.error': 'The upload file is not an image.',
   'image.upload.size.error': 'The maximum upload file size is less than 500KB.',
 
-  'comments': 'Comments',
+  comments: 'Comments',
   'comments.posts': 'Posts',
   'comments.post': 'Post',
-  'comments.noComments': `No comments yet, `,
+  'comments.noComments': 'No comments yet, ',
   'comments.signIn': 'sign in ',
   'comments.firstToPost': 'to be the first to post!',
   'comments.placeholder': 'Leave a comment',
+  'comments.posted.success': 'Your comment has been posted.',
   // Admin tasks
   'admin.tasks.status': 'Status',
 
