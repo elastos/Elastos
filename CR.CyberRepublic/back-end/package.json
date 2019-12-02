@@ -42,7 +42,7 @@
     "lodash": ">=4.17.11",
     "mailgun-js": "^0.18.0",
     "moment": "^2.22.1",
-    "mongoose": "^5.5.15",
+    "mongoose": "^5.7.5",
     "mongoose-plugin-autoinc": "^1.1.9",
     "morgan": "^1.9.1",
     "natives": "^1.1.6",
