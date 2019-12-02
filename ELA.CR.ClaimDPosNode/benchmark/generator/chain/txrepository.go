@@ -1,12 +1,14 @@
 package chain
 
 import (
+	"io"
 	"math/rand"
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/benchmark/generator/tx"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type TxRepository struct {
@@ -16,6 +18,10 @@ type TxRepository struct {
 	utxos          map[common.Uint168][]types.UTXO
 	foundation     *account.Account
 	foundationUTXO types.UTXO
+}
+
+func (r *TxRepository) Params() *GenerationParams {
+	return r.params
 }
 
 func (r *TxRepository) GetFoundationAccount() *account.Account {
@@ -64,6 +70,144 @@ func (r *TxRepository) GenerateTxs(
 	r.updateByAllocateFundTx(txn)
 
 	return
+}
+
+func (r *TxRepository) Serialize(w io.Writer) (err error) {
+	if err = r.params.Serialize(w); err != nil {
+		return
+	}
+
+	if err = r.serializeAccount(w, r.foundation); err != nil {
+		return
+	}
+
+	if err = r.foundationUTXO.Serialize(w); err != nil {
+		return
+	}
+
+	if err = common.WriteVarUint(w, uint64(len(r.accountKeys))); err != nil {
+		return
+	}
+	for _, v := range r.accountKeys {
+		if err = v.Serialize(w); err != nil {
+			return
+		}
+	}
+
+	if err = common.WriteVarUint(w, uint64(len(r.accounts))); err != nil {
+		return
+	}
+	for k, v := range r.accounts {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+		if err = r.serializeAccount(w, v); err != nil {
+			return
+		}
+	}
+
+	if err = common.WriteVarUint(w, uint64(len(r.utxos))); err != nil {
+		return
+	}
+	for k, v := range r.utxos {
+		if err = k.Serialize(w); err != nil {
+			return
+		}
+
+		if err = common.WriteVarUint(w, uint64(len(v))); err != nil {
+			return
+		}
+		for _, v := range v {
+			if err = v.Serialize(w); err != nil {
+				return
+			}
+		}
+	}
+
+	return
+}
+
+func (r *TxRepository) Deserialize(reader io.Reader) (err error) {
+	r.params = &GenerationParams{}
+	if err = r.params.Deserialize(reader); err != nil {
+		return
+	}
+
+	if r.foundation, err = r.deserializeAccount(reader); err != nil {
+		return
+	}
+
+	if err = r.foundationUTXO.Deserialize(reader); err != nil {
+		return
+	}
+
+	var length uint64
+	if length, err = common.ReadVarUint(reader, 0); err != nil {
+		return
+	}
+	var key common.Uint168
+	for i := uint64(0); i < length; i++ {
+		if err = key.Deserialize(reader); err != nil {
+			return
+		}
+		r.accountKeys = append(r.accountKeys, key)
+	}
+
+	if length, err = common.ReadVarUint(reader, 0); err != nil {
+		return
+	}
+	var ac *account.Account
+	r.accounts = make(map[common.Uint168]*account.Account, length)
+	for i := uint64(0); i < length; i++ {
+		if err = key.Deserialize(reader); err != nil {
+			return
+		}
+		if ac, err = r.deserializeAccount(reader); err != nil {
+			return
+		}
+		r.accounts[key] = ac
+	}
+
+	if length, err = common.ReadVarUint(reader, 0); err != nil {
+		return
+	}
+	var utxo types.UTXO
+	var utxoCount uint64
+	r.utxos = make(map[common.Uint168][]types.UTXO, length)
+	for i := uint64(0); i < length; i++ {
+		if err = key.Deserialize(reader); err != nil {
+			return
+		}
+
+		if utxoCount, err = common.ReadVarUint(reader, 0); err != nil {
+			return
+		}
+		utxos := make([]types.UTXO, 0, utxoCount)
+		for j := uint64(0); j < utxoCount; j++ {
+			if err = utxo.Deserialize(reader); err != nil {
+				return
+			}
+			utxos = append(utxos, utxo)
+		}
+		r.utxos[key] = utxos
+	}
+
+	return
+}
+
+func (r *TxRepository) serializeAccount(w io.Writer, ac *account.Account) error {
+	return common.WriteVarBytes(w, ac.PrivateKey)
+}
+
+func (r *TxRepository) deserializeAccount(
+	reader io.Reader) (ac *account.Account, err error) {
+	var priBuf []byte
+	if priBuf, err = common.ReadVarBytes(reader, crypto.SignerLength,
+		"private key"); err != nil {
+		return
+	}
+
+	return account.NewAccountWithPrivateKey(priBuf)
 }
 
 func (r *TxRepository) updateByAllocateFundTx(allocTx *types.Transaction) {

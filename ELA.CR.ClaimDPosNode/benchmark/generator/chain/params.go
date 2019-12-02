@@ -1,5 +1,11 @@
 package chain
 
+import (
+	"io"
+
+	"github.com/elastos/Elastos.ELA/common"
+)
+
 type GenerationMod byte
 
 const (
@@ -18,4 +24,34 @@ type GenerationParams struct {
 	MaxRefersCount uint32
 	MinRefersCount uint32
 	AddressCount   uint32
+}
+
+func (p *GenerationParams) Serialize(w io.Writer) error {
+	if err := common.WriteUint8(w, uint8(p.Mode)); err != nil {
+		return err
+	}
+
+	return common.WriteElements(w,
+		p.PrepareStartHeight,
+		p.RandomStartHeight,
+		p.InputsPerBlock,
+		p.MaxRefersCount,
+		p.MinRefersCount,
+		p.AddressCount)
+}
+
+func (p *GenerationParams) Deserialize(r io.Reader) (err error) {
+	var mode uint8
+	if mode, err = common.ReadUint8(r); err != nil {
+		return
+	}
+	p.Mode = GenerationMod(mode)
+
+	return common.ReadElements(r,
+		&p.PrepareStartHeight,
+		&p.RandomStartHeight,
+		&p.InputsPerBlock,
+		&p.MaxRefersCount,
+		&p.MinRefersCount,
+		&p.AddressCount)
 }
