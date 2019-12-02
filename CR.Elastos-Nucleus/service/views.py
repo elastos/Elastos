@@ -1,7 +1,7 @@
 import json
 
 from decouple import config
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from console_main.views import login_required
 from django.contrib import messages
@@ -22,8 +22,7 @@ def generate_key(request):
         response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
         if response.status:
             api_key = response.api_key
-            sent_json = json.dumps({'API_KEY': api_key})
-            return HttpResponse(sent_json, content_type='application/JSON')
+            return JsonResponse({'API_KEY': api_key}, status=200)
         else:
             messages.success(request, "Could not generate an API key. Please try again")
             return redirect(reverse('service:generate_key'))
