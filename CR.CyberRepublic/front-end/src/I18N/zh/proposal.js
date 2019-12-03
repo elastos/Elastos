@@ -118,11 +118,12 @@ export default {
       tooLong: '文字太长',
       [`limit${ABSTRACT_MAX_WORDS}`]: '不能超过200字'
     },
-    msg: {
-      rejected: '已驳回',
-      approved: '已批准并发布',
-      draftSaved: '草稿保存成功，请前往提案列表查看',
-      proposalPublished: '提案发布成功'
-    }
+
+  },
+  msg: {
+    rejected: '已驳回',
+    approved: '已批准并发布',
+    draftSaved: '草稿保存成功，请前往提案列表查看',
+    proposalPublished: '提案发布成功'
   }
 }

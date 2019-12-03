@@ -5,6 +5,7 @@ import CouncilService from '@/service/CouncilService'
 import { message } from 'antd'
 import _ from 'lodash'
 import { logger } from '@/util'
+import I18N from '@/I18N'
 
 export default createContainer(Component, (state) => {
   const commentables = ['task', 'submission', 'team', 'member', 'elip', 'suggestion']
@@ -32,7 +33,7 @@ export default createContainer(Component, (state) => {
           returnUrl, parentId, comment, headline)
 
         if (rs) {
-          message.success('Your comment has been posted.')
+          message.success(I18N.get('comments.posted'))
         }
       } catch (err) {
         message.error(err.message)
