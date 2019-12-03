@@ -139,7 +139,7 @@ namespace Elastos {
 #define ArgInfo(...)
 #endif
 
-#define SPVLOG_DEBUG(...) SPDLOG_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
+#define SPVLOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::get(SPV_DEFAULT_LOG), __VA_ARGS__)
 
 	}
 }

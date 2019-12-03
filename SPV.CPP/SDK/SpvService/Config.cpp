@@ -205,7 +205,7 @@ namespace Elastos {
 					"TargetTimePerBlock", "DNSSeeds", "CheckPoints"
 				};
 
-				for (const std::string cpConfigName : chainParameterConfigNames) {
+				for (const std::string &cpConfigName : chainParameterConfigNames) {
 					if (newChainParameters.find(cpConfigName) != newChainParameters.end()) {
 						currentChainParameters[cpConfigName] = newChainParameters[cpConfigName];
 						changed = true;

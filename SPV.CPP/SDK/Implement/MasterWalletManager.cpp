@@ -40,7 +40,7 @@ namespace Elastos {
 
 			Log::registerMultiLogger(_dataPath);
 
-			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
+			Log::setLevel(spdlog::level::level_enum(SPVLOG_LEVEL));
 			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
 #ifdef SPV_ENABLE_STATIC
@@ -78,7 +78,7 @@ namespace Elastos {
 
 			Log::registerMultiLogger(_dataPath);
 
-			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
+			Log::setLevel(spdlog::level::level_enum(SPVLOG_LEVEL));
 			Log::info("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
 #ifdef SPV_ENABLE_STATIC
