@@ -102,14 +102,16 @@ export default class extends Base {
       throw 'Only owner can edit suggestion'
     }
 
-    const doc = _.pick(param, BASE_FIELDS);
-    let amount = 0.0;
-    if(param.budget && Array.isArray(param.budget) && param.budget.length){
-      doc.budget.map(function(it) {
-        amount += Number(it.amount)
-      })
+    const doc = _.pick(param, BASE_FIELDS)
+
+    if (param.budget && Array.isArray(param.budget)) {
+      doc.budgetAmount = param.budget.reduce((sum, el) => {
+        if (el && el.amount) {
+          return sum += Number(el.amount)
+        }
+        return sum
+      }, 0.0)
     }
-    doc.budgetAmount = amount
     
     doc.descUpdatedAt = new Date()
     if (update) {

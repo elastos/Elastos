@@ -164,7 +164,11 @@ class C extends BaseComponent {
         validator: this.validateAbstract
       })
     }
-    if (id === 'plan') {
+    if (
+      id === 'plan' &&
+      ((initialValues.plan && typeof initialValues.plan !== 'string') ||
+        !initialValues.plan)
+    ) {
       rules.push({
         message: I18N.get('suggestion.form.error.plan'),
         validator: this.validatePlan

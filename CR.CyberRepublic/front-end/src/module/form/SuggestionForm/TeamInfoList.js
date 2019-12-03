@@ -73,7 +73,7 @@ class TeamInfoList extends BaseComponent {
 TeamInfoList.propTypes = {
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
-  list: PropTypes.array.isRequired,
+  list: PropTypes.array,
   editable: PropTypes.bool
 }
 
