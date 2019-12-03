@@ -540,10 +540,16 @@ export default class extends Base {
     }
     // has tracking
     if(param.hasTracking) {
-      query.tracking = {
-        $not: {
-          $in: [null, ""]
-        }
+      const db_cvote_tracking = this.getDBModel('CVote_Tracking')
+      const hasTracking = await db_cvote_tracking.find({
+        status: constant.CVOTE_TRACKING_STATUS.REVIEWING
+      }, "proposalId")
+      let trackingProposals = []
+      hasTracking.map(function(it) {
+        trackingProposals.push(it.proposalId)
+      })
+      query._id = {
+        $in: trackingProposals
       }
     }
 
