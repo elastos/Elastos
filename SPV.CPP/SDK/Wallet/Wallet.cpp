@@ -13,7 +13,7 @@
 #include <WalletCore/Address.h>
 #include <WalletCore/HDKeychain.h>
 #include <Plugin/Transaction/Asset.h>
-#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/IDTransaction.h>
 #include <Plugin/Transaction/TransactionOutput.h>
 #include <Plugin/Transaction/TransactionInput.h>
 #include <Plugin/Transaction/Payload/RegisterAsset.h>
@@ -812,6 +812,87 @@ namespace Elastos {
 		std::vector<Address> Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->UnusedAddresses(gapLimit, internal);
+		}
+
+		std::vector<TransactionPtr> Wallet::GetTransactions(uint32_t typeFilter) const {
+			std::vector<TransactionPtr> result;
+
+			boost::mutex::scoped_lock scopedLock(lock);
+			size_t maxCount = _transactions.size();
+			for (size_t i = 0; i < maxCount; ++i) {
+				TransactionPtr tx = _transactions[i];
+				uint32_t type = tx->GetTransactionType();
+				if (type == Transaction::registerProducer &&
+				    (typeFilter & FIlter_registerProducer) == FIlter_registerProducer) {
+					result.push_back(tx);
+				} else if (type == Transaction::updateProducer &&
+				           (typeFilter & FIlter_updateProducer) == FIlter_updateProducer) {
+					result.push_back(tx);
+				} else if (type == Transaction::cancelProducer &&
+				           (typeFilter & FIlter_cancelProducer) == FIlter_cancelProducer) {
+					result.push_back(tx);
+				} else if (type == Transaction::activateProducer &&
+				           (typeFilter & FIlter_activateProducer) == FIlter_activateProducer) {
+					result.push_back(tx);
+				} else if (type == Transaction::returnDepositCoin &&
+				           (typeFilter & FIlter_returnDepositCoin) == FIlter_returnDepositCoin) {
+					result.push_back(tx);
+				} else if (type == Transaction::registerCR &&
+				           (typeFilter & FIlter_registerCR) == FIlter_registerCR) {
+					result.push_back(tx);
+				} else if (type == Transaction::unregisterCR &&
+				           (typeFilter & FIlter_unregisterCR) == FIlter_unregisterCR) {
+					result.push_back(tx);
+				} else if (type == Transaction::updateCR &&
+				           (typeFilter & FIlter_updateCR) == FIlter_updateCR) {
+					result.push_back(tx);
+				} else if (type == Transaction::returnCRDepositCoin &&
+				           (typeFilter & FIlter_returnCRDepositCoin) == FIlter_returnCRDepositCoin) {
+					result.push_back(tx);
+				} else if (type == Transaction::coinBase && (typeFilter & FIlTER_coinBase) == FIlTER_coinBase) {
+					result.push_back(tx);
+				} else if (type == Transaction::registerAsset &&
+				           (typeFilter & FILTER_registerAsset) == FILTER_registerAsset) {
+					result.push_back(tx);
+				} else if (type == Transaction::transferAsset &&
+				           (typeFilter & FIlter_transferAsset) == FIlter_transferAsset) {
+					result.push_back(tx);
+				} else if (type == Transaction::record && (typeFilter & FIlter_record) == FIlter_record) {
+					result.push_back(tx);
+				} else if (type == Transaction::deploy && (typeFilter & FIlter_deploy) == FIlter_deploy) {
+					result.push_back(tx);
+				} else if (type == Transaction::sideChainPow &&
+				           (typeFilter & FIlter_sideChainPow) == FIlter_sideChainPow) {
+					result.push_back(tx);
+				} else if (type == Transaction::rechargeToSideChain &&
+				           (typeFilter & FIlter_rechargeToSideChain) == FIlter_rechargeToSideChain) {
+					result.push_back(tx);
+				} else if (type == Transaction::withdrawFromSideChain &&
+				           (typeFilter & FIlter_withdrawFromSideChain) == FIlter_withdrawFromSideChain) {
+					result.push_back(tx);
+				} else if (type == Transaction::transferCrossChainAsset &&
+				         (typeFilter & FIlter_transferCrossChainAsset) == FIlter_transferCrossChainAsset) {
+					result.push_back(tx);
+				} else if (type == Transaction::crcProposal &&
+				           (typeFilter & FIlter_crcProposal) == FIlter_crcProposal) {
+					result.push_back(tx);
+				} else if (type == Transaction::crcProposalReview &&
+				           (typeFilter & FIlter_crcProposalReview) == FIlter_crcProposalReview) {
+					result.push_back(tx);
+				} else if (type == Transaction::crcProposalTracking &&
+				          (typeFilter & FIlter_crcProposalTracking) == FIlter_crcProposalTracking) {
+					result.push_back(tx);
+				} else if (type == IDTransaction::registerIdentification &&
+				          (typeFilter & FILTER_IDCHAIN_registerIdentification) ==
+				          FILTER_IDCHAIN_registerIdentification) {
+					result.push_back(tx);
+				} else if (type == IDTransaction::didTransaction &&
+				          (typeFilter & FILTER_IDCHAIN_didTransaction) == FILTER_IDCHAIN_didTransaction) {
+					result.push_back(tx);
+				}
+			}
+
+			return result;
 		}
 
 		std::vector<TransactionPtr> Wallet::GetAllTransactions(size_t start, size_t count) const {

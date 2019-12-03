@@ -40,10 +40,31 @@ namespace Elastos {
 											   MasterWallet *parent,
 											   const std::string &netType) :
 				SubWallet(info, config, parent, netType) {
+			InitData();
 		}
 
 		MainchainSubWallet::~MainchainSubWallet() {
+			_crList.clear();
+		}
 
+		void MainchainSubWallet::InitData() {
+			uint32_t filter = FIlter_registerCR | FIlter_unregisterCR | FIlter_updateCR | FIlter_returnCRDepositCoin |
+			                  FIlter_registerProducer | FIlter_cancelProducer| FIlter_updateProducer| FIlter_returnDepositCoin;
+
+			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetTransactions(filter);
+
+			for (std::vector<TransactionPtr>::iterator it = list.begin(); it != list.end(); ++it) {
+				TransactionPtr tx = *it;
+				uint8_t type = tx->GetTransactionType();
+				if (type == Transaction::registerCR || type == Transaction::unregisterCR ||
+				    type == Transaction::updateCR || type == Transaction::returnCRDepositCoin) {
+					_crList.push_back(tx);
+				} else if (type == Transaction::registerProducer || type == Transaction::cancelProducer ||
+				           type == Transaction::updateProducer || type == Transaction::returnDepositCoin ||
+				           type == Transaction::activateProducer) {
+					_producerList.push_back(tx);
+				}
+			}
 		}
 
 		nlohmann::json MainchainSubWallet::CreateDepositTransaction(const std::string &fromAddress,
@@ -63,14 +84,8 @@ namespace Elastos {
 			BigInt value;
 			value.setDec(amount);
 
-			PayloadPtr payload = nullptr;
-			try {
-				TransferInfo info(sideChainAddress, 0, value);
-				payload = PayloadPtr(new TransferCrossChainAsset({info}));
-			} catch (const nlohmann::detail::exception &e) {
-				ErrorChecker::ThrowParamException(Error::JsonFormatError,
-												  "Side chain message error: " + std::string(e.what()));
-			}
+			TransferInfo info(sideChainAddress, 0, value);
+			PayloadPtr payload = PayloadPtr(new TransferCrossChainAsset({info}));
 
 			ChainConfigPtr configPtr =  _parent->GetChainConfig(sideChainID);
 			std::vector<OutputPtr> outputs;
@@ -446,13 +461,12 @@ namespace Elastos {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
-			std::vector<TransactionPtr> allTxs = wallet->GetAllTransactions(0, wallet->GetAllTransactionCount());
 			nlohmann::json j;
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
-			for (std::vector<TransactionPtr>::reverse_iterator it = allTxs.rbegin(); it != allTxs.rend(); ++it) {
-				TransactionPtr tx = *it;
+			for (size_t i = _producerList.size(); i > 0; --i) {
+				TransactionPtr tx = _producerList[i - 1];
 				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
 					continue;
 				}
@@ -473,6 +487,7 @@ namespace Elastos {
 						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
+					break;
 				} else if (tx->GetTransactionType() == Transaction::cancelProducer) {
 					const CancelProducer *pc = dynamic_cast<const CancelProducer *>(tx->GetPayload());
 					if (pc) {
@@ -485,9 +500,11 @@ namespace Elastos {
 						j["Status"] = "Canceled";
 						j["Info"] = info;
 					}
+					break;
 				} else if (tx->GetTransactionType() == Transaction::returnDepositCoin) {
 					j["Status"] = "ReturnDeposit";
 					j["Info"] = nlohmann::json();
+					break;
 				}
 			}
 
@@ -802,13 +819,12 @@ namespace Elastos {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
-			std::vector<TransactionPtr> allTxs = wallet->GetAllTransactions(0, wallet->GetAllTransactionCount());
 			nlohmann::json j;
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
-			for (std::vector<TransactionPtr>::reverse_iterator it = allTxs.rbegin(); it != allTxs.rend(); ++it) {
-				TransactionPtr tx = *it;
+			for (size_t i = _crList.size(); i > 0; --i) {
+				TransactionPtr tx = _crList[i - 1];
 				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
 					continue;
 				}
@@ -832,6 +848,7 @@ namespace Elastos {
 						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
+					break;
 				} else if (tx->GetTransactionType() == Transaction::unregisterCR) {
 					const UnregisterCR *pc = dynamic_cast<const UnregisterCR *>(tx->GetPayload());
 					if (pc) {
@@ -843,10 +860,13 @@ namespace Elastos {
 
 						j["Status"] = "Canceled";
 						j["Info"] = info;
+
 					}
+					break;
 				} else if (tx->GetTransactionType() == Transaction::returnCRDepositCoin) {
 					j["Status"] = "ReturnDeposit";
 					j["Info"] = nlohmann::json();
+					break;
 				}
 			}
 
@@ -1381,6 +1401,84 @@ namespace Elastos {
 			EncodeTx(result, tx);
 			ArgInfo("r => {}", result.dump());
 			return result;
+		}
+
+		void MainchainSubWallet::onTxAdded(const TransactionPtr &tx) {
+			SubWallet::onTxAdded(tx);
+			uint8_t type = tx->GetTransactionType();
+			Lock();
+			if (type == Transaction::registerCR ||
+			    type == Transaction::unregisterCR ||
+			    type == Transaction::updateCR ||
+			    type == Transaction::returnCRDepositCoin) {
+				_crList.push_back(tx);
+			} else if (type == Transaction::registerProducer ||
+			           type == Transaction::cancelProducer ||
+			           type == Transaction::updateProducer ||
+			           type == Transaction::returnDepositCoin ||
+			           type == Transaction::activateProducer) {
+				_producerList.push_back(tx);
+			}
+			Unlock();
+		}
+
+		void MainchainSubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
+			SubWallet::onTxUpdated(hashes, blockHeight,timeStamp);
+
+			Lock();
+			bool isFound = false;
+			size_t count = _crList.size();
+
+			for (size_t i = 0;  i < hashes.size(); ++i) {
+				for (size_t j = 0; j < count; ++j) {
+					TransactionPtr tx = _crList[j];
+					if (tx->GetHash().GetHex() == hashes[i].GetHex()) {
+						tx->SetBlockHeight(blockHeight);
+						tx->SetTimestamp(timeStamp);
+						isFound = true;
+						break;
+					}
+				}
+			}
+
+			count = isFound ? 0 : _producerList.size();
+			for (size_t i = 0;  i < hashes.size(); ++i) {
+				for (size_t j = 0; j < count; ++j) {
+					TransactionPtr tx = _producerList[j];
+					if (tx->GetHash().GetHex() == hashes[i].GetHex()) {
+						tx->SetBlockHeight(blockHeight);
+						tx->SetTimestamp(timeStamp);
+						break;
+					}
+				}
+			}
+
+			Unlock();
+		}
+
+		void MainchainSubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
+			SubWallet::onTxDeleted(hash, notifyUser, recommendRescan);
+
+			Lock();
+			size_t len = _crList.size();
+			bool isFound = false;
+			for (size_t i = 0; i < len; ++i) {
+				if (_crList[i]->GetHash().GetHex() == hash.GetHex()) {
+					_crList.erase(_crList.begin() + i);
+					isFound = true;
+					break;
+				}
+			}
+
+			len = isFound ? 0 : _producerList.size();
+			for (size_t i = 0; i < len; ++i) {
+				if (_producerList[i]->GetHash().GetHex() == hash.GetHex()) {
+					_producerList.erase(_producerList.begin() + i);
+					break;
+				}
+			}
+
+			Unlock();
 		}
 
 	}

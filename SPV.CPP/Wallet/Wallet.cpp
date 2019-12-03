@@ -948,7 +948,7 @@ static int didsign(int argc, char *argv[]) {
 	return 0;
 }
 
-// registercr (cr | dpos)
+// register (cr | dpos)
 static int _register(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1070,6 +1070,33 @@ static int unregister(int argc, char *argv[]) {
 		}
 
 		signAndPublishTx(subWallet, tx, password);
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+	return 0;
+}
+
+// info (cr | dpos)
+static int info(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+
+	std::string registerWhat = argv[1];
+
+	try {
+		IMainchainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ELA);
+		if (registerWhat == "cr") {
+			nlohmann::json crInfo = subWallet->GetRegisteredCRInfo();
+			std::cout << crInfo.dump(4) <<  std::endl;
+		} else if (registerWhat == "dpos") {
+			nlohmann::json dposInfo = subWallet->GetRegisteredProducerInfo();
+			std::cout << dposInfo.dump(4) <<  std::endl;
+		} else {
+			invalidCmdError();
+			return ERRNO_APP;
+		}
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1834,6 +1861,7 @@ struct command {
 	{"export",     _export,        "(m[nemonic] | k[eystore])                        Export mnemonic or keystore."},
 	{"register",   _register,      "(cr | dpos)                                      Register CR or DPoS with specified wallet."},
 	{"unregister", unregister,     "(cr | dpos)                                      Unregister CR or DPoS with specified wallet."},
+	{"info",      info,          "(cr | dpos)                                      Get CR or DPos info with specified wallet."},
 	{"retrieve",   retrieve,       "(cr | dpos)                                      Retrieve Pledge with specified wallet."},
 	{"vote",       vote,           "(cr | dpos)                                      CR/DPoS vote."},
 	{"network",    _network,       "[netType]                                        Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},

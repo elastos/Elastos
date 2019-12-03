@@ -65,6 +65,38 @@ namespace Elastos {
 				TypeMaxCount
 			};
 
+#define FIlTER_coinBase 1 << 0
+#define FILTER_registerAsset 1 << 1
+#define FIlter_transferAsset 1 << 2
+#define FIlter_record 1 << 3
+#define FIlter_deploy 1 << 4
+#define FIlter_sideChainPow 1 << 5
+#define FIlter_rechargeToSideChain 1 << 6
+#define FIlter_withdrawFromSideChain 1 << 7
+#define FIlter_transferCrossChainAsset 1 << 8
+
+#define FIlter_registerProducer 1 << 9
+#define FIlter_cancelProducer 1 << 10
+#define FIlter_updateProducer 1 << 11
+#define FIlter_returnDepositCoin 1 << 12
+#define FIlter_activateProducer 1 << 13
+
+#define FIlter_IllegalProposalEvidence 1 << 14
+#define FIlter_IllegalVoteEvidence 1 << 15
+#define FIlter_IllegalBlockEvidence 1 << 16
+#define FIlter_IllegalSidechainEvidence 1 << 17
+#define FIlter_InactiveArbitrators 1 << 18
+#define FIlter_UpdateVersion 1 << 19
+
+#define FIlter_registerCR 1 << 20
+#define FIlter_unregisterCR 1 << 21
+#define FIlter_updateCR 1 << 22
+#define FIlter_returnCRDepositCoin 1 << 23
+
+#define FIlter_crcProposal 1 << 24
+#define FIlter_crcProposalReview 1 << 25
+#define FIlter_crcProposalTracking 1 << 26
+
 			enum TxVersion {
 				Default = 0x00,
 				V09 = 0x09,

@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_MAINCHAINSUBWALLET_H__
 #define __ELASTOS_SDK_MAINCHAINSUBWALLET_H__
 
-#include "SubWallet.h"
+#include "SidechainSubWallet.h"
 #include <IMainchainSubWallet.h>
 
 namespace Elastos {
@@ -157,6 +157,13 @@ namespace Elastos {
 			CreateProposalTrackingTransaction(const nlohmann::json &SecretaryGeneralSignedPayload,
 			                                  const std::string &memo);
 
+		protected:
+			virtual void onTxAdded(const TransactionPtr &tx);
+
+			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
+
+			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
+
 		private:
 			PayloadPtr GenerateCRCProposalPayload(uint8_t type,
 			                                      const std::string &sponsorPublicKey,
@@ -166,6 +173,7 @@ namespace Elastos {
 			                                      const std::string &recipient,
 			                                      const std::string &sponsorSignature = "",
 			                                      const std::string &crSponsorSignature = "") const;
+			void InitData();
 		protected:
 			friend class MasterWallet;
 
@@ -175,6 +183,10 @@ namespace Elastos {
 							   const std::string &netType);
 
 			TransactionPtr CreateVoteTx(const VoteContent &voteContent, const std::string &memo, bool max);
+
+		private:
+			std::vector<TransactionPtr> _crList;
+			std::vector<TransactionPtr> _producerList;
 		};
 
 	}
