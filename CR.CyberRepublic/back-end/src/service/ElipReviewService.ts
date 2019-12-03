@@ -60,6 +60,8 @@ export default class extends Base {
       <p>Cyber Republic Team</p>
       <p>Thanks</p>
     `
+      
+    console.log(elip)
 
     const mailObj = {
       to: elip.createdBy.email,
