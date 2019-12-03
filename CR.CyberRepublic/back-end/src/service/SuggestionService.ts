@@ -21,7 +21,7 @@ export default class extends Base {
       descUpdatedAt: new Date()
     }
     let amount = 0.0;
-    if(param.budget && param.budget.length){
+    if(param.budget && Array.isArray(param.budget) && param.budget.length){
       param.budget.map(function(it) {
         amount += Number(it.amount)
       })
@@ -104,7 +104,7 @@ export default class extends Base {
 
     const doc = _.pick(param, BASE_FIELDS);
     let amount = 0.0;
-    if(param.budget && param.budget.length){
+    if(param.budget && Array.isArray(param.budget) && param.budget.length){
       doc.budget.map(function(it) {
         amount += Number(it.amount)
       })
