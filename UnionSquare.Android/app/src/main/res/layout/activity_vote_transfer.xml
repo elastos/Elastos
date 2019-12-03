@@ -137,7 +137,7 @@
                 android:id="@+id/tv_next"
                 style="@style/button_margin"
                 android:layout_gravity="center"
-                android:text="@string/sure" />
+                android:text="@string/next" />
         </LinearLayout>
 
     </LinearLayout>

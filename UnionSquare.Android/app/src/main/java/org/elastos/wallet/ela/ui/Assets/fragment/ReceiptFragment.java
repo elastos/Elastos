@@ -49,7 +49,7 @@ public class ReceiptFragment extends BaseFragment implements ReceiptViewData {
         tvTitle.setText(getString(R.string.collection));
         if (wallet.isSingleAddress()) {
             //单地址
-            tvWalletList.setVisibility(View.GONE);
+            tvWalletList.setVisibility(View.INVISIBLE);
         }
 
 
@@ -75,7 +75,7 @@ public class ReceiptFragment extends BaseFragment implements ReceiptViewData {
     @Override
     public void onCreateAddress(String data) {
         tvAddress.setText(data);
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 160), ScreenUtil.dp2px(getContext(), 160), Constant.TRANSFER,chainId,-1);
+        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.TRANSFER, chainId,-1);
         ivQr.setImageBitmap(mBitmap);
     }
 }

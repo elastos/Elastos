@@ -200,12 +200,12 @@
     <string name="transfertype9">注册参选交易</string>
     <string name="transfertype10">取消参选交易</string>
     <string name="transfertype11">更新参选信息交易</string>
-    <string name="transfertype12">取回参选质押资产交易</string>
+    <string name="transfertype12">提取DPoS质押金交易</string>
     <string name="transfertype13">未知交易类型</string>
     <string name="transfertype33">注册CR参选交易</string>
     <string name="transfertype34">取消CR参选交易</string>
     <string name="transfertype35">更新CR参选信息交易</string>
-    <string name="transfertype36">取回CR参选质押资产交易</string>
+    <string name="transfertype36">提取CR质押金交易</string>
     <string name="sidetransfertype0">创币交易</string>
     <string name="sidetransfertype1">注册资产交易</string>
     <string name="sidetransfertype2">普通转账交易</string>

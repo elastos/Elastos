@@ -228,10 +228,10 @@
 
 
                 <LinearLayout
-                    android:layout_marginBottom="25dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
+                    android:layout_marginBottom="25dp"
                     android:gravity="center"
                     android:orientation="horizontal">
 
@@ -240,18 +240,21 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="15dp"
-                        android:layout_weight="1"
                         android:text="@string/officeweb"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/tv_url"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="40dp"
                         android:layout_marginRight="15dp"
                         android:drawableRight="@mipmap/asset_transfer_copy"
                         android:drawablePadding="10dp"
+                        android:ellipsize="end"
+                        android:gravity="right"
+                        android:maxLines="1"
                         android:textColor="#ff2893e8"
                         android:textSize="13sp" />
 

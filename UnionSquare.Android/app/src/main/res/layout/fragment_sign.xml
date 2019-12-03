@@ -45,8 +45,8 @@
 
     <LinearLayout
         android:id="@+id/ll_vp"
-        android:layout_width="260dp"
-        android:layout_height="190dp"
+        android:layout_width="320dp"
+        android:layout_height="260dp"
         android:layout_marginTop="20dp"
         android:background="@mipmap/asset_code_border"
         android:orientation="vertical"
@@ -57,15 +57,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingLeft="35dp"
-            android:paddingRight="35dp" />
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp" />
     </LinearLayout>
 
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/px70"
+        android:layout_marginTop="@dimen/px60"
         android:gravity="center"
         android:text="@string/pleasesign"
         android:textColor="#ffffffff"
@@ -85,7 +85,7 @@
         android:id="@+id/tv_multip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/px56"
+        android:layout_marginTop="@dimen/px50"
         android:text="@string/scanallqr"
         android:textColor="#ffffffff"
         android:textSize="13sp" />
@@ -106,7 +106,7 @@
     <TextView
         android:id="@+id/tv_back"
         style="@style/button_margin"
-        android:layout_marginBottom="@dimen/px180"
+        android:layout_marginBottom="@dimen/px120"
         android:text="@string/backtostart"
         android:textSize="15sp" />
 </LinearLayout>

@@ -93,11 +93,12 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
                 did = tvDid.getText().toString().trim();//节点did
                 area = tvArea.getText().toString().trim();//国家地址
                 url = etUrl.getText().toString().trim();//官网
-
-                for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
-                    if (name.equals(bean.getNickname())) {
-                        showToast(getString(R.string.menbernameexist));
-                        return;
+                if (netList != null && netList.size() != 0) {
+                    for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : netList) {
+                        if (name.equals(bean.getNickname())) {
+                            showToast(getString(R.string.menbernameexist));
+                            return;
+                        }
                     }
                 }
                 if (TextUtils.isEmpty(ownerPublicKey)) {

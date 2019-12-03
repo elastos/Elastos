@@ -43,6 +43,7 @@
             style="@style/settingItem_margin15">
 
             <TextView
+                android:id="@+id/tv_address_tag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -50,10 +51,12 @@
 
             <TextView
                 android:id="@+id/tv_address"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
+                android:layout_marginLeft="15dp"
+                android:layout_toRightOf="@id/tv_address_tag"
+                android:gravity="right"
                 android:maxLines="2" />
 
             <View

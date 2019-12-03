@@ -11,8 +11,8 @@
     <ImageView
         android:padding="10dp"
         android:id="@+id/iv_qr"
-        android:layout_width="190dp"
-        android:layout_height="190dp"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
         android:layout_marginTop="70dp"
         android:background="@mipmap/asset_code_border" />
 

@@ -49,7 +49,7 @@ public class ExportReadOnlyFragment extends BaseFragment implements CommmonStrin
 
     @Override
     public void onGetCommonData(String methodname, String data) {
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 180), ScreenUtil.dp2px(getContext(), 180), Constant.CREATEREADONLY,null,-1);
+        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.CREATEREADONLY,null,-1);
         ivQr.setImageBitmap(mBitmap);
     }
 }

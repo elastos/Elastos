@@ -10,9 +10,9 @@
 
     <ImageView
         android:id="@+id/iv_qr"
-        android:layout_width="170dp"
-        android:layout_height="170dp"
-        android:layout_marginTop="70dp"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:layout_marginTop="50dp"
         android:background="@mipmap/asset_code_border"
         android:padding="10dp" />
 
@@ -40,12 +40,17 @@
         android:text="@string/scancreatemulwallet"
         android:textSize="11sp" />
 
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
     <TextView
         android:id="@+id/tv_copy"
         style="@style/button1"
         android:layout_marginLeft="79dp"
-        android:layout_marginTop="110dp"
         android:layout_marginRight="79dp"
+        android:layout_marginBottom="50dp"
         android:text="@string/copymulpublickey" />
 
 

@@ -78,7 +78,6 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
     @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
-
         wallet = data.getParcelable("wallet");
         signData = data.getString("attributes");
         transType = data.getInt("transType");
@@ -224,8 +223,8 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
 
     public void setQr(String data) {
         //encodeTransaction  加密后的结果
-        List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 170)
-                , ScreenUtil.dp2px(getContext(), 170), Constant.SIGN, transType);
+        List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240)
+                , ScreenUtil.dp2px(getContext(), 240), Constant.SIGN, transType);
         if (images.size() == 1) {
             ivQr.setVisibility(View.VISIBLE);
             llVp.setVisibility(View.GONE);

@@ -167,6 +167,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 break;
             case R.id.tv_myvote:
                 bundle = new Bundle();
+              /*  if (curentNode != null && status.equals("Registered") && curentNode.getState().equals("Active")) {
+                    bundle.putBoolean("is", is);
+                    bundle.putInt("pos", pos);
+                }*/
                 bundle.putSerializable("netList", netList);
                 start(CRMyVoteFragment.class, bundle);
                 break;
@@ -366,10 +370,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
      */
     private void resetData(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list, String totalvotes) {
 
-        Iterator<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> iterator = list.iterator();
-        while (iterator.hasNext()) {
+
+        for (int i = 0; i < list.size(); i++) {
             //筛选当前节点
-            CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = iterator.next();
+            CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = list.get(i);
             if (curentNode == null) {
                 if (bean.getDid().equals(did)) {
                     curentNode = bean;
@@ -377,8 +381,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             }
             //删除非active节点
             if (!bean.getState().equals("Active")) {
-                iterator.remove();//date  remove 不影响netlist  date修改影响netlist
+                list.remove(i--);//date  remove 不影响netlist  date修改影响netlist
                 continue;
+            } else {
+                bean.setIndex(i);
             }
             setVoterate(bean, totalvotes);
 
@@ -532,6 +538,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         onErrorRefreshLayout(srl);
         pageNum = 1;
         is = false;
+        pos=-1;
+        curentNode=null;
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
     }
 

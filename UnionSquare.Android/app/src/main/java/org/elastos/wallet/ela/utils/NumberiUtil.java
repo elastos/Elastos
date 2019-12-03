@@ -19,7 +19,12 @@ public class NumberiUtil {
     }
 
     public static String numberFormat(Object number, int wei) {
-        BigDecimal b = new BigDecimal(number.toString());
+        BigDecimal b;
+        if (number instanceof BigDecimal) {
+            b = (BigDecimal) number;
+        } else {
+            b = new BigDecimal(number.toString());
+        }
         return removeZero(b.setScale(wei, BigDecimal.ROUND_DOWN).toPlainString());
     }
 
@@ -53,7 +58,7 @@ public class NumberiUtil {
         if (number.contains("E") || number.contains("e")) {
             number = new BigDecimal(number).toPlainString();
         }
-        number=removeZero(number);
+        number = removeZero(number);
         if (number.split("\\.").length > 1) {
             String part1 = (number.split("\\."))[0];//整数部分
             String part2 = number.split("\\.")[1];//小数部分
@@ -72,7 +77,7 @@ public class NumberiUtil {
 
     public static String maxNumberFormat(BigDecimal number1, int wei) {
         String number = number1.toPlainString();
-        number=removeZero(number);
+        number = removeZero(number);
         if (number.contains(".")) {
             String part1 = (number.split("\\."))[0];//整数部分
             String part2 = number.split("\\.")[1];//小数部分
