@@ -95,7 +95,7 @@ public class TransferActivity extends BaseActivity {
         }
         wallet = data.getParcelableExtra("wallet");
         tvAddress.setText(toAddress);
-        tvAmount.setText(amount + " ELA");
+        tvAmount.setText(NumberiUtil.numberFormat(amount,8) + " ELA");
         //tvCharge.setText(NumberiUtil.maxNumberFormat(new BigDecimal(((double) fee) / MyWallet.RATE + "").toPlainString(), 12) + " " + chainId);//0.0001
         tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S), 12) + " ELA");//0.0001
 

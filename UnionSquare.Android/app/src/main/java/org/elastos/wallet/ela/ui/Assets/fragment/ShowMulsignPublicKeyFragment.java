@@ -44,7 +44,7 @@ public class ShowMulsignPublicKeyFragment extends BaseFragment/* implements NewB
     protected void setExtraData(Bundle data) {
         wallet = data.getParcelable("wallet");
         requestPubKey = data.getString("requestPubKey");
-        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(requestPubKey, ScreenUtil.dp2px(getContext(), 160), ScreenUtil.dp2px(getContext(), 160), Constant.CREATEMUL, null);
+        Bitmap mBitmap = QRCodeUtils.createQrCodeBitmap(requestPubKey, ScreenUtil.dp2px(getContext(), 240), ScreenUtil.dp2px(getContext(), 240), Constant.CREATEMUL, null);
         ivQr.setImageBitmap(mBitmap);
         tvAddress.setText(requestPubKey);
 

@@ -84,8 +84,8 @@ public class ToSignFragment extends BaseFragment {
 
     public void setData(String data) {
         //encodeTransaction  加密后的结果
-        List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 170)
-                , ScreenUtil.dp2px(getContext(), 170), Constant.SIGN);
+        List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 250)
+                , ScreenUtil.dp2px(getContext(), 250), Constant.SIGN);
         if (images.size() == 1) {
             ivQr.setVisibility(View.VISIBLE);
             llVp.setVisibility(View.GONE);

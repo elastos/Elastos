@@ -54,13 +54,13 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
     @Override
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
 
-        helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.black));
+        helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.black));
         if (is && 0 == helper.getLayoutPosition()) {
-            helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.blue1));
+            helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.blue1));
         }
         helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
         helper.setText(R.id.tv_name, bean.getNickname());
-        helper.setText(R.id.tv_address, AppUtlis.getLoc(context.getContext(), bean.getLocation() + ""));
+        helper.setText(R.id.tv_address, AppUtlis.getLoc(mContext, bean.getLocation() + ""));
         BigDecimal voterateDecimal = new BigDecimal(bean.getVoterate());
         if (voterateDecimal.compareTo(new BigDecimal(0.01)) < 0) {
             helper.setText(R.id.tv_zb, "< 1%");
@@ -69,12 +69,12 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
             helper.setText(R.id.tv_zb, voterate + "%");
 
         }
-        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
+        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + mContext.getString(R.string.ticket));
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial_circle);
         String baseUrl = bean.getUrl();
         iv.setTag(R.id.error_tag_empty, baseUrl);
-        GlideApp.with(context).clear(iv);
+        GlideApp.with(mContext).clear(iv);
         if (baseUrl == null) {
             return;
         }
@@ -117,7 +117,7 @@ public class SuperNodeListAdapter1 extends BaseQuickAdapter<VoteListBean.DataBea
                     @Override
                     public void onGetImage(ImageView iv1, String url, ImageBean imageBean) {
                         if (iv1.getTag(R.id.error_tag_empty) == null || !(iv1.getTag(R.id.error_tag_empty).toString()).equals(url)) {
-                            GlideApp.with(context).clear(iv1);
+                            GlideApp.with(mContext).clear(iv1);
                             iv1.setImageResource(R.mipmap.found_vote_initial);
                             return;
                         }

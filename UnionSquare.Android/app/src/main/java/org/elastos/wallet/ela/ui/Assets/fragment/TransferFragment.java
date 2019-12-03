@@ -118,7 +118,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
                 start(new ChooseContactFragment());
                 break;
             case R.id.tv_max:
-                //  etBalance.setText(maxBalance);
+                  etBalance.setText("MAX");
                 break;
             case R.id.tv_next:
                 startTransfer();
@@ -239,9 +239,15 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
             showToastMessage("不正确的钱包地址");
             return;
         }
+        String value;
+        if ("MAX".equals(amount)) {
+            value = "-1";
+        } else {
+            value = Arith.mul(amount, MyWallet.RATE_S).toPlainString();
+        }
         String remark = etRemark.getText().toString().trim();
         //presenter.createTransaction(wallet.getWalletId(), chainId, "", address, (long) (Double.parseDouble(amount) * MyWallet.RATE), "", remark, Checked, this);
-        presenter.createTransaction(wallet.getWalletId(), chainId, "", address, Arith.mul(amount, MyWallet.RATE_S).toPlainString(), remark, Checked, this);
+        presenter.createTransaction(wallet.getWalletId(), chainId, "", address, value, remark, Checked, this);
     }
 
     @Override
@@ -253,6 +259,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         intent.putExtra("toAddress", address);
         intent.putExtra("wallet", wallet);
         intent.putExtra("chainId", chainId);
+        intent.putExtra("maxBalance", maxBalance);
         intent.putExtra("attributes", data);
         intent.putExtra("type", Constant.TRANFER);
         startActivity(intent);

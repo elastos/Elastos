@@ -211,8 +211,8 @@ public class SignFragment extends BaseFragment implements CommmonStringWithMethN
 
     public void setQr(String data) {
         //encodeTransaction  加密后的结果
-        List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 170)
-                , ScreenUtil.dp2px(getContext(), 170), Constant.SIGN);
+        List<Bitmap> images = QRCodeUtils.createMulQrCodeBitmap(data, ScreenUtil.dp2px(getContext(), 240)
+                , ScreenUtil.dp2px(getContext(), 240), Constant.SIGN);
         if (images.size() == 1) {
             ivQr.setVisibility(View.VISIBLE);
             llVp.setVisibility(View.GONE);

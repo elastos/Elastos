@@ -37,14 +37,14 @@ public class CRListAdapter extends CRListAdapterFather {
         super.convert(helper, bean);
 
         helper.setGone(R.id.view, !showCheckbox);
-        int no = helper.getLayoutPosition();
+  /*      int no = helper.getLayoutPosition();
 
         if (is && 0 == helper.getLayoutPosition()) {
             no = pos;
         } else if (is) {
             no = (bean.getIndex() < data.get(0).getIndex()) ? no - 1 : no ;
-        }
-        helper.setText(R.id.tv_rank, "No." +( no + 1));
+        }*/
+        helper.setText(R.id.tv_rank, "No." +(bean.getIndex() + 1));
 
 
         ImageView iv = helper.getView(R.id.iv_icon);

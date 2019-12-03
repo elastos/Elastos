@@ -68,14 +68,14 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         int id = producersBean.getIndex() + 1;
         holder.tvId.setText(context.getString(R.string.currentrank) + id);
         holder.tvZb.setText(context.getString(R.string.vote_of) + "：" + producersBean.getVoterate() + "%");
-        holder.tvTicketnum.setText(context.getString(R.string.ticketnum) + NumberiUtil.numberFormat(producersBean.getVotes(), 8));
+        holder.tvTicketnum.setText(context.getString(R.string.ticketnum) + new BigDecimal(producersBean.getVotes()).intValue());
         holder.tvAddress.setText(AppUtlis.getLoc(context, producersBean.getLocation() + ""));
         holder.etTicketnum.setTag(false);
         if (holder.etTicketnum.getTag(R.id.et_ticketnum) != null) {
             holder.etTicketnum.removeTextChangedListener((TextWatcher) holder.etTicketnum.getTag(R.id.et_ticketnum));
         }
         if (producersBean.getCurentBalance() != null) {
-            holder.etTicketnum.setText(producersBean.getCurentBalance().toPlainString());
+            holder.etTicketnum.setText(NumberiUtil.numberFormat(producersBean.getCurentBalance(), 8));
         }
         addTextChangedListener(holder.etTicketnum, position);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -191,7 +191,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         Map<String, String> checkedData = new HashMap();
         if (list != null) {
             for (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean : list) {
-                if (bean.isChecked() && bean.getCurentBalance() != null && bean.getCurentBalance().compareTo(new BigDecimal(0))>0
+                if (bean.isChecked() && bean.getCurentBalance() != null && bean.getCurentBalance().compareTo(new BigDecimal(0)) > 0
                         && !TextUtils.isEmpty(bean.getCurentBalance().toPlainString())) {
                     checkedData.put("\"" + bean.getDid() + "\"", "\"" + bean.getCurentBalance().multiply(new BigDecimal(MyWallet.RATE)).setScale(0, BigDecimal.ROUND_DOWN).toPlainString() + "\"");
                 }

@@ -37,14 +37,14 @@ public class CRListAdapter1 extends CRListAdapterFather {
     protected void convert(BaseViewHolder helper, CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean) {
         helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.black));
         super.convert(helper, bean);
-        int no = helper.getLayoutPosition();
+      /*  int no = helper.getLayoutPosition();
 
         if (is && 0 == helper.getLayoutPosition()) {
             no = pos;
         } else if (is) {
             no = (bean.getIndex() < data.get(0).getIndex()) ? no - 1 : no;
-        }
-        helper.setText(R.id.tv_rank, "" + (no + 1));
+        }*/
+        helper.setText(R.id.tv_rank, "" + (bean.getIndex() + 1));
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial_circle);
         String baseUrl = bean.getUrl();

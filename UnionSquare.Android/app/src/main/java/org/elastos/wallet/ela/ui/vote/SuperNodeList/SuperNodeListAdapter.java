@@ -51,17 +51,17 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
 
     @Override
     protected void convert(BaseViewHolder helper, VoteListBean.DataBean.ResultBean.ProducersBean bean) {
-        helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.transparent));
+        helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.transparent));
         if (is && helper.getLayoutPosition() == 0) {
-            helper.setBackgroundColor(R.id.ll, context.getResources().getColor(R.color.blue1));
+            helper.setBackgroundColor(R.id.ll, mContext.getResources().getColor(R.color.blue1));
         }
         helper.setText(R.id.tv_name, bean.getNickname());
-        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + context.getString(R.string.ticket));
+        helper.setText(R.id.tv_num, new BigDecimal(bean.getVotes()).intValue() + " " + mContext.getString(R.string.ticket));
         ImageView iv = helper.getView(R.id.iv_icon);
         iv.setImageResource(R.mipmap.found_vote_initial);
         String baseUrl = bean.getUrl();
         iv.setTag(R.id.error_tag_empty, null);
-        GlideApp.with(context).clear(iv);
+        GlideApp.with(mContext).clear(iv);
         if (baseUrl == null) {
             return;
         }
@@ -107,7 +107,7 @@ public class SuperNodeListAdapter extends BaseQuickAdapter<VoteListBean.DataBean
                     @Override
                     public void onGetImage(ImageView iv1, String url, ImageBean imageBean) {
                         if (iv1.getTag(R.id.error_tag_empty) == null || !(iv1.getTag(R.id.error_tag_empty).toString()).equals(url)) {
-                            GlideApp.with(context).clear(iv1);
+                            GlideApp.with(mContext).clear(iv1);
                             iv1.setImageResource(R.mipmap.found_vote_initial);
                             return;
                         }

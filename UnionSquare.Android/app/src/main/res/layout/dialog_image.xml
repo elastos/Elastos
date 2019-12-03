@@ -3,6 +3,6 @@
     android:id="@+id/iv"
     android:padding="2dp"
     android:background="@color/whiter"
-    android:layout_width="154dp"
-    android:layout_height="154dp" />
+    android:layout_width="244dp"
+    android:layout_height="244dp" />
 

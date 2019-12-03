@@ -83,10 +83,6 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
         return R.layout.fragment_cr_myvote;
     }
 
-    @Override
-    protected void initInjector() {
-
-    }
 
     @Override
     protected void initView(View view) {
@@ -193,7 +189,7 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
         for (int i = 0; i < netList.size(); i++) {
             recorder.ticketNum = ticketNum;
             if (netList.get(i).getDid().equals(did)) {
-                recorder.no = (i + 1);
+                recorder.no = (netList.get(i).getIndex() + 1);
                 recorder.name = netList.get(i).getNickname();
                 return recorder;
             }
