@@ -24,6 +24,18 @@ public class VerifiableCredential: DIDObject {
         self.proof = vc.proof
     }
     
+    public func isExpired() -> Bool {
+        return DateFormater.comporsDate(expirationDate!, DateFormater.currentDateToWantDate(0))
+    }
+    
+    public func verify() throws -> Bool {
+        let issuerDoc: DIDDocument = try issuer.resolve()!
+        let json: String = toJsonForSign(false)
+        let inputs: [CVarArg] = [json, json.count]
+        let count = inputs.count / 2
+        return try issuerDoc.verify(proof!.verificationMethod, proof!.signature, count, inputs)
+    }
+
     public func toJson(_ ref: DID, _ compact: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String

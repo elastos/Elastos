@@ -26,7 +26,7 @@ public class DIDDocument: NSObject {
         return getEntries(publicKeys)
     }
     
-    public func selectPublicKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
+    public func selectPublicKeys(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
         var didurl: DIDURL
         do {
             didurl = try DIDURL(id)
@@ -36,7 +36,7 @@ public class DIDDocument: NSObject {
         return try selectEntry(publicKeys, didurl, type)
     }
     
-    public func selectPublicKey(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
+    public func selectPublicKeys(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
         do {
             return try selectEntry(publicKeys, id, type)
         } catch {
@@ -45,17 +45,32 @@ public class DIDDocument: NSObject {
     }
     
     public func getPublicKey(_ id: String) throws -> DIDPublicKey {
-        var didurl: DIDURL
-        do {
-            didurl = try DIDURL(id)
-        } catch {
-            throw error
-        }
-        return getEntry(publicKeys, didurl)!
+        return getEntry(publicKeys, try DIDURL(subject!, id))!
     }
     
     public func getPublicKey(_ id: DIDURL) throws -> DIDPublicKey? {
         return getEntry(publicKeys, id)
+    }
+    
+    public func hasPublicKey(_ id: DIDURL) throws -> Bool {
+        return getEntry(publicKeys, id) != nil
+    }
+    
+    public func hasPublicKey(_ id: String) throws -> Bool {
+        return try hasPublicKey(DIDURL(subject!, id))
+    }
+    
+    public func hasPrivateKey(_ id: DIDURL) throws -> Bool {
+        if (getEntry(publicKeys, id) == nil) {
+            return false
+        }
+        let store = try DIDStore.shareInstance()
+        return try (store?.containsPrivateKey(subject!, id))!
+    }
+    
+    public func hasPrivateKey(_ id: String) throws -> Bool {
+
+        return try hasPrivateKey(DIDURL(subject!, id))
     }
     
     public func getDefaultPublicKey() -> DIDURL? {
@@ -92,7 +107,7 @@ public class DIDDocument: NSObject {
     }
     
     public func addPublicKey(_ id: String, _ controller: String, _ pk: String) throws -> Bool {
-        return try addPublicKey(DIDURL(id), DID(controller), pk)
+        return try addPublicKey(DIDURL(subject!, id), DID(controller), pk)
     }
     
     public func removePublicKey(_ id: DIDURL, _ force: Bool) throws -> Bool {
@@ -129,7 +144,7 @@ public class DIDDocument: NSObject {
     }
 
     public func removePublicKey(_ id: String, _ force: Bool) throws -> Bool {
-        return try removePublicKey(DIDURL(id), force)
+        return try removePublicKey(DIDURL(subject!, id), force)
     }
     
     public func removePublicKey(_ id: DIDURL) throws -> Bool {
@@ -152,13 +167,12 @@ public class DIDDocument: NSObject {
         return list
     }
     
-    public func selectAuthenticationKey(_ id: DIDURL, type: String) throws -> Array<DIDPublicKey> {
+    public func selectAuthenticationKeys(_ id: DIDURL, type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, id, type)
     }
     
-    public func selectAuthenticationKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey>{
-        let didurl = try DIDURL(id)
-        return try selectEntry(authentications, didurl, type)
+    public func selectAuthenticationKeys(_ id: String, _ type: String) throws -> Array<DIDPublicKey>{
+        return try selectEntry(authentications, DIDURL(subject!, id), type)
     }
     
     public func getAuthenticationKey(_ id: DIDURL) -> DIDPublicKey? {
@@ -166,7 +180,7 @@ public class DIDDocument: NSObject {
     }
     
     public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey {
-        return try getEntry(authentications, DIDURL(id))!
+        return try getEntry(authentications, DIDURL(subject!, id))!
     }
 
     public func isAuthenticationKey(_ id: DIDURL) throws -> Bool {
@@ -200,7 +214,7 @@ public class DIDDocument: NSObject {
     }
     
     public func addAuthenticationKey(_ id: String) throws -> Bool {
-        return try addAuthenticationKey(DIDURL(id))
+        return try addAuthenticationKey(DIDURL(subject!, id))
     }
     
     public func addAuthenticationKey(_ id: DIDURL, _ pk: String) throws -> Bool {
@@ -212,7 +226,7 @@ public class DIDDocument: NSObject {
     }
     
     public func addAuthenticationKey(_ id: String, _ pk: String) throws -> Bool {
-        return try addAuthenticationKey(DIDURL(id), pk)
+        return try addAuthenticationKey(DIDURL(subject!, id), pk)
     }
                 
     public func removeAuthenticationKey(_ id: DIDURL) -> Bool {
@@ -225,7 +239,7 @@ public class DIDDocument: NSObject {
     }
     
     public func removeAuthenticationKey(_ id: String) throws -> Bool {
-        return try removeAuthenticationKey(DIDURL(id))
+        return try removeAuthenticationKey(DIDURL(subject!, id))
     }
 
     public func getAuthorizationKeyCount() -> Int {
@@ -236,11 +250,11 @@ public class DIDDocument: NSObject {
         return getEntries(authentications)
     }
     
-    public func selectAuthorizationKey(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
+    public func selectAuthorizationKeys(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, id, type)
     }
     
-    public func selectAuthorizationKey(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
+    public func selectAuthorizationKeys(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, DIDURL(id), type)
     }
     
@@ -249,7 +263,7 @@ public class DIDDocument: NSObject {
     }
     
     public func getAuthorizationKey(_ id: String) throws -> DIDPublicKey {
-        return try getEntry(authentications, DIDURL(id))!
+        return try getEntry(authorizations, DIDURL(subject!, id))!
     }
 
     public func isAuthorizationKey(_ id: DIDURL) throws -> Bool {
@@ -257,7 +271,7 @@ public class DIDDocument: NSObject {
     }
     
     public func isAuthorizationKey(_ id: String) throws -> Bool {
-        return try isAuthorizationKey(DIDURL(id))
+        return try isAuthorizationKey(DIDURL(subject!, id))
     }
     
     public func addAuthorizationKey(_ pk: DIDPublicKey) throws -> Bool {
@@ -282,7 +296,7 @@ public class DIDDocument: NSObject {
     }
     
     public func addAuthorizationKey(_ id: String) throws -> Bool {
-       return try addAuthorizationKey(DIDURL(id))
+       return try  addAuthorizationKey(DIDURL(subject!, id))
     }
     
     public func addAuthorizationKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
@@ -294,7 +308,7 @@ public class DIDDocument: NSObject {
     }
                 
     public func addAuthorizationKey(_ id: String, _ controller: String, _ pk: String) throws -> Bool {
-        return try addAuthorizationKey(DIDURL(id), DID(controller), pk)
+        return try addAuthorizationKey(DIDURL(subject!, id), DID(controller), pk)
     }
     
     public func authorizationDid(_ id: DIDURL, _ controller: DID, _ key: DIDURL?) throws -> Bool {
@@ -328,12 +342,9 @@ public class DIDDocument: NSObject {
     }
     
     public func authorizationDid(_ id: String, _ controller: String, _ key: String?) throws -> Bool {
-        if key != nil {
-            return try authorizationDid(DIDURL(id), DID(controller), DIDURL(key!))
-        }
-        else {
-            return try authorizationDid(DIDURL(id), DID(controller), nil)
-        }
+        let controllerId: DID = try DID(controller)
+        let keyid = (key == nil ? nil : try DIDURL(controllerId, key!))
+        return try authorizationDid(DIDURL(subject!, id), controllerId, keyid)
     }
     
     public func authorizationDid(_ id: String, _ controller: String) throws -> Bool {
@@ -346,7 +357,7 @@ public class DIDDocument: NSObject {
     }
     
     public func removeAuthorizationKey(_ id: String) throws -> Bool {
-        return try removeAuthorizationKey(DIDURL(id))
+        return try removeAuthorizationKey(DIDURL(subject!, id))
     }
     
     public func getCredentialCount() -> Int {
@@ -357,16 +368,16 @@ public class DIDDocument: NSObject {
         return getEntries(credentials)
     }
     
-    public func selectCredential(_ id: DIDURL, _ type: String) throws -> Array<VerifiableCredential> {
+    public func selectCredentials(_ id: DIDURL, _ type: String) throws -> Array<VerifiableCredential> {
         return try selectEntry(credentials, id, type)
     }
     
-    public func selectCredential(_ id: String, _ type: String) throws -> Array<VerifiableCredential> {
-        return try selectEntry(credentials, DIDURL(id), type)
+    public func selectCredentials(_ id: String, _ type: String) throws -> Array<VerifiableCredential> {
+        return try selectEntry(credentials, DIDURL(subject!, id), type)
     }
     
     public func getCredential(_ id: String) throws -> VerifiableCredential {
-        return try getEntry(credentials, DIDURL(id))!
+        return try getEntry(credentials, DIDURL(subject!, id))!
     }
     
     public func getCredential(_ id: DIDURL) throws -> VerifiableCredential {
@@ -393,8 +404,7 @@ public class DIDDocument: NSObject {
     }
     
     public func removeCredential(_ id: String) throws -> Bool {
-        
-        return try removeCredential(DIDURL(id))
+        return try removeCredential(DIDURL(subject!, id))
     }
 
     public func getServiceCount() -> Int {
@@ -410,7 +420,7 @@ public class DIDDocument: NSObject {
     }
     
     public func selectServices(_ id: String, _ type: String) throws -> Array<Service> {
-        return try selectEntry(services, DIDURL(id), type)
+        return try selectEntry(services, DIDURL(subject!, id), type)
     }
     
     public func getService(_ id: DIDURL) -> Service {
@@ -418,7 +428,7 @@ public class DIDDocument: NSObject {
     }
     
     public func getService(_ id: String) throws -> Service {
-        return try getEntry(services, DIDURL(id))!
+        return try getEntry(services, DIDURL(subject!, id))!
     }
     
     public func addService(_ svc: Service) throws -> Bool {
@@ -438,7 +448,7 @@ public class DIDDocument: NSObject {
     }
     
     public func addService(_ id: String, _ type: String, _ endpoint: String) throws -> Bool {
-        return try addService(DIDURL(id), type, endpoint)
+        return try addService(DIDURL(subject!, id), type, endpoint)
     }
     
     public func removeService(_ id: DIDURL) -> Bool {
@@ -447,7 +457,7 @@ public class DIDDocument: NSObject {
     }
     
     public func removeService(_ id: String) throws -> Bool {
-        return try removeService(DIDURL(id))
+        return try removeService(DIDURL(subject!, id))
     }
     
     public func setDefaultExpires() {
@@ -784,7 +794,7 @@ public class DIDDocument: NSObject {
     
     public func sign(_ id: String, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         
-        return try (DIDStore.shareInstance()?.sign(subject!, DIDURL(id), storepass, count, inputs))!
+        return try (DIDStore.shareInstance()?.sign(subject!, DIDURL(subject!, id), storepass, count, inputs))!
     }
     
     public func verify(_ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {
@@ -793,7 +803,7 @@ public class DIDDocument: NSObject {
     }
     
     public func verify(_ id: String, _ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {
-        return try verify(DIDURL(id), signature, count, inputs)
+        return try verify(DIDURL(subject!, id), signature, count, inputs)
     }
     
     public func verify(_ id: DIDURL, _ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {

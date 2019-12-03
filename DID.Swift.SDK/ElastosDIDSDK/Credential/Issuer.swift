@@ -3,27 +3,26 @@ import Foundation
 public class Issuer {
     
     public var didDocument: DIDDocument?
-    public var defaultSignKey: DIDURL!
+    public var signKey: DIDURL!
     public var target: DID?
     public var vc: VerifiableCredential = VerifiableCredential()
     
-    public init(_ did: DID, _ defaultSignKey: DIDURL?) throws {
-        self.defaultSignKey = defaultSignKey
+    public init(_ did: DID, _ signKey: DIDURL?) throws {
+        self.signKey = signKey
         self.target = did
-        let store = try DIDStore.shareInstance()
-        self.didDocument = try store?.resolveDid(did)
+        self.didDocument = try did.resolve()
         guard self.didDocument != nil else {
             throw DIDError.failue("Can not resolve DID.")
         }
-        if defaultSignKey == nil {
-            self.defaultSignKey = self.didDocument?.getDefaultPublicKey()
+        if signKey == nil {
+            self.signKey = self.didDocument?.getDefaultPublicKey()
         }else {
-            guard didDocument?.getAuthenticationKey(defaultSignKey!) != nil else {
+            guard try didDocument?.isAuthenticationKey(signKey!) != nil else {
                 throw DIDError.failue("Invalid sign key id.")
             }
         }
         
-        guard !(try store?.containsPrivateKey(did, defaultSignKey!))! else {
+        guard try self.didDocument!.hasPrivateKey(signKey!) else {
             throw DIDError.failue("No private key.")
         }
     }
@@ -32,6 +31,14 @@ public class Issuer {
         try self.init(did, nil)
     }
     
+    public func getDid() -> DID {
+        return (didDocument?.subject!)!
+    }
+
+    public func getSignKey() -> DIDURL {
+        return signKey
+    }
+
     public func sign(_ passphrase: String) throws -> VerifiableCredential {
         
         self.vc.issuanceDate = Date()
@@ -41,8 +48,8 @@ public class Issuer {
         }
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
-        let sig: String = (try DIDStore.shareInstance()?.sign(self.didDocument!.subject!, defaultSignKey, passphrase, count, inputs))!
-        let proof: Proof = Proof(Constants.defaultPublicKeyType, defaultSignKey, sig)
+        let sig: String = (try didDocument?.sign(signKey, passphrase, count, inputs))!
+        let proof: Proof = Proof(Constants.defaultPublicKeyType, signKey, sig)
         vc.proof = proof
         return vc
     }

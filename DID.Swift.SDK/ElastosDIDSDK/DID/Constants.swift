@@ -29,5 +29,5 @@ public class Constants {
 
     public static let DATE_FORMAT: String = "yyyy-MM-dd'T'HH:mm:ss'Z'"
     public static let MAX_VALID_YEARS: Int = 5
-
+    public static let defaultPresentationType: String = "VerifiablePresentation"
 }

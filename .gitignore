@@ -13,9 +13,9 @@ xcuserdata
 /package-lock.json
 
 /Externals/HDKey/lib/-iphoneos
-/Externals/HDKey/lib/-iphoneosimulator
-/Externals/HDKey/lib/macos
+/Externals/HDKey/lib/-iphonesimulator
+/Externals/HDKey/lib/maces
 /Externals/SPVAdapter/SPVAdapter/lib/-iphoneos
-/Externals/SPVAdapter/SPVAdapter/lib/-iphoneosimulator
+/Externals/SPVAdapter/SPVAdapter/lib/-iphonesimulator
 /Externals/SPVAdapter/SPVAdapter/lib/macos
 

@@ -73,6 +73,4 @@ class DateFormater {
     class func comporsDate(_ expireDate: Date, _ defaultDate: Date) -> Bool {
         return  defaultDate > expireDate
     }
-    
-    
 }

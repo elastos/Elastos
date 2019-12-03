@@ -18,6 +18,7 @@
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
 		116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */; };
 		116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA572360092D00BBEE4F /* TestUtils.swift */; };
+		1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182866A2395194000F1BBA3 /* BulkCreate.swift */; };
 		119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D5237D41B000C4998E /* DIDAdaptor.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
 		11A6B15B238FD79000D3C1F1 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B159238FD77E00D3C1F1 /* libcrypto.a */; };
@@ -167,6 +168,7 @@
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreCreateTests.swift; sourceTree = "<group>"; };
 		116CAA572360092D00BBEE4F /* TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestUtils.swift; path = TestUtils/TestUtils.swift; sourceTree = "<group>"; };
+		1182866A2395194000F1BBA3 /* BulkCreate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkCreate.swift; sourceTree = "<group>"; };
 		119338D5237D41B000C4998E /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		119338DC237E4DB800C4998E /* TestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestConfig.swift; path = TestUtils/TestConfig.swift; sourceTree = "<group>"; };
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -389,6 +391,7 @@
 				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
 				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
+				1182866A2395194000F1BBA3 /* BulkCreate.swift */,
 				116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
 				11DA06FE238B7C8F0066CC86 /* ElastosDIDSDKTests-Bridging-Header.h */,
@@ -701,6 +704,7 @@
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
+				1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */,
 				11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */,
 				116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */,
 			);

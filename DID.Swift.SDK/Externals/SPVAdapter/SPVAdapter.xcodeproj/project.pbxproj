@@ -7,32 +7,48 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11107CCE2396AC1700AE3B42 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC92396AC0000AE3B42 /* libboost_filesystem.a */; };
+		11107CCF2396AC1700AE3B42 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC02396AC0000AE3B42 /* libboost_system.a */; };
+		11107CD02396AC1700AE3B42 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC42396AC0000AE3B42 /* libboost_thread.a */; };
+		11107CD12396AC1700AE3B42 /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC22396AC0000AE3B42 /* libcjson.a */; };
+		11107CD22396AC1700AE3B42 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC62396AC0000AE3B42 /* libcrypto.a */; };
+		11107CD32396AC1700AE3B42 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC52396AC0000AE3B42 /* libcrystal.a */; };
+		11107CD42396AC1700AE3B42 /* libcunit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC82396AC0000AE3B42 /* libcunit.a */; };
+		11107CD52396AC1700AE3B42 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCD2396AC0000AE3B42 /* libcurl.a */; };
+		11107CD62396AC1700AE3B42 /* libfruit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC32396AC0000AE3B42 /* libfruit.a */; };
+		11107CD72396AC1700AE3B42 /* libspdlog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC72396AC0000AE3B42 /* libspdlog.a */; };
+		11107CD82396AC1700AE3B42 /* libspvadapter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCA2396AC0000AE3B42 /* libspvadapter.a */; };
+		11107CD92396AC1800AE3B42 /* libspvsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC12396AC0000AE3B42 /* libspvsdk.a */; };
+		11107CDA2396AC1800AE3B42 /* libsqlite3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CBF2396AC0000AE3B42 /* libsqlite3.a */; };
+		11107CDB2396AC1800AE3B42 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCB2396AC0000AE3B42 /* libssl.a */; };
+		11107CDC2396AC1800AE3B42 /* libtls.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCC2396AC0000AE3B42 /* libtls.a */; };
 		11267029238CC7120086740D /* SPVAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11267027238CC7120086740D /* SPVAdapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		11267049238CCACA0086740D /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267039238CCAA70086740D /* libboost_filesystem.a */; };
-		1126704A238CCACA0086740D /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126703C238CCAA70086740D /* libboost_system.a */; };
-		1126704B238CCACA0086740D /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126703D238CCAA70086740D /* libboost_thread.a */; };
-		1126704C238CCACA0086740D /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267046238CCAA80086740D /* libcjson.a */; };
-		1126704E238CCACA0086740D /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126703E238CCAA70086740D /* libcrystal.a */; };
-		1126704F238CCACA0086740D /* libcunit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267041238CCAA70086740D /* libcunit.a */; };
-		11267050238CCACA0086740D /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267047238CCAA80086740D /* libcurl.a */; };
-		11267051238CCACA0086740D /* libfruit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267040238CCAA70086740D /* libfruit.a */; };
-		11267053238CCACA0086740D /* libspdlog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267042238CCAA80086740D /* libspdlog.a */; };
-		11267054238CCACA0086740D /* libspvadapter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126703F238CCAA70086740D /* libspvadapter.a */; };
-		11267055238CCACA0086740D /* libspvsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126703B238CCAA70086740D /* libspvsdk.a */; };
-		11267056238CCACA0086740D /* libsqlite3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267048238CCAA80086740D /* libsqlite3.a */; };
-		11267057238CCACA0086740D /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267043238CCAA80086740D /* libssl.a */; };
-		11267058238CCACA0086740D /* libtls.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267044238CCAA80086740D /* libtls.a */; };
 		1126705A238CCB4C0086740D /* CSPVAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11267059238CCB4C0086740D /* CSPVAdapter.swift */; };
 		1126705C238CCBEE0086740D /* SPV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1126705B238CCBEE0086740D /* SPV.swift */; };
 		11267060238CCC930086740D /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705F238CCC890086740D /* libc++.1.tbd */; };
 		11267061238CCC930086740D /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705D238CCC890086740D /* libc++.tbd */; };
 		11267062238CCC930086740D /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705E238CCC890086740D /* libc++abi.tbd */; };
 		11267064238CCCA60086740D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267063238CCC9C0086740D /* libz.tbd */; };
-		1126706C238CD6B70086740D /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267045238CCAA80086740D /* libcrypto.a */; };
+		11601C9D2393712F008E407C /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11601C9C2393712F008E407C /* ExtensionInt.swift */; };
 		11A6B152238F956A00D3C1F1 /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11A6B151238F956A00D3C1F1 /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		11107CBF2396AC0000AE3B42 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = "SPVAdapter/lib/-iphonesimulator/libsqlite3.a"; sourceTree = "<group>"; };
+		11107CC02396AC0000AE3B42 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = "SPVAdapter/lib/-iphonesimulator/libboost_system.a"; sourceTree = "<group>"; };
+		11107CC12396AC0000AE3B42 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = "SPVAdapter/lib/-iphonesimulator/libspvsdk.a"; sourceTree = "<group>"; };
+		11107CC22396AC0000AE3B42 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = "SPVAdapter/lib/-iphonesimulator/libcjson.a"; sourceTree = "<group>"; };
+		11107CC32396AC0000AE3B42 /* libfruit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfruit.a; path = "SPVAdapter/lib/-iphonesimulator/libfruit.a"; sourceTree = "<group>"; };
+		11107CC42396AC0000AE3B42 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = "SPVAdapter/lib/-iphonesimulator/libboost_thread.a"; sourceTree = "<group>"; };
+		11107CC52396AC0000AE3B42 /* libcrystal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrystal.a; path = "SPVAdapter/lib/-iphonesimulator/libcrystal.a"; sourceTree = "<group>"; };
+		11107CC62396AC0000AE3B42 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "SPVAdapter/lib/-iphonesimulator/libcrypto.a"; sourceTree = "<group>"; };
+		11107CC72396AC0000AE3B42 /* libspdlog.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspdlog.a; path = "SPVAdapter/lib/-iphonesimulator/libspdlog.a"; sourceTree = "<group>"; };
+		11107CC82396AC0000AE3B42 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = "SPVAdapter/lib/-iphonesimulator/libcunit.a"; sourceTree = "<group>"; };
+		11107CC92396AC0000AE3B42 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = "SPVAdapter/lib/-iphonesimulator/libboost_filesystem.a"; sourceTree = "<group>"; };
+		11107CCA2396AC0000AE3B42 /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvadapter.a; path = "SPVAdapter/lib/-iphonesimulator/libspvadapter.a"; sourceTree = "<group>"; };
+		11107CCB2396AC0000AE3B42 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "SPVAdapter/lib/-iphonesimulator/libssl.a"; sourceTree = "<group>"; };
+		11107CCC2396AC0000AE3B42 /* libtls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtls.a; path = "SPVAdapter/lib/-iphonesimulator/libtls.a"; sourceTree = "<group>"; };
+		11107CCD2396AC0000AE3B42 /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = "SPVAdapter/lib/-iphonesimulator/libcurl.a"; sourceTree = "<group>"; };
 		11267024238CC7120086740D /* SPVAdapter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SPVAdapter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11267027238CC7120086740D /* SPVAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPVAdapter.h; sourceTree = "<group>"; };
 		11267028238CC7120086740D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -58,6 +74,22 @@
 		1126705E238CCC890086740D /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
 		1126705F238CCC890086740D /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		11267063238CCC9C0086740D /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
+		1139AF242394B20600C609B1 /* libtls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtls.a; path = "SPVAdapter/lib/-iphoneosimulator/libtls.a"; sourceTree = "<group>"; };
+		1139AF252394B20600C609B1 /* libfruit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfruit.a; path = "SPVAdapter/lib/-iphoneosimulator/libfruit.a"; sourceTree = "<group>"; };
+		1139AF262394B20600C609B1 /* libcurl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl.a; path = "SPVAdapter/lib/-iphoneosimulator/libcurl.a"; sourceTree = "<group>"; };
+		1139AF272394B20600C609B1 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "SPVAdapter/lib/-iphoneosimulator/libcrypto.a"; sourceTree = "<group>"; };
+		1139AF282394B20700C609B1 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = "SPVAdapter/lib/-iphoneosimulator/libboost_system.a"; sourceTree = "<group>"; };
+		1139AF292394B20700C609B1 /* libcjson.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcjson.a; path = "SPVAdapter/lib/-iphoneosimulator/libcjson.a"; sourceTree = "<group>"; };
+		1139AF2A2394B20700C609B1 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "SPVAdapter/lib/-iphoneosimulator/libssl.a"; sourceTree = "<group>"; };
+		1139AF2B2394B20700C609B1 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = "SPVAdapter/lib/-iphoneosimulator/libcunit.a"; sourceTree = "<group>"; };
+		1139AF2C2394B20700C609B1 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = "SPVAdapter/lib/-iphoneosimulator/libboost_filesystem.a"; sourceTree = "<group>"; };
+		1139AF2D2394B20700C609B1 /* libspdlog.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspdlog.a; path = "SPVAdapter/lib/-iphoneosimulator/libspdlog.a"; sourceTree = "<group>"; };
+		1139AF2E2394B20700C609B1 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = "SPVAdapter/lib/-iphoneosimulator/libsqlite3.a"; sourceTree = "<group>"; };
+		1139AF2F2394B20700C609B1 /* libcrystal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrystal.a; path = "SPVAdapter/lib/-iphoneosimulator/libcrystal.a"; sourceTree = "<group>"; };
+		1139AF302394B20700C609B1 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = "SPVAdapter/lib/-iphoneosimulator/libboost_thread.a"; sourceTree = "<group>"; };
+		1139AF312394B20700C609B1 /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvadapter.a; path = "SPVAdapter/lib/-iphoneosimulator/libspvadapter.a"; sourceTree = "<group>"; };
+		1139AF322394B20700C609B1 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = "SPVAdapter/lib/-iphoneosimulator/libspvsdk.a"; sourceTree = "<group>"; };
+		11601C9C2393712F008E407C /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionInt.swift; sourceTree = "<group>"; };
 		11A6B151238F956A00D3C1F1 /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -66,25 +98,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11267055238CCACA0086740D /* libspvsdk.a in Frameworks */,
-				11267058238CCACA0086740D /* libtls.a in Frameworks */,
-				11267056238CCACA0086740D /* libsqlite3.a in Frameworks */,
+				11107CCF2396AC1700AE3B42 /* libboost_system.a in Frameworks */,
 				11267062238CCC930086740D /* libc++abi.tbd in Frameworks */,
-				11267053238CCACA0086740D /* libspdlog.a in Frameworks */,
-				1126704E238CCACA0086740D /* libcrystal.a in Frameworks */,
+				11107CDC2396AC1800AE3B42 /* libtls.a in Frameworks */,
+				11107CDB2396AC1800AE3B42 /* libssl.a in Frameworks */,
 				11267061238CCC930086740D /* libc++.tbd in Frameworks */,
-				11267057238CCACA0086740D /* libssl.a in Frameworks */,
+				11107CD82396AC1700AE3B42 /* libspvadapter.a in Frameworks */,
+				11107CD42396AC1700AE3B42 /* libcunit.a in Frameworks */,
+				11107CCE2396AC1700AE3B42 /* libboost_filesystem.a in Frameworks */,
+				11107CD52396AC1700AE3B42 /* libcurl.a in Frameworks */,
+				11107CD32396AC1700AE3B42 /* libcrystal.a in Frameworks */,
+				11107CD02396AC1700AE3B42 /* libboost_thread.a in Frameworks */,
+				11107CD12396AC1700AE3B42 /* libcjson.a in Frameworks */,
 				11267064238CCCA60086740D /* libz.tbd in Frameworks */,
-				11267054238CCACA0086740D /* libspvadapter.a in Frameworks */,
-				1126704A238CCACA0086740D /* libboost_system.a in Frameworks */,
-				1126706C238CD6B70086740D /* libcrypto.a in Frameworks */,
-				1126704C238CCACA0086740D /* libcjson.a in Frameworks */,
-				11267049238CCACA0086740D /* libboost_filesystem.a in Frameworks */,
-				11267050238CCACA0086740D /* libcurl.a in Frameworks */,
-				1126704F238CCACA0086740D /* libcunit.a in Frameworks */,
 				11267060238CCC930086740D /* libc++.1.tbd in Frameworks */,
-				11267051238CCACA0086740D /* libfruit.a in Frameworks */,
-				1126704B238CCACA0086740D /* libboost_thread.a in Frameworks */,
+				11107CD92396AC1800AE3B42 /* libspvsdk.a in Frameworks */,
+				11107CD62396AC1700AE3B42 /* libfruit.a in Frameworks */,
+				11107CDA2396AC1800AE3B42 /* libsqlite3.a in Frameworks */,
+				11107CD72396AC1700AE3B42 /* libspdlog.a in Frameworks */,
+				11107CD22396AC1700AE3B42 /* libcrypto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +144,7 @@
 			isa = PBXGroup;
 			children = (
 				1126702F238CCA930086740D /* header */,
+				11601C9C2393712F008E407C /* ExtensionInt.swift */,
 				1126705B238CCBEE0086740D /* SPV.swift */,
 				11267027238CC7120086740D /* SPVAdapter.h */,
 				11267028238CC7120086740D /* Info.plist */,
@@ -131,6 +164,36 @@
 		11267038238CCAA70086740D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1139AF2C2394B20700C609B1 /* libboost_filesystem.a */,
+				11107CC92396AC0000AE3B42 /* libboost_filesystem.a */,
+				1139AF282394B20700C609B1 /* libboost_system.a */,
+				1139AF302394B20700C609B1 /* libboost_thread.a */,
+				11107CC42396AC0000AE3B42 /* libboost_thread.a */,
+				1139AF292394B20700C609B1 /* libcjson.a */,
+				1139AF272394B20600C609B1 /* libcrypto.a */,
+				11107CC62396AC0000AE3B42 /* libcrypto.a */,
+				1139AF2F2394B20700C609B1 /* libcrystal.a */,
+				1139AF2B2394B20700C609B1 /* libcunit.a */,
+				1139AF262394B20600C609B1 /* libcurl.a */,
+				11107CC52396AC0000AE3B42 /* libcrystal.a */,
+				11107CC82396AC0000AE3B42 /* libcunit.a */,
+				11107CCD2396AC0000AE3B42 /* libcurl.a */,
+				1139AF252394B20600C609B1 /* libfruit.a */,
+				1139AF2D2394B20700C609B1 /* libspdlog.a */,
+				1139AF312394B20700C609B1 /* libspvadapter.a */,
+				11107CC22396AC0000AE3B42 /* libcjson.a */,
+				11107CC32396AC0000AE3B42 /* libfruit.a */,
+				11107CC72396AC0000AE3B42 /* libspdlog.a */,
+				11107CCA2396AC0000AE3B42 /* libspvadapter.a */,
+				1139AF322394B20700C609B1 /* libspvsdk.a */,
+				11107CC02396AC0000AE3B42 /* libboost_system.a */,
+				11107CC12396AC0000AE3B42 /* libspvsdk.a */,
+				1139AF2E2394B20700C609B1 /* libsqlite3.a */,
+				1139AF2A2394B20700C609B1 /* libssl.a */,
+				1139AF242394B20600C609B1 /* libtls.a */,
+				11107CBF2396AC0000AE3B42 /* libsqlite3.a */,
+				11107CCB2396AC0000AE3B42 /* libssl.a */,
+				11107CCC2396AC0000AE3B42 /* libtls.a */,
 				11267063238CCC9C0086740D /* libz.tbd */,
 				1126705F238CCC890086740D /* libc++.1.tbd */,
 				1126705D238CCC890086740D /* libc++.tbd */,
@@ -237,6 +300,7 @@
 			files = (
 				1126705C238CCBEE0086740D /* SPV.swift in Sources */,
 				1126705A238CCB4C0086740D /* CSPVAdapter.swift in Sources */,
+				11601C9D2393712F008E407C /* ExtensionInt.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -391,6 +455,8 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/SPVAdapter/lib",
+					"$(PROJECT_DIR)/SPVAdapter/lib/-iphoneosimulator",
+					"$(PROJECT_DIR)/SPVAdapter/lib/-iphonesimulator",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.SPVAdapter;
@@ -427,6 +493,8 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/SPVAdapter/lib",
+					"$(PROJECT_DIR)/SPVAdapter/lib/-iphoneosimulator",
+					"$(PROJECT_DIR)/SPVAdapter/lib/-iphonesimulator",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.SPVAdapter;

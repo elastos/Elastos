@@ -6,7 +6,7 @@ public class DerivedKey: NSObject {
     
     private var index: Int32!
     private var seed: Data!
-    private var methodidString: String?
+    var methodidString: String?
     
     public init(_ seed: Data, _ index: Int32) {
         self.seed = seed

@@ -26,6 +26,10 @@ public class SPVAdaptor: DIDAdaptor {
         handle = nil
     }
     
+    public func isAvailable() throws -> Bool {
+       return SPV.isAvailable(handle)
+    }
+    
     public func createIdTransaction(_ payload: String, _ memo: String?) throws -> Bool {
         let password = passwordCallback!(walletDir, walletId)
         if password == nil {

@@ -6,6 +6,7 @@ let tempStoreRoot: String = "/PATH/TO/DIDStore.temp"
 let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
 let passphrase: String = "secret"
 let storePass: String = "passph"
+let walletPassword: String = "passwd"
 
 let walletDir: String = "/Users/liaihong/.didwallet"
 let walletId: String = "test"

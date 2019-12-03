@@ -11,9 +11,9 @@ class DIDStoreTests: XCTestCase {
 
     override func setUp() {
         do {
-            let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "helloworld"})
+            let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "test111111"})
             adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
-            TestUtils.deleteFile(storePath)
+//            TestUtils.deleteFile(storePath)
             try DIDStore.creatInstance("filesystem", storePath, adapter)
             store = try DIDStore.shareInstance()!
             let mnemonic: String = HDKey.generateMnemonic(0)
@@ -143,17 +143,54 @@ class DIDStoreTests: XCTestCase {
             do {
                 let doc: DIDDocument = try store.loadDid(did)!
                 _ = try store.publishDid(doc, DIDURL(did, "primary"), storePass)
-            }catch {
+            } catch {
                 print(error)
             }
         }
     }
     
+    /*
+     @Test
+     public void test50IssueCredential1() throws DIDException {
+         // SelfClaim
+         Issuer issuer = new Issuer(primaryDid);
+
+         Map<String, String> props = new HashMap<String, String>();
+         props.put("name", "Elastos");
+         props.put("email", "contact@elastos.org");
+         props.put("website", "https://www.elastos.org/");
+         props.put("phone", "12345678900");
+
+         Calendar cal = Calendar.getInstance();
+         cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
+         Date expire = cal.getTime();
+         VerifiableCredential vc = issuer.issueFor(primaryDid)
+                 .id("cred-1")
+                 .type(new String[] {"SelfProclaimedCredential", "BasicProfileCredential" })
+                 .expirationDate(expire)
+                 .properties(props)
+                 .sign(TestConfig.storePass);
+
+         DIDDocument doc = store.resolveDid(primaryDid);
+         doc.modify();
+         doc.addCredential(vc);
+         store.storeDid(doc);
+
+         doc = store.resolveDid(primaryDid);
+         DIDURL vcId = new DIDURL(primaryDid, "cred-1");
+         vc = doc.getCredential(vcId);
+         assertNotNull(vc);
+         assertEquals(vcId, vc.getId());
+         assertEquals(primaryDid, vc.getSubject().getId());
+     }
+     */
+    
     func test50IssueSelfClaimCredential1() throws {
-        let hint: String = "my did for test05IssueSelfClaimCredential1."
-        let doc: DIDDocument = try! store.newDid(storePass, hint)
-        ids[doc.subject!] = hint
-        primaryDid = doc.subject
+//        let hint: String = "my did for test05IssueSelfClaimCredential1."
+//        let doc: DIDDocument = try! store.newDid(storePass, hint)
+//        ids[doc.subject!] = hint
+        let did = try DID("did:elastos:iokM6UqtPsPPmooiD1nJA9up6Ser8AdxwD")
+        primaryDid = did
         let issuer: Issuer = try! Issuer(primaryDid, nil)
         var props: OrderedDictionary<String, String> = OrderedDictionary()
         props["name"] = "Elastos"

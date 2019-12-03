@@ -30,6 +30,35 @@ public class DIDStore: NSObject {
         return instance
     }
 
+    public func synchronize(_ storepass: String) throws {
+        let privateIdentity: HDKey = try loadPrivateIdentity(storepass)!
+        let nextIndex: Int = try loadPrivateIdentityIndex();
+        var blanks: Int = 0
+        var i: Int = 0
+        
+        if i < nextIndex || blanks < 10{
+            let key: DerivedKey = try privateIdentity.derive(i++)
+            let did: DID = DID(DID.METHOD, key.methodidString!)
+            let doc = try backend.resolve(did)
+            if (doc != nil) {
+                // TODO: check local conflict
+                try storeDid(doc!)
+                
+                // Save private key
+                let privatekeyData: Data = try key.getPrivateKeyData()
+                let encryptedKey: String = try encryptToBase64(storepass, privatekeyData)
+                try storePrivateKey(did, doc!.getDefaultPublicKey()!, encryptedKey)
+                
+                if (i >= nextIndex){
+                    try storePrivateIdentityIndex(i)
+                }
+                blanks = 0
+            } else {
+                blanks++
+            }
+        }
+    }
+    
     public func hasPrivateIdentity() throws -> Bool { return false }
 
     func storePrivateIdentity(_ key: String) throws {}
@@ -106,9 +135,9 @@ public class DIDStore: NSObject {
         guard (privateIdentity != nil) else {
             throw DIDStoreError.failue("DID Store not contains private identity.")
         }
-        var lastIndex: Int = try loadPrivateIdentityIndex()
+        var nextIndex: Int = try loadPrivateIdentityIndex()
 
-        let key: DerivedKey = try! privateIdentity!.derive(lastIndex++)
+        let key: DerivedKey = try! privateIdentity!.derive(nextIndex++)
         let pks: [UInt8] = try key.getPublicKeyBytes()
         let methodIdString: String = DerivedKey.getIdString(pks)
         let did: DID = DID(DID.METHOD, methodIdString)
@@ -122,7 +151,7 @@ public class DIDStore: NSObject {
         let privatekeyData: Data = try key.getPrivateKeyData()
         let encryptedKey = try encryptToBase64(storepass, privatekeyData)
         try storePrivateKey(did, pk.id, encryptedKey)
-        try storePrivateIdentityIndex(lastIndex)
+        try storePrivateIdentityIndex(nextIndex)
         
         return doc
     }
@@ -137,7 +166,7 @@ public class DIDStore: NSObject {
     }
 
     public func publishDid(_ doc: DIDDocument, _ signKey: String, _ storepass :String) throws -> Bool {
-        return try publishDid(doc, DIDURL(signKey), storepass)
+        return try publishDid(doc, DIDURL(doc.subject!, signKey), storepass)
     }
     
     public func publishDid(_ doc: DIDDocument, _ storepass :String) throws -> Bool {
@@ -152,7 +181,7 @@ public class DIDStore: NSObject {
     }
     
     public func updateDid(_ doc: DIDDocument,_ signKey: String,_ storepass :String) throws -> Bool {
-        return try updateDid(doc, DIDURL(signKey), storepass)
+        return try updateDid(doc, DIDURL(doc.subject!, signKey), storepass)
     }
     
     public func updateDid(_ doc: DIDDocument, _ storepass :String) throws -> Bool {
@@ -167,7 +196,7 @@ public class DIDStore: NSObject {
     }
     
     public func deactivateDid(_ did: DID,_ signKey: String, _ storepass :String) throws -> Bool {
-        return try deactivateDid(did, DIDURL(signKey), storepass)
+        return try deactivateDid(did, DIDURL(did, signKey), storepass)
     }
     
     public func deactivateDid(_ did: DID, _ storepass :String) throws -> Bool {
@@ -250,33 +279,38 @@ public class DIDStore: NSObject {
     public func setCredentialHint(_ did: DID, _ id: DIDURL, _ hint: String) throws {}
     
     public func setCredentialHint(_ did: String, _ id: String, _ hint: String) throws {
-        try setCredentialHint(DID(did), DIDURL(id), hint)
+        let _did: DID = try DID(did)
+        try setCredentialHint(_did, DIDURL(_did, id), hint);
     }
 
     public func getCredentialHint(_ did: DID, _ id: DIDURL) throws -> String { return "" }
     
     public func getCredentialHint(_ did: String, _ id: String) throws -> String {
-        return try getCredentialHint(DID(did), DIDURL(id))
+        let _did: DID = try DID(did)
+        return try getCredentialHint(_did, DIDURL(_did, id))
     }
     
     public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? { return VerifiableCredential() }
     public func loadCredential(_ did: String, _ id: String) throws -> VerifiableCredential? {
-        return try loadCredential(DID(did), DIDURL(id))
+        let _did: DID = try DID(did)
+        return try loadCredential(_did, DIDURL(_did, id))
     }
 
     public func containsCredentials(_ did:DID) throws -> Bool { return false }
     public func containsCredentials(_ did: String) throws -> Bool {
         return try containsCredentials(DID(did))
     }
-
+    
     public func containsCredential(_ did: DID, _ id: DIDURL) throws -> Bool { return false }
     public func containsCredential(_ did: String, _ id: String) throws -> Bool {
-        return try containsCredential(DID(did), DIDURL(id))
+        let _did: DID = try DID(did)
+        return try containsCredential(_did, DIDURL(_did, id))
     }
 
     public func deleteCredential(_ did: DID , _ id: DIDURL) throws -> Bool{ return false }
     public func deleteCredential(_ did: String , _ id: String) throws -> Bool{
-        return try deleteCredential(DID(did), DIDURL(id))
+        let _did: DID = try DID(did)
+        return try deleteCredential(_did, DIDURL(_did, id))
     }
 
     public func listCredentials(_ did: DID) throws -> Array<Entry<DIDURL, String>> { return [Entry]() }
@@ -286,29 +320,33 @@ public class DIDStore: NSObject {
 
     public func selectCredentials(_ did: DID, _ id: DIDURL,_ type: Array<Any>) throws -> Array<Entry<DIDURL, String>> { return [Entry]() }
     public func selectCredentials(_ did: String, _ id: String,_ type: Array<Any>) throws -> Array<Entry<DIDURL, String>> {
-        return try selectCredentials(DID(did), DIDURL(id), type)
+        let _did: DID = try DID(did)
+        return try selectCredentials(_did, DIDURL(_did, id), type)
     }
 
     public func containsPrivateKeys(_ did: DID) throws -> Bool { return false }
     public func containsPrivateKeys(_ did: String) throws -> Bool {
         return try containsPrivateKeys(DID(did))
     }
-
+    
     public func containsPrivateKey(_ did: DID,_ id: DIDURL) throws -> Bool { return false }
     public func containsPrivateKey(_ did: String,_ id: String) throws -> Bool {
-        return try containsPrivateKey(DID(did), DIDURL(id))
+        let _did: DID = try DID(did)
+        return try containsPrivateKey(_did, DIDURL(_did, id))
     }
 
     public func storePrivateKey(_ did: DID,_ id: DIDURL, _ privateKey:String) throws {}
     public func storePrivateKey(_ did: String,_ id: String, _ privateKey:String) throws {
-       try storePrivateKey(DID(did), DIDURL(id), privateKey)
+        let _did: DID = try DID(did)
+       try storePrivateKey(_did, DIDURL(_did, id), privateKey)
     }
 
     func loadPrivateKey(_ did: DID, id: DIDURL) throws -> String { return "" }
-
+    
     public func deletePrivateKey(_ did: DID,_ id: DIDURL) throws -> Bool { return false }
     public func deletePrivateKey(_ did: String,_ id: String) throws -> Bool {
-        return try deletePrivateKey(DID(did), DIDURL(id))
+        let _did: DID = try DID(did)
+        return try deletePrivateKey(_did, DIDURL(_did, id))
     }
 
     public func sign(_ did: DID, _ id: DIDURL?, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {

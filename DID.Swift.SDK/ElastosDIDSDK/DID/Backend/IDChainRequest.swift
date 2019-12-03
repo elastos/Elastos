@@ -91,7 +91,7 @@ class IDChainRequest: NSObject {
         self.signature = try DIDStore.shareInstance()?.sign(self.did!, key, passphrase, count, inputs) ?? ""
         self.signKey = key
         self.keyType = Constants.defaultPublicKeyType
-//        try verify()
+        try verify()
         return self
     }
 
@@ -166,7 +166,7 @@ class IDChainRequest: NSObject {
             guard proof.count != 0 else {
                 throw DIDError.failue("Missing proof.")
             }
-            let keyType: String = try JsonHelper.getString(proof, KEY_TYPE, false, nil, KEY_TYPE)
+            let keyType: String = try JsonHelper.getString(proof, KEY_TYPE, true, Constants.defaultPublicKeyType, KEY_TYPE)
             guard keyType == Constants.defaultPublicKeyType else {
                 throw DIDError.failue("Unknown signature key type.")
             }
@@ -187,4 +187,8 @@ class IDChainRequest: NSObject {
         }
     }
     
+    class public func fromJson(_ json: String) throws -> IDChainRequest {
+        let dic: OrderedDictionary = JsonHelper.handleString(json) as! OrderedDictionary<String, Any>
+        return try fromJson(dic)
+    }
 }
