@@ -82,6 +82,10 @@ module.exports = merge(common, {
             poll: 5000
         },
         proxy: {
+            '/api/dposnoderpc': {
+                "target":'https://54.223.244.60',
+                "secure": false
+            },
             '/api': 'http://localhost:3000'
         },
         compress: true,

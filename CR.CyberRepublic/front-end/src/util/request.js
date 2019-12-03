@@ -35,7 +35,9 @@ export const api_request = (opts = {}) => {
     data: {},
     success: null,
     error: null,
-    path: ''
+    path: '',
+    processResponse: null,
+    isProcessResponse: true
   }, opts)
   server_url += opts.path
 
@@ -59,6 +61,8 @@ export const api_request = (opts = {}) => {
     option.body = formData
 
     delete option.headers['Content-Type']
+  } else if (method === 'post' && option.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+    option.body = _.join(_.map(_.toPairs(opts.data), value => `${value[0]}=${value[1]}`), '&')
   } else if (method !== 'get' && method !== 'head') {
     option.body = JSON.stringify(opts.data)
   } else {
@@ -80,16 +84,7 @@ export const api_request = (opts = {}) => {
     })
   }
 
-  return fetch(server_url, option).then((response) => {
-
-    if (response.status === 200) {
-      // fetch success
-      return response.json()
-    }
-
-    throw new Error(response.statusText ? response.statusText : response.type)
-
-  }).then((data) => {
+  const processResponse = data => {
     if (data.code > 0) {
       // return data correct
       if (opts.success) {
@@ -104,8 +99,18 @@ export const api_request = (opts = {}) => {
 
     // TODO: this isn't elegant, nothing is returned to the caller so there is no graceful error
     console.error(data.error)
+  }
 
-  }).catch((err) => {
+  return fetch(server_url, option).then((response) => {
+
+    if (response.status === 200) {
+      // fetch success
+      return response.json()
+    }
+
+    throw new Error(response.statusText ? response.statusText : response.type)
+
+  }).then(opts.isProcessResponse ? processResponse : opts.processResponse).catch((err) => {
     // then we have this so the first then block can come straight here I guess?
     console.error(err)
   })
@@ -142,6 +147,39 @@ export const upload_file = async (fileObject, opts = {}) => {
       type: fileObject.type,
       ...url
     }
+  } catch (e) {
+    if (opts.error) {
+      opts.error(e)
+    }
+    throw e
+  }
+}
+
+export const wallet_request = async (opts = {}) => {
+  try {
+    return await api_request({
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      processResponse: data => {
+        if (data.code === '0') {
+          // return data correct
+          if (opts.success) {
+            opts.success(data.data, data)
+          }
+          return data.data.result
+        }
+
+        if (opts.error) {
+          opts.error(data)
+        }
+
+        // TODO: this isn't elegant, nothing is returned to the caller so there is no graceful error
+        console.error(data.error)
+      },
+      isProcessResponse: false,
+      ...opts
+    })
   } catch (e) {
     if (opts.error) {
       opts.error(e)

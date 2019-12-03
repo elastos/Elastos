@@ -3,6 +3,10 @@ export default {
   '0002': '档案列表',
   '0003': '草案',
 
+  candidate: {
+    votes: '票',
+    voteRate: '投票占比'
+  },
   list: {
     0: '摘要',
     1: '1. Cyber Republic (CR)',
