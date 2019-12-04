@@ -35,7 +35,7 @@ export default class extends StandardPage {
   renderCandidate = () => (
     <Card>
       <StyledAvatar
-        src="/assets/images/council/council-yipeng.jpeg"
+        src="/assets/images/council/council-no2.jpeg"
         shape="square"
         size={176}
         icon="user"
