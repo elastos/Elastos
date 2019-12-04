@@ -16,7 +16,7 @@ export default class extends StandardPage {
     return (
       <React.Fragment>
         <Meta
-          title="ELIP List - Cyber Republic"
+          title="Cyber Republic - Elastos"
           url="/elips"
         />
         <ElipList />

@@ -33,7 +33,11 @@ export default class extends StandardPage {
   }
 
   async componentDidMount() {
-    this.refetch()
+    this.refetch(true)
+  }
+
+  ord_loading(f = false) {
+    _.debounce(super.ord_loading, 500, f)
   }
 
   handlePaginationChange = pageNum => {
@@ -45,7 +49,8 @@ export default class extends StandardPage {
     return {pageNum, pageSize: PAGE_SIZE, state: 'all'}
   }
 
-  refetch = async () => {
+  refetch = async (isShowLoading = false) => {
+    if (isShowLoading) this.ord_loading(true)
     const { listData } = this.props
     const param = this.getQuery()
     try {
@@ -54,6 +59,7 @@ export default class extends StandardPage {
     } catch (error) {
       logger.error(error)
     }
+    if (isShowLoading) this.ord_loading(false)
   }
 
   renderLoading() {
@@ -243,7 +249,7 @@ const Meta = styled.div`
     display: flex;
     .data {
       font-weight: bold;
-      color: #ffffff;
+      color: ${text.white};
     }
     .data-vote {
       max-width: 70%;
@@ -259,7 +265,7 @@ const Name = styled.div`
   font-family: komu-a;
   font-size: 30px;
   line-height: 30px;
-  color: #ffffff;
+  color: ${text.white};
 `
 
 const StyledPagination = styled.div`
@@ -268,22 +274,43 @@ const StyledPagination = styled.div`
   text-align: center;
   .ant-pagination-prev .ant-pagination-item-link,
   .ant-pagination-next .ant-pagination-item-link {
-    border-color: #173045;
-    background-color: #173045;
+    border-color: ${bg.navy};
+    background-color: ${bg.navy};
   }
   .ant-pagination-item {
-    background-color: #173045;
+    background-color: ${bg.navy};
     a {
-      color: #1de9b6;
+      color: ${text.green};
     }
-    &:focus, &:hover {
+    &:focus,
+    &:hover {
       a {
-        color: #fff;
+        color: ${text.white};
       }
     }
   }
   .ant-pagination-item-active a {
-    color: #fff;
-    border-bottom: 2px solid #fff;
+    color: ${text.white};
+    border-bottom: 2px solid ${text.white};
+  }
+  .ant-pagination-jump-prev
+    .ant-pagination-item-container
+    .ant-pagination-item-link-icon,
+  .ant-pagination-jump-next
+    .ant-pagination-item-container
+    .ant-pagination-item-link-icon {
+    color: ${text.green};
+  }
+  .ant-pagination-jump-prev
+    .ant-pagination-item-container
+    .ant-pagination-item-ellipsis,
+  .ant-pagination-jump-next
+    .ant-pagination-item-container
+    .ant-pagination-item-ellipsis {
+    color: ${text.green};
+    &:focus,
+    &:hover {
+      color: ${text.green};
+    }
   }
 `

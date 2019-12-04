@@ -10,7 +10,7 @@ import Component from './Component'
 
 const mapState = (state) => {
   const currentUserId = state.user.current_user_id
-  
+
   const suggestionState = {
     ...state.suggestion,
     tagsIncluded: state.suggestion.tags_included,
@@ -59,9 +59,9 @@ const mapDispatch = () => {
 
     async loadMore(query) {
 
-      query = Object.assign({
-        status: SUGGESTION_STATUS.ACTIVE
-      }, query)
+      // query = Object.assign({
+      //   status: SUGGESTION_STATUS.ACTIVE
+      // }, query)
 
       return service.loadMore(query)
     },
