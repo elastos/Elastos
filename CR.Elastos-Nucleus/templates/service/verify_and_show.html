@@ -51,7 +51,7 @@
     {% if output %}
         <h5 class="card-title">Content:</h5>
         <p class="card-text">{{ content }}</p>
-          <a href="{% url 'service:verifyAndShow' %}" methods="GET">
+          <a href="{% url 'service:verify_and_show' %}" methods="GET">
             <button type="submit" class="btn-default">Show Again</button>
         </a>
     {% else %}

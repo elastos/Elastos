@@ -36,36 +36,11 @@ git clone https://github.com/cyber-republic/elastos-console.git
 cd elastos-console
 ```
 
-If this is your first time running the django, do the following as the admin user needs to be created.
-If not, you can skip to the next step of executing the automated bash script:
-
-- Create a Python virtual environment:
-  ```
-  virtualenv -p `which python3` venv
-  source venv/bin/activate
-  pip3 install -r requirements.txt
-  cp .env.example .env
-  ```
-- Start postgres server
-  ```
-  cd tools
-  ./postgres.sh
-  cd ..
-  ```
-- Put adenine client to the python path(NOTE: This is only temporary until the library is published to pip):
+Put adenine client to the python path(NOTE: This is only temporary until the library is published to pip):
   ```
   rm -f venv/lib/python3.7/site-packages/adenine
   cp -r /path/to/python-grpc-adenine/adenine venv/lib/python3.7/site-packages/
   ```
-- Create an admin user for django admin interface if not already:
-  ```
-  python3 manage.py makemigrations
-  python3 manage.py migrate
-  python3 manage.py createsuperuser
-  ```
-- Deactivate virtualenv
-  `deactivate`
-
 Copy the environment example file
 ```
 yes | cp -rf .env.example .env
@@ -76,17 +51,18 @@ Update environment file(.env) by changing the value of the following variables
 ALLOWED_HOSTS=.127.0.0.1, .localhost, .www.nucleusconsole.com, .nucleusconsole.com, .192.168.1.23
 # Replace '192.168.1.23' with your own IP address(cannot be localhost)
 APP_URL=http://192.168.1.23:8000
+```
+
+Set the following only if you want to test signup/login using Elephant Wallet. Otherwise, it's not needed:
+```
+DEVELOPMENT=False
 # Replace the following values with your own SMTP server settings
 EMAIL_HOST='smtp.example.com'
 EMAIL_HOST_USER='support@example.com'
 EMAIL_HOST_PASSWORD='password'
 EMAIL_PORT=587
 ```
-Put adenine client to the python path(NOTE: This is only temporary until the library is published to pip):
-```
-rm -f venv/lib/python3.7/site-packages/adenine
-cp -r /path/to/python-grpc-adenine/adenine venv/lib/python3.7/site-packages/
-```
+
 Run the automated script to set up everything and start Django server:
 ```
 ./run.sh
@@ -95,6 +71,10 @@ Run the automated script to set up everything and start Django server:
 The console can be viewed on at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 You can also use the admin interface at [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin)
+
+For testing purposes, you can use the following to log in to the admin interface. Note that this only works if you run the server at least once using DEVELOPMENT=True on your .env file:
+- email: test@nucleusconsole.com
+- password: admin
 
 ## Debugging
 

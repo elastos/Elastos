@@ -1,5 +1,11 @@
+from django.contrib import messages
+from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.urls import reverse
+
+from decouple import config
+
+from login.models import DIDUser
 
 
 def login_required(function):
@@ -12,7 +18,26 @@ def login_required(function):
     wrapper.__name__ = function.__name__
     return wrapper
 
-
 def landing(request):
-    context = {"logged_in": False}
+    development = config('DEVELOPMENT', default=False, cast=bool)
+    context = {'development': development}
+    if development:
+        email = "test@nucleusconsole.com"
+        try:
+            user = DIDUser.objects.get(email=email)
+        except(TypeError, ValueError, OverflowError, DIDUser.DoesNotExist):
+            user = DIDUser()
+            user.email = "test@nucleusconsole.com"
+            user.name = "Test User"
+            user.set_password("admin")
+            user.did = "test"
+            user.is_active = True
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        request.session['name'] = user.name
+        request.session['email'] = user.email
+        request.session['did'] = user.did
+        request.session['logged_in'] = True
     return render(request, 'landing.html', context)

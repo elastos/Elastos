@@ -54,7 +54,7 @@
         <p class="card-text">Public Key : {{ public_key }}</p>
         <p class="card-text">Signature : {{ signature }}</p>
         <p class="card-text">File Hash : {{ file_hash }}</p>
-        <a href="{% url "service:uploadAndSign" %}" methods="GET">
+        <a href="{% url "service:upload_and_sign" %}" methods="GET">
         <button class="btn-default">
             Upload Again
         </button>
