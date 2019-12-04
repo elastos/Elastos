@@ -350,7 +350,9 @@ export default class extends StandardPage {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     return (
       <div>
-        {I18N.get('suggestion.sort')}:{' '}
+        {I18N.get('suggestion.sort')}
+:
+        {' '}
         <Select
           name="type"
           style={{ width: 200, marginLeft: 16 }}
@@ -675,7 +677,7 @@ export default class extends StandardPage {
       results
     }
     let included = ''
-   
+
     if (this.state.showArchived) {
       query.status = SUGGESTION_STATUS.ARCHIVED
     }
