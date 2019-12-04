@@ -106,25 +106,30 @@ export default class extends Base {
 
     if (commentable) {
       const updateObj: any = {
-        comments: [],
+        comments: commentable.comments || [],
         subscribers: commentable.subscribers || []
       }
       
       if(commentable.comments && Array.isArray(commentable.comments) && commentable.comments.length){
         let currentUser = this.currentUser
         updateObj.comments = commentable.comments.map(function(it){
-          // change my comment
-          if(it._id === commentId && it.createdBy === currentUser) {
-            return {
-              _id: it._id,
-              comment,
-              headline,
-              createdBy: currentUser,
-              createdAt
-            }
-          }else{
-            return it
+          if(Array.isArray(it)) {
+            it = it.map(function(obj){
+              // change my comment
+              if(obj._id.toString() === commentId && obj.createdBy._id.toString() === currentUser._id.toString()) {
+                return {
+                  _id: commentId,
+                  comment,
+                  headline,
+                  createdBy: currentUser,
+                  createdAt
+                }
+              }else{
+                return obj
+              }
+            })
           }
+          return it
         })
       }
       
@@ -206,8 +211,17 @@ export default class extends Base {
       if(commentable.comments && Array.isArray(commentable.comments) && commentable.comments.length){
         let currentUser = this.currentUser
         updateObj.comments = commentable.comments.filter(function(it){
-          // remove my comment
-          if(it._id === commentId && it.createdBy === currentUser) {
+          if(Array.isArray(it)){
+            it = it.filter(function(obj){
+              // remove my comment
+              if(obj._id.toString() === commentId && obj.createdBy._id.toString() === currentUser._id.toString()) {
+                return false
+              }else{
+                return true
+              }
+            })
+          }
+          if(it.length === 0){
             return false
           }else{
             return true
