@@ -27,7 +27,7 @@ def landing(request):
             user = DIDUser.objects.get(email=email)
         except(TypeError, ValueError, OverflowError, DIDUser.DoesNotExist):
             user = DIDUser()
-            user.email = "test@nucleusconsole.com"
+            user.email = email
             user.name = "Test User"
             user.set_password("admin")
             user.did = "test"
