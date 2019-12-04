@@ -308,8 +308,7 @@ namespace Elastos {
 				std::vector<PeerInfo> peers;
 
 				if (_peers.size() < _maxConnectCount ||
-					_peers[_maxConnectCount - 1].Timestamp + 3 * 24 * 60 * 60 < now) {
-					_needGetAddr = true;
+					_peers[_maxConnectCount - 1].Timestamp + 60 * 24 * 60 * 60 < now) {
 					FindPeers();
 				}
 
@@ -558,7 +557,7 @@ namespace Elastos {
 			return _downloadPeerName;
 		}
 
-		const PeerPtr PeerManager::GetDownloadPeer() const {
+		PeerPtr PeerManager::GetDownloadPeer() const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _downloadPeer;
 		}
@@ -1114,7 +1113,7 @@ namespace Elastos {
 				if (save.size() > 2500) save.resize(2500);
 				peersCount = save.size();
 
-				while (peersCount > 0 && save[peersCount - 1].Timestamp + 30 * 24 * 3600 < now) peersCount--;
+				while (peersCount > 200 && save[peersCount - 1].Timestamp + 30 * 24 * 3600 < now) peersCount--;
 				save.resize(peersCount);
 
 				// remove peers more than 3 hours old, or until there are only 1000 left

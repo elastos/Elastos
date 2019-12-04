@@ -5,11 +5,9 @@
 #include "AddressMessage.h"
 
 #include <Common/Log.h>
-#include <P2P/Peer.h>
 #include <Common/Utils.h>
-
-#include <BRAddress.h>
-#include <BRArray.h>
+#include <P2P/Peer.h>
+#include <P2P/PeerManager.h>
 
 #include <arpa/inet.h>
 
@@ -88,8 +86,8 @@ namespace Elastos {
 						continue;
 					}
 
-//					_peer->debug("peers[{}] = {}:{} timestamp = {}, services = {}",
-//								i, p.GetHost(), p.Port, p.Timestamp, p.Services);
+					PEER_DEBUG(_peer, "peers[{}] = {}:{} timestamp = {}, services = {}",
+								i, p.GetHost(), p.Port, p.Timestamp, p.Services);
 
 
 					// if address time is more than 10 min in the future or unknown, set to 5 days old

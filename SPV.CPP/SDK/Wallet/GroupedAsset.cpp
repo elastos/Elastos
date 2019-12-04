@@ -206,7 +206,15 @@ namespace Elastos {
 
 				if (pv->Version() == VOTE_PRODUCER_CR_VERSION) {
 					for (const VoteContent &vc : pv->GetVoteContent()) {
-						if (vc.GetType() == voteContent.GetType())
+						bool picked = false;
+						for (const VoteContent &vcPicked: oldVoteContent) {
+							if (vc.GetType() == vcPicked.GetType()) {
+								picked = true;
+								break;
+							}
+						}
+
+						if (vc.GetType() == voteContent.GetType() || picked)
 							continue;
 
 						oldVoteContent.push_back(vc);
@@ -224,7 +232,15 @@ namespace Elastos {
 					}
 				} else {
 					for (const VoteContent &vc : pv->GetVoteContent()) {
-						if (vc.GetType() == VoteContent::Delegate && vc.GetType() != voteContent.GetType()) {
+						bool picked = false;
+						for (const VoteContent &vcPicked : oldVoteContent) {
+							if (vc.GetType() == vcPicked.GetType()) {
+								picked = true;
+								break;
+							}
+						}
+
+						if (!picked && vc.GetType() == VoteContent::Delegate && vc.GetType() != voteContent.GetType()) {
 							oldVoteContent.push_back(vc);
 							oldVoteContent.back().SetAllCandidateVotes((*u)->Output()->Amount().getUint64());
 							oldVoteAmount.push_back((*u)->Output()->Amount());

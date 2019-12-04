@@ -231,8 +231,6 @@ namespace Elastos {
 		}
 
 		void SubWallet::EncodeTx(nlohmann::json &result, const TransactionPtr &tx) const {
-			SPVLOG_DEBUG("raw tx: {}", tx->ToJson().dump());
-
 			ByteStream stream;
 			tx->Serialize(stream, true);
 			const bytes_t &hex = stream.GetBytes();
@@ -284,6 +282,7 @@ namespace Elastos {
 			ErrorChecker::CheckParam(!tx->Deserialize(stream, true), Error::InvalidArgument,
 									 "Invalid input: deserialize fail");
 
+			SPVLOG_DEBUG("tx: {}", tx->ToJson().dump(4));
 			return tx;
 		}
 

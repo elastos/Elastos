@@ -134,7 +134,7 @@ namespace Elastos {
 
 			std::string GetDownloadPeerName() const;
 
-			const PeerPtr GetDownloadPeer() const;
+			PeerPtr GetDownloadPeer() const;
 
 			size_t GetPeerCount() const;
 
