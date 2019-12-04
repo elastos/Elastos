@@ -109,15 +109,17 @@ export default class extends Base {
         comments: [],
         subscribers: commentable.subscribers || []
       }
+      
       if(commentable.comments && Array.isArray(commentable.comments) && commentable.comments.length){
+        let currentUser = this.currentUser
         updateObj.comments = commentable.comments.map(function(it){
           // change my comment
-          if(it._id === commentId && it.createdBy === this.currentUser) {
+          if(it._id === commentId && it.createdBy === currentUser) {
             return {
               _id: it._id,
               comment,
               headline,
-              createdBy: this.currentUser,
+              createdBy: currentUser,
               createdAt
             }
           }else{
@@ -202,9 +204,10 @@ export default class extends Base {
         subscribers: commentable.subscribers || []
       }
       if(commentable.comments && Array.isArray(commentable.comments) && commentable.comments.length){
+        let currentUser = this.currentUser
         updateObj.comments = commentable.comments.filter(function(it){
           // remove my comment
-          if(it._id === commentId && it.createdBy === this.currentUser) {
+          if(it._id === commentId && it.createdBy === currentUser) {
             return false
           }else{
             return true
