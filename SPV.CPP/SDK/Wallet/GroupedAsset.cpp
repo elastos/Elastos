@@ -295,6 +295,8 @@ namespace Elastos {
 			newVoteContent.push_back(voteContent);
 			if (max) {
 				newVoteMaxAmount = totalInputAmount - feeAmount;
+				if (newVoteMaxAmount > totalOutputAmount)
+					totalOutputAmount = newVoteMaxAmount;
 				newVoteContent.back().SetAllCandidateVotes(newVoteMaxAmount.getUint64());
 			}
 

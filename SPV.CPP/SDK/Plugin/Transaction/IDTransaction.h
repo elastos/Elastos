@@ -17,9 +17,6 @@ namespace Elastos {
 				didTransaction         = 0x0A,
 			};
 
-#define FILTER_IDCHAIN_registerIdentification 1 << 50
-#define FILTER_IDCHAIN_didTransaction 1 << 51
-
 		public:
 			IDTransaction();
 

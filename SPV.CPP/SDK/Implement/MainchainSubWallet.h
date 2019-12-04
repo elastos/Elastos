@@ -160,8 +160,6 @@ namespace Elastos {
 		protected:
 			virtual void onTxAdded(const TransactionPtr &tx);
 
-			virtual void onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp);
-
 			virtual void onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan);
 
 		private:

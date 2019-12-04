@@ -48,10 +48,18 @@ namespace Elastos {
 		}
 
 		void MainchainSubWallet::InitData() {
-			uint32_t filter = FIlter_registerCR | FIlter_unregisterCR | FIlter_updateCR | FIlter_returnCRDepositCoin |
-			                  FIlter_registerProducer | FIlter_cancelProducer| FIlter_updateProducer| FIlter_returnDepositCoin;
+			bytes_t types;
 
-			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetTransactions(filter);
+			types.push_back(Transaction::registerCR);
+			types.push_back(Transaction::unregisterCR);
+			types.push_back(Transaction::updateCR);
+			types.push_back(Transaction::returnCRDepositCoin);
+			types.push_back(Transaction::registerProducer);
+			types.push_back(Transaction::cancelProducer);
+			types.push_back(Transaction::updateProducer);
+			types.push_back(Transaction::returnDepositCoin);
+
+			std::vector<TransactionPtr> list = _walletManager->GetWallet()->GetTransactions(types);
 
 			for (std::vector<TransactionPtr>::iterator it = list.begin(); it != list.end(); ++it) {
 				TransactionPtr tx = *it;
@@ -60,9 +68,10 @@ namespace Elastos {
 				    type == Transaction::updateCR || type == Transaction::returnCRDepositCoin) {
 					_crList.push_back(tx);
 				} else if (type == Transaction::registerProducer || type == Transaction::cancelProducer ||
-				           type == Transaction::updateProducer || type == Transaction::returnDepositCoin ||
-				           type == Transaction::activateProducer) {
+				           type == Transaction::updateProducer || type == Transaction::returnDepositCoin) {
 					_producerList.push_back(tx);
+				} else {
+					Log::warn("contains tx we don't want");
 				}
 			}
 		}
@@ -1404,7 +1413,6 @@ namespace Elastos {
 		}
 
 		void MainchainSubWallet::onTxAdded(const TransactionPtr &tx) {
-			SubWallet::onTxAdded(tx);
 			uint8_t type = tx->GetTransactionType();
 			Lock();
 			if (type == Transaction::registerCR ||
@@ -1420,65 +1428,34 @@ namespace Elastos {
 				_producerList.push_back(tx);
 			}
 			Unlock();
-		}
-
-		void MainchainSubWallet::onTxUpdated(const std::vector<uint256> &hashes, uint32_t blockHeight, time_t timeStamp) {
-			SubWallet::onTxUpdated(hashes, blockHeight,timeStamp);
-
-			Lock();
-			bool isFound = false;
-			size_t count = _crList.size();
-
-			for (size_t i = 0;  i < hashes.size(); ++i) {
-				for (size_t j = 0; j < count; ++j) {
-					TransactionPtr tx = _crList[j];
-					if (tx->GetHash().GetHex() == hashes[i].GetHex()) {
-						tx->SetBlockHeight(blockHeight);
-						tx->SetTimestamp(timeStamp);
-						isFound = true;
-						break;
-					}
-				}
-			}
-
-			count = isFound ? 0 : _producerList.size();
-			for (size_t i = 0;  i < hashes.size(); ++i) {
-				for (size_t j = 0; j < count; ++j) {
-					TransactionPtr tx = _producerList[j];
-					if (tx->GetHash().GetHex() == hashes[i].GetHex()) {
-						tx->SetBlockHeight(blockHeight);
-						tx->SetTimestamp(timeStamp);
-						break;
-					}
-				}
-			}
-
-			Unlock();
+			SubWallet::onTxAdded(tx);
 		}
 
 		void MainchainSubWallet::onTxDeleted(const uint256 &hash, bool notifyUser, bool recommendRescan) {
-			SubWallet::onTxDeleted(hash, notifyUser, recommendRescan);
-
+			bool found = false;
 			Lock();
-			size_t len = _crList.size();
-			bool isFound = false;
-			for (size_t i = 0; i < len; ++i) {
-				if (_crList[i]->GetHash().GetHex() == hash.GetHex()) {
-					_crList.erase(_crList.begin() + i);
-					isFound = true;
+			for (std::vector<TransactionPtr>::iterator it = _crList.begin(); it != _crList.end();) {
+				if ((*it)->GetHash().GetHex() == hash.GetHex()) {
+					it = _crList.erase(it);
+					found = true;
 					break;
+				} else {
+					++it;
 				}
 			}
 
-			len = isFound ? 0 : _producerList.size();
-			for (size_t i = 0; i < len; ++i) {
-				if (_producerList[i]->GetHash().GetHex() == hash.GetHex()) {
-					_producerList.erase(_producerList.begin() + i);
+			for (std::vector<TransactionPtr>::iterator it = _producerList.begin(); !found && it != _producerList.end();) {
+				if ((*it)->GetHash().GetHex() == hash.GetHex()) {
+					it = _producerList.erase(it);
 					break;
+				} else {
+					++it;
 				}
 			}
 
 			Unlock();
+
+			SubWallet::onTxDeleted(hash, notifyUser, recommendRescan);
 		}
 
 	}

@@ -160,7 +160,7 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> GetAllTransactions(size_t start, size_t count) const;
 
-			std::vector<TransactionPtr> GetTransactions(uint32_t typeFilter) const;
+			std::vector<TransactionPtr> GetTransactions(const bytes_t &types) const;
 
 			std::vector<UTXOPtr> GetAllCoinBaseTransactions() const;
 
