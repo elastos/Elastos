@@ -11,6 +11,8 @@ import reportabuse from './reportabuse'
 import subscribe from './subscribe'
 import unsubscribe from './unsubscribe'
 import comment from './comment'
+import comment_update from './comment_update'
+import comment_remove from './comment_remove'
 import abuse from './abuse'
 import archive from './archive'
 import del from './delete'
@@ -67,6 +69,16 @@ export default Base.setRouter([
   {
     path : '/:id/comment',
     router : comment,
+    method : 'post'
+  },
+  {
+    path : '/:id/comment_update',
+    router : comment_update,
+    method : 'post'
+  },
+  {
+    path : '/:id/comment_remove',
+    router : comment_remove,
     method : 'post'
   },
   {
