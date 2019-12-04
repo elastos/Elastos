@@ -14,7 +14,7 @@
 #include "ela_did.h"
 #include "did.h"
 #include "didstore.h"
-#include "diddocument.h"
+//#include "diddocument.h"
 
 #define  TEST_LEN    512
 
@@ -103,7 +103,7 @@ static int didstore_did_op_test_suite_init(void)
     document = DIDDocument_FromJson(global_did_string);
     if(!document) {
         TestAdapter_Destroy(adapter);
-        DIDStore_Deinitialize(store);
+        DIDStore_Deinitialize();
         return -1;
     }
 
@@ -111,7 +111,7 @@ static int didstore_did_op_test_suite_init(void)
     if (!did) {
         DIDDocument_Destroy(document);
         TestAdapter_Destroy(adapter);
-        DIDStore_Deinitialize(store);
+        DIDStore_Deinitialize();
         return -1;
     }
 
@@ -120,14 +120,12 @@ static int didstore_did_op_test_suite_init(void)
 
 static int didstore_did_op_test_suite_cleanup(void)
 {
-    DIDStore *store;
+    DIDStore *store = DIDStore_GetInstance();
 
     TestAdapter_Destroy(adapter);
     DIDDocument_Destroy(document);
-
-    store = DIDStore_GetInstance();
     DIDStore_DeleteDID(store, did);
-    DIDStore_Deinitialize(store);
+    DIDStore_Deinitialize();
     return 0;
 }
 

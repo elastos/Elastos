@@ -106,7 +106,7 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
     if (!backend || !did)
         return NULL;
 
-    data = backend->adapter->resolve(backend->adapter, DID_GetMethodSpecificString(did));
+    data = backend->adapter->resolve(backend->adapter, DID_GetMethodSpecificId(did));
     if (!data)
         return NULL;
 

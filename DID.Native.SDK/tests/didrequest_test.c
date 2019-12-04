@@ -12,8 +12,6 @@
 #include "loader.h"
 #include "didtest_adapter.h"
 #include "ela_did.h"
-#include "didstore.h"
-#include "diddocument.h"
 #include "did.h"
 
 #define  TEST_LEN    512
@@ -125,14 +123,14 @@ static int didrequest_test_suite_init(void)
     Mnemonic_free((char*)mnemonic);
     if (rc < 0) {
         TestAdapter_Destroy(adapter);
-        DIDStore_Deinitialize(store);
+        DIDStore_Deinitialize();
         return -1;
     }
 
     document = DIDStore_NewDID(store, storepass, "littlefish");
     if(!document) {
         TestAdapter_Destroy(adapter);
-        DIDStore_Deinitialize(store);
+        DIDStore_Deinitialize();
         return -1;
     }
     return 0;
@@ -140,13 +138,9 @@ static int didrequest_test_suite_init(void)
 
 static int didrequest_test_suite_cleanup(void)
 {
-    DIDStore *store;
-
-    store = DIDStore_GetInstance();
-
     DIDDocument_Destroy(document);
     TestAdapter_Destroy(adapter);
-    DIDStore_Deinitialize(store);
+    DIDStore_Deinitialize();
     return 0;
 }
 

@@ -8,7 +8,7 @@
 #include "ela_did.h"
 #include "did.h"
 #include "loader.h"
-#include "diddocument.h"
+//#include "diddocument.h"
 
 #define  TEST_LEN    512
 

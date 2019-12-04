@@ -20,7 +20,7 @@ static void test_did_get_method(void)
 
 static void test_did_get_specificid(void)
 {
-    CU_ASSERT_STRING_EQUAL(DID_GetMethodSpecificString(did), "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN");
+    CU_ASSERT_STRING_EQUAL(DID_GetMethodSpecificId(did), "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN");
 }
 
 static void test_did_get_didString(void)

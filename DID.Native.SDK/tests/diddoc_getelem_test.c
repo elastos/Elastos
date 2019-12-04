@@ -9,7 +9,7 @@
 #include "loader.h"
 #include "ela_did.h"
 #include "did.h"
-#include "diddocument.h"
+//#include "diddocument.h"
 
 static DIDDocument *document;
 static DIDURL id;
@@ -25,7 +25,7 @@ static void test_diddoc_get_subject(void)
 
 static void test_diddoc_get_publickeys_count(void)
 {
-    ssize_t count = DIDDocument_GetPublicKeysCount(document);
+    ssize_t count = DIDDocument_GetPublicKeyCount(document);
     CU_ASSERT_EQUAL(count, 4);
 }
 
@@ -33,7 +33,7 @@ static void test_diddoc_get_publickeys(void)
 {
     PublicKey *pks[4];
 
-    ssize_t count = DIDDocument_GetPublicKeysCount(document);
+    ssize_t count = DIDDocument_GetPublicKeyCount(document);
     CU_ASSERT_EQUAL(count, 4);
 
     count = DIDDocument_GetPublicKeys(document, pks, 4);
@@ -50,14 +50,14 @@ static void test_diddoc_select_publickey(void)
 {
     PublicKey *pks[4];
 
-    ssize_t count = DIDDocument_SelectPublicKey(document, type, &id, pks, 4);
+    ssize_t count = DIDDocument_SelectPublicKeys(document, type, &id, pks, 4);
     CU_ASSERT_EQUAL(count, 1);
 }
 
 //authentication
 static void test_diddoc_get_authentications_count(void)
 {
-    ssize_t count = DIDDocument_GetAuthenticationsCount(document);
+    ssize_t count = DIDDocument_GetAuthenticationCount(document);
     CU_ASSERT_EQUAL(count, 3);
 }
 
@@ -65,7 +65,7 @@ static void test_diddoc_get_authentications(void)
 {
     PublicKey *pks[4];
 
-    ssize_t count = DIDDocument_GetAuthentications(document, pks, 4);
+    ssize_t count = DIDDocument_GetAuthenticationKeys(document, pks, 4);
     CU_ASSERT_EQUAL(count, 3);
 }
 
@@ -79,21 +79,21 @@ static void test_diddoc_select_authentication(void)
 {
     PublicKey *pks[4];
 
-    ssize_t count = DIDDocument_SelectAuthenticationKey(document, type, &id, pks, 4);
+    ssize_t count = DIDDocument_SelectAuthenticationKeys(document, type, &id, pks, 4);
     CU_ASSERT_EQUAL(count, 1);
 }
 
 //Authorization
 static void test_diddoc_get_authorizations_count(void)
 {
-    ssize_t count = DIDDocument_GetAuthorizationsCount(document);
+    ssize_t count = DIDDocument_GetAuthorizationCount(document);
     CU_ASSERT_EQUAL(count, 1);
 }
 
 static void test_diddoc_get_authorizations(void)
 {
     PublicKey *pks[4];
-    ssize_t count = DIDDocument_GetAuthorizations(document, pks, 4);
+    ssize_t count = DIDDocument_GetAuthorizationKeys(document, pks, 4);
     CU_ASSERT_EQUAL(count, 1);
 }
 
@@ -107,14 +107,14 @@ static void test_diddoc_select_authorization(void)
 {
     PublicKey *pks[4];
 
-    ssize_t count = DIDDocument_SelectAuthorizationKey(document, type, &auth_id, pks, 4);
+    ssize_t count = DIDDocument_SelectAuthorizationKeys(document, type, &auth_id, pks, 4);
     CU_ASSERT_EQUAL(count, 1);
 }
 
 //Credential
 static void test_diddoc_get_credentials_count(void)
 {
-    ssize_t count = DIDDocument_GetCredentialsCount(document);
+    ssize_t count = DIDDocument_GetCredentialCount(document);
     CU_ASSERT_EQUAL(count, 2);
 }
 
@@ -135,14 +135,14 @@ static void test_diddoc_get_credential(void)
 static void test_diddoc_select_credential(void)
 {
     Credential *creds[4];
-    ssize_t count = DIDDocument_SelectCredential(document, type, &cred_id, creds, 4);
+    ssize_t count = DIDDocument_SelectCredentials(document, type, &cred_id, creds, 4);
     CU_ASSERT_EQUAL(count, 1);
 }
 
 //service
 static void test_diddoc_get_services_count(void)
 {
-    ssize_t count = DIDDocument_GetServicesCount(document);
+    ssize_t count = DIDDocument_GetServiceCount(document);
     CU_ASSERT_EQUAL(count, 3);
 }
 
@@ -164,7 +164,7 @@ static void test_diddoc_select_service(void)
 {
     Service *services[4];
 
-    ssize_t count = DIDDocument_SelectService(document, service_type, &service_id, services, 4);
+    ssize_t count = DIDDocument_SelectServices(document, service_type, &service_id, services, 4);
     CU_ASSERT_EQUAL(count, 1);
 }
 

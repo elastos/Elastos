@@ -105,13 +105,11 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
         const char* data, const char *storepass)
 {
     DIDRequest req;
-    const char *payload;
-    const char *op;
+    const char *payload, *op, *requestJson;
     size_t len;
     int rc;
     char signature[SIGNATURE_BYTES * 2 + 16];
     DIDStore *store;
-    const char *requestJson;
 
     if (!did || !signKey || !data || !storepass
             || (type < RequestType_Create) && (type > RequestType_Deactivate))

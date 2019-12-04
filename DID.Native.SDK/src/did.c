@@ -26,7 +26,10 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#include "ela_did.h"
 #include "did.h"
+#include "diddocument.h"
+#include "didstore.h"
 
 static const char did_scheme[] = "did";
 static const char did_method[] = "elastos";
@@ -139,7 +142,7 @@ const char *DID_GetMethod(DID *did)
     return did_method;
 }
 
-const char *DID_GetMethodSpecificString(DID *did)
+const char *DID_GetMethodSpecificId(DID *did)
 {
     if (!did)
         return NULL;
@@ -246,6 +249,7 @@ const char *DIDURL_GetFragment(DIDURL *id)
 char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact)
 {
     size_t expect_len = 0;
+    int size;
 
     if (!id || !idstring)
         return NULL;
@@ -257,10 +261,14 @@ char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact)
         return NULL;
 
     if (compact)
-        snprintf(idstring, len, "#%s", id->fragment);
+        size = snprintf(idstring, len, "#%s", id->fragment);
+        if (size < 0 || size > len)
+            return NULL;
     else
-        snprintf(idstring, len, "%s%s#%s", elastos_did_prefix,
+        size = snprintf(idstring, len, "%s%s#%s", elastos_did_prefix,
             id->did.idstring, id->fragment);
+        if (size < 0 || size > len)
+            return NULL;
 
     return idstring;
 }

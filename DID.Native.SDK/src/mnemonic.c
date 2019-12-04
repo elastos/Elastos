@@ -35,8 +35,8 @@ const char *Mnemonic_Generate(int language)
     return HDkey_GenerateMnemonic(language);
 }
 
-void Mnemonic_free(void *p)
+void Mnemonic_free(void *mnemonic)
 {
-    if (p)
-        free(p);
+    if (mnemonic)
+        free(mnemonic);
 }

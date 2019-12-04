@@ -11,7 +11,7 @@
 #include "constant.h"
 #include "loader.h"
 #include "ela_did.h"
-#include "didstore.h"
+//#include "didstore.h"
 #include "didtest_adapter.h"
 
 #define  TEST_LEN    512
@@ -33,7 +33,7 @@ static void test_didstore_initial(void)
     store = DIDStore_Initialize(storePath, adapter);
 
     CU_ASSERT_PTR_NOT_NULL(store);
-    DIDStore_Deinitialize(store);
+    DIDStore_Deinitialize();
 }
 
 static int didstore_initial_test_suite_init(void)

@@ -101,6 +101,7 @@ endif()
 include_directories(
     .
     ../src
+    ../src/utility
     ../hdkey
     ../adapter/spvadapter
     ${PROJECT_INT_DIST_DIR}/include)

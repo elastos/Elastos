@@ -91,6 +91,14 @@ typedef struct PublicKey        PublicKey;
 typedef struct Credential       Credential;
 /**
  * \~English
+ * A Presentation can be targeted to a specific verifier by using a Linked Data
+ * Proof that includes a nonce and realm.
+ * This also helps prevent a verifier from reusing a verifiable presentation as
+ * their own.
+ */
+typedef struct Presentation     Presentation;
+/**
+ * \~English
  * A service endpoint may represent any type of service the subject
  * wishes to advertise, including decentralized identity management services
  * for further discovery, authentication, authorization, or interaction.
@@ -207,7 +215,7 @@ DID_API const char *DID_GetMethod(DID *did);
  *      Otherwise, return NULL, and a specific error code can be
  *      retrieved by calling ela_get_error().
  */
-DID_API const char *DID_GetMethodSpecificString(DID *did);
+DID_API const char *DID_GetMethodSpecificId(DID *did);
 
 /**
  * \~English
@@ -466,12 +474,12 @@ DID_API DID* DIDDocument_GetSubject(DIDDocument *document);
  *      controller           [in] A controller property, identifies
  *                              the controller of the corresponding private key.
  * @param
- *      publickeybase        [in] Key propertie depend on key type.
+ *      key                  [in] Key propertie depend on key type.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDDocument_AddPublicKey(DIDDocument *document, DIDURL *keyid,
-        DID *controller, const char *publickeybase);
+        DID *controller, const char *key);
 
 /**
  * \~English
@@ -497,7 +505,7 @@ DID_API int DIDDocument_RemovePublicKey(DIDDocument *document, DIDURL *keyid, bo
  * @return
  *      size of public keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetPublicKeysCount(DIDDocument *document);
+DID_API ssize_t DIDDocument_GetPublicKeyCount(DIDDocument *document);
 
 /**
  * \~English
@@ -546,7 +554,7 @@ DID_API PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid
  * @return
  *      size of public keys selected on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectPublicKey(DIDDocument *document, const char *type,
+DID_API ssize_t DIDDocument_SelectPublicKeys(DIDDocument *document, const char *type,
         DIDURL *keyid, PublicKey **pks, size_t size);
 
 /**
@@ -576,12 +584,12 @@ DID_API DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document);
  *      controller           [in] A controller property, identifies
  *                              the controller of the corresponding private key.
  * @param
- *      publickeybase        [in] Key property depend on key type.
+ *      key                  [in] Key property depend on key type.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *keyid,
-        const char *publickeybase);
+        const char *key);
 
 /**
  * \~English
@@ -606,7 +614,7 @@ DID_API int DIDDocument_RemoveAuthenticationKey(DIDDocument *document, DIDURL *k
  * @return
  *      size of authentication keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthenticationsCount(DIDDocument *document);
+DID_API ssize_t DIDDocument_GetAuthenticationCount(DIDDocument *document);
 
 /**
  * \~English
@@ -623,7 +631,7 @@ DID_API ssize_t DIDDocument_GetAuthenticationsCount(DIDDocument *document);
  * @return
  *      size of authentication keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthentications(DIDDocument *document,
+DID_API ssize_t DIDDocument_GetAuthenticationKeys(DIDDocument *document,
         PublicKey **pks, size_t size);
 
 /**
@@ -658,7 +666,7 @@ DID_API PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDUR
  * @return
  *      size of authentication key selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectAuthenticationKey(DIDDocument *document, const char *type,
+DID_API ssize_t DIDDocument_SelectAuthenticationKeys(DIDDocument *document, const char *type,
         DIDURL *keyid, PublicKey **pks, size_t size);
 
 /**
@@ -675,12 +683,32 @@ DID_API ssize_t DIDDocument_SelectAuthenticationKey(DIDDocument *document, const
  *      controller           [in] A controller property, identifies
  *                              the controller of the corresponding private key.
  * @param
- *      publickeybase        [in] Key property depend on key type.
+ *      key                  [in] Key property depend on key type.
  * @return
  *      0 on success, -1 if an error occurred.
  */
 DID_API int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid,
-        DID *controller, const char *publickeybase);
+        DID *controller, const char *key);
+
+/**
+ * \~English
+ * Add Authorization key to Authentication array according to DID.
+ * Authentication is the mechanism by which the controller(s) of a DID can
+ * cryptographically prove that they are associated with that DID.
+ * A DID Document must include an authentication property.
+ *
+ * @param
+ *      controller           [in] A controller property, identifies
+ *                              the controller of the corresponding private key.
+ * @param
+ *      keyid                [in] An identifier of public key.
+ * @param
+ *      key                  [in] Key property depend on key type.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocument_AuthorizationDid(DID *controller, DIDURL *keyid,
+        const char *key);
 
 /**
  * \~English
@@ -693,8 +721,6 @@ DID_API int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid
  * @param
  *      controller           [in] A controller property, identifies
  *                              the controller of the corresponding private key.
- * @param
- *      publickeybase        [in] Key property depend on key type.
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -709,7 +735,7 @@ DID_API int DIDDocument_RemoveAuthorizationKey(DIDDocument *document, DIDURL *ke
  * @return
  *      size of authorization keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthorizationsCount(DIDDocument *document);
+DID_API ssize_t DIDDocument_GetAuthorizationCount(DIDDocument *document);
 
 /**
  * \~English
@@ -725,7 +751,7 @@ DID_API ssize_t DIDDocument_GetAuthorizationsCount(DIDDocument *document);
  * @return
  *      size of authorization keys on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetAuthorizations(DIDDocument *document,
+DID_API ssize_t DIDDocument_GetAuthorizationKeys(DIDDocument *document,
         PublicKey **pks, size_t size);
 
 /**
@@ -759,7 +785,7 @@ DID_API PublicKey *DIDDocument_GetAuthorizationKey(DIDDocument *document, DIDURL
  * @return
  *      size of authorization key selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectAuthorizationKey(DIDDocument *document, const char *type,
+DID_API ssize_t DIDDocument_SelectAuthorizationKeys(DIDDocument *document, const char *type,
         DIDURL *keyid, PublicKey **pks, size_t size);
 
 /**
@@ -796,7 +822,7 @@ DID_API int DIDDocument_RemoveCredential(DIDDocument *document, DIDURL *credid);
  * @return
  *      size of credentials on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetCredentialsCount(DIDDocument *document);
+DID_API ssize_t DIDDocument_GetCredentialCount(DIDDocument *document);
 
 /**
  * \~English
@@ -845,7 +871,7 @@ DID_API Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *cre
  * @return
  *      size of credentials selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectCredential(DIDDocument *document, const char *type,
+DID_API ssize_t DIDDocument_SelectCredentials(DIDDocument *document, const char *type,
         DIDURL *credid, Credential **creds, size_t size);
 
 /**
@@ -892,7 +918,7 @@ DID_API int DIDDocument_RemoveService(DIDDocument *document, DIDURL *serviceid);
  * @return
  *      size of services on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetServicesCount(DIDDocument *document);
+DID_API ssize_t DIDDocument_GetServiceCount(DIDDocument *document);
 
 /**
  * \~English
@@ -940,7 +966,7 @@ DID_API Service *DIDDocument_GetService(DIDDocument *document, DIDURL *serviceid
  * @return
  *      size of services selected, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_SelectService(DIDDocument *document, const char *type,
+DID_API ssize_t DIDDocument_SelectServices(DIDDocument *document, const char *type,
         DIDURL *serviceid, Service **services, size_t size);
 
 /**
@@ -1297,17 +1323,6 @@ DID_API const char *Credential_GetProofSignture(Credential *cred);
 
 /**
  * \~English
- * Set an identifier of Credential.
- *
- * @param
- *      cred                 [in] A handle to Credential.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int Credential_SetId(Credential *cred, DIDURL *credid);
-
-/**
- * \~English
  * Add specified type to Credential.
  *
  * @param
@@ -1318,32 +1333,6 @@ DID_API int Credential_SetId(Credential *cred, DIDURL *credid);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int Credential_AddType(Credential *cred, const char *type);
-
-/**
- * \~English
- * Add specified type to Credential.
- *
- * @param
- *      cred                 [in] A handle to Credential.
- * @param
- *      type                 [in] Type to be added.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int Credential_SetIssuer(Credential *cred, DID *issuer);
-
-/**
- * \~English
- * Set date of issuing credential.
- *
- * @param
- *      cred                 [in] A handle to Credential.
- * @param
- *      time                 [in] The date of issuing credential.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int Credential_SetIssuanceDate(Credential *cred, time_t time);
 
 /**
  * \~English
@@ -1360,19 +1349,6 @@ DID_API int Credential_SetExpirationDate(Credential *cred, time_t time);
 
 /**
  * \~English
- * Set identifier of Credential subject.
- *
- * @param
- *      cred                 [in] A handle to Credential.
- * @param
- *      subject              [in] Identifier of Credential subject.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int Credential_SetSubjectId(Credential *cred, DIDURL *subject);
-
-/**
- * \~English
  * Add credential subject property to Credential.
  *
  * @param
@@ -1385,45 +1361,6 @@ DID_API int Credential_SetSubjectId(Credential *cred, DIDURL *subject);
  *      0 on success, -1 if an error occurred.
  */
 DID_API int Credential_AddProperty(Credential *cred, const char *name, const char *value);
-
-/**
- * \~English
- * Set verification method identifier to Credential.
- *
- * @param
- *      cred                 [in] A handle to Credential.
- * @param
- *      id                   [in] The identifier of public key to vertify.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int Credential_SetProofMethod(Credential *cred, DIDURL *methodid);
-
-/**
- * \~English
- * Set the type property of embedded proof.
- *
- * @param
- *      cred                 [in] A handle to Credential.
- * @param
- *      type                 [in] The type of embedded proof.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int Credential_SetProofType(Credential *cred, const char *type);
-
-/**
- * \~English
- * Set the signature property of embedded proof.
- *
- * @param
- *      cred                 [in] A handle to Credential.
- * @param
- *      signture             [in] Signature string.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int Credential_SetProofSignture(Credential *cred, const char *signture);
 
 /**
  * \~English
@@ -1459,6 +1396,30 @@ DID_API Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer
         DIDURL *defaultSignKey, const char **types, size_t typesize,
         Property **properties, int size, time_t expires, const char *storepass);
 
+/**
+ * \~English
+ * An issuer issues a verifiable credential to a holder.
+ * Issuance always occurs before any other actions involving a credential.
+ *
+ * @param
+ *                             [in] The Credential handle.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int Credential_Verify(Credential *cred);
+
+/**
+ * \~English
+ * An issuer issues a verifiable credential to a holder.
+ * Issuance always occurs before any other actions involving a credential.
+ *
+ * @param
+ *                             [in] The Credential handle.
+ * @return
+ *      flase if not expired, true if expired.
+ */
+DID_API bool Credential_IsExpired(Credential *cred);
+
 /******************************************************************************
  * DIDStore
  *****************************************************************************/
@@ -1487,11 +1448,8 @@ DID_API DIDStore* DIDStore_GetInstance(void);
 /**
  * \~English
  * Deinitialize DIDStore.
- *
- * @param
- *      store                [in] The handle to DIDStore.
  */
-DID_API void DIDStore_Deinitialize(DIDStore *store);
+DID_API void DIDStore_Deinitialize(void);
 
 /**
  * \~English
@@ -1508,9 +1466,8 @@ DID_API void DIDStore_Deinitialize(DIDStore *store);
  * @param
  *      language               [in] The language for DID.
  *                             0: English; 1: French; 2: Spanish;
- *                             3: Chinese_simplified;
- *                             4: Chinese_traditional;
- *                             5: Japanese.
+ *                             3: Japanese; 4: Chinese_simplified;
+ *                             5: Chinese_traditional;
  * @return
  *      0 on success, -1 if an error occurred.
  */
@@ -1886,6 +1843,9 @@ DID_API int DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,
  */
 DID_API DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force);
 
+/******************************************************************************
+ * Mnemonic
+ *****************************************************************************/
 /**
  * \~English
  * Gernerate a random mnemonic.
@@ -1908,7 +1868,40 @@ DID_API const char *Mnemonic_Generate(int language);
  * @param
  *      mnemonic               [in] mnemonic buffter.
  */
-DID_API void Mnemonic_free(void *p);
+DID_API void Mnemonic_free(void *mnemonic);
+
+/******************************************************************************
+ * Presentation
+ *****************************************************************************/
+
+DID_API Presentation *Presentation_Create(DID *did, DIDURL *signkey, int count, ...);
+
+DID_API void Presentation_Destroy(Presentation *pre);
+
+DID_API Presentation *Presentation_Sign(DID *did, Presentation *pre,
+        const char *storepass, const char *nonce, const char *realm);
+
+DID_API int Presentation_Verify(Presentation *pre);
+
+DID_API const char* Presentation_ToJson(Presentation *pre, int compact, int forsign);
+
+DID_API Presentation *Presentation_FromJson(const char *json, DID *did);
+
+DID_API DID *Presentation_GetSigner(Presentation *pre);
+
+DID_API ssize_t Presentation_GetCredentials(Presentation *pre, Credential **creds, size_t size);
+
+DID_API Credential *Presentation_GetCredential(Presentation *pre, DIDURL *credid);
+
+DID_API const char *Presentation_GetType(Presentation *pre);
+
+DID_API time_t Presentation_GetCreatedTime(Presentation *pre);
+
+DID_API DIDURL *Presentation_GetVerificationMethod(Presentation *pre);
+
+DID_API const char *Presentation_GetNonce(Presentation *pre);
+
+DID_API const char *Presentation_GetRealm(Presentation *pre);
 
 #ifdef __cplusplus
 }

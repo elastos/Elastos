@@ -5,33 +5,35 @@
 #endif
 
 #include <CUnit/Basic.h>
+#include "ela_did.h"
 #include "loader.h"
-#include "credential.h"
-#include "diddocument.h"
+//#include "credential.h"
+//#include "diddocument.h"
 
-static DID did;
+static DIDDocument *doc;
+static DID *did;
 
 static void test_cred_fromjson(void)
 {
-    Credential *credential = Credential_FromJson(global_cred_string, &did);
+    Credential *credential = Credential_FromJson(global_cred_string, did);
     CU_ASSERT_PTR_NOT_NULL_FATAL(credential);
     Credential_Destroy(credential);
 }
 
 static int cred_fromjson_test_suite_init(void)
 {
-    DIDDocument *doc = DIDDocument_FromJson(global_did_string);
+    doc = DIDDocument_FromJson(global_did_string);
     if(!doc)
         return -1;
 
-    DID_Copy(&did, DIDDocument_GetSubject(doc));
-    DIDDocument_Destroy(doc);
+    did = DIDDocument_GetSubject(doc);
 
     return 0;
 }
 
 static int cred_fromjson_test_suite_cleanup(void)
 {
+    DIDDocument_Destroy(doc);
     return 0;
 }
 

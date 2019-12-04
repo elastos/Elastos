@@ -9,8 +9,8 @@
 #include "loader.h"
 #include "ela_did.h"
 #include "did.h"
-#include "credential.h"
-#include "diddocument.h"
+//#include "credential.h"
+//#include "diddocument.h"
 
 static DIDDocument *document;
 static Credential *cred;
@@ -145,7 +145,7 @@ static int diddoc_arelem_test_suite_init(void)
     if(!document)
         return -1;
 
-    cred = Credential_FromJson(global_cred_string, &document->did);
+    cred = Credential_FromJson(global_cred_string, DIDDocument_GetSubject(document));
     if (!cred) {
         DIDDocument_Destroy(document);
         return -1;

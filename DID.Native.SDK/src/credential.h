@@ -24,9 +24,11 @@
 #define __CREDENTIAL_H__
 
 #include <stdio.h>
+#include <cjson/cJSON.h>
 
 #include "ela_did.h"
 #include "did.h"
+#include "JsonGenerator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,7 +57,7 @@ typedef struct CredentialProof {
     char signatureValue[MAX_SIGN];
 } CredentialProof;
 
-typedef struct Credential {
+struct Credential {
     DIDURL id;
 
     struct {
@@ -68,28 +70,14 @@ typedef struct Credential {
     time_t expirationDate;
     CredentialSubject subject;
     CredentialProof proof;
-} Credential;
+};
 
-typedef struct PresentationProof {
-    char *type;
-    DIDURL *verificationMethod;
-    char *nonce;
-    char *realm;
-    char *signatureValue;
-} PresentationProof;
+int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
+        size_t size, int compact);
 
-//Verifiable Presentations
-typedef struct Presentations {
-    char *type;
-    time_t created;
+Credential *Parser_Credential(cJSON *json, DID *did);
 
-    struct {
-       Credential **credentials;
-       size_t size;
-    } credentials;
-
-    PresentationProof proof;
-} Presentations;
+ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *json);
 
 #ifdef __cplusplus
 }

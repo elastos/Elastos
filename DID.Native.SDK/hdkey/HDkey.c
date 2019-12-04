@@ -32,6 +32,10 @@
 #include "BRBIP39Mnemonic.h"
 #include "BRBIP39WordsEn.h"
 #include "BRBIP39WordsChs.h"
+#include "BRBIP39WordsFrance.h"
+#include "BRBIP39WordsJap.h"
+#include "BRBIP39WordsSpan.h"
+#include "BRBIP39WordsCht.h"
 #include "BRBIP32Sequence.h"
 #include "BRCrypto.h"
 #include "BRBase58.h"
@@ -46,11 +50,23 @@ static const char **get_word_list(int language)
     case LANGUAGE_ENGLISH:
         return BRBIP39WordsEn;
 
+    case LANGUAGE_FRENCH:
+        return BRBIP39WordsFrance;
+
+    case LANGUAGE_SPANISH:
+        return BRBIP39WordsSpan;
+
+    case LANGUAGE_JAPANESE:
+        return BRBIP39WordsJap;
+
     case LANGUAGE_CHINESE_SIMPLIFIED:
         return BRBIP39WordsChs;
 
+    case LANGUAGE_CHINESE_TRADITIONAL:
+        return BRBIP39WordsCht;
+
     default:
-        return NULL;
+        return BRBIP39WordsEn;
     }
 }
 

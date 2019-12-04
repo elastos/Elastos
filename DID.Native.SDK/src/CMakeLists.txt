@@ -46,6 +46,7 @@ set(SRC
     didrequest.c
     didbackend.c
     mnemonic.c
+    presentation.c
     ${utility-SOURCES})
 
 set(HEADERS

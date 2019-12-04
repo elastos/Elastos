@@ -119,7 +119,7 @@ static int didstore_cred_op_test_suite_init(void)
 
     DIDDocument *doc = DIDDocument_FromJson(global_did_string);
     if(!doc) {
-        DIDStore_Deinitialize(store);
+        DIDStore_Deinitialize();
         TestAdapter_Destroy(adapter);
         return -1;
     }
@@ -129,7 +129,7 @@ static int didstore_cred_op_test_suite_init(void)
 
     credential = Credential_FromJson(global_cred_string, &did);
     if(!credential) {
-        DIDStore_Deinitialize(store);
+        DIDStore_Deinitialize();
         TestAdapter_Destroy(adapter);
         return -1;
     }
@@ -139,13 +139,11 @@ static int didstore_cred_op_test_suite_init(void)
 
 static int didstore_cred_op_test_suite_cleanup(void)
 {
-    DIDStore *store;
+    DIDStore *store = DIDStore_GetInstance();
 
     Credential_Destroy(credential);
-
-    store = DIDStore_GetInstance();
     DIDStore_DeleteDID(store, &did);
-    DIDStore_Deinitialize(store);
+    DIDStore_Deinitialize();
     return 0;
 }
 

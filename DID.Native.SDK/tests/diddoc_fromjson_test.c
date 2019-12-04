@@ -6,7 +6,7 @@
 
 #include <CUnit/Basic.h>
 #include "ela_did.h"
-#include "diddocument.h"
+//#include "diddocument.h"
 #include "loader.h"
 
 #define  TEST_LEN    512

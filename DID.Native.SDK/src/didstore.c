@@ -58,7 +58,7 @@
 #include "HDkey.h"
 #include "didbackend.h"
 
-static DIDStore *store;
+DIDStore *storeInstance = NULL;
 
 static char *StoreTag = "/.DIDStore";
 static char MAGIC[] = { 0x00, 0x0D, 0x01, 0x0D };
@@ -95,8 +95,7 @@ static int test_path(const char *path)
 {
     struct stat s;
 
-    if (!path)
-        return -1;
+    assert(path);
 
     if (stat(path, &s) < 0)
         return -1;
@@ -115,8 +114,8 @@ static int list_dir(const char *path, const char *pattern,
     char full_pattern[PATH_MAX];
     size_t len;
 
-    if (!path || !pattern)
-        return -1;
+    assert(path);
+    assert(pattern);
 
     len = snprintf(full_pattern, sizeof(full_pattern), "%s/%s", path, pattern);
     if (len == sizeof(full_pattern))
@@ -160,12 +159,16 @@ static void delete_file(const char *path);
 static int delete_file_helper(const char *path, void *context)
 {
     char fullpath[PATH_MAX];
+    int len;
 
     if (!path)
         return 0;
 
     if (strcmp(path, ".") != 0 && strcmp(path, "..") != 0) {
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", (char *)context, path);
+        len = snprintf(fullpath, sizeof(fullpath), "%s/%s", (char *)context, path);
+        if (len < 0 || len > PATH_MAX)
+            return -1;
+
         delete_file(fullpath);
     }
 
@@ -176,8 +179,7 @@ static void delete_file(const char *path)
 {
     int rc;
 
-    if(!path)
-        return;
+    assert(path);
 
     rc = test_path(path);
     if (rc < 0)
@@ -195,6 +197,7 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
         const char *didstring, int create)
 {
     static __thread char file_root[PATH_MAX];
+    int len;
     char file_suffix[PATH_MAX];
 
     if (type > DIDStore_PrivateKey || (type > DIDStore_DID && !didstring))
@@ -208,7 +211,7 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
         return file_root;
 
     if (type != DIDStore_Rootkey && type != DIDStore_RootIndex) {
-        int len = snprintf(file_root, sizeof(file_root), "%s/ids", store->root);
+        len = snprintf(file_root, sizeof(file_root), "%s/ids", store->root);
         if (len < 0 || len > sizeof(file_root))
             return NULL;
 
@@ -219,7 +222,10 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
     if (type == DIDStore_DID || type == DIDStore_DIDMeta)
         return file_root;
 
-    snprintf(file_suffix, sizeof(file_suffix), "/%s", didstring);
+    len = snprintf(file_suffix, sizeof(file_suffix), "/%s", didstring);
+    if (len < 0 || len > sizeof(file_suffix))
+        return NULL;
+
     strcat(file_root, file_suffix);
 
     if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
@@ -228,7 +234,10 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
     if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex)
        return file_root;
 
-    snprintf(file_suffix, sizeof(file_suffix), "/%s", methods[type]);
+    len = snprintf(file_suffix, sizeof(file_suffix), "/%s", methods[type]);
+    if (len < 0 || len > sizeof(file_suffix))
+        return NULL;
+
     strcat(file_root, file_suffix);
 
     if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
@@ -241,6 +250,7 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
         const char *didstring, const char *fragment, int create)
 {
     static __thread char file_path[PATH_MAX];
+    int len;
     const char *root;
 
     if (type > DIDStore_PrivateKey || (type > DIDStore_Root && !didstring))
@@ -257,12 +267,18 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
 		return get_file_root(store, DIDStore_Doc, didstring, create);
 
 	if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex) {
-		snprintf(file_path, sizeof(file_path), "%s/%s", root, methods[type]);
+		len = snprintf(file_path, sizeof(file_path), "%s/%s", root, methods[type]);
+        if (len < 0 || len > sizeof(file_path))
+            return NULL;
+
 		return file_path;
 	}
 
     if (type == DIDStore_DIDMeta) {
-        snprintf(file_path, sizeof(file_path), "%s/.%s.meta", root, didstring);
+        len = snprintf(file_path, sizeof(file_path), "%s/.%s.meta", root, didstring);
+        if (len < 0 || len > sizeof(file_path))
+            return NULL;
+
         return file_path;
     }
 
@@ -270,11 +286,17 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
         return NULL;
 
     if (type == DIDStore_CredentialMeta) {
-        snprintf(file_path, sizeof(file_path), "%s/.%s.meta", root, fragment);
+        len = snprintf(file_path, sizeof(file_path), "%s/.%s.meta", root, fragment);
+        if (len < 0 || len > sizeof(file_path))
+            return NULL;
+
         return file_path;
     }
 
-    snprintf(file_path, sizeof(file_path), "%s/%s", root, fragment);
+    len = snprintf(file_path, sizeof(file_path), "%s/%s", root, fragment);
+    if (len < 0 || len > sizeof(file_path))
+        return NULL;
+
     return file_path;
 }
 
@@ -283,8 +305,8 @@ static int store_file(const char *path, const char *string)
     int fd;
     size_t string_len, size;
 
-    if (!path || !string)
-        return -1;
+    assert(path);
+    assert(string);
 
     fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1)
@@ -307,8 +329,8 @@ static int load_files(const char *path, const char **string)
     size_t size;
     struct stat st;
 
-    if (!path || !string)
-        return -1;
+    assert(path);
+    assert(path);
 
     fd = open(path, O_RDONLY);
     if (fd == -1)
@@ -347,8 +369,7 @@ static bool is_empty(const char *path)
 {
     int flag = 0;
 
-    if (!path)
-        return false;
+    assert(path);
 
     if (list_dir(path, "*", is_empty_helper, &flag) < 0)
         return false;
@@ -420,6 +441,8 @@ static int create_store(DIDStore *store)
     size_t size;
     char TagFile[PATH_MAX];
 
+    assert(store);
+
     if (!get_file_path(store, DIDStore_Root, NULL, NULL, 1))
         return -1;
 
@@ -453,6 +476,8 @@ static int check_store(DIDStore *store)
     int i, flag = 0;
     size_t size;
     char TagFile[PATH_MAX];
+
+    assert(store);
 
     if (test_path(store->root) != S_IFDIR)
         return -1;
@@ -493,8 +518,9 @@ static int check_store(DIDStore *store)
 static int store_seed(DIDStore *store, uint8_t *seed, size_t size, const char *storepass)
 {
     unsigned char base64[512];
-    if (!seed || !storepass)
-        return -1;
+
+    assert(seed);
+    assert(storepass);
 
     if (encrypt_to_base64((char *)base64, storepass, seed, size) == -1)
         return -1;
@@ -545,8 +571,12 @@ static int get_last_index(DIDStore *store)
 static int store_index(DIDStore *store, int index)
 {
     char string[32];
+    int len;
 
-    snprintf(string, sizeof(string), "%d", index);
+    len = snprintf(string, sizeof(string), "%d", index);
+    if (len < 0 || len > sizeof(string))
+        return -1;
+
     if (store_file(get_file_path(store, DIDStore_RootIndex, "private", NULL, 1),
                 string) == -1)
         return -1;
@@ -586,8 +616,9 @@ static bool has_type(DID *did, const char *path, const char *type)
     Credential *credential;
     int i;
 
-    if (!path)
-        return false;
+    assert(did);
+    assert(path);
+    assert(type);
 
     if (load_files(path, &string) == -1)
         return false;
@@ -619,8 +650,7 @@ static int select_credential_helper(const char *path, void *context)
 
     Cred_Hint *ch = (Cred_Hint*)context;
 
-    if (!path)
-        return -1;
+    assert(path);
 
     if (strcmp(path, ".") == 0 || strcmp(path, "..") == 0)
         return -1;
@@ -665,8 +695,7 @@ static int list_credential_helper(const char *path, void *context)
     DIDURL *id;
     const char *hint;
 
-    if (!path)
-        return -1;
+    assert(path);
 
     if (strstr(path, ".") == 0 || strstr(path, "..") == 0)
         return 0;
@@ -688,34 +717,34 @@ static int list_credential_helper(const char *path, void *context)
     return ch->cb(cred_entry, NULL);
 }
 
-static DIDDocument *create_document(DID *did, const char *publickeybase)
+static DIDDocument *create_document(DID *did, const char *key)
 {
     PublicKey *publickey;
-    DIDURL key;
+    DIDURL id;
     DID controller;
 
     assert(did);
-    assert(publickeybase);
+    assert(key);
 
     DIDDocument *document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
     if (!document)
         return NULL;
 
-    if (DIDDocument_SetSubject(document, did) == -1) {
+    if (DID_Copy(&document->did, did) == -1) {
         DIDDocument_Destroy(document);
         return NULL;
     }
 
     strcpy((char*)controller.idstring, did->idstring);
-    strcpy((char*)key.did.idstring, did->idstring);
-    strcpy((char*)key.fragment, "primary");
+    strcpy((char*)id.did.idstring, did->idstring);
+    strcpy((char*)id.fragment, "primary");
 
-    if (DIDDocument_AddPublicKey(document, &key, &controller, publickeybase) == -1) {
+    if (DIDDocument_AddPublicKey(document, &id, &controller, key) == -1) {
         DIDDocument_Destroy(document);
         return NULL;
     }
 
-    if (DIDDocument_AddAuthenticationKey(document, &key, publickeybase) == -1) {
+    if (DIDDocument_AddAuthenticationKey(document, &id, key) == -1) {
         DIDDocument_Destroy(document);
         return NULL;
     }
@@ -730,37 +759,40 @@ DIDStore* DIDStore_Initialize(const char *root, DIDAdapter *adapter)
     if (!root || !adapter)
         return NULL;
 
-    store = (DIDStore *)calloc(1, sizeof(DIDStore));
-    if (!store)
+    DIDStore_Deinitialize();
+
+    storeInstance = (DIDStore *)calloc(1, sizeof(DIDStore));
+    if (!storeInstance)
         return NULL;
 
-    strcpy(store->root, root);
-    store->backend.adapter = adapter;
+    strcpy(storeInstance->root, root);
+    storeInstance->backend.adapter = adapter;
 
-    if (get_file_path(store, DIDStore_Root, NULL, NULL, 0) && !check_store(store))
-        return store;
+    if (get_file_path(storeInstance, DIDStore_Root, NULL, NULL, 0) && !check_store(storeInstance))
+        return storeInstance;
 
-    if (get_file_path(store, DIDStore_Root, NULL, NULL, 1) && !create_store(store))
-        return store;
+    if (get_file_path(storeInstance, DIDStore_Root, NULL, NULL, 1) && !create_store(storeInstance))
+        return storeInstance;
 
-    free(store);
+    free(storeInstance);
     return NULL;
 }
 
 DIDStore* DIDStore_GetInstance(void)
 {
-    if (!store)
+    if (!storeInstance)
         return NULL;
 
-    return store;
+    return storeInstance;
 }
 
-void DIDStore_Deinitialize(DIDStore *store)
+void DIDStore_Deinitialize()
 {
-    if (!store)
+    if (!storeInstance)
         return;
 
-    free(store);
+    free(storeInstance);
+    storeInstance = NULL;
 }
 
 int DIDStore_SetDIDHint(DIDStore *store, DID *did, const char *hint)

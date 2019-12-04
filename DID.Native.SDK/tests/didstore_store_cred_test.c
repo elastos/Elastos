@@ -15,7 +15,7 @@
 #include "did.h"
 #include "didstore.h"
 #include "credential.h"
-#include "diddocument.h"
+//#include "diddocument.h"
 
 #define  TEST_LEN    512
 
@@ -77,13 +77,9 @@ static int didstore_storecred_test_suite_init(void)
 
 static int didstore_storecred_test_suite_cleanup(void)
 {
-    DIDStore *store;
-
     TestAdapter_Destroy(adapter);
     Credential_Destroy(credential);
-
-    store = DIDStore_GetInstance();
-    DIDStore_Deinitialize(store);
+    DIDStore_Deinitialize();
     return 0;
 }
 

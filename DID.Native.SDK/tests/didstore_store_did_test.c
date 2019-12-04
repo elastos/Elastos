@@ -65,7 +65,7 @@ static int didstore_store_test_suite_init(void)
     document = DIDDocument_FromJson(global_did_string);
     if(!document) {
         TestAdapter_Destroy(adapter);
-        DIDStore_Deinitialize(store);
+        DIDStore_Deinitialize();
         return -1;
     }
 
@@ -73,7 +73,7 @@ static int didstore_store_test_suite_init(void)
     if (!did) {
         DIDDocument_Destroy(document);
         TestAdapter_Destroy(adapter);
-        DIDStore_Deinitialize(store);
+        DIDStore_Deinitialize();
         return -1;
     }
 
@@ -82,13 +82,9 @@ static int didstore_store_test_suite_init(void)
 
 static int didstore_store_test_suite_cleanup(void)
 {
-    DIDStore *store;
-
     TestAdapter_Destroy(adapter);
     DIDDocument_Destroy(document);
-
-    store = DIDStore_GetInstance();
-    DIDStore_Deinitialize(store);
+    DIDStore_Deinitialize();
     return 0;
 }
 

@@ -38,6 +38,9 @@ const char *get_time_string(time_t *p_time);
 
 int parse_time(time_t *time, const char *string);
 
+int get_current_time(time_t *time);
+
+int time_compare(time_t time1, time_t time2);
 
 #ifdef __cplusplus
 }

@@ -20,30 +20,44 @@
  * SOFTWARE.
  */
 
-#ifndef __PARSER_H__
-#define __PARSER_H__
+#ifndef __PRESENTATION_H__
+#define __PRESENTATION_H__
 
 #include <stdio.h>
-#include <cjson/cJSON.h>
+
 #include "ela_did.h"
-#include "JsonGenerator.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int Parser_Credentials(DIDDocument *document, cJSON *json);
+#define MAX_TYPE        64
+#define MAX_SIGN        128
+#define MAX_NONCE       128
+#define MAX_REALM       128
 
-Credential *Parser_Credential(cJSON *json, DID *did);
+typedef struct PresentationProof {
+    char type[MAX_TYPE];
+    DIDURL verificationMethod;
+    char nonce[MAX_NONCE];
+    char realm[MAX_REALM];
+    char signatureValue[MAX_SIGN];
+} PresentationProof;
 
-int types_toJson(JsonGenerator *generator, Credential *cred);
+struct Presentation {
+    char type[MAX_TYPE];
+    time_t created;
 
-int subject_toJson(JsonGenerator *generator, Credential *cred, int compact);
+    struct {
+       Credential **credentials;
+       size_t size;
+    } credentials;
 
-int proof_toJson(JsonGenerator *generator, Credential *cred, int compact);
+    PresentationProof proof;
+};
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__PARSER_H__
+#endif //__PRESENTATION_H__

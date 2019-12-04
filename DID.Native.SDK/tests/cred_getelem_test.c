@@ -7,11 +7,10 @@
 
 #include "loader.h"
 #include "ela_did.h"
-#include "credential.h"
-#include "diddocument.h"
+//#include "credential.h"
+//#include "diddocument.h"
 
 static Credential *credential;
-static DID did;
 
 static const char *idstring = "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN";
 
@@ -21,7 +20,7 @@ static void test_cred_get_id(void)
     CU_ASSERT_PTR_NOT_NULL_FATAL(cred_id);
 
     DID *cred_did = DIDURL_GetDid(cred_id);
-    CU_ASSERT_STRING_EQUAL_FATAL(DID_GetMethodSpecificString(cred_did), idstring);
+    CU_ASSERT_STRING_EQUAL_FATAL(DID_GetMethodSpecificId(cred_did), idstring);
 }
 
 static void test_cred_get_type_count(void)
@@ -114,10 +113,10 @@ static int cred_getelem_test_suite_init(void)
     if(!doc)
         return -1;
 
-    DID_Copy(&did, DIDDocument_GetSubject(doc));
-    DIDDocument_Destroy(doc);
+    DID *did = DIDDocument_GetSubject(doc);
 
-    credential = Credential_FromJson(global_cred_string, &did);
+    credential = Credential_FromJson(global_cred_string, did);
+    DIDDocument_Destroy(doc);
     if(!credential)
         return -1;
 

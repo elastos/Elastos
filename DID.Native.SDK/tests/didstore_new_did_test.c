@@ -12,9 +12,9 @@
 #include "loader.h"
 #include "didtest_adapter.h"
 #include "ela_did.h"
-#include "did.h"
-#include "didstore.h"
-#include "diddocument.h"
+//#include "did.h"
+//#include "didstore.h"
+//#include "diddocument.h"
 
 #define  TEST_LEN    512
 
@@ -67,10 +67,7 @@ static int didstore_new_test_suite_init(void)
 
 static int didstore_new_test_suite_cleanup(void)
 {
-    DIDStore *store;
-
-    store = DIDStore_GetInstance();
-    DIDStore_Deinitialize(store);
+    DIDStore_Deinitialize();
     return 0;
 }
 

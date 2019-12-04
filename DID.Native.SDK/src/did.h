@@ -23,6 +23,7 @@
 #ifndef __DID_H__
 #define __DID_H__
 
+#include <stdio.h>
 #include "ela_did.h"
 
 #ifdef __cplusplus
