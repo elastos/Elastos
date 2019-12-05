@@ -1,7 +1,7 @@
 import React from 'react'
 import _ from 'lodash'
 import { Row, Col, Button, Popconfirm, message } from 'antd'
-import sanitizeHtml from 'sanitize-html'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import styled from 'styled-components'
 import StandardPage from '../../StandardPage'
 import I18N from '@/I18N'
@@ -98,11 +98,7 @@ export default class extends StandardPage {
           {formNode}
           {deleteNode}
         </Row>
-
-        <ItemDesc
-          className="ql-editor"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(desc) }}
-        />
+        <MarkdownPreview content={desc} />
       </ListItem>
     )
   }
