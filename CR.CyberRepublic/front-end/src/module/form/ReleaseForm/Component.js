@@ -1,18 +1,12 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
-import {
-  Row,
-  Col,
-  Form,
-  Input,
-  Button,
-} from 'antd'
+import { Row, Col, Form, Input, Button } from 'antd'
 import I18N from '@/I18N'
 import ReactQuill from 'react-quill'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
 
-import { Container, StyledFormDesc } from './style'
+import { Container } from './style'
 
 const FormItem = Form.Item
 
@@ -20,7 +14,7 @@ class C extends BaseComponent {
   handleSubmit(e) {
     e.preventDefault()
 
-    const {form, onFormSubmit, data} = this.props
+    const { form, onFormSubmit, data } = this.props
 
     form.validateFields(async (err, values) => {
       if (!err) {
@@ -29,7 +23,7 @@ class C extends BaseComponent {
           resourceType: values.resourceType,
           desc: values.desc,
           httpMethod: values.httpMethod,
-          url: values.url,
+          url: values.url
         }
         if (_.get(data, '_id')) {
           param.id = _.get(data, '_id')
@@ -40,8 +34,8 @@ class C extends BaseComponent {
   }
 
   getInputProps() {
-    const {getFieldDecorator} = this.props.form
-    const {data} = this.props
+    const { getFieldDecorator } = this.props.form
+    const { data } = this.props
 
     const title = <Input size="large" />
     const desc_el = (
@@ -49,34 +43,29 @@ class C extends BaseComponent {
         modules={{
           toolbar: TOOLBAR_OPTIONS,
           autoLinks: true,
-          mention: this.mentionModule,
+          mention: this.mentionModule
         }}
-        style={{backgroundColor: 'white'}}
+        style={{ backgroundColor: 'white' }}
       />
     )
 
     const title_fn = getFieldDecorator('title', {
-      initialValue: _.get(data, 'title', ''),
+      initialValue: _.get(data, 'title', '')
     })
 
     const desc_fn = getFieldDecorator('desc', {
-      initialValue: _.get(data, 'desc', ''),
+      initialValue: _.get(data, 'desc', '')
     })
-
 
     return {
       title: title_fn(title),
-      desc: desc_fn(desc_el),
+      desc: desc_fn(desc_el)
     }
   }
 
   renderHeader() {
     const header = this.props.header || I18N.get('release.form.add')
-    return (
-      <h2 className="title komu-a">
-        {header}
-      </h2>
-    )
+    return <h2 className="title komu-a">{header}</h2>
   }
 
   ord_render() {
@@ -85,12 +74,12 @@ class C extends BaseComponent {
 
     const formItemLayout = {
       labelCol: {
-        span: 24,
+        span: 24
       },
       wrapperCol: {
-        span: 24,
+        span: 24
       },
-      colon: false,
+      colon: false
     }
     const formContent = (
       <div>
@@ -103,12 +92,21 @@ class C extends BaseComponent {
 
         <Row type="flex" justify="center">
           <Col xs={24} sm={12} md={6}>
-            <Button type="ebp" className="cr-btn cr-btn-default" onClick={this.props.onFormCancel}>
+            <Button
+              type="ebp"
+              className="cr-btn cr-btn-default"
+              onClick={this.props.onFormCancel}
+            >
               {I18N.get('suggestion.cancel')}
             </Button>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Button loading={this.props.loading} type="ebp" htmlType="submit" className="cr-btn cr-btn-primary">
+            <Button
+              loading={this.props.loading}
+              type="ebp"
+              htmlType="submit"
+              className="cr-btn cr-btn-primary"
+            >
               {I18N.get('suggestion.submit')}
             </Button>
           </Col>
@@ -119,9 +117,7 @@ class C extends BaseComponent {
     return (
       <Container>
         {headerNode}
-        <Form onSubmit={this.handleSubmit.bind(this)}>
-          {formContent}
-        </Form>
+        <Form onSubmit={this.handleSubmit.bind(this)}>{formContent}</Form>
       </Container>
     )
   }
