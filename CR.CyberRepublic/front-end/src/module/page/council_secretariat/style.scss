@@ -138,7 +138,7 @@ $maxWithContent: 860px;
 
     .big-rect {
       width: 260px;
-      height: 300px;
+      height: 312px;
       background: #172C3B;
 
       .content {
@@ -159,9 +159,7 @@ $maxWithContent: 860px;
           font-size: 14px;
           color: #F6F9FD;
           opacity: 0.9;
-          max-height: 150px;
-          display: block;
-          overflow: scroll;
+          max-height: 160px;
         }
       }
     }
@@ -400,4 +398,3 @@ $maxWithContent: 860px;
 .empower-modal-view {
 
 }
-

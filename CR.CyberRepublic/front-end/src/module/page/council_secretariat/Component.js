@@ -220,5 +220,5 @@ const TabTitle = styled.div`
 `
 const Email = styled.div`
   color: white;
-  margin-top: 5px
+  margin-top: 8px;
 `
