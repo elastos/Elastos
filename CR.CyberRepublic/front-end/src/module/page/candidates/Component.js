@@ -29,15 +29,11 @@ export default class extends StandardPage {
       pageNum: 1,
       total: 0
     }
-
+    this.ord_loading = _.debounce(this.ord_loading, 500)
   }
 
   async componentDidMount() {
     this.refetch(true)
-  }
-
-  ord_loading(f = false) {
-    _.debounce(super.ord_loading, 500, f)
   }
 
   handlePaginationChange = pageNum => {
