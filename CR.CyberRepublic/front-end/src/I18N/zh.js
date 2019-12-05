@@ -7,7 +7,7 @@ import suggestion from './zh/suggestion'
 import getting_started from './en/getting_started'
 import whitepaper from './zh/whitepaper'
 import elip from './zh/elip'
-import area from './en/area'
+import area from './zh/area'
 
 const zh = {
   council,
