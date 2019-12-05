@@ -245,5 +245,11 @@ func LoadBlockDB(dataPath string) (database.DB, error) {
 }
 
 func TestUnspentIndexEnd(t *testing.T) {
+	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
+		meta := dbTx.Metadata()
+		err := meta.DeleteBucket(unspentIndexKey)
+		assert.NoError(t, err)
+		return nil
+	})
 	unspentIndexDB.Close()
 }
