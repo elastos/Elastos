@@ -17,42 +17,39 @@ class BulkCreate: XCTestCase {
     
     func test30PrepareForRestore() {
         do {
-            let store: DIDStore = try DIDStore.shareInstance()!
             let mnemonic: String = HDKey.generateMnemonic(0)
             try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
             for i in 0...10 {
-                let lock = XCTestExpectation(description: "******** Waiting for wallet available")
-                isAvailable(lock)
-                wait(for: [lock], timeout: timeout)
-            
+                
+                for _ in 0...600 {
+                    let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
+                    wait(for: [lock], timeout: 30)
+                    let re = try adapter.isAvailable()
+                    if re {
+                        print(re)
+                        break
+                    }
+                }
+                
                 let hint: String = "my did \(i)"
                 let doc: DIDDocument = try store.newDid(storePass, hint)
                 let path: String = storePath + "/ids/" + doc.subject!.methodSpecificId + "/document"
                 XCTAssertTrue(TestUtils.existsFile(path))
-
+                
                 let path2: String = storePath + "/ids/." + doc.subject!.methodSpecificId + ".meta"
                 XCTAssertTrue(TestUtils.existsFile(path2))
-
+                
                 _ = try store.publishDid(doc, storePass)
-                print("******** Waiting for wallet available")
 
-                let lock2 = XCTestExpectation(description: "******** Waiting for wallet available")
-                wait(for: [lock2], timeout: timeout)
-                let d: DIDDocument = try store.resolveDid(doc.subject!, true)!
-            }
-        } catch {
-            print(error)
-        }
-    }
-    
-    func isAvailable(_ lock: XCTestExpectation) {
-        do {
-            let rc: Bool = try adapter.isAvailable()
-            if rc == false {
-                isAvailable(lock)
-            }
-            else {
-                lock.fulfill()
+                for _ in 0...600 {
+                    let lock1 = XCTestExpectation(description: "******** Waiting 30s")
+                    wait(for: [lock1], timeout: 30)
+                    let d = try store.resolveDid(doc.subject!, true)
+                    if d != nil {
+                        print(d)
+                        break
+                    }
+                }
             }
         } catch {
             print(error)

@@ -21,6 +21,7 @@
 		1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182866A2395194000F1BBA3 /* BulkCreate.swift */; };
 		119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D5237D41B000C4998E /* DIDAdaptor.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
+		11A1D664239756F2002D8AD2 /* VerifiablePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A1D663239756F2002D8AD2 /* VerifiablePresentation.swift */; };
 		11A6B15B238FD79000D3C1F1 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B159238FD77E00D3C1F1 /* libcrypto.a */; };
 		11A6B15C238FD79000D3C1F1 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B15A238FD77E00D3C1F1 /* libhdkey.a */; };
 		11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
@@ -174,6 +175,7 @@
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E4237E623100C4998E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E6237E623E00C4998E /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
+		11A1D663239756F2002D8AD2 /* VerifiablePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerifiablePresentation.swift; path = ElastosDIDSDK/Credential/VerifiablePresentation.swift; sourceTree = SOURCE_ROOT; };
 		11A6B159238FD77E00D3C1F1 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "Externals/HDKey/lib/-iphonesimulator/libcrypto.a"; sourceTree = "<group>"; };
 		11A6B15A238FD77E00D3C1F1 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = "Externals/HDKey/lib/-iphonesimulator/libhdkey.a"; sourceTree = "<group>"; };
 		11CA74AE235E06B7006E66F7 /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
@@ -497,6 +499,7 @@
 				A3E6D443233485800012CD77 /* Issuer.swift */,
 				A3E6D441233485800012CD77 /* Proof.swift */,
 				A3E6D442233485800012CD77 /* VerifiableCredential.swift */,
+				11A1D663239756F2002D8AD2 /* VerifiablePresentation.swift */,
 			);
 			path = Credential;
 			sourceTree = SOURCE_ROOT;
@@ -736,6 +739,7 @@
 				A3E6D458233485AD0012CD77 /* DIDURLParserATN.swift in Sources */,
 				119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */,
 				A3E6D446233485800012CD77 /* Proof.swift in Sources */,
+				11A1D664239756F2002D8AD2 /* VerifiablePresentation.swift in Sources */,
 				11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */,
 				A3E6D459233485AD0012CD77 /* DIDURLBaseListener.swift in Sources */,
 				11CA74C0235E06B7006E66F7 /* PathExtracter.swift in Sources */,

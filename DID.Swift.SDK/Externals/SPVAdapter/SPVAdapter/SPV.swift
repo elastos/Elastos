@@ -30,6 +30,7 @@ public class SPV {
     }
     
     public class func resolve(_ handle: OpaquePointer,_ did: String) throws -> String? {
+        //        let re = SpvDidAdapter_Resolve(handle, "did:elastos:im4wF5ZqiWFB1ATd2JxuxW6HHzR5Ks3LUS")
         let re = SpvDidAdapter_Resolve(handle, did)
         guard re != nil else { return nil }
         return String(cString: re)

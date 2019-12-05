@@ -28,11 +28,11 @@ public class CredentialSubject {
         }
     }
     
-    func toJson(_ ref: DID, _ compact: Bool) -> OrderedDictionary< String, Any> {
+    func toJson(_ ref: DID?, _ compact: Bool) -> OrderedDictionary< String, Any> {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
-        
+        let c = (ref != nil && compact)
         // id
-        if !compact || !id.isEqual(ref) {
+        if !c || !id.isEqual(ref) {
             dic[Constants.id] = id.toExternalForm()
         }
         

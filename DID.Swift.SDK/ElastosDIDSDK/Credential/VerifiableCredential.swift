@@ -36,12 +36,12 @@ public class VerifiableCredential: DIDObject {
         return try issuerDoc.verify(proof!.verificationMethod, proof!.signature, count, inputs)
     }
 
-    public func toJson(_ ref: DID, _ compact: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
+    public func toJson(_ ref: DID?, _ compact: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         
         // id
-        if compact && id.did.isEqual(ref) {
+        if compact && ref != nil && id.did.isEqual(ref) {
             value = "#" + id.fragment!
         }
         else {
@@ -87,6 +87,10 @@ public class VerifiableCredential: DIDObject {
         return dic
     }
     
+    func toJson(_ ref: DID?, _ compact: Bool) -> OrderedDictionary<String, Any> {
+       return toJson(ref, compact, false)
+    }
+
     class func fromJsonInPath(_ path: String) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         let url = URL(fileURLWithPath: path)

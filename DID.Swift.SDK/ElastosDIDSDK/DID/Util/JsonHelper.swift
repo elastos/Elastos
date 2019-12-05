@@ -19,7 +19,7 @@ public class JsonHelper {
         return try DID(value)
     }
     
-    class func getDidUrl(_ dic: OrderedDictionary<String, Any>, _ name: String, _ ref: DID, _ hint: String) throws -> DIDURL{
+    class func getDidUrl(_ dic: OrderedDictionary<String, Any>, _ name: String, _ ref: DID?, _ hint: String) throws -> DIDURL{
         let vn = dic[name]
         if vn == nil {
             throw DIDError.failue("Invalid " + hint + " value.")
@@ -30,9 +30,9 @@ public class JsonHelper {
             throw DIDError.failue("Invalid " + hint + " value.")
         }
         let fragment: String = String(value.prefix(1))
-        if fragment == "#" {
+        if ref != nil && fragment == "#" {
             value = String(value.suffix(value.count - 1))
-            return try DIDURL(ref, value)
+            return try DIDURL(ref!, value)
         }
         return try DIDURL(value)
     }
