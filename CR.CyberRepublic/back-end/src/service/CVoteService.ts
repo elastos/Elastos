@@ -510,13 +510,13 @@ export default class extends Base {
         $lte: endDate
       }
       query.status = {
-          $in: [constant.CVOTE_STATUS.PROPOSED,
-	  constant.CVOTE_STATUS.ACTIVE,
-	  constant.CVOTE_STATUS.REJECT,
-	  constant.CVOTE_STATUS.FINAL,
-	  constant.CVOTE_STATUS.DEFERRED,
-	  constant.CVOTE_STATUS.INCOMPLETED]
-	}
+        $in: [constant.CVOTE_STATUS.PROPOSED,
+	      constant.CVOTE_STATUS.ACTIVE,
+	      constant.CVOTE_STATUS.REJECT,
+	      constant.CVOTE_STATUS.FINAL,
+	      constant.CVOTE_STATUS.DEFERRED,
+	      constant.CVOTE_STATUS.INCOMPLETED]
+      }
     }
     // status
     if(param.status && constant.CVOTE_STATUS[param.status]) {
@@ -540,12 +540,16 @@ export default class extends Base {
     }
     // has tracking
     if(param.hasTracking) {
-      query.tracking = {
-        $and: [{
-          $ne: null
-        }, {
-          $ne: ""
-        }]
+      const db_cvote_tracking = this.getDBModel('CVote_Tracking')
+      const hasTracking = await db_cvote_tracking.find({
+        status: constant.CVOTE_TRACKING_STATUS.REVIEWING
+      }, "proposalId")
+      let trackingProposals = []
+      hasTracking.map(function(it) {
+        trackingProposals.push(it.proposalId)
+      })
+      query._id = {
+        $in: trackingProposals
       }
     }
 

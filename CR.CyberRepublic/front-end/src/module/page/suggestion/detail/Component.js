@@ -274,7 +274,11 @@ export default class extends StandardPage {
           moment(detail.createdAt).format('MMM D, YYYY')
         )}
         {sections.map(section => {
-          if (section === 'plan' && typeof detail.plan !== 'string') {
+          if (
+            section === 'plan' &&
+            detail.plan &&
+            typeof detail.plan !== 'string'
+          ) {
             return (
               <div key="plan">
                 <DescLabel id="plan">
@@ -283,22 +287,23 @@ export default class extends StandardPage {
                 <PlanSubtitle>
                   {I18N.get('suggestion.plan.teamInfo')}
                 </PlanSubtitle>
-                <TeamInfoList
-                  list={detail.plan && detail.plan.teamInfo}
-                  editable={false}
-                />
+                <TeamInfoList list={detail.plan.teamInfo} editable={false} />
                 <PlanSubtitle>
                   {I18N.get('suggestion.plan.milestones')}
                 </PlanSubtitle>
                 <Milestones
-                  initialValue={detail.plan && detail.plan.milestone}
+                  initialValue={detail.plan.milestone}
                   editable={false}
                 />
               </div>
             )
           }
 
-          if (section === 'budget' && typeof detail.budget !== 'string') {
+          if (
+            section === 'budget' &&
+            detail.budget &&
+            typeof detail.budget !== 'string'
+          ) {
             return (
               <div key="budget">
                 <DescLabel id="budget">
@@ -451,7 +456,9 @@ export default class extends StandardPage {
         }
         return `
           <h2>${I18N.get(`suggestion.fields.${section}`)}</h2>
-          <p>${convertMarkdownToHtml(removeImageFromMarkdown(detail[section]))}</p>
+          <p>${convertMarkdownToHtml(
+            removeImageFromMarkdown(detail[section])
+          )}</p>
         `
       })
       .join('')
@@ -597,7 +604,9 @@ export default class extends StandardPage {
             <CreateProposalText>
               {`${userUtil.formatUsername(detail.proposer)} `}
               {I18N.get('suggestion.label.hasMadeIntoProposal')}
-              <Link to={`/proposals/${_id}`}>{` ${I18N.get('council.voting.proposal')} #${vid}`}</Link>
+              <Link to={`/proposals/${_id}`}>{` ${I18N.get(
+                'council.voting.proposal'
+              )} #${vid}`}</Link>
             </CreateProposalText>
           </Col>
         </Row>

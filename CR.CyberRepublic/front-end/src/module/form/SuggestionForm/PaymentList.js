@@ -34,7 +34,7 @@ class PaymentList extends BaseComponent {
           </StyledRow>
         </StyledHead>
         <tbody>
-          {list.map((item, index) => (
+          {list && list.map((item, index) => (
             <StyledRow key={index}>
               <td>{index + 1}</td>
               <td>{item.amount}</td>
@@ -73,7 +73,7 @@ class PaymentList extends BaseComponent {
 PaymentList.propTypes = {
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
-  list: PropTypes.array.isRequired,
+  list: PropTypes.array,
   editable: PropTypes.bool
 }
 

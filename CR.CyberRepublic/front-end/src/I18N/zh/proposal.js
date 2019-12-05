@@ -117,7 +117,8 @@ export default {
       required: '必填项',
       tooLong: '文字太长',
       [`limit${ABSTRACT_MAX_WORDS}`]: '不能超过200字'
-    }
+    },
+
   },
   msg: {
     rejected: '已驳回',

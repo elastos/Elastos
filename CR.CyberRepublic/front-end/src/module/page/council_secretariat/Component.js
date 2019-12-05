@@ -113,53 +113,53 @@ export default class extends StandardPage {
         <Row className="members">
           <Col lg={8} md={8} sm={24} className="member">
             <div className="small-rect">
-              <Avatar src="/assets/images/council/council-nicola.jpeg" shape="square" size={220} icon="user" />
+              <Avatar src="/assets/images/council/council-no1.jpeg" shape="square" size={220} icon="user" />
             </div>
             <div className="big-rect">
               <div className="content">
-                <h3 className="name">{I18N.get('cs.nicola.name')}</h3>
-                <span className="self-intro">{I18N.get('cs.nicola.intro')}</span>
+                <h3 className="name">{I18N.get('cs.no1.name')}</h3>
+                <div className="self-intro">{I18N.get('cs.no1.intro')}</div>
                 <Email>
                   {I18N.get('cs.contact')}
 :
                   {' '}
-                  {I18N.get('cs.nicola.email')}
+                  {I18N.get('cs.no1.email')}
                 </Email>
               </div>
             </div>
           </Col>
           <Col lg={8} md={8} sm={24} className="member">
             <div className="small-rect">
-              <Avatar src="/assets/images/council/council-yipeng.jpeg" shape="square" size={220} icon="user" />
+              <Avatar src="/assets/images/council/council-no2.jpeg" shape="square" size={220} icon="user" />
             </div>
 
             <div className="big-rect">
               <div className="content">
-                <h3 className="name">{I18N.get('cs.yipeng.name')}</h3>
-                <span className="self-intro">{I18N.get('cs.yipeng.intro')}</span>
+                <h3 className="name">{I18N.get('cs.no2.name')}</h3>
+                <div className="self-intro">{I18N.get('cs.no2.intro')}</div>
                 <Email>
                   {I18N.get('cs.contact')}
 :
                   {' '}
-                  {I18N.get('cs.yipeng.email')}
+                  {I18N.get('cs.no2.email')}
                 </Email>
               </div>
             </div>
           </Col>
           <Col lg={8} md={8} sm={24} className="member">
             <div className="small-rect">
-              <Avatar src="/assets/images/council/council-feng.jpeg" shape="square" size={220} icon="user" />
+              <Avatar src="/assets/images/council/council-no3.jpeg" shape="square" size={220} icon="user" />
             </div>
 
             <div className="big-rect">
               <div className="content">
-                <h3 className="name">{I18N.get('cs.feng.name')}</h3>
-                <span className="self-intro">{I18N.get('cs.feng.intro')}</span>
+                <h3 className="name">{I18N.get('cs.no3.name')}</h3>
+                <div className="self-intro">{I18N.get('cs.no3.intro')}</div>
                 <Email>
                   {I18N.get('cs.contact')}
 :
                   {' '}
-                  {I18N.get('cs.feng.email')}
+                  {I18N.get('cs.no3.email')}
                 </Email>
               </div>
             </div>
@@ -185,23 +185,11 @@ export default class extends StandardPage {
             <div className="big-rect">
               <div className="content">
                 <h3 className="name">{I18N.get('cs.rebecca.name')}</h3>
-                <span className="self-intro">{I18N.get('cs.rebecca.intro')}</span>
+                <div className="self-intro">{I18N.get('cs.rebecca.intro')}</div>
               </div>
             </div>
           </Col>
         </Row>
-        {/* <div className="title">{I18N.get('cs.secretariat.staff')}<span className="title_1st"><Divider className="line" type="vertical" />1ST</span></div>
-          <Row className="members">
-              <Col lg={8} md={8} sm={24} className="member">
-                  <div className="small-rect"></div>
-                  <div className="big-rect">
-                      <div className="content">
-                          <h3 className="name">Kevin Zhang</h3>
-                          <span className="self-intro">Kevin is a dedicated industry leader, he is a advisor of BTC, Kevin is a dedicated industry leader, he is a advisor of BTC lorem ipsum dolor sit</span>
-                      </div>
-                  </div>
-              </Col>
-          </Row> */}
         {this.buildPositions()}
       </div>
     )
