@@ -27,7 +27,7 @@ export const api_request = (opts = {}) => {
     headers['api-token'] = apiToken
   }
 
-  let server_url = process.env.SERVER_URL
+  let server_url = opts.serverUrl || process.env.SERVER_URL
   opts = _.merge({
     method: 'get',
     headers,
@@ -158,6 +158,7 @@ export const upload_file = async (fileObject, opts = {}) => {
 export const wallet_request = async (opts = {}) => {
   try {
     return await api_request({
+      ...opts,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
@@ -178,7 +179,7 @@ export const wallet_request = async (opts = {}) => {
         console.error(data.error)
       },
       isProcessResponse: false,
-      ...opts
+      serverUrl: process.env.WALLET_SERVER_URL,
     })
   } catch (e) {
     if (opts.error) {
