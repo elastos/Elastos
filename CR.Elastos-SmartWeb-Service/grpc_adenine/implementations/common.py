@@ -7,6 +7,7 @@ from decouple import config
 from sqlalchemy import create_engine
 from grpc_adenine.database import (connection as db)
 from grpc_adenine.database.user import Users
+from grpc_adenine.database.user_api_relation import UserApiRelations
 from grpc_adenine.implementations.utilities import get_time
 from grpc_adenine.stubs import common_pb2
 from grpc_adenine.stubs import common_pb2_grpc
@@ -17,6 +18,7 @@ class Common(common_pb2_grpc.CommonServicer):
 	def GenerateAPIRequest(self, request, context):
 		stringLength = 32
 		secret_key = config('SHARED_SECRET_ADENINE')
+		check_did = request.did
 		
 		DATABASE_URI = config('SQLALCHEMY_DATABASE_URI')
 		engine = create_engine(DATABASE_URI)
@@ -30,11 +32,29 @@ class Common(common_pb2_grpc.CommonServicer):
 	    	created_on = date_now,
 	    	last_logged_on = date_now
     	)
+
+		
+		
 		s = Session()
 		s.add(user)
 		s.commit()
-		#print("ID value ",s.id)
-		s.close()
+		#print("ID value ",s.id)		
+		for row in s.query(Users, Users):
+			if (row.Users.did == request.did):
+				
+				userapi = UserApiRelations(
+			 		user_id = row.Users.id,
+			 		api_key = 'KHBOsth7b3WbOTVzZqGUEhOY8rPreYFZ'
+		)
+				s.add(userapi)
+				s.commit()
+				s.close()
+			else:
+				s.add(user)
+				s.commit()
+				#print("ID value ",s.id)
+				s.close()
+		s.close()		
 
 		if(secret_key==request.secret_key):
 			api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(stringLength))
