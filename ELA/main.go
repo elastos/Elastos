@@ -26,7 +26,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/elanet/routes"
 	"github.com/elastos/Elastos.ELA/mempool"
@@ -162,13 +161,6 @@ func startNode(c *cli.Context, st *settings.Settings) {
 	defer chainStore.Close()
 	ledger.Store = chainStore // fixme
 
-	var dposStore store.IDposStore
-	dposStore, err = store.NewDposStore(dataDir, st.Params())
-	if err != nil {
-		printErrorAndExit(err)
-	}
-	defer dposStore.Close()
-
 	txMemPool := mempool.NewTxPool(st.Params())
 	blockMemPool := mempool.NewBlockPool(st.Params())
 	blockMemPool.Store = chainStore
@@ -270,7 +262,7 @@ func startNode(c *cli.Context, st *settings.Settings) {
 			EnableEventRecord: false,
 			ChainParams:       st.Params(),
 			Arbitrators:       arbiters,
-			Store:             dposStore,
+			Store:             nil,
 			Server:            server,
 			TxMemPool:         txMemPool,
 			BlockMemPool:      blockMemPool,

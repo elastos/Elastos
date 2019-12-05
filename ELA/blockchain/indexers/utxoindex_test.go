@@ -350,6 +350,12 @@ func TestUtxoIndex_DisconnectBlock(t *testing.T) {
 	})
 }
 
-//func TestUtxoIndexEnd(t *testing.T) {
-//	//utxoIndexDB.Close()
-//}
+func TestUtxoIndexEnd(t *testing.T) {
+	_ = utxoIndexDB.Update(func(dbTx database.Tx) error {
+		meta := dbTx.Metadata()
+		err := meta.DeleteBucket(utxoIndexKey)
+		assert.NoError(t, err)
+		return nil
+	})
+	utxoIndexDB.Close()
+}

@@ -95,5 +95,11 @@ func TestTx3Index_Disconnect(t *testing.T) {
 }
 
 func TestTx3IndexEnd(t *testing.T) {
+	_ = tx3IndexDB.Update(func(dbTx database.Tx) error {
+		meta := dbTx.Metadata()
+		err := meta.DeleteBucket(tx3IndexKey)
+		assert.NoError(t, err)
+		return nil
+	})
 	tx3IndexDB.Close()
 }
