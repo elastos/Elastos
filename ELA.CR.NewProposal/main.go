@@ -18,6 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config/settings"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
@@ -45,6 +46,17 @@ import (
 	"github.com/urfave/cli"
 )
 
+const (
+	// dataPath indicates the path storing the chain data.
+	dataPath = "data"
+
+	// logPath indicates the path storing the node log.
+	nodeLogPath = "logs/node"
+
+	// checkpointPath indicates the path storing the checkpoint data
+	checkpointPath = "checkpoints"
+)
+
 var (
 	// Build version generated when build program.
 	Version string
@@ -65,7 +77,7 @@ func main() {
 }
 
 func setupNode() *cli.App {
-	appSettings := newSettings()
+	appSettings := settings.NewSettings()
 
 	app := cli.NewApp()
 	app.Name = "ela"
@@ -109,7 +121,7 @@ func setupNode() *cli.App {
 	return app
 }
 
-func startNode(c *cli.Context, st *settings) {
+func startNode(c *cli.Context, st *settings.Settings) {
 	// Enable http profiling server if requested.
 	if st.Config().ProfilePort != 0 {
 		go utils.StartPProf(st.Config().ProfilePort)
@@ -126,7 +138,7 @@ func startNode(c *cli.Context, st *settings) {
 		if err != nil {
 			printErrorAndExit(err)
 		}
-		act, err = account.Open(password, st.params.WalletPath)
+		act, err = account.Open(password, st.Params().WalletPath)
 		if err != nil {
 			printErrorAndExit(err)
 		}
@@ -217,8 +229,8 @@ func startNode(c *cli.Context, st *settings) {
 	if act != nil {
 		routesCfg.PID = act.PublicKeyBytes()
 		routesCfg.Addr = fmt.Sprintf("%s:%d",
-			st.params.DPoSIPAddress,
-			st.params.DPoSDefaultPort)
+			st.Params().DPoSIPAddress,
+			st.Params().DPoSDefaultPort)
 		routesCfg.Sign = act.Sign
 	}
 
