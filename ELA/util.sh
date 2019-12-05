@@ -27,13 +27,19 @@ elif [[ "$1" == "cleanall" ]]; then
 elif [[ "$1" == "test" ]]; then
   ./ela-cli script -f test/white_box/main/test_all.lua
 elif [[ "$1" == "unittest" ]]; then
-  go test ./... -short
+  go test `go list ./... | grep -v benchmark` -short
 elif [[ "$1" == "benchall" ]]; then
   go test ./benchmark/... -bench=. $cpuArgs $memArgs
 elif [[ "$1" == "benchspec" ]]; then
   go test ./benchmark/special/... -bench=. $cpuArgs $memArgs
 elif [[ "$1" == "benchproc" ]]; then
   go test ./benchmark/process/... -bench=. $cpuArgs $memArgs
+elif [[ "$1" == "benchsync" ]]; then
+  cp ela benchmark/sync/
+  cp config.json benchmark/sync/
+  rm -rf benchmark/sync/elastos_test
+  cp -r elastos benchmark/sync/elastos_test
+  go test ./benchmark/sync/... -bench=. $cpuArgs $memArgs
 elif [[ "$1" == "datagen" ]]; then
   ./ela-datagen --dir benchmark/process/elastos_test --height "$2" --mode normal --inputsperblock 200 --maxrefers 200 --minrefers 100 --addresscount 100
 fi

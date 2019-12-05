@@ -68,7 +68,7 @@ func generate(c *cli.Context) error {
 		return err
 	}
 
-	var exit chan error
+	exit := make(chan error)
 	go func() {
 		err := gen.Generate(uint32(c.Uint64(bencli.HeightFlag.Name)))
 		if err != nil {
