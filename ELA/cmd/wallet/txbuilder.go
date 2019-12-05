@@ -449,9 +449,10 @@ func CreateCRCProposalWithdrawTransaction(c *cli.Context) error {
 	}
 	crcProposalWithdraw.Sign = signature
 
+	recipient := c.String("to")
 	outputs := make([]*OutputInfo, 0)
 	outpusInfo := &OutputInfo{
-		Recipient: acc.Address,
+		Recipient: recipient,
 		Amount:    amount,
 	}
 	outputs = append(outputs, outpusInfo)

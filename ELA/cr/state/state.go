@@ -300,6 +300,14 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 		if s.manager != nil {
 			s.manager.proposalReview(tx, height, s.history)
 		}
+	case types.CRCProposalTracking:
+		if s.manager != nil {
+			s.manager.proposalTracking(tx, height, s.history)
+		}
+	case types.CRCProposalWithdraw:
+		if s.manager != nil {
+			s.manager.proposalWithdraw(tx, height, s.history)
+		}
 	case types.CRCAppropriation:
 		s.processCRCAppropriation(tx, height, s.history)
 	}

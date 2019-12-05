@@ -43,6 +43,7 @@ proposal_hash = getProposalHash()
 
 local fee = getFee()
 local stage = getStage()
+local recipient = getToAddr()
 
 --sign = getSign()
 
@@ -67,7 +68,7 @@ print(charge)
 local default_output = defaultoutput.new()
 
 -- output: asset_id, value, recipient, output_paload_type, outputpaload
-local charge_output = output.new(asset_id, charge, addr, 0, default_output)
+local charge_output = output.new(asset_id, charge, recipient, 0, default_output)
 tx:appendtxout(charge_output)
 
 
