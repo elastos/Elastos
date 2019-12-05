@@ -1615,6 +1615,7 @@ const en = {
     candidates: 'CANDIDATES',
     incumbent: 'INCUMBENT',
     council: 'CYBER REPUBLIC INTERIM COUNCIL',
+    voting: 'VOTING',
     secretariat: {
       title: 'SECRETARIAT',
       general: 'SECRETARIAT GENERAL',

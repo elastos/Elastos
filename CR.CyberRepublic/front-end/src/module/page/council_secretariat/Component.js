@@ -1,27 +1,78 @@
 import React from 'react'
+import _ from 'lodash'
+import { Col, Row, Avatar, Tabs, Spin, Popover, Pagination } from 'antd'
+import styled from 'styled-components'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
-import { Col, Row, Avatar, Tabs, Divider } from 'antd'
-import styled from 'styled-components'
+import { logger } from '@/util'
 import StandardPage from '../StandardPage'
 import PersonCard from './PersonCard'
 import BGImg from './BGImg'
-import { text, border } from '@/constants/color'
+import { bg, text, border } from '@/constants/color'
 import { breakPoint } from '@/constants/breakPoint'
 import Toast from '@/module/common/Toast'
 
 import './style.scss'
 
-const TabPane = Tabs.TabPane
+const {TabPane} = Tabs
+
+const RANK_TEXT = {
+  0: 'TH',
+  1: 'ST',
+  2: 'ND',
+  3: 'RD'
+}
+
+const PAGE_SIZE = 12
 
 export default class extends StandardPage {
-  state = {
-    // save the page you are on
-    tab: this.props.council.tab || '1',
+  constructor(props) {
+    super(props)
+    this.state = {
+      // save the page you are on
+      tab: this.props.council.tab || '1',
+      list: [],
+      totalVotes: 0,
+      pageNum: 1,
+      total: 0,
+    }
+    this.ord_loading = _.debounce(this.ord_loading, 300)
   }
+
 
   linkToRule() {
     this.props.history.push('/whitepaper')
+  }
+
+  handlePaginationChange = pageNum => {
+    this.setState({pageNum}, () => this.refetch())
+  }
+
+  getQuery = () => {
+    const {pageNum} = this.state
+    return {pageNum, pageSize: PAGE_SIZE, state: 'all'}
+  }
+
+  refetch = async (isShowLoading = false) => {
+    if (isShowLoading) this.ord_loading(true)
+    const { listData } = this.props
+    const param = this.getQuery()
+    try {
+      const result = await listData(param)
+      this.setState({ list: result.crcandidatesinfo, totalVotes: result.totalvotes, total: result.totalcounts })
+    } catch (error) {
+      logger.error(error)
+    }
+    if (isShowLoading) this.ord_loading(false)
+  }
+
+  renderLoading() {
+    return (
+      <div className="flex-center">
+        <Spin size="large" />
+      </div>
+
+    )
   }
 
   ord_renderContent() {
@@ -69,7 +120,8 @@ export default class extends StandardPage {
                 <h3 className="name">{I18N.get('cs.nicola.name')}</h3>
                 <span className="self-intro">{I18N.get('cs.nicola.intro')}</span>
                 <Email>
-                  {I18N.get('cs.contact')}:
+                  {I18N.get('cs.contact')}
+:
                   {' '}
                   {I18N.get('cs.nicola.email')}
                 </Email>
@@ -172,6 +224,76 @@ export default class extends StandardPage {
     )
   }
 
+  buildVoting() {
+    const { list, total, loading} = this.state
+    const chunkedList = _.chunk(list, 4)
+
+    return (
+      <div>
+        <Header>{I18N.get('cs.candidates')}</Header>
+        {loading
+          ? this.renderLoading()
+          : _.map(chunkedList, (row, rowIndex) => {
+            const cols = _.map(row, this.renderCandidate)
+            return (
+              <Row gutter={[24, 56]} key={rowIndex}>
+                  {cols}
+                </Row>
+            )
+          })}
+        <StyledPagination>
+          <Pagination
+              defaultPageSize={PAGE_SIZE}
+              total={total}
+              onChange={this.handlePaginationChange}
+            />
+        </StyledPagination>
+      </div>
+    )
+  }
+
+  renderCandidate = (col, colIndex) => {
+    const voteRate = col.votes / this.state.totalVotes * 100
+    return (
+      <Col lg={6} md={6} sm={24} key={colIndex}>
+        <Card>
+          <StyledAvatar>
+            <Avatar src={col.url} shape="square" size={176} icon="user" />
+            <Rank>
+              <Number>{col.index + 1}</Number>
+              <Suffix>
+                {RANK_TEXT[col.index + 1] ? RANK_TEXT[col.index + 1] : RANK_TEXT[0]}
+              </Suffix>
+            </Rank>
+          </StyledAvatar>
+          <Info>
+            <Popover content={_.toUpper(col.nickname)}>
+              <Name className="wrap-content">{col.nickname}</Name>
+            </Popover>
+            <Meta>
+              <Popover content={I18N.get(`area.${col.location}`)}>
+                <div className="wrap-content country">{I18N.get(`area.${col.location}`)}</div>
+              </Popover>
+              <div className="vote">
+                <Popover content={col.votes}>
+                  <div className="wrap-content data data-vote">{col.votes}</div>
+                </Popover>
+                &nbsp;
+                {I18N.get('council.candidate.votes')}
+              </div>
+              <div className="vote">
+                <Popover content={voteRate}>
+                  <div className="wrap-content data data-rate">{voteRate}</div>
+                </Popover>
+                {`% ${I18N.get('council.candidate.voteRate')}`}
+              </div>
+            </Meta>
+          </Info>
+        </Card>
+      </Col>
+    )
+  }
+
   buildContent() {
     const { tab } = this.props.council
     const tabBarStyle = { borderBottom: 'none', color: text.middleGray }
@@ -184,6 +306,7 @@ export default class extends StandardPage {
             <StyledTabs defaultActiveKey="COUNCIL" activeKey={tab} onChange={this.tabChange} tabBarStyle={tabBarStyle}>
               <TabPane tab={<TabTitle>{I18N.get('cs.council')}</TabTitle>} key="COUNCIL">{this.buildIncumbent()}</TabPane>
               <TabPane tab={<TabTitle>{I18N.get('cs.secretariat.title')}</TabTitle>} key="SECRETARIAT">{this.buildSecretariat()}</TabPane>
+              <TabPane tab={<TabTitle>{I18N.get('cs.voting')}</TabTitle>} key="VOTING">{this.buildVoting()}</TabPane>
             </StyledTabs>
           </div>
         </div>
@@ -192,6 +315,9 @@ export default class extends StandardPage {
   }
 
   tabChange = (activeKey) => {
+    if (activeKey === 'VOTING') {
+      this.refetch(true)
+    }
     return this.props.changeTab(activeKey)
   }
 }
@@ -201,7 +327,7 @@ const StyledTabs = styled(Tabs)`
     border-bottom: none;
     color: ${text.middleGray};
     padding: 0;
-    :first-child:after {
+    :not(:last-child):after {
       content: '';
       background-color: ${border.middleGray};
       display: block;
@@ -222,6 +348,13 @@ const StyledTabs = styled(Tabs)`
   .ant-tabs-ink-bar {
     display: none!important;
   }
+  .ant-tabs-tab-prev-icon-target, .ant-tabs-tab-next-icon-target {
+    color: ${text.green};
+    svg {
+      width: 2em;
+      height: 2em;
+    }
+  }
 `
 const TabTitle = styled.div`
   font-family: "komu-a",sans-serif;
@@ -233,4 +366,138 @@ const TabTitle = styled.div`
 const Email = styled.div`
   color: white;
   margin-top: 5px
+`
+const Header = styled.div`
+  margin: 27px 0 80px;
+  width: 211px;
+  height: 48px;
+  font-family: 'komu-a', sans-serif;
+  font-size: 48px;
+  line-height: 48px;
+  color: ${text.green};
+`
+const Card = styled.div`
+  width: 201px;
+  height: 325px;
+  background: ${bg.darkNavy};
+`
+const StyledAvatar = styled.div`
+  width: 176px;
+  height: 176px;
+  position: relative;
+  top: -30px;
+  background: ${bg.obsidian};
+`
+const Rank = styled.div`
+  padding: 4px 4px 4px 6px;
+  min-width: 36px;
+  height: 36px;
+  position: absolute;
+  top: 158px;
+  right: -18px;
+  background: #18ffff;
+  color: #000000;
+  display: flex;
+  justify-content: center;
+`
+
+const Number = styled.div`
+  font-family: komu-a;
+  font-size: 36px;
+  line-height: 36px;
+`
+const Suffix = styled.div`
+  font-family: komu-a;
+  font-size: 14px;
+  line-height: 14px;
+`
+const Info = styled.div`
+  margin-top: -6px;
+  padding-left: 16px;
+  padding-right: 25px;
+  .wrap-content {
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis; 
+  }
+`
+const Meta = styled.div`
+  height: 96px;
+  margin-top: 10px;
+  font-family: Synthese;
+  font-size: 14px;
+  line-height: 24px;
+  color: #f6f9fd;
+  opacity: 0.9;
+  .country {
+    height: 50%;
+  }
+  .vote {
+    height: 25%;
+    display: flex;
+    .data {
+      font-weight: bold;
+      color: ${text.white};
+    }
+    .data-vote {
+      max-width: 70%;
+    }
+    .data-rate {
+      max-width: 25%;
+    }
+  }
+}
+`
+const Name = styled.div`
+  height: 30px;
+  font-family: komu-a;
+  font-size: 30px;
+  line-height: 30px;
+  color: ${text.white};
+`
+const StyledPagination = styled.div`
+  margin-top: 50px;
+  margin-bottom: 90px;
+  text-align: center;
+  .ant-pagination-prev .ant-pagination-item-link,
+  .ant-pagination-next .ant-pagination-item-link {
+    border-color: ${bg.navy};
+    background-color: ${bg.navy};
+  }
+  .ant-pagination-item {
+    background-color: ${bg.navy};
+    a {
+      color: ${text.green};
+    }
+    &:focus,
+    &:hover {
+      a {
+        color: ${text.white};
+      }
+    }
+  }
+  .ant-pagination-item-active a {
+    color: ${text.white};
+    border-bottom: 2px solid ${text.white};
+  }
+  .ant-pagination-jump-prev
+    .ant-pagination-item-container
+    .ant-pagination-item-link-icon,
+  .ant-pagination-jump-next
+    .ant-pagination-item-container
+    .ant-pagination-item-link-icon {
+    color: ${text.green};
+  }
+  .ant-pagination-jump-prev
+    .ant-pagination-item-container
+    .ant-pagination-item-ellipsis,
+  .ant-pagination-jump-next
+    .ant-pagination-item-container
+    .ant-pagination-item-ellipsis {
+    color: ${text.green};
+    &:focus,
+    &:hover {
+      color: ${text.green};
+    }
+  }
 `

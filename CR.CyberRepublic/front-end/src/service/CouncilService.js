@@ -1,7 +1,7 @@
 import BaseService from '../model/BaseService'
 import { api_request } from '@/util'
 
-const councilTabKeys = ['COUNCIL', 'SECRETARIAT']
+const councilTabKeys = ['COUNCIL', 'SECRETARIAT', 'VOTING']
 
 export default class extends BaseService {
   async changeTab(tabKey) {
