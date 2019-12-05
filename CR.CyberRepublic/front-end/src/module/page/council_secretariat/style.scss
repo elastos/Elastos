@@ -1,6 +1,5 @@
-
-@import "../../../style/variable";
-@import "../../../style/color";
+@import '../../../style/variable';
+@import '../../../style/color';
 
 $mobile-padding: $gap_0 0px;
 $landingPageWidth: 1152px;
@@ -46,20 +45,20 @@ $maxWithContent: 860px;
       margin-top: 20px;
 
       .title {
-        font-family: "komu-a",sans-serif;
+        font-family: 'komu-a', sans-serif;
         line-height: normal;
         font-size: 48px;
-        color: #1DE9B6;
+        color: #1de9b6;
         @media only screen and (max-width: $mobile-width) {
           font-size: 36px;
         }
 
         .title_1st {
-          color: #7E96BE;
+          color: #7e96be;
           font-size: inherit;
-          font-family: "komu-a",sans-serif;
+          font-family: 'komu-a', sans-serif;
 
-          .line{
+          .line {
             height: 30px;
             margin-top: 4px;
             margin-left: 30px;
@@ -78,13 +77,14 @@ $maxWithContent: 860px;
       }
     }
 
-    .secretariat, .positions {
+    .secretariat,
+    .positions {
       margin-top: 20px;
       .title {
-        font-family: "komu-a",sans-serif;
+        font-family: 'komu-a', sans-serif;
         line-height: normal;
         font-size: 36px;
-        color: #1DE9B6;
+        color: #1de9b6;
         font-weight: bold;
         margin-top: 10px;
         margin-left: 40px;
@@ -95,10 +95,10 @@ $maxWithContent: 860px;
 
         .title_1st {
           font-size: inherit;
-          color: #1DE9B6;
-          font-family: "komu-a",sans-serif;
+          color: #1de9b6;
+          font-family: 'komu-a', sans-serif;
 
-          .line{
+          .line {
             height: 30px;
             margin-top: -5px;
             margin-left: 30px;
@@ -133,13 +133,13 @@ $maxWithContent: 860px;
       width: 220px;
       height: 220px;
       top: -100px;
-      background: #0F2631;
+      background: #0f2631;
     }
 
     .big-rect {
       width: 260px;
       height: 312px;
-      background: #172C3B;
+      background: #172c3b;
 
       .content {
         padding-top: 125px;
@@ -147,17 +147,17 @@ $maxWithContent: 860px;
         padding-right: 5px;
 
         .name {
-          font-family: "komu-a",sans-serif;
+          font-family: 'komu-a', sans-serif;
           line-height: normal;
           font-size: 28px;
-          color: #FFFFFF;
+          color: #ffffff;
         }
 
         .self-intro {
-          font-family: "synthese",sans-serif;
+          font-family: 'synthese', sans-serif;
           line-height: normal;
           font-size: 14px;
-          color: #F6F9FD;
+          color: #f6f9fd;
           opacity: 0.9;
           max-height: 160px;
         }
@@ -168,7 +168,7 @@ $maxWithContent: 860px;
   .council-rule {
     width: 80%;
     height: 191px;
-    background: #22384C;
+    background: #22384c;
     margin-bottom: 100px;
     margin-top: 30px;
 
@@ -178,10 +178,10 @@ $maxWithContent: 860px;
     }
 
     .title {
-      font-family: "komu-a",sans-serif;
+      font-family: 'komu-a', sans-serif;
       line-height: normal;
       font-size: 48px;
-      color: #1DE9B6;
+      color: #1de9b6;
       margin-left: 90px;
       padding-top: 50px;
       @media only screen and (max-width: $mobile-width) {
@@ -191,10 +191,10 @@ $maxWithContent: 860px;
     }
 
     .view-rule {
-      font-family: "synthese",sans-serif;
+      font-family: 'synthese', sans-serif;
       line-height: 32px;
       font-size: 20px;
-      color: #F6F9FD;
+      color: #f6f9fd;
       opacity: 0.9;
       margin-left: 10%;
       @media only screen and (max-width: $mobile-width) {
@@ -204,7 +204,7 @@ $maxWithContent: 860px;
     }
 
     .click-here {
-      font-family: "synthese",sans-serif;
+      font-family: 'synthese', sans-serif;
       line-height: 32px;
       font-size: 20px;
       color: #ffffff;
@@ -214,7 +214,7 @@ $maxWithContent: 860px;
   }
 
   %section-title {
-    font-family: "komu-a", sans-serif;
+    font-family: 'komu-a', sans-serif;
     font-size: 48px;
     text-transform: uppercase;
   }
@@ -332,9 +332,6 @@ $maxWithContent: 860px;
         right: $gap_5;
       }
 
-      .small-box {
-
-      }
       .box {
         margin-left: 50px;
       }
@@ -368,7 +365,7 @@ $maxWithContent: 860px;
     .small-box {
       width: 50px;
       height: 50px;
-      background-color: #434D72;
+      background-color: #434d72;
       opacity: 0.4;
       @media only screen and (max-width: $mobile-width) {
         width: 25px;
@@ -379,9 +376,8 @@ $maxWithContent: 860px;
     .box {
       width: 100px;
       height: 100px;
-      background-color: #434D72;
+      background-color: #434d72;
       opacity: 0.4;
-
 
       @media only screen and (max-width: $mobile-width) {
         width: 50px;
@@ -393,8 +389,4 @@ $maxWithContent: 860px;
   .c_Footer {
     margin-top: 0;
   }
-}
-
-.empower-modal-view {
-
 }
