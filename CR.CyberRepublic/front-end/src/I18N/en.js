@@ -7,6 +7,7 @@ import suggestion from './en/suggestion'
 import getting_started from './en/getting_started'
 import whitepaper from './en/whitepaper'
 import elip from './en/elip'
+import area from './en/area'
 
 const en = {
   council,
@@ -17,6 +18,7 @@ const en = {
   getting_started,
   elip,
   whitepaper,
+  area,
   // Header
   '0000': 'ALPHA',
   '0001': 'Bounty Programs',

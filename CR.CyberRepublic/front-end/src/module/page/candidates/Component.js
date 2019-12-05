@@ -98,7 +98,6 @@ export default class extends StandardPage {
           <StyledPagination>
             <Pagination
               defaultPageSize={PAGE_SIZE}
-              // current={pageNum}
               total={total}
               onChange={this.handlePaginationChange}
             />
@@ -129,8 +128,8 @@ export default class extends StandardPage {
               <Name className="wrap-content">{col.nickname}</Name>
             </Popover>
             <Meta>
-              <Popover content={col.location}>
-                <div className="wrap-content country">{col.location}</div>
+              <Popover content={I18N.get(`area.${col.location}`)}>
+                <div className="wrap-content country">{I18N.get(`area.${col.location}`)}</div>
               </Popover>
               <div className="vote">
                 <Popover content={col.votes}>
