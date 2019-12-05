@@ -830,24 +830,9 @@ func checkTransactionSize(txn *Transaction) error {
 }
 
 func checkAssetPrecision(txn *Transaction) error {
-	if len(txn.Outputs) == 0 {
-		return nil
-	}
-	assetOutputs := make(map[common.Uint256][]*Output)
-
-	for _, v := range txn.Outputs {
-		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
-	}
-	for k, outputs := range assetOutputs {
-		asset, err := DefaultLedger.GetAsset(k)
-		if err != nil {
-			return errors.New("The asset not exist in local blockchain.")
-		}
-		precision := asset.Precision
-		for _, output := range outputs {
-			if !checkAmountPrecise(output.Value, precision) {
-				return errors.New("The precision of asset is incorrect.")
-			}
+	for _, output := range txn.Outputs {
+		if !checkAmountPrecise(output.Value, config.ELAPrecision) {
+			return errors.New("the precision of asset is incorrect")
 		}
 	}
 	return nil

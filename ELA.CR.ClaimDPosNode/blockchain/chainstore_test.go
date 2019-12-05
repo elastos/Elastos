@@ -10,9 +10,9 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/utils/test"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,6 +20,7 @@ var testChainStore *ChainStore
 var sidechainTxHash common.Uint256
 
 func TestChainStoreInit(t *testing.T) {
+	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	temp, err := NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
 	assert.NoError(t, err)
 	testChainStore = temp.(*ChainStore)
@@ -117,65 +118,23 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 }
 
 func TestCheckAssetPrecision(t *testing.T) {
-	DefaultLedger = &Ledger{
-		Store:      testChainStore,
-	}
-
-	assetStr := "b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3"
-	defaultAsset, _ := common.Uint256FromHexString(assetStr)
-
-	// normal transaction
 	tx := buildTx()
+	// valid precision
 	for _, output := range tx.Outputs {
-		output.AssetID = *defaultAsset
+		output.AssetID = config.ELAAssetID
 		output.ProgramHash = common.Uint168{}
+		output.Value = 123456789876
 	}
 	err := checkAssetPrecision(tx)
 	assert.NoError(t, err)
 
-	// asset not exist
 	for _, output := range tx.Outputs {
-		output.AssetID = common.EmptyHash
+		output.AssetID = config.ELAAssetID
 		output.ProgramHash = common.Uint168{}
-	}
-	err = checkAssetPrecision(tx)
-	assert.EqualError(t, err, "The asset not exist in local blockchain.")
-
-	// register asset
-	asset := payload.Asset{
-		Name:      "TEST",
-		Precision: 0x04,
-		AssetType: 0x00,
-	}
-	register := &types.Transaction{
-		TxType:         types.RegisterAsset,
-		PayloadVersion: 0,
-		Payload: &payload.RegisterAsset{
-			Asset:  asset,
-			Amount: 0 * 100000000,
-		},
-	}
-	testChainStore.NewBatch()
-	testChainStore.PersistAsset(register.Hash(), asset)
-	testChainStore.BatchCommit()
-
-	// valid precision
-	for _, output := range tx.Outputs {
-		output.AssetID = register.Hash()
-		output.ProgramHash = common.Uint168{}
-		output.Value = 123456780000
+		output.Value = 0
 	}
 	err = checkAssetPrecision(tx)
 	assert.NoError(t, err)
-
-	// invalid precision
-	for _, output := range tx.Outputs {
-		output.AssetID = register.Hash()
-		output.ProgramHash = common.Uint168{}
-		output.Value = 12345678000
-	}
-	err = checkAssetPrecision(tx)
-	assert.EqualError(t, err, "The precision of asset is incorrect.")
 }
 
 func TestChainStoreDone(t *testing.T) {

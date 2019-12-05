@@ -511,22 +511,9 @@ func (c *ChainStore) getBlockHeader(hash Uint256) (*Header, error) {
 
 func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
-	c.NewBatch()
-	if err := c.RollbackTransactions(b); err != nil {
-		return err
-	}
-	if err := c.RollbackConfirm(b); err != nil {
-		return err
-	}
-
 	if err := c.fflDB.RollbackBlock(b, node, confirm, medianTimePast); err != nil {
 		return err
 	}
-
-	if err := c.BatchCommit(); err != nil {
-		return err
-	}
-
 	atomic.StoreUint32(&c.currentBlockHeight, b.Height-1)
 
 	return nil
@@ -537,20 +524,13 @@ func (c *ChainStore) persist(b *Block, node *BlockNode,
 	c.persistMutex.Lock()
 	defer c.persistMutex.Unlock()
 
-	c.NewBatch()
-	if err := c.PersistTransactions(b); err != nil {
-		return err
-	}
-	if err := c.persistConfirm(confirm); err != nil {
-		return err
-	}
 	// todo save genesis block at same time
 	if b.Height != 0 {
 		if err := c.fflDB.SaveBlock(b, node, confirm, medianTimePast); err != nil {
 			return err
 		}
 	}
-	return c.BatchCommit()
+	return nil
 }
 
 func (c *ChainStore) GetFFLDB() IFFLDBChainStore {
