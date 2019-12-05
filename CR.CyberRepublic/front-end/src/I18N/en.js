@@ -129,6 +129,7 @@ const en = {
   'comments.posted.success': 'Your comment has been posted.',
   'comments.updated.success': 'Your comment has been updated.',
   'comments.deleted.success': 'Your comment has been deleted.',
+  'comments.delete.confirm': 'Delete this comment?',
   // Admin tasks
   'admin.tasks.status': 'Status',
 

@@ -129,6 +129,7 @@ const zh = {
   'comments.posted.success': '您的评论已提交',
   'comments.updated.success': '您的评论已更新',
   'comments.deleted.success': '您的评论已删除',
+  'comments.delete.confirm': '删除当前评论？',
   // Admin tasks
   'admin.tasks.status': '状态',
 
