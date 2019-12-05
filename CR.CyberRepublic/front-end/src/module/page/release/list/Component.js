@@ -17,7 +17,7 @@ export default class extends StandardPage {
 
     this.state = {
       list: null,
-      loading: true,
+      loading: true
     }
   }
 
@@ -49,9 +49,7 @@ export default class extends StandardPage {
       <Header>
         <Row type="flex" align="middle" justify="space-between">
           <Col sm={16} xs={24}>
-            <Title className="komu-a">
-              {I18N.get('release.whatsNew')}
-            </Title>
+            <Title className="komu-a">{I18N.get('release.whatsNew')}</Title>
           </Col>
           {createFormNode}
         </Row>
@@ -60,17 +58,13 @@ export default class extends StandardPage {
     )
   }
 
-  renderList () {
+  renderList() {
     const { dataList } = this.props
     const node = _.map(dataList, detail => this.renderItem(detail))
-    return (
-      <List>
-        {node}
-      </List>
-    )
+    return <List>{node}</List>
   }
 
-  renderItem (detail) {
+  renderItem(detail) {
     const { isAdmin } = this.props
     const { title, desc, _id: id } = detail
     const formNode = isAdmin && (
@@ -105,7 +99,10 @@ export default class extends StandardPage {
           {deleteNode}
         </Row>
 
-        <ItemDesc className="ql-editor" dangerouslySetInnerHTML={{ __html: sanitizeHtml(desc) }} />
+        <ItemDesc
+          className="ql-editor"
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(desc) }}
+        />
       </ListItem>
     )
   }
@@ -123,7 +120,7 @@ export default class extends StandardPage {
     this.ord_loading(false)
   }
 
-  handleDelete = async (detail) => {
+  handleDelete = async detail => {
     const { deleteData } = this.props
     const id = detail._id
     try {
@@ -145,7 +142,7 @@ export const Container = styled.div`
 `
 
 const Header = styled(Row)`
-  border-bottom: 1px solid #E5E5E5;
+  border-bottom: 1px solid #e5e5e5;
 `
 const Title = styled.h3`
   font-size: 96px;
@@ -163,23 +160,19 @@ const Subtitle = styled.h4`
 const List = styled.div`
   margin: 30px auto;
 `
-const ListItem = styled.div`
-
-`
+const ListItem = styled.div``
 const ItemTitle = styled.div`
   font-size: 17px;
   font-weight: 400;
-  padding-left: 25px!important;
-  background-position-y: 8px!important;
+  padding-left: 25px !important;
+  background-position-y: 8px !important;
 `
-const ItemDesc = styled.div`
-
-`
+const ItemDesc = styled.div``
 const StyledButton = styled(Button)`
   display: flex;
   align-items: center;
   justify-content: center;
   > span {
-    font-size: 12px!important;
+    font-size: 12px !important;
   }
 `
