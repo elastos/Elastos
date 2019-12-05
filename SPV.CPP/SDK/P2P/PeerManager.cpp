@@ -812,6 +812,7 @@ namespace Elastos {
 				_peers[0].Services = services;
 				_peers[0].Timestamp = now;
 			} else {
+				_needGetAddr = true;
 				const std::vector<std::string> &dnsSeeds = _chainParams->DNSSeeds();
 				for (size_t i = 1; i < dnsSeeds.size(); i++) {
 					boost::thread workThread(boost::bind(&PeerManager::FindPeersThreadRoutine, this, dnsSeeds[i], services));
@@ -1072,7 +1073,7 @@ namespace Elastos {
 				}
 			}
 
-			PEER_DEBUG(peer, "connected peer size: {}", _connectedPeers.size());
+			PEER_INFO(peer, "connected peer size: {}", _connectedPeers.size());
 			lock.unlock();
 
 			if (willReconnect)
@@ -1399,7 +1400,7 @@ namespace Elastos {
 						_connectFailureCount = 0; // reset failure count once we know our initial request didn't timeout
 					}
 				} else if (!prev) { // block is an orphan
-					peer->info("relayed orphan block {}, previous {}, last block is {}, height {}",
+					PEER_DEBUG(peer, "relayed orphan block {}, previous {}, last block is {}, height {}",
 							   block->GetHash().GetHex(),
 							   block->GetPrevBlockHash().GetHex(),
 							   _lastBlock->GetHash().GetHex(),
@@ -2004,10 +2005,6 @@ namespace Elastos {
 			if (!txHashes.empty()) {
 				GetDataParameter getDataParameter(txHashes, {});
 				peer->info("request unrelayed tx {}", txHashes.size());
-#ifdef SPDLOG_DEBUG_ON
-				for (size_t i = 0; i < txHashes.size(); ++i)
-					PEER_DEBUG(peer, "tx[{}] {}", i, txHashes[i].GetHex());
-#endif
 				peer->SendMessage(MSG_GETDATA, getDataParameter);
 
 				if ((peer->GetPeerInfo().Flags & PEER_FLAG_SYNCED) == 0) {

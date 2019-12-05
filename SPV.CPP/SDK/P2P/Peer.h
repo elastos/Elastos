@@ -40,6 +40,7 @@ namespace Elastos {
 
 #define time_after(a,b)  ((long)(b) - (long)(a) < 0)
 #define PEER_DEBUG(p, ...) 	SPVLOG_DEBUG("{} {}:{} " __va_first(__VA_ARGS__, NULL), (p)->GetPeerManager()->GetID(), (p)->GetHost(), (p)->GetPort(), __va_rest(__VA_ARGS__, NULL))
+#define PEER_INFO(p, ...) 	SPVLOG_INFO("{} {}:{} " __va_first(__VA_ARGS__, NULL), (p)->GetPeerManager()->GetID(), (p)->GetHost(), (p)->GetPort(), __va_rest(__VA_ARGS__, NULL))
 
 
 		class Peer : public boost::enable_shared_from_this<Peer> {

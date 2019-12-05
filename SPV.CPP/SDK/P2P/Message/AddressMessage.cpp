@@ -86,7 +86,7 @@ namespace Elastos {
 						continue;
 					}
 
-					PEER_DEBUG(_peer, "peers[{}] = {}:{} timestamp = {}, services = {}",
+					PEER_INFO(_peer, "peers[{}] = {}:{} timestamp = {}, services = {}",
 								i, p.GetHost(), p.Port, p.Timestamp, p.Services);
 
 

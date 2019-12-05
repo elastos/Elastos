@@ -43,7 +43,7 @@ namespace Elastos {
 			} else {
 				uint256 txHash = tx->GetHash();
 
-				PEER_DEBUG(_peer, "got tx {}", txHash.GetHex());
+				PEER_INFO(_peer, "got tx {}", txHash.GetHex());
 
 				FireRelayedTx(tx);
 
@@ -65,7 +65,7 @@ namespace Elastos {
 		void TransactionMessage::Send(const SendMessageParameter &param) {
 			const TransactionParameter &txParam = static_cast<const TransactionParameter &>(param);
 
-			PEER_DEBUG(_peer, "sending tx {}", txParam.tx->GetHash().GetHex());
+			PEER_INFO(_peer, "sending tx {}", txParam.tx->GetHash().GetHex());
 
 			ByteStream stream;
 			txParam.tx->Serialize(stream);

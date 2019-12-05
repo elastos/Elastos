@@ -414,9 +414,7 @@ static int create(int argc, char *argv[]) {
 		subWalletOpen(masterWallet, subWallet);
 		std::cout << "Wallet create success." << std::endl;
 
-		if (!currentWallet) {
-			currentWallet = masterWallet;
-		}
+		currentWallet = masterWallet;
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -507,9 +505,7 @@ static int import(int argc, char *argv[]) {
 			return ERRNO_APP;
 		}
 
-		if (!currentWallet) {
-			currentWallet = masterWallet;
-		}
+		currentWallet = masterWallet;
 
 		auto subWallets = masterWallet->GetAllSubWallets();
 		for (ISubWallet *subWallet : subWallets) {
@@ -1411,7 +1407,7 @@ static int _export(int argc, char *argv[]) {
 
 			std::string password = getpass("Enter payment password: ");
 			nlohmann::json keystore = currentWallet->ExportKeystore(backupPassword, password);
-			std::cout << keystore.dump(4) << std::endl;
+			std::cout << keystore.dump() << std::endl;
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;

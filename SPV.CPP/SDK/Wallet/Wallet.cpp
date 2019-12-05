@@ -85,7 +85,7 @@ namespace Elastos {
 				} else if (ContainsTx(txns[i])) {
 					txns[i]->IsRegistered() = true;
 					if (StripTransaction(txns[i])) {
-						SPVLOG_DEBUG("{} strip tx: {}, h: {}, t: {}",
+						SPVLOG_INFO("{} strip tx: {}, h: {}, t: {}",
 									 _walletID,
 									 txns[i]->GetHash().GetHex(),
 									 txns[i]->GetBlockHeight(),
@@ -104,7 +104,7 @@ namespace Elastos {
 					} else {
 						for (InputArray::iterator in = txns[i]->GetInputs().begin(); in != txns[i]->GetInputs().end(); ++in)
 							_spendingOutputs.insert(UTXOPtr(new UTXO(*in)));
-						SPVLOG_DEBUG("{} tx[{}]: {}, h: {}", _walletID, i,
+						SPVLOG_INFO("{} tx[{}]: {}, h: {}", _walletID, i,
 									 txns[i]->GetHash().GetHex(), txns[i]->GetBlockHeight());
 					}
 				} else {
@@ -113,20 +113,20 @@ namespace Elastos {
 			}
 
 			if (!spentCoinbase.empty()) {
-				Log::debug("{} update spent hash count {}", _walletID, spentCoinbase.size());
+				SPVLOG_INFO("{} update spent hash count {}", _walletID, spentCoinbase.size());
 				coinBaseSpent(spentCoinbase);
 			}
 
 			if (movedToCoinbase) {
-				Log::debug("{} mv coinbase tx to single table", _walletID);
+				SPVLOG_INFO("{} mv coinbase tx to single table", _walletID);
 				coinBaseUpdatedAll(_coinBaseUTXOs);
 			}
 
 			if (needUpdate) {
-				Log::debug("{} contain not striped tx, update all tx", _walletID);
+				SPVLOG_INFO("{} contain not striped tx, update all tx", _walletID);
 				txUpdatedAll(_transactions);
 			}
-			Log::debug("{} balance info {}", _walletID, GetBalanceInfo().dump());
+			SPVLOG_INFO("{} balance info {}", _walletID, GetBalanceInfo().dump(4));
 		}
 
 		Wallet::~Wallet() {

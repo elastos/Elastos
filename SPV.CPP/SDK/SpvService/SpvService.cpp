@@ -207,16 +207,14 @@ namespace Elastos {
 				_databaseManager->DeleteAllBlocks(ISO);
 			}
 
-#ifndef NDEBUG
 			if (blocks.size() == 1) {
-				Log::debug("{} checkpoint ====> ({},  \"{}\", {}, {}),",
+				SPVLOG_INFO("{} checkpoint ====> [{}, \"{}\", {}, {}],",
 				           _peerManager->GetID(),
 				           blocks[0]->GetHeight(),
 				           blocks[0]->GetHash().GetHex(),
 				           blocks[0]->GetTimestamp(),
 				           blocks[0]->GetTarget());
 			}
-#endif
 
 			_databaseManager->PutMerkleBlocks(ISO, blocks);
 

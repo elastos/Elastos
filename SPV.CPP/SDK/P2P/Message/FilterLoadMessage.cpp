@@ -26,7 +26,6 @@ namespace Elastos {
 			const FilterLoadParameter &filterLoadParameter = static_cast<const FilterLoadParameter &>(param);
 			ByteStream stream;
 			filterLoadParameter.Filter->Serialize(stream);
-			PEER_DEBUG(_peer, "filter len = {}", stream.size());
 			_peer->SetSentFilter(true);
 			_peer->SetSentMempool(false);
 			SendMessage(stream.GetBytes(), Type());

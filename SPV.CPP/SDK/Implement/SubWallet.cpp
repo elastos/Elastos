@@ -342,7 +342,7 @@ namespace Elastos {
 
 			TransactionPtr tx = DecodeTx(signedTx);
 
-			SPVLOG_DEBUG("publishing tx: {}", tx->ToJson().dump());
+			SPVLOG_DEBUG("publishing tx: {}", tx->ToJson().dump(4));
 			publishTransaction(tx);
 
 			nlohmann::json result;
