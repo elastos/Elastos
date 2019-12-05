@@ -88,6 +88,7 @@ var buildTxCommand = []cli.Command{
 			cmdcom.TransactionAmountFlag,
 			cmdcom.TransactionFeeFlag,
 			cmdcom.CRCCommiteeAddrFlag,
+			cmdcom.TransactionToFlag,
 		},
 		Action: func(c *cli.Context) error {
 			if err := CreateCRCProposalWithdrawTransaction(c); err != nil {
