@@ -1,17 +1,15 @@
 import React from 'react'
-import { Modal, Col, Button } from 'antd'
+import { Modal, Button } from 'antd'
 import BaseComponent from '@/model/BaseComponent'
 import ReleaseForm from '@/module/form/ReleaseForm/Container'
 import I18N from '@/I18N'
-
 import styled from 'styled-components'
-import { StyledButton } from '../../suggestion/detail/style'
 
 export default class extends BaseComponent {
   constructor(props) {
     super(props)
     this.state = {
-      showForm: false,
+      showForm: false
     }
   }
 
@@ -19,7 +17,11 @@ export default class extends BaseComponent {
     const { className, btnStyle, btnText } = this.props
     const classNameLocal = `cr-btn cr-btn-primary ${className}`
     const createBtn = (
-      <StyledButton onClick={this.showForm} className={classNameLocal} style={btnStyle}>
+      <StyledButton
+        onClick={this.showForm}
+        className={classNameLocal}
+        style={btnStyle}
+      >
         {btnText || I18N.get('release.btn.add')}
       </StyledButton>
     )
@@ -32,7 +34,7 @@ export default class extends BaseComponent {
     )
   }
 
-  onFormSubmit = async (param) => {
+  onFormSubmit = async param => {
     try {
       await this.props.create(param)
       this.showForm()
@@ -46,7 +48,7 @@ export default class extends BaseComponent {
     const props = {
       onFormCancel: this.showForm,
       onFormSubmit: this.onFormSubmit,
-      header: I18N.get('release.form.add'),
+      header: I18N.get('release.form.add')
     }
 
     return (
@@ -59,9 +61,7 @@ export default class extends BaseComponent {
         footer={null}
         width="70%"
       >
-        { this.state.showForm
-          && <ReleaseForm {...props} />
-        }
+        {this.state.showForm && <ReleaseForm {...props} />}
       </Modal>
     )
   }
@@ -69,7 +69,7 @@ export default class extends BaseComponent {
   showForm = () => {
     const { showForm } = this.state
     this.setState({
-      showForm: !showForm,
+      showForm: !showForm
     })
   }
 
@@ -80,4 +80,12 @@ export default class extends BaseComponent {
 
 export const Container = styled.span`
   text-align: center;
+`
+const StyledButton = styled(Button)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  > span {
+    font-size: 12px !important;
+  }
 `
