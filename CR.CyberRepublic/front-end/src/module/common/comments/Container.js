@@ -41,6 +41,34 @@ export default createContainer(Component, (state) => {
       }
     },
 
+    async updateComment(type, reduxType, detailReducer, parentId, param) {
+      try {
+        const rs = await commentService.updateComment(type, reduxType, detailReducer,
+          parentId, param)
+
+        if (rs) {
+          message.success(I18N.get('comments.updated.success'))
+        }
+      } catch (err) {
+        message.error(err.message)
+        logger.error(err)
+      }
+    },
+
+    async removeComment(type, reduxType, detailReducer, parentId, param) {
+      try {
+        const rs = await commentService.removeComment(type, reduxType, detailReducer,
+          parentId, param)
+
+        if (rs) {
+          message.success(I18N.get('comments.deleted.success'))
+        }
+      } catch (err) {
+        message.error(err.message)
+        logger.error(err)
+      }
+    },
+
     async listUsers() {
       try {
         return await councilService.getCouncilMembers()

@@ -127,6 +127,8 @@ const zh = {
   'comments.firstToPost': '抢沙发！',
   'comments.placeholder': '说点儿什么',
   'comments.posted.success': '您的评论已提交',
+  'comments.updated.success': '您的评论已更新',
+  'comments.deleted.success': '您的评论已删除',
   // Admin tasks
   'admin.tasks.status': '状态',
 

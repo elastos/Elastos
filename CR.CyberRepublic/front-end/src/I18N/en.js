@@ -127,6 +127,8 @@ const en = {
   'comments.firstToPost': 'to be the first to post!',
   'comments.placeholder': 'Leave a comment',
   'comments.posted.success': 'Your comment has been posted.',
+  'comments.updated.success': 'Your comment has been updated.',
+  'comments.deleted.success': 'Your comment has been deleted.',
   // Admin tasks
   'admin.tasks.status': 'Status',
 
