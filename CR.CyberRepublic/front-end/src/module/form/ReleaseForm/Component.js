@@ -1,5 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
+import styled from 'styled-components'
 import _ from 'lodash'
 import { Row, Col, Form, Input, Button } from 'antd'
 import I18N from '@/I18N'
@@ -76,9 +77,11 @@ class C extends BaseComponent {
         <FormItem label="Name" {...formItemLayout}>
           {p.title}
         </FormItem>
-        <FormItem label="Desc" {...formItemLayout}>
-          {p.desc}
-        </FormItem>
+        <StyledFormItem>
+          <FormItem label="Desc" {...formItemLayout}>
+            {p.desc}
+          </FormItem>
+        </StyledFormItem>
 
         <Row type="flex" justify="center">
           <Col xs={24} sm={12} md={6}>
@@ -114,3 +117,10 @@ class C extends BaseComponent {
 }
 
 export default Form.create()(C)
+
+const StyledFormItem = styled.div`
+  .ant-col-24.ant-form-item-label {
+    padding: 0;
+    margin-bottom: -12px;
+  }
+`
