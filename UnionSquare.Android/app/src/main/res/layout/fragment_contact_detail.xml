@@ -77,6 +77,9 @@
         <View style="@style/line1" />
 
         <EditText
+            android:inputType="phone"
+            android:singleLine="true"
+            android:maxLength="100"
             android:id="@+id/et_mobile"
             android:layout_width="match_parent"
             android:layout_height="53dp"
@@ -89,6 +92,9 @@
         <View style="@style/line1" />
 
         <EditText
+            android:inputType="textEmailAddress"
+            android:singleLine="true"
+            android:maxLength="100"
             android:id="@+id/et_email"
             android:layout_width="match_parent"
             android:layout_height="53dp"

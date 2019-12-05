@@ -189,7 +189,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
     @Override
     public void onBalance(BalanceEntity data) {
         // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
-        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " ELA");
+        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.numberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 4) + " ELA");
         etBalance.setHint(balance);
     }
 
@@ -215,7 +215,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
     @Override
     public void onGetCommonData(boolean data) {
         if (!data) {
-            showToastMessage("不正确的钱包地址");
+            showToastMessage(getString(R.string.invalidaddress));
             return;
         }
         String remark = etRemark.getText().toString().trim();
