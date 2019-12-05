@@ -1595,7 +1595,7 @@ const zh = {
     contact: '联系',
     no1: {
       name: 'Alex Shipp',
-      intro: '亦来云基金会编辑，量子财富观共同作者，量子财富节点拥有者，暂时没有固定驻地。',
+      intro: '亦来云基金会编辑、量子财富观共同作者、量子财富节点拥有者，暂时没有固定驻地。',
       email: 'ashipp37@gmail.com'
     },
     no2: {
