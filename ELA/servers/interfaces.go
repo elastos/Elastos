@@ -800,30 +800,19 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 	return ResponsePack(Success, result)
 }
 
-//Asset
+// GetAssetByHash always return ELA asset
+// Deprecated: It may be removed in the next version
 func GetAssetByHash(param Params) map[string]interface{} {
-	str, ok := param.String("hash")
-	if !ok {
-		return ResponsePack(InvalidParams, "")
+	asset := payload.RegisterAsset{
+		Asset: payload.Asset{
+			Name:      "ELA",
+			Precision: config.ELAPrecision,
+			AssetType: 0x00,
+		},
+		Amount:     0 * 100000000,
+		Controller: common.Uint168{},
 	}
-	hashBytes, err := FromReversedString(str)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-	var hash common.Uint256
-	err = hash.Deserialize(bytes.NewReader(hashBytes))
-	if err != nil {
-		return ResponsePack(InvalidAsset, "")
-	}
-	asset, err := Store.GetAsset(hash)
-	if err != nil {
-		return ResponsePack(UnknownAsset, "")
-	}
-	if false {
-		w := new(bytes.Buffer)
-		asset.Serialize(w)
-		return ResponsePack(Success, common.BytesToHexString(w.Bytes()))
-	}
+
 	return ResponsePack(Success, asset)
 }
 
@@ -848,6 +837,7 @@ func GetBalanceByAddr(param Params) map[string]interface{} {
 	return ResponsePack(Success, balance.String())
 }
 
+// Deprecated: May be removed in the next version
 func GetBalanceByAsset(param Params) map[string]interface{} {
 	address, ok := param.String("addr")
 	if !ok {
@@ -1334,6 +1324,7 @@ func GetUnspends(param Params) map[string]interface{} {
 	return ResponsePack(Success, results)
 }
 
+// Deprecated: May be removed in the next version
 func GetUnspendOutput(param Params) map[string]interface{} {
 	addr, ok := param.String("addr")
 	if !ok {
