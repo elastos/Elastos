@@ -3,8 +3,7 @@ import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
 import { Row, Col, Form, Input, Button } from 'antd'
 import I18N from '@/I18N'
-import ReactQuill from 'react-quill'
-import { TOOLBAR_OPTIONS } from '@/config/constant'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 
 import { Container } from './style'
 
@@ -38,24 +37,15 @@ class C extends BaseComponent {
     const { data } = this.props
 
     const title = <Input size="large" />
-    const desc_el = (
-      <ReactQuill
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-          mention: this.mentionModule
-        }}
-        style={{ backgroundColor: 'white' }}
-      />
-    )
-
     const title_fn = getFieldDecorator('title', {
       initialValue: _.get(data, 'title', '')
     })
 
+    const desc = _.get(data, 'desc', '')
     const desc_fn = getFieldDecorator('desc', {
-      initialValue: _.get(data, 'desc', '')
+      initialValue: desc
     })
+    const desc_el = <CodeMirrorEditor content={desc} name="desc" />
 
     return {
       title: title_fn(title),
