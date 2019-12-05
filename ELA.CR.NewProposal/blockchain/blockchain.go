@@ -435,8 +435,9 @@ func (b *BlockChain) CreateCRCAppropriationTransaction() (*Transaction, error) {
 		crcCommiteeBalance += u.Value
 	}
 	p := b.chainParams.CRCAppropriatePercentage
+	uAmount := b.crCommittee.CRCCommitteeUsedAmount
 	appropriationAmount := Fixed64(float64(crcFoundationBalance+
-		crcCommiteeBalance)*p/100.0 - float64(crcCommiteeBalance))
+		crcCommiteeBalance)*p/100.0) - crcCommiteeBalance + uAmount
 
 	if appropriationAmount <= 0 {
 		return nil, nil
