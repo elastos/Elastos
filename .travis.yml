@@ -9,7 +9,8 @@ install:
   - export PATH=$PATH:$PWD/src/github.com/elastos/
   - glide install
 script:
-  - go test -v -short ./...
+  - go test `go list ./... | grep -v benchmark` -short
   - make
   - make dns
+  - make datagen
   - ./util.sh test
