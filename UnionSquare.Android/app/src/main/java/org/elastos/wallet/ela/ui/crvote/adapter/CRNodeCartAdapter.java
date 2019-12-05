@@ -147,7 +147,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         BigDecimal sum = new BigDecimal(0);
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).isChecked() && list.get(i).getCurentBalance() != null) {
+                if (list.get(i).isChecked() && list.get(i).getCurentBalance() != null && list.get(i).getCurentBalance().compareTo(new BigDecimal(0)) > 0) {
                     sum = sum.add(list.get(i).getCurentBalance());
                 }
             }
@@ -222,6 +222,10 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
                     return;
                 }
                 if (TextUtils.isEmpty(s)) {
+                    list.get(position).setCurentBalance(new BigDecimal(0));
+                    if (onTextChangedListener != null) {
+                        onTextChangedListener.onTextChanged(CRNodeCartAdapter.this, editText, position);
+                    }
                     return;
                 }
                 String number = s.toString().trim();

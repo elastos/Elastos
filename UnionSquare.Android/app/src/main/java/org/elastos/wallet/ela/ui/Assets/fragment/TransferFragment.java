@@ -228,7 +228,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         //请输入金额（可用：0 ELA）
         maxBalance = data.getBalance();
         // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(maxBalance) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
-        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(maxBalance, MyWallet.RATE_S), 12) + " ELA");
+        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.numberFormat(Arith.div(maxBalance, MyWallet.RATE_S), 4) + " ELA");
         etBalance.setHint(balance);
     }
 
@@ -236,7 +236,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
     public void onGetCommonData(boolean data) {
         //这里是判断地址是否合法
         if (!data) {
-            showToastMessage("不正确的钱包地址");
+            showToastMessage(getString(R.string.invalidaddress));
             return;
         }
         String value;

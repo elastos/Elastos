@@ -81,7 +81,7 @@ public class AreaCodeFragment extends BaseFragment implements CommonRvListener {
             @Override
             public void onSelectLetter(String letter) {
                 for (int i = 0; i < list.size(); i++) {
-                    String l = list.get(i).getEn().charAt(0) + "";
+                    String l = list.get(i).getEn().trim().charAt(0) + "";
                     if (TextUtils.equals(letter, l)) {
                         linearLayoutManager.scrollToPositionWithOffset(i, 0);
                         linearLayoutManager.setStackFromEnd(true);

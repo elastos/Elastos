@@ -223,7 +223,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
     @Override
     public void onBalance(BalanceEntity data) {
         // String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat((Double.parseDouble(data.getBalance()) / MyWallet.RATE) + "", 12) + " " + data.getChainId());
-        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " " + data.getChainId());
+        String balance = String.format(getString(R.string.inputbalance), NumberiUtil.numberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 4) + " " + data.getChainId());
         etBalance.setHint(balance);
     }
 

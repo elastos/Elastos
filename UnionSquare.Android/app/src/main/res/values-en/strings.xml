@@ -442,12 +442,12 @@
     <string name="cr_website_cannot_be_empty">Election URL cannot be blank</string>
     <string name="transactiondetail">Transaction Details</string>
     <string name="findlistup2">Community Proposal</string>
-    <string name="findlistup3">CR委员会</string>
-    <string name="findlistup4">CR委员选举</string>
+    <string name="findlistup3">CR Council </string>
+    <string name="findlistup4">CR Council election</string>
     <string name="findlistdown1">Contribute to the Elastos SmartWeb</string>
     <string name="findlistdown2">Participate in Community Autonomous Operations</string>
-    <string name="findlistdown3">委员会成员信息</string>
-    <string name="findlistdown4">票选心仪的CR委员</string>
+    <string name="findlistdown3">Council member profile</string>
+    <string name="findlistdown4">Vote for CR Council member</string>
     <string name="hasquit">（Withdrawn Successfully）</string>
     <string name="cr_72">The deposit is not available for withdrawal for 72 hours after quitting</string>
     <string name="currentno">N/A</string>
@@ -486,8 +486,8 @@
     <string name="plzinputalipay">Enter Alipay account</string>
     <string name="publish">Release</string>
     <string name="keepasdraft">Save as draft</string>
-    <string name="noidchainopenornot">该钱包尚未开启ID侧链，是否立即开启？</string>
-    <string name="toopen">去开启</string>
+    <string name="noidchainopenornot">The wallet has not opened the ID Sidechain.Open it now?</string>
+    <string name="toopen">Open</string>
     <string name="published">Released</string>
     <string name="draft">Draft</string>
     <string name="usedraftornot">Do you use the last draft?</string>
@@ -514,18 +514,19 @@
     <string name="plzinputnodeaddress">Enter node address</string>
     <string name="currentaddressnotconnect">Current address cannot be connected</string>
     <string name="addressformarterro">Incorrect address format</string>
-    <string name="pksame">公钥重复</string>
-    <string name="plzinput8walletpwd">请设置8至16位钱包密码</string>
-    <string name="cragreement">CR委员参选协议</string>
-    <string name="cragreementcontent">CR委员选举面向亦来云社区成员开放，任何社区成员均可共同参与亦来云Smartweb网络的建设，参选节点（自然人或团队，下同）一经参选，均视为充分理解并同意承诺遵守本协议所有内容，请您务必认真阅读：  \n1. 参选节点在正式参选前已阅读并充分理解CRC白皮书、CR委员参选规则内容。
-        \n2. 参选节点承诺在参与CR的过程中：遵守所在国家或地区的各项法律规定；发布、转载或提供的内容符合所在国家或地区法律法规、社会公德；尊重社区其他成员所在国家或地区的法律法规及社会公德。
-        \n3. 参选节点承诺在参与CR的过程中，在任何渠道发表的内容仅代表本人的立场和观点。参选节点对所发表的内容和发布主题负责，因所发表内容引发的一切纠纷，由参选节点承担全部法律责任及相关连带责任。同时，参选节点承诺其不会损害和侵犯亦来云社区团队及成员的权益。 
-        \n4. 参选节点充分理解并认可Elastos是一个开源项目，亦理解和认同：CR合作的团队（目前为Gelaxy Team，后续以CR委托为准）有权根据CRC白皮书、以及CRC实际运行中出现漏洞、黑客攻击等状态可能影响到CRC运转等情形时，对代码进行更新或优化。对开源代码做出相应调整、更新或优化时造成的任何影响，参选节点无条件放弃追究CR合作或委托团队的任何法律责任。
-        \n5. 参选节点承诺遵守CR委员参选、CR运行以及相关惩罚机制等规则，由于触发惩罚机制而产生的后果由参选节点自行承担。
-        \n6. 参选节点深刻理解并认可参选时所对应钱包的私钥代表参选节点行使权利和义务的唯一凭证。参选节点承诺不将该私钥以任何方式提供给他人使用，包括但不限于不将以转让、出租、借用等方式提供给他人作任何方式使用。否则，由此产生的任何后果及连带责任均由参选节点自行承担。</string>
-    <string name="agree">同意</string>
-    <string name="disagree">不同意</string>
-    <string name="menbernameexist">委员昵称已存在</string>
-    <string name="menbernamenotnull">委员昵称不能为空</string>
-    <string name="iagree">我已阅读并同意以上条款</string>
+    <string name="pksame">Public Key Repeats</string>
+    <string name="plzinput8walletpwd">Please create a password with 8 to 12 characters</string>
+    <string name="cragreement">CR Council Member Election Agreement</string>
+    <string name="cragreementcontent">The CR Council Member Election is open to the entire Elastos community, and all community members can participate in the construction of the Elastos Smartweb. By participating in the election, candidate nodes (run by either individuals or teams) effectively demonstrate a complete understanding of and take on a commitment  to comply with all contents of the following agreement:
+\n1. Before participating in the election, the candidate nodes have read and fully understand the content of the CRC white paper and the election rules pertaining to CR council members.
+\n2. While participating in CR Consensus, all candidate nodes should: abide by the laws and regulations of the country or region in which they are located; ensure the content they publish, forward, or provide conforms to relevant legislation, regulations, and social morality of the country or region in which they are located; and respect the relevant legislation, regulations, and social morality of the country or region in which other members are located.
+\n3. While participating in CR Consensus, the content published by candidate nodes in any channel only represents the positions and opinions of its owners. All candidate nodes shall be responsible for the content and topics that they publish, and the candidate nodes shall bear all legal responsibility and related joint liability for all disputes arising from such published content. Additionally, the candidate nodes shall not damage or infringe upon the rights and interests of the Elastos community, team, or community  members.
+\n4. All candidate nodes fully understand and recognize that Elastos is an open source project, and shall also comply  with the following provisions: CR partners (at present, the Gelaxy Team, but remaining subject to CR entrustment) has the right to update or optimize code according to the CRC white paper when loopholes, hacking-related exploits, or other sub-optimal conditions that impair CRC operations, are exposed. , For any impact caused by the corresponding adjustment, update, or optimization of the open source code, all candidate nodes unconditionally waive any legal responsibility for CR partners or commissioned teams.
+\n5. All candidate nodes shall comply with the conditions of CR member elections, CR operations, and related penalty mechanisms. The consequences of triggering the penalty mechanism shall be borne by all candidate nodes.
+\n6. All candidate nodes shall fully understand and recognize that the private key of their respective wallets during the election is the only certificate for the candidate nodes to exercise their rights and obligations. The candidate nodes shall not share their private keys with others for use in any way, including but not limited to not providing the private key to others for use in any way by transferring, renting, or borrowing. Otherwise, any consequences and joint liabilities arising from these actions shall be borne by the candidate nodes themselves.</string>
+    <string name="agree">Agree</string>
+    <string name="disagree">Do Not Agree</string>
+    <string name="menbernameexist">Council member nickname has been created</string>
+    <string name="menbernamenotnull">Enter Nickname of Council member</string>
+    <string name="iagree">I have read and agreed with the above provisions</string>
 </resources>
