@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_CRCPROPOSAL_H__
 
 #include "IPayload.h"
+#include <Common/BigInt.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -40,9 +41,9 @@ namespace Elastos {
 
 			const uint256 &GetDraftHash() const;
 
-			void SetBudgets(const std::vector<uint64_t> &budgets);
+			void SetBudgets(const std::vector<BigInt> &budgets);
 
-			const std::vector<uint64_t> &GetBudgets() const;
+			const std::vector<BigInt> &GetBudgets() const;
 
 			void SetRecipient(const uint168 &recipient);
 
@@ -86,7 +87,7 @@ namespace Elastos {
 			bytes_t _sponsorPublicKey;
 			uint168 _crSponsorDID;
 			uint256 _draftHash;
-			std::vector<uint64_t> _budgets;
+			std::vector<BigInt> _budgets;
 			uint168 _recipient;
 			bytes_t _signature;
 			bytes_t _crSignature;

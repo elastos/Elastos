@@ -102,6 +102,8 @@ namespace Elastos {
 
 			static void CheckParam(bool condition, Error::Code err, const std::string &msg);
 
+			static void CheckBigIntAmount(const std::string &amount);
+
 			static void CheckLogic(bool condition, Error::Code err, const std::string &msg);
 
 			static void CheckCondition(bool condition, Error::Code err, const std::string &msg,

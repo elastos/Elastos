@@ -295,6 +295,7 @@ namespace Elastos {
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(amount);
 			bool max = false;
 			BigInt bnAmount;
 			if (amount == "-1") {

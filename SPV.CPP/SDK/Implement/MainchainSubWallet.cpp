@@ -88,6 +88,7 @@ namespace Elastos {
 			ArgInfo("sideChainAddr: {}", sideChainAddress);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(amount);
 			ErrorChecker::CheckParam(sideChainID == CHAINID_MAINCHAIN, Error::InvalidArgument, "can not be mainChain");
 
 			BigInt value;
@@ -212,6 +213,7 @@ namespace Elastos {
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(amount);
 			BigInt bgAmount, minAmount(DEPOSIT_MIN_ELA);
 			bgAmount.setDec(amount);
 
@@ -324,6 +326,7 @@ namespace Elastos {
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(amount);
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
@@ -594,6 +597,7 @@ namespace Elastos {
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(amount);
 			BigInt bgAmount, minAmount(DEPOSIT_MIN_ELA);
 			bgAmount.setDec(amount);
 
@@ -713,6 +717,7 @@ namespace Elastos {
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(amount);
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
@@ -757,13 +762,15 @@ namespace Elastos {
 			BigInt value;
 			for (nlohmann::json::const_iterator it = votes.cbegin(); it != votes.cend(); ++it) {
 				ErrorChecker::CheckParam(!it.value().is_string(), Error::InvalidArgument, "stake value should be big int string");
+				std::string voteAmount = it.value().get<std::string>();
+				ErrorChecker::CheckBigIntAmount(voteAmount);
 
 				key = it.key();
 				Address didAddress(key);
 				ErrorChecker::CheckParam(!didAddress.Valid(), Error::InvalidArgument, "invalid candidate did");
 				candidate = didAddress.ProgramHash().bytes();
 
-				value.setDec(it.value().get<std::string>());
+				value.setDec(voteAmount);
 				ErrorChecker::CheckParam(value <= 0, Error::InvalidArgument, "stake value should larger than 0");
 
 				voteContent.AddCandidate(CandidateVotes(candidate, value));
@@ -1053,6 +1060,7 @@ namespace Elastos {
 
 			uint256 proposalHash(draftHash);
 			ErrorChecker::CheckParam(proposalHash.GetHex() != draftHash, Error::InvalidArgument, "invalid draftHash");
+			ErrorChecker::CheckParam(!budgets.is_array(), Error::InvalidArgument, "invalid budgets");
 
 			Address receiptAddress(recipient);
 			ErrorChecker::CheckParam(!receiptAddress.Valid(), Error::InvalidArgument, "invalid recipient");
@@ -1064,12 +1072,13 @@ namespace Elastos {
 			crcProposal->SetRecipient(receiptAddress.ProgramHash());
 			crcProposal->SetSponsorPublicKey(publicKey);
 
-			std::vector<uint64_t> budgetList;
-			for (size_t i = 0; i < budgets.size(); ++i) {
-				std::string amount = budgets[i].get<std::string>();
-				int64_t value = strtoll(amount.c_str(), NULL, 10);
-				ErrorChecker::CheckParam(value < 0, Error::InvalidArgument, "invalid budgets");
-				budgetList.push_back(value);
+			std::vector<BigInt> budgetList;
+			for (nlohmann::json::const_iterator  it = budgets.cbegin(); it != budgets.cend(); ++it) {
+				ErrorChecker::CheckBigIntAmount((*it).get<std::string>());
+				BigInt amount;
+				amount.setDec((*it).get<std::string>());
+				ErrorChecker::CheckParam(amount < 0, Error::InvalidArgument, "invalid budgets");
+				budgetList.push_back(amount);
 			}
 			crcProposal->SetBudgets(budgetList);
 
@@ -1217,6 +1226,7 @@ namespace Elastos {
 			BigInt value;
 			for (nlohmann::json::const_iterator it = votes.cbegin(); it != votes.cend(); ++it) {
 				ErrorChecker::CheckParam(!it.value().is_string(), Error::InvalidArgument, "stake value should be big int string");
+				ErrorChecker::CheckBigIntAmount(it.value().get<std::string>());
 
 				key = it.key();
 				Address didAddress(key);

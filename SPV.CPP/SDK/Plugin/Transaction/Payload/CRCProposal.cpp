@@ -50,11 +50,11 @@ namespace Elastos {
 			return _draftHash;
 		}
 
-		void CRCProposal::SetBudgets(const std::vector<uint64_t> &budgets) {
+		void CRCProposal::SetBudgets(const std::vector<BigInt> &budgets) {
 			_budgets = budgets;
 		}
 
-		const std::vector<uint64_t> &CRCProposal::GetBudgets() const {
+		const std::vector<BigInt> &CRCProposal::GetBudgets() const {
 			return _budgets;
 		}
 
@@ -122,7 +122,7 @@ namespace Elastos {
 			ostream.WriteBytes(_draftHash);
 			ostream.WriteVarUint(_budgets.size());
 			for (size_t i = 0; i < _budgets.size(); ++i) {
-				ostream.WriteUint64(_budgets[i]);
+				ostream.WriteUint64(_budgets[i].getUint64());
 			}
 			ostream.WriteBytes(_recipient);
 		}
@@ -145,19 +145,19 @@ namespace Elastos {
 				return false;
 			}
 
-			_budgets.clear();
 			uint64_t count = 0;
 			if (!istream.ReadVarUint(count)) {
 				Log::error("CRCProposal DeserializeUnsigned: read _budgets size");
 				return false;
 			}
+			_budgets.resize(count);
 			for (size_t i = 0; i < count; ++i) {
 				uint64_t budgets = 0;
 				if (!istream.ReadUint64(budgets)) {
 					Log::error("CRCProposal DeserializeUnsigned: read _budgets");
 					return false;
 				}
-				_budgets.push_back(budgets);
+				_budgets[i].setUint64(budgets);
 			}
 
 			if (!istream.ReadBytes(_recipient)) {
@@ -217,12 +217,15 @@ namespace Elastos {
 		}
 
 		nlohmann::json CRCProposal::ToJson(uint8_t version) const {
-			nlohmann::json j;
+			nlohmann::json j, budgets;
 			j["Type"] = _type;
 			j["SponsorPublicKey"] = _sponsorPublicKey.getHex();
 			j["CRSponsorDID"] = _crSponsorDID.GetHex();
 			j["DraftHash"] = _draftHash.GetHex();
-			j["Budgets"] = _budgets;
+			for (const BigInt &amount : _budgets) {
+				budgets.push_back(amount.getDec());
+			}
+			j["Budgets"] = budgets;
 			j["Recipient"] = _recipient.GetHex();
 			j["Signature"] = _signature.getHex();
 			j["CRSignature"] = _crSignature.getHex();
@@ -239,7 +242,12 @@ namespace Elastos {
 			std::string draftHash = j["DraftHash"].get<std::string>();
 			_draftHash.SetHex(draftHash);
 
-			_budgets = j["Budgets"].get<std::vector<uint64_t>>();
+			nlohmann::json budgets = j["Budgets"];
+			for (nlohmann::json::iterator it = budgets.begin(); it != budgets.end(); ++it) {
+				BigInt amount;
+				amount.setDec((*it).get<std::string>());
+				_budgets.push_back(amount);
+			}
 
 			std::string recipient = j["Recipient"].get<std::string>();
 			_recipient.SetHex(recipient);

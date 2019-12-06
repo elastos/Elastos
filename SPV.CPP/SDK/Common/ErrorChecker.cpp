@@ -37,6 +37,14 @@ namespace Elastos {
 			CheckCondition(condition, err, msg, Exception::Type::InvalidArgument);
 		}
 
+		void ErrorChecker::CheckBigIntAmount(const std::string &amount) {
+			if (amount == "-1")
+				return;
+
+			for (size_t i = 0; i < amount.size(); ++i)
+				CheckCondition(!isdigit(amount[i]), Error::InvalidArgument, "invalid bigint amount: " + amount);
+		}
+
 		void ErrorChecker::CheckLogic(bool condition, Error::Code err, const std::string &msg) {
 			CheckCondition(condition, err, msg, Exception::Type::LogicError);
 		}

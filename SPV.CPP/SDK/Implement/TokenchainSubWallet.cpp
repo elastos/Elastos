@@ -47,6 +47,7 @@ namespace Elastos {
 			ArgInfo("precision: {}", precision);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(registerAmount);
 			BigInt assetAmount;
 			assetAmount.setDec(registerAmount);
 
@@ -90,6 +91,7 @@ namespace Elastos {
 			ArgInfo("assetID: {}", assetID);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(amount);
 			uint256 asset = uint256(assetID);
 
 			AssetPtr assetInfo = _walletManager->GetWallet()->GetAsset(asset);

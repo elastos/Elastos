@@ -44,6 +44,8 @@ namespace Elastos {
 			ArgInfo("mainChainAddr: {}", mainChainAddress);
 			ArgInfo("memo: {}", memo);
 
+			ErrorChecker::CheckBigIntAmount(amount);
+
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
