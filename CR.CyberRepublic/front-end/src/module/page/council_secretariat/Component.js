@@ -211,6 +211,6 @@ const TabTitle = styled.div`
   }
 `
 const Email = styled.div`
-  color: white;
-  margin-top: 8px;
+  position: absolute;
+  bottom: 17px;
 `

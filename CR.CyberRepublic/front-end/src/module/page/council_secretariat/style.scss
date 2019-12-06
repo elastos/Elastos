@@ -138,28 +138,24 @@ $maxWithContent: 860px;
 
     .big-rect {
       width: 260px;
-      height: 312px;
+      height: 344px;
       background: #172c3b;
-
       .content {
-        padding-top: 125px;
-        padding-left: 15px;
-        padding-right: 5px;
-
+        padding: 125px 20px 0;
+        line-height: 20px;
+        font-size: 14px;
+        color: #f6f9fd;
+        opacity: 0.9;
+        font-weight: 300;
         .name {
+          padding: 30px 0 10px;
           font-family: 'komu-a', sans-serif;
-          line-height: normal;
-          font-size: 28px;
+          line-height: 30px;
+          font-size: 30px;
           color: #ffffff;
         }
-
         .self-intro {
           font-family: 'synthese', sans-serif;
-          line-height: normal;
-          font-size: 14px;
-          color: #f6f9fd;
-          opacity: 0.9;
-          max-height: 160px;
         }
       }
     }
