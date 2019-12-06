@@ -113,7 +113,7 @@ const en = {
   'login.success': 'Welcome back',
 
   'mentions.notFound': 'User not found',
-  
+
   'meta.postedBy': 'Posted By',
   'image.upload.type.error': 'The upload file is not an image.',
   'image.upload.size.error': 'The maximum upload file size is less than 500KB.',
@@ -1654,20 +1654,19 @@ const en = {
       }
     },
     contact: 'Contact',
-    nicola: {
-      name: 'Nicola Cedric Zimmermann',
-      intro: 'Community Manager of Elastos, Founding member of Elastos Orchard, based in Switzerland',
-      email: 'nicola@cyberrepublic.org'
+    no1: {
+      name: 'Alex Shipp',
+      intro: 'Elastos Foundation Writer, Era of Quantum Wealth co-author, Quantum Wealth Supernode Owner, without a home base.',
+      email: 'ashipp37@gmail.com'
     },
-    yipeng: {
+    no2: {
       name: 'Yipeng Su',
       intro: 'Chief Architect of Elastos Foundation, based in Beijing',
       email: 'suyipeng@elastos.org'
     },
-    feng: {
+    no3: {
       name: 'Feng Zhang',
-      intro:
-        'Lawyer, Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
+      intro: 'Lawyer, Founder of Digital-Era Blockchain Service Alliance, Co-Founder of Bit University, based in Shanghai',
       email: '41059324@qq.com'
     },
     rebecca: {

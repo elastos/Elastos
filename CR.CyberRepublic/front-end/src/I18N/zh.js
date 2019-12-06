@@ -1593,17 +1593,17 @@ const zh = {
       }
     },
     contact: '联系',
-    nicola: {
-      name: 'Nicola Cedric Zimmermann',
-      intro: 'Elastos社区经理, Elastos Orchard创始成员, 常驻瑞士',
-      email: 'nicola@cyberrepublic.org'
+    no1: {
+      name: 'Alex Shipp',
+      intro: '亦来云基金会编辑、量子财富观共同作者、量子财富节点拥有者，暂时没有固定驻地。',
+      email: 'ashipp37@gmail.com'
     },
-    yipeng: {
+    no2: {
       name: '苏翼鹏',
       intro: '亦来云基金会首席架构师, 常驻北京',
       email: 'suyipeng@elastos.org'
     },
-    feng: {
+    no3: {
       name: '张烽',
       intro: '律师、数字时代区块链服务联盟创始人、比特大学联合创始人，常驻上海',
       email: '41059324@qq.com'
