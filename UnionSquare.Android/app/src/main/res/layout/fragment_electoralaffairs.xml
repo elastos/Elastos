@@ -326,10 +326,11 @@
 
 
             <TextView
+                android:id="@+id/tv_quit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="@string/ela_cancelle"
+                android:text="@string/hasquit"
                 android:textColor="#ffffffff"
                 android:textSize="14sp" />
 

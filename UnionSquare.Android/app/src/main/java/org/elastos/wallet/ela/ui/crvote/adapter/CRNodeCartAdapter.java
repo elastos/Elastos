@@ -229,7 +229,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
                     return;
                 }
                 String number = s.toString().trim();
-                if (number.startsWith("0") || number.startsWith(".")) {
+                if (number.startsWith(".")) {
                     editText.setTag(true);
                     editText.setText(null);
                     return;
@@ -238,10 +238,12 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
                     number = balance.toPlainString();
                     editText.setTag(true);
                     editText.setText(number);
+                    editText.setSelection(number.length());
                 } else if (number.split("\\.").length > 1 && number.split("\\.")[1].length() > 8) {
                     number = (number.split("\\."))[0] + "." + number.split("\\.")[1].substring(0, 8);
                     editText.setTag(true);
                     editText.setText(number);
+                    editText.setSelection(number.length());
                 }
 
                 list.get(position).setCurentBalance(new BigDecimal(number));

@@ -27,7 +27,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:ellipsize="end"
             android:gravity="right"
+            android:singleLine="true"
             android:textColor="@color/whiter50"
             android:textSize="13dp" />
 
@@ -157,13 +159,13 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/ll_exportreadonly"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
@@ -188,13 +190,13 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/ll_showmulpublickey"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
@@ -218,13 +220,13 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/ll_showwalletpublickey"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
@@ -248,13 +250,13 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/ll_nodeconect"
         style="@style/settingItem_margin"
         android:layout_marginTop="10dp"
         android:background="@color/mainitembg"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"

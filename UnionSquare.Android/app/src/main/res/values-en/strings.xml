@@ -529,4 +529,6 @@
     <string name="menbernameexist">Council member nickname has been created</string>
     <string name="menbernamenotnull">Enter Nickname of Council member</string>
     <string name="iagree">I have read and agreed with the above provisions</string>
+    <string name="nocandidates">No Candidate</string>
+    <string name="nocandidatenode">No Candidate Node</string>
 </resources>

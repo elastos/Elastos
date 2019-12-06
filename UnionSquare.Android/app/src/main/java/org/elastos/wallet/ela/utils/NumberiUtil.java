@@ -2,6 +2,7 @@ package org.elastos.wallet.ela.utils;
 
 import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.widget.EditText;
 
 import java.math.BigDecimal;
@@ -92,5 +93,41 @@ public class NumberiUtil {
             return number;
         }
 
+    }
+
+    public static void editTestFormat(EditText etBalance, int wei) {
+        etBalance.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (etBalance.getTag() != null && (boolean) etBalance.getTag()) {
+                    etBalance.setTag(false);
+                    return;
+                }
+                if (!TextUtils.isEmpty(s)) {
+                    String number = s.toString().trim();
+                    if (number.startsWith(".")) {
+                        etBalance.setTag(true);
+                        etBalance.setText(null);
+                        return;
+                    }
+                    if (number.split("\\.").length > 1 && number.split("\\.")[1].length() > wei) {
+                        number = (number.split("\\."))[0] + "." + number.split("\\.")[1].substring(0, wei);
+                        etBalance.setTag(true);
+                        etBalance.setText(number);
+                        etBalance.setSelection(number.length());
+                    }
+                }
+            }
+        });
     }
 }

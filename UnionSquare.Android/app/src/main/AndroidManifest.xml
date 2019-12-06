@@ -17,11 +17,11 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-  <!--  <permission
-        android:name="my_permision.send_broadcast_receiver"
-        android:protectionLevel="signatureOrSystem"></permission>-->
+    <!--  <permission
+          android:name="my_permision.send_broadcast_receiver"
+          android:protectionLevel="signatureOrSystem"></permission>-->
     <!--添加权限-->
-<!--    <uses-permission android:name="my_permision.send_broadcast_receiver" />-->
+    <!--    <uses-permission android:name="my_permision.send_broadcast_receiver" />-->
     <application
         android:name="org.elastos.wallet.ela.MyApplication"
         android:allowBackup="false"
@@ -34,7 +34,8 @@
         tools:replace="android:allowBackup,android:icon,android:roundIcon,android:theme">
         <activity
             android:name="org.elastos.wallet.ela.ui.main.MainActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -43,9 +44,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="content"/>
-                <data android:mimeType="application/mmp"/>
-                <data android:mimeType="text/*"/>
+
+                <data android:scheme="content" />
+                <data android:mimeType="application/mmp" />
+                <data android:mimeType="text/*" />
             </intent-filter>
         </activity>
         <activity android:name="io.github.xudaojie.qrcodelib.CaptureActivity" />
@@ -58,7 +60,8 @@
 
         <activity
             android:name="org.elastos.wallet.ela.ui.Assets.activity.PwdActivity"
-            android:theme="@style/App" /><activity
+            android:theme="@style/App" />
+        <activity
             android:name="org.elastos.wallet.ela.ui.Assets.activity.IPAddressActivity"
             android:theme="@style/App" />
 

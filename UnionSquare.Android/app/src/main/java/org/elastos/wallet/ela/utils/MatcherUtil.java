@@ -183,7 +183,15 @@ public class MatcherUtil {
 
     }
 
-    public static InputFilter filter( int digits) {
+    /*source: CharSequence, //将要输入的字符串,如果是删除操作则为空字符串
+    start: Int, //将要输入的字符串起始下标，一般为0
+    end: Int, //start + source字符的长度
+    dest: Spanned, //输入之前文本框中的内容
+    dstart: Int, //将会被替换的起始位置
+    dend: Int //dstart+将会被替换的字符串长度
+    返回值 ：CharSequence //方法返回的值将会替换掉dest字符串中dstartd位置到dend位置之间字符，返回source表示不做任何处理，返回空字符串""表示不输入任何字符
+ **/
+    public static InputFilter filter(int digits) {
 // beizhu.setFilters(new InputFilter[]{MatcherUtil.filter(getContext())});
         return new InputFilter() {
             public CharSequence filter(CharSequence source, int start, int end,

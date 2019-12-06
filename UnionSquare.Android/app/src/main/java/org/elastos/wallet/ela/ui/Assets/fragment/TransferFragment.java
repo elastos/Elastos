@@ -2,7 +2,6 @@ package org.elastos.wallet.ela.ui.Assets.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -29,7 +28,6 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -89,7 +87,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
 
     @Override
     protected void initView(View view) {
-        etBalance.setFilters(new InputFilter[]{MatcherUtil.filter(4)});
+        NumberiUtil.editTestFormat(etBalance, 4);
         tvTitle.setText(getString(R.string.transfer));
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
@@ -108,6 +106,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         });*/
     }
 
+
     @OnClick({R.id.iv_paste, R.id.iv_contact, R.id.tv_max, R.id.tv_next, R.id.iv_title_right})
     public void onViewClicked(View view) {
         switch (view.getId()) {
@@ -118,7 +117,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
                 start(new ChooseContactFragment());
                 break;
             case R.id.tv_max:
-                  etBalance.setText("MAX");
+                etBalance.setText("MAX");
                 break;
             case R.id.tv_next:
                 startTransfer();

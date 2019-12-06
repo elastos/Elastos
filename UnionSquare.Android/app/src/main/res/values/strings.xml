@@ -533,4 +533,6 @@
     <string name="menbernameexist">委员昵称已存在</string>
     <string name="menbernamenotnull">委员昵称不能为空</string>
     <string name="iagree">我已阅读并同意以上条款</string>
+    <string name="nocandidates">暂无候选委员</string>
+    <string name="nocandidatenode">暂无候选节点</string>
 </resources>

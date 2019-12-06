@@ -91,7 +91,7 @@ public class SideChainRechargeFragment extends BaseFragment implements CommmonSt
         presenter = new SideChainPresenter();
         chargeChain = MyWallet.IDChain;
         tvTochain.setText(getString(R.string.chargerto) + chargeChain);
-        etBalance.setFilters(new InputFilter[]{MatcherUtil.filter(4)});
+        NumberiUtil.editTestFormat(etBalance,4);
     }
 
     @OnClick({R.id.iv_paste, R.id.iv_contact, R.id.tv_max, R.id.tv_next, R.id.iv_title_right, R.id.ll_choseaddress})

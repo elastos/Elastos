@@ -124,7 +124,7 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
                     return;
                 }
                 String data = ((CommmonStringEntity) baseEntity).getData();
-                if (data!=null&&!data.equals("{}")&&!data.equals("null")&&!data.equals("")){
+                if (data != null && !data.equals("{}") && !data.equals("null") && !data.equals("")) {
                     recyclerview.setVisibility(View.VISIBLE);
                     tvBlank.setVisibility(View.GONE);
                     ivType.setImageResource(R.mipmap.found_vote_mine_lock);
@@ -138,9 +138,14 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
 
                             String value = jsonObject.getString(key);
                             ticketSum = ticketSum.add(new BigDecimal(value));
-                            keylist.add(getRecord(key, NumberiUtil.numberFormat(Arith.div(value, MyWallet.RATE_S), 8)));
+                            BigDecimal number = Arith.div(value, MyWallet.RATE_S);
+                            if ((number.compareTo(new BigDecimal(1)) < 0)) {
+                                keylist.add(getRecord(key, "< 1"));
 
+                            } else {
+                                keylist.add(getRecord(key, number.intValue() + ""));
 
+                            }
                         }
                         tvTotle.setText(getString(R.string.all) + NumberiUtil.numberFormat(Arith.div(ticketSum + "", MyWallet.RATE_S), 8) + " " + getString(R.string.ticket));
                         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));

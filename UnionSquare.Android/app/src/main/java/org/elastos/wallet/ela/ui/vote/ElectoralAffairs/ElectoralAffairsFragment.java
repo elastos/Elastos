@@ -101,6 +101,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
     TextView tvIntroDetail;
     @BindView(R.id.ll_infodetail)
     LinearLayout llInfodetail;
+    @BindView(R.id.tv_quit)
+    TextView tvQuit;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     ElectoralAffairsPresenter presenter = new ElectoralAffairsPresenter();
@@ -138,6 +140,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
             ll_xggl.setVisibility(View.GONE);
             ll_tq.setVisibility(View.VISIBLE);
             JSONObject jsonObject = JSON.parseObject(info);
+            String nickname = jsonObject.getString("NickName");
+            tvQuit.setText(nickname + getString(R.string.hasquit));
             long height = jsonObject.getLong("Confirms");
             if (height >= 2160) {
                 //获取交易所需公钥

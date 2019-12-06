@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 通过每个条目的点击事件确定是否选中
+ */
 public class MyAdapter extends BaseAdapter {
     private final GlideRequest<Bitmap> glideRequest;
 
@@ -136,7 +139,7 @@ public class MyAdapter extends BaseAdapter {
             holder.tv_zb.setText(voterate + "%");
         }
         holder.tv_name.setText(producersBean.getNickname());
-        holder.tv_address.setText(AppUtlis.getLoc(context.getContext(), producersBean.getLocation() + ""));
+        holder.tv_address.setText(AppUtlis.getLoc(context.getBaseActivity(), producersBean.getLocation() + ""));
         int id = producersBean.getIndex() + 1;
         holder.tv_id.setText("NO." + id);//12
         AppCompatImageView iv = holder.ivIcon;

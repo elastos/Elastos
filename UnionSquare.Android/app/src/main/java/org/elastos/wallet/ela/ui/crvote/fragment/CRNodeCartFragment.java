@@ -35,7 +35,6 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
-import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -266,12 +265,11 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             tvAmount.setText(getString(R.string.totle) + "0 ELA");
             tvAvaliable.setText(getString(R.string.available) + balance.intValue() + " ELA");
         } else {
-            tvAmount.setText(getString(R.string.totle) + NumberiUtil.numberFormat(mAdapter.getCountEla(),8)  + " ELA");
+            tvAmount.setText(getString(R.string.totle) + NumberiUtil.numberFormat(mAdapter.getCountEla(), 8) + " ELA");
             BigDecimal countEla = mAdapter.getCountEla();
             if (balance.compareTo(countEla) <= 0) {
                 tvAvaliable.setText(getString(R.string.available) + "0 ELA");
             } else {
-                Log.i(">>>>>>", balance.subtract(countEla).toPlainString());
                 if (balance.subtract(countEla).compareTo(new BigDecimal(1)) < 0) {
                     tvAvaliable.setText(getString(R.string.available) + "< 1 ELA");
                 } else {
@@ -292,7 +290,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     }
 
     private void setOtherUI() {
-        tvAmount.setText(getString(R.string.totle) +  NumberiUtil.numberFormat(mAdapter.getCountEla(),8)  + " ELA");
+        tvAmount.setText(getString(R.string.totle) + NumberiUtil.numberFormat(mAdapter.getCountEla(), 8) + " ELA");
         BigDecimal countEla = mAdapter.getCountEla();
         countEla = balance.subtract(countEla);
         if (countEla.compareTo(new BigDecimal(0)) <= 0) {
