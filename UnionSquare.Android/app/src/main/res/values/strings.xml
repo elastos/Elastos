@@ -587,4 +587,6 @@
     <string name="updatepublish">更新发布</string>
     <string name="wallet">钱包</string>
     <string name="transation">交易</string>
+    <string name="nocandidates">暂无候选委员</string>
+    <string name="nocandidatenode">暂无候选节点</string>
 </resources>

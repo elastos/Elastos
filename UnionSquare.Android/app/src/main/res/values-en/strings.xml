@@ -583,4 +583,6 @@
     <string name="updatepublish">更新发布</string>
     <string name="wallet">钱包</string>
     <string name="transation">交易</string>
+    <string name="nocandidates">No Candidate</string>
+    <string name="nocandidatenode">No Candidate Node</string>
 </resources>

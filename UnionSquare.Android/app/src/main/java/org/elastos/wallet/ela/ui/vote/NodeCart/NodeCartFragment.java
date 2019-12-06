@@ -64,8 +64,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     ImageView ivTitleRight;
     @BindView(R.id.tv_ratio)
     AppCompatTextView tvRatio;
-    @BindView(R.id.tv_blank)
-    AppCompatTextView tvBlank;
     @BindView(R.id.listview)
     ListView recyclerView;
     @BindView(R.id.line_select)
@@ -206,6 +204,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     // 初始化数据
     private void initDate() {
         list = CacheUtil.getProducerList();
+        unSelectlist = new ArrayList<>();
         if (list == null || list.size() == 0) {
             return;
         }
@@ -216,7 +215,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 newlist.add(bean);
             }
         }
-        unSelectlist = new ArrayList<>();
         unSelectlist.addAll(netList);
         unSelectlist.removeAll(newlist);//netList变成了未选择
         list.clear();
@@ -482,9 +480,11 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 @Override
                 public void affireBtnClick(View view) {
                     // 遍历list的长度，将MyAdapter中的map值全部设为false
-                    curentAdapter.initDateStaus(true);
+                    curentAdapter.initDateStaus(false);
                     checkBox.setChecked(false);
                     curentAdapter.setDateStaus(36, true);
+                    curentAdapter.notifyDataSetChanged();
+                    tv_yxz.setText("36" + getString(R.string.has_been_selected));
                     dialogUtil.dialogDismiss();
                 }
 

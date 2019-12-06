@@ -79,7 +79,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
 
     @Override
     protected void initView(View view) {
-        etBalance.setFilters(new InputFilter[]{MatcherUtil.filter(4)});
+        NumberiUtil.editTestFormat(etBalance,4);
         tvTitle.setText(getString(R.string.main_chain_withdraw));
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.setting_adding_scan);
