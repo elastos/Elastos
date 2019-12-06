@@ -51,7 +51,7 @@ public class MyApplication extends MultiDexApplication {
         if (pachageName.endsWith("regtest")) {
             chainID = 2;
             useBugly();
-            REQUEST_BASE_URL = "https://54.223.244.60";
+            REQUEST_BASE_URL = "http://54.223.244.60";
         }
         if (pachageName.endsWith("prvNet")) {
             chainID = 3;
