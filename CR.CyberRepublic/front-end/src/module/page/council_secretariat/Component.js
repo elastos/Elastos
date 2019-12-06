@@ -59,65 +59,30 @@ export default class extends StandardPage {
       <div className="incumbent">
         <div className="title">{I18N.get('cs.incumbent')}</div>
         <Row className="members">
-          <Col lg={8} md={8} sm={24} className="member">
-            <div className="small-rect">
-              <Avatar
-                src="/assets/images/council/council-no1.jpeg"
-                shape="square"
-                size={220}
-                icon="user"
-              />
-            </div>
-            <div className="big-rect">
-              <div className="content">
-                <h3 className="name">{I18N.get('cs.no1.name')}</h3>
-                <div className="self-intro">{I18N.get('cs.no1.intro')}</div>
-                <Email>
-                  {I18N.get('cs.contact')}: {I18N.get('cs.no1.email')}
-                </Email>
+          {[1, 2, 3].map(item => (
+            <Col lg={8} md={8} sm={24} className="member" key={item}>
+              <div className="small-rect">
+                <Avatar
+                  src={`/assets/images/council/council-no${item}.jpeg`}
+                  shape="square"
+                  size={220}
+                  icon="user"
+                />
               </div>
-            </div>
-          </Col>
-          <Col lg={8} md={8} sm={24} className="member">
-            <div className="small-rect">
-              <Avatar
-                src="/assets/images/council/council-no2.jpeg"
-                shape="square"
-                size={220}
-                icon="user"
-              />
-            </div>
 
-            <div className="big-rect">
-              <div className="content">
-                <h3 className="name">{I18N.get('cs.no2.name')}</h3>
-                <div className="self-intro">{I18N.get('cs.no2.intro')}</div>
-                <Email>
-                  {I18N.get('cs.contact')}: {I18N.get('cs.no2.email')}
-                </Email>
+              <div className="big-rect">
+                <div className="content">
+                  <h3 className="name">{I18N.get(`cs.no${item}.name`)}</h3>
+                  <div className="self-intro">
+                    {I18N.get(`cs.no${item}.intro`)}
+                  </div>
+                  <Email>
+                    {I18N.get('cs.contact')}: {I18N.get(`cs.no${item}.email`)}
+                  </Email>
+                </div>
               </div>
-            </div>
-          </Col>
-          <Col lg={8} md={8} sm={24} className="member">
-            <div className="small-rect">
-              <Avatar
-                src="/assets/images/council/council-no3.jpeg"
-                shape="square"
-                size={220}
-                icon="user"
-              />
-            </div>
-
-            <div className="big-rect">
-              <div className="content">
-                <h3 className="name">{I18N.get('cs.no3.name')}</h3>
-                <div className="self-intro">{I18N.get('cs.no3.intro')}</div>
-                <Email>
-                  {I18N.get('cs.contact')}: {I18N.get('cs.no3.email')}
-                </Email>
-              </div>
-            </div>
-          </Col>
+            </Col>
+          ))}
         </Row>
       </div>
     )
@@ -158,22 +123,15 @@ export default class extends StandardPage {
           {I18N.get('cs.secretariat.positions.title')}
         </div>
         <Row className="members">
-          <PersonCard
-            title={I18N.get('cs.secretariat.positions.position_1.title')}
-            link="/position/secretariat/1"
-          />
-          <PersonCard
-            title={I18N.get('cs.secretariat.positions.position_2.title')}
-            link="/position/secretariat/2"
-          />
-          <PersonCard
-            title={I18N.get('cs.secretariat.positions.position_3.title')}
-            link="/position/secretariat/3"
-          />
-          <PersonCard
-            title={I18N.get('cs.secretariat.positions.position_4.title')}
-            link="/position/secretariat/4"
-          />
+          {[1, 2, 3, 4].map(item => (
+            <PersonCard
+              key={item}
+              title={I18N.get(
+                `cs.secretariat.positions.position_${item}.title`
+              )}
+              link={`/position/secretariat/${item}`}
+            />
+          ))}
         </Row>
       </div>
     )
