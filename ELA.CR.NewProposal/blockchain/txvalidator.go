@@ -1860,11 +1860,6 @@ func (b *BlockChain) checkCRCProposalCommonTracking(
 		return errors.New("stage need to be zero")
 	}
 
-	// Check appropriation.
-	if cptPayload.Appropriation != 0 {
-		return errors.New("appropriation need to be zero")
-	}
-
 	// Check signature.
 	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
 }
@@ -1874,11 +1869,6 @@ func (b *BlockChain) checkCRCProposalProgressTracking(
 	// Check stage of proposal
 	if cptPayload.Stage != pState.CurrentStage {
 		return errors.New("invalid stage")
-	}
-
-	// Check appropriation.
-	if cptPayload.Appropriation != 0 {
-		return errors.New("appropriation need to be zero")
 	}
 
 	// Check signature.
@@ -1892,11 +1882,6 @@ func (b *BlockChain) checkCRCProposalTerminatedTracking(
 		return errors.New("stage need to be zero")
 	}
 
-	// Check appropriation.
-	if cptPayload.Appropriation != 0 {
-		return errors.New("appropriation need to be zero")
-	}
-
 	// Check signature.
 	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)
 }
@@ -1908,11 +1893,6 @@ func (b *BlockChain) checkCRCProposalLeaderTracking(
 		return errors.New("stage need to be zero")
 	}
 
-	// Check appropriation.
-	if cptPayload.Appropriation != 0 {
-		return errors.New("appropriation need to be zero")
-	}
-
 	// Check signature.
 	return b.checkCRCProposalTrackingSignature(cptPayload, pState)
 }
@@ -1922,12 +1902,6 @@ func (b *BlockChain) checkCRCProposalAppropriationTracking(
 	// Check stage of proposal
 	if cptPayload.Stage != pState.CurrentStage+1 {
 		return errors.New("invalid stage")
-	}
-
-	// Check appropriation.
-	if cptPayload.Stage > uint8(len(pState.Proposal.Budgets)) ||
-		cptPayload.Appropriation != pState.Proposal.Budgets[cptPayload.Stage-1] {
-		return errors.New("invalid appropriation")
 	}
 
 	return b.normalCheckCRCProposalTrackingSignature(cptPayload, pState)

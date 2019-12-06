@@ -1673,12 +1673,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "stage need to be zero")
 
-	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 1,
-		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
-		publicKeyStr3, privateKeyStr3)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "appropriation need to be zero")
-
 	txn = s.getCRCProposalTrackingTx(payload.Common, *proposalHash, 0, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
@@ -1698,12 +1692,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "invalid stage")
-
-	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1, 1,
-		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
-		publicKeyStr3, privateKeyStr3)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "appropriation need to be zero")
 
 	txn = s.getCRCProposalTrackingTx(payload.Progress, *proposalHash, 1, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
@@ -1725,12 +1713,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "stage need to be zero")
 
-	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0, 1,
-		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
-		publicKeyStr3, privateKeyStr3)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "appropriation need to be zero")
-
 	txn = s.getCRCProposalTrackingTx(payload.Terminated, *proposalHash, 0, 0,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
 		publicKeyStr3, privateKeyStr3)
@@ -1751,12 +1733,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "stage need to be zero")
 
-	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0, 1,
-		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
-		publicKeyStr3, privateKeyStr3)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "appropriation need to be zero")
-
 	txn = s.getCRCProposalTrackingTx(payload.ProposalLeader, *proposalHash, 0, 0,
 		publicKeyStr1, privateKeyStr1, "", "",
 		publicKeyStr3, privateKeyStr3)
@@ -1776,12 +1752,6 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTrackingTransaction() {
 		publicKeyStr3, privateKeyStr3)
 	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
 	s.EqualError(err, "invalid stage")
-
-	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 2, 300,
-		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
-		publicKeyStr3, privateKeyStr3)
-	err = s.Chain.checkCRCProposalTrackingTransaction(txn, votingHeight)
-	s.EqualError(err, "invalid appropriation")
 
 	txn = s.getCRCProposalTrackingTx(payload.Appropriation, *proposalHash, 2, 200,
 		publicKeyStr1, privateKeyStr1, publicKeyStr2, privateKeyStr2,
@@ -1868,7 +1838,6 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 		Stage:                stage,
 		DocumentHash:         common.Hash(documentData),
 		OpinionHash:          common.Hash(opinionHash),
-		Appropriation:        appropriation,
 		LeaderPubKey:         leaderPublicKey,
 		NewLeaderPubKey:      newLeaderPublicKey,
 	}
