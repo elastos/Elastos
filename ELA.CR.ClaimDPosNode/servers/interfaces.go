@@ -1654,21 +1654,21 @@ func ListCRCandidates(param Params) map[string]interface{} {
 		s = strings.ToLower(s)
 	}
 	var candidates []*crstate.Candidate
-	crState := Chain.GetCRCommittee().GetState()
+	crCommittee := Chain.GetCRCommittee()
 	switch s {
 	case "all":
-		candidates = crState.GetAllCandidates()
+		candidates = crCommittee.GetAllCandidates()
 	case "pending":
-		candidates = crState.GetCandidates(crstate.Pending)
+		candidates = crCommittee.GetCandidates(crstate.Pending)
 	case "active":
-		candidates = crState.GetCandidates(crstate.Active)
+		candidates = crCommittee.GetCandidates(crstate.Active)
 	case "canceled":
-		candidates = crState.GetCandidates(crstate.Canceled)
+		candidates = crCommittee.GetCandidates(crstate.Canceled)
 	case "returned":
-		candidates = crState.GetCandidates(crstate.Returned)
+		candidates = crCommittee.GetCandidates(crstate.Returned)
 	default:
-		candidates = crState.GetCandidates(crstate.Pending)
-		candidates = append(candidates, crState.GetCandidates(crstate.Active)...)
+		candidates = crCommittee.GetCandidates(crstate.Pending)
+		candidates = append(candidates, crCommittee.GetCandidates(crstate.Active)...)
 	}
 	sort.Slice(candidates, func(i, j int) bool {
 		if candidates[i].Votes() == candidates[j].Votes() {
@@ -1723,11 +1723,6 @@ func ListCRCandidates(param Params) map[string]interface{} {
 
 //list current crs according to (state)
 func ListCurrentCRs(param Params) map[string]interface{} {
-
-	s, ok := param.String("state")
-	if ok {
-		s = strings.ToLower(s)
-	}
 	cm := Chain.GetCRCommittee()
 	var crMembers []*crstate.CRMember
 	crMembers = cm.GetAllMembers()
@@ -1750,7 +1745,7 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 			ImpeachmentVotes: cr.ImpeachmentVotes.String(),
 			DepositAmount:    cm.GetAvailableDepositAmount(cr.Info.DID).String(),
 			DepositHash:      cr.DepositHash.String(),
-			Penalty:          cm.GetState().GetPenalty(cr.Info.DID).String(),
+			Penalty:          cm.GetPenalty(cr.Info.DID).String(),
 			Index:            uint64(i),
 			State:            cr.MemberState.String(),
 		}
@@ -1778,24 +1773,24 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 		s = strings.ToLower(s)
 	}
 	var proposalMap crstate.ProposalsMap
-	proposalMgr := Chain.GetCRCommittee().GetProposalManager()
+	crCommittee := Chain.GetCRCommittee()
 	switch s {
 	case "all":
-		proposalMap = proposalMgr.GetAllProposals()
+		proposalMap = crCommittee.GetAllProposals()
 	case "registered":
-		proposalMap = proposalMgr.GetProposals(crstate.Registered)
+		proposalMap = crCommittee.GetProposals(crstate.Registered)
 	case "cragreed":
-		proposalMap = proposalMgr.GetProposals(crstate.CRAgreed)
+		proposalMap = crCommittee.GetProposals(crstate.CRAgreed)
 	case "voteragreed":
-		proposalMap = proposalMgr.GetProposals(crstate.VoterAgreed)
+		proposalMap = crCommittee.GetProposals(crstate.VoterAgreed)
 	case "finished":
-		proposalMap = proposalMgr.GetProposals(crstate.Finished)
+		proposalMap = crCommittee.GetProposals(crstate.Finished)
 	case "crcanceled":
-		proposalMap = proposalMgr.GetProposals(crstate.CRCanceled)
+		proposalMap = crCommittee.GetProposals(crstate.CRCanceled)
 	case "votercanceled":
-		proposalMap = proposalMgr.GetProposals(crstate.VoterCanceled)
+		proposalMap = crCommittee.GetProposals(crstate.VoterCanceled)
 	case "aborted":
-		proposalMap = proposalMgr.GetProposals(crstate.Aborted)
+		proposalMap = crCommittee.GetProposals(crstate.Aborted)
 	default:
 		return ResponsePack(InvalidParams, "invalidate state")
 	}
@@ -1860,14 +1855,14 @@ func ListCRProposalBaseState(param Params) map[string]interface{} {
 func GetCRProposalState(param Params) map[string]interface{} {
 
 	var proposalState *crstate.ProposalState
-	proposalMgr := Chain.GetCRCommittee().GetProposalManager()
+	crCommittee := Chain.GetCRCommittee()
 	ProposalHashHexStr, ok := param.String("proposalhash")
 	if ok {
 		ProposalHash, err := common.Uint256FromHexString(ProposalHashHexStr)
 		if err != nil {
 			return ResponsePack(InvalidParams, "invalidate proposalhash")
 		}
-		proposalState = proposalMgr.GetProposal(*ProposalHash)
+		proposalState = crCommittee.GetProposal(*ProposalHash)
 		if proposalState == nil {
 			return ResponsePack(InvalidParams, "proposalhash not exist")
 		}
@@ -1881,7 +1876,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		if err != nil {
 			return ResponsePack(InvalidParams, "invalidate drafthash")
 		}
-		proposalState = proposalMgr.GetProposalByDraftHash(*DraftHash)
+		proposalState = crCommittee.GetProposalByDraftHash(*DraftHash)
 		if proposalState == nil {
 			return ResponsePack(InvalidParams, "DraftHash not exist")
 		}
@@ -1920,7 +1915,7 @@ func GetCRProposalState(param Params) map[string]interface{} {
 		TerminatedHeight:       proposalState.TerminatedHeight,
 		ProposalLeader:         hex.EncodeToString(proposalState.ProposalLeader),
 		AppropriatedStage:      proposalState.AppropriatedStage,
-		AvailWithdrawalAmount:  proposalMgr.AvailableWithdrawalAmount(proposalHash).String(),
+		AvailWithdrawalAmount:  crCommittee.AvailableWithdrawalAmount(proposalHash).String(),
 	}
 	result := &RpcCRProposalStateInfo{RpcProposalState: RpcProposalState}
 	return ResponsePack(Success, result)
@@ -2058,7 +2053,7 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 	}
 
 	crCommittee := Chain.GetCRCommittee()
-	candidate := crCommittee.GetState().GetCandidate(*programHash)
+	candidate := crCommittee.GetCandidate(*programHash)
 	if candidate == nil {
 		return ResponsePack(InvalidParams, "can not find CR candidate")
 	}
@@ -2069,7 +2064,7 @@ func GetCRDepositCoin(param Params) map[string]interface{} {
 	}
 	return ResponsePack(Success, &depositCoin{
 		Available: crCommittee.GetAvailableDepositAmount(*programHash).String(),
-		Deducted:  crCommittee.GetState().GetPenalty(*programHash).String(),
+		Deducted:  crCommittee.GetPenalty(*programHash).String(),
 	})
 }
 
