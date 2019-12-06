@@ -165,7 +165,6 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	documentHash := c.String("documenthash")
 	opinionHash := c.String("opinionhash")
 	stage := c.Int64("stage")
-	appropriation := c.Float64("appropriation")
 	leaderPubkey := c.String("leaderpublickey")
 	newLeaderPubkey := c.String("newleaderpublickey")
 	leaderPrivkey := c.String("leaderprivatekey")
@@ -215,10 +214,6 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LNumber(stage))
 		return 1
 	}
-	getAppropriation := func(L *lua.LState) int {
-		L.Push(lua.LNumber(appropriation))
-		return 1
-	}
 	getLeaderPubkey := func(L *lua.LState) int {
 		L.Push(lua.LString(leaderPubkey))
 		return 1
@@ -253,7 +248,6 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getDocumentHash", getDocumentHash)
 	L.Register("getOpinionHash", getOpinionHash)
 	L.Register("getStage", getStage)
-	L.Register("getAppropriation", getAppropriation)
 	L.Register("getLeaderPubkey", getLeaderPubkey)
 	L.Register("getNewLeaderPubkey", getNewLeaderPubkey)
 	L.Register("getLeaderPrivkey", getLeaderPrivkey)
@@ -431,10 +425,6 @@ func NewCommand() *cli.Command {
 			cli.Int64Flag{
 				Name:  "stage",
 				Usage: "set the stage of proposal",
-			},
-			cli.Float64Flag{
-				Name:  "appropriation",
-				Usage: "set the appropriation",
 			},
 			cli.StringFlag{
 				Name:  "leaderpublickey",

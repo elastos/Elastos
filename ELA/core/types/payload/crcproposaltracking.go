@@ -78,9 +78,6 @@ type CRCProposalTracking struct {
 	// The stage of proposal.
 	Stage uint8
 
-	// The appropriation of current stage of proposal.
-	Appropriation common.Fixed64
-
 	// The leader public key.
 	LeaderPubKey []byte
 
@@ -125,10 +122,6 @@ func (p *CRCProposalTracking) SerializeUnsigned(w io.Writer, version byte) error
 
 	if err := common.WriteUint8(w, p.Stage); err != nil {
 		return errors.New("failed to serialize Stage")
-	}
-
-	if err := p.Appropriation.Serialize(w); err != nil {
-		return errors.New("failed to serialize Appropriation")
 	}
 
 	if err := common.WriteVarBytes(w, p.LeaderPubKey); err != nil {
@@ -183,10 +176,6 @@ func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) err
 
 	if p.Stage, err = common.ReadUint8(r); err != nil {
 		return errors.New("failed to deserialize Stage")
-	}
-
-	if err := p.Appropriation.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize Appropriation")
 	}
 
 	if p.LeaderPubKey, err = common.ReadVarBytes(r, crypto.PublicKeyScriptLength,
