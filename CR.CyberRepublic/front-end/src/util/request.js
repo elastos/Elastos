@@ -27,7 +27,7 @@ export const api_request = (opts = {}) => {
     headers['api-token'] = apiToken
   }
 
-  let server_url = opts.serverUrl || process.env.SERVER_URL
+  let server_url = process.env.SERVER_URL
   opts = _.merge({
     method: 'get',
     headers,
@@ -36,8 +36,6 @@ export const api_request = (opts = {}) => {
     success: null,
     error: null,
     path: '',
-    processResponse: null,
-    isProcessResponse: true
   }, opts)
   server_url += opts.path
 
@@ -61,8 +59,6 @@ export const api_request = (opts = {}) => {
     option.body = formData
 
     delete option.headers['Content-Type']
-  } else if (method === 'post' && option.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-    option.body = _.join(_.map(_.toPairs(opts.data), value => `${value[0]}=${value[1]}`), '&')
   } else if (method !== 'get' && method !== 'head') {
     option.body = JSON.stringify(opts.data)
   } else {
@@ -84,7 +80,16 @@ export const api_request = (opts = {}) => {
     })
   }
 
-  const processResponse = data => {
+  return fetch(server_url, option).then((response) => {
+
+    if (response.status === 200) {
+      // fetch success
+      return response.json()
+    }
+
+    throw new Error(response.statusText ? response.statusText : response.type)
+
+  }).then(data => {
     if (data.code > 0) {
       // return data correct
       if (opts.success) {
@@ -99,18 +104,7 @@ export const api_request = (opts = {}) => {
 
     // TODO: this isn't elegant, nothing is returned to the caller so there is no graceful error
     console.error(data.error)
-  }
-
-  return fetch(server_url, option).then((response) => {
-
-    if (response.status === 200) {
-      // fetch success
-      return response.json()
-    }
-
-    throw new Error(response.statusText ? response.statusText : response.type)
-
-  }).then(opts.isProcessResponse ? processResponse : opts.processResponse).catch((err) => {
+  }).catch((err) => {
     // then we have this so the first then block can come straight here I guess?
     console.error(err)
   })
