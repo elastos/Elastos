@@ -520,13 +520,7 @@ export default class extends Base {
     }
     // status
     if(param.status && constant.CVOTE_STATUS[param.status]) {
-      if(query.status) {
-        query.status = {
-          $or: [query.status, param.status]
-        }
-      } else {
-        query.status = param.status
-      }
+      query.status = param.status
     }
     // budget
     if(param.budgetLow || param.budgetHigh){
