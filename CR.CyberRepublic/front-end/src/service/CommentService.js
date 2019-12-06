@@ -31,7 +31,7 @@ export default class extends BaseService {
     }
 
     subDetail.comments = subDetail.comments || []
-    subDetail.comments.push([data])
+    subDetail.comments.push([{...data, createdBy: {...data.createdBy, _id: data.createdBy.current_user_id}, _id: rs.commentId}])
 
     subDetail.subscribers = subDetail.subscribers || []
     subDetail.subscribers.push({
