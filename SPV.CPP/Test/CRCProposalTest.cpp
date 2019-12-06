@@ -20,9 +20,10 @@ static void initCRCProposal(CRCProposal &crcProposal) {
 	crcProposal.SetCRSponsorDID(getRandUInt168());
 	crcProposal.SetDraftHash(getRanduint256());
 
-	std::vector<uint64_t> budgets;
+	std::vector<BigInt> budgets;
 	for (int i = 0; i < 4; ++i) {
-		budgets.push_back(getRandUInt64());
+		BigInt amount = getRandBigInt();
+		budgets.push_back(amount);
 	}
 
 	crcProposal.SetBudgets(budgets);
@@ -50,8 +51,8 @@ TEST_CASE("CRCProposal test", "[CRCProposal]") {
 		REQUIRE(crcProposal1.GetCRSponsorDID() == crcProposal2.GetCRSponsorDID());
 		REQUIRE(crcProposal1.GetDraftHash() == crcProposal2.GetDraftHash());
 
-		std::vector<uint64_t> budgets1 = crcProposal1.GetBudgets();
-		std::vector<uint64_t> budgets2 = crcProposal2.GetBudgets();
+		std::vector<BigInt> budgets1 = crcProposal1.GetBudgets();
+		std::vector<BigInt> budgets2 = crcProposal2.GetBudgets();
 		REQUIRE(budgets1.size() == budgets2.size());
 		for (size_t i = 0; i < budgets1.size(); ++i) {
 			REQUIRE(budgets1[i] == budgets2[i]);
@@ -77,8 +78,8 @@ TEST_CASE("CRCProposal test", "[CRCProposal]") {
 		REQUIRE(crcProposal1.GetCRSponsorDID() == crcProposal2.GetCRSponsorDID());
 		REQUIRE(crcProposal1.GetDraftHash() == crcProposal2.GetDraftHash());
 
-		std::vector<uint64_t> budgets1 = crcProposal1.GetBudgets();
-		std::vector<uint64_t> budgets2 = crcProposal2.GetBudgets();
+		std::vector<BigInt> budgets1 = crcProposal1.GetBudgets();
+		std::vector<BigInt> budgets2 = crcProposal2.GetBudgets();
 		REQUIRE(budgets1.size() == budgets2.size());
 		for (size_t i = 0; i < budgets1.size(); ++i) {
 			REQUIRE(budgets1[i] == budgets2[i]);
