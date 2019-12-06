@@ -52,7 +52,7 @@ func (c *Checkpoint) OnRollbackTo(height uint32) error {
 		}
 		c.initFromCommittee(committee)
 		c.committee.Recover(c)
-		c.committee.state.RegisterFunctions(&FunctionsConfig{
+		c.committee.state.registerFunctions(&FunctionsConfig{
 			TryStartVotingPeriod:    committee.tryStartVotingPeriod,
 			ProcessImpeachment:      committee.processImpeachment,
 			ProcessCRCAppropriation: committee.processCRCAppropriation,

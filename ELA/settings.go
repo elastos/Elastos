@@ -344,6 +344,7 @@ func newSettings() *settings {
 			return nil
 		},
 		ParamName: ""})
+
 	result.Add(&settingItem{Flag: cmdcom.MinTxFeeFlag,
 		DefaultValue: common.Fixed64(0),
 		ConfigPath:   "MinCrossChainTxFee",
@@ -503,6 +504,7 @@ func newSettings() *settings {
 		})
 		return nil
 	}
+
 	result.Add(&settingItem{
 		Flag:         nil,
 		DefaultValue: false,
@@ -666,13 +668,13 @@ func newSettings() *settings {
 		ParamName:    "DPoSDefaultPort"})
 
 	result.Add(&settingItem{
-		Flag:         nil,
+		Flag:         cmdcom.OriginArbitersFlag,
 		DefaultValue: []string{},
 		ConfigPath:   "DPoSConfiguration.OriginArbiters",
 		ParamName:    "OriginArbiters"})
 
 	result.Add(&settingItem{
-		Flag:         nil,
+		Flag:         cmdcom.CRCArbitersFlag,
 		DefaultValue: []string{},
 		ConfigPath:   "DPoSConfiguration.CRCArbiters",
 		ParamName:    "CRCArbiters"})
@@ -714,13 +716,13 @@ func newSettings() *settings {
 		ParamName:    "MaxInactiveRounds"})
 
 	result.Add(&settingItem{
-		Flag:         nil,
+		Flag:         cmdcom.InactivePenaltyFlag,
 		DefaultValue: common.Fixed64(0),
 		ConfigPath:   "DPoSConfiguration.InactivePenalty",
 		ParamName:    "InactivePenalty"})
 
 	result.Add(&settingItem{
-		Flag:         nil,
+		Flag:         cmdcom.EmergencyInactivePenaltyFlag,
 		DefaultValue: common.Fixed64(0),
 		ConfigPath:   "DPoSConfiguration.EmergencyInactivePenalty",
 		ParamName:    "EmergencyInactivePenalty"})

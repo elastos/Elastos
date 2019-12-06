@@ -7,7 +7,6 @@ package state
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
@@ -70,14 +69,10 @@ func (status ProposalStatus) String() string {
 type ProposalManager struct {
 	ProposalKeyFrame
 	params *config.Params
-	mtx    sync.Mutex
 }
 
-// ExistDraft judge if specified draft (that related to a proposal) exist.
-func (p *ProposalManager) ExistDraft(hash common.Uint256) bool {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-
+// existDraft judge if specified draft (that related to a proposal) exist.
+func (p *ProposalManager) existDraft(hash common.Uint256) bool {
 	for _, v := range p.Proposals {
 		if v.Proposal.DraftHash.IsEqual(hash) {
 			return true
@@ -86,21 +81,13 @@ func (p *ProposalManager) ExistDraft(hash common.Uint256) bool {
 	return false
 }
 
-// ExistProposal judge if specified proposal exist.
-func (p *ProposalManager) ExistProposal(hash common.Uint256) bool {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-
+// existProposal judge if specified proposal exist.
+func (p *ProposalManager) existProposal(hash common.Uint256) bool {
 	_, ok := p.Proposals[hash]
 	return ok
 }
 
-func (p *ProposalManager) GetAllProposals() (dst ProposalsMap) {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	return p.getAllProposal()
-}
-func (p *ProposalManager) getAllProposal() (dst ProposalsMap) {
+func (p *ProposalManager) getAllProposals() (dst ProposalsMap) {
 	dst = NewProposalMap()
 	for k, v := range p.Proposals {
 		p := *v
@@ -109,11 +96,6 @@ func (p *ProposalManager) getAllProposal() (dst ProposalsMap) {
 	return
 }
 
-func (p *ProposalManager) GetProposals(status ProposalStatus) (dst ProposalsMap) {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	return p.getProposals(status)
-}
 func (p *ProposalManager) getProposals(status ProposalStatus) (dst ProposalsMap) {
 	dst = NewProposalMap()
 	for k, v := range p.Proposals {
@@ -125,14 +107,6 @@ func (p *ProposalManager) getProposals(status ProposalStatus) (dst ProposalsMap)
 	return
 }
 
-func (p *ProposalManager) GetProposalByDraftHash(draftHash common.
-	Uint256) *ProposalState {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-
-	return p.getProposalByDraftHash(draftHash)
-}
-
 func (p *ProposalManager) getProposalByDraftHash(draftHash common.
 	Uint256) *ProposalState {
 	for _, v := range p.Proposals {
@@ -141,15 +115,6 @@ func (p *ProposalManager) getProposalByDraftHash(draftHash common.
 		}
 	}
 	return nil
-}
-
-// GetProposal will return a proposal with specified hash,
-// and return nil if not found.
-func (p *ProposalManager) GetProposal(hash common.Uint256) *ProposalState {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-
-	return p.getProposal(hash)
 }
 
 // getProposal will return a proposal with specified hash,
@@ -209,9 +174,7 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 	}
 }
 
-func (p *ProposalManager) AvailableWithdrawalAmount(hash common.Uint256) common.Fixed64 {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
+func (p *ProposalManager) availableWithdrawalAmount(hash common.Uint256) common.Fixed64 {
 	propState := p.getProposal(hash)
 	if propState == nil {
 		return common.Fixed64(0)
@@ -272,20 +235,8 @@ func (p *ProposalManager) shouldEndPublicVote(hash common.Uint256,
 		height
 }
 
-func (p *ProposalManager) IsProposalFull(did common.Uint168) bool {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	return p.isProposalFull(did)
-}
-
 func (p *ProposalManager) isProposalFull(did common.Uint168) bool {
 	return p.getProposalCount(did) >= int(p.params.MaxCommitteeProposalCount)
-}
-
-func (p *ProposalManager) GetProposalCount(did common.Uint168) int {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	return p.getProposalCount(did)
 }
 
 func (p *ProposalManager) getProposalCount(did common.Uint168) int {

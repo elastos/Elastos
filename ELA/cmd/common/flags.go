@@ -251,6 +251,14 @@ var (
 		Name:  "maxproposaltrackingcount",
 		Usage: "defines the max count of CRC proposal tracking",
 	}
+	OriginArbitersFlag = cli.StringFlag{
+		Name:  "originarbiters",
+		Usage: "defines origin arbiters",
+	}
+	CRCArbitersFlag = cli.StringFlag{
+		Name:  "crcarbiters",
+		Usage: "defines crc arbiters",
+	}
 	PreConnectOffsetFlag = cli.StringFlag{
 		Name:  "preconnectoffset",
 		Usage: "defines the offset blocks to pre-connect to the block producers",
@@ -266,6 +274,14 @@ var (
 	MaxInactiveRoundsFlag = cli.StringFlag{
 		Name:  "maxinactiverounds",
 		Usage: "defines the maximum inactive rounds before producer takes penalty",
+	}
+	InactivePenaltyFlag = cli.StringFlag{
+		Name:  "inactivepenalty",
+		Usage: "defines penalty of inactive",
+	}
+	EmergencyInactivePenaltyFlag = cli.StringFlag{
+		Name:  "emergencyinactivepenalty",
+		Usage: "defines penalty of emergency inactive",
 	}
 	CRMemberCountFlag = cli.StringFlag{
 		Name:  "crmembercount",

@@ -6,8 +6,6 @@
 package state
 
 import (
-	"sync"
-
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/contract"
@@ -51,7 +49,6 @@ type State struct {
 	getTxReference   func(tx *types.Transaction) (
 		map[*types.Input]*types.Output, error)
 
-	mtx     sync.RWMutex
 	params  *config.Params
 	history *utils.History
 }
@@ -75,9 +72,9 @@ type FunctionsConfig struct {
 		map[*types.Input]*types.Output, error)
 }
 
-// RegisterFunctions set the tryStartVotingPeriod and processImpeachment function
+// registerFunctions set the tryStartVotingPeriod and processImpeachment function
 // to change member state.
-func (s *State) RegisterFunctions(cfg *FunctionsConfig) {
+func (s *State) registerFunctions(cfg *FunctionsConfig) {
 	s.tryStartVotingPeriod = cfg.TryStartVotingPeriod
 	s.processImpeachment = cfg.ProcessImpeachment
 	s.processCRCAppropriation = cfg.ProcessCRCAppropriation
@@ -86,59 +83,32 @@ func (s *State) RegisterFunctions(cfg *FunctionsConfig) {
 	s.getTxReference = cfg.GetTxReference
 }
 
-// GetCandidateByDID returns candidate with specified did, it will return nil
-// nil if not found.
-func (s *State) GetCandidate(did common.Uint168) *Candidate {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-	return s.getCandidate(did)
-}
-
-// GetAllCandidates returns all candidates holding within state.
-func (s *State) GetAllCandidates() []*Candidate {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
+// getAllCandidates returns all candidates holding within state.
+func (s *State) getAllCandidates() []*Candidate {
 	return s.getCandidateFromMap(s.Candidates, nil)
 }
 
-// GetCandidates returns candidates with specified candidate state.
-func (s *State) GetCandidates(state CandidateState) []*Candidate {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-	return s.getCandidates(state)
-}
-
-func (s *State) Exist(did common.Uint168) bool {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
+func (s *State) exist(did common.Uint168) bool {
 	_, ok := s.depositInfo[did]
 	return ok
 }
 
-func (s *State) IsRefundable(did common.Uint168) bool {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
+func (s *State) isRefundable(did common.Uint168) bool {
 	return s.depositInfo[did].Refundable
 }
 
-// GetTotalAmount returns total amount with specified candidate or member did.
-func (s *State) GetTotalAmount(did common.Uint168) common.Fixed64 {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
+// getTotalAmount returns total amount with specified candidate or member did.
+func (s *State) getTotalAmount(did common.Uint168) common.Fixed64 {
 	return s.depositInfo[did].TotalAmount
 }
 
-// GetDepositAmount returns deposit amount with specified candidate or member did.
-func (s *State) GetDepositAmount(did common.Uint168) common.Fixed64 {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
+// getDepositAmount returns deposit amount with specified candidate or member did.
+func (s *State) getDepositAmount(did common.Uint168) common.Fixed64 {
 	return s.depositInfo[did].DepositAmount
 }
 
-// GetPenalty returns penalty with specified candidate or member did.
-func (s *State) GetPenalty(did common.Uint168) common.Fixed64 {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
+// getPenalty returns penalty with specified candidate or member did.
+func (s *State) getPenalty(did common.Uint168) common.Fixed64 {
 	return s.depositInfo[did].Penalty
 }
 
@@ -160,39 +130,29 @@ func (s *State) getAvailableDepositAmount(did common.Uint168,
 		depositInfo.Penalty - lockedDepositAmount
 }
 
-// ExistCandidate judges if there is a candidate with specified program code.
-func (s *State) ExistCandidate(programCode []byte) bool {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
+// existCandidate judges if there is a candidate with specified program code.
+func (s *State) existCandidate(programCode []byte) bool {
 	_, ok := s.CodeDIDMap[common.BytesToHexString(programCode)]
 	return ok
 }
 
 // ExistCandidateByDID judges if there is a candidate with specified did.
 func (s *State) ExistCandidateByDID(did common.Uint168) (ok bool) {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-
 	if _, ok = s.Candidates[did]; ok {
 		return
 	}
 	return
 }
 
-// ExistCandidateByDepositHash judges if there is a candidate with deposit hash.
-func (s *State) ExistCandidateByDepositHash(did common.Uint168) bool {
-	s.mtx.RLock()
+// existCandidateByDepositHash judges if there is a candidate with deposit hash.
+func (s *State) existCandidateByDepositHash(did common.Uint168) bool {
 	_, ok := s.DepositHashDIDMap[did]
-	s.mtx.RUnlock()
 	return ok
 }
 
-// ExistCandidateByNickname judges if there is a candidate with specified
+// existCandidateByNickname judges if there is a candidate with specified
 // nickname.
-func (s *State) ExistCandidateByNickname(nickname string) bool {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-
+func (s *State) existCandidateByNickname(nickname string) bool {
 	_, ok := s.Nicknames[nickname]
 	return ok
 }
@@ -225,8 +185,6 @@ func (s *State) IsCRTransaction(tx *types.Transaction) bool {
 		}
 	}
 
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
 	// Cancel votes.
 	for _, input := range tx.Inputs {
 		_, ok := s.Votes[input.ReferKey()]
@@ -242,8 +200,6 @@ func (s *State) IsCRTransaction(tx *types.Transaction) bool {
 // votes accordingly.
 func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm,
 	circulation common.Fixed64) {
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
 
 	s.processTransactions(block.Transactions, block.Height)
 	if s.manager != nil {
@@ -255,12 +211,9 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm,
 	s.history.Commit(block.Height)
 }
 
-// ProcessElectionBlock takes a block and it's confirm to update CR member state
+// processElectionBlock takes a block and it's confirm to update CR member state
 // and proposals accordingly, only in election period and not in voting period.
-func (s *State) ProcessElectionBlock(block *types.Block, circulation common.Fixed64) {
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
-
+func (s *State) processElectionBlock(block *types.Block, circulation common.Fixed64) {
 	for _, tx := range block.Transactions {
 		s.processElectionTransaction(tx, block.Height)
 	}
@@ -312,18 +265,14 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 
 }
 
-// RollbackTo restores the database state to the given height, if no enough
+// rollbackTo restores the database state to the given height, if no enough
 // history to rollback to return error.
-func (s *State) RollbackTo(height uint32) error {
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
+func (s *State) rollbackTo(height uint32) error {
 	return s.history.RollbackTo(height)
 }
 
-// FinishVoting will close all voting util next voting period
-func (s *State) FinishVoting(dids []common.Uint168) *StateKeyFrame {
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
+// finishVoting will close all voting util next voting period
+func (s *State) finishVoting(dids []common.Uint168) *StateKeyFrame {
 	for _, v := range dids {
 		if _, ok := s.Candidates[v]; !ok {
 			log.Warnf("not found active candidate %s when finish voting",
@@ -658,7 +607,7 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 
 			case outputpayload.CRCProposal:
 				proposalHash, _ := common.Uint256FromBytes(cv.Candidate)
-				proposalState := s.manager.GetProposal(*proposalHash)
+				proposalState := s.manager.getProposal(*proposalHash)
 				v := cv.Votes
 				s.history.Append(height, func() {
 					proposalState.VotersRejectAmount += v
@@ -741,7 +690,7 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 
 			case outputpayload.CRCProposal:
 				proposalHash, _ := common.Uint256FromBytes(cv.Candidate)
-				proposalState := s.manager.GetProposal(*proposalHash)
+				proposalState := s.manager.getProposal(*proposalHash)
 				v := cv.Votes
 				s.history.Append(height, func() {
 					proposalState.VotersRejectAmount -= v
@@ -753,6 +702,8 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	}
 }
 
+// getCandidate returns candidate with specified did, it will return nil
+// nil if not found.
 func (s *State) getCandidate(did common.Uint168) *Candidate {
 	if c, ok := s.Candidates[did]; ok {
 		return c
@@ -777,6 +728,7 @@ func (s *State) getDIDByCode(programCode []byte) (did common.Uint168,
 	return
 }
 
+// getCandidates returns candidates with specified candidate state.
 func (s *State) getCandidates(state CandidateState) []*Candidate {
 	switch state {
 	case Pending, Active, Canceled, Returned:
