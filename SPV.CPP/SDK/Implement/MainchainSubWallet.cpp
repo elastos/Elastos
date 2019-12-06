@@ -473,12 +473,12 @@ namespace Elastos {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
-			nlohmann::json j;
+			nlohmann::json j, info;
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
-			for (size_t i = _producerList.size(); i > 0; --i) {
-				TransactionPtr tx = _producerList[i - 1];
+			for (std::vector<TransactionPtr>::const_iterator it = _producerList.cbegin(); it != _producerList.cend(); ++it) {
+				TransactionPtr tx = (*it);
 				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
 					continue;
 				}
@@ -487,36 +487,30 @@ namespace Elastos {
 				    tx->GetTransactionType() == Transaction::updateProducer) {
 					const ProducerInfo *pinfo = dynamic_cast<const ProducerInfo *>(tx->GetPayload());
 					if (pinfo) {
-						nlohmann::json info;
-
 						info["OwnerPublicKey"] = pinfo->GetPublicKey().getHex();
 						info["NodePublicKey"] = pinfo->GetNodePublicKey().getHex();
 						info["NickName"] = pinfo->GetNickName();
 						info["URL"] = pinfo->GetUrl();
 						info["Location"] = pinfo->GetLocation();
 						info["Address"] = pinfo->GetAddress();
+						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
 
 						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
-					break;
 				} else if (tx->GetTransactionType() == Transaction::cancelProducer) {
 					const CancelProducer *pc = dynamic_cast<const CancelProducer *>(tx->GetPayload());
 					if (pc) {
-						uint32_t lastBlockHeight = wallet->LastBlockHeight();
-
-						nlohmann::json info;
-
-						info["Confirms"] = tx->GetConfirms(lastBlockHeight);
+						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
 
 						j["Status"] = "Canceled";
 						j["Info"] = info;
 					}
-					break;
 				} else if (tx->GetTransactionType() == Transaction::returnDepositCoin) {
+					info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
+
 					j["Status"] = "ReturnDeposit";
-					j["Info"] = nlohmann::json();
-					break;
+					j["Info"] = info;
 				}
 			}
 
@@ -835,12 +829,12 @@ namespace Elastos {
 			WalletPtr wallet = _walletManager->GetWallet();
 			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 
-			nlohmann::json j;
+			nlohmann::json j, info;
 
 			j["Status"] = "Unregistered";
 			j["Info"] = nlohmann::json();
-			for (size_t i = _crList.size(); i > 0; --i) {
-				TransactionPtr tx = _crList[i - 1];
+			for (std::vector<TransactionPtr>::const_iterator it = _crList.cbegin(); it != _crList.cend(); ++it) {
+				TransactionPtr tx = *it;
 				if (tx->GetBlockHeight() == TX_UNCONFIRMED) {
 					continue;
 				}
@@ -849,7 +843,6 @@ namespace Elastos {
 				    tx->GetTransactionType() == Transaction::updateCR) {
 					const CRInfo *pinfo = dynamic_cast<const CRInfo *>(tx->GetPayload());
 					if (pinfo) {
-						nlohmann::json info;
 						ByteStream stream(pinfo->GetCode());
 						bytes_t pubKey;
 						stream.ReadVarBytes(pubKey);
@@ -860,29 +853,25 @@ namespace Elastos {
 						info["NickName"] = pinfo->GetNickName();
 						info["Url"] = pinfo->GetUrl();
 						info["Location"] = pinfo->GetLocation();
+						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
 
 						j["Status"] = "Registered";
 						j["Info"] = info;
 					}
-					break;
 				} else if (tx->GetTransactionType() == Transaction::unregisterCR) {
 					const UnregisterCR *pc = dynamic_cast<const UnregisterCR *>(tx->GetPayload());
 					if (pc) {
-						uint32_t lastBlockHeight = wallet->LastBlockHeight();
-
-						nlohmann::json info;
-
-						info["Confirms"] = tx->GetConfirms(lastBlockHeight);
+						info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
 
 						j["Status"] = "Canceled";
 						j["Info"] = info;
 
 					}
-					break;
 				} else if (tx->GetTransactionType() == Transaction::returnCRDepositCoin) {
+					info["Confirms"] = tx->GetConfirms(wallet->LastBlockHeight());
+
 					j["Status"] = "ReturnDeposit";
-					j["Info"] = nlohmann::json();
-					break;
+					j["Info"] = info;
 				}
 			}
 
