@@ -50,24 +50,12 @@ namespace Elastos {
 		}
 
 		void ErrorChecker::CheckCondition(bool condition, Error::Code err, const std::string &msg,
-		                                  Exception::Type type) {
+		                                  Exception::Type type, bool enableLog) {
 			if (condition) {
 				nlohmann::json errJson = MakeErrorJson(err, msg);
 
-				Log::error(errJson.dump());
-
-				if (type == Exception::LogicError) {
-					throw std::logic_error(errJson.dump());
-				} else if (type == Exception::InvalidArgument) {
-					throw std::invalid_argument(errJson.dump());
-				}
-			}
-		}
-
-		void ErrorChecker::CheckCondition(bool condition, Error::Code err, const std::string &msg, const BigInt &data,
-		                                  Exception::Type type) {
-			if (condition) {
-				nlohmann::json errJson = MakeErrorJson(err, msg, data);
+				if (enableLog)
+					Log::error(errJson.dump());
 
 				if (type == Exception::LogicError) {
 					throw std::logic_error(errJson.dump());
@@ -106,9 +94,9 @@ namespace Elastos {
 			               msg + " json array size expect at least " + std::to_string(count), Exception::LogicError);
 		}
 
-		void ErrorChecker::CheckPathExists(const boost::filesystem::path &path) {
+		void ErrorChecker::CheckPathExists(const boost::filesystem::path &path, bool enableLog) {
 			CheckCondition(!boost::filesystem::exists(path), Error::PathNotExist,
-			               "Path '" + path.string() + "' do not exist");
+			               "Path '" + path.string() + "' do not exist", Exception::LogicError, enableLog);
 		}
 
 		void ErrorChecker::CheckPrivateKey(const std::string &key) {

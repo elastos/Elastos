@@ -1796,7 +1796,12 @@ static int _network(int argc, char *argv[]) {
 		walletCleanup();
 		delete manager;
 
-		manager = new MasterWalletManager(walletRoot, network, netConfig);
+		try {
+			manager = new MasterWalletManager(walletRoot, network, netConfig);
+		} catch (const std::exception &e) {
+			std::cout << e.what() << std::endl;
+			exit(-1);
+		}
 		walletInit();
 	}
 
@@ -2137,7 +2142,13 @@ int main(int argc, char *argv[]) {
 		netConfig = nlohmann::json();
 	}
 
-	manager = new MasterWalletManager(walletRoot, network, netConfig);
+	try {
+		manager = new MasterWalletManager(walletRoot, network, netConfig);
+	} catch (const std::exception &e) {
+		std::cout << e.what() << std::endl;
+		return -1;
+	}
+
 	walletInit();
 
 	while (1) {

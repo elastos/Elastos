@@ -35,8 +35,8 @@ namespace Elastos {
 			if (_dataPath.empty())
 				_dataPath = _rootPath;
 
-			ErrorChecker::CheckPathExists(_rootPath);
-			ErrorChecker::CheckPathExists(_dataPath);
+			ErrorChecker::CheckPathExists(_rootPath, false);
+			ErrorChecker::CheckPathExists(_dataPath, false);
 
 			Log::registerMultiLogger(_dataPath);
 

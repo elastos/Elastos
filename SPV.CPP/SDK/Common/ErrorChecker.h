@@ -107,10 +107,7 @@ namespace Elastos {
 			static void CheckLogic(bool condition, Error::Code err, const std::string &msg);
 
 			static void CheckCondition(bool condition, Error::Code err, const std::string &msg,
-									   Exception::Type type = Exception::LogicError);
-
-			static void CheckCondition(bool condition, Error::Code err, const std::string &msg, const BigInt &data,
-									   Exception::Type type = Exception::LogicError);
+									   Exception::Type type = Exception::LogicError, bool enableLog = true);
 
 			static void CheckPassword(const std::string &password, const std::string &msg);
 
@@ -120,7 +117,7 @@ namespace Elastos {
 
 			static void CheckJsonArray(const nlohmann::json &jsonData, size_t count, const std::string &msg);
 
-			static void CheckPathExists(const boost::filesystem::path &path);
+			static void CheckPathExists(const boost::filesystem::path &path, bool enableLog = true);
 
 			static void CheckPrivateKey(const std::string &key);
 
