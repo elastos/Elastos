@@ -93,6 +93,8 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.CRCProposalReview)
 	case *payload.CRCProposalTracking:
 		pload, _ = ud.Value.(*payload.CRCProposalTracking)
+	case *payload.CRCProposalWithdraw:
+		pload, _ = ud.Value.(*payload.CRCProposalWithdraw)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)
@@ -306,7 +308,6 @@ func appendEnough(L *lua.LState) int {
 	txn := checkTransaction(L, 1)
 	from := L.ToString(2)
 	totalAmount := L.ToInt64(3)
-
 	result, err := cmdcom.RPCCall("listunspent", http.Params{
 		"addresses": []string{from},
 	})

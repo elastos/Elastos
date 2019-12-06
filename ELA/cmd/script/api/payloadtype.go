@@ -1253,40 +1253,36 @@ func RegisterCRCProposalWithdrawType(L *lua.LState) {
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(),
 		crcProposalWithdrawMethods))
 }
+func getPublicKeyFromCode(code []byte) []byte {
+	return code[1 : len(code)-1]
+}
 
 // Constructor
 func newCRCProposalWithdraw(L *lua.LState) int {
-	fmt.Println("newCRCProposalWithdraw begin")
-
 	proposalHashString := L.ToString(1)
-	sponsorPublicKeyStr := L.ToString(2)
-	stage := L.ToInt64(3)
-	fee := L.ToInt64(4)
-
+	stage := L.ToInt64(2)
+	fee := L.ToInt64(3)
 	needSign := true
-	client, err := checkClient(L, 5)
+	client, err := checkClient(L, 4)
 	if err != nil {
 		needSign = false
 	}
 	proposalHash, _ := common.Uint256FromHexString(proposalHashString)
-	sponsorPublicKey, _ := common.HexStringToBytes(sponsorPublicKeyStr)
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
-		ProposalHash:     *proposalHash,
-		SponsorPublicKey: sponsorPublicKey,
-		Stage:            uint8(stage),
-		Fee:              common.Fixed64(fee),
+		ProposalHash: *proposalHash,
+		Stage:        uint8(stage),
+		Fee:          common.Fixed64(fee),
 	}
 	if needSign {
 		rpSignBuf := new(bytes.Buffer)
-		err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawVersion)
-		code := getCode(sponsorPublicKeyStr)
-		codeHash, _ := common.Uint160FromBytes(code)
-		fmt.Println("newCRCProposalWithdraw codeHash", common.BytesToHexString(codeHash.Bytes()))
-		acc := client.GetAccountByCodeHash(codeHash)
+		acc := client.GetMainAccount()
 		if acc == nil {
 			fmt.Println("no available account in wallet")
 			os.Exit(1)
 		}
+		pubkey := getPublicKeyFromCode(acc.RedeemScript)
+		crcProposalWithdraw.SponsorPublicKey = pubkey
+		err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawVersion)
 		rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
 		if err != nil {
 			fmt.Println(err)
@@ -1299,7 +1295,6 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 	ud.Value = crcProposalWithdraw
 	L.SetMetatable(ud, L.GetTypeMetatable(luaCRCProposalWithdrawName))
 	L.Push(ud)
-	fmt.Println("newCRCProposalWithdraw end")
 	return 1
 }
 

@@ -171,6 +171,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	newLeaderPrivkey := c.String("newleaderprivatekey")
 	secretaryGeneralPrivkey := c.String("secretarygeneralprivatekey")
 	recipient := c.String("recipient")
+	crcCommitteeAddress := c.String("crccommiteeaddr")
 
 	getProposalType := func(L *lua.LState) int {
 		L.Push(lua.LNumber(proposalType))
@@ -238,7 +239,10 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 		L.Push(lua.LString(recipient))
 		return 1
 	}
-
+	getCRCCommitteeAddress := func(L *lua.LState) int {
+		L.Push(lua.LString(crcCommitteeAddress))
+		return 1
+	}
 	L.Register("getProposalType", getProposalType)
 	L.Register("getDraftData", getDraftData)
 	L.Register("getBudgets", getBudgets)
@@ -254,6 +258,7 @@ func registerCRCProposalRelatedParams(c *cli.Context, L *lua.LState) {
 	L.Register("getNewLeaderPrivkey", getNewLeaderPrivkey)
 	L.Register("getSecretaryGeneralPrivkey", getSecretaryGeneralPrivkey)
 	L.Register("getRecipient", getRecipient)
+	L.Register("getCRCCommitteeAddress", getCRCCommitteeAddress)
 }
 
 func scriptAction(c *cli.Context) error {
@@ -445,6 +450,10 @@ func NewCommand() *cli.Command {
 			cli.StringFlag{
 				Name:  "secretarygeneralprivatekey",
 				Usage: "set the private key of secretary general",
+			},
+			cli.StringFlag{
+				Name:  "crccommiteeaddr",
+				Usage: "set the crccommiteeaddress",
 			},
 		},
 		Action: scriptAction,
