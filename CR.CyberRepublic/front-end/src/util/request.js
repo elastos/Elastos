@@ -158,7 +158,6 @@ export const upload_file = async (fileObject, opts = {}) => {
 export const wallet_request = async (opts = {}) => {
   try {
     return await api_request({
-      ...opts,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
@@ -179,6 +178,7 @@ export const wallet_request = async (opts = {}) => {
         console.error(data.error)
       },
       isProcessResponse: false,
+      ...opts,
       serverUrl: process.env.WALLET_SERVER_URL,
     })
   } catch (e) {
