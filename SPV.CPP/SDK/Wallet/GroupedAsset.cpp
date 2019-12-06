@@ -296,17 +296,13 @@ namespace Elastos {
 					firstInput = *u;
 
 				if (txSize >= TX_MAX_SIZE - 1000) { // transaction size-in-bytes too large
-					if (!max) {
-						_parent->Unlock();
+					_parent->Unlock();
 
-						BigInt maxAmount = totalInputAmount - feeAmount;
-						ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
-													 "Tx size too large, max available amount: " + maxAmount.getDec() +
-													 " sela");
-						return nullptr;
-					}
-
-					break;
+					BigInt maxAmount = totalInputAmount - feeAmount;
+					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
+												 "Tx size too large, max available amount: " + maxAmount.getDec() +
+												 " sela");
+					return nullptr;
 				}
 			}
 

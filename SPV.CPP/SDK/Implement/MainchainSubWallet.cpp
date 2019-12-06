@@ -914,20 +914,18 @@ namespace Elastos {
 									  j["Type"] = vc.GetTypeString();
 									  j["Timestamp"] = timestamp;
 									  j["Expiry"] = nlohmann::json();
-									  if (!type.empty()) {
-										  nlohmann::json candidateVotes;
-										  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
-														[&vc, &candidateVotes](const CandidateVotes &cv) {
-															std::string c;
-															if (vc.GetType() == VoteContent::CRC) {
-																c = Address(uint168(cv.GetCandidate())).String();
-															} else {
-																c = cv.GetCandidate().getHex();
-															}
-															candidateVotes[c] = cv.GetVotes().getDec();
-														});
-										  j["Votes"] = candidateVotes;
-									  }
+									  nlohmann::json candidateVotes;
+									  std::for_each(vc.GetCandidateVotes().cbegin(), vc.GetCandidateVotes().cend(),
+													[&vc, &candidateVotes](const CandidateVotes &cv) {
+														std::string c;
+														if (vc.GetType() == VoteContent::CRC) {
+															c = Address(uint168(cv.GetCandidate())).String();
+														} else {
+															c = cv.GetCandidate().getHex();
+														}
+														candidateVotes[c] = cv.GetVotes().getDec();
+													});
+									  j["Votes"] = candidateVotes;
 									  jinfo.push_back(j);
 								  }
 							  });

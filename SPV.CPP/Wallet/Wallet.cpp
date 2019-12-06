@@ -1073,7 +1073,7 @@ static int unregister(int argc, char *argv[]) {
 	return 0;
 }
 
-// info (cr | dpos)
+// info (cr | dpos | vote)
 static int info(int argc, char *argv[]) {
 	checkParam(2);
 	checkCurrentWallet();
@@ -1088,7 +1088,10 @@ static int info(int argc, char *argv[]) {
 			std::cout << crInfo.dump(4) <<  std::endl;
 		} else if (registerWhat == "dpos") {
 			nlohmann::json dposInfo = subWallet->GetRegisteredProducerInfo();
-			std::cout << dposInfo.dump(4) <<  std::endl;
+			std::cout << dposInfo.dump(4) << std::endl;
+		} else if (registerWhat == "vote") {
+			nlohmann::json voteInfo = subWallet->GetVoteInfo("");
+			std::cout << voteInfo.dump(4) << std::endl;
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1364,15 +1367,20 @@ static int vote(int argc, char *argv[]) {
 			tx = subWallet->CreateVoteCRTransaction("", nlohmann::json::parse(voteJson), "");
 		} else if (voteType == "dpos") {
 			std::cout << "Enter number of votes:";
-			int64_t stake;
+			std::string stake;
 			std::cin >> stake;
-			std::string num = std::to_string(stake);
+
+			if (stake != "-1") {
+				stake = convertAmount(stake);
+			}
 
 			std::cout << "Enter vote producer public keys with JSON format:\n";
 			std::string pubKeys;
+			struct termios told = enableLongInput();
 			std::cin >> pubKeys;
+			recoveryTTYSetting(&told);
 
-			tx = subWallet->CreateVoteProducerTransaction("", num, nlohmann::json::parse(pubKeys), "");
+			tx = subWallet->CreateVoteProducerTransaction("", stake, nlohmann::json::parse(pubKeys), "");
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;
@@ -1857,7 +1865,7 @@ struct command {
 	{"export",     _export,        "(m[nemonic] | k[eystore])                        Export mnemonic or keystore."},
 	{"register",   _register,      "(cr | dpos)                                      Register CR or DPoS with specified wallet."},
 	{"unregister", unregister,     "(cr | dpos)                                      Unregister CR or DPoS with specified wallet."},
-	{"info",      info,          "(cr | dpos)                                      Get CR or DPos info with specified wallet."},
+	{"info",       info,           "(cr | dpos | vote)                               Get CR or DPos info with specified wallet."},
 	{"retrieve",   retrieve,       "(cr | dpos)                                      Retrieve Pledge with specified wallet."},
 	{"vote",       vote,           "(cr | dpos)                                      CR/DPoS vote."},
 	{"network",    _network,       "[netType]                                        Show current net type or set net type: 'MainNet', 'TestNet', 'RegTest', 'PrvNet'"},
