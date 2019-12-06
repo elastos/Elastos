@@ -217,16 +217,16 @@ export default class extends StandardPage {
     const chunkedList = _.chunk(list, 4)
 
     return (
-      <div>
+      <Voting>
         <Header>{I18N.get('cs.candidates')}</Header>
         {loading
           ? this.renderLoading()
           : _.map(chunkedList, (row, rowIndex) => {
             const cols = _.map(row, this.renderCandidate)
             return (
-              <Row gutter={[24, 56]} key={rowIndex}>
-                  {cols}
-                </Row>
+              <Row gutter={24} key={rowIndex}>
+                {cols}
+              </Row>
             )
           })}
         <StyledPagination>
@@ -236,7 +236,7 @@ export default class extends StandardPage {
               onChange={this.handlePaginationChange}
             />
         </StyledPagination>
-      </div>
+      </Voting>
     )
   }
 
@@ -355,6 +355,11 @@ const Email = styled.div`
   color: white;
   margin-top: 5px
 `
+const Voting = styled.div`
+  .ant-row {
+    padding-bottom: 56px;
+  }
+`
 const Header = styled.div`
   margin: 27px 0 80px;
   width: 211px;
@@ -444,7 +449,6 @@ const Name = styled.div`
   color: ${text.white};
 `
 const StyledPagination = styled.div`
-  margin-top: 50px;
   margin-bottom: 90px;
   text-align: center;
   .ant-pagination-prev .ant-pagination-item-link,
