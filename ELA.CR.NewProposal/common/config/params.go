@@ -158,7 +158,7 @@ var DefaultParams = Params{
 	CRCOnlyDPOSHeight:           343400,
 	PublicDPOSHeight:            402680,
 	EnableActivateIllegalHeight: 439000,
-	CRVotingStartHeight:         1800000, // todo correct me when height has been confirmed
+	CRVotingStartHeight:         537670,
 	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
 	CheckRewardHeight:           436812,
 	VoteStatisticsHeight:        512881,
@@ -221,7 +221,7 @@ func (p *Params) TestNet() *Params {
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 300000
-	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
+	copy.CRVotingStartHeight = 436900
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
 	copy.CheckRewardHeight = 100
@@ -273,9 +273,9 @@ func (p *Params) RegNet() *Params {
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
 	copy.PublicDPOSHeight = 234000
-	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
-	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
-	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
+	copy.CRVotingStartHeight = 292000
+	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
+	copy.EnableActivateIllegalHeight = 256000
 	copy.CheckRewardHeight = 280000
 	copy.VoteStatisticsHeight = 0
 	copy.EnableUtxoDB = true
