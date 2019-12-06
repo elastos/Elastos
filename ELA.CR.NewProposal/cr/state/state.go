@@ -98,12 +98,7 @@ func (s *State) GetCandidate(did common.Uint168) *Candidate {
 func (s *State) GetAllCandidates() []*Candidate {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-
-	result := s.getCandidates(Pending)
-	result = append(result, s.getCandidates(Active)...)
-	result = append(result, s.getCandidates(Canceled)...)
-	result = append(result, s.getCandidates(Returned)...)
-	return result
+	return s.getCandidateFromMap(s.Candidates, nil)
 }
 
 // GetCandidates returns candidates with specified candidate state.
@@ -300,6 +295,8 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 		if s.manager != nil {
 			s.manager.proposalReview(tx, height, s.history)
 		}
+	case types.CRCAppropriation:
+		s.processCRCAppropriation(tx, height, s.history)
 	case types.CRCProposalTracking:
 		if s.manager != nil {
 			s.manager.proposalTracking(tx, height, s.history)
@@ -308,8 +305,6 @@ func (s *State) processElectionTransaction(tx *types.Transaction, height uint32)
 		if s.manager != nil {
 			s.manager.proposalWithdraw(tx, height, s.history)
 		}
-	case types.CRCAppropriation:
-		s.processCRCAppropriation(tx, height, s.history)
 	}
 
 	s.processCancelVotes(tx, height)
