@@ -21,6 +21,7 @@ export default class extends Base {
                                           .populate('owner')
                                           .populate('subscribers', sanitizeWithEmail)
 
+    let lastCommentId = ""
     if (commentable) {
       const updateObj: any = {
         comments: commentable.comments || [],
@@ -32,6 +33,7 @@ export default class extends Base {
         createdBy: this.currentUser,
         createdAt
       })
+      lastCommentId = updateObj.comments[updateObj.comments.length-1][0]._id
       // increase commentsNum if defined in its schema
       if (!_.isUndefined(commentable.commentsNum)) updateObj.commentsNum = updateObj.comments.length
 
@@ -85,7 +87,9 @@ export default class extends Base {
         this.sendNotificationEmail('Profile', param, createdBy, commentable, undefined, returnUrl, undefined)
       }
 
-      return await db_commentable.update({_id: id}, updateObj)
+      let retObj = await db_commentable.update({_id: id}, updateObj)
+      retObj['commentId'] = lastCommentId
+      return retObj
     } else {
       throw 'commentable id is not valid'
     }
