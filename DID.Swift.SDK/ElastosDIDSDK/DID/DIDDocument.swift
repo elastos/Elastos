@@ -26,7 +26,7 @@ public class DIDDocument: NSObject {
         return getEntries(publicKeys)
     }
     
-    public func selectPublicKeys(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
+    public func selectPublicKeys(_ id: String, _ type: String?) throws -> Array<DIDPublicKey> {
         var didurl: DIDURL
         do {
             didurl = try DIDURL(id)
@@ -36,7 +36,7 @@ public class DIDDocument: NSObject {
         return try selectEntry(publicKeys, didurl, type)
     }
     
-    public func selectPublicKeys(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
+    public func selectPublicKeys(_ id: DIDURL?, _ type: String?) throws -> Array<DIDPublicKey> {
         do {
             return try selectEntry(publicKeys, id, type)
         } catch {
@@ -167,11 +167,11 @@ public class DIDDocument: NSObject {
         return list
     }
     
-    public func selectAuthenticationKeys(_ id: DIDURL, type: String) throws -> Array<DIDPublicKey> {
+    public func selectAuthenticationKeys(_ id: DIDURL?, type: String?) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, id, type)
     }
     
-    public func selectAuthenticationKeys(_ id: String, _ type: String) throws -> Array<DIDPublicKey>{
+    public func selectAuthenticationKeys(_ id: String, _ type: String?) throws -> Array<DIDPublicKey>{
         return try selectEntry(authentications, DIDURL(subject!, id), type)
     }
     
@@ -179,8 +179,8 @@ public class DIDDocument: NSObject {
         return getEntry(authentications, id)
     }
     
-    public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey {
-        return try getEntry(authentications, DIDURL(subject!, id))!
+    public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey? {
+        return try getEntry(authentications, DIDURL(subject!, id))
     }
 
     public func isAuthenticationKey(_ id: DIDURL) throws -> Bool {
@@ -750,10 +750,14 @@ public class DIDDocument: NSObject {
         }
     }
     
-    private func selectEntry<T: DIDObject>(_ entries: OrderedDictionary<DIDURL, T>, _ id: DIDURL, _ type: String) throws -> Array<T>  {
+    private func selectEntry<T: DIDObject>(_ entries: OrderedDictionary<DIDURL, T>, _ id: DIDURL?, _ type: String?) throws -> Array<T>  {
         var list: Array<T> = []
         entries.values.forEach { entry in
-            if entry.id.isEqual(id) && !entry.type.isEmpty && entry.type.isEqual(type) {
+            var isId: Bool = true
+            if id != nil { isId = entry.id.isEqual(id) }
+            var isType: Bool = true
+            if type != nil { isType = entry.type.isEqual(type) }
+            if isId && isType {
                 list.append(entry)
             }
         }

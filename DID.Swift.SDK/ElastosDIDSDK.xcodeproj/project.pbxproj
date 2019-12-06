@@ -15,6 +15,16 @@
 		1125B583238234FB00D396B6 /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57E238234FB00D396B6 /* HDkey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1125B584238234FB00D396B6 /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57F238234FB00D396B6 /* crypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		11267073238CDC610086740D /* SPVAdapter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11267072238CDC490086740D /* SPVAdapter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1137CFA12398D4EB00250D4F /* vc-selfclaimed-normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CF982398D4EB00250D4F /* vc-selfclaimed-normalized.json */; };
+		1137CFA22398D4EB00250D4F /* vp.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CF9D2398D4EB00250D4F /* vp.json */; };
+		1137CFA32398D4EB00250D4F /* vc-compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CF9E2398D4EB00250D4F /* vc-compact.json */; };
+		1137CFA42398D4EB00250D4F /* vc-selfclaimed-compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CF9F2398D4EB00250D4F /* vc-selfclaimed-compact.json */; };
+		1137CFA52398D4EB00250D4F /* vc-normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CFA02398D4EB00250D4F /* vc-normalized.json */; };
+		1137CFA72398D68500250D4F /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57F238234FB00D396B6 /* crypto.h */; };
+		1137CFA82398D68900250D4F /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57E238234FB00D396B6 /* HDkey.h */; };
+		1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1125B57D238234FB00D396B6 /* CHDKey.swift */; };
+		1137CFAA2398D88900250D4F /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */; };
+		1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
 		116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */; };
 		116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA572360092D00BBEE4F /* TestUtils.swift */; };
@@ -165,6 +175,11 @@
 		1125B5932382351700D396B6 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = "Externals/libhdkey/lib/-iphonesimulator/libcunit.a"; sourceTree = "<group>"; };
 		1125B5942382351800D396B6 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = "Externals/libhdkey/lib/-iphonesimulator/libsqlite3.a"; sourceTree = "<group>"; };
 		1126706D238CDC490086740D /* SPVAdapter.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SPVAdapter.xcodeproj; path = SPVAdapter/SPVAdapter.xcodeproj; sourceTree = "<group>"; };
+		1137CF982398D4EB00250D4F /* vc-selfclaimed-normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-selfclaimed-normalized.json"; sourceTree = "<group>"; };
+		1137CF9D2398D4EB00250D4F /* vp.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vp.json; sourceTree = "<group>"; };
+		1137CF9E2398D4EB00250D4F /* vc-compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-compact.json"; sourceTree = "<group>"; };
+		1137CF9F2398D4EB00250D4F /* vc-selfclaimed-compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-selfclaimed-compact.json"; sourceTree = "<group>"; };
+		1137CFA02398D4EB00250D4F /* vc-normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-normalized.json"; sourceTree = "<group>"; };
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreCreateTests.swift; sourceTree = "<group>"; };
@@ -441,6 +456,11 @@
 		11CA74D1235E131B006E66F7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1137CF9E2398D4EB00250D4F /* vc-compact.json */,
+				1137CFA02398D4EB00250D4F /* vc-normalized.json */,
+				1137CF9F2398D4EB00250D4F /* vc-selfclaimed-compact.json */,
+				1137CF982398D4EB00250D4F /* vc-selfclaimed-normalized.json */,
+				1137CF9D2398D4EB00250D4F /* vp.json */,
 				11CA74D2235E131B006E66F7 /* normalized.json */,
 				11CA74D3235E131B006E66F7 /* compact.json */,
 				11CA74D4235E131B006E66F7 /* testdiddoc.json */,
@@ -546,6 +566,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1137CFA82398D68900250D4F /* HDkey.h in Headers */,
+				1137CFA72398D68500250D4F /* crypto.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -682,7 +704,12 @@
 			files = (
 				11CA74D5235E131B006E66F7 /* normalized.json in Resources */,
 				11CA74D7235E131B006E66F7 /* testdiddoc.json in Resources */,
+				1137CFA32398D4EB00250D4F /* vc-compact.json in Resources */,
 				11CA74D6235E131B006E66F7 /* compact.json in Resources */,
+				1137CFA22398D4EB00250D4F /* vp.json in Resources */,
+				1137CFA52398D4EB00250D4F /* vc-normalized.json in Resources */,
+				1137CFA12398D4EB00250D4F /* vc-selfclaimed-normalized.json in Resources */,
+				1137CFA42398D4EB00250D4F /* vc-selfclaimed-compact.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -703,7 +730,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */,
+				1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */,
+				1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */,
 				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,
+				1137CFAA2398D88900250D4F /* ExtensionInt.swift in Sources */,
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
