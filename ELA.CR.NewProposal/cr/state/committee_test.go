@@ -224,9 +224,9 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 			generateRegisterCR(code, did, nickname),
 		},
 	}, nil)
-	candidate := committee.GetState().GetCandidate(did)
+	candidate := committee.GetCandidate(did)
 	assert.Equal(t, Pending, candidate.state)
-	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname))
+	assert.True(t, committee.ExistCandidateByNickname(nickname))
 	height++
 
 	// update candidate
@@ -239,7 +239,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 			generateUpdateCR(code, did, nickname2),
 		},
 	}, nil)
-	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname2))
+	assert.True(t, committee.ExistCandidateByNickname(nickname2))
 	height++
 
 	// change state of candidate from pending to active
@@ -262,7 +262,7 @@ func TestCommittee_RollbackTo_SameCommittee_VotingPeriod(t *testing.T) {
 	assert.NoError(t, committee.RollbackTo(
 		config.DefaultParams.CRCommitteeStartHeight-
 			config.DefaultParams.CRVotingPeriod))
-	assert.True(t, committee.GetState().ExistCandidateByNickname(nickname))
+	assert.True(t, committee.ExistCandidateByNickname(nickname))
 }
 
 func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
@@ -295,33 +295,33 @@ func TestCommittee_RollbackTo_SameCommittee_BeforeVoting(t *testing.T) {
 		height++
 	}
 	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 4, len(committee.GetState().GetAllCandidates()))
+	assert.Equal(t, 4, len(committee.GetAllCandidates()))
 
 	// rollback within voting period, candidates' state changes but committee
 	// state stay the same
 	height -= 2
 	assert.NoError(t, committee.RollbackTo(height))
 	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 3, len(committee.GetState().GetAllCandidates()))
+	assert.Equal(t, 3, len(committee.GetAllCandidates()))
 
 	// rollback to the voting height
 	height = config.DefaultParams.CRCommitteeStartHeight + config.
 		DefaultParams.CRDutyPeriod - config.DefaultParams.CRVotingPeriod
 	assert.NoError(t, committee.RollbackTo(height))
 	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 1, len(committee.GetState().GetAllCandidates()))
+	assert.Equal(t, 1, len(committee.GetAllCandidates()))
 
 	// rollback to the height before voting
 	height--
 	assert.NoError(t, committee.RollbackTo(height))
 	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 0, len(committee.GetState().GetAllCandidates()))
+	assert.Equal(t, 0, len(committee.GetAllCandidates()))
 
 	// rollback to the height having no history
 	height--
 	assert.NoError(t, committee.RollbackTo(height))
 	assert.True(t, keyframeEqual(keyframe, &committee.KeyFrame))
-	assert.Equal(t, 0, len(committee.GetState().GetAllCandidates()))
+	assert.Equal(t, 0, len(committee.GetAllCandidates()))
 }
 
 func TestCommittee_RollbackTo_DifferenceCommittee(t *testing.T) {

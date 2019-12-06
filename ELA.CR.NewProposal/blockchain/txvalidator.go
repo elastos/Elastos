@@ -302,7 +302,7 @@ func (b *BlockChain) CheckTransactionContext(blockHeight uint32,
 		if blockHeight < b.chainParams.PublicDPOSHeight {
 			producers = append(producers, b.state.GetPendingCanceledProducers()...)
 		}
-		candidates := b.crCommittee.GetState().GetCandidates(crstate.Active)
+		candidates := b.crCommittee.GetCandidates(crstate.Active)
 		err := b.checkVoteOutputs(blockHeight, txn.Outputs, references,
 			getProducerPublicKeysMap(producers), getCRDIDsMap(candidates))
 		if err != nil {
@@ -438,7 +438,7 @@ func (b *BlockChain) checkVoteCRCProposalContent(blockHeight uint32,
 		if err != nil {
 			return err
 		}
-		if !b.crCommittee.GetProposalManager().ExistProposal(*proposalHash) {
+		if !b.crCommittee.ExistProposal(*proposalHash) {
 			return fmt.Errorf("invalid CRCProposal: %s",
 				common.BytesToHexString(cv.Candidate))
 		}
@@ -555,7 +555,7 @@ func (b *BlockChain) checkCRCProposalWithdrawOutput(txn *Transaction) error {
 	if !ok {
 		return errors.New("checkCRCProposalWithdrawOutput invalid payload")
 	}
-	proposalState := b.crCommittee.GetProposalManager().GetProposal(withdrawPayload.ProposalHash)
+	proposalState := b.crCommittee.GetProposal(withdrawPayload.ProposalHash)
 	if proposalState == nil {
 		return errors.New("proposal not exist")
 	}
@@ -804,7 +804,7 @@ func checkTransactionDepositOutpus(bc *BlockChain, txn *Transaction) error {
 			if bc.state.ExistProducerByDepositHash(output.ProgramHash) {
 				continue
 			}
-			if bc.crCommittee.GetState().ExistCandidateByDepositHash(
+			if bc.crCommittee.ExistCandidateByDepositHash(
 				output.ProgramHash) {
 				continue
 			}
@@ -1563,11 +1563,11 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	if b.crCommittee.GetState().ExistCandidateByNickname(info.NickName) {
+	if b.crCommittee.ExistCandidateByNickname(info.NickName) {
 		return fmt.Errorf("nick name %s already inuse", info.NickName)
 	}
 
-	cr := b.crCommittee.GetState().GetCandidate(info.DID)
+	cr := b.crCommittee.GetCandidate(info.DID)
 	if cr != nil {
 		return fmt.Errorf("did %s already exist", info.DID)
 	}
@@ -1668,7 +1668,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetState().GetCandidate(info.DID)
+	cr := b.crCommittee.GetCandidate(info.DID)
 	if cr == nil {
 		return errors.New("updating unknown CR")
 	}
@@ -1678,7 +1678,7 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 
 	// check nickname usage.
 	if cr.Info().NickName != info.NickName &&
-		b.crCommittee.GetState().ExistCandidateByNickname(info.NickName) {
+		b.crCommittee.ExistCandidateByNickname(info.NickName) {
 		return fmt.Errorf("nick name %s already exist", info.NickName)
 	}
 
@@ -1700,7 +1700,7 @@ func (b *BlockChain) checkCRCProposalReviewTransaction(txn *Transaction,
 	if crMember == nil {
 		return errors.New("did correspond crMember not exists")
 	}
-	exist := b.crCommittee.GetProposalManager().ExistProposal(crcProposalReview.
+	exist := b.crCommittee.ExistProposal(crcProposalReview.
 		ProposalHash)
 	if !exist {
 		return errors.New("ProposalHash must exist")
@@ -1727,9 +1727,8 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if !ok {
 		return errors.New("invalid payload")
 	}
-	propMgr := b.crCommittee.GetProposalManager()
 	// Check if the proposal exist.
-	proposalState := propMgr.GetProposal(withdrawPayload.ProposalHash)
+	proposalState := b.crCommittee.GetProposal(withdrawPayload.ProposalHash)
 	if proposalState == nil {
 		return errors.New("proposal not exist")
 	}
@@ -1751,11 +1750,11 @@ func (b *BlockChain) checkCRCProposalWithdrawTransaction(txn *Transaction,
 	if b.isSmallThanMinTransactionFee(fee) {
 		return fmt.Errorf("transaction fee not enough")
 	}
-	withdrawAmout := propMgr.AvailableWithdrawalAmount(withdrawPayload.ProposalHash)
+	withdrawAmout := b.crCommittee.AvailableWithdrawalAmount(withdrawPayload.ProposalHash)
 	if withdrawAmout == 0 {
 		return errors.New("withdrawAmout == 0")
 	}
-	//Recipient count + fee must equal to AvailableWithdrawalAmount
+	//Recipient count + fee must equal to availableWithdrawalAmount
 	if txn.Outputs[0].Value+fee != withdrawAmout {
 		return errors.New("txn.Outputs[0].Value + fee != withdrawAmout ")
 	}
@@ -1777,8 +1776,7 @@ func (b *BlockChain) checkCRCProposalTrackingTransaction(txn *Transaction,
 	}
 
 	// Check if proposal exist.
-	proposalState := b.crCommittee.GetProposalManager().GetProposal(
-		cptPayload.ProposalHash)
+	proposalState := b.crCommittee.GetProposal(cptPayload.ProposalHash)
 	if proposalState == nil {
 		return errors.New("proposal not exist")
 	}
@@ -2033,7 +2031,7 @@ func (b *BlockChain) checkUnRegisterCRTransaction(txn *Transaction,
 		return errors.New("should create tx during voting period")
 	}
 
-	cr := b.crCommittee.GetState().GetCandidate(info.DID)
+	cr := b.crCommittee.GetCandidate(info.DID)
 	if cr == nil {
 		return errors.New("unregister unknown CR")
 	}
@@ -2079,11 +2077,11 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	}
 
 	// The number of the proposals of the committee can not more than 128
-	if b.crCommittee.GetProposalManager().IsProposalFull(proposal.CRSponsorDID) {
+	if b.crCommittee.IsProposalFull(proposal.CRSponsorDID) {
 		return errors.New("proposal is full")
 	}
 	// Check draft hash of proposal.
-	if b.crCommittee.GetProposalManager().ExistDraft(proposal.DraftHash) {
+	if b.crCommittee.ExistDraft(proposal.DraftHash) {
 		return errors.New("duplicated draft proposal hash")
 	}
 	// Check sponsor of proposal.
@@ -2282,10 +2280,10 @@ func (b *BlockChain) checkReturnCRDepositCoinTransaction(txn *Transaction,
 			return err
 		}
 		did := ct.ToProgramHash()
-		if !b.crCommittee.GetState().Exist(*did) {
+		if !b.crCommittee.Exist(*did) {
 			return errors.New("signer must be candidate or member")
 		}
-		if !b.crCommittee.GetState().IsRefundable(*did) {
+		if !b.crCommittee.IsRefundable(*did) {
 			return errors.New("signer must be refundable")
 		}
 

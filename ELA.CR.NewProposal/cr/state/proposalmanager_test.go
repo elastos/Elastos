@@ -20,11 +20,11 @@ func TestProposalManager_Queries(t *testing.T) {
 	proposalState := randomProposalState()
 	manager.Proposals[*proposalKey] = proposalState
 
-	assert.True(t, manager.ExistProposal(*proposalKey))
-	assert.False(t, manager.ExistProposal(*randomUint256()))
+	assert.True(t, manager.existProposal(*proposalKey))
+	assert.False(t, manager.existProposal(*randomUint256()))
 
-	assert.True(t, manager.ExistDraft(proposalState.Proposal.DraftHash))
-	assert.False(t, manager.ExistDraft(*randomUint256()))
+	assert.True(t, manager.existDraft(proposalState.Proposal.DraftHash))
+	assert.False(t, manager.existDraft(*randomUint256()))
 
-	assert.Equal(t, proposalState, manager.GetProposal(*proposalKey))
+	assert.Equal(t, proposalState, manager.getProposal(*proposalKey))
 }

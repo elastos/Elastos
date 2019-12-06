@@ -2704,7 +2704,7 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 		},
 	}, nil, 0)
 	height++
-	candidate := s.Chain.crCommittee.GetState().GetCandidate(*did)
+	candidate := s.Chain.crCommittee.GetCandidate(*did)
 	s.True(candidate.State() == crstate.Pending, "register CR failed")
 
 	for i := 0; i < 6; i++ {

@@ -42,16 +42,18 @@ type Committee struct {
 	recordBalanceHeight uint32
 }
 
+// Deprecated: just for testing
 func (c *Committee) GetState() *State {
 	return c.state
 }
 
+// Deprecated: just for testing
 func (c *Committee) GetProposalManager() *ProposalManager {
 	return c.manager
 }
 
 func (c *Committee) ExistCR(programCode []byte) bool {
-	existCandidate := c.state.ExistCandidate(programCode)
+	existCandidate := c.state.existCandidate(programCode)
 	if existCandidate {
 		return true
 	}
@@ -199,7 +201,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	if isVoting {
 		c.state.ProcessBlock(block, confirm, c.CirculationAmount)
 	} else {
-		c.state.ProcessElectionBlock(block, c.CirculationAmount)
+		c.state.processElectionBlock(block, c.CirculationAmount)
 	}
 	c.freshCirculationAmount(block.Height)
 
@@ -221,7 +223,7 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 		checkpoint := Checkpoint{
 			KeyFrame: c.KeyFrame,
 		}
-		checkpoint.StateKeyFrame = *c.state.FinishVoting(committeeDIDs)
+		checkpoint.StateKeyFrame = *c.state.finishVoting(committeeDIDs)
 		c.mtx.Unlock()
 
 		if c.createCRCAppropriationTx != nil && block.Height == c.getHeight() {
@@ -483,7 +485,7 @@ func (c *Committee) RollbackTo(height uint32) error {
 			return fmt.Errorf("can't rollback to height: %d", height)
 		}
 
-		if err := c.state.RollbackTo(height); err != nil {
+		if err := c.state.rollbackTo(height); err != nil {
 			log.Warn("state rollback err: ", err)
 		}
 	} else {
@@ -645,7 +647,7 @@ func (c *Committee) generateCandidate(height uint32, member *CRMember) *Candidat
 }
 
 func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
-	candidates := c.state.GetCandidates(Active)
+	candidates := c.state.getCandidates(Active)
 	if uint32(len(candidates)) < c.params.CRMemberCount {
 		return nil, errors.New("candidates count less than required count")
 	}
@@ -659,6 +661,103 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 		return candidates[i].votes > candidates[j].votes
 	})
 	return candidates, nil
+}
+
+func (c *Committee) GetCandidate(did common.Uint168) *Candidate {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.getCandidate(did)
+}
+
+func (c *Committee) GetCandidates(state CandidateState) []*Candidate {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.getCandidates(state)
+}
+
+func (c *Committee) ExistCandidateByNickname(nickname string) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.existCandidateByNickname(nickname)
+}
+
+func (c *Committee) ExistCandidateByDepositHash(did common.Uint168) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.existCandidateByDepositHash(did)
+}
+
+func (c *Committee) GetPenalty(did common.Uint168) common.Fixed64 {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.getPenalty(did)
+}
+
+func (c *Committee) ExistProposal(hash common.Uint256) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.manager.existProposal(hash)
+}
+
+func (c *Committee) GetProposal(hash common.Uint256) *ProposalState {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.manager.getProposal(hash)
+}
+
+func (c *Committee) AvailableWithdrawalAmount(hash common.Uint256) common.Fixed64 {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.manager.availableWithdrawalAmount(hash)
+}
+
+func (c *Committee) IsProposalFull(did common.Uint168) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.manager.isProposalFull(did)
+}
+
+func (c *Committee) ExistDraft(hash common.Uint256) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.manager.existDraft(hash)
+}
+
+func (c *Committee) Exist(did common.Uint168) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return c.state.exist(did)
+}
+
+func (c *Committee) IsRefundable(did common.Uint168) bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.isRefundable(did)
+}
+
+func (c *Committee) GetAllCandidates() []*Candidate {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.state.getAllCandidates()
+}
+
+func (c *Committee) GetAllProposals() ProposalsMap {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.manager.getAllProposals()
+}
+
+func (c *Committee) GetProposals(status ProposalStatus) ProposalsMap {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.manager.getProposals(status)
+}
+
+func (c *Committee) GetProposalByDraftHash(draftHash common.Uint256) *ProposalState {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.manager.getProposalByDraftHash(draftHash)
 }
 
 type CommitteeFuncsConfig struct {
@@ -678,7 +777,7 @@ func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
 	c.isCurrent = cfg.IsCurrent
 	c.broadcast = cfg.Broadcast
 	c.appendToTxpool = cfg.AppendToTxpool
-	c.state.RegisterFunctions(&FunctionsConfig{
+	c.state.registerFunctions(&FunctionsConfig{
 		TryStartVotingPeriod:    c.tryStartVotingPeriod,
 		ProcessImpeachment:      c.processImpeachment,
 		ProcessCRCAppropriation: c.processCRCAppropriation,
