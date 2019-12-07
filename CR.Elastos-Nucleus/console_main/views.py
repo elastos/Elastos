@@ -18,6 +18,7 @@ def login_required(function):
     wrapper.__name__ = function.__name__
     return wrapper
 
+
 def landing(request):
     development = config('DEVELOPMENT', default=False, cast=bool)
     context = {'development': development}
