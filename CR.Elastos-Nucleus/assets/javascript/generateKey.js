@@ -19,7 +19,7 @@ function getAPI() {
    $.ajax({
         headers: { "X-CSRFToken": token},
         method:"POST",
-        url:'generateKey',
+        url:'generate_key',
         data:{
 
         },

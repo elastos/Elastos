@@ -1,7 +1,7 @@
 import json
 
 from decouple import config
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from console_main.views import login_required
 from django.contrib import messages
@@ -22,13 +22,12 @@ def generate_key(request):
         response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
         if response.status:
             api_key = response.api_key
-            sent_json = json.dumps({'API_KEY': api_key})
-            return HttpResponse(sent_json, content_type='application/JSON')
+            return JsonResponse({'API_KEY': api_key}, status=200)
         else:
             messages.success(request, "Could not generate an API key. Please try again")
-            return redirect(reverse('login:generateKey'))
+            return redirect(reverse('service:generate_key'))
     else:
-        return render(request, "service/generateKey.html")
+        return render(request, "service/generate_key.html")
 
 
 @login_required
@@ -54,16 +53,16 @@ def upload_and_sign(request):
                 public_key = data['result']['pub']
                 signature = data['result']['sig']
                 file_hash = data['result']['hash']
-                return render(request, "service/uploadAndSign.html",
+                return render(request, "service/upload_and_sign.html",
                               {"message_hash": message_hash, "public_key": public_key, "signature": signature,
                                "file_hash": file_hash, 'output': True})
             else:
                 messages.success(request, "File could not be uploaded. Please try again")
-                return redirect(reverse('login:uploadAndSign'))
+                return redirect(reverse('service:upload_and_sign'))
 
     else:
         form = UploadFileForm(initial={'did': did})
-        return render(request, "service/uploadAndSign.html", {'form': form, 'output': False})
+        return render(request, "service/upload_and_sign.html", {'form': form, 'output': False})
 
 
 @login_required
@@ -87,36 +86,36 @@ def verify_and_show(request):
         response = console.verify_and_show(api_key, request_input)
         if response.status:
             content = response.output
-            return render(request, 'service/verifyAndShow.html', {'output': output, 'content': content})
+            return render(request, 'service/verify_and_show.html', {'output': output, 'content': content})
         else:
             messages.success(request, "File could not be verified nor shown. Please try again")
-            return redirect(reverse('login:verifyAndShow'))
+            return redirect(reverse('service:verify_and_show'))
     else:
         output = False
         form = VerifyAndShowForm()
-        return render(request, 'service/verifyAndShow.html', {'output': output, 'form': form})
+        return render(request, 'service/verify_and_show.html', {'output': output, 'form': form})
 
 
 @login_required
 def request_ela(request):
-    return render(request, "service/requestELA.html")
+    return render(request, "service/request_ela.html")
 
 
 @login_required
 def vote_supernodes(request):
-    return render(request, "service/voteSupernodes.html")
+    return render(request, "service/vote_supernodes.html")
 
 
 @login_required
-def run_contract(request):
-    return render(request, "service/runContract.html")
+def run_eth_contract(request):
+    return render(request, "service/run_eth_contract.html")
 
 
 @login_required
 def save_did_data(request):
-    return render(request, "service/saveData.html")
+    return render(request, "service/save_did_data.html")
 
 
 @login_required
 def retrieve_did_data(request):
-    return render(request, "service/retrieveData.html")
+    return render(request, "service/retrieve_did_data.html")

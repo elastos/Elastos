@@ -221,5 +221,10 @@ def home(request):
 def sign_out(request):
     request.session.clear()
     gc.collect()
-    messages.success(request, "You have been logged out!")
+    development = config('DEVELOPMENT', default=False, cast=bool)
+    if development:
+        messages.success(request, "You are in development mode. Unable to log out! Please re-run the server with "
+                                  "DEVELOPMENT set to False")
+    else:
+        messages.success(request, "You have been logged out!")
     return redirect(reverse('landing'))
