@@ -91,7 +91,9 @@ namespace Elastos {
 		}
 
 		void SubAccount::AddUsedAddrs(const Address &address) {
-			_usedAddrs.insert(address);
+			if (_allAddrs.find(address) != _allAddrs.end()) {
+				_usedAddrs.insert(address);
+			}
 		}
 
 		size_t SubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {

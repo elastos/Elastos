@@ -25,7 +25,7 @@ namespace Elastos {
 #define SPV_FILE_NAME "spvsdk.log"
 #define GetFunName() (std::string("<<< ") + (__FUNCTION__) + " >>>")
 
-			static inline void registerMultiLogger(const std::string &path = "") {
+			static inline void registerMultiLogger(const std::string &path = ".") {
 				if (spdlog::get(SPV_DEFAULT_LOG) != nullptr)
 					return ;
 
