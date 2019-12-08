@@ -1,7 +1,7 @@
 import Foundation
 
 public class Service: DIDObject {
-    private var endpoint: String!
+    public var endpoint: String!
 
     init(_ id: DIDURL, _ type: String, _ endpoint: String) {
         super.init(id, type)

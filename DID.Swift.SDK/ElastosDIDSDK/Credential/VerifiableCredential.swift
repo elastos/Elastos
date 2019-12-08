@@ -91,7 +91,7 @@ public class VerifiableCredential: DIDObject {
        return toJson(ref, compact, false)
     }
 
-    class func fromJsonInPath(_ path: String) throws -> VerifiableCredential {
+   public class func fromJsonInPath(_ path: String) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         let url = URL(fileURLWithPath: path)
         let json = try! String(contentsOf: url)
@@ -102,13 +102,22 @@ public class VerifiableCredential: DIDObject {
         return vc
     }
     
-    class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
+   public class func fromJson(_ json: String) throws -> VerifiableCredential {
+        let vc: VerifiableCredential = VerifiableCredential()
+        var jsonString = json.replacingOccurrences(of: " ", with: "")
+        jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
+        let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+        try vc.parse(ordDic, nil)
+        return vc
+    }
+    
+   public class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         try vc.parse(json, ref)
         return vc
     }
 
-    class func fromJson(_ json: OrderedDictionary<String, Any>) throws -> VerifiableCredential {
+   public class func fromJson(_ json: OrderedDictionary<String, Any>) throws -> VerifiableCredential {
         let vc: VerifiableCredential = VerifiableCredential()
         try vc.parse(json, nil)
         return vc
@@ -116,7 +125,7 @@ public class VerifiableCredential: DIDObject {
     
     func parse(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws {
         // id
-        let id: DIDURL = try JsonHelper.getDidUrl(json, Constants.id, ref!, "crendential id")
+        let id: DIDURL = try JsonHelper.getDidUrl(json, Constants.id, ref, "crendential id")
         self.id = id
         
         // type
@@ -150,6 +159,9 @@ public class VerifiableCredential: DIDObject {
         
         // IMPORTANT: help resolve full method in proof
         var re: DID
+        if (issuer == nil) {
+            issuer = subject.id
+        }
         if ref == nil {
             re = issuer
         }

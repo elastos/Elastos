@@ -16,13 +16,13 @@ public class Issuer {
         }
         if signKey == nil {
             self.signKey = self.didDocument?.getDefaultPublicKey()
-        }else {
-            guard try didDocument?.isAuthenticationKey(signKey!) != nil else {
+        } else {
+            guard try didDocument?.isAuthenticationKey(self.signKey) != nil else {
                 throw DIDError.failue("Invalid sign key id.")
             }
         }
         
-        guard try self.didDocument!.hasPrivateKey(signKey!) else {
+        guard (try self.didDocument!.hasPrivateKey(self.signKey)) else {
             throw DIDError.failue("No private key.")
         }
     }

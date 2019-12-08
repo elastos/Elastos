@@ -214,11 +214,15 @@ public class FileSystemStore: DIDStore {
         }
     }
 
-    override public func getDidHint(_ did: DID) throws -> String {
+    override public func getDidHint(_ did: DID) throws -> String? {
         let path = storeRootPath + "/" + FileSystemStore.DID_DIR + "." + did.methodSpecificId + FileSystemStore.META_EXT
         let readHandle = FileHandle(forReadingAtPath: path)
-        let hint = String(data: (readHandle?.readDataToEndOfFile())!, encoding: .utf8)
-        return hint!
+        let data = readHandle?.readDataToEndOfFile()
+        guard data != nil else {
+            return nil
+        }
+        let hint = String(data: data!, encoding: .utf8)
+        return hint
     }
 
     override public func storeDid(_ doc: DIDDocument ,_ hint: String?) throws {
@@ -264,8 +268,8 @@ public class FileSystemStore: DIDStore {
         while let element = enumerator?.nextObject() as? String {
             if !element.hasSuffix(".meta") {
                 let did: DID = DID(DID.METHOD, element)
-                let hint: String = try getDidHint(did)
-                let dic: Entry<DID, String> = Entry(did, hint)
+                let hint = try getDidHint(did)
+                let dic: Entry<DID, String> = Entry(did, hint ?? "")
                 arr.append(dic)
             }
         }
@@ -485,8 +489,8 @@ public class FileSystemStore: DIDStore {
 }
 
 public class Entry<K, V> {
-    var key: K!
-    var value: V!
+   public var key: K!
+   public var value: V!
 
     init(_ key: K, _ value: V) {
         self.key = key

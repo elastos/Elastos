@@ -29,7 +29,7 @@ public class DIDDocument: NSObject {
     public func selectPublicKeys(_ id: String, _ type: String?) throws -> Array<DIDPublicKey> {
         var didurl: DIDURL
         do {
-            didurl = try DIDURL(id)
+            didurl = try DIDURL(subject!, id)
         } catch {
             throw error
         }
@@ -44,8 +44,8 @@ public class DIDDocument: NSObject {
         }
     }
     
-    public func getPublicKey(_ id: String) throws -> DIDPublicKey {
-        return getEntry(publicKeys, try DIDURL(subject!, id))!
+    public func getPublicKey(_ id: String) throws -> DIDPublicKey? {
+        return getEntry(publicKeys, try DIDURL(subject!, id))
     }
     
     public func getPublicKey(_ id: DIDURL) throws -> DIDPublicKey? {
@@ -131,7 +131,7 @@ public class DIDDocument: NSObject {
                 return false
             }
         }
-        let removed: Bool = removeEntry(publicKeys, id)
+        let removed: Bool = removeEntry("publicKeys", id)
         
         if removed {
             do {
@@ -235,7 +235,7 @@ public class DIDDocument: NSObject {
         if (getDefaultPublicKey()?.isEqual(id))! {
             return false
         }
-        return removeEntry(authentications, id)
+        return removeEntry("authentications", id)
     }
     
     public func removeAuthenticationKey(_ id: String) throws -> Bool {
@@ -250,11 +250,11 @@ public class DIDDocument: NSObject {
         return getEntries(authentications)
     }
     
-    public func selectAuthorizationKeys(_ id: DIDURL, _ type: String) throws -> Array<DIDPublicKey> {
+    public func selectAuthorizationKeys(_ id: DIDURL?, _ type: String?) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, id, type)
     }
     
-    public func selectAuthorizationKeys(_ id: String, _ type: String) throws -> Array<DIDPublicKey> {
+    public func selectAuthorizationKeys(_ id: String, _ type: String?) throws -> Array<DIDPublicKey> {
         return try selectEntry(authentications, DIDURL(id), type)
     }
     
@@ -262,8 +262,8 @@ public class DIDDocument: NSObject {
         return getEntry(authentications, id)
     }
     
-    public func getAuthorizationKey(_ id: String) throws -> DIDPublicKey {
-        return try getEntry(authorizations, DIDURL(subject!, id))!
+    public func getAuthorizationKey(_ id: String) throws -> DIDPublicKey? {
+        return try getEntry(authorizations, DIDURL(subject!, id))
     }
 
     public func isAuthorizationKey(_ id: DIDURL) throws -> Bool {
@@ -353,7 +353,7 @@ public class DIDDocument: NSObject {
                 
     public func removeAuthorizationKey(_ id: DIDURL) -> Bool {
         guard !readonly else { return false }
-        return removeEntry(authorizations, id)
+        return removeEntry("authorizations", id)
     }
     
     public func removeAuthorizationKey(_ id: String) throws -> Bool {
@@ -368,20 +368,20 @@ public class DIDDocument: NSObject {
         return getEntries(credentials)
     }
     
-    public func selectCredentials(_ id: DIDURL, _ type: String) throws -> Array<VerifiableCredential> {
+    public func selectCredentials(_ id: DIDURL?, _ type: String?) throws -> Array<VerifiableCredential> {
         return try selectEntry(credentials, id, type)
     }
     
-    public func selectCredentials(_ id: String, _ type: String) throws -> Array<VerifiableCredential> {
+    public func selectCredentials(_ id: String, _ type: String?) throws -> Array<VerifiableCredential> {
         return try selectEntry(credentials, DIDURL(subject!, id), type)
     }
     
-    public func getCredential(_ id: String) throws -> VerifiableCredential {
-        return try getEntry(credentials, DIDURL(subject!, id))!
+    public func getCredential(_ id: String) throws -> VerifiableCredential? {
+        return try getEntry(credentials, DIDURL(subject!, id))
     }
     
-    public func getCredential(_ id: DIDURL) throws -> VerifiableCredential {
-        return getEntry(credentials, id)!
+    public func getCredential(_ id: DIDURL) throws -> VerifiableCredential? {
+        return getEntry(credentials, id)
     }
     
     public func addCredential(_ vc: VerifiableCredential) -> Bool {
@@ -400,7 +400,7 @@ public class DIDDocument: NSObject {
     
     public func removeCredential(_ id: DIDURL) -> Bool {
         guard !readonly else { return false }
-        return removeEntry(credentials, id)
+        return removeEntry("credentials", id)
     }
     
     public func removeCredential(_ id: String) throws -> Bool {
@@ -415,20 +415,20 @@ public class DIDDocument: NSObject {
         return getEntries(services)
     }
     
-    public func selectServices(_ id: DIDURL, _ type: String) throws -> Array<Service> {
+    public func selectServices(_ id: DIDURL?, _ type: String?) throws -> Array<Service> {
         return try selectEntry(services, id, type)
     }
     
-    public func selectServices(_ id: String, _ type: String) throws -> Array<Service> {
+    public func selectServices(_ id: String, _ type: String?) throws -> Array<Service> {
         return try selectEntry(services, DIDURL(subject!, id), type)
     }
     
-    public func getService(_ id: DIDURL) -> Service {
-        return getEntry(services, id)!
+    public func getService(_ id: DIDURL) -> Service? {
+        return getEntry(services, id)
     }
     
-    public func getService(_ id: String) throws -> Service {
-        return try getEntry(services, DIDURL(subject!, id))!
+    public func getService(_ id: String) throws -> Service? {
+        return try getEntry(services, DIDURL(subject!, id))
     }
     
     public func addService(_ svc: Service) throws -> Bool {
@@ -453,7 +453,7 @@ public class DIDDocument: NSObject {
     
     public func removeService(_ id: DIDURL) -> Bool {
         guard !readonly else { return false }
-        return removeEntry(services, id)
+        return removeEntry("services", id)
     }
     
     public func removeService(_ id: String) throws -> Bool {
@@ -754,11 +754,24 @@ public class DIDDocument: NSObject {
         var list: Array<T> = []
         entries.values.forEach { entry in
             var isId: Bool = true
-            if id != nil { isId = entry.id.isEqual(id) }
-            var isType: Bool = true
-            if type != nil { isType = entry.type.isEqual(type) }
-            if isId && isType {
-                list.append(entry)
+            if id != nil { isId = entry.id.isEqual(id)}
+            
+            if (type != nil) {
+                // Credential's type is a list.
+                if (entry is VerifiableCredential) {
+                    let vc: VerifiableCredential = entry as! VerifiableCredential
+                    if vc.types.contains(type!) && isId {
+                        list.append(entry)
+                    }
+                } else {
+                    if entry.type.isEqual(type) && isId {
+                        list.append(entry)
+                    }
+                }
+            }
+            else
+            {
+                if isId { list.append(entry) }
             }
         }
         return list
@@ -778,9 +791,22 @@ public class DIDDocument: NSObject {
         return entries[id]
     }
     
-    private func removeEntry<T: DIDObject>(_ publickeys: OrderedDictionary<DIDURL, T>, _ id: DIDURL) -> Bool {
-        if publickeys.keys.count == 0 { return false }
-        return self.publicKeys.removeValueForKey(key: id)
+    private func removeEntry(_ entriesType: String, _ id: DIDURL) -> Bool {
+        if entriesType == "publicKeys" {
+            return self.publicKeys.removeValueForKey(key: id)
+        }
+        else if entriesType == "authentications" {
+            return self.authentications.removeValueForKey(key: id)
+        }
+        else if entriesType == "authorizations" {
+            return self.authorizations.removeValueForKey(key: id)
+        }
+        else if entriesType == "credentials" {
+            return self.credentials.removeValueForKey(key: id)
+        }
+        else {
+            return self.services.removeValueForKey(key: id)
+        }
     }
     
     public func toExternalForm(_ compact: Bool) throws -> String {

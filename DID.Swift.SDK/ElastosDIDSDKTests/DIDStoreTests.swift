@@ -5,8 +5,8 @@ import ElastosDIDSDK
 class DIDStoreTests: XCTestCase {
     
     var store: DIDStore!
-    var ids: Dictionary<DID, String> = [: ]
-    var primaryDid: DID!
+    static var ids: Dictionary<DID, String> = [: ]
+    static var primaryDid: DID!
     var adapter: SPVAdaptor!
 
     override func setUp() {
@@ -73,14 +73,14 @@ class DIDStoreTests: XCTestCase {
     func test30CreateDID1() {
         let hint: String = "my first did"
         let doc: DIDDocument = try! store.newDid(storePass, hint)
-        primaryDid = doc.subject
+        DIDStoreTests.primaryDid = doc.subject
         let id: String = doc.subject!.methodSpecificId!
         let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
         XCTAssertTrue(TestUtils.existsFile(path))
         
         let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
         XCTAssertTrue(TestUtils.existsFile(path2))
-        ids[doc.subject!] = hint
+        DIDStoreTests.ids[doc.subject!] = hint
     }
     
     func test30CreateDID2() {
@@ -90,7 +90,7 @@ class DIDStoreTests: XCTestCase {
         XCTAssertTrue(TestUtils.existsFile(path))
         let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
         XCTAssertFalse(TestUtils.existsFile(path2))
-        ids[doc.subject!] = ""
+        DIDStoreTests.ids[doc.subject!] = ""
     }
     
     func test30CreateDID3() {
@@ -106,24 +106,20 @@ class DIDStoreTests: XCTestCase {
             
             let path2: String = storePath + "/" + "ids" + "/." + id + ".meta"
             XCTAssertTrue(TestUtils.existsFile(path2))
-            ids[doc.subject!] = hint
-            print(ids)
+            DIDStoreTests.ids[doc.subject!] = hint
+            print(DIDStoreTests.ids)
         }
     }
-
+    
     func test40DeleteDID1() {
-        let hint: String = "my did for deleted."
-        let doc: DIDDocument = try! store.newDid(storePass, hint)
-        ids[doc.subject!] = hint
-        primaryDid = doc.subject
-        let dids: Array<DID> = Array(ids.keys)
+        let dids: Array<DID> = Array(DIDStoreTests.ids.keys)
         dids.forEach { did in
-            if did == primaryDid {
+            if did != DIDStoreTests.primaryDid {
                 var deleted: Bool = try! store.deleteDid(did)
                 XCTAssertTrue(deleted)
                 var path: String = storePath + "/ids/" + did.methodSpecificId!
                 XCTAssertFalse(TestUtils.exists(path))
-                
+                DIDStoreTests.ids.removeValue(forKey: did)
                 path = storePath + "/ids/." + did.methodSpecificId! + ".meta"
                 XCTAssertFalse(TestUtils.exists(path))
                 
@@ -134,11 +130,7 @@ class DIDStoreTests: XCTestCase {
     }
     
     func test40PublishDID() {
-        let hint: String = "my did for deleted."
-        let doc: DIDDocument = try! store.newDid(storePass, hint)
-        ids[doc.subject!] = hint
-        primaryDid = doc.subject
-        let dids: Array<DID> = Array(ids.keys)
+        let dids: Array<DID> = Array(DIDStoreTests.ids.keys)
         dids.forEach { did in
             do {
                 let doc: DIDDocument = try store.loadDid(did)!
@@ -149,79 +141,157 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    /*
-     @Test
-     public void test50IssueCredential1() throws DIDException {
-         // SelfClaim
-         Issuer issuer = new Issuer(primaryDid);
-
-         Map<String, String> props = new HashMap<String, String>();
-         props.put("name", "Elastos");
-         props.put("email", "contact@elastos.org");
-         props.put("website", "https://www.elastos.org/");
-         props.put("phone", "12345678900");
-
-         Calendar cal = Calendar.getInstance();
-         cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
-         Date expire = cal.getTime();
-         VerifiableCredential vc = issuer.issueFor(primaryDid)
-                 .id("cred-1")
-                 .type(new String[] {"SelfProclaimedCredential", "BasicProfileCredential" })
-                 .expirationDate(expire)
-                 .properties(props)
-                 .sign(TestConfig.storePass);
-
-         DIDDocument doc = store.resolveDid(primaryDid);
-         doc.modify();
-         doc.addCredential(vc);
-         store.storeDid(doc);
-
-         doc = store.resolveDid(primaryDid);
-         DIDURL vcId = new DIDURL(primaryDid, "cred-1");
-         vc = doc.getCredential(vcId);
-         assertNotNull(vc);
-         assertEquals(vcId, vc.getId());
-         assertEquals(primaryDid, vc.getSubject().getId());
-     }
-     */
-    
-    func test50IssueSelfClaimCredential1() throws {
-//        let hint: String = "my did for test05IssueSelfClaimCredential1."
-//        let doc: DIDDocument = try! store.newDid(storePass, hint)
-//        ids[doc.subject!] = hint
-        let did = try DID("did:elastos:iokM6UqtPsPPmooiD1nJA9up6Ser8AdxwD")
-        primaryDid = did
-        let issuer: Issuer = try! Issuer(primaryDid, nil)
-        var props: OrderedDictionary<String, String> = OrderedDictionary()
-        props["name"] = "Elastos"
-        props["email"] = "contact@elastos.org"
-        props["website"] = "https://www.elastos.org/"
-        props["phone"] = "12345678900"
-        
-        issuer.target = primaryDid
-        issuer.vc.id = try DIDURL(primaryDid, "cred-1")
-        issuer.vc.types = ["SelfProclaimedCredential", "BasicProfileCredential"]
-        issuer.vc.expirationDate = Date()
-        issuer.vc.subject.properties = props
-        _ = try issuer.sign(storePass)
-        
-        var doc2 = try store.resolveDid(primaryDid)!
-        _ = doc2.modify()
-        _ = doc2.addCredential(issuer.vc)
-        try store.storeDid(doc2)
-        doc2 = try store.resolveDid(primaryDid)!
-        let vcId: DIDURL = try DIDURL(primaryDid, "cred-1")
-        issuer.vc = try doc2.getCredential(vcId)
-        
-        XCTAssertNil(issuer.vc)
-        XCTAssertEqual(vcId, issuer.vc.id)
-        XCTAssertEqual(primaryDid, issuer.vc.subject.id)
+    func test50IssueCredential1() {
+        do {
+            // SelfClaim
+            var props: OrderedDictionary<String, String> = OrderedDictionary()
+            props["name"] = "Elastos"
+            props["email"] = "contact@elastos.org"
+            props["website"] = "https://www.elastos.org/"
+            props["phone"] = "12345678900"
+            
+            let expire = TestUtils.currentDateToWantDate(1)
+            let issuer = try! Issuer(DIDStoreTests.primaryDid, nil)
+            issuer.target = DIDStoreTests.primaryDid
+            issuer.vc.id = try! DIDURL(DIDStoreTests.primaryDid, "cred-1")
+            issuer.vc.types = ["SelfProclaimedCredential", "BasicProfileCredential"]
+            issuer.vc.expirationDate = expire
+            issuer.vc.subject.properties = props
+            _ = try! issuer.sign(storePass)
+            
+            var doc = try! store.resolveDid(DIDStoreTests.primaryDid)
+            _ = doc!.modify()
+            _ = doc!.addCredential(issuer.vc)
+            try store.storeDid(doc!)
+            
+            doc = try store.resolveDid(DIDStoreTests.primaryDid)
+            let vcId: DIDURL = try DIDURL(DIDStoreTests.primaryDid, "cred-1")
+            issuer.vc = (try doc?.getCredential(vcId))!
+            XCTAssertNotNil(issuer.vc)
+            XCTAssertEqual(vcId, issuer.vc.id)
+            XCTAssertEqual(DIDStoreTests.primaryDid, issuer.vc.subject.id)
+        } catch {
+            print(error)
+        }
     }
+    
+    func test50IssueCredential2() {
+        do {
+            let issuerDid: DID = DIDStoreTests.primaryDid
+            var issuer: Issuer = try Issuer(issuerDid)
+            
+            try DIDStoreTests.ids.keys.forEach { did in
+                var props: OrderedDictionary<String, String> = OrderedDictionary()
+                props["name"] = "Elastos-" + did.methodSpecificId
+                props["email"] = "contact@elastos.org"
+                props["website"] = "https://www.elastos.org/"
+                props["phone"] = did.methodSpecificId
+                
+                let expire = TestUtils.currentDateToWantDate(1)
+                issuer = try Issuer(DIDStoreTests.primaryDid, nil)
+                issuer.target = issuerDid
+                issuer.vc.id = try DIDURL(DIDStoreTests.primaryDid, "cred-1")
+                issuer.vc.types = ["BasicProfileCredential"]
+                issuer.vc.expirationDate = expire
+                issuer.vc.subject.properties = props
+                _ = try issuer.sign(storePass)
+                
+                try store.storeCredential(issuer.vc, "default")
+                
+                props.removeAll(keepCapacity: 0)
+                props["name"] = "CyberRepublic-" + did.methodSpecificId
+                props["email"] = "contact@CyberRepublic.org"
+                props["website"] = "https://www.CyberRepublic.org/"
+                props["phone"] = did.methodSpecificId
+                
+                issuer = try Issuer(did, nil)
+                issuer.target = did
+                issuer.vc.id = try DIDURL(DIDStoreTests.primaryDid, "cred-2")
+                issuer.vc.types = ["BasicProfileCredential"]
+                issuer.vc.expirationDate = expire
+                issuer.vc.subject.properties = props
+                _ = try issuer.sign(storePass)
+                
+                try store.storeCredential(issuer.vc)
+                
+                var keypath: String = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + "/cred-1"
+                XCTAssertTrue(TestUtils.existsFile(keypath))
+                
+                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + ".cred-1.meta"
+                XCTAssertTrue(TestUtils.existsFile(keypath))
+                
+                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + "cred-2"
+                XCTAssertTrue(TestUtils.existsFile(keypath))
+                
+                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + ".cred-2.meta"
+                XCTAssertFalse(TestUtils.existsFile(keypath))
+            }
+        } catch {
+            print(error)
+        }
+    }
+    
+    func test60DeleteCredential1() {
+        do {
+            var deleted: Bool = try store.deleteCredential(DIDStoreTests.primaryDid, DIDURL(DIDStoreTests.primaryDid, "cred-1"))
+            XCTAssertTrue(deleted)
+            
+            deleted = try store.deleteCredential(DIDStoreTests.primaryDid, DIDURL(DIDStoreTests.primaryDid, "cred-2"))
+            XCTAssertTrue(deleted)
+            
+            deleted = try store.deleteCredential(DIDStoreTests.primaryDid, DIDURL(DIDStoreTests.primaryDid, "cred-3"))
+            XCTAssertFalse(deleted)
+            
+            var path: String = storePath + "/ids" + "/" + DIDStoreTests.primaryDid.methodSpecificId + "/credentials" + "/cred-1"
+            XCTAssertFalse(TestUtils.existsFile(path))
+              
+            path = storePath + "/ids" + "/" + DIDStoreTests.primaryDid.methodSpecificId + "/credentials/" + ".cred-1.meta"
+            XCTAssertFalse(TestUtils.existsFile(path))
+
+            path = storePath + "/ids" + "/" + DIDStoreTests.primaryDid.methodSpecificId + "/credentials/" + "cred-2"
+            XCTAssertFalse(TestUtils.existsFile(path))
+
+            path = storePath + "/ids" + "/" + DIDStoreTests.primaryDid.methodSpecificId + "/credentials/" + ".cred-2.meta"
+            XCTAssertFalse(TestUtils.existsFile(path))
+        } catch {
+            print(error)
+        }
+    }
+    
+    func test60ListCredential1() {
+        do {
+            try DIDStoreTests.ids.keys.forEach { did in
+                let creds = try store.listCredentials(did)
+                
+                if (did == DIDStoreTests.primaryDid) {
+                    XCTAssertEqual(0, creds.count)
+                }
+                else{
+                    XCTAssertEqual(2, creds.count)
+                }
+                
+                creds.forEach { cred in
+                    if cred.key.fragment == "cred-1" {
+                        XCTAssertEqual("default", cred.value)
+                    }
+                    else if (cred.key.fragment == "cred-2") {
+                        XCTAssertNil(cred.value)
+                    }
+                    else{
+                        XCTFail("Unexpected credential id '\(cred.value)'.")
+                    }
+                }
+            }
+        } catch {
+            print(error)
+        }
+    }
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
             // Put the code you want to measure the time of here.
         }
     }
-
 }
+

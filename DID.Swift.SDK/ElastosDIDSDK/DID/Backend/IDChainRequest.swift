@@ -152,17 +152,17 @@ class IDChainRequest: NSObject {
         
         let payload: String = try JsonHelper.getString(json, PAYLOAD, false, nil, PAYLOAD)
         
-        let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 100)
-        let cp = payload.withCString { re -> UnsafePointer<Int8> in
-            return re
-        }
-        let _ = base64_url_decode(buffer, cp)
-        let docJson: String = String(cString: buffer)
+        let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
+        let cp = payload.toUnsafePointerInt8()
+        let c = base64_url_decode(buffer, cp)
+        var docJson: String = String(cString: buffer)
+        let endIndex = docJson.index(docJson.startIndex, offsetBy: c)
+        docJson = String(docJson[docJson.startIndex..<endIndex])
         var doc: DIDDocument
         var request: IDChainRequest
         do {
             doc = try DIDDocument.fromJson(json: docJson)
-            let proof = json[PROOF] as! OrderedDictionary<String, Any>
+            let proof = json[IDChainRequest.PROOF] as! OrderedDictionary<String, Any>
             guard proof.count != 0 else {
                 throw DIDError.failue("Missing proof.")
             }

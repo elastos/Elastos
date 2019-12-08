@@ -27,10 +27,26 @@ public class DIDBackend: NSObject {
             guard docJson != nil else {
                 return nil
             }
-            let doc: DIDDocument = try DIDDocument.fromJson(docJson!)
-            return doc
+            var jsonString = docJson!.replacingOccurrences(of: " ", with: "")
+            jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
+            let ordDic = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
+            let result = ordDic["result"] as! Array<Any>
+            
+            if (result.count == 0) {
+                /*
+                 JsonNode error = node.get("error");
+                 throw new DIDResolveException("Resolve DID error("
+                 + error.get("code").longValue() + ": "
+                 + error.get("message").textValue());
+                 */
+                //            return nil
+            }
+            let re = result[0] as! OrderedDictionary<String, Any>
+            let request: IDChainRequest = try IDChainRequest.fromJson(re)
+            
+            return request.doc
         } catch {
-           throw DIDError.failue("Resolve DID error: \(error.localizedDescription)")
+            throw DIDError.failue("Resolve DID error: \(error.localizedDescription)")
         }
     }
     

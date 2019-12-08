@@ -54,7 +54,7 @@ public class DID: NSObject {
     }
 
     public func resolve() throws -> DIDDocument? {
-        guard let _ = document else {
+        guard document == nil else {
             return document
         }
         document = try DIDStore.shareInstance()!.resolveDid(self)

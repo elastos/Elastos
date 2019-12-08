@@ -2,11 +2,11 @@ import Foundation
 
 public class JsonHelper {
     
-    class func getDid(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DID {
+    class func getDid(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DID? {
         
         let vn = dic[name]
         if vn == nil {
-            if (optional) { return ref! }
+            if (optional) { return ref }
             else {
                 throw DIDError.failue("Missing " + hint + ".")
             }

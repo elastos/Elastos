@@ -38,7 +38,10 @@ public class DIDStore: NSObject {
         
         if i < nextIndex || blanks < 10{
             let key: DerivedKey = try privateIdentity.derive(i++)
-            let did: DID = DID(DID.METHOD, key.methodidString!)
+            let pks: [UInt8] = try key.getPublicKeyBytes()
+            let methodIdString: String = DerivedKey.getIdString(pks)
+            let did: DID = DID(DID.METHOD, methodIdString)
+            
             let doc = try backend.resolve(did)
             if (doc != nil) {
                 // TODO: check local conflict
@@ -245,9 +248,9 @@ public class DIDStore: NSObject {
         try setDidHint(DID(did), hint)
     }
     
-    public func getDidHint(_ did: DID) throws -> String { return "" }
+    public func getDidHint(_ did: DID) throws -> String? { return nil }
     
-    public func getDidHint(_ did: String) throws -> String {
+    public func getDidHint(_ did: String) throws -> String? {
         return try getDidHint(DID(did))
     }
 

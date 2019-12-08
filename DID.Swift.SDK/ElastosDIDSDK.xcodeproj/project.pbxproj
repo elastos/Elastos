@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11054F18239D17B7008A4500 /* DIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D473233485DF0012CD77 /* DIDError.swift */; };
+		11054F1A239D17DC008A4500 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D474233485DF0012CD77 /* Constants.swift */; };
+		11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1C239D1B31008A4500 /* DIDURLTest.swift */; };
+		11054F1F239D2088008A4500 /* DIDTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1E239D2088008A4500 /* DIDTest.swift */; };
 		11092151235ED8BD006B7F47 /* DIDUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11092150235ED8BD006B7F47 /* DIDUtil.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		111BF480235467880043D570 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; };
@@ -149,6 +153,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		11054F1C239D1B31008A4500 /* DIDURLTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDURLTest.swift; sourceTree = "<group>"; };
+		11054F1E239D2088008A4500 /* DIDTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDTest.swift; sourceTree = "<group>"; };
 		11092150235ED8BD006B7F47 /* DIDUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDUtil.swift; sourceTree = "<group>"; };
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
@@ -408,6 +414,8 @@
 				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
 				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
+				11054F1C239D1B31008A4500 /* DIDURLTest.swift */,
+				11054F1E239D2088008A4500 /* DIDTest.swift */,
 				1182866A2395194000F1BBA3 /* BulkCreate.swift */,
 				116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
@@ -734,10 +742,14 @@
 				1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */,
 				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,
 				1137CFAA2398D88900250D4F /* ExtensionInt.swift in Sources */,
+				11054F1F239D2088008A4500 /* DIDTest.swift in Sources */,
+				11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */,
+				11054F1A239D17DC008A4500 /* Constants.swift in Sources */,
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
 				1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */,
+				11054F18239D17B7008A4500 /* DIDError.swift in Sources */,
 				11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */,
 				116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */,
 			);

@@ -42,4 +42,25 @@ class TestUtils: XCTestCase {
         return !isDirectory.boolValue && fileExists
     }
     
+    class func currentDateToWantDate(_ year: Int)-> Date {
+        let current = Date()
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(abbreviation: "UTC")!
+        var comps:DateComponents?
+        
+        comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: current)
+        comps?.year = Constants.MAX_VALID_YEARS
+        comps?.month = 0
+        comps?.day = 0
+        comps?.hour = 0
+        comps?.minute = 0
+        comps?.second = 0
+        comps?.nanosecond = 0
+        let realDate = calendar.date(byAdding: comps!, to: current) ?? Date()
+        let hour = calendar.component(.hour, from: realDate)
+        let useDate = calendar.date(bySettingHour: hour, minute: 00, second: 00, of: realDate) ?? Date()
+        
+        return useDate
+    }
+    
 }

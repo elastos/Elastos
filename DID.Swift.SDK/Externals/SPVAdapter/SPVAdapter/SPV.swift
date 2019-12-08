@@ -17,22 +17,54 @@ public class SPV {
     }
     
     public class func createIdTransaction(_ handle: OpaquePointer, _ password: String, _ payload: String, _ memo: String?) throws -> Bool {
-
-        if memo == nil {
-            let rc = SpvDidAdapter_CreateIdTransaction(handle, payload, nil, password)
-            return rc == 0
-        }
-        else {
-            let cmemo = memo!.toUnsafePointerInt8()
-            let rc = SpvDidAdapter_CreateIdTransaction(handle, payload, cmemo, password)
-            return rc == 0
-        }
+        let rc = SpvDidAdapter_CreateIdTransaction(handle, payload, memo, password)
+        return rc == 0
     }
     
     public class func resolve(_ handle: OpaquePointer,_ did: String) throws -> String? {
-        let re = SpvDidAdapter_Resolve(handle, "did:elastos:im4wF5ZqiWFB1ATd2JxuxW6HHzR5Ks3LUS")
-//        let re = SpvDidAdapter_Resolve(handle, did)
-        guard re != nil else { return nil }
-        return String(cString: re)
+//        let startIndex = did.index(did.startIndex, offsetBy: 12)
+//        let id = String(did[startIndex..<did.endIndex])
+        let id = "im4wF5ZqiWFB1ATd2JxuxW6HHzR5Ks3LUS"
+        var resuleString = ""
+        let url:URL! = URL(string: "https://coreservices-didsidechain-privnet.elastos.org")
+        var request:URLRequest! = URLRequest.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        let parameters: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "getidtxspayloads",
+            "params": ["id": id, "all": false],
+            "id": "1"
+        ]
+        request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+        let semaphore = DispatchSemaphore(value: 0)
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data,
+                let response = response as? HTTPURLResponse,
+                error == nil else { // check for fundamental networking error
+                    print("error", error ?? "Unknown error")
+                    semaphore.signal()
+                    return
+            }
+            
+            guard (200 ... 299) ~= response.statusCode else { // check for http errors
+                print("statusCode should be 2xx, but is \(response.statusCode)")
+                print("response = \(response)")
+                semaphore.signal()
+                return
+            }
+            let responseString = String(data: data, encoding: .utf8)
+            print("responseString = \(String(describing: responseString))")
+            resuleString = responseString ?? ""
+            semaphore.signal()
+        }
+        task.resume()
+        semaphore.wait()
+        guard resuleString != "" else {
+            return nil
+        }
+        return resuleString
     }
+
 }

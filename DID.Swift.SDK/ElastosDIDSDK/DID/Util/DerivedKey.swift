@@ -1,12 +1,9 @@
 import Foundation
-//import BitcoinKit
 
-// bip44 对HDKeychain封装
 public class DerivedKey: NSObject {
     
     private var index: Int32!
     private var seed: Data!
-    var methodidString: String?
     
     public init(_ seed: Data, _ index: Int32) {
         self.seed = seed
