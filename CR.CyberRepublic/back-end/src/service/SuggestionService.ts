@@ -27,7 +27,7 @@ export default class extends Base {
       })
     }
     doc.budgetAmount = amount
-    
+
     // save the document
     const result = await this.model.save(doc)
     await this.getDBModel('Suggestion_Edit_History').save({ ...param, suggestion: result._id })
@@ -112,7 +112,7 @@ export default class extends Base {
         return sum
       }, 0.0)
     }
-    
+
     doc.descUpdatedAt = new Date()
     if (update) {
       await Promise.all([
@@ -150,11 +150,11 @@ export default class extends Base {
           EMAIL: 'EMAIL',
           NAME: 'NAME'
         }
-        
+
         if (filter === SEARCH_FILTERS.NUMBER) {
           query.$or = [{ displayId: parseInt(search) || 0 }]
         }
-        
+
         if (filter === SEARCH_FILTERS.TITLE) {
           query.$or = [
             { title: { $regex: search, $options: 'i' } }
@@ -211,6 +211,7 @@ export default class extends Base {
     if (param.status && constant.SUGGESTION_STATUS[param.status]) {
       query.status = param.status
     }
+
     // budget
     if(param.budgetLow || param.budgetHigh){
       query.budgetAmount = {}
@@ -237,7 +238,8 @@ export default class extends Base {
       }
     }
 
-    console.log("[Author]" + param.author)
+    // console.log("[Author]" + param.author)
+
     // author
     if(param.author && param.author.length) {
       let search = param.author
@@ -250,10 +252,14 @@ export default class extends Base {
           { 'profile.lastName': { $regex: pattern, $options: 'i' } }
         ]
       }).select('_id')
+
+
       const userIds = _.map(users, (el: { _id: string }) => el._id)
-      console.log("[Author.IDS]" + userIds)
+
+      // console.log("[Author.IDS]" + userIds)
+
       query.createdBy = { $in: userIds }
-      console.log("[Query]" + JSON.stringify(query))
+      // console.log("[Query]" + JSON.stringify(query))
     }
     // type
     if(param.type && _.indexOf(_.values(constant.SUGGESTION_TYPE),param.type)){
@@ -327,11 +333,11 @@ export default class extends Base {
           EMAIL: 'EMAIL',
           NAME: 'NAME'
         }
-        
+
         if (filter === SEARCH_FILTERS.NUMBER) {
           query.$or = [{ displayId: parseInt(search) || 0 }]
         }
-        
+
         if (filter === SEARCH_FILTERS.TITLE) {
           query.$or = [
             { title: { $regex: search, $options: 'i' } }
@@ -448,7 +454,7 @@ export default class extends Base {
         $lte: endDate
       }
     }
-    
+
     // author
     if(param.author && param.author.length) {
       let search = param.author
@@ -479,7 +485,7 @@ export default class extends Base {
       total: rs[1]
     }
   }
-  
+
   public async show(param: any): Promise<any> {
     const { id: _id, incViewsNum } = param
     // access suggestion info by reference number
@@ -809,7 +815,7 @@ export default class extends Base {
       body,
       recVariables
     }
- 
+
     return mail.send(mailObj)
   }
 

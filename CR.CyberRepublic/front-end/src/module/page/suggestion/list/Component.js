@@ -76,7 +76,7 @@ export default class extends StandardPage {
       total: 0,
       search: '',
       filter: '',
-      status: '',
+      status: SUGGESTION_STATUS.ACTIVE,
       budgetRequested: '',
       creationDate: [],
       author: '',
@@ -675,7 +675,7 @@ export default class extends StandardPage {
       results
     }
     let included = ''
-   
+
     if (this.state.showArchived) {
       query.status = SUGGESTION_STATUS.ARCHIVED
     }
