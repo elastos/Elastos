@@ -54,7 +54,7 @@ const TESTNET = {
   REST_PORT: 21334
 };
 
-const NETWORKS = [TESTNET, MAINNET];
+const NETWORKS = [MAINNET, TESTNET];
 
 var currentNetworkIx = 0;
 
@@ -320,7 +320,7 @@ const getUnspentTransactionOutputsReadyCallback = (response) => {
 
   mainConsole.log('getUnspentTransactionOutputsCallback ' + JSON.stringify(response), response.Result);
 
-  if ((response.Result != undefined) && (response.Result != null)) {
+  if ((response.Result != undefined) && (response.Result != null) && (response.Error == 0)) {
     response.Result.forEach((utxo, utxoIx) => {
       TxFactory.updateValueSats(utxo, utxoIx);
       parsedUnspentTransactionOutputs.push(utxo);
@@ -384,12 +384,15 @@ const sendAmountToAddressErrorCallback = (error) => {
 }
 
 const sendAmountToAddressReadyCallback = (transactionJson) => {
+  sendToAddressStatuses.length = 0;
   sendToAddressStatuses.push(JSON.stringify(transactionJson));
   if (transactionJson.error == null) {
     const link = getTransactionHistoryLink(transactionJson.result);
     const elt = {};
     elt.txDetailsUrl = link;
     elt.txHash = transactionJson.result;
+    sendToAddressStatuses.length = 0;
+    sendToAddressStatuses.push('Transaction Successful.');
     sendToAddressLinks.push(elt);
   }
   showCompletedTransaction();
@@ -1099,8 +1102,8 @@ class App extends React.Component {
                     <td id='home' className="white_on_purple_with_hover h20px fake_button" onClick={(e) => showHome()}>
                       Network
                       <select value={currentNetworkIx} name="network" onChange={(e) => changeNetwork(e)}>
-                        <option value="0">Testnet</option>
-                        <option value="1">Mainnet</option>
+                        <option value="0">Mainnet</option>
+                        <option value="1">Testnet</option>
                       </select>
                     </td>
                   </tr>
