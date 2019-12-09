@@ -33,8 +33,11 @@ int DIDBackend_Create(DIDBackend *backend, DIDDocument *document, DIDURL *signke
         const char *storepass)
 {
     int ret;
-    const char *docstring;
-    const char *reqstring;
+    const char *docstring, *reqstring;
+
+    if (!backend || !backend->adapter || !document || !signkey || !storepass ||
+            !*storepass)
+        return -1;
 
     docstring = DIDDocument_ToJson(document, 1);
     if (!docstring)
@@ -56,8 +59,11 @@ int DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signke
         const char *storepass)
 {
     int ret;
-    const char *docstring;
-    const char *reqstring;
+    const char *docstring, *reqstring;
+
+    if (!backend || !backend->adapter || !document || !signkey || !storepass ||
+            !*storepass)
+        return -1;
 
     docstring = DIDDocument_ToJson(document, 1);
     if (!docstring)
@@ -81,6 +87,10 @@ int DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey,
     char data[MAX_DID], *datastring;
     const char *reqstring;
 
+    if (!backend || !backend->adapter || !did || !signKey || !storepass ||
+            !*storepass)
+        return -1;
+
     datastring = DID_ToString(did, data, MAX_DID);
     if (!reqstring)
         return -1;
@@ -99,8 +109,7 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
 {
     int rc;
    const char *data;
-    cJSON *root;
-    cJSON *item, *field;
+    cJSON *root, *item, *field;
     DIDDocument *document;
 
     if (!backend || !did)

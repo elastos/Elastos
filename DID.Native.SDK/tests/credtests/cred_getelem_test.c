@@ -7,8 +7,6 @@
 
 #include "loader.h"
 #include "ela_did.h"
-//#include "credential.h"
-//#include "diddocument.h"
 
 static Credential *credential;
 

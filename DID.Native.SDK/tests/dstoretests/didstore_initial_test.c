@@ -11,7 +11,6 @@
 #include "constant.h"
 #include "loader.h"
 #include "ela_did.h"
-//#include "didstore.h"
 #include "didtest_adapter.h"
 
 #define  TEST_LEN    512
@@ -42,7 +41,7 @@ static int didstore_initial_test_suite_init(void)
     char *walletDir;
 
     walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
     if (!adapter)
         return -1;
 
@@ -51,7 +50,7 @@ static int didstore_initial_test_suite_init(void)
 
 static int didstore_initial_test_suite_cleanup(void)
 {
-    TestAdapter_Destroy(adapter);
+    TestDIDAdapter_Destroy(adapter);
     return 0;
 }
 

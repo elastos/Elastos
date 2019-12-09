@@ -12,8 +12,6 @@
 #include "loader.h"
 #include "didtest_adapter.h"
 #include "ela_did.h"
-//#include "didstore.h"
-//#include "diddocument.h"
 #include "HDkey.h"
 
 #define SIGNATURE_BYTES         64
@@ -87,28 +85,28 @@ static int diddoc_sign_test_suite_init(void)
     DIDStore *store;
 
     walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
     if (!adapter)
         return -1;
 
     storePath = get_store_path(_path, "/newdid");
     store = DIDStore_Initialize(storePath, adapter);
     if (!store) {
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
     rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, true);
     if (rc < 0) {
         DIDStore_Deinitialize();
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
     document = DIDStore_NewDID(store, storepass, "littlefish");
     if(!document) {
         DIDStore_Deinitialize();
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
@@ -116,7 +114,7 @@ static int diddoc_sign_test_suite_init(void)
     if (!did) {
         DIDDocument_Destroy(document);
         DIDStore_Deinitialize();
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
@@ -127,7 +125,7 @@ static int diddoc_sign_test_suite_cleanup(void)
 {
     DIDStore *store = DIDStore_GetInstance();
 
-    TestAdapter_Destroy(adapter);
+    TestDIDAdapter_Destroy(adapter);
     DIDDocument_Destroy(document);
     DIDStore_DeleteDID(store, did);
     DIDStore_Deinitialize();

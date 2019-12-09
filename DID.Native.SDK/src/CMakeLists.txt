@@ -47,6 +47,7 @@ set(SRC
     didbackend.c
     mnemonic.c
     presentation.c
+    issuer.c
     ${utility-SOURCES})
 
 set(HEADERS

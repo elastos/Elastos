@@ -116,6 +116,12 @@ typedef struct Service          Service;
 typedef struct DIDDocument      DIDDocument;
 /**
  * \~English
+ * A issuer is the did to issue credential. Issuer includes issuer's did and
+ * issuer's sign key.
+ */
+typedef struct Issuer           Issuer;
+/**
+ * \~English
  * DIDEntry includes did(DID) and hint for list did callback.
  */
 typedef struct DIDEntry         DIDEntry;
@@ -692,6 +698,32 @@ DID_API int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid
 
 /**
  * \~English
+ * Check key if authentiacation key or not.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @param
+ *      keyid                [in] An identifier of authentication key.
+ * @return
+ *      true if has authentication key, or false.
+ */
+DID_API bool DIDDocument_IsAuthenticationKey(DIDDocument *document, DIDURL *keyid);
+
+/**
+ * \~English
+ * Check key if authorization key or not.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @param
+ *      keyid                [in] An identifier of authorization key.
+ * @return
+ *      true if has authorization key, or false.
+ */
+DID_API bool DIDDocument_IsAuthorizationKey(DIDDocument *document, DIDURL *keyid);
+
+/**
+ * \~English
  * Add Authorization key to Authentication array according to DID.
  * Authentication is the mechanism by which the controller(s) of a DID can
  * cryptographically prove that they are associated with that DID.
@@ -707,8 +739,8 @@ DID_API int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_AuthorizationDid(DID *controller, DIDURL *keyid,
-        const char *key);
+DID_API int DIDDocument_AuthorizationDid(DIDDocument *document, DIDURL *keyid,
+        DID *controller, DIDURL *authorkeyid);
 
 /**
  * \~English
@@ -1364,18 +1396,65 @@ DID_API int Credential_AddProperty(Credential *cred, const char *name, const cha
 
 /**
  * \~English
+ * Verify the credential is valid or not.
+ * Issuance always occurs before any other actions involving a credential.
+ *
+ * @param
+ *      cred                     [in] The Credential handle.
+ * @return
+ *      0 on success, -1 if an error occurred or verify failed.
+ */
+DID_API int Credential_Verify(Credential *cred);
+
+/**
+ * \~English
+ * Credential is expired or not.
+ * Issuance always occurs before any other actions involving a credential.
+ *
+ * @param
+ *      cred                      [in] The Credential handle.
+ * @return
+ *      flase if not expired, true if expired.
+ */
+DID_API bool Credential_IsExpired(Credential *cred);
+
+/******************************************************************************
+ * Issuer
+ *****************************************************************************/
+/**
+ * \~English
+ * Create a issuer to issue Credential.
+ *
+ * @param
+ *      did                      [in] Issuer's did.
+ * @param
+ *      signkey                  [in] Issuer's key to sign credential.
+ * @return
+ *      The handle of Issuer.
+ */
+DID_API Issuer *Issuer_Create(DID *did, DIDURL *signkey);
+
+/**
+ * \~English
+ * Destroy a issuer.
+ *
+ * @param
+ *      issuer                    [in] the handle of Issuer..
+ */
+DID_API void Issuer_Destroy(Issuer *issuer);
+
+/**
+ * \~English
  * An issuer issues a verifiable credential to a holder.
  * Issuance always occurs before any other actions involving a credential.
  *
  * @param
  *      did                  [in] A handle to DID.
- *                                The holder of this Credential.
+ *                               The holder of this Credential.
  * @param
  *      fragment             [in] The portion of a DID URL.
  * @param
  *      issuer               [in] An issuer issues this credential.
- * @param
- *      defaultSignKey       [in] Public key to sign.
  * @param
  *      types                [in] The array of credential types.
  * @param
@@ -1392,33 +1471,33 @@ DID_API int Credential_AddProperty(Credential *cred, const char *name, const cha
  *      If no error occurs, return the handle to Credential issued.
  *      Otherwise, return NULL.
  */
-DID_API Credential *Credential_Issue(DID *did, const char *fragment, DID *issuer,
-        DIDURL *defaultSignKey, const char **types, size_t typesize,
-        Property **properties, int size, time_t expires, const char *storepass);
+DID_API Credential *Issuer_CreateCredential(DID *did, const char *fragment, Issuer *issuer,
+        const char **types, size_t typesize, Property **properties, int size,
+        time_t expires, const char *storepass);
 
 /**
  * \~English
- * An issuer issues a verifiable credential to a holder.
- * Issuance always occurs before any other actions involving a credential.
+ * Get the DID of this issuer
  *
  * @param
- *                             [in] The Credential handle.
+ *      issuer                  [in] The handle to Issuer.
  * @return
- *      0 on success, -1 if an error occurred.
+ *      If no error occurs, return the handle to DID of this issuer.
+ *      Otherwise, return NULL.
  */
-DID_API int Credential_Verify(Credential *cred);
+DID_API DID *Issuer_GetSigner(Issuer *issuer);
 
 /**
  * \~English
- * An issuer issues a verifiable credential to a holder.
- * Issuance always occurs before any other actions involving a credential.
+ * Get the DID of this issuer
  *
  * @param
- *                             [in] The Credential handle.
+ *      issuer                  [in] The handle to Issuer.
  * @return
- *      flase if not expired, true if expired.
+ *      If no error occurs, return the handle to key.
+ *      Otherwise, return NULL.
  */
-DID_API bool Credential_IsExpired(Credential *cred);
+DID_API DIDURL *Issuer_GetSignKey(Issuer *issuer);
 
 /******************************************************************************
  * DIDStore
@@ -1836,7 +1915,8 @@ DID_API int DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,
  * @param
  *      did                      [in] The handle to DID.
  * @param
- *      force                    [in] The handle to DID.
+ *      force                    [in] force = true, DIDStore can load document.
+                                 force = false, DIDStore can not load document.
  * @return
  *      If no error occurs, return the handle to DID Document.
  *      Otherwise, return NULL.
@@ -1873,34 +1953,181 @@ DID_API void Mnemonic_free(void *mnemonic);
 /******************************************************************************
  * Presentation
  *****************************************************************************/
+/**
+ * \~English
+ * Create a presentation including some credentials.
+ *
+ * @param
+ *      did                      [in] The handle to DID.
+ * @param
+ *      signkey                  [in] The key id to sign.
+  * @param
+ *      storepass                [in] The password of DIDStore.
+ * @param
+ *      nonce                    [in] Indicate the usage of Presentation.
+  * @param
+ *      realm                    [in] Indicate where the Presentation is use.
+ * @param
+ *      count                    [in] The count of Credentials.
+ * @return
+ *      If no error occurs, return the handle to Presentataion.
+ *      Otherwise, return NULL.
+ */
+DID_API Presentation *Presentation_Create(DID *did, DIDURL *signkey,
+        const char *storepass, const char *nonce, const char *realm, int count, ...);
 
-DID_API Presentation *Presentation_Create(DID *did, DIDURL *signkey, int count, ...);
-
+/**
+ * \~English
+ * Destroy Presentation.
+ *
+ * @param
+ *      pre                      [in] The handle to Presentation.
+ */
 DID_API void Presentation_Destroy(Presentation *pre);
 
-DID_API Presentation *Presentation_Sign(DID *did, Presentation *pre,
-        const char *storepass, const char *nonce, const char *realm);
-
+/**
+ * \~English
+ * Verify Presentation is valid or not.
+ *
+ * @param
+ *      pre                      [in] The handle to Presentation.
+  * @return
+ *      0 on success, -1 if an error occurred.
+ */
 DID_API int Presentation_Verify(Presentation *pre);
 
+/**
+ * \~English
+ * Get json context from Presentation.
+ *
+ * @param
+ *      pre                  [in] A handle to Presentation.
+ * @param
+ *      compact              [in] Json context is compact or not.
+ *                           1 represents compact, 0 represents not compact.
+ * @param
+ *      forsign              [in] Json context needs to sign or not.
+ *                           1 represents forsign, 0 represents not forsign
+ * @return
+ *      If no error occurs, return json context. Return value must be free after
+ *      finishing use.
+ *      Otherwise, return NULL.
+ */
 DID_API const char* Presentation_ToJson(Presentation *pre, int compact, int forsign);
 
-DID_API Presentation *Presentation_FromJson(const char *json, DID *did);
+/**
+ * \~English
+ * Get Presentation from json context.
+ *
+ * @param
+ *      json                 [in] Json context about Presentation.
+ * @return
+ *      If no error occurs, return the handle to Presentation.
+ *      Otherwise, return NULL.
+ */
+DID_API Presentation *Presentation_FromJson(const char *json);
 
+/**
+ * \~English
+ * Get the DID for signing the Presentation.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @return
+ *      If no error occurs, return the handle to DID.
+ *      Otherwise, return NULL.
+ */
 DID_API DID *Presentation_GetSigner(Presentation *pre);
 
-DID_API ssize_t Presentation_GetCredentials(Presentation *pre, Credential **creds, size_t size);
+/**
+ * \~English
+ * Get Credential list for signing the Presentation.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @param
+ *      creds                 [out] The buffer that will receive the public keys.
+  * @param
+ *      size                  [in] The count of Credentials.
+ * @return
+ *      If no error occurs, return the count of Credential.
+ *      Otherwise, return -1.
+ */
+DID_API ssize_t Presentation_GetCredentials(Presentation *pre,
+        Credential **creds, size_t size);
 
+/**
+ * \~English
+ * Get Credential list for signing the Presentation.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @param
+ *      credid                [in] The Credential Id.
+ * @return
+ *      If no error occurs, return the handle to Credential.
+ *      Otherwise, return NULL.
+ */
 DID_API Credential *Presentation_GetCredential(Presentation *pre, DIDURL *credid);
 
+/**
+ * \~English
+ * Get Presentation Type.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @return
+ *      If no error occurs, return the Presentation Type string.
+ *      Otherwise, return NULL.
+ */
 DID_API const char *Presentation_GetType(Presentation *pre);
 
+/**
+ * \~English
+ * Get time created Presentation.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @return
+ *      If no error occurs, return the time created Presentation.
+ *      Otherwise, return 0.
+ */
 DID_API time_t Presentation_GetCreatedTime(Presentation *pre);
 
+/**
+ * \~English
+ * Get key to sign Presentation.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @return
+ *      If no error occurs, return the handle to sign key.
+ *      Otherwise, return NULL.
+ */
 DID_API DIDURL *Presentation_GetVerificationMethod(Presentation *pre);
 
+/**
+ * \~English
+ * Get Presentation nonce.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @return
+ *      If no error occurs, return the Presentaton nonce string.
+ *      Otherwise, return NULL.
+ */
 DID_API const char *Presentation_GetNonce(Presentation *pre);
 
+/**
+ * \~English
+ * Get Presentation realm.
+ *
+ * @param
+ *      pre                   [in] The handle to Presentation.
+ * @return
+ *      If no error occurs, return the Presentaton realm string.
+ *      Otherwise, return NULL.
+ */
 DID_API const char *Presentation_GetRealm(Presentation *pre);
 
 #ifdef __cplusplus

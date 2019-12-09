@@ -521,6 +521,7 @@ static int store_seed(DIDStore *store, uint8_t *seed, size_t size, const char *s
 
     assert(seed);
     assert(storepass);
+    assert(*storepass);
 
     if (encrypt_to_base64((char *)base64, storepass, seed, size) == -1)
         return -1;
@@ -538,8 +539,11 @@ static ssize_t load_seed(DIDStore *store, uint8_t *seed, size_t size, const char
     unsigned char binseed[SEED_BYTES];
     ssize_t len;
 
-    if (size < SEED_BYTES)
-        return -1;
+    assert(store);
+    assert(seed);
+    assert(storepass);
+    assert(*storepass);
+    assert(size > SEED_BYTES);
 
     if (load_files(get_file_path(store, DIDStore_Rootkey, "private", NULL, 0),
             &encrpted_seed) == -1)
@@ -557,6 +561,8 @@ static int get_last_index(DIDStore *store)
     int index;
     const char *index_string;
 
+    assert(store);
+
     if (load_files(get_file_path(store, DIDStore_RootIndex, "private", NULL, 0), &index_string) == -1
         || !index_string)
         index = 0;
@@ -572,6 +578,9 @@ static int store_index(DIDStore *store, int index)
 {
     char string[32];
     int len;
+
+    assert(store);
+    assert(index >= 0);
 
     len = snprintf(string, sizeof(string), "%d", index);
     if (len < 0 || len > sizeof(string))
@@ -1224,6 +1233,12 @@ static int refresh_did_fromchain(DIDStore *store, const char *storepass,
     if (publickey)
         assert(size >= PUBLICKEY_BYTES);
 
+    assert(store);
+    assert(storepass);
+    assert(*storepass);
+    assert(seed);
+    assert(did);
+
     masterkey = HDkey_GetMasterPublicKey(seed, 0, &_mk);
     if (!masterkey)
         return -1;
@@ -1359,7 +1374,7 @@ int DIDStore_Signv(DIDStore *store, DID *did, DIDURL *key, const char *storepass
     unsigned char binkey[PRIVATEKEY_BYTES];
     int rc;
 
-    if (!did || !key || !sig || count <= 0)
+    if (!store || !did || !key || !storepass || !*storepass || !sig || count <= 0)
         return -1;
 
     if (load_files(get_file_path(store, DIDStore_PrivateKey, did->idstring, key->fragment, 0),
@@ -1384,7 +1399,7 @@ int DIDStore_Sign(DIDStore *store, DID *did, DIDURL *key, const char *storepass,
     int rc;
     va_list inputs;
 
-    if (!did || !key || !sig || count <= 0)
+    if (!store || !did || !key || !storepass || !*storepass || !sig || count <= 0)
         return -1;
 
     va_start(inputs, count);
@@ -1400,7 +1415,7 @@ DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
     const char *json;
     char id[MAX_DID];
 
-    if (!did)
+    if (!store || !did)
         return NULL;
 
     document = DIDBackend_Resolve(&store->backend, did);
@@ -1418,7 +1433,7 @@ DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
 int DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass)
 {
-    if (!store || !document || !storepass)
+    if (!store || !document || !storepass || !*storepass)
         return -1;
 
     if (DIDStore_StoreDID(store, document, "") == -1)
@@ -1433,7 +1448,7 @@ int DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
 int DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass)
 {
-    if (!store || !document || !storepass)
+    if (!store || !document || !signKey || !storepass || !*storepass)
         return -1;
 
     if (!signKey)
@@ -1448,7 +1463,7 @@ int DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
 int DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,
         const char *storepass)
 {
-    if (!store || !did || !storepass)
+    if (!store || !did || !signKey || !storepass || !*storepass)
         return -1;
 
     if (!signKey) {

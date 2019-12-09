@@ -13,9 +13,7 @@
 #include "ela_did.h"
 #include "didtest_adapter.h"
 #include "did.h"
-#include "didstore.h"
 #include "credential.h"
-//#include "diddocument.h"
 
 #define  TEST_LEN    512
 
@@ -48,7 +46,7 @@ static int didstore_storecred_test_suite_init(void)
     DIDDocument *doc;
 
     walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
     if (!adapter)
         return -1;
 
@@ -59,7 +57,7 @@ static int didstore_storecred_test_suite_init(void)
 
     doc = DIDDocument_FromJson(global_did_string);
     if(!doc) {
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
@@ -68,7 +66,7 @@ static int didstore_storecred_test_suite_init(void)
 
     credential = Credential_FromJson(global_cred_string, &did);
     if(!credential) {
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
@@ -77,7 +75,7 @@ static int didstore_storecred_test_suite_init(void)
 
 static int didstore_storecred_test_suite_cleanup(void)
 {
-    TestAdapter_Destroy(adapter);
+    TestDIDAdapter_Destroy(adapter);
     Credential_Destroy(credential);
     DIDStore_Deinitialize();
     return 0;

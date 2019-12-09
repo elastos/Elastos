@@ -34,27 +34,26 @@ if(HAVE_SYS_RESOURCE_H)
     add_definitions(-DHAVE_SYS_RESOURCE_H=1)
 endif()
 
+file(GLOB CRED-TESTS "credtests/*.c")
+file(GLOB DID-TESTS "didtests/*.c")
+file(GLOB DOC-TESTS "doctests/*.c")
+file(GLOB DPUBLISH-TESTS "dpublishtests/*.c")
+file(GLOB DSTORE-TESTS "dstoretests/*.c")
+#file(GLOB PRE-TESTS "pretests/*.c")
+#file(GLOB ISSUER-TESTS "issuertests/*.c")
+
 set(SRC
     constant.c
     loader.c
     tests.c
-    didtest_adapter.c
-    did_fromstring_test.c
-    did_getelem_test.c
-    diddoc_fromjson_test.c
-    diddoc_getelem_test.c
-    diddoc_arelem_test.c
-    cred_fromjson_test.c
-    cred_getelem_test.c
-    didstore_initial_test.c
-    didstore_store_did_test.c
-    didstore_did_op_test.c
-    didstore_store_cred_test.c
-    didstore_cred_op_test.c
-    didstore_new_did_test.c
-    didrequest_test.c
-    diddoc_sign_test.c
-    diddoc_base64_test.c)
+    ${CRED-TESTS}
+    ${DID-TESTS}
+    ${DOC-TESTS}
+    ${DPUBLISH-TESTS}
+    ${DSTORE-TESTS}
+    #${PRE-TESTS}
+    #${ISSUER-TESTS}
+    )
 
 add_definitions(-DLIBCONFIG_STATIC)
 
@@ -99,6 +98,7 @@ else()
 endif()
 
 include_directories(
+    dpublishtests
     .
     ../src
     ../src/utility
@@ -122,5 +122,6 @@ install(TARGETS didtest
     ARCHIVE DESTINATION "lib"
     LIBRARY DESTINATION "lib")
 
-install(FILES qualified.json qualifiedbp.json cred.json
+#install(FILES qualified.json qualifiedbp.json cred.json
+install(DIRECTORY resources
     DESTINATION "etc/did")

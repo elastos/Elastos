@@ -108,25 +108,3 @@ int parse_time(time_t *time, const char *string)
     *time = mktime(&ptm);
     return 0;
 }
-
-int get_current_time(time_t *curtime)
-{
-    if (!curtime)
-        return -1;
-
-    time(curtime);
-    return 0;
-}
-
-// TODO: time_t can be compared directly.
-int time_compare(time_t time1, time_t time2)
-{
-    if((difftime(time1, time2) >= -0.0001) && difftime(time1, time2) <= 0.00001)
-        return 0;
-
-    if (difftime(time1, time2) < -0.0001)
-        return -1;
-
-    if (difftime(time1, time2) > 0.0001)
-        return 1;
-}

@@ -444,7 +444,7 @@ Credential *Parser_Credential(cJSON *json, DID *did)
     Credential *credential;
     cJSON *item, *field;
 
-    if (!json || !did)
+    if (!json)
         return NULL;
 
     credential = (Credential*)calloc(1, sizeof(Credential));
@@ -457,23 +457,17 @@ Credential *Parser_Credential(cJSON *json, DID *did)
             parse_didurl(&credential->id, item->valuestring, did) < 0)
         goto errorExit;
 
-    if (strlen(credential->id.did.idstring) > 0 &&
-            strcmp(credential->id.did.idstring, did->idstring))
+    if (did && strcmp(credential->id.did.idstring, did->idstring) != 0)
         goto errorExit;
-
-    if (strlen(credential->id.did.idstring) == 0)
-        strcpy((char*)credential->id.did.idstring, did->idstring);
 
     //issuer
     item = cJSON_GetObjectItem(json, "issuer");
-    if (!item)
-        strcpy((char*)credential->issuer.idstring, did->idstring);
-    else {
-        if (parse_did(&credential->issuer, item->valuestring) < 0)
-            goto errorExit;
-        if (strlen(credential->issuer.idstring) == 0)
-            strcpy((char*)credential->issuer.idstring, did->idstring);
-    }
+    if (item && parse_did(&credential->issuer, item->valuestring) < 0)
+        goto errorExit;
+    if (!item && !did)
+        goto errorExit;
+
+    strncpy((char*)credential->issuer.idstring, did->idstring, MAX_ID_SPECIFIC_STRING);
 
     //issuanceDate
     item = cJSON_GetObjectItem(json, "issuanceDate");
@@ -486,14 +480,8 @@ Credential *Parser_Credential(cJSON *json, DID *did)
     if (item && parse_time(&credential->expirationDate, item->valuestring) == -1)
         goto errorExit;
 
-    if (!item) {
-        DIDStore *store = DIDStore_GetInstance();
-        DIDDocument *doc = DIDStore_ResolveDID(store, did, false);
-        if (!doc || !DIDDocument_GetExpires(doc))
-            goto errorExit;
-
-        credential->expirationDate = DIDDocument_GetExpires(doc);
-    }
+    if (!item)
+        credential->expirationDate = 0;
 
     //proof
     item = cJSON_GetObjectItem(json, "proof");
@@ -503,25 +491,30 @@ Credential *Parser_Credential(cJSON *json, DID *did)
     field = cJSON_GetObjectItem(item, "type");
     if (!field)
         strcpy(credential->proof.type, ProofType);
-
-    strcpy(credential->proof.type, item->valuestring);
+    else {
+        if (strlen(field->valuestring) + 1 > sizeof(credential->proof.type))
+            goto errorExit;
+        else
+            strcpy((char*)credential->proof.type, field->valuestring);
+    }
 
     field = cJSON_GetObjectItem(item, "verificationMethod");
     if (!field || !cJSON_IsString(field) ||
             parse_didurl(&credential->proof.verificationMethod, field->valuestring, did) < 0)
         goto errorExit;
 
-    if (strlen(credential->proof.verificationMethod.did.idstring) == 0)
-        strcpy((char*)credential->proof.verificationMethod.did.idstring, did->idstring);
-
     field = cJSON_GetObjectItem(item, "signature");
     if (!field || !cJSON_IsString(field))
         goto errorExit;
-
-    strcpy((char*)credential->proof.signatureValue, field->valuestring);
+    else {
+        if (strlen(field->valuestring) + 1 > sizeof(credential->proof.signatureValue))
+            goto errorExit;
+        else
+            strcpy((char*)credential->proof.signatureValue, field->valuestring);
+    }
 
     //subject
-    strcpy((char*)credential->subject.id.idstring, did->idstring);
+    //strncpy((char*)credential->subject.id.idstring, did->idstring, MAX_ID_SPECIFIC_STRING);
     item = cJSON_GetObjectItem(json, "credentialSubject");
     if (!item || !cJSON_IsArray(item)|| parser_subject(item, credential) == -1)
          goto errorExit;
@@ -563,7 +556,16 @@ ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *jso
 
 static int didurl_func(const void *a, const void *b)
 {
-    return !DIDURL_Equals(&(*(PublicKey** )a)->id,  &(*(PublicKey **)b)->id);
+    char _stringa[MAX_DID], _stringb[MAX_DID];
+    char *stringa, *stringb;
+
+    Credential *creda = (Credential*)a;
+    Credential *credb = (Credential*)b;
+
+    stringa = DIDURL_ToString(&creda->id, _stringa, MAX_DID, true);
+    stringb = DIDURL_ToString(&credb->id, _stringb, MAX_DID, true);
+
+    return strcmp(stringa, stringb);
 }
 
 int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
@@ -754,81 +756,6 @@ int Credential_AddProperty(Credential *cred, const char *name, const char *value
     return (ssize_t)cred->subject.infos.size;
 }
 
-Credential *Credential_Issue(DID *did, const char *fragment,
-        DID *issuer, DIDURL *defaultSignKey, const char **types, size_t typesize,
-        Property **properties, int propsize, time_t expires, const char *storepass)
-{
-    Credential *cred;
-    const char *cred_data;
-    int i, ret;
-    char signed_data[SIGNATURE_BYTES * 2];
-    DIDStore *store;
-
-    if (!did || !fragment || !*fragment || !issuer || !types || !properties || propsize > 0 || expires > 0 || !storepass)
-        return NULL;
-
-    store = DIDStore_GetInstance();
-    if (!store)
-        return NULL;
-
-    if (check_issuer(store, issuer, &defaultSignKey) == -1)
-        return NULL;
-
-    cred = (Credential*)calloc(1, sizeof(Credential));
-    if (!cred)
-        return NULL;
-
-    strcpy(cred->id.did.idstring, did->idstring);
-    strcpy(cred->id.fragment, fragment);
-
-    cred->type.size = typesize;
-    cred->type.types = (char**)calloc(typesize, sizeof(char*));
-    if (!cred->type.types) {
-        Credential_Destroy(cred);
-        return NULL;
-    }
-    for (i = 0; i < typesize; i++)
-        cred->type.types[i] = (char *)types[i];
-
-    strcpy(cred->issuer.idstring, issuer->idstring);
-
-    cred->expirationDate = expires;
-    time(&cred->issuanceDate);
-
-    strcpy(cred->subject.id.idstring, did->idstring);
-
-    cred->subject.infos.size = propsize;
-    cred->subject.infos.properties = (Property**)calloc(propsize, sizeof(Property*));
-    if (!cred->subject.infos.properties) {
-        Credential_Destroy(cred);
-        return NULL;
-    }
-    for (i = 0; i < propsize; i++)
-        cred->subject.infos.properties[i] = properties[i];
-
-    cred_data = Credential_ToJson(cred, 0, 1);
-    if (!cred_data) {
-        Credential_Destroy(cred);
-        return NULL;
-    }
-
-    ret = DIDStore_Sign(store, issuer, defaultSignKey, storepass, signed_data, 2, (uint8_t *)cred_data,
-                 strlen(cred_data) + 1, NULL, 0);
-    if (ret == -1) {
-        free((char*)cred_data);
-        Credential_Destroy(cred);
-        return NULL;
-    }
-
-    strcpy(cred->proof.type, ProofType);
-
-    strcpy(cred->proof.verificationMethod.did.idstring, defaultSignKey->did.idstring);
-    strcpy(cred->proof.verificationMethod.fragment, defaultSignKey->fragment);
-
-    strcpy(cred->proof.signatureValue, signed_data);
-    return cred;
-}
-
 DIDURL *Credential_GetVerificationMethod(Credential *cred)
 {
     if (!cred)
@@ -870,12 +797,9 @@ bool Credential_IsExpired(Credential *cred)
     time_t curtime;
 
     if (!cred)
-        return false;
+        return true;
 
-    get_current_time(&curtime);
+    curtime = time(NULL);
 
-    if (time_compare(curtime, cred->expirationDate) < 0)
-        return false;
-
-    return true;
+    return curtime > cred->expirationDate;
 }

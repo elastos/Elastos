@@ -14,7 +14,6 @@
 #include "ela_did.h"
 #include "did.h"
 #include "didstore.h"
-//#include "diddocument.h"
 
 #define  TEST_LEN    512
 
@@ -89,20 +88,20 @@ static int didstore_did_op_test_suite_init(void)
     DIDStore *store;
 
     walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
     if (!adapter)
         return -1;
 
     storePath = get_store_path(_path, "/servet");
     store = DIDStore_Initialize(storePath, adapter);
     if (!store) {
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
     document = DIDDocument_FromJson(global_did_string);
     if(!document) {
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         DIDStore_Deinitialize();
         return -1;
     }
@@ -110,7 +109,7 @@ static int didstore_did_op_test_suite_init(void)
     did = DIDDocument_GetSubject(document);
     if (!did) {
         DIDDocument_Destroy(document);
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         DIDStore_Deinitialize();
         return -1;
     }
@@ -122,7 +121,7 @@ static int didstore_did_op_test_suite_cleanup(void)
 {
     DIDStore *store = DIDStore_GetInstance();
 
-    TestAdapter_Destroy(adapter);
+    TestDIDAdapter_Destroy(adapter);
     DIDDocument_Destroy(document);
     DIDStore_DeleteDID(store, did);
     DIDStore_Deinitialize();

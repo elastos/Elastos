@@ -81,7 +81,16 @@ int PublicKey_ToJson(JsonGenerator *gen, PublicKey *pk, int compact)
 
 static int didurl_func(const void *a, const void *b)
 {
-    return !DIDURL_Equals(&(*(PublicKey** )a)->id,  &(*(PublicKey **)b)->id);
+    char _stringa[MAX_DID], _stringb[MAX_DID];
+    char *stringa, *stringb;
+
+    PublicKey *keya = (PublicKey*)a;
+    PublicKey *keyb = (PublicKey*)b;
+
+    stringa = DIDURL_ToString(&keya->id, _stringa, MAX_DID, true);
+    stringb = DIDURL_ToString(&keyb->id, _stringb, MAX_DID, true);
+
+    return strcmp(stringa, stringb);
 }
 
 static
@@ -151,25 +160,44 @@ int ServiceArray_ToJson(JsonGenerator *gen, Service **services, size_t size,
     return 0;
 }
 
-static int add_to_publickeys(DIDDocument *document, PublicKey *pk)
+//api don't check if pk is existed in array.
+static int add_to_publickeys(DIDDocument *document, PublicKey *pk, KeyType keytype)
 {
-    PublicKey **pks = NULL;
+    PublicKey **pks, **pk_array = NULL;
+    size_t *size;
 
     assert(document);
     assert(pk);
 
-    if (!document->publickeys.pks)
+    switch (keytype) {
+        case KeyType_Authentication:
+            pk_array = document->authentication.pks;
+            size = &document->authentication.size;
+            break;
+        case KeyType_Authorization:
+            pk_array = document->authorization.pks;
+            size = &document->authorization.size;
+            break;
+        case KeyType_PublicKey:
+            pk_array = document->publickeys.pks;
+            size = &document->publickeys.size;
+            break;
+        default:
+            return -1;
+    }
+
+    if (!pk_array)
         pks = (PublicKey**)calloc(1, sizeof(PublicKey*));
     else
-        pks = realloc(document->publickeys.pks,
-                     (document->publickeys.size + 1) * sizeof(PublicKey*));
+        pks = realloc(pk_array,
+                     (*size + 1) * sizeof(PublicKey*));
 
     if (!pks)
         return -1;
 
-    pks[document->publickeys.size] = pk;
-    document->publickeys.pks = pks;
-    document->publickeys.size++;
+    pks[*size] = pk;
+    pk_array = pks;
+    *size++;
 
     return 0;
 }
@@ -325,7 +353,7 @@ int Parser_Auth_PublicKeys(DIDDocument *document, cJSON *json, KeyType keytype)
         if (Parser_PublicKey(&(document->did), pk_item, &pk) == -1)
             continue;
 
-        if (add_to_publickeys(document, pk) == -1) {
+        if (add_to_publickeys(document, pk, KeyType_PublicKey) == -1) {
             free(pk);
             continue;
         }
@@ -764,7 +792,7 @@ int DIDDocument_AddPublicKey(DIDDocument *document, DIDURL *keyid, DID *controll
     if (!pk)
         return -1;
 
-    if (add_to_publickeys(document, pk) == -1) {
+    if (add_to_publickeys(document, pk, KeyType_PublicKey) == -1) {
         PublicKey_Destroy(pk);
         return -1;
     }
@@ -800,16 +828,14 @@ int DIDDocument_RemovePublicKey(DIDDocument *document, DIDURL *keyid, bool force
     return 0;
 }
 
+//authentication keys are all did's own key.
 int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *keyid,
         const char *key)
 {
     PublicKey **pks;
-    PublicKey *temp_pk, *pk = NULL;
+    PublicKey *pk;
     uint8_t binkey[PUBLICKEY_BYTES];
     DID *controller;
-    size_t pk_size, auth_size;
-    size_t i;
-    bool flag = false;
 
     if (!document || !keyid || !key || !*key ||
         strlen (key) >= MAX_PUBLICKEY_BASE58)
@@ -818,52 +844,33 @@ int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *keyid,
     if (base58_decode(binkey, key) != PUBLICKEY_BYTES)
         return -1;
 
-    pk_size = document->publickeys.size;
-    auth_size = document->authentication.size;
-
     //check new authentication key is exist in publickeys
-    for (i = 0; i < pk_size; i++) {
-        temp_pk = document->publickeys.pks[i];
-        if (strcmp(temp_pk->id.did.idstring, keyid->did.idstring) != 0 ||
-            strcmp(temp_pk->id.fragment, keyid->fragment) != 0)
-            continue;
-
-        if (strcmp(temp_pk->publicKeyBase58, key) == 0)
+    pk = DIDDocument_GetPublicKey(document, keyid);
+    if (pk) {
+        if ((!strcmp(pk->publicKeyBase58, key) &&
+                DIDDocument_IsAuthenticationKey(document, keyid)) ||
+                strcmp(pk->publicKeyBase58, key) )
             return -1;
-
-        flag = true;
+        else
+            return add_to_publickeys(document, pk, KeyType_Authentication);
     }
 
-    if (!flag) {
-        controller = DIDDocument_GetSubject(document);
-        pk = create_publickey(keyid, controller, key);
-        if (!pk)
-            // BUGBUG: what about pks.
-            return -1;
+    controller = DIDDocument_GetSubject(document);
+    pk = create_publickey(keyid, controller, key);
+    if (!pk)
+        return -1;
 
-        if (add_to_publickeys(document, pk) == -1) {
-            PublicKey_Destroy(pk);
-            return -1;
-        }
-    }
-
-    if (auth_size == 0)
-        pks = (PublicKey**)calloc(1, sizeof(PublicKey*));
-    else
-        pks = (PublicKey**)realloc(document->authentication.pks,
-                                  (auth_size + 1) * sizeof(PublicKey*));
-
-    if (!pks && pk) {
+    if (add_to_publickeys(document, pk, KeyType_PublicKey) == -1) {
         PublicKey_Destroy(pk);
         return -1;
     }
 
-    if (flag)
-        pks[document->authentication.size++] = pk;
-    else
-        pks[document->authentication.size++] = temp_pk;
+    if (add_to_publickeys(document, pk, KeyType_Authentication) == -1) {
+        remove_publickey(document, &pk->id, KeyType_PublicKey);
+        PublicKey_Destroy(pk);
+        return -1;
+    }
 
-    document->authentication.pks = pks;
     return 0;
 }
 
@@ -879,19 +886,25 @@ int DIDDocument_RemoveAuthenticationKey(DIDDocument *document, DIDURL *keyid)
         return -1;
 
     remove_publickey(document, keyid, KeyType_Authentication);
-
     return 0;
+}
+
+bool DIDDocument_IsAuthenticationKey(DIDDocument *document, DIDURL *keyid)
+{
+    return check_auth_publickey(document, keyid, KeyType_Authentication);
+}
+
+bool DIDDocument_IsAuthorizationKey(DIDDocument *document, DIDURL *keyid)
+{
+    return check_auth_publickey(document, keyid, KeyType_Authorization);
 }
 
 int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid,
         DID *controller, const char *key)
 {
     PublicKey **pks;
-    PublicKey *temp_pk, *pk = NULL;
+    PublicKey *pk = NULL;
     uint8_t binkey[PUBLICKEY_BYTES];
-    size_t pk_size, auth_size;
-    size_t i;
-    bool flag = false;
 
     if (!document || !keyid || !controller || !key || !*key ||
         strlen (key) >= MAX_PUBLICKEY_BASE58)
@@ -903,86 +916,58 @@ int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid,
     if (base58_decode(binkey, key) != PUBLICKEY_BYTES)
         return -1;
 
-    pk_size = document->publickeys.size;
-    auth_size = document->authorization.size;
-
     //check new authentication key is exist in publickeys
-    for (i = 0; i < pk_size; i++) {
-        temp_pk = document->publickeys.pks[i];
-
-        if (strcmp(temp_pk->id.did.idstring, keyid->did.idstring) != 0 ||
-            strcmp(temp_pk->id.fragment, keyid->fragment) != 0)
-            continue;
-
-        if (strcmp(temp_pk->publicKeyBase58, key) != 0)
+    pk = DIDDocument_GetPublicKey(document, keyid);
+    if (pk) {
+        if ((!strcmp(pk->publicKeyBase58, key) &&
+                DIDDocument_IsAuthorizationKey(document, keyid)) ||
+                strcmp(pk->publicKeyBase58, key))
             return -1;
-
-        flag = true;
+        else
+            return add_to_publickeys(document, pk, KeyType_Authorization);
     }
 
-    if (!flag) {
-        pk = create_publickey(keyid, controller, key);
-        if (pk < 0)
-            //BUGBUG: what about pks;
-            return -1;
+    pk = create_publickey(keyid, controller, key);
+    if (!pk)
+        return -1;
 
-        if (add_to_publickeys(document, pk) == -1) {
-            //BUGBUG: what about pks;
-            PublicKey_Destroy(pk);
-            return -1;
-        }
-    }
-
-    if (auth_size == 0)
-        pks = (PublicKey**)calloc(1, sizeof(PublicKey*));
-    else
-        pks = (PublicKey**)realloc(document->authorization.pks,
-                                  (auth_size + 1) * sizeof(PublicKey*));
-
-    if (!pks && pk) {
+    if (add_to_publickeys(document, pk, KeyType_PublicKey) == -1) {
         PublicKey_Destroy(pk);
         return -1;
     }
 
-    if (flag)
-        pks[document->authorization.size++] = pk;
-    else
-        pks[document->authorization.size++] = temp_pk;
+    if (add_to_publickeys(document, pk, KeyType_Authorization) == -1) {
+        remove_publickey(document, &pk->id, KeyType_PublicKey);
+        PublicKey_Destroy(pk);
+        return -1;
+    }
 
-    document->authorization.pks = pks;
     return 0;
 }
 
-int DIDDocument_AuthorizationDid(DID *controller, DIDURL *keyid,
-        const char *key)
+int DIDDocument_AuthorizationDid(DIDDocument *document, DIDURL *keyid,
+        DID *controller, DIDURL *authorkeyid)
 {
-    DIDDocument *document;
+    DIDDocument *doc;
     PublicKey *pk;
-    uint8_t binkey[PUBLICKEY_BYTES];
+    int rc;
 
-    if (!controller || !keyid || !key || !*key ||
-        strlen (key) >= MAX_PUBLICKEY_BASE58)
+    if (!document || !keyid || !controller || !authorkeyid)
         return -1;
 
-    if (base58_decode(binkey, key) != PUBLICKEY_BYTES)
+    doc = DID_Resolve(controller);
+    if (!doc)
         return -1;
 
-    document = DID_Resolve(controller);
-    if (!document)
-        return -1;
-
-    pk = DIDDocument_GetPublicKey(document, keyid);
+    pk = DIDDocument_GetAuthenticationKey(doc, authorkeyid);
     if (!pk) {
-        DIDDocument_Destroy(document);
+        DIDDocument_Destroy(doc);
         return -1;
     }
 
-    if (!DID_Equals(PublicKey_GetController(pk), controller)) {
-        DIDDocument_Destroy(document);
-        return -1;
-    }
-
-    return DIDDocument_AddAuthorizationKey(document, keyid, controller, key);
+    rc = DIDDocument_AddAuthorizationKey(document, keyid, controller, pk->publicKeyBase58);
+    DIDDocument_Destroy(doc);
+    return rc;
 }
 
 int DIDDocument_RemoveAuthorizationKey(DIDDocument *document, DIDURL *keyid)
@@ -1165,15 +1150,12 @@ PublicKey *DIDDocument_GetPublicKey(DIDDocument *document, DIDURL *keyid)
     size_t size;
     size_t i;
 
-    if (!document || !keyid || !*keyid->fragment)
+    if (!document || !keyid || !*keyid->fragment || !*keyid->did.idstring)
         return NULL;
 
     size = document->publickeys.size;
     if (!size)
         return NULL;
-
-    if (!*keyid->did.idstring)
-        strcpy(keyid->did.idstring, document->did.idstring);
 
     for (i = 0; i < size; i++ ) {
         pk = document->publickeys.pks[i];
@@ -1642,7 +1624,7 @@ int DIDDocument_Sign(DIDDocument *document, DIDURL *keyid, const char *storepass
     va_list inputs;
     DIDStore *store;
 
-    if (!document || !storepass || !sig || count <= 0)
+    if (!document || !storepass || !*storepass || !sig || count <= 0)
         return -1;
 
     if (!keyid)

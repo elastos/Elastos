@@ -7,8 +7,6 @@
 #include <CUnit/Basic.h>
 #include "ela_did.h"
 #include "loader.h"
-//#include "credential.h"
-//#include "diddocument.h"
 
 static DIDDocument *doc;
 static DID *did;

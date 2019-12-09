@@ -9,8 +9,6 @@
 #include "loader.h"
 #include "ela_did.h"
 #include "did.h"
-//#include "credential.h"
-//#include "diddocument.h"
 
 static DIDDocument *document;
 static Credential *cred;

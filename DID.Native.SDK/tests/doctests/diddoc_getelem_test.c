@@ -9,7 +9,6 @@
 #include "loader.h"
 #include "ela_did.h"
 #include "did.h"
-//#include "diddocument.h"
 
 static DIDDocument *document;
 static DIDURL id;

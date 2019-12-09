@@ -111,7 +111,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     char signature[SIGNATURE_BYTES * 2 + 16];
     DIDStore *store;
 
-    if (!did || !signKey || !data || !storepass
+    if (!did || !signKey || !data || !storepass || !*storepass
             || (type < RequestType_Create) && (type > RequestType_Deactivate))
         return NULL;
 

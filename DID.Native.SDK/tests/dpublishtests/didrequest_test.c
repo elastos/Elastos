@@ -106,30 +106,33 @@ static int didrequest_test_suite_init(void)
     DIDStore *store;
 
     walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestAdapter_Create(walletDir, walletId, network, resolver, getpassword);
+    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
     if (!adapter)
         return -1;
 
+    printf("\n#### before.......\n");
     storePath = get_store_path(_path, "/newdid");
     store = DIDStore_Initialize(storePath, adapter);
     if (!store) {
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
+
+     printf("\n#### after......\n");
 
     mnemonic = Mnemonic_Generate(0);
     printf("\n#### mnemonic: %s\n", mnemonic);
     rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, true);
     Mnemonic_free((char*)mnemonic);
     if (rc < 0) {
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         DIDStore_Deinitialize();
         return -1;
     }
 
     document = DIDStore_NewDID(store, storepass, "littlefish");
     if(!document) {
-        TestAdapter_Destroy(adapter);
+        TestDIDAdapter_Destroy(adapter);
         DIDStore_Deinitialize();
         return -1;
     }
@@ -139,7 +142,7 @@ static int didrequest_test_suite_init(void)
 static int didrequest_test_suite_cleanup(void)
 {
     DIDDocument_Destroy(document);
-    TestAdapter_Destroy(adapter);
+    TestDIDAdapter_Destroy(adapter);
     DIDStore_Deinitialize();
     return 0;
 }

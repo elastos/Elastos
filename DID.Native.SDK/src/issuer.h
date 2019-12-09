@@ -20,67 +20,22 @@
  * SOFTWARE.
  */
 
-#ifndef __CREDENTIAL_H__
-#define __CREDENTIAL_H__
-
-#include <stdio.h>
-#include <cjson/cJSON.h>
+#ifndef __ISSUER_H__
+#define __ISSUER_H__
 
 #include "ela_did.h"
-#include "did.h"
-#include "JsonGenerator.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_TYPE        64
-#define MAX_SIGN        128
-
-typedef struct Property {
-    char *key;
-    char *value;
-} Property;
-
-typedef struct CredentialSubject {
-    DID id;
-
-    struct {
-        Property **properties;
-        size_t size;
-    } infos;
-} CredentialSubject;
-
-typedef struct CredentialProof {
-    char type[MAX_TYPE];
-    DIDURL verificationMethod;
-    char signatureValue[MAX_SIGN];
-} CredentialProof;
-
-struct Credential {
-    DIDURL id;
-
-    struct {
-        char **types;
-        size_t size;
-    } type;
-
-    DID issuer;
-    time_t issuanceDate;
-    time_t expirationDate;
-    CredentialSubject subject;
-    CredentialProof proof;
+struct Issuer {
+    DID signer;
+    DIDURL signkey;
 };
-
-int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
-        size_t size, int compact);
-
-Credential *Parser_Credential(cJSON *json, DID *did);
-
-ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *json);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__CREDENTIAL_H__
+#endif //__ISSUER_H__

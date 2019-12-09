@@ -27,7 +27,7 @@ static int TestDIDAdaptor_CreateIdTransaction(DIDAdapter *_adapter, const char *
     return SpvDidAdapter_CreateIdTransaction(adapter->impl, payload, memo, password);
 }
 
-static const char *TestAdapter_Resolver(DIDAdapter *_adapter, const char *did)
+static const char *TestDIDAdapter_Resolver(DIDAdapter *_adapter, const char *did)
 {
     TestDIDAdaptor *adapter = (TestDIDAdaptor*)_adapter;
 
@@ -37,7 +37,7 @@ static const char *TestAdapter_Resolver(DIDAdapter *_adapter, const char *did)
     return SpvDidAdapter_Resolve(adapter->impl, did);
 }
 
-DIDAdapter *TestAdapter_Create(const char *walletDir, const char *walletId,
+DIDAdapter *TestDIDAdapter_Create(const char *walletDir, const char *walletId,
         const char *network, const char *resolver, GetPasswordCallback *callback)
 {
     TestDIDAdaptor *adapter;
@@ -51,7 +51,7 @@ DIDAdapter *TestAdapter_Create(const char *walletDir, const char *walletId,
         return NULL;
 
     adapter->base.createIdTransaction = TestDIDAdaptor_CreateIdTransaction;
-    adapter->base.resolve = TestAdapter_Resolver;
+    adapter->base.resolve = TestDIDAdapter_Resolver;
 
     adapter->impl = SpvDidAdapter_Create(walletDir, walletId, network, resolver);
     if (!adapter->impl) {
@@ -66,7 +66,7 @@ DIDAdapter *TestAdapter_Create(const char *walletDir, const char *walletId,
     return (DIDAdapter*)adapter;
 }
 
-void TestAdapter_Destroy(DIDAdapter *_adapter)
+void TestDIDAdapter_Destroy(DIDAdapter *_adapter)
 {
     TestDIDAdaptor *adapter = (TestDIDAdaptor*)_adapter;
 

@@ -151,3 +151,10 @@ _Presentation_GetCreatedTime
 _Presentation_GetVerificationMethod
 _Presentation_GetNonce
 _Presentation_GetRealm
+
+# Issuer
+_Issuer_CreateCredential
+_Issuer_GetSigner
+_Issuer_GetSignKey
+_Issuer_Create
+_Issuer_Destroy

@@ -83,11 +83,10 @@ static int Presentation_ToJson_Internal(JsonGenerator *gen, Presentation *pre,
     return 0;
 }
 
-static int Parser_Credentials_InPre(DID *did, Presentation *pre, cJSON *json)
+static int Parser_Credentials_InPre(DID *signer, Presentation *pre, cJSON *json)
 {
     size_t size = 0;
 
-    assert(did);
     assert(pre);
     assert(json);
 
@@ -99,7 +98,7 @@ static int Parser_Credentials_InPre(DID *did, Presentation *pre, cJSON *json)
     if (!credentials)
         return -1;
 
-    size = Parser_Credentials(did, credentials, size, json);
+    size = Parser_Credentials(signer, credentials, size, json);
     if (size <= 0) {
         free(credentials);
         return -1;
@@ -111,11 +110,12 @@ static int Parser_Credentials_InPre(DID *did, Presentation *pre, cJSON *json)
     return 0;
 }
 
-static int parse_proof(DID *did, Presentation *pre, cJSON *json)
+static int parse_proof(DID *signer, Presentation *pre, cJSON *json)
 {
     cJSON *item;
+    DIDURL *keyid;
 
-    assert(did);
+    assert(signer);
     assert(pre);
     assert(json);
 
@@ -125,9 +125,10 @@ static int parse_proof(DID *did, Presentation *pre, cJSON *json)
     if (!item || !cJSON_IsString(item))
         return -1;
 
-    DIDURL *keyid = DIDURL_FromString(cJSON_GetStringValue(item), did);
+    keyid = DIDURL_FromString(cJSON_GetStringValue(item), signer);
     if (!keyid)
         return -1;
+
     DIDURL_Copy(&pre->proof.verificationMethod, keyid);
     DIDURL_Destroy(keyid);
 
@@ -148,16 +149,15 @@ static int parse_proof(DID *did, Presentation *pre, cJSON *json)
         return -1;
 
     strcpy(pre->proof.signatureValue, cJSON_GetStringValue(item));
-
     return 0;
 }
 
-static Presentation *Parser_Presentation(cJSON *json, DID *did)
+static Presentation *Parser_Presentation(cJSON *json)
 {
     cJSON *item;
+    DID subject;
 
     assert(json);
-    assert(did);
 
     Presentation *pre = (Presentation*)calloc(1, sizeof(Presentation));
     if (!pre)
@@ -169,8 +169,13 @@ static Presentation *Parser_Presentation(cJSON *json, DID *did)
         Presentation_Destroy(pre);
         return NULL;
     }
-    // TODO: check buffer overrun
-    strcpy(pre->type, cJSON_GetStringValue(item));
+
+    if (strlen(item->valuestring) + 1 > sizeof(pre->type)) {
+        Presentation_Destroy(pre);
+        return NULL;
+    }
+
+    strcpy(pre->type, item->valuestring);
 
     item = cJSON_GetObjectItem(json, "created");
     if (!item || !cJSON_IsString(item) ||
@@ -179,16 +184,16 @@ static Presentation *Parser_Presentation(cJSON *json, DID *did)
         return NULL;
     }
 
-    item = cJSON_GetObjectItem(json, "verifiableCredential");
-    if (!item || !cJSON_IsArray(item) ||
-            Parser_Credentials_InPre(did, pre, item) == -1) {
+    item = cJSON_GetObjectItem(json, "proof");
+    if (!item || !cJSON_IsObject(item) ||
+            parse_proof(&subject, pre, item) == -1) {
         Presentation_Destroy(pre);
         return NULL;
     }
 
-    item = cJSON_GetObjectItem(json, "proof");
-    if (!item || !cJSON_IsObject(item) ||
-            parse_proof(did, pre, item) == -1) {
+    item = cJSON_GetObjectItem(json, "verifiableCredential");
+    if (!item || !cJSON_IsArray(item) ||
+            Parser_Credentials_InPre(&subject, pre, item) == -1) {
         Presentation_Destroy(pre);
         return NULL;
     }
@@ -206,30 +211,48 @@ static int add_credential(Credential **creds, int index, Credential *cred)
 }
 ////////////////////////////////////////////////////////////////////////////
 
-Presentation *Presentation_Create(DID *did, DIDURL *signkey, int count, ...)
+Presentation *Presentation_Create(DID *did, DIDURL *signkey, const char *storepass,
+        const char *nonce, const char *realm, int count, ...)
 {
     va_list list;
     Credential *cred;
+    Presentation *pre = NULL;
+    DIDDocument *doc;
+    const char *data;
+    char signature[SIGNATURE_BYTES * 2 + 16];
+    int rc;
 
-    if (!did || !signkey || count <= 0)
+    if (!did || !signkey || !storepass || !*storepass || !nonce || !*nonce ||
+            !realm || !*realm || count <= 0)
         return NULL;
 
-    Presentation *pre = (Presentation*)calloc(1, sizeof(Presentation));
+    doc = DID_Resolve(did);
+    if (!doc)
+        return NULL;
+
+    if (!DIDDocument_IsAuthenticationKey(doc, signkey))
+        goto errorExit;
+
+    pre = (Presentation*)calloc(1, sizeof(Presentation));
     if (!pre)
-        return NULL;
+        goto errorExit;
 
     strcpy(pre->type, PresentationType);
-    get_current_time(&pre->created);
+    time(&pre->created);
 
     Credential **creds = (Credential**)calloc(count, sizeof(Credential*));
-    if (!creds) {
-        free(pre);
-        return NULL;
-    }
+    if (!creds)
+        goto errorExit;
 
     va_start(list, count);
     for (int i = 0; i < count; i++) {
         cred = va_arg(list, Credential*);
+        if (Credential_Verify(cred) == -1 || Credential_IsExpired(cred)) {
+            free(creds);
+            va_end(list);
+            goto errorExit;
+        }
+
         add_credential(creds, i, cred);
     }
     va_end(list);
@@ -237,7 +260,29 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, int count, ...)
     pre->credentials.credentials = creds;
     pre->credentials.size = count;
 
+    data = Presentation_ToJson(pre, 0, true);
+    if (!data)
+        goto errorExit;
+
+    rc = DIDDocument_Sign(doc, signkey, storepass, signature, 3, (unsigned char*)data, strlen(data),
+            (unsigned char*)realm, strlen(realm), (unsigned char*)nonce, strlen(nonce));
+    free((char*)data);
+    if (rc)
+        goto errorExit;
+
+    DIDDocument_Destroy(doc);
+    strcpy(pre->proof.type, ProofType);
+    DIDURL_Copy(&pre->proof.verificationMethod, signkey);
+    strcpy(pre->proof.nonce, nonce);
+    strcpy(pre->proof.realm, realm);
+    strcpy(pre->proof.signatureValue, signature);
+
     return pre;
+
+errorExit:
+    DIDDocument_Destroy(doc);
+    Presentation_Destroy(pre);
+    return NULL;
 }
 
 void Presentation_Destroy(Presentation *pre)
@@ -255,50 +300,6 @@ void Presentation_Destroy(Presentation *pre)
         free(pre->credentials.credentials);
     }
     free(pre);
-}
-
-Presentation *Presentation_Sign(DID *did, Presentation *pre, const char *storepass,
-        const char *nonce, const char *realm)
-{
-    DIDDocument *doc;
-    DIDURL *signkey;
-    char signature[SIGNATURE_BYTES * 2 + 16];
-    const char *data;
-    int rc;
-
-    if (!did || !pre || !nonce || !*nonce || !realm || !*realm)
-        return NULL;
-
-    doc = DID_Resolve(did);
-    if (!doc)
-        return NULL;
-
-    signkey = DIDDocument_GetDefaultPublicKey(doc);
-    if (!signkey) {
-        DIDDocument_Destroy(doc);
-        return NULL;
-    }
-
-    data = Presentation_ToJson(pre, 0, true);
-    if (!data) {
-        DIDDocument_Destroy(doc);
-        return NULL;
-    }
-
-    rc = DIDDocument_Sign(doc, signkey, storepass, signature, 3, (unsigned char*)data, strlen(data),
-            (unsigned char*)nonce, strlen(nonce), (unsigned char*)realm, strlen(realm));
-    free((char*)data);
-    DIDDocument_Destroy(doc);
-    if (rc)
-        return NULL;
-
-    strcpy(pre->proof.type, ProofType);
-    DIDURL_Copy(&pre->proof.verificationMethod, signkey);
-    strcpy(pre->proof.nonce, nonce);
-    strcpy(pre->proof.realm, realm);
-    strcpy(pre->proof.signatureValue, signature);
-
-    return pre;
 }
 
 int Presentation_Verify(Presentation *pre)
@@ -337,8 +338,8 @@ int Presentation_Verify(Presentation *pre)
 
     rc = DIDDocument_Verify(doc, &pre->proof.verificationMethod,
             pre->proof.signatureValue, 3, (unsigned char*)data, strlen(data),
-            (unsigned char*)pre->proof.nonce, strlen(pre->proof.nonce),
-            (unsigned char*)pre->proof.realm, strlen(pre->proof.realm));
+            (unsigned char*)pre->proof.realm, strlen(pre->proof.realm),
+            (unsigned char*)pre->proof.nonce, strlen(pre->proof.nonce));
 
     free((char*)data);
     DIDDocument_Destroy(doc);
@@ -363,20 +364,20 @@ const char* Presentation_ToJson(Presentation *pre, int compact, int forsign)
     return JsonGenerator_Finish(gen);
 }
 
-Presentation *Presentation_FromJson(const char *json, DID *did)
+Presentation *Presentation_FromJson(const char *json)
 {
     cJSON *root;
     Presentation *pre;
     int i;
 
-    if (!json || !did)
+    if (!json)
         return NULL;
 
     root = cJSON_Parse(json);
     if (!root)
         return NULL;
 
-    pre = Parser_Presentation(root, did);
+    pre = Parser_Presentation(root);
     if (!pre) {
         cJSON_Delete(root);
         return NULL;
