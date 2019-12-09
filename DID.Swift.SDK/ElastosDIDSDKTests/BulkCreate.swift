@@ -19,6 +19,8 @@ class BulkCreate: XCTestCase {
         do {
             
             let store: DIDStore = try DIDStore.shareInstance()!
+//            let did = try DID("did:elastos:im4wF5ZqiWFB1ATd2JxuxW6HHzR5Ks3LUS")
+//            let d = try store.resolveDid(did, true)
             let mnemonic: String = HDKey.generateMnemonic(0)
             try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
             for i in 0...10 {

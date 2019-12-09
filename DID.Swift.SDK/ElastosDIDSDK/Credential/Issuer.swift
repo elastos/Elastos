@@ -5,7 +5,7 @@ public class Issuer {
     public var didDocument: DIDDocument?
     public var signKey: DIDURL!
     public var target: DID?
-    public var vc: VerifiableCredential = VerifiableCredential()
+    public var vc: VerifiableCredential!
     
     public init(_ did: DID, _ signKey: DIDURL?) throws {
         self.signKey = signKey
@@ -14,6 +14,9 @@ public class Issuer {
         guard self.didDocument != nil else {
             throw DIDError.failue("Can not resolve DID.")
         }
+        self.vc = VerifiableCredential()
+        self.vc.subject = CredentialSubject(self.target!)
+        self.vc.issuer = didDocument?.subject
         if signKey == nil {
             self.signKey = self.didDocument?.getDefaultPublicKey()
         } else {
@@ -38,7 +41,7 @@ public class Issuer {
     public func getSignKey() -> DIDURL {
         return signKey
     }
-
+    
     public func sign(_ passphrase: String) throws -> VerifiableCredential {
         
         self.vc.issuanceDate = Date()

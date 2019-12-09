@@ -14,7 +14,7 @@ public class VerifiableCredential: DIDObject {
     }
     
     init(_ vc: VerifiableCredential) {
-        super.init(vc.id, vc.type)
+        super.init()
         self.id = vc.id
         self.types = vc.types
         self.issuer = vc.issuer
@@ -176,7 +176,8 @@ public class VerifiableCredential: DIDObject {
     }
     
     public func toJsonForSign(_ compact: Bool) -> String {
-
-        return ""
+        let dic = toJson(nil, compact, true)
+        let json = JsonHelper.creatJsonString(dic: dic)
+        return json
     }
 }

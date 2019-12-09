@@ -11,10 +11,10 @@
 		11054F1A239D17DC008A4500 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D474233485DF0012CD77 /* Constants.swift */; };
 		11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1C239D1B31008A4500 /* DIDURLTest.swift */; };
 		11054F1F239D2088008A4500 /* DIDTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1E239D2088008A4500 /* DIDTest.swift */; };
-		11092151235ED8BD006B7F47 /* DIDUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11092150235ED8BD006B7F47 /* DIDUtil.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		111BF480235467880043D570 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; };
 		111BF481235467880043D570 /* Antlr4.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		111F4B7B239E315C00FEE4E0 /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B1235E06B7006E66F7 /* Base64.swift */; };
 		1125B582238234FB00D396B6 /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1125B57D238234FB00D396B6 /* CHDKey.swift */; };
 		1125B583238234FB00D396B6 /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57E238234FB00D396B6 /* HDkey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1125B584238234FB00D396B6 /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57F238234FB00D396B6 /* crypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -43,7 +43,6 @@
 		11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AE235E06B7006E66F7 /* DerivedKey.swift */; };
 		11CA74B9235E06B7006E66F7 /* DateFormater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AF235E06B7006E66F7 /* DateFormater.swift */; };
 		11CA74BA235E06B7006E66F7 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B0235E06B7006E66F7 /* HDKey.swift */; };
-		11CA74BB235E06B7006E66F7 /* Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B1235E06B7006E66F7 /* Base64.swift */; };
 		11CA74BD235E06B7006E66F7 /* JsonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B3235E06B7006E66F7 /* JsonHelper.swift */; };
 		11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */; };
 		11CA74BF235E06B7006E66F7 /* OrderedDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */; };
@@ -155,7 +154,6 @@
 /* Begin PBXFileReference section */
 		11054F1C239D1B31008A4500 /* DIDURLTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDURLTest.swift; sourceTree = "<group>"; };
 		11054F1E239D2088008A4500 /* DIDTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDTest.swift; sourceTree = "<group>"; };
-		11092150235ED8BD006B7F47 /* DIDUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDUtil.swift; sourceTree = "<group>"; };
 		1109D08423275CFE00A03D56 /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = "<group>"; };
 		110AD2F0234E431D006578D6 /* Antlr4.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Antlr4.xcodeproj; path = Antlr4/Antlr4.xcodeproj; sourceTree = "<group>"; };
 		110AD2FE234E44C8006578D6 /* Base58.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
@@ -437,6 +435,7 @@
 		116CAA56236008FD00BBEE4F /* TestUtils */ = {
 			isa = PBXGroup;
 			children = (
+				11CA74B1235E06B7006E66F7 /* Base64.swift */,
 				116CAA572360092D00BBEE4F /* TestUtils.swift */,
 				119338DC237E4DB800C4998E /* TestConfig.swift */,
 			);
@@ -446,11 +445,9 @@
 		11CA74AC235E06B7006E66F7 /* Util */ = {
 			isa = PBXGroup;
 			children = (
-				11092150235ED8BD006B7F47 /* DIDUtil.swift */,
 				11CA74AE235E06B7006E66F7 /* DerivedKey.swift */,
 				11CA74AF235E06B7006E66F7 /* DateFormater.swift */,
 				11CA74B0235E06B7006E66F7 /* HDKey.swift */,
-				11CA74B1235E06B7006E66F7 /* Base64.swift */,
 				11CA74B3235E06B7006E66F7 /* JsonHelper.swift */,
 				11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */,
 				11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */,
@@ -749,6 +746,7 @@
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
 				1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */,
+				111F4B7B239E315C00FEE4E0 /* Base64.swift in Sources */,
 				11054F18239D17B7008A4500 /* DIDError.swift in Sources */,
 				11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */,
 				116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */,
@@ -769,7 +767,6 @@
 				A3E6D45A233485AD0012CD77 /* DIDURLParser.swift in Sources */,
 				A3E6D476233485DF0012CD77 /* MalformedCredentialError.swift in Sources */,
 				A3E6D483233485E00012CD77 /* Constants.swift in Sources */,
-				11CA74BB235E06B7006E66F7 /* Base64.swift in Sources */,
 				A3E6D447233485800012CD77 /* VerifiableCredential.swift in Sources */,
 				11CA74CC235E1243006E66F7 /* DIDURLComparator.swift in Sources */,
 				A3E6D479233485E00012CD77 /* MalformedDIDURLError.swift in Sources */,
@@ -792,7 +789,6 @@
 				A3E6D448233485800012CD77 /* Issuer.swift in Sources */,
 				A3E6D45F233485BB0012CD77 /* DIDBackend.swift in Sources */,
 				A3E6D47A233485E00012CD77 /* MalformedDIDError.swift in Sources */,
-				11092151235ED8BD006B7F47 /* DIDUtil.swift in Sources */,
 				A3E6D453233485AD0012CD77 /* DIDURLListener.swift in Sources */,
 				A3E6D45E233485BB0012CD77 /* IDChainRequest.swift in Sources */,
 				A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */,

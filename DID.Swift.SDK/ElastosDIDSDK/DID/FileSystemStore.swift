@@ -278,7 +278,7 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func setCredentialHint(_ did: DID, _ id: DIDURL, _ hint: String) throws {
-        let targetPath = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "." + "/" + id.fragment + "/" + FileSystemStore.META_EXT
+        let targetPath = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "/." + id.fragment + FileSystemStore.META_EXT
         let path: String = try getFile(true, targetPath)
         if hint.isEmpty {
             _ = try deleteFile(path)
@@ -301,12 +301,13 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func storeCredential(_ credential: VerifiableCredential , _ hint: String?) throws {
-        let targetPath = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + credential.subject.id.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + credential.id.fragment
+        let targetPath = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + credential.subject.id.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "/" + credential.id.fragment
         let path = try getFile(true, targetPath)
-        let storeDic =  credential.toJson(credential.issuer, true, false)
+        let storeDic = credential.toJson(credential.issuer, true, false)
+        let storeJson = JsonHelper.creatJsonString(dic: storeDic)
+        let data: Data = storeJson.data(using: .utf8)!
         let handle = FileHandle(forWritingAtPath:path)
-        let storeData: Data = try JSONSerialization.data(withJSONObject: storeDic, options: [])
-        handle?.write(storeData)
+        handle?.write(data)
         
         if hint != nil && !hint!.isEmpty {
             try setCredentialHint(credential.subject.id, credential.id, hint!)
@@ -334,7 +335,7 @@ public class FileSystemStore: DIDStore {
     }
 
     override public func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
-        var targetPath = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "." + id.fragment + "/" + FileSystemStore.META_EXT
+        var targetPath = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "/." + id.fragment + FileSystemStore.META_EXT
         var path = try getFile(targetPath)
         if try exists(path!) {
            _ = try deleteFile(path!)

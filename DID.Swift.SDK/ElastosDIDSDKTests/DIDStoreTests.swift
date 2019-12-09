@@ -90,15 +90,11 @@ class DIDStoreTests: XCTestCase {
         XCTAssertTrue(TestUtils.existsFile(path))
         let path2: String = storePath + "/" + "ids" + "/" + "." + id + ".meta"
         XCTAssertFalse(TestUtils.existsFile(path2))
-        DIDStoreTests.ids[doc.subject!] = ""
     }
     
     func test30CreateDID3() {
         for i in 0...100 {
-            var dic: Dictionary<String, String> = [: ]
-            dic["12"] = String(i)
-            
-            let hint: String = "my did " + String(10)
+            let hint: String = "my did " + String(i)
             let doc: DIDDocument = try! store.newDid(storePass, hint)
             let id: String = doc.subject!.methodSpecificId!
             let path: String = storePath + "/" + "ids" + "/" + id + "/" + "document"
@@ -113,10 +109,16 @@ class DIDStoreTests: XCTestCase {
     
     func test40DeleteDID1() {
         let dids: Array<DID> = Array(DIDStoreTests.ids.keys)
-        dids.forEach { did in
-            if did != DIDStoreTests.primaryDid {
+        for i in 0..<dids.count {
+            let did = dids[i]
+            if did != DIDStoreTests.primaryDid || i % 9 == 0 {
                 var deleted: Bool = try! store.deleteDid(did)
                 XCTAssertTrue(deleted)
+                if deleted == false {
+                    print(deleted)
+                    print(did)
+                    print(i)
+                }
                 var path: String = storePath + "/ids/" + did.methodSpecificId!
                 XCTAssertFalse(TestUtils.exists(path))
                 DIDStoreTests.ids.removeValue(forKey: did)
@@ -217,13 +219,13 @@ class DIDStoreTests: XCTestCase {
                 var keypath: String = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + "/cred-1"
                 XCTAssertTrue(TestUtils.existsFile(keypath))
                 
-                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + ".cred-1.meta"
+                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + "/.cred-1.meta"
                 XCTAssertTrue(TestUtils.existsFile(keypath))
                 
-                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + "cred-2"
+                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + "/cred-2"
                 XCTAssertTrue(TestUtils.existsFile(keypath))
                 
-                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + ".cred-2.meta"
+                keypath = storePath + "/" + "ids/" + did.methodSpecificId +  "/" + "credentials" + "/.cred-2.meta"
                 XCTAssertFalse(TestUtils.existsFile(keypath))
             }
         } catch {

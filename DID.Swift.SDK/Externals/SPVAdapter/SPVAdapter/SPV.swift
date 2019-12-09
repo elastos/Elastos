@@ -34,7 +34,7 @@ public class SPV {
         let parameters: [String: Any] = [
             "jsonrpc": "2.0",
             "method": "getidtxspayloads",
-            "params": ["id": id, "all": false],
+            "params": ["id":id, "all": false],
             "id": "1"
         ]
         request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
@@ -43,14 +43,11 @@ public class SPV {
             guard let data = data,
                 let response = response as? HTTPURLResponse,
                 error == nil else { // check for fundamental networking error
-                    print("error", error ?? "Unknown error")
                     semaphore.signal()
                     return
             }
             
             guard (200 ... 299) ~= response.statusCode else { // check for http errors
-                print("statusCode should be 2xx, but is \(response.statusCode)")
-                print("response = \(response)")
                 semaphore.signal()
                 return
             }
