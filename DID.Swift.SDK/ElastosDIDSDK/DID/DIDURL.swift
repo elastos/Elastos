@@ -51,7 +51,7 @@ public class DIDURL: NSObject {
     }
     
     public func getParameter(_ name: String) -> String? {
-        return parameters![name]!
+        return parameters![name]
     }
     
     public func hasParameter(_ name: String) -> Bool {
@@ -77,14 +77,14 @@ public class DIDURL: NSObject {
     }
     
     public func getQueryParameter(_ name: String) -> String? {
-        guard query != nil else {
-            return query![name]!
+        guard query == nil else {
+            return query![name]
         }
         return nil
     }
     
     public func hasQueryParameter(_ name: String) -> Bool {
-        guard query != nil else {
+        guard query == nil else {
             return query!.keys.contains(name)
         }
         return false
@@ -98,14 +98,16 @@ public class DIDURL: NSObject {
         }
         var path = (self.path ?? "")
         if path != "" {
-            path = path + "?"
         }
         var query: String = ""
         if self.query != nil {
-            query = mapToString(self.query!, sep: "&")
+            query = "?" + mapToString(self.query!, sep: "&")
         }
-        let fragment = self.fragment ?? ""
-        return testDID + params + path + query + "#" + fragment
+        var fragment = self.fragment ?? ""
+        if self.fragment != nil {
+            fragment = "#" + fragment
+        }
+        return testDID + params + path + query + fragment
     }
     
     public override var description: String {

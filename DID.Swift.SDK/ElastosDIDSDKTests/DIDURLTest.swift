@@ -83,11 +83,12 @@ class DIDURLTest: XCTestCase {
 
     func testGetParameter() {
         XCTAssertEqual("testvalue", url.getParameter("elastos:foo"))
-        XCTAssertNotNil(url.getParameter("foo"))
+        XCTAssertNil(url.getParameter("foo"))
         XCTAssertEqual("123", url.getParameter("bar"))
         XCTAssertEqual("12345", url.getParameter("elastos:foobar"))
-        XCTAssertNotNil(url.getParameter("foobar"))
-        XCTAssertNotNil(url.getParameter("keyonly"))
+        XCTAssertNil(url.getParameter("foobar"))
+        let re = url.getParameter("keyonly") == nil || url.getParameter("keyonly") == ""
+        XCTAssertTrue(re)
     }
 
     func testHasParameter() {
@@ -112,7 +113,8 @@ class DIDURLTest: XCTestCase {
     func testGetQueryParameter() {
         XCTAssertEqual("qvalue", url.getQueryParameter("qkey"))
         XCTAssertEqual("true", url.getQueryParameter("test"))
-        XCTAssertNil(url.getQueryParameter("qkeyonly"))
+        let re = url.getQueryParameter("qkeyonly") == nil || url.getQueryParameter("qkeyonly") == ""
+        XCTAssertTrue(re)
     }
     
     func testHasQueryParameter() {
@@ -136,7 +138,7 @@ class DIDURLTest: XCTestCase {
         XCTAssertEqual(url.hash, other.hash)
 
         other = try! DIDURL("did:elastos:1234567890#test")
-        XCTAssertEqual(url.hash, other.hash)
+        XCTAssertNotEqual(url.hash, other.hash)
     }
 
     func testEquals() {
