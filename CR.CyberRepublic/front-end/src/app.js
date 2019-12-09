@@ -7,15 +7,11 @@ import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'react-router-redux'
 import store from '@/store'
 import config from '@/config'
-import AutoLinks from 'quill-auto-links'
-import { Quill } from 'react-quill'
 import { api_request, permissions } from './util'
 
 import './boot'
 import './style/index.scss'
 import './style/mobile.scss'
-
-Quill.register('modules/autoLinks', AutoLinks)
 
 const middleware = (render, props) => render
 
