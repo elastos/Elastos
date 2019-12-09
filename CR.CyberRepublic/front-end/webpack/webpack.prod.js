@@ -16,7 +16,6 @@ const prodEnv = {
     NODE_ENV: JSON.stringify('production'),
     PLATFORM_ENV: JSON.stringify('web'),
     SERVER_URL: JSON.stringify('https://api.cyberrepublic.org'),
-    WALLET_SERVER_URL: JSON.stringify('https://unionsquare.elastos.org'),
     FORUM_URL: JSON.stringify('https://forum.cyberrepublic.org'),
     SSO_URL: JSON.stringify('https://forum.cyberrepublic.org/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION),
@@ -28,7 +27,6 @@ const stagingEnv = {
     NODE_ENV: JSON.stringify('staging'),
     PLATFORM_ENV: JSON.stringify('web'),
     SERVER_URL: JSON.stringify('https://staging-api.cyberrepublic.org'),
-    WALLET_SERVER_URL: JSON.stringify('http://54.223.244.60'),
     FORUM_URL: JSON.stringify('http://18.136.60.61:3100'),
     SSO_URL: JSON.stringify('http://18.136.60.61:3100/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION)
@@ -38,7 +36,6 @@ const devEnv = {
     NODE_ENV: JSON.stringify('dev'),
     PLATFORM_ENV: JSON.stringify('web'),
     SERVER_URL: JSON.stringify('http://local.ebp.com:3000'),
-    WALLET_SERVER_URL: JSON.stringify('http://54.223.244.60'),
     FORUM_URL: JSON.stringify('http://local.ebp.com:3100'),
     SSO_URL: JSON.stringify('http://local.ebp.com:3100/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION)

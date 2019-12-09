@@ -1,14 +1,14 @@
 import { createContainer } from '@/util'
 import Component from './Component'
-import CandidateService from '@/service/CandidateService'
+import CouncilService from '@/service/CouncilService'
 
 const mapState = state => ({})
 
 const mapDispatch = () => {
-  const service = new CandidateService()
+  const service = new CouncilService()
   return {
     async listData(param) {
-      return service.listData(param)
+      return service.getCandidates(param)
     }
   }
 }
