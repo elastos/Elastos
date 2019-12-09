@@ -36,7 +36,7 @@ public class DIDStore: NSObject {
         var blanks: Int = 0
         var i: Int = 0
         
-        if i < nextIndex || blanks < 10{
+        while i < nextIndex || blanks < 10 {
             let key: DerivedKey = try privateIdentity.derive(i++)
             let pks: [UInt8] = try key.getPublicKeyBytes()
             let methodIdString: String = DerivedKey.getIdString(pks)
@@ -57,7 +57,7 @@ public class DIDStore: NSObject {
                 }
                 blanks = 0
             } else {
-                blanks++
+                blanks = blanks + 1
             }
         }
     }
