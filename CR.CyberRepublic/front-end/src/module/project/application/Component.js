@@ -2,22 +2,19 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import moment from 'moment'
 import _ from 'lodash'
-import { Col, Row, message, Input, Avatar, InputNumber, Select } from 'antd'
-import {TASK_CATEGORY, TASK_TYPE, TASK_STATUS, TASK_CANDIDATE_TYPE, TASK_CANDIDATE_STATUS, USER_AVATAR_DEFAULT} from '@/constant'
+import { message, Avatar, InputNumber, Select } from 'antd'
+import { TASK_CANDIDATE_TYPE, USER_AVATAR_DEFAULT } from '@/constant'
 import Comments from '@/module/common/comments/Container'
 import I18N from '@/I18N'
 import { getSafeUrl } from '@/util/url'
 
 import './style.scss'
 
-const { TextArea } = Input
 const Option = Select.Option
-const dateTimeFormat = 'MMM D, YYYY - h:mma (Z [GMT])'
 
 export default class extends BaseComponent {
   ord_states() {
-    return {
-    }
+    return {}
   }
 
   async componentDidMount() {
@@ -32,7 +29,7 @@ export default class extends BaseComponent {
     this.props.resetTeams()
   }
 
-  ord_render () {
+  ord_render() {
     return this.renderMain()
   }
 
@@ -40,7 +37,7 @@ export default class extends BaseComponent {
     return this.props.detail.createdBy._id === this.props.userId
   }
 
-  getApplicant () {
+  getApplicant() {
     return _.find(this.props.detail.candidates, { _id: this.props.applicantId })
   }
 
@@ -55,60 +52,63 @@ export default class extends BaseComponent {
   }
 
   getAvatarWithFallback(avatar) {
-    return _.isEmpty(avatar)
-      ? USER_AVATAR_DEFAULT
-      : avatar
+    return _.isEmpty(avatar) ? USER_AVATAR_DEFAULT : avatar
   }
 
   getSelectDropdown() {
     const applicant = this.getApplicant()
     const userTeams = this.props.ownedTeams
-    const defaultValue = applicant && applicant.type === TASK_CANDIDATE_TYPE.USER
-      ? '$me'
-      : applicant && applicant.team && applicant.team._id
+    const defaultValue =
+      applicant && applicant.type === TASK_CANDIDATE_TYPE.USER
+        ? '$me'
+        : applicant && applicant.team && applicant.team._id
 
     const elem = []
     elem.push(
       <Option value="$me" key="$me">
-        {I18N.get('task.soloApply')}
-        {' '}
-(Solo)
-        <Avatar size="small" src={this.getAvatarWithFallback(this.props.currentUserAvatar)}
-          className="pull-right"/>
+        {I18N.get('task.soloApply')} (Solo)
+        <Avatar
+          size="small"
+          src={this.getAvatarWithFallback(this.props.currentUserAvatar)}
+          className="pull-right"
+        />
       </Option>
     )
 
     if (userTeams) {
-      _.forEach(userTeams, (team) => {
+      _.forEach(userTeams, team => {
         elem.push(
           <Option key={team._id} value={team._id}>
-            {I18N.get('task.teamApply')}
-            {' '}
-(
-            {team.name}
-)
-            {!_.isEmpty(team.pictures)
-              ? (
-                <Avatar size="small" src={this.getAvatarWithFallback(team.pictures[0].thumbUrl)}
-                className="pull-right"/>
-              )
-              : <Avatar size="small" src={this.getAvatarWithFallback()} className="pull-right"/>
-            }
+            {I18N.get('task.teamApply')} ({team.name})
+            {!_.isEmpty(team.pictures) ? (
+              <Avatar
+                size="small"
+                src={this.getAvatarWithFallback(team.pictures[0].thumbUrl)}
+                className="pull-right"
+              />
+            ) : (
+              <Avatar
+                size="small"
+                src={this.getAvatarWithFallback()}
+                className="pull-right"
+              />
+            )}
           </Option>
         )
       })
     }
     return (
       <Select
-        onChange={(value) => this.handleApplyWithChange(value)}
+        onChange={value => this.handleApplyWithChange(value)}
         className="apply-type-select cr-input"
-        defaultValue={defaultValue}>
+        defaultValue={defaultValue}
+      >
         {elem}
       </Select>
     )
   }
 
-  renderMain () {
+  renderMain() {
     const applicant = this.getApplicant()
     if (!applicant || !this.props.ownedTeams) {
       return ''
@@ -118,44 +118,40 @@ export default class extends BaseComponent {
       <div className="public">
         <div className="gridCol main-area">
           <div className="application-col">
-            <h3 className="header-text with-gizmo">{I18N.get('task.application')}</h3>
+            <h3 className="header-text with-gizmo">
+              {I18N.get('task.application')}
+            </h3>
             <div className="application-container">
               {I18N.get('task.appliedOn')}
-              <span className="application-date">
-                {' '}
-                {appliedDate}
-              </span>
+              <span className="application-date"> {appliedDate}</span>
             </div>
-            <div>
-              {this.getSelectDropdown()}
-            </div>
-            { this.props.detail.bidding && (
-            <div className="bid-container">
-              { !this.isTaskOwner() && _.indexOf(['PENDING', 'CREATED'], this.props.detail.status) >= 0 && (applicant.type !== TASK_CANDIDATE_TYPE.TEAM || applicant.team.owner._id === this.props.userId)
-                ? (
+            <div>{this.getSelectDropdown()}</div>
+            {this.props.detail.bidding && (
+              <div className="bid-container">
+                {!this.isTaskOwner() &&
+                _.indexOf(['PENDING', 'CREATED'], this.props.detail.status) >=
+                  0 &&
+                (applicant.type !== TASK_CANDIDATE_TYPE.TEAM ||
+                  applicant.team.owner._id === this.props.userId) ? (
                   <div>
-                    <span>
-                      {I18N.get('project.detail.your_bid')}
-                      {' '}
-                    </span>
-                    <InputNumber onChange={_.debounce((value) => this.changeBid(value), 2000)}
-                                    defaultValue={applicant.bid}/>
+                    <span>{I18N.get('project.detail.your_bid')} </span>
+                    <InputNumber
+                      onChange={_.debounce(
+                        value => this.changeBid(value),
+                        2000
+                      )}
+                      defaultValue={applicant.bid}
+                    />
                     <span> ELA</span>
                   </div>
-                )
-                : (
+                ) : (
                   <div>
                     <h5>
-                      {I18N.get('task.bid')}
-:
-                      {applicant.bid}
-                      {' '}
-                      {I18N.get('ela')}
+                      {I18N.get('task.bid')}:{applicant.bid} {I18N.get('ela')}
                     </h5>
                   </div>
-                )
-                              }
-            </div>
+                )}
+              </div>
             )}
             <div>
               <div className="task-reason">{I18N.get('task.applyReason')}</div>
@@ -171,8 +167,9 @@ export default class extends BaseComponent {
               reduxType="task"
               canPost={true}
               model={applicant}
-              detailReducer={(detail) => _.find(detail.candidates,
-                { _id: this.props.applicantId })}
+              detailReducer={detail =>
+                _.find(detail.candidates, { _id: this.props.applicantId })
+              }
               returnUrl={`/task-detail/${this.props.detail._id}`}
             />
           </div>
@@ -192,11 +189,17 @@ export default class extends BaseComponent {
 
   showAttachment() {
     const applicant = this.getApplicant()
-    const {attachment, attachmentFilename} = applicant
+    const { attachment, attachmentFilename } = applicant
 
-    return attachment
-      ? <h5><a href={getSafeUrl(attachment)} target="_blank">{attachmentFilename}</a></h5>
-      : <h5>{I18N.get('project.detail.no_attachments')}</h5>
+    return attachment ? (
+      <h5>
+        <a href={getSafeUrl(attachment)} target="_blank">
+          {attachmentFilename}
+        </a>
+      </h5>
+    ) : (
+      <h5>{I18N.get('project.detail.no_attachments')}</h5>
+    )
   }
 
   linkUserDetail(user) {
@@ -212,7 +215,5 @@ export default class extends BaseComponent {
     // })
   }
 
-  async rejectApplication() {
-
-  }
+  async rejectApplication() {}
 }
