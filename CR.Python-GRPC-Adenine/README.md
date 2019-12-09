@@ -1,5 +1,5 @@
 # Python-gRPC-client
-This repository contains the python package for Elastos Smart Web Service.
+This repository contains the python client library to interact with [Elastos Smart Web Service](https://github.com/cyber-republic/elastos-smartweb-service).
 
 ## Prerequisites
 First, install Python3:
@@ -20,33 +20,50 @@ Install virtualenv:
 ```
 pip3 install virtualenv
 ```
-## Instructions
+
+## Instructions on how to run from official pypi
+Setup virtualenv:
+```
+virtualenv -p `which python3` venv;
+source venv/bin/activate;
+```
+Install dependencies:
+```
+pip3 install -r requirements.txt;
+```
+Setup environment variables:
+```
+cp .env.example .env;
+```
+Install elastos-adenine via pip:
+```
+pip3 install elastos-adenine==0.1.0
+```
+Run sample.py
+```
+python3 sample.py
+```
+
+## Instructions on how to build and run locally
 Clone the repository
 ```
 git clone https://github.com/cyber-republic/python-grpc-adenine.git
 cd python-grpc-adenine
 ```
-
-To get the API service running, run the following terminal commands:
+etup virtualenv:
 ```
-virtualenv -p `which python3` venv
+virtualenv -p `which python3` venv;
+source venv/bin/activate;
 ```
+Install dependencies:
 ```
-source venv/bin/activate
+pip3 install -r requirements.txt;
 ```
+Setup environment variables:
 ```
-pip3 install -r requirements.txt
+cp .env.example .env;
 ```
-```
-cp .env.example .env
-```
-
-Export Path:
-```
-export PYTHONPATH="$PYTHONPATH:$PWD/elastos_adenine/stubs/"
-```
-
-Run the client:
+Run sample.py:
 ```
 python3 sample.py
 ```
