@@ -31,7 +31,7 @@ import ProjectApplicationStart from '@/module/page/project_detail/application/st
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import _ from 'lodash'
 import { getSafeUrl } from '@/util/url'
-import sanitizeHtml from '@/util/html'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 
 import './style.scss'
 
@@ -110,10 +110,7 @@ class C extends BaseComponent {
       <Row className={[cssRowClass, 'meta-row'].join(' ')}>
         <Col span={8}>{key}</Col>
         <Col span={16}>
-          <div
-            className="ql-editor"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }}
-          />
+          <MarkdownPreview content={value} />
         </Col>
       </Row>
     )
