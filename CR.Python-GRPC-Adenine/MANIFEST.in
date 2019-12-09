@@ -1,0 +1,5 @@
+include elastos_adenine/stubs/__init__.py
+include elastos_adenine/stubs/adenine_io_pb2_grpc.py
+include elastos_adenine/stubs/adenine_io_pb2.py
+include elastos_adenine/stubs/common_pb2_grpc.py
+include elastos_adenine/stubs/common_pb2.py
