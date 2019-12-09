@@ -7,15 +7,11 @@ import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'react-router-redux'
 import store from '@/store'
 import config from '@/config'
-import AutoLinks from 'quill-auto-links'
-import { Quill } from 'react-quill'
 import { api_request, permissions } from './util'
 
 import './boot'
 import './style/index.scss'
 import './style/mobile.scss'
-
-Quill.register('modules/autoLinks', AutoLinks)
 
 const middleware = (render, props) => render
 
@@ -23,44 +19,57 @@ const App = () => (
   <div>
     <Helmet>
       <meta name="cr-env" content={process.env.NODE_ENV} />
-      <meta name="cr-version-number" content={process.env.CR_VERSION ? `${process.env.CR_VERSION}` : 'unknown'} />
-      {process.env.NODE_ENV === 'production' && <script defer={true} src="/assets/js/rollbar_prod.js" />}
-      {process.env.NODE_ENV === 'staging' && <script defer={true} src="/assets/js/rollbar_staging.js" />}
-      {process.env.NODE_ENV === 'production' && <script async={true} src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GA_ID}`} />}
-      {process.env.NODE_ENV === 'production' && <script>{`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.GA_ID}');`}</script>}
-      {window.location.pathname === '/' && <script defer={true} src="/assets/js/elastos.js" />}
-      {/*
-      <script>{
-          (function() {
-              window.Intercom("update");
-          })()
-      }</script>
-      */}
+      <meta
+        name="cr-version-number"
+        content={
+          process.env.CR_VERSION ? `${process.env.CR_VERSION}` : 'unknown'
+        }
+      />
+      {process.env.NODE_ENV === 'production' && (
+        <script defer={true} src="/assets/js/rollbar_prod.js" />
+      )}
+      {process.env.NODE_ENV === 'staging' && (
+        <script defer={true} src="/assets/js/rollbar_staging.js" />
+      )}
+      {process.env.NODE_ENV === 'production' && (
+        <script
+          async={true}
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GA_ID}`}
+        />
+      )}
+      {process.env.NODE_ENV === 'production' && (
+        <script>{`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${process.env.GA_ID}');`}</script>
+      )}
+      {window.location.pathname === '/' && (
+        <script defer={true} src="/assets/js/elastos.js" />
+      )}
     </Helmet>
     <Switch id="ebp-main">
-      {
-        _.map(config.router, (item, i) => {
-          const props = _.omit(item, ['page', 'path', 'type'])
-          const R = item.type || Route
-          return (
-            <R path={item.path} key={i} exact={true} component={item.page} {...props} />
-          )
-        })
-      }
+      {_.map(config.router, (item, i) => {
+        const props = _.omit(item, ['page', 'path', 'type'])
+        const R = item.type || Route
+        return (
+          <R
+            path={item.path}
+            key={i}
+            exact={true}
+            component={item.page}
+            {...props}
+          />
+        )
+      })}
     </Switch>
   </div>
 )
 
 const render = () => {
   ReactDOM.render(
-    (
-      <Provider store={store}>
-        <ConnectedRouter middleware={middleware} history={store.history}>
-          <App />
-        </ConnectedRouter>
-      </Provider>
-    ),
-    document.getElementById('ebp-root'),
+    <Provider store={store}>
+      <ConnectedRouter middleware={middleware} history={store.history}>
+        <App />
+      </ConnectedRouter>
+    </Provider>,
+    document.getElementById('ebp-root')
   )
 }
 
@@ -72,7 +81,7 @@ if (sessionStorage.getItem('api-token')) {
   const userRedux = store.getRedux('user')
   api_request({
     path: '/api/user/current_user',
-    success: (data) => {
+    success: data => {
       // store user in redux
       const is_admin = permissions.isAdmin(data.role)
       const is_leader = permissions.isLeader(data.role)
@@ -91,7 +100,9 @@ if (sessionStorage.getItem('api-token')) {
       store.dispatch(userRedux.actions.role_update(data.role))
       store.dispatch(userRedux.actions.current_user_id_update(data._id))
       store.dispatch(userRedux.actions.circles_update(_.values(data.circles)))
-      store.dispatch(userRedux.actions.subscribers_update(_.values(data.subscribers)))
+      store.dispatch(
+        userRedux.actions.subscribers_update(_.values(data.subscribers))
+      )
       store.dispatch(userRedux.actions.loading_update(false))
 
       // Segment - pass identify
@@ -102,7 +113,7 @@ if (sessionStorage.getItem('api-token')) {
         id: data._id,
         title: data.role,
         gender: userProfile.gender,
-        createdAt: data.createdAt,
+        createdAt: data.createdAt
       })
 
       render()
@@ -111,7 +122,7 @@ if (sessionStorage.getItem('api-token')) {
       sessionStorage.clear()
       localStorage.removeItem('api-token')
       render()
-    },
+    }
   })
 } else {
   render()

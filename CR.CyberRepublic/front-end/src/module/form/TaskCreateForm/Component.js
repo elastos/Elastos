@@ -22,18 +22,23 @@ import {
   Divider,
   Card
 } from 'antd'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 
 import I18N from '@/I18N'
-import {upload_file} from '@/util'
-import ReactQuill from 'react-quill'
+import { upload_file } from '@/util'
 import './style.scss'
-import { TOOLBAR_OPTIONS } from '@/config/constant'
 import moment from 'moment'
 import _ from 'lodash'
 import { getSafeUrl } from '@/util/url'
 
-import {TEAM_TASK_DOMAIN, SKILLSET_TYPE, TASK_CATEGORY, TASK_TYPE,
-  TASK_STATUS, TASK_EVENT_DATE_TYPE} from '@/constant'
+import {
+  TEAM_TASK_DOMAIN,
+  SKILLSET_TYPE,
+  TASK_CATEGORY,
+  TASK_TYPE,
+  TASK_STATUS,
+  TASK_EVENT_DATE_TYPE
+} from '@/constant'
 
 const FormItem = Form.Item
 const TextArea = Input.TextArea
@@ -59,10 +64,9 @@ const Option = Select.Option
  * - a local event can have sub tasks, these are shown as tasks in the Social page
  */
 class C extends BaseComponent {
-
   async componentDidMount() {
     const taskId = this.props.match.params.taskId
-    taskId && await this.props.getTaskDetail(taskId)
+    taskId && (await this.props.getTaskDetail(taskId))
     this.props.getAllCircles()
   }
 
@@ -70,7 +74,7 @@ class C extends BaseComponent {
     this.props.resetTaskDetail()
   }
 
-  handleSubmit (e) {
+  handleSubmit(e) {
     e.preventDefault()
     this.props.form.validateFields((err, values) => {
       if (!err) {
@@ -86,8 +90,12 @@ class C extends BaseComponent {
 
         // admin does not need to agree to disclaimer
         if (!this.props.is_admin) {
-          if (values.taskReward || values.taskRewardUsd ||
-                        values.taskRewardUpfront || values.taskRewardUpfrontUsd) {
+          if (
+            values.taskReward ||
+            values.taskRewardUsd ||
+            values.taskRewardUpfront ||
+            values.taskRewardUpfrontUsd
+          ) {
             if (!this.state.readDisclaimer) {
               message.error(I18N.get('from.TaskCreateForm.message.error'))
               document.getElementById('disclaimerLink').focus()
@@ -99,7 +107,7 @@ class C extends BaseComponent {
         }
 
         values.pictures = this.state.fileList || []
-        _.each(values.pictures, (pictureFile) => {
+        _.each(values.pictures, pictureFile => {
           if (this.pictureUrlLookups[pictureFile.uid]) {
             pictureFile.url = this.pictureUrlLookups[pictureFile.uid]
           }
@@ -113,11 +121,19 @@ class C extends BaseComponent {
         }
 
         values.pitch = values.pitch || {}
-        _.each(['problem', 'valueProposition', 'useCase',
-          'beneficiaries', 'elaInfrastructure'], (pitchKeyword) => {
-          values.pitch[pitchKeyword] = values[pitchKeyword]
-          delete values[pitchKeyword]
-        })
+        _.each(
+          [
+            'problem',
+            'valueProposition',
+            'useCase',
+            'beneficiaries',
+            'elaInfrastructure'
+          ],
+          pitchKeyword => {
+            values.pitch[pitchKeyword] = values[pitchKeyword]
+            delete values[pitchKeyword]
+          }
+        )
 
         if (this.state.editing) {
           this.props.updateTask(values, this.state).then(() => {
@@ -131,49 +147,63 @@ class C extends BaseComponent {
     })
   }
 
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.state = {
       communityTrees: [],
       taskType: this.props.taskType || TASK_TYPE.TASK,
       taskCategory: this.props.taskCategory || TASK_CATEGORY.GENERAL,
-      assignSelf: props.existingTask ? props.existingTask.assignSelf : !this.props.circleId,
-      eventDateRange: (props.existingTask && props.existingTask.eventDateRange) || false,
-      thumbnail_url: (props.existingTask && props.existingTask.thumbnail) || null,
+      assignSelf: props.existingTask
+        ? props.existingTask.assignSelf
+        : !this.props.circleId,
+      eventDateRange:
+        (props.existingTask && props.existingTask.eventDateRange) || false,
+      thumbnail_url:
+        (props.existingTask && props.existingTask.thumbnail) || null,
       thumbnail_loading: false,
-      thumbnail_filename: (props.existingTask && props.existingTask.thumbnailFilename) || '',
+      thumbnail_filename:
+        (props.existingTask && props.existingTask.thumbnailFilename) || '',
       thumbnail_type: '',
-      attachment_url: (props.existingTask && props.existingTask.attachment) || null,
+      attachment_url:
+        (props.existingTask && props.existingTask.attachment) || null,
       attachment_loading: false,
-      attachment_filename: (props.existingTask && props.existingTask.attachmentFilename) || '',
+      attachment_filename:
+        (props.existingTask && props.existingTask.attachmentFilename) || '',
       attachment_type: '',
-      circle: (props.existingTask && props.existingTask.circle && props.existingTask.circle._id) ||
-                props.circleId || null,
+      circle:
+        (props.existingTask &&
+          props.existingTask.circle &&
+          props.existingTask.circle._id) ||
+        props.circleId ||
+        null,
       removeAttachment: false,
       editing: !!props.existingTask,
       fileList: (props.existingTask && props.existingTask.pictures) || [],
       previewVisible: false,
       previewImage: '',
       isBidding: (props.existingTask && props.existingTask.bidding) || false,
-      readDisclaimer: (props.existingTask && props.existingTask.readDisclaimer) || false,
+      readDisclaimer:
+        (props.existingTask && props.existingTask.readDisclaimer) || false,
       showDisclaimer: false
     }
 
     this.pictureUrlLookups = []
-    _.each(this.state.fileList, (file) => {
+    _.each(this.state.fileList, file => {
       this.pictureUrlLookups[file.uid] = file.url
     })
   }
 
   hasLeaderEditRestrictions() {
     const existingTask = this.props.existingTask
-    return this.props.page === 'LEADER' &&
-            ![TASK_STATUS.CREATED, TASK_STATUS.PENDING].includes(existingTask.status)
+    return (
+      this.props.page === 'LEADER' &&
+      ![TASK_STATUS.CREATED, TASK_STATUS.PENDING].includes(existingTask.status)
+    )
   }
 
-  getInputProps () {
-    const {getFieldDecorator} = this.props.form
+  getInputProps() {
+    const { getFieldDecorator } = this.props.form
     const existingTask = this.props.existingTask
 
     // if this is approved - TODO: back-end restrictions + tests
@@ -183,27 +213,37 @@ class C extends BaseComponent {
 
     const taskName_fn = getFieldDecorator('taskName', {
       rules: [
-        {required: true, message: I18N.get('from.TaskCreateForm.taskName.required')},
-        {min: 4, message: I18N.get('from.TaskCreateForm.taskName.min')}
+        {
+          required: true,
+          message: I18N.get('from.TaskCreateForm.taskName.required')
+        },
+        { min: 4, message: I18N.get('from.TaskCreateForm.taskName.min') }
       ],
       initialValue: this.state.editing && existingTask ? existingTask.name : ''
     })
-    const taskName_el = (
-      <Input size="large"/>
-    )
+    const taskName_el = <Input size="large" />
 
     const taskCategory_fn = getFieldDecorator('taskCategory', {
-      rules: [{required: true, message: I18N.get('from.TaskCreateForm.taskCategory.required')}],
-      initialValue: this.state.editing ? existingTask.category : (this.state.taskCategory || TASK_CATEGORY.SOCIAL)
+      rules: [
+        {
+          required: true,
+          message: I18N.get('from.TaskCreateForm.taskCategory.required')
+        }
+      ],
+      initialValue: this.state.editing
+        ? existingTask.category
+        : this.state.taskCategory || TASK_CATEGORY.SOCIAL
     })
     const taskCategory_el = (
       <Select
-        disabled={hasLeaderEditRestrictions} onChange={(val) => {
-          this.setState({taskCategory: val})
+        disabled={hasLeaderEditRestrictions}
+        onChange={val => {
+          this.setState({ taskCategory: val })
           if (this.state.taskCategory === TASK_TYPE.PROJECT) {
             // this.setState({taskType: TASK_TYPE.TASK})
           }
-        }}>
+        }}
+      >
         <Option value={TASK_CATEGORY.GENERAL}>General</Option>
         <Option value={TASK_CATEGORY.SOCIAL}>Social</Option>
         <Option value={TASK_CATEGORY.DEVELOPER}>Developer</Option>
@@ -214,15 +254,21 @@ class C extends BaseComponent {
       rules: [],
       initialValue: this.props.all_circles_loading
         ? I18N.get('.loading')
-        : (!this.props.loading && this.state.editing &&
-                existingTask.circle && existingTask.circle._id) || this.props.circleId || null
+        : (!this.props.loading &&
+            this.state.editing &&
+            existingTask.circle &&
+            existingTask.circle._id) ||
+          this.props.circleId ||
+          null
     })
 
     const circle_el = (
-      <Select disabled={this.props.all_circles_loading || this.props.disableCircleSelect}>
-        <Select.Option value={null}>
-          {I18N.get('.no')}
-        </Select.Option>
+      <Select
+        disabled={
+          this.props.all_circles_loading || this.props.disableCircleSelect
+        }
+      >
+        <Select.Option value={null}>{I18N.get('.no')}</Select.Option>
         {_.map(this.props.all_circles, (circle, ind) => (
           <Select.Option key={ind} value={circle._id}>
             {circle.name}
@@ -233,17 +279,33 @@ class C extends BaseComponent {
 
     // sub-tasks are not here because those can only be created from an existing Task Detail Page
     const taskType_fn = getFieldDecorator('taskType', {
-      rules: [{required: true, message: I18N.get('from.TaskCreateForm.taskType.required')}],
-      initialValue: this.state.editing ? existingTask.type : (this.state.taskType || TASK_TYPE.TASK)
+      rules: [
+        {
+          required: true,
+          message: I18N.get('from.TaskCreateForm.taskType.required')
+        }
+      ],
+      initialValue: this.state.editing
+        ? existingTask.type
+        : this.state.taskType || TASK_TYPE.TASK
     })
     const taskType_el = (
       <Select
-        disabled={hasLeaderEditRestrictions} onChange={(val) => this.setState({taskType: val})}>
-        <Option value={TASK_TYPE.TASK}>{I18N.get('from.TaskCreateForm.taskType.option.task')}</Option>
-        {this.state.taskCategory === TASK_CATEGORY.DEVELOPER && (this.props.is_admin || this.props.is_leader) &&
-        <Option value={TASK_TYPE.PROJECT}>{I18N.get('from.TaskCreateForm.taskType.option.project')}</Option>
-        }
-        <Option value={TASK_TYPE.EVENT}>{I18N.get('from.TaskCreateForm.taskType.option.event')}</Option>
+        disabled={hasLeaderEditRestrictions}
+        onChange={val => this.setState({ taskType: val })}
+      >
+        <Option value={TASK_TYPE.TASK}>
+          {I18N.get('from.TaskCreateForm.taskType.option.task')}
+        </Option>
+        {this.state.taskCategory === TASK_CATEGORY.DEVELOPER &&
+          (this.props.is_admin || this.props.is_leader) && (
+            <Option value={TASK_TYPE.PROJECT}>
+              {I18N.get('from.TaskCreateForm.taskType.option.project')}
+            </Option>
+          )}
+        <Option value={TASK_TYPE.EVENT}>
+          {I18N.get('from.TaskCreateForm.taskType.option.event')}
+        </Option>
       </Select>
     )
 
@@ -252,90 +314,102 @@ class C extends BaseComponent {
       initialValue: existingTask ? existingTask.taskCommunity : []
     })
     const taskCommunity_el = (
-      <Cascader options={this.state.communityTrees} placeholder="" changeOnSelect={true}/>
+      <Cascader
+        options={this.state.communityTrees}
+        placeholder=""
+        changeOnSelect={true}
+      />
     )
 
-    const applicationDeadline_fn = getFieldDecorator('taskApplicationDeadline', {
-      initialValue: this.state.editing &&
-                existingTask.applicationDeadline &&
-                moment(existingTask.applicationDeadline).isValid() ? moment(existingTask.applicationDeadline) : null
-    })
-    const applicationDeadline_el = (
-      <DatePicker/>
+    const applicationDeadline_fn = getFieldDecorator(
+      'taskApplicationDeadline',
+      {
+        initialValue:
+          this.state.editing &&
+          existingTask.applicationDeadline &&
+          moment(existingTask.applicationDeadline).isValid()
+            ? moment(existingTask.applicationDeadline)
+            : null
+      }
     )
+    const applicationDeadline_el = <DatePicker />
 
     const completionDeadline_fn = getFieldDecorator('taskCompletionDeadline', {
-      initialValue: this.state.editing &&
-            existingTask.completionDeadline &&
-            moment(existingTask.completionDeadline).isValid() ? moment(existingTask.completionDeadline) : null
+      initialValue:
+        this.state.editing &&
+        existingTask.completionDeadline &&
+        moment(existingTask.completionDeadline).isValid()
+          ? moment(existingTask.completionDeadline)
+          : null
     })
-    const completionDeadline_el = (
-      <DatePicker/>
-    )
+    const completionDeadline_el = <DatePicker />
 
+    const description = this.state.editing ? existingTask.description : ''
     const taskDesc_fn = getFieldDecorator('taskDesc', {
       rules: [
-        {required: true, message: I18N.get('from.TaskCreateForm.taskDesc.required')},
-        {max: 8192, message: I18N.get('from.TaskCreateForm.taskDesc.max')}
+        {
+          required: true,
+          message: I18N.get('from.TaskCreateForm.taskDesc.required')
+        },
+        { max: 8192, message: I18N.get('from.TaskCreateForm.taskDesc.max') }
       ],
-      initialValue: this.state.editing ? existingTask.description : ''
+      initialValue: description
     })
     const taskDesc_el = (
-      <ReactQuill
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-        }}
-      />
+      <CodeMirrorEditor content={description} name="taskDesc" />
     )
-
+    const descBreakdown = this.state.editing ? existingTask.descBreakdown : ''
     const taskDescBreakdown_fn = getFieldDecorator('taskDescBreakdown', {
       rules: [
-        {max: 8192, message: I18N.get('from.TaskCreateForm.taskDescBreakdown.max')}
+        {
+          max: 8192,
+          message: I18N.get('from.TaskCreateForm.taskDescBreakdown.max')
+        }
       ],
-      initialValue: this.state.editing ? existingTask.descBreakdown : ''
+      initialValue: descBreakdown
     })
     const taskDescBreakdown_el = (
-      <ReactQuill
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-        }}
-      />
+      <CodeMirrorEditor content={descBreakdown} name="taskDescBreakdown" />
     )
     const taskGoals_fn = getFieldDecorator('taskGoals', {
       rules: [
-        {max: 8192, message: I18N.get('from.TaskCreateForm.taskGoals.max')}
+        { max: 8192, message: I18N.get('from.TaskCreateForm.taskGoals.max') }
       ],
       initialValue: this.state.editing ? existingTask.goals : ''
     })
-    const taskGoals_el = (
-      <TextArea rows={4} />
-    )
+    const taskGoals_el = <TextArea rows={4} />
 
     const taskLink_fn = getFieldDecorator('taskLink', {
-      rules: [{required: false, message: I18N.get('from.TaskCreateForm.taskLink.required')}],
+      rules: [
+        {
+          required: false,
+          message: I18N.get('from.TaskCreateForm.taskLink.required')
+        }
+      ],
       initialValue: this.state.editing ? existingTask.infoLink : ''
     })
-    const taskLink_el = (
-      <Input size="large"/>
-    )
+    const taskLink_el = <Input size="large" />
 
     /*
-        ********************************************************************************************************
-        * Event Info
-        ********************************************************************************************************
-        */
+     ********************************************************************************************************
+     * Event Info
+     ********************************************************************************************************
+     */
     const eventDateRange_fn = getFieldDecorator('eventDateRange')
     const eventDateRange_el = (
       <Checkbox
         checked={this.state.eventDateRange}
-        onClick={() => this.setState({eventDateRange: !this.state.eventDateRange})}
+        onClick={() =>
+          this.setState({ eventDateRange: !this.state.eventDateRange })
+        }
       />
     )
 
     const eventDateStatus_fn = getFieldDecorator('eventDateStatus', {
-      initialValue: this.state.editing && existingTask.eventDateStatus ? existingTask.eventDateStatus : TASK_EVENT_DATE_TYPE.TENTATIVE
+      initialValue:
+        this.state.editing && existingTask.eventDateStatus
+          ? existingTask.eventDateStatus
+          : TASK_EVENT_DATE_TYPE.TENTATIVE
     })
     const eventDateStatus_el = (
       <Select>
@@ -346,97 +420,130 @@ class C extends BaseComponent {
     )
 
     const eventDateRangeStart_fn = getFieldDecorator('eventDateRangeStart', {
-      initialValue: this.state.editing &&
-                existingTask.eventDateRangeStart &&
-                moment(existingTask.eventDateRangeStart).isValid() ? moment(existingTask.eventDateRangeStart) : null
+      initialValue:
+        this.state.editing &&
+        existingTask.eventDateRangeStart &&
+        moment(existingTask.eventDateRangeStart).isValid()
+          ? moment(existingTask.eventDateRangeStart)
+          : null
     })
     const eventDateRangeStart_el = (
-      <DatePicker
-        showTime={true}
-        format="YYYY-MM-DD HH:mm"
-      />
+      <DatePicker showTime={true} format="YYYY-MM-DD HH:mm" />
     )
 
     const eventDateRangeEnd_fn = getFieldDecorator('eventDateRangeEnd', {
-      initialValue: this.state.editing &&
-            existingTask.eventDateRangeEnd &&
-            moment(existingTask.eventDateRangeEnd).isValid() ? moment(existingTask.eventDateRangeEnd) : null
+      initialValue:
+        this.state.editing &&
+        existingTask.eventDateRangeEnd &&
+        moment(existingTask.eventDateRangeEnd).isValid()
+          ? moment(existingTask.eventDateRangeEnd)
+          : null
     })
     const eventDateRangeEnd_el = (
-      <DatePicker
-        showTime={true}
-        format="YYYY-MM-DD HH:mm"
-      />
+      <DatePicker showTime={true} format="YYYY-MM-DD HH:mm" />
     )
 
     const taskLocation_fn = getFieldDecorator('taskLocation', {
-      rules: [{required: false, message: I18N.get('from.TaskCreateForm.taskLocation.required')}],
+      rules: [
+        {
+          required: false,
+          message: I18N.get('from.TaskCreateForm.taskLocation.required')
+        }
+      ],
       initialValue: this.state.editing ? existingTask.location : ''
     })
-    const taskLocation_el = (
-      <Input size="large"/>
-    )
+    const taskLocation_el = <Input size="large" />
 
     /*
-        ********************************************************************************************************
-        * Budget / Reward
-        ********************************************************************************************************
-        */
+     ********************************************************************************************************
+     * Budget / Reward
+     ********************************************************************************************************
+     */
 
     const taskCandLimit_fn = getFieldDecorator('taskCandLimit', {
-      rules: [{required: true, type: 'integer', message: I18N.get('from.TaskCreateForm.taskCandLimit.required')}],
+      rules: [
+        {
+          required: true,
+          type: 'integer',
+          message: I18N.get('from.TaskCreateForm.taskCandLimit.required')
+        }
+      ],
       initialValue: this.state.editing ? existingTask.candidateLimit : 10
     })
     const taskCandLimit_el = (
-      <InputNumber size="large" disabled={hasLeaderEditRestrictions}/>
+      <InputNumber size="large" disabled={hasLeaderEditRestrictions} />
     )
 
     const taskCandSltLimit_fn = getFieldDecorator('taskCandSltLimit', {
-      rules: [{required: true, type: 'integer', message: I18N.get('from.TaskCreateForm.taskCandLimit.required')}],
+      rules: [
+        {
+          required: true,
+          type: 'integer',
+          message: I18N.get('from.TaskCreateForm.taskCandLimit.required')
+        }
+      ],
       initialValue: this.state.editing ? existingTask.candidateSltLimit : 1
     })
     const taskCandSltLimit_el = (
-      <InputNumber size="large" disabled={hasLeaderEditRestrictions}/>
+      <InputNumber size="large" disabled={hasLeaderEditRestrictions} />
     )
 
     const taskRewardUpfront_fn = getFieldDecorator('taskRewardUpfront', {
-      initialValue: this.state.editing && existingTask.rewardUpfront.ela ? existingTask.rewardUpfront.ela / 1000 : null
+      initialValue:
+        this.state.editing && existingTask.rewardUpfront.ela
+          ? existingTask.rewardUpfront.ela / 1000
+          : null
     })
     const taskRewardUpfront_el = (
-      <InputNumber size="large" disabled={hasLeaderEditRestrictions}/>
+      <InputNumber size="large" disabled={hasLeaderEditRestrictions} />
     )
 
     const taskRewardUpfrontUsd_fn = getFieldDecorator('taskRewardUpfrontUsd', {
-      initialValue: this.state.editing && existingTask.rewardUpfront.usd ? existingTask.rewardUpfront.usd / 100 : null
+      initialValue:
+        this.state.editing && existingTask.rewardUpfront.usd
+          ? existingTask.rewardUpfront.usd / 100
+          : null
     })
     const taskRewardUpfrontUsd_el = (
-      <InputNumber size="large" disabled={hasLeaderEditRestrictions}/>
+      <InputNumber size="large" disabled={hasLeaderEditRestrictions} />
     )
 
     const taskRewardUsd_fn = getFieldDecorator('taskRewardUsd', {
-      initialValue: this.state.editing && existingTask.reward.usd ? existingTask.reward.usd / 100 : null
+      initialValue:
+        this.state.editing && existingTask.reward.usd
+          ? existingTask.reward.usd / 100
+          : null
     })
     const taskRewardUsd_el = (
-      <InputNumber size="large" disabled={hasLeaderEditRestrictions}/>
+      <InputNumber size="large" disabled={hasLeaderEditRestrictions} />
     )
 
     const taskReward_fn = getFieldDecorator('taskReward', {
-      initialValue: this.state.editing && existingTask.reward.ela ? existingTask.reward.ela / 1000 : null
+      initialValue:
+        this.state.editing && existingTask.reward.ela
+          ? existingTask.reward.ela / 1000
+          : null
     })
     const taskReward_el = (
-      <InputNumber size="large" disabled={hasLeaderEditRestrictions}/>
+      <InputNumber size="large" disabled={hasLeaderEditRestrictions} />
     )
 
     const referenceBidOpts = {
       rules: [
-        {validator: (rule, value, cb) => {
-          if (value && value !== '' && (isNaN(parseFloat(value)) || parseFloat(value) <= 0)) {
-            cb('must be a number greater than 0')
-            return
-          }
+        {
+          validator: (rule, value, cb) => {
+            if (
+              value &&
+              value !== '' &&
+              (isNaN(parseFloat(value)) || parseFloat(value) <= 0)
+            ) {
+              cb('must be a number greater than 0')
+              return
+            }
 
-          cb()
-        }}
+            cb()
+          }
+        }
       ]
     }
     if (this.state.editing) {
@@ -445,7 +552,7 @@ class C extends BaseComponent {
 
     const referenceBid_fn = getFieldDecorator('referenceBid', referenceBidOpts)
     const referenceBid_el = (
-      <InputNumber size="large" disabled={hasLeaderEditRestrictions}/>
+      <InputNumber size="large" disabled={hasLeaderEditRestrictions} />
     )
 
     const thumbnail_fn = getFieldDecorator('thumbnail', {
@@ -453,11 +560,11 @@ class C extends BaseComponent {
     })
     const p_thumbnail = {
       showUploadList: false,
-      customRequest: (info) => {
+      customRequest: info => {
         this.setState({
           thumbnail_loading: true
         })
-        upload_file(info.file).then((d) => {
+        upload_file(info.file).then(d => {
           const url = d.url
           this.setState({
             thumbnail_loading: false,
@@ -472,17 +579,13 @@ class C extends BaseComponent {
     }
     const thumbnail_el = (
       <Upload name="logo" listType="picture" {...p_thumbnail}>
-        {
-          this.state.thumbnail_url ? (
-            <img style={{height: '100px'}} src={this.state.thumbnail_url} />
-          ) : (
-            <Button loading={this.state.thumbnail_loading}>
-              <Icon type="upload" />
-              {' '}
-              {I18N.get('from.TaskCreateForm.uploadtext')}
-            </Button>
-          )
-        }
+        {this.state.thumbnail_url ? (
+          <img style={{ height: '100px' }} src={this.state.thumbnail_url} />
+        ) : (
+          <Button loading={this.state.thumbnail_loading}>
+            <Icon type="upload" /> {I18N.get('from.TaskCreateForm.uploadtext')}
+          </Button>
+        )}
       </Upload>
     )
 
@@ -491,11 +594,11 @@ class C extends BaseComponent {
     })
     const p_attachment = {
       showUploadList: false,
-      customRequest: (info) => {
+      customRequest: info => {
         this.setState({
           attachment_loading: true
         })
-        upload_file(info.file).then((d) => {
+        upload_file(info.file).then(d => {
           const url = d.url
           this.setState({
             attachment_loading: false,
@@ -510,25 +613,24 @@ class C extends BaseComponent {
     }
     const attachment_el = (
       <Upload name="attachment" {...p_attachment}>
-        {
-          this.state.attachment_url ? (
-            <a target="_blank" href={getSafeUrl(this.state.attachment_url)}>
-              {this.state.attachment_type === 'application/pdf'
-                ? <Icon type="file-pdf"/>
-                : <Icon type="file"/>
-              }
-              {' '}
-&nbsp;
-              {this.state.attachment_filename}
-            </a>
-          ) : (
-            <Button loading={this.state.attachment_loading} style={{width: '100%'}}>
-              <Icon type="upload" />
-              {' '}
-              {I18N.get('from.TaskCreateForm.uploadtext')}
-            </Button>
-          )
-        }
+        {this.state.attachment_url ? (
+          <a target="_blank" href={getSafeUrl(this.state.attachment_url)}>
+            {this.state.attachment_type === 'application/pdf' ? (
+              <Icon type="file-pdf" />
+            ) : (
+              <Icon type="file" />
+            )}{' '}
+            &nbsp;
+            {this.state.attachment_filename}
+          </a>
+        ) : (
+          <Button
+            loading={this.state.attachment_loading}
+            style={{ width: '100%' }}
+          >
+            <Icon type="upload" /> {I18N.get('from.TaskCreateForm.uploadtext')}
+          </Button>
+        )}
       </Upload>
     )
 
@@ -615,18 +717,30 @@ class C extends BaseComponent {
 
     const domain_fn = getFieldDecorator('domain', {
       rules: [],
-      initialValue: (this.props.existingTask && this.props.existingTask.domain) || []
+      initialValue:
+        (this.props.existingTask && this.props.existingTask.domain) || []
     })
     const domain_el = (
-      <TreeSelect treeData={specs} treeCheckable={true} searchPlaceholder={I18N.get('select.placeholder')}/>
+      <TreeSelect
+        treeData={specs}
+        treeCheckable={true}
+        searchPlaceholder={I18N.get('select.placeholder')}
+      />
     )
 
     const skillset_fn = getFieldDecorator('recruitedSkillsets', {
       rules: [],
-      initialValue: (this.props.existingTask && this.props.existingTask.recruitedSkillsets) || []
+      initialValue:
+        (this.props.existingTask &&
+          this.props.existingTask.recruitedSkillsets) ||
+        []
     })
     const skillset_el = (
-      <TreeSelect treeData={skillsets} treeCheckable={true} searchPlaceholder={I18N.get('select.placeholder')}/>
+      <TreeSelect
+        treeData={skillsets}
+        treeCheckable={true}
+        searchPlaceholder={I18N.get('select.placeholder')}
+      />
     )
 
     const p_pictures = {
@@ -634,8 +748,8 @@ class C extends BaseComponent {
       fileList: this.state.fileList,
       onChange: this.handleFileListChange.bind(this),
       onPreview: this.handlePreview.bind(this),
-      customRequest: (info) => {
-        upload_file(info.file).then((d) => {
+      customRequest: info => {
+        upload_file(info.file).then(d => {
           this.pictureUrlLookups = this.pictureUrlLookups || []
           this.pictureUrlLookups[info.file.uid] = d.url
           info.onSuccess(null, info.file)
@@ -658,53 +772,53 @@ class C extends BaseComponent {
 
     const problem_fn = getFieldDecorator('problem', {
       rules: [
-        {max: 4096, message: I18N.get('from.TaskCreateForm.problem.max')}
+        { max: 4096, message: I18N.get('from.TaskCreateForm.problem.max') }
       ],
-      initialValue: this.state.editing ? existingTask.pitch && existingTask.pitch.problem : ''
+      initialValue: this.state.editing
+        ? existingTask.pitch && existingTask.pitch.problem
+        : ''
     })
-    const problem_el = (
-      <TextArea rows={4} />
-    )
+    const problem_el = <TextArea rows={4} />
 
     const valueProposition_fn = getFieldDecorator('valueProposition', {
       rules: [
-        {max: 4096, message: I18N.get('from.TaskCreateForm.problem.max')}
+        { max: 4096, message: I18N.get('from.TaskCreateForm.problem.max') }
       ],
-      initialValue: this.state.editing ? existingTask.pitch && existingTask.pitch.valueProposition : ''
+      initialValue: this.state.editing
+        ? existingTask.pitch && existingTask.pitch.valueProposition
+        : ''
     })
-    const valueProposition_el = (
-      <TextArea rows={4} />
-    )
+    const valueProposition_el = <TextArea rows={4} />
 
     const usecase_fn = getFieldDecorator('useCase', {
       rules: [
-        {max: 4096, message: I18N.get('from.TaskCreateForm.problem.max')}
+        { max: 4096, message: I18N.get('from.TaskCreateForm.problem.max') }
       ],
-      initialValue: this.state.editing ? existingTask.pitch && existingTask.pitch.useCase : ''
+      initialValue: this.state.editing
+        ? existingTask.pitch && existingTask.pitch.useCase
+        : ''
     })
-    const usecase_el = (
-      <TextArea rows={4} />
-    )
+    const usecase_el = <TextArea rows={4} />
 
     const beneficiaries_fn = getFieldDecorator('beneficiaries', {
       rules: [
-        {max: 4096, message: I18N.get('from.TaskCreateForm.problem.max')}
+        { max: 4096, message: I18N.get('from.TaskCreateForm.problem.max') }
       ],
-      initialValue: this.state.editing ? existingTask.pitch && existingTask.pitch.beneficiaries : ''
+      initialValue: this.state.editing
+        ? existingTask.pitch && existingTask.pitch.beneficiaries
+        : ''
     })
-    const beneficiaries_el = (
-      <TextArea rows={4} />
-    )
+    const beneficiaries_el = <TextArea rows={4} />
 
     const elaInfrastructure_fn = getFieldDecorator('elaInfrastructure', {
       rules: [
-        {max: 4096, message: I18N.get('from.TaskCreateForm.problem.max')}
+        { max: 4096, message: I18N.get('from.TaskCreateForm.problem.max') }
       ],
-      initialValue: this.state.editing ? existingTask.pitch && existingTask.pitch.elaInfrastructure : ''
+      initialValue: this.state.editing
+        ? existingTask.pitch && existingTask.pitch.elaInfrastructure
+        : ''
     })
-    const elaInfrastructure_el = (
-      <TextArea rows={4} />
-    )
+    const elaInfrastructure_el = <TextArea rows={4} />
 
     return {
       problem: problem_fn(problem_el),
@@ -775,436 +889,616 @@ class C extends BaseComponent {
     })
   }
 
-    handleFileListChange = ({ fileList }) => this.setState({ fileList })
+  handleFileListChange = ({ fileList }) => this.setState({ fileList })
 
-    ord_render () {
-      const {getFieldDecorator} = this.props.form
-      const p = this.getInputProps()
-      const existingTask = this.props.existingTask
+  ord_render() {
+    const { getFieldDecorator } = this.props.form
+    const p = this.getInputProps()
+    const existingTask = this.props.existingTask
 
-      const formItemLayout = {
-        labelCol: {
-          xs: {span: 24},
-          sm: {span: 8}
-        },
-        wrapperCol: {
-          xs: {span: 24},
-          sm: {span: 12}
-        }
+    const formItemLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 8 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 12 }
       }
+    }
 
-      const formItemLayoutAdjLeft = {
-        labelCol: {
-          xs: {span: 24},
-          sm: {span: 16}
-        },
-        wrapperCol: {
-          xs: {span: 24},
-          sm: {span: 8}
-        }
+    const formItemLayoutAdjLeft = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 16 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 8 }
       }
+    }
 
-      const formItemLayoutAdjRight = {
-        labelCol: {
-          xs: {span: 24},
-          sm: {span: 8}
-        },
-        wrapperCol: {
-          xs: {span: 24},
-          sm: {span: 16}
-        }
+    const formItemLayoutAdjRight = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 8 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 16 }
       }
+    }
 
-      const formItemNoLabelLayout = {
-        wrapperCol: {
-          xs: {span: 24},
-          sm: {offset: 8, span: 12}
-        }
+    const formItemNoLabelLayout = {
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { offset: 8, span: 12 }
       }
+    }
 
-      const formItemCenterLayout = {
-        wrapperCol: {
-          xs: {span: 24},
-          sm: {offset: 6, span: 12}
-        }
+    const formItemCenterLayout = {
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { offset: 6, span: 12 }
       }
+    }
 
-      // const existingTask = this.props.existingTask
+    // const existingTask = this.props.existingTask
 
-      // TODO: terms of service checkbox\
+    // TODO: terms of service checkbox\
 
-      // TODO: react-motion animate slide left
+    // TODO: react-motion animate slide left
 
-      // TODO: description CKE Editor
-      return (
-        <div className="c_taskCreateFormContainer">
-          <Form onSubmit={this.handleSubmit.bind(this)} className="d_taskCreateForm">
-            <div>
-              <h3 className="no-margin">General Info</h3>
-              <FormItem label={I18N.get('from.TaskCreateForm.label.name')} {...formItemLayout}>
-                {p.taskName}
-              </FormItem>
-              {this.props.taskType !== 'PROJECT' && (
-              <FormItem label={I18N.get('from.TaskCreateForm.label.assigntocircle')} {...formItemLayout}>
+    // TODO: description CKE Editor
+    return (
+      <div className="c_taskCreateFormContainer">
+        <Form
+          onSubmit={this.handleSubmit.bind(this)}
+          className="d_taskCreateForm"
+        >
+          <div>
+            <h3 className="no-margin">General Info</h3>
+            <FormItem
+              label={I18N.get('from.TaskCreateForm.label.name')}
+              {...formItemLayout}
+            >
+              {p.taskName}
+            </FormItem>
+            {this.props.taskType !== 'PROJECT' && (
+              <FormItem
+                label={I18N.get('from.TaskCreateForm.label.assigntocircle')}
+                {...formItemLayout}
+              >
                 {p.circle}
               </FormItem>
-              )}
-              <FormItem label={I18N.get('from.TaskCreateForm.label.community')} {...formItemLayout}>
-                {p.taskCommunity}
-              </FormItem>
+            )}
+            <FormItem
+              label={I18N.get('from.TaskCreateForm.label.community')}
+              {...formItemLayout}
+            >
+              {p.taskCommunity}
+            </FormItem>
 
-              {!this.state.thumbnail_url
-                ? (
-                  <FormItem label={I18N.get('from.TaskCreateForm.label.thumbnail')} {...formItemLayout}>
-                    {p.thumbnail}
-                  </FormItem>
-                )
-                : (
-                  <Row className="ant-form-item">
-                    <Col span={8} className="ant-form-item-label text-right">
-                      <label>
-                        {I18N.get('from.TaskCreateForm.label.thumbnail')}
-                      </label>
-                    </Col>
-                    <Col span={16} style={{lineHeight: '40px'}}>
-                      <a target="_blank" href={getSafeUrl(this.state.thumbnail)}>
-                        <Icon type="file-image"/>
-                        {this.state.thumbnail_filename}
-                      </a>
-                      <Popconfirm title={I18N.get('from.TaskCreateForm.attachment.confirm.remove')} okText={I18N.get('from.TaskCreateForm.text.ok')} onConfirm={this.removeThumbnail.bind(this)}>
-                        <Icon className="remove-attachment" type="close-circle"/>
-                      </Popconfirm>
-                      <br/>
-                    </Col>
-                  </Row>
-                )
-              }
-              <FormItem label={I18N.get('from.TaskCreateForm.label.category')} {...formItemLayout}>
-                {p.taskCategory}
+            {!this.state.thumbnail_url ? (
+              <FormItem
+                label={I18N.get('from.TaskCreateForm.label.thumbnail')}
+                {...formItemLayout}
+              >
+                {p.thumbnail}
               </FormItem>
-              {this.props.taskType !== 'PROJECT' && (
-              <FormItem label={I18N.get('from.TaskCreateForm.label.type')} {...formItemLayout}>
+            ) : (
+              <Row className="ant-form-item">
+                <Col span={8} className="ant-form-item-label text-right">
+                  <label>
+                    {I18N.get('from.TaskCreateForm.label.thumbnail')}
+                  </label>
+                </Col>
+                <Col span={16} style={{ lineHeight: '40px' }}>
+                  <a target="_blank" href={getSafeUrl(this.state.thumbnail)}>
+                    <Icon type="file-image" />
+                    {this.state.thumbnail_filename}
+                  </a>
+                  <Popconfirm
+                    title={I18N.get(
+                      'from.TaskCreateForm.attachment.confirm.remove'
+                    )}
+                    okText={I18N.get('from.TaskCreateForm.text.ok')}
+                    onConfirm={this.removeThumbnail.bind(this)}
+                  >
+                    <Icon className="remove-attachment" type="close-circle" />
+                  </Popconfirm>
+                  <br />
+                </Col>
+              </Row>
+            )}
+            <FormItem
+              label={I18N.get('from.TaskCreateForm.label.category')}
+              {...formItemLayout}
+            >
+              {p.taskCategory}
+            </FormItem>
+            {this.props.taskType !== 'PROJECT' && (
+              <FormItem
+                label={I18N.get('from.TaskCreateForm.label.type')}
+                {...formItemLayout}
+              >
                 {p.taskType}
               </FormItem>
-              )}
-              <Row>
-                <Col span={12}>
-                  <FormItem label={I18N.get('from.TaskCreateForm.label.application')} {...formItemLayoutAdjLeft}>
-                    {p.taskApplicationDeadline}
-                  </FormItem>
-                </Col>
-                <Col span={12}>
-                  <FormItem label={I18N.get('from.TaskCreateForm.label.completeBy')} {...formItemLayoutAdjRight}>
-                    {p.taskCompletionDeadline}
-                  </FormItem>
-                </Col>
-              </Row>
-              <FormItem label={I18N.get('from.TaskCreateForm.label.description')} {...formItemLayout}>
-                {p.taskDesc}
-              </FormItem>
+            )}
+            <Row>
+              <Col span={12}>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.application')}
+                  {...formItemLayoutAdjLeft}
+                >
+                  {p.taskApplicationDeadline}
+                </FormItem>
+              </Col>
+              <Col span={12}>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.completeBy')}
+                  {...formItemLayoutAdjRight}
+                >
+                  {p.taskCompletionDeadline}
+                </FormItem>
+              </Col>
+            </Row>
+            <FormItem
+              label={I18N.get('from.TaskCreateForm.label.description')}
+              {...formItemLayout}
+            >
+              {p.taskDesc}
+            </FormItem>
 
-              <Row>
-                <Col offset="8" span="12">
-                                For larger events/tasks/projects please breakdown the budget/rewards
-                </Col>
-              </Row>
-              <FormItem {...formItemNoLabelLayout}>
-                {p.taskDescBreakdown}
-              </FormItem>
-              <FormItem label={I18N.get('from.TaskCreateForm.label.goals')} {...formItemLayout}>
-                {p.taskGoals}
-              </FormItem>
-              <FormItem label={I18N.get('from.TaskCreateForm.label.info')} {...formItemLayout}>
-                {p.taskLink}
-              </FormItem>
+            <Row>
+              <Col offset={8} span={12}>
+                For larger events/tasks/projects please breakdown the
+                budget/rewards
+              </Col>
+            </Row>
+            <FormItem {...formItemNoLabelLayout}>
+              {p.taskDescBreakdown}
+            </FormItem>
+            <FormItem
+              label={I18N.get('from.TaskCreateForm.label.goals')}
+              {...formItemLayout}
+            >
+              {p.taskGoals}
+            </FormItem>
+            <FormItem
+              label={I18N.get('from.TaskCreateForm.label.info')}
+              {...formItemLayout}
+            >
+              {p.taskLink}
+            </FormItem>
 
-              {((existingTask && existingTask.type === TASK_TYPE.PROJECT) ||
-                            this.state.taskType === TASK_TYPE.PROJECT) && (
-                            <div>
-                              <h3 className="no-margin">Pitch</h3>
-                              <FormItem label={I18N.get('from.TaskCreateForm.label.problems')} {...formItemLayout}>
-                                {p.problem}
-                              </FormItem>
-                              <FormItem label={I18N.get('from.TaskCreateForm.label.valueProposition')} {...formItemLayout}>
-                                {p.valueProposition}
-                              </FormItem>
-                              <FormItem label={I18N.get('from.TaskCreateForm.label.usecase')} {...formItemLayout}>
-                                {p.usecase}
-                              </FormItem>
-                              <FormItem label={I18N.get('from.TaskCreateForm.label.beneficiaries')} {...formItemLayout}>
-                                {p.beneficiaries}
-                              </FormItem>
-                              <FormItem label={I18N.get('from.TaskCreateForm.label.elaInfrastructure')} {...formItemLayout}>
-                                {p.elaInfrastructure}
-                              </FormItem>
+            {((existingTask && existingTask.type === TASK_TYPE.PROJECT) ||
+              this.state.taskType === TASK_TYPE.PROJECT) && (
+              <div>
+                <h3 className="no-margin">Pitch</h3>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.problems')}
+                  {...formItemLayout}
+                >
+                  {p.problem}
+                </FormItem>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.valueProposition')}
+                  {...formItemLayout}
+                >
+                  {p.valueProposition}
+                </FormItem>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.usecase')}
+                  {...formItemLayout}
+                >
+                  {p.usecase}
+                </FormItem>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.beneficiaries')}
+                  {...formItemLayout}
+                >
+                  {p.beneficiaries}
+                </FormItem>
+                <FormItem
+                  label={I18N.get(
+                    'from.TaskCreateForm.label.elaInfrastructure'
+                  )}
+                  {...formItemLayout}
+                >
+                  {p.elaInfrastructure}
+                </FormItem>
 
-                              <h3 className="no-margin">Recruitment</h3>
-                              <FormItem label={I18N.get('from.TaskCreateForm.label.domain')} {...formItemLayout}>
-                                {p.domain}
-                              </FormItem>
-                              <FormItem label={I18N.get('from.TaskCreateForm.label.recruiting')} {...formItemLayout}>
-                                {p.recruitedSkillsets}
-                              </FormItem>
-                              <FormItem label={I18N.get('from.TaskCreateForm.label.prictures')} {...formItemLayout}>
-                                {p.pictures}
-                              </FormItem>
-                              <Modal visible={this.state.previewVisible} footer={null} onCancel={this.handleCancel.bind(this)}>
-                                <img alt="example" style={{ width: '100%' }} src={this.state.previewImage} />
-                              </Modal>
-                            </div>
-              )}
+                <h3 className="no-margin">Recruitment</h3>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.domain')}
+                  {...formItemLayout}
+                >
+                  {p.domain}
+                </FormItem>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.recruiting')}
+                  {...formItemLayout}
+                >
+                  {p.recruitedSkillsets}
+                </FormItem>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.prictures')}
+                  {...formItemLayout}
+                >
+                  {p.pictures}
+                </FormItem>
+                <Modal
+                  visible={this.state.previewVisible}
+                  footer={null}
+                  onCancel={this.handleCancel.bind(this)}
+                >
+                  <img
+                    alt="example"
+                    style={{ width: '100%' }}
+                    src={this.state.previewImage}
+                  />
+                </Modal>
+              </div>
+            )}
 
-              <Divider/>
+            <Divider />
 
-              {/*
-                        ********************************************************************************
-                        * Event Info
-                        ********************************************************************************
-                        */}
-              {this.state.taskType === TASK_TYPE.EVENT && (
+            {/*
+             ********************************************************************************
+             * Event Info
+             ********************************************************************************
+             */}
+            {this.state.taskType === TASK_TYPE.EVENT && (
               <div>
                 <h3 className="no-margin">Event Info</h3>
-                <FormItem label={I18N.get('from.TaskCreateForm.label.daterange')} {...formItemLayout}>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.daterange')}
+                  {...formItemLayout}
+                >
                   {p.eventDateRange}
                 </FormItem>
                 <Row>
                   <Col span={this.state.eventDateRange ? 12 : 24}>
-                    {this.state.eventDateRange
-                      ? (
-                        <FormItem label={I18N.get('from.TaskCreateForm.label.eventdate') + (this.state.eventDateRange ? I18N.get('from.TaskCreateForm.label.start') : '')} {...formItemLayoutAdjLeft}>
-                          {p.eventDateRangeStart}
-                        </FormItem>
-                      )
-                      : (
-                        <FormItem label={I18N.get('from.TaskCreateForm.label.eventdate') + (this.state.eventDateRange ? I18N.get('from.TaskCreateForm.label.start') : '')} {...formItemLayout}>
-                          {p.eventDateRangeStart}
-                        </FormItem>
-                      )}
+                    {this.state.eventDateRange ? (
+                      <FormItem
+                        label={
+                          I18N.get('from.TaskCreateForm.label.eventdate') +
+                          (this.state.eventDateRange
+                            ? I18N.get('from.TaskCreateForm.label.start')
+                            : '')
+                        }
+                        {...formItemLayoutAdjLeft}
+                      >
+                        {p.eventDateRangeStart}
+                      </FormItem>
+                    ) : (
+                      <FormItem
+                        label={
+                          I18N.get('from.TaskCreateForm.label.eventdate') +
+                          (this.state.eventDateRange
+                            ? I18N.get('from.TaskCreateForm.label.start')
+                            : '')
+                        }
+                        {...formItemLayout}
+                      >
+                        {p.eventDateRangeStart}
+                      </FormItem>
+                    )}
                   </Col>
                   {this.state.eventDateRange && (
-                  <Col span={12}>
-                    <FormItem label={I18N.get('from.TaskCreateForm.label.end')} {...formItemLayoutAdjRight}>
-                      {p.eventDateRangeEnd}
-                    </FormItem>
-                  </Col>
+                    <Col span={12}>
+                      <FormItem
+                        label={I18N.get('from.TaskCreateForm.label.end')}
+                        {...formItemLayoutAdjRight}
+                      >
+                        {p.eventDateRangeEnd}
+                      </FormItem>
+                    </Col>
                   )}
                 </Row>
-                <FormItem label={I18N.get('from.TaskCreateForm.label.dateconfirm')} {...formItemLayout}>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.dateconfirm')}
+                  {...formItemLayout}
+                >
                   {p.eventDateStatus}
                 </FormItem>
-                <FormItem label={I18N.get('from.TaskCreateForm.label.location')} {...formItemLayout}>
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.location')}
+                  {...formItemLayout}
+                >
                   {p.taskLocation}
                 </FormItem>
               </div>
-              )}
+            )}
 
-              {this.state.taskType === TASK_TYPE.EVENT && <Divider/>}
+            {this.state.taskType === TASK_TYPE.EVENT && <Divider />}
 
-              {/*
-                        ********************************************************************************
-                        * Budget / Reward
-                        ********************************************************************************
-                        */}
-              <h3 className="no-margin">
-                {I18N.get('from.TaskCreateForm.label.paymentassigment')}
-&nbsp;
-                <Popover content={I18N.get('from.TaskCreateForm.label.budgetlabor')}>
-                  <Icon className="help-icon" type="question-circle-o"/>
-                </Popover>
-              </h3>
-              {!this.props.existingTask && (
+            {/*
+             ********************************************************************************
+             * Budget / Reward
+             ********************************************************************************
+             */}
+            <h3 className="no-margin">
+              {I18N.get('from.TaskCreateForm.label.paymentassigment')}
+              &nbsp;
+              <Popover
+                content={I18N.get('from.TaskCreateForm.label.budgetlabor')}
+              >
+                <Icon className="help-icon" type="question-circle-o" />
+              </Popover>
+            </h3>
+            {!this.props.existingTask && (
               <Row>
                 <Col span={12}>
-                  <Card hoverable={true} className={`feature-box${this.state.assignSelf ? ' selected' : ''}`} onClick={() => { this.setState({assignSelf: true}) }}>
+                  <Card
+                    hoverable={true}
+                    className={`feature-box${
+                      this.state.assignSelf ? ' selected' : ''
+                    }`}
+                    onClick={() => {
+                      this.setState({ assignSelf: true })
+                    }}
+                  >
                     <div className="title">
-                      <span>{I18N.get('from.TaskCreateForm.label.private')}</span>
+                      <span>
+                        {I18N.get('from.TaskCreateForm.label.private')}
+                      </span>
                     </div>
-                    <hr className="feature-box-divider"/>
+                    <hr className="feature-box-divider" />
                     <div className="content">
-                      <div>{I18N.get('from.TaskCreateForm.label.taskyourself')}</div>
-                      <div>{I18N.get('from.TaskCreateForm.label.proposing.approval')}</div>
-                      <div>{I18N.get('from.TaskCreateForm.label.notvisible')}</div>
+                      <div>
+                        {I18N.get('from.TaskCreateForm.label.taskyourself')}
+                      </div>
+                      <div>
+                        {I18N.get(
+                          'from.TaskCreateForm.label.proposing.approval'
+                        )}
+                      </div>
+                      <div>
+                        {I18N.get('from.TaskCreateForm.label.notvisible')}
+                      </div>
                     </div>
                   </Card>
                 </Col>
                 <Col span={12}>
-                  <Card hoverable={true} className={`feature-box${!this.state.assignSelf ? ' selected' : ''}`} onClick={() => { this.setState({assignSelf: false}) }}>
+                  <Card
+                    hoverable={true}
+                    className={`feature-box${
+                      !this.state.assignSelf ? ' selected' : ''
+                    }`}
+                    onClick={() => {
+                      this.setState({ assignSelf: false })
+                    }}
+                  >
                     <div className="title">
-                      <span>{I18N.get('from.TaskCreateForm.label.public')}</span>
+                      <span>
+                        {I18N.get('from.TaskCreateForm.label.public')}
+                      </span>
                     </div>
-                    <hr className="feature-box-divider"/>
+                    <hr className="feature-box-divider" />
                     <div className="content">
-                      <div>{I18N.get('from.TaskCreateForm.label.taskforother')}</div>
-                      <div>{I18N.get('from.TaskCreateForm.label.publicly')}</div>
-                      <div>{I18N.get('from.TaskCreateForm.label.rewardbidding')}</div>
+                      <div>
+                        {I18N.get('from.TaskCreateForm.label.taskforother')}
+                      </div>
+                      <div>
+                        {I18N.get('from.TaskCreateForm.label.publicly')}
+                      </div>
+                      <div>
+                        {I18N.get('from.TaskCreateForm.label.rewardbidding')}
+                      </div>
                     </div>
                   </Card>
                 </Col>
               </Row>
-              )}
+            )}
 
-              {!this.state.assignSelf && (
+            {!this.state.assignSelf && (
               <div>
-                <br/>
-                <FormItem label={I18N.get('from.TaskCreateForm.label.rewardtype')} {...formItemLayout}>
+                <br />
+                <FormItem
+                  label={I18N.get('from.TaskCreateForm.label.rewardtype')}
+                  {...formItemLayout}
+                >
                   <Switch
-                              onChange={() => this.setState({isBidding: !this.state.isBidding})}
-                              unCheckedChildren="Define budget"
-                              checkedChildren="Open for bidding"
-                              defaultChecked={this.state.isBidding}
-                            />
+                    onChange={() =>
+                      this.setState({ isBidding: !this.state.isBidding })
+                    }
+                    unCheckedChildren="Define budget"
+                    checkedChildren="Open for bidding"
+                    defaultChecked={this.state.isBidding}
+                  />
                 </FormItem>
               </div>
-              )}
-              { (this.state.assignSelf || !this.state.isBidding) && (
+            )}
+            {(this.state.assignSelf || !this.state.isBidding) && (
               <div>
-                {this.state.assignSelf && <br/>}
+                {this.state.assignSelf && <br />}
 
                 <Row>
                   <Col>
-                    <FormItem label={I18N.get('from.TaskCreateForm.label.usdbudget')} {...formItemLayout}>
+                    <FormItem
+                      label={I18N.get('from.TaskCreateForm.label.usdbudget')}
+                      {...formItemLayout}
+                    >
                       {p.taskRewardUpfrontUsd}
                     </FormItem>
-                    <FormItem label={I18N.get('from.TaskCreateForm.label.usdreward')} {...formItemLayout}>
+                    <FormItem
+                      label={I18N.get('from.TaskCreateForm.label.usdreward')}
+                      {...formItemLayout}
+                    >
                       {p.taskRewardUsd}
                     </FormItem>
                   </Col>
                 </Row>
 
-                {!this.props.is_admin && (!this.props.existingTask || this.props.existingTask.status === TASK_STATUS.PENDING) && (
-                <FormItem {...formItemNoLabelLayout}>
-                  <Checkbox name="readDisclaimer" checked={this.state.readDisclaimer} onChange={() => { this.setState({readDisclaimer: !this.state.readDisclaimer}) }}/>
+                {!this.props.is_admin &&
+                  (!this.props.existingTask ||
+                    this.props.existingTask.status === TASK_STATUS.PENDING) && (
+                    <FormItem {...formItemNoLabelLayout}>
+                      <Checkbox
+                        name="readDisclaimer"
+                        checked={this.state.readDisclaimer}
+                        onChange={() => {
+                          this.setState({
+                            readDisclaimer: !this.state.readDisclaimer
+                          })
+                        }}
+                      />
 
-                  <span id="disclaimerLink" className="disclaimerLink" onClick={this.showDisclaimer.bind(this)}>{I18N.get('from.TaskCreateForm.label.disclaimerrule')}</span>
-                </FormItem>
-                )}
+                      <span
+                        id="disclaimerLink"
+                        className="disclaimerLink"
+                        onClick={this.showDisclaimer.bind(this)}
+                      >
+                        {I18N.get('from.TaskCreateForm.label.disclaimerrule')}
+                      </span>
+                    </FormItem>
+                  )}
               </div>
-              )}
+            )}
 
-              {!this.state.assignSelf && this.state.isBidding && (
-              <FormItem label={I18N.get('project.detail.reference_bid')} {...formItemLayout}>
+            {!this.state.assignSelf && this.state.isBidding && (
+              <FormItem
+                label={I18N.get('project.detail.reference_bid')}
+                {...formItemLayout}
+              >
                 {p.referenceBid}
               </FormItem>
-              )}
+            )}
 
-              <Divider/>
+            <Divider />
 
-              {/*
-                        ********************************************************************************
-                        * Attachment
-                        ********************************************************************************
-                        */}
-              <h3 className="no-margin">{I18N.get('from.TaskCreateForm.label.attachment')}</h3>
-              <br/>
-              {!this.state.attachment_url
-                ? (
-                  <FormItem {...formItemCenterLayout} className="attachmentUpload">
-                    {p.attachment}
-                  </FormItem>
-                )
-                : (
-                  <Row>
-                    <Col offset={8} span={16}>
-                      <a target="_blank" href={getSafeUrl(this.state.attachment_url)}>
-                        {this.state.attachment_type === 'application/pdf'
-                          ? <Icon type="file-pdf"/>
-                          : <Icon type="file"/>
-                      }
-                        {' '}
-&nbsp;
-                        {this.state.attachment_filename}
-                      </a>
-                      <Popconfirm title={I18N.get('from.TaskCreateForm.label.remove.attachment')} okText="Yes" onConfirm={this.removeAttachment.bind(this)}>
-                        <Icon className="remove-attachment" type="close-circle"/>
-                      </Popconfirm>
-                      <br/>
-                    </Col>
-                  </Row>
-                )
-              }
-
-              <Divider/>
-
-              <br/>
-              <Row style={{margin: '50px 0 100px 0'}}>
-                <Col offset={4} span={16}>
-                  <Button loading={this.props.loading || this.props.all_circles_loading}
-                    type="primary" htmlType="submit" className="d_btn" style={{width: '100%'}}>
-                    {this.state.editing ? I18N.get('from.TaskCreateForm.button.savechange') : (this.props.is_admin ? I18N.get('from.TaskCreateForm.button.createtask') : I18N.get('from.TaskCreateForm.button.submitpropsal'))}
-                  </Button>
+            {/*
+             ********************************************************************************
+             * Attachment
+             ********************************************************************************
+             */}
+            <h3 className="no-margin">
+              {I18N.get('from.TaskCreateForm.label.attachment')}
+            </h3>
+            <br />
+            {!this.state.attachment_url ? (
+              <FormItem {...formItemCenterLayout} className="attachmentUpload">
+                {p.attachment}
+              </FormItem>
+            ) : (
+              <Row>
+                <Col offset={8} span={16}>
+                  <a
+                    target="_blank"
+                    href={getSafeUrl(this.state.attachment_url)}
+                  >
+                    {this.state.attachment_type === 'application/pdf' ? (
+                      <Icon type="file-pdf" />
+                    ) : (
+                      <Icon type="file" />
+                    )}{' '}
+                    &nbsp;
+                    {this.state.attachment_filename}
+                  </a>
+                  <Popconfirm
+                    title={I18N.get(
+                      'from.TaskCreateForm.label.remove.attachment'
+                    )}
+                    okText="Yes"
+                    onConfirm={this.removeAttachment.bind(this)}
+                  >
+                    <Icon className="remove-attachment" type="close-circle" />
+                  </Popconfirm>
+                  <br />
                 </Col>
               </Row>
+            )}
 
-              <br/>
-            </div>
-          </Form>
+            <Divider />
 
-          <Modal
-            title={I18N.get('from.TaskCreateForm.label.paymentrules')}
-            visible={this.state.showDisclaimer}
-            onCancel={this.hideDisclaimer.bind(this)}
-            footer={[
-              <Button key="cancel" onClick={this.hideDisclaimer.bind(this)}>{I18N.get('from.TaskCreateForm.button.close')}</Button>
-            ]}
-          >
-            <ol className="paymentRulesModal">
-              <li>
-                {I18N.get('from.TaskCreateForm.text.payment.billable')}
-              </li>
-              <li>
-                {I18N.get('from.TaskCreateForm.text.payment.upon')}
-              </li>
-              <li>
-                {I18N.get('from.TaskCreateForm.text.payment.exchange')}
-                {' '}
-                <a target="_blank" href="https://coinmarketcap.com/currencies/elastos">CMC</a>
-                {' '}
-                {I18N.get('from.TaskCreateForm.text.payment.used')}
-              </li>
-              <li>
-                {I18N.get('from.TaskCreateForm.text.payment.expenses')}
-              </li>
-              <li>
-                {I18N.get('from.TaskCreateForm.text.payment.agreement')}
-              </li>
-            </ol>
-          </Modal>
-        </div>
-      )
-    }
+            <br />
+            <Row style={{ margin: '50px 0 100px 0' }}>
+              <Col offset={4} span={16}>
+                <Button
+                  loading={this.props.loading || this.props.all_circles_loading}
+                  type="primary"
+                  htmlType="submit"
+                  className="d_btn"
+                  style={{ width: '100%' }}
+                >
+                  {this.state.editing
+                    ? I18N.get('from.TaskCreateForm.button.savechange')
+                    : this.props.is_admin
+                    ? I18N.get('from.TaskCreateForm.button.createtask')
+                    : I18N.get('from.TaskCreateForm.button.submitpropsal')}
+                </Button>
+              </Col>
+            </Row>
 
-    removeAttachment() {
-      this.setState({
-        attachment_loading: false,
-        attachment_url: null,
-        attachment_type: '',
-        attachment_filename: '',
+            <br />
+          </div>
+        </Form>
 
-        removeAttachment: true
-      })
-    }
+        <Modal
+          title={I18N.get('from.TaskCreateForm.label.paymentrules')}
+          visible={this.state.showDisclaimer}
+          onCancel={this.hideDisclaimer.bind(this)}
+          footer={[
+            <Button key="cancel" onClick={this.hideDisclaimer.bind(this)}>
+              {I18N.get('from.TaskCreateForm.button.close')}
+            </Button>
+          ]}
+        >
+          <ol className="paymentRulesModal">
+            <li>{I18N.get('from.TaskCreateForm.text.payment.billable')}</li>
+            <li>{I18N.get('from.TaskCreateForm.text.payment.upon')}</li>
+            <li>
+              {I18N.get('from.TaskCreateForm.text.payment.exchange')}{' '}
+              <a
+                target="_blank"
+                href="https://coinmarketcap.com/currencies/elastos"
+              >
+                CMC
+              </a>{' '}
+              {I18N.get('from.TaskCreateForm.text.payment.used')}
+            </li>
+            <li>{I18N.get('from.TaskCreateForm.text.payment.expenses')}</li>
+            <li>{I18N.get('from.TaskCreateForm.text.payment.agreement')}</li>
+          </ol>
+        </Modal>
+      </div>
+    )
+  }
 
-    removeThumbnail() {
-      this.setState({
-        thumbnail_loading: false,
-        thumbnail_url: null,
-        thumbnail_type: '',
-        thumbnail_filename: '',
+  removeAttachment() {
+    this.setState({
+      attachment_loading: false,
+      attachment_url: null,
+      attachment_type: '',
+      attachment_filename: '',
 
-        removeThumbnail: true
-      })
-    }
+      removeAttachment: true
+    })
+  }
 
-    showDisclaimer() {
-      this.setState({
-        showDisclaimer: true
-      })
-    }
+  removeThumbnail() {
+    this.setState({
+      thumbnail_loading: false,
+      thumbnail_url: null,
+      thumbnail_type: '',
+      thumbnail_filename: '',
 
-    hideDisclaimer() {
-      this.setState({
-        showDisclaimer: false
-      })
-    }
+      removeThumbnail: true
+    })
+  }
+
+  showDisclaimer() {
+    this.setState({
+      showDisclaimer: true
+    })
+  }
+
+  hideDisclaimer() {
+    this.setState({
+      showDisclaimer: false
+    })
+  }
 }
 export default Form.create()(C)

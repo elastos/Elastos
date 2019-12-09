@@ -1,27 +1,8 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import moment from 'moment'
-import {
-  message,
-  Col,
-  Row,
-  Tag,
-  Icon,
-  Carousel,
-  Avatar,
-  Button,
-  Spin,
-  Select,
-  Table,
-  Input,
-  Form,
-  Divider,
-  Modal,
-  Upload,
-  Badge
-} from 'antd'
-import {upload_file} from '@/util'
-import { TASK_CANDIDATE_STATUS, TASK_CANDIDATE_TYPE, TEAM_USER_STATUS, USER_AVATAR_DEFAULT } from '@/constant'
+import { Icon, Avatar, Spin, Select, Form, Upload } from 'antd'
+import { upload_file } from '@/util'
+import { TASK_CANDIDATE_TYPE, USER_AVATAR_DEFAULT } from '@/constant'
 import Comments from '@/module/common/comments/Container'
 import I18N from '@/I18N'
 import _ from 'lodash'
@@ -46,17 +27,19 @@ class C extends BaseComponent {
     }
   }
 
-  componentWillUnmount() {
-  }
+  componentWillUnmount() {}
 
   isTaskOwner() {
-    return this.props.detail.createdBy && this.props.detail.createdBy._id === this.props.currentUserId
+    return (
+      this.props.detail.createdBy &&
+      this.props.detail.createdBy._id === this.props.currentUserId
+    )
   }
 
   isUserSubscribed() {
     const curDetail = this.props.detail
     const subscribers = curDetail.subscribers || []
-    return !!_.find(subscribers, (subscriber) => {
+    return !!_.find(subscribers, subscriber => {
       return subscriber.user && subscriber.user._id === this.props.currentUserId
     })
   }
@@ -66,13 +49,17 @@ class C extends BaseComponent {
   }
 
   checkForLoading(followup) {
-    return this.props.loading
-      ? <div className="valign-wrapper halign-wrapper"><Spin size="large"/></div>
-      : _.isFunction(followup) && followup()
+    return this.props.loading ? (
+      <div className="valign-wrapper halign-wrapper">
+        <Spin size="large" />
+      </div>
+    ) : (
+      _.isFunction(followup) && followup()
+    )
   }
 
   isMemberByUserId(userId) {
-    const candidate = _.find(this.props.detail.candidates, (candidate) => {
+    const candidate = _.find(this.props.detail.candidates, candidate => {
       if (candidate.type === TASK_CANDIDATE_TYPE.USER) {
         return candidate.user._id === userId
       }
@@ -85,14 +72,20 @@ class C extends BaseComponent {
   }
 
   isMember(taskCandidateId) {
-    const candidate = _.find(this.props.detail.candidates, { _id: taskCandidateId })
+    const candidate = _.find(this.props.detail.candidates, {
+      _id: taskCandidateId
+    })
     if (!candidate) {
       return false
     }
     if (candidate.type === TASK_CANDIDATE_TYPE.USER) {
       return candidate.user._id === this.props.currentUserId
-    } if (candidate.type === TASK_CANDIDATE_TYPE.TEAM) {
-      return _.find(this.props.ownedTeams, (item) => item._id === candidate.team._id)
+    }
+    if (candidate.type === TASK_CANDIDATE_TYPE.TEAM) {
+      return _.find(
+        this.props.ownedTeams,
+        item => item._id === candidate.team._id
+      )
     }
   }
 
@@ -101,9 +94,7 @@ class C extends BaseComponent {
     const ln = candidate.user.profile.lastName
     const un = candidate.user.username
 
-    return _.isEmpty(fn) && _.isEmpty(ln)
-      ? un
-      : [fn, ln].join(' ')
+    return _.isEmpty(fn) && _.isEmpty(ln) ? un : [fn, ln].join(' ')
   }
 
   approveUser(taskCandidateId) {
@@ -123,21 +114,26 @@ class C extends BaseComponent {
   }
 
   removeUserByUserId(userId) {
-    const candidate = _.find(this.props.detail.candidates, (candidate) => candidate.user._id === userId)
+    const candidate = _.find(
+      this.props.detail.candidates,
+      candidate => candidate.user._id === userId
+    )
     if (!candidate) {
       return false
     }
     return this.removeUser(candidate._id)
   }
 
-  getApplicant () {
-    return (!_.isEmpty(this.props.detail.candidates) &&
-            this.props.detail.candidates.find((candidate) => {
-              return candidate._id === this.props.taskCandidateId
-            }))
+  getApplicant() {
+    return (
+      !_.isEmpty(this.props.detail.candidates) &&
+      this.props.detail.candidates.find(candidate => {
+        return candidate._id === this.props.taskCandidateId
+      })
+    )
   }
 
-  ord_render () {
+  ord_render() {
     const applicant = this.getApplicant()
 
     return (
@@ -145,10 +141,16 @@ class C extends BaseComponent {
         <div>
           {this.getHeader()}
           {this.getDescription()}
-          <Comments type="taskCandidate" reduxType="task" canPost={true} model={applicant}
-            detailReducer={(detail) => _.find(detail.candidates, (candidate) => {
-              return candidate._id === this.props.taskCandidateId
-            })}
+          <Comments
+            type="taskCandidate"
+            reduxType="task"
+            canPost={true}
+            model={applicant}
+            detailReducer={detail =>
+              _.find(detail.candidates, candidate => {
+                return candidate._id === this.props.taskCandidateId
+              })
+            }
             returnUrl={`/task-detail/${this.props.detail._id}`}
           />
         </div>
@@ -167,39 +169,49 @@ class C extends BaseComponent {
   }
 
   getAvatarWithFallback(avatar) {
-    return _.isEmpty(avatar)
-      ? USER_AVATAR_DEFAULT
-      : avatar
+    return _.isEmpty(avatar) ? USER_AVATAR_DEFAULT : avatar
   }
 
   getApplyWithDropdown() {
     const applicant = this.getApplicant()
 
-    const defaultValue = applicant && applicant.user
-      ? '$me'
-      : applicant && applicant.team && applicant.team._id
+    const defaultValue =
+      applicant && applicant.user
+        ? '$me'
+        : applicant && applicant.team && applicant.team._id
 
     return (
       <div className="full-width halign-wrapper valign-wrapper">
-        <Select className="team-selector" disabled={this.props.loading} defaultValue={defaultValue}
-          onChange={(value) => this.handleApplyWithChange(value)}>
+        <Select
+          className="team-selector"
+          disabled={this.props.loading}
+          defaultValue={defaultValue}
+          onChange={value => this.handleApplyWithChange(value)}
+        >
           <Select.Option value="$me">
-                        Apply as myself
-            <Avatar size="small" src={this.getAvatarWithFallback(this.props.currentUserAvatar)}
-              className="pull-right"/>
+            Apply as myself
+            <Avatar
+              size="small"
+              src={this.getAvatarWithFallback(this.props.currentUserAvatar)}
+              className="pull-right"
+            />
           </Select.Option>
-          {_.map(this.props.ownedTeams, (team) => (
+          {_.map(this.props.ownedTeams, team => (
             <Select.Option key={team._id} value={team._id}>
-                            Apply with
-              {' '}
-              {team.name}
-              {!_.isEmpty(team.pictures)
-                ? (
-                  <Avatar size="small" src={this.getAvatarWithFallback(team.pictures[0].thumbUrl)}
-                  className="pull-right"/>
-                )
-                : <Avatar size="small" src={this.getAvatarWithFallback()} className="pull-right"/>
-              }
+              Apply with {team.name}
+              {!_.isEmpty(team.pictures) ? (
+                <Avatar
+                  size="small"
+                  src={this.getAvatarWithFallback(team.pictures[0].thumbUrl)}
+                  className="pull-right"
+                />
+              ) : (
+                <Avatar
+                  size="small"
+                  src={this.getAvatarWithFallback()}
+                  className="pull-right"
+                />
+              )}
             </Select.Option>
           ))}
         </Select>
@@ -208,11 +220,11 @@ class C extends BaseComponent {
   }
 
   getHeader() {
-    const customRequest = (info) => {
+    const customRequest = info => {
       this.setState({
         attachment_loading: true
       })
-      upload_file(info.file).then((d) => {
+      upload_file(info.file).then(d => {
         this.props.updateApplication(this.props.taskId, {
           taskCandidateId: this.props.taskCandidateId,
           attachment: d.url,
@@ -229,14 +241,15 @@ class C extends BaseComponent {
     }
 
     const applicant = this.getApplicant()
-    const defaultFileList = applicant && applicant.attachment && [
-      {
-        uid: '1',
-        name: applicant.attachmentFilename,
-        url: applicant.attachment,
-        status: 'done'
-      }
-    ]
+    const defaultFileList = applicant &&
+      applicant.attachment && [
+        {
+          uid: '1',
+          name: applicant.attachmentFilename,
+          url: applicant.attachment,
+          status: 'done'
+        }
+      ]
 
     const showUploadList = {
       showPreviewIcon: true
@@ -244,25 +257,30 @@ class C extends BaseComponent {
 
     return (
       <div>
-        <div>
-          {this.getApplyWithDropdown()}
-        </div>
-        <Upload.Dragger name="file" multiple={false} customRequest={customRequest.bind(this)}
-          defaultFileList={defaultFileList} showUploadList={showUploadList}>
+        <div>{this.getApplyWithDropdown()}</div>
+        <Upload.Dragger
+          name="file"
+          multiple={false}
+          customRequest={customRequest.bind(this)}
+          defaultFileList={defaultFileList}
+          showUploadList={showUploadList}
+        >
           <p className="ant-upload-drag-icon">
             <Icon type="inbox" />
           </p>
-          <p className="ant-upload-text">{I18N.get('profile.detail.upload.whitepaper')}</p>
-          <p className="ant-upload-hint">{I18N.get('profile.detail.upload.comment')}</p>
+          <p className="ant-upload-text">
+            {I18N.get('profile.detail.upload.whitepaper')}
+          </p>
+          <p className="ant-upload-hint">
+            {I18N.get('profile.detail.upload.comment')}
+          </p>
         </Upload.Dragger>
       </div>
     )
   }
 
   getDescription() {
-    return (
-      <div />
-    )
+    return <div />
   }
 }
 
