@@ -1051,7 +1051,7 @@ class C extends BaseComponent {
             </FormItem>
 
             <Row>
-              <Col offset="8" span="12">
+              <Col offset={8} span={12}>
                 For larger events/tasks/projects please breakdown the
                 budget/rewards
               </Col>
