@@ -16,7 +16,7 @@ const prodEnv = {
     NODE_ENV: JSON.stringify('production'),
     PLATFORM_ENV: JSON.stringify('web'),
     SERVER_URL: JSON.stringify('https://api.cyberrepublic.org'),
-    WALLET_SERVER_URL: JSON.stringify('http://54.223.244.60'),
+    WALLET_SERVER_URL: JSON.stringify('https://unionsquare.elastos.org'),
     FORUM_URL: JSON.stringify('https://forum.cyberrepublic.org'),
     SSO_URL: JSON.stringify('https://forum.cyberrepublic.org/session/sso_login'),
     CR_VERSION: JSON.stringify(process.env.CR_VERSION),
