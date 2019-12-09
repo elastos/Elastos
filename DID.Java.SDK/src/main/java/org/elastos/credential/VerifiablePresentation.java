@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.elastos.credential;
 
 import java.io.IOException;
@@ -97,24 +119,16 @@ public class VerifiablePresentation {
 			return new Proof(type, method, realm, nonce, signature);
 		}
 
-		protected void toJson(JsonGenerator generator, DID ref, boolean compact)
-				throws IOException {
+		protected void toJson(JsonGenerator generator) throws IOException {
 			generator.writeStartObject();
 
 			// type
-			if (!compact || !type.equals(Constants.defaultPublicKeyType)) {
-				generator.writeFieldName(Constants.type);
-				generator.writeString(type);
-			}
+			generator.writeFieldName(Constants.type);
+			generator.writeString(type);
 
 			// method
-			String value;
 			generator.writeFieldName(Constants.verificationMethod);
-			if (compact && ref != null && verificationMethod.getDid().equals(ref))
-				value = "#" + verificationMethod.getFragment();
-			else
-				value = verificationMethod.toExternalForm();
-			generator.writeString(value);
+			generator.writeString(verificationMethod.toExternalForm());
 
 			// realm
 			generator.writeFieldName(Constants.realm);
@@ -157,6 +171,10 @@ public class VerifiablePresentation {
 		this.created = created;
 	}
 
+	public int getCredentialCount() {
+		return credentials.size();
+	}
+
 	public List<VerifiableCredential> getCredentials() {
 		List<VerifiableCredential> lst = new ArrayList<VerifiableCredential>(
 				credentials.size());
@@ -170,27 +188,79 @@ public class VerifiablePresentation {
 	}
 
 	public VerifiableCredential getCredential(DIDURL id) {
+		if (id == null)
+			throw new IllegalArgumentException();
+
 		return credentials.get(id);
+	}
+
+	public VerifiableCredential getCredential(String id) {
+		return credentials.get(new DIDURL(getSigner(), id));
 	}
 
 	public DID getSigner() {
 		return proof.getVerificationMethod().getDid();
 	}
 
-	public boolean verify() throws DIDException {
+	public boolean isGenuine() throws DIDException {
 		DID signer = getSigner();
+		DIDDocument signerDoc = signer.resolve();
+		if (signerDoc == null)
+			return false;
 
+		// Check the integrity of signer' document.
+		if (!signerDoc.isGenuine())
+			return false;
+
+		// Unsupported public key type;
+		if (!proof.getType().equals(Constants.defaultPublicKeyType))
+			return false;
+
+		// Credential should signed by authentication key.
+		if (!signerDoc.isAuthenticationKey(proof.getVerificationMethod()))
+			return false;
+
+		// All credentials should owned by signer
 		for (VerifiableCredential vc : credentials.values()) {
 			if (!vc.getSubject().getId().equals(signer))
 				return false;
 
-			if (!vc.verify() || vc.isExpired())
+			if (!vc.isGenuine())
 				return false;
 		}
 
-		String json = toJsonForSign();
+		String json = toJson(true);
+		return signerDoc.verify(proof.getVerificationMethod(),
+				proof.getSignature(), json.getBytes(),
+				proof.getRealm().getBytes(), proof.getNonce().getBytes());
+	}
+
+	public boolean isValid() throws DIDException {
+		DID signer = getSigner();
 		DIDDocument signerDoc = signer.resolve();
 
+		// Check the validity of signer' document.
+		if (!signerDoc.isValid())
+			return false;
+
+		// Unsupported public key type;
+		if (!proof.getType().equals(Constants.defaultPublicKeyType))
+			return false;
+
+		// Credential should signed by authentication key.
+		if (!signerDoc.isAuthenticationKey(proof.getVerificationMethod()))
+			return false;
+
+		// All credentials should owned by signer
+		for (VerifiableCredential vc : credentials.values()) {
+			if (!vc.getSubject().getId().equals(signer))
+				return false;
+
+			if (!vc.isValid())
+				return false;
+		}
+
+		String json = toJson(true);
 		return signerDoc.verify(proof.getVerificationMethod(),
 				proof.getSignature(), json.getBytes(),
 				proof.getRealm().getBytes(), proof.getNonce().getBytes());
@@ -322,8 +392,8 @@ public class VerifiablePresentation {
 	 * + proof
 	 *   - type
 	 *   - verificationMethod
-	 *   - nonce
 	 *   - realm
+	 *   - nonce
 	 *   - signature
 	 */
 	protected void toJson(JsonGenerator generator, boolean forSign)
@@ -342,13 +412,13 @@ public class VerifiablePresentation {
 		generator.writeFieldName(Constants.verifiableCredential);
 		generator.writeStartArray();
 		for (VerifiableCredential vc : credentials.values())
-			vc.toJson(generator, null, false);
+			vc.toJson(generator, null, true);
 		generator.writeEndArray();
 
 		// proof
 		if (!forSign ) {
 			generator.writeFieldName(Constants.proof);
-			proof.toJson(generator, null, false);
+			proof.toJson(generator);
 		}
 
 		generator.writeEndObject();
@@ -386,11 +456,11 @@ public class VerifiablePresentation {
 		toJson(new OutputStreamWriter(out));
 	}
 
-	protected String toJsonForSign() {
+	protected String toJson(boolean forSign) {
 		Writer out = new StringWriter(4096);
 
 		try {
-			toJson(out, true);
+			toJson(out, forSign);
 		} catch (IOException ignore) {
 		}
 
@@ -398,14 +468,7 @@ public class VerifiablePresentation {
 	}
 
 	public String toExternalForm() {
-		Writer out = new StringWriter(2048);
-
-		try {
-			toJson(out);
-		} catch (IOException ignore) {
-		}
-
-		return out.toString();
+		return toJson(false);
 	}
 
 	@Override
@@ -413,59 +476,90 @@ public class VerifiablePresentation {
 		return toExternalForm();
 	}
 
-	public static Builder createFor(DID did, DIDURL signKey) {
+	public static Builder createFor(DID did, DIDURL signKey) throws DIDException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
 		return new Builder(did, signKey);
 	}
 
-	public static Builder createFor(DID did) {
+	public static Builder createFor(DID did) throws DIDException {
 		return new Builder(did, null);
 	}
 
 	public static class Builder {
-		private DID did;
+		private DIDDocument signer;
 		private DIDURL signKey;
+		private String realm;
+		private String nonce;
 		private VerifiablePresentation presentation;
 
-		protected Builder(DID did, DIDURL signKey) {
-			this.did = did;
+		protected Builder(DID did, DIDURL signKey) throws DIDException {
+			this.signer = did.resolve();
+			if (signer == null)
+				throw new DIDException("Can not resolve DID.");
+
+			if (signKey == null) {
+				signKey = signer.getDefaultPublicKey();
+			} else {
+				if (!signer.isAuthenticationKey(signKey))
+					throw new DIDException("Invalid sign key id.");
+			}
+
+			if (!signer.hasPrivateKey(signKey))
+				throw new DIDException("No private key.");
+
 			this.signKey = signKey;
 			this.presentation = new VerifiablePresentation();
 		}
 
-		public Builder credentials(VerifiableCredential ... credentials) {
-			for (VerifiableCredential credential : credentials) {
-				if (!credential.getSubject().getId().equals(did))
-					throw new IllegalArgumentException("Credential not match with requested did");
+		public Builder credentials(VerifiableCredential ... credentials)
+				throws DIDException {
+			for (VerifiableCredential vc : credentials) {
+				if (!vc.getSubject().getId().equals(signer.getSubject()))
+					throw new IllegalArgumentException("Credential '" +
+							vc.getId() + "' not match with requested did");
 
-				presentation.addCredential(credential);
+				if (!vc.isValid())
+					throw new IllegalArgumentException("Credential '" +
+							vc.getId() + "' is invalid");
+
+				presentation.addCredential(vc);
 			}
 
 			return this;
 		}
 
-		public VerifiablePresentation sign(String storepass, String realm, String nonce)
-				throws DIDException {
-			if (nonce == null || nonce.isEmpty() || realm == null || realm.isEmpty())
+		public Builder realm(String realm) {
+			if (realm == null || realm.isEmpty())
 				throw new IllegalArgumentException();
 
-			DIDDocument doc = did.resolve();
-			if (doc == null)
-				throw new DIDException("Can not resolve DID.");
+			this.realm = realm;
+			return this;
+		}
 
-			if (signKey == null)
-				signKey = doc.getDefaultPublicKey();
+		public Builder nonce(String nonce) {
+			if (nonce == null || nonce.isEmpty())
+				throw new IllegalArgumentException();
 
-			String json = presentation.toJsonForSign();
-			String sig = doc.sign(signKey, storepass, json.getBytes(),
+			this.nonce = nonce;
+			return this;
+		}
+
+		public VerifiablePresentation seal(String storepass)
+				throws DIDException {
+			String json = presentation.toJson(true);
+			String sig = signer.sign(signKey, storepass, json.getBytes(),
 					realm.getBytes(), nonce.getBytes());
 
 			Proof proof = new Proof(signKey, realm, nonce, sig);
 			presentation.setProof(proof);
 
-			return presentation;
+			// Should clear the presentation member
+			VerifiablePresentation vp = presentation;
+			this.presentation = null;
+
+			return vp;
 		}
 	}
 }

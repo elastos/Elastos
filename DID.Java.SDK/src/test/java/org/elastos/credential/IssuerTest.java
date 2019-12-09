@@ -1,23 +1,42 @@
+/*
+ * Copyright (c) 2019 Elastos Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.elastos.credential;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDException;
-import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
 import org.elastos.did.TestConfig;
 import org.elastos.did.TestData;
-import org.elastos.did.util.Base58;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.elastos.did.util.HDKey;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,70 +45,82 @@ public class IssuerTest {
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	@BeforeClass
-	public static void setup() throws DIDStoreException {
-		TestData.setup();
-	}
-
-	@AfterClass
-	public static void cleanup() {
-		TestData.cleanup();
-	}
-
 	@Test
-	public void newIssuerTestWithSignKey() throws DIDException {
-		DIDDocument doc = TestData.getPrimaryDid().resolve();
-		DIDURL signKey = doc.getDefaultPublicKey();
+	public void newIssuerTestWithSignKey() throws DIDException, IOException {
+		TestData testData = new TestData();
+		testData.setupStore(true);
 
-		Issuer issuer = new Issuer(TestData.getPrimaryDid(), signKey);
+		DIDDocument issuerDoc = testData.loadTestIssuer();
 
-		assertEquals(TestData.getPrimaryDid(), issuer.getDid());
+		DIDURL signKey = issuerDoc.getDefaultPublicKey();
+
+		Issuer issuer = new Issuer(issuerDoc.getSubject(), signKey);
+
+		assertEquals(issuer.getDid(), issuer.getDid());
 		assertEquals(signKey, issuer.getSignKey());
 	}
 
 	@Test
-	public void newIssuerTestWithoutSignKey() throws DIDException {
-		Issuer issuer = new Issuer(TestData.getPrimaryDid());
+	public void newIssuerTestWithoutSignKey() throws DIDException, IOException {
+		TestData testData = new TestData();
+		testData.setupStore(true);
 
-		DIDDocument doc = TestData.getPrimaryDid().resolve();
-		DIDURL signKey = doc.getDefaultPublicKey();
+		DIDDocument issuerDoc = testData.loadTestIssuer();
 
-		assertEquals(TestData.getPrimaryDid(), issuer.getDid());
-		assertEquals(signKey, issuer.getSignKey());
+		Issuer issuer = new Issuer(issuerDoc.getSubject());
+
+		assertEquals(issuerDoc.getSubject(), issuer.getDid());
+		assertEquals(issuerDoc.getDefaultPublicKey(), issuer.getSignKey());
 	}
 
 	@Test
-	public void newIssuerTestWithInvalidKey() throws DIDException {
+	public void newIssuerTestWithInvalidKey() throws DIDException, IOException {
 		expectedEx.expect(DIDException.class);
 		expectedEx.expectMessage("No private key.");
 
-		DIDDocument doc = TestData.getPrimaryDid().resolve();
-		DIDURL signKey = new DIDURL(TestData.getPrimaryDid(), "auth-key");
+		TestData testData = new TestData();
+		testData.setupStore(true);
 
-		doc.modify();
-		doc.addAuthenticationKey(signKey, Base58.encode(new byte[33]));
+		DIDDocument issuerDoc = testData.loadTestIssuer();
+		DIDDocument.Builder db = issuerDoc.modify();
 
-		Issuer issuer = new Issuer(TestData.getPrimaryDid(), signKey);
+		HDKey.DerivedKey key = TestData.generateKeypair();
+		DIDURL signKey = new DIDURL(issuerDoc.getSubject(), "testKey");
+		db.addAuthenticationKey(signKey, key.getPublicKeyBase58());
+
+		issuerDoc = db.seal(TestConfig.storePass);
+		assertTrue(issuerDoc.isValid());
+
+		Issuer issuer = new Issuer(issuerDoc, signKey);
 
 		// Dead code.
-		assertEquals(TestData.getPrimaryDid(), issuer.getDid());
+		assertEquals(issuer.getDid(), issuer.getDid());
 	}
 
 	@Test
-	public void newIssuerTestWithInvalidKey2() throws DIDException {
+	public void newIssuerTestWithInvalidKey2() throws DIDException, IOException {
 		expectedEx.expect(DIDException.class);
 		expectedEx.expectMessage("Invalid sign key id.");
 
-		DIDURL signKey = new DIDURL(TestData.getPrimaryDid(), "notExist");
-		Issuer issuer = new Issuer(TestData.getPrimaryDid(), signKey);
+		TestData testData = new TestData();
+		testData.setupStore(true);
+
+		DIDDocument issuerDoc = testData.loadTestIssuer();
+		DIDURL signKey = new DIDURL(issuerDoc.getSubject(), "recovery");
+		Issuer issuer = new Issuer(issuerDoc, signKey);
 
 		// Dead code.
-		assertEquals(TestData.getPrimaryDid(), issuer.getDid());
+		assertEquals(issuer.getDid(), issuer.getDid());
+
 	}
 
 	@Test
-	public void IssueTest() throws DIDException {
-		Issuer issuer = new Issuer(TestData.getPrimaryDid());
+	public void IssueKycCredentialTest() throws DIDException, IOException {
+		TestData testData = new TestData();
+		testData.setupStore(true);
+
+		DIDDocument issuerDoc = testData.loadTestIssuer();
+		DIDDocument testDoc = testData.loadTestDocument();
 
 		Map<String, String> props= new HashMap<String, String>();
 		props.put("name", "John");
@@ -99,14 +130,15 @@ public class IssuerTest {
 		props.put("email", "john@example.com");
 		props.put("twitter", "@john");
 
-		Issuer.CredentialBuilder cb = issuer.issueFor("did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN");
-		VerifiableCredential vc = cb.id("credential-1")
+		Issuer issuer = new Issuer(issuerDoc);
+
+		Issuer.CredentialBuilder cb = issuer.issueFor(testDoc.getSubject());
+		VerifiableCredential vc = cb.id("testCredential")
 			.type("BasicProfileCredential", "InternetAccountCredential")
 			.properties(props)
-			.sign(TestConfig.storePass);
+			.seal(TestConfig.storePass);
 
-		DID did = new DID("did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN");
-		DIDURL vcId = new DIDURL(did, "credential-1");
+		DIDURL vcId = new DIDURL(testDoc.getSubject(), "testCredential");
 
 		assertEquals(vcId, vc.getId());
 
@@ -114,8 +146,8 @@ public class IssuerTest {
 		assertTrue(Arrays.asList(vc.getTypes()).contains("InternetAccountCredential"));
 		assertFalse(Arrays.asList(vc.getTypes()).contains("SelfProclaimedCredential"));
 
-		assertEquals(issuer.getDid(), vc.getIssuer());
-		assertEquals(did, vc.getSubject().getId());
+		assertEquals(issuerDoc.getSubject(), vc.getIssuer());
+		assertEquals(testDoc.getSubject(), vc.getSubject().getId());
 
 		assertEquals("John", vc.getSubject().getProperty("name"));
 		assertEquals("Male", vc.getSubject().getProperty("gender"));
@@ -124,14 +156,17 @@ public class IssuerTest {
 		assertEquals("john@example.com", vc.getSubject().getProperty("email"));
 		assertEquals("@john", vc.getSubject().getProperty("twitter"));
 
-		assertTrue(vc.verify());
 		assertFalse(vc.isExpired());
+		assertTrue(vc.isGenuine());
+		assertTrue(vc.isValid());
 	}
 
 	@Test
-	public void IssueTest2() throws DIDException {
-		// Self claimed
-		Issuer issuer = new Issuer(TestData.getPrimaryDid());
+	public void IssueSelfProclaimedCredentialTest() throws DIDException, IOException {
+		TestData testData = new TestData();
+		testData.setupStore(true);
+
+		DIDDocument issuerDoc = testData.loadTestIssuer();
 
 		Map<String, String> props= new HashMap<String, String>();
 		props.put("name", "Testing Issuer");
@@ -139,13 +174,15 @@ public class IssuerTest {
 		props.put("language", "English");
 		props.put("email", "issuer@example.com");
 
-		Issuer.CredentialBuilder cb = issuer.issueFor(issuer.getDid());
-		VerifiableCredential vc = cb.id("credential-2")
+		Issuer issuer = new Issuer(issuerDoc);
+
+		Issuer.CredentialBuilder cb = issuer.issueFor(issuerDoc.getSubject());
+		VerifiableCredential vc = cb.id("myCredential")
 			.type("BasicProfileCredential", "SelfProclaimedCredential")
 			.properties(props)
-			.sign(TestConfig.storePass);
+			.seal(TestConfig.storePass);
 
-		DIDURL vcId = new DIDURL(issuer.getDid(), "credential-2");
+		DIDURL vcId = new DIDURL(issuerDoc.getSubject(), "myCredential");
 
 		assertEquals(vcId, vc.getId());
 
@@ -153,16 +190,16 @@ public class IssuerTest {
 		assertTrue(Arrays.asList(vc.getTypes()).contains("SelfProclaimedCredential"));
 		assertFalse(Arrays.asList(vc.getTypes()).contains("InternetAccountCredential"));
 
-		assertEquals(issuer.getDid(), vc.getIssuer());
-		assertEquals(issuer.getDid(), vc.getSubject().getId());
+		assertEquals(issuerDoc.getSubject(), vc.getIssuer());
+		assertEquals(issuerDoc.getSubject(), vc.getSubject().getId());
 
 		assertEquals("Testing Issuer", vc.getSubject().getProperty("name"));
 		assertEquals("Singapore", vc.getSubject().getProperty("nation"));
 		assertEquals("English", vc.getSubject().getProperty("language"));
 		assertEquals("issuer@example.com", vc.getSubject().getProperty("email"));
 
-		assertTrue(vc.verify());
 		assertFalse(vc.isExpired());
+		assertTrue(vc.isGenuine());
+		assertTrue(vc.isValid());
 	}
-
 }

@@ -22,47 +22,296 @@
 
 package org.elastos.did;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
+import org.elastos.credential.VerifiableCredential;
+import org.elastos.credential.VerifiablePresentation;
 import org.elastos.did.adapter.SPVAdapter;
+import org.elastos.did.backend.DummyAdapter;
+import org.elastos.did.util.Base58;
+import org.elastos.did.util.HDKey;
 
 public final class TestData {
-	private static DID primaryDid;
+	private static DIDAdapter dummyAdapter;
+	private static DIDAdapter spvAdapter;
+	private static HDKey rootKey;
+	private static int index;
 
-	public static void setup() throws DIDStoreException {
-		//DIDAdapter adapter = new FakeConsoleAdapter();
+	private DIDDocument testIssuer;
+	private String issuerCompactJson;
+	private String issuerNormalizedJson;
 
-		DIDAdapter adapter = new SPVAdapter(TestConfig.walletDir,
-				TestConfig.walletId, TestConfig.networkConfig,
-				TestConfig.resolver, new SPVAdapter.PasswordCallback() {
-					@Override
-					public String getPassword(String walletDir, String walletId) {
-						return TestConfig.walletPassword;
-					}
-				});
+	private DIDDocument testDocument;
+	private String testCompactJson;
+	private String testNormalizedJson;
 
-    	TestData.deleteFile(new File(TestConfig.storeRoot));
+	private VerifiableCredential profileVc;
+	private String profileVcCompactJson;
+	private String profileVcNormalizedJson;
 
+	private VerifiableCredential emailVc;
+	private String emailVcCompactJson;
+	private String emailVcNormalizedJson;
+
+	private VerifiableCredential passportVc;
+	private String passportVcCompactJson;
+	private String passportVcNormalizedJson;
+
+	private VerifiableCredential twitterVc;
+	private String twitterVcCompactJson;
+	private String twitterVcNormalizedJson;
+
+	private VerifiablePresentation testVp;
+	private String testVpNormalizedJson;
+
+	private String restoreMnemonic;
+
+	public void setupStore(boolean dummyBackend) throws DIDStoreException {
+		DIDAdapter adapter;
+
+		if (dummyBackend) {
+			if (TestData.dummyAdapter == null)
+				TestData.dummyAdapter = new DummyAdapter();
+			adapter = TestData.dummyAdapter;
+		} else {
+			if (TestData.spvAdapter == null)
+				TestData.spvAdapter = new SPVAdapter(TestConfig.walletDir,
+						TestConfig.walletId, TestConfig.networkConfig,
+						TestConfig.resolver, new SPVAdapter.PasswordCallback() {
+							@Override
+							public String getPassword(String walletDir, String walletId) {
+								return TestConfig.walletPassword;
+							}
+						});
+			adapter = TestData.spvAdapter;
+		}
+
+    	deleteFile(new File(TestConfig.storeRoot));
     	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
+	}
 
-    	DIDStore store = DIDStore.getInstance();
-
+	public String initIdentity() throws DIDStoreException {
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+    	DIDStore.getInstance().initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
     			TestConfig.passphrase, TestConfig.storePass, true);
 
-
-    	DIDDocument doc = store.newDid(TestConfig.storePass, "Primary ID");
-    	primaryDid = doc.getSubject();
+    	return mnemonic;
 	}
 
-	public static DID getPrimaryDid() {
-		return primaryDid;
+	private DIDDocument loadDIDDocument(String fileName)
+			throws DIDException, IOException {
+		Reader input = new InputStreamReader(getClass()
+				.getClassLoader().getResourceAsStream(fileName));
+		DIDDocument doc = DIDDocument.fromJson(input);
+		input.close();
+
+		if (DIDStore.isInitialized()) {
+			DIDStore store = DIDStore.getInstance();
+			store.storeDid(doc);
+			//store.publishDid(doc, TestConfig.storePass);
+		}
+
+		return doc;
 	}
 
-	public static void cleanup() {
-		primaryDid = null;
-		TestData.deleteFile(new File(TestConfig.storeRoot));
+	private void importPrivateKey(DIDURL id, String fileName)
+			throws IOException, DIDException {
+		String skBase58 = loadText(fileName);
+		byte[] sk = Base58.decode(skBase58);
+
+		String encryptedKey = DIDStore.encryptToBase64(TestConfig.storePass, sk);
+		DIDStore.getInstance().storePrivateKey(id.getDid(), id, encryptedKey);
+	}
+
+	public DIDDocument loadTestIssuer() throws DIDException, IOException {
+		if (testIssuer == null) {
+			testIssuer = loadDIDDocument("issuer.json");
+
+			importPrivateKey(testIssuer.getDefaultPublicKey(), "issuer.primary.sk");
+		}
+
+		return testIssuer;
+	}
+
+	public DIDDocument loadTestDocument() throws DIDException, IOException {
+		loadTestIssuer();
+
+		if (testDocument == null)
+			testDocument = loadDIDDocument("document.json");
+
+		importPrivateKey(testDocument.getDefaultPublicKey(), "document.primary.sk");
+		importPrivateKey(testDocument.getPublicKey("key2").getId(), "document.key2.sk");
+		importPrivateKey(testDocument.getPublicKey("key3").getId(), "document.key3.sk");
+
+		return testDocument;
+	}
+
+	private VerifiableCredential loadCredential(String fileName)
+			throws DIDException, IOException {
+		Reader input = new InputStreamReader(getClass()
+				.getClassLoader().getResourceAsStream(fileName));
+		VerifiableCredential vc = VerifiableCredential.fromJson(input);
+		input.close();
+
+		if (DIDStore.isInitialized())
+			DIDStore.getInstance().storeCredential(vc);
+
+		return vc;
+	}
+
+	public VerifiableCredential loadProfileCredential()
+			throws DIDException, IOException {
+		if (profileVc == null)
+			profileVc = loadCredential("vc-profile.json");
+
+		return profileVc;
+	}
+
+	public VerifiableCredential loadEmailCredential()
+			throws DIDException, IOException {
+		if (emailVc == null)
+			emailVc = loadCredential("vc-email.json");
+
+		return emailVc;
+	}
+
+	public VerifiableCredential loadPassportCredential()
+			throws DIDException, IOException {
+		if (passportVc == null)
+			passportVc = loadCredential("vc-passport.json");
+
+		return passportVc;
+	}
+
+	public VerifiableCredential loadTwitterCredential()
+			throws DIDException, IOException {
+		if (twitterVc == null)
+			twitterVc = loadCredential("vc-twitter.json");
+
+		return twitterVc;
+	}
+
+	public VerifiablePresentation loadPresentation()
+			throws DIDException, IOException {
+		if (testVp == null) {
+			Reader input = new InputStreamReader(getClass()
+					.getClassLoader().getResourceAsStream("vp.json"));
+			testVp = VerifiablePresentation.fromJson(input);
+			input.close();
+		}
+
+		return testVp;
+	}
+
+	private String loadText(String fileName) throws IOException {
+		BufferedReader input = new BufferedReader(new InputStreamReader(
+				getClass().getClassLoader().getResourceAsStream(fileName)));
+		String text = input.readLine();
+		input.close();
+
+		return text;
+	}
+
+	public String loadIssuerCompactJson() throws IOException {
+		if (issuerCompactJson == null)
+			issuerCompactJson = loadText("issuer.compact.json");
+
+		return issuerCompactJson;
+	}
+
+	public String loadIssuerNormalizedJson() throws IOException {
+		if (issuerNormalizedJson == null)
+			issuerNormalizedJson = loadText("issuer.normalized.json");
+
+		return issuerNormalizedJson;
+	}
+
+	public String loadTestCompactJson() throws IOException {
+		if (testCompactJson == null)
+			testCompactJson = loadText("document.compact.json");
+
+		return testCompactJson;
+	}
+
+	public String loadTestNormalizedJson() throws IOException {
+		if (testNormalizedJson == null)
+			testNormalizedJson = loadText("document.normalized.json");
+
+		return testNormalizedJson;
+	}
+
+	public String loadProfileVcCompactJson() throws IOException {
+		if (profileVcCompactJson == null)
+			profileVcCompactJson = loadText("vc-profile.compact.json");
+
+		return profileVcCompactJson;
+	}
+
+	public String loadProfileVcNormalizedJson() throws IOException {
+		if (profileVcNormalizedJson == null)
+			profileVcNormalizedJson = loadText("vc-profile.normalized.json");
+
+		return profileVcNormalizedJson;
+	}
+
+	public String loadEmailVcCompactJson() throws IOException {
+		if (emailVcCompactJson == null)
+			emailVcCompactJson = loadText("vc-email.compact.json");
+
+		return emailVcCompactJson;
+	}
+
+	public String loadEmailVcNormalizedJson() throws IOException {
+		if (emailVcNormalizedJson == null)
+			emailVcNormalizedJson = loadText("vc-email.normalized.json");
+
+		return emailVcNormalizedJson;
+	}
+
+	public String loadPassportVcCompactJson() throws IOException {
+		if (passportVcCompactJson == null)
+			passportVcCompactJson = loadText("vc-passport.compact.json");
+
+		return passportVcCompactJson;
+	}
+
+	public String loadPassportVcNormalizedJson() throws IOException {
+		if (passportVcNormalizedJson == null)
+			passportVcNormalizedJson = loadText("vc-passport.normalized.json");
+
+		return passportVcNormalizedJson;
+	}
+
+	public String loadTwitterVcCompactJson() throws IOException {
+		if (twitterVcCompactJson == null)
+			twitterVcCompactJson = loadText("vc-twitter.compact.json");
+
+		return twitterVcCompactJson;
+	}
+
+	public String loadTwitterVcNormalizedJson() throws IOException {
+		if (twitterVcNormalizedJson == null)
+			twitterVcNormalizedJson = loadText("vc-twitter.normalized.json");
+
+		return twitterVcNormalizedJson;
+	}
+
+	public String loadPresentationNormalizedJson() throws IOException {
+		if (testVpNormalizedJson == null)
+			testVpNormalizedJson = loadText("vp.normalized.json");
+
+		return testVpNormalizedJson;
+	}
+
+	public String loadRestoreMnemonic() throws IOException {
+		if (restoreMnemonic == null)
+			restoreMnemonic = loadText("mnemonic.restore");
+
+		return restoreMnemonic;
 	}
 
 	public static void deleteFile(File file) {
@@ -73,5 +322,15 @@ public final class TestData {
 		}
 
 		file.delete();
+	}
+
+	public static synchronized HDKey.DerivedKey generateKeypair() {
+		if (rootKey == null) {
+	    	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+	    	rootKey = HDKey.fromMnemonic(mnemonic, "");
+	    	index = 0;
+		}
+
+		return rootKey.derive(index++);
 	}
 }

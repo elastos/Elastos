@@ -40,8 +40,12 @@ public class JsonHelper {
 	private final static SimpleDateFormat dateFormat =
 			new SimpleDateFormat(Constants.DATE_FORMAT);
 
+	private final static SimpleDateFormat isoDateFormat =
+			new SimpleDateFormat(Constants.DATE_FORMAT_ISO_8601);
+
 	static {
 		dateFormat.setTimeZone(Constants.UTC);
+		isoDateFormat.setTimeZone(Constants.UTC);
 	}
 
 	static class ExceptionFactory {
@@ -90,7 +94,7 @@ public class JsonHelper {
 	}
 
 	public static <E extends DIDException> DID getDid(JsonNode node,
-			String name,boolean optional, DID ref, String hint,
+			String name, boolean optional, DID ref, String hint,
 			Class<E> exceptionClass) throws E {
 		JsonNode vn = node.get(name);
 		if (vn == null) {
@@ -118,11 +122,15 @@ public class JsonHelper {
 	}
 
 	public static <E extends DIDException> DIDURL getDidUrl(JsonNode node,
-			String name, DID ref, String hint,
+			String name, boolean optional, DID ref, String hint,
 			Class<E> exceptionClass) throws E {
 		JsonNode vn = node.get(name);
-		if (vn == null)
-			throw ExceptionFactory.create(exceptionClass, "Missing " + hint + ".");
+		if (vn == null) {
+			if (optional)
+				return null;
+			else
+				throw ExceptionFactory.create(exceptionClass, "Missing " + hint + ".");
+		}
 
 		if (!vn.isTextual())
 			throw ExceptionFactory.create(exceptionClass, "Invalid " + hint + " value.");
@@ -142,6 +150,12 @@ public class JsonHelper {
 		}
 
 		return id;
+	}
+
+	public static <E extends DIDException> DIDURL getDidUrl(JsonNode node,
+			String name, DID ref, String hint,
+			Class<E> exceptionClass) throws E {
+		return getDidUrl(node, name, false, ref, hint, exceptionClass);
 	}
 
 	public static <E extends DIDException> DIDURL getDidUrl(JsonNode node,
@@ -186,6 +200,12 @@ public class JsonHelper {
 
 		try {
 			return dateFormat.parse(value);
+		} catch (ParseException e) {
+		}
+
+		// Failback to ISO 8601 format.
+		try {
+			return isoDateFormat.parse(value);
 		} catch (ParseException e) {
 			throw ExceptionFactory.create(exceptionClass, "Invalid " + hint + ": " + value, e);
 		}

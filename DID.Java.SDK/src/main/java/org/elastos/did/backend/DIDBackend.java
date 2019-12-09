@@ -46,10 +46,8 @@ public class DIDBackend {
 
 	public boolean create(DIDDocument doc, DIDURL signKey,
 			String storepass) throws DIDStoreException {
-		IDChainRequest request = new IDChainRequest(
-				IDChainRequest.Operation.CREATE, doc);
-
-		String json = request.sign(signKey, storepass).toJson(true);
+		IDChainRequest request = IDChainRequest.create(doc, signKey, storepass);
+		String json = request.toJson(true);
 
 		try {
 			return adapter.createIdTransaction(json, null);
@@ -85,7 +83,7 @@ public class DIDBackend {
 			result = result.get(0);
 			IDChainRequest request = IDChainRequest.fromJson(result);
 
-			if (!request.verify())
+			if (!request.isValid())
 				throw new DIDResolveException("Signature verify failed.");
 
 			return request.getDocument();
@@ -96,10 +94,8 @@ public class DIDBackend {
 
 	public boolean update(DIDDocument doc, DIDURL signKey,
 			String storepass) throws DIDStoreException {
-		IDChainRequest request = new IDChainRequest(
-				IDChainRequest.Operation.UPDATE, doc);
-
-		String json = request.sign(signKey, storepass).toJson(true);
+		IDChainRequest request = IDChainRequest.update(doc, signKey, storepass);
+		String json = request.toJson(true);
 
 		try {
 			return adapter.createIdTransaction(json, null);
@@ -110,10 +106,8 @@ public class DIDBackend {
 
 	public boolean deactivate(DID did, DIDURL signKey,
 			String storepass) throws DIDStoreException {
-		IDChainRequest request = new IDChainRequest(
-				IDChainRequest.Operation.DEACRIVATE, did);
-
-		String json = request.sign(signKey, storepass).toJson(true);
+		IDChainRequest request = IDChainRequest.deactivate(did, signKey, storepass);
+		String json = request.toJson(true);
 
 		try {
 			return adapter.createIdTransaction(json, null);

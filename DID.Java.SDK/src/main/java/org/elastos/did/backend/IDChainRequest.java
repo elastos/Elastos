@@ -42,7 +42,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-class IDChainRequest {
+public class IDChainRequest {
 	public static final String CURRENT_SPECIFICATION = "elastos/did/1.0";
 
 	private static final String HEADER = "header";
@@ -53,7 +53,6 @@ class IDChainRequest {
 	private static final String KEY_TYPE = Constants.type;
 	private static final String KEY_ID = Constants.verificationMethod;
 	private static final String SIGNATURE = Constants.signature;
-
 
 	public enum Operation {
 		CREATE, UPDATE, DEACRIVATE;
@@ -74,74 +73,134 @@ class IDChainRequest {
 	private String payload;
 
 	// signature
-	private DIDURL signKey;
 	private String keyType;
+	private DIDURL signKey;
 	private String signature;
 
-	IDChainRequest(Operation op, DID did) {
-		if (op != Operation.DEACRIVATE)
-			throw new IllegalArgumentException("Operation need a DIDDocument.");
-
+	private IDChainRequest(Operation op) {
 		this.specification = CURRENT_SPECIFICATION;
 		this.operation = op;
-		this.did = did;
 	}
 
-	IDChainRequest(Operation op, DIDDocument doc) {
-		this.specification = CURRENT_SPECIFICATION;
-		this.operation = op;
+	public static IDChainRequest create(DIDDocument doc, DIDURL signKey,
+			String storepass) throws DIDStoreException {
+		IDChainRequest request = new IDChainRequest(Operation.CREATE);
+		request.setPayload(doc);
+		request.seal(signKey, storepass);
+
+		return request;
+	}
+
+	public static IDChainRequest update(DIDDocument doc, DIDURL signKey,
+			String storepass) throws DIDStoreException {
+		IDChainRequest request = new IDChainRequest(Operation.UPDATE);
+		request.setPayload(doc);
+		request.seal(signKey, storepass);
+
+		return request;
+	}
+
+	public static IDChainRequest deactivate(DID did, DIDURL signKey,
+			String storepass) throws DIDStoreException {
+		IDChainRequest request = new IDChainRequest(Operation.DEACRIVATE);
+		request.setPayload(did);
+		request.seal(signKey, storepass);
+
+		return request;
+	}
+
+	public Operation getOperation() {
+		return operation;
+	}
+
+	public String getPayload() {
+		return payload;
+	}
+
+	public DID getDid() {
+		return did;
+	}
+
+	public DIDDocument getDocument() {
+		return doc;
+	}
+
+	private void setPayload(DID did) {
+		this.did = did;
+		this.doc = null;
+		this.payload = did.toString();
+	}
+
+	private void setPayload(DIDDocument doc) {
 		this.did = doc.getSubject();
 		this.doc = doc;
+
+		String json = doc.toExternalForm(false);
+
+		payload = Base64.encodeToString(json.getBytes(),
+				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 
-	public IDChainRequest sign(DIDURL key, String passphrase)
-			throws DIDStoreException {
-		// operation
-		String op = operation.toString();
+	private void setPayload(String payload) throws DIDResolveException {
+		try {
+			if (operation != Operation.DEACRIVATE) {
+				String json = new String(Base64.decode(payload,
+						Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
 
-		// payload: did or doc
-		if (operation == Operation.DEACRIVATE)
-			payload = did.toExternalForm();
-		else {
-			payload = doc.toExternalForm(true);
+				doc = DIDDocument.fromJson(json);
+				did = doc.getSubject();
+			} else {
+				did = new DID(payload);
+				doc = null;
+			}
+		} catch (DIDException e) {
+			throw new DIDResolveException("Parse payload error.", e);
+		}
 
-			payload = Base64.encodeToString(payload.getBytes(),
-					Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+		this.payload = payload;
+	}
+
+	private void setProof(String keyType, DIDURL signKey, String signature) {
+		this.keyType = keyType;
+		this.signKey = signKey;
+		this.signature = signature;
+	}
+
+	private void seal(DIDURL signKey, String storepass) throws DIDStoreException {
+		byte[][] inputs = new byte[][] {
+			specification.getBytes(),
+			operation.toString().getBytes(),
+			payload.getBytes()
+		};
+
+		this.signature = DIDStore.getInstance().sign(did, signKey, storepass, inputs);
+		this.signKey = signKey;
+		this.keyType = Constants.defaultPublicKeyType;
+	}
+
+	public boolean isValid() throws DIDException {
+		DIDDocument doc;
+		if (operation != Operation.DEACRIVATE) {
+			doc = this.doc;
+			if (!doc.isAuthenticationKey(signKey))
+				return false;
+		} else {
+			doc = DIDStore.getInstance().loadDid(did);
+			if (!doc.isAuthenticationKey(signKey) &&
+					!doc.isAuthorizationKey(signKey))
+				return false;
 		}
 
 		byte[][] inputs = new byte[][] {
 			specification.getBytes(),
-			op.getBytes(),
-			payload.getBytes()
-		};
-
-		signature = DIDStore.getInstance().sign(did, key, passphrase, inputs);
-		signKey = key;
-		keyType = Constants.defaultPublicKeyType;
-
-		return this;
-	}
-
-	boolean verify() throws DIDException {
-		String op = operation.toString();
-
-		byte[][] inputs = new byte[][] {
-			specification.getBytes(),
-			op.getBytes(),
+			operation.toString().getBytes(),
 			payload.getBytes()
 		};
 
 		return doc.verify(signKey, signature, inputs);
 	}
 
-	DIDDocument getDocument() {
-		return doc;
-	}
-
-	public void toJson(Writer out, boolean compact) throws IOException {
-		JsonFactory factory = new JsonFactory();
-		JsonGenerator generator = factory.createGenerator(out);
-
+	public void toJson(JsonGenerator generator, boolean normalized) throws IOException {
 		generator.writeStartObject();
 
 		// header
@@ -166,7 +225,7 @@ class IDChainRequest {
 
 		String keyId;
 
-		if (!compact) {
+		if (normalized) {
 			generator.writeFieldName(KEY_TYPE);
 			generator.writeString(keyType);
 
@@ -183,14 +242,21 @@ class IDChainRequest {
 		generator.writeString(signature);
 
 		generator.writeEndObject();
+		generator.writeEndObject();
+	}
+
+	public void toJson(Writer out, boolean normalized) throws IOException {
+		JsonFactory factory = new JsonFactory();
+		JsonGenerator generator = factory.createGenerator(out);
+		toJson(generator, normalized);
 		generator.close();
 	}
 
-	public String toJson(boolean compact) {
+	public String toJson(boolean normalized) {
 		Writer out = new StringWriter(2048);
 
 		try {
-			toJson(out, compact);
+			toJson(out, normalized);
 		} catch (IOException ignore) {
 		}
 
@@ -210,22 +276,15 @@ class IDChainRequest {
 		if (!spec.equals(CURRENT_SPECIFICATION))
 			throw new DIDResolveException("Unknown DID specifiction.");
 
-		String op = JsonHelper.getString(header, OPERATION, false,
+		String opstr = JsonHelper.getString(header, OPERATION, false,
 				null, OPERATION, clazz);
-		if (!op.contentEquals(Operation.CREATE.toString()))
-			if (!spec.equals(CURRENT_SPECIFICATION))
-				throw new DIDResolveException("Invalid DID operation verb.");
+		Operation op = Operation.valueOf(opstr.toUpperCase());
+
+		IDChainRequest request = new IDChainRequest(op);
 
 		String payload = JsonHelper.getString(node, PAYLOAD, false,
 				null, PAYLOAD, clazz);
-		String docJson = new String(Base64.decode(payload,
-				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
-		DIDDocument doc = null;
-		try {
-			doc = DIDDocument.fromJson(docJson);
-		} catch (DIDException e) {
-			throw new DIDResolveException("Invalid document payload.", e);
-		}
+		request.setPayload(payload);
 
 		JsonNode proof = node.get(PROOF);
 		if (proof == null)
@@ -236,20 +295,15 @@ class IDChainRequest {
 		if (!keyType.equals(Constants.defaultPublicKeyType))
 			throw new DIDResolveException("Unknown signature key type.");
 
-		DIDURL signKey = JsonHelper.getDidUrl(proof, KEY_ID, doc.getSubject(),
+		DIDURL signKey = JsonHelper.getDidUrl(proof, KEY_ID, request.getDid(),
 				KEY_ID, clazz);
-		if (doc.getAuthenticationKey(signKey) == null)
-			throw new DIDResolveException("Unknown signature key.");
+		//if (doc.getAuthenticationKey(signKey) == null)
+		//	throw new DIDResolveException("Unknown signature key.");
 
 		String sig = JsonHelper.getString(proof, SIGNATURE, false,
 				null, SIGNATURE, clazz);
 
-		IDChainRequest request = new IDChainRequest(Operation.CREATE, doc);
-		request.payload = payload;
-		request.keyType = keyType;
-		request.signKey = signKey;
-		request.signature = sig;
-
+		request.setProof(keyType, signKey, sig);
 		return request;
 	}
 

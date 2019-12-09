@@ -57,20 +57,18 @@ public class Service extends DIDObject {
 		return new Service(id, type, endpoint);
 	}
 
-	public void toJson(JsonGenerator generator, DID ref, boolean compact)
+	public void toJson(JsonGenerator generator, DID ref, boolean normalized)
 			throws IOException {
-		compact = (ref != null && compact);
-
 		String value;
 
 		generator.writeStartObject();
 
 		// id
 		generator.writeFieldName(Constants.id);
-		if (compact && getId().getDid().equals(ref))
-			value = "#" + getId().getFragment();
-		else
+		if (normalized || ref == null || !getId().getDid().equals(ref))
 			value = getId().toExternalForm();
+		else
+			value = "#" + getId().getFragment();
 		generator.writeString(value);
 
 		// type

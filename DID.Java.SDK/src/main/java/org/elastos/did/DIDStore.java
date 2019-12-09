@@ -110,6 +110,10 @@ public abstract class DIDStore {
 		instance.backend = new DIDBackend(adapter);
 	}
 
+	public static boolean isInitialized() {
+		return instance != null;
+	}
+
 	public static DIDStore getInstance() throws DIDStoreException {
 		if (instance == null)
 			throw new DIDStoreException("Store not initialized.");
@@ -133,7 +137,7 @@ public abstract class DIDStore {
 
 	protected abstract int loadPrivateIdentityIndex() throws DIDStoreException;
 
-	private static String encryptToBase64(String passwd, byte[] input)
+	protected static String encryptToBase64(String passwd, byte[] input)
 			throws DIDStoreException {
 		byte[] cipher;
 		try {
@@ -146,14 +150,14 @@ public abstract class DIDStore {
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 
-	private static byte[] decryptFromBase64(String passwd, String input)
+	protected static byte[] decryptFromBase64(String storepass, String input)
 			throws DIDStoreException {
 		byte[] cipher = Base64.decode(input,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		try {
-			return Aes256cbc.decrypt(passwd, cipher);
+			return Aes256cbc.decrypt(storepass, cipher);
 		} catch (Exception e) {
-			throw new DIDStoreException("Decrypt key error.", e);
+			throw new DIDStoreException("Decrypt private key error, maybe wrong store password.", e);
 		}
 	}
 
@@ -164,7 +168,7 @@ public abstract class DIDStore {
 		if (!Mnemonic.isValid(language, mnemonic))
 			throw new IllegalArgumentException("Invalid mnemonic.");
 
-		if (storepass == null)
+		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
 
 		if (hasPrivateIdentity() && !force)
@@ -201,7 +205,7 @@ public abstract class DIDStore {
 	}
 
 	public void synchronize(String storepass) throws DIDStoreException  {
-		if (storepass == null)
+		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
 
 		HDKey privateIdentity = loadPrivateIdentity(storepass);
@@ -237,7 +241,7 @@ public abstract class DIDStore {
 
 	public DIDDocument newDid(String storepass, String hint)
 			throws DIDStoreException {
-		if (storepass == null)
+		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
 
 		HDKey privateIdentity = loadPrivateIdentity(storepass);
@@ -248,21 +252,17 @@ public abstract class DIDStore {
 
 		HDKey.DerivedKey key = privateIdentity.derive(nextIndex++);
 		DID did = new DID(DID.METHOD, key.getAddress());
-		PublicKey pk = new PublicKey(new DIDURL(did, "primary"),
-				Constants.defaultPublicKeyType, did, key.getPublicKeyBase58());
-
-		DIDDocument doc = new DIDDocument();
-		doc.setSubject(did);
-		doc.addPublicKey(pk);
-		doc.addAuthenticationKey(pk);
-		doc.setReadonly(true);
-
-		storeDid(doc, hint);
+		DIDURL id = new DIDURL(did, "primary");
 
 		String encryptedKey = encryptToBase64(storepass, key.serialize());
-		storePrivateKey(did, pk.getId(), encryptedKey);
-		storePrivateIdentityIndex(nextIndex);
+		storePrivateKey(did, id, encryptedKey);
 
+		DIDDocument.Builder db = new DIDDocument.Builder(did);
+		db.addAuthenticationKey(id, key.getPublicKeyBase58());
+		DIDDocument doc = db.seal(storepass);
+		storeDid(doc, hint);
+
+		storePrivateIdentityIndex(nextIndex);
 		privateIdentity.wipe();
 		key.wipe();
 
@@ -281,7 +281,6 @@ public abstract class DIDStore {
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		storeDid(doc);
 		return backend.create(doc, signKey, storepass);
 	}
 
@@ -321,7 +320,7 @@ public abstract class DIDStore {
 
 	public boolean deactivateDid(DID did, DIDURL signKey, String storepass)
 			throws DIDStoreException {
-		if (did == null || storepass == null)
+		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
 		if (signKey == null) {
@@ -560,7 +559,7 @@ public abstract class DIDStore {
 
 	public String sign(DID did, DIDURL id, String storepass, byte[] ... data)
 			throws DIDStoreException {
-		if (did == null || storepass == null || data == null)
+		if (did == null || storepass == null || storepass.isEmpty() || data == null)
 			throw new IllegalArgumentException();
 
 		if (id == null) {

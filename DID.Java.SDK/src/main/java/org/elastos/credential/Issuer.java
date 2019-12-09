@@ -38,13 +38,34 @@ public class Issuer {
 	private DIDDocument self;
 	private DIDURL signKey;
 
+	public Issuer(DIDDocument doc, DIDURL signKey) throws DIDException {
+		if (doc == null)
+			throw new IllegalArgumentException();
+
+		init(doc, signKey);
+	}
+
+	public Issuer(DIDDocument doc) throws DIDException {
+		this(doc, null);
+	}
+
 	public Issuer(DID did, DIDURL signKey) throws DIDException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
-		this.self = did.resolve();
-		if (this.self == null)
+		DIDDocument doc = did.resolve();
+		if (doc == null)
 			throw new DIDException("Can not resolve DID.");
+
+		init(doc, signKey);
+	}
+
+	public Issuer(DID did) throws DIDException {
+		this(did, null);
+	}
+
+	private void init(DIDDocument doc, DIDURL signKey) throws DIDException {
+		this.self = doc;
 
 		if (signKey == null) {
 			signKey = self.getDefaultPublicKey();
@@ -57,10 +78,7 @@ public class Issuer {
 			throw new DIDException("No private key.");
 
 		this.signKey = signKey;
-	}
 
-	public Issuer(DID did) throws DIDException {
-		this(did, null);
 	}
 
 	public DID getDid() {
@@ -84,17 +102,17 @@ public class Issuer {
 
 	public class CredentialBuilder {
 		private DID target;
-		private VerifiableCredential vc;
+		private VerifiableCredential credential;
 
 		protected CredentialBuilder(DID target) {
 			this.target = target;
 
-			vc = new VerifiableCredential();
-			vc.setIssuer(self.getSubject());
+			credential = new VerifiableCredential();
+			credential.setIssuer(self.getSubject());
 		}
 
 		public CredentialBuilder id(DIDURL id) {
-			vc.setId(id);
+			credential.setId(id);
 			return this;
 		}
 
@@ -103,21 +121,21 @@ public class Issuer {
 		}
 
 		public CredentialBuilder type(String ... type) {
-			vc.setType(type);
+			credential.setType(type);
 			return this;
 		}
 
 		private Calendar getMaxExpires() {
 			Calendar cal = Calendar.getInstance(Constants.UTC);
-			if (vc.getIssuanceDate() != null)
-				cal.setTime(vc.getIssuanceDate());
+			if (credential.getIssuanceDate() != null)
+				cal.setTime(credential.getIssuanceDate());
 			cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
 
 			return cal;
 		}
 
 		private void defaultExpirationDate() {
-			vc.setExpirationDate(getMaxExpires().getTime());
+			credential.setExpirationDate(getMaxExpires().getTime());
 		}
 
 		public CredentialBuilder expirationDate(Date expirationDate) {
@@ -128,7 +146,7 @@ public class Issuer {
 			if (cal.after(maxExpires))
 				cal = maxExpires;
 
-			vc.setExpirationDate(cal.getTime());
+			credential.setExpirationDate(cal.getTime());
 
 			return this;
 		}
@@ -137,34 +155,38 @@ public class Issuer {
 			VerifiableCredential.CredentialSubject subject =
 					new VerifiableCredential.CredentialSubject(target);
 			subject.addProperties(properties);
-			vc.setSubject(subject);
+			credential.setSubject(subject);
 
 			return this;
 		}
 
-		public VerifiableCredential sign(String storepass)
+		public VerifiableCredential seal(String storepass)
 				throws MalformedCredentialException, DIDStoreException {
-			if (vc.getId() == null)
+			if (credential.getId() == null)
 				throw new MalformedCredentialException("Missing id.");
 
-			if (vc.getTypes() == null)
+			if (credential.getTypes() == null)
 				throw new MalformedCredentialException("Missing types.");
 
-			if (vc.getSubject() == null)
+			if (credential.getSubject() == null)
 				throw new MalformedCredentialException("Missing subject.");
 
 			Calendar cal = Calendar.getInstance(Constants.UTC);
-			vc.setIssuanceDate(cal.getTime());
+			credential.setIssuanceDate(cal.getTime());
 
-			if (vc.getExpirationDate() == null)
+			if (credential.getExpirationDate() == null)
 				defaultExpirationDate();
 
-			String json = vc.toJsonForSign(false);
+			String json = credential.toJson(true, true);
 			String sig = self.sign(signKey, storepass, json.getBytes());
 
 			VerifiableCredential.Proof proof = new VerifiableCredential.Proof(
 					Constants.defaultPublicKeyType, signKey, sig);
-			vc.setProof(proof);
+			credential.setProof(proof);
+
+			// Should clean credential member
+			VerifiableCredential vc = credential;
+			this.credential = null;
 
 			return vc;
 		}

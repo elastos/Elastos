@@ -27,180 +27,86 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import org.elastos.credential.Issuer;
 import org.elastos.credential.VerifiableCredential;
-import org.elastos.did.DIDStore.Entry;
-import org.elastos.did.adapter.SPVAdapter;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
+import org.elastos.did.backend.DummyAdapter;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DIDStoreTest {
-    private static DIDStore store;
-    private static DIDAdapter adapter;
-    private static LinkedHashMap<DID, String> ids;
-	private static DID primaryDid;
-
-	public static void waitForDidRegisted(DID did) throws DIDException {
-		do {
-			System.out.println("Waiting for DID '" + did + "' registed.");
-
-			DIDDocument doc = store.resolveDid(did, true);
-			if (doc == null) {
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException ignore) {
-				}
-			} else
-				break;
-		} while (true);
-	}
-
-	@BeforeClass
-	public static void setup() {
-		//adapter = new FakeConsoleAdapter();
-
-		adapter = new SPVAdapter(TestConfig.walletDir, TestConfig.walletId,
-				TestConfig.networkConfig, TestConfig.resolver,
-				new SPVAdapter.PasswordCallback() {
-
-					@Override
-					public String getPassword(String walletDir, String walletId) {
-						return "helloworld";
-					}
-				});
-
-	}
-
 	@Test
-	public void test00CreateEmptyStore0() throws DIDStoreException {
-    	TestData.deleteFile(new File(TestConfig.tempStoreRoot));
-
-    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
-
-    	DIDStore tempStore = DIDStore.getInstance();
-
-    	assertFalse(tempStore.hasPrivateIdentity());
-
-    	File file = new File(TestConfig.tempStoreRoot);
-    	assertTrue(file.exists());
-    	assertTrue(file.isDirectory());
-
-    	file = new File(TestConfig.tempStoreRoot + File.separator + ".DIDStore");
-    	assertTrue(file.exists());
-    	assertTrue(file.isFile());
-
-    	assertFalse(tempStore.hasPrivateIdentity());
-	}
-
-	@Test(expected = DIDStoreException.class)
-	public void test00CreateEmptyStore1() throws DIDStoreException {
-    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
-
-    	DIDStore tempStore = DIDStore.getInstance();
-
-    	tempStore.newDid(TestConfig.storePass, "my first did");
-	}
-
-	@Test
-	public void test00Restore() throws DIDException {
-    	TestData.deleteFile(new File(TestConfig.storeRoot));
-
-    	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
+	public void testCreateEmptyStore() throws DIDStoreException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
 
     	DIDStore store = DIDStore.getInstance();
 
-    	String mnemonic = "harvest goddess absorb secret drift rail smooth eight boy fresh faculty spawn";
+    	File file = new File(TestConfig.storeRoot);
+    	assertTrue(file.exists());
+    	assertTrue(file.isDirectory());
 
-    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
-    			TestConfig.passphrase, TestConfig.storePass, true);
+    	file = new File(TestConfig.storeRoot + File.separator + ".DIDStore");
+    	assertTrue(file.exists());
+    	assertTrue(file.isFile());
 
-    	store.synchronize(TestConfig.storePass);
+    	assertFalse(store.hasPrivateIdentity());
+	}
 
-    	List<DIDStore.Entry<DID, String>> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+	@Test(expected = DIDStoreException.class)
+	public void testCreateDidInEmptyStore() throws DIDStoreException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
 
-    	assertEquals(10, dids.size());
-
-    	// TODO: improve
+    	DIDStore store = DIDStore.getInstance();
+    	store.newDid(TestConfig.storePass, "this will be fail");
 	}
 
 	@Test
-	public void test10InitPrivateIdentity0() throws DIDStoreException {
-		TestData.deleteFile(new File(TestConfig.tempStoreRoot));
+	public void testInitPrivateIdentity0() throws DIDStoreException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
 
-    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
+    	DIDStore store = DIDStore.getInstance();
+    	assertFalse(store.hasPrivateIdentity());
 
-    	DIDStore tempStore = DIDStore.getInstance();
+    	testData.initIdentity();
+    	assertTrue(store.hasPrivateIdentity());
 
-    	assertFalse(tempStore.hasPrivateIdentity());
-
-    	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	tempStore.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
-    			TestConfig.passphrase, TestConfig.storePass, true);
-
-    	File file = new File(TestConfig.tempStoreRoot + File.separator + "private"
+    	File file = new File(TestConfig.storeRoot + File.separator + "private"
     			+ File.separator + "key");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
-    	file = new File(TestConfig.tempStoreRoot + File.separator + "private"
+    	file = new File(TestConfig.storeRoot + File.separator + "private"
     			+ File.separator + "index");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
-    	assertTrue(tempStore.hasPrivateIdentity());
-
-    	DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
-
-    	tempStore = DIDStore.getInstance();
-
-    	assertTrue(tempStore.hasPrivateIdentity());
-	}
-
-	// Can not decrypt root private key because wrong storepass
-	@Test
-	public void test10InitPrivateIdentity1() throws DIDStoreException {
-		DIDStore.initialize("filesystem", TestConfig.tempStoreRoot, adapter);
-
-    	DIDStore tempStore = DIDStore.getInstance();
-
-    	assertTrue(tempStore.hasPrivateIdentity());
-	}
-
-    @Test
-    public void test20Setup() throws DIDStoreException {
-    	TestData.deleteFile(new File(TestConfig.storeRoot));
-
-    	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
+    	DIDStore.initialize("filesystem", TestConfig.storeRoot,
+    			new DummyAdapter());
 
     	store = DIDStore.getInstance();
-
-    	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
-    			TestConfig.passphrase, TestConfig.storePass, true);
-
-    	ids = new LinkedHashMap<DID, String>(128);
-    }
+    	assertTrue(store.hasPrivateIdentity());
+	}
 
 	@Test
-	public void test30CreateDID1() throws DIDException {
+	public void testCreateDIDWithHint() throws DIDException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDStore store = DIDStore.getInstance();
 		String hint = "my first did";
 
     	DIDDocument doc = store.newDid(TestConfig.storePass, hint);
-    	primaryDid = doc.getSubject();
+    	assertTrue(doc.isValid());
+
+    	DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNull(resolved);
 
     	store.publishDid(doc, TestConfig.storePass);
 
@@ -216,12 +122,30 @@ public class DIDStoreTest {
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
-    	ids.put(doc.getSubject(), hint);
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.getSubject(), resolved.getSubject());
+    	assertEquals(doc.getProof().getSignature(),
+    			resolved.getProof().getSignature());
+
+    	assertTrue(resolved.isValid());
 	}
 
 	@Test
-	public void test30CreateDID2() throws DIDStoreException {
-    	DIDDocument doc = store.newDid(TestConfig.storePass, null);
+	public void tesCreateDIDWithoutHint() throws DIDException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDStore store = DIDStore.getInstance();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNull(resolved);
+
+    	store.publishDid(doc, TestConfig.storePass);
 
     	File file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + doc.getSubject().getMethodSpecificId()
@@ -234,41 +158,86 @@ public class DIDStoreTest {
     			+ doc.getSubject().getMethodSpecificId() + ".meta");
     	assertFalse(file.exists());
 
-    	ids.put(doc.getSubject(), null);
-	}
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.getSubject(), resolved.getSubject());
+    	assertEquals(doc.getProof().getSignature(),
+    			resolved.getProof().getSignature());
+
+    	assertTrue(resolved.isValid());
+    }
 
 	@Test
-	public void test30CreateDID3() throws DIDStoreException {
-    	for (int i = 0; i < 100; i++) {
+	public void testBulkCreate() throws DIDException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDStore store = DIDStore.getInstance();
+
+		for (int i = 0; i < 100; i++) {
     		String hint = "my did " + i;
-    		DIDDocument doc = store.newDid(TestConfig.storePass, hint);
+        	DIDDocument doc = store.newDid(TestConfig.storePass, hint);
+        	assertTrue(doc.isValid());
 
-	    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
-	    			+ File.separator + doc.getSubject().getMethodSpecificId()
-	    			+ File.separator + "document");
-	    	assertTrue(file.exists());
-	    	assertTrue(file.isFile());
+        	DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+        	assertNull(resolved);
 
-	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
-	    			+ File.separator + "."
-	    			+ doc.getSubject().getMethodSpecificId() + ".meta");
-	    	assertTrue(file.exists());
-	    	assertTrue(file.isFile());
+        	store.publishDid(doc, TestConfig.storePass);
 
-	    	ids.put(doc.getSubject(), hint);
+        	File file = new File(TestConfig.storeRoot + File.separator + "ids"
+        			+ File.separator + doc.getSubject().getMethodSpecificId()
+        			+ File.separator + "document");
+        	assertTrue(file.exists());
+        	assertTrue(file.isFile());
+
+        	file = new File(TestConfig.storeRoot + File.separator + "ids"
+        			+ File.separator + "."
+        			+ doc.getSubject().getMethodSpecificId() + ".meta");
+        	assertTrue(file.exists());
+        	assertTrue(file.isFile());
+
+        	resolved = store.resolveDid(doc.getSubject(), true);
+        	assertNotNull(resolved);
+        	assertEquals(doc.getSubject(), resolved.getSubject());
+        	assertEquals(doc.getProof().getSignature(),
+        			resolved.getProof().getSignature());
+
+        	assertTrue(resolved.isValid());
     	}
+
+		List<DIDStore.Entry<DID, String>> dids = store.listDids(DIDStore.DID_ALL);
+		assertEquals(100, dids.size());
+
+		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(100, dids.size());
+
+		dids = store.listDids(DIDStore.DID_NO_PRIVATEKEY);
+		assertEquals(0, dids.size());
 	}
 
 	@Test
-	public void test40DeleteDID1() throws DIDStoreException {
-		Iterator<DID> dids = ids.keySet().iterator();
-		int i = 0;
+	public void testDeleteDID() throws DIDException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
 
-		while (dids.hasNext()) {
-			DID did = dids.next();
+    	DIDStore store = DIDStore.getInstance();
 
-			if (++i % 9 != 0 || did.equals(primaryDid))
+    	// Create test DIDs
+    	LinkedList<DID> dids = new LinkedList<DID>();
+		for (int i = 0; i < 100; i++) {
+    		String hint = "my did " + i;
+        	DIDDocument doc = store.newDid(TestConfig.storePass, hint);
+         	store.publishDid(doc, TestConfig.storePass);
+         	dids.add(doc.getSubject());
+    	}
+
+		for (int i = 0; i < 100; i++) {
+			if (i % 5 != 0)
 				continue;
+
+			DID did = dids.get(i);
 
     		boolean deleted = store.deleteDid(did);
     		assertTrue(deleted);
@@ -284,219 +253,170 @@ public class DIDStoreTest {
 
     		deleted = store.deleteDid(did);
     		assertFalse(deleted);
-
-	    	dids.remove();
     	}
+
+		List<DIDStore.Entry<DID, String>> remains = store.listDids(DIDStore.DID_ALL);
+		assertEquals(80, remains.size());
+
+		remains = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(80, remains.size());
+
+		remains = store.listDids(DIDStore.DID_NO_PRIVATEKEY);
+		assertEquals(0, remains.size());
+
 	}
 
 	@Test
-	public void test40PublishDID() throws DIDStoreException, MalformedDocumentException {
-		Iterator<DID> dids = ids.keySet().iterator();
-		int i = 0;
+	public void testStoreAndLoadDID() throws DIDException, IOException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
 
-		while (dids.hasNext()) {
-			DID did = dids.next();
+    	// Store test data into current store
+    	DIDDocument issuer = testData.loadTestDocument();
+    	DIDDocument test = testData.loadTestIssuer();
 
-			if (++i % 9 != 0)
-				continue;
+    	DIDStore store = DIDStore.getInstance();
 
-			DIDDocument doc = store.loadDid(did);
-    		store.publishDid(doc, new DIDURL(did, "primary"), TestConfig.storePass);
-    	}
+    	DIDDocument doc = store.loadDid(issuer.getSubject());
+    	assertEquals(issuer.getSubject(), doc.getSubject());
+    	assertEquals(issuer.getProof().getSignature(), doc.getProof().getSignature());
+    	assertTrue(doc.isValid());
+
+    	doc = store.loadDid(test.getSubject().toString());
+    	assertEquals(test.getSubject(), doc.getSubject());
+    	assertEquals(test.getProof().getSignature(), doc.getProof().getSignature());
+    	assertTrue(doc.isValid());
+
+		List<DIDStore.Entry<DID, String>> dids = store.listDids(DIDStore.DID_ALL);
+		assertEquals(2, dids.size());
+
+		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(2, dids.size());
+
+		dids = store.listDids(DIDStore.DID_NO_PRIVATEKEY);
+		assertEquals(0, dids.size());
 	}
 
 	@Test
-	public void test50IssueCredential1() throws DIDException {
-		// SelfClaim
-		Issuer issuer = new Issuer(primaryDid);
+	public void testLoadCredentials() throws DIDException, IOException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
 
-		Map<String, String> props = new HashMap<String, String>();
-		props.put("name", "Elastos");
-		props.put("email", "contact@elastos.org");
-		props.put("website", "https://www.elastos.org/");
-		props.put("phone", "12345678900");
+    	// Store test data into current store
+    	testData.loadTestIssuer();
+    	DIDDocument test = testData.loadTestDocument();
+    	testData.loadProfileCredential();
+    	testData.loadEmailCredential();
+    	testData.loadTwitterCredential();
+    	testData.loadPassportCredential();
 
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
-		Date expire = cal.getTime();
-		VerifiableCredential vc = issuer.issueFor(primaryDid)
-				.id("cred-1")
-				.type(new String[] {"SelfProclaimedCredential", "BasicProfileCredential" })
-				.expirationDate(expire)
-				.properties(props)
-				.sign(TestConfig.storePass);
+    	DIDStore store = DIDStore.getInstance();
 
-		DIDDocument doc = store.resolveDid(primaryDid);
-		doc.modify();
-		doc.addCredential(vc);
-		store.storeDid(doc);
+    	DIDURL id = new DIDURL(test.getSubject(), "profile");
+    	VerifiableCredential vc = store.loadCredential(test.getSubject(), id);
+    	assertNotNull(vc);
+    	assertEquals(test.getSubject(), vc.getSubject().getId());
+    	assertEquals(id, vc.getId());
+    	assertTrue(vc.isValid());
 
-		doc = store.resolveDid(primaryDid);
-		DIDURL vcId = new DIDURL(primaryDid, "cred-1");
-		vc = doc.getCredential(vcId);
-		assertNotNull(vc);
-		assertEquals(vcId, vc.getId());
-		assertEquals(primaryDid, vc.getSubject().getId());
+    	id = new DIDURL(test.getSubject(), "twitter");
+    	vc = store.loadCredential(test.getSubject().toString(), "twitter");
+    	assertNotNull(vc);
+    	assertEquals(test.getSubject(), vc.getSubject().getId());
+    	assertEquals(id, vc.getId());
+    	assertTrue(vc.isValid());
+
+    	vc = store.loadCredential(test.getSubject().toString(), "notExist");
+    	assertNull(vc);
+
+    	id = new DIDURL(test.getSubject(), "twitter");
+		assertTrue(store.containsCredential(test.getSubject(), id));
+		assertTrue(store.containsCredential(test.getSubject().toString(), "twitter"));
+		assertFalse(store.containsCredential(test.getSubject().toString(), "notExist"));
 	}
 
 	@Test
-	public void test50IssueCredential2() throws DIDException {
-		DID issuerDid = primaryDid;
-		Issuer issuer = new Issuer(issuerDid);
+	public void testListCredentials() throws DIDException, IOException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
 
-		for (DID did : ids.keySet()) {
-			Map<String, String> props = new HashMap<String, String>();
-			props.put("name", "Elastos-" + did.getMethodSpecificId());
-			props.put("email", "contact@elastos.org");
-			props.put("website", "https://www.elastos.org/");
-			props.put("phone", did.getMethodSpecificId());
+    	// Store test data into current store
+    	testData.loadTestIssuer();
+    	DIDDocument test = testData.loadTestDocument();
+    	testData.loadProfileCredential();
+    	testData.loadEmailCredential();
+    	testData.loadTwitterCredential();
+    	testData.loadPassportCredential();
 
-			Calendar cal = Calendar.getInstance();
-			cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
-			Date expire = cal.getTime();
-			VerifiableCredential vc = issuer.issueFor(did)
-					.id("cred-1")
-					.type(new String[] { "BasicProfileCredential" })
-					.expirationDate(expire)
-					.properties(props)
-					.sign(TestConfig.storePass);
+    	DIDStore store = DIDStore.getInstance();
 
-			store.storeCredential(vc, "default");
+    	List<DIDStore.Entry<DIDURL, String>> vcs;
+		vcs = store.listCredentials(test.getSubject());
+		assertEquals(4, vcs.size());
 
-			props.clear();
-			props.put("name", "CyberRepublic-" + did.getMethodSpecificId());
-			props.put("email", "contact@CyberRepublic.org");
-			props.put("website", "https://www.CyberRepublic.org/");
-			props.put("phone", did.getMethodSpecificId());
+		for (DIDStore.Entry<DIDURL, String> entry : vcs) {
+			DIDURL id = entry.getKey();
 
-			vc = issuer.issueFor(did)
-				.id("cred-2")
-				.type(new String[] { "BasicProfileCredential" })
-				.expirationDate(expire)
-				.properties(props)
-				.sign(TestConfig.storePass);
-
-			store.storeCredential(vc);
-
-	    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
-	    			+ File.separator + did.getMethodSpecificId() + File.separator
-	    			+ "credentials" + File.separator + "cred-1");
-	    	assertTrue(file.exists());
-	    	assertTrue(file.isFile());
-	    	assertTrue(file.length() > 0);
-
-	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
-	    			+ File.separator + did.getMethodSpecificId() + File.separator
-	    			+ "credentials" + File.separator + ".cred-1.meta");
-	    	assertTrue(file.exists());
-	    	assertTrue(file.isFile());
-	    	assertTrue(file.length() > 0);
-
-	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
-	    			+ File.separator + did.getMethodSpecificId() + File.separator
-	    			+ "credentials" + File.separator + "cred-2");
-	    	assertTrue(file.exists());
-	    	assertTrue(file.isFile());
-	    	assertTrue(file.length() > 0);
-
-	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
-	    			+ File.separator + did.getMethodSpecificId() + File.separator
-	    			+ "credentials" + File.separator + ".cred-2.meta");
-	    	assertFalse(file.exists());
+			assertTrue(id.getFragment().equals("profile")
+					|| id.getFragment().equals("email")
+					|| id.getFragment().equals("twitter")
+					|| id.getFragment().equals("passport"));
 		}
 	}
 
 	@Test
-	public void test60DeleteCredential1() throws DIDException {
-		boolean deleted = store.deleteCredential(primaryDid, new DIDURL(primaryDid, "cred-1"));
+	public void testDeleteCredential() throws DIDException, IOException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
+
+    	// Store test data into current store
+    	testData.loadTestIssuer();
+    	DIDDocument test = testData.loadTestDocument();
+    	testData.loadProfileCredential();
+    	testData.loadEmailCredential();
+    	testData.loadTwitterCredential();
+    	testData.loadPassportCredential();
+
+    	DIDStore store = DIDStore.getInstance();
+
+    	boolean deleted = store.deleteCredential(test.getSubject(),
+    			new DIDURL(test.getSubject(), "twitter"));
 		assertTrue(deleted);
 
-		deleted = store.deleteCredential(primaryDid, new DIDURL(primaryDid, "cred-2"));
+		deleted = store.deleteCredential(test.getSubject().toString(), "passport");
 		assertTrue(deleted);
 
-		deleted = store.deleteCredential(primaryDid, new DIDURL(primaryDid, "cred-3"));
+		deleted = store.deleteCredential(test.getSubject().toString(), "notExist");
 		assertFalse(deleted);
 
     	File file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + primaryDid.getMethodSpecificId() + File.separator
-    			+ "credentials" + File.separator + "cred-1");
+    			+ File.separator + test.getSubject().getMethodSpecificId()
+    			+ File.separator + "credentials" + File.separator + "twitter");
     	assertFalse(file.exists());
 
     	file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + primaryDid.getMethodSpecificId() + File.separator
-    			+ "credentials" + File.separator + ".cred-1.meta");
+    			+ File.separator + test.getSubject().getMethodSpecificId()
+    			+ File.separator + "credentials" + File.separator + ".twitter.meta");
     	assertFalse(file.exists());
 
     	file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + primaryDid.getMethodSpecificId() + File.separator
-    			+ "credentials" + File.separator + "cred-2");
+    			+ File.separator + test.getSubject().getMethodSpecificId()
+    			+ File.separator + "credentials" + File.separator + "passport");
     	assertFalse(file.exists());
 
     	file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + primaryDid.getMethodSpecificId() + File.separator
-    			+ "credentials" + File.separator + ".cred-2.meta");
+    			+ File.separator + test.getSubject().getMethodSpecificId()
+    			+ File.separator + "credentials" + File.separator + ".passport.meta");
     	assertFalse(file.exists());
 
+		assertTrue(store.containsCredential(test.getSubject().toString(), "email"));
+		assertTrue(store.containsCredential(test.getSubject().toString(), "profile"));
+
+		assertFalse(store.containsCredential(test.getSubject().toString(), "twitter"));
+		assertFalse(store.containsCredential(test.getSubject().toString(), "passport"));
 	}
-
-	@Test
-	public void test60ListCredential1() throws DIDException {
-		for (DID did : ids.keySet()) {
-			List<Entry<DIDURL, String>> creds = store.listCredentials(did);
-
-			if (did.equals(primaryDid))
-				assertEquals(0, creds.size());
-			else
-				assertEquals(2, creds.size());
-
-			for (Entry<DIDURL, String> cred : creds) {
-				if (cred.getKey().getFragment().equals("cred-1"))
-					assertEquals("default", cred.getValue());
-				else if (cred.getKey().getFragment().equals("cred-2"))
-					assertNull(cred.getValue());
-				else
-					fail("Unexpected credential id '" + cred.getKey() + "'.");
-			}
-		}
-	}
-
-	@Test
-	public void test60LoadCredential1() throws DIDException {
-		for (DID did : ids.keySet()) {
-			if (did.equals(primaryDid))
-				continue;
-
-			DIDURL id1 = new DIDURL(did, "cred-1");
-			VerifiableCredential vc1 = store.loadCredential(did, id1);
-			assertNotNull(vc1);
-
-			DIDURL id2 = new DIDURL(did, "cred-2");
-			VerifiableCredential vc2 = store.loadCredential(did, id2);
-			assertNotNull(vc2);
-
-			assertEquals(id1, vc1.getId());
-			assertEquals(primaryDid, vc1.getIssuer());
-			assertEquals(did, vc1.getSubject().getId());
-			assertEquals("Elastos-" + did.getMethodSpecificId(),
-					vc1.getSubject().getProperty("name"));
-
-			assertEquals(id2, vc2.getId());
-			assertEquals(primaryDid, vc2.getIssuer());
-			assertEquals(did, vc2.getSubject().getId());
-			assertEquals("CyberRepublic-" + did.getMethodSpecificId(),
-					vc2.getSubject().getProperty("name"));
-		}
-	}
-
-    @Test
-    public void test99Check() throws DIDStoreException {
-    	List<DIDStore.Entry<DID, String>> dids = store.listDids(DIDStore.DID_ALL);
-
-    	assertEquals(ids.size(), dids.size());
-
-    	for (DIDStore.Entry<DID, String> entry : dids) {
-    		assertTrue(ids.containsKey(entry.getKey()));
-    		assertEquals(ids.get(entry.getKey()), entry.getValue());
-    	}
-    }
 }

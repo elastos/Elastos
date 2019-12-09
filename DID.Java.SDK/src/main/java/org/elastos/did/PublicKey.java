@@ -93,30 +93,28 @@ public class PublicKey extends DIDObject {
 		return new PublicKey(id, type, controller, keyBase58);
 	}
 
-	protected void toJson(JsonGenerator generator, DID ref, boolean compact)
+	protected void toJson(JsonGenerator generator, DID ref, boolean normalized)
 			throws IOException {
-		compact = (ref != null && compact);
-
 		String value;
 
 		generator.writeStartObject();
 
 		// id
 		generator.writeFieldName(Constants.id);
-		if (compact && getId().getDid().equals(ref))
-			value = "#" + getId().getFragment();
-		else
+		if (normalized || ref == null || !getId().getDid().equals(ref))
 			value = getId().toExternalForm();
+		else
+			value = "#" + getId().getFragment();
 		generator.writeString(value);
 
 		// type
-		if (!compact || !getType().equals(Constants.defaultPublicKeyType)) {
+		if (normalized || !getType().equals(Constants.defaultPublicKeyType)) {
 			generator.writeFieldName(Constants.type);
 			generator.writeString(getType());
 		}
 
 		// controller
-		if (!compact || !controller.equals(ref)) {
+		if (normalized || ref == null || !controller.equals(ref)) {
 			generator.writeFieldName(Constants.controller);
 			generator.writeString(controller.toExternalForm());
 		}

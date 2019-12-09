@@ -58,8 +58,8 @@ public class DIDDocument {
 	private Map<DIDURL, VerifiableCredential> credentials;
 	private Map<DIDURL, Service> services;
 	private Date expires;
-
-	private boolean readonly;
+	private Proof proof;
+	private boolean deactivated;
 
 	/* Just expose from/toJson method for current package */
 	static class EmbeddedCredential extends VerifiableCredential {
@@ -77,15 +77,44 @@ public class DIDDocument {
 		}
 
 		@Override
-		protected void toJson(JsonGenerator generator, DID ref, boolean compact)
+		protected void toJson(JsonGenerator generator, DID ref, boolean normalized)
 				throws IOException {
-			super.toJson(generator, ref, compact);
+			super.toJson(generator, ref, normalized);
 		}
 	}
 
-	protected DIDDocument() {
-		readonly = false;
-		setDefaultExpires();
+	private DIDDocument() {
+		this.deactivated = false;
+	}
+
+	protected DIDDocument(DID subject) {
+		this();
+		this.subject = subject;
+	}
+
+	protected DIDDocument(DIDDocument doc) {
+		this();
+
+		// Copy constructor
+		this.subject = doc.subject;
+
+		if (doc.publicKeys != null)
+			this.publicKeys = new TreeMap<DIDURL, PublicKey>(doc.publicKeys);
+
+		if (doc.authentications != null)
+			this.authentications = new TreeMap<DIDURL, PublicKey>(doc.authentications);
+
+		if (doc.authorizations != null)
+			this.authorizations = new TreeMap<DIDURL, PublicKey>(doc.authorizations);
+
+		if (doc.credentials != null)
+			this.credentials = new TreeMap<DIDURL, VerifiableCredential>(doc.credentials);
+
+		if (doc.services != null)
+			this.services = new TreeMap<DIDURL, Service>(doc.services);
+
+		this.expires = doc.expires;
+		this.proof = doc.proof;
 	}
 
 	private <K, V extends DIDObject> int getEntryCount(Map<K, V> entries) {
@@ -154,7 +183,7 @@ public class DIDDocument {
 		return subject;
 	}
 
-	protected void setSubject(DID subject) {
+	private void setSubject(DID subject) {
 		this.subject = subject;
 	}
 
@@ -232,60 +261,33 @@ public class DIDDocument {
 	}
 
 	protected boolean addPublicKey(PublicKey pk) {
-		if (readonly)
-			return false;
-
 		if (publicKeys == null) {
 			publicKeys = new TreeMap<DIDURL, PublicKey>();
 		} else {
-			// Check the existence
-			if (publicKeys.containsKey(pk.getId()))
-				return false;
+			// Check the existence, both id and keyBase58
+			for (PublicKey key : publicKeys.values()) {
+				if (key.getId().equals(pk.getId()))
+					return false;
+
+				if (key.getPublicKeyBase58().equals(pk.getPublicKeyBase58()))
+					return false;
+			}
 		}
 
 		publicKeys.put(pk.getId(), pk);
 		return true;
 	}
 
-	public boolean addPublicKey(DIDURL id, DID controller, String pk) {
-		if (id == null || controller == null || pk == null)
-			throw new IllegalArgumentException();
-
-		if ( Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
-			throw new IllegalArgumentException("Invalid public key.");
-
-		PublicKey key = new PublicKey(id, controller, pk);
-		return addPublicKey(key);
-	}
-
-	public boolean addPublicKey(String id, String controller, String pk)
-			throws MalformedDIDURLException, MalformedDIDException {
-		return addPublicKey(new DIDURL(getSubject(), id),
-				new DID(controller), pk);
-	}
-
-	public boolean removePublicKey(DIDURL id, boolean force) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
-		if (readonly)
-			return false;
-
+	protected boolean removePublicKey(DIDURL id, boolean force) {
 		// Can not remove default public key
 		if (getDefaultPublicKey().equals(id))
 			return false;
 
-		if (isAuthenticationKey(id)) {
-			if (force)
-				removeAuthenticationKey(id);
-			else
-				return false;
-		}
-
-		if (isAuthorizationKey(id)) {
-			if (force)
-				removeAuthorizationKey(id);
-			else
+		if (force) {
+			removeAuthenticationKey(id);
+			removeAuthorizationKey(id);
+		} else {
+			if (isAuthenticationKey(id) || isAuthorizationKey(id))
 				return false;
 		}
 
@@ -299,19 +301,6 @@ public class DIDDocument {
 		}
 
 		return removed;
-	}
-
-	public boolean removePublicKey(String id, boolean force)
-			throws MalformedDIDURLException {
-		return removePublicKey(new DIDURL(getSubject(), id), force);
-	}
-
-	public boolean removePublicKey(DIDURL id) {
-		return removePublicKey(id, false);
-	}
-
-	public boolean removePublicKey(String id) throws MalformedDIDURLException {
-		return removePublicKey(id, false);
 	}
 
 	public int getAuthenticationKeyCount() {
@@ -359,15 +348,20 @@ public class DIDDocument {
 	}
 
 	protected boolean addAuthenticationKey(PublicKey pk) {
-		if (readonly)
-			return false;
-
 		// Check the controller is current DID subject
 		if (!pk.getController().equals(getSubject()))
 			return false;
 
-		// Confirm add the new pk to PublicKeys
-		addPublicKey(pk);
+		PublicKey key = getPublicKey(pk.getId());
+		if (key == null) {
+			// Add the new pk to PublicKeys if not exist.
+			addPublicKey(pk);
+		} else {
+			if (!key.equals(pk)) // Key conflict.
+				return false;
+			else // Already has this key.
+				pk = key;
+		}
 
 		if (authentications == null) {
 			authentications = new TreeMap<DIDURL, PublicKey>();
@@ -380,55 +374,12 @@ public class DIDDocument {
 		return true;
 	}
 
-	public boolean addAuthenticationKey(DIDURL id) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
-		PublicKey pk = getPublicKey(id);
-		if (pk == null)
-			return false;
-
-		return addAuthenticationKey(pk);
-	}
-
-	public boolean addAuthenticationKey(String id)
-			throws MalformedDIDURLException {
-		return addAuthenticationKey(new DIDURL(getSubject(), id));
-	}
-
-	public boolean addAuthenticationKey(DIDURL id, String pk) {
-		if (id == null || pk == null)
-			throw new IllegalArgumentException();
-
-		if (Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
-			throw new IllegalArgumentException("Invalid public key.");
-
-		PublicKey key = new PublicKey(id, getSubject(), pk);
-		return addAuthenticationKey(key);
-	}
-
-	public boolean addAuthenticationKey(String id, String pk)
-			throws MalformedDIDURLException {
-		return addAuthenticationKey(new DIDURL(getSubject(), id), pk);
-	}
-
-	public boolean removeAuthenticationKey(DIDURL id) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
-		if (readonly)
-			return false;
-
+	protected boolean removeAuthenticationKey(DIDURL id) {
 		// Can not remove default public key
 		if (getDefaultPublicKey().equals(id))
 			return false;
 
 		return removeEntry(authentications, id);
-	}
-
-	public boolean removeAuthenticationKey(String id)
-			throws MalformedDIDURLException {
-		return removeAuthenticationKey(new DIDURL(getSubject(), id));
 	}
 
 	public int getAuthorizationKeyCount() {
@@ -476,15 +427,20 @@ public class DIDDocument {
 	}
 
 	protected boolean addAuthorizationKey(PublicKey pk) {
-		if (readonly)
-			return false;
-
 		// Can not authorize to self
 		if (pk.getController().equals(getSubject()))
 			return false;
 
-		// Confirm add the new pk to PublicKeys
-		addPublicKey(pk);
+		PublicKey key = getPublicKey(pk.getId());
+		if (key == null) {
+			// Add the new pk to PublicKeys if not exist.
+			addPublicKey(pk);
+		} else {
+			if (!key.equals(pk)) // Key conflict.
+				return false;
+			else // Already has this key.
+				pk = key;
+		}
 
 		if (authorizations == null) {
 			authorizations = new TreeMap<DIDURL, PublicKey>();
@@ -497,101 +453,8 @@ public class DIDDocument {
 		return true;
 	}
 
-	public boolean addAuthorizationKey(DIDURL id) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
-		PublicKey pk = getPublicKey(id);
-		if (pk == null)
-			return false;
-
-		return addAuthorizationKey(pk);
-	}
-
-	public boolean addAuthorizationKey(String id)
-			throws MalformedDIDURLException {
-		return addAuthorizationKey(new DIDURL(getSubject(), id));
-	}
-
-	public boolean addAuthorizationKey(DIDURL id, DID controller, String pk) {
-		if (id == null || controller == null || pk == null)
-			throw new IllegalArgumentException();
-
-		if (Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
-			throw new IllegalArgumentException("Invalid public key.");
-
-		PublicKey key = new PublicKey(id, controller, pk);
-		return addAuthorizationKey(key);
-	}
-
-	public boolean addAuthorizationKey(String id, String controller, String pk)
-			throws MalformedDIDURLException, MalformedDIDException {
-		return addAuthorizationKey(new DIDURL(getSubject(), id), new DID(controller), pk);
-	}
-
-	public boolean authorizationDid(DIDURL id, DID controller, DIDURL key)
-			throws DIDException {
-		if (id == null || controller == null)
-			throw new IllegalArgumentException();
-
-		// Can not authorize to self
-		if (controller.equals(getSubject()))
-			return false;
-
-		DIDDocument doc = controller.resolve();
-		if (doc == null)
-			return false;
-
-		if (key == null)
-			key = doc.getDefaultPublicKey();
-
-		PublicKey refPk = doc.getPublicKey(key);
-		if (refPk == null)
-			return false;
-
-		// The public key should belongs to controller
-		if (!refPk.getController().equals(controller))
-			return false;
-
-		PublicKey pk = new PublicKey(id,refPk.getType(),
-				controller, refPk.getPublicKeyBase58());
-
-		return addAuthorizationKey(pk);
-	}
-
-	public boolean authorizationDid(DIDURL id, DID controller)
-			throws DIDException {
-		if (id == null || controller == null)
-			throw new IllegalArgumentException();
-
-		return authorizationDid(id, controller);
-	}
-
-	public boolean authorizationDid(String id, String controller, String key)
-			throws MalformedDIDURLException, MalformedDIDException, DIDException {
-		DID controllerId = new DID(controller);
-		DIDURL keyid = key == null ? null : new DIDURL(controllerId, key);
-		return authorizationDid(new DIDURL(getSubject(), id), controllerId, keyid);
-	}
-
-	public boolean authorizationDid(String id, String controller)
-			throws MalformedDIDURLException, MalformedDIDException, DIDException {
-		return authorizationDid(id, controller, null);
-	}
-
-	public boolean removeAuthorizationKey(DIDURL id) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
-		if (readonly)
-			return false;
-
+	protected boolean removeAuthorizationKey(DIDURL id) {
 		return removeEntry(authorizations, id);
-	}
-
-	public boolean removeAuthorizationKey(String id)
-			throws MalformedDIDURLException {
-		return removeAuthorizationKey(new DIDURL(getSubject(), id));
 	}
 
 	public int getCredentialCount() {
@@ -626,13 +489,7 @@ public class DIDDocument {
 		return getEntry(credentials, new DIDURL(getSubject(), id));
 	}
 
-	public boolean addCredential(VerifiableCredential vc) {
-		if (vc == null)
-			throw new IllegalArgumentException();
-
-		if (readonly)
-			return false;
-
+	protected boolean addCredential(VerifiableCredential vc) {
 		// Check the credential belongs to current DID.
 		if (!vc.getSubject().getId().equals(getSubject()))
 			return false;
@@ -649,18 +506,8 @@ public class DIDDocument {
 		return true;
 	}
 
-	public boolean removeCredential(DIDURL id) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
-		if (readonly)
-			return false;
-
+	protected boolean removeCredential(DIDURL id) {
 		return removeEntry(credentials, id);
-	}
-
-	public boolean removeCredential(String id) throws MalformedDIDURLException {
-		return removeCredential(new DIDURL(getSubject(), id));
 	}
 
 	public int getServiceCount() {
@@ -695,9 +542,6 @@ public class DIDDocument {
 	}
 
 	protected boolean addService(Service svc) {
-		if (readonly)
-			return false;
-
 		if (services == null)
 			services = new TreeMap<DIDURL, Service>();
 		else {
@@ -709,73 +553,62 @@ public class DIDDocument {
 		return true;
 	}
 
-	public boolean addService(DIDURL id, String type, String endpoint) {
-		if (id == null || type == null || type.isEmpty() ||
-				endpoint == null || endpoint.isEmpty() )
-			throw new IllegalArgumentException();
-
-		Service svc = new Service(id, type, endpoint);
-		return addService(svc);
-	}
-
-	public boolean addService(String id, String type, String endpoint)
-			throws MalformedDIDURLException {
-		return addService(new DIDURL(getSubject(), id), type, endpoint);
-	}
-
-	public boolean removeService(DIDURL id) {
-		if (id == null)
-			throw new IllegalArgumentException();
-
-		if (readonly)
-			return false;
-
+	protected boolean removeService(DIDURL id) {
 		return removeEntry(services, id);
-	}
-
-	public boolean removeService(String id) throws MalformedDIDURLException {
-		return removeService(new DIDURL(getSubject(), id));
-	}
-
-	private Calendar getMaxExpires() {
-		Calendar cal = Calendar.getInstance(Constants.UTC);
-		cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
-		return cal;
-	}
-
-	public void setDefaultExpires() {
-		expires = getMaxExpires().getTime();
-	}
-
-	public boolean setExpires(Date expires) {
-		if (readonly)
-			return false;
-
-		Calendar cal = Calendar.getInstance(Constants.UTC);
-		cal.setTime(expires);
-
-		if (cal.after(getMaxExpires()))
-			return false;
-
-		this.expires = cal.getTime();
-		return true;
 	}
 
 	public Date getExpires() {
 		return expires;
 	}
 
-	protected void setReadonly(boolean readonly) {
-		this.readonly = readonly;
+	protected void setExpires(Date expires) {
+		this.expires = expires;
 	}
 
-	public boolean isReadonly() {
-		return readonly;
+	public Proof getProof() {
+		return proof;
 	}
 
-	public boolean modify() {
-		setReadonly(false);
-		return true;
+	private void setProof(Proof proof) {
+		this.proof = proof;
+	}
+
+	public boolean isExpired() {
+		Calendar now = Calendar.getInstance(Constants.UTC);
+
+		Calendar expireDate  = Calendar.getInstance(Constants.UTC);
+		expireDate.setTime(expires);
+
+		return now.after(expireDate);
+	}
+
+	public boolean isDeactivated() {
+		return deactivated;
+	}
+
+	protected void setDeactivated(boolean deactivated) {
+		this.deactivated = deactivated;
+	}
+
+	public boolean isGenuine() {
+		// Document should signed(only) by default public key.
+		if (!proof.getCreator().equals(getDefaultPublicKey()))
+			return false;
+
+		// Unsupported public key type;
+		if (!proof.getType().equals(Constants.defaultPublicKeyType))
+			return false;
+
+		String json = toJson(true, true);
+		return verify(proof.getCreator(), proof.getSignature(), json.getBytes());
+	}
+
+	public boolean isValid() {
+		return !isDeactivated() && !isExpired() && isGenuine();
+	}
+
+	public Builder modify() {
+		return new Builder(this);
 	}
 
 	public String sign(String storepass, byte[] ... data)
@@ -786,7 +619,7 @@ public class DIDDocument {
 
 	public String sign(DIDURL id, String storepass, byte[] ... data)
 			throws DIDStoreException {
-		if (id == null || storepass == null || data == null)
+		if (id == null || storepass == null || storepass.isEmpty() || data == null)
 			throw new IllegalArgumentException();
 
 		return DIDStore.getInstance().sign(getSubject(), id, storepass, data);
@@ -809,8 +642,7 @@ public class DIDDocument {
 		return verify(new DIDURL(getSubject(), id), signature, data);
 	}
 
-	public boolean verify(DIDURL id, String signature, byte[] ... data)
-			throws DIDException {
+	public boolean verify(DIDURL id, String signature, byte[] ... data) {
 		if (id == null || signature == null || signature.isEmpty() || data == null)
 			throw new IllegalArgumentException();
 
@@ -867,6 +699,14 @@ public class DIDDocument {
 		if (node != null)
 			parseAuthentication(node);
 
+		DIDURL defaultPk = getDefaultPublicKey();
+		if (defaultPk == null)
+			throw new MalformedDocumentException("Missing default publicKey.");
+
+		// Add default public key to authentication keys if needed.
+		if (isAuthenticationKey(defaultPk))
+			addAuthenticationKey(getPublicKey(defaultPk));
+
 		node = doc.get(Constants.authorization);
 		if (node != null)
 			parseAuthorization(node);
@@ -881,6 +721,11 @@ public class DIDDocument {
 
 		expires = JsonHelper.getDate(doc, Constants.expires,
 				true, null, "expires", clazz);
+
+		node = doc.get(Constants.proof);
+		if (node == null)
+			throw new MalformedDocumentException("Missing proof.");
+		setProof(Proof.fromJson(node, defaultPk));
 	}
 
 	private void parsePublicKey(JsonNode node)
@@ -1005,7 +850,6 @@ public class DIDDocument {
 
 		DIDDocument doc = new DIDDocument();
 		doc.parse(reader);
-		doc.setReadonly(true);
 
 		return doc;
 	}
@@ -1017,7 +861,6 @@ public class DIDDocument {
 
 		DIDDocument doc = new DIDDocument();
 		doc.parse(in);
-		doc.setReadonly(true);
 
 		return doc;
 	}
@@ -1029,7 +872,6 @@ public class DIDDocument {
 
 		DIDDocument doc = new DIDDocument();
 		doc.parse(json);
-		doc.setReadonly(true);
 
 		return doc;
 	}
@@ -1056,11 +898,14 @@ public class DIDDocument {
 	 *     - type
 	 *     - endpoint
 	 * - expires
+	 * + proof
+	 *   - type
+	 *   - created
+	 *   - creator
+	 *   - signatureValue
 	 */
-	public void toJson(Writer out, boolean compact) throws IOException {
-		if (out == null)
-			throw new IllegalArgumentException();
-
+	protected void toJson(Writer out, boolean normalized, boolean forSign)
+			throws IOException {
 		JsonFactory factory = new JsonFactory();
 		JsonGenerator generator = factory.createGenerator(out);
 
@@ -1074,7 +919,7 @@ public class DIDDocument {
 		generator.writeFieldName(Constants.publicKey);
 		generator.writeStartArray();
 		for (PublicKey pk : publicKeys.values())
-			pk.toJson(generator, getSubject(), compact);
+			pk.toJson(generator, getSubject(), normalized);
 		generator.writeEndArray();
 
 		// authentication
@@ -1083,10 +928,10 @@ public class DIDDocument {
 		for (PublicKey pk : authentications.values()) {
 			String value;
 
-			if (compact && pk.getId().getDid().equals(getSubject()))
-				value = "#" + pk.getId().getFragment();
-			else
+			if (normalized || !pk.getId().getDid().equals(getSubject()))
 				value = pk.getId().toExternalForm();
+			else
+				value = "#" + pk.getId().getFragment();
 
 			generator.writeString(value);
 		}
@@ -1099,10 +944,10 @@ public class DIDDocument {
 			for (PublicKey pk : authorizations.values()) {
 				String value;
 
-				if (compact && pk.getId().getDid().equals(getSubject()))
-					value = "#" + pk.getId().getFragment();
-				else
+				if (normalized || !pk.getId().getDid().equals(getSubject()))
 					value = pk.getId().toExternalForm();
+				else
+					value = "#" + pk.getId().getFragment();
 
 				generator.writeString(value);
 			}
@@ -1114,7 +959,7 @@ public class DIDDocument {
 			generator.writeFieldName(Constants.credential);
 			generator.writeStartArray();
 			for (VerifiableCredential vc : credentials.values())
-				((EmbeddedCredential)vc).toJson(generator, getSubject(), compact);
+				((EmbeddedCredential)vc).toJson(generator, getSubject(), normalized);
 			generator.writeEndArray();
 		}
 
@@ -1123,7 +968,7 @@ public class DIDDocument {
 			generator.writeFieldName(Constants.service);
 			generator.writeStartArray();
 			for (Service svc : services.values())
-				svc.toJson(generator, getSubject(), compact);
+				svc.toJson(generator, getSubject(), normalized);
 			generator.writeEndArray();
 		}
 
@@ -1133,11 +978,25 @@ public class DIDDocument {
 			generator.writeString(JsonHelper.format(expires));
 		}
 
+		// proof
+		if (proof != null && !forSign) {
+			generator.writeFieldName(Constants.proof);
+			proof.toJson(generator, normalized);
+		}
+
 		generator.writeEndObject();
 		generator.close();
 	}
 
-	public void toJson(OutputStream out, String charsetName, boolean compact)
+	public void toJson(Writer out, boolean normalized)
+			throws IOException {
+		if (out == null)
+			throw new IllegalArgumentException();
+
+		toJson(out, normalized, false);
+	}
+
+	public void toJson(OutputStream out, String charsetName, boolean normalized)
 			throws IOException {
 		if (out == null)
 			throw new IllegalArgumentException();
@@ -1145,29 +1004,310 @@ public class DIDDocument {
 		if (charsetName == null)
 			charsetName = "UTF-8";
 
-		toJson(new OutputStreamWriter(out, charsetName), compact);
+		toJson(new OutputStreamWriter(out, charsetName), normalized);
 	}
 
-	public void toJson(OutputStream out, boolean compact) throws IOException {
+	public void toJson(OutputStream out, boolean normalized) throws IOException {
 		if (out == null)
 			throw new IllegalArgumentException();
 
-		toJson(new OutputStreamWriter(out), compact);
+		toJson(new OutputStreamWriter(out), normalized);
 	}
 
-	public String toExternalForm(boolean compact) {
+	protected String toJson(boolean normalized, boolean forSign) {
 		Writer out = new StringWriter(2048);
 
 		try {
-			toJson(out, compact);
+			toJson(out, normalized, forSign);
 		} catch (IOException ignore) {
 		}
 
 		return out.toString();
 	}
 
+	public String toExternalForm(boolean normalized) {
+		return toJson(normalized, false);
+	}
+
 	@Override
 	public String toString() {
-		return toExternalForm(true);
+		return toExternalForm(false);
+	}
+
+	public static class Builder {
+		private DIDDocument target;
+
+		protected Builder(DID did) {
+			this.target = new DIDDocument(did);
+		}
+
+		protected Builder(DIDDocument doc) {
+			// Make a copy.
+			this.target = new DIDDocument(doc);
+		}
+
+		public DID getSubject() {
+			return target.getSubject();
+		}
+
+		public boolean addPublicKey(DIDURL id, DID controller, String pk) {
+			if (id == null || controller == null || pk == null)
+				throw new IllegalArgumentException();
+
+			if ( Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
+				throw new IllegalArgumentException("Invalid public key.");
+
+			PublicKey key = new PublicKey(id, controller, pk);
+			return target.addPublicKey(key);
+		}
+
+		public boolean addPublicKey(String id, String controller, String pk)
+				throws MalformedDIDURLException, MalformedDIDException {
+			return addPublicKey(new DIDURL(getSubject(), id),
+					new DID(controller), pk);
+		}
+
+		public boolean removePublicKey(DIDURL id, boolean force) {
+			if (id == null)
+				throw new IllegalArgumentException();
+
+			return target.removePublicKey(id, force);
+		}
+
+		public boolean removePublicKey(String id, boolean force)
+				throws MalformedDIDURLException {
+			return removePublicKey(new DIDURL(getSubject(), id), force);
+		}
+
+		public boolean removePublicKey(DIDURL id) {
+			return removePublicKey(id, false);
+		}
+
+		public boolean removePublicKey(String id) throws MalformedDIDURLException {
+			return removePublicKey(id, false);
+		}
+
+		public boolean addAuthenticationKey(DIDURL id) {
+			if (id == null)
+				throw new IllegalArgumentException();
+
+			PublicKey pk = target.getPublicKey(id);
+			if (pk == null)
+				return false;
+
+			return target.addAuthenticationKey(pk);
+		}
+
+		public boolean addAuthenticationKey(String id)
+				throws MalformedDIDURLException {
+			return addAuthenticationKey(new DIDURL(getSubject(), id));
+		}
+
+		public boolean addAuthenticationKey(DIDURL id, String pk) {
+			if (id == null || pk == null)
+				throw new IllegalArgumentException();
+
+			if (Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
+				throw new IllegalArgumentException("Invalid public key.");
+
+			PublicKey key = new PublicKey(id, getSubject(), pk);
+			return target.addAuthenticationKey(key);
+		}
+
+		public boolean addAuthenticationKey(String id, String pk)
+				throws MalformedDIDURLException {
+			return addAuthenticationKey(new DIDURL(getSubject(), id), pk);
+		}
+
+		public boolean removeAuthenticationKey(DIDURL id) {
+			if (id == null)
+				throw new IllegalArgumentException();
+
+			return target.removeAuthenticationKey(id);
+		}
+
+		public boolean removeAuthenticationKey(String id)
+				throws MalformedDIDURLException {
+			return removeAuthenticationKey(new DIDURL(getSubject(), id));
+		}
+
+		public boolean addAuthorizationKey(DIDURL id) {
+			if (id == null)
+				throw new IllegalArgumentException();
+
+			PublicKey pk = target.getPublicKey(id);
+			if (pk == null)
+				return false;
+
+			return target.addAuthorizationKey(pk);
+		}
+
+		public boolean addAuthorizationKey(String id)
+				throws MalformedDIDURLException {
+			return addAuthorizationKey(new DIDURL(getSubject(), id));
+		}
+
+		public boolean addAuthorizationKey(DIDURL id, DID controller, String pk) {
+			if (id == null || controller == null || pk == null)
+				throw new IllegalArgumentException();
+
+			if (Base58.decode(pk).length != HDKey.PUBLICKEY_BYTES)
+				throw new IllegalArgumentException("Invalid public key.");
+
+			PublicKey key = new PublicKey(id, controller, pk);
+			return target.addAuthorizationKey(key);
+		}
+
+		public boolean addAuthorizationKey(String id, String controller, String pk)
+				throws MalformedDIDURLException, MalformedDIDException {
+			return addAuthorizationKey(new DIDURL(getSubject(), id),
+					new DID(controller), pk);
+		}
+
+		public boolean authorizationDid(DIDURL id, DID controller, DIDURL key)
+				throws DIDException {
+			if (id == null || controller == null)
+				throw new IllegalArgumentException();
+
+			// Can not authorize to self
+			if (controller.equals(getSubject()))
+				return false;
+
+			DIDDocument controllerDoc = controller.resolve();
+			if (controllerDoc == null)
+				return false;
+
+			if (key == null)
+				key = controllerDoc.getDefaultPublicKey();
+
+			// Check the key should be a authentication key.
+			PublicKey targetPk = controllerDoc.getAuthenticationKey(key);
+			if (targetPk == null)
+				return false;
+
+			PublicKey pk = new PublicKey(id, targetPk.getType(),
+					controller, targetPk.getPublicKeyBase58());
+
+			return target.addAuthorizationKey(pk);
+		}
+
+		public boolean authorizationDid(DIDURL id, DID controller)
+				throws DIDException {
+			if (id == null || controller == null)
+				throw new IllegalArgumentException();
+
+			return authorizationDid(id, controller, null);
+		}
+
+		public boolean authorizationDid(String id, String controller, String key)
+				throws MalformedDIDURLException, MalformedDIDException, DIDException {
+			DID controllerId = new DID(controller);
+			DIDURL keyid = key == null ? null : new DIDURL(controllerId, key);
+
+			return authorizationDid(new DIDURL(getSubject(), id),
+					controllerId, keyid);
+		}
+
+		public boolean authorizationDid(String id, String controller)
+				throws MalformedDIDURLException, MalformedDIDException, DIDException {
+			return authorizationDid(id, controller, null);
+		}
+
+		public boolean removeAuthorizationKey(DIDURL id) {
+			if (id == null)
+				throw new IllegalArgumentException();
+
+			return target.removeAuthorizationKey(id);
+		}
+
+		public boolean removeAuthorizationKey(String id)
+				throws MalformedDIDURLException {
+			return removeAuthorizationKey(new DIDURL(getSubject(), id));
+		}
+
+		public boolean addCredential(VerifiableCredential vc) {
+			if (vc == null)
+				throw new IllegalArgumentException();
+
+			return target.addCredential(vc);
+		}
+
+		public boolean removeCredential(DIDURL id) {
+			if (id == null)
+				throw new IllegalArgumentException();
+
+			return target.removeCredential(id);
+		}
+
+		public boolean removeCredential(String id)
+				throws MalformedDIDURLException {
+			return removeCredential(new DIDURL(getSubject(), id));
+		}
+
+		public boolean addService(DIDURL id, String type, String endpoint) {
+			if (id == null || type == null || type.isEmpty() ||
+					endpoint == null || endpoint.isEmpty() )
+				throw new IllegalArgumentException();
+
+			Service svc = new Service(id, type, endpoint);
+			return target.addService(svc);
+		}
+
+		public boolean addService(String id, String type, String endpoint)
+				throws MalformedDIDURLException {
+			return addService(new DIDURL(getSubject(), id), type, endpoint);
+		}
+
+		public boolean removeService(DIDURL id) {
+			if (id == null)
+				throw new IllegalArgumentException();
+
+			return target.removeService(id);
+		}
+
+		public boolean removeService(String id) throws MalformedDIDURLException {
+			return removeService(new DIDURL(getSubject(), id));
+		}
+
+		private Calendar getMaxExpires() {
+			Calendar cal = Calendar.getInstance(Constants.UTC);
+			cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
+			return cal;
+		}
+
+		public void setDefaultExpires() {
+			target.setExpires(getMaxExpires().getTime());
+		}
+
+		public boolean setExpires(Date expires) {
+			Calendar cal = Calendar.getInstance(Constants.UTC);
+			cal.setTime(expires);
+
+			if (cal.after(getMaxExpires()))
+				return false;
+
+			target.setExpires(expires);
+			return true;
+		}
+
+		public DIDDocument seal(String storepass) throws DIDStoreException {
+			if (storepass == null || storepass.isEmpty())
+				throw new IllegalArgumentException();
+
+			if (target.getExpires() == null)
+				setDefaultExpires();
+
+			DIDURL signKey = target.getDefaultPublicKey();
+			String json = target.toJson(true, true);
+			String sig = target.sign(signKey, storepass, json.getBytes());
+			Proof proof = new Proof(signKey, sig);
+			target.setProof(proof);
+
+			// Should clean target member
+			DIDDocument doc = target;
+			this.target = null;
+
+			return doc;
+		}
 	}
 }

@@ -35,6 +35,7 @@ public final class Constants {
 	public final static String service = "service";
 	public final static String serviceEndpoint = "serviceEndpoint";
 	public final static String expires = "expires";
+	public final static String creator = "creator";
 
 	public final static String credential = "verifiableCredential";
 	public final static String issuer = "issuer";
@@ -46,6 +47,7 @@ public final class Constants {
 	public final static String verifiableCredential = "verifiableCredential";
 	public final static String verificationMethod = "verificationMethod";
 	public final static String signature = "signature";
+	public final static String signatureValue = "signatureValue";
 	public final static String nonce = "nonce";
 	public final static String realm = "realm";
 
@@ -53,6 +55,8 @@ public final class Constants {
 	public final static String defaultPresentationType = "VerifiablePresentation";
 
 	public final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+	public final static String DATE_FORMAT_ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
 
 	public final static TimeZone UTC = TimeZone.getTimeZone("UTC");
 

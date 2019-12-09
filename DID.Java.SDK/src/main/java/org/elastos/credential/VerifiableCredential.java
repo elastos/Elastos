@@ -105,11 +105,6 @@ public class VerifiableCredential extends DIDObject {
 
 			CredentialSubject cs = new CredentialSubject(id);
 
-			if (node.size() <= 1) {
-				System.out.println("Empty credentialSubject.");
-				return cs;
-			}
-
 			Iterator<Map.Entry<String, JsonNode>> props = node.fields();
 			Map.Entry<String, JsonNode> prop;
 			while (props.hasNext()) {
@@ -121,17 +116,17 @@ public class VerifiableCredential extends DIDObject {
 				cs.addProperty(prop.getKey(), prop.getValue().asText());
 			}
 
+			// TODO: should check whether the subject is empty?
+
 			return cs;
 		}
 
-		protected void toJson(JsonGenerator generator, DID ref, boolean compact)
+		protected void toJson(JsonGenerator generator, DID ref, boolean normalized)
 				throws IOException {
-			compact = (ref != null && compact);
-
 			generator.writeStartObject();
 
 			// id
-			if (!compact || !getId().equals(ref)) {
+			if (normalized || ref == null || !getId().equals(ref)) {
 				generator.writeFieldName(Constants.id);
 				generator.writeString(getId().toExternalForm());
 			}
@@ -187,12 +182,12 @@ public class VerifiableCredential extends DIDObject {
 			return new Proof(type, method, signature);
 		}
 
-		protected void toJson(JsonGenerator generator, DID ref, boolean compact)
+		protected void toJson(JsonGenerator generator, DID ref, boolean normalized)
 				throws IOException {
 			generator.writeStartObject();
 
 			// type
-			if (!compact || !type.equals(Constants.defaultPublicKeyType)) {
+			if (normalized || !type.equals(Constants.defaultPublicKeyType)) {
 				generator.writeFieldName(Constants.type);
 				generator.writeString(type);
 			}
@@ -200,10 +195,10 @@ public class VerifiableCredential extends DIDObject {
 			// method
 			String value;
 			generator.writeFieldName(Constants.verificationMethod);
-			if (compact && ref != null && verificationMethod.getDid().equals(ref))
-				value = "#" + verificationMethod.getFragment();
-			else
+			if (normalized || ref == null || !verificationMethod.getDid().equals(ref))
 				value = verificationMethod.toExternalForm();
+			else
+				value = "#" + verificationMethod.getFragment();
 			generator.writeString(value);
 
 			// signature
@@ -296,22 +291,105 @@ public class VerifiableCredential extends DIDObject {
 		return expirationDate;
 	}
 
-	public boolean isExpired() {
-		Calendar now = Calendar.getInstance(Constants.UTC);
-
-		Calendar expireDate  = Calendar.getInstance(Constants.UTC);
-		expireDate.setTime(expirationDate);
-
-		return now.after(expireDate);
+	public boolean isSelfProclaimed() {
+		return issuer.equals(subject.id);
 	}
 
-	public boolean verify() throws DIDException {
+	private static final int RULE_EXPIRE = 1;
+	private static final int RULE_GENUINE = 2;
+	private static final int RULE_VALID = 3;
+
+	private boolean traceCheck(int rule) throws DIDException {
+		DIDDocument controllerDoc = subject.id.resolve();
+		switch (rule) {
+		case RULE_EXPIRE:
+			if (controllerDoc.isExpired())
+				return true;
+			break;
+
+		case RULE_GENUINE:
+			if (!controllerDoc.isGenuine())
+				return false;
+			break;
+
+		case RULE_VALID:
+			if (!controllerDoc.isValid())
+				return false;
+			break;
+		}
+
+		if (!isSelfProclaimed()) {
+			DIDDocument issuerDoc = issuer.resolve();
+			switch (rule) {
+			case RULE_EXPIRE:
+				if (issuerDoc.isExpired())
+					return true;
+				break;
+
+			case RULE_GENUINE:
+				if (!issuerDoc.isGenuine())
+					return false;
+				break;
+
+			case RULE_VALID:
+				if (!issuerDoc.isValid())
+					return false;
+				break;
+			}
+		}
+
+		return rule != RULE_EXPIRE;
+	}
+
+	private boolean checkExpired() throws DIDException {
+		if (expirationDate != null) {
+			Calendar now = Calendar.getInstance(Constants.UTC);
+
+			Calendar expireDate  = Calendar.getInstance(Constants.UTC);
+			expireDate.setTime(expirationDate);
+
+			return now.after(expireDate);
+		}
+
+		return false;
+	}
+
+	public boolean isExpired() throws DIDException {
+		if (traceCheck(RULE_EXPIRE))
+			return true;
+
+		return checkExpired();
+	}
+
+	private boolean checkGenuine() throws DIDException {
 		DIDDocument issuerDoc = issuer.resolve();
 
-		String json = toJsonForSign(false);
+		// Credential should signed by authentication key.
+		if (!issuerDoc.isAuthenticationKey(proof.getVerificationMethod()))
+			return false;
+
+		// Unsupported public key type;
+		if (!proof.getType().equals(Constants.defaultPublicKeyType))
+			return false;
+
+		String json = toJson(true, true);
 
 		return issuerDoc.verify(proof.getVerificationMethod(),
 				proof.getSignature(), json.getBytes());
+	}
+
+	public boolean isGenuine() throws DIDException {
+		if (!traceCheck(RULE_GENUINE))
+			return false;
+
+		return checkGenuine();
+	}
+
+	public boolean isValid() throws DIDException {
+		if (!traceCheck(RULE_VALID))
+			return false;
+
+		return !checkExpired() && checkGenuine();
 	}
 
 	protected void setExpirationDate(Date expirationDate) {
@@ -421,18 +499,15 @@ public class VerifiableCredential extends DIDObject {
 			throw new MalformedCredentialException("Missing credentialSubject.");
 		subject = CredentialSubject.fromJson(valueNode, ref);
 
+		// IMPORTANT: help resolve full method in proof
 		if (issuer == null)
 			issuer = subject.getId();
-
-		// IMPORTANT: help resolve full method in proof
-		if (ref == null)
-			ref = issuer;
 
 		// proof
 		valueNode = node.get(Constants.proof);
 		if (valueNode == null)
 			throw new MalformedCredentialException("Missing credential proof.");
-		proof = Proof.fromJson(valueNode, ref);
+		proof = Proof.fromJson(valueNode, issuer);
 	}
 
 	public static VerifiableCredential fromJson(Reader reader)
@@ -480,9 +555,9 @@ public class VerifiableCredential extends DIDObject {
 		return fromJson(node, null);
 	}
 
-	protected void toJson(JsonGenerator generator, DID ref, boolean compact)
+	protected void toJson(JsonGenerator generator, DID ref, boolean normalized)
 			throws IOException {
-		toJson(generator, ref, compact, false);
+		toJson(generator, ref, normalized, false);
 	}
 
 	/*
@@ -501,17 +576,19 @@ public class VerifiableCredential extends DIDObject {
 	 *   - method
 	 *   - signature
 	 */
-	protected void toJson(JsonGenerator generator, DID ref, boolean compact,
+	protected void toJson(JsonGenerator generator, DID ref, boolean normalized,
 			boolean forSign) throws IOException {
 		generator.writeStartObject();
 
 		// id
 		String value;
 		generator.writeFieldName(Constants.id);
-		if (compact && ref != null && getId().getDid().equals(ref))
-			value = "#" + getId().getFragment();
-		else
+
+		if (normalized || ref == null || !getId().getDid().equals(ref))
 			value = getId().toExternalForm();
+		else
+			value = "#" + getId().getFragment();
+
 		generator.writeString(value);
 
 		// type
@@ -524,7 +601,7 @@ public class VerifiableCredential extends DIDObject {
 		generator.writeEndArray();
 
 		// issuer
-		if (!compact || !issuer.equals(subject.getId())) {
+		if (normalized || !issuer.equals(subject.getId())) {
 			generator.writeFieldName(Constants.issuer);
 			generator.writeString(issuer.toExternalForm());
 		}
@@ -541,72 +618,65 @@ public class VerifiableCredential extends DIDObject {
 
 		// credentialSubject
 		generator.writeFieldName(Constants.credentialSubject);
-		subject.toJson(generator, ref, compact);
+		subject.toJson(generator, ref, normalized);
 
 		// proof
 		if (!forSign ) {
 			generator.writeFieldName(Constants.proof);
-			proof.toJson(generator, issuer, compact);
+			proof.toJson(generator, issuer, normalized);
 		}
 
 		generator.writeEndObject();
 	}
 
-	public void toJson(Writer out, boolean compact) throws IOException {
-		toJson(out, compact, false);
+	public void toJson(Writer out, boolean normalized) throws IOException {
+		toJson(out, normalized, false);
 	}
 
-	protected void toJson(Writer out, boolean compact, boolean forSign) throws IOException {
+	protected void toJson(Writer out, boolean normalized, boolean forSign) throws IOException {
 		if (out == null)
 			throw new IllegalArgumentException();
 
 		JsonFactory factory = new JsonFactory();
 		JsonGenerator generator = factory.createGenerator(out);
 
-		toJson(generator, null, compact, forSign);
+		toJson(generator, null, normalized, forSign);
 
 		generator.close();
 	}
 
-	public void toJson(OutputStream out, String charsetName, boolean compact)
+	public void toJson(OutputStream out, String charsetName, boolean normalized)
 			throws IOException {
 		if (out == null)
 			throw new IllegalArgumentException();
 
-		toJson(new OutputStreamWriter(out, charsetName), compact);
+		toJson(new OutputStreamWriter(out, charsetName), normalized);
 	}
 
-	public void toJson(OutputStream out, boolean compact) throws IOException {
+	public void toJson(OutputStream out, boolean normalized) throws IOException {
 		if (out == null)
 			throw new IllegalArgumentException();
 
-		toJson(new OutputStreamWriter(out), compact);
+		toJson(new OutputStreamWriter(out), normalized);
 	}
 
-	protected String toJsonForSign(boolean compact) {
+	protected String toJson(boolean normalized, boolean forSign) {
 		Writer out = new StringWriter(2048);
 
 		try {
-			toJson(out, compact, true);
+			toJson(out, normalized, forSign);
 		} catch (IOException ignore) {
 		}
 
 		return out.toString();
 	}
 
-	public String toExternalForm(boolean compact) {
-		Writer out = new StringWriter(2048);
-
-		try {
-			toJson(out, compact);
-		} catch (IOException ignore) {
-		}
-
-		return out.toString();
+	public String toExternalForm(boolean normalized) {
+		return toJson(normalized, false);
 	}
 
 	@Override
 	public String toString() {
-		return toExternalForm(true);
+		return toExternalForm(false);
 	}
 }
