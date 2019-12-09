@@ -36,25 +36,17 @@ git clone https://github.com/cyber-republic/elastos-console.git
 cd elastos-console
 ```
 
-Put adenine client to the python path(NOTE: This is only temporary until the library is published to pip):
-  ```
-  rm -f venv/lib/python3.7/site-packages/adenine
-  cp -r /path/to/python-grpc-adenine/adenine venv/lib/python3.7/site-packages/
-  ```
 Copy the environment example file
 ```
 yes | cp -rf .env.example .env
 ```
-Update environment file(.env) by changing the value of the following variables
+
+Set the following only if you want to test signup/login using Elephant Wallet. Otherwise, it's not needed:
 ```
 # Replace '192.168.1.23' with your own IP address(cannot be localhost)
 ALLOWED_HOSTS=.127.0.0.1, .localhost, .www.nucleusconsole.com, .nucleusconsole.com, .192.168.1.23
 # Replace '192.168.1.23' with your own IP address(cannot be localhost)
 APP_URL=http://192.168.1.23:8000
-```
-
-Set the following only if you want to test signup/login using Elephant Wallet. Otherwise, it's not needed:
-```
 DEVELOPMENT=False
 # Replace the following values with your own SMTP server settings
 EMAIL_HOST='smtp.example.com'
