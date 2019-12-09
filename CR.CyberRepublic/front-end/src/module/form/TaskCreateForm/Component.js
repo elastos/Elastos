@@ -22,12 +22,11 @@ import {
   Divider,
   Card
 } from 'antd'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 
 import I18N from '@/I18N'
 import {upload_file} from '@/util'
-import ReactQuill from 'react-quill'
 import './style.scss'
-import { TOOLBAR_OPTIONS } from '@/config/constant'
 import moment from 'moment'
 import _ from 'lodash'
 import { getSafeUrl } from '@/util/url'
@@ -272,36 +271,27 @@ class C extends BaseComponent {
     const completionDeadline_el = (
       <DatePicker/>
     )
-
+    
+    const description = this.state.editing ? existingTask.description : ''
     const taskDesc_fn = getFieldDecorator('taskDesc', {
       rules: [
         {required: true, message: I18N.get('from.TaskCreateForm.taskDesc.required')},
         {max: 8192, message: I18N.get('from.TaskCreateForm.taskDesc.max')}
       ],
-      initialValue: this.state.editing ? existingTask.description : ''
+      initialValue: description
     })
     const taskDesc_el = (
-      <ReactQuill
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-        }}
-      />
+      <CodeMirrorEditor content={description} name="taskDesc" />
     )
-
+    const descBreakdown = this.state.editing ? existingTask.descBreakdown : ''
     const taskDescBreakdown_fn = getFieldDecorator('taskDescBreakdown', {
       rules: [
         {max: 8192, message: I18N.get('from.TaskCreateForm.taskDescBreakdown.max')}
       ],
-      initialValue: this.state.editing ? existingTask.descBreakdown : ''
+      initialValue: descBreakdown
     })
     const taskDescBreakdown_el = (
-      <ReactQuill
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-        }}
-      />
+      <CodeMirrorEditor content={descBreakdown} name="taskDescBreakdown" />
     )
     const taskGoals_fn = getFieldDecorator('taskGoals', {
       rules: [
