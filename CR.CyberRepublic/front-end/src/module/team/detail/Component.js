@@ -22,7 +22,7 @@ import I18N from '@/I18N'
 import Comments from '@/module/common/comments/Container'
 import TeamApplication from '@/module/team/application/Container'
 import { TEAM_USER_STATUS } from '@/constant'
-import sanitizeHtml from '@/util/html'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 
 class C extends BaseComponent {
   ord_states() {
@@ -138,10 +138,9 @@ class C extends BaseComponent {
         <div className="description-box">
           <hr className="divider" />
           <div className="description-title">{recruiting_el}</div>
-          <div
-            className="description-content ql-editor"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
-          />
+          <div className="description-content ql-editor">
+            <MarkdownPreview content={description} />
+          </div>
         </div>
       </div>
     )

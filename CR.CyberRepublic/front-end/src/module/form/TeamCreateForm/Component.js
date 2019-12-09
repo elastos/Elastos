@@ -7,7 +7,6 @@ import InputTags from '@/module/shared/InputTags/Component'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import { TEAM_TASK_DOMAIN, SKILLSET_TYPE } from '@/constant'
 import { upload_file } from '@/util'
-import sanitizeHtml from '@/util/html'
 import './style.scss'
 
 const FormItem = Form.Item
@@ -59,9 +58,6 @@ class C extends BaseComponent {
 
         const createParams = {
           ...values,
-          description: sanitizeHtml(values.description, {
-            // allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's'])
-          }),
           tags: tags.join(','),
           logo: '',
           metadata: '',
@@ -94,8 +90,6 @@ class C extends BaseComponent {
     const existingTeam = this.props.existingTeam
 
     const input_el = <Input size="large" />
-
-    const textarea_el = <CodeMirrorEditor />
 
     const name_fn = getFieldDecorator('name', {
       rules: [
@@ -216,6 +210,7 @@ class C extends BaseComponent {
       </div>
     )
 
+    const description = (existingTeam && existingTeam.profile.description) || ''
     const description_fn = getFieldDecorator('description', {
       rules: [
         {
@@ -224,8 +219,9 @@ class C extends BaseComponent {
         },
         { min: 4, message: I18N.get('team.create.error.descriptionTooShort') }
       ],
-      initialValue: (existingTeam && existingTeam.profile.description) || ''
+      initialValue: description
     })
+    const textarea_el = <CodeMirrorEditor content={description} name="description"/>
 
     const tags_fn = getFieldDecorator('tags', {
       rules: [],

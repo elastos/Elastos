@@ -6,7 +6,7 @@ import '../../admin/admin.scss'
 import { Col, Row, Input, Button, Divider, Select, List, Carousel, Avatar, Tag } from 'antd'
 import { TEAM_USER_STATUS, TEAM_AVATAR_DEFAULT } from '@/constant'
 import MediaQuery from 'react-responsive'
-import sanitizeHtml from '@/util/html'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 import ProfilePage from '../../ProfilePage'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
@@ -246,7 +246,9 @@ export default class extends ProfilePage {
             <h5 className="no-margin">
               {item.description}
             </h5>
-            <div className="description-content ql-editor" dangerouslySetInnerHTML={{__html: sanitizeHtml(item.content)}} />
+            <div className="description-content ql-editor">
+              <MarkdownPreview content={item.content} />
+            </div>
             <div className="ant-list-item-right-box">
               <a className="pull-up" onClick={this.linkUserDetail.bind(this, item.owner)}>
                 <Avatar size="large" icon="user" className="pull-right" src={ownerProfile.avatar}/>
