@@ -4,8 +4,9 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="elastos_adenine", # Replace with your own username
+    name="elastos_adenine",
     version="0.1.0",
+    license='MIT',
     author="Kiran Pachhai",
     author_email="kiran@tuum.tech",
     description="gRPC Client library to interact with Elastos Smartweb Service",
