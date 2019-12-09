@@ -21,7 +21,7 @@ import {
 } from 'antd'
 import I18N from '@/I18N'
 import InputTags from '@/module/shared/InputTags/Component'
-import ReactQuill from 'react-quill'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import { TOOLBAR_OPTIONS } from '@/config/constant'
 import {TEAM_TASK_DOMAIN, SKILLSET_TYPE} from '@/constant'
 import {upload_file} from '@/util'
@@ -115,14 +115,7 @@ class C extends BaseComponent {
       <Input size="large"/>
     )
 
-    const textarea_el = (
-      <ReactQuill
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-        }}
-      />
-    )
+    const textarea_el = <CodeMirrorEditor />
 
     const name_fn = getFieldDecorator('name', {
       rules: [
