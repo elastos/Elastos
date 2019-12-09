@@ -43,7 +43,7 @@ cp .env.example .env
 
 Export Path:
 ```
-export PYTHONPATH="$PYTHONPATH:$PWD/adenine/stubs/"
+export PYTHONPATH="$PYTHONPATH:$PWD/elastos_adenine/stubs/"
 ```
 
 Run the client:
