@@ -31,13 +31,13 @@ Install dependencies:
 ```
 pip3 install -r requirements.txt;
 ```
-Setup environment variables:
+Setup environment variables and update variables if needed:
 ```
 cp .env.example .env;
 ```
 Install elastos-adenine via pip:
 ```
-pip3 install elastos-adenine==0.1.0
+pip3 install elastos-adenine==0.1.1
 ```
 Run sample.py
 ```
@@ -50,7 +50,7 @@ Clone the repository
 git clone https://github.com/cyber-republic/python-grpc-adenine.git
 cd python-grpc-adenine
 ```
-etup virtualenv:
+Setup virtualenv:
 ```
 virtualenv -p `which python3` venv;
 source venv/bin/activate;
@@ -59,7 +59,7 @@ Install dependencies:
 ```
 pip3 install -r requirements.txt;
 ```
-Setup environment variables:
+Setup environment variables and update variables if needed:
 ```
 cp .env.example .env;
 ```
@@ -67,3 +67,28 @@ Run sample.py:
 ```
 python3 sample.py
 ```
+
+## How to package up the client library
+Setup virtualenv:
+```
+virtualenv -p `which python3` venv;
+source venv/bin/activate;
+```
+Install dependencies:
+```
+pip3 install -r requirements.txt;
+```
+Update setup.py if needed(eg. version number should be modified each time it's pushed to the pypi repo) and get the package ready 
+```
+rm -rf dist/*;
+python3 setup.py sdist bdist_wheel
+```
+Push to pypi repo:
+- For testing purposes, do the following: 
+  ```
+  python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+  ```
+- For production, do the following:
+  ```
+  python3 -m twine upload dist/*
+  ```
