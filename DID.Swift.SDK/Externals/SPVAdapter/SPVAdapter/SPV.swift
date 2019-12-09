@@ -22,9 +22,9 @@ public class SPV {
     }
     
     public class func resolve(_ handle: OpaquePointer,_ did: String) throws -> String? {
-//        let startIndex = did.index(did.startIndex, offsetBy: 12)
-//        let id = String(did[startIndex..<did.endIndex])
-        let id = "im4wF5ZqiWFB1ATd2JxuxW6HHzR5Ks3LUS"
+        let startIndex = did.index(did.startIndex, offsetBy: 12)
+        let id = String(did[startIndex..<did.endIndex])
+//        let id = "im4wF5ZqiWFB1ATd2JxuxW6HHzR5Ks3LUS"
         var resuleString = ""
         let url:URL! = URL(string: "https://coreservices-didsidechain-privnet.elastos.org")
         var request:URLRequest! = URLRequest.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
@@ -66,5 +66,4 @@ public class SPV {
         }
         return resuleString
     }
-
 }
