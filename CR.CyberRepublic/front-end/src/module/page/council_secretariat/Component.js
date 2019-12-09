@@ -39,6 +39,12 @@ export default class extends StandardPage {
     this.ord_loading = _.debounce(this.ord_loading, 300)
   }
 
+  async componentDidMount() {
+    const { tab } = this.state
+    if (tab === 'VOTING') {
+      this.refetch(true)
+    }
+  }
 
   linkToRule() {
     this.props.history.push('/whitepaper')
