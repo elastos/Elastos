@@ -86,7 +86,7 @@ export default class extends StandardPage {
             : _.map(chunkedList, (row, rowIndex) => {
               const cols = _.map(row, this.renderCandidate)
               return (
-                <Row gutter={[24, 56]} key={rowIndex}>
+                <Row gutter={24} key={rowIndex}>
                   {cols}
                 </Row>
               )
@@ -173,6 +173,9 @@ const Circles = styled.div`
 const Container = styled.div`
   max-width: 888px;
   margin: 0 auto;
+  .ant-row {
+    padding-bottom: 56px;
+  }
 `
 const Header = styled.div`
   margin: 27px 0 80px;
@@ -264,7 +267,6 @@ const Name = styled.div`
 `
 
 const StyledPagination = styled.div`
-  margin-top: 50px;
   margin-bottom: 90px;
   text-align: center;
   .ant-pagination-prev .ant-pagination-item-link,
