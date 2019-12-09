@@ -4,8 +4,8 @@ import logging
 import grpc
 from decouple import config
 
-from adenine.stubs import common_pb2
-from adenine.stubs import common_pb2_grpc
+from .stubs import common_pb2
+from .stubs import common_pb2_grpc
 
 class Common():
     def generate_api_request(self, secret_key, did):

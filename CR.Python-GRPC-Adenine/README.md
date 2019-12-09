@@ -1,5 +1,5 @@
 # Python-gRPC-client
-This repository contains the python package for Elastos Smart Web Service.
+This repository contains the python client library to interact with [Elastos Smart Web Service](https://github.com/cyber-republic/elastos-smartweb-service).
 
 ## Prerequisites
 First, install Python3:
@@ -20,33 +20,75 @@ Install virtualenv:
 ```
 pip3 install virtualenv
 ```
-## Instructions
+
+## Instructions on how to run from official pypi
+Setup virtualenv:
+```
+virtualenv -p `which python3` venv;
+source venv/bin/activate;
+```
+Install dependencies:
+```
+pip3 install -r requirements.txt;
+```
+Setup environment variables and update variables if needed:
+```
+cp .env.example .env;
+```
+Install elastos-adenine via pip:
+```
+pip3 install elastos-adenine==0.1.1
+```
+Run sample.py
+```
+python3 sample.py
+```
+
+## Instructions on how to build and run locally
 Clone the repository
 ```
 git clone https://github.com/cyber-republic/python-grpc-adenine.git
 cd python-grpc-adenine
 ```
-
-To get the API service running, run the following terminal commands:
+Setup virtualenv:
 ```
-virtualenv -p `which python3` venv
+virtualenv -p `which python3` venv;
+source venv/bin/activate;
 ```
+Install dependencies:
 ```
-source venv/bin/activate
+pip3 install -r requirements.txt;
 ```
+Setup environment variables and update variables if needed:
 ```
-pip3 install -r requirements.txt
+cp .env.example .env;
 ```
-```
-cp .env.example .env
-```
-
-Export Path:
-```
-export PYTHONPATH="$PYTHONPATH:$PWD/adenine/stubs/"
-```
-
-Run the client:
+Run sample.py:
 ```
 python3 sample.py
 ```
+
+## How to package up the client library
+Setup virtualenv:
+```
+virtualenv -p `which python3` venv;
+source venv/bin/activate;
+```
+Install dependencies:
+```
+pip3 install -r requirements.txt;
+```
+Update setup.py if needed(eg. version number should be modified each time it's pushed to the pypi repo) and get the package ready 
+```
+rm -rf dist/*;
+python3 setup.py sdist bdist_wheel
+```
+Push to pypi repo:
+- For testing purposes, do the following: 
+  ```
+  python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+  ```
+- For production, do the following:
+  ```
+  python3 -m twine upload dist/*
+  ```

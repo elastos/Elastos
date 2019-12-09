@@ -5,8 +5,8 @@ import json
 import grpc
 from decouple import config
 
-from adenine.stubs import adenine_io_pb2
-from adenine.stubs import adenine_io_pb2_grpc
+from .stubs import adenine_io_pb2
+from .stubs import adenine_io_pb2_grpc
 
 class DidSidechain():
     def sign(self, api_key, private_key, message):
