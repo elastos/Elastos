@@ -102,6 +102,7 @@ module.exports = merge(common, {
                 NODE_ENV: JSON.stringify('development'),
                 PLATFORM_ENV: JSON.stringify('web'),
                 SERVER_URL: JSON.stringify('http://localhost:3001'),
+                WALLET_SERVER_URL: JSON.stringify('http://54.223.244.60'),
                 FORUM_URL: JSON.stringify('http://localhost:3100'),
                 SSO_URL: JSON.stringify('http://localhost:3100/session/sso_login'),
                 CR_VERSION: JSON.stringify(process.env.CR_VERSION)

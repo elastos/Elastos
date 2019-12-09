@@ -35,7 +35,7 @@ export const api_request = (opts = {}) => {
     data: {},
     success: null,
     error: null,
-    path: ''
+    path: '',
   }, opts)
   server_url += opts.path
 
@@ -89,7 +89,7 @@ export const api_request = (opts = {}) => {
 
     throw new Error(response.statusText ? response.statusText : response.type)
 
-  }).then((data) => {
+  }).then(data => {
     if (data.code > 0) {
       // return data correct
       if (opts.success) {
@@ -104,7 +104,6 @@ export const api_request = (opts = {}) => {
 
     // TODO: this isn't elegant, nothing is returned to the caller so there is no graceful error
     console.error(data.error)
-
   }).catch((err) => {
     // then we have this so the first then block can come straight here I guess?
     console.error(err)
@@ -148,4 +147,66 @@ export const upload_file = async (fileObject, opts = {}) => {
     }
     throw e
   }
+}
+
+export const wallet_request = async (opts = {}) => {
+  const headers = {}
+
+  let server_url = process.env.WALLET_SERVER_URL
+  opts = _.merge(
+    {
+      method: 'get',
+      headers,
+      cache: 'no-cache',
+      data: {},
+      success: null,
+      error: null,
+      path: '',
+    },
+    opts
+  )
+  server_url += opts.path
+
+  const option = {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...opts.headers
+    },
+    cache: opts.cache,
+    method: opts.method,
+    signal: opts.signal,
+    mode: 'cors'
+  }
+
+  option.body = _.join(_.map(_.toPairs(opts.data), value => `${value[0]}=${value[1]}`), '&')
+
+  return fetch(server_url, option)
+    .then(response => {
+      if (response.status === 200) {
+        // fetch success
+        return response.json()
+      }
+
+      throw new Error(response.statusText ? response.statusText : response.type)
+    })
+    .then(data => {
+      if (data.code === '0') {
+        // return data correct
+        if (opts.success) {
+          opts.success(data.data, data)
+        }
+        return data.data.result
+      }
+
+      if (opts.error) {
+        opts.error(data)
+      }
+
+      // TODO: this isn't elegant, nothing is returned to the caller so there is no graceful error
+      console.error(data.error)
+    })
+    .catch(err => {
+      // then we have this so the first then block can come straight here I guess?
+      console.error(err)
+    })
 }

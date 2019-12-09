@@ -1,11 +1,11 @@
-import { createContainer } from '@/util'
+import { message } from 'antd'
+import _ from 'lodash'
+import { createContainer, logger } from '@/util'
 import Component from './Component'
 import CommentService from '@/service/CommentService'
 import CouncilService from '@/service/CouncilService'
-import { message } from 'antd'
-import _ from 'lodash'
-import { logger } from '@/util'
 import I18N from '@/I18N'
+
 
 export default createContainer(Component, (state) => {
   const commentables = ['task', 'submission', 'team', 'member', 'elip', 'suggestion']
@@ -33,7 +33,35 @@ export default createContainer(Component, (state) => {
           returnUrl, parentId, comment, headline)
 
         if (rs) {
-          message.success(I18N.get('comments.posted'))
+          message.success(I18N.get('comments.posted.success'))
+        }
+      } catch (err) {
+        message.error(err.message)
+        logger.error(err)
+      }
+    },
+
+    async updateComment(type, reduxType, detailReducer, parentId, param) {
+      try {
+        const rs = await commentService.updateComment(type, reduxType, detailReducer,
+          parentId, param)
+
+        if (rs) {
+          message.success(I18N.get('comments.updated.success'))
+        }
+      } catch (err) {
+        message.error(err.message)
+        logger.error(err)
+      }
+    },
+
+    async removeComment(type, reduxType, detailReducer, parentId, param) {
+      try {
+        const rs = await commentService.removeComment(type, reduxType, detailReducer,
+          parentId, param)
+
+        if (rs) {
+          message.success(I18N.get('comments.deleted.success'))
         }
       } catch (err) {
         message.error(err.message)

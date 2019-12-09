@@ -1,7 +1,8 @@
+import {message} from 'antd'
 import {createContainer} from '@/util'
 import Component from './Component'
 import UserService from '@/service/UserService'
-import {message} from 'antd'
+import I18N from '@/I18N'
 
 export default createContainer(Component, (state) => {
   return {
@@ -14,7 +15,7 @@ export default createContainer(Component, (state) => {
     async logout() {
       const rs = await userService.logout()
       if (rs) {
-        message.success('logout success')
+        message.success(I18N.get('logout.success'))
         userService.path.push('/login')
       }
     }

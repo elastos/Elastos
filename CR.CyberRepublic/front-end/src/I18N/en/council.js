@@ -3,6 +3,10 @@ export default {
   '0002': 'Article List',
   '0003': 'Alpha Version',
 
+  candidate: {
+    votes: 'votes',
+    voteRate: 'of total votes'
+  },
   list: {
     0: 'Abstract',
     1: '1. Cyber Republic (CR)',
