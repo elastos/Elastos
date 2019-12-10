@@ -28,6 +28,10 @@ RUN curl https://glide.sh/get | sh
 # cwd
 WORKDIR /go/src/github.com/elastos/Elastos.ELA.SideChain.Token
 
+# Have to ignore blackfriday package for now. Hopefully this gets changed 
+# in the future
+RUN printf 'ignore:\n- github.com/russross/blackfriday/v2\n' >> glide.yaml
+
 RUN make
 
 # alpine3.10

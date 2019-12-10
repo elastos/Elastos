@@ -98,7 +98,7 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "arbitrator" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "v0.1.2" "github.com/elastos/Elastos.ELA.Arbiter" "arbitrator" \
+    build_binary_and_docker "release_v0.1.2" "github.com/elastos/Elastos.ELA.Arbiter" "arbitrator" \
         "cyberrepublic/elastos-arbitrator-node" "yes" "v0.1.2"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.did" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
@@ -133,12 +133,12 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.misc" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "8edec764b7d04029d52f7cdf7e98043d11366387" "github.com/elastos/Elastos.ORG.API.Misc" "service.misc" \
+    build_binary_and_docker "6e7308f67294b9a24d30d87b453a6aefaf317672" "github.com/elastos/Elastos.ORG.API.Misc" "service.misc" \
         "cyberrepublic/elastos-api-misc-service" "yes" ""
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "elaphant" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "8152d09342cba08707c76d0cf154ecef0e37c0c6" "github.com/elaphantapp/ElaphantNode" "elaphant" \
+    build_binary_and_docker "153d9f73555ec386fbc376b0468b48c3e8c994f7" "github.com/elaphantapp/ElaphantNode" "elaphant" \
         "cyberrepublic/elastos-elaphant-node" "yes" ""
 fi
 
