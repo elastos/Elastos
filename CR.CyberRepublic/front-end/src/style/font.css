@@ -1,5 +1,3 @@
-// @import url("https://use.typekit.net/fqf7vne.css");
-
 /*
  * The Typekit service used to deliver this font or fonts for use on websites
  * is provided by Adobe and is subject to these Terms of Use
@@ -57,7 +55,7 @@ font-display:auto;font-style:normal;font-weight:600;
 
 @font-face {
 font-family:"montserrat";
-src:url("https://use.typekit.net/af/05093b/00000000000000003b9b133d/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff2"),url("https://use.typekit.net/af/05093b/00000000000000003b9b133d/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff"),url("https://use.typekit.net/af/05093b/00000000000000003b9b133d/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("opentype");
+src:url("fonts/montserrat-700.woff2") format("woff2"),url("fonts/montserrat-700.woff") format("woff"),url("fonts/montserrat-700.ttf") format("opentype");
 font-display:auto;font-style:normal;font-weight:700;
 }
 
