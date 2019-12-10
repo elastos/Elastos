@@ -66,6 +66,10 @@ type UtxoCacheDB struct {
 	transactions map[common.Uint256]*types.Transaction
 }
 
+func init() {
+	testing.Init()
+}
+
 func (s *UtxoCacheDB) GetTransaction(txID common.Uint256) (
 	*types.Transaction, uint32, error) {
 	txn, exist := s.transactions[txID]

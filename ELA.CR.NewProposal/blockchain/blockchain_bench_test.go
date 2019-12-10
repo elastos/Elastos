@@ -58,6 +58,11 @@ var (
 	newChain              = newBlockChain()
 )
 
+func init() {
+	testing.Init()
+	flag.Parse()
+}
+
 func BenchmarkBlockChain_PersistBlocks(b *testing.B) {
 	chainStore := newChain.db.(*ChainStore)
 	for i := chainHeight - 30000; i < chainHeight; i++ {
