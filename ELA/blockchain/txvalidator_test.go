@@ -44,6 +44,10 @@ type txValidatorTestSuite struct {
 	OriginalLedger    *Ledger
 }
 
+func init() {
+	testing.Init()
+}
+
 func (s *txValidatorTestSuite) SetupSuite() {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 

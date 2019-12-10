@@ -19,6 +19,10 @@ import (
 var testChainStore *ChainStore
 var sidechainTxHash common.Uint256
 
+func init() {
+	testing.Init()
+}
+
 func TestChainStoreInit(t *testing.T) {
 	temp, err := NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
 	testChainStore = temp.(*ChainStore)

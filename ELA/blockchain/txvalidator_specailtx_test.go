@@ -36,6 +36,10 @@ type txValidatorSpecialTxTestSuite struct {
 	Chain              *BlockChain
 }
 
+func init() {
+	testing.Init()
+}
+
 func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 	arbitratorsStr := []string{
 		"023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a",

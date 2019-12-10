@@ -24,6 +24,10 @@ var (
 	DPoSLogPath = filepath.Join(DataDir, "logs/dpos")
 )
 
+func init() {
+	testing.Init()
+}
+
 // SkipShort is used to skip the following testing in short mode
 func SkipShort(t *testing.T) {
 	if testing.Short() {
