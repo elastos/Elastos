@@ -55,9 +55,9 @@ These are located in the `wallets` folder:
 ## Repos used to build 
 - [Elastos.ELA](https://github.com/elastos/Elastos.ELA): v0.3.9
 - [Elastos.ELA.Arbiter](https://github.com/elastos/Elastos.ELA.Arbiter): v0.1.2
-- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.Sidechain.ID): v0.1.3
+- [Elastos.ELA.SideChain.ID](https://github.com/elastos/Elastos.ELA.SideChain.ID): release_v0.1.3 c161ef43a3084db4ebb3ac1af989fd230c6ce7f0
 - [Elastos.ELA.SideChain.Token](https://github.com/elastos/Elastos.ELA.SideChain.Token): v0.1.2
-- [Elastos.ELA.SideChain.ETH](https://github.com/elastos/Elastos.ELA.SideChain.ETH): dev
+- [Elastos.ELA.SideChain.ETH](https://github.com/elastos/Elastos.ELA.SideChain.ETH): v0.0.2
 - [Elastos.ORG.Wallet.Service](https://github.com/elastos/Elastos.ORG.Wallet.Service): master
 - [Elastos.ORG.SideChain.Service](https://github.com/elastos/Elastos.ORG.SideChain.Service): master
 - [Elastos.ORG.API.Misc](https://github.com/elastos/Elastos.ORG.API.Misc): master
