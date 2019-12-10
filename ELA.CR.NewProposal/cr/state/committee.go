@@ -135,6 +135,14 @@ func (c *Committee) GetElectedMembers() []*CRMember {
 	return getElectedCRMembers(c.Members)
 }
 
+//get all impeachable CRMembers
+func (c *Committee) GetImpeachableMembers() []*CRMember {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return getImpeachableCRMembers(c.Members)
+}
+
 //get all history CRMembers
 func (c *Committee) GetAllHistoryMembers() []*CRMember {
 	c.mtx.RLock()
@@ -345,7 +353,7 @@ func (c *Committee) processImpeachment(height uint32, member []byte,
 
 	var crMember *CRMember
 	for _, v := range c.Members {
-		if bytes.Equal(crMember.Info.Code, member) {
+		if bytes.Equal(v.Info.DID.Bytes(), member) {
 			crMember = v
 			break
 		}
