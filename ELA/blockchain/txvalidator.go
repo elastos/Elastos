@@ -353,7 +353,7 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 					return err
 				}
 			case outputpayload.CRCImpeachment:
-				err := b.checkCRImpeachmentContent(blockHeight, content)
+				err := b.checkCRImpeachmentContent(content)
 				if err != nil {
 					return err
 				}
@@ -364,11 +364,11 @@ func (b *BlockChain) checkVoteOutputs(blockHeight uint32, outputs []*Output, ref
 	return nil
 }
 
-func (b *BlockChain) checkCRImpeachmentContent(blockHeight uint32, content outputpayload.VoteContent) error {
-	crMembersMap := getCRMembersMap(b.crCommittee.GetElectedMembers())
+func (b *BlockChain) checkCRImpeachmentContent(content outputpayload.VoteContent) error {
+	crMembersMap := getCRMembersMap(b.crCommittee.GetImpeachableMembers())
 	for _, cv := range content.CandidateVotes {
 		if _, ok := crMembersMap[common.BytesToHexString(cv.Candidate)]; !ok {
-			return errors.New("CR sponsor should be one of the CR members")
+			return errors.New("candidate should be one of the CR members")
 		}
 	}
 	return nil
@@ -474,7 +474,7 @@ func getCRDIDsMap(crs []*crstate.Candidate) map[common.Uint168]struct{} {
 func getCRMembersMap(members []*crstate.CRMember) map[string]struct{} {
 	crMaps := make(map[string]struct{})
 	for _, c := range members {
-		crMaps[common.BytesToHexString(c.Info.Code)] = struct{}{}
+		crMaps[c.Info.DID.String()] = struct{}{}
 	}
 	return crMaps
 }

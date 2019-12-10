@@ -890,7 +890,7 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 	s.EqualError(err, "duplicate vote type")
 
 	err = outputs1[5].Payload.(*outputpayload.VoteOutput).Validate()
-	s.EqualError(err, "invalid vote type")
+	s.NoError(err)
 
 	err = outputs1[6].Payload.(*outputpayload.VoteOutput).Validate()
 	s.NoError(err)
@@ -1047,7 +1047,7 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 	s.EqualError(err, "duplicate vote type")
 
 	err = outputs[5].Payload.(*outputpayload.VoteOutput).Validate()
-	s.EqualError(err, "invalid vote type")
+	s.NoError(err)
 
 	err = outputs[6].Payload.(*outputpayload.VoteOutput).Validate()
 	s.EqualError(err, "invalid candidate votes")
@@ -3310,9 +3310,10 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		},
 	})
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs15, references, producersMap, crsMap),
-		"CR sponsor should be one of the CR members")
+		"candidate should be one of the CR members")
 
 	// Check vote output of v1 with wrong votes
+	did, _ := getDIDByCode(getCodeByPubKeyStr(publicKey4))
 	outputs16 := []*types.Output{{Type: types.OTNone}}
 	outputs16 = append(outputs16, &types.Output{
 		Type:        types.OTVote,
@@ -3324,7 +3325,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRCImpeachment,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{getCodeByPubKeyStr(publicKey4), 10},
+						{did.Bytes(), 10},
 					},
 				},
 			},
@@ -3332,7 +3333,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	})
 	s.Chain.crCommittee.Members[common.Uint168{1, 2, 3}] = &crstate.CRMember{
 		Info: payload.CRInfo{
-			Code: getCodeByPubKeyStr(publicKey4),
+			DID: *did,
 		},
 		MemberState: crstate.MemberElected,
 	}
@@ -3363,7 +3364,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 		MemberState: crstate.MemberImpeached,
 	}
 	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs15, references, producersMap, crsMap),
-		"CR sponsor should be one of the CR members")
+		"candidate should be one of the CR members")
 
 }
 
