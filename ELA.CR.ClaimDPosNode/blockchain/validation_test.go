@@ -35,6 +35,10 @@ type account struct {
 	programHash  *common.Uint168
 }
 
+func init() {
+	testing.Init()
+}
+
 func (a *account) RedeemScript() []byte {
 	return a.redeemScript
 }

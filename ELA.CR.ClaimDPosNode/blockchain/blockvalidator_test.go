@@ -46,6 +46,10 @@ const (
 		"bef97806557bdb4faec8c83a8fc557c1afb287b07bd923c589ac"
 )
 
+func init() {
+	testing.Init()
+}
+
 func TestCheckBlockSanity(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	params := &config.DefaultParams
