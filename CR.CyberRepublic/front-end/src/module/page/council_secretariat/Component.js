@@ -51,7 +51,7 @@ export default class extends StandardPage {
   }
 
   handlePaginationChange = pageNum => {
-    this.setState({pageNum}, () => this.refetch())
+    this.setState({pageNum}, () => this.candidatesRefetch())
   }
 
   getCandidatesQuery = () => {
