@@ -39,4 +39,14 @@ export default class extends BaseService {
     return result
   }
 
+  async getCandidates(param) {
+    const path = '/api/cvote/listcrcandidates'
+
+    const rs = await api_request({
+      path,
+      method: 'post',
+      data: param
+    })
+    return JSON.parse(rs).data.result
+  }
 }

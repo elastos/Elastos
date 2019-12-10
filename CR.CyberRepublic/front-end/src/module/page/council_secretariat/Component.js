@@ -42,7 +42,7 @@ export default class extends StandardPage {
   async componentDidMount() {
     const { tab } = this.state
     if (tab === 'VOTING') {
-      this.refetch(true)
+      this.candidatesRefetch(true)
     }
   }
 
@@ -51,20 +51,20 @@ export default class extends StandardPage {
   }
 
   handlePaginationChange = pageNum => {
-    this.setState({pageNum}, () => this.refetch())
+    this.setState({pageNum}, () => this.candidatesRefetch())
   }
 
-  getQuery = () => {
+  getCandidatesQuery = () => {
     const {pageNum} = this.state
     return {pageNum, pageSize: PAGE_SIZE, state: 'all'}
   }
 
-  refetch = async (isShowLoading = false) => {
+  candidatesRefetch = async (isShowLoading = false) => {
     if (isShowLoading) this.ord_loading(true)
-    const { listData } = this.props
-    const param = this.getQuery()
+    const { getCandidates } = this.props
+    const param = this.getCandidatesQuery()
     try {
-      const result = await listData(param)
+      const result = await getCandidates(param)
       this.setState({ list: result.crcandidatesinfo, totalVotes: result.totalvotes, total: result.totalcounts })
     } catch (error) {
       logger.error(error)
@@ -311,7 +311,7 @@ export default class extends StandardPage {
 
   tabChange = activeKey => {
     if (activeKey === 'VOTING') {
-      this.refetch(true)
+      this.candidatesRefetch(true)
     }
     return this.props.changeTab(activeKey)
   }

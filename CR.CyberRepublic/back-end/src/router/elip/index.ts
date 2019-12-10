@@ -4,6 +4,7 @@ import detail from './detail'
 import update from './update'
 import list from './list'
 import comment from './comment'
+import comment_remove from './comment_remove'
 import vote from './vote'
 import remove from './remove'
 import propose from './propose'
@@ -48,5 +49,10 @@ export default Base.setRouter([
     path: '/:id/comment',
     router: comment,
     method: 'post'
+  },
+  {
+    path : '/:id/comment_remove',
+    router : comment_remove,
+    method : 'post'
   }
 ])
