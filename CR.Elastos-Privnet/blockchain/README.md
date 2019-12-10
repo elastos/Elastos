@@ -941,12 +941,7 @@ COMING SOON
   npm install -g truffle solc;
   ```
 
-2. Install Solidity Compiler
-  ```
-  npm install -g solc;
-  ```
-
-3. Compile Eth Smart Contracts
+2. Compile Eth Smart Contracts
   ```
   truffle compile;
   ```
@@ -962,24 +957,18 @@ COMING SOON
     - solc: 0.5.1+commit.c8a2cb62.Emscripten.clang
   ```
 
-4. Unlock our account 
-  Stop your currently running geth process and rerun with the following command. Note that a new flag "console" has been added
-  ```
-  ./geth --testnet --datadir elastos_eth --ethash.dagdir elastos_ethash --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcport 21636 --rpcapi 'personal,db,eth,net,web3,txpool,miner' console
-  ```
+3. Unlock our account 
+  We're going to unlock our ETH account that is already pre-loaded with some ETH/ELASC. It's address is 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3
 
-  Then, unlock your account that we created in testnet. I'm going to unlock 0x285f996244aa936e1c54bcf77d5e253790614af5
   ```
-  > personal.unlockAccount(web3.eth.coinbase)
+  curl -X POST -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"personal_unlockAccount","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "elastos-privnet", 3600],"id":67}' http://localhost:60111
   ```
   Should return
   ```
-  Unlock account 0x285f996244aa936e1c54bcf77d5e253790614af5
-  Passphrase: 
-  true
+  {"jsonrpc":"2.0","id":67,"result":true}
   ```
 
-5. Migrate Eth Smart Contracts
+4. Migrate Eth Smart Contracts
   ```
   truffle migrate --network develop;
   ```
@@ -1142,16 +1131,16 @@ COMING SOON
   > Final cost:          0.01263116 ETH
   ```
 
-6. Enter the truffle console
+5. Enter the truffle console
   ```
   truffle console --network develop;
   ```
 
-7. Execute HelloWorld.sol smart contract on testnet Ethereum sidechain
+6. Execute HelloWorld.sol smart contract on testnet Ethereum sidechain
   First, let's see what message is currently set 
   ```
-  truffle(develop)>var first_contract
-  truffle(develop)>HelloWorld.deployed().then(function(instance) { first_contract = instance; })
+  truffle(develop)> var first_contract
+  truffle(develop)> HelloWorld.deployed().then(function(instance) { first_contract = instance; })
   truffle(develop)> first_contract.message.call()
   ```
   Should return
@@ -1171,11 +1160,11 @@ COMING SOON
   ```
   Success!
 
-8. Execute StoreNumber.sol smart contract on testnet Ethereum sidechain
+7. Execute StoreNumber.sol smart contract on testnet Ethereum sidechain
   First, let's see what number is currently stored
   ```
-  truffle(develop)>var second_contract
-  truffle(develop)>StoreNumber.deployed().then(function(instance) { second_contract = instance; })
+  truffle(develop)> var second_contract
+  truffle(develop)> StoreNumber.deployed().then(function(instance) { second_contract = instance; })
   truffle(develop)> second_contract.get()
   ```
   Should return

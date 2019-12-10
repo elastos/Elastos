@@ -200,6 +200,7 @@ services:
     container_name: privnet-sidechain-eth-node
     image: cyberrepublic/elastos-sidechain-eth-node:privnet-v0.6
     user: "${UID}:${GID}"
+    entrypoint: /bin/sh -c "./geth --mine --datadir elastos_eth --syncmode 'full' --gcmode 'archive' --rpc --rpcaddr 0.0.0.0 --rpccorsdomain '*' --rpcvhosts '*' --rpcport 20636 --rpcapi 'db,eth,net,web3,personal' --ws --wsaddr 0.0.0.0 --wsorigins '*' --wsport 20635 --wsapi 'db,eth,net,web3,personal' --unlock 0x961386e437294f9171040e2d56d4522c4f55187d --password ./eth-accounts-pass.txt"
     volumes:
       - ~/.volumes/elastos-privnet/eth-node:/eth/elastos_eth
       - ${PWD}/ela-sidechain/eth/eth-node/eth-accounts-pass.txt:/eth/eth-accounts-pass.txt
