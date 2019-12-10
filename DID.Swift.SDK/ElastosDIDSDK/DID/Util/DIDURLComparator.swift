@@ -2,7 +2,7 @@ import Foundation
 
 class DIDURLComparator {
     
-    // TODO string 判断比较
+    // string comparator
     class func DIDStringComparator(_ a: String, _ b: String) -> Bool {
         return a.compare(b) == ComparisonResult.orderedAscending
     }
@@ -36,14 +36,14 @@ class DIDURLComparator {
         return result
     }
     
-    // TODO DIDURL 判断比较
+    // DIDURL comparator
     class func DIDURLComparator(_ a: DIDURL, _ b: DIDURL) -> Bool {
         let aToken = a.toExternalForm()
         let bToken = b.toExternalForm()
         return aToken.compare(bToken) == ComparisonResult.orderedAscending
     }
     
-    // TODO OrderDictionary 排序
+    // OrderDictionary order
     class func DIDOrderedDictionaryComparator(_ source: OrderedDictionary<DIDURL, DIDPublicKey>) -> OrderedDictionary<DIDURL, DIDPublicKey> {
         
         var sortArray: Array<(DIDURL, DIDPublicKey)> = Array()

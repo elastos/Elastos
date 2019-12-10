@@ -13,7 +13,6 @@
 		11107CD12396AC1700AE3B42 /* libcjson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC22396AC0000AE3B42 /* libcjson.a */; };
 		11107CD22396AC1700AE3B42 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC62396AC0000AE3B42 /* libcrypto.a */; };
 		11107CD32396AC1700AE3B42 /* libcrystal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC52396AC0000AE3B42 /* libcrystal.a */; };
-		11107CD42396AC1700AE3B42 /* libcunit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC82396AC0000AE3B42 /* libcunit.a */; };
 		11107CD52396AC1700AE3B42 /* libcurl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CCD2396AC0000AE3B42 /* libcurl.a */; };
 		11107CD62396AC1700AE3B42 /* libfruit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC32396AC0000AE3B42 /* libfruit.a */; };
 		11107CD72396AC1700AE3B42 /* libspdlog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11107CC72396AC0000AE3B42 /* libspdlog.a */; };
@@ -104,7 +103,6 @@
 				11107CDB2396AC1800AE3B42 /* libssl.a in Frameworks */,
 				11267061238CCC930086740D /* libc++.tbd in Frameworks */,
 				11107CD82396AC1700AE3B42 /* libspvadapter.a in Frameworks */,
-				11107CD42396AC1700AE3B42 /* libcunit.a in Frameworks */,
 				11107CCE2396AC1700AE3B42 /* libboost_filesystem.a in Frameworks */,
 				11107CD52396AC1700AE3B42 /* libcurl.a in Frameworks */,
 				11107CD32396AC1700AE3B42 /* libcrystal.a in Frameworks */,
@@ -455,7 +453,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/SPVAdapter/lib",
-					"$(PROJECT_DIR)/SPVAdapter/lib/-iphoneosimulator",
 					"$(PROJECT_DIR)/SPVAdapter/lib/-iphonesimulator",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
@@ -493,7 +490,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/SPVAdapter/lib",
-					"$(PROJECT_DIR)/SPVAdapter/lib/-iphoneosimulator",
 					"$(PROJECT_DIR)/SPVAdapter/lib/-iphonesimulator",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;

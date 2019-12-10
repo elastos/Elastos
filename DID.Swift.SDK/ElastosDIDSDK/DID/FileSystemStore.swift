@@ -50,7 +50,7 @@ public class FileSystemStore: DIDStore {
     public init(_ dir: String) throws {
         super.init()
         if dir.isEmpty {
-            throw DIDError.failue("Invalid DIDStore root directory.")
+            throw DIDStoreError.failue("Invalid DIDStore root directory.")
         }
         self.storeRootPath = dir
         if try exists(dir) {
@@ -80,7 +80,7 @@ public class FileSystemStore: DIDStore {
         var isDir: ObjCBool = false
         if fileManager.fileExists(atPath: storeRootPath, isDirectory:&isDir) {
             guard isDir.boolValue else {
-                throw DIDError.failue("Store root \(storeRootPath ?? "") is a file.")
+                throw DIDStoreError.failue("Store root \(storeRootPath ?? "") is a file.")
             }
         }
         
@@ -89,7 +89,7 @@ public class FileSystemStore: DIDStore {
         var tagFilePathIsDir: ObjCBool = false
         let tagFilePathExists: Bool = fileManager.fileExists(atPath: tagFilePath, isDirectory:&tagFilePathIsDir)
         guard !tagFilePathIsDir.boolValue || tagFilePathExists else {
-            throw DIDError.failue("Directory \(tagFilePath) is not a DIDStore.")
+            throw DIDStoreError.failue("Directory \(tagFilePath) is not a DIDStore.")
         }
         
         let localData = try Data(contentsOf: URL(fileURLWithPath: tagFilePath))
@@ -102,18 +102,18 @@ public class FileSystemStore: DIDStore {
          + storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
          */
         guard uInt8DataArray.count == FileSystemStore.TAG_SIZE else {
-            throw DIDError.failue("Directory \(tagFilePath) is not a DIDStore.")
+            throw DIDStoreError.failue("Directory \(tagFilePath) is not a DIDStore.")
         }
         
         let magicArray = localData[0...3]
         let versionArray = localData[4...7]
         
         guard magicArray.elementsEqual(FileSystemStore.TAG_MAGIC) else {
-            throw DIDError.failue("Directory \(tagFilePath) is not a DIDStore.")
+            throw DIDStoreError.failue("Directory \(tagFilePath) is not a DIDStore.")
         }
         
         guard versionArray.elementsEqual(FileSystemStore.TAG_VERSION) else {
-            throw DIDError.failue("Directory \(tagFilePath) unsupported version.")
+            throw DIDStoreError.failue("Directory \(tagFilePath) unsupported version.")
         }
     }
     

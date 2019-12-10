@@ -264,7 +264,7 @@
 		A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequest.swift; path = ElastosDIDSDK/DID/Backend/IDChainRequest.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D45D233485BB0012CD77 /* DIDBackend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDBackend.swift; path = ElastosDIDSDK/DID/Backend/DIDBackend.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D466233485DE0012CD77 /* FileSystemStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FileSystemStore.swift; path = ElastosDIDSDK/DID/FileSystemStore.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedCredentialError.swift; path = ElastosDIDSDK/DID/MalformedCredentialError.swift; sourceTree = SOURCE_ROOT; };
+		A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedCredentialError.swift; path = Credential/MalformedCredentialError.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D468233485DF0012CD77 /* DIDStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDStore.swift; path = ElastosDIDSDK/DID/DIDStore.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D469233485DF0012CD77 /* DIDObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDObject.swift; path = ElastosDIDSDK/DID/DIDObject.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D46A233485DF0012CD77 /* MalformedDIDURLError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedDIDURLError.swift; path = ElastosDIDSDK/DID/MalformedDIDURLError.swift; sourceTree = SOURCE_ROOT; };
@@ -525,6 +525,7 @@
 				A3E6D441233485800012CD77 /* Proof.swift */,
 				A3E6D442233485800012CD77 /* VerifiableCredential.swift */,
 				11A1D663239756F2002D8AD2 /* VerifiablePresentation.swift */,
+				A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */,
 			);
 			path = Credential;
 			sourceTree = SOURCE_ROOT;
@@ -546,7 +547,6 @@
 				A3E6D46D233485DF0012CD77 /* DIDURL.swift */,
 				A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */,
 				A3E6D466233485DE0012CD77 /* FileSystemStore.swift */,
-				A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */,
 				A3E6D46B233485DF0012CD77 /* MalformedDIDError.swift */,
 				A3E6D46A233485DF0012CD77 /* MalformedDIDURLError.swift */,
 				A3E6D46F233485DF0012CD77 /* MalformedDocumentError.swift */,
@@ -829,16 +829,13 @@
 					"$(PROJECT_DIR)/ElastosDIDSDKTests",
 				);
 				INFOPLIST_FILE = ElastosDIDSDKTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ElastosDIDSDKTests/spvadapter/lib/",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.ElastosDIDSDKTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -861,16 +858,13 @@
 					"$(PROJECT_DIR)/ElastosDIDSDKTests",
 				);
 				INFOPLIST_FILE = ElastosDIDSDKTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ElastosDIDSDKTests/spvadapter/lib/",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = elastos.ElastosDIDSDKTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

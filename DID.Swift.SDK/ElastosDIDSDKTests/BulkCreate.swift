@@ -49,7 +49,7 @@ class BulkCreate: XCTestCase {
                     wait(for: [lock1], timeout: 30)
                     let d = try store.resolveDid(doc.subject!, true)
                     if d != nil {
-                        print(d)
+                        print(d as Any)
                         break
                     }
                 }

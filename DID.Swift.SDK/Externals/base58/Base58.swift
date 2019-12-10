@@ -84,6 +84,7 @@ struct Base58 {
             guard let base58Index = base58Alphabet.index(of: c) else { return [] }
             
             var carry = base58Index.encodedOffset
+            
             var i = 0
             for j in 0...base58.count where carry != 0 || i < length {
                 carry += 58 * Int(base58[base58.count - j - 1])

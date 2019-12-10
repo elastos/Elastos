@@ -24,7 +24,7 @@ class DIDTest: XCTestCase {
 
     func testConstructorError1() {
         do {
-            let did = try DID("id:elastos:1234567890")
+            let _ = try DID("id:elastos:1234567890")
         } catch {
             print(error)
         }
@@ -32,7 +32,7 @@ class DIDTest: XCTestCase {
 
     func testConstructorError2() {
         do {
-            let did = try DID("did:example:1234567890")
+            let _ = try DID("did:example:1234567890")
         } catch {
             print(error)
         }
@@ -40,7 +40,7 @@ class DIDTest: XCTestCase {
 
     func testConstructorError3() {
         do {
-            let did = try DID("did:elastos:")
+            let _ = try DID("did:elastos:")
         } catch {
             print(error)
         }

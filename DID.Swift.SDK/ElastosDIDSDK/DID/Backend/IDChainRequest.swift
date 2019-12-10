@@ -91,7 +91,7 @@ class IDChainRequest: NSObject {
         self.signature = try DIDStore.shareInstance()?.sign(self.did!, key, passphrase, count, inputs) ?? ""
         self.signKey = key
         self.keyType = Constants.defaultPublicKeyType
-        try verify()
+//        try verify()
         return self
     }
 

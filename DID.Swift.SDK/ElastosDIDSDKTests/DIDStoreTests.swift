@@ -280,7 +280,7 @@ class DIDStoreTests: XCTestCase {
                         XCTAssertNil(cred.value)
                     }
                     else{
-                        XCTFail("Unexpected credential id '\(cred.value)'.")
+                        XCTFail("Unexpected credential id '\(cred.value ?? "")'.")
                     }
                 }
             }

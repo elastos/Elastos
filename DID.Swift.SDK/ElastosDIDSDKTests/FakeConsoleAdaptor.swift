@@ -9,12 +9,8 @@ class FakeConsoleAdaptor: DIDAdaptor {
         let header = json["header"] as! OrderedDictionary<String, Any>
         print("Operation: \(header["operation"] ?? "")")
         let _payload = json["payload"] as! String
-        let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 100)
-        let cp = _payload.withCString { re -> UnsafePointer<Int8> in
-            return re
-        }
-        //        let _ = base64_url_decode(buffer, cp)
-//        print("        \(String(cString: buffer))")
+        let data = _payload.data(using: .utf8)
+        _ = data?.base64urlEncodedString()
         return true
     }
     

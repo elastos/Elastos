@@ -301,7 +301,7 @@ public class DIDDocument: NSObject {
     
     public func addAuthorizationKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
         guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
-            throw DIDError.failue("Invalid public key.")
+            throw MalformedDocumentError.failue("Invalid public key.")
         }
         let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
         return try addAuthorizationKey(key)
@@ -637,12 +637,12 @@ public class DIDDocument: NSObject {
         let publicKeys = json["publicKey"] as? Array<Any>
         
         guard publicKeys != nil else {
-            throw DIDError.failue("Invalid publicKey, should be an array.")
+            throw MalformedDocumentError.failue("Invalid publicKey, should be an array.")
         }
         
         let publicKeysArray: [OrderedDictionary<String, Any>] = publicKeys as! Array<OrderedDictionary<String, Any>>
         guard publicKeysArray.count != 0 else {
-            throw DIDError.failue("Invalid publicKey, should not be an empty array.")
+            throw MalformedDocumentError.failue("Invalid publicKey, should not be an empty array.")
         }
         
         for publicKey in publicKeysArray {
@@ -656,7 +656,7 @@ public class DIDDocument: NSObject {
         let authentications = json[Constants.authentication] as? Array<Any>
 
         guard (authentications != nil) else {
-            throw DIDError.failue("Invalid authentication, should be an array.")
+            throw MalformedDocumentError.failue("Invalid authentication, should be an array.")
         }
 
         guard authentications!.count != 0 else {
@@ -692,7 +692,7 @@ public class DIDDocument: NSObject {
         }
         let authorizations = aus as? Array<Any>
         guard (authorizations != nil) else {
-            throw DIDError.failue("Invalid authorization, should be an array.")
+            throw MalformedDocumentError.failue("Invalid authorization, should be an array.")
         }
         guard authorizations!.count != 0  else {
             return
@@ -719,7 +719,7 @@ public class DIDDocument: NSObject {
         }
         let credentials = crs as? Array<OrderedDictionary<String, Any>>
         guard (credentials != nil) else {
-            throw DIDError.failue("Invalid credential, should be an array.")
+            throw MalformedDocumentError.failue("Invalid credential, should be an array.")
         }
         guard credentials!.count != 0  else {
             return
@@ -738,7 +738,7 @@ public class DIDDocument: NSObject {
         }
         let services = ses as? Array<OrderedDictionary<String, Any>>
         guard (services != nil) else {
-            throw DIDError.failue("Invalid services, should be an array.")
+            throw MalformedDocumentError.failue("Invalid services, should be an array.")
         }
         guard services!.count != 0  else {
             return

@@ -96,9 +96,7 @@ public class DIDURL: NSObject {
         if self.parameters != nil {
             params = ";" + mapToString(self.parameters!, sep: ";")
         }
-        var path = (self.path ?? "")
-        if path != "" {
-        }
+        let path = (self.path ?? "")
         var query: String = ""
         if self.query != nil {
             query = "?" + mapToString(self.query!, sep: "&")
