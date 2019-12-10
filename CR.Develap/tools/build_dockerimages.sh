@@ -113,13 +113,13 @@ then
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.eth" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
-    build_binary_and_docker "dev" "github.com/elastos/Elastos.ELA.SideChain.ETH" "sidechain.eth" \
-        "cyberrepublic/elastos-sidechain-eth-node" "no" "dev"
+    build_binary_and_docker "v0.0.2" "github.com/elastos/Elastos.ELA.SideChain.ETH" "sidechain.eth" \
+        "cyberrepublic/elastos-sidechain-eth-node" "no" "v0.0.2"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "sidechain.eth.oracle" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
     build_docker "sidechain/eth/oracle" "sidechain.eth.oracle" \
-        "cyberrepublic/elastos-sidechain-eth-oracle" "v0.0.1"
+        "cyberrepublic/elastos-sidechain-eth-oracle" "v0.0.2"
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.wallet" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 
