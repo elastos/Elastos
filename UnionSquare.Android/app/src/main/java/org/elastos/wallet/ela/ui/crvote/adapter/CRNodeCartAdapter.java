@@ -74,6 +74,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         if (holder.etTicketnum.getTag(R.id.et_ticketnum) != null) {
             holder.etTicketnum.removeTextChangedListener((TextWatcher) holder.etTicketnum.getTag(R.id.et_ticketnum));
         }
+        holder.etTicketnum.setText(null);
         if (producersBean.getCurentBalance() != null) {
             holder.etTicketnum.setText(NumberiUtil.numberFormat(producersBean.getCurentBalance(), 8));
         }
@@ -222,7 +223,7 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
                     return;
                 }
                 if (TextUtils.isEmpty(s)) {
-                    list.get(position).setCurentBalance(new BigDecimal(0));
+                    list.get(position).setCurentBalance(null);
                     if (onTextChangedListener != null) {
                         onTextChangedListener.onTextChanged(CRNodeCartAdapter.this, editText, position);
                     }

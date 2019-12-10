@@ -13,10 +13,11 @@ import io.reactivex.Observer;
 public class VoteListPresenter extends PresenterAbstract {
 
 
-    public void votelistbean(String moreInfo, BaseFragment baseFragment) {
+    public void votelistbean(String moreInfo,String state, BaseFragment baseFragment) {
         // initProgressDialog(baseFragment.getContext());
         Map<String, String> map = new HashMap();
         map.put("moreInfo", moreInfo);
+        map.put("state", state );
         Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).votelistbean(map);
         Observer observer = createObserver(VotelistbeanListener.class, baseFragment);
         subscriberObservable(observer, observable, baseFragment);

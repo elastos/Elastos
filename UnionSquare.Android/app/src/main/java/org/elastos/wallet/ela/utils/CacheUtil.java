@@ -29,8 +29,9 @@ public class CacheUtil {
 
     public static ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> getProducerList() {
         Wallet wallet = new RealmUtil().queryDefauleWallet();
-        return (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) CacheDiskUtils.getInstance(file)
+        ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> list = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) CacheDiskUtils.getInstance(file)
                 .getSerializable("list" + wallet.getWalletId());
+        return list == null ? new ArrayList<>() : list;
     }
 
     public static void setProducerList(List<VoteListBean.DataBean.ResultBean.ProducersBean> list) {

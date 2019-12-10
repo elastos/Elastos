@@ -118,7 +118,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
     @Override
     protected void initView(View view) {
-
+        netList = new ArrayList<>();
         setToobar(toolbar, toolbarTitle, getString(R.string.crcvote), getString(R.string.voting_rules));
         presenter = new CRlistPresenter();
         //presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
@@ -299,14 +299,12 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.BOTH_SET, 10, R.color.transparent);
             recyclerview.addItemDecoration(decoration);
             adapter = new CRListAdapter(this, netList, is);
-            adapter.setPos(pos);
             adapter.setOnItemClickListener(this);
             recyclerview.setAdapter(adapter);
             if (curentAdapter == null)
                 curentAdapter = adapter;
         } else {
             adapter.setIs(is);
-            adapter.setPos(pos);
             adapter.notifyDataSetChanged();
         }
 
@@ -317,20 +315,15 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             recyclerview1.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter1 = new CRListAdapter1(this, netList, is);
             adapter1.setOnItemClickListener(this);
-            adapter1.setPos(pos);
             recyclerview1.setAdapter(adapter1);
         } else {
             adapter1.setIs(is);
-            adapter1.setPos(pos);
             adapter1.notifyDataSetChanged();
         }
     }
 
 
     public void onGetVoteList(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data) {
-        if (netList == null) {
-            netList = new ArrayList<>();
-        }
 
         if (pageNum == 1) {
             netList.clear();
@@ -342,13 +335,13 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             netList.addAll(data);
             //pos==-1表示未移除过 先移除  并获得移除的位置  待添加
             //!curentNode.getState().equals("Active")的已经移除了
-            if (curentNode != null && curentNode.getState().equals("Active") && pos == -1) {
+            int pos = netList.indexOf(curentNode);
+            if (curentNode != null && curentNode.getState().equals("Active") && pos != -1 && pos != 0) {
                 //curentNode还在netList中 直接contaion耗费内存
-                pos = netList.indexOf(curentNode);//获取当前位置
                 netList.remove(curentNode);
             }
             //只有active  并且Registered时候添加
-            if (!is && curentNode != null && status.equals("Registered") && curentNode.getState().equals("Active") && pos != -1) {
+            if (!is && curentNode != null && status.equals("Registered") && curentNode.getState().equals("Active") && netList.indexOf(curentNode) != 0) {
                 netList.add(0, curentNode);
                 is = true;
             }
@@ -359,8 +352,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
         pageNum++;
     }
-
-    int pos = -1;
 
     /**
      * 重置信息  获得当前节点详情  剔除非active数据
@@ -374,13 +365,12 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         for (int i = 0; i < list.size(); i++) {
             //筛选当前节点
             CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = list.get(i);
-            bean.setIndex(i);
+            bean.setIndex(netList.size() + i);
             setVoterate(bean, totalvotes);
-            if (curentNode == null) {
-                if (bean.getDid().equals(did)) {
-                    curentNode = bean;
-                }
+            if (curentNode == null && bean.getDid().equals(did)) {
+                curentNode = bean;
             }
+
             //删除非active节点
             if (!bean.getState().equals("Active")) {
                 list.remove(i--);//date  remove 不影响netlist  date修改影响netlist
@@ -536,7 +526,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         onErrorRefreshLayout(srl);
         pageNum = 1;
         is = false;
-        pos = -1;
         curentNode = null;
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
     }
