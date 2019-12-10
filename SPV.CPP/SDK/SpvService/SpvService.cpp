@@ -90,7 +90,12 @@ namespace Elastos {
 		}
 
 		void SpvService::onCoinBaseUpdatedAll(const UTXOArray &cbs) {
-			_databaseManager->DeleteAllCoinBase();
+			std::vector<uint256> txHashes;
+
+			for (UTXOArray::const_iterator it = cbs.cbegin(); it != cbs.cend(); ++it)
+				txHashes.push_back((*it)->Hash());
+
+			_databaseManager->DeleteTxByHashes(txHashes);
 			_databaseManager->PutCoinBase(cbs);
 		}
 

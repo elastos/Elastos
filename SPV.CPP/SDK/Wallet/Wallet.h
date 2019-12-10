@@ -218,6 +218,8 @@ namespace Elastos {
 
 			UTXOPtr RegisterCoinBaseTx(const TransactionPtr &tx);
 
+			bool InsertCoinbaseUTXO(const UTXOPtr &u);
+
 			void InsertTx(const TransactionPtr &tx);
 
 			int TxCompare(const TransactionPtr &tx1, const TransactionPtr &tx2) const;
@@ -228,7 +230,7 @@ namespace Elastos {
 
 			bool IsAssetUnique(const std::vector<OutputPtr> &outputs) const;
 
-			std::map<uint256, BigInt> BalanceAfterUpdatedTx(const TransactionPtr &tx, UTXOArray spentCoinbase);
+			std::map<uint256, BigInt> BalanceAfterUpdatedTx(const TransactionPtr &tx, UTXOArray &spentCoinbase);
 
 			void BalanceAfterRemoveTx(const TransactionPtr &tx);
 
@@ -281,6 +283,7 @@ namespace Elastos {
 
 			UTXOSet _spendingOutputs;
 			UTXOArray _coinBaseUTXOs;
+			UTXOSet _allCoinbaseUTXOs;
 
 			uint64_t _feePerKb;
 

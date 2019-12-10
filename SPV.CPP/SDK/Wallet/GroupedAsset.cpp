@@ -17,7 +17,6 @@
 #include <Plugin/Transaction/Attribute.h>
 #include <Plugin/Transaction/Program.h>
 #include <Plugin/Transaction/Payload/OutputPayload/PayloadVote.h>
-#include <CMakeConfig.h>
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -28,8 +27,8 @@ namespace Elastos {
 		}
 
 		GroupedAsset::GroupedAsset(Wallet *parent, const AssetPtr &asset) :
-				_parent(parent),
-				_asset(asset) {
+			_parent(parent),
+			_asset(asset) {
 
 		}
 
@@ -61,7 +60,7 @@ namespace Elastos {
 			result.insert(result.end(), _utxosDeposit.begin(), _utxosDeposit.end());
 			result.insert(result.end(), _utxosLocked.begin(), _utxosLocked.end());
 			if (!addr.empty()) {
-				for (UTXOArray::iterator it = result.begin(); it != result.end(); ) {
+				for (UTXOArray::iterator it = result.begin(); it != result.end();) {
 					if (addr != (*it)->Output()->Addr().String()) {
 						it = result.erase(it);
 					} else {
@@ -331,7 +330,8 @@ namespace Elastos {
 				if (oldVoteAmount[i] <= totalInputAmount - feeAmount) {
 					newVoteContent.push_back(oldVoteContent[i]);
 				} else {
-					Log::warn("drop old vote content type: {} amount: {}", oldVoteContent[i].GetType(), oldVoteAmount[i].getDec());
+					Log::warn("drop old vote content type: {} amount: {}", oldVoteContent[i].GetType(),
+							  oldVoteAmount[i].getDec());
 				}
 			}
 
@@ -352,7 +352,8 @@ namespace Elastos {
 				return nullptr;
 			}
 
-			OutputPayloadPtr outputPayload = OutputPayloadPtr(new PayloadVote(newVoteContent, VOTE_PRODUCER_CR_VERSION));
+			OutputPayloadPtr outputPayload = OutputPayloadPtr(
+				new PayloadVote(newVoteContent, VOTE_PRODUCER_CR_VERSION));
 
 			tx->AddOutput(OutputPtr(new TransactionOutput(totalOutputAmount, firstInput->Output()->Addr(),
 														  Asset::GetELAAssetID(),
@@ -550,12 +551,13 @@ namespace Elastos {
 				txSize = txn->EstimateSize();
 				if (txSize >= TX_MAX_SIZE - 1000) { // transaction size-in-bytes too large
 					_parent->Unlock();
-					if (!pickVoteFirst){
+					if (!pickVoteFirst) {
 						return CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max, !pickVoteFirst);
 					}
 					BigInt maxAmount = totalInputAmount - feeAmount;
 					ErrorChecker::CheckCondition(true, Error::CreateTransactionExceedSize,
-												 "Tx size too large, max available amount: " + maxAmount.getDec() + " sela");
+												 "Tx size too large, max available amount: " + maxAmount.getDec() +
+												 " sela");
 					return nullptr;
 				}
 
@@ -637,7 +639,7 @@ namespace Elastos {
 
 			if (_asset->GetHash() != Asset::GetELAAssetID()) {
 				Log::error("asset '{}' do not support to add fee for tx", _asset->GetHash().GetHex());
-				return ;
+				return;
 			}
 
 			_parent->Lock();
@@ -731,30 +733,33 @@ namespace Elastos {
 		}
 
 		bool GroupedAsset::AddUTXO(const UTXOPtr &o) {
-			if (ContainUTXO(o))
-				return false;
+			if (_parent->_subAccount->IsProducerDepositAddress(o->Output()->Addr()) ||
+				_parent->_subAccount->IsCRDepositAddress(o->Output()->Addr())) {
+				if (!_utxosDeposit.insert(o).second)
+					return false;
 
-			if (_parent->_subAccount->IsProducerDepositAddress(o->Output()->Addr()) || _parent->_subAccount->IsCRDepositAddress(o->Output()->Addr())) {
 				_balanceDeposit += o->Output()->Amount();
-				_utxosDeposit.insert(o);
-				SPVLOG_DEBUG("{} +++ deposit utxo {}:{}:{}:{} -> deposit {}", \
-							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
-							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balanceDeposit.getDec());
+				SPVLOG_DEBUG("{} +++ deposit utxo {}:{}:{}:{} -> deposit {}", _parent->_walletID,
+							 o->Hash().GetHex(), o->Index(), o->Output()->Addr().String(),
+							 o->Output()->Amount().getDec(), _balanceDeposit.getDec());
 			} else {
-				_balance += o->Output()->Amount();
 				if (o->Output()->GetType() == TransactionOutput::Type::VoteOutput) {
+					if (!_utxosVote.insert(o).second)
+						return false;
+
 					_balanceVote += o->Output()->Amount();
-					_utxosVote.insert(o);
-					SPVLOG_DEBUG("{} +++ vote utxo {}:{}:{}:{} -> vote {} balance {}", \
-								 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
-								 o->Output()->Addr().String(), o->Output()->Amount().getDec(), \
-								 _balanceVote.getDec(), _balance.getDec());
+					_balance += o->Output()->Amount();
+					SPVLOG_DEBUG("{} +++ vote utxo {}:{}:{}:{} -> vote {} balance {}", _parent->_walletID,
+								 o->Hash().GetHex(), o->Index(), o->Output()->Addr().String(),
+								 o->Output()->Amount().getDec(), _balanceVote.getDec(), _balance.getDec());
 				} else {
-					_utxos.insert(o);
-					SPVLOG_DEBUG("{} +++ utxo {}:{}:{}:{} -> balance {}, size: {}", \
-								 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
-								 o->Output()->Addr().String(), o->Output()->Amount().getDec(), \
-								 _balance.getDec(), _utxos.size());
+					if (!_utxos.insert(o).second)
+						return false;
+
+					_balance += o->Output()->Amount();
+					SPVLOG_DEBUG("{} +++ utxo {}:{}:{}:{} -> balance {}, size: {}", _parent->_walletID,
+								 o->Hash().GetHex(), o->Index(), o->Output()->Addr().String(),
+								 o->Output()->Amount().getDec(), _balance.getDec(), _utxos.size());
 				}
 			}
 
@@ -762,21 +767,23 @@ namespace Elastos {
 		}
 
 		bool GroupedAsset::AddCoinBaseUTXO(const UTXOPtr &o) {
-			if (ContainUTXO(o))
+			if (o->Spent())
 				return false;
 
 			if (o->GetConfirms(_parent->_blockHeight) <= 100) {
+				if (!_utxosLocked.insert(o).second)
+					return false;
 				_balanceLocked += o->Output()->Amount();
-				_utxosLocked.insert(o);
-				SPVLOG_DEBUG("{} +++ coinbase locked utxo {}:{}:{}:{} -> locked {}", \
-							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
-							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balanceLocked.getDec());
+				SPVLOG_DEBUG("{} +++ coinbase locked utxo {}:{}:{}:{} -> locked {}", _parent->_walletID,
+							 o->Hash().GetHex(), o->Index(), o->Output()->Addr().String(),
+							 o->Output()->Amount().getDec(), _balanceLocked.getDec());
 			} else {
+				if (!_utxosCoinbase.insert(o).second)
+					return false;
 				_balance += o->Output()->Amount();
-				_utxosCoinbase.insert(o);
-				SPVLOG_DEBUG("{} +++ coinbase utxo {}:{}:{}:{} -> balance {}", \
-							 _parent->_walletID, o->Hash().GetHex(), o->Index(), \
-							 o->Output()->Addr().String(), o->Output()->Amount().getDec(), _balance.getDec());
+				SPVLOG_DEBUG("{} +++ coinbase utxo {}:{}:{}:{} -> balance {}", _parent->_walletID, o->Hash().GetHex(),
+							 o->Index(), o->Output()->Addr().String(), o->Output()->Amount().getDec(),
+							 _balance.getDec());
 			}
 
 			return true;
@@ -800,9 +807,9 @@ namespace Elastos {
 				spentCoinbase.push_back(*it);
 				(*it)->SetSpent(true);
 				_balance -= (*it)->Output()->Amount();
-				SPVLOG_DEBUG("{} --- coinbase utxo {}:{}:{}:{} -> balance {}", \
-								 _parent->_walletID, (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr().String(), \
-								 (*it)->Output()->Amount().getDec(), _balance.getDec());
+				SPVLOG_DEBUG("{} --- coinbase utxo {}:{}:{}:{} -> balance {}", _parent->_walletID,
+							 (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr().String(),
+							 (*it)->Output()->Amount().getDec(), _balance.getDec());
 				_utxosCoinbase.erase(it);
 				return true;
 			}
@@ -810,27 +817,27 @@ namespace Elastos {
 			if ((it = _utxosVote.find(u)) != _utxosVote.end()) {
 				_balanceVote -= (*it)->Output()->Amount();
 				_balance -= (*it)->Output()->Amount();
-				SPVLOG_DEBUG("{} --- vote utxo {}:{}:{}:{} -> vote balance {} balance {}", \
-								 _parent->_walletID, (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr().String(), \
-								 (*it)->Output()->Amount().getDec(), _balanceVote.getDec(), _balance.getDec());
+				SPVLOG_DEBUG("{} --- vote utxo {}:{}:{}:{} -> vote balance {} balance {}", _parent->_walletID,
+							 (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr().String(),
+							 (*it)->Output()->Amount().getDec(), _balanceVote.getDec(), _balance.getDec());
 				_utxosVote.erase(it);
 				return true;
 			}
 
 			if ((it = _utxos.find(u)) != _utxos.end()) {
 				_balance -= (*it)->Output()->Amount();
-				SPVLOG_DEBUG("{} --- utxo {}:{}:{}:{} -> balance {}", \
-								 _parent->_walletID, (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr().String(), \
-								 (*it)->Output()->Amount().getDec(), _balance.getDec());
+				SPVLOG_DEBUG("{} --- utxo {}:{}:{}:{} -> balance {}", _parent->_walletID, (*it)->Hash().GetHex(),
+							 (*it)->Index(), (*it)->Output()->Addr().String(), (*it)->Output()->Amount().getDec(),
+							 _balance.getDec());
 				_utxos.erase(it);
 				return true;
 			}
 
 			if ((it = _utxosDeposit.find(u)) != _utxosDeposit.end()) {
 				_balanceDeposit -= (*it)->Output()->Amount();
-				SPVLOG_DEBUG("{} --- deposit utxo {}:{}:{}:{} -> deposit balance {}", \
-								 _parent->_walletID, (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr().String(), \
-								 (*it)->Output()->Amount().getDec(), _balanceDeposit.getDec());
+				SPVLOG_DEBUG("{} --- deposit utxo {}:{}:{}:{} -> deposit balance {}", _parent->_walletID,
+							 (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Addr().String(),
+							 (*it)->Output()->Amount().getDec(), _balanceDeposit.getDec());
 				_utxosDeposit.erase(it);
 				return true;
 			}
@@ -852,9 +859,9 @@ namespace Elastos {
 					_balanceLocked -= (*it)->Output()->Amount();
 					_balance += (*it)->Output()->Amount();
 					_utxosCoinbase.insert(*it);
-					SPVLOG_DEBUG("{} move locked utxo {}:{}:{} -> locked balance {} balance {}", \
-								 _parent->_walletID, (*it)->Hash().GetHex(), (*it)->Index(), \
-								 (*it)->Output()->Amount().getDec(), _balanceLocked.getDec(), _balance.getDec());
+					SPVLOG_DEBUG("{} move locked utxo {}:{}:{} -> locked balance {} balance {}", _parent->_walletID,
+								 (*it)->Hash().GetHex(), (*it)->Index(), (*it)->Output()->Amount().getDec(),
+								 _balanceLocked.getDec(), _balance.getDec());
 					it = _utxosLocked.erase(it);
 					changed = true;
 				} else {
@@ -874,7 +881,7 @@ namespace Elastos {
 		}
 
 		uint64_t GroupedAsset::CalculateFee(uint64_t feePerKB, size_t size) const {
-			return (size + 999) / 1000 * feePerKB ;
+			return (size + 999) / 1000 * feePerKB;
 		}
 
 	}

@@ -459,6 +459,9 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (int i = 0; i < txToSave.size(); ++i) {
 				REQUIRE(dbm.PutTransaction(ISO, txToSave[i]));
 			}
+			std::sort(txToSave.begin(), txToSave.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
+				return a->GetBlockHeight() < b->GetBlockHeight();
+			});
 		}
 
 		SECTION("Transaction read test") {

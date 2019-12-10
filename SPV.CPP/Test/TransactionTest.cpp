@@ -7,16 +7,13 @@
 #include <catch.hpp>
 #include "TestHelper.h"
 
-#include <Plugin/Transaction/TransactionOutput.h>
 #include <Plugin/Transaction/Transaction.h>
 #include <Plugin/Transaction/Attribute.h>
 #include <Plugin/Transaction/IDTransaction.h>
-#include <Plugin/Transaction/Payload/CoinBase.h>
 #include <Plugin/Transaction/Payload/DIDInfo.h>
 #include <Common/Utils.h>
 #include <Common/Log.h>
-#include <BRTransaction.h>
-#include <BRTransaction.h>
+#include <Common/ElementSet.h>
 
 using namespace Elastos::ElaWallet;
 
@@ -42,6 +39,25 @@ TEST_CASE("Transaction Serialize and Deserialize", "[Transaction]") {
 		tx2 = tx1;
 
 		verifyTransaction(tx1, tx2, true);
+	}
+
+	SECTION("transaction set") {
+		ElementSet<TransactionPtr> txSet;
+
+		for (size_t i = 0; i < 30; ++i) {
+			TransactionPtr tx1(new Transaction());
+			initTransaction(*tx1, Transaction::TxVersion::V09);
+			REQUIRE(txSet.Insert(tx1));
+			REQUIRE(txSet.Size() == i + 1);
+			REQUIRE(txSet.Contains(tx1));
+			REQUIRE(txSet.Contains(tx1->GetHash()));
+
+			TransactionPtr tx2(new Transaction(*tx1));
+			REQUIRE(tx1->GetHash() == tx2->GetHash());
+			REQUIRE(tx1.get() != tx2.get());
+			REQUIRE(!txSet.Insert(tx2));
+			REQUIRE(txSet.Size() == i + 1);
+		}
 	}
 
 }

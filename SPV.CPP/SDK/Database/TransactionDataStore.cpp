@@ -156,7 +156,7 @@ namespace Elastos {
 					  TX_BLOCK_HEIGHT + "," +
 					  TX_TIME_STAMP + "," +
 					  TX_ISO +
-					  " FROM " + TX_TABLE_NAME + ";";
+					  " FROM " + TX_TABLE_NAME + " ORDER BY " + TX_BLOCK_HEIGHT + " ASC;";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
