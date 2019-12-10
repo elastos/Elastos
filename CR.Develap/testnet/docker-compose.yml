@@ -26,7 +26,7 @@ services:
     user: "${UID}:${GID}"
     volumes:
       - ~/.data/docker/volumes/development-services/testnet/sidechain-did-data:/did/elastos_did
-      - ${PWD}/sidechain/did/config.json:/did/config.json
+      - ${PWD}/did/config.json:/did/config.json
     ports:
       - 21604-21608:21604-21608
     healthcheck:
@@ -44,7 +44,7 @@ services:
     user: "${UID}:${GID}"
     volumes:
       - ~/.data/docker/volumes/development-services/testnet/sidechain-token-data:/did/elastos_token
-      - ${PWD}/sidechain/token/config.json:/token/config.json
+      - ${PWD}/token/config.json:/token/config.json
     ports:
       - 21614-21618:21614-21618
     healthcheck:
