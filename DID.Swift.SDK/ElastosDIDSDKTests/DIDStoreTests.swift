@@ -191,7 +191,7 @@ class DIDStoreTests: XCTestCase {
                 
                 let expire = TestUtils.currentDateToWantDate(1)
                 issuer = try Issuer(DIDStoreTests.primaryDid, nil)
-                issuer.target = issuerDid
+                issuer.target = did
                 issuer.vc.id = try DIDURL(DIDStoreTests.primaryDid, "cred-1")
                 issuer.vc.types = ["BasicProfileCredential"]
                 issuer.vc.expirationDate = expire
@@ -277,11 +277,43 @@ class DIDStoreTests: XCTestCase {
                         XCTAssertEqual("default", cred.value)
                     }
                     else if (cred.key.fragment == "cred-2") {
-                        XCTAssertNil(cred.value)
+                        let re = cred.value == nil || cred.value == ""
+                        XCTAssertTrue(re)
                     }
                     else{
                         XCTFail("Unexpected credential id '\(cred.value ?? "")'.")
                     }
+                }
+            }
+        } catch {
+            print(error)
+        }
+    }
+    
+    func test60LoadCredential1() {
+        do {
+           try DIDStoreTests.ids.keys.forEach { did in
+                if did != DIDStoreTests.primaryDid {
+                    
+                    let id1: DIDURL = try DIDURL(did, "cred-1")
+                    let vc1 = try store.loadCredential(did, id1)
+                    XCTAssertNotNil(vc1)
+                    
+                    let id2: DIDURL = try DIDURL(did, "cred-2")
+                    let vc2 = try store.loadCredential(did, id2)
+                    XCTAssertNotNil(vc2)
+                    
+                    XCTAssertEqual(id1, vc1!.id)
+                    XCTAssertEqual(DIDStoreTests.primaryDid, vc1!.issuer)
+                    XCTAssertEqual(did, vc1!.subject.id)
+                    XCTAssertEqual("Elastos-" + did.methodSpecificId,
+                                   vc1!.subject.getProperty("name"))
+                    
+                    XCTAssertEqual(id2, vc2!.id)
+                    XCTAssertEqual(DIDStoreTests.primaryDid, vc2!.issuer)
+                    XCTAssertEqual(did, vc2!.subject.id)
+                    XCTAssertEqual("CyberRepublic-" + did.methodSpecificId,
+                                   vc2!.subject.getProperty("name"))
                 }
             }
         } catch {

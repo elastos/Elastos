@@ -75,7 +75,7 @@ public class FileSystemStore: DIDStore {
     }
     
     private func checkStore() throws {
-        // 检查根目录是否是文件
+        // Check if the root directory is a file
         let fileManager = FileManager.default
         var isDir: ObjCBool = false
         if fileManager.fileExists(atPath: storeRootPath, isDirectory:&isDir) {
@@ -84,7 +84,7 @@ public class FileSystemStore: DIDStore {
             }
         }
         
-        // 检查.DIDStore文件
+        // check.DIDStore file
         let tagFilePath: String = storeRootPath + "/" + FileSystemStore.TAG_FILE
         var tagFilePathIsDir: ObjCBool = false
         let tagFilePathExists: Bool = fileManager.fileExists(atPath: tagFilePath, isDirectory:&tagFilePathIsDir)
@@ -125,6 +125,13 @@ public class FileSystemStore: DIDStore {
         let data: Data = (readhandle?.readDataToEndOfFile()) ?? Data()
         let str: String = String(data: data, encoding: .utf8) ?? ""
         return str.count > 0 ? true : false
+    }
+    
+    public func exists_dir(_ dirPath: String) throws -> Bool {
+        let fileManager = FileManager.default
+        var isDir : ObjCBool = false
+        let re = fileManager.fileExists(atPath: dirPath, isDirectory:&isDir)
+        return re && isDir.boolValue
     }
     
     public func getFile(_ create: Bool, _ path: String) throws -> String {
@@ -287,10 +294,9 @@ public class FileSystemStore: DIDStore {
         }
     }
     
-    override public func getCredentialHint(_ did: DID, _ id: DIDURL) throws -> String{
-        let targetPath = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "." + "/" + id.fragment + "/" + FileSystemStore.META_EXT
-        let path = try getFile(targetPath)
-        return try readTextFromPath(path!)
+    override public func getCredentialHint(_ did: DID, _ id: DIDURL) throws -> String {
+        let targetPath = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR + "/" + id.fragment + FileSystemStore.META_EXT
+        return try readTextFromPath(targetPath)
     }
     
     override public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
@@ -351,23 +357,22 @@ public class FileSystemStore: DIDStore {
     
     override public func listCredentials(_ did: DID) throws -> Array<Entry<DIDURL, String>> {
         let dir: String = storeRootPath + "/" + FileSystemStore.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStore.CREDENTIALS_DIR
-        guard try exists(dir) else {
+        guard try exists_dir(dir) else {
             return [Entry]()
         }
         
         let fileManager = FileManager.default
-        let enumerater = fileManager.enumerator(atPath: dir)
+        let enumerator = try fileManager.contentsOfDirectory(atPath: dir)
         var arr: Array<Entry<DIDURL, String>> = []
-        while let file = enumerater?.nextObject() as? String {
-            if !file.hasSuffix(".meta") {
-                let didUrl: DIDURL = try DIDURL(did, file)
+        for element: String in enumerator  {
+            if !element.hasSuffix(".meta") {
+                let didUrl: DIDURL = try DIDURL(did, element)
                 var hint: String = ""
                 hint = try getCredentialHint(did, didUrl)
                 let dic: Entry<DIDURL, String> = Entry(didUrl, hint)
                 arr.append(dic)
             }
         }
-        
         return arr
     }
     
@@ -465,8 +470,10 @@ public class FileSystemStore: DIDStore {
     }
     
     private func readTextFromPath(_ path: String) throws -> String {
-        let readPath = try getFile(path)
-        return try! String(contentsOfFile:readPath!, encoding: String.Encoding.utf8)
+        guard try exists(path) else {
+            return ""
+        }
+        return try String(contentsOfFile:path, encoding: String.Encoding.utf8)
     }
     
     private func getHDPrivateKeyFile(_ create: Bool) throws -> String{
