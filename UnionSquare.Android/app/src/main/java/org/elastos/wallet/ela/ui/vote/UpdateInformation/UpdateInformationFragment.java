@@ -26,6 +26,7 @@ import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
 import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
+import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
@@ -82,15 +83,15 @@ public class UpdateInformationFragment extends BaseFragment implements NewBaseVi
 
     @Override
     protected void setExtraData(Bundle data) {
-        String i = data.getString("info");
-        ElectoralAffairsBean bean = JSON.parseObject(i, ElectoralAffairsBean.class);
-        etDotname.setText(bean.getNickName());
+        VoteListBean.DataBean.ResultBean.ProducersBean bean = (VoteListBean.DataBean.ResultBean.ProducersBean) data.getSerializable("curentNode");
+
+        etDotname.setText(bean.getNickname());
         etDotname.setEnabled(false);
         code = bean.getLocation();
         tvArea.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
-        etUrl.setText(bean.getURL());
-        ownerPublicKey = bean.getOwnerPublicKey();
-        etPublickey.setText(bean.getNodePublicKey());
+        etUrl.setText(bean.getUrl());
+        ownerPublicKey = bean.getOwnerpublickey();
+        etPublickey.setText(bean.getNodepublickey());
         super.setExtraData(data);
 
     }

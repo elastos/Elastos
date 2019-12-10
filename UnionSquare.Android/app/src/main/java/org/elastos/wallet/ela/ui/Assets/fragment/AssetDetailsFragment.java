@@ -316,7 +316,7 @@ public class AssetDetailsFragment extends BaseFragment implements CommonRvListen
 
     @Override
     public void onBalance(BalanceEntity data) {
-        if (data != null) {
+        if (data != null && !TextUtils.isEmpty(data.getBalance())) {
             tvBalance.setText(NumberiUtil.maxNumberFormat(Arith.div(data.getBalance(), MyWallet.RATE_S), 12) + " ELA");
         }
     }

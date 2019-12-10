@@ -24,14 +24,14 @@ import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
-import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
+import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
+import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeDotJsonViewData;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.UpdateInformation.UpdateInformationFragment;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
-import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Arith;
@@ -54,7 +54,7 @@ import butterknife.OnClick;
 /**
  * 选举管理  getRegisteredProducerInfo
  */
-public class ElectoralAffairsFragment extends BaseFragment implements NewBaseViewData {
+public class ElectoralAffairsFragment extends BaseFragment implements NewBaseViewData, RegisteredProducerInfoViewData {
 
     @BindView(R.id.toolbar_title)
     TextView toolbarTitle;
@@ -106,9 +106,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     ElectoralAffairsPresenter presenter = new ElectoralAffairsPresenter();
-    String status;
-    private String ownerPublicKey;
-    private String info;
+    private VoteListBean.DataBean.ResultBean.ProducersBean curentNode;
+
 
     @Override
     protected int getLayoutId() {
@@ -130,26 +129,22 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
 
     @Override
     protected void setExtraData(Bundle data) {
-        status = data.getString("status", "Canceled");
-        info = data.getString("info", "");
-        VoteListBean.DataBean.ResultBean.ProducersBean curentNode = (VoteListBean.DataBean.ResultBean.ProducersBean) data.getSerializable("curentNode");
+        curentNode = (VoteListBean.DataBean.ResultBean.ProducersBean) data.getSerializable("curentNode");
         //这里只会有 "Registered", "Canceled"分别代表, 已注册过, 已注销(不知道可不可提取)
-        if (status.equals("Canceled")) {
+        if (curentNode.getState().equals("Canceled")) {
             //已经注销了
             setToobar(toolbar, toolbarTitle, getString(R.string.electoral_affairs));
             ll_xggl.setVisibility(View.GONE);
             ll_tq.setVisibility(View.VISIBLE);
-            JSONObject jsonObject = JSON.parseObject(info);
-            String nickname = jsonObject.getString("NickName");
+            String nickname = curentNode.getNickname();
             tvQuit.setText(nickname + getString(R.string.hasquit));
-            long height = jsonObject.getLong("Confirms");
-            if (height >= 2160) {
-                //获取交易所需公钥
-                presenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
+            if (curentNode.getCancelheight() >= 2160) {
+                //获取deposit状态
+                new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), MyWallet.ELA, this);
             }
         } else {
             //未注销展示选举信息
-            onJustRegistered(info, curentNode);
+            onJustRegistered(curentNode);
         }
         super.setExtraData(data);
     }
@@ -192,9 +187,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                 break;
 
             case R.id.sb_up:
-                Bundle bundle = new Bundle();
-                bundle.putString("info", info);
-                start(UpdateInformationFragment.class, bundle);
+                start(UpdateInformationFragment.class, getArguments());
                 break;
         }
     }
@@ -220,15 +213,10 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                 //注销可提取
                 sbtq.setVisibility(View.VISIBLE);
                 break;
-            case "getPublicKeyForVote":
-                ownerPublicKey = ((CommmonStringWithiMethNameEntity) baseEntity).getData();
-                presenter.getDepositcoin(ownerPublicKey, this);
-                break;
-
             case "getFee":
                 Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
                 intent.putExtra("wallet", wallet);
-                if (status.equals("Canceled")) {
+                if (curentNode.getState().equals("Canceled")) {
                     //提取按钮
                     intent.putExtra("type", Constant.WITHDRAWSUPERNODE);
                     intent.putExtra("amount", available);
@@ -239,7 +227,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                     intent.putExtra("transType", 10);
                 }
                 intent.putExtra("chainId", MyWallet.ELA);
-                intent.putExtra("ownerPublicKey", ownerPublicKey);
+                intent.putExtra("ownerPublicKey", curentNode.getOwnerpublickey());
                 intent.putExtra("fee", ((CommmonLongEntity) baseEntity).getData());
                 startActivity(intent);
                 break;
@@ -247,11 +235,10 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
         }
     }
 
-    private void onJustRegistered(String data, VoteListBean.DataBean.ResultBean.ProducersBean curentNode) {
-        ElectoralAffairsBean bean = JSON.parseObject(data, ElectoralAffairsBean.class);
-        tvName.setText(bean.getNickName());
-        tvAddress.setText(AppUtlis.getLoc(getContext(), bean.getLocation() + ""));
-        String url = bean.getURL();
+    private void onJustRegistered(VoteListBean.DataBean.ResultBean.ProducersBean curentNode) {
+        tvName.setText(curentNode.getNickname());
+        tvAddress.setText(AppUtlis.getLoc(getContext(), curentNode.getLocation() + ""));
+        String url = curentNode.getUrl();
         new SuperNodeListPresenter().getUrlJson(url, this, new NodeDotJsonViewData() {
             @Override
             public void onGetNodeDotJsonData(NodeInfoBean t, String url) {
@@ -276,8 +263,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
             }
         });
         tvUrl.setText(url);
-        tvNode.setText(bean.getNodePublicKey());
-        ownerPublicKey = bean.getOwnerPublicKey();
+        tvNode.setText(curentNode.getNodepublickey());
         if (curentNode != null) {
             tvNum.setText(curentNode.getVotes() + getString(R.string.ticket));
             BigDecimal voterateDecimal = new BigDecimal(curentNode.getVoterate());
@@ -303,4 +289,19 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
         }
     }
 
+    @Override
+    public void onGetRegisteredProducerInfo(String data) {
+
+        JSONObject jsonObject = JSON.parseObject(data);
+        String status = jsonObject.getString("Status");
+        JSONObject info = jsonObject.getJSONObject("Info");
+        long height = info.getLong("Confirms");
+        if (!TextUtils.isEmpty(status) && status.equals("Canceled")) {
+            if (height >= 2160) {
+                //获取押金
+                presenter.getDepositcoin(curentNode.getOwnerpublickey(), this);
+            }
+        }
+
+    }
 }

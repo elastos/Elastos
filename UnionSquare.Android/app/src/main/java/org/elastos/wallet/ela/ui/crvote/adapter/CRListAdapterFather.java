@@ -23,8 +23,6 @@ import java.util.Map;
  * 用CRListBean的check字段 记得在不同状态下重置状态
  */
 public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean, BaseViewHolder> {
-
-    int pos;
     BaseFragment context;
     boolean showCheckbox;//是否展示加入购物车页面ui
     boolean is;//是否有当前钱包参选的节点
@@ -50,10 +48,6 @@ public class CRListAdapterFather extends BaseQuickAdapter<CRListBean.DataBean.Re
         this.is = is;
     }
 
-
-    public void setPos(int pos) {
-        this.pos = pos;
-    }
 
     public boolean isShowCheckbox() {
         return showCheckbox;

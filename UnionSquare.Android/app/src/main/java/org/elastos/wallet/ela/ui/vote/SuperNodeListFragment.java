@@ -9,13 +9,10 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -28,8 +25,6 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
-import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
-import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.ElectoralAffairsFragment;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VotelistViewData;
@@ -46,6 +41,7 @@ import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -53,7 +49,7 @@ import butterknife.OnClick;
 /**
  * 超级节点选举
  */
-public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, CommmonStringWithMethNameViewData, VotelistViewData, RegisteredProducerInfoViewData, OnRefreshListener {
+public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, CommmonStringWithMethNameViewData, VotelistViewData, OnRefreshListener {
 
 
     @BindView(R.id.toolbar_title)
@@ -100,25 +96,18 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @Override
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election), getString(R.string.voting_rules));
-
-
-
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        //presenter.getVotedProducerList(wallet.getWalletId(), MyWallet.ELA, this);
+        netList = new ArrayList<>();
         srl.setOnRefreshListener(this);
-        new VoteListPresenter().votelistbean("1", this);
-
+        new VoteListPresenter().votelistbean("1", "all", this);
         if (wallet.getType() != 0) {
             tv_signupfor.setVisibility(View.GONE);
         } else {
-            //获取选举状态
-            new VoteFirstPresenter().getRegisteredProducerInfo(wallet.getWalletId(), MyWallet.ELA, this);
+            //获取pk
+            signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
         }
+
     }
+
 
     @OnClick({R.id.tv_myvote, R.id.tv_title_right, R.id.tv_going_to_vote, R.id.tv_signupfor, R.id.iv_swichlist})
     public void onViewClicked(View view) {
@@ -153,8 +142,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                     start(SignUpForFragment.newInstance());
                 } else {
                     bundle = new Bundle();
-                    bundle.putString("status", status);
-                    bundle.putString("info", info);
                     bundle.putParcelable("curentNode", curentNode);
                     start(ElectoralAffairsFragment.class, bundle);
                 }
@@ -222,44 +209,89 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             case "getPublicKeyForVote":
                 publicKey = data;
                 //有自已的投票就排第一
-                onGetPk(data);
+                new VoteListPresenter().votelistbean("1", "all", this);
+                //  onGetPk(data);
                 break;
         }
     }
 
-    private void onGetPk(String data) {
-
-        if (netList != null&&!is) {
-
-            for (int i = 0; i < netList.size(); i++) {
-                if (netList.get(i).getOwnerpublickey().equals(data)) {
-                    curentNode = netList.get(i);
-                    netList.remove(i);
-                    netList.add(0, curentNode);
-                    is = true;
-                    break;
+    /**
+     * 重置信息  获得当前节点详情  剔除非active数据
+     *
+     * @param list
+     */
+    private void resetData(List<VoteListBean.DataBean.ResultBean.ProducersBean> list) {
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                VoteListBean.DataBean.ResultBean.ProducersBean bean = list.get(i);
+                bean.setIndex(netList.size() + i);
+                if (curentNode == null && bean.getOwnerpublickey().equals(publicKey)) {
+                    curentNode = bean;
                 }
+
+                //删除非active节点
+                if (!list.get(i).getState().equals("Active")) {
+                    list.remove(i--);//date  remove 不影响netlist  date修改影响netlist
+                }
+
             }
 
         }
-        setRecyclerview( );
-        setRecyclerview1();
     }
 
     @Override
     public void onGetVoteList(VoteListBean dataResponse) {
+
+        tvNodenum.setText(netList.size() + "");
+        zb = dataResponse.getData().getResult().getTotalvoterate();//全局占有率
+        tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(zb) * 100 + "", 2) + "%");
+        tv_num.setText(dataResponse.getData().getResult().getTotalvotes().split("\\.")[0]);//totalvotes": "
+
+
+        List<VoteListBean.DataBean.ResultBean.ProducersBean> curentList = dataResponse.getData().getResult().getProducers();
+        resetData(curentList);
+
         if (netList == null) {
             netList = new ArrayList<>();
         } else {
             netList.clear();
         }
-        netList.addAll(dataResponse.getData().getResult().getProducers());
-        tvNodenum.setText(netList.size() + "");
-        zb = dataResponse.getData().getResult().getTotalvoterate();
-        tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(zb) * 100 + "", 2) + "%");
-        tv_num.setText(dataResponse.getData().getResult().getTotalvotes().split("\\.")[0]);//totalvotes": "
+        if (curentList != null && curentList.size() != 0) {
+            netList.addAll(curentList);
+            if (curentNode == null) {
+                tv_signupfor.setText(getString(R.string.sign_up_for));
+                tv_signupfor.setVisibility(View.VISIBLE);
+                tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_attend), null, null);
 
-        //0 普通单签 1单签只读 2普通多签 3多签只读
+            } else {
+                switch (curentNode.getState()) {
+                    case "Returned":
+                        tv_signupfor.setVisibility(View.GONE);
+                        break;
+                    case "Active":
+                        is = true;
+                        if (netList.indexOf(curentNode) != 0) {
+                            netList.remove(curentNode);
+                            netList.add(0, curentNode);
+                        }
+                    case "Pending":
+                    case "Canceled":
+                        tv_signupfor.setText(getString(R.string.electoral_affairs));
+                        tv_signupfor.setVisibility(View.VISIBLE);
+                        tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_management), null, null);
+
+                        break;
+
+
+                }
+            }
+            setRecyclerview();
+            setRecyclerview1();
+        }
+
+
+
+       /* //0 普通单签 1单签只读 2普通多签 3多签只读
         if (wallet.getType() == 0 || wallet.getType() == 1) {
             //获取公钥
             if (TextUtils.isEmpty(publicKey)) {
@@ -270,40 +302,9 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         } else {
             setRecyclerview();
             setRecyclerview1();
-        }
+        }*/
 
 
-    }
-
-    private String status;
-    private String info;
-
-    @Override
-    public void onGetRegisteredProducerInfo(String data) {
-        JSONObject jsonObject = JSON.parseObject(data);
-        status = jsonObject.getString("Status");
-        info = jsonObject.getString("Info");
-        if (!TextUtils.isEmpty(status)) {
-            switch (status) {
-                case "Unregistered":
-                    tv_signupfor.setText(getString(R.string.sign_up_for));
-                    tv_signupfor.setVisibility(View.VISIBLE);
-                    tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_attend), null, null);
-                    break;
-                case "ReturnDeposit":
-                    tv_signupfor.setVisibility(View.GONE);
-                    break;
-                case "Canceled":
-                case "Registered":
-                    tv_signupfor.setText(getString(R.string.electoral_affairs));
-                    tv_signupfor.setVisibility(View.VISIBLE);
-                    tv_signupfor.setCompoundDrawables(null, getDrawable(R.mipmap.vote_management), null, null);
-
-                    break;
-
-            }
-
-        }
     }
 
     private Drawable getDrawable(int id) {
@@ -315,8 +316,9 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @Override
     public void onRefresh(RefreshLayout refreshLayout) {
         onErrorRefreshLayout(srl);
-        is=false;
-        new VoteListPresenter().votelistbean("1", this);
+        is = false;
+        curentNode = null;
+        new VoteListPresenter().votelistbean("1", "all", this);
 
     }
 }

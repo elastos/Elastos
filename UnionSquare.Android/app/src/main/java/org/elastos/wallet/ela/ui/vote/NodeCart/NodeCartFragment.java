@@ -98,7 +98,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     @BindView(R.id.tv_ljtp)
     AppCompatTextView tv_ljtp;
     List<VoteListBean.DataBean.ResultBean.ProducersBean> list;
-    List<VoteListBean.DataBean.ResultBean.ProducersBean> unSelectlist;
+    List<VoteListBean.DataBean.ResultBean.ProducersBean> unSelectlist;//未选择
     DialogUtil dialogUtil = new DialogUtil();
     @BindView(R.id.ll_blank)
     LinearLayout ll_blank;
@@ -145,10 +145,8 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         // 为Adapter准备数据
         initDate();
         // 绑定listView的监听器
-        if (list != null && list.size() != 0) {
-            tv_num.setText(getString(R.string.future_generations) + "(" + list.size() + ")");//全选
-            setRecyclerView(mAdapter, list);
-        }
+        tv_num.setText(getString(R.string.future_generations) + "(" + list.size() + ")");//全选
+        setRecyclerView(mAdapter, list);
         //这里list已经排序
         CacheUtil.setProducerList(list);
         recyclerView.setOnItemClickListener(this);
@@ -182,45 +180,44 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         } else {
             ll_blank.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
-            if (mAdapter == null) {
-                mAdapter = new MyAdapter(list, this);
-                if (curentPage == 0) {
-                    this.mAdapter = mAdapter;
-                } else if (curentPage == 1) {
-                    this.selectAdapter = mAdapter;
-                } else if (curentPage == 2) {
-                    this.unSelectAdapter = mAdapter;
-                }
-            } else {
-
-                mAdapter.setList(list);
-            }
-            recyclerView.setAdapter(mAdapter);//一个rv  多个adpter  这里用来切换adapter  不能notifydatachange'
-
-            setSelectAllStatus(mAdapter);
         }
+        if (mAdapter == null) {
+            mAdapter = new MyAdapter(list, this);
+            if (curentPage == 0) {
+                this.mAdapter = mAdapter;
+            } else if (curentPage == 1) {
+                this.selectAdapter = mAdapter;
+            } else if (curentPage == 2) {
+                this.unSelectAdapter = mAdapter;
+            }
+        } else {
+
+            mAdapter.setList(list);
+        }
+        recyclerView.setAdapter(mAdapter);//一个rv  多个adpter  这里用来切换adapter  不能notifydatachange'
+
+        setSelectAllStatus(mAdapter);
+
     }
 
     // 初始化数据
     private void initDate() {
         list = CacheUtil.getProducerList();
         unSelectlist = new ArrayList<>();
-        if (list == null || list.size() == 0) {
-            return;
-        }
         ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> newlist = new ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>();
-        for (VoteListBean.DataBean.ResultBean.ProducersBean bean : netList) {
-            //刷新本地数据
-            if (list.contains(bean)) {
-                newlist.add(bean);
+        if (list.size() > 0) {
+            for (VoteListBean.DataBean.ResultBean.ProducersBean bean : netList) {
+                //刷新本地数据
+                if (list.contains(bean)) {
+                    newlist.add(bean);
+                }
             }
         }
         unSelectlist.addAll(netList);
         unSelectlist.removeAll(newlist);//netList变成了未选择
+        //刷新list数据
         list.clear();
         list.addAll(newlist);
-
-
     }
 
 
@@ -339,9 +336,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
 
     private void doAdd() {
-        if (list == null || list.size() == 0) {
-            return;
-        }
         MyAdapter curentAdapter = ((MyAdapter) recyclerView.getAdapter());
         List<VoteListBean.DataBean.ResultBean.ProducersBean> addList = curentAdapter.getAllSelectList();
         list.addAll(addList);
@@ -468,9 +462,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
     //点击全选按钮
     private void onClickSelectAll() {
-        if (list == null || list.size() == 0) {
-            return;
-        }
         MyAdapter curentAdapter = ((MyAdapter) recyclerView.getAdapter());
         if (!checkBox.isChecked()) {
             curentAdapter.initDateStaus(false);

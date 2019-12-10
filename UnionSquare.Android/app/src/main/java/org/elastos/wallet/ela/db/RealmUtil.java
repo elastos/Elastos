@@ -422,6 +422,8 @@ public class RealmUtil {
             List<SubWallet> assetList = entry.getValue();
             for (SubWallet subWallet : assetList) {
                 subWallet.setFiled1("Connecting");
+                subWallet.setSyncTime("- -");
+                subWallet.setProgress(0);
                 subWallet.setWallletId(subWallet.getBelongId() + subWallet.getChainId());
                 subWallet.setFiled2("false");
                 subWallet.setBytesPerSecond(0);
