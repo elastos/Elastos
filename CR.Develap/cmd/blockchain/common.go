@@ -102,7 +102,7 @@ var (
 			},
 		},
 		"eth": {
-			ImageName: "cyberrepublic/elastos-sidechain-eth-node:dev",
+			ImageName: "cyberrepublic/elastos-sidechain-eth-node:v0.0.2",
 			DataPath:  "/eth/elastos_eth",
 			PortMapping: map[string]DockerPort{
 				"mainnet":  DockerPort{ContainerRPCPort: "20636", HostRPCPort: "20636"},
