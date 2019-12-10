@@ -1,8 +1,9 @@
 {
   "Configuration": {
+    "ActiveNet": "mainnet",
     "DPoSConfiguration": {
       "EnableArbiter": false,
-      "IPAddress": "127.0.0.1"
+      "IPAddress": "mainnet-mainchain-node"
     },
     "HttpRestStart": true,
     "EnableRPC": true,
