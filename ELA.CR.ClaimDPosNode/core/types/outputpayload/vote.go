@@ -217,8 +217,8 @@ func (o *VoteOutput) Validate() error {
 			len(content.CandidateVotes) > MaxVoteProducersPerTransaction {
 			return errors.New("invalid public key count")
 		}
-		// only use Delegate and CRC as a vote type for now
-		if content.VoteType != Delegate && content.VoteType != CRC {
+		if content.VoteType != Delegate && content.VoteType != CRC &&
+			content.VoteType != CRCProposal && content.VoteType != CRCImpeachment {
 			return errors.New("invalid vote type")
 		}
 

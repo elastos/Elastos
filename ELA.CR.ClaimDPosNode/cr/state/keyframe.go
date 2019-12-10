@@ -1032,6 +1032,17 @@ func getElectedCRMembers(src map[common.Uint168]*CRMember) []*CRMember {
 	return dst
 }
 
+func getImpeachableCRMembers(src map[common.Uint168]*CRMember) []*CRMember {
+	dst := make([]*CRMember, 0)
+	for _, v := range src {
+		if v.MemberState == MemberElected || v.MemberState == MemberImpeached {
+			m := *v
+			dst = append(dst, &m)
+		}
+	}
+	return dst
+}
+
 // copyMembersMap copy the CR members map's key and value, and return the dst map.
 func copyMembersMap(src map[common.Uint168]*CRMember) (
 	dst map[common.Uint168]*CRMember) {
