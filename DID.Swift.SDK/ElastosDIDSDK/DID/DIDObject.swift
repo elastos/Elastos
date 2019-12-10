@@ -1,8 +1,8 @@
 import Foundation
 
 public class DIDObject: NSObject {
-    public var id: DIDURL!
-    public var type: String!
+    public var id: DIDURL
+    public var type: String
 
     override init() {
     }
