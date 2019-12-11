@@ -11,6 +11,8 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
+	"path/filepath"
 	"sort"
 	"sync"
 	"time"
@@ -27,6 +29,7 @@ import (
 	"github.com/elastos/Elastos.ELA/database"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/utils"
 )
 
 const (
@@ -131,35 +134,75 @@ func (b *BlockChain) Init(interrupt <-chan struct{}) error {
 	return nil
 }
 
-func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
-	barStart func(total uint32), increase func(), clear bool) (err error) {
+func (b *BlockChain) MigrateOldDB(
+	interrupt <-chan struct{},
+	barStart func(total uint32),
+	increase func(),
+	dataDir string,
+	params *config.Params) (err error) {
 
-	endHeight := b.db.GetHeight()
-	startHeight := b.GetHeight() + 1
-	if endHeight < startHeight {
+	// No old database need migrate.
+	if !utils.FileExisted(filepath.Join(dataDir, oldBlockDbName)) {
 		return nil
 	}
 
-	done := make(chan error)
+	oldFFLDB, err := LoadBlockDB(dataDir, oldBlockDbName)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		oldFFLDB.Close()
+		oldLevelDB.Close()
+	}()
+	oldChainStoreFFLDB := &ChainStoreFFLDB{
+		db:               oldFFLDB,
+		indexManager:     nil,
+		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
+		blocksCache:      make(map[Uint256]*DposBlock),
+	}
+	oldChainStore := &ChainStore{
+		fflDB:            oldChainStoreFFLDB,
+		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
+		blocksCache:      make(map[Uint256]*Block),
+	}
+	oldChain, err := New(oldChainStore, params, nil, nil)
+	if err != nil {
+		return err
+	}
 
+	endHeight := oldChain.db.GetHeight()
+	startHeight := b.GetHeight() + 1
+
+	done := make(chan error)
 	go func() {
-		log.Info("[InitFFLDBFromChainStore] start height: ", startHeight, "end height:", endHeight)
+		log.Info("[MigrateOldDB] start height: ", startHeight, "end height:", endHeight)
+		if endHeight < startHeight {
+			done <- nil
+			return
+		}
 		if barStart != nil {
 			barStart(endHeight - startHeight)
 		}
-
 		for start := startHeight; start <= endHeight; start++ {
-			hash, err := b.db.GetBlockHash(start)
+			hash, err := oldChain.GetBlockHash(start)
 			if err != nil {
-				done <- fmt.Errorf("GetBlockHash err: %s", err)
+				done <- fmt.Errorf("GetBlockHash failed : %s", err)
 				break
 			}
-			block, err := b.db.GetBlock(hash)
+			block, err := oldChain.db.GetFFLDB().GetOldBlock(hash)
 			if err != nil {
 				done <- fmt.Errorf("GetBlock err: %s", err)
 				break
 			}
-			confirm, _ := b.db.GetConfirm(hash)
+			var confirm *payload.Confirm
+			if start > params.CRCOnlyDPOSHeight {
+				confirm, err = b.db.GetConfirm(hash)
+				if err != nil {
+					done <- fmt.Errorf("GetConfirm err: %s", err)
+					break
+				}
+			}
+
 			node, err := b.LoadBlockNode(&block.Header, &hash)
 			if err != nil {
 				done <- fmt.Errorf("LoadBlockNode err: %s", err)
@@ -193,30 +236,29 @@ func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
 			if increase != nil {
 				increase()
 			}
-
-			if clear {
-				chain := b.db.(*ChainStore)
-				chain.NewBatch()
-				chain.RollbackTrimmedBlock(block)
-				chain.RollbackBlockHash(block)
-				chain.BatchCommit()
-			}
 		}
 		done <- nil
 	}()
-	var result error
-	select {
-	case err := <-done:
-		if err == nil {
-			log.Info("process block finished.")
-		} else {
-			result = fmt.Errorf("process block failed, %s", err)
-		}
 
+	select {
+	case err = <-done:
+		if err != nil {
+			err = fmt.Errorf("process block failed, %s", err)
+		} else {
+			log.Info("Migrating the old db finished, then delete the old db files.")
+
+			// Delete the old database files include "chain", "blocks_ffldb" and "dpos".
+			oldFFLDB.Close()
+			oldLevelDB.Close()
+			os.RemoveAll(filepath.Join(dataDir, oldBlockDbName))
+			os.RemoveAll(filepath.Join(dataDir, "chain"))
+			os.RemoveAll(filepath.Join(dataDir, "dpos"))
+		}
 	case <-interrupt:
-		result = errors.New("process block interrupted")
+		err = errors.New("process block interrupted")
 	}
-	return result
+
+	return err
 }
 
 // InitCheckpoint go through all blocks since the genesis block

@@ -192,7 +192,7 @@ func dbPutTxIndexEntry(dbTx database.Tx, txHash *common.Uint256, serializedData 
 // there is no entry for the provided hash, nil will be returned for the both
 // the region and the error.
 func dbFetchTxIndexEntry(dbTx database.Tx, txHash *common.Uint256) (*database.BlockRegion, error) {
-	// Load the record from the database and return now if it doesn't exist.
+	// Load the record from the database and return nil if it doesn't exist.
 	txIndex := dbTx.Metadata().Bucket(txIndexKey)
 	serializedData := txIndex.Get(txHash[:])
 	if len(serializedData) == 0 {

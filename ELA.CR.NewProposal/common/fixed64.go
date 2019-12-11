@@ -1,13 +1,12 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package common
 
 import (
 	"bytes"
-	"encoding/binary"
 	"errors"
 	"io"
 	"strconv"
@@ -18,28 +17,11 @@ import (
 type Fixed64 int64
 
 func (f *Fixed64) Serialize(w io.Writer) error {
-	err := binary.Write(w, binary.LittleEndian, int64(*f))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return WriteElement(w, f)
 }
 
 func (f *Fixed64) Deserialize(r io.Reader) error {
-	p := make([]byte, 8)
-	n, err := r.Read(p)
-	if n <= 0 || err != nil {
-		return err
-	}
-	buf := bytes.NewBuffer(p)
-	var x int64
-	err = binary.Read(buf, binary.LittleEndian, &x)
-	if err != nil {
-		return err
-	}
-	*f = Fixed64(x)
-	return nil
+	return ReadElement(r, f)
 }
 
 func (f Fixed64) IntValue() int64 {

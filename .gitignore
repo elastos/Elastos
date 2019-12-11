@@ -17,3 +17,4 @@ elastos*/
 *.csv
 *.out
 *.test
+benchmark/process/run-to-height

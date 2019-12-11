@@ -142,8 +142,8 @@ func startDstNode() {
 		logger.Error(err)
 		return
 	}
-	if err := chain.InitFFLDBFromChainStore(interrupt.C, func(uint32) {},
-		func() {}, false); err != nil {
+	if err := chain.MigrateOldDB(interrupt.C, func(uint32) {},
+		func() {}, dataDir, dstSettings.Params()); err != nil {
 		logger.Error(err)
 		return
 	}

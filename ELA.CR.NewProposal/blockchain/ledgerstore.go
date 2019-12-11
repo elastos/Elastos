@@ -74,6 +74,9 @@ type IFFLDBChainStore interface {
 	// Get block from file db.
 	GetBlock(hash Uint256) (*DposBlock, error)
 
+	// Get block from file db.
+	GetOldBlock(hash Uint256) (*Block, error)
+
 	// Get block header from file db.
 	GetHeader(hash Uint256) (*Header, error)
 
