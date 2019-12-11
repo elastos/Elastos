@@ -15,7 +15,6 @@
     "@liradb2000/markdown-it-mermaid": "^0.3.6",
     "@svgr/webpack": "^4.1.0",
     "antd": "^3.20.7",
-    "bluebird": "^3.5.1",
     "codemirror": "^5.49.0",
     "cross-env": "^5.1.1",
     "crypto-js": "^3.1.9-1",
