@@ -137,7 +137,10 @@ export default {
     teamInfo: '实施团队',
     milestones: '里程碑',
     publishDate: '发布日期',
-    version: '版本'
+    version: '版本',
+    goal: '目标',
+    showDetail: '显示详细信息',
+    hideDetail: '隐藏详细信息'
   },
   label: {
     hasMadeIntoProposal: '已经将此建议发布为'
