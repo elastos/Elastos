@@ -39,21 +39,6 @@ class Common(common_pb2_grpc.CommonServicer):
 		s.add(user)
 		s.commit()
 		#print("ID value ",s.id)		
-		for row in s.query(Users, Users):
-			if (row.Users.did == request.did):
-				
-				userapi = UserApiRelations(
-			 		user_id = row.Users.id,
-			 		api_key = 'KHBOsth7b3WbOTVzZqGUEhOY8rPreYFZ'
-		)
-				s.add(userapi)
-				s.commit()
-				s.close()
-			else:
-				s.add(user)
-				s.commit()
-				#print("ID value ",s.id)
-				s.close()
 		s.close()		
 
 		if(secret_key==request.secret_key):
