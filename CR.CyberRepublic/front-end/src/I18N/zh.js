@@ -45,7 +45,13 @@ const zh = {
   '0109': '提交',
   '0110': '博客',
   navigation: {
-    council: '委员会',
+    council: {
+      title: '委员会',
+      submenu: {
+        incumbent: '现任',
+        candidate: '候选人',
+      }
+    },
     whitepaper: '白皮书',
     suggestion: '建议',
     elips: 'ELIPs',

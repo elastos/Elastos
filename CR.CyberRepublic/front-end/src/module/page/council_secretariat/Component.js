@@ -1,10 +1,9 @@
 import React from 'react'
 import _ from 'lodash'
-import { Col, Row, Avatar, Tabs, Spin, Popover, Pagination } from 'antd'
+import { Col, Row, Avatar, Tabs } from 'antd'
 import styled from 'styled-components'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
-import { logger } from '@/util'
 import StandardPage from '../StandardPage'
 import PersonCard from './PersonCard'
 import BGImg from './BGImg'
@@ -16,69 +15,17 @@ import './style.scss'
 
 const {TabPane} = Tabs
 
-const RANK_TEXT = {
-  0: 'TH',
-  1: 'ST',
-  2: 'ND',
-  3: 'RD'
-}
-
-const PAGE_SIZE = 12
-
 export default class extends StandardPage {
   constructor(props) {
     super(props)
     this.state = {
       // save the page you are on
       tab: this.props.council.tab || '1',
-      list: [],
-      totalVotes: 0,
-      pageNum: 1,
-      total: 0,
-    }
-    this.ord_loading = _.debounce(this.ord_loading, 300)
-  }
-
-  async componentDidMount() {
-    const { tab } = this.state
-    if (tab === 'VOTING') {
-      this.candidatesRefetch(true)
     }
   }
 
   linkToRule() {
     this.props.history.push('/whitepaper')
-  }
-
-  handlePaginationChange = pageNum => {
-    this.setState({pageNum}, () => this.candidatesRefetch())
-  }
-
-  getCandidatesQuery = () => {
-    const {pageNum} = this.state
-    return {pageNum, pageSize: PAGE_SIZE, state: 'all'}
-  }
-
-  candidatesRefetch = async (isShowLoading = false) => {
-    if (isShowLoading) this.ord_loading(true)
-    const { getCandidates } = this.props
-    const param = this.getCandidatesQuery()
-    try {
-      const result = await getCandidates(param)
-      this.setState({ list: result.crcandidatesinfo, totalVotes: result.totalvotes, total: result.totalcounts })
-    } catch (error) {
-      logger.error(error)
-    }
-    if (isShowLoading) this.ord_loading(false)
-  }
-
-  renderLoading() {
-    return (
-      <div className="flex-center">
-        <Spin size="large" />
-      </div>
-
-    )
   }
 
   ord_renderContent() {
@@ -218,76 +165,6 @@ export default class extends StandardPage {
     )
   }
 
-  buildVoting() {
-    const { list, total, loading} = this.state
-    const chunkedList = _.chunk(list, 4)
-
-    return (
-      <Voting>
-        <Header>{I18N.get('cs.candidates')}</Header>
-        {loading
-          ? this.renderLoading()
-          : _.map(chunkedList, (row, rowIndex) => {
-            const cols = _.map(row, this.renderCandidate)
-            return (
-              <Row gutter={24} key={rowIndex}>
-                {cols}
-              </Row>
-            )
-          })}
-        <StyledPagination>
-          <Pagination
-              defaultPageSize={PAGE_SIZE}
-              total={total}
-              onChange={this.handlePaginationChange}
-            />
-        </StyledPagination>
-      </Voting>
-    )
-  }
-
-  renderCandidate = (col, colIndex) => {
-    const voteRate = col.votes / this.state.totalVotes * 100
-    return (
-      <Col lg={6} md={6} sm={24} key={colIndex}>
-        <Card>
-          <StyledAvatar>
-            <Avatar src={col.url} shape="square" size={176} icon="user" />
-            <Rank>
-              <Number>{col.index + 1}</Number>
-              <Suffix>
-                {RANK_TEXT[col.index + 1] ? RANK_TEXT[col.index + 1] : RANK_TEXT[0]}
-              </Suffix>
-            </Rank>
-          </StyledAvatar>
-          <Info>
-            <Popover content={_.toUpper(col.nickname)}>
-              <Name className="wrap-content">{col.nickname}</Name>
-            </Popover>
-            <Meta>
-              <Popover content={I18N.get(`area.${col.location}`)}>
-                <div className="wrap-content country">{I18N.get(`area.${col.location}`)}</div>
-              </Popover>
-              <div className="vote">
-                <Popover content={col.votes}>
-                  <div className="wrap-content data data-vote">{col.votes}</div>
-                </Popover>
-                &nbsp;
-                {I18N.get('council.candidate.votes')}
-              </div>
-              <div className="vote">
-                <Popover content={voteRate}>
-                  <div className="wrap-content data data-rate">{voteRate}</div>
-                </Popover>
-                {`% ${I18N.get('council.candidate.voteRate')}`}
-              </div>
-            </Meta>
-          </Info>
-        </Card>
-      </Col>
-    )
-  }
-
   buildContent() {
     const { tab } = this.props.council
     const tabBarStyle = { borderBottom: 'none', color: text.middleGray }
@@ -300,7 +177,6 @@ export default class extends StandardPage {
             <StyledTabs defaultActiveKey="COUNCIL" activeKey={tab} onChange={this.tabChange} tabBarStyle={tabBarStyle}>
               <TabPane tab={<TabTitle>{I18N.get('cs.council')}</TabTitle>} key="COUNCIL">{this.buildIncumbent()}</TabPane>
               <TabPane tab={<TabTitle>{I18N.get('cs.secretariat.title')}</TabTitle>} key="SECRETARIAT">{this.buildSecretariat()}</TabPane>
-              <TabPane tab={<TabTitle>{I18N.get('cs.voting')}</TabTitle>} key="VOTING">{this.buildVoting()}</TabPane>
             </StyledTabs>
           </div>
         </div>
@@ -309,9 +185,6 @@ export default class extends StandardPage {
   }
 
   tabChange = (activeKey) => {
-    if (activeKey === 'VOTING') {
-      this.candidatesRefetch(true)
-    }
     return this.props.changeTab(activeKey)
   }
 }

@@ -45,7 +45,13 @@ const en = {
   '0109': 'Submissions',
   '0110': 'Blog',
   navigation: {
-    council: 'Council',
+    council: {
+      title: 'Council',
+      submenu: {
+        incumbent: 'Incumbent',
+        candidate: 'Candidate',
+      }
+    },
     whitepaper: 'Whitepaper',
     suggestion: 'Suggestions',
     elips: 'ELIPs',
