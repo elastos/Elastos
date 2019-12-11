@@ -98,7 +98,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         setToobar(toolbar, toolbarTitle, getString(R.string.supernode_election), getString(R.string.voting_rules));
         netList = new ArrayList<>();
         srl.setOnRefreshListener(this);
-        new VoteListPresenter().votelistbean("1", "all", this);
         if (wallet.getType() != 0) {
             tv_signupfor.setVisibility(View.GONE);
         } else {
@@ -224,7 +223,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
                 VoteListBean.DataBean.ResultBean.ProducersBean bean = list.get(i);
-                bean.setIndex(netList.size() + i);
+                bean.setIndex(i);
                 if (curentNode == null && bean.getOwnerpublickey().equals(publicKey)) {
                     curentNode = bean;
                 }
@@ -242,13 +241,11 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     @Override
     public void onGetVoteList(VoteListBean dataResponse) {
 
-        tvNodenum.setText(netList.size() + "");
         zb = dataResponse.getData().getResult().getTotalvoterate();//全局占有率
         tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(zb) * 100 + "", 2) + "%");
         tv_num.setText(dataResponse.getData().getResult().getTotalvotes().split("\\.")[0]);//totalvotes": "
-
-
         List<VoteListBean.DataBean.ResultBean.ProducersBean> curentList = dataResponse.getData().getResult().getProducers();
+
         resetData(curentList);
 
         if (netList == null) {
@@ -258,6 +255,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
         if (curentList != null && curentList.size() != 0) {
             netList.addAll(curentList);
+            tvNodenum.setText(netList.size() + "");
             if (curentNode == null) {
                 tv_signupfor.setText(getString(R.string.sign_up_for));
                 tv_signupfor.setVisibility(View.VISIBLE);

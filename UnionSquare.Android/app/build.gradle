@@ -3,6 +3,14 @@ apply plugin: 'realm-android'
 
 
 android {
+    signingConfigs {
+        relsease {
+            storeFile file('D:\\studioprogress\\ela\\Elastos.App.UnionSquare.Android\\elaWallet.jks')
+            storePassword 'elaWallet'
+            keyAlias = 'elaWallet'
+            keyPassword 'elaWallet'
+        }
+    }
     flavorDimensions "default"
     productFlavors {
         applicationVariants.all { variant ->
@@ -111,6 +119,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.relsease
         }
     }
     externalNativeBuild {
