@@ -59,7 +59,10 @@ def run():
 	elif(response.status==False):
 		print("Error Message: ",response.status_message)
 
-	#Deploy ETH Contract
+	# Deploy ETH Contract
+	# The eth account addresses below is used from that of privatenet. In order to test this,
+	# you must first run https://github.com/cyber-republic/elastos-privnet locally
+	# For production GMUnet, this won't work
 	print("\n--> Deploy ETH Contract")
 	response = console.deploy_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3', 'elastos-privnet', 'test/HelloWorld.sol')
 	json_output = json.loads(response.output)
