@@ -205,9 +205,9 @@ services:
       - ~/.volumes/elastos-privnet/eth-node:/eth/elastos_eth
       - ${PWD}/ela-sidechain/eth/eth-node/eth-accounts-pass.txt:/eth/eth-accounts-pass.txt
     ports:
-      - 60111:20636
-      - 60112:20638
-      - 60113:8080
+      - 60111:20635
+      - 60112:20636
+      - 60113:20638
     healthcheck:
       test: ["CMD", "curl", "-H", "'Content-Type:application/json'", "-H", "'Accept:application/json'", "--data", "'{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[], \"id\":1}'", "http://localhost:60111"]
       interval: 30s

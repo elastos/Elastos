@@ -241,7 +241,7 @@ These are located in the `wallets` folder:
 
     Pre-loaded ETH Sidechain Address:
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60111
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60112
     ```
     
     Should return something like:
@@ -917,7 +917,7 @@ COMING SOON
 6. Check eth balance:
 
   ```
-  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60111
+  curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "latest"],"id":1}' localhost:60112
   ```
 
   Should return something like:
@@ -961,7 +961,7 @@ COMING SOON
   We're going to unlock our ETH account that is already pre-loaded with some ETH/ELASC. It's address is 0x4505b967d56f84647eb3a40f7c365f7d87a88bc3
 
   ```
-  curl -X POST -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"personal_unlockAccount","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "elastos-privnet", 3600],"id":67}' http://localhost:60111
+  curl -X POST -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"jsonrpc":"2.0","method":"personal_unlockAccount","params":["0x4505b967d56f84647eb3a40f7c365f7d87a88bc3", "elastos-privnet", 3600],"id":67}' http://localhost:60112
   ```
   Should return
   ```
