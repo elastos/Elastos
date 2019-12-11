@@ -77,10 +77,11 @@ services:
 
   mainnet-api-misc-mainchain:
     container_name: mainnet-api-misc-mainchain
-    image: cyberrepublic/elastos-api-misc-service:privnet-v0.5
+    image: cyberrepublic/elastos-api-misc-service:latest
     user: "${UID}:${GID}"
     volumes:
       - ${PWD}/restful-services/api-misc/mainchain/config.json:/home/elauser/config.json
+      - ${PWD}/restful-services/api-misc/mainchain/erc20.json:/home/elauser/erc20.json
       - ${PWD}/restful-services/api-misc/mainchain/deploy.sh:/home/elauser/deploy.sh
       - ${PWD}/restful-services/api-misc/sql:/home/elauser/sql
     depends_on:
@@ -102,7 +103,7 @@ services:
 
   mainnet-api-misc-sidechain-did:
     container_name: mainnet-api-misc-sidechain-did
-    image: cyberrepublic/elastos-api-misc-service:privnet-v0.5
+    image: cyberrepublic/elastos-api-misc-service:latest
     user: "${UID}:${GID}"
     volumes:
       - ${PWD}/restful-services/api-misc/sidechain/did/config.json:/home/elauser/config.json
