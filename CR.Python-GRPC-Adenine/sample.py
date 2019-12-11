@@ -19,19 +19,20 @@ def run():
 	#Signing using Did Sidechain
 	did_sidechain = DidSidechain()
 	print("\n--> Sign a message")
-	#response1 = did_sidechain.sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99', 'hey hi!')
-	#json_output1 = json.loads(response1.output)
+	response1 = did_sidechain.sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99', 'hey hi!')
+	json_output1 = json.loads(response1.output)
 
-	#if(response1.status==True):
-	#	for i in json_output1 :
-	#		print(i,':', json_output1[i])
-	#elif(response1.status==False):
-	#	print("Error Message: ",json_output1)
+	if(response1.status==True):
+		for i in json_output1 :
+			print(i,':', json_output1[i])
+	elif(response1.status==False):
+		print("Error Message: ",json_output1)
 
 	#Upload and Sign
 	console = Console()
+	
 	print("\n--> Upload and Sign")
-	response2 = console.upload_and_sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99', './sample.txt')
+	response2 = console.upload_and_sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99', 'test/sample.txt')
 	json_output2 = json.loads(response2.output)
 
 	if(response2.status==True):
@@ -55,7 +56,17 @@ def run():
 		print('File Content:', response3.output)
 	elif(response3.status==False):
 		print("Error Message: ",response3.status_message)
+	
+	#Deploy ETH Contract
+	print("\n--> Deploy ETH Contract")
+	response = console.deploy_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3', 'elastos-privnet', 'test/HelloWorld.sol')
+	json_output = json.loads(response.output)
 
+	if(response.status==True):
+		for i in json_output['result'] :
+			print(i,':', json_output['result'][i])
+	elif(response.status==False):
+		print("Error Message: ",response.status_message)
 
 if __name__ == '__main__':
     run()

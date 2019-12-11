@@ -29,6 +29,16 @@ class AdenineIoStub(object):
         request_serializer=adenine__io__pb2.Request.SerializeToString,
         response_deserializer=adenine__io__pb2.Response.FromString,
         )
+    self.DeployEthContract = channel.unary_unary(
+        '/adenineio.AdenineIo/DeployEthContract',
+        request_serializer=adenine__io__pb2.Request.SerializeToString,
+        response_deserializer=adenine__io__pb2.Response.FromString,
+        )
+    self.RunEthContract = channel.unary_unary(
+        '/adenineio.AdenineIo/RunEthContract',
+        request_serializer=adenine__io__pb2.Request.SerializeToString,
+        response_deserializer=adenine__io__pb2.Response.FromString,
+        )
 
 
 class AdenineIoServicer(object):
@@ -56,6 +66,20 @@ class AdenineIoServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def DeployEthContract(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def RunEthContract(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_AdenineIoServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -71,6 +95,16 @@ def add_AdenineIoServicer_to_server(servicer, server):
       ),
       'VerifyAndShow': grpc.unary_unary_rpc_method_handler(
           servicer.VerifyAndShow,
+          request_deserializer=adenine__io__pb2.Request.FromString,
+          response_serializer=adenine__io__pb2.Response.SerializeToString,
+      ),
+      'DeployEthContract': grpc.unary_unary_rpc_method_handler(
+          servicer.DeployEthContract,
+          request_deserializer=adenine__io__pb2.Request.FromString,
+          response_serializer=adenine__io__pb2.Response.SerializeToString,
+      ),
+      'RunEthContract': grpc.unary_unary_rpc_method_handler(
+          servicer.RunEthContract,
           request_deserializer=adenine__io__pb2.Request.FromString,
           response_serializer=adenine__io__pb2.Response.SerializeToString,
       ),
