@@ -196,8 +196,8 @@ func startNode(c *cli.Context, st *settings.Settings) {
 	if err := chain.Init(interrupt.C); err != nil {
 		printErrorAndExit(err)
 	}
-	if err := chain.InitFFLDBFromChainStore(interrupt.C, pgBar.Start,
-		pgBar.Increase, false); err != nil {
+	if err := chain.MigrateOldDB(interrupt.C, pgBar.Start,
+		pgBar.Increase, dataDir, st.Params()); err != nil {
 		printErrorAndExit(err)
 	}
 	pgBar.Stop()

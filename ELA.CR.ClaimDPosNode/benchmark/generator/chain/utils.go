@@ -40,8 +40,8 @@ func newBlockChain(path string, params *config.Params,
 	if err = chain.Init(interrupt); err != nil {
 		return nil, err
 	}
-	if err = chain.InitFFLDBFromChainStore(interrupt, func(uint32) {},
-		func() {}, false); err != nil {
+	if err = chain.MigrateOldDB(interrupt, func(uint32) {},
+		func() {}, path, params); err != nil {
 		return nil, err
 	}
 
