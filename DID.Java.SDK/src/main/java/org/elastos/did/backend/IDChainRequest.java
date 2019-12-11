@@ -135,7 +135,7 @@ public class IDChainRequest {
 		this.did = doc.getSubject();
 		this.doc = doc;
 
-		String json = doc.toExternalForm(false);
+		String json = doc.toString(false);
 
 		payload = Base64.encodeToString(json.getBytes(),
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
@@ -229,7 +229,7 @@ public class IDChainRequest {
 			generator.writeFieldName(KEY_TYPE);
 			generator.writeString(keyType);
 
-			keyId = signKey.toExternalForm();
+			keyId = signKey.toString();
 		} else {
 			keyId = "#" + signKey.getFragment();
 		}

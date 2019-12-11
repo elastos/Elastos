@@ -141,8 +141,8 @@ public class VerifiablePresentationTest {
 		assertTrue(normalized.isValid());
 
 		assertEquals(testData.loadPresentationNormalizedJson(),
-				normalized.toExternalForm());
+				normalized.toString());
 		assertEquals(testData.loadPresentationNormalizedJson(),
-				vp.toExternalForm());
+				vp.toString());
 	}
 }

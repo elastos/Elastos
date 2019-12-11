@@ -913,7 +913,7 @@ public class DIDDocument {
 
 		// subject
 		generator.writeFieldName(Constants.id);
-		generator.writeString(getSubject().toExternalForm());
+		generator.writeString(getSubject().toString());
 
 		// publicKey
 		generator.writeFieldName(Constants.publicKey);
@@ -929,7 +929,7 @@ public class DIDDocument {
 			String value;
 
 			if (normalized || !pk.getId().getDid().equals(getSubject()))
-				value = pk.getId().toExternalForm();
+				value = pk.getId().toString();
 			else
 				value = "#" + pk.getId().getFragment();
 
@@ -945,7 +945,7 @@ public class DIDDocument {
 				String value;
 
 				if (normalized || !pk.getId().getDid().equals(getSubject()))
-					value = pk.getId().toExternalForm();
+					value = pk.getId().toString();
 				else
 					value = "#" + pk.getId().getFragment();
 
@@ -1025,13 +1025,13 @@ public class DIDDocument {
 		return out.toString();
 	}
 
-	public String toExternalForm(boolean normalized) {
+	public String toString(boolean normalized) {
 		return toJson(normalized, false);
 	}
 
 	@Override
 	public String toString() {
-		return toExternalForm(false);
+		return toString(false);
 	}
 
 	public static class Builder {

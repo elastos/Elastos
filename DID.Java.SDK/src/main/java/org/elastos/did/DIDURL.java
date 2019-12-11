@@ -146,7 +146,8 @@ public class DIDURL implements Comparable<DIDURL> {
 		this.fragment = fragment;
 	}
 
-	public String toExternalForm() {
+	@Override
+	public String toString() {
 		StringBuilder builder = new StringBuilder(512);
 		builder.append(did);
 
@@ -166,23 +167,18 @@ public class DIDURL implements Comparable<DIDURL> {
 	}
 
 	@Override
-	public String toString() {
-		return toExternalForm();
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (obj == this)
 			return true;
 
 		if (obj instanceof DIDURL) {
 			DIDURL id = (DIDURL)obj;
-			return toExternalForm().equals(id.toExternalForm());
+			return toString().equals(id.toString());
 		}
 
 		if (obj instanceof String) {
 			String url = (String)obj;
-			return toExternalForm().equals(url);
+			return toString().equals(url);
 		}
 
 		return false;
@@ -190,7 +186,7 @@ public class DIDURL implements Comparable<DIDURL> {
 
 	@Override
 	public int compareTo(DIDURL id) {
-		return toExternalForm().compareTo(id.toExternalForm());
+		return toString().compareTo(id.toString());
 	}
 
 	private int mapHashCode(Map<String, String> map) {

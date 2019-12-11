@@ -22,9 +22,6 @@
 
 package org.elastos.did;
 
-import java.util.Calendar;
-import java.util.Date;
-
 import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
@@ -34,11 +31,6 @@ public class DID implements Comparable<DID> {
 
 	private String method;
 	private String methodSpecificId;
-
-	private DIDDocument document;
-
-	boolean resolved;
-	Date resolveTimestamp;
 
 	protected DID() {
 	}
@@ -75,15 +67,15 @@ public class DID implements Comparable<DID> {
 		this.methodSpecificId = methodSpecificId;
 	}
 
-	public String toExternalForm() {
-		StringBuilder builder = new StringBuilder(64);
-		builder.append("did:").append(method).append(":").append(methodSpecificId);
-		return builder.toString();
-	}
-
 	@Override
 	public String toString() {
-		return toExternalForm();
+		StringBuilder builder = new StringBuilder(64);
+		builder.append("did:")
+			.append(method)
+			.append(":")
+			.append(methodSpecificId);
+
+		return builder.toString();
 	}
 
 	@Override
@@ -104,7 +96,7 @@ public class DID implements Comparable<DID> {
 
 		if (obj instanceof String) {
 			String did = (String)obj;
-			return toExternalForm().equals(did);
+			return toString().equals(did);
 		}
 
 		return false;
@@ -120,14 +112,7 @@ public class DID implements Comparable<DID> {
 	}
 
 	public DIDDocument resolve() throws DIDException {
-		if (document != null)
-			return document;
-
-		document = DIDStore.getInstance().resolveDid(this);
-		if (document != null)
-			resolveTimestamp = Calendar.getInstance().getTime();
-
-		return document;
+		return DIDStore.getInstance().resolveDid(this);
 	}
 
 	class Listener extends DIDURLBaseListener {

@@ -66,7 +66,7 @@ public class Service extends DIDObject {
 		// id
 		generator.writeFieldName(Constants.id);
 		if (normalized || ref == null || !getId().getDid().equals(ref))
-			value = getId().toExternalForm();
+			value = getId().toString();
 		else
 			value = "#" + getId().getFragment();
 		generator.writeString(value);

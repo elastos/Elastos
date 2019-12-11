@@ -99,13 +99,13 @@ public class TestDataGenerator {
 		byte[] binSk = DIDStore.decryptFromBase64(TestConfig.storePass, sk);
 		writeTo("issuer." + id.getFragment() + ".sk", Base58.encode(binSk));
 
-		String json = issuer.toExternalForm(true);
+		String json = issuer.toString(true);
 		writeTo("issuer.normalized.json", json);
 
 		json = formatJson(json);
 		writeTo("issuer.json", json);
 
-		json = issuer.toExternalForm(false);
+		json = issuer.toString(false);
 		writeTo("issuer.compact.json", json);
 
 		System.out.println(issuer.isValid() ? "OK" : "Error");
@@ -174,39 +174,39 @@ public class TestDataGenerator {
 		byte[] binSk = DIDStore.decryptFromBase64(TestConfig.storePass, sk);
 		writeTo("document." + id.getFragment() + ".sk", Base58.encode(binSk));
 
-		String json = test.toExternalForm(true);
+		String json = test.toString(true);
 		writeTo("document.normalized.json", json);
 
 		json = formatJson(json);
 		writeTo("document.json", json);
 
-		json = test.toExternalForm(false);
+		json = test.toString(false);
 		writeTo("document.compact.json", json);
 
 		System.out.println(test.isValid() ? "OK" : "Error");
 
 		// Profile credential
 		System.out.print("Generate credential: " + vcProfile.getId() + "...");
-		json = vcProfile.toExternalForm(true);
+		json = vcProfile.toString(true);
 		writeTo("vc-profile.normalized.json", json);
 
 		json = formatJson(json);
 		writeTo("vc-profile.json", json);
 
-		json = vcProfile.toExternalForm(false);
+		json = vcProfile.toString(false);
 		writeTo("vc-profile.compact.json", json);
 
 		System.out.println(vcProfile.isValid() ? "OK" : "Error");
 
 		// email credential
 		System.out.print("Generate credential: " + vcEmail.getId() + "...");
-		json = vcEmail.toExternalForm(true);
+		json = vcEmail.toString(true);
 		writeTo("vc-email.normalized.json", json);
 
 		json = formatJson(json);
 		writeTo("vc-email.json", json);
 
-		json = vcEmail.toExternalForm(false);
+		json = vcEmail.toString(false);
 		writeTo("vc-email.compact.json", json);
 
 		System.out.println(vcEmail.isValid() ? "OK" : "Error");
@@ -226,13 +226,13 @@ public class TestDataGenerator {
 				.properties(props)
 				.seal(TestConfig.storePass);
 
-		json = vcPassport.toExternalForm(true);
+		json = vcPassport.toString(true);
 		writeTo("vc-passport.normalized.json", json);
 
 		json = formatJson(json);
 		writeTo("vc-passport.json", json);
 
-		json = vcPassport.toExternalForm(false);
+		json = vcPassport.toString(false);
 		writeTo("vc-passport.compact.json", json);
 
 		System.out.println(vcPassport.isValid() ? "OK" : "Error");
@@ -251,13 +251,13 @@ public class TestDataGenerator {
 				.properties(props)
 				.seal(TestConfig.storePass);
 
-		json = vcTwitter.toExternalForm(true);
+		json = vcTwitter.toString(true);
 		writeTo("vc-twitter.normalized.json", json);
 
 		json = formatJson(json);
 		writeTo("vc-twitter.json", json);
 
-		json = vcTwitter.toExternalForm(false);
+		json = vcTwitter.toString(false);
 		writeTo("vc-twitter.compact.json", json);
 
 		System.out.println(vcPassport.isValid() ? "OK" : "Error");
@@ -274,7 +274,7 @@ public class TestDataGenerator {
 				.nonce("873172f58701a9ee686f0630204fee59")
 				.seal(TestConfig.storePass);
 
-		json = vp.toExternalForm();
+		json = vp.toString();
 		writeTo("vp.normalized.json", json);
 
 		json = formatJson(json);

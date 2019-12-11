@@ -128,7 +128,7 @@ public class VerifiablePresentation {
 
 			// method
 			generator.writeFieldName(Constants.verificationMethod);
-			generator.writeString(verificationMethod.toExternalForm());
+			generator.writeString(verificationMethod.toString());
 
 			// realm
 			generator.writeFieldName(Constants.realm);
@@ -467,13 +467,9 @@ public class VerifiablePresentation {
 		return out.toString();
 	}
 
-	public String toExternalForm() {
-		return toJson(false);
-	}
-
 	@Override
 	public String toString() {
-		return toExternalForm();
+		return toJson(false);
 	}
 
 	public static Builder createFor(DID did, DIDURL signKey) throws DIDException {

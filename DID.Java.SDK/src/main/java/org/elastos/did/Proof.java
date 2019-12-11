@@ -107,7 +107,7 @@ public class Proof {
 		// creator
 		if (normalized) {
 			generator.writeFieldName(Constants.creator);
-			generator.writeString(creator.toExternalForm());
+			generator.writeString(creator.toString());
 		}
 
 		// signature

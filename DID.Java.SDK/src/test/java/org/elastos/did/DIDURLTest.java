@@ -191,8 +191,8 @@ public class DIDURLTest {
 	}
 
 	@Test
-	public void testToExternalForm() {
-		assertEquals(testURL, url.toExternalForm());
+	public void testToString() {
+		assertEquals(testURL, url.toString());
 	}
 
 	@Test

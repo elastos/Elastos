@@ -113,13 +113,13 @@ public class VerifiableCredentialTest {
 
 		VerifiableCredential vc = testData.loadTwitterCredential();
 
-		assertEquals(testData.loadTwitterVcNormalizedJson(), normalized.toExternalForm(true));
-		assertEquals(testData.loadTwitterVcNormalizedJson(), compact.toExternalForm(true));
-		assertEquals(testData.loadTwitterVcNormalizedJson(), vc.toExternalForm(true));
+		assertEquals(testData.loadTwitterVcNormalizedJson(), normalized.toString(true));
+		assertEquals(testData.loadTwitterVcNormalizedJson(), compact.toString(true));
+		assertEquals(testData.loadTwitterVcNormalizedJson(), vc.toString(true));
 
-		assertEquals(testData.loadTwitterVcCompactJson(), normalized.toExternalForm(false));
-		assertEquals(testData.loadTwitterVcCompactJson(), compact.toExternalForm(false));
-		assertEquals(testData.loadTwitterVcCompactJson(), vc.toExternalForm(false));
+		assertEquals(testData.loadTwitterVcCompactJson(), normalized.toString(false));
+		assertEquals(testData.loadTwitterVcCompactJson(), compact.toString(false));
+		assertEquals(testData.loadTwitterVcCompactJson(), vc.toString(false));
 	}
 
 	@Test
@@ -135,12 +135,12 @@ public class VerifiableCredentialTest {
 
 		VerifiableCredential vc = testData.loadProfileCredential();
 
-		assertEquals(testData.loadProfileVcNormalizedJson(), normalized.toExternalForm(true));
-		assertEquals(testData.loadProfileVcNormalizedJson(), compact.toExternalForm(true));
-		assertEquals(testData.loadProfileVcNormalizedJson(), vc.toExternalForm(true));
+		assertEquals(testData.loadProfileVcNormalizedJson(), normalized.toString(true));
+		assertEquals(testData.loadProfileVcNormalizedJson(), compact.toString(true));
+		assertEquals(testData.loadProfileVcNormalizedJson(), vc.toString(true));
 
-		assertEquals(testData.loadProfileVcCompactJson(), normalized.toExternalForm(false));
-		assertEquals(testData.loadProfileVcCompactJson(), compact.toExternalForm(false));
-		assertEquals(testData.loadProfileVcCompactJson(), vc.toExternalForm(false));
+		assertEquals(testData.loadProfileVcCompactJson(), normalized.toString(false));
+		assertEquals(testData.loadProfileVcCompactJson(), compact.toString(false));
+		assertEquals(testData.loadProfileVcCompactJson(), vc.toString(false));
 	}
 }

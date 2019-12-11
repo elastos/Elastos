@@ -79,8 +79,8 @@ public class DIDTest {
 	}
 
 	@Test
-	public void testToExtermalForm() {
-		assertEquals(testDID, did.toExternalForm());
+	public void testToString() {
+		assertEquals(testDID, did.toString());
 	}
 
 	@Test

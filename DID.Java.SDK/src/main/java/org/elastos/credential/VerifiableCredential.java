@@ -128,7 +128,7 @@ public class VerifiableCredential extends DIDObject {
 			// id
 			if (normalized || ref == null || !getId().equals(ref)) {
 				generator.writeFieldName(Constants.id);
-				generator.writeString(getId().toExternalForm());
+				generator.writeString(getId().toString());
 			}
 
 			// Properties
@@ -196,7 +196,7 @@ public class VerifiableCredential extends DIDObject {
 			String value;
 			generator.writeFieldName(Constants.verificationMethod);
 			if (normalized || ref == null || !verificationMethod.getDid().equals(ref))
-				value = verificationMethod.toExternalForm();
+				value = verificationMethod.toString();
 			else
 				value = "#" + verificationMethod.getFragment();
 			generator.writeString(value);
@@ -585,7 +585,7 @@ public class VerifiableCredential extends DIDObject {
 		generator.writeFieldName(Constants.id);
 
 		if (normalized || ref == null || !getId().getDid().equals(ref))
-			value = getId().toExternalForm();
+			value = getId().toString();
 		else
 			value = "#" + getId().getFragment();
 
@@ -603,7 +603,7 @@ public class VerifiableCredential extends DIDObject {
 		// issuer
 		if (normalized || !issuer.equals(subject.getId())) {
 			generator.writeFieldName(Constants.issuer);
-			generator.writeString(issuer.toExternalForm());
+			generator.writeString(issuer.toString());
 		}
 
 		// issuanceDate
@@ -671,12 +671,12 @@ public class VerifiableCredential extends DIDObject {
 		return out.toString();
 	}
 
-	public String toExternalForm(boolean normalized) {
+	public String toString(boolean normalized) {
 		return toJson(normalized, false);
 	}
 
 	@Override
 	public String toString() {
-		return toExternalForm(false);
+		return toString(false);
 	}
 }

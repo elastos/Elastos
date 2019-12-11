@@ -102,7 +102,7 @@ public class PublicKey extends DIDObject {
 		// id
 		generator.writeFieldName(Constants.id);
 		if (normalized || ref == null || !getId().getDid().equals(ref))
-			value = getId().toExternalForm();
+			value = getId().toString();
 		else
 			value = "#" + getId().getFragment();
 		generator.writeString(value);
@@ -116,7 +116,7 @@ public class PublicKey extends DIDObject {
 		// controller
 		if (normalized || ref == null || !controller.equals(ref)) {
 			generator.writeFieldName(Constants.controller);
-			generator.writeString(controller.toExternalForm());
+			generator.writeString(controller.toString());
 		}
 
 		// publicKeyBase58

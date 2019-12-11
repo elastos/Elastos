@@ -914,13 +914,13 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		assertEquals(testData.loadTestNormalizedJson(), compact.toExternalForm(true));
-		assertEquals(testData.loadTestNormalizedJson(), normalized.toExternalForm(true));
-		assertEquals(testData.loadTestNormalizedJson(), doc.toExternalForm(true));
+		assertEquals(testData.loadTestNormalizedJson(), compact.toString(true));
+		assertEquals(testData.loadTestNormalizedJson(), normalized.toString(true));
+		assertEquals(testData.loadTestNormalizedJson(), doc.toString(true));
 
-		assertEquals(testData.loadTestCompactJson(), compact.toExternalForm(false));
-		assertEquals(testData.loadTestCompactJson(), normalized.toExternalForm(false));
-		assertEquals(testData.loadTestCompactJson(), doc.toExternalForm(false));
+		assertEquals(testData.loadTestCompactJson(), compact.toString(false));
+		assertEquals(testData.loadTestCompactJson(), normalized.toString(false));
+		assertEquals(testData.loadTestCompactJson(), doc.toString(false));
 	}
 
 	@Test
