@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_IMASTERWALLETMANAGER_H__
 #define __ELASTOS_SDK_IMASTERWALLETMANAGER_H__
 
-#include <IMasterWallet.h>
+#include "IMasterWallet.h"
 
 namespace Elastos {
 	namespace ElaWallet {
