@@ -365,10 +365,23 @@ time_t Credential_GetIssuanceDate(Credential *cred)
 
 time_t Credential_GetExpirationDate(Credential *cred)
 {
+    DIDDocument *doc;
+    time_t _expire, expire;
+
     if (!cred)
         return -1;
 
-    return cred->expirationDate;
+    doc = DID_Resolve(&cred->id.did);
+    expire = DIDDocument_GetExpires(doc);
+
+    doc = DID_Resolve(&cred->issuer);
+    _expire = DIDDocument_GetExpires(doc);
+
+    expire = expire < _expire ? expire : _expire;
+    if (cred->expirationDate != 0)
+        expire = expire < cred->expirationDate ? expire : cred->expirationDate;
+
+    return expire;
 }
 
 ssize_t Credential_GetPropertyCount(Credential *cred)
@@ -464,10 +477,12 @@ Credential *Parser_Credential(cJSON *json, DID *did)
     item = cJSON_GetObjectItem(json, "issuer");
     if (item && parse_did(&credential->issuer, item->valuestring) < 0)
         goto errorExit;
-    if (!item && !did)
-        goto errorExit;
-
-    strncpy((char*)credential->issuer.idstring, did->idstring, MAX_ID_SPECIFIC_STRING);
+    if (!item) {
+        if (!did)
+            goto errorExit;
+        else
+            DID_Copy(&credential->issuer, did);
+    }
 
     //issuanceDate
     item = cJSON_GetObjectItem(json, "issuanceDate");
@@ -516,7 +531,7 @@ Credential *Parser_Credential(cJSON *json, DID *did)
     //subject
     //strncpy((char*)credential->subject.id.idstring, did->idstring, MAX_ID_SPECIFIC_STRING);
     item = cJSON_GetObjectItem(json, "credentialSubject");
-    if (!item || !cJSON_IsArray(item)|| parser_subject(item, credential) == -1)
+    if (!item || !cJSON_IsObject(item)|| parser_subject(item, credential) == -1)
          goto errorExit;
 
     //type
@@ -533,25 +548,23 @@ errorExit:
 
 ssize_t Parser_Credentials(DID *did, Credential **creds, size_t size, cJSON *json)
 {
-    size_t i;
+    size_t i, index = 0;
     cJSON *item;
 
     if (!creds || size <= 0 || !json || !cJSON_IsArray(json))
         return -1;
 
     for (i = 0; i < size; i++) {
-        int index = 0;
         item = cJSON_GetArrayItem(json, i);
         if(!item)
             continue;
 
         Credential *cred = Parser_Credential(item, did);
         if (cred)
-            creds[i++] = cred;
+            creds[index++] = cred;
     }
 
-    assert(i == size);
-    return i;
+    return index;
 }
 
 static int didurl_func(const void *a, const void *b)

@@ -34,24 +34,24 @@ if(HAVE_SYS_RESOURCE_H)
     add_definitions(-DHAVE_SYS_RESOURCE_H=1)
 endif()
 
-file(GLOB CRED-TESTS "credtests/*.c")
+file(GLOB VC-TESTS "vctests/*.c")
 file(GLOB DID-TESTS "didtests/*.c")
 file(GLOB DOC-TESTS "doctests/*.c")
-file(GLOB DPUBLISH-TESTS "dpublishtests/*.c")
+file(GLOB PUBDID-TESTS "pubdidtests/*.c")
 file(GLOB DSTORE-TESTS "dstoretests/*.c")
-#file(GLOB PRE-TESTS "pretests/*.c")
+#file(GLOB VP-TESTS "vptests/*.c")
 #file(GLOB ISSUER-TESTS "issuertests/*.c")
 
 set(SRC
     constant.c
     loader.c
     tests.c
-    ${CRED-TESTS}
+    ${VC-TESTS}
     ${DID-TESTS}
     ${DOC-TESTS}
-    ${DPUBLISH-TESTS}
+    ${PUBDID-TESTS}
     ${DSTORE-TESTS}
-    #${PRE-TESTS}
+    #${VP-TESTS}
     #${ISSUER-TESTS}
     )
 
@@ -98,7 +98,7 @@ else()
 endif()
 
 include_directories(
-    dpublishtests
+    pubdidtests
     .
     ../src
     ../src/utility

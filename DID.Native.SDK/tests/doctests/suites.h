@@ -20,46 +20,20 @@
  * SOFTWARE.
  */
 
-#ifndef __TEST_SUITES_H__
-#define __TEST_SUITES_H__
+#ifndef __DOC_TEST_SUITES_H__
+#define __DOC_TEST_SUITES_H__
 
-#include <CUnit/Basic.h>
+DECL_TESTSUITE(diddoc_fromjson_test);
+DECL_TESTSUITE(diddoc_getelem_test);
+DECL_TESTSUITE(diddoc_arelem_test);
+DECL_TESTSUITE(diddoc_base_test);
+DECL_TESTSUITE(diddoc_sign_test);
 
-typedef CU_SuiteInfo* (*SuiteInfoFunc)(void);
+#define DEFINE_DOC_TESTSUITES \
+    DEFINE_TESTSUITE(diddoc_fromjson_test), \
+    DEFINE_TESTSUITE(diddoc_getelem_test), \
+    DEFINE_TESTSUITE(diddoc_arelem_test), \
+    DEFINE_TESTSUITE(diddoc_base_test), \
+    DEFINE_TESTSUITE(diddoc_sign_test)
 
-typedef struct TestSuite {
-    const char* fileName;
-    SuiteInfoFunc getSuiteInfo;
-} TestSuite;
-
-#define DECL_TESTSUITE(mod) \
-    CU_SuiteInfo* mod##_suite_info(void);
-
-#define DEFINE_TESTSUITE(mod) \
-    { \
-        .fileName     = #mod".c", \
-        .getSuiteInfo = mod##_suite_info \
-    }
-
-#define DEFINE_TESTSUITE_NULL \
-    { \
-        .fileName = NULL, \
-        .getSuiteInfo  = NULL\
-    }
-
-#include "vctests/suites.h"
-#include "didtests/suites.h"
-#include "doctests/suites.h"
-#include "pubdidtests/suites.h"
-#include "dstoretests/suites.h"
-
-TestSuite suites[] = {
-    DEFINE_DID_TESTSUITES,
-    DEFINE_VC_TESTSUITES,
-    DEFINE_DOC_TESTSUITES,
-    DEFINE_DSTORE_TESTSUITES,
-    DEFINE_PUBDID_TESTSUITES,
-    DEFINE_TESTSUITE_NULL
-};
-
-#endif /* __TEST_SUITES_H__ */
+#endif /* __DOC_TEST_SUITES_H__ */

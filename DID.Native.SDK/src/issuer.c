@@ -46,7 +46,7 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey)
         return NULL;
 
     if (!signkey)
-        signkey = DIDDocument_GetDefaultKey(doc);
+        signkey = DIDDocument_GetDefaultPublicKey(doc);
     else {
         isAuthKey = DIDDocument_IsAuthenticationKey(doc, signkey);
         if (!isAuthKey) {
