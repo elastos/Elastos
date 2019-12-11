@@ -4,15 +4,14 @@ import android.content.Context;
 import android.os.Environment;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
 import org.elastos.wallet.ela.rxjavahelp.PresenterAbstract;
-import org.elastos.wallet.ela.ui.Assets.listener.GetSupportedChainsListner;
-import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.utils.CopyFile;
 import org.elastos.wallet.ela.utils.Log;
 
 import java.io.File;
@@ -42,6 +41,9 @@ public class AboutPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
+                if (MyApplication.chainID > 0) {
+                    moveWalletFile(baseFragment.getContext());
+                }
                 return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext()) + "", "moveLogFile");
             }
         });
@@ -82,5 +84,33 @@ public class AboutPresenter extends PresenterAbstract {
             return null;
         }
 
+    }
+
+    private static String moveWalletFile(Context context) {
+        String rootPath = context.getFilesDir().getParent();
+
+        String root = "RegTest";
+        switch (MyApplication.chainID) {
+            case 1:
+                root = "TestNet";
+                break;
+            case 2:
+                root = "RegTest";
+                break;
+            case 3:
+                root = "PrvNet";
+                break;
+
+        }
+
+        String target = Environment.getExternalStoragePublicDirectory(
+                context.getPackageName()).getAbsolutePath();
+        try {
+            CopyFile.dirCopy(rootPath + "/" + root, target + "/" + root);
+            return target;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 }
