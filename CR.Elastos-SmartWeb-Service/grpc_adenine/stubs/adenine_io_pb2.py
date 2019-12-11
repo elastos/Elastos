@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='adenineio',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x10\x61\x64\x65nine_io.proto\x12\tadenineio\")\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\r\n\x05input\x18\x02 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\xb6\x01\n\tAdenineIo\x12\x31\n\x04Sign\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x12:\n\rUploadAndSign\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x12:\n\rVerifyAndShow\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x10\x61\x64\x65nine_io.proto\x12\tadenineio\")\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\r\n\x05input\x18\x02 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\xb3\x02\n\tAdenineIo\x12\x31\n\x04Sign\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x12:\n\rUploadAndSign\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x12:\n\rVerifyAndShow\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x12>\n\x11\x44\x65ployEthContract\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x12;\n\x0eRunEthContract\x12\x12.adenineio.Request\x1a\x13.adenineio.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -135,7 +135,7 @@ _ADENINEIO = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=143,
-  serialized_end=325,
+  serialized_end=450,
   methods=[
   _descriptor.MethodDescriptor(
     name='Sign',
@@ -159,6 +159,24 @@ _ADENINEIO = _descriptor.ServiceDescriptor(
     name='VerifyAndShow',
     full_name='adenineio.AdenineIo.VerifyAndShow',
     index=2,
+    containing_service=None,
+    input_type=_REQUEST,
+    output_type=_RESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeployEthContract',
+    full_name='adenineio.AdenineIo.DeployEthContract',
+    index=3,
+    containing_service=None,
+    input_type=_REQUEST,
+    output_type=_RESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='RunEthContract',
+    full_name='adenineio.AdenineIo.RunEthContract',
+    index=4,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,
