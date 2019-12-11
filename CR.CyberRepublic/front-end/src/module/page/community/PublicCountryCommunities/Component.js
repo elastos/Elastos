@@ -58,7 +58,7 @@ export default class extends StandardPage {
         countryCommunity = _.find(countryCommunities, {parentCommunityId: null})
 
         this.setState({
-          countryGeolocation: countryCommunity.geolocation
+          countryGeolocation: countryCommunity && countryCommunity.geolocation
         })
 
       } else {
