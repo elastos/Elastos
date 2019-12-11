@@ -2,8 +2,8 @@
 {% load static %} 
 
 {% block title %}
-<title>Deploy ETH contract - Elastos Nucleus</title>
-{% endblock title %} 
+<title>Deploy ETH Contract - Elastos Nucleus</title>
+{% endblock title %}
 
 {% block related %}
   <li>
@@ -45,11 +45,25 @@
 
 {% block servicetitle %}
 <h5 class="card-header">Deploy ETH Contract</h5>
-{% endblock servicetitle %} 
+{% endblock servicetitle %}
 
 {% block service %}
-<p>The Deploy ETH Contract service goes here.</p>
-{% endblock service %} 
+    {% if output %}
+        <h5 class="card-title">Response:</h5>
+        <p class="card-text">Smart Contract Address :  {{ contract_address }}</p>
+        <a href="{% url "service:deploy_eth_contract" %}" methods="GET">
+        <button class="btn-default">
+            Upload Smart Contract Again
+        </button>
+        </a>
+    {% else %}
+       <form  class="form-group" method="post" enctype="multipart/form-data">
+       {% csrf_token %}
+       {{ form.as_p }}
+       <button type="submit">Upload Smart Contract</button>
+       </form>
+    {% endif %}
+{% endblock service %}
 
 {% block description %}
 <p>The description of the Deploy ETH Contract service goes here.</p>

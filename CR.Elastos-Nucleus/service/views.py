@@ -10,7 +10,7 @@ from django.urls import reverse
 from elastos_adenine.common import Common
 from elastos_adenine.console import Console
 
-from .forms import UploadFileForm, VerifyAndShowForm
+from .forms import UploadAndSignForm, VerifyAndShowForm, DeployETHContractForm
 from .models import UploadFile
 
 
@@ -39,7 +39,7 @@ def upload_and_sign(request):
 
         private_key = request.POST['private_key']
         api_key = request.POST['api_key']
-        form = UploadFileForm(request.POST, request.FILES, initial={'did': did})
+        form = UploadAndSignForm(request.POST, request.FILES, initial={'did': did})
         if form.is_valid():
             form.save()
             temp_file = UploadFile.objects.get(did=did)
@@ -61,7 +61,7 @@ def upload_and_sign(request):
                 return redirect(reverse('service:upload_and_sign'))
 
     else:
-        form = UploadFileForm(initial={'did': did})
+        form = UploadAndSignForm(initial={'did': did})
         return render(request, "service/upload_and_sign.html", {'form': form, 'output': False})
 
 
@@ -108,7 +108,34 @@ def request_ela(request):
 
 @login_required
 def deploy_eth_contract(request):
-    return render(request, "service/deploy_eth_contract.html")
+    did = request.session['did']
+    if request.method == 'POST':
+        # Purge old requests for housekeeping.
+        UploadFile.objects.filter(did=did).delete()
+
+        eth_account_address = request.POST['eth_account_address']
+        eth_account_password = request.POST['eth_account_password']
+        api_key = request.POST['api_key']
+        form = DeployETHContractForm(request.POST, request.FILES, initial={'did': did})
+        if form.is_valid():
+            form.save()
+            temp_file = UploadFile.objects.get(did=did)
+            file_path = temp_file.uploaded_file.path
+            console = Console()
+            response = console.deploy_eth_contract(api_key, eth_account_address, eth_account_password, file_path)
+            data = json.loads(response.output)
+            if response.status:
+                temp_file.delete()
+                contract_address = data['result']['contract_address']
+                return render(request, "service/deploy_eth_contract.html",
+                              {"contract_address": contract_address, 'output': True})
+            else:
+                messages.success(request, "File could not be uploaded. Please try again")
+                return redirect(reverse('service:deploy_eth_contract'))
+
+    else:
+        form = DeployETHContractForm(initial={'did': did})
+        return render(request, "service/deploy_eth_contract.html", {'form': form, 'output': False})
 
 
 @login_required
