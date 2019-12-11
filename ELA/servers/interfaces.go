@@ -1491,6 +1491,7 @@ type RpcCrMemberInfo struct {
 	DepositHash      string `json:"deposithash"`
 	Penalty          string `json:"penalty"`
 	Index            uint64 `json:"index"`
+	State            string `json:"state"`
 }
 
 //a group cr member info  include cr member count
@@ -1751,6 +1752,7 @@ func ListCurrentCRs(param Params) map[string]interface{} {
 			DepositHash:      cr.DepositHash.String(),
 			Penalty:          cm.GetState().GetPenalty(cr.Info.DID).String(),
 			Index:            uint64(i),
+			State:            cr.MemberState.String(),
 		}
 		rsCRMemberInfoSlice = append(rsCRMemberInfoSlice, memberInfo)
 	}

@@ -32,6 +32,19 @@ const (
 	MemberReturned
 )
 
+func (s *MemberState) String() string {
+	switch *s {
+	case MemberElected:
+		return "Elected"
+	case MemberImpeached:
+		return "Impeached"
+	case MemberReturned:
+		return "Returned"
+	}
+
+	return "Unknown"
+}
+
 // CRMember defines CR committee member related info.
 type CRMember struct {
 	Info             payload.CRInfo
