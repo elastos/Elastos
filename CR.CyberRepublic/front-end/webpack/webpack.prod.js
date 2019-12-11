@@ -203,6 +203,11 @@ module.exports = merge(common, {
                         ),
                     },
                     {
+                        test: /\.(eot|ttf|woff|woff2)$/,
+                        exclude: /node_modules/,
+                        use: 'url-loader'
+                    },
+                    {
                         loader: require.resolve('file-loader'),
                         exclude: [/\.js$/, /\.html$/, /\.json$/],
                         options: {
