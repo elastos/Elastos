@@ -1,17 +1,12 @@
 import React from 'react'
 import Footer from '@/module/layout/Footer/Container'
-import { Link } from 'react-router-dom'
-import config from '@/config'
-import _ from 'lodash'
 import './style.scss'
-import I18N from '@/I18N'
 
 import MediaQuery from 'react-responsive'
 import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC } from '@/config/constant'
 
-import { Breadcrumb, Col, Row, Icon, Form, Input, Button, Modal, Select,
-  Table, List, Popover, Cascader, Tabs, Tree, Divider } from 'antd'
-import moment from 'moment'
+import { Col, Row, Tabs, Tree, Divider } from 'antd'
+
 import StandardPage from '../../StandardPage'
 
 // /////////////////

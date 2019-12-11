@@ -1,12 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import _ from 'lodash'
-import {
-  Row,
-  Col,
-  Modal,
-  Spin,
-} from 'antd'
+import { Modal, Spin } from 'antd'
 import I18N from '@/I18N'
 import sanitizeHtml from '@/util/html'
 import { TranslateButton, ModalBody, TranslationText, Container, Footer, LangText } from './style'

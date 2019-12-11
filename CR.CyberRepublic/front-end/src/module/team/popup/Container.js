@@ -1,7 +1,6 @@
 import {createContainer} from '@/util'
 import TeamService from '@/service/TeamService'
 import Component from './Component'
-import _ from 'lodash'
 
 export default createContainer(Component, (state) => {
   let page

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import { Row, Col } from 'antd'
 import I18N from '@/I18N'
-import _ from 'lodash'
 import PopoverProfile from '@/module/common/PopoverProfile'
 import styled from 'styled-components'
 

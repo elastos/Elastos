@@ -1,6 +1,6 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
-import {Form, Icon, Input, Button, Select} from 'antd'
+import {Form, Input, Button, Select} from 'antd'
 import {SUBMISSION_TYPE} from '@/constant'
 import I18N from '@/I18N'
 

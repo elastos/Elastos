@@ -3,7 +3,6 @@ import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
 import CommunityService from '@/service/CommunityService'
 import {message} from 'antd'
-import _ from 'lodash'
 import { logger } from '@/util'
 
 import {SUBMISSION_TYPE, SUBMISSION_CAMPAIGN} from '@/constant'

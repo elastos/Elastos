@@ -1,5 +1,5 @@
 import React from 'react'
-import { Row, Col, Spin, Button, message, Popconfirm, Anchor, Icon } from 'antd'
+import { Row, Col, Spin, Button, message, Popconfirm, Anchor } from 'antd'
 import { StickyContainer, Sticky } from 'react-sticky'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'

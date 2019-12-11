@@ -4,7 +4,7 @@ import { DEFAULT_IMAGE, USER_GENDER } from '@/constant'
 import I18N from '@/I18N'
 import _ from 'lodash'
 
-import { Table, Card, Select, Col, Row, Breadcrumb, Icon, Button, Input } from 'antd'
+import { Card, Select, Col, Row, Button, Input } from 'antd'
 
 import config from '@/config'
 import Footer from '@/module/layout/Footer/Container'

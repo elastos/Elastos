@@ -2,7 +2,6 @@ import React from 'react'
 import _ from 'lodash'
 import BaseComponent from '@/model/BaseComponent'
 import CVoteSummaryForm from '@/module/form/CVoteSummaryForm/Container'
-import I18N from '@/I18N'
 import styled from 'styled-components'
 
 export default class extends BaseComponent {
