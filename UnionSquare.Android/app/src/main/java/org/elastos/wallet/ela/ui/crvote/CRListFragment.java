@@ -365,7 +365,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         for (int i = 0; i < list.size(); i++) {
             //筛选当前节点
             CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = list.get(i);
-            bean.setIndex(netList.size() + i);
+            bean.setIndex(i);
             setVoterate(bean, totalvotes);
             if (curentNode == null && bean.getDid().equals(did)) {
                 curentNode = bean;
