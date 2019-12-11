@@ -3,10 +3,7 @@ import StandardPage from '../../StandardPage'
 import Footer from '@/module/layout/Footer/Container'
 import './style.scss'
 
-import { Col, Row, Icon, Form, Input, Button, Modal, Select, Table, List, Tooltip, Breadcrumb, Card } from 'antd'
-import moment from 'moment/moment'
-
-import config from '@/config'
+import { Col, Row } from 'antd'
 
 export default class extends StandardPage {
 
