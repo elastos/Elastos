@@ -2005,7 +2005,8 @@ Response:
                 "depositamout": "5000",
                 "deposithash": "1f56b347f27954f1061883cfe469839f8465cc7340",
                 "penalty": 0,
-                "index": 0
+                "index": 0,
+                "State": "Elected"
             },
             {
                 "code": "2103c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95ac",
@@ -2017,7 +2018,8 @@ Response:
                 "depositamout": "5000",
                 "deposithash": "1f0f11c336563d31ed1cf81ac4a83f9df7306f9967",
                 "penalty": 0,
-                "index": 1
+                "index": 1,
+                "State": "Elected"
             }
         ],
         "totalcounts": 2
