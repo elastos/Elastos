@@ -1,5 +1,7 @@
 # Elastos DID Java SDK
 
+[![Build Status](https://travis-ci.com/elastos/Elastos.DID.Java.SDK.svg?)](https://travis-ci.com/elastos/Elastos.DID.Java.SDK)
+
 ## About
 
 This repository contains a JAVA implementation of the W3C DID and DID Credentials  specifications, for the Elastos blockchain project.
