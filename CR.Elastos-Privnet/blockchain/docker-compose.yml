@@ -269,6 +269,7 @@ services:
     user: "${UID}:${GID}"
     volumes:
       - ${PWD}/restful-services/api-misc/mainchain/config.json:/home/elauser/config.json
+      - ${PWD}/restful-services/api-misc/mainchain/erc20.json:/home/elauser/erc20.json
       - ${PWD}/restful-services/api-misc/mainchain/deploy.sh:/home/elauser/deploy.sh
     depends_on:
       - privnet-mysql
