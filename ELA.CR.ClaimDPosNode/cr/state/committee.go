@@ -339,7 +339,9 @@ func (c *Committee) tryStartVotingPeriod(height uint32) {
 		}
 		if normalCount < c.params.CRAgreementCount {
 			c.InElectionPeriod = false
-			c.LastVotingStartHeight = height
+			if !c.isInVotingPeriod(height) {
+				c.LastVotingStartHeight = height
+			}
 		}
 	}, func() {
 		c.InElectionPeriod = inElectionPeriod
@@ -547,7 +549,25 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 		return nil, err
 	}
 
-	// Record history members.
+	// Process current members.
+	c.processCurrentMembers(height)
+
+	result := make([]common.Uint168, 0, c.params.CRMemberCount)
+	for i := 0; i < int(c.params.CRMemberCount); i++ {
+		c.Members[candidates[i].info.DID] = c.generateMember(candidates[i])
+		result = append(result, candidates[i].info.DID)
+	}
+
+	// Process current candidates.
+	c.processCurrentCandidates()
+
+	c.state.CurrentSession += 1
+	c.InElectionPeriod = true
+	c.LastCommitteeHeight = height
+	return result, nil
+}
+
+func (c *Committee) processCurrentMembers(height uint32) {
 	if _, ok := c.HistoryMembers[c.state.CurrentSession]; !ok {
 		c.HistoryMembers[c.state.CurrentSession] =
 			make(map[common.Uint168]*CRMember)
@@ -557,18 +577,12 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 		c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = m
 	}
 
-	result := make([]common.Uint168, 0, c.params.CRMemberCount)
 	c.Members = make(map[common.Uint168]*CRMember, c.params.CRMemberCount)
-	c.manager.Proposals = make(map[common.Uint256]*ProposalState)
-	c.manager.ProposalHashs = make(map[common.Uint168]ProposalHashSet)
 	c.state.Nicknames = map[string]struct{}{}
 	c.state.Votes = map[string]struct{}{}
-	for i := 0; i < int(c.params.CRMemberCount); i++ {
-		c.Members[candidates[i].info.DID] = c.generateMember(candidates[i])
-		result = append(result, candidates[i].info.DID)
-	}
+}
 
-	// Record history candidates.
+func (c *Committee) processCurrentCandidates() {
 	if _, ok := c.state.HistoryCandidates[c.state.CurrentSession]; !ok {
 		c.state.HistoryCandidates[c.state.CurrentSession] =
 			make(map[common.Uint168]*Candidate)
@@ -578,11 +592,6 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 			c.state.HistoryCandidates[c.state.CurrentSession][k] = v
 		}
 	}
-
-	c.state.CurrentSession += 1
-	c.InElectionPeriod = true
-	c.LastCommitteeHeight = height
-	return result, nil
 }
 
 func (c *Committee) generateMember(candidate *Candidate) *CRMember {
