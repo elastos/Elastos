@@ -1,4 +1,4 @@
-# Elastos Local PrivateNet - v0.5
+# Elastos Local PrivateNet - v0.6
 
 This version supports the entirety of AuxPoW+DPoS(2 CRC supernodes and 2 DPoS supernodes)
 
@@ -18,7 +18,7 @@ Here's a taste of how this build process looks from scratch [https://www.cyberre
 
 ## Requirements
 
-- Ubuntu 16 or higher
+- Ubuntu 18 or higher
 - Docker Engine 18.09.2
 - Docker Compose 1.23.2
 - Docker Machine 0.16.1
