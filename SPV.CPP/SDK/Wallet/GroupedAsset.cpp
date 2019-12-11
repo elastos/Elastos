@@ -265,11 +265,11 @@ namespace Elastos {
 			feeAmount = CalculateFee(_parent->_feePerKb, tx->EstimateSize());
 
 			UTXOArray utxo2Pick(_utxos.begin(), _utxos.end());
-			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
-
 			std::sort(utxo2Pick.begin(), utxo2Pick.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
 				return a->Output()->Amount() > b->Output()->Amount();
 			});
+
+			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
 
 			for (UTXOArray::const_iterator u = utxo2Pick.cbegin(); u != utxo2Pick.cend(); ++u) {
 				if (!max && totalInputAmount >= totalOutputAmount + feeAmount)
@@ -385,11 +385,11 @@ namespace Elastos {
 			_parent->Lock();
 
 			UTXOArray utxo2Pick(_utxos.begin(), _utxos.end());
-			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
-
 			std::sort(utxo2Pick.begin(), utxo2Pick.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
 				return a->Output()->Amount() > b->Output()->Amount();
 			});
+
+			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
 
 			for (UTXOArray::iterator u = utxo2Pick.begin(); u != utxo2Pick.end(); ++u) {
 				if (txSize >= TX_MAX_SIZE - 1000 || tx->GetInputs().size() >= 500)
@@ -523,11 +523,11 @@ namespace Elastos {
 			}
 
 			UTXOArray utxo2Pick(_utxos.begin(), _utxos.end());
-			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
-
 			std::sort(utxo2Pick.begin(), utxo2Pick.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
 				return a->Output()->Amount() > b->Output()->Amount();
 			});
+
+			utxo2Pick.insert(utxo2Pick.end(), _utxosCoinbase.begin(), _utxosCoinbase.end());
 
 			for (UTXOArray::iterator u = utxo2Pick.begin(); u != utxo2Pick.end(); ++u) {
 				if (!max && totalInputAmount >= totalOutputAmount + feeAmount && txSize >= 2000)

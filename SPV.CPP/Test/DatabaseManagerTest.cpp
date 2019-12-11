@@ -332,8 +332,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	SECTION("CoinBase UTXO test") {
 #define TEST_TX_RECORD_CNT DEFAULT_RECORD_CNT
-		static std::vector<UTXOPtr> txToSave;
-		static std::vector<UTXOPtr> txToUpdate;
+		static UTXOSet txToSave;
+		static UTXOSet txToUpdate;
 
 		SECTION("prepare for testing") {
 			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
@@ -341,23 +341,22 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				o->SetOutputLock(getRandUInt32());
 				UTXOPtr entity(new UTXO(getRanduint256(), getRandUInt16(), getRandUInt32(), getRandUInt32(), o));
 
-				txToSave.push_back(entity);
+				REQUIRE(txToSave.insert(entity).second);
 			}
 
-			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
-				UTXOPtr entity(new UTXO());
+			for (const UTXOPtr &u : txToSave) {
+				UTXOPtr entity(new UTXO(*u));
 
 				entity->SetTimestamp(12345);
 				entity->SetBlockHeight(12345678);
-				entity->SetHash(txToSave[i]->Hash());
-				txToUpdate.push_back(entity);
+				REQUIRE(txToUpdate.insert(entity).second);
 			}
 		}
 
 		SECTION("save test") {
 			DatabaseManager dbm(DBFILE);
-			for (int i = 0; i < txToSave.size(); ++i)
-				REQUIRE(dbm.PutCoinBase(txToSave[i]));
+			for (const UTXOPtr &u : txToSave)
+				REQUIRE(dbm.PutCoinBase(u));
 		}
 
 		SECTION("read test") {
@@ -366,15 +365,20 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				REQUIRE(readTx[i]->Spent() == txToSave[i]->Spent());
-				REQUIRE(readTx[i]->Index() == txToSave[i]->Index());
-				REQUIRE(readTx[i]->Output()->ProgramHash() == txToSave[i]->Output()->ProgramHash());
-				REQUIRE(readTx[i]->Output()->AssetID() == txToSave[i]->Output()->AssetID());
-				REQUIRE(readTx[i]->Output()->OutputLock() == txToSave[i]->Output()->OutputLock());
-				REQUIRE(readTx[i]->Output()->Amount() == txToSave[i]->Output()->Amount());
-				REQUIRE(readTx[i]->Timestamp() == txToSave[i]->Timestamp());
-				REQUIRE(readTx[i]->BlockHeight() == txToSave[i]->BlockHeight());
-				REQUIRE(readTx[i]->Hash() == txToSave[i]->Hash());
+				if (i < readTx.size() - 1)
+					REQUIRE(readTx[i]->BlockHeight() <= readTx[i + 1]->BlockHeight());
+				UTXOSet::iterator it = txToSave.find(readTx[i]);
+				REQUIRE((it != txToSave.end()));
+				const UTXOPtr &u = *it;
+				REQUIRE(readTx[i]->Spent() == u->Spent());
+				REQUIRE(readTx[i]->Index() == u->Index());
+				REQUIRE(readTx[i]->Output()->ProgramHash() == u->Output()->ProgramHash());
+				REQUIRE(readTx[i]->Output()->AssetID() == u->Output()->AssetID());
+				REQUIRE(readTx[i]->Output()->OutputLock() == u->Output()->OutputLock());
+				REQUIRE(readTx[i]->Output()->Amount() == u->Output()->Amount());
+				REQUIRE(readTx[i]->Timestamp() == u->Timestamp());
+				REQUIRE(readTx[i]->BlockHeight() == u->BlockHeight());
+				REQUIRE(readTx[i]->Hash() == u->Hash());
 			}
 		}
 
@@ -382,9 +386,9 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			DatabaseManager dbm(DBFILE);
 			std::vector<uint256> hashes;
 
-			for (int i = 0; i < txToUpdate.size(); ++i)
-				hashes.push_back(uint256(txToUpdate[i]->Hash()));
-			REQUIRE(dbm.UpdateCoinBase(hashes, txToUpdate[0]->BlockHeight(), txToUpdate[0]->Timestamp()));
+			for (const UTXOPtr &u : txToUpdate)
+				hashes.emplace_back(u->Hash());
+			REQUIRE(dbm.UpdateCoinBase(hashes, (*txToUpdate.begin())->BlockHeight(), (*txToUpdate.begin())->Timestamp()));
 		}
 
 		SECTION("read after update test") {
@@ -393,28 +397,31 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				REQUIRE(readTx[i]->Hash() == txToSave[i]->Hash());
-				REQUIRE(readTx[i]->Spent() == txToSave[i]->Spent());
-				REQUIRE(readTx[i]->Index() == txToSave[i]->Index());
-				REQUIRE(readTx[i]->Output()->ProgramHash() == txToSave[i]->Output()->ProgramHash());
-				REQUIRE(readTx[i]->Output()->AssetID() == txToSave[i]->Output()->AssetID());
-				REQUIRE(readTx[i]->Output()->OutputLock() == txToSave[i]->Output()->OutputLock());
-				REQUIRE(readTx[i]->Output()->Amount() == txToSave[i]->Output()->Amount());
+				UTXOSet::iterator it = txToSave.find(readTx[i]);
+				REQUIRE((it != txToSave.end()));
+				const UTXOPtr &u = *it;
+				REQUIRE(readTx[i]->Hash() == u->Hash());
+				REQUIRE(readTx[i]->Spent() == u->Spent());
+				REQUIRE(readTx[i]->Index() == u->Index());
+				REQUIRE(readTx[i]->Output()->ProgramHash() == u->Output()->ProgramHash());
+				REQUIRE(readTx[i]->Output()->AssetID() == u->Output()->AssetID());
+				REQUIRE(readTx[i]->Output()->OutputLock() == u->Output()->OutputLock());
+				REQUIRE(readTx[i]->Output()->Amount() == u->Output()->Amount());
 
-				REQUIRE(readTx[i]->Timestamp() == txToUpdate[i]->Timestamp());
-				REQUIRE(readTx[i]->BlockHeight() == txToUpdate[i]->BlockHeight());
+				REQUIRE(readTx[i]->Timestamp() == (*txToUpdate.begin())->Timestamp());
+				REQUIRE(readTx[i]->BlockHeight() == (*txToUpdate.begin())->BlockHeight());
 			}
 		}
 
 		SECTION("delete by txHash test") {
 			DatabaseManager dbm(DBFILE);
 
-			for (int i = 0; i < txToUpdate.size(); ++i) {
-				REQUIRE(dbm.DeleteCoinBase(txToUpdate[i]->Hash()));
+			for (const UTXOPtr &u : txToUpdate) {
+				REQUIRE(dbm.DeleteCoinBase(u->Hash()));
 			}
 
 			std::vector<UTXOPtr> readTx = dbm.GetAllCoinBase();
-			REQUIRE(0 == readTx.size());
+			REQUIRE(readTx.empty());
 		}
 
 	}

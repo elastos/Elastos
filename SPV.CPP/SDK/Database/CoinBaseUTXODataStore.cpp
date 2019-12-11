@@ -95,7 +95,7 @@ namespace Elastos {
 
 				sql = "SELECT " + _txHash + ", " + _blockHeight + ", " + _timestamp + ", " + _index + ", " +
 					  _programHash + ", " + _assetID + ", " + _outputLock + ", " + _amount + ", " +
-					  _payload + ", " + _spent + " FROM " + _tableName + ";";
+					  _payload + ", " + _spent + " FROM " + _tableName + " ORDER BY " + _blockHeight + " ASC;";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
