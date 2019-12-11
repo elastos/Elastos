@@ -1,13 +1,9 @@
 import React from 'react'
 import I18N from '@/I18N'
-import _ from 'lodash'
 import styled from 'styled-components'
 import './style.scss'
-import MediaQuery from 'react-responsive'
-import { Row, Col, Timeline, Button } from 'antd'
-
+import { Button } from 'antd'
 import { LG_WIDTH, MAX_WIDTH_MOBILE } from '../../../config/constant'
-import { USER_LANGUAGE } from '@/constant'
 import CRCFlow from './CRCFlow'
 
 import { images } from './images'
@@ -26,41 +22,6 @@ export default class extends React.Component {
               <MainDesc>
                 <div dangerouslySetInnerHTML={{__html: I18N.get('home.crc.desc')}} />
               </MainDesc>
-              {/* <Timeline>
-                <Timeline.Item>
-                  <ItemTitle>{I18N.get('home.crc.list.1.date')}</ItemTitle>
-                  <ItemDesc>{I18N.get('home.crc.list.1.text')}</ItemDesc>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <ItemTitle>{I18N.get('home.crc.list.2.date')}</ItemTitle>
-                  <ItemDesc>
-                    {I18N.get('home.crc.list.2.text')}
-                    {' '}
--
-                    {' '}
-                    <a href="/whitepaper">{I18N.get('home.crc.list.2.link')}</a>
-.
-                  </ItemDesc>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <ItemTitle>{I18N.get('home.crc.list.3.date')}</ItemTitle>
-                  <ItemDesc>
-                    {I18N.get('home.crc.list.3.text')}
-                    {' '}
-                    <a href="https://www.cyberrepublic.org/docs/#/overview/crc" target="_blank">{I18N.get('home.crc.list.3.link')}</a>
-.
-                  </ItemDesc>
-                </Timeline.Item>
-                <Timeline.Item>
-                  <ItemTitle>{I18N.get('home.crc.list.4.date')}</ItemTitle>
-                  <ItemDesc>
-                    {I18N.get('home.crc.list.4.text')}
-                    {' '}
-                    <a href="/proposals">{I18N.get('home.crc.list.4.link')}</a>
-.
-                  </ItemDesc>
-                </Timeline.Item>
-              </Timeline> */}
             </CRCDesc>
             <BottomImg src={images.StripLightImg} alt="StripLightImg" />
           </CRCIntroContainer>
@@ -147,16 +108,6 @@ const CRCDesc = styled.div`
 
 const MainDesc = styled.div`
   margin-bottom: 25px;
-`
-
-const ItemTitle = styled.div`
-  color: #18FFFF;
-  font-size: 16px;
-`
-
-const ItemDesc = styled.div`
-  color: white;
-  font-size: 13px;
 `
 
 const BottomImg = styled.img`

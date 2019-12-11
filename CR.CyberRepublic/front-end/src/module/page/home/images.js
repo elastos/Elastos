@@ -1,5 +1,3 @@
-
-
 import ElaLogo from '@/assets/images/home/ela-logo.png'
 import CRLogo from '@/assets/images/home/cr-main.png'
 
