@@ -16,6 +16,7 @@ public class DIDStore: NSObject {
         guard type == "filesystem" else {
             throw DIDStoreError.failue("Unsupported store type:\(type)")
         }
+
         if instance == nil {
             instance = try FileSystemStore(location)
             instance.backend = DIDBackend(adapter)
@@ -24,7 +25,7 @@ public class DIDStore: NSObject {
     }
 
     public static func shareInstance() throws -> DIDStore? {
-        guard (instance != nil) else {
+        guard let _ = instance else {
             throw DIDStoreError.failue("Please call the creatInstance first.")
         }
         return instance

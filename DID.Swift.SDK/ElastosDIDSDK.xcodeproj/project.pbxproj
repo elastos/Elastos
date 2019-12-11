@@ -246,7 +246,6 @@
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		11F4BA59232FDAA3002B3789 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		A3E6D440233485800012CD77 /* EmbeddedCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EmbeddedCredential.swift; path = ElastosDIDSDK/Credential/EmbeddedCredential.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D441233485800012CD77 /* Proof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Proof.swift; path = ElastosDIDSDK/Credential/Proof.swift; sourceTree = SOURCE_ROOT; };
 		A3E6D442233485800012CD77 /* VerifiableCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VerifiableCredential.swift; path = ElastosDIDSDK/Credential/VerifiableCredential.swift; sourceTree = SOURCE_ROOT; };
@@ -510,7 +509,6 @@
 				11F262B523260D550009C103 /* Credential */,
 				11F262B623260D550009C103 /* DID */,
 				11F262AD23260CF40009C103 /* ElastosDIDSDK.h */,
-				11F4BA59232FDAA3002B3789 /* File.swift */,
 				11F262AE23260CF40009C103 /* Info.plist */,
 			);
 			path = ElastosDIDSDK;

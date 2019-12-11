@@ -7,7 +7,6 @@ public class DID: NSObject {
     public var methodSpecificId: String!
 
     private var document: DIDDocument?
-    private var resolved: Bool?
     private var resolveTimestamp: Date?
 
     init(_ method: String, _ methodSpecificId: String) {
@@ -39,27 +38,25 @@ public class DID: NSObject {
     public override func isEqual(_ object: Any?) -> Bool {
         if object is DID {
             let did = object as! DID
-            let didExternalForm = did.toExternalForm()
-            let selfExternalForm = toExternalForm()
-            return didExternalForm.isEqual(selfExternalForm)
+            return did.toExternalForm().isEqual(toExternalForm())
         }
         
         if object is String {
             let did = object as! String
-            let selfExternalForm = toExternalForm()
-            return did.isEqual(selfExternalForm)
+            return did.isEqual(toExternalForm())
         }
         
-        return super.isEqual(object);
+        return super.isEqual(object)
     }
 
-    public func resolve() throws -> DIDDocument? {
-        guard document == nil else {
-            return document
+    public func resolve() throws -> DIDDocument {
+        if let _ = document {
+            return document!
         }
+
         document = try DIDStore.shareInstance()!.resolveDid(self)
         self.resolveTimestamp = Date()
-        return document
+        return document!
     }
 }
 
@@ -85,6 +82,4 @@ class DListener: DIDURLBaseListener {
     public override func exitMethodSpecificString(_ ctx: DIDURLParser.MethodSpecificStringContext) {
         self.did!.methodSpecificId = ctx.getText()
     }
-
 }
-

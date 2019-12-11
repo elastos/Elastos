@@ -5,7 +5,6 @@ public enum DIDStoreError: Error {
 }
 
 extension DIDStoreError {
-
     static func des(_ error: DIDStoreError) -> String {
         switch error {
         case .failue(let err):

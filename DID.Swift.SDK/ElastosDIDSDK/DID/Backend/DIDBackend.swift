@@ -1,7 +1,6 @@
 import Foundation
 
 public class DIDBackend: NSObject {
-    
     private static var instance: DIDBackend!
     private var adaptor: DIDAdaptor!
     
