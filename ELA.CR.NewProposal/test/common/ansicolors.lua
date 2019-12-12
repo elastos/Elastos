@@ -1,3 +1,8 @@
+-- Copyright (c) 2017-2019 The Elastos Foundation
+-- Use of this source code is governed by an MIT
+-- license that can be found in the LICENSE file.
+-- 
+
 -- ansicolors.lua v1.0.2 (2012-08)
 
 -- Copyright (c) 2009 Rob Hoelz <rob@hoelzro.net>

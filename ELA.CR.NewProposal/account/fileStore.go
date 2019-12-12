@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package account
 
 import (
@@ -43,7 +48,7 @@ func (cs *FileStore) readDB() ([]byte, error) {
 	defer cs.closeDB()
 
 	var err error
-	cs.file, err = os.OpenFile(cs.path, os.O_RDONLY, 0666)
+	cs.file, err = os.OpenFile(cs.path, os.O_RDONLY, 0400)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +71,7 @@ func (cs *FileStore) writeDB(data []byte) error {
 	defer cs.closeDB()
 
 	var err error
-	cs.file, err = os.OpenFile(cs.path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	cs.file, err = os.OpenFile(cs.path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
@@ -98,7 +103,8 @@ func (cs *FileStore) BuildDatabase(path string) {
 	cs.writeDB(jsonBlob)
 }
 
-func (cs *FileStore) SaveAccountData(programHash []byte, redeemScript []byte, encryptedPrivateKey []byte) error {
+func (cs *FileStore) SaveAccountData(programHash *common.Uint168, redeemScript []byte,
+	encryptedPrivateKey []byte) error {
 	JSONData, err := cs.readDB()
 	if err != nil {
 		return errors.New("error: reading db")
@@ -114,17 +120,13 @@ func (cs *FileStore) SaveAccountData(programHash []byte, redeemScript []byte, en
 		accountType = SUBACCOUNT
 	}
 
-	pHash, err := common.Uint168FromBytes(programHash)
-	if err != nil {
-		return errors.New("invalid program hash")
-	}
-	addr, err := pHash.ToAddress()
+	addr, err := programHash.ToAddress()
 	if err != nil {
 		return errors.New("invalid address")
 	}
 	a := AccountData{
 		Address:             addr,
-		ProgramHash:         common.BytesToHexString(programHash),
+		ProgramHash:         common.BytesToHexString(programHash.Bytes()),
 		RedeemScript:        common.BytesToHexString(redeemScript),
 		PrivateKeyEncrypted: common.BytesToHexString(encryptedPrivateKey),
 		Type:                accountType,
@@ -146,7 +148,7 @@ func (cs *FileStore) SaveAccountData(programHash []byte, redeemScript []byte, en
 	return nil
 }
 
-func (cs *FileStore) DeleteAccountData(programHash string) error {
+func (cs *FileStore) DeleteAccountData(address string) error {
 	JSONData, err := cs.readDB()
 	if err != nil {
 		return errors.New("error: reading db")
@@ -156,7 +158,7 @@ func (cs *FileStore) DeleteAccountData(programHash string) error {
 	}
 
 	for i, v := range cs.data.Account {
-		if programHash == v.ProgramHash {
+		if address == v.Address {
 			if v.Type == MAINACCOUNT {
 				return errors.New("can't remove main account")
 			}

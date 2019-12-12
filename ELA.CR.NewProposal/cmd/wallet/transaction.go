@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package wallet
 
 import (
@@ -29,7 +34,8 @@ var txCommand = []cli.Command{
 			cmdcom.TransactionToManyFlag,
 			cmdcom.TransactionAmountFlag,
 			cmdcom.TransactionFeeFlag,
-			//TransactionLockFlag,
+			cmdcom.TransactionOutputLockFlag,
+			cmdcom.TransactionTxLockFlag,
 			cmdcom.AccountWalletFlag,
 		},
 		Subcommands: buildTxCommand,
@@ -81,10 +87,6 @@ var buildTxCommand = []cli.Command{
 			cmdcom.AccountPasswordFlag,
 		},
 		Action: func(c *cli.Context) error {
-			if c.NumFlags() == 0 {
-				cli.ShowSubcommandHelp(c)
-				return nil
-			}
 			if err := CreateActivateProducerTransaction(c); err != nil {
 				fmt.Println("error:", err)
 				os.Exit(1)
@@ -109,6 +111,29 @@ var buildTxCommand = []cli.Command{
 				return nil
 			}
 			if err := CreateVoteTransaction(c); err != nil {
+				fmt.Println("error:", err)
+				os.Exit(1)
+			}
+			return nil
+		},
+	},
+	{
+		Name:  "crosschain",
+		Usage: "Build a cross chain tx",
+		Flags: []cli.Flag{
+			cmdcom.TransactionSAddressFlag,
+			cmdcom.TransactionAmountFlag,
+			cmdcom.TransactionFromFlag,
+			cmdcom.TransactionToFlag,
+			cmdcom.TransactionFeeFlag,
+			cmdcom.AccountWalletFlag,
+		},
+		Action: func(c *cli.Context) error {
+			if c.NumFlags() == 0 {
+				cli.ShowSubcommandHelp(c)
+				return nil
+			}
+			if err := CreateCrossChainTransaction(c); err != nil {
 				fmt.Println("error:", err)
 				os.Exit(1)
 			}

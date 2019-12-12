@@ -10,6 +10,7 @@ import:
 - package: github.com/urfave/cli
   version: v1.22.0
 - package: github.com/howeyc/gopass
+- package: github.com/tidwall/gjson
 - package: github.com/itchyny/base58-go
 - package: github.com/stretchr/testify
   subpackages:
@@ -25,5 +26,8 @@ import:
 - package: github.com/yuin/gopher-lua
 - package: gopkg.in/cheggaaa/pb.v1
 - package: gopkg.in/yaml.v2
+- package: github.com/btcsuite/btcd/wire
+- package: github.com/davecgh/go-spew
+- package: github.com/pmezard/go-difflib
 ignore:
-  - github.com/russross/blackfriday/v2
+- github.com/russross/blackfriday/v2

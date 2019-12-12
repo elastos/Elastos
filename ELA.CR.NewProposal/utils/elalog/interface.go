@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package elalog
 
 // Logger is an interface which describes a level-based logger.  A default
