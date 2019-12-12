@@ -7,11 +7,37 @@ from web3.middleware import geth_poa_middleware
 from solc import compile_standard
 
 from grpc_adenine import settings
-from grpc_adenine.stubs import adenine_io_pb2
-from grpc_adenine.stubs import adenine_io_pb2_grpc
+from grpc_adenine.stubs import hive_pb2
+from grpc_adenine.stubs import hive_pb2_grpc
 
 
-class Console(adenine_io_pb2_grpc.AdenineIoServicer):
+class Hive(hive_pb2_grpc.HiveServicer):
+
+    def Sign(self, request, context):
+
+        # Validate the API Key
+        api_key = request.api_key
+        # api_status = validate_api_key(api_key)
+        # if not api_status:
+        #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+
+        PRIVATE_NET_IP_ADDRESS = config('PRIVATE_NET_IP_ADDRESS')
+        DID_SERVICE_URL = config('DID_SERVICE_URL')
+        did_api_url = PRIVATE_NET_IP_ADDRESS + DID_SERVICE_URL + settings.DID_SERVICE_SIGN
+
+        # Signing a message
+        headers = {'Content-type': 'application/json'}
+        myResponse = requests.post(did_api_url, data=request.input, headers=headers).json()
+
+        if myResponse['status'] == 200:
+            status_message = 'Success'
+            status = True
+        else:
+            status_message = 'Error'
+            status = False
+
+        return hive_pb2.Response(output=json.dumps(myResponse['result']), status_message=status_message,
+                                       status=status)
 
     def UploadAndSign(self, request, context):
 
@@ -36,7 +62,7 @@ class Console(adenine_io_pb2_grpc.AdenineIoServicer):
         if not myResponse1:
             status_message = 'Error: File could not be uploaded'
             status = False
-            return adenine_io_pb2.Response(output="", status_message=status_message, status=status)
+            return hive_pb2.Response(output="", status_message=status_message, status=status)
 
         # signing the hash key
         private_key = request_input['private_key']
@@ -56,7 +82,7 @@ class Console(adenine_io_pb2_grpc.AdenineIoServicer):
             status_message = 'Error'
             status = False
 
-        return adenine_io_pb2.Response(output=json.dumps(myResponse2), status_message=status_message, status=status)
+        return hive_pb2.Response(output=json.dumps(myResponse2), status_message=status_message, status=status)
 
     def VerifyAndShow(self, request, context):
 
@@ -81,7 +107,7 @@ class Console(adenine_io_pb2_grpc.AdenineIoServicer):
         }
         myResponse1 = requests.post(api_url_base, data=json.dumps(json_data), headers=headers).json()
         if not myResponse1['result']:
-            return adenine_io_pb2.Response(output="", status_message='Hask key could not be verified', status=False)
+            return hive_pb2.Response(output="", status_message='Hask key could not be verified', status=False)
 
         # verify the given input message using private key
         api_url_base = config('PRIVATE_NET_IP_ADDRESS') + config('DID_SERVICE_URL') + settings.DID_SERVICE_SIGN
@@ -93,17 +119,17 @@ class Console(adenine_io_pb2_grpc.AdenineIoServicer):
         myResponse2 = requests.post(api_url_base, data=json.dumps(req_data), headers=headers).json()
 
         if myResponse2['status'] != 200:
-            return adenine_io_pb2.Response(output="", status_message='Hash Key and message could not be verified',
+            return hive_pb2.Response(output="", status_message='Hash Key and message could not be verified',
                                            status=False)
 
         if myResponse2['result']['msg'] != signed_message:
-            return adenine_io_pb2.Response(output="", status_message='Hash Key and message could not be verified',
+            return hive_pb2.Response(output="", status_message='Hash Key and message could not be verified',
                                            status=False)
 
         # show content
         api_url_base = config('PRIVATE_NET_IP_ADDRESS') + config('HIVE_PORT') + settings.SHOW_CONTENT + "{}"
         myResponse = requests.get(api_url_base.format(file_hash))
-        return adenine_io_pb2.Response(output=myResponse.text, status_message='Success', status=True)
+        return hive_pb2.Response(output=myResponse.text, status_message='Success', status=True)
 
     def DeployEthContract(self, request, context):
 
@@ -130,7 +156,7 @@ class Console(adenine_io_pb2_grpc.AdenineIoServicer):
         if not w3.isConnected():
             status_message = 'Error: Could not connect to Eth Sidechain node'
             status = False
-            return adenine_io_pb2.Response(output="", status_message=status_message, status=status)
+            return hive_pb2.Response(output="", status_message=status_message, status=status)
 
         contract_name = contract_metadata['children'][1]['name']
         compiled_sol = compile_standard({
@@ -181,4 +207,4 @@ class Console(adenine_io_pb2_grpc.AdenineIoServicer):
         status_message = 'Successfuly deployed Eth Smart Contract'
         status = True
 
-        return adenine_io_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
+        return hive_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
