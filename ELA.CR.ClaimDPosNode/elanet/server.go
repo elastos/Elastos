@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package elanet
 
 import (
@@ -5,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"sync/atomic"
+	"time"
 
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
@@ -574,7 +580,7 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 			if doneChan != nil {
 				doneChan <- struct{}{}
 			}
-			return errors.New("not found block")
+			return errors.New("block not found")
 		}
 	}
 	block.HaveConfirm = false
@@ -617,12 +623,16 @@ func (s *server) pushConfirmedBlockMsg(sp *serverPeer, hash *common.Uint256, don
 	waitChan <-chan struct{}) error {
 
 	// Fetch the block from the database.
-	block, err := s.chain.GetDposBlockByHash(*hash)
+	block, _ := s.chain.GetDposBlockByHash(*hash)
 	if block == nil {
-		if doneChan != nil {
-			doneChan <- struct{}{}
+		// Fetch the block from the block pool.
+		block, _ = s.blockMemPool.GetDposBlockByHash(*hash)
+		if block == nil || !block.HaveConfirm {
+			if doneChan != nil {
+				doneChan <- struct{}{}
+			}
+			return errors.New("confirmed block not found")
 		}
-		return err
 	}
 
 	// Once we have fetched data wait for any previous operation to finish.
@@ -798,6 +808,10 @@ func (s *server) handleRelayInvMsg(peers map[svr.IPeer]*serverPeer, rmsg relayMs
 // peers to and from the server, banning peers, and broadcasting messages to
 // peers.  It must be run in a goroutine.
 func (s *server) peerHandler() {
+
+	// Reset the TimeSource of BlockChain.
+	s.resetTimeSource()
+
 	// Start the address manager and sync manager, both of which are needed
 	// by peers.  This is done here since their lifecycle is closely tied
 	// to this handler and rather than adding more channels to sychronize
@@ -867,6 +881,15 @@ func (s *server) handlePeerMsg(peers map[svr.IPeer]*serverPeer, p interface{}) {
 		delete(peers, p.IPeer)
 		p.reply <- struct{}{}
 	}
+}
+
+// Reset TimeSource after one second to avoid accepting the wrong time
+// in version message.
+func (s *server) resetTimeSource() {
+	go func() {
+		time.Sleep(time.Second)
+		s.chain.TimeSource.Reset()
+	}()
 }
 
 // Services returns the service flags the server supports.

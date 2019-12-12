@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package mempool
 
 import (
@@ -171,13 +176,13 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 	if !ok {
 		return false, false, errors.New("there is no block in pool when confirming block")
 	}
+	log.Info("[ConfirmBlock] block height:", block.Height)
 
 	confirm, ok := bm.confirms[hash]
 	if !ok {
 		return false, false, errors.New("there is no block confirmation in pool when confirming block")
 	}
 
-	log.Info("[ConfirmBlock] block height:", block.Height)
 	if !bm.Chain.BlockExists(&hash) {
 		inMainChain, isOrphan, err := bm.Chain.ProcessBlock(block, confirm)
 		if err != nil {
@@ -185,7 +190,7 @@ func (bm *BlockPool) confirmBlock(hash common.Uint256) (bool, bool, error) {
 		}
 
 		if !inMainChain && !isOrphan {
-			if err := bm.CheckConfirmedBlockOnFork(bm.Store.GetHeight(), block); err != nil {
+			if err := bm.CheckConfirmedBlockOnFork(bm.Chain.GetHeight(), block); err != nil {
 				return inMainChain, isOrphan, err
 			}
 		}

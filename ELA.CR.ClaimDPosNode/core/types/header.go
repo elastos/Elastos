@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package types
 
 import (
@@ -20,7 +25,7 @@ type Header struct {
 }
 
 func (header *Header) Serialize(w io.Writer) error {
-	err := header.serializeNoAux(w)
+	err := header.SerializeNoAux(w)
 	if err != nil {
 		return err
 	}
@@ -59,7 +64,7 @@ func (header *Header) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (header *Header) serializeNoAux(w io.Writer) error {
+func (header *Header) SerializeNoAux(w io.Writer) error {
 	return common.WriteElements(w,
 		header.Version,
 		&header.Previous,
@@ -71,8 +76,25 @@ func (header *Header) serializeNoAux(w io.Writer) error {
 	)
 }
 
+func (header *Header) DeserializeNoAux(r io.Reader) error {
+	err := common.ReadElements(r,
+		&header.Version,
+		&header.Previous,
+		&header.MerkleRoot,
+		&header.Timestamp,
+		&header.Bits,
+		&header.Nonce,
+		&header.Height,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (header *Header) Hash() common.Uint256 {
 	buf := new(bytes.Buffer)
-	header.serializeNoAux(buf)
+	header.SerializeNoAux(buf)
 	return common.Uint256(common.Sha256D(buf.Bytes()))
 }

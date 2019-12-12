@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package common
 
 import (
@@ -54,7 +59,7 @@ func ReadFile(filePath string) (string, error) {
 	if _, err := os.Stat(filePath); err != nil {
 		return "", errors.New("invalid transaction file path")
 	}
-	file, err := os.OpenFile(filePath, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(filePath, os.O_RDONLY, 0400)
 	if err != nil {
 		return "", errors.New("open transaction file failed")
 	}

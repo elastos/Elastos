@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 /*
 This package provides the DPOS routes(network addresses) protocol, it can
 collect all DPOS peer addresses from the normal P2P network.

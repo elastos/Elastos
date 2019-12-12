@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package blockchain
 
 import (
@@ -6,6 +11,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -64,7 +70,8 @@ func ConfirmContextCheck(confirm *payload.Confirm) error {
 	return nil
 }
 
-func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
+func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm,
+	manager *checkpoint.Manager) error {
 	if block.Hash() != confirm.Proposal.BlockHash {
 		return errors.New("[CheckBlockWithConfirmation] block " +
 			"confirmation validate failed")
@@ -72,8 +79,7 @@ func checkBlockWithConfirmation(block *Block, confirm *payload.Confirm) error {
 
 	if err := ConfirmContextCheck(confirm); err != nil {
 		// rollback to the state before this method
-		if e := DefaultLedger.Arbitrators.RollbackTo(block.
-			Height - 1); e != nil {
+		if e := manager.OnRollbackTo(block.Height - 1); e != nil {
 			panic("rollback fail when check block with confirmation")
 		}
 		return err

@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package dpos
 
 import (
@@ -30,7 +35,6 @@ type Config struct {
 	Server            elanet.Server
 	TxMemPool         *mempool.TxPool
 	BlockMemPool      *mempool.BlockPool
-	Localhost         string
 	ChainParams       *config.Params
 	Broadcast         func(msg p2p.Message)
 	AnnounceAddr      func()
@@ -168,8 +172,12 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		Server:      cfg.Server,
 	})
 
-	network, err := NewDposNetwork(account, medianTime, cfg.Localhost,
-		dposManager)
+	network, err := NewDposNetwork(NetworkConfig{
+		ChainParams: cfg.ChainParams,
+		Account:     account,
+		MedianTime:  medianTime,
+		Listener:    dposManager,
+	})
 	if err != nil {
 		log.Error("Init p2p network error")
 		return nil, err

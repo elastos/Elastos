@@ -1,4 +1,4 @@
-Instructions
+API reference (JSON-RPC)
 ===============
 
 this is the document of ela json rpc interfaces.
@@ -11,10 +11,11 @@ It is needed when you want to distinguish different requests.
 "jsonrpc" is optional. It tells which version this request uses.
 In version 2.0 it is required, while in version 1.0 it does not exist.
 
-#### getbestblockhash
-description: return the hash of the most recent block
 
-parameters: none
+
+### getbestblockhash
+
+Return the hash of the most recent block
 
 result:
 
@@ -22,41 +23,49 @@ result:
 | --------- | ------ | --------------------------------- |
 | blockhash | string | the hash of the most recent block |
 
-arguments sample:
+#### Example
 
-```json
+Request:
+
+```
 {
-  "method":"getbestblockhash"
+  "jsonrpc": "2.0",
+  "method":"getbestblockhash",
+  "params": [],
+  "id": 1
 }
 ```
 
-result sample:
+Response:
 
-```json
+```
 {
-  "id": null,
+  "id": 1,
   "jsonrpc": "2.0",
   "result": "68692d63a8bfc8887553b97f99f09e523d34a2b599bf5b388436b2ddc85ed76e",
   "error": null
 }
 ```
 
-#### getblockhash
-description: return the hash of the specific blockchain height.
+### getblockhash
 
-paramters:
+Return the hash of the specific blockchain height.
+
+#### Parameter
 
 | name   | type    | description              |
 | ------ | ------- | ------------------------ |
 | height | integer | the height of blockchain |
 
-result:
+#### Result
 
 | name      | type   | description           |
 | --------- | ------ | --------------------- |
 | blockhash | string | the hash of the block |
 
-arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -65,7 +74,7 @@ arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -76,21 +85,31 @@ result sample:
 }
 ```
 
-#### getblock
-description: return the block information of the specific blockchain hash.
+### getblock
 
-parameters:
+Return the block information of the specific blockchain hash.
+
+#### Parameter 
 
 | name      | type   | description                             |
 | --------- | ------ | --------------------------------------- |
 | blockhash | string | the blockchain hash                     |
 | verbosity | int    | the verbosity of result, can be 0, 1, 2 |
 
-result:(verbosity=0)
+#### Example
 
-raw hash
+Request:
 
-result sample:
+```
+{
+  "method":"getblock",
+  "params":{
+  	"blockhash":"f3a7469bb59452ab665f8b8870e1fb30e6a7181e2ea70f377e218d5b13cfa8ed", 
+  	"verbosity": 0},
+}
+```
+
+Response when verbosity is 0:
 
 ```json
 {
@@ -101,7 +120,7 @@ result sample:
 }
 ```
 
-result:(verbosity=1)
+Response when verbosity is 1:
 
 | name              | type          | description                                                                                                                     |
 | ----------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -124,18 +143,6 @@ result:(verbosity=1)
 | previousblockhash | string        | previous block hash                                                                                                             |
 | nextblockhash     | string        | next block hash                                                                                                                 |
 | auxpow            | string        | Auxpow information in hex format                                                                                                |
-
-arguments sample:
-
-```json
-{
-  "method": "getblock",
-  "params": ["0000000000000c128adadedd348061952fa5c9bd78320ee25052d2b74a10573f"],
-  "id": 123
-}
-```
-
-result sample
 
 ```json
 {
@@ -168,7 +175,7 @@ result sample
 }
 ```
 
-result:(verbosity=2)
+Response when verbosity is 2:
 
 result format except 'tx' is the same as it is when verbosity=1
 
@@ -251,13 +258,13 @@ result format in 'tx' please see interface 'getrawtransaction'
 }
 ```
 
-#### getblockcount
+### getblockcount
 
-description: get block count
+Get block count
 
-parameters: none
+#### Example
 
-argument sample:
+Request:
 
 ```json
 {
@@ -265,7 +272,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -276,18 +283,18 @@ result sample:
 }
 ```
 
-#### getrawtransaction
+### getrawtransaction
 
-description: get transaction infomation of given transaction hash.
+Get transaction infomation of given transaction hash.
 
-parameters:
+#### Parameter 
 
 | name    | type   | description       |
 | ------- | ------ | ----------------- |
 | txid    | string | transaction hash  |
 | verbose | bool   | verbose of result |
 
-results:
+#### Results
 
 | name       | type    | description                                  |
 | ---------- | ------- | -------------------------------------------- |
@@ -304,7 +311,9 @@ results:
 | assetid    | string  | asset id                                     |
 | outputlock | string  | outputlock of this transaction               |
 
-argument sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -313,7 +322,7 @@ argument sample:
 }
 ```
 
-result sample:(verbose=true)
+Response when verbosity is ture:
 
 ```json
 {
@@ -370,9 +379,7 @@ result sample:(verbose=true)
 }
 ```
 
-result sample:(verbose=false)
-
-return raw data
+Response when verbosity is false:
 
 ```json
 {
@@ -383,13 +390,13 @@ return raw data
 }
 ```
 
-#### getrawmempool
+### getrawmempool
 
-description: return hashes of transactions in memory pool.
+Return hashes of transactions in memory pool.
 
-parameters: none
+#### Example
 
-argument sample:
+Request:
 
 ```json
 {
@@ -397,7 +404,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -408,18 +415,19 @@ result sample:
 }
 ```
 
-#### getreceivedbyaddress
-description: get the balance of an address
+### getreceivedbyaddress
 
-parameters:
+Get the balance of an address
+
+#### Parameter 
 
 | name    | type   | description |
 | ------- | ------ | ----------- |
 | address | string | address     |
 
-result: the balance of the address
+#### Example
 
-argument sample:
+Request:
 
 ```json
 {
@@ -428,7 +436,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -439,11 +447,11 @@ result sample:
 }
 ```
 
-#### listunspent
+### listunspent
 
-description: list all utxo of given addresses
+List all utxo of given addresses
 
-parameters:
+#### Parameter 
 
 | name      | type          | description   |
 | --------- | ------------- | ------------- |
@@ -455,10 +463,9 @@ if set utxotype to "mixed" or not set will get all utxos ignore the type
 if set utxotype to "vote" will get vote utxos
 if set utxotype to "normal" will get normal utxos without vote
 
-result:
-please see below
+#### Example
 
-argument sample:
+Request:
 
 ```json
 {
@@ -467,7 +474,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -497,20 +504,19 @@ result sample:
 }
 ```
 
-#### setloglevel
+### setloglevel
 
-description: set log level
+Set log level
 
-parameters:
+#### Parameter 
 
 | name  | type    | description   |
 | ----- | ------- | ------------- |
 | level | integer | the log level |
 
-result:
-please see below
+#### Example
 
-argument sample:
+Request:
 
 ```json
 {
@@ -521,7 +527,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -532,11 +538,13 @@ result sample:
 }
 ```
 
-#### getconnectioncount
+### getconnectioncount
 
-description: get peer's count of this node
+Get peer's count of this node
 
-argument sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -544,7 +552,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -555,13 +563,13 @@ result sample:
 }
 ```
 
-#### getneighbors
+### getneighbors
 
-description: get peer's info
+Get peer's info
 
-parameters: none
+#### Example
 
-argument sample:
+Request:
 
 ```json
 {
@@ -569,12 +577,12 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
     "error": null,
-    "id": 123456,
+    "id": null,
     "jsonrpc": "2.0",
     "result": [
         "127.0.0.1:64890 (inbound)",
@@ -587,13 +595,11 @@ result sample:
 }
 ```
 
-#### getnodestate
+### getnodestate
 
-description: get node state
+Get node state
 
-parameters: none
-
-results:
+#### Result
 
 | name        | type            | description                                                 |
 | ----------- | --------------- | ----------------------------------------------------------- |
@@ -625,17 +631,21 @@ neighbor:
 | lastpingtime   | string  | the last time send a ping message to the neighbor               |
 | lastpingmicros | integer | microseconds to receive pong message after sending last ping message |
 
-argument sample:
+#### Example
+
+Request:
 ```json
 {
   "method":"getnodestate"
 }
 ```
 
+Response:
 ```json
+
 {
     "error": null,
-    "id": 123456,
+    "id": null,
     "jsonrpc": "2.0",
     "result": {
         "compile": "v0.2.2-231-g75d2-dirty",
@@ -682,23 +692,25 @@ argument sample:
 }
 ```
 
-#### sendrawtransaction
+### sendrawtransaction
 
-description: send a raw transaction to node
+Send a raw transaction to node
 
-parameters:
+#### Parameter 
 
 | name | type   | description                 |
 | ---- | ------ | --------------------------- |
 | data | string | raw transaction data in hex |
 
-result:
+#### Result
 
 | name | type   | description      |
 | ---- | ------ | ---------------- |
 | hash | string | transaction hash |
 
-argument sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -707,7 +719,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -718,17 +730,19 @@ result sample:
 }
 ```
 
-#### togglemining
+### togglemining
 
-description: the switch of mining
+The switch of mining
 
-parameters:
+#### Parameter 
 
 | name   | type | description         |
 | ------ | ---- | ------------------- |
 | mining | bool | whether mine or not |
 
-argument sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -737,7 +751,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -748,16 +762,19 @@ result sample:
 }
 ```
 
-#### discretemining
+### discretemining
 
-description: generate one or more blocks instantly
-parameters:
+Generate one or more blocks instantly
+
+#### Parameter 
 
 | name  | type    | description     |
 | ----- | ------- | --------------- |
 | count | integer | count of blocks |
 
-argument sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -766,7 +783,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -779,13 +796,11 @@ result sample:
 }
 ```
 
-#### getmininginfo
+### getmininginfo
 
-description: returns a json object containing mining-related information 
+Returns a json object containing mining-related information 
 
-parameters: none
-
-results:
+#### Result
 
 | name              | type      | description                                  |
 | ----------------- | --------- | -------------------------------------------- |
@@ -797,7 +812,9 @@ results:
 | chain             | string    | current network name |
 
 
-argument sample:
+#### Example
+
+Request:
 ```json
 {
   "method":"getmininginfo",
@@ -805,7 +822,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 ```json
 {
     "error": null,
@@ -822,16 +839,21 @@ result sample:
 }
 ```
 
-#### createauxblock
+### createauxblock
 
-description: generate an auxiliary block
-parameters:
+Generate an auxiliary block
+
+#### Parameter 
 
 | name         | type   | description     |
 | ------------ | ------ | --------------- |
 | paytoaddress | string | miner's address |
 
-named arguments sample:
+#### Example
+
+Request:
+
+named arguments:
 
 ```json
 {
@@ -840,7 +862,7 @@ named arguments sample:
 }
 ```
 
-positional arguments sample:
+positional arguments:
 
 ```json
 {
@@ -849,7 +871,7 @@ positional arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -867,15 +889,20 @@ result sample:
 }
 ```
 
-#### submitauxblock
+### submitauxblock
 
-description: submit the solved auxpow of an auxiliary block
-parameters:
+Submit the solved auxpow of an auxiliary block
+
+#### Parameter 
 
 | name      | type   | description                               |
 | --------- | ------ | ----------------------------------------- |
 | blockhash | string | the auxiliary block hash                  |
 | auxpow    | string | the solved auxpow of this auxiliary block |
+
+#### Example
+
+Request:
 
 named arguments sample:
 
@@ -901,7 +928,7 @@ positional arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -912,15 +939,16 @@ result sample:
 }
 ```
 
-#### getinfo
+### getinfo
 
-description: return node information.
+Return node information.
 warning: this interface is ready to be deprecated. So no api information will be supplied.
 
-#### listproducers
+### listproducers
 
-description: show producers infromation
-parameters:
+Show producers infromation
+
+#### Parameter 
 
 | name  | type    | description                                                  |
 | ----- | ------- | ------------------------------------------------------------ |
@@ -934,7 +962,7 @@ parameters:
 "returned": get producers in the returned state |
 if state flag not provided return the producers in pending and active state.
 
-result:
+#### Result
 
 | name           | type   | description                               |
 | -------------- | ------ | ----------------------------------------- |
@@ -954,7 +982,9 @@ result:
 | totalvotes     | string | the total votes of registered producers   |
 | totalcounts    | uint64 | the total counts of registered producers  |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -966,7 +996,7 @@ named arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1027,22 +1057,25 @@ result sample:
 }
 ```
 
-#### producerstatus
+### producerstatus
 
-description: show producer status
-parameters:
+Show producer status
+
+#### Parameter 
 
 | name      | type   | description                  |
 | --------- | ------ | ---------------------------- |
 | publickey | string | the public key of producer   |
 
-result:
+#### Result
 
 0: producer has not registered
 1: producer has confirmed (6 confirms)
 2: producer registered but not confirmed (less than 6 confirms)
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1053,7 +1086,7 @@ named arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1064,16 +1097,19 @@ result sample:
 }
 ```
 
-#### votestatus
+### votestatus
 
-description: show producer vote status
-parameters:
+Show producer vote status
+
+#### Parameter 
 
 | name    | type   | description         |
 | ------- | ------ | ------------------- |
 | address | string | the address of user |
 
-result:
+#### Result
+
+Note: If the EnableUtxoDB configuration entry is true, the total field is computed, otherwise the total field returns -1
 
 | name      | type   | description             |
 | --------- | ------ | ----------------------- |
@@ -1081,7 +1117,9 @@ result:
 | voting    | string | the used voting rights  |
 | pending   | bool   | have vote in tx pool    |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1092,7 +1130,7 @@ named arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1107,23 +1145,25 @@ result sample:
 }
 ```
 
-#### estimatesmartfee
+### estimatesmartfee
 
-description: estimate transaction fee smartly.
+Estimate transaction fee smartly.
 
-parameters:
+#### Parameter 
 
 | name          | type | description                                                  |
 | ------------- | ---- | ------------------------------------------------------------ |
 | confirmations | int  | in how many blocks do you want your transaction to be packed |
 
-result:
+#### Result
 
 | name | type | description                       |
 | ---- | ---- | --------------------------------- |
 | -    | int  | fee rate, the unit is sela per KB |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1134,7 +1174,7 @@ named arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1145,24 +1185,26 @@ result sample:
 }
 ```
 
-#### getdepositcoin
+### getdepositcoin
 
-description: get deposit coin by owner public key.
+Get deposit coin by owner public key.
 
-parameters:
+#### Parameter 
 
 | name           | type   | description                    |
 | -------------- | ------ | ------------------------------ |
 | ownerpublickey | string | the ownerPublicKey of producer |
 
-result:
+#### Result
 
 | name      | type   | description                            |
 | --------- | ------ | -------------------------------------- |
 | available | string | the available deposit coin of producer |
 | deducted  | string | the deducted deposit coin of producer  |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1173,7 +1215,7 @@ named arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1187,11 +1229,55 @@ result sample:
 }
 ```
 
-#### getarbiterpeersinfo
+### getcrdepositcoin
 
-description: get dpos peers information.
+Get deposit coin by owner public key.
 
-result:
+#### Parameter 
+
+| name           | type   | description                     |
+| -------------- | ------ | ------------------------------- |
+| did            | string | the did address of CR candidate |
+
+#### Result
+
+| name      | type   | description                                |
+| --------- | ------ | ------------------------------------------ |
+| available | string | the available deposit coin of CR candidate |
+| deducted  | string | the deducted deposit coin of CR candidate  |
+
+#### Example
+
+Request:
+
+```json
+{
+  "method": "getcrdepositcoin",
+  "params":{
+    "did": "iUzjmMPTYZq2afqtR46coY6B7h2qD1PQbyq"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": {
+    "available": "3",
+    "deducted": "0"
+  }
+}
+```
+
+### getarbiterpeersinfo
+
+Get dpos peers information.
+
+#### Result
 
 | name | type | description                       |
 | ---- | ---- | --------------------------------- |
@@ -1200,7 +1286,9 @@ result:
 | ip    | string  | ip address of the peer (including port) |
 | connstate | string  | connection state about the peer, the value can be: NoneConnection, OutboundOnly, InboundOnly, or 2WayConnection |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1208,7 +1296,7 @@ named arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1238,17 +1326,19 @@ result sample:
 }
 ```
 
-#### submitsidechainillegaldata
+### submitsidechainillegaldata
 
-description: submit illegal data from side chain.
+Submit illegal data from side chain.
 
-parameters:
+#### Parameter 
 
 | name           | type   | description                    |
 | -------------- | ------ | ------------------------------ |
 | illegaldata | string | serialized illegal data in hex string format |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1258,7 +1348,7 @@ named arguments sample:
   }
 }
 ```
-result sample:
+Response:
 
 ```json
 {
@@ -1269,18 +1359,18 @@ result sample:
 }
 ```
 
-#### getconfirmbyheight
+### getconfirmbyheight
 
-description: get block confirm by height of block.
+Get block confirm by height of block.
 
-parameters:
+#### Parameter 
 
 | name      | type   | description                                                                 |
 | --------- | ------ | --------------------------------------------------------------------------- |
 | height    | int    | the height of block                                                         |
 | verbosity | int    | the verbosity of result, 0 will return serialized confirmed data, default 1 |
 
-result:
+#### Result
 
 | name       | type           | description                               |
 | -------    | -------------- | ----------------------------------------- |
@@ -1290,7 +1380,9 @@ result:
 | signer     | string         | the singner nodePublicKey of the proposal |
 | accept     | bool           | accept or not of the proposal             |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1301,7 +1393,7 @@ named arguments sample:
   }
 }
 ```
-result sample:
+Response:
 
 ```json
 {
@@ -1309,7 +1401,7 @@ result sample:
   "id": null,
   "jsonrpc": "2.0",
   "result": {
-    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8",
     "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
     "viewoffset": 0,
     "votes": [
@@ -1330,17 +1422,18 @@ result sample:
 }
 ```
 
-#### getconfirmbyhash
+### getconfirmbyhash
 
-description: get block confirm by hash of block.
+Get block confirm by hash of block.
 
-parameters:
+#### Parameter 
 
 | name      | type   | description                                                                 |
 | --------- | ------ | --------------------------------------------------------------------------- |
 | blockhash | string | the hash of block                                                           |
 | verbosity | int    | the verbosity of result, 0 will return serialized confirmed data, default 1 |
-result:
+
+#### Result
 
 | name       | type          | description                               |
 | -------    | ------------- | ----------------------------------------- |
@@ -1350,7 +1443,9 @@ result:
 | signer     | string        | the singner nodePublicKey of the proposal |
 | accept     | bool          | accept or not of the proposal             |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1361,7 +1456,7 @@ named arguments sample:
   }
 }
 ```
-result sample:
+Response:
 
 ```json
 {
@@ -1369,7 +1464,7 @@ result sample:
   "id": null,
   "jsonrpc": "2.0",
   "result": {
-    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8"
+    "blockhash": "65fd07f4069a1ca6833d38e0baa9b0b4a9bac35131feb5c363bd2fb99f8d06d8",
     "sponsor": "024ac1cdf73e3cbe88843b2d7279e6afdc26fc71d221f28cfbecbefb2a48d48304",
     "viewoffset": 0,
     "votes": [
@@ -1389,11 +1484,11 @@ result sample:
   }
 }
 ```
-#### getarbitersinfo
+### getarbitersinfo
 
-description: get arbiters and candidates about current and next turn.
+Get arbiters and candidates about current and next turn.
 
-result:
+#### Result
 
 | name | type | description                       |
 | ---- | ---- | --------------------------------- |
@@ -1405,7 +1500,9 @@ result:
 | currentturnstartheight | integer  | get height of current turn |
 | nextturnstartheight | integer  | get an estimate height of next turn |
 
-named arguments sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1413,7 +1510,7 @@ named arguments sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1444,11 +1541,11 @@ result sample:
 }
 ```
 
-#### getutxosbyamount
+### getutxosbyamount
 
-description: get utxo by given amount, amount of utxo >= given amount.
+Get utxo by given amount, amount of utxo >= given amount.
 
-parameters:
+#### Parameter 
 
 | name     | type   | description                |
 | -------- | ------ | -------------------------- |
@@ -1461,10 +1558,9 @@ if set utxotype to "mixed" or not set will get all utxos ignore the type
 if set utxotype to "vote" will get vote utxos
 if set utxotype to "normal" will get normal utxos without vote
 
-result:
-please see below
+#### Example
 
-argument sample:
+Request:
 
 ```json
 {
@@ -1476,7 +1572,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1506,20 +1602,23 @@ result sample:
 }
 ```
 
-#### getamountbyinputs
+### getamountbyinputs
 
-description: get amount of given inputs.
+Get amount of given inputs.
 
-parameters:
+#### Parameter 
 
 | name    | type   | description              |
 | ------- | ------ | ------------------------ |
 | inputs  | string | the hex string of inputs |
 
-result:
-amount of all given inputs, the type is string, if not found input will return error
+#### Result
 
-argument sample:
+Amount of all given inputs, the type is string, if not found input will return error
+
+#### Example
+
+Request:
 
 ```json
 {
@@ -1530,7 +1629,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1541,17 +1640,17 @@ result sample:
 }
 ```
 
-#### getblockbyheight
+### getblockbyheight
 
-description: get a block by specifying block height.
+Get a block by specifying block height.
 
-parameters:
+#### Parameter 
 
 | name   | type   | description         |
 | ------ | ------ | ------------------- |
 | height | uint32 | the height of block |
 
-result:
+#### Result
 
 | name              | type          | description                                                  |
 | ----------------- | ------------- | ------------------------------------------------------------ |
@@ -1575,7 +1674,9 @@ result:
 | nextblockhash     | string        | next block hash                                              |
 | auxpow            | string        | Auxpow information in hex format                             |
 
-argument sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1586,7 +1687,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1679,24 +1780,26 @@ result sample:
 }
 ```
 
-#### getarbitratorgroupbyheight
+### getarbitratorgroupbyheight
 
-description: get amount of given inputs.
+Get amount of given inputs.
 
-parameters:
+#### Parameter 
 
 | name   | type   | description                  |
 | ------ | ------ | ---------------------------- |
 | height | uint32 | block height about the chain |
 
-result:
+#### Result
 
 | name                  | type          | description                         |
 | --------------------- | ------------- | ----------------------------------- |
 | ondutyarbitratorindex | int           | index of current on duty arbitrator |
 | arbitrators           | array[string] | an array of current arbitrators     |
 
-argument sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1707,7 +1810,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1734,21 +1837,23 @@ result sample:
 }
 ```
 
-#### getexistwithdrawtransactions
+### getexistwithdrawtransactions
 
-description: find out which are already exist in chain by providing a list of  withdraw transaction hashes.
+Find out which are already exist in chain by providing a list of  withdraw transaction hashes.
 
-parameters:
+#### Parameter 
 
 | name | type          | description                                   |
 | ---- | ------------- | --------------------------------------------- |
 | txs  | array[string] | a list of transaction hashes in string format |
 
-result:
+#### Result
 
-a list of existing transaction hashes
+A list of existing transaction hashes.
 
-argument sample:
+#### Example
+
+Request:
 
 ```json
 {
@@ -1763,7 +1868,7 @@ argument sample:
 }
 ```
 
-result sample:
+Response:
 
 ```json
 {
@@ -1777,4 +1882,304 @@ result sample:
 }
 ```
 
-####
+### listcrcandidates
+
+Show cr candidates information
+
+#### Parameter
+| name  | type    | description                                                  |
+| ----- | ------- | ------------------------------------------------------------ |
+| start | integer | the start index of cr candidates                                 |
+| limit | integer | the limit count of cr candidates                                 |
+| state | string  | the cr candidates state you want<br/>"all": get cr candidates in any state<br/>"pending": get cr candidates in the pendding state<br/>
+"active": get cr candidates in the active state<br/>
+"canceled": get cr candidates in the canceled state<br/>
+"returned": get cr candidates in the returned state |
+if state flag not provided return the cr candidates in pending and active state.
+
+#### Result
+| name           | type   | description                               |
+| -------------- | ------ | ----------------------------------------- |
+| code           | string | the cr candiate code                      |
+| did            | string | the cr candiate did address               |
+| nickname       | string | the nick name of the cr candiate          |
+| url            | string | the url of the cr candiate                |
+| location       | uint64 | the location number of the cr candiate    |
+| state          | bool   | if cr candiate has confirmed              |
+| votes          | string | the votes currently held                  |
+| index          | uint64 | the index of the cr candiate              |
+| totalvotes     | string | the total votes of registered cr candiate |
+| totalcounts    | uint64 | the total counts of registered cr candiate|
+
+#### Example
+
+Request:
+```json
+{
+  "method": "listcrcandidates",
+  "params":{
+    "start": 0,
+    "limit": 3
+  }
+}
+```
+
+Response:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "crcandidatesinfo": [
+            {
+                "code": "21036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535ac",
+                "did": "iUzjmMPTYZq2afqtR46coY6B7h2qD1PQbyq",
+                "nickname": "ela_test11",
+                "url": "ela_test.org11",
+                "location": 38025,
+                "state": "Canceled",
+                "votes": "0",
+                "index": 0
+            }
+        ],
+        "totalvotes": "0",
+        "totalcounts": 1
+    }
+}
+```
+
+
+### listcurrentcrs
+
+Show current cr members information
+
+#### Parameter
+| name  | type    | description                                                  |
+| ----- | ------- | ------------------------------------------------------------ |
+| state | string  | the cr member state you want know <br/>
+
+#### Result
+| name            | type   | description                               |
+| --------------  | ------ | ----------------------------------------- |
+| code            | string | the cr member code                        |
+| did             | string | the cr member did address                 |
+| nickname        | string | the nick name of the cr member            |
+| url             | string | the url of the cr member                  |
+| location        | uint64 | the location number of the cr member      |
+| impeachmentvotes| int64  | impeachment votes of the cr member        |
+| depositamount   | string | the deposite amout of the cr member       |
+| deposithash     | string | the deposite address of the cr member     |
+| penalty         | int64  | the penalty of the cr member              |
+| index           | uint64 | the index of the cr member                |
+| totalcounts     | uint64 | the total counts of current cr member     |
+
+
+#### Example
+
+Request:
+```json
+{
+"method": "listcurrentcrs",
+  "params":{
+    "state":"all"
+  }
+}
+```
+
+Response:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "crmembersinfo": [
+            {
+                "code": "2102e23f70b9b967af35571c32b1442d787c180753bbed5cd6e7d5a5cfe75c7fc1ffac",
+                "did": "iaiZJM922uWo2Uc2gYwZk1nEgiVV7NTtxR",
+                "nickname": "ela_cr2",
+                "url": "ela_cr2.org",
+                "location": 112211, "impeachmentvotes": 0,
+                "depositamout": "5000",
+                "deposithash": "1f56b347f27954f1061883cfe469839f8465cc7340",
+                "penalty": 0,
+                "index": 0
+            },
+            {
+                "code": "2103c3dd01baa4e3d0625f6c0026ad3d06d085e80c57477efa1a4aa2ab209c210e95ac",
+                "did": "iUBoqE5KnBA1zsd4EWeyj2mXMfUrm5rDmf",
+                "nickname": "ela_cr1",
+                "url": "ela_cr1.org",
+                "location": 112211,
+                "impeachmentvotes": 0,
+                "depositamout": "5000",
+                "deposithash": "1f0f11c336563d31ed1cf81ac4a83f9df7306f9967",
+                "penalty": 0,
+                "index": 1
+            }
+        ],
+        "totalcounts": 2
+    }
+}
+```
+
+### createrawtransaction
+
+Create a transaction spending the given inputs and creating new outputs.
+Warning: you should calculate the change output and append it to transaction outputs, otherwise the change should
+ be given to the miners.
+
+#### Parameter 
+
+| name     | type          | description                        |
+| -------- | ------------- | ---------------------------------- |
+| inputs   | array[string] | inputs json array of json objects  |
+| outputs  | array[string] | outputs json array of json objects |
+| locktime | interger      | the transaction lock time number   |
+
+#### Example
+
+Request:
+
+```
+ {
+  "method": "createrawtransaction",
+  "params":{
+    "inputs":"[{\"txid\":\"a704c4c04c70043a2cce34fa95e20f3d33b0a3dc95dd948dee573673b701c7e7\",\"vout\":1}]",
+    "outputs": "[{\"address\":\"EKn3UGyEoycACJxKu7F8R5U1Pe6NUpni1H\",\"amount\":1},{\"address\":\"EUmvbPnoC59DJWnEx5VkcJNhK6GnjkoHao\",\"amount\":98.9}]",
+    "locktime": 0
+  }
+}
+```
+
+Response:
+
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": "0902000001285f24620c18ddc75b7d1f3090efa619bd5b901a5355c30621dad1c2c6dcfbc000000000000002b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f5050000000000000000211cc5e2ab8654b4fe70949aceaacb017410df55c300b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3806c7d4d0200000000000000217f7946d05f62a92ed345ed9f1391869517bff44d000000000000"
+}
+```
+
+### signrawtransactionwithkey
+
+Sign the raw transaction with private key.
+
+#### Parameter 
+
+| name     | type   | description                                |
+| -------- | ------ | ------------------------------------------ |
+| data     | string | the transaction hex string                 |
+| codes    | string | the codes json array of json objects       |
+| privkeys | string | the private key json array of json objects |
+
+
+#### Example
+
+Request:
+
+```
+ {
+  "method": "signrawtransactionwithkey",
+  "params":{
+    "data": "0902000001e7c701b7733657ee8d94dd95dca3b0333d0fe295fa34ce2c3a04704cc0c404a701000000000002b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f505000000000000000021121c2c946cb3d88b5272038621290e120193c7e600b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a380a2e2110200000000000000126aa11de1372f5763cd93e9eef71008be74a94693000000000000",
+    "codes": "[\"5321033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7210251a471359b13d22cfdb2d8c8ec687a61f9e01c26e6475d58acf77c153c75d62121036e9eebad12dfbd6ea41a770baa735ec8db0a0be39e35db5ff8f5c87a47543e852103e630e917b0cfd076478780dcbfed89bc6db71f2865c2c124c6f95a4e3b9b307b54ae\"]",
+    "privkeys": "[\"ea3ddc681a780866577334de8a2f3e25cbb590c21671d705ce1fef46d84ffd81\"]"
+  }
+}
+```
+
+Response:
+
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": "0902000001e7c701b7733657ee8d94dd95dca3b0333d0fe295fa34ce2c3a04704cc0c404a701000000000002b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300e1f505000000000000000021121c2c946cb3d88b5272038621290e120193c7e600b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a380a2e2110200000000000000126aa11de1372f5763cd93e9eef71008be74a946930000000000014140e0bdb6879df338b0aa0039e900237471315342a06e4f40de2777903179c4fd77a48557058e6428bb403318ac2f101501761ce7ae2bb68bc0b5ccf47f5049aef38b5321033b4606d3cec58a01a09da325f5849754909fec030e4cf626e6b4104328599fc7210251a471359b13d22cfdb2d8c8ec687a61f9e01c26e6475d58acf77c153c75d62121036e9eebad12dfbd6ea41a770baa735ec8db0a0be39e35db5ff8f5c87a47543e852103e630e917b0cfd076478780dcbfed89bc6db71f2865c2c124c6f95a4e3b9b307b54ae"
+}
+```
+
+### decoderawtransaction
+
+Return a JSON object representing the serialized, hex-encoded transaction.
+
+#### Parameter 
+
+| name     | type   | description                                |
+| -------- | ------ | ------------------------------------------ |
+| data     | string | the transaction hex string                 |
+
+#### Example
+
+Request:
+```
+ {
+  "method": "decoderawtransaction",
+  "params":{
+    "data":"0200018151747970653a746578742c6d73673a46726f6d20454c4142616e6b2c456e74657220456c6173746f73202d43616c6c6973746f205375706572204e6f64652052657761726420446973747269627574696f6e015241653c7bcee5347ce08918fb52232312cdf14611bd5ab3ed8434a44d379a3701000000000002b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a386a20500000000000000000021da7a8bc95561e969706abbaf87b12089cd9667dab037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3b0fdfa5302000000000000002157cbdce387181d010890a972f93acf0ff54346b100000000014140a1d30614cc236006f31d67b9dc74af8298692c0fd09d1236d3c50fd50a64df82864359e441efde018d47f69bbcf92e46720baa160621c2160d7830a2bebfc144232103bd33d4fb0697bba896790a132439f402941b6b184cdd06dddf9ce8658f0c0443ac"
+  }
+}
+```
+
+Response:
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "txid": "4089d8362dfae2680bedb0e6ebab78afe64843b16c2b7e5734b70ff1a2659eef",
+        "hash": "4089d8362dfae2680bedb0e6ebab78afe64843b16c2b7e5734b70ff1a2659eef",
+        "size": 363,
+        "vsize": 363,
+        "version": 0,
+        "type": 2,
+        "payloadversion": 0,
+        "payload": null,
+        "attributes": [
+            {
+                "usage": 129,
+                "data": "747970653a746578742c6d73673a46726f6d20454c4142616e6b2c456e74657220456c6173746f73202d43616c6c6973746f205375706572204e6f64652052657761726420446973747269627574696f6e"
+            }
+        ],
+        "vin": [
+            {
+                "txid": "379a374da43484edb35abd1146f1cd12232352fb1889e07c34e5ce7b3c654152",
+                "vout": 1,
+                "sequence": 0
+            }
+        ],
+        "vout": [
+            {
+                "value": "0.00369286",
+                "n": 0,
+                "address": "Ed57c3wF3J1u8vEYE9cjGUpqGPkEJC69v8",
+                "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                "outputlock": 0,
+                "type": 0,
+                "payload": null
+            },
+            {
+                "value": "99.98892464",
+                "n": 1,
+                "address": "ERA8VusTKV78LTiEseuQC4wBPRu3BQo6rE",
+                "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+                "outputlock": 0,
+                "type": 0,
+                "payload": null
+            }
+        ],
+        "locktime": 0,
+        "programs": [
+            {
+                "code": "2103bd33d4fb0697bba896790a132439f402941b6b184cdd06dddf9ce8658f0c0443ac",
+                "parameter": "40a1d30614cc236006f31d67b9dc74af8298692c0fd09d1236d3c50fd50a64df82864359e441efde018d47f69bbcf92e46720baa160621c2160d7830a2bebfc144"
+            }
+        ]
+    }
+}
+```

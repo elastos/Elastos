@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package crypto
 
 import (
@@ -72,7 +77,6 @@ func Sign(priKey []byte, data []byte) ([]byte, error) {
 
 	r, s, err := ecdsa.Sign(rand.Reader, privateKey, digest[:])
 	if err != nil {
-		fmt.Printf("Sign error\n")
 		return nil, err
 	}
 

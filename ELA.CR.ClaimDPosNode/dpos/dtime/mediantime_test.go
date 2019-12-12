@@ -1,6 +1,8 @@
-// Copyright (c) 2013-2017 The btcsuite developers
-// Use of this source code is governed by an ISC
+// Copyright (c) 2015-2016 The btcsuite developers
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
+//
 
 package dtime
 
@@ -52,14 +54,14 @@ func TestMedianTime(t *testing.T) {
 		filter := NewMedianTime()
 		for j, offset := range test.in {
 			id := strconv.Itoa(j)
-			tOffset := Now().Add(time.Duration(offset*Millisecond))
+			tOffset := Now().Add(time.Duration(offset * Millisecond))
 			filter.AddTimeSample(id, tOffset)
 
 			// Ensure the duplicate IDs are ignored.
 			if test.useDupID {
 				// Modify the offsets to ensure the final median
 				// would be different if the duplicate is added.
-				tOffset = tOffset.Add(time.Duration(offset*Millisecond))
+				tOffset = tOffset.Add(time.Duration(offset * Millisecond))
 				filter.AddTimeSample(id, tOffset)
 			}
 		}
@@ -68,8 +70,8 @@ func TestMedianTime(t *testing.T) {
 		// and the time.Now calls here in the tests will be off by one
 		// second, allow a fudge factor to compensate.
 		gotOffset := filter.Offset()
-		wantOffset := time.Duration(test.wantOffset*Millisecond)
-		wantOffset2 := time.Duration((test.wantOffset-1)*Millisecond)
+		wantOffset := time.Duration(test.wantOffset * Millisecond)
+		wantOffset2 := time.Duration((test.wantOffset - 1) * Millisecond)
 		if gotOffset != wantOffset && gotOffset != wantOffset2 {
 			t.Errorf("Offset #%d: unexpected offset -- got %v, "+
 				"want %v or %v", i, gotOffset, wantOffset,

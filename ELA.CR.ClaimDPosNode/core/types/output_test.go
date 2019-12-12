@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package types
 
 import (
@@ -9,7 +14,7 @@ import (
 )
 
 const (
-	OUTPUTHEX = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0a08601000000000000000000210fcd528848be05f8cffe5d99896c44bdeec70502010101000103010203"
+	OUTPUTHEX = "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0a08601000000000000000000210fcd528848be05f8cffe5d99896c44bdeec70502010001000103010203"
 )
 
 var (
@@ -26,11 +31,13 @@ func TestOutput_Serialize(t *testing.T) {
 		ProgramHash: *recipient,
 		Type:        OTVote,
 		Payload: &outputpayload.VoteOutput{
-			Version: 1,
+			Version: 0,
 			Contents: []outputpayload.VoteContent{
 				outputpayload.VoteContent{
-					VoteType:   0,
-					Candidates: [][]byte{[]byte{1, 2, 3}},
+					VoteType: 0,
+					CandidateVotes: []outputpayload.CandidateVotes{
+						{[]byte{1, 2, 3}, 0},
+					},
 				},
 			},
 		},

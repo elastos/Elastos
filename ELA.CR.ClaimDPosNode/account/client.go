@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package account
 
 import (
@@ -95,14 +100,14 @@ func (cl *Client) Sign(txn *types.Transaction) (*types.Transaction, error) {
 		// Look up transaction type
 		if signType == vm.CHECKSIG {
 			// Sign single transaction
-			signedProgram, err := cl.signStandardTransaction(txn, program)
+			signedProgram, err := SignStandardTransaction(txn, program, cl.accounts)
 			if err != nil {
 				return nil, err
 			}
 			signedPrograms = append(signedPrograms, signedProgram)
 		} else if signType == vm.CHECKMULTISIG {
 			// Sign multi sign transaction
-			signedProgram, err := cl.signMultiSignTransaction(txn, program)
+			signedProgram, err := SignMultiSignTransaction(txn, program, cl.accounts)
 			if err != nil {
 				return nil, err
 			}
@@ -112,75 +117,6 @@ func (cl *Client) Sign(txn *types.Transaction) (*types.Transaction, error) {
 	txn.Programs = signedPrograms
 
 	return txn, nil
-}
-
-func (cl *Client) signStandardTransaction(txn *types.Transaction, program *pg.Program) (*pg.Program, error) {
-	code := program.Code
-	acct := cl.GetAccountByCodeHash(*common.ToCodeHash(code))
-	if acct == nil {
-		return nil, errors.New("no available account in wallet to do single-sign")
-	}
-
-	// Sign transaction
-	signature, err := SignBySigner(txn, acct)
-	if err != nil {
-		return nil, err
-	}
-	// Add verify program for transaction
-	buf := new(bytes.Buffer)
-	buf.WriteByte(byte(len(signature)))
-	buf.Write(signature)
-
-	signedProgram := &pg.Program{
-		Code:      code,
-		Parameter: buf.Bytes(),
-	}
-
-	return signedProgram, nil
-}
-
-func (cl *Client) signMultiSignTransaction(txn *types.Transaction, program *pg.Program) (*pg.Program, error) {
-	code := program.Code
-	param := program.Parameter
-	// Check if current user is a valid signer
-	codeHashes, err := GetSigners(code)
-	if err != nil {
-		return nil, err
-	}
-	var signerIndex = -1
-	var acc *Account
-	for i, hash := range codeHashes {
-		acc = cl.GetAccountByCodeHash(*hash)
-		if acc != nil {
-			signerIndex = i
-			break
-		}
-	}
-	if signerIndex == -1 {
-		return nil, errors.New("no available account detected")
-	}
-	// Sign transaction
-	signature, err := SignBySigner(txn, acc)
-	if err != nil {
-		return nil, err
-	}
-
-	// Append signature
-	buf := new(bytes.Buffer)
-	if err := txn.SerializeUnsigned(buf); err != nil {
-		return nil, err
-	}
-	parameter, err := crypto.AppendSignature(signerIndex, signature, buf.Bytes(), code, param)
-	if err != nil {
-		return nil, err
-	}
-
-	signedProgram := &pg.Program{
-		Code:      code,
-		Parameter: parameter,
-	}
-
-	return signedProgram, nil
 }
 
 func (cl *Client) GetMainAccount() *Account {
@@ -210,8 +146,6 @@ func NewClient(path string, password []byte, create bool) *Client {
 		accounts:  map[common.Uint160]*Account{},
 		FileStore: FileStore{path: path},
 	}
-
-	go client.HandleInterrupt()
 
 	passwordKey := crypto.ToAesKey(password)
 	if create {
@@ -300,7 +234,7 @@ func (cl *Client) CreateMultiSigAccount(m int, pubKeys []*crypto.PublicKey) (*Ac
 	if err != nil {
 		return nil, err
 	}
-	if err = cl.SaveAccountData(account.ProgramHash.Bytes(), account.RedeemScript, nil); err != nil {
+	if err = cl.SaveAccountData(&account.ProgramHash, account.RedeemScript, nil); err != nil {
 		return nil, err
 	}
 
@@ -333,7 +267,7 @@ func (cl *Client) SaveAccount(ac *Account) error {
 	common.ClearBytes(decryptedPrivateKey)
 
 	// save Account keys to db
-	err = cl.SaveAccountData(ac.ProgramHash.Bytes(), ac.RedeemScript, encryptedPrivateKey)
+	err = cl.SaveAccountData(&ac.ProgramHash, ac.RedeemScript, encryptedPrivateKey)
 	if err != nil {
 		return err
 	}
@@ -373,37 +307,44 @@ func (cl *Client) LoadAccounts() error {
 		}
 		prefixType := contract.GetPrefixType(*programHash)
 		if prefixType == contract.PrefixStandard {
-			encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
-			keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
-			if err != nil {
-				return err
-			}
-			privateKey := keyPair[64:96]
-			ac, err := NewAccountWithPrivateKey(privateKey)
-			if err != nil {
-				return err
-			}
-			accounts[ac.ProgramHash.ToCodeHash()] = ac
-			if a.Type == MAINACCOUNT {
-				cl.mainAccount = ac.ProgramHash.ToCodeHash()
+			if a.PrivateKeyEncrypted != "" {
+				encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
+				keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
+				if err != nil {
+					return err
+				}
+				privateKey := keyPair[64:96]
+				ac, err := NewAccountWithPrivateKey(privateKey)
+				if err != nil {
+					return err
+				}
+				accounts[programHash.ToCodeHash()] = ac
+			} else {
+				rs, _ := common.HexStringToBytes(a.RedeemScript)
+				ac := &Account{
+					PrivateKey:   nil,
+					PublicKey:    nil,
+					ProgramHash:  *programHash,
+					RedeemScript: rs,
+					Address:      a.Address,
+				}
+				accounts[programHash.ToCodeHash()] = ac
 			}
 		} else if prefixType == contract.PrefixMultiSig {
-			phBytes, _ := common.HexStringToBytes(a.ProgramHash)
-			ph, err := common.Uint168FromBytes(phBytes)
-			if err != nil {
-				return err
-			}
 			rs, _ := common.HexStringToBytes(a.RedeemScript)
 			ac := &Account{
 				PrivateKey:   nil,
 				PublicKey:    nil,
-				ProgramHash:  *ph,
+				ProgramHash:  *programHash,
 				RedeemScript: rs,
 				Address:      a.Address,
 			}
-			accounts[ac.ProgramHash.ToCodeHash()] = ac
+			accounts[programHash.ToCodeHash()] = ac
 		}
 
+		if a.Type == MAINACCOUNT {
+			cl.mainAccount = programHash.ToCodeHash()
+		}
 	}
 
 	cl.accounts = accounts
@@ -474,4 +415,76 @@ func SignBySigner(txn *types.Transaction, acc *Account) ([]byte, error) {
 		return nil, errors.New("[Signature],SignBySigner failed")
 	}
 	return signature, nil
+}
+
+func SignStandardTransaction(txn *types.Transaction, program *pg.Program,
+	accounts map[common.Uint160]*Account) (*pg.Program, error) {
+	code := program.Code
+	acct, ok := accounts[*common.ToCodeHash(code)]
+	if !ok {
+		return nil, errors.New("no available account in wallet to do single-sign")
+	}
+
+	// Sign transaction
+	signature, err := SignBySigner(txn, acct)
+	if err != nil {
+		return nil, err
+	}
+	// Add verify program for transaction
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(signature)))
+	buf.Write(signature)
+
+	signedProgram := &pg.Program{
+		Code:      code,
+		Parameter: buf.Bytes(),
+	}
+
+	return signedProgram, nil
+}
+
+func SignMultiSignTransaction(txn *types.Transaction, program *pg.Program,
+	accounts map[common.Uint160]*Account) (*pg.Program, error) {
+	code := program.Code
+	param := program.Parameter
+	// Check if current user is a valid signer
+	codeHashes, err := GetSigners(code)
+	if err != nil {
+		return nil, err
+	}
+	var signerIndex = -1
+	var acc *Account
+	for i, hash := range codeHashes {
+		var ok bool
+		acc, ok = accounts[*hash]
+		if ok {
+			signerIndex = i
+			break
+		}
+	}
+	if signerIndex == -1 {
+		return nil, errors.New("no available account detected")
+	}
+	// Sign transaction
+	signature, err := SignBySigner(txn, acc)
+	if err != nil {
+		return nil, err
+	}
+
+	// Append signature
+	buf := new(bytes.Buffer)
+	if err := txn.SerializeUnsigned(buf); err != nil {
+		return nil, err
+	}
+	parameter, err := crypto.AppendSignature(signerIndex, signature, buf.Bytes(), code, param)
+	if err != nil {
+		return nil, err
+	}
+
+	signedProgram := &pg.Program{
+		Code:      code,
+		Parameter: parameter,
+	}
+
+	return signedProgram, nil
 }

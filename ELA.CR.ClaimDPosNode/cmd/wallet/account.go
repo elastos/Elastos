@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package wallet
 
 import (
@@ -242,17 +247,12 @@ func delAccount(c *cli.Context) error {
 		cli.ShowCommandHelpAndExit(c, "delete", 1)
 	}
 	address := c.Args().First()
-	programHash, err := common.Uint168FromAddress(address)
-	if err != nil {
-		return err
-	}
-
 	client, err := account.Open(walletPath, password)
 	if err != nil {
 		return err
 	}
 
-	err = client.DeleteAccountData(programHash.String())
+	err = client.DeleteAccountData(address)
 	if err != nil {
 		return err
 	}
@@ -263,11 +263,6 @@ func delAccount(c *cli.Context) error {
 		return err
 	}
 	return ShowAccountInfo(client)
-}
-
-func changePassword(c *cli.Context) error {
-	// todo
-	return nil
 }
 
 func importAccount(c *cli.Context) error {

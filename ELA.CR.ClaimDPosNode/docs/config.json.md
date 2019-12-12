@@ -61,10 +61,7 @@ Default config for `testnet`
       "Magic": 2019000,           // The magic number of DPoS network
       "IPAddress": "192.168.0.1", // The public network IP address of the node.
       "DPoSPort": 20339,          // The node prot of DPoS network
-      "PrintLevel": 0,            // Log level. Level 0 is the highest, 5 is the lowest
       "SignTolerance": 5,         // The time interval of consensus in seconds
-      "MaxLogsSize": 0,           // Max total logs size in MB
-      "MaxPerLogSize": 0,         // Max per log file size in MB
       "OriginArbiters": [         // The publickey list of arbiters before CRCOnlyDPOSHeight
         "02f3876d0973210d5af7eb44cc11029eb63a102e424f0dc235c60adb80265e426e",
         "03c96f2469b43dd8d0e6fa3041a6cee727e0a3a6658a9c28d91e547d11ba8014a1",
@@ -85,11 +82,19 @@ Default config for `testnet`
       "InactivePenalty": 10000000000,           // InactivePenalty defines the penalty amount the producer takes.
       "PreConnectOffset": 360                   // PreConnectOffset defines the offset blocks to pre-connect to the block producers.
     },
+    "CRConfiguration": {
+      "MemberCount": 12,        // The count of CR committee members
+      "VotingPeriod": 21600,    // CRVotingStartHeight defines the height of CR voting started
+      "DutyPeriod": 262800      // CRDutyPeriod defines the duration of a normal duty period which measured by block height
+      },
     "CheckAddressHeight": 88812,   //Before the height will not check that if address is ela address
     "VoteStartHeight": 88812,      //Starting height of statistical voting
     "CRCOnlyDPOSHeight": 1008812,  //The height start DPOS by CRC producers
-    "PublicDPOSHeight": 1108812,    //The height start DPOS by CRCProducers and voted producers
-    "EnableActivateIllegalHeight": 439000 //The start height to enable activate illegal producer though activate tx
+    "PublicDPOSHeight": 1108812,   //The height start DPOS by CRCProducers and voted producers
+    "CRVotingStartHeight": 1800000,// CRVotingStartHeight defines the height of CR voting started
+    "CRCommitteeStartHeight": 2000000, // CRCommitteeStartHeight defines the height of CR Committee started
+    "EnableActivateIllegalHeight": 439000, //The start height to enable activate illegal producer though activate tx
+    "EnableUtxoDB": true //Whether the db is enabled to store the UTXO
   }
 }
 ```
