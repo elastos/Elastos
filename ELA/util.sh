@@ -39,7 +39,8 @@ elif [[ "$1" == "benchsync" ]]; then
   cp config.json benchmark/sync/
   rm -rf benchmark/sync/elastos_test
   cp -r elastos benchmark/sync/elastos_test
-  go test ./benchmark/sync/... -bench=. $cpuArgs $memArgs
+  ulimit -n 1024
+  go test ./benchmark/sync/... -bench=. $cpuArgs $memArgs -timeout 1000m
 elif [[ "$1" == "datagen" ]]; then
   ./ela-datagen --dir benchmark/process/elastos_test --height "$2" --mode normal --inputsperblock 200 --maxrefers 200 --minrefers 100 --addresscount 100
 fi
