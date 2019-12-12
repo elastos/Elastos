@@ -112,16 +112,31 @@ public class Issuer {
 		}
 
 		public CredentialBuilder id(DIDURL id) {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
+			if (id == null)
+				throw new IllegalArgumentException();
+
 			credential.setId(id);
 			return this;
 		}
 
 		public CredentialBuilder id(String id) {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
 			return id(new DIDURL(target, id));
 		}
 
-		public CredentialBuilder type(String ... type) {
-			credential.setType(type);
+		public CredentialBuilder type(String ... types) {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
+			if (types == null || types.length == 0)
+				throw new IllegalArgumentException();
+
+			credential.setType(types);
 			return this;
 		}
 
@@ -134,11 +149,20 @@ public class Issuer {
 			return cal;
 		}
 
-		private void defaultExpirationDate() {
+		public void defaultExpirationDate() {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
 			credential.setExpirationDate(getMaxExpires().getTime());
 		}
 
 		public CredentialBuilder expirationDate(Date expirationDate) {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
+			if (expirationDate == null)
+				return this;
+
 			Calendar cal = Calendar.getInstance(Constants.UTC);
 			cal.setTime(expirationDate);
 
@@ -152,6 +176,12 @@ public class Issuer {
 		}
 
 		public CredentialBuilder properties(Map<String, String> properties) {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
+			if (properties == null || properties.size() == 0)
+				throw new IllegalArgumentException();
+
 			VerifiableCredential.CredentialSubject subject =
 					new VerifiableCredential.CredentialSubject(target);
 			subject.addProperties(properties);
@@ -162,6 +192,12 @@ public class Issuer {
 
 		public VerifiableCredential seal(String storepass)
 				throws MalformedCredentialException, DIDStoreException {
+			if (credential == null)
+				throw new IllegalStateException("Credential already sealed.");
+
+			if (storepass == null || storepass.isEmpty())
+				throw new IllegalArgumentException();
+
 			if (credential.getId() == null)
 				throw new MalformedCredentialException("Missing id.");
 
@@ -184,7 +220,7 @@ public class Issuer {
 					Constants.defaultPublicKeyType, signKey, sig);
 			credential.setProof(proof);
 
-			// Should clean credential member
+			// Invalidate builder
 			VerifiableCredential vc = credential;
 			this.credential = null;
 

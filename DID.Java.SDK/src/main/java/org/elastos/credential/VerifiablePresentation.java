@@ -511,6 +511,9 @@ public class VerifiablePresentation {
 
 		public Builder credentials(VerifiableCredential ... credentials)
 				throws DIDException {
+			if (presentation == null)
+				throw new IllegalStateException("Presentation already sealed.");
+
 			for (VerifiableCredential vc : credentials) {
 				if (!vc.getSubject().getId().equals(signer.getSubject()))
 					throw new IllegalArgumentException("Credential '" +
@@ -527,6 +530,9 @@ public class VerifiablePresentation {
 		}
 
 		public Builder realm(String realm) {
+			if (presentation == null)
+				throw new IllegalStateException("Presentation already sealed.");
+
 			if (realm == null || realm.isEmpty())
 				throw new IllegalArgumentException();
 
@@ -535,6 +541,9 @@ public class VerifiablePresentation {
 		}
 
 		public Builder nonce(String nonce) {
+			if (presentation == null)
+				throw new IllegalStateException("Presentation already sealed.");
+
 			if (nonce == null || nonce.isEmpty())
 				throw new IllegalArgumentException();
 
@@ -544,6 +553,12 @@ public class VerifiablePresentation {
 
 		public VerifiablePresentation seal(String storepass)
 				throws DIDException {
+			if (presentation == null)
+				throw new IllegalStateException("Presentation already sealed.");
+
+			if (storepass == null || storepass.isEmpty())
+				throw new IllegalArgumentException();
+
 			String json = presentation.toJson(true);
 			String sig = signer.sign(signKey, storepass, json.getBytes(),
 					realm.getBytes(), nonce.getBytes());
@@ -551,7 +566,7 @@ public class VerifiablePresentation {
 			Proof proof = new Proof(signKey, realm, nonce, sig);
 			presentation.setProof(proof);
 
-			// Should clear the presentation member
+			// Invalidate builder
 			VerifiablePresentation vp = presentation;
 			this.presentation = null;
 

@@ -1056,22 +1056,28 @@ public class DIDDocument {
 	}
 
 	public static class Builder {
-		private DIDDocument target;
+		private DIDDocument document;
 
 		protected Builder(DID did) {
-			this.target = new DIDDocument(did);
+			this.document = new DIDDocument(did);
 		}
 
 		protected Builder(DIDDocument doc) {
 			// Make a copy.
-			this.target = new DIDDocument(doc);
+			this.document = new DIDDocument(doc);
 		}
 
 		public DID getSubject() {
-			return target.getSubject();
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
+			return document.getSubject();
 		}
 
 		public boolean addPublicKey(DIDURL id, DID controller, String pk) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null || controller == null || pk == null)
 				throw new IllegalArgumentException();
 
@@ -1079,7 +1085,7 @@ public class DIDDocument {
 				throw new IllegalArgumentException("Invalid public key.");
 
 			PublicKey key = new PublicKey(id, controller, pk);
-			return target.addPublicKey(key);
+			return document.addPublicKey(key);
 		}
 
 		public boolean addPublicKey(String id, String controller, String pk)
@@ -1089,10 +1095,13 @@ public class DIDDocument {
 		}
 
 		public boolean removePublicKey(DIDURL id, boolean force) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return target.removePublicKey(id, force);
+			return document.removePublicKey(id, force);
 		}
 
 		public boolean removePublicKey(String id, boolean force)
@@ -1109,14 +1118,17 @@ public class DIDDocument {
 		}
 
 		public boolean addAuthenticationKey(DIDURL id) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			PublicKey pk = target.getPublicKey(id);
+			PublicKey pk = document.getPublicKey(id);
 			if (pk == null)
 				return false;
 
-			return target.addAuthenticationKey(pk);
+			return document.addAuthenticationKey(pk);
 		}
 
 		public boolean addAuthenticationKey(String id)
@@ -1125,6 +1137,9 @@ public class DIDDocument {
 		}
 
 		public boolean addAuthenticationKey(DIDURL id, String pk) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null || pk == null)
 				throw new IllegalArgumentException();
 
@@ -1132,7 +1147,7 @@ public class DIDDocument {
 				throw new IllegalArgumentException("Invalid public key.");
 
 			PublicKey key = new PublicKey(id, getSubject(), pk);
-			return target.addAuthenticationKey(key);
+			return document.addAuthenticationKey(key);
 		}
 
 		public boolean addAuthenticationKey(String id, String pk)
@@ -1141,10 +1156,13 @@ public class DIDDocument {
 		}
 
 		public boolean removeAuthenticationKey(DIDURL id) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return target.removeAuthenticationKey(id);
+			return document.removeAuthenticationKey(id);
 		}
 
 		public boolean removeAuthenticationKey(String id)
@@ -1153,14 +1171,17 @@ public class DIDDocument {
 		}
 
 		public boolean addAuthorizationKey(DIDURL id) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			PublicKey pk = target.getPublicKey(id);
+			PublicKey pk = document.getPublicKey(id);
 			if (pk == null)
 				return false;
 
-			return target.addAuthorizationKey(pk);
+			return document.addAuthorizationKey(pk);
 		}
 
 		public boolean addAuthorizationKey(String id)
@@ -1169,6 +1190,9 @@ public class DIDDocument {
 		}
 
 		public boolean addAuthorizationKey(DIDURL id, DID controller, String pk) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null || controller == null || pk == null)
 				throw new IllegalArgumentException();
 
@@ -1176,7 +1200,7 @@ public class DIDDocument {
 				throw new IllegalArgumentException("Invalid public key.");
 
 			PublicKey key = new PublicKey(id, controller, pk);
-			return target.addAuthorizationKey(key);
+			return document.addAuthorizationKey(key);
 		}
 
 		public boolean addAuthorizationKey(String id, String controller, String pk)
@@ -1187,6 +1211,9 @@ public class DIDDocument {
 
 		public boolean authorizationDid(DIDURL id, DID controller, DIDURL key)
 				throws DIDException {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null || controller == null)
 				throw new IllegalArgumentException();
 
@@ -1209,14 +1236,11 @@ public class DIDDocument {
 			PublicKey pk = new PublicKey(id, targetPk.getType(),
 					controller, targetPk.getPublicKeyBase58());
 
-			return target.addAuthorizationKey(pk);
+			return document.addAuthorizationKey(pk);
 		}
 
 		public boolean authorizationDid(DIDURL id, DID controller)
 				throws DIDException {
-			if (id == null || controller == null)
-				throw new IllegalArgumentException();
-
 			return authorizationDid(id, controller, null);
 		}
 
@@ -1235,10 +1259,13 @@ public class DIDDocument {
 		}
 
 		public boolean removeAuthorizationKey(DIDURL id) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return target.removeAuthorizationKey(id);
+			return document.removeAuthorizationKey(id);
 		}
 
 		public boolean removeAuthorizationKey(String id)
@@ -1247,17 +1274,23 @@ public class DIDDocument {
 		}
 
 		public boolean addCredential(VerifiableCredential vc) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (vc == null)
 				throw new IllegalArgumentException();
 
-			return target.addCredential(vc);
+			return document.addCredential(vc);
 		}
 
 		public boolean removeCredential(DIDURL id) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return target.removeCredential(id);
+			return document.removeCredential(id);
 		}
 
 		public boolean removeCredential(String id)
@@ -1266,12 +1299,15 @@ public class DIDDocument {
 		}
 
 		public boolean addService(DIDURL id, String type, String endpoint) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null || type == null || type.isEmpty() ||
 					endpoint == null || endpoint.isEmpty() )
 				throw new IllegalArgumentException();
 
 			Service svc = new Service(id, type, endpoint);
-			return target.addService(svc);
+			return document.addService(svc);
 		}
 
 		public boolean addService(String id, String type, String endpoint)
@@ -1280,10 +1316,13 @@ public class DIDDocument {
 		}
 
 		public boolean removeService(DIDURL id) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (id == null)
 				throw new IllegalArgumentException();
 
-			return target.removeService(id);
+			return document.removeService(id);
 		}
 
 		public boolean removeService(String id) throws MalformedDIDURLException {
@@ -1297,36 +1336,48 @@ public class DIDDocument {
 		}
 
 		public void setDefaultExpires() {
-			target.setExpires(getMaxExpires().getTime());
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
+			document.setExpires(getMaxExpires().getTime());
 		}
 
 		public boolean setExpires(Date expires) {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
+			if (expires == null)
+				throw new IllegalArgumentException();
+
 			Calendar cal = Calendar.getInstance(Constants.UTC);
 			cal.setTime(expires);
 
 			if (cal.after(getMaxExpires()))
 				return false;
 
-			target.setExpires(expires);
+			document.setExpires(expires);
 			return true;
 		}
 
 		public DIDDocument seal(String storepass) throws DIDStoreException {
+			if (document == null)
+				throw new IllegalStateException("Document already sealed.");
+
 			if (storepass == null || storepass.isEmpty())
 				throw new IllegalArgumentException();
 
-			if (target.getExpires() == null)
+			if (document.getExpires() == null)
 				setDefaultExpires();
 
-			DIDURL signKey = target.getDefaultPublicKey();
-			String json = target.toJson(true, true);
-			String sig = target.sign(signKey, storepass, json.getBytes());
+			DIDURL signKey = document.getDefaultPublicKey();
+			String json = document.toJson(true, true);
+			String sig = document.sign(signKey, storepass, json.getBytes());
 			Proof proof = new Proof(signKey, sig);
-			target.setProof(proof);
+			document.setProof(proof);
 
-			// Should clean target member
-			DIDDocument doc = target;
-			this.target = null;
+			// Invalidate builder
+			DIDDocument doc = document;
+			this.document = null;
 
 			return doc;
 		}
