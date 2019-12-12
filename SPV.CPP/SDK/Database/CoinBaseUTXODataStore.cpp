@@ -77,7 +77,7 @@ namespace Elastos {
 				}
 
 				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
+					Log::error("Coinbase get count finalize");
 					return false;
 				}
 
@@ -90,48 +90,47 @@ namespace Elastos {
 		std::vector<UTXOPtr> CoinBaseUTXODataStore::GetAll() const {
 			std::vector<UTXOPtr> entitys;
 
-			DoTransaction([&entitys, this]() {
-				std::string sql;
+			std::string sql;
 
-				sql = "SELECT " + _txHash + ", " + _blockHeight + ", " + _timestamp + ", " + _index + ", " +
-					  _programHash + ", " + _assetID + ", " + _outputLock + ", " + _amount + ", " +
-					  _payload + ", " + _spent + " FROM " + _tableName + " ORDER BY " + _blockHeight + " ASC;";
+			sql = "SELECT " + _txHash + ", " + _blockHeight + ", " + _timestamp + ", " + _index + ", " +
+				  _programHash + ", " + _assetID + ", " + _outputLock + ", " + _amount + ", " +
+				  _payload + ", " + _spent + " FROM " + _tableName + /*" ORDER BY " + _blockHeight + " ASC*/";";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
-				}
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return {};
+			}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+			while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				uint256 txHash(_sqlite->ColumnText(stmt, 0));
+				uint32_t blockHeight = _sqlite->ColumnInt(stmt, 1);
+				time_t timestamp = _sqlite->ColumnInt64(stmt, 2);
+				uint16_t index = (uint16_t) _sqlite->ColumnInt(stmt, 3);
+				uint168 programHash(*_sqlite->ColumnBlobBytes(stmt, 4));
+				uint256 assetID(*_sqlite->ColumnBlobBytes(stmt, 5));
+				uint32_t outputLock = _sqlite->ColumnInt(stmt, 6);
+				BigInt amount;
+				amount.setDec(_sqlite->ColumnText(stmt, 7));
+				_sqlite->ColumnBlobBytes(stmt, 8);
+				bool spent = _sqlite->ColumnInt(stmt, 9) != 0;
 
-					uint256 txHash(_sqlite->ColumnText(stmt, 0));
-					uint32_t blockHeight = _sqlite->ColumnInt(stmt, 1);
-					time_t timestamp = _sqlite->ColumnInt64(stmt, 2);
-					uint16_t index = (uint16_t) _sqlite->ColumnInt(stmt, 3);
-					uint168 programHash(*_sqlite->ColumnBlobBytes(stmt, 4));
-					uint256 assetID(*_sqlite->ColumnBlobBytes(stmt, 5));
-					uint32_t outputLock = _sqlite->ColumnInt(stmt, 6);
-					BigInt amount;
-					amount.setDec(_sqlite->ColumnText(stmt, 7));
-					_sqlite->ColumnBlobBytes(stmt, 8);
-					bool spent = _sqlite->ColumnInt(stmt, 9) != 0;
+				OutputPtr o(new TransactionOutput(amount, Address(programHash), assetID));
+				o->SetOutputLock(outputLock);
+				o->SetFixedIndex(index);
 
-					OutputPtr o(new TransactionOutput(amount, Address(programHash), assetID));
-					o->SetOutputLock(outputLock);
-					o->SetFixedIndex(index);
+				UTXOPtr entity(new UTXO(txHash, index, timestamp, blockHeight, o));
+				entity->SetSpent(spent);
+				entitys.push_back(entity);
+			}
 
-					UTXOPtr entity(new UTXO(txHash, index, timestamp, blockHeight, o));
-					entity->SetSpent(spent);
-					entitys.push_back(entity);
-				}
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Coinbase get all finalize");
+				return {};
+			}
 
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-
-				return true;
+			std::sort(entitys.begin(), entitys.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
+				return a->BlockHeight() < b->BlockHeight();
 			});
 
 			return entitys;
@@ -160,16 +159,14 @@ namespace Elastos {
 						!_sqlite->BindInt64(stmt, 2, timestamp) ||
 						!_sqlite->BindText(stmt, 3, hash, nullptr)) {
 						Log::error("bind args");
-						return false;
 					}
 
 					if (SQLITE_DONE != _sqlite->Step(stmt)) {
 						Log::error("step");
-						return false;
 					}
 
 					if (!_sqlite->Finalize(stmt)) {
-						Log::error("finalize");
+						Log::error("Coinbase update finalize");
 						return false;
 					}
 				}
@@ -199,16 +196,14 @@ namespace Elastos {
 						!_sqlite->BindText(stmt, 2, hash, nullptr) ||
 						!_sqlite->BindInt(stmt, 3, index)) {
 						Log::error("bind args");
-						return false;
 					}
 
 					if (SQLITE_DONE != _sqlite->Step(stmt)) {
 						Log::error("step");
-						return false;
 					}
 
 					if (!_sqlite->Finalize(stmt)) {
-						Log::error("finalize");
+						Log::error("Coinbase update spent finalize");
 						return false;
 					}
 				}
@@ -230,16 +225,14 @@ namespace Elastos {
 
 				if (!_sqlite->BindText(stmt, 1, hashString, nullptr)) {
 					Log::error("bind args");
-					return false;
 				}
 
 				if (SQLITE_DONE != _sqlite->Step(stmt)) {
 					Log::error("step");
-					return false;
 				}
 
 				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
+					Log::error("Coinbase delete finalize");
 					return false;
 				}
 
@@ -276,16 +269,14 @@ namespace Elastos {
 				!_sqlite->BindBlob(stmt, 9, nullptr, 0, nullptr) ||
 				!_sqlite->BindInt(stmt, 10, entity->Spent())) {
 				Log::error("bind args");
-				return false;
 			}
 
 			if (SQLITE_DONE != _sqlite->Step(stmt)) {
 				Log::error("step");
-				return false;
 			}
 
 			if (!_sqlite->Finalize(stmt)) {
-				Log::error("finalize");
+				Log::error("Coinbase put finalize");
 				return false;
 			}
 

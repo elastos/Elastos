@@ -54,16 +54,14 @@ namespace Elastos {
 					    !_sqlite->BindInt64(stmt, 2, timestamp) ||
 					    !_sqlite->BindText(stmt, 3, hash, nullptr)) {
 						Log::error("bind args");
-						return false;
 					}
 
 					if (!_sqlite->Step(stmt)) {
 						Log::error("step");
-						return false;
 					}
 
 					if (!_sqlite->Finalize(stmt)) {
-						Log::error("finalize");
+						Log::error("DID update finalize");
 						return false;
 					}
 				}
@@ -85,16 +83,14 @@ namespace Elastos {
 
 				if (!_sqlite->BindText(stmt, 1, did, nullptr)) {
 					Log::error("bind text");
-					return false;
 				}
 
 				if (SQLITE_DONE != _sqlite->Step(stmt)) {
 					Log::error("step");
-					return false;
 				}
 
 				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
+					Log::error("DID delete finalize");
 					return false;
 				}
 
@@ -116,16 +112,14 @@ namespace Elastos {
 
 				if (!_sqlite->BindText(stmt, 1, txHash, nullptr)) {
 					Log::error("bind text");
-					return false;
 				}
 
 				if (SQLITE_DONE != _sqlite->Step(stmt)) {
 					Log::error("step");
-					return false;
 				}
 
 				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
+					Log::error("DID delete by hash finalize");
 					return false;
 				}
 
@@ -151,42 +145,38 @@ namespace Elastos {
 		std::vector<DIDEntity> DIDDataStore::GetAllDID() const {
 			std::vector<DIDEntity> didEntitys;
 
-			DoTransaction([&didEntitys, this]() {
-				DIDEntity didEntity;
-				std::string sql;
+			DIDEntity didEntity;
+			std::string sql;
 
-				sql = "SELECT " + DID_COLUMN_ID + ", " + DID_PAYLOAD_BUFF + ", " + DID_CREATE_TIME + ", " + BLOCK_HEIGHT
-						+ ", " + TIME_STAMP + ", " + TX_HASH + " FROM " + DID_TABLE_NAME + ";";
+			sql = "SELECT " + DID_COLUMN_ID + ", " + DID_PAYLOAD_BUFF + ", " + DID_CREATE_TIME + ", " + BLOCK_HEIGHT
+				  + ", " + TIME_STAMP + ", " + TX_HASH + " FROM " + DID_TABLE_NAME + ";";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
-				}
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return {};
+			}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
+			while (SQLITE_ROW == _sqlite->Step(stmt)) {
 
-					didEntity.DID = _sqlite->ColumnText(stmt, 0);
+				didEntity.DID = _sqlite->ColumnText(stmt, 0);
 
-					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
-					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
-					didEntity.PayloadInfo.assign(pdata, pdata + len);
+				const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
+				didEntity.PayloadInfo.assign(pdata, pdata + len);
 
-					didEntity.CreateTime = _sqlite->ColumnInt64(stmt, 2);
-					didEntity.BlockHeight = _sqlite->ColumnInt(stmt, 3);
-					didEntity.TimeStamp = _sqlite->ColumnInt64(stmt, 4);
-					didEntity.TxHash = _sqlite->ColumnText(stmt, 5);
+				didEntity.CreateTime = _sqlite->ColumnInt64(stmt, 2);
+				didEntity.BlockHeight = _sqlite->ColumnInt(stmt, 3);
+				didEntity.TimeStamp = _sqlite->ColumnInt64(stmt, 4);
+				didEntity.TxHash = _sqlite->ColumnText(stmt, 5);
 
-					didEntitys.push_back(didEntity);
-				}
+				didEntitys.push_back(didEntity);
+			}
 
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-
-				return true;
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("DID get all finalize");
+				return {};
+			}
 
 			return didEntitys;
 		}
@@ -194,40 +184,34 @@ namespace Elastos {
 		std::string DIDDataStore::GetDIDByTxHash(const std::string &txHash) const {
 			std::string did = "";
 
-			DoTransaction([&did, &txHash, this]() {
-				std::string sql;
+			std::string sql;
 
-				sql = "SELECT " + DID_COLUMN_ID + " FROM " + DID_TABLE_NAME + " WHERE " + TX_HASH + " = ?;";
+			sql = "SELECT " + DID_COLUMN_ID + " FROM " + DID_TABLE_NAME + " WHERE " + TX_HASH + " = ?;";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
-				}
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return "";
+			}
 
-				if (!_sqlite->BindText(stmt, 1, txHash, nullptr)) {
-					Log::error("bind text");
-					return false;
-				}
+			if (!_sqlite->BindText(stmt, 1, txHash, nullptr)) {
+				Log::error("bind text");
+			}
 
-				if (SQLITE_ROW == _sqlite->Step(stmt)) {
-					did = _sqlite->ColumnText(stmt, 0);
-				}
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				did = _sqlite->ColumnText(stmt, 0);
+			}
 
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-				return true;
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("DID get by hash finalize");
+				return "";
+			}
 
 			return did;
 		}
 
 		bool DIDDataStore::GetDIDDetails(const std::string &did, DIDEntity &didEntity) const {
-			return DoTransaction([&did, &didEntity, this]() {
-				return SelectDID(did, didEntity);
-			});
+			return SelectDID(did, didEntity);
 		}
 
 		bool DIDDataStore::InsertDID(const std::string &iso, const DIDEntity &didEntity) {
@@ -251,16 +235,14 @@ namespace Elastos {
 			    !_sqlite->BindText(stmt, 6, didEntity.TxHash, nullptr) ||
 			    !_sqlite->BindText(stmt, 7, "", nullptr)) {
 				Log::error("bind args");
-				return false;
 			}
 
 			if (SQLITE_DONE != _sqlite->Step(stmt)) {
 				Log::error("step");
-				return false;
 			}
 
 			if (!_sqlite->Finalize(stmt)) {
-				Log::error("finalize");
+				Log::error("DID insert finalize");
 				return false;
 			}
 
@@ -291,16 +273,14 @@ namespace Elastos {
 			    !_sqlite->BindText(stmt, 5, "", nullptr) ||
 			    !_sqlite->BindText(stmt, 6, didEntity.DID, nullptr)) {
 				Log::error("bind args");
-				return false;
 			}
 
 			if (SQLITE_DONE != _sqlite->Step(stmt)) {
 				Log::error("step");
-				return false;
 			}
 
 			if (!_sqlite->Finalize(stmt)) {
-				Log::error("finalize");
+				Log::error("DID update finalize");
 				return false;
 			}
 
@@ -322,7 +302,6 @@ namespace Elastos {
 
 			if (!_sqlite->BindText(stmt, 1, did, nullptr)) {
 				Log::error("bind text");
-				return false;
 			}
 
 			if (SQLITE_ROW == _sqlite->Step(stmt)) {
@@ -341,7 +320,7 @@ namespace Elastos {
 			}
 
 			if (!_sqlite->Finalize(stmt)) {
-				Log::error("finalize");
+				Log::error("DID select finalize");
 				return false;
 			}
 
@@ -351,41 +330,36 @@ namespace Elastos {
 		bool DIDDataStore::ContainTxHash(const std::string &txHash) const {
 			bool contain = false;
 
-			DoTransaction([&txHash, &contain, this]() {
-				std::string sql;
+			std::string sql;
 
-				sql = "SELECT " +
-				      DID_COLUMN_ID + "," +
-				      DID_PAYLOAD_BUFF + "," +
-				      DID_CREATE_TIME + "," +
-				      BLOCK_HEIGHT + "," +
-				      TIME_STAMP + "," +
-				      DID_RESERVE +
-				      " FROM " + DID_TABLE_NAME +
-				      " WHERE " + TX_HASH + " = ?;";
+			sql = "SELECT " +
+				  DID_COLUMN_ID + "," +
+				  DID_PAYLOAD_BUFF + "," +
+				  DID_CREATE_TIME + "," +
+				  BLOCK_HEIGHT + "," +
+				  TIME_STAMP + "," +
+				  DID_RESERVE +
+				  " FROM " + DID_TABLE_NAME +
+				  " WHERE " + TX_HASH + " = ?;";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}" + sql);
-					return false;
-				}
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}" + sql);
+				return false;
+			}
 
-				if (!_sqlite->BindText(stmt, 1, txHash, nullptr)) {
-					Log::error("bind args");
-					return false;
-				}
+			if (!_sqlite->BindText(stmt, 1, txHash, nullptr)) {
+				Log::error("bind args");
+			}
 
-				if (SQLITE_ROW == _sqlite->Step(stmt)) {
-					contain = true;
-				}
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				contain = true;
+			}
 
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-
-				return true;
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("DID contain finalize");
+				return false;
+			}
 
 			return contain;
 		}

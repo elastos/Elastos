@@ -57,16 +57,14 @@ namespace Elastos {
 				!_sqlite->BindText(stmt, 6, "", nullptr) ||
 				!_sqlite->BindText(stmt, 7, iso, nullptr)) {
 				Log::error("bind args");
-				return false;
 			}
 
 			if (SQLITE_DONE != _sqlite->Step(stmt)) {
 				Log::error("step");
-				return false;
 			}
 
 			if (!_sqlite->Finalize(stmt)) {
-				Log::error("finalize");
+				Log::error("Tx put finalize");
 				return false;
 			}
 
@@ -115,28 +113,24 @@ namespace Elastos {
 		size_t TransactionDataStore::GetAllTransactionsCount() const {
 			size_t count = 0;
 
-			DoTransaction([&count, this]() {
-				std::string sql;
+			std::string sql;
 
-				sql = "SELECT COUNT(" + TX_COLUMN_ID + ") AS nums FROM " + TX_TABLE_NAME + ";";
+			sql = "SELECT COUNT(" + TX_COLUMN_ID + ") AS nums FROM " + TX_TABLE_NAME + ";";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
-				}
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return 0;
+			}
 
-				if (SQLITE_ROW == _sqlite->Step(stmt)) {
-					count = (uint32_t) _sqlite->ColumnInt(stmt, 0);
-				}
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				count = (uint32_t) _sqlite->ColumnInt(stmt, 0);
+			}
 
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-
-				return true;
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Tx get all count finalize");
+				return 0;
+			}
 
 			return count;
 		}
@@ -147,61 +141,63 @@ namespace Elastos {
 
 		std::vector<TransactionPtr> TransactionDataStore::GetAllTransactions(const std::string &chainID) const {
 			std::vector<TransactionPtr> txns;
-			DoTransaction([&chainID, &txns, this]() {
-				std::string sql;
+			std::string sql;
+			int r;
 
-				sql = "SELECT " +
-					  TX_COLUMN_ID + "," +
-					  TX_BUFF + "," +
-					  TX_BLOCK_HEIGHT + "," +
-					  TX_TIME_STAMP + "," +
-					  TX_ISO +
-					  " FROM " + TX_TABLE_NAME + " ORDER BY " + TX_BLOCK_HEIGHT + " ASC;";
+			sql = "SELECT " +
+				  TX_COLUMN_ID + "," +
+				  TX_BUFF + "," +
+				  TX_BLOCK_HEIGHT + "," +
+				  TX_TIME_STAMP + "," +
+				  TX_ISO +
+				  " FROM " + TX_TABLE_NAME + /*" ORDER BY " + TX_BLOCK_HEIGHT + " ASC*/";";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+			}
+
+			while (SQLITE_ROW == (r = _sqlite->Step(stmt))) {
+				TransactionPtr tx;
+				if (chainID == CHAINID_MAINCHAIN) {
+					tx = TransactionPtr(new Transaction());
+				} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+					tx = TransactionPtr(new IDTransaction());
 				}
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					TransactionPtr tx;
-					if (chainID == CHAINID_MAINCHAIN) {
-						tx = TransactionPtr(new Transaction());
-					} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
-						tx = TransactionPtr(new IDTransaction());
-					}
+				uint256 txHash(_sqlite->ColumnText(stmt, 0));
 
-					uint256 txHash(_sqlite->ColumnText(stmt, 0));
+				const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
+				ByteStream stream(pdata, len);
 
-					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
-					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
-					ByteStream stream(pdata, len);
+				uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+				uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
+				std::string iso = _sqlite->ColumnText(stmt, 4);
 
-					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
-					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
-					std::string iso = _sqlite->ColumnText(stmt, 4);
-
-					if (iso == "ela") {
-						tx->Deserialize(stream);
-						assert(txHash == tx->GetHash());
-					} else if (iso == "ela1") {
-						tx->Deserialize(stream, true);
-						tx->SetHash(txHash);
-					}
-
-					tx->SetBlockHeight(blockHeight);
-					tx->SetTimestamp(timeStamp);
-
-					txns.push_back(tx);
+				if (iso == "ela") {
+					tx->Deserialize(stream);
+					assert(txHash == tx->GetHash());
+				} else if (iso == "ela1") {
+					tx->Deserialize(stream, true);
+					tx->SetHash(txHash);
 				}
 
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-				return true;
+				tx->SetBlockHeight(blockHeight);
+				tx->SetTimestamp(timeStamp);
+
+				txns.push_back(tx);
+			}
+
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Tx get all finalize");
+				return {};
+			}
+
+			std::sort(txns.begin(), txns.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
+				return a->GetBlockHeight() < b->GetBlockHeight();
 			});
+
 			return txns;
 		}
 
@@ -227,16 +223,14 @@ namespace Elastos {
 						!_sqlite->BindInt64(stmt, 2, timestamp) ||
 						!_sqlite->BindText(stmt, 3, hash, nullptr)) {
 						Log::error("bind args");
-						return false;
 					}
 
 					if (!_sqlite->Step(stmt)) {
 						Log::error("step");
-						return false;
 					}
 
 					if (!_sqlite->Finalize(stmt)) {
-						Log::error("finalize");
+						Log::error("Tx update finalize");
 						return false;
 					}
 				}
@@ -259,16 +253,14 @@ namespace Elastos {
 
 				if (!_sqlite->BindText(stmt, 1, hashString, nullptr)) {
 					Log::error("bind args");
-					return false;
 				}
 
 				if (SQLITE_DONE != _sqlite->Step(stmt)) {
 					Log::error("step");
-					return false;
 				}
 
 				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
+					Log::error("Tx delete finalize");
 					return false;
 				}
 				return true;
@@ -294,16 +286,14 @@ namespace Elastos {
 
 					if (!_sqlite->BindText(stmt, 1, hash, nullptr)) {
 						Log::error("bind args");
-						return false;
 					}
 
 					if (SQLITE_DONE != _sqlite->Step(stmt)) {
 						Log::error("step");
-						return false;
 					}
 
 					if (!_sqlite->Finalize(stmt)) {
-						Log::error("finalize");
+						Log::error("Tx delete hashes finalize");
 						return false;
 					}
 				}
@@ -317,65 +307,60 @@ namespace Elastos {
 		TransactionPtr TransactionDataStore::SelectTxByHash(const std::string &hash, const std::string &chainID) const {
 			TransactionPtr tx = nullptr;
 
-			DoTransaction([&hash, &chainID, &tx, this]() {
-				std::string sql;
+			std::string sql;
 
-				sql = "SELECT " +
-					  TX_COLUMN_ID + "," +
-					  TX_BUFF + "," +
-					  TX_BLOCK_HEIGHT + "," +
-					  TX_TIME_STAMP + "," +
-					  TX_ISO +
-					  " FROM " + TX_TABLE_NAME +
-					  " WHERE " + TX_COLUMN_ID + " = ?;";
+			sql = "SELECT " +
+				  TX_COLUMN_ID + "," +
+				  TX_BUFF + "," +
+				  TX_BLOCK_HEIGHT + "," +
+				  TX_TIME_STAMP + "," +
+				  TX_ISO +
+				  " FROM " + TX_TABLE_NAME +
+				  " WHERE " + TX_COLUMN_ID + " = ?;";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}", sql);
-					return false;
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}", sql);
+				return nullptr;
+			}
+
+			if (!_sqlite->BindText(stmt, 1, hash, nullptr)) {
+				Log::error("bind args");
+			}
+
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				if (chainID == CHAINID_MAINCHAIN) {
+					tx = TransactionPtr(new Transaction());
+				} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
+					tx = TransactionPtr(new IDTransaction());
 				}
 
-				if (!_sqlite->BindText(stmt, 1, hash, nullptr)) {
-					Log::error("bind args");
-					return false;
+				uint256 txHash(_sqlite->ColumnText(stmt, 0));
+
+				const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+				size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
+				ByteStream stream(pdata, len);
+
+				uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
+				uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
+				std::string iso = _sqlite->ColumnText(stmt, 4);
+
+				if (iso == "ela") {
+					tx->Deserialize(stream);
+					assert(txHash == tx->GetHash());
+				} else if (iso == "ela1") {
+					tx->Deserialize(stream, true);
+					tx->SetHash(txHash);
 				}
 
-				if (SQLITE_ROW == _sqlite->Step(stmt)) {
-					if (chainID == CHAINID_MAINCHAIN) {
-						tx = TransactionPtr(new Transaction());
-					} else if (chainID == CHAINID_IDCHAIN || chainID == CHAINID_TOKENCHAIN) {
-						tx = TransactionPtr(new IDTransaction());
-					}
+				tx->SetBlockHeight(blockHeight);
+				tx->SetTimestamp(timeStamp);
+			}
 
-					uint256 txHash(_sqlite->ColumnText(stmt, 0));
-
-					const uint8_t *pdata = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
-					size_t len = (size_t) _sqlite->ColumnBytes(stmt, 1);
-					ByteStream stream(pdata, len);
-
-					uint32_t blockHeight = (uint32_t) _sqlite->ColumnInt(stmt, 2);
-					uint32_t timeStamp = (uint32_t) _sqlite->ColumnInt(stmt, 3);
-					std::string iso = _sqlite->ColumnText(stmt, 4);
-
-					if (iso == "ela") {
-						tx->Deserialize(stream);
-						assert(txHash == tx->GetHash());
-					} else if (iso == "ela1") {
-						tx->Deserialize(stream, true);
-						tx->SetHash(txHash);
-					}
-
-					tx->SetBlockHeight(blockHeight);
-					tx->SetTimestamp(timeStamp);
-				}
-
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-
-				return true;
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Tx select finalize");
+				return nullptr;
+			}
 
 			return tx;
 		}
@@ -383,36 +368,31 @@ namespace Elastos {
 		bool TransactionDataStore::ContainHash(const std::string &hash) const {
 			bool contain = false;
 
-			DoTransaction([&hash, &contain, this]() {
-				std::string sql;
+			std::string sql;
 
-				sql = "SELECT " +
-					  TX_COLUMN_ID +
-					  " FROM " + TX_TABLE_NAME +
-					  " WHERE " + TX_COLUMN_ID + " = ?;";
+			sql = "SELECT " +
+				  TX_COLUMN_ID +
+				  " FROM " + TX_TABLE_NAME +
+				  " WHERE " + TX_COLUMN_ID + " = ?;";
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}" + sql);
-					return false;
-				}
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}" + sql);
+				return false;
+			}
 
-				if (!_sqlite->BindText(stmt, 1, hash, nullptr)) {
-					Log::error("bind args");
-					return false;
-				}
+			if (!_sqlite->BindText(stmt, 1, hash, nullptr)) {
+				Log::error("bind args");
+			}
 
-				if (SQLITE_ROW == _sqlite->Step(stmt)) {
-					contain = true;
-				}
+			if (SQLITE_ROW == _sqlite->Step(stmt)) {
+				contain = true;
+			}
 
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-
-				return true;
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("Tx contain finalize");
+				return false;
+			}
 
 			return contain;
 		}

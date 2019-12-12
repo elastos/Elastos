@@ -70,16 +70,14 @@ namespace Elastos {
 				!_sqlite->BindInt(stmt, 2, blockPtr->GetHeight()) ||
 				!_sqlite->BindText(stmt, 3, iso, nullptr)) {
 				Log::error("bind args");
-				return false;
 			}
 
 			if (SQLITE_DONE != _sqlite->Step(stmt)) {
 				Log::error("step");
-				return false;
 			}
 
 			if (!_sqlite->Finalize(stmt)) {
-				Log::error("finalize");
+				Log::error("mb put finalize");
 				return false;
 			}
 
@@ -100,16 +98,14 @@ namespace Elastos {
 
 				if (!_sqlite->BindInt64(stmt, 1, id)) {
 					Log::error("bind args");
-					return false;
 				}
 
 				if (SQLITE_DONE != _sqlite->Step(stmt)) {
 					Log::error("step");
-					return false;
 				}
 
 				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
+					Log::error("mb delete finalize");
 					return false;
 				}
 
@@ -136,39 +132,34 @@ namespace Elastos {
 																			  const std::string &chainID) const {
 			std::vector<MerkleBlockPtr> merkleBlocks;
 
-			DoTransaction([&iso, &chainID, &merkleBlocks, this]() {
+			std::string sql;
+			sql = "SELECT " + MB_COLUMN_ID + ", " + MB_BUFF + ", " + MB_HEIGHT + " FROM " + MB_TABLE_NAME + ";";
 
-				std::string sql;
-				sql = "SELECT " + MB_COLUMN_ID + ", " + MB_BUFF + ", " + MB_HEIGHT + " FROM " + MB_TABLE_NAME + ";";
+			sqlite3_stmt *stmt;
+			if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
+				Log::error("prepare sql: {}" + sql);
+				return {};
+			}
 
-				sqlite3_stmt *stmt;
-				if (!_sqlite->Prepare(sql, &stmt, nullptr)) {
-					Log::error("prepare sql: {}" + sql);
-					return false;
-				}
+			while (SQLITE_ROW == _sqlite->Step(stmt)) {
+				MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(chainID));
+				// blockBytes
+				const uint8_t *pblob = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
+				size_t len = _sqlite->ColumnBytes(stmt, 1);
+				ByteStream stream(pblob, len);
+				merkleBlock->Deserialize(stream);
 
-				while (SQLITE_ROW == _sqlite->Step(stmt)) {
-					MerkleBlockPtr merkleBlock(Registry::Instance()->CreateMerkleBlock(chainID));
-					// blockBytes
-					const uint8_t *pblob = (const uint8_t *) _sqlite->ColumnBlob(stmt, 1);
-					size_t len = _sqlite->ColumnBytes(stmt, 1);
-					ByteStream stream(pblob, len);
-					merkleBlock->Deserialize(stream);
+				// blockHeight
+				uint32_t blockHeight = _sqlite->ColumnInt(stmt, 2);
+				merkleBlock->SetHeight(blockHeight);
 
-					// blockHeight
-					uint32_t blockHeight = _sqlite->ColumnInt(stmt, 2);
-					merkleBlock->SetHeight(blockHeight);
+				merkleBlocks.push_back(merkleBlock);
+			}
 
-					merkleBlocks.push_back(merkleBlock);
-				}
-
-				if (!_sqlite->Finalize(stmt)) {
-					Log::error("finalize");
-					return false;
-				}
-
-				return true;
-			});
+			if (!_sqlite->Finalize(stmt)) {
+				Log::error("mb get all finalize");
+				return {};
+			}
 
 			return merkleBlocks;
 		}

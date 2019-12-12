@@ -99,17 +99,21 @@ namespace Elastos {
 			utxo.insert(utxo.end(), _utxosLocked.begin(), _utxosLocked.end());
 
 			BigInt spendingAmount;
+			std::map<std::string, BigInt> addrAmount;
 			for (UTXOArray::iterator iter = utxo.begin(); iter != utxo.end(); ++iter) {
 				const OutputPtr &o = (*iter)->Output();
 				if (_parent->IsUTXOSpending(*iter))
 					spendingAmount += o->Amount();
 
 				std::string addr = o->Addr().String();
-				if (addrBalance.find(addr) == addrBalance.end())
-					addrBalance[addr] = o->Amount().getDec();
+				if (addrAmount.find(addr) == addrAmount.end())
+					addrAmount[addr] = o->Amount();
 				else
-					addrBalance[addr] = (o->Amount() + BigInt(addrBalance[addr].get<std::string>(), 10)).getDec();
+					addrAmount[addr] += o->Amount();
 			}
+
+			for (std::map<std::string, BigInt>::iterator it = addrAmount.begin(); it != addrAmount.end(); ++it)
+				addrBalance[it->first] = it->second.getDec();
 
 			info["SpendingBalance"] = spendingAmount.getDec();
 			info["Address"] = addrBalance;
