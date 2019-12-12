@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package wallet;
+
+// The service definition.
+service Wallet {
+  rpc CreateWallet (Request) returns (Response) {}
+  rpc ViewWallet (Request) returns (Response) {}
+  rpc RequestELA (Request) returns (Response) {}
+}
+
+// The request message
+message Request {
+  string api_key = 1;
+  string input = 2;
+}
+
+// The response message
+message Response {
+  string output = 1;
+  string status_message = 2;
+  bool status = 3;
+}
