@@ -37,7 +37,7 @@ cp .env.example .env;
 ```
 Install elastos-adenine via pip:
 ```
-pip3 install elastos-adenine==0.1.1
+pip3 install elastos-adenine==0.1.4
 ```
 Run sample.py
 ```

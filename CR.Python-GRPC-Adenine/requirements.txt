@@ -2,3 +2,4 @@ grpcio==1.24.3
 grpcio-tools==1.24.3
 python-decouple==3.3
 twine==3.1.1
+solidity-parser==0.0.7
