@@ -8,7 +8,8 @@ from django.contrib import messages
 from django.urls import reverse
 
 from elastos_adenine.common import Common
-from elastos_adenine.console import Console
+from elastos_adenine.hive import Hive
+from elastos_adenine.sidechain_eth import SidechainEth
 
 from .forms import UploadAndSignForm, VerifyAndShowForm, DeployETHContractForm
 from .models import UploadFile
@@ -44,7 +45,7 @@ def upload_and_sign(request):
             form.save()
             temp_file = UploadFile.objects.get(did=did)
             file_path = temp_file.uploaded_file.path
-            console = Console()
+            console = Hive()
             response = console.upload_and_sign(api_key, private_key, file_path)
             data = json.loads(response.output)
             if response.status:
@@ -82,7 +83,7 @@ def verify_and_show(request):
             "hash": file_hash,
             "private_key": private_key
         }
-        console = Console()
+        console = Hive()
         response = console.verify_and_show(api_key, request_input)
         if response.status:
             content = response.output
@@ -121,7 +122,7 @@ def deploy_eth_contract(request):
             form.save()
             temp_file = UploadFile.objects.get(did=did)
             file_path = temp_file.uploaded_file.path
-            console = Console()
+            console = SidechainEth()
             response = console.deploy_eth_contract(api_key, eth_account_address, eth_account_password, file_path)
             data = json.loads(response.output)
             if response.status:
