@@ -94,15 +94,15 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testCreateDIDWithHint() throws DIDException {
+	public void testCreateDIDWithAlias() throws DIDException {
     	TestData testData = new TestData();
     	testData.setupStore(true);
     	testData.initIdentity();
 
     	DIDStore store = DIDStore.getInstance();
-		String hint = "my first did";
+		String alias = "my first did";
 
-    	DIDDocument doc = store.newDid(TestConfig.storePass, hint);
+    	DIDDocument doc = store.newDid(TestConfig.storePass, alias);
     	assertTrue(doc.isValid());
 
     	DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
@@ -124,6 +124,7 @@ public class DIDStoreTest {
 
     	resolved = store.resolveDid(doc.getSubject(), true);
     	assertNotNull(resolved);
+    	assertEquals(alias, resolved.getAlias());
     	assertEquals(doc.getSubject(), resolved.getSubject());
     	assertEquals(doc.getProof().getSignature(),
     			resolved.getProof().getSignature());
@@ -132,7 +133,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void tesCreateDIDWithoutHint() throws DIDException {
+	public void tesCreateDIDWithoutAlias() throws DIDException {
     	TestData testData = new TestData();
     	testData.setupStore(true);
     	testData.initIdentity();
@@ -176,8 +177,8 @@ public class DIDStoreTest {
     	DIDStore store = DIDStore.getInstance();
 
 		for (int i = 0; i < 100; i++) {
-    		String hint = "my did " + i;
-        	DIDDocument doc = store.newDid(TestConfig.storePass, hint);
+    		String alias = "my did " + i;
+        	DIDDocument doc = store.newDid(TestConfig.storePass, alias);
         	assertTrue(doc.isValid());
 
         	DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
@@ -199,6 +200,7 @@ public class DIDStoreTest {
 
         	resolved = store.resolveDid(doc.getSubject(), true);
         	assertNotNull(resolved);
+        	assertEquals(alias, resolved.getAlias());
         	assertEquals(doc.getSubject(), resolved.getSubject());
         	assertEquals(doc.getProof().getSignature(),
         			resolved.getProof().getSignature());
@@ -206,7 +208,7 @@ public class DIDStoreTest {
         	assertTrue(resolved.isValid());
     	}
 
-		List<DIDStore.Entry<DID, String>> dids = store.listDids(DIDStore.DID_ALL);
+		List<DID> dids = store.listDids(DIDStore.DID_ALL);
 		assertEquals(100, dids.size());
 
 		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
@@ -227,8 +229,8 @@ public class DIDStoreTest {
     	// Create test DIDs
     	LinkedList<DID> dids = new LinkedList<DID>();
 		for (int i = 0; i < 100; i++) {
-    		String hint = "my did " + i;
-        	DIDDocument doc = store.newDid(TestConfig.storePass, hint);
+    		String alias = "my did " + i;
+        	DIDDocument doc = store.newDid(TestConfig.storePass, alias);
          	store.publishDid(doc, TestConfig.storePass);
          	dids.add(doc.getSubject());
     	}
@@ -255,7 +257,7 @@ public class DIDStoreTest {
     		assertFalse(deleted);
     	}
 
-		List<DIDStore.Entry<DID, String>> remains = store.listDids(DIDStore.DID_ALL);
+		List<DID> remains = store.listDids(DIDStore.DID_ALL);
 		assertEquals(80, remains.size());
 
 		remains = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
@@ -288,7 +290,7 @@ public class DIDStoreTest {
     	assertEquals(test.getProof().getSignature(), doc.getProof().getSignature());
     	assertTrue(doc.isValid());
 
-		List<DIDStore.Entry<DID, String>> dids = store.listDids(DIDStore.DID_ALL);
+		List<DID> dids = store.listDids(DIDStore.DID_ALL);
 		assertEquals(2, dids.size());
 
 		dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
@@ -317,11 +319,15 @@ public class DIDStoreTest {
     	DIDURL id = new DIDURL(test.getSubject(), "profile");
     	VerifiableCredential vc = store.loadCredential(test.getSubject(), id);
     	assertNotNull(vc);
+    	vc.setAlias("MyProfile");
+    	assertEquals("MyProfile", vc.getAlias());
     	assertEquals(test.getSubject(), vc.getSubject().getId());
     	assertEquals(id, vc.getId());
     	assertTrue(vc.isValid());
 
     	id = new DIDURL(test.getSubject(), "twitter");
+    	vc.setAlias("Twitter");
+    	assertEquals("Twitter", vc.getAlias());
     	vc = store.loadCredential(test.getSubject().toString(), "twitter");
     	assertNotNull(vc);
     	assertEquals(test.getSubject(), vc.getSubject().getId());
@@ -346,24 +352,30 @@ public class DIDStoreTest {
     	// Store test data into current store
     	testData.loadTestIssuer();
     	DIDDocument test = testData.loadTestDocument();
-    	testData.loadProfileCredential();
-    	testData.loadEmailCredential();
-    	testData.loadTwitterCredential();
-    	testData.loadPassportCredential();
+    	VerifiableCredential vc = testData.loadProfileCredential();
+    	vc.setAlias("MyProfile");
+    	vc = testData.loadEmailCredential();
+    	vc.setAlias("Email");
+    	vc = testData.loadTwitterCredential();
+    	vc.setAlias("Twitter");
+    	vc = testData.loadPassportCredential();
+    	vc.setAlias("Passport");
 
     	DIDStore store = DIDStore.getInstance();
 
-    	List<DIDStore.Entry<DIDURL, String>> vcs;
-		vcs = store.listCredentials(test.getSubject());
+    	List<DIDURL> vcs = store.listCredentials(test.getSubject());
 		assertEquals(4, vcs.size());
 
-		for (DIDStore.Entry<DIDURL, String> entry : vcs) {
-			DIDURL id = entry.getKey();
-
+		for (DIDURL id : vcs) {
 			assertTrue(id.getFragment().equals("profile")
 					|| id.getFragment().equals("email")
 					|| id.getFragment().equals("twitter")
 					|| id.getFragment().equals("passport"));
+
+			assertTrue(id.getAlias().equals("MyProfile")
+					|| id.getAlias().equals("Email")
+					|| id.getAlias().equals("Twitter")
+					|| id.getAlias().equals("Passport"));
 		}
 	}
 

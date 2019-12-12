@@ -61,6 +61,8 @@ public class DIDDocument {
 	private Proof proof;
 	private boolean deactivated;
 
+	private String alias;
+
 	/* Just expose from/toJson method for current package */
 	static class EmbeddedCredential extends VerifiableCredential {
 		protected EmbeddedCredential() {
@@ -571,6 +573,25 @@ public class DIDDocument {
 
 	private void setProof(Proof proof) {
 		this.proof = proof;
+	}
+
+	public void setAlias(String alias) throws DIDException {
+		if (DIDStore.isInitialized())
+			DIDStore.getInstance().setDidAlias(getSubject(), alias);
+
+		this.alias = alias != null ? alias : "";
+	}
+
+	public String getAlias() throws DIDException {
+		if (alias == null) {
+			if (DIDStore.isInitialized())
+				alias = DIDStore.getInstance().getDidAlias(getSubject());
+
+			if (alias == null)
+				alias = "";
+		}
+
+		return alias;
 	}
 
 	public boolean isExpired() {

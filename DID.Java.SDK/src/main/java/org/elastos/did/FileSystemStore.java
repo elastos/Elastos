@@ -51,16 +51,16 @@ import org.elastos.credential.VerifiableCredential;
  *      - .ixxxxxxxxxxxxxxx0.meta		[Meta for DID, alias only, OPTIONAL]
  *      + ixxxxxxxxxxxxxxx0 			[DID root, named by id specific string]
  *        - document					[DID document, json format]
- *          + credentials				[Credentials root, OPTIONAL]
- *            - credential-id-0			[Credential, json format, named by id' fragment]
- *            - .credential-id-0.meta	[Meta for credential, alias only, OPTONAL]
- *            - ...
- *            - credential-id-N
- *            - .credential-id-N.meta
- *          + privatekeys				[Private keys root, OPTIONAL]
- *            - privatekey-id-0			[Encrypted private key, named by pk' id]
- *            - ...
- *            - privatekey-id-N
+ *        + credentials				[Credentials root, OPTIONAL]
+ *          - credential-id-0			[Credential, json format, named by id' fragment]
+ *          - .credential-id-0.meta	[Meta for credential, alias only, OPTONAL]
+ *          - ...
+ *          - credential-id-N
+ *          - .credential-id-N.meta
+ *        + privatekeys				[Private keys root, OPTIONAL]
+ *          - privatekey-id-0			[Encrypted private key, named by pk' id]
+ *          - ...
+ *          - privatekey-id-N
  *
  *      ......
  *
@@ -304,7 +304,7 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public void setDidHint(DID did, String hint) throws DIDStoreException {
+	public void setDidAlias(DID did, String alias) throws DIDStoreException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
@@ -312,17 +312,17 @@ class FileSystemStore extends DIDStore {
 			File file = getFile(true, DID_DIR,
 					"." + did.getMethodSpecificId() + META_EXT);
 
-			if (hint == null || hint.isEmpty())
+			if (alias == null || alias.isEmpty())
 				file.delete();
 			else
-				writeText(file, hint);
+				writeText(file, alias);
 		} catch (IOException e) {
-			throw new DIDStoreException("Write hint error.", e);
+			throw new DIDStoreException("Write alias error.", e);
 		}
 	}
 
 	@Override
-	public String getDidHint(DID did) throws DIDStoreException {
+	public String getDidAlias(DID did) throws DIDStoreException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
@@ -331,12 +331,12 @@ class FileSystemStore extends DIDStore {
 					+ META_EXT);
 			return readText(file);
 		} catch (IOException e) {
-			throw new DIDStoreException("Read hint error.", e);
+			throw new DIDStoreException("Read alias error.", e);
 		}
 	}
 
 	@Override
-	public void storeDid(DIDDocument doc, String hint) throws DIDStoreException {
+	public void storeDid(DIDDocument doc, String alias) throws DIDStoreException {
 		if (doc == null)
 			throw new IllegalArgumentException();
 
@@ -347,8 +347,8 @@ class FileSystemStore extends DIDStore {
 
 			doc.toJson(new FileOutputStream(file), DEFAULT_CHARSET, true);
 
-			if (!exist || (hint != null && !hint.isEmpty()))
-				setDidHint(doc.getSubject(), hint);
+			if (!exist || (alias != null && !alias.isEmpty()))
+				setDidAlias(doc.getSubject(), alias);
 		} catch (IOException e) {
 			throw new DIDStoreException("Store DIDDocument error.", e);
 		}
@@ -403,11 +403,10 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public List<Entry<DID, String>> listDids(int filter)
-			throws DIDStoreException {
+	public List<DID> listDids(int filter) throws DIDStoreException {
 		File dir = getDir(DID_DIR);
 		if (!dir.exists())
-			return new ArrayList<Entry<DID, String>>(0);
+			return new ArrayList<DID>(0);
 
 		File[] children = dir.listFiles(new FileFilter() {
 			@Override
@@ -434,24 +433,23 @@ class FileSystemStore extends DIDStore {
 		});
 
 		int size = children != null ? children.length : 0;
-		ArrayList<Entry<DID, String>> dids = new ArrayList<Entry<DID, String>>(size);
+		ArrayList<DID> dids = new ArrayList<DID>(size);
 
 		for (File didRoot : children) {
 			DID did = new DID(DID.METHOD, didRoot.getName());
-			String hint = null;
 			try {
-				hint = getDidHint(did);
+				did.setAliasInternal(getDidAlias(did));
 			} catch (DIDStoreException ignore) {
 			}
 
-			dids.add(new Entry<DID, String>(did, hint));
+			dids.add(did);
 		}
 
 		return dids;
 	}
 
 	@Override
-	public void setCredentialHint(DID did, DIDURL id, String hint)
+	public void setCredentialAlias(DID did, DIDURL id, String alias)
 			throws DIDStoreException {
 		if (did == null || id == null)
 			throw new IllegalArgumentException();
@@ -460,17 +458,17 @@ class FileSystemStore extends DIDStore {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, "." + id.getFragment() + META_EXT);
 
-			if (hint == null || hint.isEmpty())
+			if (alias == null || alias.isEmpty())
 				file.delete();
 			else
-				writeText(file, hint);
+				writeText(file, alias);
 		} catch (IOException e) {
-			throw new DIDStoreException("Write hint error.", e);
+			throw new DIDStoreException("Write alias error.", e);
 		}
 	}
 
 	@Override
-	public String getCredentialHint(DID did, DIDURL id)
+	public String getCredentialAlias(DID did, DIDURL id)
 			throws DIDStoreException {
 		if (did == null || id == null)
 			throw new IllegalArgumentException();
@@ -480,12 +478,12 @@ class FileSystemStore extends DIDStore {
 					CREDENTIALS_DIR, "." + id.getFragment() + META_EXT);
 			return readText(file);
 		} catch (IOException e) {
-			throw new DIDStoreException("Read hint error.", e);
+			throw new DIDStoreException("Read alias error.", e);
 		}
 	}
 
 	@Override
-	public void storeCredential(VerifiableCredential credential, String hint)
+	public void storeCredential(VerifiableCredential credential, String alias)
 			throws DIDStoreException {
 		if (credential == null)
 			throw new IllegalArgumentException();
@@ -498,9 +496,9 @@ class FileSystemStore extends DIDStore {
 
 			credential.toJson(new FileOutputStream(file), true);
 
-			if (!exist || (hint != null && !hint.isEmpty()))
-				setCredentialHint(credential.getSubject().getId(),
-						credential.getId(), hint);
+			if (!exist || (alias != null && !alias.isEmpty()))
+				setCredentialAlias(credential.getSubject().getId(),
+						credential.getId(), alias);
 		} catch (IOException e) {
 			throw new DIDStoreException("Store credential error.", e);
 		}
@@ -578,13 +576,13 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public List<Entry<DIDURL, String>> listCredentials(DID did) throws DIDStoreException {
+	public List<DIDURL> listCredentials(DID did) throws DIDStoreException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(), CREDENTIALS_DIR);
 		if (!dir.exists())
-			return new ArrayList<Entry<DIDURL, String>>(0);
+			return new ArrayList<DIDURL>(0);
 
 		File[] children = dir.listFiles(new FileFilter() {
 			@Override
@@ -600,24 +598,24 @@ class FileSystemStore extends DIDStore {
 		});
 
 		int size = children != null ? children.length : 0;
-		ArrayList<Entry<DIDURL, String>> credentials = new ArrayList<Entry<DIDURL, String>>(size);
+		ArrayList<DIDURL> credentials = new ArrayList<DIDURL>(size);
 
 		for (File credential : children) {
 			DIDURL id = new DIDURL(did, credential.getName());
-			String hint = null;
 			try {
-				hint = getCredentialHint(did, id);
+				id.setAliasInternal(getCredentialAlias(did, id));
 			} catch (DIDStoreException ignore) {
 			}
 
-			credentials.add(new Entry<DIDURL, String>(id, hint));
+			credentials.add(id);
 		}
 
 		return credentials;
 	}
 
 	@Override
-	public List<Entry<DIDURL, String>> selectCredentials(DID did, DIDURL id, String[] type) throws DIDStoreException {
+	public List<DIDURL> selectCredentials(DID did, DIDURL id, String[] type)
+			throws DIDStoreException {
 		if (did == null)
 			throw new IllegalArgumentException();
 

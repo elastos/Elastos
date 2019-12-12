@@ -32,72 +32,35 @@ import org.elastos.did.util.Aes256cbc;
 import org.elastos.did.util.Base64;
 import org.elastos.did.util.EcdsaSigner;
 import org.elastos.did.util.HDKey;
+import org.elastos.did.util.LRUCache;
 
 public abstract class DIDStore {
+	private static final int CACHE_INITIAL_CAPACITY = 16;
+	private static final int CACHE_MAX_CAPACITY = 32;
+
 	public static final int DID_HAS_PRIVATEKEY = 0;
 	public static final int DID_NO_PRIVATEKEY = 1;
 	public static final int DID_ALL	= 2;
 
 	private static DIDStore instance;
 
+	private Map<DID, DIDDocument> didCache;
+	private Map<DIDURL, VerifiableCredential> vcCache;
+
 	private DIDBackend backend;
 
-	static public class Entry<K, V> implements java.io.Serializable {
-		private static final long serialVersionUID = -4061538310957041415L;
-
-		private final K key;
-		private V value;
-
-		public Entry(K key, V value) {
-			this.key = key;
-			this.value = value;
+	protected void setupStore(int initialCacheCapacity, int maxCacheCapacity,
+			DIDAdapter adapter) {
+		if (maxCacheCapacity > 0) {
+			this.didCache = LRUCache.createInstance(initialCacheCapacity, maxCacheCapacity);
+			this.vcCache = LRUCache.createInstance(initialCacheCapacity, maxCacheCapacity);
 		}
 
-		public Entry(Entry<? extends K, ? extends V> entry) {
-			this.key = entry.getKey();
-			this.value = entry.getValue();
-		}
-
-		public K getKey() {
-			return key;
-		}
-
-		public V getValue() {
-			return value;
-		}
-
-		public V setValue(V value) {
-			V oldValue = this.value;
-			this.value = value;
-			return oldValue;
-		}
-
-		private static boolean eq(Object o1, Object o2) {
-			return o1 == null ? o2 == null : o1.equals(o2);
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (!(o instanceof Map.Entry))
-				return false;
-			Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
-			return eq(key, e.getKey()) && eq(value, e.getValue());
-		}
-
-		@Override
-		public int hashCode() {
-			return (key == null   ? 0 : key.hashCode()  ) ^
-				   (value == null ? 0 : value.hashCode());
-		}
-
-		@Override
-		public String toString() {
-			return key + "=" + value;
-		}
-
+		this.backend = new DIDBackend(adapter);
 	}
 
 	public static void initialize(String type, String location,
+			int initialCacheCapacity, int maxCacheCapacity,
 			DIDAdapter adapter) throws DIDStoreException {
 		if (type == null || location == null ||
 				location.isEmpty() || adapter == null)
@@ -107,7 +70,13 @@ public abstract class DIDStore {
 			throw new DIDStoreException("Unsupported store type: " + type);
 
 		instance = new FileSystemStore(location);
-		instance.backend = new DIDBackend(adapter);
+		instance.setupStore(initialCacheCapacity, maxCacheCapacity, adapter);
+	}
+
+	public static void initialize(String type, String location,
+			DIDAdapter adapter) throws DIDStoreException {
+		initialize(type, location, CACHE_INITIAL_CAPACITY,
+				CACHE_MAX_CAPACITY, adapter);
 	}
 
 	public static boolean isInitialized() {
@@ -239,7 +208,7 @@ public abstract class DIDStore {
 		}
 	}
 
-	public DIDDocument newDid(String storepass, String hint)
+	public DIDDocument newDid(String storepass, String alias)
 			throws DIDStoreException {
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
@@ -260,7 +229,7 @@ public abstract class DIDStore {
 		DIDDocument.Builder db = new DIDDocument.Builder(did);
 		db.addAuthenticationKey(id, key.getPublicKeyBase58());
 		DIDDocument doc = db.seal(storepass);
-		storeDid(doc, hint);
+		storeDid(doc, alias);
 
 		storePrivateIdentityIndex(nextIndex);
 		privateIdentity.wipe();
@@ -383,26 +352,26 @@ public abstract class DIDStore {
 		return resolveDid(did, false);
 	}
 
-	public abstract void storeDid(DIDDocument doc, String hint)
+	public abstract void storeDid(DIDDocument doc, String alias)
 			throws DIDStoreException;
 
 	public void storeDid(DIDDocument doc) throws DIDStoreException {
 		storeDid(doc, null);
 	}
 
-	public abstract void setDidHint(DID did, String hint)
+	public abstract void setDidAlias(DID did, String alias)
 			throws DIDStoreException;
 
-	public void setDidHint(String did, String hint)
+	public void setDidAlias(String did, String alias)
 			throws MalformedDIDException, DIDStoreException {
-		setDidHint(new DID(did), hint);
+		setDidAlias(new DID(did), alias);
 	}
 
-	public abstract String getDidHint(DID did) throws DIDStoreException;
+	public abstract String getDidAlias(DID did) throws DIDStoreException;
 
-	public String getDidHint(String did)
+	public String getDidAlias(String did)
 			throws MalformedDIDException, DIDStoreException {
-		return getDidHint(new DID(did));
+		return getDidAlias(new DID(did));
 	}
 
 	public abstract DIDDocument loadDid(DID did)
@@ -428,36 +397,35 @@ public abstract class DIDStore {
 		return deleteDid(new DID(did));
 	}
 
-	// Return a <DID, hint> tuples enumeration object
-	public abstract List<Entry<DID, String>> listDids(int filter)
+	public abstract List<DID> listDids(int filter)
 			throws DIDStoreException;
 
 	public abstract void storeCredential(VerifiableCredential credential,
-			String hint) throws DIDStoreException;
+			String alias) throws DIDStoreException;
 
 	public void storeCredential(VerifiableCredential credential)
 			throws DIDStoreException {
 		storeCredential(credential, null);
 	}
 
-	public abstract void setCredentialHint(DID did, DIDURL id, String hint)
+	public abstract void setCredentialAlias(DID did, DIDURL id, String alias)
 			throws DIDStoreException;
 
-	public void setCredentialHint(String did, String id, String hint)
+	public void setCredentialAlias(String did, String id, String alias)
 			throws  MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
 		DID _did = new DID(did);
-		setCredentialHint(_did, new DIDURL(_did, id), hint);
+		setCredentialAlias(_did, new DIDURL(_did, id), alias);
 	}
 
-	public abstract String getCredentialHint(DID did, DIDURL id)
+	public abstract String getCredentialAlias(DID did, DIDURL id)
 			throws DIDStoreException;
 
-	public String getCredentialHint(String did, String id)
+	public String getCredentialAlias(String did, String id)
 			throws  MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
 		DID _did = new DID(did);
-		return getCredentialHint(_did, new DIDURL(_did, id));
+		return getCredentialAlias(_did, new DIDURL(_did, id));
 	}
 
 	public abstract VerifiableCredential loadCredential(DID did, DIDURL id)
@@ -497,19 +465,18 @@ public abstract class DIDStore {
 		return deleteCredential(_did, new DIDURL(_did, id));
 	}
 
-	// Return a <DIDURL, hint> tuples enumeration object
-	public abstract List<Entry<DIDURL, String>> listCredentials(DID did)
+	public abstract List<DIDURL> listCredentials(DID did)
 			throws DIDStoreException;
 
-	public List<Entry<DIDURL, String>> listCredentials(String did)
+	public List<DIDURL> listCredentials(String did)
 			throws MalformedDIDException, DIDStoreException {
 		return listCredentials(new DID(did));
 	}
 
-	public abstract List<Entry<DIDURL, String>> selectCredentials(DID did,
+	public abstract List<DIDURL> selectCredentials(DID did,
 			DIDURL id, String[] type) throws DIDStoreException;
 
-	public List<Entry<DIDURL, String>> selectCredentials(String did, String id,
+	public List<DIDURL> selectCredentials(String did, String id,
 			String[] type) throws MalformedDIDException,
 			MalformedDIDURLException, DIDStoreException {
 		DID _did = new DID(did);

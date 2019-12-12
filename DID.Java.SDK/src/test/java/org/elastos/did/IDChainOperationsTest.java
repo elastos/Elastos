@@ -102,12 +102,12 @@ public class IDChainOperationsTest {
 
     	store.synchronize(TestConfig.storePass);
 
-    	List<DIDStore.Entry<DID, String>> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+    	List<DID> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
     	assertEquals(5, dids.size());
 
     	ArrayList<String> didStrings = new ArrayList<String>(dids.size());
-    	for (DIDStore.Entry<DID, String> entry : dids)
-    		didStrings.add(entry.getKey().toString());
+    	for (DID id : dids)
+    		didStrings.add(id.toString());
 
     	BufferedReader input = new BufferedReader(new InputStreamReader(
 				getClass().getClassLoader().getResourceAsStream("dids.restore")));

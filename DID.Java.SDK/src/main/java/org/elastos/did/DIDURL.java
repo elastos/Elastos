@@ -36,6 +36,8 @@ public class DIDURL implements Comparable<DIDURL> {
 	private Map<String, String> query;
 	private String fragment;
 
+	private String alias;
+
 	public DIDURL(DID id, String fragment) {
 		if (id == null)
 			throw new IllegalArgumentException();
@@ -144,6 +146,14 @@ public class DIDURL implements Comparable<DIDURL> {
 
 	protected void setFragment(String fragment) {
 		this.fragment = fragment;
+	}
+
+	protected void setAliasInternal(String alias) {
+		this.alias = alias != null ? alias : "";
+	}
+
+	public String getAlias() throws DIDException {
+		return alias != null ? alias : "";
 	}
 
 	@Override

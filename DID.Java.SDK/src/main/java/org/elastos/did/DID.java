@@ -32,6 +32,8 @@ public class DID implements Comparable<DID> {
 	private String method;
 	private String methodSpecificId;
 
+	private String alias;
+
 	protected DID() {
 	}
 
@@ -65,6 +67,33 @@ public class DID implements Comparable<DID> {
 
 	protected void setMethodSpecificId(String methodSpecificId) {
 		this.methodSpecificId = methodSpecificId;
+	}
+
+	protected void setAliasInternal(String alias) {
+		this.alias = alias != null ? alias : "";
+	}
+
+	public void setAlias(String alias) throws DIDException {
+		if (DIDStore.isInitialized())
+			DIDStore.getInstance().setDidAlias(this, alias);
+
+		setAliasInternal(alias);
+	}
+
+	public String getAlias() throws DIDException {
+		if (alias == null) {
+			if (DIDStore.isInitialized())
+				alias = DIDStore.getInstance().getDidAlias(this);
+
+			if (alias == null)
+				alias = "";
+		}
+
+		return alias;
+	}
+
+	public DIDDocument resolve() throws DIDException {
+		return DIDStore.getInstance().resolveDid(this);
 	}
 
 	@Override
@@ -109,10 +138,6 @@ public class DID implements Comparable<DID> {
 
 		int rc = method.compareTo(did.method);
 		return rc == 0 ? methodSpecificId.compareTo(did.methodSpecificId) : rc;
-	}
-
-	public DIDDocument resolve() throws DIDException {
-		return DIDStore.getInstance().resolveDid(this);
 	}
 
 	class Listener extends DIDURLBaseListener {

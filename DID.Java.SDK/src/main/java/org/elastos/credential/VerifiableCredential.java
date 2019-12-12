@@ -44,6 +44,7 @@ import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
 import org.elastos.did.DIDException;
 import org.elastos.did.DIDObject;
+import org.elastos.did.DIDStore;
 import org.elastos.did.DIDURL;
 import org.elastos.did.util.JsonHelper;
 
@@ -59,6 +60,8 @@ public class VerifiableCredential extends DIDObject {
 	private Date expirationDate;
 	private CredentialSubject subject;
 	private Proof proof;
+
+	private String alias;
 
 	static public class CredentialSubject {
 		private DID id;
@@ -289,6 +292,27 @@ public class VerifiableCredential extends DIDObject {
 
 	public Date getExpirationDate() {
 		return expirationDate;
+	}
+
+	public void setAlias(String alias) throws DIDException {
+		if (DIDStore.isInitialized())
+			DIDStore.getInstance().setCredentialAlias(getSubject().getId(),
+					getId(), alias);
+
+		this.alias = alias != null ? alias : "";
+	}
+
+	public String getAlias() throws DIDException {
+		if (alias == null) {
+			if (DIDStore.isInitialized())
+				alias = DIDStore.getInstance().getCredentialAlias(
+						getSubject().getId(), getId());
+
+			if (alias == null)
+				alias = "";
+		}
+
+		return alias;
 	}
 
 	public boolean isSelfProclaimed() {
