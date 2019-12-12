@@ -324,6 +324,14 @@ DIDURL *Credential_GetId(Credential *cred)
     return &cred->id;
 }
 
+DID *Credential_GetOwner(Credential *cred)
+{
+    if (!cred)
+        return NULL;
+
+    return &cred->subject.id;
+}
+
 ssize_t Credential_GetTypeCount(Credential *cred)
 {
     if (!cred)
@@ -450,7 +458,6 @@ const char *Credential_GetProofSignture(Credential *cred)
     return cred->proof.signatureValue;
 }
 
-
 Credential *Parser_Credential(cJSON *json, DID *did)
 {
     size_t i, size;
@@ -529,7 +536,7 @@ Credential *Parser_Credential(cJSON *json, DID *did)
     }
 
     //subject
-    //strncpy((char*)credential->subject.id.idstring, did->idstring, MAX_ID_SPECIFIC_STRING);
+    strncpy((char*)credential->subject.id.idstring, did->idstring, MAX_ID_SPECIFIC_STRING);
     item = cJSON_GetObjectItem(json, "credentialSubject");
     if (!item || !cJSON_IsObject(item)|| parser_subject(item, credential) == -1)
          goto errorExit;
@@ -598,35 +605,6 @@ int CredentialArray_ToJson(JsonGenerator *gen, Credential **creds,
     CHECK(JsonGenerator_WriteEndArray(gen));
 
     return 0;
-}
-
-static int check_issuer(DIDStore *store, DID *issuer, DIDURL **defaultSignKey)
-{
-    DIDDocument *doc;
-    DIDURL *key;
-
-    assert(store);
-    assert(issuer);
-    assert(defaultSignKey);
-
-    doc = DIDStore_ResolveDID(store, issuer, true);
-    if (!doc)
-        return -1;
-
-    if (!*defaultSignKey) {
-        key = DIDDocument_GetDefaultPublicKey(doc);
-        if (!key) {
-            DIDDocument_Destroy(doc);
-            return -1;
-        }
-
-        DID_Copy(&(*defaultSignKey)->did, &key->did);
-    }
-
-    if (!DIDDocument_GetAuthenticationKey(doc, *defaultSignKey))
-        return -1;
-
-    return DIDStore_ContainPrivateKey(store, issuer, *defaultSignKey) ? 0 : -1;
 }
 
 const char* Credential_ToJson(Credential *cred, int compact, int forsign)
@@ -807,12 +785,64 @@ int Credential_Verify(Credential *cred)
 
 bool Credential_IsExpired(Credential *cred)
 {
-    time_t curtime;
+    time_t curtime, credexpires;
 
     if (!cred)
         return true;
 
+    credexpires = Credential_GetExpirationDate(cred);
     curtime = time(NULL);
 
-    return curtime > cred->expirationDate;
+    return curtime > credexpires;
+}
+
+bool Credential_IsGenuine(Credential *cred)
+{
+    DIDDocument *doc;
+    int rc;
+
+    if (!cred)
+        return false;
+
+    doc = DID_Resolve(&cred->issuer);
+    if (!DIDDocument_IsAuthenticationKey(doc, &cred->proof.verificationMethod))
+        return false;
+
+    if (strcmp(cred->proof.type, ProofType))
+        return false;
+
+    rc = Credential_Verify(cred);
+    return rc == 0 ? true : false;
+}
+
+bool Credential_IsValid(Credential *cred)
+{
+    DID *owner, *issuer;
+    DIDDocument *doc, *issuerdoc;
+
+    if (!cred)
+        return false;
+
+    owner = Credential_GetOwner(cred);
+    if (!owner)
+        return false;
+
+    doc = DID_Resolve(owner);
+    if (!doc || !DIDDocument_IsValid(doc)) {
+        DIDDocument_Destroy(doc);
+        return false;
+    }
+
+    DIDDocument_Destroy(doc);
+    issuer = Credential_GetIssuer(cred);
+    if (!issuer)
+        return false;
+
+    doc = DID_Resolve(issuer);
+    if (!doc || !DIDDocument_IsValid(doc)) {
+        DIDDocument_Destroy(doc);
+        return false;
+    }
+
+    return Credential_IsGenuine(cred) && !Credential_IsExpired(cred);
 }

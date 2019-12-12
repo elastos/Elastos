@@ -39,7 +39,7 @@ int DIDBackend_Create(DIDBackend *backend, DIDDocument *document, DIDURL *signke
             !*storepass)
         return -1;
 
-    docstring = DIDDocument_ToJson(document, 1);
+    docstring = DIDDocument_ToJson(document, 1, 0);
     if (!docstring)
         return -1;
 
@@ -65,7 +65,7 @@ int DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signke
             !*storepass)
         return -1;
 
-    docstring = DIDDocument_ToJson(document, 1);
+    docstring = DIDDocument_ToJson(document, 1, 0);
     if (!docstring)
         return -1;
 

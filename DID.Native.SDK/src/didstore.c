@@ -63,6 +63,7 @@ DIDStore *storeInstance = NULL;
 static char *StoreTag = "/.DIDStore";
 static char MAGIC[] = { 0x00, 0x0D, 0x01, 0x0D };
 static char VERSION[] = { 0x00, 0x00, 0x00, 0x01 };
+static const char *ProofType = "ECDSAsecp256r1";
 
 typedef enum DIDStore_Type {
     DIDStore_Root,
@@ -726,11 +727,14 @@ static int list_credential_helper(const char *path, void *context)
     return ch->cb(cred_entry, NULL);
 }
 
-static DIDDocument *create_document(DID *did, const char *key)
+static DIDDocument *create_document(DID *did, const char *key, const char *storepass)
 {
     PublicKey *publickey;
     DIDURL id;
     DID controller;
+    const char *data;
+    int rc;
+    char signature[SIGNATURE_BYTES * 2];
 
     assert(did);
     assert(key);
@@ -759,6 +763,26 @@ static DIDDocument *create_document(DID *did, const char *key)
     }
 
     DIDDocument_SetExpires(document, 0);
+
+    data = DIDDocument_ToJson(document, 0, 1);
+    if (!data) {
+        DIDDocument_Destroy(document);
+        return NULL;
+    }
+
+    rc = DIDDocument_Sign(document, &id, storepass, signature, 1,
+            (unsigned char*)data, strlen(data));
+    free((char*)data);
+    if (rc) {
+        DIDDocument_Destroy(document);
+        return NULL;
+    }
+
+    strcpy(document->proof.type, ProofType);
+    time(&document->proof.created);
+    DIDURL_Copy(&document->proof.creater, &id);
+    strcpy(document->proof.signatureValue, signature);
+
     return document;
 }
 
@@ -825,7 +849,7 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *hint)
     if (!path)
         return -1;
 
-	string = DIDDocument_ToJson(document, 0);
+	string = DIDDocument_ToJson(document, 0, 0);
 	if (!string)
 		return -1;
 
@@ -1340,7 +1364,7 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
 
     base58_encode(publickeybase58, publickey, sizeof(publickey));
 
-    document = create_document(&did, publickeybase58);
+    document = create_document(&did, publickeybase58, storepass);
     if (!document) {
         memset(seed, 0, sizeof(seed));
         return NULL;

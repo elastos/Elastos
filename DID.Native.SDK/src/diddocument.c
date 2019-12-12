@@ -36,6 +36,8 @@
 
 #define MAX_EXPIRES              5
 
+static const char *ProofType = "ECDSAsecp256r1";
+
 typedef enum KeyType {
     KeyType_Authentication,
     KeyType_Authorization,
@@ -157,6 +159,25 @@ int ServiceArray_ToJson(JsonGenerator *gen, Service **services, size_t size,
     }
     CHECK(JsonGenerator_WriteEndArray(gen));
 
+    return 0;
+}
+
+static int proof_toJson(JsonGenerator *gen, DIDDocument *doc, int compact)
+{
+    char id[MAX_DIDURL];
+
+    assert(gen);
+    assert(gen->buffer);
+    assert(doc);
+
+    CHECK(JsonGenerator_WriteStartObject(gen));
+    if (!compact)
+        CHECK(JsonGenerator_WriteStringField(gen, "type", doc->proof.type));
+    CHECK(JsonGenerator_WriteStringField(gen, "created", get_time_string(&doc->proof.created)));
+    CHECK(JsonGenerator_WriteStringField(gen, "creater",
+            DIDURL_ToString(&doc->proof.creater, id, sizeof(id), compact)));
+    CHECK(JsonGenerator_WriteStringField(gen, "signature", doc->proof.signatureValue));
+    CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
 
@@ -642,7 +663,8 @@ errorExit:
 }
 
 static
-int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc, int compact)
+int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
+        int compact, int forsign)
 {
     char id[MAX_DIDURL];
     size_t i;
@@ -685,10 +707,13 @@ int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc, int compac
     CHECK(JsonGenerator_WriteStringField(gen, "expires", get_time_string(&doc->expires)));
     CHECK(JsonGenerator_WriteEndObject(gen));
 
+    if (!forsign)
+        CHECK(proof_toJson(gen, doc, compact));
+
     return 0;
 }
 
-const char *DIDDocument_ToJson(DIDDocument *doc, int compact)
+const char *DIDDocument_ToJson(DIDDocument *doc, int compact, int forsign)
 {
     JsonGenerator g, *gen;
 
@@ -699,7 +724,7 @@ const char *DIDDocument_ToJson(DIDDocument *doc, int compact)
     if (!gen)
         return NULL;
 
-    if (DIDDocument_ToJson_Internal(gen, doc, compact) < 0)
+    if (DIDDocument_ToJson_Internal(gen, doc, compact, forsign) < 0)
         return NULL;
 
     return JsonGenerator_Finish(gen);
@@ -737,6 +762,59 @@ void DIDDocument_Destroy(DIDDocument *document)
         free(document->credentials.credentials);
 
     free(document);
+}
+
+bool DIDDocument_IsDeactivated(DIDDocument *document)
+{
+    if (!document)
+        return true;
+
+    //Todo:
+    return false;
+}
+
+bool DIDDocument_IsGenuine(DIDDocument *document)
+{
+    const char *data;
+    int rc;
+
+    if (!document)
+        return false;
+
+    if (!DIDURL_Equals(DIDDocument_GetDefaultPublicKey(document),
+            &document->proof.creater))
+        return false;
+
+    if (strcmp(document->proof.type, ProofType))
+        return false;
+
+    data = DIDDocument_ToJson(document, 0, 1);
+    if (!data)
+        return false;
+
+    rc = DIDDocument_Verify(document, NULL, document->proof.signatureValue, 1,
+            (unsigned char*)data, strlen(data));
+    return rc == 0 ? true : false;
+}
+
+bool DIDDocument_IsExpires(DIDDocument *document)
+{
+    time_t curtime;
+
+    if (!document)
+        return true;
+
+    curtime = time(NULL);
+    return curtime > document->expires;
+}
+
+bool DIDDocument_IsValid(DIDDocument *document)
+{
+    if (!document)
+        return false;
+
+    return !DIDDocument_IsExpires(document) &&
+           !DIDDocument_IsDeactivated(document) && DIDDocument_IsGenuine(document);
 }
 
 static

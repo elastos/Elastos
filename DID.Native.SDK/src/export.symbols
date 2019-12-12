@@ -24,6 +24,10 @@ _DIDURL_Destroy
 _DIDDocument_FromJson
 _DIDDocument_ToJson
 _DIDDocument_Destroy
+_DIDDocument_IsDeactivated
+_DIDDocument_IsGenuine
+_DIDDocument_IsExpires
+_DIDDocument_IsValid
 _DIDDocument_AddPublicKey
 _DIDDocument_RemovePublicKey
 _DIDDocument_AddAuthenticationKey
@@ -99,6 +103,8 @@ _Credential_SetProofSignture
 _Credential_Issue
 _Credential_Verify
 _Credential_IsExpired
+_Credential_IsGenuine
+_Credential_IsValid
 
 # DIDStore
 _DIDStore_Initialize

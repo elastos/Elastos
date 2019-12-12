@@ -253,6 +253,21 @@ DID_API bool DID_Equals(DID *did1, DID *did2);
 
 /**
  * \~English
+ * Compare two DIDs with their did string.
+ *
+ * @param
+ *      did1                   [in] One DID to be compared.
+ * @param
+ *      did2                   [in] The other DID to be compared.
+ * @return
+ *      return value < 0, it indicates did1 is less than did2.
+ *      return value = 0, it indicates did1 is equal to did2.
+ *      return value > 0, it indicates did1 is greater than did2.
+ */
+DID_API int DID_Compare(DID *did1, DID *did2);
+
+/**
+ * \~English
  * Copy one DID to the other DID.
  *
  * @param
@@ -378,6 +393,21 @@ DID_API bool DIDURL_Equals(DIDURL *id1, DIDURL *id2);
 
 /**
  * \~English
+ * Compare two DIDURLs with their whole string.
+ *
+ * @param
+ *      id1                   [in] One DID URL to be compared.
+ * @param
+ *      id2                   [in] The other DID URL to be compared.
+ * @return
+ *      return value < 0, it indicates id1 is less than id2.
+ *      return value = 0, it indicates id1 is equal to id2.
+ *      return value > 0, it indicates id1 is greater than id2.
+ */
+DID_API int DIDURL_Compare(DIDURL *id1, DIDURL *id2);
+
+/**
+ * \~English
  * Copy one DID URL to the other DID URL.
  *
  * @param
@@ -422,12 +452,15 @@ DID_API DIDDocument *DIDDocument_FromJson(const char* json);
  * @param
  *      compact              [in] Json context is compact or not.
  *                           1 represents compact, 0 represents not compact.
+ * @param
+ *      forsign              [in] Json context needs to sign or not.
+ *                           1 represents forsign, 0 represents not forsign.
  * @return
  *      If no error occurs, return json context. Return value must be free after
  *      finishing use.
  *      Otherwise, return NULL.
  */
-DID_API const char *DIDDocument_ToJson(DIDDocument *document, int compact);
+DID_API const char *DIDDocument_ToJson(DIDDocument *document, int compact, int forsign);
 
 /**
  * \~English
@@ -440,17 +473,47 @@ DID_API void DIDDocument_Destroy(DIDDocument *document);
 
 /**
  * \~English
- * Set DID subject to DID Document. The DID Subject is the entity of
- * the DID Document. A DID Document must have exactly one DID subject.
+ * Check that document is deactivated or not.
  *
  * @param
  *      document             [in] A handle to DID Document.
- * @param
- *      subject              [in] A handle to DID, becoming to DID subject.
  * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_SetSubject(DIDDocument *document, DID *subject);
+ *      true if document is deactivated, otherwise false.
+*/
+DID_API bool DIDDocument_IsDeactivated(DIDDocument *document);
+
+/**
+ * \~English
+ * Check that document is genuine or not.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @return
+ *      true if document is genuine, otherwise false.
+*/
+DID_API bool DIDDocument_IsGenuine(DIDDocument *document);
+
+/**
+ * \~English
+ * Check that document is expired or not.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @return
+ *      true if document is expired, otherwise false.
+*/
+DID_API bool DIDDocument_IsExpires(DIDDocument *document);
+
+/**
+ * \~English
+ * Check that document is valid or not.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @return
+ *      true if document is valid, otherwise false.
+*/
+DID_API bool DIDDocument_IsValid(DIDDocument *document);
 
 /**
  * \~English
@@ -1208,6 +1271,18 @@ DID_API DIDURL *Credential_GetId(Credential *cred);
 
 /**
  * \~English
+ * Get who this credential is belong to.
+ *
+ * @param
+ *      cred                 [in] A handle to Credential.
+ * @return
+ *      If no error occurs, return owner DID.
+ *      Otherwise, return NULL.
+ */
+DID_API DID *Credential_GetOwner(Credential *cred);
+
+/**
+ * \~English
  * Get count of Credential types.
  *
  * @param
@@ -1417,6 +1492,30 @@ DID_API int Credential_Verify(Credential *cred);
  *      flase if not expired, true if expired.
  */
 DID_API bool Credential_IsExpired(Credential *cred);
+
+/**
+ * \~English
+ * Credential is genuine or not.
+ * Issuance always occurs before any other actions involving a credential.
+ *
+ * @param
+ *      cred                      [in] The Credential handle.
+ * @return
+ *      flase if not genuine, true if genuine.
+ */
+DID_API bool Credential_IsGenuine(Credential *cred);
+
+/**
+ * \~English
+ * Credential is expired or not.
+ * Issuance always occurs before any other actions involving a credential.
+ *
+ * @param
+ *      cred                      [in] The Credential handle.
+ * @return
+ *      flase if not valid, true if valid.
+ */
+DID_API bool Credential_IsValid(Credential *cred);
 
 /******************************************************************************
  * Issuer
@@ -2129,6 +2228,28 @@ DID_API const char *Presentation_GetNonce(Presentation *pre);
  *      Otherwise, return NULL.
  */
 DID_API const char *Presentation_GetRealm(Presentation *pre);
+
+/**
+ * \~English
+ * Presentation is genuine or not.
+ *
+ * @param
+ *      pre                      [in] The Presentation handle.
+ * @return
+ *      flase if not genuine, true if genuine.
+ */
+DID_API bool Presentation_IsGenuine(Presentation *pre);
+
+/**
+ * \~English
+ * Presentation is valid or not.
+ *
+ * @param
+ *      cred                      [in] The Presentation handle.
+ * @return
+ *      flase if not valid, true if valid.
+ */
+DID_API bool Presentation_IsValid(Presentation *pre);
 
 #ifdef __cplusplus
 }

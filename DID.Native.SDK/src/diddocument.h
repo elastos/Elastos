@@ -32,7 +32,15 @@
 extern "C" {
 #endif
 
+#define MAX_SIGN        128
 #define CHECK(func)        do { if (func == -1) return -1; } while(0)
+
+typedef struct DocumentProof {
+    char type[MAX_TYPE];
+    time_t created;
+    DIDURL creater;
+    char signatureValue[MAX_SIGN];
+} DocumentProof;
 
 struct DIDDocument {
     DID did;
@@ -63,6 +71,7 @@ struct DIDDocument {
     } services;
 
     time_t expires;
+    DocumentProof proof;
 };
 
 struct PublicKey {

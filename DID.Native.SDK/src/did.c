@@ -181,6 +181,14 @@ bool DID_Equals(DID *did1, DID *did2)
     return strcmp(did1->idstring, did2->idstring) == 0;
 }
 
+int DID_Compare(DID *did1, DID *did2)
+{
+    if (!did1 || !did2)
+        return -1;
+
+    return strcmp(did1->idstring, did2->idstring);
+}
+
 void DID_Destroy(DID *did)
 {
     if (!did)
@@ -280,6 +288,22 @@ bool DIDURL_Equals(DIDURL *id1, DIDURL *id2)
 
     return (strcmp(id1->did.idstring, id2->did.idstring) == 0 &&
             strcmp(id1->fragment, id2->fragment) == 0);
+}
+
+int DIDURL_Compare(DIDURL *id1, DIDURL *id2)
+{
+    char _idstring1[MAX_DIDURL], _idstring2[MAX_DIDURL];
+    char *idstring1, *idstring2;
+
+    if (!id1 || !id2)
+        return -1;
+
+    idstring1 = DIDURL_ToString(id1, _idstring1, MAX_DIDURL, false);
+    idstring2 = DIDURL_ToString(id2, _idstring2, MAX_DIDURL, false);
+    if (!idstring1 || !idstring2)
+        return -1;
+
+    return strcmp(idstring1, idstring2);
 }
 
 int DIDURL_Copy(DIDURL *dest, DIDURL *src)

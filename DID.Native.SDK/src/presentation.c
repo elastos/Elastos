@@ -260,7 +260,7 @@ Presentation *Presentation_Create(DID *did, DIDURL *signkey, const char *storepa
     pre->credentials.credentials = creds;
     pre->credentials.size = count;
 
-    data = Presentation_ToJson(pre, 0, true);
+    data = Presentation_ToJson(pre, 0, 1);
     if (!data)
         goto errorExit;
 
@@ -469,4 +469,89 @@ const char *Presentation_GetRealm(Presentation *pre)
         return NULL;
 
     return pre->proof.realm;
+}
+
+bool Presentation_IsGenuine(Presentation *pre)
+{
+    DID *signer;
+    DIDDocument *doc = NULL;
+    int i, rc;
+
+    if (!pre)
+        return false;
+
+    if (strcmp(pre->proof.type, PresentationType))
+        return false;
+
+    signer = Presentation_GetSigner(pre);
+    if (!signer)
+        return false;
+
+    doc = DID_Resolve(signer);
+    if (!doc)
+        return false;
+
+    if (!DIDDocument_IsGenuine(doc))
+        goto errorExit;
+
+    if (!DIDDocument_IsAuthenticationKey(doc, &pre->proof.verificationMethod))
+        goto errorExit;
+
+    for (i = 0; i < pre->credentials.size; i++) {
+        Credential *cred = pre->credentials.credentials[i];
+        if (!cred || !Credential_IsGenuine(cred) ||
+                !DID_Equals(Credential_GetOwner(cred), Presentation_GetSigner(pre)))
+            goto errorExit;
+    }
+
+    rc = Presentation_Verify(pre);
+    DIDDocument_Destroy(doc);
+    return rc;
+
+errorExit:
+    DIDDocument_Destroy(doc);
+    return false;
+}
+
+bool Presentation_IsValid(Presentation *pre)
+{
+    DID *signer;
+    DIDDocument *doc = NULL;
+    int i, rc;
+
+    if (!pre)
+        return false;
+
+    if (strcmp(pre->proof.type, PresentationType))
+        return false;
+
+    signer = Presentation_GetSigner(pre);
+    if (!signer)
+        return false;
+
+    doc = DID_Resolve(signer);
+    if (!doc)
+        return false;
+
+    if (!DIDDocument_IsValid(doc))
+        goto errorExit;
+
+    if (!DIDDocument_IsAuthenticationKey(doc, &pre->proof.verificationMethod))
+        goto errorExit;
+
+    for (i = 0; i < pre->credentials.size; i++) {
+        Credential *cred = pre->credentials.credentials[i];
+        if (!cred || !Credential_IsValid(cred) ||
+                !DID_Equals(Credential_GetOwner(cred), Presentation_GetSigner(pre)))
+            goto errorExit;
+    }
+
+    rc = Presentation_Verify(pre);
+    DIDDocument_Destroy(doc);
+    return rc;
+
+errorExit:
+    DIDDocument_Destroy(doc);
+    return false;
+
 }
