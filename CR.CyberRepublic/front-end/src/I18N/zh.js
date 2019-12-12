@@ -7,6 +7,7 @@ import suggestion from './zh/suggestion'
 import getting_started from './en/getting_started'
 import whitepaper from './zh/whitepaper'
 import elip from './zh/elip'
+import area from './zh/area'
 
 const zh = {
   council,
@@ -17,6 +18,7 @@ const zh = {
   getting_started,
   whitepaper,
   elip,
+  area,
   // Header
   '0000': 'ALPHA版本',
   '0001': '奖励计划',
@@ -43,7 +45,13 @@ const zh = {
   '0109': '提交',
   '0110': '博客',
   navigation: {
-    council: '委员会',
+    council: {
+      title: '委员会',
+      submenu: {
+        incumbent: '现任',
+        candidate: '候选人',
+      }
+    },
     whitepaper: '白皮书',
     suggestion: '建议',
     elips: 'ELIPs',
@@ -111,6 +119,7 @@ const zh = {
   'profile.suggestion': '我的建议',
 
   'login.success': '欢迎回来',
+  'logout.success': '登出成功',
 
   'mentions.notFound': '该用户不存在',
 
@@ -118,15 +127,17 @@ const zh = {
   'image.upload.type.error': '上传的文件不是图片',
   'image.upload.size.error': '上传的文件大小不能超过500KB',
 
-  'comments': '评论',
+  comments: '评论',
   'comments.posts': '动态',
   'comments.post': '发言',
   'comments.noComments': '还没有评论，',
   'comments.signIn': '注册',
   'comments.firstToPost': '抢沙发！',
   'comments.placeholder': '说点儿什么',
-  'comments.posted': '您的评论已发布',
-
+  'comments.posted.success': '您的评论已提交',
+  'comments.updated.success': '您的评论已更新',
+  'comments.deleted.success': '您的评论已删除',
+  'comments.delete.confirm': '删除当前评论？',
   // Admin tasks
   'admin.tasks.status': '状态',
 
@@ -1553,6 +1564,7 @@ const zh = {
     candidates: '候选人',
     incumbent: '现任委员',
     council: 'CYBER REPUBLIC 筹委会',
+    voting: '选举',
     secretariat: {
       title: '秘书处',
       general: '秘书长',

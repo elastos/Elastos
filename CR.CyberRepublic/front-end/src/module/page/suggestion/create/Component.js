@@ -33,7 +33,7 @@ export default class extends StandardPage {
 
     this.state = {
       error: null,
-      draftSuggestion: draftSuggestion
+      draftSuggestion
     }
   }
 

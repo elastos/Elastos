@@ -2,8 +2,6 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import './style.scss'
-import { Col, Row, Card, Button, Breadcrumb, Icon, List, Spin, Avatar, Modal } from 'antd'
-import _ from 'lodash'
 
 export default class extends BaseComponent {
 

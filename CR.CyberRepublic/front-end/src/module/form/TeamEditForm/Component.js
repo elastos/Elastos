@@ -2,39 +2,19 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
 import I18N from '@/I18N'
-import {
-  Form,
-  Icon,
-  Input,
-  InputNumber,
-  Button,
-  Checkbox,
-  Radio,
-  Select,
-  message,
-  Row,
-  Col,
-  Upload,
-  Cascader,
-  Divider
-
-} from 'antd'
-
+import { Form, Input, Button, Radio } from 'antd'
 
 const FormItem = Form.Item
-const TextArea = Input.TextArea
 const RadioGroup = Radio.Group
 
-
 class C extends BaseComponent {
-
   ord_states() {
     return {
       loading: false
     }
   }
 
-  handleSubmit (e) {
+  handleSubmit(e) {
     e.preventDefault()
     this.props.form.validateFields(async (err, values) => {
       if (!err) {
@@ -48,26 +28,33 @@ class C extends BaseComponent {
         if (res) {
           location.reload()
         }
-
       }
     })
   }
 
-  getInputProps () {
-    const {getFieldDecorator} = this.props.form
+  getInputProps() {
+    const { getFieldDecorator } = this.props.form
     const team = this.props.data
 
-    const input_el = (
-      <Input size="large"/>
-    )
+    const input_el = <Input size="large" />
 
     const name_fn = getFieldDecorator('name', {
-      rules: [{required: true, message: I18N.get('from.TeamEditForm.field.required')}],
+      rules: [
+        {
+          required: true,
+          message: I18N.get('from.TeamEditForm.field.required')
+        }
+      ],
       initialValue: team.name
     })
 
     const type_fn = getFieldDecorator('type', {
-      rules: [{required: true, message: I18N.get('from.TeamEditForm.field.required')}],
+      rules: [
+        {
+          required: true,
+          message: I18N.get('from.TeamEditForm.field.required')
+        }
+      ],
       initialValue: team.type
     })
     const type_el = (
@@ -79,23 +66,17 @@ class C extends BaseComponent {
             </Radio>
           )
         })}
-
       </RadioGroup>
     )
 
     const recruiting_fn = getFieldDecorator('recruiting', {
-      rules: [{required: true}],
+      rules: [{ required: true }],
       initialValue: team.recruiting
     })
     const recruiting_el = (
       <RadioGroup>
-        <Radio value={true}>
-          {I18N.get('from.TeamEditForm.radio.yes')}
-        </Radio>
-        <Radio value={false}>
-          {I18N.get('from.TeamEditForm.radio.no')}
-        </Radio>
-
+        <Radio value={true}>{I18N.get('from.TeamEditForm.radio.yes')}</Radio>
+        <Radio value={false}>{I18N.get('from.TeamEditForm.radio.no')}</Radio>
       </RadioGroup>
     )
 
@@ -110,7 +91,6 @@ class C extends BaseComponent {
     })
     const tags_el = <Input size="large" disabled={true} />
 
-
     return {
       name: name_fn(input_el),
       type: type_fn(type_el),
@@ -120,48 +100,72 @@ class C extends BaseComponent {
     }
   }
 
-  componentDidMount() {
+  componentDidMount() {}
 
-  }
-
-  ord_render () {
+  ord_render() {
     const p = this.getInputProps()
 
     const formItemLayout = {
       labelCol: {
-        xs: {span: 24},
-        sm: {span: 8},
+        xs: { span: 24 },
+        sm: { span: 8 }
       },
       wrapperCol: {
-        xs: {span: 24},
-        sm: {span: 12},
-      },
+        xs: { span: 24 },
+        sm: { span: 12 }
+      }
     }
 
     return (
       <div className="layout-pt">
-
-        <Form onSubmit={this.handleSubmit.bind(this)} className="d_taskCreateForm">
+        <Form
+          onSubmit={this.handleSubmit.bind(this)}
+          className="d_taskCreateForm"
+        >
           <div>
-            <FormItem label={I18N.get('from.TeamEditForm.label.name')} {...formItemLayout}>
+            <FormItem
+              label={I18N.get('from.TeamEditForm.label.name')}
+              {...formItemLayout}
+            >
               {p.name}
             </FormItem>
-            <FormItem label={I18N.get('from.TeamEditForm.label.type')} {...formItemLayout}>
+            <FormItem
+              label={I18N.get('from.TeamEditForm.label.type')}
+              {...formItemLayout}
+            >
               {p.type}
             </FormItem>
-            <FormItem label={I18N.get('from.TeamEditForm.label.recrui')} {...formItemLayout}>
+            <FormItem
+              label={I18N.get('from.TeamEditForm.label.recrui')}
+              {...formItemLayout}
+            >
               {p.recruiting}
             </FormItem>
-            <FormItem label={I18N.get('from.TeamEditForm.label.description')} {...formItemLayout}>
+            <FormItem
+              label={I18N.get('from.TeamEditForm.label.description')}
+              {...formItemLayout}
+            >
               {p.description}
             </FormItem>
-            <FormItem label={I18N.get('from.TeamEditForm.label.tags')} {...formItemLayout}>
+            <FormItem
+              label={I18N.get('from.TeamEditForm.label.tags')}
+              {...formItemLayout}
+            >
               {p.tags}
             </FormItem>
 
-
-            <FormItem wrapperCol={{xs: {span: 24, offset: 0}, sm: {span: 12, offset: 8}}}>
-              <Button loading={this.state.loading} type="ebp" htmlType="submit" className="d_btn">
+            <FormItem
+              wrapperCol={{
+                xs: { span: 24, offset: 0 },
+                sm: { span: 12, offset: 8 }
+              }}
+            >
+              <Button
+                loading={this.state.loading}
+                type="ebp"
+                htmlType="submit"
+                className="d_btn"
+              >
                 {I18N.get('from.TeamEditForm.label.save')}
               </Button>
             </FormItem>
@@ -170,6 +174,5 @@ class C extends BaseComponent {
       </div>
     )
   }
-
 }
 export default Form.create()(C)

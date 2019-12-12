@@ -11,5 +11,8 @@ export default createContainer(Component, state => ({
     async changeTab(tabKey) {
       return councilService.changeTab(tabKey)
     },
+    async getCandidates(param) {
+      return councilService.getCandidates(param)
+    }
   }
 })

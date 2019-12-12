@@ -1,7 +1,7 @@
 import BaseService from '../model/BaseService'
 import { api_request } from '@/util'
 
-const councilTabKeys = ['COUNCIL', 'SECRETARIAT']
+const councilTabKeys = ['COUNCIL', 'SECRETARIAT', 'VOTING']
 
 export default class extends BaseService {
   async changeTab(tabKey) {
@@ -39,4 +39,14 @@ export default class extends BaseService {
     return result
   }
 
+  async getCandidates(param) {
+    const path = '/api/cvote/listcrcandidates'
+
+    const rs = await api_request({
+      path,
+      method: 'post',
+      data: param
+    })
+    return JSON.parse(rs).data.result
+  }
 }

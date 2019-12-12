@@ -1,6 +1,5 @@
 import {createContainer} from '@/util'
 import Component from './Component'
-import _ from 'lodash'
 import { message } from 'antd/lib/index'
 import UserService from '@/service/UserService'
 import { logger } from '@/util'

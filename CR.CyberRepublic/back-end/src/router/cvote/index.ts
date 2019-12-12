@@ -13,6 +13,7 @@ import vote from './vote'
 import finish from './finish'
 import unfinish from './unfinish'
 import update_notes from './update_notes'
+import listcrcandidates from './listcrcandidates'
 
 export default Base.setRouter([
   {
@@ -78,6 +79,11 @@ export default Base.setRouter([
   {
     path: '/update_notes',
     router: update_notes,
+    method: 'post'
+  },
+  {
+    path: '/listcrcandidates',
+    router: listcrcandidates,
     method: 'post'
   }
 ])

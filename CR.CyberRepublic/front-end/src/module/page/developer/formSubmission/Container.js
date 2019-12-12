@@ -1,4 +1,4 @@
-import { createContainer, goPath } from '@/util'
+import { createContainer } from '@/util'
 import Component from './Component'
 import SubmissionService from '@/service/SubmissionService'
 import { message } from 'antd'

@@ -1,7 +1,7 @@
 import React from 'react'
 import MediaQuery from 'react-responsive'
 import './style.scss'
-import {Row, Icon, Button, Spin, Checkbox, Card, Tag, Cascader, Select, Divider} from 'antd'
+import {Row, Icon, Button, Checkbox, Card, Tag, Cascader, Select, Divider} from 'antd'
 import moment from 'moment/moment'
 import _ from 'lodash'
 import {MAX_WIDTH_MOBILE, MIN_WIDTH_PC} from '../../../../config/constant'

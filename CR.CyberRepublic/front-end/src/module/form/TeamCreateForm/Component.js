@@ -1,36 +1,15 @@
 import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import _ from 'lodash'
-import {
-  Form,
-  Icon,
-  Input,
-  InputNumber,
-  Button,
-  Checkbox,
-  Radio,
-  Select,
-  message,
-  Row,
-  Col,
-  Upload,
-  Cascader,
-  Divider,
-  TreeSelect,
-  Modal
-} from 'antd'
+import { Form, Icon, Input, Button, Upload, TreeSelect, Modal } from 'antd'
 import I18N from '@/I18N'
 import InputTags from '@/module/shared/InputTags/Component'
-import ReactQuill from 'react-quill'
-import { TOOLBAR_OPTIONS } from '@/config/constant'
-import {TEAM_TASK_DOMAIN, SKILLSET_TYPE} from '@/constant'
-import {upload_file} from '@/util'
-import sanitizeHtml from '@/util/html'
+import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
+import { TEAM_TASK_DOMAIN, SKILLSET_TYPE } from '@/constant'
+import { upload_file } from '@/util'
 import './style.scss'
 
 const FormItem = Form.Item
-const TextArea = Input.TextArea
-const RadioGroup = Radio.Group
 
 class C extends BaseComponent {
   componentDidMount() {
@@ -43,7 +22,7 @@ class C extends BaseComponent {
     teamId && this.props.resetTeamDetail()
   }
 
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.state = {
@@ -54,12 +33,12 @@ class C extends BaseComponent {
     }
 
     this.pictureUrlLookups = []
-    _.each(this.state.fileList, (file) => {
+    _.each(this.state.fileList, file => {
       this.pictureUrlLookups[file.uid] = file.url
     })
   }
 
-  handleSubmit (e) {
+  handleSubmit(e) {
     e.preventDefault()
 
     const tags = this.props.form.getFieldInstance('tags').getValue()
@@ -68,8 +47,10 @@ class C extends BaseComponent {
         if (_.isEmpty(values.description)) {
           this.props.form.setFields({
             description: {
-              errors: [new Error(I18N.get('team.create.error.descriptionRequired'))],
-            },
+              errors: [
+                new Error(I18N.get('team.create.error.descriptionRequired'))
+              ]
+            }
           })
 
           return
@@ -77,9 +58,6 @@ class C extends BaseComponent {
 
         const createParams = {
           ...values,
-          description: sanitizeHtml(values.description, {
-            // allowedTags: sanitizeHtml.defaults.allowedTags.concat(['u', 's'])
-          }),
           tags: tags.join(','),
           logo: '',
           metadata: '',
@@ -87,7 +65,7 @@ class C extends BaseComponent {
           type: this.props.existingTeam && this.props.existingTeam.type
         }
 
-        _.each(createParams.pictures, (pictureFile) => {
+        _.each(createParams.pictures, pictureFile => {
           if (this.pictureUrlLookups[pictureFile.uid]) {
             pictureFile.url = this.pictureUrlLookups[pictureFile.uid]
           }
@@ -107,27 +85,16 @@ class C extends BaseComponent {
     })
   }
 
-  getInputProps () {
-    const {getFieldDecorator} = this.props.form
+  getInputProps() {
+    const { getFieldDecorator } = this.props.form
     const existingTeam = this.props.existingTeam
 
-    const input_el = (
-      <Input size="large"/>
-    )
-
-    const textarea_el = (
-      <ReactQuill
-        modules={{
-          toolbar: TOOLBAR_OPTIONS,
-          autoLinks: true,
-        }}
-      />
-    )
+    const input_el = <Input size="large" />
 
     const name_fn = getFieldDecorator('name', {
       rules: [
-        {required: true, message: I18N.get('team.create.error.nameRequired')},
-        {min: 4, message: I18N.get('team.create.error.nameTooShort')}
+        { required: true, message: I18N.get('team.create.error.nameRequired') },
+        { min: 4, message: I18N.get('team.create.error.nameTooShort') }
       ],
       initialValue: (existingTeam && existingTeam.name) || ''
     })
@@ -215,37 +182,50 @@ class C extends BaseComponent {
 
     const type_fn = getFieldDecorator('domain', {
       rules: [],
-      initialValue: existingTeam && existingTeam.domain || []
+      initialValue: (existingTeam && existingTeam.domain) || []
     })
     const type_el = (
       <div>
-        <TreeSelect treeData={specs} treeCheckable={true} searchPlaceholder={I18N.get('select.placeholder')}/>
-        <div className="select-arrow"/>
+        <TreeSelect
+          treeData={specs}
+          treeCheckable={true}
+          searchPlaceholder={I18N.get('select.placeholder')}
+        />
+        <div className="select-arrow" />
       </div>
     )
 
     const skillset_fn = getFieldDecorator('recruitedSkillsets', {
       rules: [],
-      initialValue: existingTeam && existingTeam.recruitedSkillsets || []
+      initialValue: (existingTeam && existingTeam.recruitedSkillsets) || []
     })
     const skillset_el = (
       <div>
-        <TreeSelect treeData={skillsets} treeCheckable={true} searchPlaceholder={I18N.get('select.placeholder')}/>
-        <div className="select-arrow"/>
+        <TreeSelect
+          treeData={skillsets}
+          treeCheckable={true}
+          searchPlaceholder={I18N.get('select.placeholder')}
+        />
+        <div className="select-arrow" />
       </div>
     )
 
+    const description = (existingTeam && existingTeam.profile.description) || ''
     const description_fn = getFieldDecorator('description', {
       rules: [
-        {required: true, message: I18N.get('team.create.error.descriptionRequired')},
-        {min: 4, message: I18N.get('team.create.error.descriptionTooShort')}
+        {
+          required: true,
+          message: I18N.get('team.create.error.descriptionRequired')
+        },
+        { min: 4, message: I18N.get('team.create.error.descriptionTooShort') }
       ],
-      initialValue: existingTeam && existingTeam.profile.description || ''
+      initialValue: description
     })
+    const textarea_el = <CodeMirrorEditor content={description} name="description"/>
 
     const tags_fn = getFieldDecorator('tags', {
       rules: [],
-      initialValue: existingTeam && existingTeam.tags || []
+      initialValue: (existingTeam && existingTeam.tags) || []
     })
     const tags_el = <InputTags />
 
@@ -254,8 +234,8 @@ class C extends BaseComponent {
       fileList: this.state.fileList,
       onChange: this.handleFileListChange.bind(this),
       onPreview: this.handlePreview.bind(this),
-      customRequest: (info) => {
-        upload_file(info.file).then((d) => {
+      customRequest: info => {
+        upload_file(info.file).then(d => {
           this.pictureUrlLookups = this.pictureUrlLookups || []
           this.pictureUrlLookups[info.file.uid] = d.url
           info.onSuccess(null, info.file)
@@ -266,7 +246,9 @@ class C extends BaseComponent {
     const uploadButton = (
       <div>
         <Icon type="plus" />
-        <div className="ant-upload-text">{I18N.get('from.TeamCreateForm.text.upload')}</div>
+        <div className="ant-upload-text">
+          {I18N.get('from.TeamCreateForm.text.upload')}
+        </div>
       </div>
     )
 
@@ -297,75 +279,107 @@ class C extends BaseComponent {
     })
   }
 
-    handleFileListChange = ({ fileList }) => this.setState({ fileList })
+  handleFileListChange = ({ fileList }) => this.setState({ fileList })
 
-    ord_render () {
-      const p = this.getInputProps()
+  ord_render() {
+    const p = this.getInputProps()
 
-      const formItemLayout = {
-        labelCol: {
-          xs: {span: 24},
-          sm: {span: 8}
-        },
-        wrapperCol: {
-          xs: {span: 24},
-          sm: {span: 12}
-        }
+    const formItemLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 8 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 12 }
       }
-
-      const formContent = (
-        <div>
-          <FormItem label={I18N.get('from.TeamCreateForm.label.teamname')} {...formItemLayout}>
-            {p.name}
-          </FormItem>
-          <FormItem label={I18N.get('from.TeamCreateForm.label.type')} {...formItemLayout}>
-            {p.type}
-          </FormItem>
-          <FormItem label={I18N.get('from.TeamCreateForm.label.recrui')} {...formItemLayout}>
-            {p.skillset}
-          </FormItem>
-          <FormItem label={I18N.get('from.TeamCreateForm.label.description')} {...formItemLayout}>
-            {p.description}
-          </FormItem>
-          { !this.props.embedded && (
-          <FormItem label={I18N.get('from.TeamCreateForm.label.pictures')} {...formItemLayout}>
-            {p.pictures}
-          </FormItem>
-          )}
-          <Modal visible={this.state.previewVisible} footer={null} onCancel={this.handleCancel.bind(this)}>
-            <img alt="example" style={{ width: '100%' }} src={this.state.previewImage} />
-          </Modal>
-          <FormItem className="form-item-tags" label="Tags" {...formItemLayout}>
-            {p.tags}
-          </FormItem>
-
-          { !this.props.embedded && (
-          <FormItem wrapperCol={{xs: {span: 24, offset: 0}, sm: {span: 12, offset: 8}}}>
-            <Button loading={this.props.loading} type="ebp" htmlType="submit" className="d_btn">
-              {this.state.editing ? I18N.get('from.TeamCreateForm.button.save') : I18N.get('from.TeamCreateForm.button.create')}
-            </Button>
-          </FormItem>
-          )}
-        </div>
-      )
-
-      return (
-        <div className="c_userEditFormContainer">
-
-          { this.props.embedded
-            ? (
-              <div className="d_taskCreateForm">
-                {formContent}
-              </div>
-            ) : (
-              <Form onSubmit={this.handleSubmit.bind(this)} className="d_taskCreateForm">
-                {formContent}
-              </Form>
-            )
-          }
-        </div>
-      )
     }
 
+    const formContent = (
+      <div>
+        <FormItem
+          label={I18N.get('from.TeamCreateForm.label.teamname')}
+          {...formItemLayout}
+        >
+          {p.name}
+        </FormItem>
+        <FormItem
+          label={I18N.get('from.TeamCreateForm.label.type')}
+          {...formItemLayout}
+        >
+          {p.type}
+        </FormItem>
+        <FormItem
+          label={I18N.get('from.TeamCreateForm.label.recrui')}
+          {...formItemLayout}
+        >
+          {p.skillset}
+        </FormItem>
+        <FormItem
+          label={I18N.get('from.TeamCreateForm.label.description')}
+          {...formItemLayout}
+        >
+          {p.description}
+        </FormItem>
+        {!this.props.embedded && (
+          <FormItem
+            label={I18N.get('from.TeamCreateForm.label.pictures')}
+            {...formItemLayout}
+          >
+            {p.pictures}
+          </FormItem>
+        )}
+        <Modal
+          visible={this.state.previewVisible}
+          footer={null}
+          onCancel={this.handleCancel.bind(this)}
+        >
+          <img
+            alt="example"
+            style={{ width: '100%' }}
+            src={this.state.previewImage}
+          />
+        </Modal>
+        <FormItem className="form-item-tags" label="Tags" {...formItemLayout}>
+          {p.tags}
+        </FormItem>
+
+        {!this.props.embedded && (
+          <FormItem
+            wrapperCol={{
+              xs: { span: 24, offset: 0 },
+              sm: { span: 12, offset: 8 }
+            }}
+          >
+            <Button
+              loading={this.props.loading}
+              type="ebp"
+              htmlType="submit"
+              className="d_btn"
+            >
+              {this.state.editing
+                ? I18N.get('from.TeamCreateForm.button.save')
+                : I18N.get('from.TeamCreateForm.button.create')}
+            </Button>
+          </FormItem>
+        )}
+      </div>
+    )
+
+    return (
+      <div className="c_userEditFormContainer">
+        {this.props.embedded ? (
+          <div className="d_taskCreateForm">{formContent}</div>
+        ) : (
+          <Form
+            onSubmit={this.handleSubmit.bind(this)}
+            className="d_taskCreateForm"
+          >
+            {formContent}
+          </Form>
+        )}
+      </div>
+    )
+  }
 }
 export default Form.create()(C)

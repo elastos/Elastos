@@ -4,7 +4,7 @@ import {Helmet} from 'react-helmet'
 import Footer from '@/module/layout/Footer/Container'
 import I18N from '@/I18N'
 import './style.scss'
-import { Col, Row, Card, Button, Breadcrumb, Icon, List, Spin, Avatar, Modal } from 'antd'
+import { Button, Spin } from 'antd'
 import _ from 'lodash'
 import StandardPage from '../../StandardPage'
 

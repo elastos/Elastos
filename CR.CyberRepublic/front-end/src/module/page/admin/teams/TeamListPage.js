@@ -3,14 +3,14 @@ import BaseAdmin from '../BaseAdmin'
 import {createContainer} from '@/util'
 
 import Navigator from '../shared/Navigator/Component'
-import { Breadcrumb, Col, Icon, Row, Menu, Select, Table } from 'antd'
+import { Breadcrumb, Col, Icon, Row, Table } from 'antd'
 
 import TeamService from '@/service/TeamService'
 import moment from 'moment/moment'
 import config from '@/config'
 import _ from 'lodash'
 import {TEAM_TYPE} from '@/constant'
-import sanitizeHtml from '@/util/html'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 
 const Component = class extends BaseAdmin {
 
@@ -60,7 +60,7 @@ const Component = class extends BaseAdmin {
         title: 'Description',
         dataIndex: 'profile.description',
         render: (description, record) => {
-          return <div dangerouslySetInnerHTML={{__html: sanitizeHtml(description)}} />
+          return <MarkdownPreview content={description} />
         }
         // key: 'profile.description'
       },

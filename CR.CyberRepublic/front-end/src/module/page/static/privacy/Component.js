@@ -2,8 +2,7 @@ import React from 'react'
 import Footer from '@/module/layout/Footer/Container'
 import './style.scss'
 
-import { Col, Row } from 'antd'
-import moment from 'moment/moment'
+import { Row } from 'antd'
 import StandardPage from '../../StandardPage'
 
 export default class extends StandardPage {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Col, Row, Icon } from 'antd'
+import { Col, Row } from 'antd'
 import StandardPage from '../StandardPage'
 import I18N from '@/I18N'
 import Footer from '@/module/layout/Footer/Container'

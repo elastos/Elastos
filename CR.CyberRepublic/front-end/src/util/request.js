@@ -35,7 +35,7 @@ export const api_request = (opts = {}) => {
     data: {},
     success: null,
     error: null,
-    path: ''
+    path: '',
   }, opts)
   server_url += opts.path
 
@@ -89,7 +89,7 @@ export const api_request = (opts = {}) => {
 
     throw new Error(response.statusText ? response.statusText : response.type)
 
-  }).then((data) => {
+  }).then(data => {
     if (data.code > 0) {
       // return data correct
       if (opts.success) {
@@ -104,7 +104,6 @@ export const api_request = (opts = {}) => {
 
     // TODO: this isn't elegant, nothing is returned to the caller so there is no graceful error
     console.error(data.error)
-
   }).catch((err) => {
     // then we have this so the first then block can come straight here I guess?
     console.error(err)

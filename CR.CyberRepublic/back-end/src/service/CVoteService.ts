@@ -5,6 +5,8 @@ import { constant } from '../constant'
 import { permissions } from '../utility'
 import * as moment from 'moment'
 import { mail, user as userUtil, logger } from '../utility'
+const util = require('util')
+const request = require('request')
 
 let tm = undefined
 
@@ -884,5 +886,17 @@ export default class extends Base {
   private canManageProposal() {
     const userRole = _.get(this.currentUser, 'role')
     return permissions.isCouncil(userRole) || permissions.isSecretary(userRole)
+  }
+
+  public async listcrcandidates(param) {
+    const { pageNum, pageSize, state } = param
+
+    let ret = null
+    const postPromise = util.promisify(request.post, {multiArgs: true});
+    await postPromise({url: 'http://54.223.244.60/api/dposnoderpc/check/listcrcandidates',
+                 form: { pageNum, pageSize, state },
+                 encoding: 'utf8'
+    }).then((value) => ret = value.body)
+    return ret
   }
 }

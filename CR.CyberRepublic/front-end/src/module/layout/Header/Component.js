@@ -166,6 +166,21 @@ export default class extends BaseComponent {
     )
   }
 
+  buildCouncilDropdown() {
+    return (
+      <Menu onClick={this.clickItem.bind(this)} className="help-menu">
+
+        <Menu.Item key="council">
+          {I18N.get('navigation.council.submenu.incumbent')}
+        </Menu.Item>
+
+        <Menu.Item key="candidates">
+          {I18N.get('navigation.council.submenu.candidate')}
+        </Menu.Item>
+      </Menu>
+    )
+  }
+
   buildResourcesDropdown() {
     return (
       <Menu onClick={this.clickItem.bind(this)} className="help-menu">
@@ -270,8 +285,15 @@ export default class extends BaseComponent {
             selectedKeys={this.getSelectedKeys()}
             mode="horizontal"
           >
-            <Menu.Item className="c_MenuItem link" key="council">
-              {I18N.get('navigation.council')}
+            <Menu.Item className="c_MenuItem link" key="councils">
+              <Dropdown
+                overlay={this.buildCouncilDropdown()}
+                placement="bottomCenter"
+              >
+                <a className="ant-dropdown-link">
+                  {I18N.get('navigation.council.title')}
+                </a>
+              </Dropdown>
             </Menu.Item>
 
             <Menu.Item className="c_MenuItem link" key="whitepaper">
@@ -418,6 +440,7 @@ export default class extends BaseComponent {
           'slack',
           'suggestion',
           'council',
+          'candidates',
           'constitution/1',
           'whitepaper',
           'what-is-new',

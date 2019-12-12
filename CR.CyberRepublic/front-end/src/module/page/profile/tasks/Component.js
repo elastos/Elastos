@@ -3,7 +3,7 @@ import Footer from '@/module/layout/Footer/Container'
 import Navigator from '@/module/page/shared/HomeNavigator/Container'
 import _ from 'lodash'
 import I18N from '@/I18N'
-import sanitizeHtml from '@/util/html'
+import MarkdownPreview from '@/module/common/MarkdownPreview'
 
 import './style.scss'
 import '../../admin/admin.scss'
@@ -537,12 +537,9 @@ export default class extends ProfilePage {
                   </span>
                 )}
                 <h5 className="no-margin">{item.description}</h5>
-                <div
-                  className="description-content ql-editor"
-                  dangerouslySetInnerHTML={{
-                    __html: sanitizeHtml(item.content)
-                  }}
-                />
+                <div className="description-content ql-editor">
+                  <MarkdownPreview content={item.content} />
+                </div>
                 <div className="ant-list-item-right-box">
                   <a
                     className="pull-up"

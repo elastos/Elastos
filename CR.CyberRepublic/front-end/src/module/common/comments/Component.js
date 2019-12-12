@@ -1,23 +1,36 @@
 import React from 'react'
-import BaseComponent from '@/model/BaseComponent'
 import {
-  Form, Col, Row, List, Avatar, Icon, Divider, Button, Input, Mention, Modal,
+  Form,
+  Col,
+  Row,
+  List,
+  Avatar,
+  Icon,
+  Button,
+  Input,
+  Mention,
+  Modal,
+  Popconfirm
 } from 'antd'
-import config from '@/config'
-import { MAX_WIDTH_MOBILE, MIN_WIDTH_PC, MAX_LENGTH_COMMENT } from '@/config/constant'
-import './style.scss'
-import moment from 'moment'
 import _ from 'lodash'
-import I18N from '@/I18N'
+import moment from 'moment'
+import MediaQuery from 'react-responsive'
+import linkifyStr from 'linkifyjs/string'
+import BaseComponent from '@/model/BaseComponent'
 import ProfilePopup from '@/module/profile/OverviewPopup/Container'
 import Translation from '@/module/common/Translation/Container'
-import MediaQuery from 'react-responsive'
-import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
-import linkifyStr from 'linkifyjs/string'
 import sanitizeHtml from '@/util/html'
 import userUtil from '@/util/user'
+import I18N from '@/I18N'
+import {
+  MAX_WIDTH_MOBILE,
+  MIN_WIDTH_PC,
+  MAX_LENGTH_COMMENT
+} from '@/config/constant'
+import { USER_AVATAR_DEFAULT, LINKIFY_OPTION } from '@/constant'
+import './style.scss'
 
-const TextArea = Input.TextArea
+const {TextArea} = Input
 const FormItem = Form.Item
 
 class C extends BaseComponent {
@@ -29,7 +42,7 @@ class C extends BaseComponent {
 
   async componentDidMount() {
     this.props.listUsers()
-    const hash = this.props.location.hash
+    const {hash} = this.props.location
     if (hash && hash === '#comments') {
       document.getElementById('comments').scrollIntoView({
         behavior: 'smooth',
@@ -337,7 +350,7 @@ class C extends BaseComponent {
       const avatar = (thread.createdBy && thread.createdBy.profile && thread.createdBy.profile.avatar) || USER_AVATAR_DEFAULT
       const createdById = (thread.createdBy && thread.createdBy._id)
       const dateFormatted = dateFormatter(thread.createdAt)
-
+      const isDeletable = thread.createdBy && (thread.createdBy._id === this.props.currentUserId)
       const linkifyComment = linkifyStr(thread.comment || '', LINKIFY_OPTION)
       return {
         comment: linkifyComment,
@@ -347,8 +360,7 @@ class C extends BaseComponent {
             <a onClick={() => this.linkUserDetail(thread.createdBy)}>
               {createdByUsername}
             </a>
-            {dateFormatted
-            && (
+            {dateFormatted && (
               <span>
                 <span className="date-colon">, </span>
                 <span className="date">{dateFormatted}</span>
@@ -365,6 +377,18 @@ class C extends BaseComponent {
             onClick={() => this.linkUserDetail(thread.createdBy)}
           />
         ),
+        delete: isDeletable && (
+          <h5>
+            <Popconfirm
+              title={I18N.get('comments.delete.confirm')}
+              onConfirm={() => this.handleDelete(thread)}
+              okText={I18N.get('.yes')}
+              cancelText={I18N.get('.no')}
+            >
+              <Icon type="delete" />
+            </Popconfirm>
+          </h5>
+        )
       }
     })
 
@@ -392,16 +416,15 @@ class C extends BaseComponent {
           <List.Item key={ind}>
             {item.avatar}
             <div className="comment-content pull-left">
-              { item.headline
-                && (
-                  <h4>
-                    {item.headline}
-                  </h4>
-                )
-              }
-              <h5>
-                {enrichComment(item.comment)}
-              </h5>
+              <Row>
+                <Col span={22}>
+                  {item.headline && <h4>{item.headline}</h4>}
+                  <h5>{enrichComment(item.comment)}</h5>
+                </Col>
+                <Col span={2}>
+                  {item.delete}
+                </Col>
+              </Row>
               {this.renderTranslationBtn(item.comment)}
               <hr />
               {item.description}
@@ -424,7 +447,7 @@ class C extends BaseComponent {
     e.preventDefault()
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        const comment = values.comment
+        const {comment} = values
         const commentPlainText = _.isFunction(comment.getPlainText)
           ? comment.getPlainText()
           : comment
@@ -462,6 +485,19 @@ class C extends BaseComponent {
           })
       }
     })
+  }
+
+  handleDelete = comment => {
+    this.props
+      .removeComment(
+        this.props.type,
+        this.props.reduxType,
+        this.props.detailReducer,
+        this.getModelId(),
+        {
+          commentId: comment._id
+        }
+      )
   }
 
   showUserProfile(username) {

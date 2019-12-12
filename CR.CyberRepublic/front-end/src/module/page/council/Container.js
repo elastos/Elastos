@@ -1,8 +1,6 @@
 import { createContainer } from '@/util'
 import Component from './Component'
 import { USER_ROLE } from '@/constant'
-// import SubmissionService from '@/service/SubmissionService'
-// import _ from 'lodash'
 
 export default createContainer(Component, state => ({
   user: state.user,

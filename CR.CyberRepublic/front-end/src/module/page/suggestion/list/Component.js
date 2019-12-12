@@ -24,6 +24,7 @@ import Footer from '@/module/layout/Footer/Container'
 import SuggestionForm from '@/module/form/SuggestionForm/Container'
 import ActionsContainer from '../common/actions/Container'
 import MetaContainer from '../common/meta/Container'
+import Meta from '@/module/common/Meta'
 import TagsContainer from '../common/tags/Container'
 import { SUGGESTION_STATUS, SUGGESTION_TAG_TYPE } from '@/constant'
 import { breakPoint } from '@/constants/breakPoint'
@@ -170,6 +171,9 @@ export default class extends StandardPage {
 
     return (
       <div>
+        <Meta
+          title="Cyber Republic - Elastos"
+        />
         <div className="suggestion-header">{headerNode}</div>
         <SuggestionContainer className="p_SuggestionList">
           <Row
@@ -350,7 +354,9 @@ export default class extends StandardPage {
     const sortBy = this.props.sortBy || DEFAULT_SORT
     return (
       <div>
-        {I18N.get('suggestion.sort')}:{' '}
+        {I18N.get('suggestion.sort')}
+:
+        {' '}
         <Select
           name="type"
           style={{ width: 200, marginLeft: 16 }}

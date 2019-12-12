@@ -7,6 +7,7 @@ import suggestion from './en/suggestion'
 import getting_started from './en/getting_started'
 import whitepaper from './en/whitepaper'
 import elip from './en/elip'
+import area from './en/area'
 
 const en = {
   council,
@@ -17,6 +18,7 @@ const en = {
   getting_started,
   elip,
   whitepaper,
+  area,
   // Header
   '0000': 'ALPHA',
   '0001': 'Bounty Programs',
@@ -43,7 +45,13 @@ const en = {
   '0109': 'Submissions',
   '0110': 'Blog',
   navigation: {
-    council: 'Council',
+    council: {
+      title: 'Council',
+      submenu: {
+        incumbent: 'Incumbent',
+        candidate: 'Candidate',
+      }
+    },
     whitepaper: 'Whitepaper',
     suggestion: 'Suggestions',
     elips: 'ELIPs',
@@ -111,6 +119,7 @@ const en = {
   'profile.suggestion': 'My Suggestions',
 
   'login.success': 'Welcome back',
+  'logout.success': 'logout success',
 
   'mentions.notFound': 'User not found',
 
@@ -118,15 +127,17 @@ const en = {
   'image.upload.type.error': 'The upload file is not an image.',
   'image.upload.size.error': 'The maximum upload file size is less than 500KB.',
 
-  'comments': 'Comments',
+  comments: 'Comments',
   'comments.posts': 'Posts',
   'comments.post': 'Post',
-  'comments.noComments': `No comments yet, `,
+  'comments.noComments': 'No comments yet, ',
   'comments.signIn': 'sign in ',
   'comments.firstToPost': 'to be the first to post!',
   'comments.placeholder': 'Leave a comment',
-  'comments.posted': 'Your comment has been posted.',
-
+  'comments.posted.success': 'Your comment has been posted.',
+  'comments.updated.success': 'Your comment has been updated.',
+  'comments.deleted.success': 'Your comment has been deleted.',
+  'comments.delete.confirm': 'Delete this comment?',
   // Admin tasks
   'admin.tasks.status': 'Status',
 
@@ -1610,6 +1621,7 @@ const en = {
     candidates: 'CANDIDATES',
     incumbent: 'INCUMBENT',
     council: 'CYBER REPUBLIC INTERIM COUNCIL',
+    voting: 'VOTING',
     secretariat: {
       title: 'SECRETARIAT',
       general: 'SECRETARIAT GENERAL',

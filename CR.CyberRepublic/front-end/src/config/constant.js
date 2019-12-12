@@ -19,37 +19,6 @@ export const EMPOWER_MAX_DAPP_ANALYST = 5
 export const EMPOWER_MAX_REGIONAL_EVANGELIST = 10
 export const MAX_LENGTH_COMMENT = 2048
 
-// react quill configs
-export const TOOLBAR_OPTIONS = {
-  container: [
-    [{ header: [3, 4, 5, 6, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    ['link'],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    ['blockquote', 'code-block'],
-    ['clean'],
-  ],
-  handlers: {
-    // handlers object will be merged with default handlers object
-    link: function link(value) {
-      if (value) {
-        const range = this.quill.getSelection()
-        if (range == null || range.length === 0) return
-        let preview = this.quill.getText(range)
-        if (/^\S+@\S+\.\S+$/.test(preview) && preview.indexOf('mailto:') !== 0) {
-          preview = `mailto:${preview}`
-        }
-        const { tooltip } = this.quill.theme
-        const input = tooltip.root.querySelector('input[data-link]')
-        input.dataset.link = ''
-        tooltip.edit('link', preview)
-      } else {
-        this.quill.format('link', false)
-      }
-    },
-  },
-}
-
 // medium-draft toolbar configs
 export const MEDIUM_DRAFT_TOOLBAR_OPTIONS = {
   BLOCK_BUTTONS: [

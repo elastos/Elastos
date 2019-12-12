@@ -2,7 +2,7 @@ import React from 'react'
 import I18N from '@/I18N'
 import styled from 'styled-components'
 import { Row, Col } from 'antd'
-import { LG_WIDTH, MAX_WIDTH_MOBILE } from '../../../config/constant'
+import { MAX_WIDTH_MOBILE } from '../../../config/constant'
 import { images } from './images'
 
 import './style.scss'

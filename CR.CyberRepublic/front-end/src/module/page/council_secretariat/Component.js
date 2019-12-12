@@ -1,8 +1,8 @@
 import React from 'react'
-import Footer from '@/module/layout/Footer/Container'
-import I18N from '@/I18N'
 import { Col, Row, Avatar, Tabs } from 'antd'
 import styled from 'styled-components'
+import Footer from '@/module/layout/Footer/Container'
+import I18N from '@/I18N'
 import StandardPage from '../StandardPage'
 import PersonCard from './PersonCard'
 import BGImg from './BGImg'
@@ -12,12 +12,15 @@ import Toast from '@/module/common/Toast'
 
 import './style.scss'
 
-const TabPane = Tabs.TabPane
+const {TabPane} = Tabs
 
 export default class extends StandardPage {
-  state = {
-    // save the page you are on
-    tab: this.props.council.tab || '1'
+  constructor(props) {
+    super(props)
+    this.state = {
+      // save the page you are on
+      tab: this.props.council.tab || '1',
+    }
   }
 
   linkToRule() {
@@ -41,10 +44,12 @@ export default class extends StandardPage {
           <div className="council-rule">
             <h3 className="title">{I18N.get('cs.rule.tile')}</h3>
             <span className="view-rule">
-              {I18N.get('cs.rule.show.click')}{' '}
+              {I18N.get('cs.rule.show.click')}
+{' '}
               <span className="click-here" onClick={this.linkToRule.bind(this)}>
                 {I18N.get('cs.rule.show.here')}
-              </span>{' '}
+              </span>
+{' '}
               {I18N.get('cs.rule.show.view')}
             </span>
           </div>
@@ -59,65 +64,33 @@ export default class extends StandardPage {
       <div className="incumbent">
         <div className="title">{I18N.get('cs.incumbent')}</div>
         <Row className="members">
-          <Col lg={8} md={8} sm={24} className="member">
-            <div className="small-rect">
-              <Avatar
-                src="/assets/images/council/council-no1.jpeg"
-                shape="square"
-                size={220}
-                icon="user"
-              />
-            </div>
-            <div className="big-rect">
-              <div className="content">
-                <h3 className="name">{I18N.get('cs.no1.name')}</h3>
-                <div className="self-intro">{I18N.get('cs.no1.intro')}</div>
-                <Email>
-                  {I18N.get('cs.contact')}: {I18N.get('cs.no1.email')}
-                </Email>
+          {[1, 2, 3].map(item => (
+            <Col lg={8} md={8} sm={24} className="member" key={item}>
+              <div className="small-rect">
+                <Avatar
+                  src={`/assets/images/council/council-no${item}.jpeg`}
+                  shape="square"
+                  size={220}
+                  icon="user"
+                />
               </div>
-            </div>
-          </Col>
-          <Col lg={8} md={8} sm={24} className="member">
-            <div className="small-rect">
-              <Avatar
-                src="/assets/images/council/council-no2.jpeg"
-                shape="square"
-                size={220}
-                icon="user"
-              />
-            </div>
 
-            <div className="big-rect">
-              <div className="content">
-                <h3 className="name">{I18N.get('cs.no2.name')}</h3>
-                <div className="self-intro">{I18N.get('cs.no2.intro')}</div>
-                <Email>
-                  {I18N.get('cs.contact')}: {I18N.get('cs.no2.email')}
-                </Email>
+              <div className="big-rect">
+                <div className="content">
+                  <h3 className="name">{I18N.get(`cs.no${item}.name`)}</h3>
+                  <div className="self-intro">
+                    {I18N.get(`cs.no${item}.intro`)}
+                  </div>
+                  <Email>
+                    {I18N.get('cs.contact')}
+:
+{' '}
+{I18N.get(`cs.no${item}.email`)}
+                  </Email>
+                </div>
               </div>
-            </div>
-          </Col>
-          <Col lg={8} md={8} sm={24} className="member">
-            <div className="small-rect">
-              <Avatar
-                src="/assets/images/council/council-no3.jpeg"
-                shape="square"
-                size={220}
-                icon="user"
-              />
-            </div>
-
-            <div className="big-rect">
-              <div className="content">
-                <h3 className="name">{I18N.get('cs.no3.name')}</h3>
-                <div className="self-intro">{I18N.get('cs.no3.intro')}</div>
-                <Email>
-                  {I18N.get('cs.contact')}: {I18N.get('cs.no3.email')}
-                </Email>
-              </div>
-            </div>
-          </Col>
+            </Col>
+          ))}
         </Row>
       </div>
     )
@@ -158,22 +131,15 @@ export default class extends StandardPage {
           {I18N.get('cs.secretariat.positions.title')}
         </div>
         <Row className="members">
-          <PersonCard
-            title={I18N.get('cs.secretariat.positions.position_1.title')}
-            link="/position/secretariat/1"
-          />
-          <PersonCard
-            title={I18N.get('cs.secretariat.positions.position_2.title')}
-            link="/position/secretariat/2"
-          />
-          <PersonCard
-            title={I18N.get('cs.secretariat.positions.position_3.title')}
-            link="/position/secretariat/3"
-          />
-          <PersonCard
-            title={I18N.get('cs.secretariat.positions.position_4.title')}
-            link="/position/secretariat/4"
-          />
+          {[1, 2, 3, 4].map(item => (
+            <PersonCard
+              key={item}
+              title={I18N.get(
+                `cs.secretariat.positions.position_${item}.title`
+              )}
+              link={`/position/secretariat/${item}`}
+            />
+          ))}
         </Row>
       </div>
     )
@@ -223,7 +189,7 @@ const StyledTabs = styled(Tabs)`
     border-bottom: none;
     color: ${text.middleGray};
     padding: 0;
-    :first-child:after {
+    :not(:last-child):after {
       content: '';
       background-color: ${border.middleGray};
       display: block;
@@ -244,6 +210,13 @@ const StyledTabs = styled(Tabs)`
   .ant-tabs-ink-bar {
     display: none !important;
   }
+  .ant-tabs-tab-prev-icon-target, .ant-tabs-tab-next-icon-target {
+    color: ${text.green};
+    svg {
+      width: 2em;
+      height: 2em;
+    }
+  }
 `
 const TabTitle = styled.div`
   font-family: 'komu-a', sans-serif;
@@ -253,6 +226,6 @@ const TabTitle = styled.div`
   }
 `
 const Email = styled.div`
-  color: white;
-  margin-top: 8px;
+  position: absolute;
+  bottom: 17px;
 `
