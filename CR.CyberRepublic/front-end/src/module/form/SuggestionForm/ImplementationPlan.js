@@ -25,13 +25,13 @@ class ImplementationPlan extends Component {
     const { plan } = this.state
     return (
       <div>
-        <Title>{I18N.get('suggestion.plan.teamInfo')}</Title>
+        <Title>{I18N.get('suggestion.plan.milestones')}</Title>
+        <Milestones onChange={this.changeValue} initialValue={plan.milestone} />
         <TeamInfoSection
+          title={I18N.get('suggestion.plan.teamInfo')}
           onChange={this.changeValue}
           initialValue={plan.teamInfo}
         />
-        <Title>{I18N.get('suggestion.plan.milestones')}</Title>
-        <Milestones onChange={this.changeValue} initialValue={plan.milestone} />
       </div>
     )
   }
