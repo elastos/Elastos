@@ -1,0 +1,30 @@
+import json
+import grpc
+from decouple import config
+
+from .stubs import wallet_pb2
+from .stubs import wallet_pb2_grpc
+
+
+class Wallet:
+
+    def __init__(self):
+        host = config('GRPC_SERVER_HOST')
+        port = config('GRPC_SERVER_PORT')
+        production = config('PRODUCTION', default=False, cast=bool)
+        if not production:
+            self._channel = grpc.insecure_channel('{}:{}'.format(host, port))
+        else:
+            credentials = grpc.ssl_channel_credentials()
+            self._channel = grpc.secure_channel('{}:{}'.format(host, port), credentials)
+        self.stub = wallet_pb2_grpc.WalletStub(self._channel)
+
+    def close(self):
+        self._channel.close()
+
+    def create_wallet(self, api_key, eth_password):
+        req_data = {
+            "eth_password": eth_password
+        }
+        response = self.stub.CreateWallet(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        return response
