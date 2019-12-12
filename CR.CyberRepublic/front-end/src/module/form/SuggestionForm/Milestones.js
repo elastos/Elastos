@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button, Popover } from 'antd'
 import moment from 'moment'
+import linkifyStr from 'linkifyjs/string'
 import MilestoneForm from '@/module/form/MilestoneForm/Container'
 import I18N from '@/I18N'
 
@@ -29,7 +30,7 @@ class Milestones extends Component {
     const { milestones, milestonesTrigger } = this.state
     const { onChange } = this.props
     this.setState({ milestones: [...milestones, values] }, () => {
-      onChange({ milestone: milestones })
+      onChange({ milestone: this.state.milestones })
     })
     this.setState({
       milestonesTrigger: {
@@ -145,7 +146,7 @@ class Milestones extends Component {
                         }
                       >
                         <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                        <div className="square-content"><p>{item.version}</p></div>
+                        <div className="square-content"><p dangerouslySetInnerHTML={{__html: linkifyStr(item.version)}}/></div>
                         <Button
                           type="link"
                           onClick={() => this.handleClickSwitchChange(index)}
