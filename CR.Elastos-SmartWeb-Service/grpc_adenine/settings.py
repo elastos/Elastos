@@ -1,9 +1,15 @@
+# Mainchain RPC
+MAINCHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'
+
+# DID Sidechain RPC
+DID_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'
+
+# Token Sidechain RPC
+TOKEN_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'
+
 # Wallet Service
 WALLET_API_GENERATE_MNEMONIC = '/1/eng/mnemonic'
 WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC = '/1/hd'
-WALLET_API_GET_BALANCE = '/1/balance/'
-WALLET_API_GET_TRANSACTION = '/1/tx'
-WALLET_API_GET_TRANSACTION_HISTORY = '/1/history/'
 WALLET_API_CROSSCHAIN_TRANSFER = '/1/cross/m2d/transfer'
 
 # Sidechain Service
