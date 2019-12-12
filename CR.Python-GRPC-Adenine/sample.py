@@ -1,12 +1,13 @@
 from elastos_adenine.common import Common
-from elastos_adenine.console import Console
+from elastos_adenine.hive import Hive
+from elastos_adenine.sidechain_eth import SidechainEth
+
 from decouple import config
 import json
 
 
 def run():
     common = Common()
-
     # Generate API Key
     print("--> Generate Api Request")
     response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), 'qhfiueq98dqwbd')
@@ -14,14 +15,14 @@ def run():
         print("Api Key: " + response.api_key)
     else:
         print("Error Message: " + response.status_message)
+    common.close()
 
-    console = Console()
-
+    hive = Hive()
     # Upload and Sign
     print("\n--> Upload and Sign")
-    response = console.upload_and_sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
-                                       '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99',
-                                       'test/sample.txt')
+    response = hive.upload_and_sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
+                                    '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99',
+                                    'test/sample.txt')
     json_output = json.loads(response.output)
     if response.status:
         for i in json_output['result']:
@@ -38,26 +39,29 @@ def run():
         "hash": "QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN",
         "private_key": "1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99"
     }
-    response = console.verify_and_show('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', request_input)
+    response = hive.verify_and_show('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', request_input)
     if response.status:
         print('File Content:', response.output)
     else:
         print("Error Message: ", response.status_message)
+    hive.close()
 
+    sidechain_eth = SidechainEth()
     # Deploy ETH Contract
     # The eth account addresses below is used from that of privatenet. In order to test this,
     # you must first run https://github.com/cyber-republic/elastos-privnet locally
     # For production GMUnet, this won't work
     print("\n--> Deploy ETH Contract")
-    response = console.deploy_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
-                                           '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3', 'elastos-privnet',
-                                           'test/HelloWorld.sol')
+    response = sidechain_eth.deploy_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
+                                                 '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3', 'elastos-privnet',
+                                                 'test/HelloWorld.sol')
     json_output = json.loads(response.output)
     if response.status:
         for i in json_output['result']:
             print(i, ':', json_output['result'][i])
     else:
         print("Error Message: ", response.status_message)
+    sidechain_eth.close()
 
 
 if __name__ == '__main__':
