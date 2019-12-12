@@ -2,10 +2,6 @@ import json
 import requests
 from decouple import config
 
-from web3 import Web3, HTTPProvider
-from web3.middleware import geth_poa_middleware
-from solc import compile_standard
-
 from grpc_adenine import settings
 from grpc_adenine.stubs import hive_pb2
 from grpc_adenine.stubs import hive_pb2_grpc
