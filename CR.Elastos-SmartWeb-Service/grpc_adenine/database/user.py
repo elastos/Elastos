@@ -11,6 +11,7 @@ from sqlalchemy import ForeignKey
 Users table is mapped to the elastos_console database. Users table has the user information which is stored in it during the registration.
 """
 
+
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     did = db.Column(db.String(50), unique=True, nullable=False)

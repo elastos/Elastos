@@ -44,8 +44,7 @@ docker run -d --name smartweb-postgres \
 sleep 5
 # Copy .sql files to the running container
 docker cp ../grpc_adenine/database/scripts/create_table_scripts.sql smartweb-postgres:/create_table_scripts.sql
-docker cp ../grpc_adenine/database/scripts/insert_scripts.sql smartweb-postgres:/insert_scripts.sql
+
 # Run the sql scripts 
 docker container exec -it smartweb-postgres psql -h localhost -d smartweb_master -U gmu -a -q -f /create_table_scripts.sql
-docker container exec -it smartweb-postgres psql -h localhost -d smartweb_master -U gmu -a -q -f /insert_scripts.sql
 

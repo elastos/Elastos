@@ -1,5 +1,7 @@
 from grpc_adenine import settings
 from sqlalchemy_wrapper import SQLAlchemy
+from decouple import config
 
 # Connect to the database
-connection = SQLAlchemy(settings.SQLALCHEMY_DATABASE_URI)
+DATABASE_URI = config('SQLALCHEMY_DATABASE_URI')
+connection = SQLAlchemy(DATABASE_URI)

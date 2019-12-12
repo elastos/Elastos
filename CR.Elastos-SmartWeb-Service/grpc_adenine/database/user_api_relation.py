@@ -8,6 +8,7 @@ from sqlalchemy import ForeignKey
 UserApiRelation table is mapped to the elastos_console database. It maps the User with its api key.
 """
 
+
 class UserApiRelations(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(20), db.ForeignKey('users.id'), nullable=False)

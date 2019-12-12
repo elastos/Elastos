@@ -1,10 +1,12 @@
 syntax = "proto3";
 
-package adenineio;
+package sidechain_eth;
 
 // The service definition.
-service AdenineIo {
-  rpc sendRequest (Request) returns (Response) {}
+service SidechainEth {
+  rpc DeployEthContract (Request) returns (Response) {}
+  rpc WatchEthContract (Request) returns (Response) {}
+  rpc RunEthContract (Request) returns (Response) {}
 }
 
 // The request message
