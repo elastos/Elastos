@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package api
 
 import (
@@ -78,6 +83,10 @@ func newTransaction(L *lua.LState) int {
 		pload, _ = ud.Value.(*payload.InactiveArbitrators)
 	case *payload.SideChainPow:
 		pload, _ = ud.Value.(*payload.SideChainPow)
+	case *payload.CRInfo:
+		pload, _ = ud.Value.(*payload.CRInfo)
+	case *payload.UnregisterCR:
+		pload, _ = ud.Value.(*payload.UnregisterCR)
 	default:
 		fmt.Println("error: undefined payload type")
 		os.Exit(1)
@@ -161,16 +170,18 @@ func signPayload(L *lua.LState) int {
 
 	switch txn.TxType {
 	case types.RegisterProducer:
-		registerProducer, ok := txn.Payload.(*payload.ProducerInfo)
+		fallthrough
+	case types.UpdateProducer:
+		producerInfo, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
-			cmdcom.PrintErrorAndExit("invalid register producer payload")
+			cmdcom.PrintErrorAndExit("invalid producer payload")
 		}
 		rpSignBuf := new(bytes.Buffer)
-		if err := registerProducer.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion); err != nil {
+		if err := producerInfo.SerializeUnsigned(rpSignBuf, payload.ProducerInfoVersion); err != nil {
 			cmdcom.PrintErrorAndExit(err.Error())
 		}
 
-		codeHash, err := contract.PublicKeyToStandardCodeHash(registerProducer.OwnerPublicKey)
+		codeHash, err := contract.PublicKeyToStandardCodeHash(producerInfo.OwnerPublicKey)
 		if err != nil {
 			cmdcom.PrintErrorAndExit(err.Error())
 		}
@@ -182,10 +193,10 @@ func signPayload(L *lua.LState) int {
 		if err != nil {
 			cmdcom.PrintErrorAndExit(err.Error())
 		}
-		registerProducer.Signature = rpSig
-		txn.Payload = registerProducer
+		producerInfo.Signature = rpSig
+		txn.Payload = producerInfo
 	default:
-		cmdcom.PrintErrorAndExit("invalid payload")
+		cmdcom.PrintErrorAndExit("invalid producer payload")
 	}
 
 	udn := L.NewUserData()

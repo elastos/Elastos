@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package state
 
 import (
@@ -280,5 +285,4 @@ func (a *ArbitratorsMock) HasArbitersMinorityCount(num int) bool {
 }
 
 func (a *ArbitratorsMock) DumpInfo(height uint32) {
-	panic("implement me")
 }

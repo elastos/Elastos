@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package state
 
 import (
@@ -12,8 +17,11 @@ import (
 
 func TestArbitrators_GetSnapshot(t *testing.T) {
 	var bestHeight uint32
-	arbitrators, _ := NewArbitrators(&config.DefaultParams, nil,
-		func() uint32 { return bestHeight }, nil, nil)
+
+	arbitrators, _ := NewArbitrators(&config.DefaultParams,
+		nil)
+	arbitrators.RegisterFunction(func() uint32 { return bestHeight },
+		nil)
 
 	// define three height versions:
 	// firstSnapshotHeight < secondSnapshotHeight < bestHeight

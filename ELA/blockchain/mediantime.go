@@ -1,6 +1,8 @@
-// Copyright (c) 2013-2014 The btcsuite developers
-// Use of this source code is governed by an ISC
+// Copyright (c) 2015-2016 The btcsuite developers
+// Copyright (c) 2017-2019 Elastos Foundation
+// Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
+//
 
 package blockchain
 
@@ -47,6 +49,9 @@ type MedianTimeSource interface {
 	// Offset returns the number of seconds to adjust the local clock based
 	// upon the median of the time samples added by AddTimeData.
 	Offset() time.Duration
+
+	// Reset the median time.
+	Reset()
 }
 
 // int64Sorter implements sort.Interface to allow a slice of 64-bit integers to
@@ -196,6 +201,16 @@ func (m *medianTime) Offset() time.Duration {
 	defer m.mtx.Unlock()
 
 	return time.Duration(m.offsetSecs) * time.Second
+}
+
+// Reset the median time.
+func (m *medianTime) Reset() {
+	m.mtx.Lock()
+	m.knownIDs = make(map[string]struct{})
+	m.offsets = make([]int64, 0, maxMedianTimeEntries)
+	m.offsetSecs = 0
+	m.invalidTimeChecked = false
+	m.mtx.Unlock()
 }
 
 // NewMedianTime returns a new instance of concurrency-safe implementation of

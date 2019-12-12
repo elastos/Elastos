@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package blockchain
 
 import (
@@ -15,6 +20,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
+	"github.com/elastos/Elastos.ELA/database"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/events"
 )
@@ -37,6 +44,8 @@ type BlockChain struct {
 	chainParams *config.Params
 	db          IChainStore
 	state       *state.State
+	crCommittee *crstate.Committee
+	UTXOCache   *UTXOCache
 	GenesisHash Uint256
 
 	// The following fields are calculated based upon the provided chain
@@ -49,8 +58,10 @@ type BlockChain struct {
 
 	BestChain *BlockNode
 	Root      *BlockNode
-	Index     map[Uint256]*BlockNode
+	index     *blockIndex
+
 	IndexLock sync.RWMutex
+	Nodes     []*BlockNode
 	DepNodes  map[Uint256][]*BlockNode
 
 	orphanLock     sync.RWMutex
@@ -66,7 +77,8 @@ type BlockChain struct {
 	mutex          sync.RWMutex
 }
 
-func New(db IChainStore, chainParams *config.Params, state *state.State) (*BlockChain, error) {
+func New(db IChainStore, chainParams *config.Params, state *state.State,
+	committee *crstate.Committee) (*BlockChain, error) {
 
 	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
 	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
@@ -75,13 +87,16 @@ func New(db IChainStore, chainParams *config.Params, state *state.State) (*Block
 		chainParams:         chainParams,
 		db:                  db,
 		state:               state,
+		crCommittee:         committee,
+		UTXOCache:           NewUTXOCache(db),
 		GenesisHash:         chainParams.GenesisBlock.Hash(),
 		minRetargetTimespan: targetTimespan / adjustmentFactor,
 		maxRetargetTimespan: targetTimespan * adjustmentFactor,
 		blocksPerRetarget:   uint32(targetTimespan / targetTimePerBlock),
 		Root:                nil,
 		BestChain:           nil,
-		Index:               make(map[Uint256]*BlockNode),
+		Nodes:               make([]*BlockNode, 0),
+		index:               newBlockIndex(db, chainParams),
 		DepNodes:            make(map[Uint256][]*BlockNode),
 		oldestOrphan:        nil,
 		orphans:             make(map[Uint256]*OrphanBlock),
@@ -92,62 +107,136 @@ func New(db IChainStore, chainParams *config.Params, state *state.State) (*Block
 		TimeSource:          NewMedianTime(),
 	}
 
-	endHeight := chain.db.GetHeight()
-	startHeight := uint32(0)
-	if endHeight > minMemoryNodes {
-		startHeight = endHeight - minMemoryNodes
-	}
-
-	for start := startHeight; start <= endHeight; start++ {
-		hash, err := chain.db.GetBlockHash(start)
-		if err != nil {
-			return nil, err
-		}
-		header, err := chain.db.GetHeader(hash)
-		if err != nil {
-			return nil, err
-		}
-		node, err := chain.LoadBlockNode(header, &hash)
-		if err != nil {
-			return nil, err
-		}
-
-		// This node is now the end of the best chain.
-		chain.BestChain = node
+	// Initialize the chain state from the passed database.  When the db
+	// does not yet contain any chain state, both it and the chain state
+	// will be initialized to contain only the genesis block.
+	if err := chain.initChainState(); err != nil {
+		return nil, err
 	}
 
 	return &chain, nil
 }
 
-// InitProducerState go through all blocks since the start of DPOS
-// consensus to initialize producers and votes state.
-func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
-	start func(total uint32), increase func()) (err error) {
-	bestHeight := b.db.GetHeight()
+func (b *BlockChain) InitFFLDBFromChainStore(interrupt <-chan struct{},
+	barStart func(total uint32), increase func(), clear bool) (err error) {
+	endHeight := b.db.GetHeight()
+	startHeight := b.GetHeight() + 1
+	if endHeight < startHeight {
+		return nil
+	}
+
+	done := make(chan bool)
+
+	go func() {
+		log.Info("[InitFFLDBFromChainStore] start height: ", startHeight, "end height:", endHeight)
+		if barStart != nil {
+			barStart(endHeight - startHeight)
+		}
+
+		for start := startHeight; start <= endHeight; start++ {
+			hash, err := b.db.GetBlockHash(start)
+			if err != nil {
+				done <- false
+				break
+			}
+			block, err := b.db.GetBlock(hash)
+			if err != nil {
+				done <- false
+				break
+			}
+			confirm, _ := b.db.GetConfirm(hash)
+			node, err := b.LoadBlockNode(&block.Header, &hash)
+			if err != nil {
+				done <- false
+				break
+			}
+			b.SetTip(node)
+
+			b.index.SetFlags(&block.Header, statusDataStored)
+			err = b.index.flushToDB()
+			if err != nil {
+				done <- false
+				break
+			}
+
+			err = b.db.GetFFLDB().SaveBlock(block, node, confirm, CalcPastMedianTime(node))
+			if err != nil {
+				done <- false
+				break
+			}
+
+			b.index.SetFlags(&block.Header, statusDataStored|statusValid)
+			err = b.index.flushToDB()
+			if err != nil {
+				done <- false
+				break
+			}
+
+			// This node is now the end of the best chain.
+			b.BestChain = node
+			// Notify process increase.
+			if increase != nil {
+				increase()
+			}
+
+			if clear {
+				chain := b.db.(*ChainStore)
+				chain.NewBatch()
+				chain.RollbackTrimmedBlock(block)
+				chain.RollbackBlockHash(block)
+				chain.BatchCommit()
+			}
+		}
+		done <- true
+	}()
+	var result error
+	select {
+	case ok := <-done:
+		if ok {
+			log.Info("process block finished.")
+		} else {
+			result = errors.New("process block failed")
+		}
+
+	case <-interrupt:
+		result = errors.New("process block interrupted")
+	}
+	return result
+}
+
+// InitCheckpoint go through all blocks since the genesis block
+// to initialize all checkpoint.
+func (b *BlockChain) InitCheckpoint(interrupt <-chan struct{},
+	barStart func(total uint32), increase func()) (err error) {
+	bestHeight := b.GetHeight()
 	log.Info("current block height ->", bestHeight)
 	arbiters := DefaultLedger.Arbitrators
+	//ckpManager := b.chainParams.CkpManager
 	done := make(chan struct{})
 	go func() {
 		// Notify initialize process start.
-		startHeight := b.chainParams.VoteStartHeight
-		if height, err := arbiters.RecoverFromCheckPoints(
-			bestHeight); err != nil {
-			log.Warn("recover form check points fail: ", err)
-		} else {
-			startHeight = height + 1
-		}
+		startHeight := uint32(0)
+
+		//if err = ckpManager.Restore(); err != nil {
+		//	log.Warn(err)
+		//	err = nil
+		//}
+		//safeHeight := ckpManager.SafeHeight()
+		//if startHeight < safeHeight {
+		//	startHeight = safeHeight + 1
+		//}
 
 		log.Info("[RecoverFromCheckPoints] recover start height: ", startHeight)
-		if start != nil && bestHeight >= startHeight {
-			start(bestHeight - startHeight)
+		if barStart != nil && bestHeight >= startHeight {
+			barStart(bestHeight - startHeight)
 		}
 		for i := startHeight; i <= bestHeight; i++ {
-			hash, e := b.db.GetBlockHash(i)
+			hash, e := b.GetBlockHash(i)
 			if e != nil {
 				err = e
 				break
 			}
-			block, e := b.db.GetBlock(hash)
+			block, e := b.db.GetFFLDB().GetBlock(hash)
 			if e != nil {
 				err = e
 				break
@@ -163,7 +252,12 @@ func (b *BlockChain) InitProducerState(interrupt <-chan struct{},
 				break
 			}
 			confirm, _ := b.db.GetConfirm(block.Hash())
-			arbiters.ProcessBlock(block, confirm)
+
+			b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
+				Block:       block,
+				HaveConfirm: confirm != nil,
+				Confirm:     confirm,
+			}, nil)
 
 			// Notify process increase.
 			if increase != nil {
@@ -189,7 +283,7 @@ func CalculateTxsFee(block *Block) {
 		if tx.IsCoinBaseTx() {
 			continue
 		}
-		references, err := DefaultLedger.Store.GetTxReference(tx)
+		references, err := DefaultLedger.Blockchain.UTXOCache.GetTxReference(tx)
 		if err != nil {
 			log.Error("get transaction reference failed")
 			return
@@ -199,8 +293,8 @@ func CalculateTxsFee(block *Block) {
 		for _, output := range tx.Outputs {
 			outputValue += output.Value
 		}
-		for _, reference := range references {
-			inputValue += reference.Value
+		for _, output := range references {
+			inputValue += output.Value
 		}
 		// set Fee and FeePerKB if check has passed
 		tx.Fee = inputValue - outputValue
@@ -215,9 +309,19 @@ func CalculateTxsFee(block *Block) {
 func (b *BlockChain) GetState() *state.State {
 	return b.state
 }
+func (b *BlockChain) GetCRCommittee() *crstate.Committee {
+	return b.crCommittee
+}
 
 func (b *BlockChain) GetHeight() uint32 {
-	return b.db.GetHeight()
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	if len(b.Nodes) == 0 {
+		return 0
+	}
+
+	return uint32(len(b.Nodes) - 1)
 }
 
 func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool, bool, error) {
@@ -228,7 +332,7 @@ func (b *BlockChain) ProcessBlock(block *Block, confirm *payload.Confirm) (bool,
 }
 
 func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
-	header, err := b.db.GetHeader(hash)
+	header, err := b.db.GetFFLDB().GetHeader(hash)
 	if err != nil {
 		return nil, errors.New("[BlockChain], GetHeader failed.")
 	}
@@ -237,12 +341,34 @@ func (b *BlockChain) GetHeader(hash Uint256) (*Header, error) {
 
 // Get block with block hash.
 func (b *BlockChain) GetBlockByHash(hash Uint256) (*Block, error) {
-	return b.db.GetBlock(hash)
+	return b.db.GetFFLDB().GetBlock(hash)
+}
+
+// Get block with block hash.
+func (b *BlockChain) GetBlockHash(height uint32) (Uint256, error) {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	if height >= uint32(len(b.Nodes)) {
+		return EmptyHash, errors.New("not found block")
+	}
+	return *b.Nodes[height].Hash, nil
+}
+
+// Get block with block hash.
+func (b *BlockChain) GetBlockNode(height uint32) *BlockNode {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	if height >= uint32(len(b.Nodes)) {
+		return nil
+	}
+	return b.Nodes[height]
 }
 
 // Get DPOS block with block hash.
 func (b *BlockChain) GetDposBlockByHash(hash Uint256) (*DposBlock, error) {
-	if block, _ := b.db.GetBlock(hash); block != nil {
+	if block, _ := b.db.GetFFLDB().GetBlock(hash); block != nil {
 		confirm, _ := b.db.GetConfirm(hash)
 		return &DposBlock{
 			Block:       block,
@@ -275,8 +401,11 @@ func (b *BlockChain) ContainsTransaction(hash Uint256) bool {
 	return true
 }
 
-func (b *BlockChain) CurrentBlockHash() Uint256 {
-	return b.db.GetCurrentBlockHash()
+func (b *BlockChain) GetCurrentBlockHash() Uint256 {
+	b.IndexLock.RLock()
+	defer b.IndexLock.RUnlock()
+
+	return *b.Nodes[len(b.Nodes)-1].Hash
 }
 
 func (b *BlockChain) ProcessIllegalBlock(payload *payload.DPOSIllegalBlocks) {
@@ -456,35 +585,6 @@ func (b *BlockChain) GetOrphanRoot(hash *Uint256) *Uint256 {
 	return orphanRoot
 }
 
-type BlockNode struct {
-	Hash        *Uint256
-	ParentHash  *Uint256
-	Height      uint32
-	Version     uint32
-	Bits        uint32
-	Timestamp   uint32
-	WorkSum     *big.Int
-	InMainChain bool
-	Parent      *BlockNode
-	Children    []*BlockNode
-}
-
-func NewBlockNode(header *Header, hash *Uint256) *BlockNode {
-	var previous, current Uint256
-	copy(previous[:], header.Previous[:])
-	copy(current[:], hash[:])
-	node := BlockNode{
-		Hash:       &current,
-		ParentHash: &previous,
-		Height:     header.Height,
-		Version:    header.Version,
-		Bits:       header.Bits,
-		Timestamp:  header.Timestamp,
-		WorkSum:    CalcWork(header.Bits),
-	}
-	return &node
-}
-
 func compactToBig(compact uint32) *big.Int {
 	// Extract the mantissa, sign bit, and exponent.
 	mantissa := compact & 0x007fffff
@@ -566,7 +666,7 @@ func (b *BlockChain) LoadBlockNode(blockHeader *Header, hash *Uint256) (*BlockNo
 	//     to the tree, so it's the root.
 	prevHash := &blockHeader.Previous
 	//if parentNode, ok := b.Index[*prevHash]; ok {
-	if parentNode, ok := b.LookupNodeInIndex(prevHash); ok {
+	if parentNode, ok := b.index.LookupNode(prevHash); ok {
 		// Case 1 -- This node is a child of an existing block node.
 		// Update the node's work sum with the sum of the parent node's
 		// work sum and this node's work, append the node as a child of
@@ -605,7 +705,7 @@ func (b *BlockChain) LoadBlockNode(blockHeader *Header, hash *Uint256) (*BlockNo
 
 	// Add the new node to the indices for faster lookups.
 	//b.Index[*hash] = node
-	b.AddNodeToIndex(node)
+	b.index.addNode(node)
 	b.DepNodes[*prevHash] = append(b.DepNodes[*prevHash], node)
 
 	return node, nil
@@ -655,7 +755,7 @@ func (b *BlockChain) removeBlockNode(node *BlockNode) error {
 
 	// Remove the node from the node index.
 	//delete(b.Index, *node.Hash)
-	b.RemoveNodeFromIndex(node)
+	b.index.RemoveNode(node)
 
 	// Unlink all of the node's children.
 	for _, child := range node.Children {
@@ -694,11 +794,11 @@ func (b *BlockChain) getPrevNodeFromBlock(block *Block) (*BlockNode, error) {
 
 	// Return the existing previous block node if it's already there.
 	//if bn, ok := b.Index[*prevHash]; ok {
-	if bn, ok := b.LookupNodeInIndex(&prevHash); ok {
+	if bn, ok := b.index.LookupNode(&prevHash); ok {
 		return bn, nil
 	}
 
-	header, err := b.GetHeader(prevHash)
+	header, err := b.db.GetFFLDB().GetHeader(prevHash)
 	if err != nil {
 		return nil, err
 	}
@@ -727,7 +827,7 @@ func (b *BlockChain) getPrevNodeFromNode(node *BlockNode) (*BlockNode, error) {
 		return nil, nil
 	}
 
-	header, err := b.GetHeader(*node.ParentHash)
+	header, err := b.db.GetFFLDB().GetHeader(*node.ParentHash)
 	if err != nil {
 		return nil, err
 	}
@@ -793,6 +893,9 @@ func (b *BlockChain) getReorganizeNodes(node *BlockNode) (*list.List, *list.List
 // the end of the chain) and nodes the are being attached must be in forwards
 // order (think pushing them onto the end of the chain).
 func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error {
+	// Clean the UTXO cache
+	b.UTXOCache.CleanCache()
+
 	// Ensure all of the needed side chain blocks are in the cache.
 	for e := attachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
@@ -805,7 +908,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
-		block, err := b.db.GetBlock(*n.Hash)
+		block, err := b.db.GetFFLDB().GetBlock(*n.Hash)
 		if err != nil {
 			return err
 		}
@@ -813,7 +916,8 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 		// roll back state about the last block before disconnect
 		if block.Height-1 >= b.chainParams.VoteStartHeight {
-			err = DefaultLedger.Arbitrators.RollbackTo(block.Height - 1)
+
+			err = b.chainParams.CkpManager.OnRollbackTo(block.Height - 1)
 			if err != nil {
 				return err
 			}
@@ -841,10 +945,12 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 		}
 
 		// update state after connected block
-		if block.Height >= b.chainParams.VoteStartHeight {
-			DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
-			DefaultLedger.Arbitrators.DumpInfo(block.Height)
-		}
+		b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
+			Block:       block,
+			HaveConfirm: confirm != nil,
+			Confirm:     confirm,
+		}, nil)
+		DefaultLedger.Arbitrators.DumpInfo(block.Height)
 
 		delete(b.blockCache, *n.Hash)
 		delete(b.confirmCache, *n.Hash)
@@ -863,19 +969,20 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	}
 
 	// Remove the block from the database which houses the main chain.
-	_, err := b.getPrevNodeFromNode(node)
+	prevNode, err := b.getPrevNodeFromNode(node)
 	if err != nil {
 		return err
 	}
 
-	err = b.db.RollbackBlock(*node.Hash)
+	err = b.db.RollbackBlock(block, node, confirm, CalcPastMedianTime(prevNode))
 	if err != nil {
 		return err
 	}
 
 	// Rollback state memory DB
 	if block.Height-1 >= b.chainParams.VoteStartHeight {
-		err := DefaultLedger.Arbitrators.RollbackTo(block.Height - 1)
+
+		err := b.chainParams.CkpManager.OnRollbackTo(block.Height - 1)
 		if err != nil {
 			return err
 		}
@@ -887,6 +994,7 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *Block, confirm *pay
 	b.confirmCache[*node.Hash] = confirm
 
 	//// This node's parent is now the end of the best chain.
+	b.SetTip(node.Parent)
 	b.BestChain = node.Parent
 	b.MedianTimePast = CalcPastMedianTime(b.BestChain)
 
@@ -913,7 +1021,8 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 	}
 
 	if block.Height >= b.chainParams.CRCOnlyDPOSHeight {
-		if err := checkBlockWithConfirmation(block, confirm); err != nil {
+		if err := checkBlockWithConfirmation(block, confirm,
+			b.chainParams.CkpManager); err != nil {
 			return fmt.Errorf("block confirmation validate failed: %s", err)
 		}
 	}
@@ -925,21 +1034,48 @@ func (b *BlockChain) connectBlock(node *BlockNode, block *Block, confirm *payloa
 			"that extends the main chain")
 	}
 
+	// Insert the block into the database if it's not already there.  Even
+	// though it is possible the block will ultimately fail to connect, it
+	// has already passed all proof-of-work and validity tests which means
+	// it would be prohibitively expensive for an attacker to fill up the
+	// disk with a bunch of blocks that fail to connect.  This is necessary
+	// since it allows block download to be decoupled from the much more
+	// expensive connection logic.  It also has some other nice properties
+	// such as making blocks that never become part of the main chain or
+	// blocks that fail to connect available for further analysis.
+	err := b.db.GetFFLDB().Update(func(dbTx database.Tx) error {
+		return dbStoreBlock(dbTx, block)
+	})
+	if err != nil {
+		return fmt.Errorf("fflDB store block failed: %s", err)
+	}
+
+	b.index.SetFlags(&block.Header, statusDataStored)
+	if err := b.index.flushToDB(); err != nil {
+		return err
+	}
+
+	medianTime := CalcPastMedianTime(b.BestChain)
 	// Insert the block into the database which houses the main chain.
-	if err := b.db.SaveBlock(block, confirm); err != nil {
+	if err := b.db.SaveBlock(block, node, confirm, medianTime); err != nil {
 		return err
 	}
 
 	// Add the new node to the memory main chain indices for faster
 	// lookups.
 	node.InMainChain = true
+	node.Status = statusDataStored | statusValid
 	//b.Index[*node.Hash] = node
-	b.AddNodeToIndex(node)
+	b.SetTip(node)
+	b.index.AddNode(node, &block.Header)
+	if err := b.index.flushToDB(); err != nil {
+		return err
+	}
 	b.DepNodes[*prevHash] = append(b.DepNodes[*prevHash], node)
 
 	// This node is now the end of the best chain.
 	b.BestChain = node
-	b.MedianTimePast = CalcPastMedianTime(b.BestChain)
+	b.MedianTimePast = medianTime
 
 	// Notify the caller that the block was connected to the main chain.
 	// The caller would typically want to react with actions such as
@@ -956,12 +1092,19 @@ func (b *BlockChain) HaveBlock(hash *Uint256) (bool, error) {
 func (b *BlockChain) BlockExists(hash *Uint256) bool {
 	// Check memory chain first (could be main chain or side chain blocks).
 	//if _, ok := b.Index[*hash]; ok {
-	if _, ok := b.LookupNodeInIndex(hash); ok {
+	if _, ok := b.index.LookupNode(hash); ok {
 		return true
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return b.db.IsBlockInStore(hash)
+	exist, height, _ := b.db.GetFFLDB().BlockExists(hash)
+
+	if !exist || uint32(len(b.Nodes)) <= height ||
+		!b.Nodes[height].Hash.IsEqual(*hash) {
+		return false
+	}
+
+	return true
 }
 
 func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (bool, error) {
@@ -995,6 +1138,7 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 	// block chain (could be either a side chain or the main chain).
 	blockhash := block.Hash()
 	newNode := NewBlockNode(&block.Header, &blockhash)
+	newNode.Status = statusDataStored
 	if prevNode != nil {
 		newNode.Parent = prevNode
 		newNode.Height = blockHeight
@@ -1009,11 +1153,12 @@ func (b *BlockChain) maybeAcceptBlock(block *Block, confirm *payload.Confirm) (b
 		return false, err
 	}
 
-	if inMainChain && !reorganized && (block.Height >= b.chainParams.VoteStartHeight ||
-		// In case of VoteStartHeight larger than (CRCOnlyDPOSHeight-PreConnectOffset)
-		block.Height == b.chainParams.CRCOnlyDPOSHeight-b.chainParams.
-			PreConnectOffset) {
-		DefaultLedger.Arbitrators.ProcessBlock(block, confirm)
+	if inMainChain && !reorganized {
+		b.chainParams.CkpManager.OnBlockSaved(&DposBlock{
+			Block:       block,
+			HaveConfirm: confirm != nil,
+			Confirm:     confirm,
+		}, nil)
 		DefaultLedger.Arbitrators.DumpInfo(block.Height)
 	}
 
@@ -1074,7 +1219,8 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 	b.blockCache[*node.Hash] = block
 	b.confirmCache[*node.Hash] = confirm
 	//b.Index[*node.Hash] = node
-	b.AddNodeToIndex(node)
+	node.Status = statusInvalidAncestor
+	b.index.AddNode(node, &block.Header)
 
 	// Connect the parent node to this node.
 	node.InMainChain = false
@@ -1144,7 +1290,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *Block, confirm *pa
 // checking
 func (b *BlockChain) ReorganizeChain(block *Block) error {
 	hash := block.Hash()
-	node, ok := b.LookupNodeInIndex(&hash)
+	node, ok := b.index.LookupNode(&hash)
 	if !ok {
 		return errors.New("node of the reorganizing block does not exist")
 	}
@@ -1234,7 +1380,7 @@ func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
 		// database.
 
 		// Get Current Block
-		blockHash := b.db.GetCurrentBlockHash()
+		blockHash := b.GetCurrentBlockHash()
 		return b.BlockLocatorFromHash(&blockHash), nil
 	}
 
@@ -1242,25 +1388,59 @@ func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
 	return b.BlockLocatorFromHash(b.BestChain.Hash), nil
 }
 
-func (b *BlockChain) AddNodeToIndex(node *BlockNode) {
+// SetTip sets the block chain to use the provided block node as the current tip
+// and ensures the view is consistent by populating it with the nodes obtained
+// by walking backwards all the way to genesis block as necessary.  Further
+// calls will only perform the minimum work needed, so switching between chain
+// tips is efficient.
+//
+// This function is safe for concurrent access.
+func (b *BlockChain) SetTip(node *BlockNode) {
 	b.IndexLock.Lock()
-	defer b.IndexLock.Unlock()
-
-	b.Index[*node.Hash] = node
+	b.setTip(node)
+	b.IndexLock.Unlock()
 }
 
-func (b *BlockChain) RemoveNodeFromIndex(node *BlockNode) {
-	b.IndexLock.Lock()
-	defer b.IndexLock.Unlock()
-	delete(b.Index, *node.Hash)
+// This only differs from the exported version in that it is up to the caller
+// to ensure the lock is held.
+//
+// This function MUST be called with the block chain mutex locked (for writes).
+func (b *BlockChain) setTip(node *BlockNode) {
+	if node == nil {
+		// Keep the backing array around for potential future use.
+		b.Nodes = b.Nodes[:0]
+		return
+	}
+
+	// Create or resize the slice that will hold the block nodes to the
+	// provided tip height.  When creating the slice, it is created with
+	// some additional capacity for the underlying array as append would do
+	// in order to reduce overhead when extending the chain later.  As long
+	// as the underlying array already has enough capacity, simply expand or
+	// contract the slice accordingly.  The additional capacity is chosen
+	// such that the array should only have to be extended about once a
+	// week.
+	needed := node.Height + 1
+	if uint32(cap(b.Nodes)) < needed {
+		nodes := make([]*BlockNode, needed, needed+approxNodesPerWeek)
+		copy(nodes, b.Nodes)
+		b.Nodes = nodes
+	} else {
+		prevLen := uint32(len(b.Nodes))
+		b.Nodes = b.Nodes[0:needed]
+		for i := prevLen; i < needed; i++ {
+			b.Nodes[i] = nil
+		}
+	}
+
+	for node != nil && b.Nodes[node.Height] != node {
+		b.Nodes[node.Height] = node
+		node = node.Parent
+	}
 }
 
 func (b *BlockChain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
-	b.IndexLock.Lock()
-	defer b.IndexLock.Unlock()
-	node, exist := b.Index[*hash]
-
-	return node, exist
+	return b.index.LookupNode(hash)
 }
 
 func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
@@ -1281,17 +1461,17 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	// which it forks from the main chain.
 	blockHeight := int32(-1)
 	//node, exists := b.Index[*hash]
-	node, exists := b.LookupNodeInIndex(&hash)
+	node, exists := b.index.LookupNode(&hash)
 	if !exists {
 		// Try to look up the height for passed block hash.  Assume an
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
 
-		block, err := b.db.GetBlock(hash)
-		if err != nil {
+		exist, height, err := b.db.GetFFLDB().BlockExists(&hash)
+		if err != nil || !exist {
 			return locator
 		}
-		blockHeight = int32(block.Header.Height)
+		blockHeight = int32(height)
 	} else {
 		blockHeight = int32(node.Height)
 	}
@@ -1314,7 +1494,7 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 		// The desired block height is in the main chain, so look it up
 		// from the main chain database.
 
-		h, err := b.db.GetBlockHash(uint32(blockHeight))
+		h, err := b.GetBlockHash(uint32(blockHeight))
 		if err != nil {
 			log.Debugf("Lookup of known valid height failed %v", blockHeight)
 			continue
@@ -1332,8 +1512,8 @@ func (b *BlockChain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 func (b *BlockChain) locateStartBlock(locator []*Uint256) *Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
-		_, err := b.db.GetBlock(*hash)
-		if err == nil {
+		exist, _, err := b.db.GetFFLDB().BlockExists(hash)
+		if err == nil && exist {
 			startHash = *hash
 			break
 		}
@@ -1345,7 +1525,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 	var count = uint32(0)
 	var startHeight uint32
 	var stopHeight uint32
-	curHeight := b.db.GetHeight()
+	curHeight := b.GetHeight()
 	if stopHash.IsEqual(EmptyHash) {
 		if startHash.IsEqual(EmptyHash) {
 			if curHeight > maxBlockHashes {
@@ -1354,7 +1534,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 				count = curHeight
 			}
 		} else {
-			startHeader, err := b.db.GetHeader(*startHash)
+			startHeader, err := b.db.GetFFLDB().GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1365,13 +1545,13 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 			}
 		}
 	} else {
-		stopHeader, err := b.db.GetHeader(*stopHash)
+		stopHeader, err := b.db.GetFFLDB().GetHeader(*stopHash)
 		if err != nil {
 			return nil, err
 		}
 		stopHeight = stopHeader.Height
 		if !startHash.IsEqual(EmptyHash) {
-			startHeader, err := b.db.GetHeader(*startHash)
+			startHeader, err := b.db.GetFFLDB().GetHeader(*startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -1397,7 +1577,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 
 	hashes := make([]*Uint256, 0)
 	for i := uint32(1); i <= count; i++ {
-		hash, err := b.db.GetBlockHash(startHeight + i)
+		hash, err := b.GetBlockHash(startHeight + i)
 		if err != nil {
 			return nil, err
 		}

@@ -1,16 +1,24 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package api
 
 import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
+	"github.com/elastos/Elastos.ELA/crypto"
 
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/yuin/gopher-lua"
+	lua "github.com/yuin/gopher-lua"
 )
 
 const (
@@ -215,11 +223,14 @@ func RegisterVoteContentType(L *lua.LState) {
 func newVoteContent(L *lua.LState) int {
 	voteType := L.ToInt(1)
 	candidatesTable := L.ToTable(2)
+	candidateVotesTable := L.ToTable(3)
 
 	candidates := make([][]byte, 0)
+	votes := make([]common.Fixed64, 0)
 	candidatesTable.ForEach(func(i, value lua.LValue) {
-		//fmt.Println(lua.LVAsString(value))
 		publicKey := lua.LVAsString(value)
+		publicKey = strings.Replace(publicKey, "{", "", 1)
+		publicKey = strings.Replace(publicKey, "}", "", 1)
 		pk, err := common.HexStringToBytes(publicKey)
 		if err != nil {
 			fmt.Println("invalid public key")
@@ -227,10 +238,38 @@ func newVoteContent(L *lua.LState) int {
 		}
 		candidates = append(candidates, pk)
 	})
+	candidateVotesTable.ForEach(func(i, value lua.LValue) {
+		voteStr := lua.LVAsString(value)
+		voteStr = strings.Replace(voteStr, "{", "", 1)
+		voteStr = strings.Replace(voteStr, "}", "", 1)
+		vote, _ := common.StringToFixed64(voteStr)
+		votes = append(votes, *vote)
+	})
+
+	candidateVotes := make([]outputpayload.CandidateVotes, 0, len(candidates))
+	for i := 0; i < len(candidates); i++ {
+		pk, err := crypto.DecodePoint(candidates[i])
+		if err != nil {
+			fmt.Println("wrong cr public key")
+			os.Exit(1)
+		}
+		code, err := contract.CreateStandardRedeemScript(pk)
+		if err != nil {
+			fmt.Println("wrong cr public key")
+			os.Exit(1)
+		}
+
+		//get didUint168 from code
+		didUint168 := getDidProgramHash(code)
+		candidateVotes = append(candidateVotes, outputpayload.CandidateVotes{
+			Candidate: didUint168.Bytes(),
+			Votes:     votes[i],
+		})
+	}
 
 	voteContent := &outputpayload.VoteContent{
-		VoteType:   outputpayload.VoteType(voteType),
-		Candidates: candidates,
+		VoteType:       outputpayload.VoteType(voteType),
+		CandidateVotes: candidateVotes,
 	}
 
 	ud := L.NewUserData()

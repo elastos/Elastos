@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package blockchain
 
 import (
@@ -41,8 +46,8 @@ func getNetworkHashPS(tipNode *BlockNode) *big.Int {
 
 // GetNetworkHashPS return average network hashes per second based on the last 'lookup' blocks.
 func (b *BlockChain) GetNetworkHashPS() *big.Int {
-	tipHash := b.CurrentBlockHash()
-	tipNode, exist := b.LookupNodeInIndex(&tipHash)
+	tipHash := b.GetCurrentBlockHash()
+	tipNode, exist := b.index.LookupNode(&tipHash)
 	if !exist {
 		return new(big.Int)
 	}

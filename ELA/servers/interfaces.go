@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package servers
 
 import (
@@ -8,15 +13,18 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/elastos/Elastos.ELA/account"
 	aux "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	pg "github.com/elastos/Elastos.ELA/core/contract/program"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/elanet"
@@ -25,18 +33,23 @@ import (
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/pow"
+	"github.com/elastos/Elastos.ELA/wallet"
+
+	"github.com/tidwall/gjson"
 )
 
 var (
-	Compile   string
-	Config    *config.Configuration
-	Chain     *blockchain.BlockChain
-	Store     blockchain.IChainStore
-	TxMemPool *mempool.TxPool
-	Pow       *pow.Service
-	Server    elanet.Server
-	Arbiter   *dpos.Arbitrator
-	Arbiters  state.Arbitrators
+	Compile     string
+	Config      *config.Configuration
+	ChainParams *config.Params
+	Chain       *blockchain.BlockChain
+	Store       blockchain.IChainStore
+	TxMemPool   *mempool.TxPool
+	Pow         *pow.Service
+	Server      elanet.Server
+	Arbiter     *dpos.Arbitrator
+	Arbiters    state.Arbitrators
+	Wallet      *wallet.Wallet
 )
 
 func ToReversedString(hash common.Uint256) string {
@@ -48,7 +61,7 @@ func FromReversedString(reversed string) ([]byte, error) {
 	return common.BytesReverse(bytes), err
 }
 
-func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
+func GetTransactionInfo(tx *Transaction) *TransactionInfo {
 	inputs := make([]InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = ToReversedString(v.Previous.TxID)
@@ -83,6 +96,24 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	var txHash = tx.Hash()
 	var txHashStr = ToReversedString(txHash)
 	var size = uint32(tx.GetSize())
+	return &TransactionInfo{
+		TxID:           txHashStr,
+		Hash:           txHashStr,
+		Size:           size,
+		VSize:          size,
+		Version:        tx.Version,
+		TxType:         tx.TxType,
+		PayloadVersion: tx.PayloadVersion,
+		Payload:        getPayloadInfo(tx.Payload),
+		Attributes:     attributes,
+		Inputs:         inputs,
+		Outputs:        outputs,
+		LockTime:       tx.LockTime,
+		Programs:       programs,
+	}
+}
+
+func GetTransactionContextInfo(header *Header, tx *Transaction) *TransactionContextInfo {
 	var blockHash string
 	var confirmations uint32
 	var time uint32
@@ -94,24 +125,14 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		blockTime = header.Timestamp
 	}
 
-	return &TransactionInfo{
-		TxID:           txHashStr,
-		Hash:           txHashStr,
-		Size:           size,
-		VSize:          size,
-		Version:        tx.Version,
-		LockTime:       tx.LockTime,
-		Inputs:         inputs,
-		Outputs:        outputs,
-		BlockHash:      blockHash,
-		Confirmations:  confirmations,
-		Time:           time,
-		BlockTime:      blockTime,
-		TxType:         tx.TxType,
-		PayloadVersion: tx.PayloadVersion,
-		Payload:        getPayloadInfo(tx.Payload),
-		Attributes:     attributes,
-		Programs:       programs,
+	txInfo := GetTransactionInfo(tx)
+
+	return &TransactionContextInfo{
+		TransactionInfo: txInfo,
+		BlockHash:       blockHash,
+		Confirmations:   confirmations,
+		Time:            time,
+		BlockTime:       blockTime,
 	}
 }
 
@@ -142,7 +163,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 				"cannot find transaction in blockchain and transactionpool")
 		}
 	} else {
-		hash, err := Store.GetBlockHash(height)
+		hash, err := Chain.GetBlockHash(height)
 		if err != nil {
 			return ResponsePack(UnknownTransaction, "")
 		}
@@ -154,7 +175,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 
 	verbose, _ := param.Bool("verbose")
 	if verbose {
-		return ResponsePack(Success, GetTransactionInfo(header, tx))
+		return ResponsePack(Success, GetTransactionContextInfo(header, tx))
 	} else {
 		buf := new(bytes.Buffer)
 		tx.Serialize(buf)
@@ -237,11 +258,11 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 
 	SendToAux := AuxBlock{
 		ChainID:           aux.AuxPowChainID,
-		Height:            Store.GetHeight(),
+		Height:            Chain.GetHeight(),
 		CoinBaseValue:     block.Transactions[0].Outputs[1].Value,
 		Bits:              fmt.Sprintf("%x", block.Header.Bits),
 		Hash:              block.Hash().String(),
-		PreviousBlockHash: Chain.CurrentBlockHash().String(),
+		PreviousBlockHash: Chain.GetCurrentBlockHash().String(),
 	}
 	return ResponsePack(Success, &SendToAux)
 }
@@ -353,8 +374,8 @@ func GetArbitersInfo(params Params) map[string]interface{} {
 		NextCandidates: make([]string, 0),
 		OnDutyArbiter:  common.BytesToHexString(Arbiters.GetOnDutyArbitrator()),
 
-		CurrentTurnStartHeight: int(Store.GetHeight()) - dutyIndex,
-		NextTurnStartHeight: int(Store.GetHeight()) +
+		CurrentTurnStartHeight: int(Chain.GetHeight()) - dutyIndex,
+		NextTurnStartHeight: int(Chain.GetHeight()) +
 			Arbiters.GetArbitersCount() - dutyIndex,
 	}
 	for _, v := range Arbiters.GetArbitrators() {
@@ -391,7 +412,7 @@ func GetInfo(param Params) map[string]interface{} {
 	}{
 		Version:       pact.DPOSStartVersion,
 		Balance:       0,
-		Blocks:        Store.GetHeight(),
+		Blocks:        Chain.GetHeight(),
 		Timeoffset:    0,
 		Connections:   Server.ConnectedCount(),
 		Keypoololdest: 0,
@@ -408,7 +429,7 @@ func AuxHelp(param Params) map[string]interface{} {
 }
 
 func GetMiningInfo(param Params) map[string]interface{} {
-	block, err := Store.GetBlock(Store.GetCurrentBlockHash())
+	block, err := Chain.GetBlockByHash(Chain.GetCurrentBlockHash())
 	if err != nil {
 		return ResponsePack(InternalError, "get tip block failed")
 	}
@@ -421,7 +442,7 @@ func GetMiningInfo(param Params) map[string]interface{} {
 		PooledTx       uint32 `json:"pooledtx"`
 		Chain          string `json:"chain"`
 	}{
-		Blocks:         Store.GetHeight() + 1,
+		Blocks:         Chain.GetHeight() + 1,
 		CurrentBlockTx: uint32(len(block.Transactions)),
 		Difficulty:     Chain.CalcCurrentDifficulty(block.Bits),
 		NetWorkHashPS:  Chain.GetNetworkHashPS().String(),
@@ -479,9 +500,9 @@ func GetConnectionCount(param Params) map[string]interface{} {
 }
 
 func GetTransactionPool(param Params) map[string]interface{} {
-	txs := make([]*TransactionInfo, 0)
+	txs := make([]*TransactionContextInfo, 0)
 	for _, tx := range TxMemPool.GetTxsInPool() {
-		txs = append(txs, GetTransactionInfo(nil, tx))
+		txs = append(txs, GetTransactionContextInfo(nil, tx))
 	}
 	return ResponsePack(Success, txs)
 }
@@ -490,7 +511,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 	var txs []interface{}
 	if verbose {
 		for _, tx := range block.Transactions {
-			txs = append(txs, GetTransactionInfo(&block.Header, tx))
+			txs = append(txs, GetTransactionContextInfo(&block.Header, tx))
 		}
 	} else {
 		for _, tx := range block.Transactions {
@@ -501,16 +522,16 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 	binary.BigEndian.PutUint32(versionBytes[:], block.Header.Version)
 
 	var chainWork [4]byte
-	binary.BigEndian.PutUint32(chainWork[:], Store.GetHeight()-block.Header.Height)
+	binary.BigEndian.PutUint32(chainWork[:], Chain.GetHeight()-block.Header.Height)
 
-	nextBlockHash, _ := Store.GetBlockHash(block.Header.Height + 1)
+	nextBlockHash, _ := Chain.GetBlockHash(block.Header.Height + 1)
 
 	auxPow := new(bytes.Buffer)
 	block.Header.AuxPow.Serialize(auxPow)
 
 	return BlockInfo{
 		Hash:              ToReversedString(block.Hash()),
-		Confirmations:     Store.GetHeight() - block.Header.Height + 1,
+		Confirmations:     Chain.GetHeight() - block.Header.Height + 1,
 		StrippedSize:      uint32(block.GetSize()),
 		Size:              uint32(block.GetSize()),
 		Weight:            uint32(block.GetSize() * 4),
@@ -550,7 +571,7 @@ func GetConfirmInfo(confirm *payload.Confirm) ConfirmInfo {
 }
 
 func getBlock(hash common.Uint256, verbose uint32) (interface{}, ErrCode) {
-	block, err := Store.GetBlock(hash)
+	block, err := Chain.GetBlockByHash(hash)
 	if err != nil {
 		return "", UnknownBlock
 	}
@@ -610,7 +631,7 @@ func GetConfirmByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, err.Error())
 	}
@@ -671,11 +692,11 @@ func SendRawTransaction(param Params) map[string]interface{} {
 }
 
 func GetBlockHeight(param Params) map[string]interface{} {
-	return ResponsePack(Success, Store.GetHeight())
+	return ResponsePack(Success, Chain.GetHeight())
 }
 
 func GetBestBlockHash(param Params) map[string]interface{} {
-	hash, err := Store.GetBlockHash(Store.GetHeight())
+	hash, err := Chain.GetBlockHash(Chain.GetHeight())
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -683,7 +704,7 @@ func GetBestBlockHash(param Params) map[string]interface{} {
 }
 
 func GetBlockCount(param Params) map[string]interface{} {
-	return ResponsePack(Success, Store.GetHeight()+1)
+	return ResponsePack(Success, Chain.GetHeight()+1)
 }
 
 func GetBlockHash(param Params) map[string]interface{} {
@@ -692,7 +713,7 @@ func GetBlockHash(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -723,12 +744,12 @@ func GetTransactionsByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 
 	}
-	block, err := Store.GetBlock(hash)
+	block, err := Chain.GetBlockByHash(hash)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -741,7 +762,7 @@ func GetBlockByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, err.Error())
 	}
@@ -757,12 +778,12 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := Store.GetBlockHash(height)
+	hash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "not found block hash at given height")
 	}
 
-	block, _ := Store.GetBlock(hash)
+	block, _ := Chain.GetBlockByHash(hash)
 	if block == nil {
 		return ResponsePack(InternalError, "not found block at given height")
 	}
@@ -808,18 +829,17 @@ func GetAssetByHash(param Params) map[string]interface{} {
 }
 
 func GetBalanceByAddr(param Params) map[string]interface{} {
-	str, ok := param.String("addr")
+	address, ok := param.String("addr")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := common.Uint168FromAddress(str)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
-		return ResponsePack(InvalidParams, "")
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
-	unspends, err := Store.GetUnspentsFromProgramHash(*programHash)
 	var balance common.Fixed64 = 0
-	for _, u := range unspends {
+	for _, u := range unspent {
 		for _, v := range u {
 			balance = balance + v.Value
 		}
@@ -828,16 +848,10 @@ func GetBalanceByAddr(param Params) map[string]interface{} {
 }
 
 func GetBalanceByAsset(param Params) map[string]interface{} {
-	addr, ok := param.String("addr")
+	address, ok := param.String("addr")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-
-	programHash, err := common.Uint168FromAddress(addr)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
 	assetIDStr, ok := param.String("assetid")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -851,9 +865,12 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	if err != nil {
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
+	}
 	var balance common.Fixed64 = 0
-	for k, u := range unspents {
+	for k, u := range unspent {
 		for _, v := range u {
 			if assetID.IsEqual(k) {
 				balance = balance + v.Value
@@ -868,25 +885,24 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named address")
 	}
-	programHash, err := common.Uint168FromAddress(address)
+
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
-		return ResponsePack(InvalidParams, "Invalid address: "+address)
-	}
-	UTXOsWithAssetID, err := Store.GetUnspentsFromProgramHash(*programHash)
-	if err != nil {
-		return ResponsePack(InvalidParams, err)
-	}
-	UTXOs := UTXOsWithAssetID[config.ELAAssetID]
-	var totalValue common.Fixed64
-	for _, unspent := range UTXOs {
-		totalValue += unspent.Value
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 
-	return ResponsePack(Success, totalValue.String())
+	var balance common.Fixed64 = 0
+	for _, u := range unspent {
+		for _, v := range u {
+			balance = balance + v.Value
+		}
+	}
+
+	return ResponsePack(Success, balance.String())
 }
 
 func GetUTXOsByAmount(param Params) map[string]interface{} {
-	bestHeight := Store.GetHeight()
+	bestHeight := Chain.GetHeight()
 
 	result := make([]UTXOInfo, 0)
 	address, ok := param.String("address")
@@ -901,13 +917,9 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid amount!")
 	}
-	programHash, err := common.Uint168FromAddress(address)
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 	if err != nil {
-		return ResponsePack(InvalidParams, "invalid address: "+address)
-	}
-	unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
-	if err != nil {
-		return ResponsePack(InvalidParams, "cannot get asset with program")
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	utxoType := "mixed"
 	if t, ok := param.String("utxotype"); ok {
@@ -919,7 +931,7 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 		}
 	}
 	totalAmount := common.Fixed64(0)
-	for _, unspent := range unspents[config.ELAAssetID] {
+	for _, unspent := range unspent[config.ELAAssetID] {
 		if totalAmount >= *amount {
 			break
 		}
@@ -990,7 +1002,7 @@ func GetAmountByInputs(param Params) map[string]interface{} {
 }
 
 func ListUnspent(param Params) map[string]interface{} {
-	bestHeight := Store.GetHeight()
+	bestHeight := Chain.GetHeight()
 
 	var result []UTXOInfo
 	addresses, ok := param.ArrayString("addresses")
@@ -1007,16 +1019,12 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 	}
 	for _, address := range addresses {
-		programHash, err := common.Uint168FromAddress(address)
+		unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
 		if err != nil {
-			return ResponsePack(InvalidParams, "Invalid address: "+address)
-		}
-		unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
-		if err != nil {
-			return ResponsePack(InvalidParams, "cannot get asset with program")
+			return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 		}
 
-		for _, unspent := range unspents[config.ELAAssetID] {
+		for _, unspent := range unspent[config.ELAAssetID] {
 			tx, height, err := Store.GetTransaction(unspent.TxID)
 			if err != nil {
 				return ResponsePack(InternalError,
@@ -1047,16 +1055,254 @@ func ListUnspent(param Params) map[string]interface{} {
 	return ResponsePack(Success, result)
 }
 
+func CreateRawTransaction(param Params) map[string]interface{} {
+	inputsParam, ok := param.String("inputs")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named inputs")
+	}
+	outputsParam, ok := param.String("outputs")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named outputs")
+	}
+	locktime, ok := param.Uint("locktime")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named locktime")
+	}
+
+	inputs := make([]string, 0)
+	gjson.Parse(inputsParam).ForEach(func(key, value gjson.Result) bool {
+		inputs = append(inputs, value.String())
+		return true
+	})
+
+	outputs := make([]string, 0)
+	gjson.Parse(outputsParam).ForEach(func(key, value gjson.Result) bool {
+		outputs = append(outputs, value.String())
+		return true
+	})
+
+	txInputs := make([]*Input, 0)
+	for _, v := range inputs {
+		txIDStr := gjson.Get(v, "txid").String()
+		txIDBytes, err := common.HexStringToBytes(txIDStr)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid txid when convert to bytes")
+		}
+		txID, err := common.Uint256FromBytes(common.BytesReverse(txIDBytes))
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid txid in inputs param")
+		}
+		input := &Input{
+			Previous: OutPoint{
+				TxID:  *txID,
+				Index: uint16(gjson.Get(v, "vout").Int()),
+			},
+		}
+		txInputs = append(txInputs, input)
+	}
+
+	txOutputs := make([]*Output, 0)
+	for _, v := range outputs {
+		amount := gjson.Get(v, "amount").String()
+		value, err := common.StringToFixed64(amount)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid amount in inputs param")
+		}
+		address := gjson.Get(v, "address").String()
+		programHash, err := common.Uint168FromAddress(address)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid address in outputs param")
+		}
+		output := &Output{
+			AssetID:     *account.SystemAssetID,
+			Value:       *value,
+			OutputLock:  0,
+			ProgramHash: *programHash,
+			Type:        OTNone,
+			Payload:     &outputpayload.DefaultOutput{},
+		}
+		txOutputs = append(txOutputs, output)
+	}
+
+	txn := &Transaction{
+		Version:    TxVersion09,
+		TxType:     TransferAsset,
+		Payload:    &payload.TransferAsset{},
+		Attributes: []*Attribute{},
+		Inputs:     txInputs,
+		Outputs:    txOutputs,
+		Programs:   []*pg.Program{},
+		LockTime:   locktime,
+	}
+
+	buf := new(bytes.Buffer)
+	err := txn.Serialize(buf)
+	if err != nil {
+		return ResponsePack(InternalError, "txn serialize failed")
+	}
+
+	return ResponsePack(Success, common.BytesToHexString(buf.Bytes()))
+}
+
+func SignRawTransactionWithKey(param Params) map[string]interface{} {
+	dataParam, ok := param.String("data")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named data")
+	}
+	codesParam, ok := param.String("codes")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named codes")
+	}
+	privkeysParam, ok := param.String("privkeys")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named privkeys")
+	}
+
+	privkeys := make([]string, 0)
+	gjson.Parse(privkeysParam).ForEach(func(key, value gjson.Result) bool {
+		privkeys = append(privkeys, value.String())
+		return true
+	})
+
+	accounts := make(map[common.Uint160]*account.Account, 0)
+	for _, privkeyStr := range privkeys {
+		privkey, err := common.HexStringToBytes(privkeyStr)
+		if err != nil {
+			return ResponsePack(InvalidParams, err.Error())
+		}
+		acc, err := account.NewAccountWithPrivateKey(privkey)
+		if err != nil {
+			return ResponsePack(InvalidTransaction, err.Error())
+		}
+		accounts[acc.ProgramHash.ToCodeHash()] = acc
+	}
+
+	txBytes, err := common.HexStringToBytes(dataParam)
+	if err != nil {
+		return ResponsePack(InvalidParams, "hex string to bytes error")
+	}
+	var txn Transaction
+	if err := txn.Deserialize(bytes.NewReader(txBytes)); err != nil {
+		return ResponsePack(InvalidTransaction, err.Error())
+	}
+
+	codes := make([]string, 0)
+	gjson.Parse(codesParam).ForEach(func(key, value gjson.Result) bool {
+		codes = append(codes, value.String())
+		return true
+	})
+
+	programs := make([]*pg.Program, 0)
+	if len(txn.Programs) > 0 {
+		programs = txn.Programs
+	} else {
+		for _, codeStr := range codes {
+			code, err := common.HexStringToBytes(codeStr)
+			if err != nil {
+				return ResponsePack(InvalidParams, "invalid params codes")
+			}
+			program := &pg.Program{
+				Code:      code,
+				Parameter: nil,
+			}
+			programs = append(programs, program)
+		}
+	}
+
+	signData := new(bytes.Buffer)
+	if err := txn.SerializeUnsigned(signData); err != nil {
+		return ResponsePack(InvalidTransaction, err.Error())
+	}
+
+	references, err := Chain.UTXOCache.GetTxReference(&txn)
+	if err != nil {
+		return ResponsePack(InvalidTransaction, err.Error())
+	}
+
+	programHashes, err := blockchain.GetTxProgramHashes(&txn, references)
+	if err != nil {
+		return ResponsePack(InternalError, err.Error())
+	}
+
+	if len(programs) != len(programHashes) {
+		return ResponsePack(InternalError, "the number of program hashes is different with number of programs")
+	}
+
+	// sort the program hashes of owner and programs of the transaction
+	common.SortProgramHashByCodeHash(programHashes)
+	blockchain.SortPrograms(programs)
+
+	for i, programHash := range programHashes {
+		program := programs[i]
+		codeHash := common.ToCodeHash(program.Code)
+		ownerHash := programHash.ToCodeHash()
+		if !codeHash.IsEqual(ownerHash) {
+			return ResponsePack(InternalError, "the program hashes is different with corresponding program code")
+		}
+
+		prefixType := contract.GetPrefixType(programHash)
+		if prefixType == contract.PrefixStandard {
+			signedProgram, err := account.SignStandardTransaction(&txn, program, accounts)
+			if err != nil {
+				return ResponsePack(InternalError, err.Error())
+			}
+			programs[i] = signedProgram
+		} else if prefixType == contract.PrefixMultiSig {
+			signedProgram, err := account.SignMultiSignTransaction(&txn, program, accounts)
+			if err != nil {
+				return ResponsePack(InternalError, err.Error())
+			}
+			programs[i] = signedProgram
+		} else {
+			return ResponsePack(InternalError, "invalid program hash type")
+		}
+	}
+	txn.Programs = programs
+
+	result := new(bytes.Buffer)
+	if err := txn.Serialize(result); err != nil {
+		return ResponsePack(InternalError, err.Error())
+	}
+
+	return ResponsePack(Success, common.BytesToHexString(result.Bytes()))
+}
+
+func ImportAddress(param Params) map[string]interface{} {
+	address, ok := param.String("address")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named address")
+	}
+
+	if err := Wallet.ImportAddress(address, ChainParams.EnableUtxoDB); err != nil {
+		return ResponsePack(InternalError, "import address failed: "+err.Error())
+	}
+
+	return ResponsePack(Success, 0)
+}
+
+func ImportPubkey(param Params) map[string]interface{} {
+	pubKey, ok := param.String("pubkey")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named pubkey")
+	}
+	pubKeyBytes, err := common.HexStringToBytes(pubKey)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid pubkey")
+	}
+
+	if err := Wallet.ImportPubkey(pubKeyBytes, ChainParams.EnableUtxoDB); err != nil {
+		return ResponsePack(InternalError, "import public key failed: "+err.Error())
+	}
+
+	return ResponsePack(Success, 0)
+}
+
 func GetUnspends(param Params) map[string]interface{} {
-	addr, ok := param.String("addr")
+	address, ok := param.String("addr")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := common.Uint168FromAddress(addr)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
 	type UTXOUnspentInfo struct {
 		TxID  string `json:"Txid"`
 		Index uint32 `json:"Index"`
@@ -1068,9 +1314,12 @@ func GetUnspends(param Params) map[string]interface{} {
 		Utxo      []UTXOUnspentInfo `json:"Utxo"`
 	}
 	var results []Result
-	unspends, err := Store.GetUnspentsFromProgramHash(*programHash)
 
-	for k, u := range unspends {
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	if err != nil {
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
+	}
+	for k, u := range unspent {
 		asset, err := Store.GetAsset(k)
 		if err != nil {
 			return ResponsePack(InternalError, "")
@@ -1149,7 +1398,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 		txn.Serialize(w)
 		return ResponsePack(Success, common.BytesToHexString(w.Bytes()))
 	}
-	bHash, err := Store.GetBlockHash(height)
+	bHash, err := Chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -1158,7 +1407,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 		return ResponsePack(UnknownBlock, "")
 	}
 
-	return ResponsePack(Success, GetTransactionInfo(header, txn))
+	return ResponsePack(Success, GetTransactionContextInfo(header, txn))
 }
 
 func GetExistWithdrawTransactions(param Params) map[string]interface{} {
@@ -1187,7 +1436,8 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 	return ResponsePack(Success, resultTxHashes)
 }
 
-type Producer struct {
+//single producer info
+type producerInfo struct {
 	OwnerPublicKey string `json:"ownerpublickey"`
 	NodePublicKey  string `json:"nodepublickey"`
 	Nickname       string `json:"nickname"`
@@ -1203,10 +1453,51 @@ type Producer struct {
 	Index          uint64 `json:"index"`
 }
 
-type Producers struct {
-	Producers   []Producer `json:"producers"`
-	TotalVotes  string     `json:"totalvotes"`
-	TotalCounts uint64     `json:"totalcounts"`
+//a group producer info  include TotalVotes and producer count
+type producersInfo struct {
+	ProducerInfoSlice []producerInfo `json:"producers"`
+	TotalVotes        string         `json:"totalvotes"`
+	TotalCounts       uint64         `json:"totalcounts"`
+}
+
+//single cr candidate info
+type crCandidateInfo struct {
+	Code     string `json:"code"`
+	DID      string `json:"did"`
+	NickName string `json:"nickname"`
+	Url      string `json:"url"`
+	Location uint64 `json:"location"`
+	State    string `json:"state"`
+	Votes    string `json:"votes"`
+
+	Index uint64 `json:"index"`
+}
+
+//a group cr candidate info include TotalVotes and candidate count
+type crCandidatesInfo struct {
+	CRCandidateInfoSlice []crCandidateInfo `json:"crcandidatesinfo"`
+	TotalVotes           string            `json:"totalvotes"`
+	TotalCounts          uint64            `json:"totalcounts"`
+}
+
+//single cr member info
+type crMemberInfo struct {
+	Code             string         `json:"code"`
+	DID              string         `json:"did"`
+	NickName         string         `json:"nickname"`
+	Url              string         `json:"url"`
+	Location         uint64         `json:"location"`
+	ImpeachmentVotes common.Fixed64 `json:"impeachmentvotes"`
+	DepositAmount    string         `json:"depositamout"`
+	DepositHash      string         `json:"deposithash"`
+	Penalty          common.Fixed64 `json:"penalty"`
+	Index            uint64         `json:"index"`
+}
+
+//a group cr member info  include cr member count
+type crMembersInfo struct {
+	CRMemberInfoSlice []crMemberInfo `json:"crmembersinfo"`
+	TotalCounts       uint64         `json:"totalcounts"`
 }
 
 func ListProducers(param Params) map[string]interface{} {
@@ -1247,11 +1538,11 @@ func ListProducers(param Params) map[string]interface{} {
 		return producers[i].Votes() > producers[j].Votes()
 	})
 
-	var ps []Producer
+	var producerInfoSlice []producerInfo
 	var totalVotes common.Fixed64
 	for i, p := range producers {
 		totalVotes += p.Votes()
-		producer := Producer{
+		producerInfo := producerInfo{
 			OwnerPublicKey: hex.EncodeToString(p.Info().OwnerPublicKey),
 			NodePublicKey:  hex.EncodeToString(p.Info().NodePublicKey),
 			Nickname:       p.Info().NickName,
@@ -1266,14 +1557,14 @@ func ListProducers(param Params) map[string]interface{} {
 			IllegalHeight:  p.IllegalHeight(),
 			Index:          uint64(i),
 		}
-		ps = append(ps, producer)
+		producerInfoSlice = append(producerInfoSlice, producerInfo)
 	}
 
 	count := int64(len(producers))
 	if limit < 0 {
 		limit = count
 	}
-	var resultPs []Producer
+	var rsProducerInfoSlice []producerInfo
 	if start < count {
 		end := start
 		if start+limit <= count {
@@ -1281,13 +1572,136 @@ func ListProducers(param Params) map[string]interface{} {
 		} else {
 			end = count
 		}
-		resultPs = append(resultPs, ps[start:end]...)
+		rsProducerInfoSlice = append(rsProducerInfoSlice, producerInfoSlice[start:end]...)
 	}
 
-	result := &Producers{
-		Producers:   resultPs,
-		TotalVotes:  totalVotes.String(),
-		TotalCounts: uint64(count),
+	result := &producersInfo{
+		ProducerInfoSlice: rsProducerInfoSlice,
+		TotalVotes:        totalVotes.String(),
+		TotalCounts:       uint64(count),
+	}
+
+	return ResponsePack(Success, result)
+}
+
+//list cr candidates according to ( state , start and limit)
+func ListCRCandidates(param Params) map[string]interface{} {
+	start, _ := param.Int("start")
+	limit, ok := param.Int("limit")
+	if !ok {
+		limit = -1
+	}
+	s, ok := param.String("state")
+	if ok {
+		s = strings.ToLower(s)
+	}
+	var candidates []*crstate.Candidate
+	crState := Chain.GetCRCommittee().GetState()
+	switch s {
+	case "all":
+		candidates = crState.GetAllCandidates()
+	case "pending":
+		candidates = crState.GetCandidates(crstate.Pending)
+	case "active":
+		candidates = crState.GetCandidates(crstate.Active)
+	case "canceled":
+		candidates = crState.GetCandidates(crstate.Canceled)
+	case "returned":
+		candidates = crState.GetCandidates(crstate.Returned)
+	default:
+		candidates = crState.GetCandidates(crstate.Pending)
+		candidates = append(candidates, crState.GetCandidates(crstate.Active)...)
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].Votes() == candidates[j].Votes() {
+			iCRInfo := candidates[i].Info()
+			jCRInfo := candidates[j].Info()
+			return iCRInfo.GetCodeHash().Compare(jCRInfo.GetCodeHash()) < 0
+		}
+		return candidates[i].Votes() > candidates[j].Votes()
+	})
+
+	var candidateInfoSlice []crCandidateInfo
+	var totalVotes common.Fixed64
+	for i, c := range candidates {
+		totalVotes += c.Votes()
+		didAddress, _ := c.Info().DID.ToAddress()
+		candidateInfo := crCandidateInfo{
+			Code:     hex.EncodeToString(c.Info().Code),
+			DID:      didAddress,
+			NickName: c.Info().NickName,
+			Url:      c.Info().Url,
+			Location: c.Info().Location,
+			State:    c.State().String(),
+			Votes:    c.Votes().String(),
+			Index:    uint64(i),
+		}
+		candidateInfoSlice = append(candidateInfoSlice, candidateInfo)
+	}
+
+	count := int64(len(candidates))
+	if limit < 0 {
+		limit = count
+	}
+	var rSCandidateInfoSlice []crCandidateInfo
+	if start < count {
+		end := start
+		if start+limit <= count {
+			end = start + limit
+		} else {
+			end = count
+		}
+		rSCandidateInfoSlice = append(rSCandidateInfoSlice, candidateInfoSlice[start:end]...)
+	}
+
+	result := &crCandidatesInfo{
+		CRCandidateInfoSlice: rSCandidateInfoSlice,
+		TotalVotes:           totalVotes.String(),
+		TotalCounts:          uint64(count),
+	}
+
+	return ResponsePack(Success, result)
+}
+
+//list current crs according to (state)
+func ListCurrentCRs(param Params) map[string]interface{} {
+
+	s, ok := param.String("state")
+	if ok {
+		s = strings.ToLower(s)
+	}
+	var crMembers []*crstate.CRMember
+	crMembers = Chain.GetCRCommittee().GetAllMembers()
+
+	sort.Slice(crMembers, func(i, j int) bool {
+		return crMembers[i].Info.GetCodeHash().Compare(
+			crMembers[j].Info.GetCodeHash()) < 0
+	})
+
+	var rsCRMemberInfoSlice []crMemberInfo
+
+	for i, cr := range crMembers {
+		didAddress, _ := cr.Info.DID.ToAddress()
+		memberInfo := crMemberInfo{
+			Code:             hex.EncodeToString(cr.Info.Code),
+			DID:              didAddress,
+			NickName:         cr.Info.NickName,
+			Url:              cr.Info.Url,
+			Location:         cr.Info.Location,
+			ImpeachmentVotes: cr.ImpeachmentVotes,
+			DepositAmount:    cr.DepositAmount.String(),
+			DepositHash:      cr.DepositHash.String(),
+			Penalty:          cr.Penalty,
+			Index:            uint64(i),
+		}
+		rsCRMemberInfoSlice = append(rsCRMemberInfoSlice, memberInfo)
+	}
+
+	count := int64(len(crMembers))
+
+	result := &crMembersInfo{
+		CRMemberInfoSlice: rsCRMemberInfoSlice,
+		TotalCounts:       uint64(count),
 	}
 
 	return ResponsePack(Success, result)
@@ -1322,14 +1736,14 @@ func VoteStatus(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "Invalid address: "+address)
 	}
-	unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
-	if err != nil {
-		return ResponsePack(InvalidParams, "cannot get asset with program")
-	}
 
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	if err != nil {
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
+	}
 	var total common.Fixed64
 	var voting common.Fixed64
-	for _, unspent := range unspents[config.ELAAssetID] {
+	for _, unspent := range unspent[config.ELAAssetID] {
 		tx, _, err := Store.GetTransaction(unspent.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
@@ -1386,9 +1800,17 @@ func GetDepositCoin(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid publickey to programHash")
 	}
-	unspends, err := Store.GetUnspentsFromProgramHash(*programHash)
+	address, err := programHash.ToAddress()
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid programHash")
+	}
+
+	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	if err != nil {
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
+	}
 	var balance common.Fixed64 = 0
-	for _, u := range unspends {
+	for _, u := range unspent {
 		for _, v := range u {
 			balance = balance + v.Value
 		}
@@ -1403,6 +1825,32 @@ func GetDepositCoin(param Params) map[string]interface{} {
 	return ResponsePack(Success, &depositCoin{
 		Available: balance.String(),
 		Deducted:  deducted.String(),
+	})
+}
+
+func GetCRDepositCoin(param Params) map[string]interface{} {
+	did, ok := param.String("did")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a param called did")
+	}
+	programHash, err := common.Uint168FromAddress(did)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid did to programHash")
+	}
+
+	crState := Chain.GetCRCommittee().GetState()
+	candidate := crState.GetCandidateByDID(*programHash)
+	if candidate == nil {
+		return ResponsePack(InvalidParams, "can not find CR candidate")
+	}
+
+	type depositCoin struct {
+		Available string `json:"available"`
+		Deducted  string `json:"deducted"`
+	}
+	return ResponsePack(Success, &depositCoin{
+		Available: candidate.DepositAmount().String(),
+		Deducted:  candidate.Penalty().String(),
 	})
 }
 
@@ -1429,6 +1877,23 @@ func GetFeeRate(count int, confirm int) int {
 		gap = -1
 	}
 	return gap + 2
+}
+
+func DecodeRawTransaction(param Params) map[string]interface{} {
+	dataParam, ok := param.String("data")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named data")
+	}
+	txBytes, err := common.HexStringToBytes(dataParam)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid raw tx data, "+err.Error())
+	}
+	var txn Transaction
+	if err := txn.Deserialize(bytes.NewReader(txBytes)); err != nil {
+		return ResponsePack(InvalidParams, "invalid raw tx data, "+err.Error())
+	}
+
+	return ResponsePack(Success, GetTransactionInfo(&txn))
 }
 
 func getPayloadInfo(p Payload) PayloadInfo {
@@ -1501,8 +1966,12 @@ func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
 		for _, content := range object.Contents {
 			var contentInfo VoteContentInfo
 			contentInfo.VoteType = content.VoteType
-			for _, candidate := range content.Candidates {
-				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo, common.BytesToHexString(candidate))
+			for _, cv := range content.CandidateVotes {
+				contentInfo.CandidatesInfo = append(contentInfo.CandidatesInfo,
+					CandidateVotes{
+						Candidate: common.BytesToHexString(cv.Candidate),
+						Votes:     cv.Votes.String(),
+					})
 			}
 			obj.Contents = append(obj.Contents, contentInfo)
 		}

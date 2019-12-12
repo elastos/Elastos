@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package httpjsonrpc
 
 import (
@@ -59,10 +64,14 @@ func StartRPCServer() {
 	mainMux["getblockcount"] = GetBlockCount
 	mainMux["getblockbyheight"] = GetBlockByHeight
 	mainMux["getexistwithdrawtransactions"] = GetExistWithdrawTransactions
-	mainMux["listunspent"] = ListUnspent
-	mainMux["getutxosbyamount"] = GetUTXOsByAmount
-	mainMux["getamountbyinputs"] = GetAmountByInputs
 	mainMux["getreceivedbyaddress"] = GetReceivedByAddress
+	// wallet interfaces
+	mainMux["getamountbyinputs"] = GetAmountByInputs
+	mainMux["getutxosbyamount"] = GetUTXOsByAmount
+	mainMux["listunspent"] = ListUnspent
+	mainMux["createrawtransaction"] = CreateRawTransaction
+	mainMux["decoderawtransaction"] = DecodeRawTransaction
+	mainMux["signrawtransactionwithkey"] = SignRawTransactionWithKey
 	// aux interfaces
 	mainMux["help"] = AuxHelp
 	mainMux["submitauxblock"] = SubmitAuxBlock
@@ -71,6 +80,9 @@ func StartRPCServer() {
 	mainMux["getmininginfo"] = GetMiningInfo
 	mainMux["togglemining"] = ToggleMining
 	mainMux["discretemining"] = DiscreteMining
+	//cr interfaces
+	mainMux["listcrcandidates"] = ListCRCandidates
+	mainMux["listcurrentcrs"] = ListCurrentCRs
 	// vote interfaces
 	mainMux["listproducers"] = ListProducers
 	mainMux["producerstatus"] = ProducerStatus
@@ -81,6 +93,7 @@ func StartRPCServer() {
 
 	mainMux["estimatesmartfee"] = EstimateSmartFee
 	mainMux["getdepositcoin"] = GetDepositCoin
+	mainMux["getcrdepositcoin"] = GetCRDepositCoin
 	mainMux["getarbitersinfo"] = GetArbitersInfo
 
 	rpcServeMux := http.NewServeMux()
@@ -90,8 +103,12 @@ func StartRPCServer() {
 		WriteTimeout: IOTimeout,
 	}
 	rpcServeMux.HandleFunc("/", Handle)
-	l, _ := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
-	err := server.Serve(l)
+	l, err := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
+	if err != nil {
+		log.Fatal("Create listener error: ", err.Error())
+		return
+	}
+	err = server.Serve(l)
 	if err != nil {
 		log.Fatal("ListenAndServe error: ", err.Error())
 	}
@@ -169,7 +186,6 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Debug("RPC method:", requestMethod)
-	log.Debug("RPC params:", params)
 
 	response := method(params)
 	var data []byte

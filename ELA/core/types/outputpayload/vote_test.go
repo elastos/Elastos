@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package outputpayload
 
 import (
@@ -13,7 +18,12 @@ const (
 	PUBLICKEY2 = "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
 	PUBLICKEY3 = "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
 	PUBLICKEY4 = "0288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
-	VOTEHEX    = "000200042103e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd21023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a21030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9210288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c701022103e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd210288e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
+	VOTEHEX    = "000200042103e281f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a3" +
+		"8bbeae85dd21023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc" +
+		"77a21030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be92102" +
+		"88e79636e41edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c701022103e28" +
+		"1f89d85b3a7de177c240c4961cb5b1f2106f09daa42d15874a38bbeae85dd210288e79636e4" +
+		"1edce04d4fa95d8f62fed73a76164f8631ccc42f5425f960e4a0c7"
 )
 
 var (
@@ -26,18 +36,18 @@ var (
 func TestVoteOutput_Serialize(t *testing.T) {
 	voteContent1 := VoteContent{
 		VoteType: Delegate,
-		Candidates: [][]byte{
-			candidate1,
-			candidate2,
-			candidate3,
-			candidate4,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
+			{candidate2, 0},
+			{candidate3, 0},
+			{candidate4, 0},
 		},
 	}
 	voteContent2 := VoteContent{
 		VoteType: CRC,
-		Candidates: [][]byte{
-			candidate1,
-			candidate4,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
+			{candidate4, 0},
 		},
 	}
 	voteOutput := VoteOutput{
@@ -77,19 +87,19 @@ func TestVoteOutput_Deserialize(t *testing.T) {
 	if vo.Contents[0].VoteType != Delegate {
 		t.Error("error vote type in content0")
 	}
-	if len(vo.Contents[0].Candidates) != 4 ||
-		!bytes.Equal(vo.Contents[0].Candidates[0], candidate1) ||
-		!bytes.Equal(vo.Contents[0].Candidates[1], candidate2) ||
-		!bytes.Equal(vo.Contents[0].Candidates[2], candidate3) ||
-		!bytes.Equal(vo.Contents[0].Candidates[3], candidate4) {
+	if len(vo.Contents[0].CandidateVotes) != 4 ||
+		!bytes.Equal(vo.Contents[0].CandidateVotes[0].Candidate, candidate1) ||
+		!bytes.Equal(vo.Contents[0].CandidateVotes[1].Candidate, candidate2) ||
+		!bytes.Equal(vo.Contents[0].CandidateVotes[2].Candidate, candidate3) ||
+		!bytes.Equal(vo.Contents[0].CandidateVotes[3].Candidate, candidate4) {
 		t.Error("error candidates in content0")
 	}
 	if vo.Contents[1].VoteType != CRC {
 		t.Error("error vote type in content1")
 	}
-	if len(vo.Contents[1].Candidates) != 2 ||
-		!bytes.Equal(vo.Contents[1].Candidates[0], candidate1) ||
-		!bytes.Equal(vo.Contents[1].Candidates[1], candidate4) {
+	if len(vo.Contents[1].CandidateVotes) != 2 ||
+		!bytes.Equal(vo.Contents[1].CandidateVotes[0].Candidate, candidate1) ||
+		!bytes.Equal(vo.Contents[1].CandidateVotes[1].Candidate, candidate4) {
 		t.Error("error candidates in content1")
 	}
 }
@@ -102,8 +112,8 @@ func TestVoteOutput_Validate(t *testing.T) {
 
 	// vo1
 	content1 := VoteContent{
-		VoteType:   Delegate,
-		Candidates: [][]byte{},
+		VoteType:       Delegate,
+		CandidateVotes: []CandidateVotes{},
 	}
 	vo1 := VoteOutput{
 		Version: 0,
@@ -117,14 +127,14 @@ func TestVoteOutput_Validate(t *testing.T) {
 	// vo2
 	content2 := VoteContent{
 		VoteType: Delegate,
-		Candidates: [][]byte{
-			candidate1,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
 		},
 	}
 	content3 := VoteContent{
 		VoteType: Delegate,
-		Candidates: [][]byte{
-			candidate1,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
 		},
 	}
 	vo2 := VoteOutput{
@@ -140,9 +150,9 @@ func TestVoteOutput_Validate(t *testing.T) {
 	// vo3
 	content4 := VoteContent{
 		VoteType: Delegate,
-		Candidates: [][]byte{
-			candidate1,
-			candidate1,
+		CandidateVotes: []CandidateVotes{
+			{candidate1, 0},
+			{candidate1, 0},
 		},
 	}
 	vo3 := VoteOutput{
@@ -162,5 +172,5 @@ func TestVoteOutput_Validate(t *testing.T) {
 		t.Error("vote output deserialize failed")
 	}
 	err = vo4.Validate()
-	assert.EqualError(t, err, "invalid vote type")
+	assert.NoError(t, err)
 }

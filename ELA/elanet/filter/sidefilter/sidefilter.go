@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 /*
 Side filter is a filter of for SideChain SPV module, it filters transactions
 that will change DPOS producers state like RegisterProducer, CancelProducer etc.

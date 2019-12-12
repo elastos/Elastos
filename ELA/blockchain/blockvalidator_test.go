@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package blockchain
 
 import (
@@ -5,6 +10,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
+	"math/rand"
+	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -12,6 +19,8 @@ import (
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 	"github.com/elastos/Elastos.ELA/utils/test"
 
@@ -41,13 +50,15 @@ func TestCheckBlockSanity(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 	params := &config.DefaultParams
 	FoundationAddress = params.Foundation
-	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "sanity"),
+		params.GenesisBlock)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	defer chainStore.Close()
 
-	chain, _ := New(chainStore, params, state.NewState(params, nil))
+	chain, _ := New(chainStore, params, state.NewState(params,
+		nil, nil), nil)
 	if DefaultLedger == nil {
 		DefaultLedger = &Ledger{
 			Blockchain: chain,
@@ -168,4 +179,335 @@ func TestCheckCoinbaseArbitratorsReward(t *testing.T) {
 	assert.NoError(t, checkCoinbaseArbitratorsReward(tx))
 
 	DefaultLedger = originLedger
+}
+
+func TestCRDuplicateTx(t *testing.T) {
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	code := getValideCode(publicKeyStr1)
+	nickname := randomString()
+	didPointer := getValideDID(publicKeyStr1)
+	did := *didPointer
+
+	TestRegisterCR := func(t *testing.T) {
+		OneRegisterCRTest := func() {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			registerCRTxPointer := generateRegisterCR(code, did, nickname)
+			block.Transactions = append(block.Transactions, registerCRTxPointer)
+			err := checkDuplicateTx(&block)
+			assert.NoError(t, err)
+		}
+		OneRegisterCRTest()
+
+		TwoRegisterCRTest := func() {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			registerCRTxPointer := generateRegisterCR(code, did, nickname)
+			block.Transactions = append(block.Transactions, registerCRTxPointer)
+			block.Transactions = append(block.Transactions, registerCRTxPointer)
+			err := checkDuplicateTx(&block)
+			assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+		}
+		TwoRegisterCRTest()
+	}
+	TestRegisterCR(t)
+
+	TestUpdateCR := func(t *testing.T) {
+		OneUpdateCRTest := func(t *testing.T) {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			updateCRPointer := generateUpdateCR(code, did, nickname)
+			block.Transactions = append(block.Transactions, updateCRPointer)
+			err := checkDuplicateTx(&block)
+			assert.NoError(t, err)
+		}
+		OneUpdateCRTest(t)
+
+		TwoUpdateCRTest := func(t *testing.T) {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			updateCRPointer := generateUpdateCR(code, did, nickname)
+			block.Transactions = append(block.Transactions, updateCRPointer)
+			block.Transactions = append(block.Transactions, updateCRPointer)
+			err := checkDuplicateTx(&block)
+			assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+		}
+		TwoUpdateCRTest(t)
+	}
+	TestUpdateCR(t)
+
+	TestUnregisterCR := func(t *testing.T) {
+		OneUnregisterCR := func(t *testing.T) {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			unregisterCRPointer := generateUnregisterCR(code)
+			block.Transactions = append(block.Transactions, unregisterCRPointer)
+			err := checkDuplicateTx(&block)
+			assert.NoError(t, err)
+		}
+		OneUnregisterCR(t)
+
+		TwoUnregisterCR := func(t *testing.T) {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			unregisterCRPointer := generateUnregisterCR(code)
+			block.Transactions = append(block.Transactions, unregisterCRPointer)
+			block.Transactions = append(block.Transactions, unregisterCRPointer)
+			err := checkDuplicateTx(&block)
+			assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+		}
+		TwoUnregisterCR(t)
+	}
+	TestUnregisterCR(t)
+
+	OneRegisterOneUpdate := func(t *testing.T) {
+		var block types.Block
+		block.Transactions = make([]*types.Transaction, 0)
+		registerCRTxPointer := generateRegisterCR(code, did, nickname)
+		updateCRPointer := generateUpdateCR(code, did, nickname)
+		block.Transactions = append(block.Transactions, registerCRTxPointer)
+		block.Transactions = append(block.Transactions, updateCRPointer)
+		err := checkDuplicateTx(&block)
+		assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+	}
+	OneRegisterOneUpdate(t)
+
+	OneRegisterOneUnregister := func(t *testing.T) {
+		var block types.Block
+		block.Transactions = make([]*types.Transaction, 0)
+		registerCRTxPointer := generateRegisterCR(code, did, nickname)
+		unregisterCRPointer := generateUnregisterCR(code)
+		block.Transactions = append(block.Transactions, registerCRTxPointer)
+		block.Transactions = append(block.Transactions, unregisterCRPointer)
+		err := checkDuplicateTx(&block)
+		assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+	}
+	OneRegisterOneUnregister(t)
+	OneUpdateOneUnregister := func(t *testing.T) {
+		var block types.Block
+		block.Transactions = make([]*types.Transaction, 0)
+		updateCRPointer := generateUpdateCR(code, did, nickname)
+		unregisterCRPointer := generateUnregisterCR(code)
+		block.Transactions = append(block.Transactions, updateCRPointer)
+		block.Transactions = append(block.Transactions, unregisterCRPointer)
+		err := checkDuplicateTx(&block)
+		assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+	}
+	OneUpdateOneUnregister(t)
+
+}
+
+func TestProducerDuplicateTx(t *testing.T) {
+	TestRegisterProducer := func(t *testing.T) {
+		OneRegisterProducerTest := func() {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			registerProducerTxPointer := generateRegisterProducer()
+			block.Transactions = append(block.Transactions, registerProducerTxPointer)
+			err := checkDuplicateTx(&block)
+			assert.NoError(t, err)
+		}
+		OneRegisterProducerTest()
+
+		TwoRegisterProducerTest := func() {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			registerProducerTxPointer := generateRegisterProducer()
+			block.Transactions = append(block.Transactions, registerProducerTxPointer)
+			block.Transactions = append(block.Transactions, registerProducerTxPointer)
+			err := checkDuplicateTx(&block)
+			assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+		}
+		TwoRegisterProducerTest()
+	}
+	TestRegisterProducer(t)
+	TestUpdateProducer := func(t *testing.T) {
+		OneUpdateProducerTest := func() {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			updateProducerTxPointer := generateUpdateProducer()
+			block.Transactions = append(block.Transactions, updateProducerTxPointer)
+			err := checkDuplicateTx(&block)
+			assert.NoError(t, err)
+		}
+		OneUpdateProducerTest()
+
+		TwoUpdateProducerTest := func() {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			updateProducerTxPointer := generateUpdateProducer()
+			block.Transactions = append(block.Transactions, updateProducerTxPointer)
+			block.Transactions = append(block.Transactions, updateProducerTxPointer)
+			err := checkDuplicateTx(&block)
+			assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+		}
+		TwoUpdateProducerTest()
+	}
+	TestUpdateProducer(t)
+	TestCancelProducer := func(t *testing.T) {
+		OneCancelProducerTest := func() {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			cancelProducerTxPointer := generateCancelProducer()
+			block.Transactions = append(block.Transactions, cancelProducerTxPointer)
+			err := checkDuplicateTx(&block)
+			assert.NoError(t, err)
+		}
+		OneCancelProducerTest()
+
+		TwoCancelProducerTest := func() {
+			var block types.Block
+			block.Transactions = make([]*types.Transaction, 0)
+			cancelProducerTxPointer := generateCancelProducer()
+			block.Transactions = append(block.Transactions, cancelProducerTxPointer)
+			block.Transactions = append(block.Transactions, cancelProducerTxPointer)
+			err := checkDuplicateTx(&block)
+			assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+		}
+		TwoCancelProducerTest()
+	}
+	TestCancelProducer(t)
+
+	OneRegisterOneUpdate := func(t *testing.T) {
+		var block types.Block
+		block.Transactions = make([]*types.Transaction, 0)
+		registerProducerTxPointer := generateRegisterProducer()
+		updateProducerTxPointer := generateUpdateProducer()
+		block.Transactions = append(block.Transactions, registerProducerTxPointer)
+		block.Transactions = append(block.Transactions, updateProducerTxPointer)
+		err := checkDuplicateTx(&block)
+		assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+	}
+	OneRegisterOneUpdate(t)
+
+	OneRegisterOneCancel := func(t *testing.T) {
+		var block types.Block
+		block.Transactions = make([]*types.Transaction, 0)
+		registerProducerTxPointer := generateRegisterProducer()
+		cancelProducerTxPointer := generateCancelProducer()
+		block.Transactions = append(block.Transactions, registerProducerTxPointer)
+		block.Transactions = append(block.Transactions, cancelProducerTxPointer)
+		err := checkDuplicateTx(&block)
+		assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+	}
+	OneRegisterOneCancel(t)
+	OneUpdateOneCancel := func(t *testing.T) {
+		var block types.Block
+		block.Transactions = make([]*types.Transaction, 0)
+		updateProducerTxPointer := generateUpdateProducer()
+		cancelProducerTxPointer := generateCancelProducer()
+		block.Transactions = append(block.Transactions, updateProducerTxPointer)
+		block.Transactions = append(block.Transactions, cancelProducerTxPointer)
+		err := checkDuplicateTx(&block)
+		assert.Error(t, err, "[PowCheckBlockSanity] block contains duplicate CR")
+	}
+	OneUpdateOneCancel(t)
+}
+
+func generateRegisterProducer() *types.Transaction {
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	return &types.Transaction{
+		TxType: types.RegisterProducer,
+		Payload: &payload.ProducerInfo{
+			OwnerPublicKey: publicKey1,
+			NodePublicKey:  publicKey1,
+			NickName:       "nickname 1",
+			Url:            "http://www.elastos_test.com",
+			Location:       1,
+			NetAddress:     "127.0.0.1:20338",
+		},
+	}
+}
+
+func generateUpdateProducer() *types.Transaction {
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	return &types.Transaction{
+		TxType: types.UpdateProducer,
+		Payload: &payload.ProducerInfo{
+			OwnerPublicKey: publicKey1,
+			NodePublicKey:  publicKey1,
+			NickName:       "nickname 1",
+			Url:            "http://www.elastos_test.com",
+			Location:       1,
+			NetAddress:     "127.0.0.1:20338",
+		},
+	}
+}
+
+func generateCancelProducer() *types.Transaction {
+	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	return &types.Transaction{
+		TxType: types.CancelProducer,
+		Payload: &payload.ProcessProducer{
+			OwnerPublicKey: publicKey1,
+		},
+	}
+}
+
+func generateRegisterCR(code []byte, did common.Uint168,
+	nickname string) *types.Transaction {
+	return &types.Transaction{
+		TxType: types.RegisterCR,
+		Payload: &payload.CRInfo{
+			Code:     code,
+			DID:      did,
+			NickName: nickname,
+		},
+	}
+}
+
+func generateUpdateCR(code []byte, did common.Uint168,
+	nickname string) *types.Transaction {
+	return &types.Transaction{
+		TxType: types.UpdateCR,
+		Payload: &payload.CRInfo{
+			Code:     code,
+			DID:      did,
+			NickName: nickname,
+		},
+	}
+}
+
+func generateUnregisterCR(code []byte) *types.Transaction {
+	return &types.Transaction{
+		TxType: types.UnregisterCR,
+		Payload: &payload.UnregisterCR{
+			DID: *getDid(code),
+		},
+	}
+}
+
+func randomString() string {
+	a := make([]byte, 20)
+	rand.Read(a)
+	return common.BytesToHexString(a)
+}
+
+func randomBytes(len int) []byte {
+	a := make([]byte, len)
+	rand.Read(a)
+	return a
+}
+
+func randomUint168() *common.Uint168 {
+	randBytes := make([]byte, 21)
+	rand.Read(randBytes)
+	result, _ := common.Uint168FromBytes(randBytes)
+
+	return result
+}
+
+func getValideCode(publicKeyStr string) []byte {
+	publicKey1, _ := common.HexStringToBytes(publicKeyStr)
+	pk1, _ := crypto.DecodePoint(publicKey1)
+	ct1, _ := contract.CreateStandardContract(pk1)
+	return ct1.Code
+}
+
+func getValideDID(publicKeyStr string) *common.Uint168 {
+	code := getValideCode(publicKeyStr)
+	return getDid(code)
 }

@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+//
+
 package wallet
 
 import (
@@ -5,7 +10,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
+	"os"
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA/account"
@@ -23,6 +30,12 @@ import (
 type OutputInfo struct {
 	Recipient string
 	Amount    *common.Fixed64
+}
+
+type CrossChainOutput struct {
+	Recipient         string
+	Amount            *common.Fixed64
+	CrossChainAddress string
 }
 
 func CreateTransaction(c *cli.Context) error {
@@ -69,17 +82,27 @@ func CreateTransaction(c *cli.Context) error {
 		outputs = []*OutputInfo{{to, amount}}
 	}
 
-	lockStr := c.String("lock")
-	lock := uint64(0)
-	if lockStr != "" {
-		lock, err = strconv.ParseUint(lockStr, 10, 32)
+	outputLockStr := c.String("outputlock")
+	outputLock := uint64(0)
+	if outputLockStr != "" {
+		outputLock, err = strconv.ParseUint(outputLockStr, 10, 32)
 		if err != nil {
-			return errors.New("invalid lock height")
+			return errors.New("invalid output lock height")
+		}
+	}
+
+	txLockStr := c.String("txlock")
+	txLock := uint64(0)
+	if txLockStr != "" {
+		txLock, err = strconv.ParseUint(txLockStr, 10, 32)
+		if err != nil {
+			return errors.New("invalid transaction lock height")
 		}
 	}
 
 	var txn *types.Transaction
-	txn, err = createTransaction(walletPath, from, *fee, uint32(lock), outputs...)
+	txn, err = createTransaction(walletPath, from, *fee, uint32(outputLock),
+		uint32(txLock), outputs...)
 	if err != nil {
 		return errors.New("create transaction failed: " + err.Error())
 	}
@@ -129,12 +152,16 @@ func createInputs(sender *account.AccountData, totalAmount common.Fixed64) ([]*t
 	for _, utxo := range UTXOs {
 		txIDReverse, _ := hex.DecodeString(utxo.TxID)
 		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
+		sequence := math.MaxUint32
+		if utxo.OutputLock > 0 {
+			sequence = math.MaxUint32 - 1
+		}
 		input := &types.Input{
 			Previous: types.OutPoint{
 				TxID:  *txID,
 				Index: uint16(utxo.VOut),
 			},
-			Sequence: 4294967295,
+			Sequence: uint32(sequence),
 		}
 		txInputs = append(txInputs, input)
 		amount, err := common.StringToFixed64(utxo.Amount)
@@ -205,17 +232,19 @@ func createVoteOutputs(output *OutputInfo, candidateList []string) ([]*types.Out
 	}
 
 	// create vote output payload
-	var candidates [][]byte
+	var cv []outputpayload.CandidateVotes
 	for _, candidateHex := range candidateList {
 		candidateBytes, err := common.HexStringToBytes(candidateHex)
 		if err != nil {
 			return nil, err
 		}
-		candidates = append(candidates, candidateBytes)
+		cv = append(cv, outputpayload.CandidateVotes{
+			Candidate: candidateBytes,
+		})
 	}
 	voteContent := outputpayload.VoteContent{
-		VoteType:   outputpayload.Delegate,
-		Candidates: candidates,
+		VoteType:       outputpayload.Delegate,
+		CandidateVotes: cv,
 	}
 	voteOutput := outputpayload.VoteOutput{
 		Version: 0,
@@ -237,7 +266,8 @@ func createVoteOutputs(output *OutputInfo, candidateList []string) ([]*types.Out
 	return txOutputs, nil
 }
 
-func createTransaction(walletPath string, from string, fee common.Fixed64, lockedUntil uint32, outputs ...*OutputInfo) (*types.Transaction, error) {
+func createTransaction(walletPath string, from string, fee common.Fixed64, outputLock uint32,
+	txLock uint32, outputs ...*OutputInfo) (*types.Transaction, error) {
 	// check output
 	if len(outputs) == 0 {
 		return nil, errors.New("invalid transaction target")
@@ -250,7 +280,7 @@ func createTransaction(walletPath string, from string, fee common.Fixed64, locke
 	}
 
 	// create outputs
-	txOutputs, totalAmount, err := createNormalOutputs(outputs, fee, lockedUntil)
+	txOutputs, totalAmount, err := createNormalOutputs(outputs, fee, outputLock)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +315,7 @@ func createTransaction(walletPath string, from string, fee common.Fixed64, locke
 		Inputs:     txInputs,
 		Outputs:    txOutputs,
 		Programs:   []*pg.Program{txProgram},
-		LockTime:   0,
+		LockTime:   txLock,
 	}, nil
 }
 
@@ -301,25 +331,40 @@ func CreateActivateProducerTransaction(c *cli.Context) error {
 		return err
 	}
 
+	var acc *account.Account
+	var nodePublicKey []byte
+
 	nodePublicKeyStr := c.String("nodepublickey")
-	nodePublicKey, err := common.HexStringToBytes(nodePublicKeyStr)
-	if err != nil {
-		return err
+	if nodePublicKeyStr != "" {
+		nodePublicKey, err = common.HexStringToBytes(nodePublicKeyStr)
+		if err != nil {
+			return err
+		}
+		codeHash, err := contract.PublicKeyToStandardCodeHash(nodePublicKey)
+		if err != nil {
+			return err
+		}
+		acc = client.GetAccountByCodeHash(*codeHash)
+		if acc == nil {
+			return errors.New("no available account in wallet")
+		}
+	} else {
+		acc = client.GetMainAccount()
+		if contract.GetPrefixType(acc.ProgramHash) != contract.PrefixStandard {
+			return errors.New("main account is not a standard account")
+		}
+		nodePublicKey, err = acc.PublicKey.EncodePoint(true)
+		if err != nil {
+			return err
+		}
 	}
 
-	codeHash, err := contract.PublicKeyToStandardCodeHash(nodePublicKey)
-	if err != nil {
-		return err
-	}
-
+	buf := new(bytes.Buffer)
 	apPayload := &payload.ActivateProducer{
 		NodePublicKey: nodePublicKey,
 	}
-	buf := new(bytes.Buffer)
-	apPayload.SerializeUnsigned(buf, payload.ActivateProducerVersion)
-	acc := client.GetAccountByCodeHash(*codeHash)
-	if acc == nil {
-		return errors.New("no available account in wallet")
+	if err = apPayload.SerializeUnsigned(buf, payload.ActivateProducerVersion); err != nil {
+		return err
 	}
 	signature, err := acc.Sign(buf.Bytes())
 	if err != nil {
@@ -426,4 +471,118 @@ func CreateVoteTransaction(c *cli.Context) error {
 	OutputTx(0, 1, txn)
 
 	return nil
+}
+
+func CreateCrossChainTransaction(c *cli.Context) error {
+	walletPath := c.String("wallet")
+
+	from := c.String("from")
+	to := c.String("to")
+	if to == "" {
+		return errors.New("use --to to specify a side chain address which want to recharge")
+	}
+	sAddress := c.String("saddress")
+	if sAddress == "" {
+		return errors.New("use --saddress to specify a locked address of side chain")
+	}
+
+	feeStr := c.String("fee")
+	if feeStr == "" {
+		return errors.New("use --fee to specify transfer fee")
+	}
+	fee, err := common.StringToFixed64(feeStr)
+	if err != nil {
+		return errors.New("invalid transaction fee")
+	}
+
+	amountStr := c.String("amount")
+	if amountStr == "" {
+		return errors.New("use --amount to specify transfer amount")
+	}
+	amount, err := common.StringToFixed64(amountStr)
+	if err != nil {
+		return errors.New("invalid transaction amount")
+	}
+
+	txn, err := createCrossChainTransaction(walletPath, from, *fee, 0, &CrossChainOutput{
+		Recipient:         sAddress,
+		Amount:            amount,
+		CrossChainAddress: to,
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	OutputTx(0, 1, txn)
+
+	return nil
+}
+
+func createCrossChainTransaction(walletPath string, from string, fee common.Fixed64, lockedUntil uint32,
+	crossChainOutputs ...*CrossChainOutput) (*types.Transaction, error) {
+	// check output
+	if len(crossChainOutputs) == 0 {
+		return nil, errors.New("invalid transaction target")
+	}
+
+	outputs := make([]*OutputInfo, 0)
+	perAccountFee := fee / common.Fixed64(len(crossChainOutputs))
+
+	// create payload
+	payload := &payload.TransferCrossChainAsset{}
+	for index, output := range crossChainOutputs {
+		payload.CrossChainAddresses = append(payload.CrossChainAddresses, output.CrossChainAddress)
+		payload.OutputIndexes = append(payload.OutputIndexes, uint64(index))
+		payload.CrossChainAmounts = append(payload.CrossChainAmounts, *output.Amount-perAccountFee)
+		outputs = append(outputs, &OutputInfo{
+			Recipient: output.Recipient,
+			Amount:    output.Amount,
+		})
+	}
+
+	// create outputs
+	txOutputs, totalAmount, err := createNormalOutputs(outputs, fee, lockedUntil)
+	if err != nil {
+		return nil, err
+	}
+
+	// get sender in wallet by from address
+	sender, err := getSender(walletPath, from)
+	if err != nil {
+		return nil, err
+	}
+
+	// create inputs
+	txInputs, changeOutputs, err := createInputs(sender, totalAmount)
+	if err != nil {
+		return nil, err
+	}
+	txOutputs = append(txOutputs, changeOutputs...)
+
+	redeemScript, err := common.HexStringToBytes(sender.RedeemScript)
+	if err != nil {
+		return nil, err
+	}
+	// create attributes
+	txAttr := types.NewAttribute(types.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
+	txAttributes := make([]*types.Attribute, 0)
+	txAttributes = append(txAttributes, &txAttr)
+
+	// create program
+	var txProgram = &pg.Program{
+		Code:      redeemScript,
+		Parameter: nil,
+	}
+
+	return &types.Transaction{
+		Version:    types.TxVersion09,
+		TxType:     types.TransferCrossChainAsset,
+		Payload:    payload,
+		Attributes: txAttributes,
+		Inputs:     txInputs,
+		Outputs:    txOutputs,
+		Programs:   []*pg.Program{txProgram},
+		LockTime:   0,
+	}, nil
 }

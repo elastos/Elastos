@@ -1,8 +1,12 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package crypto
 
 import (
 	"errors"
-
 	"github.com/elastos/Elastos.ELA/common"
 )
 
@@ -15,9 +19,16 @@ const (
 	// signature length(0x40) || 64 bytes signature
 	SignatureScriptLength = 65
 
-	// 1byte m || 3 encoded public keys with leading 0x40 (34 bytes * 3) ||
+	// max signature length(0x40) || 1000 signature (64 bytes * 1000)
+	MaxSignatureScriptLength = 64001
+
+	// 1byte m || 2 encoded public keys with leading 0x40 (34 bytes * 2) ||
 	// 1byte n + 1byte OP_CHECKMULTISIG
 	MinMultiSignCodeLength = 71
+
+	// 1byte m || 1000 encoded public keys with leading 0x40 (34 bytes * 1000) ||
+	// 1byte n + 1byte OP_CHECKMULTISIG
+	MaxMultiSignCodeLength = 34003
 )
 
 func ParseMultisigScript(code []byte) ([][]byte, error) {
@@ -42,7 +53,7 @@ func parsePublicKeys(code []byte) ([][]byte, error) {
 	// remove n
 	code = code[:len(code)-1]
 	if len(code)%(PublicKeyScriptLength-1) != 0 {
-		return nil, errors.New("not a valid cross chain transaction code, length not match")
+		return nil, errors.New("not a valid transaction code, length not match")
 	}
 
 	var publicKeys [][]byte

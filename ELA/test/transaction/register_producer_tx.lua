@@ -1,3 +1,8 @@
+-- Copyright (c) 2017-2019 The Elastos Foundation
+-- Use of this source code is governed by an MIT
+-- license that can be found in the LICENSE file.
+-- 
+
 local m = require("api")
 
 -- client: path, password, if create
@@ -13,17 +18,80 @@ print(pubkey)
 local asset_id = m.get_asset_id()
 
 -- amount, fee
-local amount = 5000
-local fee = 0.001
+--local amount = 5000
+--local fee = 0.001
 
 -- deposit params
-local deposit_address = "DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD"
-local own_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
-local node_publickey = "029628ed890a25295a91817669dd9e35b4d792d51503c7eb4190b01a26e1a48fba"
-local nick_name = "ela_test"
-local url = "ela_test.org"
-local location = "112211"
-local host_address = "127.0.0.1"
+--local deposit_address = "DVgnDnVfPVuPa2y2E4JitaWjWgRGJDuyrD"
+--local own_publickey = "034f3a7d2f33ac7f4e30876080d359ce5f314c9eabddbaaca637676377f655e16c"
+--local node_publickey = "029628ed890a25295a91817669dd9e35b4d792d51503c7eb4190b01a26e1a48fba"
+--local nick_name = "ela_test"
+--local url = "ela_test.org"
+--local location = "112211"
+--local host_address = "127.0.0.1"
+
+local amount = getDepositAmount()
+local fee = getFee()
+local deposit_address = getDepositAddr()
+local own_publickey = getOwnerPublicKey()
+local node_publickey = getNodePublicKey()
+local nick_name = getNickName()
+local url = getUrl()
+local location = getLocation()
+local host_address = getHostAddr()
+
+if amount == 0
+then
+    amount = 5000
+end
+
+if fee == 0
+then
+    fee = 0.001
+end
+
+if deposit_address == ""
+then
+    print("deposit addr is nil, should use --depositaddr or -daddr to set it.")
+    return
+end
+
+if own_publickey == ""
+then
+    print("owner public key is nil, should use --ownerpublickey or -opk to set it.")
+    return
+end
+
+if node_publickey == ""
+then
+    print("node public key is nil, should use --nodepublickey or -npk to set it.")
+    return
+end
+
+if nick_name == ""
+then
+    nick_name = "nickname_test"
+end
+
+if url == ""
+then
+    url = "url_test"
+end
+
+if location == ""
+then
+    location = 123
+end
+
+print("deposit amount:", amount)
+print("fee:", fee)
+print("deposit addr:", deposit_address)
+print("owner public key:", own_publickey)
+print("node public key:", node_publickey)
+print("nick name:", nick_name)
+print("url:", url)
+print("location:", location)
+
 
 -- register producer payload: publickey, nickname, url, local, host, wallet
 local rp_payload = registerproducer.new(own_publickey, node_publickey, nick_name, url, location, host_address, wallet)

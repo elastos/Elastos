@@ -1,3 +1,8 @@
+-- Copyright (c) 2017-2019 The Elastos Foundation
+-- Use of this source code is governed by an MIT
+-- license that can be found in the LICENSE file.
+-- 
+
 --- This is a test about normal arbitrator successfully collect vote and broadcast block confirm
 ---
 local suite = dofile("test/white_box/dpos_test_suite.lua")

@@ -1,5 +1,7 @@
 *.patch
-.idea/
+.idea/**/*.iml
+.idea/**/*.xml
+.idea/codeStyles
 .DS_Store
 *.orig
 *.rej
@@ -8,11 +10,8 @@
 *.dat
 *.txn
 *.log
-/glide.lock
 /vendor/*
-elastos_test/
-elastos/
-/ela
-/ela-cli
-/ela-dns
+elastos*/
+/ela*
+/bin
 *.csv

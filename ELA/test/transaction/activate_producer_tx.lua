@@ -1,3 +1,8 @@
+-- Copyright (c) 2017-2019 The Elastos Foundation
+-- Use of this source code is governed by an MIT
+-- license that can be found in the LICENSE file.
+-- 
+
 local m = require("api")
 
 -- client: path, password, if create
@@ -10,7 +15,16 @@ print(addr)
 print(pubkey)
 
 -- deposit params
-local node_publickey = "032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5"
+--local node_publickey =
+--"032895050b7de1a9cf43416e6e5310f8e909249dcd9c4166159b04a343f7f141b5"
+
+local node_publickey = getNodePublicKey()
+if node_publickey == ""
+then
+    print("node public key is nil, should use --nodepubkey or -npk to set it.")
+    return
+end
+print("node public key:", node_publickey)
 
 -- activate producer payload: publickey, wallet
 local ap_payload = activateproducer.new(node_publickey, wallet)

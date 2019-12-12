@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019 The Elastos Foundation
+// Use of this source code is governed by an MIT
+// license that can be found in the LICENSE file.
+// 
+
 package state
 
 import (
@@ -37,10 +42,6 @@ const (
 	// MaxSnapshotLength defines the max length the snapshot map should take
 	MaxSnapshotLength = 20
 
-	// CheckPointInterval defines interval height between two neighbor check
-	// points
-	CheckPointInterval = uint32(720)
-
 	none         = ChangeType(0x00)
 	updateNext   = ChangeType(0x01)
 	normalChange = ChangeType(0x02)
@@ -54,10 +55,8 @@ type arbitrators struct {
 	*State
 	*degradation
 	*KeyFrame
-	store            IArbitratorsRecord
 	chainParams      *config.Params
 	bestHeight       func() uint32
-	bestBlock        func() (*types.Block, error)
 	getBlockByHeight func(uint32) (*types.Block, error)
 
 	mtx               sync.Mutex
@@ -82,6 +81,8 @@ type arbitrators struct {
 	snapshots            map[uint32][]*CheckPoint
 	snapshotKeysDesc     []uint32
 	lastCheckPointHeight uint32
+
+	forceChanged bool
 }
 
 func (a *arbitrators) Start() {
@@ -90,20 +91,16 @@ func (a *arbitrators) Start() {
 	a.mtx.Unlock()
 }
 
-func (a *arbitrators) RecoverFromCheckPoints(height uint32) (uint32, error) {
-	if a.store == nil {
-		return 0, errors.New("can't find dpos store object")
-	}
-	point, err := a.store.GetCheckPoint(height)
-	if err != nil {
-		return 0, err
-	}
+func (a *arbitrators) RegisterFunction(bestHeight func() uint32,
+	getBlockByHeight func(uint32) (*types.Block, error)) {
+	a.bestHeight = bestHeight
+	a.getBlockByHeight = getBlockByHeight
+}
 
+func (a *arbitrators) RecoverFromCheckPoints(point *CheckPoint) {
 	a.mtx.Lock()
 	a.recoverFromCheckPoints(point)
 	a.mtx.Unlock()
-
-	return point.Height, err
 }
 
 func (a *arbitrators) recoverFromCheckPoints(point *CheckPoint) {
@@ -177,7 +174,7 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 }
 
 func (a *arbitrators) RollbackTo(height uint32) error {
-	if height > a.history.height {
+	if height > a.history.Height() {
 		return fmt.Errorf("can't rollback to height: %d", height)
 	}
 
@@ -229,7 +226,7 @@ func (a *arbitrators) ForceChange(height uint32) error {
 
 	block, err := a.getBlockByHeight(height)
 	if err != nil {
-		block, err = a.bestBlock()
+		block, err = a.getBlockByHeight(a.bestHeight())
 		if err != nil {
 			return err
 		}
@@ -253,8 +250,9 @@ func (a *arbitrators) ForceChange(height uint32) error {
 			a.getNeedConnectArbiters())
 	}
 
-	a.dumpInfo(height)
+	a.forceChanged = true
 
+	a.dumpInfo(height)
 	return nil
 }
 
@@ -325,11 +323,14 @@ func (a *arbitrators) accumulateReward(block *types.Block) {
 		return
 	}
 
-	dposReward := a.getBlockDPOSReward(block)
-	a.accumulativeReward += dposReward
+	if block.Height < a.chainParams.CRVotingStartHeight || !a.forceChanged {
+		dposReward := a.getBlockDPOSReward(block)
+		a.accumulativeReward += dposReward
+	}
 
 	a.arbitersRoundReward = nil
 	a.finalRoundChange = 0
+	a.forceChanged = false
 }
 
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
@@ -444,7 +445,7 @@ func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
 }
 
 func (a *arbitrators) getNeedConnectArbiters() []peer.PID {
-	height := a.history.height + 1
+	height := a.history.Height() + 1
 	if height < a.chainParams.CRCOnlyDPOSHeight-a.chainParams.PreConnectOffset {
 		return nil
 	}
@@ -973,20 +974,6 @@ func (a *arbitrators) newCheckPoint(height uint32) *CheckPoint {
 	return point
 }
 
-func (a *arbitrators) trySaveCheckPoint(height uint32) error {
-	if a.store == nil || height < a.lastCheckPointHeight+CheckPointInterval {
-		return nil
-	}
-
-	point := a.newCheckPoint(height)
-	if err := a.store.SaveArbitersState(point); err != nil {
-		return err
-	}
-
-	a.lastCheckPointHeight = height
-	return nil
-}
-
 func (a *arbitrators) snapshot(height uint32) {
 	var frames []*CheckPoint
 	if v, ok := a.snapshots[height]; ok {
@@ -1008,10 +995,6 @@ func (a *arbitrators) snapshot(height uint32) {
 	checkpoint := a.newCheckPoint(height)
 	frames = append(frames, checkpoint)
 	a.snapshots[height] = frames
-
-	if err := a.trySaveCheckPoint(height); err != nil {
-		log.Warn("[snapshot] save check point err: ", err)
-	}
 }
 
 func (a *arbitrators) GetSnapshot(height uint32) (result []*KeyFrame) {
@@ -1079,24 +1062,19 @@ func getArbitersInfoWithoutOnduty(title string, arbiters [][]byte) (string, []in
 	return info, params
 }
 
-func NewArbitrators(chainParams *config.Params,
-	store IArbitratorsRecord,
-	bestHeight func() uint32,
-	bestBlock func() (*types.Block, error),
-	getBlockByHeight func(uint32) (*types.Block, error)) (*arbitrators, error) {
-
+func (a *arbitrators) initArbitrators(chainParams *config.Params) error {
 	originArbiters := make([][]byte, len(chainParams.OriginArbiters))
 	originArbitersProgramHashes := make([]*common.Uint168, len(chainParams.OriginArbiters))
 	for i, arbiter := range chainParams.OriginArbiters {
 		a, err := common.HexStringToBytes(arbiter)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		originArbiters[i] = a
 
 		hash, err := contract.PublicKeyToStandardProgramHash(a)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		originArbitersProgramHashes[i] = hash
 	}
@@ -1107,11 +1085,11 @@ func NewArbitrators(chainParams *config.Params,
 	for _, pk := range chainParams.CRCArbiters {
 		pubKey, err := hex.DecodeString(pk)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		hash, err := contract.PublicKeyToStandardProgramHash(pubKey)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		crcArbiters = append(crcArbiters, pubKey)
 		crcArbitratorsProgramHashes[*hash] = nil
@@ -1124,38 +1102,38 @@ func NewArbitrators(chainParams *config.Params,
 		}
 	}
 
+	a.nextArbitrators = originArbiters
+	a.crcArbiters = crcArbiters
+	a.crcArbitratorsNodePublicKey = crcNodeMap
+	a.crcArbitratorsProgramHashes = crcArbitratorsProgramHashes
+	a.KeyFrame = &KeyFrame{CurrentArbitrators: originArbiters}
+	a.CurrentReward = RewardData{
+		OwnerProgramHashes:          originArbitersProgramHashes,
+		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+		TotalVotesInRound:           0,
+	}
+	a.NextReward = RewardData{
+		OwnerProgramHashes:          originArbitersProgramHashes,
+		CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
+		OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
+		TotalVotesInRound:           0,
+	}
+	return nil
+}
+
+func NewArbitrators(chainParams *config.Params,
+	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
+		error)) (*arbitrators, error) {
 	a := &arbitrators{
-		chainParams:                 chainParams,
-		store:                       store,
-		bestHeight:                  bestHeight,
-		bestBlock:                   bestBlock,
-		getBlockByHeight:            getBlockByHeight,
-		nextArbitrators:             originArbiters,
-		nextCandidates:              make([][]byte, 0),
-		crcArbiters:                 crcArbiters,
-		crcArbitratorsNodePublicKey: crcNodeMap,
-		crcArbitratorsProgramHashes: crcArbitratorsProgramHashes,
-		accumulativeReward:          common.Fixed64(0),
-		finalRoundChange:            common.Fixed64(0),
-		arbitersRoundReward:         nil,
-		illegalBlocksPayloadHashes:  make(map[common.Uint256]interface{}),
-		snapshots:                   make(map[uint32][]*CheckPoint),
-		snapshotKeysDesc:            make([]uint32, 0),
-		KeyFrame: &KeyFrame{
-			CurrentArbitrators: originArbiters,
-		},
-		CurrentReward: RewardData{
-			OwnerProgramHashes:          originArbitersProgramHashes,
-			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-			TotalVotesInRound:           0,
-		},
-		NextReward: RewardData{
-			OwnerProgramHashes:          originArbitersProgramHashes,
-			CandidateOwnerProgramHashes: make([]*common.Uint168, 0),
-			OwnerVotesInRound:           make(map[common.Uint168]common.Fixed64),
-			TotalVotesInRound:           0,
-		},
+		chainParams:                chainParams,
+		nextCandidates:             make([][]byte, 0),
+		accumulativeReward:         common.Fixed64(0),
+		finalRoundChange:           common.Fixed64(0),
+		arbitersRoundReward:        nil,
+		illegalBlocksPayloadHashes: make(map[common.Uint256]interface{}),
+		snapshots:                  make(map[uint32][]*CheckPoint),
+		snapshotKeysDesc:           make([]uint32, 0),
 		degradation: &degradation{
 			inactiveTxs:       make(map[common.Uint256]interface{}),
 			inactivateHeight:  0,
@@ -1163,14 +1141,11 @@ func NewArbitrators(chainParams *config.Params,
 			state:             DSNormal,
 		},
 	}
-	a.State = NewState(chainParams, a.GetArbitrators)
-
-	if store != nil {
-		checkedHeights, err := store.GetHeightsDesc()
-		if err == nil && len(checkedHeights) > 0 {
-			a.lastCheckPointHeight = checkedHeights[0]
-		}
+	if err := a.initArbitrators(chainParams); err != nil {
+		return nil, err
 	}
+	a.State = NewState(chainParams, a.GetArbitrators, getProducerDepositAmount)
 
+	chainParams.CkpManager.Register(NewCheckpoint(a))
 	return a, nil
 }
