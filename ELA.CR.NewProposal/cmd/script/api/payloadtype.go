@@ -1262,10 +1262,10 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 	proposalHashString := L.ToString(1)
 	stage := L.ToInt64(2)
 	fee := L.ToInt64(3)
-	needSign := true
 	client, err := checkClient(L, 4)
 	if err != nil {
-		needSign = false
+		fmt.Println("err != nil wallet expected")
+		os.Exit(1)
 	}
 	proposalHash, _ := common.Uint256FromHexString(proposalHashString)
 	crcProposalWithdraw := &payload.CRCProposalWithdraw{
@@ -1273,23 +1273,21 @@ func newCRCProposalWithdraw(L *lua.LState) int {
 		Stage:        uint8(stage),
 		Fee:          common.Fixed64(fee),
 	}
-	if needSign {
-		rpSignBuf := new(bytes.Buffer)
-		acc := client.GetMainAccount()
-		if acc == nil {
-			fmt.Println("no available account in wallet")
-			os.Exit(1)
-		}
-		pubkey := getPublicKeyFromCode(acc.RedeemScript)
-		crcProposalWithdraw.SponsorPublicKey = pubkey
-		err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawVersion)
-		rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		crcProposalWithdraw.Sign = rpSig
+	rpSignBuf := new(bytes.Buffer)
+	acc := client.GetMainAccount()
+	if acc == nil {
+		fmt.Println("no available account in wallet")
+		os.Exit(1)
 	}
+	pubkey := getPublicKeyFromCode(acc.RedeemScript)
+	crcProposalWithdraw.SponsorPublicKey = pubkey
+	err = crcProposalWithdraw.SerializeUnsigned(rpSignBuf, payload.CRCProposalWithdrawVersion)
+	rpSig, err := crypto.Sign(acc.PrivKey(), rpSignBuf.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	crcProposalWithdraw.Sign = rpSig
 
 	ud := L.NewUserData()
 	ud.Value = crcProposalWithdraw
