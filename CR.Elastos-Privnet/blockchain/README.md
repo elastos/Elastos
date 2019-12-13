@@ -28,7 +28,7 @@
 ## General Info
 - Prerequisite basic knowledge of docker is expected  
 - After starting, the miners will automatically start running and about 18 containers are created
-- Pre-mined 1000 ELA on Mainchain miner reward address, 100,000 ELA on one mainchain address, 100,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address, 100,000 ELA on Token sidechain address and 100,000 ELA on ETH sidechain address. For more, see [Wallets](#Wallets)
+- Pre-mined 1000 ELA on Mainchain miner reward address, 3,000,000 ELA on one mainchain address, 3,000,000 ELA on another mainchain address, 100,000 ELA on DID sidechain address, 100,000 ELA on Token sidechain address and 100,000 ELA on ETH sidechain address. For more, see [Wallets](#Wallets)
 - For the docker images that might be used for connecting to mainnet, testnet, regnet or private net, check out [https://cloud.docker.com/u/cyberrepublic/repository/list](https://cloud.docker.com/u/cyberrepublic/repository/list)
 
 ## Tools 
@@ -49,7 +49,7 @@ These are located in the `wallets` folder:
 
 - `foundation.json` - This is where the genesis block's 33 million ELA is created(Note some ELA have been taken out of this account to other addresses for testing purposes)
 - `mainchain-miner-reward.json` - This is where the mining rewards from mainchain go
-- `preload/mainchains.json` - This is where the two mainchain addresses are located with 100,000 ELA and 100,000 ELA respectively
+- `preload/mainchains.json` - This is where the two mainchain addresses are located with 3,000,000 ELA and 3,000,000 ELA respectively
 - `preload/sidechains.json` - This is where the DID and Token sidechain addresses are located with 100,000 DID ELA, 100,000 TOKEN ELA and 100,000 ETH ELA respectively
 
 ## Repos used to build 
@@ -141,10 +141,10 @@ These are located in the `wallets` folder:
 4. Verify the Wallet Service is running by checking the pre-loaded main chain wallet:
 
     ```
-    curl http://localhost:8091/api/1/balance/EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr
+    curl http://localhost:8091/api/1/balance/EYSLC2mgk5KTLEATK6hRYJ77Umnt1Zv72N
     ```    
     
-    You should see around 100,000 ELA in the miner wallet:
+    You should see around 3,000,000 ELA in this preloaded wallet:
     ```
     {"result":"95046.51050338","status":200}
     ```
@@ -179,7 +179,7 @@ These are located in the `wallets` folder:
 
     Pre-loaded Main chain Address 1:
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr"}}' http://localhost:10014 
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EYSLC2mgk5KTLEATK6hRYJ77Umnt1Zv72N"}}' http://localhost:10014 
     ```
 
     Should return
@@ -194,7 +194,7 @@ These are located in the `wallets` folder:
 
     Pre-loaded Main chain Address 2:
     ```
-    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY"}}' http://localhost:10014
+    curl -H 'Content-Type: application/json' -H 'Accept:application/json' --data '{"method":"getreceivedbyaddress","params":{"address":"ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD"}}' http://localhost:10014
     ```
 
     Should return
@@ -280,7 +280,7 @@ These are located in the `wallets` folder:
     The service for mainchain is running on port 9091 and for DID sidechain is running on port 9092
     
     ```
-    curl http://localhost:9091/api/1/history/EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY 
+    curl http://localhost:9091/api/1/history/ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD 
     ```
     
     Should return
@@ -290,7 +290,7 @@ These are located in the `wallets` folder:
       "result": {
         "History": [
           {
-            "Address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+            "Address": "ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD",
             "Txid": "22718f7d7499c43bd8f165367d2b19b1898d971b8b9d112deb004199c5db2b45",
             "Type": "income",
             "Value": 10000000000000,
@@ -301,7 +301,7 @@ These are located in the `wallets` folder:
               "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s"
             ],
             "Outputs": [
-              "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+              "ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD",
               "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s"
             ],
             "TxType": "TransferAsset",
@@ -329,7 +329,7 @@ These are located in the `wallets` folder:
           "Vote_type": "Delegate",
           "Txid": "810910a1578c3e05365c0c57eafa2a23122361199e4220084b4e1ba3827b1c57",
           "Value": "75000",
-          "Address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+          "Address": "ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD",
           "Block_time": 1557343057,
           "Height": 479
         }
