@@ -10,8 +10,6 @@ RUN apk update
 # copy folders
 COPY service.wallet /restful-services/wallet-service
 
-RUN sed -i 's#localhost:20334#privnet-mainchain-node:20334#g' /restful-services/wallet-service/base.api/src/main/resources/application.properties
-RUN sed -i 's#8090#8080#g' /restful-services/wallet-service/base.api/src/main/resources/application.properties
 RUN cd /restful-services/wallet-service \
     && mvn clean                        \
     && mvn install -Dmaven.test.skip -Dgpg.skip
@@ -35,4 +33,4 @@ USER elauser
 
 EXPOSE 8090
 
-ENTRYPOINT ["java", "-jar", "./base.api-0.1.0.jar"]
+ENTRYPOINT ["java", "-Dspring.config.location=./application.properties", "-jar", "./base.api-0.1.0.jar"]

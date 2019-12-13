@@ -9,7 +9,7 @@ while getopts ":p:t:i:h" opt; do
       echo "    tools/build_dockerimages.sh -h                  Display this help message."
       echo "    tools/build_dockerimages.sh -t [yes|no]         Do we also want to put the latest private net tag to the docker images?"
       echo "    tools/build_dockerimages.sh -p [yes|no]         Push built images to docker registry. You will need access to push to https://hub.docker.com/u/cyberrepublic to use this option."
-      echo "    tools/build_dockerimages.sh -i  [all|ela|arbitrator|sidechain.did|sidechain.token|sidechain.eth|sidechain.eth.oracle|service.wallet|service.wallet.tokensidechain|service.sidechain|service.misc|elaphant]         Build a specific docker image."
+      echo "    tools/build_dockerimages.sh -i  [all|ela|arbitrator|sidechain.did|sidechain.token|sidechain.eth|sidechain.eth.oracle|service.wallet|service.sidechain|service.misc|elaphant]         Build a specific docker image."
       exit 0
     ;;
     p) DOCKER_PUSH="$OPTARG"
@@ -125,11 +125,6 @@ if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.wallet" ] || [ "${DOCKER_IMAGE_TO_BU
 then 
     build_binary_and_docker "9acddc6e5ce3ffa7305e618b723b66b9edf58108" "github.com/elastos/Elastos.ORG.Wallet.Service" "service.wallet" \
         "cyberrepublic/elastos-wallet-service" "yes" ""
-fi
-if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.wallet.tokensidechain" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
-then 
-    build_binary_and_docker "9acddc6e5ce3ffa7305e618b723b66b9edf58108" "github.com/elastos/Elastos.ORG.Wallet.Service" "service.wallet.tokensidechain" \
-        "cyberrepublic/elastos-wallet-service-tokensidechain" "yes" ""
 fi
 if [ "${DOCKER_IMAGE_TO_BUILD}" == "service.sidechain" ] || [ "${DOCKER_IMAGE_TO_BUILD}" == "all" ]
 then 

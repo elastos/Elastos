@@ -79,6 +79,8 @@ services:
     container_name: testnet-wallet-service
     image: cyberrepublic/elastos-wallet-service:latest
     user: "${UID}:${GID}"
+    volumes:
+      - ${PWD}/restful-services/wallet/application-mainchain-did.properties:/home/elauser/application.properties
     depends_on:
       - testnet-mainchain-node
     ports:
@@ -94,8 +96,10 @@ services:
 
   testnet-wallet-service-tokensidechain:
     container_name: testnet-wallet-service-tokensidechain
-    image: cyberrepublic/elastos-wallet-service-tokensidechain:latest
+    image: cyberrepublic/elastos-wallet-service:latest
     user: "${UID}:${GID}"
+    volumes:
+      - ${PWD}/restful-services/wallet/application-mainchain-token.properties:/home/elauser/application.properties
     depends_on:
       - testnet-mainchain-node
     ports:
