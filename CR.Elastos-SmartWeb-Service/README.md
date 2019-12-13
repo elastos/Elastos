@@ -22,6 +22,21 @@ Install virtualenv:
 pip3 install virtualenv
 ```
 
+Install solidity compiler:
+- On Mac:
+    ```
+    brew update
+    brew upgrade
+    brew tap ethereum/ethereum
+    brew install solidity
+    ```
+- On Ubuntu:
+    ``` 
+    sudo add-apt-repository ppa:ethereum/ethereum
+    sudo apt-get update
+    sudo apt-get install solc
+    ```
+
 ## Instructions
 Clone the repository
 ```
