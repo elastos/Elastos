@@ -24,7 +24,7 @@ WalletAddressesETH = set()
 
 def cronjob_send_ela():
     logging.debug("Running cron job to send ELA, ELA/DIDSC and ELA/DIDTOKEN")
-    threading.Timer(10, cronjob_send_ela).start()
+    threading.Timer(120, cronjob_send_ela).start()
     if len(WalletAddresses) == 0:
         return
     headers = {
@@ -98,7 +98,7 @@ def cronjob_send_ela():
 
 def cronjob_send_ela_ethsc():
     logging.debug("Running cron job to send ELA/ETHSC")
-    threading.Timer(20, cronjob_send_ela_ethsc).start()
+    threading.Timer(30, cronjob_send_ela_ethsc).start()
     if len(WalletAddressesETH) == 0:
         return
 
