@@ -29,10 +29,18 @@ class Wallet:
         response = self.stub.CreateWallet(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
         return response
 
-    def view_wallet(self, api_key, address, chain):
+    def view_wallet(self, api_key, chain, address):
         req_data = {
             'address': address,
             'chain': chain
         }
         response = self.stub.ViewWallet(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        return response
+
+    def request_ela(self, api_key, chain, address):
+        req_data = {
+            'address': address,
+            'chain': chain
+        }
+        response = self.stub.RequestELA(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
         return response
