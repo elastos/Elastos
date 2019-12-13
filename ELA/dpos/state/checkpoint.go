@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -36,13 +36,18 @@ const (
 type CheckPoint struct {
 	KeyFrame
 	StateKeyFrame
-	Height            uint32
-	DutyIndex         int
-	NextArbitrators   [][]byte
-	NextCandidates    [][]byte
-	CurrentCandidates [][]byte
-	CurrentReward     RewardData
-	NextReward        RewardData
+	Height                     uint32
+	DutyIndex                  int
+	NextArbitrators            [][]byte
+	NextCandidates             [][]byte
+	CurrentCandidates          [][]byte
+	CurrentReward              RewardData
+	NextReward                 RewardData
+	accumulativeReward         common.Fixed64
+	finalRoundChange           common.Fixed64
+	clearingHeight             uint32
+	arbitersRoundReward        map[common.Uint168]common.Fixed64
+	illegalBlocksPayloadHashes map[common.Uint256]interface{}
 
 	arbitrators *arbitrators
 }

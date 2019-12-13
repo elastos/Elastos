@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -25,7 +25,7 @@ func TestUnregisterCR_Deserialize(t *testing.T) {
 }
 
 func unregisterCRPayloadEqual(payload1 *UnregisterCR, payload2 *UnregisterCR) bool {
-	if !bytes.Equal(payload1.Code, payload2.Code) ||
+	if !payload1.DID.IsEqual(payload2.DID) ||
 		!bytes.Equal(payload1.Signature, payload2.Signature) {
 		return false
 	}
@@ -35,7 +35,7 @@ func unregisterCRPayloadEqual(payload1 *UnregisterCR, payload2 *UnregisterCR) bo
 
 func randomUnregisterCRPayload() *UnregisterCR {
 	return &UnregisterCR{
-		Code:      randomBytes(34),
+		DID:       *randomUint168(),
 		Signature: randomBytes(65),
 	}
 }

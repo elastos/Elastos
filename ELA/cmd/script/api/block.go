@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -133,7 +133,8 @@ func updateDposRewards(b *types.Block) {
 
 	totalTxFee := common.Fixed64(0)
 	for _, tx := range b.Transactions {
-		fee := blockchain.GetTxFee(tx, config.ELAAssetID)
+		reference, _ := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference(tx)
+		fee := blockchain.GetTxFee(tx, config.ELAAssetID, reference)
 		if fee != tx.Fee {
 			continue
 		}

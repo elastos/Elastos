@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -70,9 +70,8 @@ func StartRPCServer() {
 	mainMux["getutxosbyamount"] = GetUTXOsByAmount
 	mainMux["listunspent"] = ListUnspent
 	mainMux["createrawtransaction"] = CreateRawTransaction
+	mainMux["decoderawtransaction"] = DecodeRawTransaction
 	mainMux["signrawtransactionwithkey"] = SignRawTransactionWithKey
-	mainMux["importaddress"] = ImportAddress
-	mainMux["importpubkey"] = ImportPubkey
 	// aux interfaces
 	mainMux["help"] = AuxHelp
 	mainMux["submitauxblock"] = SubmitAuxBlock
@@ -94,6 +93,7 @@ func StartRPCServer() {
 
 	mainMux["estimatesmartfee"] = EstimateSmartFee
 	mainMux["getdepositcoin"] = GetDepositCoin
+	mainMux["getcrdepositcoin"] = GetCRDepositCoin
 	mainMux["getarbitersinfo"] = GetArbitersInfo
 
 	rpcServeMux := http.NewServeMux()
@@ -103,8 +103,12 @@ func StartRPCServer() {
 		WriteTimeout: IOTimeout,
 	}
 	rpcServeMux.HandleFunc("/", Handle)
-	l, _ := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
-	err := server.Serve(l)
+	l, err := net.Listen("tcp4", ":"+strconv.Itoa(config.Parameters.HttpJsonPort))
+	if err != nil {
+		log.Fatal("Create listener error: ", err.Error())
+		return
+	}
+	err = server.Serve(l)
 	if err != nil {
 		log.Fatal("ListenAndServe error: ", err.Error())
 	}
@@ -182,7 +186,6 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Debug("RPC method:", requestMethod)
-	log.Debug("RPC params:", params)
 
 	response := method(params)
 	var data []byte

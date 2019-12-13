@@ -1,28 +1,30 @@
-FROM ubuntu:16.04
-
-# Install necessary tools
-RUN apt-get update && apt-get install -y git curl
-
-# Install golang
-RUN apt-get install -y software-properties-common && add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
-
-# Prepare environment
-RUN mkdir /root/dev/bin -p && mkdir /root/dev/src/github.com/elastos -p
-
-WORKDIR /root/dev/
-
-# Install glide
-RUN export GOROOT=/usr/lib/go-1.9  GOPATH=$HOME/dev && export GOBIN=$GOPATH/bin PATH=$GOROOT/bin:$PATH && export PATH=$GOBIN:$PATH && curl https://glide.sh/get | sh
-
-WORKDIR /root/dev/src/github.com/elastos
-# Clone source code
-RUN git clone https://github.com/elastos/Elastos.ELA.git
-
-WORKDIR Elastos.ELA
-
-# Build Elastos.ELA Node
-RUN export GOROOT=/usr/lib/go-1.9  GOPATH=$HOME/dev && export GOBIN=$GOPATH/bin PATH=$GOROOT/bin:$PATH && export PATH=$GOBIN:$PATH && glide update && glide install && make && mv config.json.sample config.json
-
-ENTRYPOINT ["./ela"]
-
+#### Usage ####
+# Build image for master branch:
+# docker build -t ela:master .
+# Build image for other branch:
+# docker build --build-arg CODE_VERSION=release_v0.4.0 \
+#   --build-arg MAKE_VERSION=dev -t ela:0.4.0 .
+##############
+FROM golang:alpine as builder
+# Packaging version
+ARG MAKE_VERSION=all
+ARG CODE_VERSION=master
+ARG GIT_URL=https://github.com/elastos/Elastos.ELA.git
+# Install system tools
+RUN apk update && apk -U upgrade && apk add --no-cache git curl make
+# Set environment
+RUN mkdir -p $GOPATH/src/github.com/elastos
+WORKDIR $GOPATH/src/github.com/elastos
+# Clone elastos source code
+RUN git clone -b ${CODE_VERSION} --depth 10 ${GIT_URL}
+# Install glide and build Elastos.ELA Node
+RUN curl https://glide.sh/get | sh && cd $GOPATH/src/github.com/elastos/Elastos.ELA && \
+  glide update && glide install && make $MAKE_VERSION && mv ela ela-cli /
+# Building ela image
+FROM alpine:3.10.2
+# Copy ela binary
+COPY --from=builder /ela /ela-cli /
+# Expose p2p rpc http port
 EXPOSE 20334 20335 20336 20338
+# Entrypoint for ela node
+ENTRYPOINT ["/ela"]

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -24,6 +24,9 @@ const (
 	// ActivateDuration is about how long we should activate from pending or
 	// inactive state.
 	ActivateDuration = 6
+
+	// CacheCRVotesSize indicate the size to cache votes information.
+	CacheCRVotesSize = 6
 )
 
 // State hold all CR candidates related information, and process block by block
@@ -34,6 +37,9 @@ type State struct {
 	mtx     sync.RWMutex
 	params  *config.Params
 	history *utils.History
+
+	votesCacheKeys map[uint32][]string
+	votesCache     map[string]*types.Output
 }
 
 // GetCandidate returns candidate with specified program code, it will return
@@ -96,6 +102,14 @@ func (s *State) ExistCandidateByDID(did common.Uint168) (ok bool) {
 		return
 	}
 	return
+}
+
+// ExistCandidateByDepositHash judges if there is a candidate with deposit hash.
+func (s *State) ExistCandidateByDepositHash(did common.Uint168) bool {
+	s.mtx.RLock()
+	_, ok := s.DepositHashMap[did]
+	s.mtx.RUnlock()
+	return ok
 }
 
 // ExistCandidateByNickname judges if there is a candidate with specified
@@ -203,6 +217,18 @@ func (s *State) FinishVoting(dids []common.Uint168) *StateKeyFrame {
 // packed into a block.  Then loop through the transactions to update CR
 // state and votes according to transactions content.
 func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
+	// Remove cached votes
+	if len(s.votesCacheKeys) >= CacheCRVotesSize {
+		for k, v := range s.votesCacheKeys {
+			if k <= height-CacheCRVotesSize {
+				for _, referKey := range v {
+					delete(s.votesCache, referKey)
+				}
+				delete(s.votesCacheKeys, k)
+			}
+		}
+	}
+
 	for _, tx := range txs {
 		s.processTransaction(tx, height)
 	}
@@ -250,6 +276,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnCRDepositCoin:
 		s.returnDeposit(tx, height)
+		s.processDeposit(tx, height)
 	}
 
 	s.processCancelVotes(tx, height)
@@ -280,15 +307,32 @@ func (s *State) registerCR(tx *types.Transaction, height uint32) {
 	}
 	candidate.depositAmount = amount
 
-	s.history.Append(height, func() {
-		s.Nicknames[nickname] = struct{}{}
-		s.CodeDIDMap[code] = info.DID
-		s.PendingCandidates[info.DID] = &candidate
-	}, func() {
-		delete(s.Nicknames, nickname)
-		delete(s.CodeDIDMap, code)
-		delete(s.PendingCandidates, info.DID)
-	})
+	c := s.getCandidateByDID(info.DID)
+	if c == nil {
+		s.history.Append(height, func() {
+			s.Nicknames[nickname] = struct{}{}
+			s.CodeDIDMap[code] = info.DID
+			s.DepositHashMap[candidate.depositHash] = struct{}{}
+			s.PendingCandidates[info.DID] = &candidate
+		}, func() {
+			delete(s.Nicknames, nickname)
+			delete(s.CodeDIDMap, code)
+			delete(s.DepositHashMap, candidate.depositHash)
+			delete(s.PendingCandidates, info.DID)
+		})
+	} else {
+		candidate.votes = c.votes
+		s.history.Append(height, func() {
+			delete(s.CanceledCandidates, c.Info().DID)
+			s.Nicknames[nickname] = struct{}{}
+			s.PendingCandidates[info.DID] = &candidate
+		}, func() {
+			delete(s.PendingCandidates, info.DID)
+			delete(s.Nicknames, nickname)
+			s.CanceledCandidates[c.Info().DID] = c
+		})
+	}
+
 }
 
 // updateCR handles the update CR transaction.
@@ -304,8 +348,11 @@ func (s *State) updateCR(info *payload.CRInfo, height uint32) {
 
 // unregisterCR handles the cancel producer transaction.
 func (s *State) unregisterCR(info *payload.UnregisterCR, height uint32) {
-	candidate := s.getCandidate(info.Code)
-	key := candidate.info.DID
+	candidate := s.getCandidateByDID(info.DID)
+	if candidate == nil {
+		return
+	}
+	key := info.DID
 	isPending := candidate.state == Pending
 	s.history.Append(height, func() {
 		candidate.state = Canceled
@@ -396,9 +443,11 @@ func (s *State) returnDeposit(tx *types.Transaction, height uint32) {
 		s.history.Append(height, func() {
 			candidate.depositAmount -= inputValue
 			candidate.state = Returned
+			delete(s.Nicknames, candidate.info.NickName)
 		}, func() {
 			candidate.depositAmount += inputValue
 			candidate.state = originState
+			s.Nicknames[candidate.info.NickName] = struct{}{}
 		})
 	}
 
@@ -424,7 +473,7 @@ func (s *State) addCandidateAssert(output *types.Output, height uint32) bool {
 }
 
 // getCandidateByDepositHash will try to get candidate with specified program
-// hash, note the candidate state should be pending or active.
+// hash.
 func (s *State) getCandidateByDepositHash(hash common.Uint168) *Candidate {
 	for _, candidate := range s.PendingCandidates {
 		if candidate.depositHash.IsEqual(hash) {
@@ -432,6 +481,11 @@ func (s *State) getCandidateByDepositHash(hash common.Uint168) *Candidate {
 		}
 	}
 	for _, candidate := range s.ActivityCandidates {
+		if candidate.depositHash.IsEqual(hash) {
+			return candidate
+		}
+	}
+	for _, candidate := range s.CanceledCandidates {
 		if candidate.depositHash.IsEqual(hash) {
 			return candidate
 		}
@@ -444,7 +498,11 @@ func (s *State) processVoteOutput(output *types.Output, height uint32) {
 	p := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
-			candidate := s.getCandidate(cv.Candidate)
+			did, err := common.Uint168FromBytes(cv.Candidate)
+			if err != nil {
+				continue
+			}
+			candidate := s.getCandidateByDID(*did)
 			if candidate == nil {
 				continue
 			}
@@ -469,8 +527,20 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 		referKey := input.ReferKey()
 		output, ok := s.Votes[referKey]
 		if ok {
+			if output == nil {
+				output, ok = s.votesCache[referKey]
+				if !ok {
+					log.Errorf("invalid votes output")
+					return
+				}
+			}
 			s.processVoteCancel(output, height)
-			// todo consider rollback
+			if _, exist := s.votesCacheKeys[height]; !exist {
+				s.votesCacheKeys[height] = make([]string, 0)
+			}
+			s.votesCacheKeys[height] = append(s.votesCacheKeys[height], referKey)
+			s.votesCache[referKey] = output
+
 			s.Votes[referKey] = nil
 		}
 	}
@@ -481,17 +551,21 @@ func (s *State) processVoteCancel(output *types.Output, height uint32) {
 	p := output.Payload.(*outputpayload.VoteOutput)
 	for _, vote := range p.Contents {
 		for _, cv := range vote.CandidateVotes {
-			producer := s.getCandidate(cv.Candidate)
-			if producer == nil {
+			did, err := common.Uint168FromBytes(cv.Candidate)
+			if err != nil {
+				continue
+			}
+			candidate := s.getCandidateByDID(*did)
+			if candidate == nil {
 				continue
 			}
 			switch vote.VoteType {
 			case outputpayload.CRC:
 				v := cv.Votes
 				s.history.Append(height, func() {
-					producer.votes -= v
+					candidate.votes -= v
 				}, func() {
-					producer.votes += v
+					candidate.votes += v
 				})
 			}
 		}
@@ -563,8 +637,10 @@ func (s *State) getCandidateFromMap(cmap map[common.Uint168]*Candidate,
 
 func NewState(chainParams *config.Params) *State {
 	return &State{
-		StateKeyFrame: *NewStateKeyFrame(),
-		params:        chainParams,
-		history:       utils.NewHistory(maxHistoryCapacity),
+		StateKeyFrame:  *NewStateKeyFrame(),
+		params:         chainParams,
+		history:        utils.NewHistory(maxHistoryCapacity),
+		votesCacheKeys: make(map[uint32][]string),
+		votesCache:     make(map[string]*types.Output),
 	}
 }

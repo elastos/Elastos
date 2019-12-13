@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 	mrand "math/rand"
+	"path/filepath"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/common"
@@ -48,7 +49,8 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	FoundationAddress = params.Foundation
 	s.foundationAddress = params.Foundation
 
-	chainStore, err := NewChainStore(test.DataPath, params.GenesisBlock)
+	chainStore, err := NewChainStore(
+		filepath.Join(test.DataPath, "txvalidator"), params.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}
@@ -62,16 +64,18 @@ func (s *txValidatorTestSuite) SetupSuite() {
 	s.OriginalLedger = DefaultLedger
 
 	arbiters, err := state.NewArbitrators(params,
-		chainStore.GetHeight, func(height uint32) (*types.Block, error) {
+		nil)
+	if err != nil {
+		s.Fail("initialize arbitrator failed")
+	}
+	arbiters.RegisterFunction(chainStore.GetHeight,
+		func(height uint32) (*types.Block, error) {
 			hash, err := chainStore.GetBlockHash(height)
 			if err != nil {
 				return nil, err
 			}
 			return chainStore.GetBlock(hash)
-		}, nil)
-	if err != nil {
-		s.Fail("initialize arbitrator failed")
-	}
+		})
 	DefaultLedger = &Ledger{Arbitrators: arbiters}
 }
 
@@ -480,12 +484,16 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	}
 
 	references := map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1},
+		&types.Input{}: {
+			Value: outputValue1,
+		},
 	}
 	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + s.Chain.chainParams.MinTransactionFee},
+		&types.Input{}: {
+			Value: outputValue1 + s.Chain.chainParams.MinTransactionFee,
+		},
 	}
 	s.NoError(s.Chain.checkTransactionFee(tx, references))
 
@@ -499,12 +507,16 @@ func (s *txValidatorTestSuite) TestCheckTransactionBalance() {
 	}
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + outputValue2},
+		&types.Input{}: {
+			Value: outputValue1 + outputValue2,
+		},
 	}
 	s.EqualError(s.Chain.checkTransactionFee(tx, references), "transaction fee not enough")
 
 	references = map[*types.Input]*types.Output{
-		&types.Input{}: {Value: outputValue1 + outputValue2 + s.Chain.chainParams.MinTransactionFee},
+		&types.Input{}: {
+			Value: outputValue1 + outputValue2 + s.Chain.chainParams.MinTransactionFee,
+		},
 	}
 	s.NoError(s.Chain.checkTransactionFee(tx, references))
 }
@@ -549,7 +561,9 @@ func (s *txValidatorTestSuite) TestCheckDestructionAddress() {
 	txID, _ := common.Uint256FromHexString("7e8863a503e90e6464529feb1c25d98c903e01bec00ccfea2475db4e37d7328b")
 	programHash, _ := common.Uint168FromAddress(destructionAddress)
 	reference := map[*types.Input]*types.Output{
-		&types.Input{Previous: types.OutPoint{*txID, 1234}, Sequence: 123456}: &types.Output{ProgramHash: *programHash},
+		&types.Input{Previous: types.OutPoint{*txID, 1234}, Sequence: 123456}: {
+			ProgramHash: *programHash,
+		},
 	}
 
 	err := checkDestructionAddress(reference)
@@ -637,12 +651,6 @@ func (s *txValidatorTestSuite) TestCheckRegisterProducerTransaction() {
 	txn.Payload.(*payload.ProducerInfo).NodePublicKey = publicKey2
 	err = s.Chain.checkRegisterProducerTransaction(txn)
 	s.EqualError(err, "invalid signature in payload")
-
-	// Give an invalid url in payload
-	txn.Payload.(*payload.ProducerInfo).OwnerPublicKey = publicKey1
-	txn.Payload.(*payload.ProducerInfo).Url = ""
-	err = s.Chain.checkRegisterProducerTransaction(txn)
-	s.EqualError(err, "Field Url has invalid string length.")
 
 	// Give a mismatching deposit address
 	rpPayload.OwnerPublicKey = publicKey1
@@ -1019,9 +1027,9 @@ func (s *txValidatorTestSuite) TestCheckVoteProducerOutput() {
 }
 
 func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
+	publicKeyStr1 := "031e12374bae471aa09ad479f66c2306f4bcc4ca5b754609a82a1839b94b4721b9"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
-	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	privateKeyStr1 := "94396a69462208b8fd96d83842855b867d3b0e663203cb31d0dfaec0362ec034"
 	privateKey1, _ := common.HexStringToBytes(privateKeyStr1)
 	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
 	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
@@ -1064,10 +1072,8 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 	txn.Payload = updatePayload
 	s.Chain.state.ProcessBlock(block, nil)
 
-	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field NickName has invalid string length.")
-
+	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "field NickName has invalid string length")
 	updatePayload.NickName = "nick name"
-	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "Field Url has invalid string length.")
 
 	updatePayload.Url = "www.elastos.org"
 	updatePayload.OwnerPublicKey = errPublicKey
@@ -1172,6 +1178,7 @@ func (s *txValidatorTestSuite) TestCheckActivateProducerTransaction() {
 
 func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	// Generate a register CR transaction
+
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
@@ -1207,26 +1214,21 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	nickName := txn.Payload.(*payload.CRInfo).NickName
 	txn.Payload.(*payload.CRInfo).NickName = ""
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field NickName has invalid string length.")
+	s.EqualError(err, "field NickName has invalid string length")
 
 	// Give an invalid NickName length more than 100 in payload
 	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field NickName has invalid string length.")
-
-	// Give an invalid url length 0 in payload
-	url := txn.Payload.(*payload.CRInfo).Url
-	txn.Payload.(*payload.CRInfo).Url = ""
-	txn.Payload.(*payload.CRInfo).NickName = nickName
-	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field Url has invalid string length.")
+	s.EqualError(err, "field NickName has invalid string length")
 
 	// Give an invalid url length more than 100 in payload
+	url := txn.Payload.(*payload.CRInfo).Url
+	txn.Payload.(*payload.CRInfo).NickName = nickName
 	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
-	s.EqualError(err, "Field Url has invalid string length.")
+	s.EqualError(err, "field Url has invalid string length")
 
 	//not in vote Period lower
 	txn.Payload.(*payload.CRInfo).Url = url
@@ -1307,7 +1309,7 @@ func (s *txValidatorTestSuite) TestCheckRegisterCRTransaction() {
 	}}
 	err = s.Chain.checkRegisterCRTransaction(txn, votingHeight)
 	txn.Outputs = outPuts
-	s.EqualError(err, "producer deposit amount is insufficient")
+	s.EqualError(err, "CR deposit amount is insufficient")
 
 	// Multi deposit addresses
 	txn.Outputs = []*types.Output{
@@ -1509,7 +1511,7 @@ func (s *txValidatorTestSuite) getUnregisterCRTx(publicKeyStr, privateKeyStr str
 	txn.TxType = types.UnregisterCR
 	txn.Version = types.TxVersion09
 	unregisterCRPayload := &payload.UnregisterCR{
-		Code: code1,
+		DID: *getDid(code1),
 	}
 	signBuf := new(bytes.Buffer)
 	err := unregisterCRPayload.SerializeUnsigned(signBuf, payload.UnregisterCRVersion)
@@ -1567,8 +1569,8 @@ func (s *txValidatorTestSuite) TestCrInfoSanityCheck() {
 func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 
 	// Generate a UpdateCR CR transaction
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
@@ -1609,28 +1611,22 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	txn.Payload.(*payload.CRInfo).NickName = ""
 	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
 	txn.Payload.(*payload.CRInfo).NickName = nickName
-	s.EqualError(err, "Field NickName has invalid string length.")
+	s.EqualError(err, "field NickName has invalid string length")
 
 	// Give an invalid NickName length more than 100 in payload
 	txn.Payload.(*payload.CRInfo).NickName = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
 	txn.Payload.(*payload.CRInfo).NickName = nickName
-	s.EqualError(err, "Field NickName has invalid string length.")
-
-	// Give an invalid url length 0 in payload
-	url := txn.Payload.(*payload.CRInfo).Url
-	txn.Payload.(*payload.CRInfo).Url = ""
-	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
-	txn.Payload.(*payload.CRInfo).Url = url
-	s.EqualError(err, "Field Url has invalid string length.")
+	s.EqualError(err, "field NickName has invalid string length")
 
 	// Give an invalid url length more than 100 in payload
+	url := txn.Payload.(*payload.CRInfo).Url
 	txn.Payload.(*payload.CRInfo).Url = "012345678901234567890123456789012345678901234567890" +
 		"12345678901234567890123456789012345678901234567890123456789"
 	err = s.Chain.checkUpdateCRTransaction(txn, votingHeight)
 	txn.Payload.(*payload.CRInfo).Url = url
-	s.EqualError(err, "Field Url has invalid string length.")
+	s.EqualError(err, "field Url has invalid string length")
 
 	// Give an invalid code in payload
 	code := txn.Payload.(*payload.CRInfo).Code
@@ -1682,8 +1678,8 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 
 func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 
-	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
-	privateKeyStr1 := "7638c2a799d93185279a4a6ae84a5b76bd89e41fa9f465d9ae9b2120533983a1"
+	publicKeyStr1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
 
 	publicKeyStr2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
 	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
@@ -1729,9 +1725,13 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 }
 
 func (s *txValidatorTestSuite) TestCheckStringField() {
-	s.NoError(checkStringField("Normal", "test"))
-	s.EqualError(checkStringField("", "test"), "Field test has invalid string length.")
-	s.EqualError(checkStringField("I am more than 100, 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test"), "Field test has invalid string length.")
+	s.NoError(checkStringField("Normal", "test", false))
+	s.EqualError(checkStringField("", "test", false),
+		"field test has invalid string length")
+	s.EqualError(checkStringField("I am more than 100, 1234567890123456"+
+		"789012345678901234567890123456789012345678901234567890123456789012345"+
+		"678901234567890", "test", false), "field test"+
+		" has invalid string length")
 }
 
 func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
@@ -1745,6 +1745,7 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 		ProgramHash: *depositHash,
 	}
 	references[input] = depositOutput
+
 	txn.TxType = types.TransferAsset
 	err := checkTransactionDepositUTXO(&txn, references)
 	s.EqualError(err, "only the ReturnDepositCoin and "+
@@ -1950,6 +1951,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 		ProgramHash: *randomUint168(),
 		Value:       common.Fixed64(5000 * 100000000),
 	}
+
 	rdTx := &types.Transaction{
 		TxType:  types.ReturnCRDepositCoin,
 		Payload: &payload.ReturnDepositCoin{},
@@ -1977,7 +1979,7 @@ func (s txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 			{
 				TxType: types.UnregisterCR,
 				Payload: &payload.UnregisterCR{
-					Code: code,
+					DID: *getDid(code),
 				},
 			},
 		},
@@ -2132,18 +2134,43 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 
 	references := make(map[*types.Input]*types.Output)
 	outputs := []*types.Output{{Type: types.OTNone}}
-	s.NoError(checkVoteOutputs(outputs, references, nil, nil))
+	s.NoError(s.Chain.checkVoteOutputs(0, outputs, references, nil, nil))
 
-	publicKey1 := "023a133480176214f88848c6eaa684a54b316849df2b8570b57f3a917f19bbc77a"
-	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
-	publicKey3 := "039d419986f5c2bf6f2a6f59f0b6e111735b66570fb22107a038bca3e1005d1920"
+	publicKey1 := "02f981e4dae4983a5d284d01609ad735e3242c5672bb2c7bb0018cc36f9ab0c4a5"
+	publicKey2 := "036db5984e709d2e0ec62fd974283e9a18e7b87e8403cc784baf1f61f775926535"
+	publicKey3 := "031e12374bae471aa09ad479f66c2306f4bcc4ca5b754609a82a1839b94b4721b9"
+	privateKeyStr1 := "15e0947580575a9b6729570bed6360a890f84a07dc837922fe92275feec837d4"
+	privateKeyStr2 := "b2c25e877c8a87d54e8a20a902d27c7f24ed52810813ba175ca4e8d3036d130e"
+	privateKeyStr3 := "94396a69462208b8fd96d83842855b867d3b0e663203cb31d0dfaec0362ec034"
+
+	registerCRTxn1 := s.getRegisterCRTx(publicKey1, privateKeyStr1, "nickName1")
+	registerCRTxn2 := s.getRegisterCRTx(publicKey2, privateKeyStr2, "nickName2")
+	registerCRTxn3 := s.getRegisterCRTx(publicKey3, privateKeyStr3, "nickName3")
+
+	block := &types.Block{
+		Transactions: []*types.Transaction{
+			registerCRTxn1,
+			registerCRTxn2,
+			registerCRTxn3,
+		},
+	}
+	s.Chain.crCommittee.GetState().ProcessBlock(block, nil)
+	code1 := getCode(publicKey1)
+	code2 := getCode(publicKey2)
+	code3 := getCode(publicKey3)
+
 	candidate1, _ := common.HexStringToBytes(publicKey1)
 	candidate2, _ := common.HexStringToBytes(publicKey2)
-	candidate3, _ := common.HexStringToBytes(publicKey3)
+	didCandidate1 := getDid(code1)
+	didCandidate2 := getDid(code2)
+	didCandidate3 := getDid(code3)
+
 	producersMap := make(map[string]struct{})
 	producersMap[publicKey1] = struct{}{}
-	crsMap := make(map[string]struct{})
-	crsMap[publicKey3] = struct{}{}
+	crsMap := make(map[common.Uint168]struct{})
+
+	crsMap[*didCandidate1] = struct{}{}
+	crsMap[*didCandidate3] = struct{}{}
 
 	hashStr := "21c5656c65028fe21f2222e8f0cd46a1ec734cbdb6"
 	hashByte, _ := common.HexStringToBytes(hashStr)
@@ -2166,7 +2193,8 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs1, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs1, references, producersMap,
+		crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output of v0 with crc type and with wrong output program hash
@@ -2180,13 +2208,14 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 0},
+						{didCandidate3.Bytes(), 0},
 					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs2, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs2, references,
+		producersMap, crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output of v1 with wrong output program hash
@@ -2206,22 +2235,24 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 0},
+						{didCandidate3.Bytes(), 0},
 					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs3, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs3, references, producersMap, crsMap),
 		"the output address of vote tx should exist in its input")
 
 	// Check vote output v0 with correct ouput program hash
 	references[&types.Input{}] = &types.Output{
 		ProgramHash: *hash,
 	}
-	s.NoError(checkVoteOutputs(outputs1, references, producersMap, crsMap))
-	s.NoError(checkVoteOutputs(outputs2, references, producersMap, crsMap))
-	s.NoError(checkVoteOutputs(outputs3, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight,
+		outputs1, references, producersMap, crsMap))
+
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs2, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs3, references, producersMap, crsMap))
 
 	// Check vote output of v0 with delegate type and invalid candidate
 	outputs4 := []*types.Output{{Type: types.OTNone}}
@@ -2240,9 +2271,9 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs4, references, producersMap, crsMap),
-		"invalid vote output payload candidate: "+
-			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs4, references, producersMap,
+		crsMap),
+		"invalid vote output payload producer candidate: "+publicKey2)
 
 	// Check vote output of v0 with crc type and invalid candidate
 	outputs5 := []*types.Output{{Type: types.OTNone}}
@@ -2255,13 +2286,14 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate2, 0},
+						{didCandidate2.Bytes(), 0},
 					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs5, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs5, references, producersMap,
+		crsMap),
 		"payload VoteProducerVersion not support vote CR")
 
 	// Check vote output of v1 with crc type and invalid candidate
@@ -2275,15 +2307,14 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate2, 0},
+						{didCandidate2.Bytes(), 0},
 					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs6, references, producersMap, crsMap),
-		"invalid vote output payload candidate: "+
-			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs6, references, producersMap, crsMap),
+		"invalid vote output payload CR candidate: "+didCandidate2.String())
 
 	// Check vote output of v0 with invalid candidate
 	outputs7 := []*types.Output{{Type: types.OTNone}}
@@ -2302,17 +2333,14 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate2, 0},
+						{didCandidate2.Bytes(), 0},
 					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs7, references, producersMap, crsMap),
-		"invalid vote output payload candidate: "+
-			"030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9")
-
-	crsMap[publicKey2] = struct{}{}
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs7, references, producersMap, crsMap),
+		"invalid vote output payload producer candidate: "+publicKey2)
 
 	// Check vote output of v1 with delegate type and wrong votes
 	outputs8 := []*types.Output{{Type: types.OTNone}}
@@ -2332,7 +2360,7 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs8, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs8, references, producersMap, crsMap),
 		"votes larger than output amount")
 
 	// Check vote output of v1 with crc type and wrong votes
@@ -2347,14 +2375,14 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate2, 10},
-						{candidate3, 10},
+						{didCandidate1.Bytes(), 10},
+						{didCandidate3.Bytes(), 10},
 					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs9, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs9, references, producersMap, crsMap),
 		"total votes larger than output amount")
 
 	// Check vote output of v1 with wrong votes
@@ -2375,13 +2403,13 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 20},
+						{didCandidate3.Bytes(), 20},
 					},
 				},
 			},
 		},
 	})
-	s.EqualError(checkVoteOutputs(outputs10, references, producersMap, crsMap),
+	s.EqualError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs10, references, producersMap, crsMap),
 		"votes larger than output amount")
 
 	// Check vote output v1 with correct votes
@@ -2402,13 +2430,13 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 10},
+						{didCandidate3.Bytes(), 10},
 					},
 				},
 			},
 		},
 	})
-	s.NoError(checkVoteOutputs(outputs11, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs11, references, producersMap, crsMap))
 
 	// Check vote output of v1 with wrong votes
 	outputs12 := []*types.Output{{Type: types.OTNone}}
@@ -2428,13 +2456,14 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 				{
 					VoteType: outputpayload.CRC,
 					CandidateVotes: []outputpayload.CandidateVotes{
-						{candidate3, 1},
+						{didCandidate3.Bytes(), 1},
 					},
 				},
 			},
 		},
 	})
-	s.NoError(checkVoteOutputs(outputs12, references, producersMap, crsMap))
+	s.NoError(s.Chain.checkVoteOutputs(config.DefaultParams.CRVotingStartHeight, outputs12, references, producersMap,
+		crsMap))
 }
 
 func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
