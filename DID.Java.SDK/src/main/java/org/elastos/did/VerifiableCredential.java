@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.credential;
+package org.elastos.did;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,13 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.elastos.did.Constants;
-import org.elastos.did.DID;
-import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDException;
-import org.elastos.did.DIDObject;
-import org.elastos.did.DIDStore;
-import org.elastos.did.DIDURL;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -294,18 +289,26 @@ public class VerifiableCredential extends DIDObject {
 		return expirationDate;
 	}
 
+	protected void setAliasInternal(String alias) {
+		this.alias = alias != null ? alias : "";
+	}
+
 	public void setAlias(String alias) throws DIDException {
 		if (DIDStore.isInitialized())
-			DIDStore.getInstance().setCredentialAlias(getSubject().getId(),
+			DIDStore.getInstance().storeCredentialAlias(getSubject().getId(),
 					getId(), alias);
 
-		this.alias = alias != null ? alias : "";
+		setAliasInternal(alias);
+	}
+
+	public String getAliasInternal() {
+		return alias;
 	}
 
 	public String getAlias() throws DIDException {
 		if (alias == null) {
 			if (DIDStore.isInitialized())
-				alias = DIDStore.getInstance().getCredentialAlias(
+				alias = DIDStore.getInstance().loadCredentialAlias(
 						getSubject().getId(), getId());
 
 			if (alias == null)

@@ -20,26 +20,24 @@
  * SOFTWARE.
  */
 
-package org.elastos.credential;
+package org.elastos.did.exception;
 
-import org.elastos.did.DIDException;
+public class MalformedCredentialException extends DIDException {
+	private static final long serialVersionUID = -1775184934700973122L;
 
-public class MalformedPresentationException extends DIDException {
-	private static final long serialVersionUID = 8453912647945382207L;
-
-	public MalformedPresentationException() {
+	public MalformedCredentialException() {
         super();
     }
 
-    public MalformedPresentationException(String message) {
+    public MalformedCredentialException(String message) {
         super(message);
     }
 
-    public MalformedPresentationException(String message, Throwable cause) {
+    public MalformedCredentialException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public MalformedPresentationException(Throwable cause) {
+    public MalformedCredentialException(Throwable cause) {
         super(cause);
     }
 }

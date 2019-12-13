@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.did.backend;
+package org.elastos.did.adapter;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -32,8 +32,10 @@ import java.util.Random;
 import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDAdapter;
-import org.elastos.did.DIDException;
-import org.elastos.did.MalformedDIDException;
+import org.elastos.did.backend.IDChainRequest;
+import org.elastos.did.backend.IDChainRequest.Operation;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.MalformedDIDException;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;

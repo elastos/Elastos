@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.credential;
+package org.elastos.did;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.elastos.did.Constants;
-import org.elastos.did.DID;
-import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDException;
-import org.elastos.did.DIDURL;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.MalformedCredentialException;
+import org.elastos.did.exception.MalformedPresentationException;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;

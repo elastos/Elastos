@@ -20,24 +20,24 @@
  * SOFTWARE.
  */
 
-package org.elastos.did;
+package org.elastos.did.exception;
 
-public class MalformedDIDException extends DIDException {
-	private static final long serialVersionUID = -5320577254261002967L;
+public class DIDResolveException extends DIDException {
+	private static final long serialVersionUID = 8679582737929676981L;
 
-	public MalformedDIDException() {
+	public DIDResolveException() {
         super();
     }
 
-    public MalformedDIDException(String message) {
+    public DIDResolveException(String message) {
         super(message);
     }
 
-    public MalformedDIDException(String message, Throwable cause) {
+    public DIDResolveException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public MalformedDIDException(Throwable cause) {
+    public DIDResolveException(Throwable cause) {
         super(cause);
     }
 }

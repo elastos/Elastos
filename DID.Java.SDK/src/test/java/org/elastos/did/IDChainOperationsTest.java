@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.elastos.did.adapter.SPVAdapter;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
 import org.junit.Test;
 
 public class IDChainOperationsTest {
@@ -63,6 +65,7 @@ public class IDChainOperationsTest {
     	DIDDocument doc = store.newDid(TestConfig.storePass);
     	Boolean success = store.publishDid(doc, TestConfig.storePass);
     	assertTrue(success);
+    	System.out.println("Published new DID: " + doc.getSubject());
 
     	DIDDocument resolved;
 		System.out.print("Try to resolve new published DID.");

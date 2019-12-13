@@ -29,10 +29,9 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elastos.credential.Issuer;
-import org.elastos.credential.VerifiableCredential;
-import org.elastos.credential.VerifiablePresentation;
 import org.elastos.did.adapter.SPVAdapter;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.util.Base58;
 import org.elastos.did.util.HDKey;
 
@@ -89,7 +88,7 @@ public class TestDataGenerator {
 				.properties(props)
 				.seal(TestConfig.storePass);
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 		db.addCredential(vc);
 		issuer = db.seal(TestConfig.storePass);
 		store.storeDid(issuer);
@@ -118,7 +117,7 @@ public class TestDataGenerator {
 		// Test document with two embedded credentials
 		System.out.print("Generate test DID: " + doc.getSubject() + "...");
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
 		HDKey.DerivedKey temp = TestData.generateKeypair();
 		db.addAuthenticationKey("key2", temp.getPublicKeyBase58());

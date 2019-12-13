@@ -22,6 +22,8 @@
 
 package org.elastos.did;
 
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
@@ -75,7 +77,7 @@ public class DID implements Comparable<DID> {
 
 	public void setAlias(String alias) throws DIDException {
 		if (DIDStore.isInitialized())
-			DIDStore.getInstance().setDidAlias(this, alias);
+			DIDStore.getInstance().storeDidAlias(this, alias);
 
 		setAliasInternal(alias);
 	}
@@ -83,7 +85,7 @@ public class DID implements Comparable<DID> {
 	public String getAlias() throws DIDException {
 		if (alias == null) {
 			if (DIDStore.isInitialized())
-				alias = DIDStore.getInstance().getDidAlias(this);
+				alias = DIDStore.getInstance().loadDidAlias(this);
 
 			if (alias == null)
 				alias = "";

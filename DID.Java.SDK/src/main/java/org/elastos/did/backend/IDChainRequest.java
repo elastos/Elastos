@@ -29,11 +29,11 @@ import java.io.Writer;
 import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDException;
-import org.elastos.did.DIDResolveException;
 import org.elastos.did.DIDStore;
-import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDResolveException;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.util.Base64;
 import org.elastos.did.util.JsonHelper;
 

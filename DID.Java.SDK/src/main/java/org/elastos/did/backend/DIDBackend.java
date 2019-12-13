@@ -25,10 +25,10 @@ package org.elastos.did.backend;
 import org.elastos.did.DID;
 import org.elastos.did.DIDAdapter;
 import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDException;
-import org.elastos.did.DIDResolveException;
-import org.elastos.did.DIDStoreException;
 import org.elastos.did.DIDURL;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDResolveException;
+import org.elastos.did.exception.DIDStoreException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

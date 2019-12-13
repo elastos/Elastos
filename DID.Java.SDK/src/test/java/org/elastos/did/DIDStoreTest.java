@@ -30,11 +30,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import org.elastos.credential.VerifiableCredential;
-import org.elastos.did.backend.DummyAdapter;
+import org.elastos.did.adapter.DummyAdapter;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
 import org.junit.Test;
 
 public class DIDStoreTest {
@@ -49,11 +52,11 @@ public class DIDStoreTest {
     	assertTrue(file.exists());
     	assertTrue(file.isDirectory());
 
-    	file = new File(TestConfig.storeRoot + File.separator + ".DIDStore");
+    	file = new File(TestConfig.storeRoot + File.separator + ".meta");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
-    	assertFalse(store.hasPrivateIdentity());
+    	assertFalse(store.containsPrivateIdentity());
 	}
 
 	@Test(expected = DIDStoreException.class)
@@ -71,10 +74,10 @@ public class DIDStoreTest {
     	testData.setupStore(true);
 
     	DIDStore store = DIDStore.getInstance();
-    	assertFalse(store.hasPrivateIdentity());
+    	assertFalse(store.containsPrivateIdentity());
 
     	testData.initIdentity();
-    	assertTrue(store.hasPrivateIdentity());
+    	assertTrue(store.containsPrivateIdentity());
 
     	File file = new File(TestConfig.storeRoot + File.separator + "private"
     			+ File.separator + "key");
@@ -90,7 +93,7 @@ public class DIDStoreTest {
     			new DummyAdapter());
 
     	store = DIDStore.getInstance();
-    	assertTrue(store.hasPrivateIdentity());
+    	assertTrue(store.containsPrivateIdentity());
 	}
 
 	@Test
@@ -117,8 +120,8 @@ public class DIDStoreTest {
     	assertTrue(file.isFile());
 
     	file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + "."
-    			+ doc.getSubject().getMethodSpecificId() + ".meta");
+    			+ File.separator + doc.getSubject().getMethodSpecificId()
+    			+ File.separator + ".meta");
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
@@ -155,8 +158,8 @@ public class DIDStoreTest {
     	assertTrue(file.isFile());
 
     	file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + "."
-    			+ doc.getSubject().getMethodSpecificId() + ".meta");
+    			+ File.separator + doc.getSubject().getMethodSpecificId()
+    			+ File.separator + ".meta");
     	assertFalse(file.exists());
 
     	resolved = store.resolveDid(doc.getSubject(), true);
@@ -193,8 +196,8 @@ public class DIDStoreTest {
         	assertTrue(file.isFile());
 
         	file = new File(TestConfig.storeRoot + File.separator + "ids"
-        			+ File.separator + "."
-        			+ doc.getSubject().getMethodSpecificId() + ".meta");
+        			+ File.separator + doc.getSubject().getMethodSpecificId()
+        			+ File.separator + ".meta");
         	assertTrue(file.exists());
         	assertTrue(file.isFile());
 
@@ -246,11 +249,6 @@ public class DIDStoreTest {
 
 	    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
 	    			+ File.separator + did.getMethodSpecificId());
-	    	assertFalse(file.exists());
-
-	    	file = new File(TestConfig.storeRoot + File.separator + "ids"
-	    			+ File.separator + "."
-	    			+ did.getMethodSpecificId() + ".meta");
 	    	assertFalse(file.exists());
 
     		deleted = store.deleteDid(did);
@@ -309,27 +307,37 @@ public class DIDStoreTest {
     	// Store test data into current store
     	testData.loadTestIssuer();
     	DIDDocument test = testData.loadTestDocument();
-    	testData.loadProfileCredential();
-    	testData.loadEmailCredential();
-    	testData.loadTwitterCredential();
-    	testData.loadPassportCredential();
+    	VerifiableCredential vc = testData.loadProfileCredential();
+    	vc.setAlias("MyProfile");
+    	vc = testData.loadEmailCredential();
+    	vc.setAlias("Email");
+    	vc = testData.loadTwitterCredential();
+    	vc.setAlias("Twitter");
+    	vc = testData.loadPassportCredential();
+    	vc.setAlias("Passport");
 
     	DIDStore store = DIDStore.getInstance();
 
     	DIDURL id = new DIDURL(test.getSubject(), "profile");
-    	VerifiableCredential vc = store.loadCredential(test.getSubject(), id);
+    	vc = store.loadCredential(test.getSubject(), id);
     	assertNotNull(vc);
-    	vc.setAlias("MyProfile");
+    	assertEquals("MyProfile", vc.getAlias());
+    	assertEquals(test.getSubject(), vc.getSubject().getId());
+    	assertEquals(id, vc.getId());
+    	assertTrue(vc.isValid());
+
+    	// try with full id string
+    	vc = store.loadCredential(test.getSubject().toString(), id.toString());
+    	assertNotNull(vc);
     	assertEquals("MyProfile", vc.getAlias());
     	assertEquals(test.getSubject(), vc.getSubject().getId());
     	assertEquals(id, vc.getId());
     	assertTrue(vc.isValid());
 
     	id = new DIDURL(test.getSubject(), "twitter");
-    	vc.setAlias("Twitter");
-    	assertEquals("Twitter", vc.getAlias());
     	vc = store.loadCredential(test.getSubject().toString(), "twitter");
     	assertNotNull(vc);
+    	assertEquals("Twitter", vc.getAlias());
     	assertEquals(test.getSubject(), vc.getSubject().getId());
     	assertEquals(id, vc.getId());
     	assertTrue(vc.isValid());
@@ -388,12 +396,40 @@ public class DIDStoreTest {
     	// Store test data into current store
     	testData.loadTestIssuer();
     	DIDDocument test = testData.loadTestDocument();
-    	testData.loadProfileCredential();
-    	testData.loadEmailCredential();
-    	testData.loadTwitterCredential();
-    	testData.loadPassportCredential();
+    	VerifiableCredential vc = testData.loadProfileCredential();
+    	vc.setAlias("MyProfile");
+    	vc = testData.loadEmailCredential();
+    	vc.setAlias("Email");
+    	vc = testData.loadTwitterCredential();
+    	vc.setAlias("Twitter");
+    	vc = testData.loadPassportCredential();
+    	vc.setAlias("Passport");
 
     	DIDStore store = DIDStore.getInstance();
+
+    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
+    			+ File.separator + test.getSubject().getMethodSpecificId()
+    			+ File.separator + "credentials" + File.separator + "twitter"
+    			+ File.separator + "credential");
+    	assertTrue(file.exists());
+
+    	file = new File(TestConfig.storeRoot + File.separator + "ids"
+    			+ File.separator + test.getSubject().getMethodSpecificId()
+    			+ File.separator + "credentials" + File.separator + "twitter"
+    			+ File.separator + ".meta");
+    	assertTrue(file.exists());
+
+    	file = new File(TestConfig.storeRoot + File.separator + "ids"
+    			+ File.separator + test.getSubject().getMethodSpecificId()
+    			+ File.separator + "credentials" + File.separator + "passport"
+    			+ File.separator + "credential");
+    	assertTrue(file.exists());
+
+    	file = new File(TestConfig.storeRoot + File.separator + "ids"
+    			+ File.separator + test.getSubject().getMethodSpecificId()
+    			+ File.separator + "credentials" + File.separator + "passport"
+    			+ File.separator + ".meta");
+    	assertTrue(file.exists());
 
     	boolean deleted = store.deleteCredential(test.getSubject(),
     			new DIDURL(test.getSubject(), "twitter"));
@@ -405,14 +441,9 @@ public class DIDStoreTest {
 		deleted = store.deleteCredential(test.getSubject().toString(), "notExist");
 		assertFalse(deleted);
 
-    	File file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + test.getSubject().getMethodSpecificId()
-    			+ File.separator + "credentials" + File.separator + "twitter");
-    	assertFalse(file.exists());
-
     	file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + test.getSubject().getMethodSpecificId()
-    			+ File.separator + "credentials" + File.separator + ".twitter.meta");
+    			+ File.separator + "credentials" + File.separator + "twitter");
     	assertFalse(file.exists());
 
     	file = new File(TestConfig.storeRoot + File.separator + "ids"
@@ -420,15 +451,84 @@ public class DIDStoreTest {
     			+ File.separator + "credentials" + File.separator + "passport");
     	assertFalse(file.exists());
 
-    	file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + test.getSubject().getMethodSpecificId()
-    			+ File.separator + "credentials" + File.separator + ".passport.meta");
-    	assertFalse(file.exists());
-
 		assertTrue(store.containsCredential(test.getSubject().toString(), "email"));
 		assertTrue(store.containsCredential(test.getSubject().toString(), "profile"));
 
 		assertFalse(store.containsCredential(test.getSubject().toString(), "twitter"));
 		assertFalse(store.containsCredential(test.getSubject().toString(), "passport"));
+	}
+
+	private void createDataForPerformanceTest() throws DIDException {
+		DIDStore store = DIDStore.getInstance();
+
+		Map<String, String> props= new HashMap<String, String>();
+		props.put("name", "John");
+		props.put("gender", "Male");
+		props.put("nation", "Singapore");
+		props.put("language", "English");
+		props.put("email", "john@example.com");
+		props.put("twitter", "@john");
+
+		for (int i = 0; i < 10; i++) {
+    		String alias = "my did " + i;
+        	DIDDocument doc = store.newDid(TestConfig.storePass, alias);
+
+        	Issuer issuer = new Issuer(doc);
+        	Issuer.CredentialBuilder cb = issuer.issueFor(doc.getSubject());
+        	VerifiableCredential vc = cb.id("cred-1")
+        			.type("BasicProfileCredential", "SelfProclaimedCredential")
+        			.properties(props)
+        			.seal(TestConfig.storePass);
+
+        	store.storeCredential(vc);
+		}
+	}
+
+	private void testStorePerformance(boolean cached) throws DIDException {
+		DIDAdapter adapter = new DummyAdapter();
+    	TestData.deleteFile(new File(TestConfig.storeRoot));
+    	if (cached)
+    		DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
+    	else
+    		DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter, 0, 0);
+
+       	DIDStore store = DIDStore.getInstance();
+
+       	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+    			TestConfig.passphrase, TestConfig.storePass, true);
+
+    	createDataForPerformanceTest();
+
+    	List<DID> dids = store.listDids(DIDStore.DID_ALL);
+    	assertEquals(10, dids.size());
+
+    	long start = System.currentTimeMillis();
+
+    	for (int i = 0; i < 1000; i++) {
+	    	for (DID did : dids) {
+	    		DIDDocument doc = store.loadDid(did);
+	    		assertEquals(did, doc.getSubject());
+
+	    		DIDURL id = new DIDURL(did, "cred-1");
+	    		VerifiableCredential vc = store.loadCredential(did, id);
+	    		assertEquals(id, vc.getId());
+	    	}
+    	}
+
+    	long end = System.currentTimeMillis();
+
+    	System.out.println("Store " + (cached ? "with " : "without ") +
+    			"cache took " + (end - start) + " milliseconds.");
+	}
+
+	@Test
+	public void testStoreWithCache() throws DIDException {
+		testStorePerformance(true);
+	}
+
+	@Test
+	public void testStoreWithoutCache() throws DIDException {
+		testStorePerformance(false);
 	}
 }

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.credential;
+package org.elastos.did;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -31,9 +31,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDException;
 import org.elastos.did.DIDURL;
-import org.elastos.did.TestData;
+import org.elastos.did.VerifiableCredential;
+import org.elastos.did.exception.DIDException;
 import org.junit.Test;
 
 public class VerifiableCredentialTest {

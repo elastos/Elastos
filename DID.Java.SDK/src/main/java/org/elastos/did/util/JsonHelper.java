@@ -29,10 +29,10 @@ import java.util.Date;
 
 import org.elastos.did.Constants;
 import org.elastos.did.DID;
-import org.elastos.did.DIDException;
 import org.elastos.did.DIDURL;
-import org.elastos.did.MalformedDIDException;
-import org.elastos.did.MalformedDIDURLException;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.MalformedDIDException;
+import org.elastos.did.exception.MalformedDIDURLException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

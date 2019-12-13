@@ -37,8 +37,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.elastos.credential.MalformedCredentialException;
-import org.elastos.credential.VerifiableCredential;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.MalformedCredentialException;
+import org.elastos.did.exception.MalformedDIDException;
+import org.elastos.did.exception.MalformedDIDURLException;
+import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.util.Base58;
 import org.elastos.did.util.Base64;
 import org.elastos.did.util.EcdsaSigner;
@@ -63,25 +67,241 @@ public class DIDDocument {
 
 	private String alias;
 
-	/* Just expose from/toJson method for current package */
-	static class EmbeddedCredential extends VerifiableCredential {
-		protected EmbeddedCredential() {
-			super();
+	public static class PublicKey extends DIDObject {
+		private DID controller;
+		private String keyBase58;
+
+		protected PublicKey(DIDURL id, String type, DID controller, String keyBase58) {
+			super(id, type);
+			this.controller = controller;
+			this.keyBase58 = keyBase58;
 		}
 
-		protected EmbeddedCredential(VerifiableCredential vc) {
-			super(vc);
+		protected PublicKey(DIDURL id, DID controller, String keyBase58) {
+			this(id, Constants.defaultPublicKeyType, controller, keyBase58);
 		}
 
-		protected static VerifiableCredential fromJson(JsonNode node, DID ref)
-				throws MalformedCredentialException {
-			return new EmbeddedCredential(VerifiableCredential.fromJson(node, ref));
+		public DID getController() {
+			return controller;
+		}
+
+		public String getPublicKeyBase58() {
+			return keyBase58;
+		}
+
+		public byte[] getPublicKeyBytes() {
+			return Base58.decode(keyBase58);
 		}
 
 		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+
+			if (obj instanceof PublicKey) {
+				PublicKey ref = (PublicKey)obj;
+
+				if (getId().equals(ref.getId()) &&
+						getType().equals(ref.getType()) &&
+						getController().equals(ref.getController()) &&
+						getPublicKeyBase58().equals(ref.getPublicKeyBase58()))
+					return true;
+			}
+
+			return false;
+		}
+
+		protected static PublicKey fromJson(JsonNode node, DID ref)
+				throws MalformedDocumentException {
+			Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
+
+			DIDURL id = JsonHelper.getDidUrl(node, Constants.id,
+						ref, "publicKey' id", clazz);
+
+			String type = JsonHelper.getString(node, Constants.type, true,
+						Constants.defaultPublicKeyType, "publicKey' type", clazz);
+
+			DID controller = JsonHelper.getDid(node, Constants.controller,
+						true, ref, "publicKey' controller", clazz);
+
+			String keyBase58 = JsonHelper.getString(node, Constants.publicKeyBase58,
+						false, null, "publicKeyBase58", clazz);
+
+			return new PublicKey(id, type, controller, keyBase58);
+		}
+
 		protected void toJson(JsonGenerator generator, DID ref, boolean normalized)
 				throws IOException {
-			super.toJson(generator, ref, normalized);
+			String value;
+
+			generator.writeStartObject();
+
+			// id
+			generator.writeFieldName(Constants.id);
+			if (normalized || ref == null || !getId().getDid().equals(ref))
+				value = getId().toString();
+			else
+				value = "#" + getId().getFragment();
+			generator.writeString(value);
+
+			// type
+			if (normalized || !getType().equals(Constants.defaultPublicKeyType)) {
+				generator.writeFieldName(Constants.type);
+				generator.writeString(getType());
+			}
+
+			// controller
+			if (normalized || ref == null || !controller.equals(ref)) {
+				generator.writeFieldName(Constants.controller);
+				generator.writeString(controller.toString());
+			}
+
+			// publicKeyBase58
+			generator.writeFieldName(Constants.publicKeyBase58);
+			generator.writeString(keyBase58);
+
+			generator.writeEndObject();
+		}
+	}
+
+	public static class Service extends DIDObject {
+		private String endpoint;
+
+		protected Service(DIDURL id, String type, String endpoint) {
+			super(id, type);
+			this.endpoint = endpoint;
+		}
+
+		public String getServiceEndpoint() {
+			return endpoint;
+		}
+
+		protected static Service fromJson(JsonNode node, DID ref)
+				throws MalformedDocumentException {
+			Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
+
+			DIDURL id = JsonHelper.getDidUrl(node, Constants.id,
+					ref, "service' id", clazz);
+
+			String type = JsonHelper.getString(node, Constants.type, false,
+					null, "service' type", clazz);
+
+			String endpoint = JsonHelper.getString(node, Constants.serviceEndpoint,
+					false, null, "service' endpoint", clazz);
+
+			return new Service(id, type, endpoint);
+		}
+
+		public void toJson(JsonGenerator generator, DID ref, boolean normalized)
+				throws IOException {
+			String value;
+
+			generator.writeStartObject();
+
+			// id
+			generator.writeFieldName(Constants.id);
+			if (normalized || ref == null || !getId().getDid().equals(ref))
+				value = getId().toString();
+			else
+				value = "#" + getId().getFragment();
+			generator.writeString(value);
+
+			// type
+			generator.writeFieldName(Constants.type);
+			generator.writeString(getType());
+
+			// endpoint
+			generator.writeFieldName(Constants.serviceEndpoint);
+			generator.writeString(endpoint);
+
+			generator.writeEndObject();
+		}
+	}
+
+	public static class Proof {
+		private String type;
+		private Date created;
+		private DIDURL creator;
+		private String signature;
+
+		protected Proof(String type, Date created, DIDURL creator, String signature) {
+			this.type = type;
+			this.created = created;
+			this.creator = creator;
+			this.signature = signature;
+		}
+
+		protected Proof(DIDURL creator, String signature) {
+			this(Constants.defaultPublicKeyType,
+					Calendar.getInstance(Constants.UTC).getTime(),
+					creator, signature);
+		}
+
+	    public String getType() {
+	    	return type;
+	    }
+
+	    public Date getCreated() {
+	    	return created;
+	    }
+
+	    public DIDURL getCreator() {
+	    	return creator;
+	    }
+
+	    public String getSignature() {
+	    	return signature;
+	    }
+
+		protected static Proof fromJson(JsonNode node, DIDURL refSignKey)
+				throws MalformedDocumentException {
+			Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
+
+			String type = JsonHelper.getString(node, Constants.type,
+					true, Constants.defaultPublicKeyType,
+					"document proof type", clazz);
+
+			Date created = JsonHelper.getDate(node, Constants.created,
+					true, null, "proof created date", clazz);
+
+			DIDURL creator = JsonHelper.getDidUrl(node, Constants.creator, true,
+					refSignKey.getDid(), "document proof creator", clazz);
+			if (creator == null)
+				creator = refSignKey;
+
+			String signature = JsonHelper.getString(node, Constants.signatureValue,
+					false, null, "document proof signature", clazz);
+
+			return new Proof(type, created, creator, signature);
+		}
+
+		protected void toJson(JsonGenerator generator, boolean normalized)
+				throws IOException {
+			generator.writeStartObject();
+
+			// type
+			if (normalized || !type.equals(Constants.defaultPublicKeyType)) {
+				generator.writeFieldName(Constants.type);
+				generator.writeString(type);
+			}
+
+			// created
+			if (created != null) {
+				generator.writeFieldName(Constants.created);
+				generator.writeString(JsonHelper.format(created));
+			}
+
+			// creator
+			if (normalized) {
+				generator.writeFieldName(Constants.creator);
+				generator.writeString(creator.toString());
+			}
+
+			// signature
+			generator.writeFieldName(Constants.signatureValue);
+			generator.writeString(signature);
+
+			generator.writeEndObject();
 		}
 	}
 
@@ -503,8 +723,7 @@ public class DIDDocument {
 				return false;
 		}
 
-		EmbeddedCredential ec = new EmbeddedCredential(vc);
-		credentials.put(ec.getId(), ec);
+		credentials.put(vc.getId(), vc);
 		return true;
 	}
 
@@ -575,17 +794,25 @@ public class DIDDocument {
 		this.proof = proof;
 	}
 
+	protected void setAliasInternal(String alias) {
+		this.alias = alias != null ? alias : "";
+	}
+
 	public void setAlias(String alias) throws DIDException {
 		if (DIDStore.isInitialized())
-			DIDStore.getInstance().setDidAlias(getSubject(), alias);
+			DIDStore.getInstance().storeDidAlias(getSubject(), alias);
 
-		this.alias = alias != null ? alias : "";
+		setAliasInternal(alias);
+	}
+
+	protected String getAliasInternal() {
+		return alias;
 	}
 
 	public String getAlias() throws DIDException {
 		if (alias == null) {
 			if (DIDStore.isInitialized())
-				alias = DIDStore.getInstance().getDidAlias(getSubject());
+				alias = DIDStore.getInstance().loadDidAlias(getSubject());
 
 			if (alias == null)
 				alias = "";
@@ -628,7 +855,7 @@ public class DIDDocument {
 		return !isDeactivated() && !isExpired() && isGenuine();
 	}
 
-	public Builder modify() {
+	public Builder edit() {
 		return new Builder(this);
 	}
 
@@ -841,7 +1068,7 @@ public class DIDDocument {
 		for (int i = 0; i < node.size(); i++) {
 			VerifiableCredential vc;
 			try {
-				vc = EmbeddedCredential.fromJson(node.get(i), getSubject());
+				vc = VerifiableCredential.fromJson(node.get(i), getSubject());
 			} catch (MalformedCredentialException e) {
 				throw new MalformedDocumentException(e.getMessage(), e);
 			}
@@ -980,7 +1207,7 @@ public class DIDDocument {
 			generator.writeFieldName(Constants.credential);
 			generator.writeStartArray();
 			for (VerifiableCredential vc : credentials.values())
-				((EmbeddedCredential)vc).toJson(generator, getSubject(), normalized);
+				vc.toJson(generator, getSubject(), normalized);
 			generator.writeEndArray();
 		}
 

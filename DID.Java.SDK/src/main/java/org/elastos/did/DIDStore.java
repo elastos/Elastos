@@ -25,16 +25,19 @@ package org.elastos.did;
 import java.util.List;
 import java.util.Map;
 
-import org.elastos.credential.MalformedCredentialException;
-import org.elastos.credential.VerifiableCredential;
 import org.elastos.did.backend.DIDBackend;
+import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.MalformedCredentialException;
+import org.elastos.did.exception.MalformedDIDException;
+import org.elastos.did.exception.MalformedDIDURLException;
+import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.util.Aes256cbc;
 import org.elastos.did.util.Base64;
 import org.elastos.did.util.EcdsaSigner;
 import org.elastos.did.util.HDKey;
 import org.elastos.did.util.LRUCache;
 
-public abstract class DIDStore {
+public final class DIDStore {
 	private static final int CACHE_INITIAL_CAPACITY = 16;
 	private static final int CACHE_MAX_CAPACITY = 32;
 
@@ -48,35 +51,39 @@ public abstract class DIDStore {
 	private Map<DIDURL, VerifiableCredential> vcCache;
 
 	private DIDBackend backend;
+	private DIDStoreBackend storage;
 
-	protected void setupStore(int initialCacheCapacity, int maxCacheCapacity,
-			DIDAdapter adapter) {
+	private DIDStore(int initialCacheCapacity, int maxCacheCapacity,
+			DIDAdapter adapter, DIDStoreBackend storage) {
 		if (maxCacheCapacity > 0) {
 			this.didCache = LRUCache.createInstance(initialCacheCapacity, maxCacheCapacity);
 			this.vcCache = LRUCache.createInstance(initialCacheCapacity, maxCacheCapacity);
 		}
 
 		this.backend = new DIDBackend(adapter);
+		this.storage = storage;
 	}
 
 	public static void initialize(String type, String location,
-			int initialCacheCapacity, int maxCacheCapacity,
-			DIDAdapter adapter) throws DIDStoreException {
+			DIDAdapter adapter, int initialCacheCapacity, int maxCacheCapacity)
+			throws DIDStoreException {
 		if (type == null || location == null ||
-				location.isEmpty() || adapter == null)
+				location.isEmpty() || adapter == null ||
+				maxCacheCapacity < initialCacheCapacity)
 			throw new IllegalArgumentException();
 
 		if (!type.equals("filesystem"))
 			throw new DIDStoreException("Unsupported store type: " + type);
 
-		instance = new FileSystemStore(location);
-		instance.setupStore(initialCacheCapacity, maxCacheCapacity, adapter);
+		DIDStoreBackend storage = new FileSystemStoreBackend(location);
+		instance = new DIDStore(initialCacheCapacity, maxCacheCapacity,
+				adapter, storage);
 	}
 
 	public static void initialize(String type, String location,
 			DIDAdapter adapter) throws DIDStoreException {
-		initialize(type, location, CACHE_INITIAL_CAPACITY,
-				CACHE_MAX_CAPACITY, adapter);
+		initialize(type, location, adapter,
+				CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY);
 	}
 
 	public static boolean isInitialized() {
@@ -94,17 +101,9 @@ public abstract class DIDStore {
 		return backend.getAdapter();
 	}
 
-	public abstract boolean hasPrivateIdentity() throws DIDStoreException;
-
-	protected abstract void storePrivateIdentity(String key)
-			throws DIDStoreException;
-
-	protected abstract String loadPrivateIdentity() throws DIDStoreException;
-
-	protected abstract void storePrivateIdentityIndex(int index)
-			throws DIDStoreException;
-
-	protected abstract int loadPrivateIdentityIndex() throws DIDStoreException;
+	public boolean containsPrivateIdentity() throws DIDStoreException {
+		return storage.containsPrivateIdentity();
+	}
 
 	protected static String encryptToBase64(String passwd, byte[] input)
 			throws DIDStoreException {
@@ -140,7 +139,7 @@ public abstract class DIDStore {
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
 
-		if (hasPrivateIdentity() && !force)
+		if (containsPrivateIdentity() && !force)
 			throw new DIDStoreException("Already has private indentity.");
 
 		if (passphrase == null)
@@ -152,8 +151,8 @@ public abstract class DIDStore {
 		// keep compatible with Native SDK
 		String encryptedIdentity = encryptToBase64(storepass,
 				privateIdentity.getSeed());
-		storePrivateIdentity(encryptedIdentity);
-		storePrivateIdentityIndex(0);
+		storage.storePrivateIdentity(encryptedIdentity);
+		storage.storePrivateIdentityIndex(0);
 
 		privateIdentity.wipe();
 	}
@@ -166,10 +165,10 @@ public abstract class DIDStore {
 	// initialized from saved private identity from DIDStore.
 	protected HDKey loadPrivateIdentity(String storepass)
 			throws DIDStoreException {
-		if (!hasPrivateIdentity())
+		if (!containsPrivateIdentity())
 			return null;
 
-		byte[] seed = decryptFromBase64(storepass, loadPrivateIdentity());
+		byte[] seed = decryptFromBase64(storepass, storage.loadPrivateIdentity());
 		return HDKey.fromSeed(seed);
 	}
 
@@ -181,7 +180,7 @@ public abstract class DIDStore {
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
 
-		int nextIndex = loadPrivateIdentityIndex();
+		int nextIndex = storage.loadPrivateIdentityIndex();
 		int blanks = 0;
 		int i = 0;
 
@@ -195,11 +194,12 @@ public abstract class DIDStore {
 				storeDid(doc);
 
 				// Save private key
-				String encryptedKey = encryptToBase64(storepass, key.serialize());
-				storePrivateKey(did, doc.getDefaultPublicKey(), encryptedKey);
+				// TODO: get real private key bytes
+				storePrivateKey(did, doc.getDefaultPublicKey(),
+						key.serialize(),storepass);
 
 				if (i >= nextIndex)
-					storePrivateIdentityIndex(i);
+					storage.storePrivateIdentityIndex(i);
 
 				blanks = 0;
 			} else {
@@ -217,21 +217,21 @@ public abstract class DIDStore {
 		if (privateIdentity == null)
 			throw new DIDStoreException("DID Store not contains private identity.");
 
-		int nextIndex = loadPrivateIdentityIndex();
+		int nextIndex = storage.loadPrivateIdentityIndex();
 
 		HDKey.DerivedKey key = privateIdentity.derive(nextIndex++);
 		DID did = new DID(DID.METHOD, key.getAddress());
 		DIDURL id = new DIDURL(did, "primary");
 
-		String encryptedKey = encryptToBase64(storepass, key.serialize());
-		storePrivateKey(did, id, encryptedKey);
+		// TODO: get real private key bytes
+		storePrivateKey(did, id, key.serialize(), storepass);
 
 		DIDDocument.Builder db = new DIDDocument.Builder(did);
 		db.addAuthenticationKey(id, key.getPublicKeyBase58());
 		DIDDocument doc = db.seal(storepass);
 		storeDid(doc, alias);
 
-		storePrivateIdentityIndex(nextIndex);
+		storage.storePrivateIdentityIndex(nextIndex);
 		privateIdentity.wipe();
 		key.wipe();
 
@@ -244,7 +244,7 @@ public abstract class DIDStore {
 
 	public boolean publishDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
-		if (doc == null || storepass == null)
+		if (doc == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
 		if (signKey == null)
@@ -266,13 +266,12 @@ public abstract class DIDStore {
 
 	public boolean updateDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
-		if (doc == null || storepass == null)
+		if (doc == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		storeDid(doc);
 		return backend.update(doc, signKey, storepass);
 	}
 
@@ -352,30 +351,88 @@ public abstract class DIDStore {
 		return resolveDid(did, false);
 	}
 
-	public abstract void storeDid(DIDDocument doc, String alias)
-			throws DIDStoreException;
+	public void storeDid(DIDDocument doc, String alias)
+			throws DIDStoreException {
+		storeDid(doc);
+		storeDidAlias(doc.getSubject(), alias);
+	}
 
 	public void storeDid(DIDDocument doc) throws DIDStoreException {
-		storeDid(doc, null);
+		if (doc == null)
+			throw new IllegalArgumentException();
+
+		storage.storeDid(doc);
+
+		if (didCache != null)
+			didCache.put(doc.getSubject(), doc);
 	}
 
-	public abstract void setDidAlias(DID did, String alias)
-			throws DIDStoreException;
+	public void storeDidAlias(DID did, String alias)
+			throws DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
 
-	public void setDidAlias(String did, String alias)
+		storage.storeDidAlias(did, alias);
+
+		if (didCache != null) {
+			DIDDocument doc = didCache.get(did);
+			if (doc != null)
+				doc.setAliasInternal(alias);
+		}
+	}
+
+	public void storeDidAlias(String did, String alias)
 			throws MalformedDIDException, DIDStoreException {
-		setDidAlias(new DID(did), alias);
+		storeDidAlias(new DID(did), alias);
 	}
 
-	public abstract String getDidAlias(DID did) throws DIDStoreException;
+	public String loadDidAlias(DID did) throws DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
 
-	public String getDidAlias(String did)
+		String alias = null;
+		DIDDocument doc = null;
+
+		if (didCache != null) {
+			doc = didCache.get(did);
+			if (doc != null) {
+				alias = doc.getAliasInternal();
+				if (alias != null)
+					return alias;
+			}
+		}
+
+		alias = storage.loadDidAlias(did);
+		if (doc != null)
+			doc.setAliasInternal(alias);
+
+		return alias;
+	}
+
+	public String loadDidAlias(String did)
 			throws MalformedDIDException, DIDStoreException {
-		return getDidAlias(new DID(did));
+		return loadDidAlias(new DID(did));
 	}
 
-	public abstract DIDDocument loadDid(DID did)
-			throws MalformedDocumentException, DIDStoreException;
+	public DIDDocument loadDid(DID did)
+			throws MalformedDocumentException, DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
+
+		DIDDocument doc;
+
+		if (didCache != null) {
+			doc = didCache.get(did);
+			if (doc != null)
+				return doc;
+		}
+
+		doc = storage.loadDid(did);
+		if (doc != null && didCache != null)
+			didCache.put(doc.getSubject(), doc);
+
+		return doc;
+	}
 
 	public DIDDocument loadDid(String did)
 			throws MalformedDIDException, MalformedDocumentException,
@@ -383,53 +440,124 @@ public abstract class DIDStore {
 		return loadDid(new DID(did));
 	}
 
-	public abstract boolean containsDid(DID did) throws DIDStoreException;
+	public boolean containsDid(DID did) throws DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
+
+		return storage.containsDid(did);
+	}
 
 	public boolean containsDid(String did)
 			throws MalformedDIDException, DIDStoreException {
 		return containsDid(new DID(did));
 	}
 
-	public abstract boolean deleteDid(DID did) throws DIDStoreException;
+	public boolean deleteDid(DID did) throws DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
+
+		return storage.deleteDid(did);
+	}
 
 	public boolean deleteDid(String did)
 			throws MalformedDIDException, DIDStoreException {
 		return deleteDid(new DID(did));
 	}
 
-	public abstract List<DID> listDids(int filter)
-			throws DIDStoreException;
+	public List<DID> listDids(int filter) throws DIDStoreException {
+		return storage.listDids(filter);
+	}
 
-	public abstract void storeCredential(VerifiableCredential credential,
-			String alias) throws DIDStoreException;
+	public void storeCredential(VerifiableCredential credential, String alias)
+			throws DIDStoreException {
+		storeCredential(credential);
+		storeCredentialAlias(credential.getSubject().getId(),
+				credential.getId(), alias);
+	}
 
 	public void storeCredential(VerifiableCredential credential)
 			throws DIDStoreException {
-		storeCredential(credential, null);
+		if (credential == null)
+			throw new IllegalArgumentException();
+
+		storage.storeCredential(credential);
+
+		if (vcCache != null)
+			vcCache.put(credential.getId(), credential);
 	}
 
-	public abstract void setCredentialAlias(DID did, DIDURL id, String alias)
-			throws DIDStoreException;
+	public void storeCredentialAlias(DID did, DIDURL id, String alias)
+			throws DIDStoreException {
+		if (did == null || id == null)
+			throw new IllegalArgumentException();
 
-	public void setCredentialAlias(String did, String id, String alias)
+		storage.storeCredentialAlias(did, id, alias);
+
+		if (vcCache != null) {
+			VerifiableCredential vc = vcCache.get(id);
+			if (vc != null) {
+				vc.setAliasInternal(alias);
+			}
+		}
+	}
+
+	public void storeCredentialAlias(String did, String id, String alias)
 			throws  MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
 		DID _did = new DID(did);
-		setCredentialAlias(_did, new DIDURL(_did, id), alias);
+		storeCredentialAlias(_did, new DIDURL(_did, id), alias);
 	}
 
-	public abstract String getCredentialAlias(DID did, DIDURL id)
-			throws DIDStoreException;
+	public String loadCredentialAlias(DID did, DIDURL id)
+			throws DIDStoreException {
+		if (did == null || id == null)
+			throw new IllegalArgumentException();
 
-	public String getCredentialAlias(String did, String id)
+		String alias = null;
+		VerifiableCredential vc = null;
+
+		if (vcCache != null) {
+			vc = vcCache.get(id);
+			if (vc != null) {
+				alias = vc.getAliasInternal();
+				if (alias != null)
+					return alias;
+			}
+		}
+
+		alias = storage.loadCredentialAlias(did, id);
+		if (vc != null)
+			vc.setAliasInternal(alias);
+
+		return alias;
+	}
+
+	public String loadCredentialAlias(String did, String id)
 			throws  MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
 		DID _did = new DID(did);
-		return getCredentialAlias(_did, new DIDURL(_did, id));
+		return loadCredentialAlias(_did, new DIDURL(_did, id));
 	}
 
-	public abstract VerifiableCredential loadCredential(DID did, DIDURL id)
-			throws MalformedCredentialException, DIDStoreException;
+	public VerifiableCredential loadCredential(DID did, DIDURL id)
+			throws MalformedCredentialException, DIDStoreException {
+		if (did == null || id == null)
+			throw new IllegalArgumentException();
+
+		VerifiableCredential vc;
+
+		if (vcCache != null) {
+			vc = vcCache.get(id);
+			if (vc != null)
+				return vc;
+		}
+
+		vc = storage.loadCredential(did, id);
+		if (vc != null && vcCache != null)
+			vcCache.put(vc.getId(), vc);
+
+		return vc;
+	}
 
 	public VerifiableCredential loadCredential(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
@@ -438,15 +566,25 @@ public abstract class DIDStore {
 		return loadCredential(_did, new DIDURL(_did, id));
 	}
 
-	public abstract boolean containsCredentials(DID did) throws DIDStoreException;
+	public boolean containsCredentials(DID did) throws DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
+
+		return storage.containsCredentials(did);
+	}
 
 	public boolean containsCredentials(String did)
 			throws MalformedDIDException, DIDStoreException {
 		return containsCredentials(new DID(did));
 	}
 
-	public abstract boolean containsCredential(DID did, DIDURL id)
-			throws DIDStoreException;
+	public boolean containsCredential(DID did, DIDURL id)
+			throws DIDStoreException {
+		if (did == null || id == null)
+			throw new IllegalArgumentException();
+
+		return storage.containsCredential(did, id);
+	}
 
 	public boolean containsCredential(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
@@ -455,8 +593,13 @@ public abstract class DIDStore {
 		return containsCredential(_did, new DIDURL(_did, id));
 	}
 
-	public abstract boolean deleteCredential(DID did, DIDURL id)
-			throws DIDStoreException;
+	public boolean deleteCredential(DID did, DIDURL id)
+			throws DIDStoreException {
+		if (did == null || id == null)
+			throw new IllegalArgumentException();
+
+		return storage.deleteCredential(did, id);
+	}
 
 	public boolean deleteCredential(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
@@ -465,34 +608,77 @@ public abstract class DIDStore {
 		return deleteCredential(_did, new DIDURL(_did, id));
 	}
 
-	public abstract List<DIDURL> listCredentials(DID did)
-			throws DIDStoreException;
+	public List<DIDURL> listCredentials(DID did) throws DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
+
+		return storage.listCredentials(did);
+	}
 
 	public List<DIDURL> listCredentials(String did)
 			throws MalformedDIDException, DIDStoreException {
 		return listCredentials(new DID(did));
 	}
 
-	public abstract List<DIDURL> selectCredentials(DID did,
-			DIDURL id, String[] type) throws DIDStoreException;
+	public List<DIDURL> selectCredentials(DID did, DIDURL id, String[] type)
+			throws DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
 
-	public List<DIDURL> selectCredentials(String did, String id,
-			String[] type) throws MalformedDIDException,
-			MalformedDIDURLException, DIDStoreException {
+		if ((id == null) && (type == null || type.length == 0))
+			throw new IllegalArgumentException();
+
+		return storage.selectCredentials(did, id, type);
+	}
+
+	public List<DIDURL> selectCredentials(String did, String id, String[] type)
+			throws MalformedDIDException, MalformedDIDURLException, DIDStoreException {
 		DID _did = new DID(did);
 		return selectCredentials(_did, new DIDURL(_did, id), type);
 	}
 
-	public abstract boolean containsPrivateKeys(DID did)
-			throws DIDStoreException;
+	public void storePrivateKey(DID did, DIDURL id, byte[] privateKey,
+			String storepass) throws DIDStoreException {
+		if (did == null || id == null ||
+				privateKey == null || privateKey.length == 0 ||
+				storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
+
+		String encryptedKey = encryptToBase64(storepass, privateKey);
+		storage.storePrivateKey(did, id, encryptedKey);
+	}
+
+	public void storePrivateKey(String did, String id, byte[] privateKey,
+			String storepass) throws MalformedDIDException,
+			MalformedDIDURLException, DIDStoreException {
+		DID _did = new DID(did);
+		storePrivateKey(_did, new DIDURL(_did, id), privateKey, storepass);
+	}
+
+	protected String loadPrivateKey(DID did, DIDURL id)
+			throws DIDStoreException {
+		return storage.loadPrivateKey(did, id);
+	}
+
+	public boolean containsPrivateKeys(DID did) throws DIDStoreException {
+		if (did == null)
+			throw new IllegalArgumentException();
+
+		return storage.containsPrivateKeys(did);
+	}
 
 	public boolean containsPrivateKeys(String did)
 			throws MalformedDIDException, DIDStoreException {
 		return containsPrivateKeys(new DID(did));
 	}
 
-	public abstract boolean containsPrivateKey(DID did, DIDURL id)
-			throws DIDStoreException;
+	public boolean containsPrivateKey(DID did, DIDURL id)
+			throws DIDStoreException {
+		if (did == null || id == null)
+			throw new IllegalArgumentException();
+
+		return storage.containsPrivateKey(did, id);
+	}
 
 	public boolean containsPrivateKey(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,
@@ -501,21 +687,13 @@ public abstract class DIDStore {
 		return containsPrivateKey(_did, new DIDURL(_did, id));
 	}
 
-	public abstract void storePrivateKey(DID did, DIDURL id, String privateKey)
-			throws DIDStoreException;
+	public boolean deletePrivateKey(DID did, DIDURL id)
+			throws DIDStoreException {
+		if (did == null || id == null)
+			throw new IllegalArgumentException();
 
-	public void storePrivateKey(String did, String id, String privateKey)
-			throws MalformedDIDException, MalformedDIDURLException,
-			DIDStoreException {
-		DID _did = new DID(did);
-		storePrivateKey(_did, new DIDURL(_did, id), privateKey);
+		return storage.deletePrivateKey(did, id);
 	}
-
-	protected abstract String loadPrivateKey(DID did, DIDURL id)
-			throws DIDStoreException;
-
-	public abstract boolean deletePrivateKey(DID did, DIDURL id)
-			throws DIDStoreException;
 
 	public boolean deletePrivateKey(String did, String id)
 			throws MalformedDIDException, MalformedDIDURLException,

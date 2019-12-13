@@ -20,19 +20,16 @@
  * SOFTWARE.
  */
 
-package org.elastos.credential;
+package org.elastos.did;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
-import org.elastos.did.Constants;
-import org.elastos.did.DID;
-import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDException;
-import org.elastos.did.DIDStoreException;
-import org.elastos.did.DIDURL;
-import org.elastos.did.MalformedDIDException;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.MalformedCredentialException;
+import org.elastos.did.exception.MalformedDIDException;
 
 public class Issuer {
 	private DIDDocument self;

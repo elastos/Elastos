@@ -28,10 +28,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.elastos.credential.VerifiableCredential;
-import org.elastos.credential.VerifiablePresentation;
+import org.elastos.did.adapter.DummyAdapter;
 import org.elastos.did.adapter.SPVAdapter;
-import org.elastos.did.backend.DummyAdapter;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.util.Base58;
 import org.elastos.did.util.HDKey;
 
@@ -123,8 +123,8 @@ public final class TestData {
 		String skBase58 = loadText(fileName);
 		byte[] sk = Base58.decode(skBase58);
 
-		String encryptedKey = DIDStore.encryptToBase64(TestConfig.storePass, sk);
-		DIDStore.getInstance().storePrivateKey(id.getDid(), id, encryptedKey);
+		DIDStore.getInstance().storePrivateKey(id.getDid(), id, sk,
+				TestConfig.storePass);
 	}
 
 	public DIDDocument loadTestIssuer() throws DIDException, IOException {

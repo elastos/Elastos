@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.elastos.credential;
+package org.elastos.did;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,10 +32,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDException;
 import org.elastos.did.DIDURL;
-import org.elastos.did.TestConfig;
-import org.elastos.did.TestData;
+import org.elastos.did.Issuer;
+import org.elastos.did.VerifiableCredential;
+import org.elastos.did.exception.DIDException;
 import org.elastos.did.util.HDKey;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,7 +82,7 @@ public class IssuerTest {
 		testData.setupStore(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
-		DIDDocument.Builder db = issuerDoc.modify();
+		DIDDocument.Builder db = issuerDoc.edit();
 
 		HDKey.DerivedKey key = TestData.generateKeypair();
 		DIDURL signKey = new DIDURL(issuerDoc.getSubject(), "testKey");

@@ -36,43 +36,44 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.elastos.credential.MalformedCredentialException;
-import org.elastos.credential.VerifiableCredential;
+import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.exception.MalformedCredentialException;
+import org.elastos.did.exception.MalformedDocumentException;
 
 /*
  * FileSystem DID Store: storage layout
  *
  *  + DIDStore root
- *    - .DIDStore						[Store tag file, include magic and version]
+ *    - .meta						    [Store meta file, include magic and version]
  *    + private							[Personal root private key for HD identity]
  *      - key							[HD root private key]
  *      - index							[Last derive index]
  *    + ids
- *      - .ixxxxxxxxxxxxxxx0.meta		[Meta for DID, alias only, OPTIONAL]
  *      + ixxxxxxxxxxxxxxx0 			[DID root, named by id specific string]
+ *        - .meta						[Meta for DID, alias only, OPTIONAL]
  *        - document					[DID document, json format]
- *        + credentials				[Credentials root, OPTIONAL]
- *          - credential-id-0			[Credential, json format, named by id' fragment]
- *          - .credential-id-0.meta	[Meta for credential, alias only, OPTONAL]
- *          - ...
- *          - credential-id-N
- *          - .credential-id-N.meta
- *        + privatekeys				[Private keys root, OPTIONAL]
+ *        + credentials				    [Credentials root, OPTIONAL]
+ *          + credential-id-0           [Credential root, named by id' fragment]
+ *            - .meta					[Meta for credential, alias only, OPTONAL]
+ *            - credential				[Credential, json format]
+ *          + ...
+ *          + credential-id-N
+ *            - .meta
+ *            - credential
+ *        + privatekeys				    [Private keys root, OPTIONAL]
  *          - privatekey-id-0			[Encrypted private key, named by pk' id]
  *          - ...
  *          - privatekey-id-N
  *
  *      ......
  *
- *      - .ixxxxxxxxxxxxxxxN.meta
  *      + ixxxxxxxxxxxxxxxN
  *
  */
-class FileSystemStore extends DIDStore {
-	private static final String TAG_FILE = ".DIDStore";
-	private static final byte[] TAG_MAGIC = { 0x00, 0x0D, 0x01, 0x0D };
-	private static final byte[] TAG_VERSION = { 0x00, 0x00, 0x00, 0x01 };
-	private static final int TAG_SIZE = 8;
+class FileSystemStoreBackend implements DIDStoreBackend {
+	private static final byte[] STORE_MAGIC = { 0x00, 0x0D, 0x01, 0x0D };
+	private static final byte[] STORE_VERSION = { 0x00, 0x00, 0x00, 0x02 };
+	private static final int STORE_META_SIZE = 8;
 
 	private static final String PRIVATE_DIR = "private";
 	private static final String HDKEY_FILE = "key";
@@ -81,14 +82,16 @@ class FileSystemStore extends DIDStore {
 	private static final String DID_DIR = "ids";
 	private static final String DOCUMENT_FILE = "document";
 	private static final String CREDENTIALS_DIR = "credentials";
+	private static final String CREDENTIAL_FILE = "credential";
 	private static final String PRIVATEKEYS_DIR = "privatekeys";
-	private static final String META_EXT = ".meta";
+
+	private static final String META_FILE = ".meta";
 
 	private static final String DEFAULT_CHARSET = "UTF-8";
 
 	private File storeRoot;
 
-	FileSystemStore(String dir) throws DIDStoreException {
+	FileSystemStoreBackend(String dir) throws DIDStoreException {
 		if (dir == null)
 			throw new IllegalArgumentException();
 
@@ -104,12 +107,12 @@ class FileSystemStore extends DIDStore {
 		try {
 			storeRoot.mkdirs();
 
-			File file = getFile(TAG_FILE);
+			File file = getFile(META_FILE);
 			file.createNewFile();
 
 			OutputStream out = new FileOutputStream(file);
-			out.write(TAG_MAGIC);
-			out.write(TAG_VERSION);
+			out.write(STORE_MAGIC);
+			out.write(STORE_VERSION);
 			out.close();
 		} catch (IOException e) {
 			throw new DIDStoreException("Initialize DIDStore \""
@@ -122,12 +125,12 @@ class FileSystemStore extends DIDStore {
 			throw new DIDStoreException("Store root \""
 					+ storeRoot.getAbsolutePath() + "\" is a file.");
 
-		File file = getFile(TAG_FILE);
+		File file = getFile(META_FILE);
 		if (!file.exists() || !file.isFile())
 			throw new DIDStoreException("Directory \""
 					+ storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
 
-		if (file.length() != TAG_SIZE)
+		if (file.length() != STORE_META_SIZE)
 			throw new DIDStoreException("Directory \""
 					+ storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
 
@@ -145,11 +148,11 @@ class FileSystemStore extends DIDStore {
 					+ storeRoot.getAbsolutePath() + "\" error.", e);
 		}
 
-		if (!Arrays.equals(TAG_MAGIC, magic))
+		if (!Arrays.equals(STORE_MAGIC, magic))
 			throw new DIDStoreException("Directory \""
 					+ storeRoot.getAbsolutePath() + "\" is not a DIDStore.");
 
-		if (!Arrays.equals(TAG_VERSION, version))
+		if (!Arrays.equals(STORE_VERSION, version))
 			throw new DIDStoreException("DIDStore \""
 					+ storeRoot.getAbsolutePath() + "\", unsupported version.");
 	}
@@ -258,13 +261,13 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public boolean hasPrivateIdentity() {
+	public boolean containsPrivateIdentity() {
 		File file = getHDPrivateKeyFile();
 		return file.exists() && file.length() > 0;
 	}
 
 	@Override
-	protected void storePrivateIdentity(String key) throws DIDStoreException {
+	public void storePrivateIdentity(String key) throws DIDStoreException {
 		try {
 			File file = getHDPrivateKeyFile(true);
 			writeText(file, key);
@@ -274,7 +277,7 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	protected String loadPrivateIdentity() throws DIDStoreException {
+	public String loadPrivateIdentity() throws DIDStoreException {
 		try {
 			File file = getHDPrivateKeyFile();
 			return readText(file);
@@ -284,7 +287,7 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	protected void storePrivateIdentityIndex(int index) throws DIDStoreException {
+	public void storePrivateIdentityIndex(int index) throws DIDStoreException {
 		try {
 			File file = getFile(true, PRIVATE_DIR, INDEX_FILE);
 			writeText(file, Integer.toString(index));
@@ -294,7 +297,7 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	protected int loadPrivateIdentityIndex() throws DIDStoreException {
+	public int loadPrivateIdentityIndex() throws DIDStoreException {
 		try {
 			File file = getFile(PRIVATE_DIR, INDEX_FILE);
 			return Integer.valueOf(readText(file));
@@ -304,13 +307,9 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public void setDidAlias(DID did, String alias) throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
+	public void storeDidAlias(DID did, String alias) throws DIDStoreException {
 		try {
-			File file = getFile(true, DID_DIR,
-					"." + did.getMethodSpecificId() + META_EXT);
+			File file = getFile(true, DID_DIR, did.getMethodSpecificId(), META_FILE);
 
 			if (alias == null || alias.isEmpty())
 				file.delete();
@@ -322,13 +321,9 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public String getDidAlias(DID did) throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
+	public String loadDidAlias(DID did) throws DIDStoreException {
 		try {
-			File file = getFile(DID_DIR, "." + did.getMethodSpecificId()
-					+ META_EXT);
+			File file = getFile(DID_DIR, did.getMethodSpecificId(), META_FILE);
 			return readText(file);
 		} catch (IOException e) {
 			throw new DIDStoreException("Read alias error.", e);
@@ -336,19 +331,12 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public void storeDid(DIDDocument doc, String alias) throws DIDStoreException {
-		if (doc == null)
-			throw new IllegalArgumentException();
-
+	public void storeDid(DIDDocument doc) throws DIDStoreException {
 		try {
 			File file = getFile(true, DID_DIR,
 					doc.getSubject().getMethodSpecificId(), DOCUMENT_FILE);
-			boolean exist = file.length() > 0;
 
 			doc.toJson(new FileOutputStream(file), DEFAULT_CHARSET, true);
-
-			if (!exist || (alias != null && !alias.isEmpty()))
-				setDidAlias(doc.getSubject(), alias);
 		} catch (IOException e) {
 			throw new DIDStoreException("Store DIDDocument error.", e);
 		}
@@ -356,9 +344,6 @@ class FileSystemStore extends DIDStore {
 
 	@Override
 	public DIDDocument loadDid(DID did) throws MalformedDocumentException, DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
 		try {
 			File file = getFile(DID_DIR,
 					did.getMethodSpecificId(), DOCUMENT_FILE);
@@ -372,10 +357,7 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public boolean containsDid(DID did) throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
+	public boolean containsDid(DID did) {
 		File file = getFile(DID_DIR,
 					did.getMethodSpecificId(), DOCUMENT_FILE);
 		return file.exists();
@@ -383,16 +365,6 @@ class FileSystemStore extends DIDStore {
 
 	@Override
 	public boolean deleteDid(DID did) throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
-		// Delete .did.meta
-		File file = getFile(DID_DIR,
-				"." + did.getMethodSpecificId() + META_EXT);
-		if (file.exists())
-			file.delete();
-
-		// Delete did folder
 		File dir = getDir(DID_DIR, did.getMethodSpecificId());
 		if (dir.exists()) {
 			deleteFile(dir);
@@ -403,7 +375,7 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public List<DID> listDids(int filter) throws DIDStoreException {
+	public List<DID> listDids(int filter) {
 		File dir = getDir(DID_DIR);
 		if (!dir.exists())
 			return new ArrayList<DID>(0);
@@ -420,11 +392,11 @@ class FileSystemStore extends DIDStore {
 				} catch (Exception ignore) {
 				}
 
-				if (filter == DID_HAS_PRIVATEKEY) {
+				if (filter == DIDStore.DID_HAS_PRIVATEKEY) {
 					return hasPrivateKey;
-				} else if (filter == DID_NO_PRIVATEKEY) {
+				} else if (filter == DIDStore.DID_NO_PRIVATEKEY) {
 					return !hasPrivateKey;
-				} else if (filter == DID_ALL) {
+				} else if (filter == DIDStore.DID_ALL) {
 					return true;
 				}
 
@@ -438,7 +410,7 @@ class FileSystemStore extends DIDStore {
 		for (File didRoot : children) {
 			DID did = new DID(DID.METHOD, didRoot.getName());
 			try {
-				did.setAliasInternal(getDidAlias(did));
+				did.setAliasInternal(loadDidAlias(did));
 			} catch (DIDStoreException ignore) {
 			}
 
@@ -449,14 +421,11 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public void setCredentialAlias(DID did, DIDURL id, String alias)
+	public void storeCredentialAlias(DID did, DIDURL id, String alias)
 			throws DIDStoreException {
-		if (did == null || id == null)
-			throw new IllegalArgumentException();
-
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
-					CREDENTIALS_DIR, "." + id.getFragment() + META_EXT);
+					CREDENTIALS_DIR, id.getFragment(), META_FILE);
 
 			if (alias == null || alias.isEmpty())
 				file.delete();
@@ -468,14 +437,11 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public String getCredentialAlias(DID did, DIDURL id)
+	public String loadCredentialAlias(DID did, DIDURL id)
 			throws DIDStoreException {
-		if (did == null || id == null)
-			throw new IllegalArgumentException();
-
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
-					CREDENTIALS_DIR, "." + id.getFragment() + META_EXT);
+					CREDENTIALS_DIR, id.getFragment(), META_FILE);
 			return readText(file);
 		} catch (IOException e) {
 			throw new DIDStoreException("Read alias error.", e);
@@ -483,22 +449,15 @@ class FileSystemStore extends DIDStore {
 	}
 
 	@Override
-	public void storeCredential(VerifiableCredential credential, String alias)
+	public void storeCredential(VerifiableCredential credential)
 			throws DIDStoreException {
-		if (credential == null)
-			throw new IllegalArgumentException();
-
 		try {
 			File file = getFile(true, DID_DIR,
 					credential.getSubject().getId().getMethodSpecificId(),
-					CREDENTIALS_DIR, credential.getId().getFragment());
-			boolean exist = file.length() > 0;
+					CREDENTIALS_DIR, credential.getId().getFragment(),
+					CREDENTIAL_FILE);
 
 			credential.toJson(new FileOutputStream(file), true);
-
-			if (!exist || (alias != null && !alias.isEmpty()))
-				setCredentialAlias(credential.getSubject().getId(),
-						credential.getId(), alias);
 		} catch (IOException e) {
 			throw new DIDStoreException("Store credential error.", e);
 		}
@@ -507,12 +466,9 @@ class FileSystemStore extends DIDStore {
 	@Override
 	public VerifiableCredential loadCredential(DID did, DIDURL id)
 			throws MalformedCredentialException, DIDStoreException {
-		if (did == null || id == null)
-			throw new IllegalArgumentException();
-
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
-					CREDENTIALS_DIR, id.getFragment());
+					CREDENTIALS_DIR, id.getFragment(), CREDENTIAL_FILE);
 			if (!file.exists())
 				return null;
 
@@ -524,9 +480,6 @@ class FileSystemStore extends DIDStore {
 
 	@Override
 	public boolean containsCredentials(DID did) throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(), CREDENTIALS_DIR);
 		if (!dir.exists())
 			return false;
@@ -534,10 +487,10 @@ class FileSystemStore extends DIDStore {
 		File[] creds = dir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File file) {
-				if (file.getName().startsWith("."))
-					return false;
-				else
+				if (file.isDirectory())
 					return true;
+				else
+					return false;
 			}
 		});
 
@@ -546,29 +499,17 @@ class FileSystemStore extends DIDStore {
 
 	@Override
 	public boolean containsCredential(DID did, DIDURL id) throws DIDStoreException {
-		if (did == null || id == null)
-			throw new IllegalArgumentException();
-
 		File file = getFile(DID_DIR, did.getMethodSpecificId(),
-				CREDENTIALS_DIR, id.getFragment());
+				CREDENTIALS_DIR, id.getFragment(), CREDENTIAL_FILE);
 		return file.exists();
 	}
 
 	@Override
 	public boolean deleteCredential(DID did, DIDURL id) throws DIDStoreException {
-		if (did == null || id == null)
-			throw new IllegalArgumentException();
-
-		File file = getFile(DID_DIR, did.getMethodSpecificId(),
-				CREDENTIALS_DIR, "." + id.getFragment() + META_EXT);
-
-		if (file.exists())
-			file.delete();
-
-		file = getFile(DID_DIR, did.getMethodSpecificId(),
+		File dir = getDir(DID_DIR, did.getMethodSpecificId(),
 				CREDENTIALS_DIR, id.getFragment());
-		if (file.exists()) {
-			file.delete();
+		if (dir.exists()) {
+			deleteFile(dir);
 			return true;
 		} else {
 			return false;
@@ -577,9 +518,6 @@ class FileSystemStore extends DIDStore {
 
 	@Override
 	public List<DIDURL> listCredentials(DID did) throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(), CREDENTIALS_DIR);
 		if (!dir.exists())
 			return new ArrayList<DIDURL>(0);
@@ -588,12 +526,9 @@ class FileSystemStore extends DIDStore {
 			@Override
 			public boolean accept(File file) {
 				if (file.isDirectory())
+					return true;
+				else
 					return false;
-
-				if (file.getName().startsWith("."))
-					return false;
-
-				return true;
 			}
 		});
 
@@ -601,13 +536,12 @@ class FileSystemStore extends DIDStore {
 		ArrayList<DIDURL> credentials = new ArrayList<DIDURL>(size);
 
 		for (File credential : children) {
-			DIDURL id = new DIDURL(did, credential.getName());
 			try {
-				id.setAliasInternal(getCredentialAlias(did, id));
+				DIDURL id = new DIDURL(did, credential.getName());
+				id.setAliasInternal(loadCredentialAlias(did, id));
+				credentials.add(id);
 			} catch (DIDStoreException ignore) {
 			}
-
-			credentials.add(id);
 		}
 
 		return credentials;
@@ -616,14 +550,30 @@ class FileSystemStore extends DIDStore {
 	@Override
 	public List<DIDURL> selectCredentials(DID did, DIDURL id, String[] type)
 			throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
-		if ((id == null) && (type == null || type.length == 0))
-			throw new IllegalArgumentException();
-
 		// TODO:
 		return null;
+	}
+
+	@Override
+	public void storePrivateKey(DID did, DIDURL id, String privateKey) throws DIDStoreException {
+		try {
+			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
+					PRIVATEKEYS_DIR, id.getFragment());
+			writeText(file, privateKey);
+		} catch (IOException e) {
+			throw new DIDStoreException("Store private key error.", e);
+		}
+	}
+
+	@Override
+	public String loadPrivateKey(DID did, DIDURL id) throws DIDStoreException {
+		try {
+			File file = getFile(DID_DIR, did.getMethodSpecificId(),
+					PRIVATEKEYS_DIR, id.getFragment());
+			return readText(file);
+		} catch (Exception e) {
+			throw new DIDStoreException("Load private key error.", e);
+		}
 	}
 
 	private boolean containsPrivateKeys(File didDir) throws DIDStoreException {
@@ -633,9 +583,6 @@ class FileSystemStore extends DIDStore {
 
 	@Override
 	public boolean containsPrivateKeys(DID did) throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
 		File dir = getDir(DID_DIR, did.getMethodSpecificId(), PRIVATEKEYS_DIR);
 		if (!dir.exists())
 			return false;
@@ -655,33 +602,13 @@ class FileSystemStore extends DIDStore {
 
 	@Override
 	public boolean containsPrivateKey(DID did, DIDURL id) throws DIDStoreException {
-		if (did == null || id == null)
-			throw new IllegalArgumentException();
-
 		File file = getFile(DID_DIR, did.getMethodSpecificId(),
 				PRIVATEKEYS_DIR, id.getFragment());
 		return file.exists();
 	}
 
 	@Override
-	public void storePrivateKey(DID did, DIDURL id, String privateKey) throws DIDStoreException {
-		if (did == null || id == null || privateKey == null || privateKey.isEmpty())
-			throw new IllegalArgumentException();
-
-		try {
-			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
-					PRIVATEKEYS_DIR, id.getFragment());
-			writeText(file, privateKey);
-		} catch (IOException e) {
-			throw new DIDStoreException("Store private key error.", e);
-		}
-	}
-
-	@Override
 	public boolean deletePrivateKey(DID did, DIDURL id) throws DIDStoreException {
-		if (did == null || id == null)
-			throw new IllegalArgumentException();
-
 		File file = getFile(DID_DIR, did.getMethodSpecificId(),
 				PRIVATEKEYS_DIR, id.getFragment());
 		if (file.exists()) {
@@ -689,17 +616,6 @@ class FileSystemStore extends DIDStore {
 			return true;
 		} else {
 			return false;
-		}
-	}
-
-	@Override
-	protected String loadPrivateKey(DID did, DIDURL id) throws DIDStoreException {
-		try {
-			File file = getFile(DID_DIR, did.getMethodSpecificId(),
-					PRIVATEKEYS_DIR, id.getFragment());
-			return readText(file);
-		} catch (Exception e) {
-			throw new DIDStoreException("Load private key error.", e);
 		}
 	}
 }

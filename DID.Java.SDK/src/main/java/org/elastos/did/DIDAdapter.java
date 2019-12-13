@@ -22,6 +22,8 @@
 
 package org.elastos.did;
 
+import org.elastos.did.exception.DIDException;
+
 public interface DIDAdapter {
 	public boolean createIdTransaction(String payload, String memo)
 			throws DIDException;

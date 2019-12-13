@@ -33,7 +33,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.elastos.credential.VerifiableCredential;
+import org.elastos.did.DIDDocument.PublicKey;
+import org.elastos.did.DIDDocument.Service;
+import org.elastos.did.exception.DIDException;
 import org.elastos.did.util.HDKey;
 import org.junit.Test;
 
@@ -122,7 +124,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
 		// Add 2 public keys
 		DIDURL id = new DIDURL(db.getSubject(), "test1");
@@ -165,7 +167,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
 		// recovery used by authorization, should failed.
 		DIDURL id = new DIDURL(doc.getSubject(), "recovery");
@@ -281,7 +283,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
 		// Add 2 public keys for test.
 		DIDURL id = new DIDURL(db.getSubject(), "test1");
@@ -357,7 +359,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
 		// Add 2 public keys for test
 		HDKey.DerivedKey key = TestData.generateKeypair();
@@ -474,7 +476,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
 		// Add 2 public keys for test.
 		DIDURL id = new DIDURL(db.getSubject(), "test1");
@@ -552,7 +554,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
 		// Add 2 keys for test.
 		DIDURL id = new DIDURL(db.getSubject(), "test1");
@@ -662,7 +664,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
         // Add credentials.
 		VerifiableCredential vc = testData.loadPassportCredential();
@@ -705,7 +707,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
         // Add test credentials.
 		VerifiableCredential vc = testData.loadPassportCredential();
@@ -815,7 +817,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
         // Add services
         boolean success = db.addService("test-svc-1",
@@ -854,7 +856,7 @@ public class DIDDocumentTest {
 		assertNotNull(doc);
 		assertTrue(doc.isValid());
 
-		DIDDocument.Builder db = doc.modify();
+		DIDDocument.Builder db = doc.edit();
 
         // remove services
         boolean success = db.removeService("openid");

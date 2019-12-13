@@ -25,6 +25,8 @@ package org.elastos.did;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.MalformedDIDURLException;
 import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
@@ -41,6 +43,16 @@ public class DIDURL implements Comparable<DIDURL> {
 	public DIDURL(DID id, String fragment) {
 		if (id == null)
 			throw new IllegalArgumentException();
+
+		if (fragment != null) {
+			if (fragment.startsWith("did:")) {
+				ParserHelper.parse(fragment, false, new Listener());
+				if (!getDid().equals(id))
+					throw new IllegalArgumentException("Missmatched arguments");
+
+				return;
+			}
+		}
 
 		this.did = id;
 		this.fragment = fragment;

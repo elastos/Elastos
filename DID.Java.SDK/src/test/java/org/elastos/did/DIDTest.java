@@ -27,6 +27,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.elastos.did.exception.MalformedDIDException;
 import org.junit.Before;
 import org.junit.Test;
 

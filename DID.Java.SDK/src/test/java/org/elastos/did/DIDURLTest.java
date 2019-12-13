@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.elastos.did.exception.MalformedDIDURLException;
 import org.junit.Before;
 import org.junit.Test;
 

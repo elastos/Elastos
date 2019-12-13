@@ -23,7 +23,7 @@
 package org.elastos.did.adapter;
 
 import org.elastos.did.DIDAdapter;
-import org.elastos.did.DIDException;
+import org.elastos.did.exception.DIDException;
 
 public class SPVAdapter implements DIDAdapter {
 	static {
