@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -143,7 +143,8 @@ func (c *Committee) Recover(checkpoint *Checkpoint) {
 func (c *Committee) shouldChange(block *types.Block) bool {
 	//todo judge by change cr committee tx later
 	return block.Height >= c.params.CRCommitteeStartHeight &&
-		block.Height >= c.LastCommitteeHeight+c.params.CRDutyPeriod
+		(c.LastCommitteeHeight == 0 || block.Height >=
+			c.LastCommitteeHeight+c.params.CRDutyPeriod)
 }
 
 func (c *Committee) isInVotingPeriod(height uint32) bool {
@@ -196,6 +197,11 @@ func (c *Committee) getActiveCRCandidatesDesc() ([]*Candidate, error) {
 	}
 
 	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].votes == candidates[j].votes {
+			iCRInfo := candidates[i].Info()
+			jCRInfo := candidates[j].Info()
+			return iCRInfo.GetCodeHash().Compare(jCRInfo.GetCodeHash()) < 0
+		}
 		return candidates[i].votes > candidates[j].votes
 	})
 	return candidates, nil

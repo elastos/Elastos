@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -51,9 +51,10 @@ func crInfoEqual(first *payload.CRInfo, second *payload.CRInfo) bool {
 }
 
 func randomCRInfo() *payload.CRInfo {
+	code := randomBytes(34)
 	return &payload.CRInfo{
-		Code:     randomBytes(34),
-		DID:      *randomUint168(),
+		Code:     code,
+		DID:      *getDid(code),
 		NickName: randomString(),
 		Url:      randomString(),
 		Location: rand2.Uint64(),

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -147,8 +147,6 @@ func NewClient(path string, password []byte, create bool) *Client {
 		FileStore: FileStore{path: path},
 	}
 
-	go client.HandleInterrupt()
-
 	passwordKey := crypto.ToAesKey(password)
 	if create {
 		//create new client
@@ -236,7 +234,7 @@ func (cl *Client) CreateMultiSigAccount(m int, pubKeys []*crypto.PublicKey) (*Ac
 	if err != nil {
 		return nil, err
 	}
-	if err = cl.SaveAccountData(account.ProgramHash.Bytes(), account.RedeemScript, nil); err != nil {
+	if err = cl.SaveAccountData(&account.ProgramHash, account.RedeemScript, nil); err != nil {
 		return nil, err
 	}
 
@@ -269,7 +267,7 @@ func (cl *Client) SaveAccount(ac *Account) error {
 	common.ClearBytes(decryptedPrivateKey)
 
 	// save Account keys to db
-	err = cl.SaveAccountData(ac.ProgramHash.Bytes(), ac.RedeemScript, encryptedPrivateKey)
+	err = cl.SaveAccountData(&ac.ProgramHash, ac.RedeemScript, encryptedPrivateKey)
 	if err != nil {
 		return err
 	}
@@ -309,37 +307,44 @@ func (cl *Client) LoadAccounts() error {
 		}
 		prefixType := contract.GetPrefixType(*programHash)
 		if prefixType == contract.PrefixStandard {
-			encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
-			keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
-			if err != nil {
-				return err
-			}
-			privateKey := keyPair[64:96]
-			ac, err := NewAccountWithPrivateKey(privateKey)
-			if err != nil {
-				return err
-			}
-			accounts[ac.ProgramHash.ToCodeHash()] = ac
-			if a.Type == MAINACCOUNT {
-				cl.mainAccount = ac.ProgramHash.ToCodeHash()
+			if a.PrivateKeyEncrypted != "" {
+				encryptedKeyPair, _ := common.HexStringToBytes(a.PrivateKeyEncrypted)
+				keyPair, err := cl.DecryptPrivateKey(encryptedKeyPair)
+				if err != nil {
+					return err
+				}
+				privateKey := keyPair[64:96]
+				ac, err := NewAccountWithPrivateKey(privateKey)
+				if err != nil {
+					return err
+				}
+				accounts[programHash.ToCodeHash()] = ac
+			} else {
+				rs, _ := common.HexStringToBytes(a.RedeemScript)
+				ac := &Account{
+					PrivateKey:   nil,
+					PublicKey:    nil,
+					ProgramHash:  *programHash,
+					RedeemScript: rs,
+					Address:      a.Address,
+				}
+				accounts[programHash.ToCodeHash()] = ac
 			}
 		} else if prefixType == contract.PrefixMultiSig {
-			phBytes, _ := common.HexStringToBytes(a.ProgramHash)
-			ph, err := common.Uint168FromBytes(phBytes)
-			if err != nil {
-				return err
-			}
 			rs, _ := common.HexStringToBytes(a.RedeemScript)
 			ac := &Account{
 				PrivateKey:   nil,
 				PublicKey:    nil,
-				ProgramHash:  *ph,
+				ProgramHash:  *programHash,
 				RedeemScript: rs,
 				Address:      a.Address,
 			}
-			accounts[ac.ProgramHash.ToCodeHash()] = ac
+			accounts[programHash.ToCodeHash()] = ac
 		}
 
+		if a.Type == MAINACCOUNT {
+			cl.mainAccount = programHash.ToCodeHash()
+		}
 	}
 
 	cl.accounts = accounts

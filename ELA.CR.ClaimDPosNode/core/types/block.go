@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	InvalidBlockSize int    = -1
+	InvalidBlockSize int = -1
 )
 
 type Block struct {
@@ -69,4 +69,11 @@ func (b *Block) GetSize() int {
 
 func (b *Block) Hash() common.Uint256 {
 	return b.Header.Hash()
+}
+
+// SerializeSizeStripped returns the number of bytes it would take to serialize
+// the block, excluding any witness data (if any).
+func (b *Block) SerializeSizeStripped() int {
+	// todo add cache for size according to btcd
+	return b.GetSize()
 }

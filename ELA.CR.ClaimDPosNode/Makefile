@@ -1,9 +1,22 @@
+GOVER := $(shell go version)
 VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
-BUILD = go build -ldflags "-X main.Version=$(VERSION) -X 'main.GoVersion=`go version`'" #-race
+BUILD = go build -ldflags "-X main.Version=$(VERSION) -X 'main.GoVersion=$(GOVER)'" #-race
+
+DEV_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+DEV_VERSION := $(shell git rev-list HEAD -n 1 | cut -c 1-8)
+DEV_BUILD = go build -ldflags "-X main.Version=$(DEV_BRANCH)-$(DEV_VERSION) -X 'main.GoVersion=$(GOVER)'" #-race
 
 all:
-	$(BUILD) -o ela log.go config.go main.go
+	$(BUILD) -o ela log.go settings.go main.go
 	$(BUILD) -o ela-cli cmd/ela-cli.go
+
+dev:
+	$(DEV_BUILD) -o ela log.go settings.go main.go
+	$(DEV_BUILD) -o ela-cli cmd/ela-cli.go
+
+linux:
+	GOARCH=amd64 GOOS=linux $(BUILD) -o ela log.go settings.go main.go
+	GOARCH=amd64 GOOS=linux $(BUILD) -o ela-cli cmd/ela-cli.go
 
 cli:
 	$(BUILD) -o ela-cli cmd/ela-cli.go

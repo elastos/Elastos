@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -68,9 +68,9 @@ type Configuration struct {
 	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
 	CRVotingStartHeight         uint32            `json:"CRVotingStartHeight"`
 	CRCommitteeStartHeight      uint32            `json:"CRCommitteeStartHeight"`
+	VoteStatisticsHeight        uint32            `json:"VoteStatisticsHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
-	MaxBlockSize                uint32            `json"MaxBlockSize"`
-	CheckPointNoFlatFile        bool              `json:"CheckPointNoFlatFile"`
+	MaxBlockSize                uint32            `json:"MaxBlockSize"`
 	EnableHistory               bool              `json:"EnableHistory"`
 	HistoryStartHeight          uint32            `json:"HistoryStartHeight"`
 	EnableUtxoDB                bool              `json:"EnableUtxoDB"`
