@@ -1,12 +1,13 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"sync"
@@ -15,27 +16,42 @@ import (
 	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/core/contract"
 	. "github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/outputpayload"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/elanet/pact"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/vm"
 )
 
 type TxPool struct {
 	chainParams *config.Params
 
 	sync.RWMutex
-	txnList         map[Uint256]*Transaction // transaction which have been verifyed will put into this map
-	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
-	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
-	ownerPublicKeys map[string]struct{}
-	nodePublicKeys  map[string]struct{}
-	crDIDs          map[Uint168]struct{}
-	specialTxList   map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
-	txnListSize     int
+	txnList           map[Uint256]*Transaction // transaction which have been verifyed will put into this map
+	inputUTXOList     map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
+	sidechainTxList   map[Uint256]*Transaction // sidechain tx pool
+	ownerPublicKeys   map[string]struct{}
+	nodePublicKeys    map[string]struct{}
+	codes             map[string]struct{}
+	crDIDs            map[Uint168]struct{}
+	specialTxList     map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
+	producerNicknames map[string]struct{}
+	crNicknames       map[string]struct{}
+
+	tempInputUTXOList   map[string]*Transaction
+	tempSidechainTxList map[Uint256]*Transaction
+	tempOwnerPublicKeys map[string]struct{}
+	tempNodePublicKeys  map[string]struct{}
+	tempCodes           map[string]struct{}
+	tempCrDIDs          map[Uint168]struct{}
+	tempSpecialTxList   map[Uint256]struct{}
+
+	tempProducerNicknames map[string]struct{}
+	tempCrNicknames       map[string]struct{}
+	txnListSize           int
 }
 
 //append transaction to txnpool when check ok.
@@ -73,12 +89,18 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		log.Warn("[TxPool CheckTransactionSanity] failed", tx.Hash())
 		return errCode
 	}
-	if errCode := chain.CheckTransactionContext(bestHeight+1, tx); errCode != Success {
+	references, err := chain.UTXOCache.GetTxReference(tx)
+	if err != nil {
+		log.Warn("[CheckTransactionContext] get transaction reference failed")
+		return ErrUnknownReferredTx
+	}
+	if errCode := chain.CheckTransactionContext(bestHeight+1, tx, references); errCode != Success {
 		log.Warn("[TxPool CheckTransactionContext] failed", tx.Hash())
 		return errCode
 	}
 	//verify transaction by pool with lock
-	if errCode := mp.verifyTransactionWithTxnPool(tx); errCode != Success {
+	defer mp.clearTemp()
+	if errCode := mp.verifyTransactionWithTxnPool(tx, references); errCode != Success {
 		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", tx.Hash())
 		return errCode
 	}
@@ -88,6 +110,9 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) ErrCode {
 		log.Warn("TxPool check transactions size failed", tx.Hash())
 		return ErrTransactionPoolSize
 	}
+
+	mp.commitTemp()
+
 	// Add the transaction to mem pool
 	mp.txnList[txHash] = tx
 	mp.txnListSize += size
@@ -123,7 +148,7 @@ func (mp *TxPool) CleanSubmittedTransactions(block *Block) {
 	mp.cleanTransactions(block.Transactions)
 	mp.cleanSidechainTx(block.Transactions)
 	mp.cleanSideChainPowTx()
-	mp.cleanCanceledProducer(block.Transactions)
+	mp.cleanCanceledProducerAndCR(block.Transactions)
 	mp.Unlock()
 }
 
@@ -169,7 +194,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 			continue
 		}
 
-		inputUtxos, err := blockchain.DefaultLedger.Store.GetTxReference(blockTx)
+		inputUtxos, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference(blockTx)
 		if err != nil {
 			log.Infof("Transaction=%s not exist when deleting, %s.",
 				blockTx.Hash(), err)
@@ -219,6 +244,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					mp.delOwnerPublicKey(BytesToHexString(rpPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(rpPayload.NodePublicKey))
+					mp.delProducerNickname(rpPayload.NickName)
 				case UpdateProducer:
 					upPayload, ok := tx.Payload.(*payload.ProducerInfo)
 					if !ok {
@@ -227,6 +253,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					}
 					mp.delOwnerPublicKey(BytesToHexString(upPayload.OwnerPublicKey))
 					mp.delNodePublicKey(BytesToHexString(upPayload.NodePublicKey))
+					mp.delProducerNickname(upPayload.NickName)
 				case CancelProducer:
 					cpPayload, ok := tx.Payload.(*payload.ProcessProducer)
 					if !ok {
@@ -234,6 +261,8 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delOwnerPublicKey(BytesToHexString(cpPayload.OwnerPublicKey))
+				case ReturnDepositCoin:
+					mp.delCode(BytesToHexString(tx.Programs[0].Code))
 				case RegisterCR:
 					rcPayload, ok := tx.Payload.(*payload.CRInfo)
 					if !ok {
@@ -241,6 +270,8 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delCRDID(rcPayload.DID)
+					mp.delPublicKeyByCode(rcPayload.Code)
+					mp.delCrNickname(rcPayload.NickName)
 				case UpdateCR:
 					rcPayload, ok := tx.Payload.(*payload.CRInfo)
 					if !ok {
@@ -248,19 +279,16 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delCRDID(rcPayload.DID)
+					mp.delCrNickname(rcPayload.NickName)
 				case UnregisterCR:
 					unrcPayload, ok := tx.Payload.(*payload.UnregisterCR)
 					if !ok {
 						log.Error("unregisterCR CR payload cast failed, tx:", tx.Hash())
 						continue
 					}
-					ct, err := contract.CreateCRDIDContractByCode(unrcPayload.Code)
-					if err != nil {
-						log.Error("invalid unregister CR code, tx:", tx.Hash())
-						continue
-					}
-					did := ct.ToProgramHash()
-					mp.delCRDID(*did)
+					mp.delCRDID(unrcPayload.DID)
+				case ReturnCRDepositCoin:
+					mp.delCode(BytesToHexString(tx.Programs[0].Code))
 				}
 
 				deleteCount++
@@ -272,7 +300,7 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 		len(blockTxs), txsInPool, deleteCount, len(mp.txnList)))
 }
 
-func (mp *TxPool) cleanCanceledProducer(txs []*Transaction) error {
+func (mp *TxPool) cleanCanceledProducerAndCR(txs []*Transaction) error {
 	for _, txn := range txs {
 		if txn.TxType == CancelProducer {
 			cpPayload, ok := txn.Payload.(*payload.ProcessProducer)
@@ -280,6 +308,15 @@ func (mp *TxPool) cleanCanceledProducer(txs []*Transaction) error {
 				return errors.New("invalid cancel producer payload")
 			}
 			if err := mp.cleanVoteAndUpdateProducer(cpPayload.OwnerPublicKey); err != nil {
+				log.Error(err)
+			}
+		}
+		if txn.TxType == UnregisterCR {
+			crPayload, ok := txn.Payload.(*payload.UnregisterCR)
+			if !ok {
+				return errors.New("invalid cancel producer payload")
+			}
+			if err := mp.cleanVoteAndUpdateCR(crPayload.DID); err != nil {
 				log.Error(err)
 			}
 		}
@@ -324,6 +361,41 @@ func (mp *TxPool) cleanVoteAndUpdateProducer(ownerPublicKey []byte) error {
 	return nil
 }
 
+func (mp *TxPool) cleanVoteAndUpdateCR(did Uint168) error {
+	for _, txn := range mp.txnList {
+		if txn.TxType == TransferAsset {
+			for _, output := range txn.Outputs {
+				if output.Type == OTVote {
+					opPayload, ok := output.Payload.(*outputpayload.VoteOutput)
+					if !ok {
+						return errors.New("invalid vote output payload")
+					}
+					for _, content := range opPayload.Contents {
+						if content.VoteType == outputpayload.CRC {
+							for _, cv := range content.CandidateVotes {
+								if bytes.Equal(did.Bytes(), cv.Candidate) {
+									mp.removeTransaction(txn)
+								}
+							}
+						}
+					}
+				}
+			}
+		} else if txn.TxType == UpdateCR {
+			crPayload, ok := txn.Payload.(*payload.CRInfo)
+			if !ok {
+				return errors.New("invalid update CR payload")
+			}
+			if did.IsEqual(crPayload.DID) {
+				mp.removeTransaction(txn)
+				mp.delCRDID(crPayload.DID)
+			}
+		}
+	}
+
+	return nil
+}
+
 //get the transaction by hash
 func (mp *TxPool) GetTransaction(hash Uint256) *Transaction {
 	mp.RLock()
@@ -332,7 +404,8 @@ func (mp *TxPool) GetTransaction(hash Uint256) *Transaction {
 }
 
 //verify transaction with txnpool
-func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
+func (mp *TxPool) verifyTransactionWithTxnPool(
+	txn *Transaction, references map[*Input]*Output) ErrCode {
 	if txn.IsSideChainPowTx() {
 		// check and replace the duplicate sidechainpow tx
 		mp.replaceDuplicateSideChainPowTx(txn)
@@ -361,52 +434,52 @@ func (mp *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 	switch txn.TxType {
 	case RegisterProducer:
-		payload, ok := txn.Payload.(*payload.ProducerInfo)
+		p, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("register producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
+		if err := mp.verifyDuplicateProducer(BytesToHexString(p.OwnerPublicKey),
+			BytesToHexString(p.NodePublicKey), p.NickName); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
-			log.Warn(err)
-			return ErrProducerNodeProcessing
-		}
 	case UpdateProducer:
-		payload, ok := txn.Payload.(*payload.ProducerInfo)
+		p, ok := txn.Payload.(*payload.ProducerInfo)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
+		if err := mp.verifyDuplicateProducer(BytesToHexString(p.OwnerPublicKey),
+			BytesToHexString(p.NodePublicKey), p.NickName); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
-			log.Warn(err)
-			return ErrProducerNodeProcessing
-		}
 	case CancelProducer:
-		payload, ok := txn.Payload.(*payload.ProcessProducer)
+		p, ok := txn.Payload.(*payload.ProcessProducer)
 		if !ok {
 			log.Error("cancel producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateOwner(BytesToHexString(payload.OwnerPublicKey)); err != nil {
+		if err := mp.verifyDuplicateOwner(BytesToHexString(p.OwnerPublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerProcessing
 		}
 	case ActivateProducer:
-		payload, ok := txn.Payload.(*payload.ActivateProducer)
+		p, ok := txn.Payload.(*payload.ActivateProducer)
 		if !ok {
 			log.Error("activate producer payload cast failed, tx:", txn.Hash())
 			return ErrProducerProcessing
 		}
-		if err := mp.verifyDuplicateNode(BytesToHexString(payload.NodePublicKey)); err != nil {
+		if err := mp.verifyDuplicateNode(BytesToHexString(p.NodePublicKey)); err != nil {
 			log.Warn(err)
 			return ErrProducerNodeProcessing
+		}
+	case ReturnDepositCoin:
+		err := mp.verifyDuplicateCode(BytesToHexString(txn.Programs[0].Code))
+		if err != nil {
+			log.Warn(err)
+			return ErrProducerProcessing
 		}
 	case IllegalProposalEvidence, IllegalVoteEvidence, IllegalBlockEvidence,
 		IllegalSidechainEvidence, InactiveArbitrators:
@@ -429,38 +502,38 @@ func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) ErrCode {
 func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) ErrCode {
 	switch txn.TxType {
 	case RegisterCR:
-		payload, ok := txn.Payload.(*payload.CRInfo)
+		p, ok := txn.Payload.(*payload.CRInfo)
 		if !ok {
 			log.Error("register CR payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCR(payload.DID); err != nil {
+		if err := mp.verifyDuplicateCRAndProducer(p.DID, p.Code, p.NickName); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
 	case UpdateCR:
-		payload, ok := txn.Payload.(*payload.CRInfo)
+		p, ok := txn.Payload.(*payload.CRInfo)
 		if !ok {
-			log.Error("update producer payload cast failed, tx:", txn.Hash())
+			log.Error("update CR payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		if err := mp.verifyDuplicateCR(payload.DID); err != nil {
+		if err := mp.verifyDuplicateCRAndNickname(p.DID, p.NickName); err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
 	case UnregisterCR:
-		payload, ok := txn.Payload.(*payload.UnregisterCR)
+		p, ok := txn.Payload.(*payload.UnregisterCR)
 		if !ok {
 			log.Error("update producer payload cast failed, tx:", txn.Hash())
 			return ErrCRProcessing
 		}
-		ct, err := contract.CreateCRDIDContractByCode(payload.Code)
-		if err != nil {
-			log.Error("invalid unregister CR code, tx:", txn.Hash())
+		if err := mp.verifyDuplicateCR(p.DID); err != nil {
+			log.Warn(err)
 			return ErrCRProcessing
 		}
-		did := ct.ToProgramHash()
-		if err := mp.verifyDuplicateCR(*did); err != nil {
+	case ReturnCRDepositCoin:
+		err := mp.verifyDuplicateCode(BytesToHexString(txn.Programs[0].Code))
+		if err != nil {
 			log.Warn(err)
 			return ErrCRProcessing
 		}
@@ -477,24 +550,24 @@ func (mp *TxPool) removeTransaction(tx *Transaction) {
 	}
 
 	//2.remove from UTXO list map
-	result, err := blockchain.DefaultLedger.Store.GetTxReference(tx)
+	reference, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference(tx)
 	if err != nil {
 		log.Infof("Transaction=%s not exist when deleting, %s",
 			tx.Hash(), err)
 		return
 	}
-	for UTXOTxInput := range result {
+	for UTXOTxInput := range reference {
 		mp.delInputUTXOList(UTXOTxInput)
 	}
 }
 
 //check and add to utxo list pool
 func (mp *TxPool) verifyDoubleSpend(txn *Transaction) error {
-	reference, err := blockchain.DefaultLedger.Store.GetTxReference(txn)
+	reference, err := blockchain.DefaultLedger.Blockchain.UTXOCache.GetTxReference(txn)
 	if err != nil {
 		return err
 	}
-	inputs := []*Input{}
+	inputs := make([]*Input, 0)
 	for k := range reference {
 		if txn := mp.getInputUTXOList(k); txn != nil {
 			return fmt.Errorf("double spent UTXO inputs detected, "+
@@ -535,6 +608,26 @@ func (mp *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
+func (mp *TxPool) verifyDuplicateProducer(ownerPublicKey string,
+	nodePublicKey string, nickName string) error {
+	_, ok := mp.ownerPublicKeys[ownerPublicKey]
+	if ok {
+		return errors.New("this producer in being processed")
+	}
+	_, ok = mp.nodePublicKeys[nodePublicKey]
+	if ok {
+		return errors.New("this producer node in being processed")
+	}
+	_, ok = mp.producerNicknames[nickName]
+	if ok {
+		return errors.New("this producer nickName in being processed")
+	}
+	mp.addOwnerPublicKey(ownerPublicKey)
+	mp.addNodePublicKey(nodePublicKey)
+	mp.addProducerNickname(nickName)
+	return nil
+}
+
 func (mp *TxPool) verifyDuplicateOwner(ownerPublicKey string) error {
 	_, ok := mp.ownerPublicKeys[ownerPublicKey]
 	if ok {
@@ -546,7 +639,7 @@ func (mp *TxPool) verifyDuplicateOwner(ownerPublicKey string) error {
 }
 
 func (mp *TxPool) addOwnerPublicKey(publicKey string) {
-	mp.ownerPublicKeys[publicKey] = struct{}{}
+	mp.tempOwnerPublicKeys[publicKey] = struct{}{}
 }
 
 func (mp *TxPool) delOwnerPublicKey(publicKey string) {
@@ -564,11 +657,43 @@ func (mp *TxPool) verifyDuplicateNode(nodePublicKey string) error {
 }
 
 func (mp *TxPool) addNodePublicKey(nodePublicKey string) {
-	mp.nodePublicKeys[nodePublicKey] = struct{}{}
+	mp.tempNodePublicKeys[nodePublicKey] = struct{}{}
 }
 
 func (mp *TxPool) delNodePublicKey(nodePublicKey string) {
 	delete(mp.nodePublicKeys, nodePublicKey)
+}
+
+func (mp *TxPool) verifyDuplicateCode(code string) error {
+	_, ok := mp.codes[code]
+	if ok {
+		return errors.New("this code in being processed")
+	}
+	mp.addCode(code)
+
+	return nil
+}
+
+func (mp *TxPool) addCode(code string) {
+	mp.tempCodes[code] = struct{}{}
+}
+
+func (mp *TxPool) delCode(code string) {
+	delete(mp.codes, code)
+}
+
+func (mp *TxPool) verifyDuplicateCRAndNickname(did Uint168,
+	nickname string) error {
+	err := mp.verifyDuplicateCR(did)
+	if err != nil {
+		return err
+	}
+	_, ok := mp.crNicknames[nickname]
+	if ok {
+		return errors.New("this CR nickname in being processed")
+	}
+	mp.addCrNickName(nickname)
+	return nil
 }
 
 func (mp *TxPool) verifyDuplicateCR(did Uint168) error {
@@ -581,16 +706,79 @@ func (mp *TxPool) verifyDuplicateCR(did Uint168) error {
 	return nil
 }
 
+func (mp *TxPool) verifyDuplicateCRAndProducer(did Uint168, code []byte, crNickname string) error {
+	_, ok := mp.crDIDs[did]
+	if ok {
+		return errors.New("this CR in being processed")
+	}
+	_, ok = mp.crNicknames[crNickname]
+	if ok {
+		return errors.New("this CR crNickname in being processed")
+	}
+	signType, err := crypto.GetScriptType(code)
+	if err != nil {
+		return err
+	}
+
+	if signType == vm.CHECKSIG {
+		pk := hex.EncodeToString(code[1 : len(code)-1])
+		if _, ok := mp.ownerPublicKeys[pk]; ok {
+			return errors.New("this public key in being" +
+				" processed by producer owner public key")
+		}
+
+		if _, ok := mp.nodePublicKeys[pk]; ok {
+			return errors.New("this public key in being" +
+				" processed by producer node public key")
+		}
+		mp.addOwnerPublicKey(pk)
+		mp.addNodePublicKey(pk)
+	}
+
+	mp.addCRDID(did)
+	mp.addCrNickName(crNickname)
+
+	return nil
+}
+
 func (mp *TxPool) addCRDID(did Uint168) {
-	mp.crDIDs[did] = struct{}{}
+	mp.tempCrDIDs[did] = struct{}{}
 }
 
 func (mp *TxPool) delCRDID(did Uint168) {
 	delete(mp.crDIDs, did)
 }
 
+func (mp *TxPool) addProducerNickname(key string) {
+	mp.tempProducerNicknames[key] = struct{}{}
+}
+
+func (mp *TxPool) delProducerNickname(key string) {
+	delete(mp.producerNicknames, key)
+}
+
+func (mp *TxPool) addCrNickName(key string) {
+	mp.tempCrNicknames[key] = struct{}{}
+}
+
+func (mp *TxPool) delCrNickname(key string) {
+	delete(mp.crNicknames, key)
+}
+
+func (mp *TxPool) delPublicKeyByCode(code []byte) {
+	signType, err := crypto.GetScriptType(code)
+	if err != nil {
+		return
+	}
+	if signType == vm.CHECKSIG {
+		pk := hex.EncodeToString(code[1 : len(code)-1])
+		delete(mp.ownerPublicKeys, pk)
+		delete(mp.nodePublicKeys, pk)
+	}
+}
+
 func (mp *TxPool) addSpecialTx(hash *Uint256) {
-	mp.specialTxList[*hash] = struct{}{}
+	mp.tempSpecialTxList[*hash] = struct{}{}
 }
 
 func (mp *TxPool) delSpecialTx(hash *Uint256) {
@@ -700,7 +888,7 @@ func (mp *TxPool) getInputUTXOList(input *Input) *Transaction {
 
 func (mp *TxPool) addInputUTXOList(tx *Transaction, input *Input) {
 	id := input.ReferKey()
-	mp.inputUTXOList[id] = tx
+	mp.tempInputUTXOList[id] = tx
 }
 
 func (mp *TxPool) delInputUTXOList(input *Input) {
@@ -711,7 +899,7 @@ func (mp *TxPool) delInputUTXOList(input *Input) {
 func (mp *TxPool) addSidechainTx(txn *Transaction) {
 	witPayload := txn.Payload.(*payload.WithdrawFromSideChain)
 	for _, hash := range witPayload.SideChainTransactionHashes {
-		mp.sidechainTxList[hash] = txn
+		mp.tempSidechainTxList[hash] = txn
 	}
 }
 
@@ -753,15 +941,69 @@ func (mp *TxPool) doRemoveTransaction(hash Uint256, txSize int) {
 	mp.txnListSize -= txSize
 }
 
+func (mp *TxPool) clearTemp() {
+	mp.tempInputUTXOList = make(map[string]*Transaction)
+	mp.tempSidechainTxList = make(map[Uint256]*Transaction)
+	mp.tempOwnerPublicKeys = make(map[string]struct{})
+	mp.tempNodePublicKeys = make(map[string]struct{})
+	mp.tempCodes = make(map[string]struct{})
+	mp.tempCrDIDs = make(map[Uint168]struct{})
+	mp.tempSpecialTxList = make(map[Uint256]struct{})
+	mp.tempProducerNicknames = make(map[string]struct{})
+	mp.tempCrNicknames = make(map[string]struct{})
+}
+
+func (mp *TxPool) commitTemp() {
+	for k, v := range mp.tempInputUTXOList {
+		mp.inputUTXOList[k] = v
+	}
+	for k, v := range mp.tempSidechainTxList {
+		mp.sidechainTxList[k] = v
+	}
+	for k, v := range mp.tempOwnerPublicKeys {
+		mp.ownerPublicKeys[k] = v
+	}
+	for k, v := range mp.tempNodePublicKeys {
+		mp.nodePublicKeys[k] = v
+	}
+	for k, v := range mp.tempCodes {
+		mp.codes[k] = v
+	}
+	for k, v := range mp.tempCrDIDs {
+		mp.crDIDs[k] = v
+	}
+	for k, v := range mp.tempSpecialTxList {
+		mp.specialTxList[k] = v
+	}
+	for k, v := range mp.tempProducerNicknames {
+		mp.producerNicknames[k] = v
+	}
+	for k, v := range mp.tempCrNicknames {
+		mp.crNicknames[k] = v
+	}
+}
+
 func NewTxPool(params *config.Params) *TxPool {
 	return &TxPool{
-		chainParams:     params,
-		inputUTXOList:   make(map[string]*Transaction),
-		txnList:         make(map[Uint256]*Transaction),
-		sidechainTxList: make(map[Uint256]*Transaction),
-		ownerPublicKeys: make(map[string]struct{}),
-		nodePublicKeys:  make(map[string]struct{}),
-		specialTxList:   make(map[Uint256]struct{}),
-		crDIDs:          make(map[Uint168]struct{}),
+		chainParams:           params,
+		inputUTXOList:         make(map[string]*Transaction),
+		txnList:               make(map[Uint256]*Transaction),
+		sidechainTxList:       make(map[Uint256]*Transaction),
+		ownerPublicKeys:       make(map[string]struct{}),
+		nodePublicKeys:        make(map[string]struct{}),
+		codes:                 make(map[string]struct{}),
+		crDIDs:                make(map[Uint168]struct{}),
+		specialTxList:         make(map[Uint256]struct{}),
+		producerNicknames:     make(map[string]struct{}),
+		crNicknames:           make(map[string]struct{}),
+		tempInputUTXOList:     make(map[string]*Transaction),
+		tempSidechainTxList:   make(map[Uint256]*Transaction),
+		tempOwnerPublicKeys:   make(map[string]struct{}),
+		tempNodePublicKeys:    make(map[string]struct{}),
+		tempCodes:             make(map[string]struct{}),
+		tempCrDIDs:            make(map[Uint168]struct{}),
+		tempSpecialTxList:     make(map[Uint256]struct{}),
+		tempProducerNicknames: make(map[string]struct{}),
+		tempCrNicknames:       make(map[string]struct{}),
 	}
 }

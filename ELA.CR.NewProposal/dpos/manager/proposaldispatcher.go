@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -463,6 +463,7 @@ func (p *ProposalDispatcher) IsCRCBadNetWork() bool {
 }
 
 func (p *ProposalDispatcher) IsViewChangedTimeOut() bool {
+	return false
 	if p.crcBadNetwork {
 		if !p.IsCRCBadNetWork() {
 			p.crcBadNetwork = false

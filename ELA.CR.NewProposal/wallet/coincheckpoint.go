@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package wallet
 
@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
+	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 )
 
@@ -83,7 +84,7 @@ func (ccp *CoinsCheckPoint) Deserialize(r io.Reader) error {
 }
 
 func (ccp *CoinsCheckPoint) Key() string {
-	return key
+	return utxoCheckPointKey
 }
 
 func (ccp *CoinsCheckPoint) Snapshot() checkpoint.ICheckPoint {
@@ -148,7 +149,7 @@ func (ccp *CoinsCheckPoint) OnBlockSaved(block *types.DposBlock) {
 				TxID:  tx.Hash(),
 				Index: uint16(index),
 			}
-			ccp.appendWalletCoin(&op, &Coin{
+			ccp.appendCoin(&op, &Coin{
 				TxVersion: tx.Version,
 				Output:    output,
 				Height:    block.Height,
@@ -161,16 +162,16 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 	ccp.Lock()
 	defer ccp.Unlock()
 
-	bestHeight := Store.GetHeight()
+	bestHeight := Chain.GetHeight()
 	if height >= bestHeight {
 		return nil
 	}
 	for i := bestHeight; i == height; i-- {
-		hash, err := Store.GetBlockHash(height)
+		hash, err := Chain.GetBlockHash(height)
 		if err != nil {
 			return err
 		}
-		block, err := Store.GetBlock(hash)
+		block, err := Store.GetFFLDB().GetBlock(hash)
 		if err != nil {
 			return err
 		}
@@ -193,9 +194,9 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 				if err != nil {
 					return err
 				}
-				_, exist := addressBook[addr]
+				_, exist := GetWalletAccount(addr)
 				if exist {
-					ccp.appendWalletCoin(&input.Previous, &Coin{
+					ccp.appendCoin(&input.Previous, &Coin{
 						TxVersion: tx.Version,
 						Output:    output,
 						Height:    i,
@@ -208,13 +209,16 @@ func (ccp *CoinsCheckPoint) OnRollbackTo(height uint32) error {
 	return nil
 }
 
-func (ccp *CoinsCheckPoint) appendWalletCoin(op *types.OutPoint, coin *Coin) error {
+func (ccp *CoinsCheckPoint) appendCoin(op *types.OutPoint, coin *Coin) error {
 	addr, err := coin.Output.ProgramHash.ToAddress()
 	if err != nil {
 		return err
 	}
-	_, exist := addressBook[addr]
-	if exist {
+
+	// append wallet coin, vote utxo and deposit coin
+	_, exist := GetWalletAccount(addr)
+	if exist || coin.Output.Type == types.OTVote ||
+		contract.GetPrefixType(coin.Output.ProgramHash) == contract.PrefixDeposit {
 		ccp.coins[*op] = coin
 		ccp.ownedCoins.append(addr, op)
 	}
