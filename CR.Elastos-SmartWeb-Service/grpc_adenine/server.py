@@ -1,8 +1,6 @@
 from concurrent import futures
 
-import logging
 import grpc
-import queue
 
 from grpc_adenine.stubs import common_pb2_grpc
 from grpc_adenine.stubs import wallet_pb2_grpc
@@ -30,5 +28,4 @@ def serve():
 
 
 if __name__ == '__main__':
-    logging.basicConfig()
     serve()

@@ -7,7 +7,7 @@ from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
 
 from grpc_adenine import settings
-from grpc_adenine.implementations import WalletAddresses
+from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
 from grpc_adenine.stubs import wallet_pb2
 from grpc_adenine.stubs import wallet_pb2_grpc
 
@@ -121,8 +121,12 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         status = True
         amount = 5
         if chain == "eth":
-            request_ela_eth(self.web3, address, amount, config('SIDECHAIN_ETH_WALLET_ADDRESS'), config('SIDECHAIN_ETH_WALLET_PRIVATE_KEY'))
             currency_representation = "ELA/ETHSC"
+            if len(WalletAddressesETH) < 10000:
+                WalletAddressesETH.add(address)
+            else:
+                status_message = "Could not deposit ELA at this time. Please try again later"
+                status = False
         else:
             if len(WalletAddresses) < 10000:
                 WalletAddresses.add((chain, address))
@@ -236,20 +240,3 @@ def view_wallet_eth(w3, address):
     balance = w3.eth.getBalance(address)
     balance = w3.fromWei(balance, 'ether')
     return str(balance)
-
-
-def request_ela_eth(w3, to_address, to_amount, from_address, from_password):
-    tx_hash = None
-    if not w3.isConnected():
-        return
-    signed_txn = w3.eth.account.signTransaction(
-        dict(
-            nonce=w3.eth.getTransactionCount(w3.toChecksumAddress(from_address)),
-            gasPrice=w3.eth.gasPrice,
-            gas=100000,
-            to=w3.toChecksumAddress(to_address),
-            value=w3.toWei(to_amount, 'ether')
-        ),
-        from_password
-    )
-    w3.eth.sendRawTransaction(signed_txn.rawTransaction)
