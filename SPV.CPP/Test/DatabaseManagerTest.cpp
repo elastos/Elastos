@@ -365,8 +365,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				if (i < readTx.size() - 1)
-					REQUIRE(readTx[i]->BlockHeight() <= readTx[i + 1]->BlockHeight());
 				UTXOSet::iterator it = txToSave.find(readTx[i]);
 				REQUIRE((it != txToSave.end()));
 				const UTXOPtr &u = *it;
@@ -466,9 +464,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (int i = 0; i < txToSave.size(); ++i) {
 				REQUIRE(dbm.PutTransaction(ISO, txToSave[i]));
 			}
-			std::sort(txToSave.begin(), txToSave.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
-				return a->GetBlockHeight() < b->GetBlockHeight();
-			});
 		}
 
 		SECTION("Transaction read test") {

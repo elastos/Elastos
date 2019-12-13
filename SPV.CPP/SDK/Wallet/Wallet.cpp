@@ -44,15 +44,15 @@ namespace Elastos {
 
 			_listener = boost::weak_ptr<Listener>(listener);
 
-			_subAccount->Init(txns);
-			if (chainID == CHAINID_IDCHAIN)
-				_subAccount->InitDID();
-
 			if (assetArray.empty()) {
 				InstallDefaultAsset();
 			} else {
 				InstallAssets(assetArray);
 			}
+
+			_subAccount->Init(txns);
+			if (chainID == CHAINID_IDCHAIN)
+				_subAccount->InitDID();
 
 			if (!txns.empty() && !ContainsTx(txns[0])) { // verify _transactions match master pubKey
 				std::string hash = txns[0]->GetHash().GetHex();

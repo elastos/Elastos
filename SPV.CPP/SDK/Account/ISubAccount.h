@@ -32,7 +32,7 @@ namespace Elastos {
 
 			virtual bool IsCRDepositAddress(const Address &address) const = 0;
 
-			virtual void AddUsedAddrs(const Address &address) = 0;
+			virtual bool AddUsedAddrs(const Address &address) = 0;
 
 			virtual size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool internal) const = 0;
 

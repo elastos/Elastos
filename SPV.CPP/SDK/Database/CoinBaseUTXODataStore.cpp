@@ -129,10 +129,6 @@ namespace Elastos {
 				return {};
 			}
 
-			std::sort(entitys.begin(), entitys.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
-				return a->BlockHeight() < b->BlockHeight();
-			});
-
 			return entitys;
 		}
 

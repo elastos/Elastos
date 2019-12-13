@@ -194,10 +194,6 @@ namespace Elastos {
 				return {};
 			}
 
-			std::sort(txns.begin(), txns.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
-				return a->GetBlockHeight() < b->GetBlockHeight();
-			});
-
 			return txns;
 		}
 

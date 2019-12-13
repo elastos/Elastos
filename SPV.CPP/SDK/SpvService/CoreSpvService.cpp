@@ -35,6 +35,14 @@ namespace Elastos {
 			std::vector<TransactionPtr>  txs = loadTransactions(chainID);
 			std::vector<UTXOPtr> cbs = loadCoinBaseUTXOs();
 
+			std::sort(txs.begin(), txs.end(), [](const TransactionPtr &a, const TransactionPtr &b) {
+				return a->GetBlockHeight() < b->GetBlockHeight();
+			});
+
+			std::sort(cbs.begin(), cbs.end(), [](const UTXOPtr &a, const UTXOPtr &b) {
+				return a->BlockHeight() < b->BlockHeight();
+			});
+
 			if (_peerManager == nullptr) {
 				_peerManager = PeerManagerPtr(new PeerManager(
 						config->ChainParameters(),

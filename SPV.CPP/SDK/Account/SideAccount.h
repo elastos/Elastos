@@ -128,7 +128,7 @@ namespace Elastos {
 
 			bool IsCRDepositAddress(const Address &address) const;
 
-			void AddUsedAddrs(const Address &address);
+			bool AddUsedAddrs(const Address &address);
 
 			size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool internal) const;
 

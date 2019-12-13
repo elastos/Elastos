@@ -42,7 +42,7 @@ namespace Elastos {
 
 		bool SideAccount::IsCRDepositAddress(const Address &address) const { return false; }
 
-		void SideAccount::AddUsedAddrs(const Address &) {}
+		bool SideAccount::AddUsedAddrs(const Address &) { return false; }
 
 		size_t SideAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t, size_t, bool) const {
 			addr.clear();

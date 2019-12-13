@@ -44,14 +44,17 @@ namespace Elastos {
 		}
 
 		void SubAccount::Init(const std::vector<TransactionPtr> &tx) {
+			UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
+			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
+
 			for (size_t i = 0; i < tx.size(); i++) {
 				const OutputArray &outputs = tx[i]->GetOutputs();
 				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o)
-					AddUsedAddrs((*o)->Addr());
+					if (AddUsedAddrs((*o)->Addr())) {
+						UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
+						UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
+					}
 			}
-
-			UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
-			UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 		}
 
 		void SubAccount::InitDID() {
@@ -90,10 +93,12 @@ namespace Elastos {
 			return _crDepositAddress == address;
 		}
 
-		void SubAccount::AddUsedAddrs(const Address &address) {
+		bool SubAccount::AddUsedAddrs(const Address &address) {
 			if (_allAddrs.find(address) != _allAddrs.end()) {
 				_usedAddrs.insert(address);
+				return true;
 			}
+			return false;
 		}
 
 		size_t SubAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool containInternal) const {

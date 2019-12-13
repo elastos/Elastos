@@ -175,9 +175,10 @@ namespace Elastos {
 			Mnemonic m(_rootPath);
 			ErrorChecker::CheckLogic(!m.Validate(mnemonic), Error::Mnemonic, "Invalid mnemonic");
 
+			time_t now = time(NULL);
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
 														  singleAddress, _p2pEnable, ConfigPtr(new Config(*_config)),
-														  _dataPath, 0, CreateNormal);
+														  _dataPath, now, CreateNormal);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
