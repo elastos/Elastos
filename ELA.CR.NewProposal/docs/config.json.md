@@ -82,11 +82,19 @@ Default config for `testnet`
       "InactivePenalty": 10000000000,           // InactivePenalty defines the penalty amount the producer takes.
       "PreConnectOffset": 360                   // PreConnectOffset defines the offset blocks to pre-connect to the block producers.
     },
+    "CRConfiguration": {
+      "MemberCount": 12,        // The count of CR committee members
+      "VotingPeriod": 21600,    // CRVotingStartHeight defines the height of CR voting started
+      "DutyPeriod": 262800      // CRDutyPeriod defines the duration of a normal duty period which measured by block height
+      },
     "CheckAddressHeight": 88812,   //Before the height will not check that if address is ela address
     "VoteStartHeight": 88812,      //Starting height of statistical voting
     "CRCOnlyDPOSHeight": 1008812,  //The height start DPOS by CRC producers
-    "PublicDPOSHeight": 1108812,    //The height start DPOS by CRCProducers and voted producers
-    "EnableActivateIllegalHeight": 439000 //The start height to enable activate illegal producer though activate tx
+    "PublicDPOSHeight": 1108812,   //The height start DPOS by CRCProducers and voted producers
+    "CRVotingStartHeight": 1800000,// CRVotingStartHeight defines the height of CR voting started
+    "CRCommitteeStartHeight": 2000000, // CRCommitteeStartHeight defines the height of CR Committee started
+    "EnableActivateIllegalHeight": 439000, //The start height to enable activate illegal producer though activate tx
+    "EnableUtxoDB": true //Whether the db is enabled to store the UTXO
   }
 }
 ```

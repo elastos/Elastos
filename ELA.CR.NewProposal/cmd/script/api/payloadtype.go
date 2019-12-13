@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package api
 
@@ -810,6 +810,10 @@ func RegisterUnregisterCRType(L *lua.LState) {
 	// methods
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), unregisterCRMethods))
 }
+func getDidProgramHash(code []byte) *common.Uint168 {
+	ct, _ := contract.CreateCRDIDContractByCode(code)
+	return ct.ToProgramHash()
+}
 
 // Constructor
 func newUnregisterCR(L *lua.LState) int {
@@ -836,8 +840,9 @@ func newUnregisterCR(L *lua.LState) int {
 		fmt.Println("wrong cr public key")
 		os.Exit(1)
 	}
+	did := getDidProgramHash(ct.Code)
 	unregisterCR := &payload.UnregisterCR{
-		Code: ct.Code,
+		DID: *did,
 	}
 
 	if needSign {

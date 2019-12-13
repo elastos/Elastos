@@ -1,14 +1,13 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package script
 
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/cmd/script/api"
@@ -104,10 +103,7 @@ func registerParams(c *cli.Context, L *lua.LState) {
 		table := L.NewTable()
 		L.SetMetatable(table, L.GetTypeMetatable("candidateVotes"))
 		for _, cv := range candidateVotes {
-			num, err := strconv.ParseFloat(cv, 64)
-			if err == nil {
-				table.Append(lua.LNumber(num))
-			}
+			table.Append(lua.LString(cv))
 		}
 		L.Push(table)
 		return 1

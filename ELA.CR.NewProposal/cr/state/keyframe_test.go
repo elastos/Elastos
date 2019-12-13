@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package state
 
@@ -157,39 +157,32 @@ func randomStateKeyFrame(size int, hasPending bool) *StateKeyFrame {
 	frame := NewStateKeyFrame()
 
 	for i := 0; i < size; i++ {
-		did := *randomUint168()
 		candidate := randomCandidate()
-		nickname := randomString()
-		code := randomBytes(34)
-		candidate.info.Code = code
-		candidate.info.NickName = nickname
-		candidate.info.DID = did
+		nickname := candidate.Info().NickName
+		code := candidate.Info().Code
+		did := candidate.Info().DID
 		frame.CodeDIDMap[common.BytesToHexString(code)] = did
 		frame.PendingCandidates[did] = candidate
 		frame.Nicknames[nickname] = struct{}{}
 	}
 	if hasPending {
 		for i := 0; i < size; i++ {
-			did := *randomUint168()
 			candidate := randomCandidate()
-			nickname := randomString()
-			code := randomBytes(34)
-			candidate.info.Code = code
-			candidate.info.NickName = nickname
-			candidate.info.DID = did
+			code := candidate.info.Code
+			did := candidate.info.DID
+			nickname := candidate.info.NickName
 			frame.CodeDIDMap[common.BytesToHexString(code)] = did
 			frame.ActivityCandidates[did] = candidate
 			frame.Nicknames[nickname] = struct{}{}
 		}
 	}
 	for i := 0; i < size; i++ {
-		did := *randomUint168()
+
 		candidate := randomCandidate()
-		nickname := randomString()
-		code := randomBytes(34)
-		candidate.info.Code = code
-		candidate.info.NickName = nickname
-		candidate.info.DID = did
+
+		did := candidate.info.DID
+		nickname := candidate.info.NickName
+		code := candidate.info.Code
 		if i%2 == 0 {
 			candidate.state = Canceled
 		} else {
