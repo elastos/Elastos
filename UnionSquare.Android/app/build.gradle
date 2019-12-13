@@ -5,7 +5,7 @@ apply plugin: 'realm-android'
 android {
     signingConfigs {
         relsease {
-            storeFile file('D:\\studioprogress\\ela\\Elastos.App.UnionSquare.Android\\elaWallet.jks')
+            storeFile file('elaWallet.jks')
             storePassword 'elaWallet'
             keyAlias = 'elaWallet'
             keyPassword 'elaWallet'
