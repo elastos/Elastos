@@ -93,7 +93,7 @@ services:
     tty: true 
 
   testnet-wallet-service-tokensidechain:
-    container_name: testnet-wallet-service
+    container_name: testnet-wallet-service-tokensidechain
     image: cyberrepublic/elastos-wallet-service-tokensidechain:latest
     user: "${UID}:${GID}"
     depends_on:
