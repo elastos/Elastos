@@ -174,7 +174,11 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
             helper.setText(R.id.tv_name, item.name);
             if (item.no == Integer.MAX_VALUE) {
                 helper.setText(R.id.tv_no, "- -");
+                helper.setTextColor(R.id.tv_no, getContext().getResources().getColor(R.color.whiter50));
+                helper.setTextColor(R.id.tv_name, getContext().getResources().getColor(R.color.whiter50));
             } else {
+                helper.setTextColor(R.id.tv_no, getContext().getResources().getColor(R.color.whiter));
+                helper.setTextColor(R.id.tv_name, getContext().getResources().getColor(R.color.whiter));
                 helper.setText(R.id.tv_no, "NO." + item.no);
 
             }
@@ -186,13 +190,13 @@ public class MyVoteFragment extends BaseFragment implements CommmonStringWithMet
         Recorder recorder = new Recorder();
         for (int i = 0; i < netList.size(); i++) {
             if (netList.get(i).getOwnerpublickey().equals(publickey)) {
-                recorder.no = (i + 1);
+                recorder.no = (netList.get(i).getIndex() + 1);
                 recorder.name = netList.get(i).getNickname();
                 return recorder;
             }
         }
         recorder.no = Integer.MAX_VALUE;
-        recorder.name = getString(R.string.invalidnode);
+        recorder.name = getString(R.string.invalidcr);
         return recorder;
     }
 

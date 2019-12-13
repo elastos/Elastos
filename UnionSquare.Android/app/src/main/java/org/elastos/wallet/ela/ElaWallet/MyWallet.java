@@ -37,7 +37,6 @@ public class MyWallet {
     public static final String IDChain = "IDChain";
     public static final long RATE = 100000000;
     public static final String RATE_S = RATE + "";
-    public static final Double RATE_ = 100000000.0;
     public static final long feePerKb = 10000L;
     public static String Url = getTxHashBaseUrl();
     public MasterWalletManager mMasterWalletManager = null;

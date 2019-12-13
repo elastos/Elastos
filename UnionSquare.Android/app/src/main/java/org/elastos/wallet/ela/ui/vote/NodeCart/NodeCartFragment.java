@@ -400,7 +400,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             if ("MAX".equals(num)) {
                 amount = "-1";
             } else {
-                amount = Arith.mul(num, MyWallet.RATE_S).toPlainString();
+                amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
             }
             presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
                     amount, String.valueOf(JSONArray.parseArray(JSON.toJSONString(nodelist))), "", true, this);

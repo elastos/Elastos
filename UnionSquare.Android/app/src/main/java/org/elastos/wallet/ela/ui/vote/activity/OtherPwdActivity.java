@@ -115,12 +115,12 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                         break;
                     case Constant.WITHDRAWSUPERNODE:
                         presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                                Arith.sub(Arith.mul(amount, MyWallet.RATE_S), "10000").toPlainString(), this);
+                                Arith.sub(Arith.mulRemoveZero(amount, MyWallet.RATE_S), "10000").toPlainString(), this);
 
                         break;
                     case Constant.WITHDRAWCR:
                         presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
-                                Arith.sub(Arith.mul(amount, MyWallet.RATE_S), "10000").toPlainString(), "", this);
+                                Arith.sub(Arith.mulRemoveZero(amount, MyWallet.RATE_S), "10000").toPlainString(), "", this);
 
                         break;
 
@@ -154,7 +154,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
             case "signDigest":
                 paylodJson.put("Signature", ((CommmonStringEntity) baseEntity).getData());
                 if (type.equals(Constant.CRSIGNUP)) {
-                    presenter.createRegisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", paylodJson.toString(), Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
+                    presenter.createRegisterCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", paylodJson.toString(), Arith.mulRemoveZero("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
                 } else if (type.equals(Constant.CRUPDATE)) {
                     presenter.createUpdateCRTransaction(wallet.getWalletId(), MyWallet.ELA, "", paylodJson.toString(), "", false, this);
                 } else if (type.equals(Constant.UNREGISTERCR)) {
@@ -172,7 +172,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                 break;
             case "generateProducerPayload":
                 if (type.equals(Constant.SUPERNODESIGN)) {
-                    presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), Arith.mul(amount, MyWallet.RATE_S).toPlainString(), "", true, this);
+                    presenter.createRegisterProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString(), "", true, this);
                 } else if (type.equals(Constant.UPDATENODEINFO)) {
                     presenter.createUpdateProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "", ((CommmonStringEntity) baseEntity).getData(), "", false, this);
                 }
