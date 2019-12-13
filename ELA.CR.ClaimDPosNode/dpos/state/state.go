@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -47,6 +47,9 @@ const (
 	// Returned indicates the producer has canceled and deposit returned.
 	Returned
 )
+
+// CacheVotesSize indicate the size to cache votes information.
+const CacheVotesSize = 6
 
 // producerStateStrings is a array of producer states back to their constant
 // names for pretty printing.
@@ -246,6 +249,11 @@ type State struct {
 
 	mtx     sync.RWMutex
 	history *utils.History
+
+	votesCacheKeys map[uint32][]string
+	votesCache     map[string]*types.Output
+
+	cursor int
 }
 
 // getProducerKey returns the producer's owner public key string, whether the
@@ -311,6 +319,13 @@ func (s *State) updateProducerInfo(origin *payload.ProducerInfo, update *payload
 	}
 
 	producer.info = *update
+}
+
+func (s *State) ExistProducerByDepositHash(programHash common.Uint168) bool {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	_, ok := s.ProducerDepositMap[programHash]
+	return ok
 }
 
 // GetProducer returns a producer with the producer's node public key or it's
@@ -635,6 +650,10 @@ func (s *State) IsDPOSTransaction(tx *types.Transaction) bool {
 		if ok {
 			return true
 		}
+		_, ok = s.votesCache[input.ReferKey()]
+		if ok {
+			return true
+		}
 	}
 
 	return false
@@ -648,6 +667,7 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 
 	s.tryInitProducerAssetAmounts(block.Height)
 	s.processTransactions(block.Transactions, block.Height)
+	s.ProcessVoteStatisticsBlock(block)
 
 	if confirm != nil {
 		s.countArbitratorsInactivity(block.Height, confirm)
@@ -657,10 +677,30 @@ func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	s.history.Commit(block.Height)
 }
 
+// ProcessVoteStatisticsBlock deal with block with vote statistics error.
+func (s *State) ProcessVoteStatisticsBlock(block *types.Block) {
+	if block.Height == s.chainParams.VoteStatisticsHeight {
+		s.processTransactions(block.Transactions, block.Height)
+	}
+}
+
 // processTransactions takes the transactions and the height when they have been
 // packed into a block.  Then loop through the transactions to update producers
 // state and votes according to transactions content.
 func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
+
+	// Remove cached votes
+	if len(s.votesCacheKeys) >= CacheVotesSize {
+		for k, v := range s.votesCacheKeys {
+			if k <= height-CacheVotesSize {
+				for _, referKey := range v {
+					delete(s.votesCache, referKey)
+				}
+				delete(s.votesCacheKeys, k)
+			}
+		}
+	}
+
 	for _, tx := range txs {
 		s.processTransaction(tx, height)
 	}
@@ -766,6 +806,7 @@ func (s *State) processTransaction(tx *types.Transaction, height uint32) {
 
 	case types.ReturnDepositCoin:
 		s.returnDeposit(tx, height)
+		s.processDeposit(tx, height)
 
 	case types.UpdateVersion:
 		s.updateVersion(tx, height)
@@ -810,10 +851,12 @@ func (s *State) registerProducer(tx *types.Transaction, height uint32) {
 		s.Nicknames[nickname] = struct{}{}
 		s.NodeOwnerKeys[nodeKey] = ownerKey
 		s.PendingProducers[ownerKey] = &producer
+		s.ProducerDepositMap[*programHash] = struct{}{}
 	}, func() {
 		delete(s.Nicknames, nickname)
 		delete(s.NodeOwnerKeys, nodeKey)
 		delete(s.PendingProducers, ownerKey)
+		delete(s.ProducerDepositMap, *programHash)
 	})
 }
 
@@ -922,7 +965,7 @@ func (s *State) tryInitProducerAssetAmounts(blockHeight uint32) {
 
 	producers := s.getAllProducers()
 	for _, v := range producers {
-		programHash, err := contract.PublicKeyToStandardProgramHash(
+		programHash, err := contract.PublicKeyToDepositProgramHash(
 			v.info.OwnerPublicKey)
 		if err != nil {
 			log.Warn(err)
@@ -971,6 +1014,16 @@ func (s *State) getProducerByDepositHash(hash common.Uint168) *Producer {
 			return producer
 		}
 	}
+	for _, producer := range s.CanceledProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
+	for _, producer := range s.IllegalProducers {
+		if producer.depositHash.IsEqual(hash) {
+			return producer
+		}
+	}
 	return nil
 }
 
@@ -994,8 +1047,20 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 		referKey := input.ReferKey()
 		output, ok := s.Votes[referKey]
 		if ok {
+			if output == nil {
+				output, ok = s.votesCache[referKey]
+				if !ok {
+					log.Errorf("invalid votes output")
+					return
+				}
+			}
 			s.processVoteCancel(output, height)
-			// todo consider rollback
+			if _, exist := s.votesCacheKeys[height]; !exist {
+				s.votesCacheKeys[height] = make([]string, 0)
+			}
+			s.votesCacheKeys[height] = append(s.votesCacheKeys[height], referKey)
+			s.votesCache[referKey] = output
+
 			s.Votes[referKey] = nil
 		}
 	}
@@ -1415,12 +1480,14 @@ func (s *State) GetHistory(height uint32) (*StateKeyFrame, error) {
 // NewState returns a new State instance.
 func NewState(chainParams *config.Params, getArbiters func() [][]byte,
 	getProducerDepositAmount func(programHash common.Uint168) (common.Fixed64,
-	error)) *State {
+		error)) *State {
 	return &State{
 		chainParams:              chainParams,
 		getArbiters:              getArbiters,
 		getProducerDepositAmount: getProducerDepositAmount,
 		history:                  utils.NewHistory(maxHistoryCapacity),
 		StateKeyFrame:            NewStateKeyFrame(),
+		votesCacheKeys:           make(map[uint32][]string),
+		votesCache:               make(map[string]*types.Output),
 	}
 }

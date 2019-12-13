@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package payload
 
@@ -17,7 +17,7 @@ import (
 const UnregisterCRVersion byte = 0x00
 
 type UnregisterCR struct {
-	Code      []byte
+	DID       common.Uint168
 	Signature []byte
 }
 
@@ -44,11 +44,9 @@ func (a *UnregisterCR) Serialize(w io.Writer, version byte) error {
 }
 
 func (a *UnregisterCR) SerializeUnsigned(w io.Writer, version byte) error {
-	err := common.WriteVarBytes(w, a.Code)
-	if err != nil {
-		return errors.New("[UnregisterCR], code serialize failed")
+	if err := a.DID.Serialize(w); err != nil {
+		return errors.New("[UnregisterCR], DID serialize failed")
 	}
-
 	return nil
 }
 
@@ -66,11 +64,8 @@ func (a *UnregisterCR) Deserialize(r io.Reader, version byte) error {
 }
 
 func (a *UnregisterCR) DeserializeUnsigned(r io.Reader, version byte) error {
-	var err error
-	a.Code, err = common.ReadVarBytes(r, crypto.MaxMultiSignCodeLength, "code")
-	if err != nil {
-		return errors.New("[UnregisterCR], code deserialize failed")
+	if err := a.DID.Deserialize(r); err != nil {
+		return errors.New("[UnregisterCR], DID deserialize failed")
 	}
-
 	return nil
 }

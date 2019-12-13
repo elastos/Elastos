@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package dpos
 
@@ -28,6 +28,13 @@ import (
 )
 
 const dataPathDPoS = "elastos/data/dpos"
+
+type NetworkConfig struct {
+	ChainParams *config.Params
+	Account     account.Account
+	MedianTime  dtime.MedianTimeSource
+	Listener    manager.NetworkEventListener
+}
 
 type blockItem struct {
 	Block     *types.Block
@@ -318,17 +325,16 @@ func (n *network) getCurrentHeight(pid peer.PID) uint64 {
 	return uint64(blockchain.DefaultLedger.Blockchain.GetHeight())
 }
 
-func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
-	localhost string, listener manager.NetworkEventListener) (*network, error) {
+func NewDposNetwork(cfg NetworkConfig) (*network, error) {
 	network := &network{
-		listener:                 listener,
+		listener:                 cfg.Listener,
 		messageQueue:             make(chan *messageItem, 10000), //todo config handle capacity though config file
 		quit:                     make(chan bool),
 		badNetworkChan:           make(chan bool),
 		changeViewChan:           make(chan bool),
 		recoverChan:              make(chan bool),
 		recoverTimeoutChan:       make(chan bool),
-		blockReceivedChan:        make(chan blockItem, 10),        //todo config handle capacity though config file
+		blockReceivedChan:        make(chan blockItem, 10),            //todo config handle capacity though config file
 		confirmReceivedChan:      make(chan *mempool.ConfirmInfo, 10), //todo config handle capacity though config file
 		illegalBlocksEvidence:    make(chan *payload.DPOSIllegalBlocks),
 		sidechainIllegalEvidence: make(chan *payload.SidechainIllegalData),
@@ -338,20 +344,20 @@ func NewDposNetwork(account account.Account, medianTime dtime.MedianTimeSource,
 	notifier := p2p.NewNotifier(p2p.NFNetStabled|p2p.NFBadNetwork, network.notifyFlag)
 
 	var pid peer.PID
-	copy(pid[:], account.PublicKeyBytes())
+	copy(pid[:], cfg.Account.PublicKeyBytes())
 	server, err := p2p.NewServer(&p2p.Config{
 		DataDir:          dataPathDPoS,
 		PID:              pid,
 		EnableHub:        true,
-		Localhost:        localhost,
-		MagicNumber:      config.Parameters.DPoSConfiguration.Magic,
-		DefaultPort:      config.Parameters.DPoSConfiguration.DPoSPort,
-		TimeSource:       medianTime,
+		Localhost:        cfg.ChainParams.DPoSIPAddress,
+		MagicNumber:      cfg.ChainParams.DPoSMagic,
+		DefaultPort:      cfg.ChainParams.DPoSDefaultPort,
+		TimeSource:       cfg.MedianTime,
 		MakeEmptyMessage: makeEmptyMessage,
 		HandleMessage:    network.handleMessage,
 		PingNonce:        network.getCurrentHeight,
 		PongNonce:        network.getCurrentHeight,
-		Sign:             account.Sign,
+		Sign:             cfg.Account.Sign,
 		StateNotifier:    notifier,
 	})
 	if err != nil {

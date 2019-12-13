@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -29,6 +29,7 @@ type FilterLoad struct {
 	Filter    []byte
 	HashFuncs uint32
 	Tweak     uint32
+	Flags     uint8
 }
 
 func (msg *FilterLoad) CMD() string {
@@ -36,7 +37,7 @@ func (msg *FilterLoad) CMD() string {
 }
 
 func (msg *FilterLoad) MaxLength() uint32 {
-	return 3 + MaxFilterLoadFilterSize + 8
+	return 3 + MaxFilterLoadFilterSize + 8 + 1
 }
 
 func (msg *FilterLoad) Serialize(w io.Writer) error {
@@ -58,7 +59,7 @@ func (msg *FilterLoad) Serialize(w io.Writer) error {
 		return err
 	}
 
-	return common.WriteElements(w, msg.HashFuncs, msg.Tweak)
+	return common.WriteElements(w, msg.HashFuncs, msg.Tweak, msg.Flags)
 }
 
 func (msg *FilterLoad) Deserialize(r io.Reader) error {
@@ -79,6 +80,9 @@ func (msg *FilterLoad) Deserialize(r io.Reader) error {
 			"[count %v, max %v]", msg.HashFuncs, MaxFilterLoadHashFuncs)
 		return common.FuncError("FilterLoad.Deserialize", str)
 	}
+
+	// deserialize flags ignore the result for compatibility with previous versions
+	common.ReadElements(r, &msg.Flags)
 
 	return nil
 }

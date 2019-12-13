@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -33,6 +33,7 @@ import (
 const (
 	maxNonce       = ^uint32(0) // 2^32 - 1
 	updateInterval = 30 * time.Second
+	maxTxPerBlock  = 100
 )
 
 type Config struct {
@@ -266,7 +267,7 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 			continue
 		}
 		totalTxsSize = size
-		if txCount >= pact.MaxTxPerBlock {
+		if txCount >= maxTxPerBlock {
 			log.Warn("txCount reached max MaxTxPerBlock")
 			break
 		}
@@ -274,7 +275,13 @@ func (pow *Service) GenerateBlock(minerAddr string) (*types.Block, error) {
 		if !blockchain.IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
-		if errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx); errCode != elaerr.Success {
+		references, err := pow.chain.UTXOCache.GetTxReference(tx)
+		if err != nil {
+			log.Warn("check transaction context failed, get transaction reference failed")
+			break
+		}
+		errCode := pow.chain.CheckTransactionContext(nextBlockHeight, tx, references)
+		if errCode != elaerr.Success {
 			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
 			continue
 		}
@@ -374,11 +381,11 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	log.Info("<================Discrete Mining==============>\n")
 	for {
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
-		log.Info("Generate block, " + msgBlock.Hash().String())
 		if err != nil {
 			log.Warn("Generate block failed, ", err.Error())
 			continue
 		}
+		log.Info("Generate block, " + msgBlock.Hash().String())
 
 		if pow.SolveBlock(msgBlock, nil) {
 			if msgBlock.Header.Height == pow.chain.GetHeight()+1 {

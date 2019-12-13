@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package mempool
 
@@ -19,6 +19,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -106,6 +107,7 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 
 	// 2. Add sidechain Tx to pool
 	txPool.addSidechainTx(txn1)
+	txPool.commitTemp()
 
 	// 3. Generate a withdraw transaction with duplicate sidechain Tx which already in the pool
 	txn2 := new(types.Transaction)
@@ -134,10 +136,12 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 		&types.Output{
 			AssetID:     common.Uint256{1, 2, 3},
 			Value:       1,
-			OutputLock:  0,
 			ProgramHash: common.Uint168{1, 2, 3},
-			Type:        0,
-			Payload:     nil,
+		},
+		&types.Output{
+			AssetID:     common.Uint256{4, 5, 6},
+			Value:       1,
+			ProgramHash: common.Uint168{4, 5, 6},
 		},
 	}
 	tx2 := new(types.Transaction)
@@ -145,17 +149,21 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	tx2.Payload = &payload.TransferAsset{}
 	tx2.Outputs = []*types.Output{
 		&types.Output{
-			AssetID:     common.Uint256{4, 5, 6},
+			AssetID:     common.Uint256{11, 12, 13},
 			Value:       1,
-			OutputLock:  0,
-			ProgramHash: common.Uint168{4, 5, 6},
-			Type:        0,
-			Payload:     nil,
+			ProgramHash: common.Uint168{11, 12, 13},
+		},
+		&types.Output{
+			AssetID:     common.Uint256{14, 15, 16},
+			Value:       1,
+			ProgramHash: common.Uint168{14, 15, 16},
 		},
 	}
 
 	publicKeyStr1 := "03c77af162438d4b7140f8544ad6523b9734cca9c7a62476d54ed5d1bddc7a39c3"
 	publicKey1, _ := common.HexStringToBytes(publicKeyStr1)
+	publicKeyStr2 := "027c4f35081821da858f5c7197bac5e33e77e5af4a3551285f8a8da0a59bd37c45"
+	publicKey2, _ := common.HexStringToBytes(publicKeyStr2)
 	pk1, _ := crypto.DecodePoint(publicKey1)
 	ct1, _ := contract.CreateStandardContract(pk1)
 	hash1, _ := contract.PublicKeyToDepositProgramHash(publicKey1)
@@ -170,6 +178,20 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 		Previous: types.OutPoint{
 			TxID:  tx2.Hash(),
 			Index: 0,
+		},
+		Sequence: 0,
+	}
+	input3 := &types.Input{
+		Previous: types.OutPoint{
+			TxID:  tx1.Hash(),
+			Index: 1,
+		},
+		Sequence: 0,
+	}
+	input4 := &types.Input{
+		Previous: types.OutPoint{
+			TxID:  tx2.Hash(),
+			Index: 1,
 		},
 		Sequence: 0,
 	}
@@ -198,6 +220,50 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	}
 	tx4.Inputs = []*types.Input{input2}
 
+	tx5 := new(types.Transaction)
+	tx5.TxType = types.RegisterProducer
+	tx5.Version = types.TxVersion09
+	tx5.Payload = &payload.ProducerInfo{
+		OwnerPublicKey: publicKey1,
+		NodePublicKey:  publicKey2,
+		NickName:       "nickname 3",
+		Url:            "http://www.elastos_test.com",
+		Location:       3,
+	}
+	tx5.Inputs = []*types.Input{input3}
+
+	tx6 := new(types.Transaction)
+	tx6.TxType = types.RegisterProducer
+	tx6.Version = types.TxVersion09
+	tx6.Payload = &payload.ProducerInfo{
+		OwnerPublicKey: publicKey2,
+		NodePublicKey:  publicKey1,
+		NickName:       "nickname 4",
+		Url:            "http://www.elastos_test.com",
+		Location:       4,
+	}
+	tx6.Inputs = []*types.Input{input4}
+
+	tx7 := new(types.Transaction)
+	tx7.TxType = types.ReturnDepositCoin
+	tx7.Version = types.TxVersion09
+	tx7.Programs = []*program.Program{
+		&program.Program{
+			Code:      []byte{11},
+			Parameter: nil,
+		},
+	}
+
+	tx8 := new(types.Transaction)
+	tx8.TxType = types.ReturnCRDepositCoin
+	tx8.Version = types.TxVersion09
+	tx8.Programs = []*program.Program{
+		&program.Program{
+			Code:      []byte{22},
+			Parameter: nil,
+		},
+	}
+
 	// 2. Add tx1 and tx2 into store and input UTXO list
 	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).NewBatch()
 	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).PersistTransactions(
@@ -207,33 +273,75 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	blockchain.DefaultLedger.Store.(*blockchain.ChainStore).BatchCommit()
 	txPool.addInputUTXOList(tx3, input1)
 	txPool.addInputUTXOList(tx4, input2)
+	txPool.addInputUTXOList(tx5, input3)
 
 	// 3. Verify CR related tx
 	errCode := txPool.verifyCRRelatedTx(tx3)
-	if errCode != errors.Success {
-		t.Error("Should have no error verify CR related tx")
-	}
+	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
 
 	// 4. Verify duplicate CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx4)
-	if errCode != errors.ErrCRProcessing {
-		t.Error("Should find the duplicate CR related tx")
-	}
+	assert.True(t, errCode == errors.ErrCRProcessing)
 
-	// 5. Clean CR related tx
-	txs := make([]*types.Transaction, 2)
+	// 5. Verify duplicate producer related tx
+	errCode = txPool.verifyProducerRelatedTx(tx5)
+	assert.True(t, errCode == errors.ErrProducerProcessing)
+
+	// 6. Verify duplicate producer related tx
+	errCode = txPool.verifyProducerRelatedTx(tx6)
+	assert.True(t, errCode == errors.ErrProducerProcessing)
+	txPool.clearTemp()
+
+	// 7. Clean CR related tx
+	txs := make([]*types.Transaction, 1)
 	txs[0] = tx3
-	txs[1] = tx4
 	txPool.cleanTransactions(txs)
-	if errCode != errors.ErrCRProcessing {
-		t.Error("Should find the duplicate CR related tx")
-	}
 
-	// 6. Verify CR related tx
+	// 8. Verify duplicate producer related tx
+	errCode = txPool.verifyProducerRelatedTx(tx5)
+	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
+
+	// 9. Verify CR related tx
+	errCode = txPool.verifyCRRelatedTx(tx3)
+	assert.True(t, errCode == errors.ErrCRProcessing)
+	txPool.clearTemp()
+
+	// 10. Verify CR related tx
 	errCode = txPool.verifyCRRelatedTx(tx4)
-	if errCode != errors.Success {
-		t.Error("Should find the duplicate CR related tx")
-	}
+	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
+
+	// 11. Clean producer related tx
+	txs2 := make([]*types.Transaction, 2)
+	txs2[0] = tx4
+	txs2[1] = tx5
+	txPool.cleanTransactions(txs2)
+
+	// 12. Verify CR related tx
+	errCode = txPool.verifyCRRelatedTx(tx3)
+	assert.True(t, errCode == errors.Success)
+
+	// 13. Verify ReturnDepositCoin tx
+	errCode = txPool.verifyProducerRelatedTx(tx7)
+	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
+
+	// 14. Verify same ReturnDepositCoin tx again
+	errCode = txPool.verifyProducerRelatedTx(tx7)
+	assert.True(t, errCode == errors.ErrProducerProcessing)
+	txPool.clearTemp()
+
+	// 15. Verify ReturnCRDepositCoin tx
+	errCode = txPool.verifyCRRelatedTx(tx8)
+	assert.True(t, errCode == errors.Success)
+	txPool.commitTemp()
+
+	// 16. Verify same ReturnCRDepositCoin tx again
+	errCode = txPool.verifyCRRelatedTx(tx8)
+	assert.True(t, errCode == errors.ErrCRProcessing)
+	txPool.clearTemp()
 }
 
 func TestTxPool_CleanSidechainTx(t *testing.T) {
@@ -290,6 +398,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	// 2. Add to sidechain txs pool
 	for _, txn := range txns {
 		txPool.addSidechainTx(txn)
+		txPool.commitTemp()
 	}
 
 	// Verify sidechain tx pool state
@@ -379,6 +488,7 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 
 	// 2. Add sidechain Tx to pool
 	txPool.addSidechainTx(txn1)
+	txPool.commitTemp()
 
 	// 3. Run IsDuplicateSidechainTx
 	inPool := txPool.IsDuplicateSidechainTx(sideTx1)
@@ -634,6 +744,12 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	//if err := isTransactionExisted(txPool, tx6); err != nil {
 	//	t.Error("should have transaction: tx6", err)
 	//}
+}
+
+func TestTxPool_End(t *testing.T) {
+	blockchain.DefaultLedger.Store.Close()
+	blockchain.DefaultLedger = initialLedger
+	initialLedger = nil
 }
 
 func isTransactionCleaned(pool *TxPool, tx *types.Transaction) error {
