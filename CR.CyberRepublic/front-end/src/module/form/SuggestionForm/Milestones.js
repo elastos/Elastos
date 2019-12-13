@@ -14,7 +14,12 @@ class Milestones extends Component {
       milestones: props.initialValue ? props.initialValue : [],
       milestonesTrigger: props.initialValue
         ? this.milestonesTrigger(props.initialValue.length)
-        : {}
+        : {},
+      currentMilestonesTrigger: {
+        index: -1,
+        clicked: false,
+        clickedSwitch: false
+      }
     }
   }
 
@@ -41,7 +46,7 @@ class Milestones extends Component {
   }
 
   handleEdit = (index, values) => {
-    const { milestones, milestonesTrigger } = this.state
+    const { milestones } = this.state
     const { onChange } = this.props
     const rs = milestones.map((item, key) => {
       if (index === key) {
@@ -49,37 +54,46 @@ class Milestones extends Component {
       }
       return item
     })
-    this.setState({ milestones: rs,
-      milestonesTrigger: {
-        ...milestonesTrigger,
-        [index]: { clicked: false, clickedSwitch: false }
-      } }, () => {
+    this.setState({ milestones: rs, currentMilestonesTrigger: {} }, () => {
       onChange({ milestone: milestones })
     })
   }
 
   handleClickChange = (index, visible) => {
-    const { milestonesTrigger } = this.state
     this.setState({
-      milestonesTrigger: {
-        ...milestonesTrigger,
-        [index]: { ...milestonesTrigger[index], clicked: visible }
+      currentMilestonesTrigger: {
+        index,
+        clicked: visible,
+        clickedSwitch: false
       }
     })
   }
 
-  handleClickSwitchChange = (index) => {
-    const { milestonesTrigger } = this.state
+  handleClickSwitchChange = index => {
+    const { currentMilestonesTrigger } = this.state
+    const isCurrentMilestone = currentMilestonesTrigger.index === index
     this.setState({
-      milestonesTrigger: {
-        ...milestonesTrigger,
-        [index]: { ...milestonesTrigger[index], clickedSwitch: !milestonesTrigger[index].clickedSwitch }
+      currentMilestonesTrigger: {
+        index,
+        clicked: false,
+        clickedSwitch: isCurrentMilestone
+          ? !currentMilestonesTrigger.clickedSwitch
+          : true
       }
     })
+  }
+
+  getMilestoneTrigger = index => {
+    const { currentMilestonesTrigger, milestonesTrigger } = this.state
+    const isCurrentMilestone = currentMilestonesTrigger.index === index
+    if (isCurrentMilestone) {
+      return currentMilestonesTrigger
+    }
+    return milestonesTrigger[index]
   }
 
   render() {
-    const { milestones, milestonesTrigger } = this.state
+    const { milestones } = this.state
     const { editable } = this.props
     const visible = editable === false ? editable : true
     return (
@@ -92,25 +106,27 @@ class Milestones extends Component {
                   <MilestoneItem>
                     <Square
                       className={
-                        milestonesTrigger[index].clickedSwitch
+                        this.getMilestoneTrigger(index).clickedSwitch
                           ? 'big-square'
                           : ''
                       }
                     >
                       <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                      <div className="square-content"><p>{item.version}</p></div>
+                      <div className="square-content">
+                        <p>{item.version}</p>
+                      </div>
                       <Button
                         type="link"
                         onClick={() => this.handleClickSwitchChange(index)}
                       >
-                        {milestonesTrigger[index].clickedSwitch
+                        {this.getMilestoneTrigger(index).clickedSwitch
                           ? I18N.get('suggestion.plan.hideDetail')
                           : I18N.get('suggestion.plan.showDetail')}
                       </Button>
                     </Square>
                     <MilestoneEdit>
                       <Popover
-                        content={(
+                        content={
                           <MilestoneForm
                             item={{
                               ...item,
@@ -119,10 +135,11 @@ class Milestones extends Component {
                             }}
                             onSubmit={this.handleEdit}
                           />
-                        )}
+                        }
                         trigger="click"
-                        visible={milestonesTrigger[index].clicked}
-                        onVisibleChange={isVisible => this.handleClickChange(index, isVisible)
+                        visible={this.getMilestoneTrigger(index).clicked}
+                        onVisibleChange={isVisible =>
+                          this.handleClickChange(index, isVisible)
                         }
                         placement="top"
                       >
@@ -140,18 +157,24 @@ class Milestones extends Component {
                     <MilestoneItem>
                       <Square
                         className={
-                          milestonesTrigger[index].clickedSwitch
+                          this.getMilestoneTrigger(index).clickedSwitch
                             ? 'big-square'
                             : ''
                         }
                       >
                         <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                        <div className="square-content"><p dangerouslySetInnerHTML={{__html: linkifyStr(item.version)}}/></div>
+                        <div className="square-content">
+                          <p
+                            dangerouslySetInnerHTML={{
+                              __html: linkifyStr(item.version)
+                            }}
+                          />
+                        </div>
                         <Button
                           type="link"
                           onClick={() => this.handleClickSwitchChange(index)}
                         >
-                          {milestonesTrigger[index].clickedSwitch
+                          {this.getMilestoneTrigger(index).clickedSwitch
                             ? I18N.get('suggestion.plan.hideDetail')
                             : I18N.get('suggestion.plan.showDetail')}
                         </Button>
