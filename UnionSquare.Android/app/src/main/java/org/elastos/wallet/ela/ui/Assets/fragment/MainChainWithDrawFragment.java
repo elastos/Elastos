@@ -219,7 +219,7 @@ public class MainChainWithDrawFragment extends BaseFragment implements CommonBal
             return;
         }
         String remark = etRemark.getText().toString().trim();
-        presenter.createWithdrawTransaction(wallet.getWalletId(), chainId, "", Arith.mul(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
+        presenter.createWithdrawTransaction(wallet.getWalletId(), chainId, "", Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString(), address, remark, this);
 
     }
 

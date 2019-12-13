@@ -244,7 +244,7 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         if ("MAX".equals(amount)) {
             value = "-1";
         } else {
-            value = Arith.mul(amount, MyWallet.RATE_S).toPlainString();
+            value = Arith.mulRemoveZero(amount, MyWallet.RATE_S).toPlainString();
         }
         String remark = etRemark.getText().toString().trim();
         //presenter.createTransaction(wallet.getWalletId(), chainId, "", address, (long) (Double.parseDouble(amount) * MyWallet.RATE), "", remark, Checked, this);

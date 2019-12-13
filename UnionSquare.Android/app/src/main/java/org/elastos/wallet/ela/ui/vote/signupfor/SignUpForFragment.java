@@ -116,7 +116,7 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
                     return;
                 }
                 //模拟交易获得手续费
-                new TransferPresenter().createTransaction(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", Arith.mul("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
+                new TransferPresenter().createTransaction(wallet.getWalletId(), MyWallet.ELA, "", "8USqenwzA5bSAvj1mG4SGTABykE9n5RzJQ", Arith.mulRemoveZero("5000", MyWallet.RATE_S).toPlainString(), "", true, this);
 
                 break;
             case R.id.ll_area:

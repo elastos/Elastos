@@ -64,6 +64,17 @@ public class Arith {
         return b1.multiply(b2);
     }
 
+    /**
+     * 提供精确的乘法运算。
+     *
+     * @param v1 被乘数
+     * @param v2 乘数
+     * @return 两个参数的积
+     */
+    public static BigDecimal mulRemoveZero(String v1, String v2) {
+        return mul(v1, v2).setScale(0, BigDecimal.ROUND_DOWN);
+    }
+
     public static BigDecimal mul(Object v1, Object v2) {
         BigDecimal b1;
         BigDecimal b2;
