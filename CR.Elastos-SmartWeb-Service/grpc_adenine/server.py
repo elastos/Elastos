@@ -2,6 +2,7 @@ from concurrent import futures
 
 import logging
 import grpc
+import queue
 
 from grpc_adenine.stubs import common_pb2_grpc
 from grpc_adenine.stubs import wallet_pb2_grpc
@@ -15,7 +16,8 @@ from grpc_adenine.implementations.sidechain_eth import SidechainEth
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    # Initialize the server
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), maximum_concurrent_rpcs=10000)
     
     common_pb2_grpc.add_CommonServicer_to_server(Common(), server)
     wallet_pb2_grpc.add_WalletServicer_to_server(Wallet(), server)

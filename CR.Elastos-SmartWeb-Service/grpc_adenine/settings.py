@@ -7,10 +7,14 @@ DID_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'
 # Token Sidechain RPC
 TOKEN_SIDECHAIN_RPC_GET_BALANCE = 'getreceivedbyaddress'
 
-# Wallet Service
+# Wallet Service[mainchain, did sidechain]
 WALLET_API_GENERATE_MNEMONIC = '/1/eng/mnemonic'
 WALLET_API_RETRIEVE_WALLET_FROM_MNEMONIC = '/1/hd'
+WALLET_API_TRANSFER = '/1/transfer'
 WALLET_API_CROSSCHAIN_TRANSFER = '/1/cross/m2d/transfer'
+
+# Wallet Service[mainchain, token sidechain]
+WALLET_API_CROSSCHAIN_TRANSFER_TOKENSIDECHAIN = '/1/cross/m2d/transfer'
 
 # Sidechain Service
 DID_SERVICE_API_CREATE_DID = '/1/gen/did'

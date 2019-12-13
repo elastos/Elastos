@@ -1,12 +1,13 @@
 import json
-from requests import Session
 
+from requests import Session
 from decouple import config
 
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
 
 from grpc_adenine import settings
+from grpc_adenine.implementations import WalletAddresses
 from grpc_adenine.stubs import wallet_pb2
 from grpc_adenine.stubs import wallet_pb2_grpc
 
@@ -91,7 +92,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         if chain == "eth":
             balance = view_wallet_eth(self.web3, address)
         else:
-            balance = view_wallet_general(self.session, address, chain)
+            balance = view_wallet_general(self.session, chain, address)
 
         response = {
             'result': {
@@ -111,13 +112,37 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         # if not api_status:
         #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
 
+        request_input = json.loads(request.input)
+        chain = request_input['chain']
+        address = request_input['address']
+
+        status_message = 'Successfuly deposited ELA. Please wait 2-4 minutes for the ELA to arrive on main chain and ' \
+                         '12-15 minutes to arrive on PoW sidechains'
+        status = True
+        amount = 5
+        if chain == "eth":
+            request_ela_eth(self.web3, address, amount, config('SIDECHAIN_ETH_WALLET_ADDRESS'), config('SIDECHAIN_ETH_WALLET_PRIVATE_KEY'))
+            currency_representation = "ELA/ETHSC"
+        else:
+            if len(WalletAddresses) < 10000:
+                WalletAddresses.add((chain, address))
+            else:
+                status_message = "Could not deposit ELA at this time. Please try again later"
+                status = False
+            if chain == "mainchain":
+                amount = 10
+                currency_representation = "ELA"
+            if chain == "did":
+                currency_representation = "ELA/DIDSC"
+            elif chain == "token":
+                currency_representation = "ELA/TOKENSC"
+
         response = {
             'result': {
-                'key': 'value'
+                'address': address,
+                'deposit_amount': "{0} {1}".format(amount, currency_representation)
             }
         }
-        status_message = 'Successfuly deposited ELA'
-        status = True
 
         return wallet_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
 
@@ -172,7 +197,7 @@ def create_wallet_sidechain_eth(w3, password):
     return result
 
 
-def view_wallet_general(session, address, chain):
+def view_wallet_general(session, chain, address):
     if chain == "mainchain":
         get_balance_url = config('PRIVATE_NET_IP_ADDRESS') + config('MAINCHAIN_RPC_PORT')
         d = {
@@ -211,3 +236,20 @@ def view_wallet_eth(w3, address):
     balance = w3.eth.getBalance(address)
     balance = w3.fromWei(balance, 'ether')
     return str(balance)
+
+
+def request_ela_eth(w3, to_address, to_amount, from_address, from_password):
+    tx_hash = None
+    if not w3.isConnected():
+        return
+    signed_txn = w3.eth.account.signTransaction(
+        dict(
+            nonce=w3.eth.getTransactionCount(w3.toChecksumAddress(from_address)),
+            gasPrice=w3.eth.gasPrice,
+            gas=100000,
+            to=w3.toChecksumAddress(to_address),
+            value=w3.toWei(to_amount, 'ether')
+        ),
+        from_password
+    )
+    w3.eth.sendRawTransaction(signed_txn.rawTransaction)
