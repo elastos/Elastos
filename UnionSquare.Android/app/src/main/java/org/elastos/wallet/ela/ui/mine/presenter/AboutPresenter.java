@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -41,7 +42,8 @@ public class AboutPresenter extends PresenterAbstract {
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                if (MyApplication.chainID > 0) {
+                if (MyApplication.currentWalletNet != WalletNet.MAINNET
+                        && MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET) {
                     moveWalletFile(baseFragment.getContext());
                 }
                 return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext()) + "", "moveLogFile");
@@ -90,14 +92,14 @@ public class AboutPresenter extends PresenterAbstract {
         String rootPath = context.getFilesDir().getParent();
 
         String root = "RegTest";
-        switch (MyApplication.chainID) {
-            case 1:
+        switch (MyApplication.currentWalletNet) {
+            case WalletNet.TESTNET:
                 root = "TestNet";
                 break;
-            case 2:
+            case WalletNet.REGTESTNET:
                 root = "RegTest";
                 break;
-            case 3:
+            case WalletNet.PRVNET:
                 root = "PrvNet";
                 break;
 

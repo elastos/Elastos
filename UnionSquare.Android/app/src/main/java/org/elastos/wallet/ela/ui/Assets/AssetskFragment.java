@@ -8,8 +8,8 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.os.Parcelable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -452,7 +452,6 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             if (transferType == null) {
                 return;
             }
-            transactionMap.remove(hash);
             String chainId = jsonObject.getString("ChainID");
             try {
                 if (chainId.equals(MyWallet.IDChain)) {
@@ -469,8 +468,12 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             String masterWalletID = jsonObject.getString("MasterWalletID");
             String walleName = realmUtil.queryUserWallet(masterWalletID).getWalletName();
             JSONObject result = new JSONObject(resultString);
-            // int code = result.getInt("Code");
+            int code = result.getInt("Code");
             String reason = result.getString("Reason");
+            if (code == 0 || (code == 18 && reason.contains("uplicate"))) {
+                return;
+            }
+            transactionMap.remove(hash);
             NotificationManager manager = (NotificationManager) getContext().getSystemService(NOTIFICATION_SERVICE);
 
             //需添加的代码

@@ -29,7 +29,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 /**
- * wallet webview jni
+ * wallet  jni
  */
 public class MyWallet {
     private static final String TAG = "Wallet";
@@ -40,9 +40,9 @@ public class MyWallet {
     public static final Double RATE_ = 100000000.0;
     public static final long feePerKb = 10000L;
     public static String Url = getTxHashBaseUrl();
-    public MasterWalletManager mMasterWalletManager = null;
+    public MasterWalletManager mMasterWalletManager;
     //private IDidManager mDidManager = null;
-    private String mRootPath = null;
+    private String mRootPath ;
     public static final String SUCCESSCODE = "00000";
     private static final String WalletException = "000001";
     private static final String JSONEXCEPTION = "000002";
@@ -64,14 +64,14 @@ public class MyWallet {
         mRootPath = MyApplication.getAppContext().getFilesDir().getParent();
         String net = "MainNet";
         String config = "";
-        switch (MyApplication.chainID) {
-            case 1:
+        switch (MyApplication.currentWalletNet) {
+            case WalletNet.TESTNET:
                 net = "TestNet";
                 break;
-            case 2:
+            case WalletNet.REGTESTNET:
                 net = "RegTest";
                 break;
-            case 3:
+            case WalletNet.PRVNET:
                 net = "PrvNet";
                 break;
 
@@ -81,11 +81,11 @@ public class MyWallet {
 
     private static String getTxHashBaseUrl() {
         String baseUrl = "https://blockchain.elastos.org/tx/";
-        switch (MyApplication.chainID) {
-            case 1:
+        switch (MyApplication.currentWalletNet) {
+            case WalletNet.TESTNET:
                 baseUrl = "https://blockchain-beta.elastos.org/tx/";
                 break;
-            case 2:
+            case WalletNet.REGTESTNET:
                 baseUrl = "https://blockchain-regtest.elastos.org/tx/";
                 break;
 

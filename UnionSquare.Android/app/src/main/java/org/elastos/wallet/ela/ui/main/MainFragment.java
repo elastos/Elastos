@@ -3,11 +3,12 @@ package org.elastos.wallet.ela.ui.main;
 import android.os.Bundle;
 import android.view.View;
 
-import com.blankj.utilcode.util. CacheDiskUtils;
+import com.blankj.utilcode.util.CacheDiskUtils;
 import com.chaychan.library.BottomBarItem;
 import com.chaychan.library.BottomBarLayout;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.base.BaseFragment;
@@ -111,7 +112,7 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
     private void initArea() {
         if (new SPUtil(getContext()).getFristLogin()) {
-             CacheDiskUtils.getInstance().clear();
+            CacheDiskUtils.getInstance().clear();
             new SPUtil(getContext()).setFristLogin();
         }
         AppUtlis.getArea(getContext(), null);
@@ -119,7 +120,8 @@ public class MainFragment extends BaseFragment implements CommmonObjectWithMethN
 
     private void initServer() {
 
-        if (MyApplication.chainID <= 0) {
+        if (MyApplication.currentWalletNet == WalletNet.MAINNET
+                || MyApplication.currentWalletNet == WalletNet.ALPHAMAINNET) {
             //主网才有高可用
             new MainPresenter().getServerList(this);
         }

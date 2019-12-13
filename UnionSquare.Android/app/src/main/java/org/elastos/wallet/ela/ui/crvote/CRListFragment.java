@@ -341,8 +341,10 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 netList.remove(curentNode);
             }
             //只有active  并且Registered时候添加
-            if (!is && curentNode != null && status.equals("Registered") && curentNode.getState().equals("Active") && netList.indexOf(curentNode) != 0) {
-                netList.add(0, curentNode);
+            if (!is && curentNode != null && status.equals("Registered") && curentNode.getState().equals("Active")) {
+                if (netList.indexOf(curentNode) != 0) {
+                    netList.add(0, curentNode);
+                }
                 is = true;
             }
         }

@@ -1,9 +1,10 @@
 package org.elastos.wallet.ela.utils;
 
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 
 public class Log {
-    private static boolean showLog = MyApplication.chainID != 0;
+    private static boolean showLog = MyApplication.currentWalletNet != WalletNet.MAINNET;
 
     public static void v(String tag, String msg) {
         if (showLog)

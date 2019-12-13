@@ -27,6 +27,7 @@ import com.trello.rxlifecycle2.LifecycleTransformer;
 
 import org.elastos.wallet.R;
 import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.SupportFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
@@ -93,13 +94,13 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         inflaterView(inflater, container);
         int Language = new SPUtil(getContext()).getLanguage();
-        int id = R.drawable.commonbg;
-        if (Language == 0) {
-            id = MyApplication.chainID > 0 ? R.mipmap.bg_test : id;
-        } else {
-            id = MyApplication.chainID > 0 ? R.mipmap.bg_e_test : id;
-
+        int bg = R.mipmap.bg_test;
+        if (Language != 0) {
+            bg = R.mipmap.bg_e_test;
         }
+        int id = (MyApplication.currentWalletNet != WalletNet.MAINNET
+                && MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET) ? bg : R.drawable.commonbg;
+
         mRootView.setBackgroundResource(id);//为每个页面设置默认背景
         unbinder = ButterKnife.bind(this, mRootView);
         showLoading();

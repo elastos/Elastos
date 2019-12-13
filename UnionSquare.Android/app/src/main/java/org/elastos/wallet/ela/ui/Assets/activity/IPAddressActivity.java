@@ -10,6 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ElaWallet.MyWallet;
+import org.elastos.wallet.ela.ElaWallet.WalletNet;
+import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.base.BaseActivity;
 import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
@@ -84,10 +87,7 @@ public class IPAddressActivity extends BaseActivity implements NewBaseViewData, 
                     return;
                 }
 
-
                 //ping一下
-
-
                 new IPPresenter().ping(ip, this);
                 break;
 
@@ -148,5 +148,38 @@ public class IPAddressActivity extends BaseActivity implements NewBaseViewData, 
     @Override
     public void onClick(View v) {
         recyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private int getDefaultPort(String chainId) {
+        int port = 0;
+        switch (MyApplication.currentWalletNet) {
+            case WalletNet.MAINNET:
+            case WalletNet.ALPHAMAINNET:
+                port = getPort(20338, 20608, chainId);
+                break;
+            case WalletNet.TESTNET:
+                port = getPort(21338, 21608, chainId);
+                break;
+            case WalletNet.REGTESTNET:
+                port = getPort(22338, 22608, chainId);
+                break;
+            default:
+                showToastMessage("please set por" + chainId);
+                break;
+        }
+        return port;
+    }
+
+    private int getPort(int elaPort, int IDChainPort, String chainId) {
+        switch (chainId) {
+            case MyWallet.IDChain:
+                return elaPort;
+            case MyWallet.ELA:
+                return IDChainPort;
+            default:
+                showToastMessage("please set por" + chainId);
+                return 0;
+
+        }
     }
 }
