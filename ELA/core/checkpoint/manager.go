@@ -1,7 +1,7 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package checkpoint
 
@@ -204,6 +204,15 @@ func (m *Manager) Restore() (err error) {
 		v.OnInit()
 	}
 	return
+}
+
+func (m *Manager) Reset(filter func(point ICheckPoint) bool) {
+	for _, v := range m.checkpoints {
+		if filter != nil && !filter(v) {
+			continue
+		}
+		m.channels[v.Key()].Reset(v, nil)
+	}
 }
 
 // SafeHeight returns the minimum height of all checkpoints from which we can

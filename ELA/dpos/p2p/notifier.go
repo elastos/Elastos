@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -146,12 +146,12 @@ func (n *Notifier) notifyHandler() {
 			}
 
 		case <-timer.C:
-
-			if n.flags&NFBadNetwork == NFBadNetwork {
-				go n.notify(NFBadNetwork)
+			if len(connected)/2 < len(peers)/3 {
+				if n.flags&NFBadNetwork == NFBadNetwork {
+					go n.notify(NFBadNetwork)
+				}
+				startTimer()
 			}
-			startTimer()
-
 		}
 	}
 }

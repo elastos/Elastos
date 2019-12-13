@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -51,6 +51,11 @@ func TestFileChannels_LifeCycle(t *testing.T) {
 	<-reply
 	assert.False(t, utils.FileExisted(getFilePath("", pt)))
 	assert.FileExists(t, getDefaultPath("", pt))
+
+	// reset should clean all reserved files
+	channels.Reset(pt, reply)
+	<-reply
+	assert.False(t, utils.FileExisted(getDefaultPath("", pt)))
 
 	// exit
 	channels.Exit()

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 // 
@@ -8,6 +8,7 @@ package blockchain
 import (
 	"bytes"
 	"math/rand"
+	"path/filepath"
 	"strconv"
 	"testing"
 
@@ -70,7 +71,8 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		s.arbitratorsPriKeys = append(s.arbitratorsPriKeys, a)
 	}
 
-	chainStore, err := NewChainStore(test.DataPath, config.DefaultParams.GenesisBlock)
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "special"),
+		config.DefaultParams.GenesisBlock)
 	if err != nil {
 		s.Error(err)
 	}

@@ -7,6 +7,7 @@
 package peer_test
 
 import (
+	"container/list"
 	"errors"
 	"fmt"
 	"io"
@@ -21,6 +22,8 @@ import (
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 	"github.com/elastos/Elastos.ELA/p2p/peer"
 	"github.com/elastos/Elastos.ELA/utils/test"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
@@ -408,7 +411,7 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 	invalidVersionMsg := msg.NewVersion(1, 0, 0, verNonce,
 		0, true)
 
-	err = p2p.WriteMessage(remoteConn.Writer, peerCfg.Magic, invalidVersionMsg,
+	err = p2p.WriteMessage(remoteConn, peerCfg.Magic, invalidVersionMsg,
 		func(m p2p.Message) (*types.DposBlock, bool) {
 			msgBlock, ok := m.(*msg.Block)
 			if !ok {
@@ -444,4 +447,165 @@ func TestUnsupportedVersionPeer(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("Timeout waiting for remote reader to close")
 	}
+}
+
+func TestSendMessage(t *testing.T) {
+	test.SkipShort(t)
+
+	writeMessageCount := 100
+	writeMessageTime := time.Second * 5
+
+	outputQueue := make(chan bool, 50)
+	sendQueue := make(chan bool, 1)
+	sendDoneQueue := make(chan bool, 1)
+	waiQueue := make(chan bool, 1)
+
+	pendingMsgs := list.New()
+
+	var sendCount int
+	var writeCount int
+	// To avoid duplication below.
+	queuePacket := func(msg bool, list *list.List, waiting bool) bool {
+		if !waiting {
+			sendQueue <- msg
+			sendCount++
+			fmt.Println("queuePacket sendQueue ", sendCount)
+		} else {
+			list.PushBack(msg)
+			sendCount++
+			fmt.Println("queuePacket list push back ", sendCount)
+		}
+		// we are always waiting now.
+		return true
+	}
+
+	var waiting bool
+	go func() {
+		for {
+			select {
+			case msg := <-outputQueue:
+				time.Sleep(time.Second / 4)
+				fmt.Println("waiting: ", waiting)
+				waiting = queuePacket(msg, pendingMsgs, waiting)
+			case <-sendDoneQueue:
+				// No longer waiting if there are no more messages
+				// in the pending messages queue.
+				next := pendingMsgs.Front()
+				if next == nil {
+					waiting = false
+					continue
+				}
+
+				// Notify the outHandler about the next item to
+				// asynchronously send.
+				val := pendingMsgs.Remove(next)
+				sendQueue <- val.(bool)
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			select {
+			case <-sendQueue:
+				fmt.Println("write ", writeCount)
+				time.Sleep(writeMessageTime)
+				sendDoneQueue <- true
+				writeCount++
+				if writeCount == writeMessageCount {
+					waiQueue <- true
+				}
+			}
+		}
+	}()
+
+	for i := 0; i < writeMessageCount; i++ {
+		fmt.Println("output message ", i+1)
+		outputQueue <- true
+	}
+
+	<-waiQueue
+
+	assert.Equal(t, writeCount, 100)
+}
+
+func TestWriteAfterTimeout(t *testing.T) {
+	test.SkipShort(t)
+	timeOutput := 2
+
+	c1, err := net.ListenPacket("udp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c1.Close()
+
+	host, _, err := net.SplitHostPort(c1.LocalAddr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c2, err := net.ListenPacket(c1.LocalAddr().Network(),
+		net.JoinHostPort(host, "0"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c2.Close()
+
+	if err := c2.SetWriteDeadline(time.Now().Add(time.Duration(timeOutput) *
+		time.Second)); err != nil {
+		t.Fatalf("set write deadline error: %v", err)
+	}
+
+	var result bool
+	fmt.Println("start write:", time.Now())
+	for i := 0; i < timeOutput*2; i++ {
+		_, err := c2.WriteTo([]byte("WRITETO TIMEOUT TEST"), c1.LocalAddr())
+		if err != nil {
+			result = err.(net.Error).Timeout()
+			break
+		}
+		time.Sleep(time.Second)
+	}
+	fmt.Println("end write:", time.Now())
+
+	assert.Equal(t, result, true)
+}
+
+func TestWriteToTimeout(t *testing.T) {
+	test.SkipShort(t)
+
+	// create 1G data to send.
+	data := randomBytes(1024 * 1024 * 1024)
+	fmt.Println("prepare data finished:", time.Now())
+
+	ln, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+
+	c, err := net.Dial(ln.Addr().Network(), ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+
+	if err := c.SetWriteDeadline(time.Now().Add(2 * time.Second)); err != nil {
+		t.Fatalf("set write deadline error: %v", err)
+	}
+
+	var result bool
+	_, err = c.Write(data)
+	if err != nil {
+		result = err.(net.Error).Timeout()
+	} else {
+		result = false
+	}
+	assert.Equal(t, result, true)
+}
+
+func randomBytes(len int) []byte {
+	a := make([]byte, len)
+	rand.Read(a)
+	return a
 }

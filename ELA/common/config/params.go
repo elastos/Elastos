@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 //
@@ -158,9 +158,10 @@ var DefaultParams = Params{
 	CRCOnlyDPOSHeight:           343400,
 	PublicDPOSHeight:            402680,
 	EnableActivateIllegalHeight: 439000,
-	CheckRewardHeight:           436812,
-	CRVotingStartHeight:         1800000, // todo correct me when height has been confirmed
+	CRVotingStartHeight:         537670,
 	CRCommitteeStartHeight:      2000000, // todo correct me when height has been confirmed
+	CheckRewardHeight:           436812,
+	VoteStatisticsHeight:        512881,
 	ToleranceDuration:           5 * time.Second,
 	MaxInactiveRounds:           720 * 2,
 	InactivePenalty:             0, //there will be no penalty in this version
@@ -168,11 +169,10 @@ var DefaultParams = Params{
 	GeneralArbiters:             24,
 	CandidateArbiters:           72,
 	PreConnectOffset:            360,
-	CheckPointNoFlatFile:        false,
 	CRMemberCount:               12,
 	CRVotingPeriod:              30 * 720,
 	CRDutyPeriod:                365 * 720,
-	EnableUtxoDB:                false,
+	EnableUtxoDB:                true,
 	CkpManager: checkpoint.NewManager(&checkpoint.Config{
 		EnableHistory:      false,
 		HistoryStartHeight: uint32(0),
@@ -221,10 +221,12 @@ func (p *Params) TestNet() *Params {
 	copy.VoteStartHeight = 200000
 	copy.CRCOnlyDPOSHeight = 246700
 	copy.PublicDPOSHeight = 300000
-	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
+	copy.CRVotingStartHeight = 436900
 	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
 	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
-	copy.CheckRewardHeight = 1000000           //todo correct me later
+	copy.CheckRewardHeight = 100
+	copy.VoteStatisticsHeight = 0
+	copy.EnableUtxoDB = true
 	return &copy
 }
 
@@ -271,10 +273,12 @@ func (p *Params) RegNet() *Params {
 	copy.VoteStartHeight = 170000
 	copy.CRCOnlyDPOSHeight = 211000
 	copy.PublicDPOSHeight = 234000
-	copy.CRVotingStartHeight = 900000          // todo correct me when height has been confirmed
-	copy.CRCommitteeStartHeight = 1000000      // todo correct me when height has been confirmed
-	copy.EnableActivateIllegalHeight = 1000000 //todo correct me later
-	copy.CheckRewardHeight = 1000000           //todo correct me later
+	copy.CRVotingStartHeight = 292000
+	copy.CRCommitteeStartHeight = 1000000 // todo correct me when height has been confirmed
+	copy.EnableActivateIllegalHeight = 256000
+	copy.CheckRewardHeight = 280000
+	copy.VoteStatisticsHeight = 0
+	copy.EnableUtxoDB = true
 	return &copy
 }
 
@@ -299,6 +303,9 @@ type Params struct {
 
 	// The interface/port to listen for connections.
 	ListenAddrs []string
+
+	// PermanentPeers defines peers seeds for node to initialize p2p connection.
+	PermanentPeers []string
 
 	// Foundation defines the foundation address which receiving mining
 	// rewards.
@@ -375,18 +382,26 @@ type Params struct {
 	CRCommitteeStartHeight uint32
 
 	// PublicDPOSHeight defines the start height to enable activate illegal
-	// producer though activate tx
+	// producer though activate tx.
 	EnableActivateIllegalHeight uint32
 
 	// CheckRewardHeight defines the height to check reward in coin base
-	// with new check function
+
+	// with new check function.
 	CheckRewardHeight uint32
+
+	// VoteStatisticsHeight defines the height to deal with block with vote
+	// statistics error.
+	VoteStatisticsHeight uint32
 
 	// CRCArbiters defines the fixed CRC arbiters producing the block.
 	CRCArbiters []string
 
 	// DPoSMagic defines the magic number used in the DPoS network.
 	DPoSMagic uint32
+
+	// DPoSIPAddress defines the IP address for the DPoS network.
+	DPoSIPAddress string
 
 	// DPoSDefaultPort defines the default port for the DPoS network.
 	DPoSDefaultPort uint16
@@ -414,9 +429,6 @@ type Params struct {
 	// EmergencyInactivePenalty defines the penalty amount the emergency
 	// producer takes.
 	EmergencyInactivePenalty common.Fixed64
-
-	// CheckPointNoFlatFile defines if check point should store as flat file
-	CheckPointNoFlatFile bool
 
 	// CRMemberCount defines the number of CR committee members
 	CRMemberCount uint32

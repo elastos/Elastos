@@ -1,26 +1,38 @@
-// Copyright (c) 2017-2019 Elastos Foundation
+// Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-//
+// 
 
 package wallet
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 
 	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/crypto"
 	"github.com/elastos/Elastos.ELA/utils"
 )
 
-var (
-	addressBook = make(map[string]*AddressInfo, 0)
+const (
+	// utxoCheckPointKey defines key of utxo checkpoint.
+	utxoCheckPointKey = "utxo"
+
+	// dataExtension defines checkpoint file extension of utxo checkpoint.
+	dataExtension = ".ucp"
+
+	// savePeriod defines interval height between two neighbor check
+	// points.
+	savePeriod = uint32(720)
+
+	effectivePeriod = uint32(720)
 )
 
 type AddressInfo struct {
@@ -30,27 +42,24 @@ type AddressInfo struct {
 
 type Wallet struct {
 	*CoinsCheckPoint
-	FileStore
+	*account.Client
 }
 
 func (w *Wallet) LoadAddresses() error {
-	addrBook := make(map[string]*AddressInfo, 0)
-	storeAddresses, err := w.LoadAddressData()
+	storeAccounts, err := w.LoadAccountData()
 	if err != nil {
 		return err
 	}
-	for _, addressData := range storeAddresses {
-		code, err := common.HexStringToBytes(addressData.Code)
+	for _, account := range storeAccounts {
+		code, err := common.HexStringToBytes(account.RedeemScript)
 		if err != nil {
 			return err
 		}
-		addressInfo := &AddressInfo{
-			address: addressData.Address,
+		SetWalletAccount(&AddressInfo{
+			address: account.Address,
 			code:    code,
-		}
-		addrBook[addressData.Address] = addressInfo
+		})
 	}
-	addressBook = addrBook
 
 	return nil
 }
@@ -68,15 +77,16 @@ func (w *Wallet) ImportPubkey(pubKey []byte, enableUtxoDB bool) error {
 	if err != nil {
 		return err
 	}
-
-	if err := w.SaveAddressData(address, sc.Code); err != nil {
+	if err := w.SaveAccountData(sc.ToProgramHash(), sc.Code, nil); err != nil {
 		return err
 	}
-
-	addressBook[address] = &AddressInfo{
+	SetWalletAccount(&AddressInfo{
 		address: address,
 		code:    sc.Code,
-	}
+	})
+	ChainParam.CkpManager.Reset(func(point checkpoint.ICheckPoint) bool {
+		return point.Key() == utxoCheckPointKey
+	})
 
 	if enableUtxoDB {
 		return nil
@@ -86,19 +96,20 @@ func (w *Wallet) ImportPubkey(pubKey []byte, enableUtxoDB bool) error {
 }
 
 func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
-	_, err := common.Uint168FromAddress(address)
+	programHash, err := common.Uint168FromAddress(address)
 	if err != nil {
 		return errors.New("invalid address")
 	}
-
-	if err := w.SaveAddressData(address, nil); err != nil {
+	if err := w.SaveAccountData(programHash, nil, nil); err != nil {
 		return err
 	}
-
-	addressBook[address] = &AddressInfo{
+	SetWalletAccount(&AddressInfo{
 		address: address,
 		code:    nil,
-	}
+	})
+	ChainParam.CkpManager.Reset(func(point checkpoint.ICheckPoint) bool {
+		return point.Key() == utxoCheckPointKey
+	})
 
 	if enableUtxoDB {
 		return nil
@@ -114,12 +125,12 @@ func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint
 		if err != nil {
 			return nil, err
 		}
-		unspents, err := Store.GetUnspentsFromProgramHash(*programHash)
+		unspent, err := Store.GetUnspentsFromProgramHash(*programHash)
 		if err != nil {
 			return nil, err
 		}
 
-		return unspents, nil
+		return unspent, nil
 	}
 
 	coins := w.ListCoins(address)
@@ -131,16 +142,16 @@ func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint
 			Value: coin.Output.Value,
 		})
 	}
-	unspents := make(map[common.Uint256][]*blockchain.UTXO, 0)
-	unspents[*account.SystemAssetID] = utxos
+	unspent := make(map[common.Uint256][]*blockchain.UTXO, 0)
+	unspent[*account.SystemAssetID] = utxos
 
-	return unspents, nil
+	return unspent, nil
 }
 
 func (w *Wallet) RescanWallet() error {
-	bestHeight := Store.GetHeight()
+	bestHeight := Chain.GetHeight()
 	for i := uint32(0); i <= bestHeight; i++ {
-		hash, err := Store.GetBlockHash(i)
+		hash, err := Chain.GetBlockHash(i)
 		if err != nil {
 			return err
 		}
@@ -156,25 +167,41 @@ func (w *Wallet) RescanWallet() error {
 	return nil
 }
 
+func NewWallet() *Wallet {
+	return &Wallet{
+		CoinsCheckPoint: NewCoinCheckPoint(),
+	}
+}
+
 func New(dataDir string) *Wallet {
-	walletPath := filepath.Join(dataDir, "wallet.dat")
+	path := filepath.Join(dataDir, account.KeystoreFileName)
 	wallet := Wallet{
-		FileStore:       FileStore{path: walletPath},
 		CoinsCheckPoint: NewCoinCheckPoint(),
 	}
 
-	exist := utils.FileExisted(walletPath)
+	exist := utils.FileExisted(path)
 	if !exist {
-		if err := wallet.BuildDatabase(walletPath); err != nil {
-			log.Warn("Build wallet failed, " + err.Error())
+		pwd, err := utils.GetConfirmedPassword()
+		if err != nil {
+			log.Warn("Get password failed, use an empty password. " + err.Error())
 		}
-		if err := wallet.SaveStoredData("Version", []byte(WalletVersion)); err != nil {
-			log.Warn("Save version field failed, " + err.Error())
+		client, err := account.Create(path, pwd)
+		if err != nil {
+			log.Warn("Create wallet failed, " + err.Error())
+			os.Exit(1)
 		}
-		if err := wallet.SaveStoredData("Height", []byte("0")); err != nil {
-			log.Warn("Save height field failed, " + err.Error())
-		}
+		wallet.Client = client
 	} else {
+		pwd, err := utils.GetPassword()
+		if err != nil {
+			log.Warn("Get password failed, use an empty password. " + err.Error())
+		}
+		client, err := account.Open(path, pwd)
+		if err != nil {
+			log.Warn("Open wallet failed, " + err.Error())
+			os.Exit(1)
+		}
+		wallet.Client = client
 		if err := wallet.LoadAddresses(); err != nil {
 			log.Warn("Build wallet failed" + err.Error())
 		}
