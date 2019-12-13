@@ -13,11 +13,9 @@ WalletAddresses = set()
 
 
 def cronjob_send_ela():
-    print("Executing now...")
-    threading.Timer(10, cronjob_send_ela).start()
+    threading.Timer(120, cronjob_send_ela).start()
     if len(WalletAddresses) == 0:
         return
-    print(len(WalletAddresses))
     headers = {
         'Accepts': 'application/json',
         'Content-Type': 'application/json'
