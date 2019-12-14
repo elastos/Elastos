@@ -80,7 +80,7 @@ def cronjob_send_ela():
         confirmation_times = json.loads(response.text)['result']['confirmations']
         if confirmation_times >= 1:
             done = True
-        time.sleep(5)
+        time.sleep(30)
     logging.debug("Finished transferring 10 ELA. Tx Hash: {0}".format(tx_hash))
 
     # Transfer from mainchain to did sidechain
