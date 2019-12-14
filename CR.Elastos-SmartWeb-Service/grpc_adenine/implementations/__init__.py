@@ -1,4 +1,5 @@
 import json
+import time
 import logging
 import threading
 
@@ -21,10 +22,15 @@ global WalletAddresses, WalletAddressesETH
 WalletAddresses = set()
 WalletAddressesETH = set()
 
+def create_wallet_mainchain(session):
+    create_wallet_url = config('PRIVATE_NET_IP_ADDRESS') + config('WALLET_SERVICE_URL') + settings.WALLET_API_CREATE_WALLET
+    response = session.get(create_wallet_url)
+    data = json.loads(response.text)['result']
+    return data['address'], data['privateKey']
 
 def cronjob_send_ela():
     logging.debug("Running cron job to send ELA, ELA/DIDSC and ELA/DIDTOKEN")
-    threading.Timer(120, cronjob_send_ela).start()
+    threading.Timer(300, cronjob_send_ela).start()
     if len(WalletAddresses) == 0:
         return
     headers = {
@@ -34,24 +40,11 @@ def cronjob_send_ela():
     session = Session()
     session.headers.update(headers)
 
+    addrs_for_did, addrs_for_token = {}, {}
     req_data_mainchain = {
         "sender": [{
             "address": config('MAINCHAIN_WALLET_ADDRESS'),
             "privateKey": config('MAINCHAIN_WALLET_PRIVATE_KEY')
-        }],
-        "receiver": []
-    }
-    req_data_did = {
-        "sender": [{
-            "address": config('MAINCHAIN_WALLET_ADDRESS2'),
-            "privateKey": config('MAINCHAIN_WALLET_PRIVATE_KEY2')
-        }],
-        "receiver": []
-    }
-    req_data_token = {
-        "sender": [{
-            "address": config('MAINCHAIN_WALLET_ADDRESS3'),
-            "privateKey": config('MAINCHAIN_WALLET_PRIVATE_KEY3')
         }],
         "receiver": []
     }
@@ -61,40 +54,72 @@ def cronjob_send_ela():
                 "address": address,
                 "amount": "10"
             })
-        elif chain == "did":
-            req_data_did["receiver"].append({
-                "address": address,
-                "amount": "5"
+        else:
+            new_address, new_private_key = create_wallet_mainchain(session)
+            req_data_mainchain["receiver"].append({
+                "address": new_address,
+                "amount": "5.5"
             })
-        elif chain == "token":
-            req_data_token["receiver"].append({
-                "address": address,
-                "amount": "5"
-            })
+            if chain == "did":
+                addrs_for_did[address] = (new_address, new_private_key)
+            elif chain == "token":
+                addrs_for_token[address] = (new_address, new_private_key)
 
     # Transfer from mainchain to mainchain
     transfer_ela_url = config('PRIVATE_NET_IP_ADDRESS') + config(
         'WALLET_SERVICE_URL') + settings.WALLET_API_TRANSFER
     response = session.post(transfer_ela_url, data=json.dumps(req_data_mainchain))
     tx_hash = json.loads(response.text)['result']
-    logging.debug("Transferred {0} ELA. Tx Hash: {1}".format(len(req_data_mainchain), tx_hash))
+    logging.debug("Transferred 10 ELA. Tx Hash: {0}".format(tx_hash))
+
+    # Wait for transaction to have one confirmation
+    done = False
+    while done != True:
+        tx_url = config('PRIVATE_NET_IP_ADDRESS') + config('WALLET_SERVICE_URL') + settings.WALLET_API_GET_TRANSACTION + tx_hash
+        response = session.get(tx_url)
+        confirmation_times = json.loads(response.text)['result']['confirmations']
+        if confirmation_times >= 1:
+            done = True
+        time.sleep(5)
+    logging.debug("Finished transferring 10 ELA. Tx Hash: {0}".format(tx_hash))
 
     # Transfer from mainchain to did sidechain
-    transfer_ela_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-        'WALLET_SERVICE_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER
-    response = session.post(transfer_ela_url, data=json.dumps(req_data_did))
-    tx_hash = json.loads(response.text)['result']
-    logging.debug("Transferred ELA/DIDSC. Tx Hash: {0}".format(tx_hash))
+    for address, wallet in addrs_for_did.items():
+        req_data = {
+            "sender": [{
+                "address": wallet[0],
+                "privateKey": wallet[1],
+            }],
+            "receiver": [{
+                "address": address,
+                "amount": "5"
+            }]
+        }
+        transfer_ela_url = config('PRIVATE_NET_IP_ADDRESS') + config(
+            'WALLET_SERVICE_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER
+        response = session.post(transfer_ela_url, data=json.dumps(req_data))
+        tx_hash = json.loads(response.text)['result']
+        logging.debug("Transferred ELA/DIDSC. Tx Hash: {0}".format(tx_hash))
 
     # Transfer from mainchain to token sidechain
-    transfer_ela_url = config('PRIVATE_NET_IP_ADDRESS') + config(
-        'WALLET_SERVICE_TOKENSIDECHAIN_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER_TOKENSIDECHAIN
-    response = session.post(transfer_ela_url, data=json.dumps(req_data_token))
-    tx_hash = json.loads(response.text)['result']
-    logging.debug("Transferred ELA/TOKENSC. Tx Hash: {0}".format(tx_hash))
+    for address, wallet in addrs_for_token.items():
+        req_data = {
+            "sender": [{
+                "address": wallet[0],
+                "privateKey": wallet[1],
+            }],
+            "receiver": [{
+                "address": address,
+                "amount": "5"
+            }]
+        }
+        transfer_ela_url = config('PRIVATE_NET_IP_ADDRESS') + config(
+            'WALLET_SERVICE_TOKENSIDECHAIN_URL') + settings.WALLET_API_CROSSCHAIN_TRANSFER_TOKENSIDECHAIN
+        response = session.post(transfer_ela_url, data=json.dumps(req_data))
+        tx_hash = json.loads(response.text)['result']
+        logging.debug("Transferred ELA/TOKENSC. Tx Hash: {0}".format(tx_hash))
 
     WalletAddresses.clear()
-
 
 def cronjob_send_ela_ethsc():
     logging.debug("Running cron job to send ELA/ETHSC")
@@ -106,8 +131,6 @@ def cronjob_send_ela_ethsc():
         HTTPProvider("{0}{1}".format(config('PRIVATE_NET_IP_ADDRESS'), config('SIDECHAIN_ETH_RPC_PORT')),
                      request_kwargs={'timeout': 60}))
     web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-    if not web3.isConnected():
-        return
     amount = web3.toWei(5, 'ether')
     starting_nonce = web3.eth.getTransactionCount(web3.toChecksumAddress(config('SIDECHAIN_ETH_WALLET_ADDRESS')))
     for index, address in enumerate(WalletAddressesETH):

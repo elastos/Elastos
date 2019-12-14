@@ -192,8 +192,6 @@ def create_wallet_sidechain_did(session):
 
 def create_wallet_sidechain_eth(w3, password):
     result = {}
-    if not w3.isConnected():
-        return result
     # Create account
     eth_address = w3.parity.personal.newAccount(password)
     result['address'] = eth_address
@@ -234,8 +232,6 @@ def view_wallet_general(session, chain, address):
 
 def view_wallet_eth(w3, address):
     balance = None
-    if not w3.isConnected():
-        return balance
     address = w3.toChecksumAddress(address)
     balance = w3.eth.getBalance(address)
     balance = w3.fromWei(balance, 'ether')
