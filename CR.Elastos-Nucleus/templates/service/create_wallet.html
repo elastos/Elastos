@@ -48,7 +48,46 @@
 {% endblock servicetitle %} 
 
 {% block service %}
-<p>The Create Wallet service goes here.</p>
+    {% if output %}
+        <h5 class="card-title">Response:</h5>
+        <p class="card-text">
+          Mainchain:<br>
+          Mnemonic: {{ wallet_mainchain.mnemonic }}<br>
+          Private Key: {{ wallet_mainchain.private_key }}<br>
+          Public Key: {{ wallet_mainchain.public_key }}<br>
+          Address: {{ wallet_mainchain.address }}
+        </p>
+        <p class="card-text">
+          DID Sidechain:<br>
+          Private Key: {{ wallet_did.private_key }}<br>
+          Public Key: {{ wallet_did.public_key }}<br>
+          Address: {{ wallet_did.address }}<br>
+          DID: {{ wallet_did.did }}
+        </p>
+        <p class="card-text">
+          Token Sidechain:<br>
+          Mnemonic: {{ wallet_token.mnemonic }}<br>
+          Private Key: {{ wallet_token.private_key }}<br>
+          Public Key: {{ wallet_token.public_key }}<br>
+          Address: {{ wallet_token.address }}
+        </p>
+        <p class="card-text">
+          ETH Sidechain:<br>
+          Address: {{ wallet_eth.address }}<br>
+          Password: {{ wallet_eth.password }}
+        </p>
+        <a href="{% url "service:create_wallet" %}" methods="GET">
+            <button class="btn-default">
+                Create Wallet Again
+            </button>
+        </a>
+    {% else %}
+       <form  class="form-group" method="post" enctype="multipart/form-data">
+       {% csrf_token %}
+       {{ form.as_p }}
+       <button type="submit">Create Wallet</button>
+       </form>
+    {% endif %}
 {% endblock service %} 
 
 {% block description %}

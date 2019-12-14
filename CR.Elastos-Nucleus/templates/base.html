@@ -118,35 +118,44 @@
 
                         <div class="btn-group dropright">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Category 1
+                        General
                         </button>
                             <div class="dropdown-menu">
                                 <a class="dropdown-item" href="{%  url 'service:generate_key' %}">Generate API Key</a>
-                                <a class="dropdown-item" href="{%  url 'service:upload_and_sign' %}">Upload and Sign</a>
-                                <a class="dropdown-item" href="{%  url 'service:verify_and_show' %}">Verify and Show</a>
                              </div>
                         </div>
                         <br> <br>
                         <div class="btn-group dropright">
+                          <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Elastos Hive
+                          </button>
+                              <div class="dropdown-menu">
+                                  <a class="dropdown-item" href="{%  url 'service:upload_and_sign' %}">Upload and Sign</a>
+                                  <a class="dropdown-item" href="{%  url 'service:verify_and_show' %}">Verify and Show</a>
+                               </div>
+                          </div>
+                          <br> <br>
+                        <div class="btn-group dropright">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Category 2
+                        Wallet
                         </button>
                             <div class="dropdown-menu">
                                 <a class="dropdown-item" href="{%  url 'service:create_wallet' %}">Create Wallet</a>
+                                <a class="dropdown-item" href="{%  url 'service:view_wallet' %}">View Wallet</a>
                                 <a class="dropdown-item" href="{%  url 'service:request_ela' %}">Request ELA</a>
-                                <a class="dropdown-item" href="{%  url 'service:deploy_eth_contract' %}">Deploy ETH Contract</a>
                             </div>
                         </div>
                         <br> <br>
                         <div class="btn-group dropright">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Category 1
+                        Ethereum Sidechain
                         </button>
                             <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{%  url 'service:deploy_eth_contract' %}">Deploy ETH Contract</a>
+                                <a class="dropdown-item" href="{%  url 'service:watch_eth_contract' %}">Watch ETH Contract</a>
                                 <a class="dropdown-item" href="{%  url 'service:run_eth_contract' %}">Run ETH Contract</a>
-                                <a class="dropdown-item" href="{%  url 'service:deploy_elastos_dapp' %}">Deploy elastOS DApp</a>
                             </div>
-        </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -10,8 +10,11 @@ from django.urls import reverse
 from elastos_adenine.common import Common
 from elastos_adenine.hive import Hive
 from elastos_adenine.sidechain_eth import SidechainEth
+from elastos_adenine.wallet import Wallet
 
-from .forms import UploadAndSignForm, VerifyAndShowForm, DeployETHContractForm
+from .forms import UploadAndSignForm, VerifyAndShowForm
+from .forms import CreateWalletForm, ViewWalletForm, RequestELAForm
+from .forms import DeployETHContractForm
 from .models import UploadFile
 
 
@@ -99,12 +102,161 @@ def verify_and_show(request):
 
 @login_required
 def create_wallet(request):
-    return render(request, "service/create_wallet.html")
+    if request.method == "POST":
+        try:
+            wallet = Wallet()
+            api_key = request.POST['api_key']
+            eth_password = request.POST['eth_password']
+            response = wallet.create_wallet(api_key, eth_password)
+            if response.status:
+                content = json.loads(response.output)['result']
+                wallet_mainchain = content['mainchain']
+                wallet_did = content['sidechain']['did']
+                wallet_token = content['sidechain']['token']
+                wallet_eth = content['sidechain']['eth']
+                return render(request, "service/create_wallet.html", { 'output': True, 'wallet_mainchain': wallet_mainchain,
+                    'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth })
+            else:
+                messages.success(request, "Could not create wallet at this time. Please try again")
+                return redirect(reverse('service:create_wallet'))
+        except Exception as e:
+            messages.success(request, "Could not create wallet at this time. Please try again")
+            return redirect(reverse('service:create_wallet'))
+        finally:
+            wallet.close()
+    else:
+        form = CreateWalletForm()
+        return render(request, 'service/create_wallet.html', {'output': False, 'form': form})
+
+
+@login_required
+def view_wallet(request):
+    form_to_display = {
+        'mainchain': ViewWalletForm(initial={'chain': 'mainchain'}),
+        'did': ViewWalletForm(initial={'chain': 'did'}),
+        'token': ViewWalletForm(initial={'chain': 'token'}),
+        'eth': ViewWalletForm(initial={'chain': 'eth'})
+    }
+    output = {
+        'mainchain': False,
+        'did': False,
+        'token': False,
+        'eth': False
+    }
+    if request.method == "POST":
+        address = {
+            'mainchain': '',
+            'did': '',
+            'token': '',
+            'eth': ''
+        }
+        balance = {
+            'mainchain': 0,
+            'did': 0,
+            'token': 0,
+            'eth': 0
+        }
+        if 'submit_mainchain' in request.POST:
+            chain = 'mainchain'
+            form = ViewWalletForm(request.POST, initial={'chain': chain})
+        elif 'submit_did' in request.POST:
+            chain = 'did'
+            form = ViewWalletForm(request.POST, initial={'chain': chain})
+        elif 'submit_token' in request.POST:
+            chain = 'token'
+            form = ViewWalletForm(request.POST, initial={'chain': chain})
+        elif 'submit_eth' in request.POST:
+            chain = 'eth'
+            form = ViewWalletForm(request.POST, initial={'chain': chain})
+
+        if form.is_valid():
+            api_key = form.cleaned_data.get('api_key')
+            addr = form.cleaned_data.get('address')   
+            try:
+                wallet = Wallet()
+                response = wallet.view_wallet(api_key, chain, addr)
+                if response.status:
+                    output[chain] = True
+                    content = json.loads(response.output)['result']
+                    address[chain] = content['address']
+                    balance[chain] = content['balance']
+                    return render(request, "service/view_wallet.html", { 'output': output, 'form': form_to_display,
+                        'address': address, 'balance': balance })
+                else:
+                    messages.success(request, "Could not view wallet at this time. Please try again")
+                    return redirect(reverse('service:view_wallet'))
+            except Exception as e:
+                messages.success(request, "Could not view wallet at this time. Please try again")
+                return redirect(reverse('service:view_wallet'))
+            finally:
+                wallet.close()
+    else:
+        return render(request, 'service/view_wallet.html', {'output': output, 'form': form_to_display})
 
 
 @login_required
 def request_ela(request):
-    return render(request, "service/request_ela.html")
+    form_to_display = {
+        'mainchain': RequestELAForm(initial={'chain': 'mainchain'}),
+        'did': RequestELAForm(initial={'chain': 'did'}),
+        'token': RequestELAForm(initial={'chain': 'token'}),
+        'eth': RequestELAForm(initial={'chain': 'eth'})
+    }
+    output = {
+        'mainchain': False,
+        'did': False,
+        'token': False,
+        'eth': False
+    }
+    if request.method == "POST":
+        address = {
+            'mainchain': '',
+            'did': '',
+            'token': '',
+            'eth': ''
+        }
+        deposit_amount = {
+            'mainchain': 0,
+            'did': 0,
+            'token': 0,
+            'eth': 0
+        }
+        if 'submit_mainchain' in request.POST:
+            chain = 'mainchain'
+            form = RequestELAForm(request.POST, initial={'chain': chain})
+        elif 'submit_did' in request.POST:
+            chain = 'did'
+            form = RequestELAForm(request.POST, initial={'chain': chain})
+        elif 'submit_token' in request.POST:
+            chain = 'token'
+            form = RequestELAForm(request.POST, initial={'chain': chain})
+        elif 'submit_eth' in request.POST:
+            chain = 'eth'
+            form = RequestELAForm(request.POST, initial={'chain': chain})
+
+        if form.is_valid():
+            api_key = form.cleaned_data.get('api_key')
+            addr = form.cleaned_data.get('address')   
+            try:
+                wallet = Wallet()
+                response = wallet.request_ela(api_key, chain, addr)
+                if response.status:
+                    output[chain] = True
+                    content = json.loads(response.output)['result']
+                    address[chain] = content['address']
+                    deposit_amount[chain] = content['deposit_amount']
+                    return render(request, "service/request_ela.html", { 'output': output, 'form': form_to_display,
+                        'address': address, 'deposit_amount': deposit_amount })
+                else:
+                    messages.success(request, "Could not view wallet at this time. Please try again")
+                    return redirect(reverse('service:request_ela'))
+            except Exception as e:
+                messages.success(request, "Could not view wallet at this time. Please try again")
+                return redirect(reverse('service:request_ela'))
+            finally:
+                wallet.close()
+    else:
+        return render(request, 'service/request_ela.html', {'output': output, 'form': form_to_display})
 
 
 @login_required
@@ -140,11 +292,11 @@ def deploy_eth_contract(request):
 
 
 @login_required
-def run_eth_contract(request):
-    return render(request, "service/run_eth_contract.html")
+def watch_eth_contract(request):
+    return render(request, "service/watch_eth_contract.html")
 
 
 @login_required
-def deploy_elastos_dapp(request):
-    return render(request, "service/deploy_elastos_dapp.html")
+def run_eth_contract(request):
+    return render(request, "service/run_eth_contract.html")
 

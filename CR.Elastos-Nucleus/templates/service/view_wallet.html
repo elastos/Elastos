@@ -2,7 +2,7 @@
 {% load static %} 
 
 {% block title %}
-<title>Request ELA - Elastos Nucleus</title>
+<title>View Wallet - Elastos Nucleus</title>
 {% endblock title %} 
 
 {% block related %}
@@ -44,11 +44,11 @@
 {% endblock documentation %}
 
 {% block servicetitle %}
-<h5 class="card-header">Request ELA</h5>
+<h5 class="card-header">View Wallet</h5>
 {% endblock servicetitle %} 
 
 {% block service %}
-    <h5 class="card-title">Request ELA on Mainchain Address</h5>
+    <h5 class="card-title">Mainchain Balance</h5>
     <form  class="form-group" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.mainchain.as_p }}
@@ -56,14 +56,13 @@
       <h5 class="card-title">Response:</h5>
       <p class="card-text">
         Address: {{ address.mainchain }}<br>
-        Deposit Amount: {{ deposit_amount.mainchain }}<br>
-        It may take around 3 minutes for ELA to be deposited.
+        Balance: {{ balance.mainchain }}
       </p>
       {% endif %}
-      <button type="submit" name="submit_mainchain">Request ELA</button>
+      <button type="submit" name="submit_mainchain">View Wallet</button>
     </form>
 
-    <h5 class="card-title">Request ELA/DIDSC on DID Sidechain Address</h5>
+    <h5 class="card-title">DID Sidechain Balance</h5>
     <form  class="form-group" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.did.as_p }}
@@ -71,14 +70,13 @@
       <h5 class="card-title">Response:</h5>
       <p class="card-text">
         Address: {{ address.did }}<br>
-        Deposit Amount: {{ deposit_amount.did }}<br>
-        It may take around 10-15 minutes for ELA to be deposited.
+        Balance: {{ balance.did }}
       </p>
       {% endif %} 
-      <button type="submit" name="submit_did">Request ELA/DIDSC</button>
+      <button type="submit" name="submit_did">View Wallet</button>
     </form>
 
-    <h5 class="card-title">Request ELA/TOKENSC on Token Sidechain Address</h5>
+    <h5 class="card-title">Token Sidechain Balance</h5>
     <form  class="form-group" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.token.as_p }}
@@ -86,14 +84,13 @@
       <h5 class="card-title">Response:</h5>
       <p class="card-text">
         Address: {{ address.token }}<br>
-        Deposit Amount: {{ deposit_amount.token }}<br>
-        It may take around 10-15 minutes for ELA/TOKENSC to be deposited.
+        Balance: {{ balance.token }}
       </p>
       {% endif %}
-      <button type="submit" name="submit_token">Request ELA/TOKENSC</button>
+      <button type="submit" name="submit_token">View Wallet</button>
     </form>
 
-    <h5 class="card-title">Request ELA/ETHSC on ETH Sidechain Address</h5>
+    <h5 class="card-title">ETH Sidechain Balance</h5>
     <form  class="form-group" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.eth.as_p }}
@@ -101,14 +98,13 @@
       <h5 class="card-title">Response:</h5>
       <p class="card-text">
         Address: {{ address.eth }}<br>
-        Deposit Amount: {{ deposit_amount.eth }}<br>
-        It may take around 1 minute for ELA/ETHSC to be deposited.
+        Balance: {{ balance.eth }}
       </p>
       {% endif %}
-      <button type="submit" name="submit_eth">Request ELA/ETHSC</button>
+      <button type="submit" name="submit_eth">View Wallet</button>
     </form>
 {% endblock service %} 
 
 {% block description %}
-<p>The description of the Request ELA service goes here.</p>
+<p>The description of the View Wallet service goes here.</p>
 {% endblock description %}
