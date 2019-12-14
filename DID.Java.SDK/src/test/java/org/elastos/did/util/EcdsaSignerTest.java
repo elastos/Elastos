@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 
 import org.elastos.did.Mnemonic;
+import org.elastos.did.exception.DIDException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -40,7 +41,7 @@ public class EcdsaSignerTest {
 	private static byte[] sig;
 
 	@BeforeClass
-	public static void setup() {
+	public static void setup() throws DIDException {
 		String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
 
 		HDKey root = HDKey.fromMnemonic(mnemonic, "");

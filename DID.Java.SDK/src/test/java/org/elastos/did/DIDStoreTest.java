@@ -69,7 +69,7 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testInitPrivateIdentity0() throws DIDStoreException {
+	public void testInitPrivateIdentity0() throws DIDException {
     	TestData testData = new TestData();
     	testData.setupStore(true);
 

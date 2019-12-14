@@ -33,7 +33,6 @@ import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDAdapter;
 import org.elastos.did.backend.IDChainRequest;
-import org.elastos.did.backend.IDChainRequest.Operation;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.MalformedDIDException;
 

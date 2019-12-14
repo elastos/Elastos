@@ -33,12 +33,11 @@ import java.util.List;
 
 import org.elastos.did.adapter.SPVAdapter;
 import org.elastos.did.exception.DIDException;
-import org.elastos.did.exception.DIDStoreException;
 import org.junit.Test;
 
 public class IDChainOperationsTest {
 	@Test
-	public void testPublishAndResolve() throws DIDStoreException {
+	public void testPublishAndResolve() throws DIDException {
     	TestData testData = new TestData();
     	testData.setupStore(false);
     	testData.initIdentity();
@@ -91,7 +90,7 @@ public class IDChainOperationsTest {
     	assertTrue(resolved.isValid());
 	}
 
-	@Test
+	@Test(timeout = 900000)
 	public void testRestore() throws DIDException, IOException {
     	TestData testData = new TestData();
     	testData.setupStore(false);
@@ -113,7 +112,7 @@ public class IDChainOperationsTest {
     		didStrings.add(id.toString());
 
     	BufferedReader input = new BufferedReader(new InputStreamReader(
-				getClass().getClassLoader().getResourceAsStream("dids.restore")));
+				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
 
     	String did;
     	while ((did = input.readLine()) != null) {

@@ -94,7 +94,7 @@ public final class TestData {
     	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
 	}
 
-	public String initIdentity() throws DIDStoreException {
+	public String initIdentity() throws DIDException {
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
     	DIDStore.getInstance().initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
     			TestConfig.passphrase, TestConfig.storePass, true);
@@ -105,7 +105,7 @@ public final class TestData {
 	private DIDDocument loadDIDDocument(String fileName)
 			throws DIDException, IOException {
 		Reader input = new InputStreamReader(getClass()
-				.getClassLoader().getResourceAsStream(fileName));
+				.getClassLoader().getResourceAsStream("testdata/" + fileName));
 		DIDDocument doc = DIDDocument.fromJson(input);
 		input.close();
 
@@ -153,7 +153,7 @@ public final class TestData {
 	private VerifiableCredential loadCredential(String fileName)
 			throws DIDException, IOException {
 		Reader input = new InputStreamReader(getClass()
-				.getClassLoader().getResourceAsStream(fileName));
+				.getClassLoader().getResourceAsStream("testdata/" + fileName));
 		VerifiableCredential vc = VerifiableCredential.fromJson(input);
 		input.close();
 
@@ -199,7 +199,7 @@ public final class TestData {
 			throws DIDException, IOException {
 		if (testVp == null) {
 			Reader input = new InputStreamReader(getClass()
-					.getClassLoader().getResourceAsStream("vp.json"));
+					.getClassLoader().getResourceAsStream("testdata/vp.json"));
 			testVp = VerifiablePresentation.fromJson(input);
 			input.close();
 		}
@@ -209,7 +209,7 @@ public final class TestData {
 
 	private String loadText(String fileName) throws IOException {
 		BufferedReader input = new BufferedReader(new InputStreamReader(
-				getClass().getClassLoader().getResourceAsStream(fileName)));
+				getClass().getClassLoader().getResourceAsStream("testdata/" + fileName)));
 		String text = input.readLine();
 		input.close();
 
@@ -324,7 +324,8 @@ public final class TestData {
 		file.delete();
 	}
 
-	public static synchronized HDKey.DerivedKey generateKeypair() {
+	public static synchronized HDKey.DerivedKey generateKeypair()
+			throws DIDException {
 		if (rootKey == null) {
 	    	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
 	    	rootKey = HDKey.fromMnemonic(mnemonic, "");

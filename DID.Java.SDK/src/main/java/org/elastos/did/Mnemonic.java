@@ -22,7 +22,11 @@
 
 package org.elastos.did;
 
+import java.io.IOException;
 import java.security.SecureRandom;
+
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.wordlists.UserDefinedWordLists;
 
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.MnemonicValidator;
@@ -46,10 +50,8 @@ public class Mnemonic {
 	public static final int CHINESE_SIMPLIFIED = 3;
 	public static final int CHINESE_TRADITIONAL = 4;
 	public static final int JAPANESE = 5;
-	public static final int LANGUAGE_MIN = ENGLISH;
-	public static final int LANGUAGE_MAX = JAPANESE;
 
-	private static WordList getWordList(int language) {
+	private static WordList getWordList(int language) throws DIDException {
 		switch (language) {
 		case ENGLISH:
 			return English.INSTANCE;
@@ -70,12 +72,26 @@ public class Mnemonic {
 			return Japanese.INSTANCE;
 
 		default:
+			UserDefinedWordLists wordLists;
+			wordLists = UserDefinedWordLists.getInstance();
+			if (wordLists != null) {
+				WordList wordList = null;
+				try {
+					wordList = wordLists.getWordList(language);
+				} catch (IOException e) {
+					throw new DIDException("Load word list failed.", e);
+				}
+
+				if (wordList != null)
+					return wordList;
+			}
+
 			return English.INSTANCE;
 		}
 	}
 
-	public static String generate(int language) {
-		if (language < LANGUAGE_MIN || language > LANGUAGE_MAX)
+	public static String generate(int language) throws DIDException {
+		if (language < 0)
 			throw new IllegalArgumentException();
 
 		StringBuilder mnemonic = new StringBuilder();
@@ -90,8 +106,7 @@ public class Mnemonic {
 	}
 
 	public static boolean isValid(int language, String mnemonic) {
-		if (language < LANGUAGE_MIN || language > LANGUAGE_MAX ||
-				mnemonic == null || mnemonic.isEmpty())
+		if (language < 0)
 			throw new IllegalArgumentException();
 
 	    try {
@@ -105,6 +120,8 @@ public class Mnemonic {
 		} catch (WordNotFoundException e) {
 			return false;
 		} catch (UnexpectedWhiteSpaceException e) {
+			return false;
+		} catch (DIDException e) {
 			return false;
 		}
 

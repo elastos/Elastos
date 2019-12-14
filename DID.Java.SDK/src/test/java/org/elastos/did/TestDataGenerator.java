@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.elastos.did.adapter.SPVAdapter;
 import org.elastos.did.exception.DIDException;
-import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.util.Base58;
 import org.elastos.did.util.HDKey;
 
@@ -44,7 +43,7 @@ public class TestDataGenerator {
 	private DIDDocument issuer;
 	private DIDDocument test;
 
-	private String init() throws IOException, DIDStoreException {
+	private String init() throws IOException, DIDException {
 		adapter = new SPVAdapter(TestConfig.walletDir,
 				TestConfig.walletId, TestConfig.networkConfig,
 				TestConfig.resolver, new SPVAdapter.PasswordCallback() {
