@@ -9,9 +9,9 @@ class IDChainRequest: NSObject {
     private static let OPERATION: String = "operation"
     private static let PAYLOAD: String = "payload"
     private static let PROOF: String = Constants.proof
-    private static let KEY_TYPE: String = Constants.type;
-    private static let KEY_ID: String = Constants.verificationMethod;
-    private static let SIGNATURE: String = Constants.signature;
+    private static let KEY_TYPE: String = Constants.type
+    private static let KEY_ID: String = Constants.verificationMethod
+    private static let SIGNATURE: String = Constants.signature
     
     enum Operation: Int {
         case CREATE = 0
@@ -39,74 +39,113 @@ class IDChainRequest: NSObject {
     public var payload: String = ""
     
     // signature
-    public var signKey: DIDURL?
     public var keyType: String = ""
+    public var signKey: DIDURL?
     public var signature: String = ""
     
-    
-    public init(_ op: Operation, _ did_: DID) throws {
-        if op != Operation.DEACRIVATE {
-            throw DIDError.failue("Operation need a DIDDocument.")
-        }
-        
+    public init(_ op: Operation) throws {
         specification = IDChainRequest.CURRENT_SPECIFICATION
         operation = op
-        did = did_
     }
     
-    public init(_ op: Operation, _ doc_: DIDDocument) throws {
-        specification = IDChainRequest.CURRENT_SPECIFICATION
-        operation = op
-        did = doc_.subject
-        doc = doc_
-    }
-    
-    public func sign(_ key: DIDURL, _ passphrase: String) throws -> IDChainRequest {
-        // operation
+    public class func create(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
+        let request: IDChainRequest = try IDChainRequest(Operation.CREATE)
+        try request.setPayload(doc)
+        try request.seal(signKey, storepass)
 
-        let op: String = operation.toString()
-        // payload: did or doc
-        if operation == Operation.DEACRIVATE {
-            payload = (did?.toExternalForm())!
+        return request
+    }
+    
+    public class func update(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
+        let request: IDChainRequest = try IDChainRequest(Operation.UPDATE)
+        try request.setPayload(doc)
+        try request.seal(signKey, storepass)
+
+        return request
+    }
+    
+    public class func deactivate(_ did: DID, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
+        let request: IDChainRequest = try IDChainRequest(Operation.DEACRIVATE)
+        try request.setPayload(did)
+        try request.seal(signKey, storepass)
+
+        return request
+    }
+
+     func setPayload(_ did: DID) throws {
+        self.did = did
+        self.doc = nil
+        self.payload = did.description
+    }
+    
+     func setPayload(_ doc: DIDDocument) throws {
+        self.did = doc.subject
+        self.doc = doc
+        let json = try doc.description(false)
+        let c_input = (json.toUnsafePointerUInt8())!
+        payload = json + "\0"
+        payload = String(cString: payload.toUnsafePointerUInt8()!)
+        let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: 512)
+        print(payload)
+        base64_url_encode(c_payload, c_input, payload.count)
+        payload = String(cString: c_payload)
+    }
+
+    func setPayload(_ payload: String) throws {
+        if (operation != Operation.DEACRIVATE) {
+            let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
+            let cp = payload.toUnsafePointerInt8()
+            let c = base64_url_decode(buffer, cp)
+            var json: String = String(cString: buffer)
+            let endIndex = json.index(json.startIndex, offsetBy: c)
+            json = String(json[json.startIndex..<endIndex])
+            
+            doc = try DIDDocument.fromJson(json: json)
+            did = doc?.subject
         } else {
-
-            payload = try (doc?.toExternalForm(true))!
-            let c_input = (payload.toUnsafePointerUInt8())!
-            payload = payload + "\0"
-            payload = String(cString: payload.toUnsafePointerUInt8()!)
-            let c_payload = UnsafeMutablePointer<Int8>.allocate(capacity: 512)
-            print(payload)
-            base64_url_encode(c_payload, c_input, payload.count)
-            payload = String(cString: c_payload)
-            print(payload)
+            did = try DID(payload)
+            doc = nil
+        }
+        self.payload = payload
+    }
+    
+    func setProof(_ keyType: String, _ signKey: DIDURL, _ signature: String) throws {
+        self.keyType = keyType
+        self.signKey = signKey
+        self.signature = signature
+    }
+    
+    func seal(_ signKey: DIDURL, _ storepass: String) throws {
+        let inputs: [CVarArg] = [specification, specification.count,
+                                 operation.toString(), operation.toString().count,
+                                 payload, payload.count]
+        let count = inputs.count / 2
+        self.signature = (try DIDStore.shareInstance()?.sign(did!, signKey, storepass, count, inputs))!
+        self.signKey = signKey
+        self.keyType = Constants.defaultPublicKeyType
+    }
+    
+   public func isValid() throws -> Bool {
+        var doc: DIDDocument
+        if (operation != Operation.DEACRIVATE) {
+            doc = self.doc!
+            if (try !doc.isAuthenticationKey(signKey!)){
+                return false
+            }
+        } else {
+            doc = try DIDStore.shareInstance()!.loadDid(did!)
+            if (try !doc.isAuthenticationKey(signKey!) && !doc.isAuthorizationKey(signKey!)){
+                return false
+            }
         }
 
-        let inputs: [CVarArg] = [
-            specification, specification.count,
-            op, op.count,
-            payload, payload.count
-        ]
+        let inputs: [CVarArg] = [specification, specification.count, operation.toString(), operation.toString().count, payload, payload.count]
         let count = inputs.count / 2
 
-        self.signature = try DIDStore.shareInstance()?.sign(self.did!, key, passphrase, count, inputs) ?? ""
-        self.signKey = key
-        self.keyType = Constants.defaultPublicKeyType
-//        try verify()
-        return self
+        return try doc.verify(signKey!, signature, count, inputs)
     }
-
-    func verify() throws -> Bool {
-        let op: String = operation.toString()
-        let inputs: [CVarArg] = [
-            specification, specification.count,
-            op, op.count,
-            payload, payload.count,
-        ]
-        let count = inputs.count / 2
-        return try (doc?.verify(self.signKey!, signature, count, inputs ))!
-    }
-
-    public func toJson(_ compact: Bool) -> String {
+    
+    public func toJson(_ normalized: Bool) -> String {
         
         var json: OrderedDictionary<String, Any> = OrderedDictionary()
         // header
@@ -122,9 +161,9 @@ class IDChainRequest: NSObject {
         var keyId: String
         dic.removeAll(keepCapacity: 0)
         
-        if !compact {
+        if normalized {
             dic[IDChainRequest.KEY_TYPE] = keyType
-            keyId = (signKey?.toExternalForm())!
+            keyId = signKey!.description
         }
         else {
             keyId = "#" + signKey!.fragment
@@ -141,52 +180,43 @@ class IDChainRequest: NSObject {
         let header = json[HEADER] as! OrderedDictionary<String, Any>
         let spec: String = try JsonHelper.getString(header, SPECIFICATION, false, nil, SPECIFICATION)
         guard (spec == CURRENT_SPECIFICATION) else {
-            throw DIDError.failue("Missing header.")
+            throw DIDError.failue("Unknown DID specifiction.")
         }
-        let op: String = try JsonHelper.getString(header, OPERATION, false, nil, OPERATION)
-        if op != Operation.CREATE.toString() {
-            guard spec == CURRENT_SPECIFICATION else {
-                throw DIDError.failue("Invalid DID operation verb.")
+        var opstr: String = try JsonHelper.getString(header, OPERATION, false, nil, OPERATION)
+        opstr = opstr.uppercased()
+        var op: Operation = .CREATE
+        switch opstr {
+        case "CREATE": do {
+             op = .CREATE
             }
+        case "UPDATE": do {
+             op = .UPDATE
+            }
+        case "DEACRIVATE": do {
+             op = .DEACRIVATE
+            }
+        default: break
+            
         }
-        
+        let request: IDChainRequest = try IDChainRequest(op)
         let payload: String = try JsonHelper.getString(json, PAYLOAD, false, nil, PAYLOAD)
+        try request.setPayload(payload)
         
-        let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
-        let cp = payload.toUnsafePointerInt8()
-        let c = base64_url_decode(buffer, cp)
-        var docJson: String = String(cString: buffer)
-        let endIndex = docJson.index(docJson.startIndex, offsetBy: c)
-        docJson = String(docJson[docJson.startIndex..<endIndex])
-        var doc: DIDDocument
-        var request: IDChainRequest
-        do {
-            doc = try DIDDocument.fromJson(json: docJson)
-            let proof = json[IDChainRequest.PROOF] as! OrderedDictionary<String, Any>
-            guard proof.count != 0 else {
-                throw DIDError.failue("Missing proof.")
-            }
-            let keyType: String = try JsonHelper.getString(proof, KEY_TYPE, true, Constants.defaultPublicKeyType, KEY_TYPE)
-            guard keyType == Constants.defaultPublicKeyType else {
-                throw DIDError.failue("Unknown signature key type.")
-            }
-            let signKey: DIDURL = try JsonHelper.getDidUrl(proof, KEY_ID, doc.subject!, KEY_ID)
-            guard doc.getAuthenticationKey(signKey) != nil else {
-                throw DIDError.failue("Unknown signature key.")
-            }
-            let sig: String = try JsonHelper.getString(proof, SIGNATURE, false, nil, SIGNATURE)
-            request = try IDChainRequest(Operation.CREATE, doc)
-            request.payload = payload
-            request.keyType = keyType
-            request.signKey = signKey
-            request.signature = sig
-            return request
-        } catch {
-            print(error)
-            throw DIDError.failue("\(error)")
+        let proof = json[PROOF] as! OrderedDictionary<String, Any>
+        let keyType = try JsonHelper.getString(proof, KEY_TYPE, true,
+        Constants.defaultPublicKeyType, KEY_TYPE)
+        guard (keyType == Constants.defaultPublicKeyType) else {
+            throw DIDResolveError.failue("Unknown signature key type.")
         }
+        let signKey = try JsonHelper.getDidUrl(proof, KEY_ID, request.did,
+        KEY_ID)
+        let sig = try JsonHelper.getString(proof, SIGNATURE, false,
+        nil, SIGNATURE)
+        try request.setProof(keyType, signKey, sig)
+        
+        return request
     }
-    
+
     class public func fromJson(_ json: String) throws -> IDChainRequest {
         let dic: OrderedDictionary = JsonHelper.handleString(json) as! OrderedDictionary<String, Any>
         return try fromJson(dic)

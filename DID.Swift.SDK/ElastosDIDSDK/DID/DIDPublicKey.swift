@@ -1,8 +1,8 @@
 import Foundation
 
 public class DIDPublicKey: DIDObject {
-    public var controller: DID
-    public var keyBase58: String
+    public var controller: DID!
+    public var keyBase58: String!
 
     init(_ id: DIDURL, _ type: String, _ controller: DID, _ keyBase58: String) {
         super.init(id, type)
@@ -10,8 +10,10 @@ public class DIDPublicKey: DIDObject {
         self.keyBase58 = keyBase58
     }
 
-    convenience init(_ id: DIDURL, _ controller: DID, _ keyBase58: String) {
-        self.init(id, Constants.defaultPublicKeyType, controller, keyBase58)
+    init(_ id: DIDURL, _ controller: DID, _ keyBase58: String) {
+        super.init(id, Constants.defaultPublicKeyType)
+        self.controller = controller
+        self.keyBase58 = keyBase58
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
@@ -60,30 +62,44 @@ public class DIDPublicKey: DIDObject {
         return DIDPublicKey(id, type, controller, publicKeyBase58)
     }
     
-    public func toJson(_ ref: DID, _ compact: Bool) -> OrderedDictionary<String, Any> {
+    class public func fromJson_dc(_ dic: OrderedDictionary<String, Any>, _ ref: DID) throws -> DIDPublicKey {
+        let id = try JsonHelper.getDidUrl(dic, Constants.id,
+        ref, "publicKey' id")
+        let type = try JsonHelper.getString(dic, Constants.type, true,
+        Constants.defaultPublicKeyType, "publicKey' type")
+        let controller = try JsonHelper.getDid(dic, Constants.controller,
+        true, ref, "publicKey' controller")
+        let keyBase58 = try JsonHelper.getString(dic, Constants.publicKeyBase58,
+        false, nil, "publicKeyBase58")
+            
+        return DIDPublicKey(id, type, controller!, keyBase58)
+    }
+    
+    public func toJson(_ ref: DID, _ normalized: Bool) -> OrderedDictionary<String, Any> {
         var dict: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         
         // id
-        if compact && id.did.isEqual(ref){
-            value = "#" + id.fragment!
-        } else {
+        if normalized || id.did != ref {
             value = id.toExternalForm()
+        } else {
+            value = "#" + id.fragment!
         }
         dict[Constants.id] = value
         
         // type
-        if !compact || type != Constants.defaultPublicKeyType {
+        if normalized || type != Constants.defaultPublicKeyType {
             dict[Constants.type] = type
         }
         
         // controller
-        if !compact || !controller.isEqual(ref) {
+        if normalized || controller != ref {
             dict[Constants.controller] = controller.toExternalForm()
         }
         
         // publicKeyBase58
         dict[Constants.publicKeyBase58] = keyBase58
+        
         return dict
     }
     

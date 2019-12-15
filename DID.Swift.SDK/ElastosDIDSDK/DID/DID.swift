@@ -5,9 +5,7 @@ public class DID: NSObject {
 
     public var method: String!
     public var methodSpecificId: String!
-
-    private var document: DIDDocument?
-    private var resolveTimestamp: Date?
+    public var alias: String = ""
 
     init(_ method: String, _ methodSpecificId: String) {
         self.method = method
@@ -23,6 +21,24 @@ public class DID: NSObject {
         try ParserHelper.parase(did, true, DListener(self))
     }
 
+    public func setAlias(_ alias: String) throws {
+        if DIDStore.isInitialized() {
+           try DIDStore.shareInstance()!.storeDidAlias(self, alias)
+        }
+        self.alias = alias
+    }
+    
+    public func getAlias() throws -> String {
+        var al = alias
+        if (alias == "") {
+            if (DIDStore.isInitialized()){
+                al = try DIDStore.shareInstance()!.loadDidAlias(self)
+            }
+        }
+
+        return al
+    }
+    
     public func toExternalForm() -> String {
         return String("did:\(method!):\(methodSpecificId!)")
     }
@@ -50,13 +66,7 @@ public class DID: NSObject {
     }
 
     public func resolve() throws -> DIDDocument {
-        if let _ = document {
-            return document!
-        }
-
-        document = try DIDStore.shareInstance()!.resolveDid(self)
-        self.resolveTimestamp = Date()
-        return document!
+        return try DIDStore.shareInstance()!.resolveDid(self)!
     }
 }
 

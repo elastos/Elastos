@@ -11,7 +11,7 @@ public class EmbeddedCredential: VerifiableCredential {
         return try EmbeddedCredential(VerifiableCredential.fromJson(json, ref))
     }
 
-    public override func toJson(_ ref: DID?, _ compact: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
+    public override func toJson(_ ref: DID, _ compact: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
         super.toJson(ref, compact, forSign)
     }
 }

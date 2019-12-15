@@ -7,7 +7,11 @@ public class VerifiableCredential: DIDObject {
     public var expirationDate: Date?
     public var subject: CredentialSubject!
     public var proof: Proof!
-    private var propf: Proof?
+    public var alias: String!
+    
+    private let  RULE_EXPIRE: Int = 1
+    private let  RULE_GENUINE: Int = 2
+    private let  RULE_VALID: Int = 3
 
     override init() {
         super.init()
@@ -24,24 +28,125 @@ public class VerifiableCredential: DIDObject {
         self.proof = vc.proof
     }
     
-    public func isExpired() -> Bool {
-        return DateFormater.comporsDate(expirationDate!, DateFormater.currentDateToWantDate(0))
+    public func setAlias(_ alias: String) throws {
+        if DIDStore.isInitialized() {
+            try DIDStore.shareInstance()!.storeCredentialAlias(subject.id, id, alias)
+        }
+        self.alias = alias
     }
     
+    public func isSelfProclaimed() throws -> Bool {
+        return issuer.isEqual(subject.id)
+    }
+    
+    private func traceCheck(_ rule: Int) throws -> Bool {
+        let controllerDoc: DIDDocument = try subject.id.resolve()
+        switch rule {
+        case RULE_EXPIRE: do {
+            if controllerDoc.isExpired() {
+                return true
+            }
+            break
+            }
+        case RULE_EXPIRE: do {
+            if try !controllerDoc.isGenuine() {
+                return false
+            }
+            break
+            }
+        default: do {
+                if ( try !controllerDoc.isValid()) {
+                    return false
+                }
+            }
+        }
+        return rule != RULE_EXPIRE
+    }
+    
+    public func checkExpired() throws -> Bool {
+        if (expirationDate != nil) {
+            let date = DateFormater.currentDate()
+            return DateFormater.comporsDate(expirationDate!, date)
+        }
+
+        return false
+    }
+    
+    public func isExpired() throws -> Bool {
+        if (try traceCheck(RULE_EXPIRE)){
+            return true
+        }
+        
+        return try checkExpired()
+    }
+
+    private func checkGenuine() throws -> Bool {
+        let issuerDoc: DIDDocument = try issuer.resolve()
+        
+        // Credential should signed by authentication key.
+        if (try !issuerDoc.isAuthenticationKey(proof.verificationMethod)){
+            return false
+        }
+        
+        // Unsupported public key type;
+        if (proof!.type != Constants.defaultPublicKeyType){
+            return false
+        }
+        let dic = toJson(true, true)
+        let json: String = JsonHelper.creatJsonString(dic: dic)
+        let inputs: [CVarArg] = [json, json.count]
+        let count = inputs.count / 2
+        
+        return try issuerDoc.verify(proof.signature, count, inputs)
+    }
+    
+    public func isValid() throws -> Bool {
+        if (try !traceCheck(RULE_VALID)) {
+            return false
+        }
+
+        return try !checkExpired() && checkGenuine()
+    }
+
     public func verify() throws -> Bool {
-        let issuerDoc: DIDDocument = try issuer.resolve()!
+        let issuerDoc: DIDDocument = try issuer.resolve()
         let json: String = toJsonForSign(false)
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
+        
         return try issuerDoc.verify(proof!.verificationMethod, proof!.signature, count, inputs)
     }
-
-    public func toJson(_ ref: DID?, _ compact: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
+    
+    public func isGenuine() throws -> Bool {
+        if (try !traceCheck(RULE_GENUINE)) {
+            return false
+        }
+        
+        return try checkGenuine()
+    }
+    
+    public func toJson(_ normalized: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
+        return toJson(ref: nil, normalized, forSign)
+    }
+    
+    public func toJson(_ ref: DID, _ normalized: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
+        return toJson(ref: nil, normalized, forSign)
+    }
+    
+    public func toJson(_ ref: DID, _ normalized: Bool) -> OrderedDictionary<String, Any> {
+       return toJson(ref, normalized, false)
+    }
+    
+    public func toJson(_ normalized: Bool) -> OrderedDictionary<String, Any> {
+        return toJson(ref: nil, normalized, false)
+    }
+    
+    private func toJson(ref: DID?, _ normalized: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         
         // id
-        if compact && ref != nil && id.did.isEqual(ref) {
+        if normalized && ref != nil && id.did.isEqual(ref) {
             value = "#" + id.fragment!
         }
         else {
@@ -60,7 +165,7 @@ public class VerifiableCredential: DIDObject {
         dic[Constants.type] = strs
         
         // issuer
-        if !compact || !(issuer.isEqual(subject.id)) {
+        if !normalized || !(issuer.isEqual(subject.id)) {
             dic[Constants.issuer] = issuer.toExternalForm()
         }
         
@@ -74,7 +179,7 @@ public class VerifiableCredential: DIDObject {
             dic[Constants.expirationDate] = DateFormater.format(expirationDate!)
         }
         
-        let credSubject = subject.toJson(ref, compact)
+        let credSubject = subject.toJson(ref, normalized)
         let orderCredSubject = DIDURLComparator.DIDOrderedDictionaryComparatorByKey(credSubject)
 
         // credentialSubject
@@ -82,13 +187,9 @@ public class VerifiableCredential: DIDObject {
         
         // proof
         if !forSign {
-            dic[Constants.proof] = proof.toJson(issuer, compact)
+            dic[Constants.proof] = proof.toJson_vc(issuer, normalized)
         }
         return dic
-    }
-    
-    func toJson(_ ref: DID?, _ compact: Bool) -> OrderedDictionary<String, Any> {
-       return toJson(ref, compact, false)
     }
 
    public class func fromJsonInPath(_ path: String) throws -> VerifiableCredential {
@@ -158,26 +259,30 @@ public class VerifiableCredential: DIDObject {
         subject = try CredentialSubject.fromJson(value as! OrderedDictionary<String, Any>, ref)
         
         // IMPORTANT: help resolve full method in proof
-        var re: DID
         if (issuer == nil) {
             issuer = subject.id
-        }
-        if ref == nil {
-            re = issuer
-        }
-        else {
-            re = ref!
         }
         
         // proof
         value = json[Constants.proof]
-        proof = try Proof.fromJson(value as! OrderedDictionary<String, Any>, re)
+        proof = try Proof.fromJson_vc(value as! OrderedDictionary<String, Any>, issuer)
         self.type = proof.type
     }
     
-    public func toJsonForSign(_ compact: Bool) -> String {
-        let dic = toJson(nil, compact, true)
+    public func toJsonForSign(_ normalized: Bool) -> String {
+        let dic = toJson(normalized, true)
         let json = JsonHelper.creatJsonString(dic: dic)
         return json
     }
+    
+    public func toExternalForm(_ normalized: Bool) -> String {
+        let dic = toJson(normalized, false)
+        let json = JsonHelper.creatJsonString(dic: dic)
+        return json
+    }
+    
+    public override var description: String{
+        return toExternalForm(false)
+    }
+
 }

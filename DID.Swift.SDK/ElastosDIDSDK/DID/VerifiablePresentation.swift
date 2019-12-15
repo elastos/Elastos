@@ -21,40 +21,94 @@ public class VerifiablePresentation: NSObject {
         credentials![credential.id] = credential
     }
     
-    public func getCredential(_ id: DIDURL) -> VerifiableCredential {
+    public func getCredential(_ id: DIDURL) throws -> VerifiableCredential {
         return credentials![id]!
+    }
+    
+    public func getCredential(_ id: String) throws -> VerifiableCredential {
+        return try getCredential(DIDURL(getSigner(), id))
     }
     
     public func getSigner() -> DID {
         return (proof?.verificationMethod.did)!
     }
     
-    public func verify() throws -> Bool {
+    public func isGenuine() throws -> Bool {
         let signer: DID = getSigner()
-        
-        var b: Bool = true
-        try credentials.values.forEach { vc  in
-            guard vc.subject.id == signer else {
-                b = false
-               return
-            }
-            guard try vc.verify() || !vc.isExpired() else {
-                b = false
-                return
-            }
-        }
-        
-        guard b else {
+        let signerDoc: DIDDocument = try signer.resolve()
+
+        // Check the integrity of signer' document.
+        if (try !signerDoc.isGenuine()) {
             return false
         }
-        let json: String = toJsonForSign()
-        let signerDoc: DIDDocument = try signer.resolve()!
-        
+        // Unsupported public key type;
+        if (proof?.type != (Constants.defaultPublicKeyType)) {
+            return false
+        }
+        // Credential should signed by authentication key.
+        if (try !signerDoc.isAuthenticationKey(proof!.verificationMethod)) {
+        return false
+        }
+
+        // All credentials should owned by signer
+        for i in 0..<credentials.values.count {
+            let vc = credentials.values[i]
+            if vc.subject.id == signer {
+                return false
+            }
+            
+            if try vc.isGenuine() {
+                return false
+            }
+        }
+        let dic = toJson(true)
+        let json = JsonHelper.creatJsonString(dic: dic)
         let inputs: [CVarArg] = [json, json.count]
-        let count: Int = inputs.count / 2
-    
+        let count = inputs.count / 2
         return try signerDoc.verify(proof!.verificationMethod, proof!.signature, count, inputs)
-     }
+    }
+    
+    public func isValid() throws -> Bool {
+        let signer: DID = getSigner()
+        let signerDoc: DIDDocument = try signer.resolve()
+
+        // Check the validity of signer' document.
+        if (try !signerDoc.isValid()){
+            return false
+        }
+
+        // Unsupported public key type;
+        if (proof!.type != (Constants.defaultPublicKeyType)){
+            return false
+        }
+
+        // Credential should signed by authentication key.
+        if (try !signerDoc.isAuthenticationKey(proof!.verificationMethod)){
+            return false
+        }
+
+        // All credentials should owned by signer
+        
+        for i in 0..<credentials.values.count {
+            let vc = credentials.values[0]
+            if (vc.subject.id != signer) {
+                return false
+            }
+            if try !vc.isValid() {
+                return false
+            }
+        }
+        let dic = toJson(true)
+        let json = JsonHelper.creatJsonString(dic: dic)
+        let inputs: [CVarArg] = [json, json.count]
+        let count = inputs.count / 2
+        
+        return try signerDoc.verify(proof!.verificationMethod, proof!.signature, count, inputs)
+    }
+    
+    public func getCredentialCount() -> Int {
+        return credentials.count
+    }
     
     public class func fromJson(_ jsonString: String) throws -> VerifiablePresentation {
         let vp: VerifiablePresentation = VerifiablePresentation()
@@ -113,8 +167,8 @@ public class VerifiablePresentation: NSObject {
      * + proof
      *   - type
      *   - verificationMethod
-     *   - nonce
      *   - realm
+     *   - nonce
      *   - signature
      */
     public func toJson(_ forSign: Bool) -> OrderedDictionary<String, Any>  {
@@ -129,14 +183,14 @@ public class VerifiablePresentation: NSObject {
         // credentials
         var arr: Array<OrderedDictionary<String, Any>> = []
         credentials.values.forEach { vc in
-           let dic = vc.toJson(nil, false)
+           let dic = vc.toJson(true)
             arr.append(dic)
         }
         dic[Constants.verifiableCredential] = arr
 
         // proof
         if (!forSign ) {
-            let d = proof?.toJson_vp(nil, false)
+            let d = proof?.toJson_vp()
             dic[Constants.proof] = d
         }
         return dic
@@ -146,8 +200,8 @@ public class VerifiablePresentation: NSObject {
        return toJson(false)
     }
 
-    func toJsonForSign() -> String {
-        let dic = toJson(true)
+    func toJsonForSign(_ forSign: Bool) -> String {
+        let dic = toJson(forSign)
         let jsonString: String = JsonHelper.creatJsonString(dic: dic)
         return jsonString
     }

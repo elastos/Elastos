@@ -20,8 +20,15 @@ public class JsonHelper {
     }
     
     class func getDidUrl(_ dic: OrderedDictionary<String, Any>, _ name: String, _ ref: DID?, _ hint: String) throws -> DIDURL{
+        return try getDidUrl(dic, name, false, ref, hint)
+    }
+    
+    class func getDidUrl(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: DID?, _ hint: String) throws -> DIDURL {
         let vn = dic[name]
         if vn == nil {
+            if optional {
+                throw DIDError.failue("No DIDURL.")
+            }
             throw DIDError.failue("Invalid " + hint + " value.")
         }
         var value: String = vn as? String ?? ""

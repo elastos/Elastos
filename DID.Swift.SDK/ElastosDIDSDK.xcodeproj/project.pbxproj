@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11054F18239D17B7008A4500 /* DIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D473233485DF0012CD77 /* DIDError.swift */; };
-		11054F1A239D17DC008A4500 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D474233485DF0012CD77 /* Constants.swift */; };
 		11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1C239D1B31008A4500 /* DIDURLTest.swift */; };
 		11054F1F239D2088008A4500 /* DIDTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11054F1E239D2088008A4500 /* DIDTest.swift */; };
 		110AD2FF234E44C8006578D6 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
@@ -27,65 +25,70 @@
 		1137CFA72398D68500250D4F /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57F238234FB00D396B6 /* crypto.h */; };
 		1137CFA82398D68900250D4F /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57E238234FB00D396B6 /* HDkey.h */; };
 		1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1125B57D238234FB00D396B6 /* CHDKey.swift */; };
-		1137CFAA2398D88900250D4F /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */; };
 		1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
+		116AC38A23A5FA410076BDC7 /* LRUCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116AC38523A5FA410076BDC7 /* LRUCache.swift */; };
 		116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */; };
 		116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA572360092D00BBEE4F /* TestUtils.swift */; };
 		1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182866A2395194000F1BBA3 /* BulkCreate.swift */; };
-		119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338D5237D41B000C4998E /* DIDAdaptor.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
-		11A1D664239756F2002D8AD2 /* VerifiablePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A1D663239756F2002D8AD2 /* VerifiablePresentation.swift */; };
 		11A6B15B238FD79000D3C1F1 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B159238FD77E00D3C1F1 /* libcrypto.a */; };
 		11A6B15C238FD79000D3C1F1 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B15A238FD77E00D3C1F1 /* libhdkey.a */; };
 		11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AE235E06B7006E66F7 /* DerivedKey.swift */; };
-		11CA74B9235E06B7006E66F7 /* DateFormater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74AF235E06B7006E66F7 /* DateFormater.swift */; };
-		11CA74BA235E06B7006E66F7 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B0235E06B7006E66F7 /* HDKey.swift */; };
-		11CA74BD235E06B7006E66F7 /* JsonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B3235E06B7006E66F7 /* JsonHelper.swift */; };
-		11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */; };
-		11CA74BF235E06B7006E66F7 /* OrderedDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */; };
-		11CA74C0235E06B7006E66F7 /* PathExtracter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74B6235E06B7006E66F7 /* PathExtracter.swift */; };
-		11CA74CC235E1243006E66F7 /* DIDURLComparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11CA74CB235E1243006E66F7 /* DIDURLComparator.swift */; };
 		11CA74D5235E131B006E66F7 /* normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D2235E131B006E66F7 /* normalized.json */; };
 		11CA74D6235E131B006E66F7 /* compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D3235E131B006E66F7 /* compact.json */; };
 		11CA74D7235E131B006E66F7 /* testdiddoc.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D4235E131B006E66F7 /* testdiddoc.json */; };
 		11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */; };
 		11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9C623545A5700453218 /* DIDStoreTests.swift */; };
 		11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DA0796238B929F0066CC86 /* SPVAdaptor.swift */; };
+		11E89FD823A4C36000C81B3C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA723A4C36000C81B3C /* Constants.swift */; };
+		11E89FD923A4C36000C81B3C /* DID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA823A4C36000C81B3C /* DID.swift */; };
+		11E89FDA23A4C36000C81B3C /* DIDStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA923A4C36000C81B3C /* DIDStore.swift */; };
+		11E89FDB23A4C36000C81B3C /* VerifiableCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAB23A4C36000C81B3C /* VerifiableCredential.swift */; };
+		11E89FDC23A4C36000C81B3C /* VerifiablePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */; };
+		11E89FDD23A4C36000C81B3C /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */; };
+		11E89FDE23A4C36000C81B3C /* Issuer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAE23A4C36000C81B3C /* Issuer.swift */; };
+		11E89FDF23A4C36000C81B3C /* Proof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FAF23A4C36000C81B3C /* Proof.swift */; };
+		11E89FE023A4C36000C81B3C /* CredentialSubject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB023A4C36000C81B3C /* CredentialSubject.swift */; };
+		11E89FE123A4C36000C81B3C /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB123A4C36000C81B3C /* Service.swift */; };
+		11E89FE223A4C36000C81B3C /* DerivedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB323A4C36000C81B3C /* DerivedKey.swift */; };
+		11E89FE323A4C36000C81B3C /* DateFormater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB423A4C36000C81B3C /* DateFormater.swift */; };
+		11E89FE423A4C36000C81B3C /* DIDURLComparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB523A4C36000C81B3C /* DIDURLComparator.swift */; };
+		11E89FE523A4C36000C81B3C /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB623A4C36000C81B3C /* HDKey.swift */; };
+		11E89FE623A4C36000C81B3C /* JsonHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB723A4C36000C81B3C /* JsonHelper.swift */; };
+		11E89FE723A4C36000C81B3C /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB823A4C36000C81B3C /* ExtensionInt.swift */; };
+		11E89FE823A4C36000C81B3C /* OrderedDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FB923A4C36000C81B3C /* OrderedDictionary.swift */; };
+		11E89FE923A4C36000C81B3C /* PathExtracter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FBA23A4C36000C81B3C /* PathExtracter.swift */; };
+		11E89FEA23A4C36000C81B3C /* DIDAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FBB23A4C36000C81B3C /* DIDAdapter.swift */; };
+		11E89FEB23A4C36000C81B3C /* DIDObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FBC23A4C36000C81B3C /* DIDObject.swift */; };
+		11E89FEC23A4C36000C81B3C /* DIDBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FBE23A4C36000C81B3C /* DIDBackend.swift */; };
+		11E89FED23A4C36000C81B3C /* IDChainRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FBF23A4C36000C81B3C /* IDChainRequest.swift */; };
+		11E89FEE23A4C36000C81B3C /* DIDURLLexer.tokens in Resources */ = {isa = PBXBuildFile; fileRef = 11E89FC123A4C36000C81B3C /* DIDURLLexer.tokens */; };
+		11E89FEF23A4C36000C81B3C /* DIDURLLexerATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FC223A4C36000C81B3C /* DIDURLLexerATN.swift */; };
+		11E89FF023A4C36000C81B3C /* DIDURLBaseListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FC323A4C36000C81B3C /* DIDURLBaseListener.swift */; };
+		11E89FF123A4C36000C81B3C /* DIDURL.tokens in Resources */ = {isa = PBXBuildFile; fileRef = 11E89FC423A4C36000C81B3C /* DIDURL.tokens */; };
+		11E89FF223A4C36000C81B3C /* DIDURL.g4 in Resources */ = {isa = PBXBuildFile; fileRef = 11E89FC523A4C36000C81B3C /* DIDURL.g4 */; };
+		11E89FF323A4C36000C81B3C /* DIDURLParserATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FC623A4C36000C81B3C /* DIDURLParserATN.swift */; };
+		11E89FF423A4C36000C81B3C /* ParserHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FC723A4C36000C81B3C /* ParserHelper.swift */; };
+		11E89FF523A4C36000C81B3C /* DIDURLLexer.interp in Resources */ = {isa = PBXBuildFile; fileRef = 11E89FC823A4C36000C81B3C /* DIDURLLexer.interp */; };
+		11E89FF623A4C36000C81B3C /* DIDURLLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FC923A4C36000C81B3C /* DIDURLLexer.swift */; };
+		11E89FF723A4C36000C81B3C /* DIDURLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FCA23A4C36000C81B3C /* DIDURLParser.swift */; };
+		11E89FF823A4C36000C81B3C /* DIDURL.interp in Resources */ = {isa = PBXBuildFile; fileRef = 11E89FCB23A4C36000C81B3C /* DIDURL.interp */; };
+		11E89FF923A4C36000C81B3C /* DIDURLListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FCC23A4C36000C81B3C /* DIDURLListener.swift */; };
+		11E89FFA23A4C36000C81B3C /* DIDURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FCD23A4C36000C81B3C /* DIDURL.swift */; };
+		11E89FFB23A4C36000C81B3C /* DIDDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FCE23A4C36000C81B3C /* DIDDocument.swift */; };
+		11E89FFC23A4C36000C81B3C /* DIDPublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FCF23A4C36000C81B3C /* DIDPublicKey.swift */; };
+		11E89FFD23A4C36000C81B3C /* FileSystemStoreBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD023A4C36000C81B3C /* FileSystemStoreBackend.swift */; };
+		11E89FFE23A4C36000C81B3C /* DIDStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD223A4C36000C81B3C /* DIDStoreError.swift */; };
+		11E89FFF23A4C36000C81B3C /* MalformedDIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD323A4C36000C81B3C /* MalformedDIDError.swift */; };
+		11E8A00023A4C36000C81B3C /* MalformedDocumentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD423A4C36000C81B3C /* MalformedDocumentError.swift */; };
+		11E8A00123A4C36000C81B3C /* DIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD523A4C36000C81B3C /* DIDError.swift */; };
+		11E8A00223A4C36000C81B3C /* MalformedDIDURLError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD623A4C36000C81B3C /* MalformedDIDURLError.swift */; };
+		11E8A00323A4C36000C81B3C /* MalformedCredentialError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD723A4C36000C81B3C /* MalformedCredentialError.swift */; };
+		11E8A00523A4C39400C81B3C /* DIDResolveError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E8A00423A4C39400C81B3C /* DIDResolveError.swift */; };
+		11E8A00723A4DAF200C81B3C /* DIDStoreBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E8A00623A4DAF100C81B3C /* DIDStoreBackend.swift */; };
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D440233485800012CD77 /* EmbeddedCredential.swift */; };
-		A3E6D446233485800012CD77 /* Proof.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D441233485800012CD77 /* Proof.swift */; };
-		A3E6D447233485800012CD77 /* VerifiableCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D442233485800012CD77 /* VerifiableCredential.swift */; };
-		A3E6D448233485800012CD77 /* Issuer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D443233485800012CD77 /* Issuer.swift */; };
-		A3E6D449233485800012CD77 /* CredentialSubject.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D444233485800012CD77 /* CredentialSubject.swift */; };
-		A3E6D453233485AD0012CD77 /* DIDURLListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D44A233485AD0012CD77 /* DIDURLListener.swift */; };
-		A3E6D454233485AD0012CD77 /* DIDURLLexer.tokens in Resources */ = {isa = PBXBuildFile; fileRef = A3E6D44B233485AD0012CD77 /* DIDURLLexer.tokens */; };
-		A3E6D455233485AD0012CD77 /* DIDURLLexer.interp in Resources */ = {isa = PBXBuildFile; fileRef = A3E6D44C233485AD0012CD77 /* DIDURLLexer.interp */; };
-		A3E6D456233485AD0012CD77 /* DIDURLLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D44D233485AD0012CD77 /* DIDURLLexer.swift */; };
-		A3E6D457233485AD0012CD77 /* DIDURLLexerATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D44E233485AD0012CD77 /* DIDURLLexerATN.swift */; };
-		A3E6D458233485AD0012CD77 /* DIDURLParserATN.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D44F233485AD0012CD77 /* DIDURLParserATN.swift */; };
-		A3E6D459233485AD0012CD77 /* DIDURLBaseListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D450233485AD0012CD77 /* DIDURLBaseListener.swift */; };
-		A3E6D45A233485AD0012CD77 /* DIDURLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D451233485AD0012CD77 /* DIDURLParser.swift */; };
-		A3E6D45B233485AD0012CD77 /* ParserHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D452233485AD0012CD77 /* ParserHelper.swift */; };
-		A3E6D45E233485BB0012CD77 /* IDChainRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */; };
-		A3E6D45F233485BB0012CD77 /* DIDBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D45D233485BB0012CD77 /* DIDBackend.swift */; };
-		A3E6D475233485DF0012CD77 /* FileSystemStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D466233485DE0012CD77 /* FileSystemStore.swift */; };
-		A3E6D476233485DF0012CD77 /* MalformedCredentialError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */; };
-		A3E6D477233485E00012CD77 /* DIDStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D468233485DF0012CD77 /* DIDStore.swift */; };
-		A3E6D478233485E00012CD77 /* DIDObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D469233485DF0012CD77 /* DIDObject.swift */; };
-		A3E6D479233485E00012CD77 /* MalformedDIDURLError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D46A233485DF0012CD77 /* MalformedDIDURLError.swift */; };
-		A3E6D47A233485E00012CD77 /* MalformedDIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D46B233485DF0012CD77 /* MalformedDIDError.swift */; };
-		A3E6D47B233485E00012CD77 /* DID.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D46C233485DF0012CD77 /* DID.swift */; };
-		A3E6D47C233485E00012CD77 /* DIDURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D46D233485DF0012CD77 /* DIDURL.swift */; };
-		A3E6D47D233485E00012CD77 /* DIDStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D46E233485DF0012CD77 /* DIDStoreError.swift */; };
-		A3E6D47E233485E00012CD77 /* MalformedDocumentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D46F233485DF0012CD77 /* MalformedDocumentError.swift */; };
-		A3E6D47F233485E00012CD77 /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D470233485DF0012CD77 /* Service.swift */; };
-		A3E6D480233485E00012CD77 /* DIDDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D471233485DF0012CD77 /* DIDDocument.swift */; };
-		A3E6D481233485E00012CD77 /* DIDPublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */; };
-		A3E6D482233485E00012CD77 /* DIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D473233485DF0012CD77 /* DIDError.swift */; };
-		A3E6D483233485E00012CD77 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6D474233485DF0012CD77 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -186,26 +189,17 @@
 		1137CFA02398D4EB00250D4F /* vc-normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-normalized.json"; sourceTree = "<group>"; };
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		116AC38523A5FA410076BDC7 /* LRUCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LRUCache.swift; sourceTree = "<group>"; };
 		116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreCreateTests.swift; sourceTree = "<group>"; };
 		116CAA572360092D00BBEE4F /* TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestUtils.swift; path = TestUtils/TestUtils.swift; sourceTree = "<group>"; };
 		1182866A2395194000F1BBA3 /* BulkCreate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkCreate.swift; sourceTree = "<group>"; };
-		119338D5237D41B000C4998E /* DIDAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDAdaptor.swift; path = ElastosDIDSDK/DID/DIDAdaptor.swift; sourceTree = SOURCE_ROOT; };
 		119338DC237E4DB800C4998E /* TestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestConfig.swift; path = TestUtils/TestConfig.swift; sourceTree = "<group>"; };
 		119338E2237E622300C4998E /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.1.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E4237E623100C4998E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
 		119338E6237E623E00C4998E /* libc++abi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++abi.tbd"; path = "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/lib/libc++abi.tbd"; sourceTree = DEVELOPER_DIR; };
-		11A1D663239756F2002D8AD2 /* VerifiablePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerifiablePresentation.swift; path = ElastosDIDSDK/Credential/VerifiablePresentation.swift; sourceTree = SOURCE_ROOT; };
 		11A6B159238FD77E00D3C1F1 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "Externals/HDKey/lib/-iphonesimulator/libcrypto.a"; sourceTree = "<group>"; };
 		11A6B15A238FD77E00D3C1F1 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = "Externals/HDKey/lib/-iphonesimulator/libhdkey.a"; sourceTree = "<group>"; };
-		11CA74AE235E06B7006E66F7 /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
-		11CA74AF235E06B7006E66F7 /* DateFormater.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateFormater.swift; sourceTree = "<group>"; };
-		11CA74B0235E06B7006E66F7 /* HDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HDKey.swift; sourceTree = "<group>"; };
 		11CA74B1235E06B7006E66F7 /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base64.swift; sourceTree = "<group>"; };
-		11CA74B3235E06B7006E66F7 /* JsonHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonHelper.swift; sourceTree = "<group>"; };
-		11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionInt.swift; sourceTree = "<group>"; };
-		11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderedDictionary.swift; sourceTree = "<group>"; };
-		11CA74B6235E06B7006E66F7 /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathExtracter.swift; sourceTree = "<group>"; };
-		11CA74CB235E1243006E66F7 /* DIDURLComparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDURLComparator.swift; sourceTree = "<group>"; };
 		11CA74D2235E131B006E66F7 /* normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = normalized.json; sourceTree = "<group>"; };
 		11CA74D3235E131B006E66F7 /* compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = compact.json; sourceTree = "<group>"; };
 		11CA74D4235E131B006E66F7 /* testdiddoc.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testdiddoc.json; sourceTree = "<group>"; };
@@ -243,40 +237,55 @@
 		11DA06EA238B7B760066CC86 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ElastosDIDSDKTests/spvadapter/lib/libboost_thread.a; sourceTree = "<group>"; };
 		11DA06FE238B7C8F0066CC86 /* ElastosDIDSDKTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ElastosDIDSDKTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		11DA0796238B929F0066CC86 /* SPVAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SPVAdaptor.swift; sourceTree = "<group>"; };
+		11E89FA723A4C36000C81B3C /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		11E89FA823A4C36000C81B3C /* DID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DID.swift; sourceTree = "<group>"; };
+		11E89FA923A4C36000C81B3C /* DIDStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDStore.swift; sourceTree = "<group>"; };
+		11E89FAB23A4C36000C81B3C /* VerifiableCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerifiableCredential.swift; sourceTree = "<group>"; };
+		11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerifiablePresentation.swift; sourceTree = "<group>"; };
+		11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmbeddedCredential.swift; sourceTree = "<group>"; };
+		11E89FAE23A4C36000C81B3C /* Issuer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Issuer.swift; sourceTree = "<group>"; };
+		11E89FAF23A4C36000C81B3C /* Proof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Proof.swift; sourceTree = "<group>"; };
+		11E89FB023A4C36000C81B3C /* CredentialSubject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CredentialSubject.swift; sourceTree = "<group>"; };
+		11E89FB123A4C36000C81B3C /* Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
+		11E89FB323A4C36000C81B3C /* DerivedKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DerivedKey.swift; sourceTree = "<group>"; };
+		11E89FB423A4C36000C81B3C /* DateFormater.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateFormater.swift; sourceTree = "<group>"; };
+		11E89FB523A4C36000C81B3C /* DIDURLComparator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLComparator.swift; sourceTree = "<group>"; };
+		11E89FB623A4C36000C81B3C /* HDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HDKey.swift; sourceTree = "<group>"; };
+		11E89FB723A4C36000C81B3C /* JsonHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonHelper.swift; sourceTree = "<group>"; };
+		11E89FB823A4C36000C81B3C /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionInt.swift; sourceTree = "<group>"; };
+		11E89FB923A4C36000C81B3C /* OrderedDictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderedDictionary.swift; sourceTree = "<group>"; };
+		11E89FBA23A4C36000C81B3C /* PathExtracter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathExtracter.swift; sourceTree = "<group>"; };
+		11E89FBB23A4C36000C81B3C /* DIDAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDAdapter.swift; sourceTree = "<group>"; };
+		11E89FBC23A4C36000C81B3C /* DIDObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDObject.swift; sourceTree = "<group>"; };
+		11E89FBE23A4C36000C81B3C /* DIDBackend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDBackend.swift; sourceTree = "<group>"; };
+		11E89FBF23A4C36000C81B3C /* IDChainRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IDChainRequest.swift; sourceTree = "<group>"; };
+		11E89FC123A4C36000C81B3C /* DIDURLLexer.tokens */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DIDURLLexer.tokens; sourceTree = "<group>"; };
+		11E89FC223A4C36000C81B3C /* DIDURLLexerATN.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLLexerATN.swift; sourceTree = "<group>"; };
+		11E89FC323A4C36000C81B3C /* DIDURLBaseListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLBaseListener.swift; sourceTree = "<group>"; };
+		11E89FC423A4C36000C81B3C /* DIDURL.tokens */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DIDURL.tokens; sourceTree = "<group>"; };
+		11E89FC523A4C36000C81B3C /* DIDURL.g4 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DIDURL.g4; sourceTree = "<group>"; };
+		11E89FC623A4C36000C81B3C /* DIDURLParserATN.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLParserATN.swift; sourceTree = "<group>"; };
+		11E89FC723A4C36000C81B3C /* ParserHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParserHelper.swift; sourceTree = "<group>"; };
+		11E89FC823A4C36000C81B3C /* DIDURLLexer.interp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DIDURLLexer.interp; sourceTree = "<group>"; };
+		11E89FC923A4C36000C81B3C /* DIDURLLexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLLexer.swift; sourceTree = "<group>"; };
+		11E89FCA23A4C36000C81B3C /* DIDURLParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLParser.swift; sourceTree = "<group>"; };
+		11E89FCB23A4C36000C81B3C /* DIDURL.interp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DIDURL.interp; sourceTree = "<group>"; };
+		11E89FCC23A4C36000C81B3C /* DIDURLListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURLListener.swift; sourceTree = "<group>"; };
+		11E89FCD23A4C36000C81B3C /* DIDURL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURL.swift; sourceTree = "<group>"; };
+		11E89FCE23A4C36000C81B3C /* DIDDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDDocument.swift; sourceTree = "<group>"; };
+		11E89FCF23A4C36000C81B3C /* DIDPublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDPublicKey.swift; sourceTree = "<group>"; };
+		11E89FD023A4C36000C81B3C /* FileSystemStoreBackend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileSystemStoreBackend.swift; sourceTree = "<group>"; };
+		11E89FD223A4C36000C81B3C /* DIDStoreError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDStoreError.swift; sourceTree = "<group>"; };
+		11E89FD323A4C36000C81B3C /* MalformedDIDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MalformedDIDError.swift; sourceTree = "<group>"; };
+		11E89FD423A4C36000C81B3C /* MalformedDocumentError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MalformedDocumentError.swift; sourceTree = "<group>"; };
+		11E89FD523A4C36000C81B3C /* DIDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDError.swift; sourceTree = "<group>"; };
+		11E89FD623A4C36000C81B3C /* MalformedDIDURLError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MalformedDIDURLError.swift; sourceTree = "<group>"; };
+		11E89FD723A4C36000C81B3C /* MalformedCredentialError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MalformedCredentialError.swift; sourceTree = "<group>"; };
+		11E8A00423A4C39400C81B3C /* DIDResolveError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDResolveError.swift; sourceTree = "<group>"; };
+		11E8A00623A4DAF100C81B3C /* DIDStoreBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreBackend.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A3E6D440233485800012CD77 /* EmbeddedCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EmbeddedCredential.swift; path = ElastosDIDSDK/Credential/EmbeddedCredential.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D441233485800012CD77 /* Proof.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Proof.swift; path = ElastosDIDSDK/Credential/Proof.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D442233485800012CD77 /* VerifiableCredential.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VerifiableCredential.swift; path = ElastosDIDSDK/Credential/VerifiableCredential.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D443233485800012CD77 /* Issuer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Issuer.swift; path = ElastosDIDSDK/Credential/Issuer.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D444233485800012CD77 /* CredentialSubject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CredentialSubject.swift; path = ElastosDIDSDK/Credential/CredentialSubject.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D44A233485AD0012CD77 /* DIDURLListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDURLListener.swift; path = ElastosDIDSDK/DID/Parser/DIDURLListener.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D44B233485AD0012CD77 /* DIDURLLexer.tokens */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = DIDURLLexer.tokens; path = ElastosDIDSDK/DID/Parser/DIDURLLexer.tokens; sourceTree = SOURCE_ROOT; };
-		A3E6D44C233485AD0012CD77 /* DIDURLLexer.interp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = DIDURLLexer.interp; path = ElastosDIDSDK/DID/Parser/DIDURLLexer.interp; sourceTree = SOURCE_ROOT; };
-		A3E6D44D233485AD0012CD77 /* DIDURLLexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDURLLexer.swift; path = ElastosDIDSDK/DID/Parser/DIDURLLexer.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D44E233485AD0012CD77 /* DIDURLLexerATN.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDURLLexerATN.swift; path = ElastosDIDSDK/DID/Parser/DIDURLLexerATN.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D44F233485AD0012CD77 /* DIDURLParserATN.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDURLParserATN.swift; path = ElastosDIDSDK/DID/Parser/DIDURLParserATN.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D450233485AD0012CD77 /* DIDURLBaseListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDURLBaseListener.swift; path = ElastosDIDSDK/DID/Parser/DIDURLBaseListener.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D451233485AD0012CD77 /* DIDURLParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDURLParser.swift; path = ElastosDIDSDK/DID/Parser/DIDURLParser.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D452233485AD0012CD77 /* ParserHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParserHelper.swift; path = ElastosDIDSDK/DID/Parser/ParserHelper.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IDChainRequest.swift; path = ElastosDIDSDK/DID/Backend/IDChainRequest.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D45D233485BB0012CD77 /* DIDBackend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDBackend.swift; path = ElastosDIDSDK/DID/Backend/DIDBackend.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D466233485DE0012CD77 /* FileSystemStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FileSystemStore.swift; path = ElastosDIDSDK/DID/FileSystemStore.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedCredentialError.swift; path = Credential/MalformedCredentialError.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D468233485DF0012CD77 /* DIDStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDStore.swift; path = ElastosDIDSDK/DID/DIDStore.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D469233485DF0012CD77 /* DIDObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDObject.swift; path = ElastosDIDSDK/DID/DIDObject.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D46A233485DF0012CD77 /* MalformedDIDURLError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedDIDURLError.swift; path = ElastosDIDSDK/DID/MalformedDIDURLError.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D46B233485DF0012CD77 /* MalformedDIDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedDIDError.swift; path = ElastosDIDSDK/DID/MalformedDIDError.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D46C233485DF0012CD77 /* DID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DID.swift; path = ElastosDIDSDK/DID/DID.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D46D233485DF0012CD77 /* DIDURL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDURL.swift; path = ElastosDIDSDK/DID/DIDURL.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D46E233485DF0012CD77 /* DIDStoreError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDStoreError.swift; path = ElastosDIDSDK/DID/DIDStoreError.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D46F233485DF0012CD77 /* MalformedDocumentError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalformedDocumentError.swift; path = ElastosDIDSDK/DID/MalformedDocumentError.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D470233485DF0012CD77 /* Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Service.swift; path = ElastosDIDSDK/DID/Service.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D471233485DF0012CD77 /* DIDDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDDocument.swift; path = ElastosDIDSDK/DID/DIDDocument.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDPublicKey.swift; path = ElastosDIDSDK/DID/DIDPublicKey.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D473233485DF0012CD77 /* DIDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DIDError.swift; path = ElastosDIDSDK/DID/DIDError.swift; sourceTree = SOURCE_ROOT; };
-		A3E6D474233485DF0012CD77 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Constants.swift; path = ElastosDIDSDK/DID/Constants.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -301,22 +310,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1109D06D232758D500A03D56 /* Parser */ = {
-			isa = PBXGroup;
-			children = (
-				A3E6D450233485AD0012CD77 /* DIDURLBaseListener.swift */,
-				A3E6D44C233485AD0012CD77 /* DIDURLLexer.interp */,
-				A3E6D44D233485AD0012CD77 /* DIDURLLexer.swift */,
-				A3E6D44B233485AD0012CD77 /* DIDURLLexer.tokens */,
-				A3E6D44E233485AD0012CD77 /* DIDURLLexerATN.swift */,
-				A3E6D44A233485AD0012CD77 /* DIDURLListener.swift */,
-				A3E6D451233485AD0012CD77 /* DIDURLParser.swift */,
-				A3E6D44F233485AD0012CD77 /* DIDURLParserATN.swift */,
-				A3E6D452233485AD0012CD77 /* ParserHelper.swift */,
-			);
-			path = Parser;
-			sourceTree = "<group>";
-		};
 		1109D08723275DC600A03D56 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -441,22 +434,6 @@
 			name = TestUtils;
 			sourceTree = "<group>";
 		};
-		11CA74AC235E06B7006E66F7 /* Util */ = {
-			isa = PBXGroup;
-			children = (
-				11CA74AE235E06B7006E66F7 /* DerivedKey.swift */,
-				11CA74AF235E06B7006E66F7 /* DateFormater.swift */,
-				11CA74B0235E06B7006E66F7 /* HDKey.swift */,
-				11CA74B3235E06B7006E66F7 /* JsonHelper.swift */,
-				11CA74B4235E06B7006E66F7 /* ExtensionInt.swift */,
-				11CA74B5235E06B7006E66F7 /* OrderedDictionary.swift */,
-				11CA74B6235E06B7006E66F7 /* PathExtracter.swift */,
-				11CA74CB235E1243006E66F7 /* DIDURLComparator.swift */,
-			);
-			name = Util;
-			path = ElastosDIDSDK/DID/Util;
-			sourceTree = SOURCE_ROOT;
-		};
 		11CA74D1235E131B006E66F7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -483,6 +460,92 @@
 			path = Externals;
 			sourceTree = "<group>";
 		};
+		11E89FA623A4C36000C81B3C /* DID */ = {
+			isa = PBXGroup;
+			children = (
+				11E89FC023A4C36000C81B3C /* Parser */,
+				11E89FD123A4C36000C81B3C /* Exception */,
+				11E89FBD23A4C36000C81B3C /* Backend */,
+				11E89FB223A4C36000C81B3C /* Util */,
+				11E89FA723A4C36000C81B3C /* Constants.swift */,
+				11E89FA823A4C36000C81B3C /* DID.swift */,
+				11E89FBB23A4C36000C81B3C /* DIDAdapter.swift */,
+				11E89FCE23A4C36000C81B3C /* DIDDocument.swift */,
+				11E89FBC23A4C36000C81B3C /* DIDObject.swift */,
+				11E89FA923A4C36000C81B3C /* DIDStore.swift */,
+				11E8A00623A4DAF100C81B3C /* DIDStoreBackend.swift */,
+				11E89FCD23A4C36000C81B3C /* DIDURL.swift */,
+				11E89FD023A4C36000C81B3C /* FileSystemStoreBackend.swift */,
+				11E89FAE23A4C36000C81B3C /* Issuer.swift */,
+				11E89FAB23A4C36000C81B3C /* VerifiableCredential.swift */,
+				11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */,
+				11E89FB123A4C36000C81B3C /* Service.swift */,
+				11E89FAD23A4C36000C81B3C /* EmbeddedCredential.swift */,
+				11E89FAF23A4C36000C81B3C /* Proof.swift */,
+				11E89FB023A4C36000C81B3C /* CredentialSubject.swift */,
+				11E89FCF23A4C36000C81B3C /* DIDPublicKey.swift */,
+			);
+			path = DID;
+			sourceTree = "<group>";
+		};
+		11E89FB223A4C36000C81B3C /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				116AC38523A5FA410076BDC7 /* LRUCache.swift */,
+				11E89FB323A4C36000C81B3C /* DerivedKey.swift */,
+				11E89FB423A4C36000C81B3C /* DateFormater.swift */,
+				11E89FB523A4C36000C81B3C /* DIDURLComparator.swift */,
+				11E89FB623A4C36000C81B3C /* HDKey.swift */,
+				11E89FB723A4C36000C81B3C /* JsonHelper.swift */,
+				11E89FB823A4C36000C81B3C /* ExtensionInt.swift */,
+				11E89FB923A4C36000C81B3C /* OrderedDictionary.swift */,
+				11E89FBA23A4C36000C81B3C /* PathExtracter.swift */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
+		11E89FBD23A4C36000C81B3C /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				11E89FBE23A4C36000C81B3C /* DIDBackend.swift */,
+				11E89FBF23A4C36000C81B3C /* IDChainRequest.swift */,
+			);
+			path = Backend;
+			sourceTree = "<group>";
+		};
+		11E89FC023A4C36000C81B3C /* Parser */ = {
+			isa = PBXGroup;
+			children = (
+				11E89FC123A4C36000C81B3C /* DIDURLLexer.tokens */,
+				11E89FC223A4C36000C81B3C /* DIDURLLexerATN.swift */,
+				11E89FC323A4C36000C81B3C /* DIDURLBaseListener.swift */,
+				11E89FC423A4C36000C81B3C /* DIDURL.tokens */,
+				11E89FC523A4C36000C81B3C /* DIDURL.g4 */,
+				11E89FC623A4C36000C81B3C /* DIDURLParserATN.swift */,
+				11E89FC723A4C36000C81B3C /* ParserHelper.swift */,
+				11E89FC823A4C36000C81B3C /* DIDURLLexer.interp */,
+				11E89FC923A4C36000C81B3C /* DIDURLLexer.swift */,
+				11E89FCA23A4C36000C81B3C /* DIDURLParser.swift */,
+				11E89FCB23A4C36000C81B3C /* DIDURL.interp */,
+				11E89FCC23A4C36000C81B3C /* DIDURLListener.swift */,
+			);
+			path = Parser;
+			sourceTree = "<group>";
+		};
+		11E89FD123A4C36000C81B3C /* Exception */ = {
+			isa = PBXGroup;
+			children = (
+				11E89FD223A4C36000C81B3C /* DIDStoreError.swift */,
+				11E89FD323A4C36000C81B3C /* MalformedDIDError.swift */,
+				11E89FD423A4C36000C81B3C /* MalformedDocumentError.swift */,
+				11E89FD523A4C36000C81B3C /* DIDError.swift */,
+				11E89FD623A4C36000C81B3C /* MalformedDIDURLError.swift */,
+				11E89FD723A4C36000C81B3C /* MalformedCredentialError.swift */,
+				11E8A00423A4C39400C81B3C /* DIDResolveError.swift */,
+			);
+			path = Exception;
+			sourceTree = "<group>";
+		};
 		11F262A023260CF30009C103 = {
 			isa = PBXGroup;
 			children = (
@@ -506,60 +569,11 @@
 		11F262AC23260CF40009C103 /* ElastosDIDSDK */ = {
 			isa = PBXGroup;
 			children = (
-				11F262B523260D550009C103 /* Credential */,
-				11F262B623260D550009C103 /* DID */,
+				11E89FA623A4C36000C81B3C /* DID */,
 				11F262AD23260CF40009C103 /* ElastosDIDSDK.h */,
 				11F262AE23260CF40009C103 /* Info.plist */,
 			);
 			path = ElastosDIDSDK;
-			sourceTree = "<group>";
-		};
-		11F262B523260D550009C103 /* Credential */ = {
-			isa = PBXGroup;
-			children = (
-				A3E6D444233485800012CD77 /* CredentialSubject.swift */,
-				A3E6D440233485800012CD77 /* EmbeddedCredential.swift */,
-				A3E6D443233485800012CD77 /* Issuer.swift */,
-				A3E6D441233485800012CD77 /* Proof.swift */,
-				A3E6D442233485800012CD77 /* VerifiableCredential.swift */,
-				11A1D663239756F2002D8AD2 /* VerifiablePresentation.swift */,
-				A3E6D467233485DF0012CD77 /* MalformedCredentialError.swift */,
-			);
-			path = Credential;
-			sourceTree = SOURCE_ROOT;
-		};
-		11F262B623260D550009C103 /* DID */ = {
-			isa = PBXGroup;
-			children = (
-				11CA74AC235E06B7006E66F7 /* Util */,
-				11F262BB23260DFD0009C103 /* Backend */,
-				1109D06D232758D500A03D56 /* Parser */,
-				A3E6D474233485DF0012CD77 /* Constants.swift */,
-				119338D5237D41B000C4998E /* DIDAdaptor.swift */,
-				A3E6D46C233485DF0012CD77 /* DID.swift */,
-				A3E6D471233485DF0012CD77 /* DIDDocument.swift */,
-				A3E6D473233485DF0012CD77 /* DIDError.swift */,
-				A3E6D469233485DF0012CD77 /* DIDObject.swift */,
-				A3E6D468233485DF0012CD77 /* DIDStore.swift */,
-				A3E6D46E233485DF0012CD77 /* DIDStoreError.swift */,
-				A3E6D46D233485DF0012CD77 /* DIDURL.swift */,
-				A3E6D472233485DF0012CD77 /* DIDPublicKey.swift */,
-				A3E6D466233485DE0012CD77 /* FileSystemStore.swift */,
-				A3E6D46B233485DF0012CD77 /* MalformedDIDError.swift */,
-				A3E6D46A233485DF0012CD77 /* MalformedDIDURLError.swift */,
-				A3E6D46F233485DF0012CD77 /* MalformedDocumentError.swift */,
-				A3E6D470233485DF0012CD77 /* Service.swift */,
-			);
-			path = DID;
-			sourceTree = SOURCE_ROOT;
-		};
-		11F262BB23260DFD0009C103 /* Backend */ = {
-			isa = PBXGroup;
-			children = (
-				A3E6D45D233485BB0012CD77 /* DIDBackend.swift */,
-				A3E6D45C233485BB0012CD77 /* IDChainRequest.swift */,
-			);
-			path = Backend;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -720,8 +734,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A3E6D455233485AD0012CD77 /* DIDURLLexer.interp in Resources */,
-				A3E6D454233485AD0012CD77 /* DIDURLLexer.tokens in Resources */,
+				11E89FF823A4C36000C81B3C /* DIDURL.interp in Resources */,
+				11E89FF223A4C36000C81B3C /* DIDURL.g4 in Resources */,
+				11E89FEE23A4C36000C81B3C /* DIDURLLexer.tokens in Resources */,
+				11E89FF523A4C36000C81B3C /* DIDURLLexer.interp in Resources */,
+				11E89FF123A4C36000C81B3C /* DIDURL.tokens in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -736,16 +753,13 @@
 				1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */,
 				1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */,
 				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,
-				1137CFAA2398D88900250D4F /* ExtensionInt.swift in Sources */,
 				11054F1F239D2088008A4500 /* DIDTest.swift in Sources */,
 				11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */,
-				11054F1A239D17DC008A4500 /* Constants.swift in Sources */,
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
 				1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */,
 				111F4B7B239E315C00FEE4E0 /* Base64.swift in Sources */,
-				11054F18239D17B7008A4500 /* DIDError.swift in Sources */,
 				11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */,
 				116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */,
 			);
@@ -755,47 +769,50 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A3E6D480233485E00012CD77 /* DIDDocument.swift in Sources */,
-				A3E6D47D233485E00012CD77 /* DIDStoreError.swift in Sources */,
-				A3E6D482233485E00012CD77 /* DIDError.swift in Sources */,
-				A3E6D47F233485E00012CD77 /* Service.swift in Sources */,
-				11CA74BF235E06B7006E66F7 /* OrderedDictionary.swift in Sources */,
-				11CA74B9235E06B7006E66F7 /* DateFormater.swift in Sources */,
-				11CA74BD235E06B7006E66F7 /* JsonHelper.swift in Sources */,
-				A3E6D45A233485AD0012CD77 /* DIDURLParser.swift in Sources */,
-				A3E6D476233485DF0012CD77 /* MalformedCredentialError.swift in Sources */,
-				A3E6D483233485E00012CD77 /* Constants.swift in Sources */,
-				A3E6D447233485800012CD77 /* VerifiableCredential.swift in Sources */,
-				11CA74CC235E1243006E66F7 /* DIDURLComparator.swift in Sources */,
-				A3E6D479233485E00012CD77 /* MalformedDIDURLError.swift in Sources */,
-				A3E6D47C233485E00012CD77 /* DIDURL.swift in Sources */,
-				A3E6D45B233485AD0012CD77 /* ParserHelper.swift in Sources */,
-				A3E6D481233485E00012CD77 /* DIDPublicKey.swift in Sources */,
-				A3E6D47E233485E00012CD77 /* MalformedDocumentError.swift in Sources */,
-				A3E6D456233485AD0012CD77 /* DIDURLLexer.swift in Sources */,
-				A3E6D458233485AD0012CD77 /* DIDURLParserATN.swift in Sources */,
-				119338D6237D41B000C4998E /* DIDAdaptor.swift in Sources */,
-				A3E6D446233485800012CD77 /* Proof.swift in Sources */,
-				11A1D664239756F2002D8AD2 /* VerifiablePresentation.swift in Sources */,
-				11CA74B8235E06B7006E66F7 /* DerivedKey.swift in Sources */,
-				A3E6D459233485AD0012CD77 /* DIDURLBaseListener.swift in Sources */,
-				11CA74C0235E06B7006E66F7 /* PathExtracter.swift in Sources */,
-				A3E6D475233485DF0012CD77 /* FileSystemStore.swift in Sources */,
+				11E89FEC23A4C36000C81B3C /* DIDBackend.swift in Sources */,
+				11E89FFB23A4C36000C81B3C /* DIDDocument.swift in Sources */,
+				11E89FDD23A4C36000C81B3C /* EmbeddedCredential.swift in Sources */,
 				1125B582238234FB00D396B6 /* CHDKey.swift in Sources */,
+				11E89FEA23A4C36000C81B3C /* DIDAdapter.swift in Sources */,
+				11E89FDF23A4C36000C81B3C /* Proof.swift in Sources */,
+				11E89FE323A4C36000C81B3C /* DateFormater.swift in Sources */,
+				11E8A00023A4C36000C81B3C /* MalformedDocumentError.swift in Sources */,
+				116AC38A23A5FA410076BDC7 /* LRUCache.swift in Sources */,
+				11E89FF623A4C36000C81B3C /* DIDURLLexer.swift in Sources */,
+				11E89FF023A4C36000C81B3C /* DIDURLBaseListener.swift in Sources */,
+				11E89FF723A4C36000C81B3C /* DIDURLParser.swift in Sources */,
+				11E89FDA23A4C36000C81B3C /* DIDStore.swift in Sources */,
+				11E89FE923A4C36000C81B3C /* PathExtracter.swift in Sources */,
+				11E89FFA23A4C36000C81B3C /* DIDURL.swift in Sources */,
+				11E89FD923A4C36000C81B3C /* DID.swift in Sources */,
+				11E8A00723A4DAF200C81B3C /* DIDStoreBackend.swift in Sources */,
+				11E89FE123A4C36000C81B3C /* Service.swift in Sources */,
+				11E89FDC23A4C36000C81B3C /* VerifiablePresentation.swift in Sources */,
+				11E8A00323A4C36000C81B3C /* MalformedCredentialError.swift in Sources */,
+				11E89FDB23A4C36000C81B3C /* VerifiableCredential.swift in Sources */,
+				11E89FE023A4C36000C81B3C /* CredentialSubject.swift in Sources */,
+				11E89FEB23A4C36000C81B3C /* DIDObject.swift in Sources */,
 				110AD2FF234E44C8006578D6 /* Base58.swift in Sources */,
-				A3E6D477233485E00012CD77 /* DIDStore.swift in Sources */,
-				A3E6D448233485800012CD77 /* Issuer.swift in Sources */,
-				A3E6D45F233485BB0012CD77 /* DIDBackend.swift in Sources */,
-				A3E6D47A233485E00012CD77 /* MalformedDIDError.swift in Sources */,
-				A3E6D453233485AD0012CD77 /* DIDURLListener.swift in Sources */,
-				A3E6D45E233485BB0012CD77 /* IDChainRequest.swift in Sources */,
-				A3E6D445233485800012CD77 /* EmbeddedCredential.swift in Sources */,
-				11CA74BE235E06B7006E66F7 /* ExtensionInt.swift in Sources */,
-				A3E6D457233485AD0012CD77 /* DIDURLLexerATN.swift in Sources */,
-				11CA74BA235E06B7006E66F7 /* HDKey.swift in Sources */,
-				A3E6D47B233485E00012CD77 /* DID.swift in Sources */,
-				A3E6D478233485E00012CD77 /* DIDObject.swift in Sources */,
-				A3E6D449233485800012CD77 /* CredentialSubject.swift in Sources */,
+				11E8A00523A4C39400C81B3C /* DIDResolveError.swift in Sources */,
+				11E89FFC23A4C36000C81B3C /* DIDPublicKey.swift in Sources */,
+				11E8A00123A4C36000C81B3C /* DIDError.swift in Sources */,
+				11E89FE523A4C36000C81B3C /* HDKey.swift in Sources */,
+				11E89FED23A4C36000C81B3C /* IDChainRequest.swift in Sources */,
+				11E89FF423A4C36000C81B3C /* ParserHelper.swift in Sources */,
+				11E89FE223A4C36000C81B3C /* DerivedKey.swift in Sources */,
+				11E89FFD23A4C36000C81B3C /* FileSystemStoreBackend.swift in Sources */,
+				11E89FFE23A4C36000C81B3C /* DIDStoreError.swift in Sources */,
+				11E89FE823A4C36000C81B3C /* OrderedDictionary.swift in Sources */,
+				11E89FF923A4C36000C81B3C /* DIDURLListener.swift in Sources */,
+				11E89FF323A4C36000C81B3C /* DIDURLParserATN.swift in Sources */,
+				11E89FE623A4C36000C81B3C /* JsonHelper.swift in Sources */,
+				11E89FE423A4C36000C81B3C /* DIDURLComparator.swift in Sources */,
+				11E8A00223A4C36000C81B3C /* MalformedDIDURLError.swift in Sources */,
+				11E89FFF23A4C36000C81B3C /* MalformedDIDError.swift in Sources */,
+				11E89FD823A4C36000C81B3C /* Constants.swift in Sources */,
+				11E89FDE23A4C36000C81B3C /* Issuer.swift in Sources */,
+				11E89FEF23A4C36000C81B3C /* DIDURLLexerATN.swift in Sources */,
+				11E89FE723A4C36000C81B3C /* ExtensionInt.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

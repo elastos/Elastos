@@ -5,7 +5,15 @@ public class Issuer {
     public var didDocument: DIDDocument?
     public var signKey: DIDURL!
     public var target: DID?
-    public var vc: VerifiableCredential!
+    public var credential: VerifiableCredential!
+
+    public init(_ doc: DIDDocument, _ signKey: DIDURL) throws {
+       _ = try Issuer(doc, signKey)
+    }
+    
+    public init(_ doc: DIDDocument) throws {
+        _ = try Issuer(doc, nil)
+    }
     
     public init(_ did: DID, _ signKey: DIDURL?) throws {
         self.signKey = signKey
@@ -14,9 +22,9 @@ public class Issuer {
         guard self.didDocument != nil else {
             throw DIDError.failue("Can not resolve DID.")
         }
-        self.vc = VerifiableCredential()
-        self.vc.subject = CredentialSubject(self.target!)
-        self.vc.issuer = didDocument?.subject
+        self.credential = VerifiableCredential()
+        self.credential.subject = CredentialSubject(self.target!)
+        self.credential.issuer = didDocument?.subject
         if signKey == nil {
             self.signKey = self.didDocument?.getDefaultPublicKey()
         } else {
@@ -34,6 +42,23 @@ public class Issuer {
         try self.init(did, nil)
     }
     
+    private init(_ doc: DIDDocument, _ signKey: DIDURL?) throws {
+        
+        self.didDocument = doc
+        self.signKey = signKey
+        if (signKey == nil) {
+            self.signKey = didDocument!.getDefaultPublicKey()
+        } else {
+            if (try !(didDocument!.isAuthenticationKey((self.signKey)))){
+                throw DIDError.failue("Invalid sign key id.")
+            }
+            
+            if (try !didDocument!.hasPrivateKey(self.signKey)){
+                throw DIDError.failue("No private key.")
+            }
+        }
+    }
+    
     public func getDid() -> DID {
         return (didDocument?.subject!)!
     }
@@ -44,8 +69,8 @@ public class Issuer {
     
     public func sign(_ passphrase: String) throws -> VerifiableCredential {
         
-        self.vc.issuanceDate = Date()
-        let json: String = self.vc.toJsonForSign(false)
+        self.credential.issuanceDate = Date()
+        let json: String = self.credential.toJsonForSign(false)
         guard !json.isEmpty else {
             throw DIDError.failue("No json.")
         }
@@ -53,7 +78,11 @@ public class Issuer {
         let count = inputs.count / 2
         let sig: String = (try didDocument?.sign(signKey, passphrase, count, inputs))!
         let proof: Proof = Proof(Constants.defaultPublicKeyType, signKey, sig)
-        vc.proof = proof
+        credential.proof = proof
+        
+        // Should clean credential member
+        let vc: VerifiableCredential = credential
+        // TODO: CLEAR
         return vc
     }
 }
