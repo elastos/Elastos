@@ -704,7 +704,7 @@ namespace Elastos {
 					const OutputPtr o = tx->OutputOfIndex((*in)->Index());
 					if (o && wallet->ContainsAddress(o->Addr()) && !wallet->IsDepositAddress(o->Addr())) {
 						const BigInt &spentAmount = o->Amount();
-						addr = o->Addr().String();
+						addr = o->Addr()->String();
 
 						if (detail) {
 							if (inputList.find(addr) == inputList.end()) {
@@ -722,7 +722,7 @@ namespace Elastos {
 					UTXOPtr cb = wallet->CoinBaseTxForHash((*in)->TxHash());
 					if (cb && cb->Index() == (*in)->Index()) {
 						const BigInt &spentAmount = cb->Output()->Amount();
-						addr = Address(cb->Output()->ProgramHash()).String();
+						addr = cb->Output()->Addr()->String();
 
 						if (detail) {
 							if (inputList.find(addr) == inputList.end()) {
@@ -749,7 +749,7 @@ namespace Elastos {
 			std::map<std::string, BigInt> outputList;
 			for (OutputArray::iterator o = _outputs.begin(); o != _outputs.end(); ++o) {
 				const BigInt &oAmount = (*o)->Amount();
-				addr = (*o)->Addr().String();
+				addr = (*o)->Addr()->String();
 
 				if ((*o)->GetType() == TransactionOutput::VoteOutput) {
 					outputPayload = (*o)->GetPayload()->ToJson();

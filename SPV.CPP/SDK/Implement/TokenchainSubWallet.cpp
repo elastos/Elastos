@@ -61,10 +61,11 @@ namespace Elastos {
 			PayloadPtr payload = PayloadPtr(new RegisterAsset(asset, assetAmount.getUint64(), address.ProgramHash()));
 
 			std::vector<OutputPtr> outputs;
-			Address receiveAddr(CreateAddress());
-			outputs.emplace_back(OutputPtr(new TransactionOutput(BigInt(1000000000), receiveAddr, Asset::GetELAAssetID())));
+			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+			outputs.emplace_back(OutputPtr(new TransactionOutput(BigInt(1000000000), *receiveAddr, Asset::GetELAAssetID())));
+			AddressPtr fromAddr(new Address());
 
-			TransactionPtr tx = CreateTx(Transaction::registerAsset, payload, "", outputs, memo);
+			TransactionPtr tx = CreateTx(Transaction::registerAsset, payload, fromAddr, outputs, memo);
 
 			assetAmount *= BigInt(TOKEN_ASSET_PRECISION, 10);
 			tx->AddOutput(OutputPtr(new TransactionOutput(assetAmount, address, asset->GetHash())));
@@ -111,9 +112,10 @@ namespace Elastos {
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr, asset)));
+			AddressPtr fromAddr(new Address(fromAddress));
 
 			PayloadPtr payload = PayloadPtr(new TransferAsset());
-			TransactionPtr tx = CreateTx(Transaction::transferAsset, payload, fromAddress, outputs, memo);
+			TransactionPtr tx = CreateTx(Transaction::transferAsset, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

@@ -22,6 +22,7 @@ namespace Elastos {
 		}
 
 		Address::Address(const std::string &address) {
+			_str = address;
 			if (address.empty()) {
 				_isValid = false;
 			} else {
@@ -46,13 +47,15 @@ namespace Elastos {
 			} else {
 				GenerateCode(prefix, pubkeys, m);
 				GenerateProgramHash(prefix);
-				CheckValid();
+				if (CheckValid())
+					_str = Base58::CheckEncode(_programHash.bytes());
 			}
 		}
 
 		Address::Address(const uint168 &programHash) {
 			_programHash = programHash;
-			CheckValid();
+			if (CheckValid())
+				_str = Base58::CheckEncode(_programHash.bytes());
 		}
 
 		Address::Address(const Address &address) {
@@ -75,14 +78,17 @@ namespace Elastos {
 		}
 
 		std::string Address::String() const {
-			if (!_isValid)
-				return std::string();
-
-			return Base58::CheckEncode(_programHash.bytes());
+			return _str;
 		}
 
 		const uint168 &Address::ProgramHash() const {
 			return _programHash;
+		}
+
+		void Address::SetProgramHash(const uint168 &programHash) {
+			_programHash = programHash;
+			if (CheckValid())
+				_str = Base58::CheckEncode(_programHash.bytes());
 		}
 
 		SignType Address::PrefixToSignType(Prefix prefix) const {
@@ -115,7 +121,8 @@ namespace Elastos {
 		void Address::SetRedeemScript(Prefix prefix, const bytes_t &code) {
 			_code = code;
 			GenerateProgramHash(prefix);
-			CheckValid();
+			if (CheckValid())
+				_str = Base58::CheckEncode(_programHash.bytes());
 			ErrorChecker::CheckCondition(!_isValid, Error::InvalidArgument, "redeemscript is invalid");
 		}
 
@@ -126,6 +133,7 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::Address, "can't change to or from multi-sign prefix");
 
 			GenerateProgramHash(prefix);
+			_str = Base58::CheckEncode(_programHash.bytes());
 			return true;
 		}
 
@@ -142,15 +150,16 @@ namespace Elastos {
 			_programHash = address._programHash;
 			_code = address._code;
 			_isValid = address._isValid;
+			_str = address._str;
 			return *this;
 		}
 
 		bool Address::operator==(const Address &address) const {
-			return this == &address || _programHash == address._programHash;
+			return _isValid == address._isValid && _programHash == address._programHash;
 		}
 
 		bool Address::operator==(const std::string &address) const {
-			return this->String() == address;
+			return _isValid && this->String() == address;
 		}
 
 		bool Address::operator!=(const Address &address) const {
@@ -211,7 +220,7 @@ namespace Elastos {
 			_programHash = uint168(prefix, hash);
 		}
 
-		void Address::CheckValid() {
+		bool Address::CheckValid() {
 			if (_programHash.prefix() == PrefixDeposit ||
 				_programHash.prefix() == PrefixStandard ||
 				_programHash.prefix() == PrefixCrossChain ||
@@ -222,6 +231,8 @@ namespace Elastos {
 			} else {
 				_isValid = false;
 			}
+
+			return _isValid;
 		}
 
 	}

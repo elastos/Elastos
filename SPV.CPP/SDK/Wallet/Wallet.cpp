@@ -15,7 +15,6 @@
 #include <Plugin/Transaction/IDTransaction.h>
 #include <Plugin/Transaction/TransactionOutput.h>
 #include <Plugin/Transaction/Payload/RegisterAsset.h>
-#include <Plugin/Registry.h>
 #include <Wallet/UTXO.h>
 
 #include <ISubWallet.h>
@@ -36,11 +35,11 @@ namespace Elastos {
 					   const UTXOArray &cbUTXOs,
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Wallet::Listener> &listener) :
-				_walletID(walletID + ":" + chainID),
-				_chainID(chainID),
-				_blockHeight(lastBlockHeight),
-				_feePerKb(DEFAULT_FEE_PER_KB),
-				_subAccount(subAccount) {
+			_walletID(walletID + ":" + chainID),
+			_chainID(chainID),
+			_blockHeight(lastBlockHeight),
+			_feePerKb(DEFAULT_FEE_PER_KB),
+			_subAccount(subAccount) {
 
 			_listener = boost::weak_ptr<Listener>(listener);
 
@@ -50,9 +49,7 @@ namespace Elastos {
 				InstallAssets(assetArray);
 			}
 
-			_subAccount->Init(txns);
-			if (chainID == CHAINID_IDCHAIN)
-				_subAccount->InitDID();
+			_subAccount->Init();
 
 			if (!txns.empty() && !ContainsTx(txns[0])) { // verify _transactions match master pubKey
 				std::string hash = txns[0]->GetHash().GetHex();
@@ -70,6 +67,7 @@ namespace Elastos {
 					const OutputArray &outputs = txns[i]->GetOutputs();
 					for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
 						if (_subAccount->ContainsAddress((*o)->Addr())) {
+							_subAccount->AddUsedAddrs((*o)->Addr());
 							UTXOPtr cb(new UTXO(txns[i]->GetHash(), (*o)->FixedIndex(), txns[i]->GetTimestamp(),
 												txns[i]->GetBlockHeight(), *o));
 
@@ -81,7 +79,7 @@ namespace Elastos {
 					txns[i]->IsRegistered() = true;
 					if (StripTransaction(txns[i])) {
 						SPVLOG_INFO("{} strip tx: {}, h: {}, t: {}", _walletID, txns[i]->GetHash().GetHex(),
-									 txns[i]->GetBlockHeight(), txns[i]->GetTimestamp());
+									txns[i]->GetBlockHeight(), txns[i]->GetTimestamp());
 						needUpdate = true;
 					}
 
@@ -95,11 +93,13 @@ namespace Elastos {
 					} else {
 						AddSpendingUTXO(txns[i]->GetInputs());
 						SPVLOG_INFO("{} tx[{}]: {}, h: {}", _walletID, i,
-									 txns[i]->GetHash().GetHex(), txns[i]->GetBlockHeight());
+									txns[i]->GetHash().GetHex(), txns[i]->GetBlockHeight());
 					}
 				} else {
 					needUpdate = true;
 				}
+				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 			}
 
 			if (!spentCoinbase.empty()) {
@@ -142,7 +142,7 @@ namespace Elastos {
 						  [&result](GroupedAssetMap::reference &asset) {
 							  const UTXOSet &utxos = asset.second->GetVoteUTXO();
 							  result.insert(result.end(), utxos.begin(), utxos.end());
-			});
+						  });
 
 			return result;
 		}
@@ -169,13 +169,7 @@ namespace Elastos {
 			std::vector<UTXOPtr> utxos = GetUTXO(assetID, addr);
 
 			for (size_t i = 0; i < utxos.size(); ++i) {
-				const TransactionPtr tx = _allTx.Get(utxos[i]->Hash());
-				if (tx) {
-					OutputPtr o = tx->OutputOfIndex(utxos[i]->Index());
-					if (o && o->Addr().String() == addr) {
-						balance += o->Amount();
-					}
-				}
+				balance += utxos[i]->Output()->Amount();
 			}
 
 			return balance;
@@ -225,7 +219,7 @@ namespace Elastos {
 
 		TransactionPtr Wallet::CreateTransaction(uint8_t type,
 												 const PayloadPtr &payload,
-												 const Address &fromAddress,
+												 const AddressPtr &fromAddress,
 												 const std::vector<OutputPtr> &outputs,
 												 const std::string &memo,
 												 bool max) {
@@ -241,7 +235,8 @@ namespace Elastos {
 			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
 			TransactionPtr tx;
-			if (fromAddress.Valid() && (_subAccount->IsProducerDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
+			if (fromAddress->Valid() &&
+				(_subAccount->IsProducerDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
 				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(type, payload, outputs, fromAddress, memo);
 			else
 				tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max);
@@ -401,7 +396,8 @@ namespace Elastos {
 					tx->SetBlockHeight(blockHeight);
 
 					if (ContainsTx(tx)) {
-						for (std::vector<TransactionPtr>::reverse_iterator it = _transactions.rbegin(); it != _transactions.rend();) {
+						for (std::vector<TransactionPtr>::reverse_iterator it = _transactions.rbegin();
+							 it != _transactions.rend();) {
 							if ((*it)->IsEqual(tx.get())) {
 								it = std::vector<TransactionPtr>::reverse_iterator(_transactions.erase((++it).base()));
 								InsertTx(tx);
@@ -578,7 +574,8 @@ namespace Elastos {
 					if (o && _subAccount->ContainsAddress(o->Addr())) {
 						amount += o->Amount();
 					}
-				} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr && cb->Index() == (*in)->Index()) {
+				} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr &&
+						   cb->Index() == (*in)->Index()) {
 					amount += cb->Output()->Amount();
 				}
 			}
@@ -601,7 +598,7 @@ namespace Elastos {
 
 		bool Wallet::StripTransaction(const TransactionPtr &tx) const {
 			const OutputArray &outputs = tx->GetOutputs();
-			if (outputs.size() > 2 && outputs.size() - 1 == outputs.back()->FixedIndex() && IsReceiveTransaction(tx) ) {
+			if (outputs.size() > 2 && outputs.size() - 1 == outputs.back()->FixedIndex() && IsReceiveTransaction(tx)) {
 				size_t sizeBeforeStrip = outputs.size();
 				boost::mutex::scoped_lock scopedLock(lock);
 				std::vector<OutputPtr> newOutputs;
@@ -619,61 +616,52 @@ namespace Elastos {
 			return false;
 		}
 
-		Address Wallet::GetReceiveAddress() const {
+		AddressPtr Wallet::GetReceiveAddress() const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			std::vector<Address> addr = _subAccount->UnusedAddresses(1, 0);
-			return addr[0];
+			return _subAccount->UnusedAddresses(1, 0)[0];
 		}
 
-		size_t Wallet::GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count,
-									   bool containInternal) const {
+		size_t Wallet::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool containInternal) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-
 			return _subAccount->GetAllAddresses(addr, start, count, containInternal);
 		}
 
-		size_t Wallet::GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const {
+		size_t Wallet::GetAllDID(AddressArray &did, uint32_t start, size_t count) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-
-			if (_chainID == CHAINID_IDCHAIN) {
-				return _subAccount->GetAllDID(did, start, count);
-			}
-
-			return 0;
+			return _subAccount->GetAllDID(did, start, count);
 		}
 
 		size_t Wallet::GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
-		                                bool containInternal) {
+										bool containInternal) {
 			boost::mutex::scoped_lock scopedLock(lock);
-
 			return _subAccount->GetAllPublickeys(pubkeys, start, count, containInternal);
 		}
 
-		Address Wallet::GetOwnerDepositAddress() const {
+		AddressPtr Wallet::GetOwnerDepositAddress() const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return Address(PrefixDeposit, _subAccount->OwnerPubKey());
+			return AddressPtr(new Address(PrefixDeposit, _subAccount->OwnerPubKey()));
 		}
 
-		Address Wallet::GetCROwnerDepositAddress() const {
+		AddressPtr Wallet::GetCROwnerDepositAddress() const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return Address(PrefixDeposit, _subAccount->DIDPubKey());
+			return AddressPtr(new Address(PrefixDeposit, _subAccount->DIDPubKey()));
 		}
 
-		Address Wallet::GetOwnerAddress() const {
+		AddressPtr Wallet::GetOwnerAddress() const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return Address(PrefixStandard, _subAccount->OwnerPubKey());
+			return AddressPtr(new Address(PrefixStandard, _subAccount->OwnerPubKey()));
 		}
 
-		std::vector<Address> Wallet::GetAllSpecialAddresses() const {
-			std::vector<Address> result;
+		AddressArray Wallet::GetAllSpecialAddresses() const {
+			AddressArray result;
 			boost::mutex::scoped_lock scopedLock(lock);
 			if (_subAccount->Parent()->GetSignType() != Account::MultiSign) {
 				// Owner address
-				result.push_back(Address(PrefixStandard, _subAccount->OwnerPubKey()));
+				result.push_back(AddressPtr(new Address(PrefixStandard, _subAccount->OwnerPubKey())));
 				// Owner deposit address
-				result.push_back(Address(PrefixDeposit, _subAccount->OwnerPubKey()));
+				result.push_back(AddressPtr(new Address(PrefixDeposit, _subAccount->OwnerPubKey())));
 				// CR Owner deposit address
-				result.push_back(Address(PrefixDeposit, _subAccount->DIDPubKey()));
+				result.push_back(AddressPtr(new Address(PrefixDeposit, _subAccount->DIDPubKey())));
 			}
 
 			return result;
@@ -689,7 +677,7 @@ namespace Elastos {
 			return _subAccount->DIDPubKey();
 		}
 
-		bool Wallet::IsDepositAddress(const Address &addr) const {
+		bool Wallet::IsDepositAddress(const AddressPtr &addr) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 
 			if (_subAccount->IsProducerDepositAddress(addr))
@@ -700,9 +688,13 @@ namespace Elastos {
 			return false;
 		}
 
-		bool Wallet::ContainsAddress(const Address &address) {
+		bool Wallet::ContainsAddress(const AddressPtr &address) {
 			boost::mutex::scoped_lock scoped_lock(lock);
 			return _subAccount->ContainsAddress(address);
+		}
+
+		void Wallet::GenerateDID() {
+			_subAccount->InitDID();
 		}
 
 		nlohmann::json Wallet::GetBasicInfo() const {
@@ -729,16 +721,15 @@ namespace Elastos {
 			_subAccount->SignTransaction(tx, payPassword);
 		}
 
-		std::string Wallet::SignWithDID(const Address &did, const std::string &msg, const std::string &payPasswd) const {
-			ErrorChecker::CheckParam(_chainID != CHAINID_IDCHAIN, Error::InvalidArgument, "subWallet should be IDChain");
+		std::string
+		Wallet::SignWithDID(const AddressPtr &did, const std::string &msg, const std::string &payPasswd) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			Key key = _subAccount->GetKeyWithDID(did, payPasswd);
 			return key.Sign(msg).getHex();
 		}
 
-		std::string Wallet::SignDigestWithDID(const Address &did, const uint256 &digest,
-		                                      const std::string &payPasswd) const {
-			ErrorChecker::CheckParam(_chainID != CHAINID_IDCHAIN, Error::InvalidArgument, "subWallet should be IDChain");
+		std::string Wallet::SignDigestWithDID(const AddressPtr &did, const uint256 &digest,
+											  const std::string &payPasswd) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 			Key key = _subAccount->GetKeyWithDID(did, payPasswd);
 			return key.Sign(digest).getHex();
@@ -797,7 +788,7 @@ namespace Elastos {
 			if (count > 0) txUpdated(hashes, TX_UNCONFIRMED, 0);
 		}
 
-		std::vector<Address> Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
+		AddressArray Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			return _subAccount->UnusedAddresses(gapLimit, internal);
 		}
@@ -930,7 +921,8 @@ namespace Elastos {
 			const OutputArray &outputs = tx->GetOutputs();
 			for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
 				if (_subAccount->ContainsAddress((*o)->Addr())) {
-					UTXOPtr cb(new UTXO(tx->GetHash(), (*o)->FixedIndex(), tx->GetTimestamp(), tx->GetBlockHeight(), (*o)));
+					UTXOPtr cb(
+						new UTXO(tx->GetHash(), (*o)->FixedIndex(), tx->GetTimestamp(), tx->GetBlockHeight(), (*o)));
 					if (!InsertCoinbaseUTXO(cb))
 						return nullptr;
 
@@ -978,7 +970,7 @@ namespace Elastos {
 		}
 
 		bool Wallet::TxIsAscending(const TransactionPtr &tx1, const TransactionPtr &tx2) const {
-			if (! tx1 || ! tx2)
+			if (!tx1 || !tx2)
 				return false;
 
 			if (tx1->GetBlockHeight() > tx2->GetBlockHeight()) return 1;
@@ -1045,7 +1037,9 @@ namespace Elastos {
 				const OutputArray &outputs = tx->GetOutputs();
 				for (OutputArray::const_iterator o = outputs.cbegin(); o != outputs.cend(); ++o) {
 					if (_subAccount->ContainsAddress((*o)->Addr())) {
-						UTXOPtr utxo(new UTXO(tx->GetHash(), (*o)->FixedIndex(), tx->GetTimestamp(), tx->GetBlockHeight(), (*o)));
+						UTXOPtr utxo(
+							new UTXO(tx->GetHash(), (*o)->FixedIndex(), tx->GetTimestamp(), tx->GetBlockHeight(),
+									 (*o)));
 						_subAccount->AddUsedAddrs((*o)->Addr());
 						if (ContainsAsset((*o)->AssetID()) &&
 							_groupedAssets[(*o)->AssetID()]->RemoveSpentUTXO(utxo, spentCoinbase)) {
@@ -1063,12 +1057,14 @@ namespace Elastos {
 						if (o) {
 							_spendingOutputs.insert(UTXOPtr(new UTXO(*in)));
 							if (_subAccount->ContainsAddress(o->Addr()) && ContainsAsset(o->AssetID())) {
-								UTXOPtr utxo(new UTXO(txInput->GetHash(), o->FixedIndex(), txInput->GetTimestamp(), txInput->GetBlockHeight(), o));
+								UTXOPtr utxo(new UTXO(txInput->GetHash(), o->FixedIndex(), txInput->GetTimestamp(),
+													  txInput->GetBlockHeight(), o));
 								if (_groupedAssets[o->AssetID()]->AddUTXO(utxo))
 									changedBalance[o->AssetID()] = _groupedAssets[o->AssetID()]->GetBalance();
 							}
 						}
-					} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr && cb->Index() == (*in)->Index()) {
+					} else if ((cb = CoinBaseForHashInternal((*in)->TxHash())) != nullptr &&
+							   cb->Index() == (*in)->Index()) {
 						_spendingOutputs.insert(UTXOPtr(new UTXO(*in)));
 						// TODO BUG update spent status to database
 						cb->SetSpent(false);

@@ -17,7 +17,7 @@ namespace Elastos {
 			}
 			data.push_back(0xAF); // The cross chain op code.
 
-			side_address.SetRedeemScript(PrefixCrossChain, data);
+			side_address->SetRedeemScript(PrefixCrossChain, data);
 		}
 
 		SideAccount::~SideAccount() {
@@ -30,27 +30,27 @@ namespace Elastos {
 			return j;
 		}
 
-		void SideAccount::Init(const std::vector<TransactionPtr> &) {}
+		void SideAccount::Init() {}
 
 		void SideAccount::InitDID() {}
 
 		bool SideAccount::IsSingleAddress() const { return true; }
 
-		bool SideAccount::IsProducerDepositAddress(const Address &address) const { return false; }
+		bool SideAccount::IsProducerDepositAddress(const AddressPtr &address) const { return false; }
 
-		bool SideAccount::IsOwnerAddress(const Address &address) const { return false; }
+		bool SideAccount::IsOwnerAddress(const AddressPtr &address) const { return false; }
 
-		bool SideAccount::IsCRDepositAddress(const Address &address) const { return false; }
+		bool SideAccount::IsCRDepositAddress(const AddressPtr &address) const { return false; }
 
-		bool SideAccount::AddUsedAddrs(const Address &) { return false; }
+		bool SideAccount::AddUsedAddrs(const AddressPtr &) { return false; }
 
-		size_t SideAccount::GetAllAddresses(std::vector<Address> &addr, uint32_t, size_t, bool) const {
+		size_t SideAccount::GetAllAddresses(AddressArray &addr, uint32_t, size_t, bool) const {
 			addr.clear();
 			addr.push_back(side_address);
 			return addr.size();
 		}
 
-		size_t SideAccount::GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const {
+		size_t SideAccount::GetAllDID(AddressArray &did, uint32_t start, size_t count) const {
 			return 0;
 		}
 
@@ -59,10 +59,8 @@ namespace Elastos {
 			return 0;
 		}
 
-		std::vector<Address> SideAccount::UnusedAddresses(uint32_t, bool) {
-			std::vector<Address> addrs;
-			addrs.push_back(side_address);
-			return addrs;
+		AddressArray SideAccount::UnusedAddresses(uint32_t, bool) {
+			return {side_address};
 		}
 
 		bytes_t SideAccount::OwnerPubKey() const { return bytes_t(); }
@@ -71,7 +69,7 @@ namespace Elastos {
 
 		void SideAccount::SignTransaction(const TransactionPtr &, const std::string &) const {}
 
-		Key SideAccount::GetKeyWithDID(const Address &did, const std::string &payPasswd) const {
+		Key SideAccount::GetKeyWithDID(const AddressPtr &did, const std::string &payPasswd) const {
 			return Key();
 		}
 
@@ -79,11 +77,9 @@ namespace Elastos {
 
 		Key SideAccount::DeriveDIDKey(const std::string &payPasswd) { return Key(); }
 
-		bool SideAccount::ContainsAddress(const Address &address) const { return side_address == address; }
+		bool SideAccount::ContainsAddress(const AddressPtr &address) const { return *side_address == *address; }
 
-		void SideAccount::ClearUsedAddresses() {}
-
-		bool SideAccount::GetCodeAndPath(const Address &, bytes_t &, std::string &) const { return false; }
+		bool SideAccount::GetCodeAndPath(const AddressPtr &, bytes_t &, std::string &) const { return false; }
 
 		size_t SideAccount::InternalChainIndex(const TransactionPtr &tx) const { return -1; }
 

@@ -370,7 +370,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				const UTXOPtr &u = *it;
 				REQUIRE(readTx[i]->Spent() == u->Spent());
 				REQUIRE(readTx[i]->Index() == u->Index());
-				REQUIRE(readTx[i]->Output()->ProgramHash() == u->Output()->ProgramHash());
+				REQUIRE(*readTx[i]->Output()->Addr() == *u->Output()->Addr());
 				REQUIRE(readTx[i]->Output()->AssetID() == u->Output()->AssetID());
 				REQUIRE(readTx[i]->Output()->OutputLock() == u->Output()->OutputLock());
 				REQUIRE(readTx[i]->Output()->Amount() == u->Output()->Amount());
@@ -401,7 +401,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				REQUIRE(readTx[i]->Hash() == u->Hash());
 				REQUIRE(readTx[i]->Spent() == u->Spent());
 				REQUIRE(readTx[i]->Index() == u->Index());
-				REQUIRE(readTx[i]->Output()->ProgramHash() == u->Output()->ProgramHash());
+				REQUIRE(*readTx[i]->Output()->Addr() == *u->Output()->Addr());
 				REQUIRE(readTx[i]->Output()->AssetID() == u->Output()->AssetID());
 				REQUIRE(readTx[i]->Output()->OutputLock() == u->Output()->OutputLock());
 				REQUIRE(readTx[i]->Output()->Amount() == u->Output()->Amount());

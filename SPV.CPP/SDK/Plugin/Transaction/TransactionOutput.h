@@ -13,8 +13,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#define TX_RECHARGE_OUTPUT_SIZE 65
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -46,7 +44,7 @@ namespace Elastos {
 
 			bool IsValid() const;
 
-			Address Addr() const;
+			const AddressPtr &Addr() const;
 
 			const BigInt &Amount() const;
 
@@ -59,10 +57,6 @@ namespace Elastos {
 			uint32_t OutputLock() const;
 
 			void SetOutputLock(uint32_t outputLock);
-
-			const uint168 &ProgramHash() const;
-
-			void SetProgramHash(const uint168 &hash);
 
 			const Type &GetType() const;
 
@@ -92,7 +86,7 @@ namespace Elastos {
 			BigInt _amount; // to support token chain
 			uint256 _assetID;
 			uint32_t _outputLock;
-			uint168 _programHash;
+			AddressPtr _addr;
 
 			Type _outputType;
 

@@ -51,10 +51,14 @@ namespace Elastos {
 			uchar_vector checksum = sha256_2(data);
 			checksum.assign(checksum.begin(), checksum.begin() + 4);        // compute checksum
 			data += checksum;                                               // append checksum
+#if 0
 			BigInt bn(data);
 			std::string base58check = bn.getInBase(58, pchars);             // convert to base58
 			std::string leading0s(countLeading0s(data), pchars[0]);         // prepend leading 0's (1 in base58)
 			return leading0s + base58check;
+#else
+			return Encode(data);
+#endif
 		}
 
 		bool Base58::CheckDecode(const std::string &base58check, bytes_t &payload, unsigned int &version) {
@@ -92,8 +96,41 @@ namespace Elastos {
 
 		std::string Base58::Encode(const bytes_t &payload) {
 			const char *pchars = DEFAULT_BASE58_CHARS;
+#if 0
 			BigInt bn(payload);
-			return bn.getInBase(58, pchars);
+			std::string base58 = bn.getInBase(58, pchars);
+			std::string leading0s(countLeading0s(payload), pchars[0]);
+			return leading0s + base58;
+#else
+			size_t i, j, len, zcount = 0;
+			size_t dataLen = payload.size();
+
+			while (zcount < dataLen && payload[zcount] == 0) zcount++; // count leading zeroes
+
+			uint8_t buf[(dataLen - zcount) * 138 / 100 + 1]; // log(256)/log(58), rounded up
+
+			memset(buf, 0, sizeof(buf));
+
+			for (i = zcount; i < dataLen; i++) {
+				uint32_t carry = payload[i];
+
+				for (j = sizeof(buf); j > 0; j--) {
+					carry += (uint32_t)buf[j - 1] << 8;
+					buf[j - 1] = carry % 58;
+					carry /= 58;
+				}
+			}
+
+			i = 0;
+			while (i < sizeof(buf) && buf[i] == 0) i++; // skip leading zeroes
+			len = (zcount + sizeof(buf) - i) + 1;
+
+			std::string str;
+			while (zcount-- > 0) str.push_back(pchars[0]);
+			while (i < sizeof(buf)) str.push_back(pchars[buf[i++]]);
+
+			return str;
+#endif
 		}
 
 		bytes_t Base58::Decode(const std::string &base58) {

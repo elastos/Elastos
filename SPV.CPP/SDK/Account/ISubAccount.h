@@ -20,32 +20,30 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
-			virtual void Init(const std::vector<TransactionPtr> &tx) = 0;
+			virtual void Init() = 0;
 
 			virtual void InitDID() = 0;
 
 			virtual bool IsSingleAddress() const = 0;
 
-			virtual bool IsProducerDepositAddress(const Address &address) const = 0;
+			virtual bool IsProducerDepositAddress(const AddressPtr &address) const = 0;
 
-			virtual bool IsOwnerAddress(const Address &address) const = 0;
+			virtual bool IsOwnerAddress(const AddressPtr &address) const = 0;
 
-			virtual bool IsCRDepositAddress(const Address &address) const = 0;
+			virtual bool IsCRDepositAddress(const AddressPtr &address) const = 0;
 
-			virtual bool AddUsedAddrs(const Address &address) = 0;
+			virtual bool AddUsedAddrs(const AddressPtr &address) = 0;
 
-			virtual size_t GetAllAddresses(std::vector<Address> &addr, uint32_t start, size_t count, bool internal) const = 0;
+			virtual size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const = 0;
 
-			virtual size_t GetAllDID(std::vector<Address> &did, uint32_t start, size_t count) const = 0;
+			virtual size_t GetAllDID(AddressArray &did, uint32_t start, size_t count) const = 0;
 
 			virtual size_t GetAllPublickeys(std::vector<bytes_t> &pubkeys, uint32_t start, size_t count,
 			                                bool containInternal) const = 0;
 
-			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal) = 0;
+			virtual AddressArray UnusedAddresses(uint32_t gapLimit, bool internal) = 0;
 
-			virtual bool ContainsAddress(const Address &address) const = 0;
-
-			virtual void ClearUsedAddresses() = 0;
+			virtual bool ContainsAddress(const AddressPtr &address) const = 0;
 
 			virtual bytes_t OwnerPubKey() const = 0;
 
@@ -53,13 +51,13 @@ namespace Elastos {
 
 			virtual void SignTransaction(const TransactionPtr &tx, const std::string &payPasswd) const = 0;
 
-			virtual Key GetKeyWithDID(const Address &did, const std::string &payPasswd) const = 0;
+			virtual Key GetKeyWithDID(const AddressPtr &did, const std::string &payPasswd) const = 0;
 
 			virtual Key DeriveOwnerKey(const std::string &payPasswd) = 0;
 
 			virtual Key DeriveDIDKey(const std::string &payPasswd) = 0;
 
-			virtual bool GetCodeAndPath(const Address &addr, bytes_t &code, std::string &path) const = 0;
+			virtual bool GetCodeAndPath(const AddressPtr &addr, bytes_t &code, std::string &path) const = 0;
 
 			virtual size_t InternalChainIndex(const TransactionPtr &tx) const = 0;
 

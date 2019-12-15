@@ -123,11 +123,9 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < 20; ++i) {
-				OutputPtr output(new TransactionOutput());
-				output->SetAmount(getRandUInt64());
-				output->SetAssetID(getRanduint256());
+				Address addr(getRandUInt168());
+				OutputPtr output(new TransactionOutput(getRandBigInt(), addr, getRanduint256()));
 				output->SetOutputLock(getRandUInt32());
-				output->SetProgramHash(getRandUInt168());
 				if (version >= Transaction::TxVersion::V09) {
 					output->SetType(TransactionOutput::Type(i % 2));
 					if (output->GetType() == TransactionOutput::VoteOutput) {
@@ -189,7 +187,7 @@ namespace Elastos {
 				o1 = tx1.GetOutputs()[i];
 				o2 = tx2.GetOutputs()[i];
 				REQUIRE(o2->AssetID() == o1->AssetID());
-				REQUIRE(o2->ProgramHash() == o1->ProgramHash());
+				REQUIRE(*o2->Addr() == *o1->Addr());
 				REQUIRE(o2->OutputLock() == o1->OutputLock());
 				REQUIRE(o2->Amount() == o1->Amount());
 

@@ -53,7 +53,7 @@ namespace Elastos {
 			TransactionPtr CreateRetrieveDepositTx(uint8_t type,
 												   const PayloadPtr &payload,
 												   const OutputArray &outputs,
-												   const Address &fromAddress,
+												   const AddressPtr &fromAddress,
 												   const std::string &memo);
 
 			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo, bool max);
@@ -62,8 +62,8 @@ namespace Elastos {
 
 			TransactionPtr CreateTxForOutputs(uint8_t type,
 											  const PayloadPtr &payload,
-											  const std::vector<OutputPtr> &outputs,
-											  const Address &fromAddress,
+											  const OutputArray &outputs,
+											  const AddressPtr &fromAddress,
 											  const std::string &memo,
 											  bool max,
 											  bool pickVoteFirst = false);

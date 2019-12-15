@@ -66,6 +66,8 @@ namespace Elastos {
 
 			const uint168 &ProgramHash() const;
 
+			void SetProgramHash(const uint168 &programHash);
+
 			SignType PrefixToSignType(Prefix prefix) const;
 
 			const bytes_t &RedeemScript() const;
@@ -94,13 +96,23 @@ namespace Elastos {
 
 			void GenerateProgramHash(Prefix prefix);
 
-			void CheckValid();
+			bool CheckValid();
 
 		private:
 			uint168 _programHash;
 			bytes_t _code;
+			std::string _str;
 			bool _isValid;
 		};
+
+		typedef boost::shared_ptr<Address> AddressPtr;
+		typedef struct {
+			bool operator() (const AddressPtr &x, const AddressPtr &y) const {
+				return *x < *y;
+			}
+		} AddressCompare;
+		typedef std::set<AddressPtr, AddressCompare> AddressSet;
+		typedef std::vector<AddressPtr> AddressArray;
 
 	}
 }

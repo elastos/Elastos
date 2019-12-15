@@ -92,7 +92,7 @@ namespace Elastos {
 		std::string SubWallet::CreateAddress() {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 
-			std::string address = _walletManager->GetWallet()->GetReceiveAddress().String();
+			std::string address = _walletManager->GetWallet()->GetReceiveAddress()->String();
 
 			ArgInfo("r => {}", address);
 
@@ -105,12 +105,12 @@ namespace Elastos {
 			ArgInfo("count: {}", count);
 
 			nlohmann::json j;
-			std::vector<Address> addresses;
+			AddressArray addresses;
 			size_t maxCount = _walletManager->GetWallet()->GetAllAddresses(addresses, start, count, false);
 
 			std::vector<std::string> addrString;
 			for (size_t i = 0; i < addresses.size(); ++i) {
-				addrString.push_back(addresses[i].String());
+				addrString.push_back(addresses[i]->String());
 			}
 
 			j["Addresses"] = addrString;
@@ -188,12 +188,12 @@ namespace Elastos {
 			ArgInfo("remove callback done");
 		}
 
-		TransactionPtr SubWallet::CreateTx(uint8_t type, const PayloadPtr &payload, const std::string &fromAddress,
+		TransactionPtr SubWallet::CreateTx(uint8_t type, const PayloadPtr &payload, const AddressPtr &fromAddress,
 										   const std::vector<OutputPtr> &outputs,
 		                                   const std::string &memo, bool max) const {
 			for (const OutputPtr &output : outputs) {
-				ErrorChecker::CheckParam(!output->Addr().Valid(), Error::CreateTransaction,
-				                         "invalid receiver address " + output->Addr().String());
+				ErrorChecker::CheckParam(!output->Addr()->Valid(), Error::CreateTransaction,
+				                         "invalid receiver address");
 
 				ErrorChecker::CheckParam(output->Amount() < 0, Error::CreateTransaction,
 				                         "output amount should big than zero");
@@ -204,7 +204,7 @@ namespace Elastos {
 			if (!memo.empty())
 				m = "type:text,msg:" + memo;
 
-			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(type, payload, Address(fromAddress), outputs, m, max);
+			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(type, payload, fromAddress, outputs, m, max);
 
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
@@ -308,9 +308,10 @@ namespace Elastos {
 			std::vector<OutputPtr> outputs;
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr)));
+			AddressPtr fromAddr(new Address(fromAddress));
 
 			PayloadPtr payload = PayloadPtr(new TransferAsset());
-			TransactionPtr tx = CreateTx(Transaction::transferAsset, payload, fromAddress, outputs, memo, max);
+			TransactionPtr tx = CreateTx(Transaction::transferAsset, payload, fromAddr, outputs, memo, max);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -477,7 +478,7 @@ namespace Elastos {
 						cb["ConfirmStatus"] = confirms <= 100 ? std::to_string(confirms) : "100+";
 						cb["Height"] = cbptr->BlockHeight();
 						cb["Spent"] = cbptr->Spent();
-						cb["Address"] = Address(cbptr->Output()->ProgramHash()).String();
+						cb["Address"] = cbptr->Output()->Addr()->String();
 						cb["Type"] = Transaction::coinBase;
 						jcbs.push_back(cb);
 						realCount++;
@@ -595,36 +596,6 @@ namespace Elastos {
 			} else {
 				Log::warn("{} callback not register", _walletManager->GetWallet()->GetWalletID());
 			}
-		}
-
-		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &tx, const std::string &addressOrTxid) const {
-
-			if (addressOrTxid.empty()) {
-				return true;
-			}
-
-			const WalletPtr &wallet = _walletManager->GetWallet();
-			for (InputArray::const_iterator in = tx->GetInputs().cbegin(); in != tx->GetInputs().cend(); ++in) {
-				TransactionPtr t = wallet->TransactionForHash((*in)->TxHash());
-				if (t) {
-					OutputPtr o = t->OutputOfIndex((*in)->Index());
-					if (o && o->Addr().String() == addressOrTxid)
-						return true;
-				}
-			}
-			for (OutputArray::const_iterator o = tx->GetOutputs().cbegin(); o != tx->GetOutputs().cend(); ++o) {
-				if ((*o)->Addr().String() == addressOrTxid) {
-					return true;
-				}
-			}
-
-			if (addressOrTxid.length() == 64) {
-				if (uint256(addressOrTxid) == tx->GetHash()) {
-					return true;
-				}
-			}
-
-			return false;
 		}
 
 		void SubWallet::syncStarted() {

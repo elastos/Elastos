@@ -168,7 +168,7 @@ namespace Elastos {
 			TransactionPtr CreateTx(
 				uint8_t type,
 				const PayloadPtr &payload,
-				const std::string &fromAddress,
+				const AddressPtr &fromAddress,
 				const std::vector<OutputPtr> &outputs,
 				const std::string &memo,
 				bool max = false) const;
@@ -178,8 +178,6 @@ namespace Elastos {
 				const uint256 &asset) const;
 
 			virtual void publishTransaction(const TransactionPtr &tx);
-
-			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) const;
 
 			virtual void fireTransactionStatusChanged(const uint256 &txid, const std::string &status,
 													  const nlohmann::json &desc, uint32_t confirms);

@@ -257,7 +257,7 @@ namespace Elastos {
 				!_sqlite->BindInt(stmt, 2, entity->BlockHeight()) ||
 				!_sqlite->BindInt64(stmt, 3, entity->Timestamp()) ||
 				!_sqlite->BindInt(stmt, 4, entity->Index()) ||
-				!_sqlite->BindBlob(stmt, 5, entity->Output()->ProgramHash().bytes(), nullptr) ||
+				!_sqlite->BindBlob(stmt, 5, entity->Output()->Addr()->ProgramHash().bytes(), nullptr) ||
 				!_sqlite->BindBlob(stmt, 6, entity->Output()->AssetID().begin(), entity->Output()->AssetID().size(),
 								   nullptr) ||
 				!_sqlite->BindInt(stmt, 7, entity->Output()->OutputLock()) ||

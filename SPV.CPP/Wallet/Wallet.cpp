@@ -944,6 +944,24 @@ static int didsign(int argc, char *argv[]) {
 	return 0;
 }
 
+// did
+static int did(int argc, char *argv[]) {
+	checkCurrentWallet();
+
+	try {
+		IIDChainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ID);
+
+		nlohmann::json didlist = subWallet->GetAllDID(0, 20);
+		std::cout << didlist.dump(4) << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
+	return 0;
+}
+
 // register (cr | dpos)
 static int _register(int argc, char *argv[]) {
 	checkParam(2);
@@ -1852,6 +1870,7 @@ struct command {
 	{"diddoc",     diddoc,         "                                                 Create DID document."},
 	{"didtx",      didtx,          "[didDocFilepath]                                 Create DID transaction."},
 	{"didsign",    didsign,        "DID digest                                       Sign `digest` with private key of DID."},
+	{"did",        did,            "                                                 List did of IDChain"},
 	{"sync",       _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},

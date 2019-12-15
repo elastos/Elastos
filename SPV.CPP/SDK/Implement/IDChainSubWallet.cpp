@@ -86,6 +86,7 @@ namespace Elastos {
 		                                   const std::string &netType) :
 				SidechainSubWallet(info, config, parent, netType) {
 
+			_walletManager->GetWallet()->GenerateDID();
 			InitDIDList();
 		}
 
@@ -144,8 +145,9 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr, Asset::GetELAAssetID())));
+			AddressPtr fromAddr(new Address());
 
-			TransactionPtr tx = CreateTx(IDTransaction::didTransaction, payload, "", outputs, memo);
+			TransactionPtr tx = CreateTx(IDTransaction::didTransaction, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -265,12 +267,12 @@ namespace Elastos {
 			ArgInfo("count: {}", count);
 
 			nlohmann::json j;
-			std::vector<Address> did;
+			AddressArray did;
 			size_t maxCount = _walletManager->GetWallet()->GetAllDID(did, start, count);
 
 			nlohmann::json didJson;
 			for (size_t i = 0; i < did.size(); ++i) {
-				didJson.push_back(did[i].String());
+				didJson.push_back(did[i]->String());
 			}
 
 			j["DID"] = didJson;
@@ -287,7 +289,8 @@ namespace Elastos {
 			ArgInfo("message: {}", message);
 			ArgInfo("payPasswd: *");
 
-			std::string signature = _walletManager->GetWallet()->SignWithDID(Address(did), message, payPassword);
+			AddressPtr didAddress(new Address(did));
+			std::string signature = _walletManager->GetWallet()->SignWithDID(didAddress, message, payPassword);
 
 			ArgInfo("r => {}", signature);
 
@@ -302,7 +305,8 @@ namespace Elastos {
 			ArgInfo("payPasswd: *");
 
 			ErrorChecker::CheckParam(digest.size() != 64, Error::InvalidArgument, "invalid digest");
-			std::string signature = _walletManager->GetWallet()->SignDigestWithDID(Address(did), uint256(digest), payPassword);
+			AddressPtr didAddress(new Address(did));
+			std::string signature = _walletManager->GetWallet()->SignDigestWithDID(didAddress, uint256(digest), payPassword);
 
 			ArgInfo("r => {}", signature);
 

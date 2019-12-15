@@ -718,13 +718,13 @@ namespace Elastos {
 			_filterUpdateHeight = _lastBlock->GetHeight();
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
-			std::vector<Address> specialAddresses = _wallet->GetAllSpecialAddresses();
+			AddressArray specialAddresses = _wallet->GetAllSpecialAddresses();
 
-			std::vector<Address> addrs, allDID;
+			AddressArray addrs, allDID;
 			_wallet->GetAllAddresses(addrs, 0, UINT32_MAX, true);
 			_wallet->GetAllDID(allDID, 0, UINT32_MAX);
 
-			std::vector<UTXOPtr> utxos = _wallet->GetAllUTXO("");
+			UTXOArray utxos = _wallet->GetAllUTXO("");
 			uint32_t blockHeight = (_lastBlock->GetHeight() > 100) ? _lastBlock->GetHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
@@ -732,7 +732,7 @@ namespace Elastos {
 			size_t elementCount = specialAddresses.size() + addrs.size() + allDID.size() +
 				utxos.size() + transactions.size();
 
-			bool is_side_wallet = addrs.size() == 1 && addrs[0].ProgramHash().prefix() == PrefixCrossChain;
+			bool is_side_wallet = addrs.size() == 1 && addrs[0]->ProgramHash().prefix() == PrefixCrossChain;
 			uint32_t tweak = is_side_wallet ? UINT32_MAX : (uint32_t) peer->GetPeerInfo().GetHash();
 			BloomFilterPtr filter = BloomFilterPtr(new BloomFilter(_fpRate, elementCount + 100, tweak,
 																   BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
@@ -740,23 +740,23 @@ namespace Elastos {
 			bytes_t hash;
 
 			for (size_t i = 0; i < specialAddresses.size(); ++i) {
-				if (specialAddresses[i].Valid()) {
-					hash = specialAddresses[i].ProgramHash().bytes();
+				if (specialAddresses[i]->Valid()) {
+					hash = specialAddresses[i]->ProgramHash().bytes();
 					if (!filter->ContainsData(hash))
 						filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < addrs.size(); i++) { // add addresses to watch for tx receiveing money to the wallet
-				if (addrs[i].Valid()) {
-					hash = addrs[i].ProgramHash().bytes();
+				if (addrs[i]->Valid()) {
+					hash = addrs[i]->ProgramHash().bytes();
 					if (!filter->ContainsData(hash))
 						filter->InsertData(hash);
 				}
 			}
 
 			for (size_t i = 0; i < allDID.size(); ++i) {
-				hash = allDID[i].ProgramHash().bytes();
+				hash = allDID[i]->ProgramHash().bytes();
 				if (!filter->ContainsData(hash)) {
 					filter->InsertData(hash);
 				}
@@ -1196,31 +1196,18 @@ namespace Elastos {
 
 						// the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
 						// unused addresses are still matched by the bloom filter
-						std::vector<Address> externalAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-						std::vector<Address> internalAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+						AddressArray unusedAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+						AddressArray internalAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+						unusedAddrs.insert(unusedAddrs.end(), internalAddrs.begin(), internalAddrs.end());
 
 						bytes_t hash;
 
-						for (std::vector<Address>::iterator externalIt = externalAddrs.begin(), internalIt = internalAddrs.begin();
-							 externalIt != externalAddrs.end() || internalIt != internalAddrs.end();) {
-							if (externalIt != externalAddrs.end()) {
-								hash = (*externalIt).ProgramHash().bytes();
-								if (!_bloomFilter->ContainsData(hash)) {
-									_bloomFilter.reset();
-									UpdateBloomFilter();
-									break;
-								}
-								externalIt++;
-							}
-
-							if (internalIt != internalAddrs.end()) {
-								hash = (*internalIt).ProgramHash().bytes();
-								if (!_bloomFilter->ContainsData(hash)) {
-									_bloomFilter.reset();
-									UpdateBloomFilter();
-									break;
-								}
-								internalIt++;
+						for (AddressArray::iterator it = unusedAddrs.begin(); it != unusedAddrs.end(); ++it) {
+							hash = (*it)->ProgramHash().bytes();
+							if (!_bloomFilter->ContainsData(hash)) {
+								_bloomFilter.reset();
+								UpdateBloomFilter();
+								break;
 							}
 						}
 					}

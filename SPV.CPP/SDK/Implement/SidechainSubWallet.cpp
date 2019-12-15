@@ -60,8 +60,9 @@ namespace Elastos {
 
 			std::vector<OutputPtr> outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR))));
+			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(Transaction::transferCrossChainAsset, payload, fromAddress, outputs, memo);
+			TransactionPtr tx = CreateTx(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
