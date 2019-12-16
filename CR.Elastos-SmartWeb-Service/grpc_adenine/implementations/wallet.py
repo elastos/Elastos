@@ -231,7 +231,6 @@ def view_wallet_general(session, chain, address):
 
 
 def view_wallet_eth(w3, address):
-    balance = None
     address = w3.toChecksumAddress(address)
     balance = w3.eth.getBalance(address)
     balance = w3.fromWei(balance, 'ether')
