@@ -5,6 +5,7 @@ import com.blankj.utilcode.util.CacheDiskUtils;
 import org.elastos.wallet.ela.MyApplication;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.ui.Assets.bean.IPEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.did.entity.CredentialSubjectBean;
 import org.elastos.wallet.ela.ui.did.entity.DIDInfoEntity;
@@ -95,14 +96,14 @@ public class CacheUtil {
 
     }
 
-    public static ArrayList<String> getIps() {
-        ArrayList<String> list = (ArrayList<String>) CacheDiskUtils.getInstance(file)
+    public static ArrayList<IPEntity> getIps() {
+        ArrayList<IPEntity> list = (ArrayList<IPEntity>) CacheDiskUtils.getInstance(file)
                 .getSerializable("ips");
         return list == null ? new ArrayList<>() : list;
     }
 
     //Set<String> serverList = new HashSet<>();
-    public static void setIps(List<String> list) {
+    public static void setIps(List<IPEntity> list) {
         CacheDiskUtils.getInstance(file).put("ips", (Serializable) list, CacheDiskUtils.DAY * 360);
     }
 }

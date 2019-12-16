@@ -585,4 +585,5 @@
     <string name="transation">交易</string>
     <string name="nocandidates">No Candidate</string>
     <string name="nocandidatenode">No Candidate Node</string>
+    <string name="plzinputport">请输入端口号</string>
 </resources>

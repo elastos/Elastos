@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.elastos.wallet.R;
+import org.elastos.wallet.ela.ui.Assets.bean.IPEntity;
 
 import java.util.List;
 
@@ -20,11 +21,11 @@ import butterknife.ButterKnife;
 public class TextAdapter extends RecyclerView.Adapter<TextAdapter.MyViewHolder> {
 
 
-    private List<String> temp;
+    private List<IPEntity> temp;
     private Context context;
 
 
-    public TextAdapter(List<String> temp, Context context) {
+    public TextAdapter(List<IPEntity> temp, Context context) {
         this.temp = temp;
         this.context = context;
 
@@ -43,8 +44,9 @@ public class TextAdapter extends RecyclerView.Adapter<TextAdapter.MyViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
 
-        String text = temp.get(position);
-        holder.tvIp.setText(text);
+        IPEntity entity = temp.get(position);
+        holder.tvIp.setText(entity.getAddress());
+        holder.tvPort.setText(entity.getPort() + "");
 
 
         (holder.ivDel).setOnClickListener(new View.OnClickListener() {
@@ -65,7 +67,7 @@ public class TextAdapter extends RecyclerView.Adapter<TextAdapter.MyViewHolder> 
             (holder.itemView).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemOnclickListner.onItemClick(v, position, text);
+                    onItemOnclickListner.onItemClick(v, position, entity);
 
                 }
             });
@@ -81,7 +83,7 @@ public class TextAdapter extends RecyclerView.Adapter<TextAdapter.MyViewHolder> 
     private OnItemClickListner onItemOnclickListner;
 
     public interface OnItemClickListner {
-        void onItemClick(View v, int position, String text);
+        void onItemClick(View v, int position, IPEntity ipEntity);
     }
 
     @Override
@@ -95,6 +97,8 @@ public class TextAdapter extends RecyclerView.Adapter<TextAdapter.MyViewHolder> 
         ImageView ivDel;
         @BindView(R.id.tv_ip)
         TextView tvIp;
+        @BindView(R.id.tv_port)
+        TextView tvPort;
 
         MyViewHolder(View view) {
             super(view);
