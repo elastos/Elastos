@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
@@ -30,6 +29,30 @@ type HttpService struct {
 	*service.HttpService
 	cfg   *Config
 	store *blockchain.IDChainStore
+}
+
+type DidDocState uint8
+
+const (
+	Valid = iota
+	Expired
+	Deactivated
+	NonExist
+)
+
+func (c DidDocState) String() string {
+	switch c {
+	case Valid:
+		return "Valid"
+	case Expired:
+		return "Expired"
+	case Deactivated:
+		return "Deactivated"
+	case NonExist:
+		return "NonExist"
+	default:
+		return "Unknown"
+	}
 }
 
 func NewHttpService(cfg *Config) *HttpService {
@@ -77,16 +100,43 @@ func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
 
 // payload of DID transaction
 type RpcPayloadDIDInfo struct {
+	DID        string                `json:"did"`
+	Status     int                   `json:"status"`
+	RpcTXDatas []RpcTranasactionData `json:"transaction"`
+}
+
+type RpcOperation struct {
 	Header  id.DIDHeaderInfo `json:"header"`
 	Payload string           `json:"payload"`
 	Proof   id.DIDProofInfo  `json:"proof"`
 }
 
-func (s *HttpService) GetIdTxsPayloads(param http.Params) (interface{}, error) {
+type RpcTranasactionData struct {
+	TXID      string       `json:"txid"`
+	Timestamp string       `json:"timestamp"`
+	Operation RpcOperation `json:"operation"`
+}
+
+func (rpcTxData *RpcTranasactionData) FromTranasactionData(txData id.TranasactionData) {
+	rpcTxData.TXID = txData.TXID
+	rpcTxData.Timestamp = txData.Timestamp
+	rpcTxData.Operation.Header = txData.Operation.Header
+	rpcTxData.Operation.Payload = txData.Operation.Payload
+	rpcTxData.Operation.Proof = txData.Operation.Proof
+}
+
+func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
+	var didDocState DidDocState
+	didDocState = NonExist
 	idParam, ok := param.String("id")
 	if !ok {
 		return nil, http.NewError(int(service.InvalidParams), "id is null")
 	}
+	//remove DID_ELASTOS_PREFIX
+	if id.IsURIHasPrefix(idParam) {
+		idParam = id.GetDIDFromUri(idParam)
+	}
+	//check is valid address
 	_, err := common.Uint168FromAddress(idParam)
 	if err != nil {
 		return nil, http.NewError(int(service.InvalidParams), "invalid id")
@@ -101,48 +151,48 @@ func (s *HttpService) GetIdTxsPayloads(param http.Params) (interface{}, error) {
 
 	expiresHeight, err := s.store.GetExpiresHeight(buf.Bytes())
 	if err != nil {
-		return nil, http.NewError(int(service.UnknownTransaction), "GetExpiresHeight failed")
-	}
-	if s.store.ChainStore.GetHeight() > expiresHeight {
-		return nil, http.NewError(int(service.InvalidParams), "DID is expired")
+		return nil, http.NewError(int(service.InvalidParams),
+			"this id did not have data on this chain")
 	}
 
-	var rpcPayloadDids []RpcPayloadDIDInfo
-	var payloadDid id.PayloadDIDInfo
 	var rpcPayloadDid RpcPayloadDIDInfo
 
-	var didInfosByte [][]byte
+	var txsData []id.TranasactionData
 	if isGetAll {
-		didInfosByte, err = s.store.GetDIDTxPayload(buf.Bytes())
+		txsData, err = s.store.GetAllDIDTxTxData(buf.Bytes())
 		if err != nil {
-			return nil, http.NewError(int(service.UnknownTransaction),
+			return nil, http.NewError(int(service.InternalError),
 				"get did transaction failed")
 		}
 
 	} else {
-		didInfoByte, err := s.store.GetLastDIDTxPayload(buf.Bytes())
+		txData, err := s.store.GetLastDIDTxData(buf.Bytes())
 		if err != nil {
-			return nil, http.NewError(int(service.UnknownTransaction),
+			return nil, http.NewError(int(service.InternalError),
 				"get did transactions failed")
 		}
-		if len(didInfoByte) > 0 {
-			didInfosByte = append(didInfosByte, didInfoByte)
+		if txData != nil {
+			txsData = append(txsData, *txData)
 		}
 	}
-	for _, didInfo := range didInfosByte {
-		r := bytes.NewReader(didInfo)
-
-		err = payloadDid.Deserialize(r, id.DIDInfoVersion)
-		if err != nil {
-			return nil, http.NewError(int(service.InvalidTransaction),
-				"payloaddid Deserialize failed")
+	for index, txData := range txsData {
+		rpcPayloadDid.DID = txData.Operation.PayloadInfo.ID
+		tempTXData := new(RpcTranasactionData)
+		tempTXData.FromTranasactionData(txData)
+		rpcPayloadDid.RpcTXDatas = append(rpcPayloadDid.RpcTXDatas, *tempTXData)
+		if index == 0 {
+			if txData.Operation.Header.Operation == "deactivate" {
+				didDocState = Deactivated
+			} else {
+				didDocState = Valid
+				if s.store.ChainStore.GetHeight() > expiresHeight {
+					didDocState = Expired
+				}
+			}
+			rpcPayloadDid.Status = int(didDocState)
 		}
-		rpcPayloadDid.Header = payloadDid.Header
-		rpcPayloadDid.Payload = payloadDid.Payload
-		rpcPayloadDid.Proof = payloadDid.Proof
-		rpcPayloadDids = append(rpcPayloadDids, rpcPayloadDid)
 	}
-	return rpcPayloadDids, nil
+	return rpcPayloadDid, nil
 
 }
 
