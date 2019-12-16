@@ -3,7 +3,7 @@ import XCTest
 
 class TestUtils: XCTestCase {
     
-    
+    /*
     class func deleteFile(_ path: String) {
         do {
             let filemanager: FileManager = FileManager.default
@@ -62,5 +62,5 @@ class TestUtils: XCTestCase {
         
         return useDate
     }
-    
+    */
 }

@@ -47,7 +47,11 @@ public class DIDStore: NSObject {
         }
         return instance
     }
-
+    
+    public func getAdapter() -> DIDAdapter {
+        return backend.adapter
+    }
+    
     public static func isInitialized() -> Bool {
         return instance != nil
     }

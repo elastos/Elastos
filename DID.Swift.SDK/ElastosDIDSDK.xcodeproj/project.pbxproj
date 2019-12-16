@@ -17,11 +17,6 @@
 		1125B583238234FB00D396B6 /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57E238234FB00D396B6 /* HDkey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1125B584238234FB00D396B6 /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57F238234FB00D396B6 /* crypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		11267073238CDC610086740D /* SPVAdapter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 11267072238CDC490086740D /* SPVAdapter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1137CFA12398D4EB00250D4F /* vc-selfclaimed-normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CF982398D4EB00250D4F /* vc-selfclaimed-normalized.json */; };
-		1137CFA22398D4EB00250D4F /* vp.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CF9D2398D4EB00250D4F /* vp.json */; };
-		1137CFA32398D4EB00250D4F /* vc-compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CF9E2398D4EB00250D4F /* vc-compact.json */; };
-		1137CFA42398D4EB00250D4F /* vc-selfclaimed-compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CF9F2398D4EB00250D4F /* vc-selfclaimed-compact.json */; };
-		1137CFA52398D4EB00250D4F /* vc-normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 1137CFA02398D4EB00250D4F /* vc-normalized.json */; };
 		1137CFA72398D68500250D4F /* crypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57F238234FB00D396B6 /* crypto.h */; };
 		1137CFA82398D68900250D4F /* HDkey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1125B57E238234FB00D396B6 /* HDkey.h */; };
 		1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1125B57D238234FB00D396B6 /* CHDKey.swift */; };
@@ -36,12 +31,38 @@
 		11A6B15C238FD79000D3C1F1 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B15A238FD77E00D3C1F1 /* libhdkey.a */; };
 		11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		11CA74D5235E131B006E66F7 /* normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D2235E131B006E66F7 /* normalized.json */; };
-		11CA74D6235E131B006E66F7 /* compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D3235E131B006E66F7 /* compact.json */; };
-		11CA74D7235E131B006E66F7 /* testdiddoc.json in Resources */ = {isa = PBXBuildFile; fileRef = 11CA74D4235E131B006E66F7 /* testdiddoc.json */; };
 		11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */; };
 		11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9C623545A5700453218 /* DIDStoreTests.swift */; };
 		11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DA0796238B929F0066CC86 /* SPVAdaptor.swift */; };
+		11E7519F23A7570A0022C592 /* TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E7519E23A7570A0022C592 /* TestData.swift */; };
+		11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E751A423A75A120022C592 /* DummyAdapter.swift */; };
+		11E751C023A762000022C592 /* vc-profile.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A623A761FC0022C592 /* vc-profile.json */; };
+		11E751C123A762000022C592 /* document.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A723A761FD0022C592 /* document.json */; };
+		11E751C223A762000022C592 /* vc-email.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A823A761FD0022C592 /* vc-email.json */; };
+		11E751C323A762000022C592 /* vc-twitter.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A923A761FD0022C592 /* vc-twitter.compact.json */; };
+		11E751C423A762000022C592 /* vp.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AA23A761FD0022C592 /* vp.normalized.json */; };
+		11E751C523A762000022C592 /* vp.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AB23A761FD0022C592 /* vp.json */; };
+		11E751C623A762000022C592 /* document.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AC23A761FD0022C592 /* document.normalized.json */; };
+		11E751C723A762000022C592 /* document.primary.sk in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AD23A761FD0022C592 /* document.primary.sk */; };
+		11E751C823A762000022C592 /* vc-email.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AE23A761FD0022C592 /* vc-email.normalized.json */; };
+		11E751C923A762000022C592 /* vc-passport.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751AF23A761FD0022C592 /* vc-passport.compact.json */; };
+		11E751CA23A762000022C592 /* vc-profile.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B023A761FE0022C592 /* vc-profile.compact.json */; };
+		11E751CB23A762000022C592 /* dids.restore in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B123A761FE0022C592 /* dids.restore */; };
+		11E751CC23A762000022C592 /* document.key3.sk in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B223A761FE0022C592 /* document.key3.sk */; };
+		11E751CD23A762000022C592 /* vc-profile.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B323A761FF0022C592 /* vc-profile.normalized.json */; };
+		11E751CE23A762000022C592 /* vc-passport.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B423A761FF0022C592 /* vc-passport.normalized.json */; };
+		11E751CF23A762000022C592 /* issuer.primary.sk in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B523A761FF0022C592 /* issuer.primary.sk */; };
+		11E751D023A762000022C592 /* document.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B623A761FF0022C592 /* document.compact.json */; };
+		11E751D123A762000022C592 /* issuer.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B723A761FF0022C592 /* issuer.normalized.json */; };
+		11E751D223A762000022C592 /* issuer.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B823A761FF0022C592 /* issuer.compact.json */; };
+		11E751D323A762000022C592 /* vc-twitter.normalized.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751B923A761FF0022C592 /* vc-twitter.normalized.json */; };
+		11E751D423A762000022C592 /* vc-email.compact.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BA23A761FF0022C592 /* vc-email.compact.json */; };
+		11E751D523A762000022C592 /* issuer.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BB23A761FF0022C592 /* issuer.json */; };
+		11E751D623A762000022C592 /* vc-passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BC23A762000022C592 /* vc-passport.json */; };
+		11E751D723A762000022C592 /* vc-twitter.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BD23A762000022C592 /* vc-twitter.json */; };
+		11E751D823A762000022C592 /* document.key2.sk in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BE23A762000022C592 /* document.key2.sk */; };
+		11E751D923A762000022C592 /* mnemonic.restore in Resources */ = {isa = PBXBuildFile; fileRef = 11E751BF23A762000022C592 /* mnemonic.restore */; };
+		11E751DB23A774DD0022C592 /* IDChainOperationsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */; };
 		11E89FD823A4C36000C81B3C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA723A4C36000C81B3C /* Constants.swift */; };
 		11E89FD923A4C36000C81B3C /* DID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA823A4C36000C81B3C /* DID.swift */; };
 		11E89FDA23A4C36000C81B3C /* DIDStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FA923A4C36000C81B3C /* DIDStore.swift */; };
@@ -182,11 +203,6 @@
 		1125B5932382351700D396B6 /* libcunit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcunit.a; path = "Externals/libhdkey/lib/-iphonesimulator/libcunit.a"; sourceTree = "<group>"; };
 		1125B5942382351800D396B6 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = "Externals/libhdkey/lib/-iphonesimulator/libsqlite3.a"; sourceTree = "<group>"; };
 		1126706D238CDC490086740D /* SPVAdapter.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SPVAdapter.xcodeproj; path = SPVAdapter/SPVAdapter.xcodeproj; sourceTree = "<group>"; };
-		1137CF982398D4EB00250D4F /* vc-selfclaimed-normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-selfclaimed-normalized.json"; sourceTree = "<group>"; };
-		1137CF9D2398D4EB00250D4F /* vp.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vp.json; sourceTree = "<group>"; };
-		1137CF9E2398D4EB00250D4F /* vc-compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-compact.json"; sourceTree = "<group>"; };
-		1137CF9F2398D4EB00250D4F /* vc-selfclaimed-compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-selfclaimed-compact.json"; sourceTree = "<group>"; };
-		1137CFA02398D4EB00250D4F /* vc-normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-normalized.json"; sourceTree = "<group>"; };
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		116AC38523A5FA410076BDC7 /* LRUCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LRUCache.swift; sourceTree = "<group>"; };
@@ -200,9 +216,6 @@
 		11A6B159238FD77E00D3C1F1 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "Externals/HDKey/lib/-iphonesimulator/libcrypto.a"; sourceTree = "<group>"; };
 		11A6B15A238FD77E00D3C1F1 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = "Externals/HDKey/lib/-iphonesimulator/libhdkey.a"; sourceTree = "<group>"; };
 		11CA74B1235E06B7006E66F7 /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base64.swift; sourceTree = "<group>"; };
-		11CA74D2235E131B006E66F7 /* normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = normalized.json; sourceTree = "<group>"; };
-		11CA74D3235E131B006E66F7 /* compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = compact.json; sourceTree = "<group>"; };
-		11CA74D4235E131B006E66F7 /* testdiddoc.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testdiddoc.json; sourceTree = "<group>"; };
 		11D3C04A23815A3200875E51 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = Externals/libhdkey/libspvsdk.a; sourceTree = "<group>"; };
 		11D3C04F23815A3200875E51 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = Externals/libhdkey/libsqlite3.a; sourceTree = "<group>"; };
 		11D3C05223815AAF00875E51 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = Externals/libhdkey/libboost_thread.a; sourceTree = "<group>"; };
@@ -237,6 +250,35 @@
 		11DA06EA238B7B760066CC86 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ElastosDIDSDKTests/spvadapter/lib/libboost_thread.a; sourceTree = "<group>"; };
 		11DA06FE238B7C8F0066CC86 /* ElastosDIDSDKTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ElastosDIDSDKTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		11DA0796238B929F0066CC86 /* SPVAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SPVAdaptor.swift; sourceTree = "<group>"; };
+		11E7519E23A7570A0022C592 /* TestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestData.swift; sourceTree = "<group>"; };
+		11E751A423A75A120022C592 /* DummyAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DummyAdapter.swift; sourceTree = "<group>"; };
+		11E751A623A761FC0022C592 /* vc-profile.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.json"; sourceTree = "<group>"; };
+		11E751A723A761FD0022C592 /* document.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.json; sourceTree = "<group>"; };
+		11E751A823A761FD0022C592 /* vc-email.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.json"; sourceTree = "<group>"; };
+		11E751A923A761FD0022C592 /* vc-twitter.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.compact.json"; sourceTree = "<group>"; };
+		11E751AA23A761FD0022C592 /* vp.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vp.normalized.json; sourceTree = "<group>"; };
+		11E751AB23A761FD0022C592 /* vp.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vp.json; sourceTree = "<group>"; };
+		11E751AC23A761FD0022C592 /* document.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.normalized.json; sourceTree = "<group>"; };
+		11E751AD23A761FD0022C592 /* document.primary.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.primary.sk; sourceTree = "<group>"; };
+		11E751AE23A761FD0022C592 /* vc-email.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.normalized.json"; sourceTree = "<group>"; };
+		11E751AF23A761FD0022C592 /* vc-passport.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.compact.json"; sourceTree = "<group>"; };
+		11E751B023A761FE0022C592 /* vc-profile.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.compact.json"; sourceTree = "<group>"; };
+		11E751B123A761FE0022C592 /* dids.restore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dids.restore; sourceTree = "<group>"; };
+		11E751B223A761FE0022C592 /* document.key3.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.key3.sk; sourceTree = "<group>"; };
+		11E751B323A761FF0022C592 /* vc-profile.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.normalized.json"; sourceTree = "<group>"; };
+		11E751B423A761FF0022C592 /* vc-passport.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.normalized.json"; sourceTree = "<group>"; };
+		11E751B523A761FF0022C592 /* issuer.primary.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = issuer.primary.sk; sourceTree = "<group>"; };
+		11E751B623A761FF0022C592 /* document.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = document.compact.json; sourceTree = "<group>"; };
+		11E751B723A761FF0022C592 /* issuer.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.normalized.json; sourceTree = "<group>"; };
+		11E751B823A761FF0022C592 /* issuer.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.compact.json; sourceTree = "<group>"; };
+		11E751B923A761FF0022C592 /* vc-twitter.normalized.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.normalized.json"; sourceTree = "<group>"; };
+		11E751BA23A761FF0022C592 /* vc-email.compact.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-email.compact.json"; sourceTree = "<group>"; };
+		11E751BB23A761FF0022C592 /* issuer.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = issuer.json; sourceTree = "<group>"; };
+		11E751BC23A762000022C592 /* vc-passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-passport.json"; sourceTree = "<group>"; };
+		11E751BD23A762000022C592 /* vc-twitter.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-twitter.json"; sourceTree = "<group>"; };
+		11E751BE23A762000022C592 /* document.key2.sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = document.key2.sk; sourceTree = "<group>"; };
+		11E751BF23A762000022C592 /* mnemonic.restore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = mnemonic.restore; sourceTree = "<group>"; };
+		11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDChainOperationsTest.swift; sourceTree = "<group>"; };
 		11E89FA723A4C36000C81B3C /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		11E89FA823A4C36000C81B3C /* DID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DID.swift; sourceTree = "<group>"; };
 		11E89FA923A4C36000C81B3C /* DIDStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDStore.swift; sourceTree = "<group>"; };
@@ -398,11 +440,14 @@
 		1155D9472352FACE00DF8C9D /* ElastosDIDSDKTests */ = {
 			isa = PBXGroup;
 			children = (
+				11CA74D1235E131B006E66F7 /* Resources */,
+				11E751A423A75A120022C592 /* DummyAdapter.swift */,
 				11DA0796238B929F0066CC86 /* SPVAdaptor.swift */,
 				116CAA56236008FD00BBEE4F /* TestUtils */,
-				11CA74D1235E131B006E66F7 /* Resources */,
 				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
+				11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */,
 				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
+				11E7519E23A7570A0022C592 /* TestData.swift */,
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
 				11054F1C239D1B31008A4500 /* DIDURLTest.swift */,
 				11054F1E239D2088008A4500 /* DIDTest.swift */,
@@ -437,14 +482,32 @@
 		11CA74D1235E131B006E66F7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				1137CF9E2398D4EB00250D4F /* vc-compact.json */,
-				1137CFA02398D4EB00250D4F /* vc-normalized.json */,
-				1137CF9F2398D4EB00250D4F /* vc-selfclaimed-compact.json */,
-				1137CF982398D4EB00250D4F /* vc-selfclaimed-normalized.json */,
-				1137CF9D2398D4EB00250D4F /* vp.json */,
-				11CA74D2235E131B006E66F7 /* normalized.json */,
-				11CA74D3235E131B006E66F7 /* compact.json */,
-				11CA74D4235E131B006E66F7 /* testdiddoc.json */,
+				11E751B123A761FE0022C592 /* dids.restore */,
+				11E751B623A761FF0022C592 /* document.compact.json */,
+				11E751A723A761FD0022C592 /* document.json */,
+				11E751BE23A762000022C592 /* document.key2.sk */,
+				11E751B223A761FE0022C592 /* document.key3.sk */,
+				11E751AC23A761FD0022C592 /* document.normalized.json */,
+				11E751AD23A761FD0022C592 /* document.primary.sk */,
+				11E751B823A761FF0022C592 /* issuer.compact.json */,
+				11E751BB23A761FF0022C592 /* issuer.json */,
+				11E751B723A761FF0022C592 /* issuer.normalized.json */,
+				11E751B523A761FF0022C592 /* issuer.primary.sk */,
+				11E751BF23A762000022C592 /* mnemonic.restore */,
+				11E751BA23A761FF0022C592 /* vc-email.compact.json */,
+				11E751A823A761FD0022C592 /* vc-email.json */,
+				11E751AE23A761FD0022C592 /* vc-email.normalized.json */,
+				11E751AF23A761FD0022C592 /* vc-passport.compact.json */,
+				11E751BC23A762000022C592 /* vc-passport.json */,
+				11E751B423A761FF0022C592 /* vc-passport.normalized.json */,
+				11E751B023A761FE0022C592 /* vc-profile.compact.json */,
+				11E751A623A761FC0022C592 /* vc-profile.json */,
+				11E751B323A761FF0022C592 /* vc-profile.normalized.json */,
+				11E751A923A761FD0022C592 /* vc-twitter.compact.json */,
+				11E751BD23A762000022C592 /* vc-twitter.json */,
+				11E751B923A761FF0022C592 /* vc-twitter.normalized.json */,
+				11E751AB23A761FD0022C592 /* vp.json */,
+				11E751AA23A761FD0022C592 /* vp.normalized.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -719,14 +782,32 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11CA74D5235E131B006E66F7 /* normalized.json in Resources */,
-				11CA74D7235E131B006E66F7 /* testdiddoc.json in Resources */,
-				1137CFA32398D4EB00250D4F /* vc-compact.json in Resources */,
-				11CA74D6235E131B006E66F7 /* compact.json in Resources */,
-				1137CFA22398D4EB00250D4F /* vp.json in Resources */,
-				1137CFA52398D4EB00250D4F /* vc-normalized.json in Resources */,
-				1137CFA12398D4EB00250D4F /* vc-selfclaimed-normalized.json in Resources */,
-				1137CFA42398D4EB00250D4F /* vc-selfclaimed-compact.json in Resources */,
+				11E751D723A762000022C592 /* vc-twitter.json in Resources */,
+				11E751C723A762000022C592 /* document.primary.sk in Resources */,
+				11E751C223A762000022C592 /* vc-email.json in Resources */,
+				11E751D423A762000022C592 /* vc-email.compact.json in Resources */,
+				11E751CD23A762000022C592 /* vc-profile.normalized.json in Resources */,
+				11E751CC23A762000022C592 /* document.key3.sk in Resources */,
+				11E751D623A762000022C592 /* vc-passport.json in Resources */,
+				11E751C323A762000022C592 /* vc-twitter.compact.json in Resources */,
+				11E751D523A762000022C592 /* issuer.json in Resources */,
+				11E751C123A762000022C592 /* document.json in Resources */,
+				11E751D323A762000022C592 /* vc-twitter.normalized.json in Resources */,
+				11E751C823A762000022C592 /* vc-email.normalized.json in Resources */,
+				11E751C923A762000022C592 /* vc-passport.compact.json in Resources */,
+				11E751CA23A762000022C592 /* vc-profile.compact.json in Resources */,
+				11E751D223A762000022C592 /* issuer.compact.json in Resources */,
+				11E751C523A762000022C592 /* vp.json in Resources */,
+				11E751CF23A762000022C592 /* issuer.primary.sk in Resources */,
+				11E751CE23A762000022C592 /* vc-passport.normalized.json in Resources */,
+				11E751D123A762000022C592 /* issuer.normalized.json in Resources */,
+				11E751C623A762000022C592 /* document.normalized.json in Resources */,
+				11E751D923A762000022C592 /* mnemonic.restore in Resources */,
+				11E751C023A762000022C592 /* vc-profile.json in Resources */,
+				11E751CB23A762000022C592 /* dids.restore in Resources */,
+				11E751D823A762000022C592 /* document.key2.sk in Resources */,
+				11E751D023A762000022C592 /* document.compact.json in Resources */,
+				11E751C423A762000022C592 /* vp.normalized.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -754,10 +835,13 @@
 				1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */,
 				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,
 				11054F1F239D2088008A4500 /* DIDTest.swift in Sources */,
+				11E7519F23A7570A0022C592 /* TestData.swift in Sources */,
 				11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */,
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
+				11E751DB23A774DD0022C592 /* IDChainOperationsTest.swift in Sources */,
+				11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */,
 				1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */,
 				111F4B7B239E315C00FEE4E0 /* Base64.swift in Sources */,
 				11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */,

@@ -13,6 +13,7 @@ public class DIDDocument: NSObject {
     public var proof: Proof!
     public var deactivated: Bool!
     public var alias: String = ""
+//    public var edit: Bool
     
     override init() {
         super.init()
