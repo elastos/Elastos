@@ -33,9 +33,8 @@ NativeDistributions
        |--CCarrier.swift
        |--CSession.swift
    |--libs
-       |--libcrystal.dylib
-       |--libelacarrier.dylib
-       |--libelasession.dylib
+       |-- PLACEHOLDER.md
+       （Please read the PLACEHOLDER.md）
 ```
 
 The headers under subdirectory **"include"** are public header files from Carrier native.
@@ -64,14 +63,6 @@ The distribution has been published to CocoaPods platform. So, the simple way to
 Then run the command below to install it before open your Xcode workspace:
 ```shell
 $ pod install
-```
-
-### 2. Add shell script for codesign
-
-In the project navigator, select the tab **Build Phases**  in the specific  **TARGET" ** item. Then click **+** button on the right-top corner to choose **New Run Script Phase** and expand it to add shell script as below:
-
-```
- "${SRCROOT}/Pods/ElastosCarrierSDK/ElastosCarrier-framework/CocoaPods/codesigncarrierframework.sh"
 ```
 
 ## Build Docs

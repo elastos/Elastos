@@ -51,9 +51,6 @@
 		112CC13D23346CEE0018F76C /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0B4226F1CFD00146D25 /* libsrtp.a */; };
 		112CC13E23346CEE0018F76C /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3F4A0A0226F1C6300146D25 /* libtoxcore.a */; };
 		112CC13F23346CEE0018F76C /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A265230BE2C500381137 /* libz.a */; };
-		1155A26B230BE2CF00381137 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A268230BE2CE00381137 /* libc++.tbd */; };
-		1155A26C230BE2CF00381137 /* libc++.1.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A269230BE2CE00381137 /* libc++.1.tbd */; };
-		1155A26D230BE2CF00381137 /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1155A26A230BE2CF00381137 /* libc++abi.tbd */; };
 		116061DB2268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 116061D92268AB4A00BDCB9F /* ElastosCarrierSDK_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		116061DF2268AB6900BDCB9F /* CFileTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35CE15B21BD43CF00AF4FE3 /* CFileTransfer.swift */; };
 		116061E02268AB6E00BDCB9F /* CCarrier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497F32003779300420421 /* CCarrier.swift */; };
@@ -302,9 +299,6 @@
 				112CC13D23346CEE0018F76C /* libsrtp.a in Frameworks */,
 				112CC13E23346CEE0018F76C /* libtoxcore.a in Frameworks */,
 				112CC13F23346CEE0018F76C /* libz.a in Frameworks */,
-				1155A26B230BE2CF00381137 /* libc++.tbd in Frameworks */,
-				1155A26C230BE2CF00381137 /* libc++.1.tbd in Frameworks */,
-				1155A26D230BE2CF00381137 /* libc++abi.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

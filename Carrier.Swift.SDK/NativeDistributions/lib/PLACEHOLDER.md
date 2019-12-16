@@ -2,27 +2,37 @@ This folder is hold for native dependency libraries with layout below:
 
 ```
 |-- -iphoneos
-    |-- libflatccrt.a
-    |-- libtoxcore.a
-    |-- libpj.a
-    |-- libpjnath.a
-    |-- libpjlib-util.a
-    |-- libpjmedia.a
-    |-- libcrystal.a
-    |-- libelacarrier.a
-    |-- libelasession.a
-    |-- libelafiletrans.a
+    |--libcjson.a
+    |--libcrystal.a
+    |--libcurl.a
+    |--libelacarrier.a
+    |--libelafiletrans.a
+    |--libelasession.a
+    |--libflatccrt.a
+    |--libpj.a
+    |--libpjlib-util.a
+    |--libpjmedia.a
+    |--libpjnath.a
+    |--libsodium.a
+    |--libsrtp.a
+    |--libtoxcore.a
+    |--libz.a
 |-- -iphonesimulator
-    |-- libflatccrt.a
-    |-- libtoxcore.a
-    |-- libpj.a
-    |-- libpjnath.a
-    |-- libpjlib-util.a
-    |-- libpjmedia.a
-    |-- libcrystal.a
-    |-- libelacarrier.a
-    |-- libelasession.a
-    |-- libelafiletrans.a
+    |--libcjson.a
+    |--libcrystal.a
+    |--libcurl.a
+    |--libelacarrier.a
+    |--libelafiletrans.a
+    |--libelasession.a
+    |--libflatccrt.a
+    |--libpj.a
+    |--libpjlib-util.a
+    |--libpjmedia.a
+    |--libpjnath.a
+    |--libsodium.a
+    |--libsrtp.a
+    |--libtoxcore.a
+    |--libz.a
 ```
 
 **Notice**:
@@ -33,15 +43,19 @@ And if you want build framework used for macos platform, then added relevant nat
 |-- -iphoneos
 |-- -iphonesimulator
 |-- macosx
-    |-- libflatccrt.a
-    |-- libtoxcore.a
-    |-- libpj.a
-    |-- libpjnath.a
-    |-- libpjlib-util.a
-    |-- libpjmedia.a
-    |-- libsrtp.a
-    |-- libcrystal.a
-    |-- libelacarrier.a
-    |-- libelasession.a
-    |-- libelafiletrans.a
+    |--libcjson.a
+    |--libcrystal.a
+    |--libcurl.a
+    |--libelacarrier.a
+    |--libelafiletrans.a
+    |--libelasession.a
+    |--libflatccrt.a
+    |--libpj.a
+    |--libpjlib-util.a
+    |--libpjmedia.a
+    |--libpjnath.a
+    |--libsodium.a
+    |--libsrtp.a
+    |--libtoxcore.a
+    |--libz.a
 ```
