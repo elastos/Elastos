@@ -1,6 +1,7 @@
 import json
 from decouple import config
 from requests import Session
+from pathlib import Path
 
 from web3 import Web3, HTTPProvider
 from web3.middleware import geth_poa_middleware
@@ -38,7 +39,6 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         request_input = json.loads(request.input)
         eth_account_address = request_input['eth_account_address']
         eth_account_password = request_input['eth_account_password']
-        filename = request_input['filename']
         contract_metadata = request_input['contract_metadata']
         contract_source = request_input['contract_source']
 
@@ -51,7 +51,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         if not response:
             status_message = 'Error: Smart contract code could not be uploaded'
             status = False
-            return hive_pb2.Response(output="", status_message=status_message, status=status)
+            return sidechain_eth_pb2.Response(output="", status_message=status_message, status=status)
 
         if not self.web3.isConnected():
             status_message = 'Error: Could not connect to Eth Sidechain node'
@@ -62,7 +62,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         compiled_sol = compile_standard({
             "language": "Solidity",
             "sources": {
-                filename: {
+                contract_name: {
                     "content": contract_source,
                 },
             },
@@ -81,10 +81,10 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         self.web3.parity.personal.unlockAccount(self.web3.eth.defaultAccount, eth_account_password, 3600)
 
         # get bytecode
-        bytecode = compiled_sol['contracts'][filename][contract_name]['evm']['bytecode']['object']
+        bytecode = compiled_sol['contracts'][contract_name][contract_name]['evm']['bytecode']['object']
 
         # get abi
-        abi = json.loads(compiled_sol['contracts'][filename][contract_name]['metadata'])['output']['abi']
+        abi = json.loads(compiled_sol['contracts'][contract_name][contract_name]['metadata'])['output']['abi']
 
         contract = self.web3.eth.contract(abi=abi, bytecode=bytecode)
 
@@ -102,7 +102,6 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         response = {
             'result': {
                 'contract_address': contract_details.address,
-                'contract_filename': filename,
                 'contract_name': contract_name,
                 'contract_code_hash': hive_hash,
             }
@@ -123,7 +122,6 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         # reading the file content
         request_input = json.loads(request.input)
         contract_address = request_input['contract_address']
-        contract_filename = request_input['contract_filename']
         contract_name = request_input['contract_name']
         contract_code_hash = request_input['contract_code_hash']
 
@@ -141,7 +139,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         compiled_sol = compile_standard({
             "language": "Solidity",
             "sources": {
-                contract_filename: {
+                contract_name: {
                     "content": contract_source,
                 },
             },
@@ -152,7 +150,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
                 }
             }
         })
-        abi = json.loads(compiled_sol['contracts'][contract_filename][contract_name]['metadata'])['output']['abi']
+        abi = json.loads(compiled_sol['contracts'][contract_name][contract_name]['metadata'])['output']['abi']
         contract = self.web3.eth.contract(address=contract_address, abi=abi)
         functions = contract.all_functions()
         contract_functions = []
