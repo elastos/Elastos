@@ -465,7 +465,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         MyAdapter curentAdapter = ((MyAdapter) recyclerView.getAdapter());
         if (!checkBox.isChecked()) {
             curentAdapter.initDateStaus(false);
-        } else if (curentPage == 0 && curentAdapter.getList().size() >= 36) {
+        } else if (curentPage == 0 && curentAdapter.getList().size() > 36) {
             //大于36全选
             dialogUtil.showWarmPrompt2(getBaseActivity(), "", new NewWarmPromptListener() {
                 @Override

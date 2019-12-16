@@ -327,7 +327,7 @@ public class VoteListBean extends BaseEntity implements Serializable {
 
                 @Override
                 public int compareTo(@NonNull ProducersBean o) {
-                    return Double.compare(Double.parseDouble(o.getVoterate()), Double.parseDouble(this.getVoterate()));
+                    return Integer.compare(o.getIndex(), this.getIndex());
 
                 }
 

@@ -37,6 +37,7 @@ import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -167,12 +168,12 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         }
     }
 
+
     @OnClick({R.id.iv_title_right, R.id.tv_delete, R.id.tv_vote, R.id.cb_selectall, R.id.cb_equal})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.cb_equal:
-                mAdapter.equalDataMapELA();
-                initUi(cbEqual.isChecked());
+                doCheckMuil(cbEqual.isChecked(), true);
                 break;
             case R.id.cb_selectall:
                 mAdapter.initDateStaus(cbSelectall.isChecked());
@@ -180,7 +181,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                 break;
 
             case R.id.iv_title_right:
-                initUi(false);
+                doCheckMuil(false, false);
                 if (tvAvaliable.getVisibility() == View.VISIBLE) {
                     tvAvaliable.setVisibility(View.GONE);
                     tvBalance.setVisibility(View.GONE);
@@ -217,6 +218,10 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
             case R.id.tv_vote:
 
                 Map<String, String> checkedData = mAdapter.getCheckedData();
+                if (mAdapter.getCheckAndHasBalanceNum() > 36) {
+                    showToast(getString(R.string.max36dot));
+                    return;
+                }
                 if (checkedData == null || checkedData.size() == 0) {
                     ToastUtils.showShort(getString(R.string.please_select));
                     return;
@@ -255,30 +260,47 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     /**
      * 一次性全部取消 或者全选时候的ui改变
      *
-     * @param tag
+     * @param tag 选中还是取消选中
+     * @param tag 是否检查选中的数量36
      */
-    private void initUi(boolean tag) {
-        mAdapter.initDateStaus(tag);
-        mAdapter.notifyDataSetChanged();
-
+    private void doCheckMuil(boolean tag, boolean checkSelectNuber) {
         if (!tag) {
+            mAdapter.initDateStaus(false);
+            mAdapter.notifyDataSetChanged();
             tvAmount.setText(getString(R.string.totle) + "0 ELA");
             tvAvaliable.setText(getString(R.string.available) + balance.intValue() + " ELA");
-        } else {
-            tvAmount.setText(getString(R.string.totle) + NumberiUtil.numberFormat(mAdapter.getCountEla(), 8) + " ELA");
-            BigDecimal countEla = mAdapter.getCountEla();
-            if (balance.compareTo(countEla) <= 0) {
-                tvAvaliable.setText(getString(R.string.available) + "0 ELA");
-            } else {
-                if (balance.subtract(countEla).compareTo(new BigDecimal(1)) < 0) {
-                    tvAvaliable.setText(getString(R.string.available) + "< 1 ELA");
-                } else {
-                    tvAvaliable.setText(getString(R.string.available) + balance.subtract(countEla).intValue() + " ELA");
+            cbSelectall.setChecked(false);
+            cbEqual.setChecked(false);
+        } else if (checkSelectNuber && mAdapter.getList().size() > 36) {
+            //大于36的平均分配
+            new DialogUtil().showWarmPrompt2(getBaseActivity(), "", new NewWarmPromptListener() {
+                @Override
+                public void affireBtnClick(View tag) {
+                    // 遍历list的长度，将MyAdapter中的map值全部设为false
+                    mAdapter.initDateStaus(false);
+                    mAdapter.equalDataMapELA(36);
+                    mAdapter.setDateStaus(36, true);
+                    mAdapter.notifyDataSetChanged();
+                    resetCountAndAvaliable();
+                    cbSelectall.setChecked(true);
+                    cbEqual.setChecked(true);
                 }
-            }
+
+                @Override
+                public void onCancel(View view) {
+                    cbEqual.setChecked(false);
+                }
+            });
+
+        } else {
+            mAdapter.initDateStaus(true);
+            mAdapter.notifyDataSetChanged();
+            resetCountAndAvaliable();
+            cbSelectall.setChecked(true);
+            cbEqual.setChecked(true);
+
         }
-        cbSelectall.setChecked(tag);
-        cbEqual.setChecked(tag);
+
 
     }
 
@@ -286,10 +308,10 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     @Override
     public void onItemViewClick(CRNodeCartAdapter adapter, View clickView, int position) {
         setSelectAllStatus();
-        setOtherUI();
+        resetCountAndAvaliable();
     }
 
-    private void setOtherUI() {
+    private void resetCountAndAvaliable() {
         tvAmount.setText(getString(R.string.totle) + NumberiUtil.numberFormat(mAdapter.getCountEla(), 8) + " ELA");
         BigDecimal countEla = mAdapter.getCountEla();
         countEla = balance.subtract(countEla);
@@ -321,7 +343,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
     @Override
     public void onTextChanged(CRNodeCartAdapter adapter, View clickView, int position) {
-        setOtherUI();
+        resetCountAndAvaliable();
 
     }
 
