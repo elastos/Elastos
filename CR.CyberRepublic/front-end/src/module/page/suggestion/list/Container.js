@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import {
   createContainer,
 } from '@/util'
@@ -7,6 +8,19 @@ import {
 import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'
 import Component from './Component'
+
+const defaultFilters = {
+  referenceStatus: false,
+  infoNeeded: false,
+  underConsideration: false,
+  search: '',
+  filter: '',
+  status: SUGGESTION_STATUS.ACTIVE,
+  budgetRequested: '',
+  creationDate: [],
+  author: '',
+  type: ''
+}
 
 const mapState = (state) => {
   const currentUserId = state.user.current_user_id
@@ -18,7 +32,10 @@ const mapState = (state) => {
     dataList: state.suggestion.all_suggestions,
     total: state.suggestion.all_suggestions_total,
     currentUserId,
-    filter: state.suggestion.filter || {},
+    filters: _.isEmpty(state.suggestion.filters)
+      ? defaultFilters
+      : state.suggestion.filters,
+    isVisitableFilter: !_.isEqual(defaultFilters, state.suggestion.filters),
     isLogin: state.user.is_login,
     isSecretary: state.user.is_secretary,
     user: state.user
@@ -32,6 +49,17 @@ const mapDispatch = () => {
   const commentService = new CommentService()
 
   return {
+    getDefaultFilters() {
+      return defaultFilters
+    },
+    async updateFilters(filters) {
+      return service.updateFilters({...defaultFilters, ...filters})
+    },
+
+    async clearFilters() {
+      return this.updateFilters({})
+    },
+
     async changePage(page) {
       return service.changePage(page)
     },
