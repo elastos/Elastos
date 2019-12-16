@@ -79,7 +79,7 @@ func (v *validator) checkTransactionPayload(txn *types.Transaction) error {
 	case *types.PayloadRechargeToSideChain:
 	case *types.PayloadTransferCrossChainAsset:
 	case *id.PayloadRegisterIdentification:
-	case *id.PayloadDIDInfo:
+	case *id.Operation:
 	default:
 		return errors.New("[ID CheckTransactionPayload] [txValidator],invalidate transaction payload type.")
 	}
@@ -232,7 +232,7 @@ func (v *validator) checkVerificationMethod(proof *id.DIDProofInfo,
 				return err
 			}
 			//didAddress must equal address in DID
-			if didAddress == v.Store.GetIDFromUri(payloadInfo.ID) {
+			if didAddress == v.Store.GetDIDFromUri(payloadInfo.ID) {
 				return nil
 			}
 		}
@@ -325,14 +325,14 @@ func (v *validator) VerifyByVM(iDateContainer interfaces.IDataContainer,
 //                 update----->db must have
 func (v *validator) checkDIDOperation(header *id.DIDHeaderInfo,
 	idUri string) error {
-	id := v.Store.GetIDFromUri(idUri)
-	if id == "" {
+	did := v.Store.GetDIDFromUri(idUri)
+	if did == "" {
 		return errors.New("WRONG DID FORMAT")
 	}
 
 	buf := new(bytes.Buffer)
-	buf.WriteString(id)
-	_, err := v.Store.GetLastDIDTxPayload(buf.Bytes())
+	buf.WriteString(did)
+	lastTXData, err := v.Store.GetLastDIDTxData(buf.Bytes())
 
 	dbExist := true
 	if err != nil {
@@ -343,11 +343,16 @@ func (v *validator) checkDIDOperation(header *id.DIDHeaderInfo,
 		}
 	}
 	if dbExist {
-		if header.Operation == "create" {
+		if header.Operation == id.Create_DID_Operation {
 			return errors.New("DID WRONG OPERATION ALREADY EXIST")
+		} else if header.Operation == id.Update_DID_Operation {
+			//check PreviousTxid
+			if lastTXData.TXID != header.PreviousTxid {
+				return errors.New("PreviousTxid IS NOT CORRECT")
+			}
 		}
 	} else {
-		if header.Operation == "update" {
+		if header.Operation == id.Update_DID_Operation {
 			return errors.New("DID WRONG OPERATION NOT EXIST")
 		}
 	}
@@ -359,9 +364,9 @@ func (v *validator) checkRegisterDID(txn *types.Transaction) error {
 	if txn.TxType != id.RegisterDID {
 		return nil
 	}
-	payloadDidInfo, ok := txn.Payload.(*id.PayloadDIDInfo)
+	payloadDidInfo, ok := txn.Payload.(*id.Operation)
 	if !ok {
-		return errors.New("invalid PayloadDIDInfo")
+		return errors.New("invalid Operation")
 	}
 
 	//

@@ -113,7 +113,7 @@ result sample:
   }
 }
 ```
-#### getidtxspayloads
+#### resolvedid
 
 description: get registered id transactions' payloads by id and getall. 
 If request argument getall is false then request result returns newest 
@@ -132,7 +132,7 @@ results: id transactions' payloads information
 argument sample:
 ```json
 {
-"method": "getidtxspayloads",
+"method": "resolvedid",
   "params":{
   	"id": "ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
   	"all": false
@@ -146,20 +146,29 @@ result sample when all is false:
 {
     "id": null,
     "jsonrpc": "2.0",
-    "result": [
-        {
-            "header": {
-                "specification": "elastos/did/1.0",
-                "operation": "update"
-            },
-            "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0=",
-            "proof": {
-                "type": "ECDSAsecp256r1",
-                "verificationMethod": "#master-key",
-                "signature": "J9UL8wmSUW+QaS5dXqcww57unN1pcqZ2zqA4up6wt1SXCvIKM4EbUDTHRsPkDR5Hhe8OUBGSXc1QkfO3Oo0Ihg=="
+    "result": {
+        "did": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
+        "status": 0,
+        "transaction": [
+            {
+                "txid": "4a691f8b6d67f07e9352be27ffeb5c2d2e432ee3de85abeb457e4427e69f3b74",
+                "timestamp": "2020-08-15T17:00:00Z",
+                "operation": {
+                    "header": {
+                        "specification": "elastos/did/1.0",
+                        "operation": "update",
+                        "previousTxid": "05dd212f746831ec47f3aae674d9ab16e2a3f75de2b4c811df02568cf926e447"
+                    },
+                    "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0",
+                    "proof": {
+                        "type": "ECDSAsecp256r1",
+                        "verificationMethod": "#master-key",
+                        "signature": "UCi/Y3gssvbwdOu0tCmUpYEUk8n+rFbhoOUrEwdNqfcCMP5BB2qeMH5/7yl7gQKHmYyxJzP8CVj4lWBs7xw3Rw=="
+                    }
+                }
             }
-        }
-    ],
+        ]
+    },
     "error": null
 }
 ```
@@ -170,32 +179,62 @@ result sample when all is true:
 {
     "id": null,
     "jsonrpc": "2.0",
-    "result": [
-        {
-            "header": {
-                "specification": "elastos/did/1.0",
-                "operation": "update"
+    "result": {
+        "did": "did:elastos:ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
+        "status": 0,
+        "transaction": [
+            {
+                "txid": "4a691f8b6d67f07e9352be27ffeb5c2d2e432ee3de85abeb457e4427e69f3b74",
+                "timestamp": "2020-08-15T17:00:00Z",
+                "operation": {
+                    "header": {
+                        "specification": "elastos/did/1.0",
+                        "operation": "update",
+                        "previousTxid": "05dd212f746831ec47f3aae674d9ab16e2a3f75de2b4c811df02568cf926e447"
+                    },
+                    "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0",
+                    "proof": {
+                        "type": "ECDSAsecp256r1",
+                        "verificationMethod": "#master-key",
+                        "signature": "UCi/Y3gssvbwdOu0tCmUpYEUk8n+rFbhoOUrEwdNqfcCMP5BB2qeMH5/7yl7gQKHmYyxJzP8CVj4lWBs7xw3Rw=="
+                    }
+                }
             },
-            "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0=",
-            "proof": {
-                "type": "ECDSAsecp256r1",
-                "verificationMethod": "#master-key",
-                "signature": "J9UL8wmSUW+QaS5dXqcww57unN1pcqZ2zqA4up6wt1SXCvIKM4EbUDTHRsPkDR5Hhe8OUBGSXc1QkfO3Oo0Ihg=="
-            }
-        },
-        {
-            "header": {
-                "specification": "elastos/did/1.0",
-                "operation": "create"
+            {
+                "txid": "05dd212f746831ec47f3aae674d9ab16e2a3f75de2b4c811df02568cf926e447",
+                "timestamp": "2020-08-15T17:00:00Z",
+                "operation": {
+                    "header": {
+                        "specification": "elastos/did/1.0",
+                        "operation": "update",
+                        "previousTxid": "23df5f7d0befb743899c22357f774df3d9ce809917b07559c59f12771e67aa31"
+                    },
+                    "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0",
+                    "proof": {
+                        "type": "ECDSAsecp256r1",
+                        "verificationMethod": "#master-key",
+                        "signature": "r4t+DvxL7m3XiSuKoJw7k8nPMlQhhE9GPlSQJa0Tu52NOMtw+Kb8s3/bdmEahXQ3wQzBtqp42eMhakNFiiKwTA=="
+                    }
+                }
             },
-            "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0=",
-            "proof": {
-                "type": "ECDSAsecp256r1",
-                "verificationMethod": "#master-key",
-                "signature": "HUZ421QF2lfpYgBqL3KrtlDTsuZC2vm4u11nZ89XlVqvPaTxRIfXawE1sUpSxTJSzGmOIET1eG1oO3Vneinhlw=="
+            {
+                "txid": "23df5f7d0befb743899c22357f774df3d9ce809917b07559c59f12771e67aa31",
+                "timestamp": "2020-08-15T17:00:00Z",
+                "operation": {
+                    "header": {
+                        "specification": "elastos/did/1.0",
+                        "operation": "create"
+                    },
+                    "payload": "eyJpZCI6ICJkaWQ6ZWxhc3RvczppZmF3Z1dGbVpSTFhOMUpWbXFwWGNOUnVyaEIxenlITmNmIiwicHVibGljS2V5IjogW3siaWQiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiNtYXN0ZXIta2V5IiwidHlwZSI6ICJFQ0RTQXNlY3AyNTZyMSIsImNvbnRyb2xsZXIiOiAiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiIsInB1YmxpY0tleUJhc2U1OCI6ICJ6eHQ2Tnlvb3JGVUZNWEE4bURCVUxqbnVIM3Y2aU5kWm00MlB5RzRjMVlkQyJ9XSwiYXV0aG9yaXphdGlvbiI6IFsiZGlkOmVsYXN0b3M6aWZhd2dXRm1aUkxYTjFKVm1xcFhjTlJ1cmhCMXp5SE5jZiJdLCJleHBpcmVzIjogIjIwMjAtMDgtMTVUMTc6MDA6MDBaIn0",
+                    "proof": {
+                        "type": "ECDSAsecp256r1",
+                        "verificationMethod": "#master-key",
+                        "signature": "xiD4kHrjwmEd11RPGs3vNcb/sDQuC48PQFjCM2Yuk6YFCpjJsvY2ZWwGwlx1IUg0iqmN+4W9MkzknQa9gim+zA=="
+                    }
+                }
             }
-        }
-    ],
+        ]
+    },
     "error": null
 }
 ```
