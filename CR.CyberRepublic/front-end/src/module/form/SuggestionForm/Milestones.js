@@ -228,13 +228,13 @@ export default Milestones
 
 const Wrapper = styled.div`
   margin-bottom: 32px;
+  padding-bottom: 24px;
+  overflow-x: auto;
+  overflow-y: visible;
 `
 
 const Timeline = styled.div`
   display: flex;
-  padding-bottom: 24px;
-  overflow-x: scroll;
-  overflow-y: visible;
 `
 const Milestone = styled.div`
   padding-right: 16px;
@@ -248,29 +248,6 @@ const MilestoneItem = styled.div`
   position: relative;
   width: 150px;
   height: 109px;
-
-  > div.big-square {
-    position: absolute;
-    left: -72.5px;
-    z-index: 1;
-    width: 295px;
-
-    > div {
-      &:first-child {
-        margin-top: 20px;
-      }
-      &.square-content {
-        width: 100%;
-        padding: 0 20px;
-        > p {
-          padding: 0;
-          text-align: center;
-          overflow-wrap: break-word;
-          white-space: normal;
-        }
-      }
-    }
-  }
 `
 const Square = styled.div`
   position: absolute;
@@ -367,6 +344,9 @@ const BigSquare = styled.div`
 const MilestoneEdit = styled.div`
   position: relative;
   top: 97px;
+  > button.ant-btn > i {
+    vertical-align: baseline;
+  }
 `
 const Circle = styled.div`
   height: 16px;
@@ -388,6 +368,7 @@ const Action = styled.div`
     border-color: unset;
     > i {
       color: #1de9b6;
+      vertical-align: baseline;
     }
   }
   &:after {
