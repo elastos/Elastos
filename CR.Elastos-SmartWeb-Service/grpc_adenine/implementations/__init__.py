@@ -121,6 +121,7 @@ def cronjob_send_ela():
 
     WalletAddresses.clear()
 
+
 def cronjob_send_ela_ethsc():
     logging.debug("Running cron job to send ELA/ETHSC")
     threading.Timer(30, cronjob_send_ela_ethsc).start()
@@ -137,11 +138,11 @@ def cronjob_send_ela_ethsc():
         transaction = {
             'to': web3.toChecksumAddress(address),
             'value': amount,
-            'gas': 100000,
+            'gas': 200000,
             'gasPrice': web3.eth.gasPrice,
             'nonce': starting_nonce + index
         }
-        signed_tx = web3.eth.account.signTransaction(transaction, config('SIDECHAIN_ETH_WALLET_PRIVATE_KEY'))
+        signed_tx = web3.eth.account.sign_transaction(transaction, config('SIDECHAIN_ETH_WALLET_PRIVATE_KEY'))
         tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
         logging.debug("Transferred ELA/ETHSC to: {0} Tx Hash: {1}".format(address, web3.toHex(tx_hash)))
     WalletAddressesETH.clear()
