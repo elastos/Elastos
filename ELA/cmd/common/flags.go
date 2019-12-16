@@ -292,6 +292,10 @@ var (
 		Usage: "defines the duration of a normal duty period which measured " +
 			"by block height",
 	}
+	CRDepositLockupBlocksFlag = cli.StringFlag{
+		Name:  "crdepositlockupblocks",
+		Usage: "DepositLockupBlocks indicates how many blocks need to wait when cancel",
+	}
 	CRVotingPeriodFlag = cli.StringFlag{
 		Name: "crvotingperiod",
 		Usage: "defines the duration of voting period which measured by " +
