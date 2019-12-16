@@ -75,7 +75,7 @@ def main():
         try:
             wallet = Wallet()
             print("\n--> Create Wallet")
-            response = wallet.create_wallet('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'elastos-privnet')
+            response = wallet.create_wallet('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU')
             json_output = json.loads(response.output)
             if response.status:
                 for i in json_output['result']:
@@ -180,9 +180,8 @@ def main():
             # you must first run https://github.com/cyber-republic/elastos-privnet locally
             # For production GMUnet, this won't work
             print("\n--> Deploy ETH Contract")
-            response = sidechain_eth.deploy_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
-                                                         '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3', 'elastos-privnet',
-                                                         'test/HelloWorld.sol')
+            response = sidechain_eth.deploy_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3',
+                                                         '0xf98fa0f1e6b6772077591ba9eefe68b227c59d9103477a4db3c411feec919abb', 200000, 'test/HelloWorld.sol')
             json_output = json.loads(response.output)
             if response.status:
                 for i in json_output['result']:
@@ -198,7 +197,7 @@ def main():
             sidechain_eth = SidechainEth()
             print("\n--> Watch ETH Contract")
             response = sidechain_eth.watch_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
-                                                         '0x222cb136E35439875cC35fD6Af028D0b16788503', 'HelloWorld',
+                                                         '0xdf29327c95b12A37089A6e230d5ce50F23237671', 'HelloWorld',
                                                         'QmRCn3tQem7UugGLE7tkchXudp4prqLtDhMRs828mUED34')
             json_output = json.loads(response.output)
             if response.status:
