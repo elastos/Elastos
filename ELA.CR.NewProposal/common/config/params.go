@@ -183,6 +183,7 @@ var DefaultParams = Params{
 	CRMemberCount:               12,
 	CRVotingPeriod:              30 * 720,
 	CRDutyPeriod:                365 * 720,
+	CRDepositLockupBlocks:       2160,
 	ProposalCRVotingPeriod:      7 * 720,
 	ProposalPublicVotingPeriod:  7 * 720,
 	CRAgreementCount:            8,
@@ -477,6 +478,10 @@ type Params struct {
 	// CRDutyPeriod defines the duration of a normal duty period which
 	// measured by block height
 	CRDutyPeriod uint32
+
+	// DepositLockupBlocks indicates how many blocks need to wait when cancel
+	// producer or CRC was triggered, and can submit return deposit coin request
+	CRDepositLockupBlocks uint32
 
 	// ProposalCRVotingPeriod defines the duration of CR voting about a proposal
 	ProposalCRVotingPeriod uint32

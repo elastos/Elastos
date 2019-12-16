@@ -16,10 +16,6 @@ import (
 )
 
 const (
-	// DepositLockupBlocks indicates how many blocks need to wait when cancel
-	// producer or CRC was triggered, and can submit return deposit coin request.
-	DepositLockupBlocks = 2160
-
 	// MinDepositAmount is the minimum deposit as a producer.
 	MinDepositAmount = 5000 * 100000000
 
@@ -121,7 +117,7 @@ func (s *State) getAvailableDepositAmount(did common.Uint168,
 	if isInVotingPeriod {
 		c := s.getCandidate(did)
 		if c != nil && c.state == Canceled && currentHeight-c.cancelHeight <
-			DepositLockupBlocks {
+			s.params.CRDepositLockupBlocks {
 			lockedDepositAmount = MinDepositAmount
 		}
 	}

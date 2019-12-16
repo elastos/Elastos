@@ -10,9 +10,12 @@
 *.dat
 *.txn
 *.log
+*.csv
+*.zip
+*.tgz
 /vendor/*
 elastos*/
 /ela*
 /bin
-*.csv
 /go.sum
+keystore

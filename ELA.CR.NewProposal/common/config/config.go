@@ -100,6 +100,7 @@ type CRConfiguration struct {
 	MemberCount                uint32  `json:"MemberCount"`
 	VotingPeriod               uint32  `json:"VotingPeriod"`
 	DutyPeriod                 uint32  `json:"DutyPeriod"`
+	DepositLockupBlocks        uint32  `json:"DepositLockupBlocks"`
 	ProposalCRVotingPeriod     uint32  `json:"ProposalCRVotingPeriod"`
 	ProposalPublicVotingPeriod uint32  `json:"ProposalPublicVotingPeriod"`
 	CRAgreementCount           uint32  `json:"CRAgreementCount"`
