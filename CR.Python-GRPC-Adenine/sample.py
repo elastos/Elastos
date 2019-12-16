@@ -198,8 +198,8 @@ def main():
             sidechain_eth = SidechainEth()
             print("\n--> Watch ETH Contract")
             response = sidechain_eth.watch_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
-                                                         '0x099E99A9f9668Cc6176c27F73da0b11B7DF42705', 'test/HelloWorld.sol',
-                                                         'HelloWorld', 'QmRCn3tQem7UugGLE7tkchXudp4prqLtDhMRs828mUED34')
+                                                         '0x222cb136E35439875cC35fD6Af028D0b16788503', 'HelloWorld',
+                                                        'QmRCn3tQem7UugGLE7tkchXudp4prqLtDhMRs828mUED34')
             json_output = json.loads(response.output)
             if response.status:
                 for i in json_output['result']:

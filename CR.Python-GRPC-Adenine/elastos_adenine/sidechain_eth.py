@@ -31,17 +31,15 @@ class SidechainEth:
         req_data = {
             'eth_account_address': eth_account_address,
             'eth_account_password': eth_account_password,
-            'filename': filename,
             'contract_source': contract_source,
             'contract_metadata': contract_metadata,
         }
         response = self.stub.DeployEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
         return response
 
-    def watch_eth_contract(self, api_key, contract_address, contract_filename, contract_name, contract_code_hash):
+    def watch_eth_contract(self, api_key, contract_address, contract_name, contract_code_hash):
         req_data = {
             'contract_address': contract_address,
-            'contract_filename': contract_filename,
             'contract_name': contract_name,
             'contract_code_hash': contract_code_hash,
         }
