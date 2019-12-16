@@ -121,7 +121,7 @@ func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 	err := s.validator.checkRegisterDID(tx)
 	s.NoError(err)
 
-	info := new(types.PayloadDIDInfo)
+	info := new(types.Operation)
 	json.Unmarshal(didPayloadInfoBytes, info)
 
 	payloadBase64, _ := base64url.DecodeString(info.Payload)
@@ -136,19 +136,19 @@ func (s *txValidatorTestSuite) TestIDChainStore_CreateDIDTx() {
 
 func (s *txValidatorTestSuite) TestGetIDFromUri() {
 	validUriFormat := "did:elastos:icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN"
-	id := s.validator.Store.GetIDFromUri(validUriFormat)
+	id := s.validator.Store.GetDIDFromUri(validUriFormat)
 	s.Equal(id, "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN")
 
 	InvalidUriFormat := "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN"
-	id = s.validator.Store.GetIDFromUri(InvalidUriFormat)
+	id = s.validator.Store.GetDIDFromUri(InvalidUriFormat)
 	s.Equal(id, "")
 }
 
-func getPayloadCreateDID() *types.PayloadDIDInfo {
+func getPayloadCreateDID() *types.Operation {
 	info := new(types.DIDPayloadInfo)
 	json.Unmarshal(didPayloadBytes, info)
 
-	p := &types.PayloadDIDInfo{
+	p := &types.Operation{
 		Header: types.DIDHeaderInfo{
 			Specification: "elastos/did/1.0",
 			Operation:     "create",
@@ -167,11 +167,11 @@ func getPayloadCreateDID() *types.PayloadDIDInfo {
 	return p
 }
 
-func getPayloadUpdateDID() *types.PayloadDIDInfo {
+func getPayloadUpdateDID() *types.Operation {
 	info := new(types.DIDPayloadInfo)
 	json.Unmarshal(didPayloadBytes, info)
 
-	return &types.PayloadDIDInfo{
+	return &types.Operation{
 		Header: types.DIDHeaderInfo{
 			Specification: "elastos/did/1.0",
 			Operation:     "update",
@@ -213,11 +213,11 @@ func getDIDPayloadBytes(id string) []byte {
 	)
 }
 
-func getPayloadDIDInfo(id string, didOperation string) *types.PayloadDIDInfo {
+func getPayloadDIDInfo(id string, didOperation string) *types.Operation {
 	pBytes := getDIDPayloadBytes(id)
 	info := new(types.DIDPayloadInfo)
 	json.Unmarshal(pBytes, info)
-	p := &types.PayloadDIDInfo{
+	p := &types.Operation{
 		Header: types.DIDHeaderInfo{
 			Specification: "elastos/did/1.0",
 			Operation:     didOperation,

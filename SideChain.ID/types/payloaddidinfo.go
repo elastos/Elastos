@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strings"
 
 	"github.com/elastos/Elastos.ELA/common"
 
@@ -12,13 +13,30 @@ import (
 )
 
 const DIDInfoVersion = 0x00
+const DID_ELASTOS_PREFIX = "did:elastos:"
+const (
+	Create_DID_Operation     = "create"
+	Update_DID_Operation     = "update"
+	Deactivate_DID_Operation = "deactivate"
+)
 
 // header of DID transaction payload
 type DIDHeaderInfo struct {
 	Specification string `json:"specification"`
 	Operation     string `json:"operation"`
+	PreviousTxid  string `json:"previousTxid,omitempty"`
 }
 
+func IsURIHasPrefix(did string) bool {
+	return strings.HasPrefix(did, DID_ELASTOS_PREFIX)
+}
+func GetDIDFromUri(idURI string) string {
+	index := strings.LastIndex(idURI, ":")
+	if index == -1 {
+		return ""
+	}
+	return idURI[index+1:]
+}
 func (d *DIDHeaderInfo) Serialize(w io.Writer, version byte) error {
 	if err := common.WriteVarString(w, d.Specification); err != nil {
 		return errors.New("[DIDHeaderInfo], Specification serialize failed.")
@@ -26,6 +44,11 @@ func (d *DIDHeaderInfo) Serialize(w io.Writer, version byte) error {
 
 	if err := common.WriteVarString(w, d.Operation); err != nil {
 		return errors.New("[DIDHeaderInfo], Operation serialize failed.")
+	}
+	if d.Operation == Update_DID_Operation {
+		if err := common.WriteVarString(w, d.PreviousTxid); err != nil {
+			return errors.New("[DIDHeaderInfo], PreviousTxid serialize failed.")
+		}
 	}
 
 	return nil
@@ -41,6 +64,12 @@ func (d *DIDHeaderInfo) Deserialize(r io.Reader, version byte) error {
 	d.Operation, err = common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[DIDHeaderInfo], Operation deserialize failed.")
+	}
+	if d.Operation == Update_DID_Operation {
+		d.PreviousTxid, err = common.ReadVarString(r)
+		if err != nil {
+			return errors.New("[DIDHeaderInfo], PreviousTxid deserialize failed.")
+		}
 	}
 
 	return nil
@@ -151,7 +180,7 @@ type DIDPayloadInfo struct {
 }
 
 // payload of DID transaction
-type PayloadDIDInfo struct {
+type Operation struct {
 	Header  DIDHeaderInfo `json:"header"`
 	Payload string        `json:"payload"`
 	Proof   DIDProofInfo  `json:"proof"`
@@ -159,7 +188,13 @@ type PayloadDIDInfo struct {
 	PayloadInfo *DIDPayloadInfo
 }
 
-func (p *PayloadDIDInfo) Data(version byte) []byte {
+type TranasactionData struct {
+	TXID      string    `json:txid`
+	Timestamp string    `json:timestamp`
+	Operation Operation `json:operation`
+}
+
+func (p *Operation) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
 	if err := p.Header.Serialize(buf, version); err != nil {
 		return nil
@@ -170,23 +205,23 @@ func (p *PayloadDIDInfo) Data(version byte) []byte {
 	return buf.Bytes()
 }
 
-func (p *PayloadDIDInfo) Serialize(w io.Writer, version byte) error {
+func (p *Operation) Serialize(w io.Writer, version byte) error {
 	if err := p.Header.Serialize(w, version); err != nil {
-		return errors.New("[PayloadDIDInfo], Header serialize failed," + err.Error())
+		return errors.New("[Operation], Header serialize failed," + err.Error())
 	}
 
 	if err := common.WriteVarString(w, p.Payload); err != nil {
-		return errors.New("[PayloadDIDInfo], Payload serialize failed")
+		return errors.New("[Operation], Payload serialize failed")
 	}
 
 	if err := p.Proof.Serialize(w, version); err != nil {
-		return errors.New("[PayloadDIDInfo], Proof serialize failed," + err.Error())
+		return errors.New("[Operation], Proof serialize failed," + err.Error())
 	}
 
 	return nil
 }
 
-func (p *PayloadDIDInfo) Deserialize(r io.Reader, version byte) error {
+func (p *Operation) Deserialize(r io.Reader, version byte) error {
 	if err := p.Header.Deserialize(r, version); err != nil {
 		return errors.New("[DIDInfo], Header deserialize failed" + err.Error())
 	}
@@ -214,7 +249,7 @@ func (p *PayloadDIDInfo) Deserialize(r io.Reader, version byte) error {
 	return nil
 }
 
-func (p *PayloadDIDInfo) GetData() []byte {
+func (p *Operation) GetData() []byte {
 	dataString := p.Header.Specification + p.Header.Operation + p.Payload
 	return []byte(dataString)
 }

@@ -7,10 +7,13 @@ import (
 	"time"
 
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
+
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
+	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/utils/http"
 )
 
 const (
@@ -70,9 +73,9 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 				}
 			}
 		case id.RegisterDID:
-			regPayload := txn.Payload.(*id.PayloadDIDInfo)
+			regPayload := txn.Payload.(*id.Operation)
 
-			id := c.GetIDFromUri(regPayload.PayloadInfo.ID)
+			id := c.GetDIDFromUri(regPayload.PayloadInfo.ID)
 			if id == "" {
 				return errors.New("invalid regPayload.PayloadInfo.ID")
 			}
@@ -85,7 +88,7 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 	return nil
 }
 
-func (c *IDChainStore) GetIDFromUri(idURI string) string {
+func (c *IDChainStore) GetDIDFromUri(idURI string) string {
 	index := strings.LastIndex(idURI, ":")
 	if index == -1 {
 		return ""
@@ -123,8 +126,8 @@ func (c *IDChainStore) rollbackTransactions(batch database.Batch, b *types.Block
 				}
 			}
 		case id.RegisterDID:
-			regPayload := txn.Payload.(*id.PayloadDIDInfo)
-			id := c.GetIDFromUri(regPayload.PayloadInfo.ID)
+			regPayload := txn.Payload.(*id.Operation)
+			id := c.GetDIDFromUri(regPayload.PayloadInfo.ID)
 			if id == "" {
 				return errors.New("invalid regPayload.PayloadInfo.ID")
 			}
@@ -168,9 +171,9 @@ func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error)
 func (c *IDChainStore) TryGetExpiresHeight(txn *types.Transaction,
 	blockHeight uint32,
 	blockTimeStamp uint32) (uint32, error) {
-	payloadDidInfo, ok := txn.Payload.(*id.PayloadDIDInfo)
+	payloadDidInfo, ok := txn.Payload.(*id.Operation)
 	if !ok {
-		return 0, errors.New("invalid PayloadDIDInfo")
+		return 0, errors.New("invalid Operation")
 	}
 	if payloadDidInfo.PayloadInfo == nil {
 		return 0, errors.New("invalid PayloadInfo")
@@ -210,7 +213,7 @@ func (c *IDChainStore) persistRegisterDIDTx(batch database.Batch,
 	}
 
 	if err := c.persistRegisterDIDPayload(batch, tx.Hash(),
-		tx.Payload.(*id.PayloadDIDInfo)); err != nil {
+		tx.Payload.(*id.Operation)); err != nil {
 		return err
 	}
 
@@ -408,7 +411,7 @@ func (c *IDChainStore) rollbackRegisterDIDTx(batch database.Batch,
 }
 
 func (c *IDChainStore) persistRegisterDIDPayload(batch database.Batch,
-	txHash common.Uint256, p *id.PayloadDIDInfo) error {
+	txHash common.Uint256, p *id.Operation) error {
 	key := []byte{byte(IX_DIDPayload)}
 	key = append(key, txHash.Bytes()...)
 
@@ -417,7 +420,7 @@ func (c *IDChainStore) persistRegisterDIDPayload(batch database.Batch,
 	return batch.Put(key, buf.Bytes())
 }
 
-func (c *IDChainStore) GetLastDIDTxPayload(idKey []byte) ([]byte, error) {
+func (c *IDChainStore) GetLastDIDTxData(idKey []byte) (*id.TranasactionData, error) {
 	key := []byte{byte(IX_DIDTXHash)}
 	key = append(key, idKey...)
 
@@ -447,7 +450,19 @@ func (c *IDChainStore) GetLastDIDTxPayload(idKey []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return dataPayload, nil
+	tempOperation := new(id.Operation)
+	r = bytes.NewReader(dataPayload)
+	err = tempOperation.Deserialize(r, id.DIDInfoVersion)
+	if err != nil {
+		return nil, http.NewError(int(service.ResolverInternalError),
+			"tempOperation Deserialize failed")
+	}
+	tempTxData := new(id.TranasactionData)
+	tempTxData.TXID = txHash.String()
+	tempTxData.Operation = *tempOperation
+	tempTxData.Timestamp = tempOperation.PayloadInfo.Expires
+
+	return tempTxData, nil
 }
 
 func (c *IDChainStore) GetExpiresHeight(idKey []byte) (uint32, error) {
@@ -475,7 +490,7 @@ func (c *IDChainStore) GetExpiresHeight(idKey []byte) (uint32, error) {
 	return expiresBlockHeight, nil
 }
 
-func (c *IDChainStore) GetDIDTxPayload(idKey []byte) ([][]byte, error) {
+func (c *IDChainStore) GetAllDIDTxTxData(idKey []byte) ([]id.TranasactionData, error) {
 	key := []byte{byte(IX_DIDTXHash)}
 	key = append(key, idKey...)
 
@@ -489,13 +504,12 @@ func (c *IDChainStore) GetDIDTxPayload(idKey []byte) ([][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	var payloadList [][]byte
+	var transactionsData []id.TranasactionData
 	for i := uint64(0); i < count; i++ {
 		var txHash common.Uint256
 		if err := txHash.Deserialize(r); err != nil {
 			return nil, err
 		}
-
 		keyPayload := []byte{byte(IX_DIDPayload)}
 		keyPayload = append(keyPayload, txHash.Bytes()...)
 
@@ -503,8 +517,19 @@ func (c *IDChainStore) GetDIDTxPayload(idKey []byte) ([][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		payloadList = append(payloadList, payloadData)
+		tempOperation := new(id.Operation)
+		r := bytes.NewReader(payloadData)
+		err = tempOperation.Deserialize(r, id.DIDInfoVersion)
+		if err != nil {
+			return nil, http.NewError(int(service.InvalidTransaction),
+				"payloaddid Deserialize failed")
+		}
+		tempTxData := new(id.TranasactionData)
+		tempTxData.TXID = txHash.String()
+		tempTxData.Operation = *tempOperation
+		tempTxData.Timestamp = tempOperation.PayloadInfo.Expires
+		transactionsData = append(transactionsData, *tempTxData)
 	}
 
-	return payloadList, nil
+	return transactionsData, nil
 }
