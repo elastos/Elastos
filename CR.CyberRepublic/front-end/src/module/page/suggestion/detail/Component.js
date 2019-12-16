@@ -285,16 +285,16 @@ export default class extends StandardPage {
                   {I18N.get(`suggestion.fields.plan`)}
                 </DescLabel>
                 <PlanSubtitle>
-                  {I18N.get('suggestion.plan.teamInfo')}
-                </PlanSubtitle>
-                <TeamInfoList list={detail.plan.teamInfo} editable={false} />
-                <PlanSubtitle>
                   {I18N.get('suggestion.plan.milestones')}
                 </PlanSubtitle>
                 <Milestones
                   initialValue={detail.plan.milestone}
                   editable={false}
                 />
+                <PlanSubtitle>
+                  {I18N.get('suggestion.plan.teamInfo')}
+                </PlanSubtitle>
+                <TeamInfoList list={detail.plan.teamInfo} editable={false} />
               </div>
             )
           }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, Modal } from 'antd'
+import { Button, Modal, Row, Col } from 'antd'
 import I18N from '@/I18N'
 import TeamInfoForm from '@/module/form/TeamInfoForm/Container'
 import TeamInfoList from './TeamInfoList'
@@ -65,12 +65,21 @@ class TeamInfoSection extends Component {
   }
 
   render() {
+    const { title } = this.props
     const { teamInfos, index } = this.state
     return (
       <Wrapper>
-        <Button onClick={this.showModal}>
-          {I18N.get('suggestion.plan.createTeamInfo')}
-        </Button>
+        <Row>
+          <Col span={14}>{title}</Col>
+          <Col
+            span={10}
+            style={{ display: 'flex', justifyContent: 'flex-end' }}
+          >
+            <Button onClick={this.showModal}>
+              {I18N.get('suggestion.plan.createTeamInfo')}
+            </Button>
+          </Col>
+        </Row>
         {teamInfos.length ? (
           <TeamInfoList
             list={teamInfos}
@@ -99,7 +108,8 @@ class TeamInfoSection extends Component {
 }
 
 TeamInfoSection.propTypes = {
-  onChang: PropTypes.func,
+  title: PropTypes.string,
+  onChange: PropTypes.func,
   initialValue: PropTypes.array
 }
 

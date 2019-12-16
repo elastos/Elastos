@@ -1,10 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import BaseComponent from '@/model/BaseComponent'
-import styled from 'styled-components'
 import { Form, Input, Button, DatePicker } from 'antd'
+import styled from 'styled-components'
+import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 
+const { TextArea } = Input
 const FormItem = Form.Item
 
 class MilestoneForm extends BaseComponent {
@@ -48,7 +49,7 @@ class MilestoneForm extends BaseComponent {
           })(<DatePicker />)}
         </FormItem>
         <FormItem
-          label={I18N.get('suggestion.plan.version')}
+          label={I18N.get('suggestion.plan.goal')}
           {...formItemLayout}
         >
           {getFieldDecorator('version', {
@@ -59,7 +60,7 @@ class MilestoneForm extends BaseComponent {
               }
             ],
             initialValue: item && item.version
-          })(<Input />)}
+          })(<TextArea rows={5} />)}
         </FormItem>
         <Actions>
           <Button type="primary" htmlType="submit" size="default">

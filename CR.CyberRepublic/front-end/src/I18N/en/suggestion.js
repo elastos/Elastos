@@ -137,7 +137,10 @@ export default {
     teamInfo: 'Implementation Team',
     milestones: 'Milestones',
     publishDate: 'Publish Date',
-    version: 'Version'
+    version: 'Version',
+    goal: 'Goal',
+    showDetail: 'Show Detail',
+    hideDetail: 'Hide Detail'
   },
   label: {
     hasMadeIntoProposal: 'has made it into'
