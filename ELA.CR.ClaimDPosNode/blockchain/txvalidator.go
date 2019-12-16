@@ -2228,7 +2228,7 @@ func (b *BlockChain) checkReturnDepositCoinTransaction(txn *Transaction,
 		if p.State() != state.Canceled {
 			return errors.New("producer must be canceled before return deposit coin")
 		}
-		if currentHeight-p.CancelHeight() < crstate.DepositLockupBlocks {
+		if currentHeight-p.CancelHeight() < b.chainParams.CRDepositLockupBlocks {
 			return errors.New("return deposit does not meet the lockup limit")
 		}
 		penalty += p.Penalty()

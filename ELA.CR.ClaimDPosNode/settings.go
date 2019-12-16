@@ -742,6 +742,12 @@ func newSettings() *settings {
 		ParamName:    "CRDutyPeriod"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.CRDepositLockupBlocksFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CRConfiguration.DepositLockupBlocks",
+		ParamName:    "CRDepositLockupBlocks"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.CRVotingPeriodFlag,
 		DefaultValue: uint32(0),
 		ConfigPath:   "CRConfiguration.VotingPeriod",
