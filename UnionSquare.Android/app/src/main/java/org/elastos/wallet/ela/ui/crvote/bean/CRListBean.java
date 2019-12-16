@@ -149,7 +149,7 @@ public class CRListBean extends BaseEntity {
                  */
                 @Override
                 public int compareTo(@NonNull CrcandidatesinfoBean o) {
-                    return Double.compare(Double.parseDouble(o.getVotes()), Double.parseDouble(this.getVotes()));
+                    return Integer.compare(o.getIndex(), this.getIndex());
 
                 }
 

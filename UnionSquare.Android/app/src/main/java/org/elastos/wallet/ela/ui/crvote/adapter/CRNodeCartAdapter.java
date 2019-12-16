@@ -30,6 +30,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.MyViewHolder> {
+    public List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> getList() {
+        return list;
+    }
+
+    public void setList(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list) {
+        this.list = list;
+    }
+
     private List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> list;
     private Context context;
 
@@ -168,6 +176,18 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         return sum;
     }
 
+    public int getCheckAndHasBalanceNum() {
+        int sum = 0;
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).isChecked() && list.get(i).getCurentBalance() != null && list.get(i).getCurentBalance().compareTo(new BigDecimal(0)) > 0) {
+                    sum++;
+                }
+            }
+        }
+        return sum;
+    }
+
     // 初始化dataMap的数据
     public void initDateStaus(boolean status) {
         if (list != null) {
@@ -177,11 +197,19 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         }
     }
 
-    // 初始化dataMap的数据
-    public void equalDataMapELA() {
-        BigDecimal curentbalance = Arith.div(balance, list.size(), 8);
+    public void setDateStaus(int size, boolean status) {
         if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
+            for (int i = 0; i < size; i++) {
+                list.get(i).setChecked(status);
+            }
+        }
+    }
+
+    // 初始化前 number个dataMap的数据
+    public void equalDataMapELA(int number) {
+        BigDecimal curentbalance = Arith.div(balance, number, 8);
+        if (list != null) {
+            for (int i = 0; i < number; i++) {
                 list.get(i).setCurentBalance(curentbalance);
             }
         }
