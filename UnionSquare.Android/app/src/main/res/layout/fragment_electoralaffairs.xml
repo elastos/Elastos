@@ -33,13 +33,13 @@
 
 
             <TextView
-                android:gravity="center"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
                 android:id="@+id/tv_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
                 android:layout_marginTop="@dimen/px30"
+                android:layout_marginRight="15dp"
+                android:gravity="center"
                 android:textColor="@color/white"
                 android:textSize="13sp" />
 
@@ -112,7 +112,9 @@
                 android:id="@+id/ll_infodetail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
                 android:layout_marginTop="22dp"
+                android:layout_marginRight="15dp"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -124,7 +126,6 @@
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="@string/node_publickey"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -134,8 +135,7 @@
                         android:id="@+id/tv_node"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="15dp"
-                        android:layout_weight="1"
+                        android:layout_weight="3"
                         android:gravity="right"
                         android:maxLines="2"
                         android:text=""
@@ -149,14 +149,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:gravity="center"
                     android:orientation="horizontal">
 
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="@string/the_current_number"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -164,9 +162,10 @@
 
                     <TextView
                         android:id="@+id/tv_num"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="15dp"
+                        android:layout_weight="3"
+                        android:gravity="right"
                         android:text=""
                         android:textColor="@color/qmui_config_color_white"
                         android:textSize="13sp" />
@@ -178,7 +177,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:gravity="center"
                     android:orientation="horizontal"
                     android:visibility="visible">
 
@@ -186,7 +184,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="@string/vote_of"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -194,9 +191,10 @@
 
                     <TextView
                         android:id="@+id/tv_zb"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="15dp"
+                        android:layout_weight="3"
+                        android:gravity="right"
                         android:text=""
                         android:textColor="@color/qmui_config_color_white"
                         android:textSize="13sp" />
@@ -208,14 +206,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:gravity="center"
                     android:orientation="horizontal">
 
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="@string/country_region"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -223,9 +219,10 @@
 
                     <TextView
                         android:id="@+id/tv_address"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="15dp"
+                        android:layout_weight="3"
+                        android:gravity="right"
                         android:textColor="@color/qmui_config_color_white"
                         android:textSize="13sp" />
 
@@ -233,18 +230,17 @@
 
 
                 <LinearLayout
-                    android:layout_marginBottom="25dp"
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:gravity="center"
+                    android:layout_marginBottom="25dp"
                     android:orientation="horizontal">
 
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="URL"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -252,11 +248,14 @@
 
                     <TextView
                         android:id="@+id/tv_url"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="15dp"
+                        android:layout_weight="3"
                         android:drawableRight="@mipmap/asset_transfer_copy"
                         android:drawablePadding="10dp"
+                        android:ellipsize="end"
+                        android:gravity="right"
+                        android:singleLine="true"
                         android:textColor="#ff2893e8"
                         android:textSize="13sp" />
 

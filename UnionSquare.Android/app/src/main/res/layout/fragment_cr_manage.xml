@@ -111,7 +111,9 @@
                 android:id="@+id/ll_infodetail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
                 android:layout_marginTop="22dp"
+                android:layout_marginRight="15dp"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -123,7 +125,6 @@
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="@string/menberdid"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -133,8 +134,6 @@
                         android:id="@+id/tv_did"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="40dp"
-                        android:layout_marginRight="15dp"
                         android:layout_weight="3"
                         android:gravity="right"
                         android:textColor="@color/qmui_config_color_white"
@@ -154,7 +153,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="@string/the_current_number"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -162,9 +160,10 @@
 
                     <TextView
                         android:id="@+id/tv_num"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="15dp"
+                        android:layout_weight="3"
+                        android:gravity="right"
                         android:text=""
                         android:textColor="@color/qmui_config_color_white"
                         android:textSize="13sp" />
@@ -184,7 +183,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="@string/vote_of"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -192,9 +190,10 @@
 
                     <TextView
                         android:id="@+id/tv_zb"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="15dp"
+                        android:layout_weight="3"
+                        android:gravity="right"
                         android:text=""
                         android:textColor="@color/qmui_config_color_white"
                         android:textSize="13sp" />
@@ -211,9 +210,8 @@
 
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
                         android:layout_weight="1"
                         android:text="@string/country_region"
                         android:textColor="@color/qmui_config_color_50_white"
@@ -221,9 +219,10 @@
 
                     <TextView
                         android:id="@+id/tv_address"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="15dp"
+                        android:layout_weight="3"
+                        android:gravity="right"
                         android:textColor="@color/qmui_config_color_white"
                         android:textSize="13sp" />
 
@@ -240,19 +239,19 @@
 
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
+                        android:layout_weight="1"
+
                         android:text="@string/officeweb"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/tv_url"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="40dp"
-                        android:layout_marginRight="15dp"
+                        android:layout_weight="3"
                         android:drawableRight="@mipmap/asset_transfer_copy"
                         android:drawablePadding="10dp"
                         android:ellipsize="end"
