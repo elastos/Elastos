@@ -51,6 +51,8 @@
     {% if output %}
         <h5 class="card-title">Response:</h5>
         <p class="card-text">Smart Contract Address :  {{ contract_address }}</p>
+        <p class="card-text">Smart Contract Name :  {{ contract_name }}</p>
+        <p class="card-text">Smart Contract Code Hash :  {{ contract_code_hash }}</p>
         <a href="{% url "service:deploy_eth_contract" %}" methods="GET">
         <button class="btn-default">
             Upload Smart Contract Again

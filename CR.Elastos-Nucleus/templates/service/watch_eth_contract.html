@@ -48,8 +48,25 @@
 {% endblock servicetitle %} 
 
 {% block service %}
-<p>The Watch ETH Contract service goes here.</p>
-{% endblock service %} 
+    {% if output %}
+        <h5 class="card-title">Response:</h5>
+        <p class="card-text">Smart Contract Address :  {{ contract_address }}</p>
+        <p class="card-text">Smart Contract Name :  {{ contract_name }}</p>
+        <p class="card-text">Smart Contract Functions :  {{ contract_functions }}</p>
+        <p class="card-text">Smart Contract Source :<br>{{ contract_source | linebreaks }}</p>
+        <a href="{% url "service:deploy_eth_contract" %}" methods="GET">
+        <button class="btn-default">
+            Watch Smart Contract Again
+        </button>
+        </a>
+    {% else %}
+       <form  class="form-group" method="post" enctype="multipart/form-data">
+       {% csrf_token %}
+       {{ form.as_p }}
+       <button type="submit">Watch Smart Contract</button>
+       </form>
+    {% endif %}
+{% endblock service %}
 
 {% block description %}
 <p>The description of the Watch ETH Contract service goes here.</p>

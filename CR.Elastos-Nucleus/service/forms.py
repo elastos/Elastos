@@ -28,7 +28,7 @@ class VerifyAndShowForm(forms.Form):
 
 
 class CreateWalletForm(forms.Form):
-    eth_password = forms.CharField(max_length=300)
+    eth_password = forms.CharField(widget=forms.PasswordInput(), max_length=300)
     api_key = forms.CharField(max_length=300)
 
 
@@ -56,7 +56,7 @@ class RequestELAForm(forms.Form):
 
 class DeployETHContractForm(forms.ModelForm):
     eth_account_address = forms.CharField(max_length=300)
-    eth_account_password = forms.CharField(max_length=300)
+    eth_account_password = forms.CharField(widget=forms.PasswordInput(), max_length=300)
     api_key = forms.CharField(max_length=64)
 
     def __init__(self, *args, **kwargs):
@@ -67,3 +67,10 @@ class DeployETHContractForm(forms.ModelForm):
     class Meta:
         model = UploadFile
         fields = ['did', 'uploaded_file']
+
+
+class WatchETHContractForm(forms.Form):
+    contract_address = forms.CharField(max_length=300)
+    contract_name = forms.CharField(max_length=300)
+    contract_code_hash = forms.CharField(max_length=300)
+    api_key = forms.CharField(max_length=64)

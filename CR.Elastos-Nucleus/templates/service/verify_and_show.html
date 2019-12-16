@@ -50,7 +50,7 @@
 {% block service %}
     {% if output %}
         <h5 class="card-title">Content:</h5>
-        <p class="card-text">{{ content }}</p>
+        <p class="card-text">{{ content | linebreaks }}</p>
           <a href="{% url 'service:verify_and_show' %}" methods="GET">
             <button type="submit" class="btn-default">Show Again</button>
         </a>
