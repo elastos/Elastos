@@ -12,7 +12,7 @@ def main():
     parser = argparse.ArgumentParser(description="sample.py", add_help=False)
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
                         help='Types of services supported: generate_api, upload_and_sign, verify_and_show, '
-                             'deploy_eth_contract, create_wallet, view_wallet, request_ela')
+                             'create_wallet, view_wallet, request_ela, deploy_eth_contract, watch_eth_contract')
     parser.add_argument('-s', action="store", dest="service")
 
     results = parser.parse_args()
@@ -71,27 +71,6 @@ def main():
             print(e)
         finally:
             hive.close()
-    elif service == "deploy_eth_contract":
-        try:
-            sidechain_eth = SidechainEth()
-            # Deploy ETH Contract
-            # The eth account addresses below is used from that of privatenet. In order to test this,
-            # you must first run https://github.com/cyber-republic/elastos-privnet locally
-            # For production GMUnet, this won't work
-            print("\n--> Deploy ETH Contract")
-            response = sidechain_eth.deploy_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
-                                                         '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3', 'elastos-privnet',
-                                                         'test/HelloWorld.sol')
-            json_output = json.loads(response.output)
-            if response.status:
-                for i in json_output['result']:
-                    print(i, ':', json_output['result'][i])
-            else:
-                print("Error Message: ", response.status_message)
-        except Exception as e:
-            print(e)
-        finally:
-            sidechain_eth.close()
     elif service == "create_wallet":
         try:
             wallet = Wallet()
@@ -193,6 +172,44 @@ def main():
             print(e)
         finally:
             wallet.close()
+    elif service == "deploy_eth_contract":
+        try:
+            sidechain_eth = SidechainEth()
+            # Deploy ETH Contract
+            # The eth account addresses below is used from that of privatenet. In order to test this,
+            # you must first run https://github.com/cyber-republic/elastos-privnet locally
+            # For production GMUnet, this won't work
+            print("\n--> Deploy ETH Contract")
+            response = sidechain_eth.deploy_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
+                                                         '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3', 'elastos-privnet',
+                                                         'test/HelloWorld.sol')
+            json_output = json.loads(response.output)
+            if response.status:
+                for i in json_output['result']:
+                    print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: ", response.status_message)
+        except Exception as e:
+            print(e)
+        finally:
+            sidechain_eth.close()
+    elif service == "watch_eth_contract":
+        try:
+            sidechain_eth = SidechainEth()
+            print("\n--> Watch ETH Contract")
+            response = sidechain_eth.watch_eth_contract('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
+                                                         '0x099E99A9f9668Cc6176c27F73da0b11B7DF42705', 'test/HelloWorld.sol',
+                                                         'HelloWorld', 'QmRCn3tQem7UugGLE7tkchXudp4prqLtDhMRs828mUED34')
+            json_output = json.loads(response.output)
+            if response.status:
+                for i in json_output['result']:
+                    print(i, ':', json_output['result'][i])
+            else:
+                print("Error Message: ", response.status_message)
+        except Exception as e:
+            print(e)
+        finally:
+            sidechain_eth.close()
 
 
 if __name__ == '__main__':

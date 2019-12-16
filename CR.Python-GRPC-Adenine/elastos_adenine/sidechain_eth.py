@@ -37,3 +37,13 @@ class SidechainEth:
         }
         response = self.stub.DeployEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
         return response
+
+    def watch_eth_contract(self, api_key, contract_address, contract_filename, contract_name, contract_code_hash):
+        req_data = {
+            'contract_address': contract_address,
+            'contract_filename': contract_filename,
+            'contract_name': contract_name,
+            'contract_code_hash': contract_code_hash,
+        }
+        response = self.stub.WatchEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        return response
