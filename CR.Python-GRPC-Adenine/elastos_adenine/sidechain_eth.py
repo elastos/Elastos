@@ -24,13 +24,14 @@ class SidechainEth:
     def close(self):
         self._channel.close()
 
-    def deploy_eth_contract(self, api_key, eth_account_address, eth_account_password, filename):
+    def deploy_eth_contract(self, api_key, eth_account_address, eth_private_key, eth_gas, filename):
         with open(filename, 'r') as myfile:
             contract_source = myfile.read()
         contract_metadata = parser.parse_file(filename)
         req_data = {
             'eth_account_address': eth_account_address,
-            'eth_account_password': eth_account_password,
+            'eth_private_key': eth_private_key,
+            'eth_gas': eth_gas,
             'contract_source': contract_source,
             'contract_metadata': contract_metadata,
         }

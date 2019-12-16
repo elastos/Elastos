@@ -22,11 +22,8 @@ class Wallet:
     def close(self):
         self._channel.close()
 
-    def create_wallet(self, api_key, eth_password):
-        req_data = {
-            "eth_password": eth_password
-        }
-        response = self.stub.CreateWallet(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+    def create_wallet(self, api_key):
+        response = self.stub.CreateWallet(wallet_pb2.Request(api_key=api_key))
         return response
 
     def view_wallet(self, api_key, chain, address):
