@@ -38,7 +38,8 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         # reading the file content
         request_input = json.loads(request.input)
         eth_account_address = request_input['eth_account_address']
-        eth_account_password = request_input['eth_account_password']
+        eth_gas = request_input['eth_gas']
+        eth_private_key = request_input['eth_private_key']
         contract_metadata = request_input['contract_metadata']
         contract_source = request_input['contract_source']
 
@@ -74,39 +75,31 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
             }
         })
 
-        # set pre-funded account as sender
-        self.web3.eth.defaultAccount = self.web3.toChecksumAddress(eth_account_address)
-
-        # Have to unlock the account before we can transact with it
-        self.web3.parity.personal.unlockAccount(self.web3.eth.defaultAccount, eth_account_password, 3600)
-
         # get bytecode
         bytecode = compiled_sol['contracts'][contract_name][contract_name]['evm']['bytecode']['object']
 
-        # get abi
-        abi = json.loads(compiled_sol['contracts'][contract_name][contract_name]['metadata'])['output']['abi']
-
-        contract = self.web3.eth.contract(abi=abi, bytecode=bytecode)
+        transaction = {
+            'gas': eth_gas,
+            'gasPrice': self.web3.eth.gasPrice,
+            'nonce': self.web3.eth.getTransactionCount(self.web3.toChecksumAddress(eth_account_address)),
+            'data': '0x' + bytecode
+        }
+        signed_tx = self.web3.eth.account.sign_transaction(transaction, eth_private_key)
 
         # Submit the transaction that deploys the contract
-        tx_hash = contract.constructor().transact()
+        tx_hash = self.web3.eth.sendRawTransaction(signed_tx.rawTransaction)
 
         # Wait for the transaction to be mined, and get the transaction receipt
         tx_receipt = self.web3.eth.waitForTransactionReceipt(tx_hash)
 
-        contract_details = self.web3.eth.contract(
-            address=tx_receipt.contractAddress,
-            abi=abi
-        )
-
         response = {
             'result': {
-                'contract_address': contract_details.address,
+                'contract_address': tx_receipt.contractAddress,
                 'contract_name': contract_name,
                 'contract_code_hash': hive_hash,
             }
         }
-        status_message = 'Successfuly deployed Eth Smart Contract'
+        status_message = 'Successfully deployed Eth Smart Contract'
         status = True
 
         return sidechain_eth_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)

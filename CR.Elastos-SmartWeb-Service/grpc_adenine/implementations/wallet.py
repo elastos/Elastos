@@ -1,4 +1,5 @@
 import json
+import secrets
 
 from requests import Session
 from decouple import config
@@ -35,15 +36,11 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         # if not api_status:
         #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
 
-        # reading the file content
-        request_input = json.loads(request.input)
-        eth_password = request_input['eth_password']
-
         # Create wallets
         wallet_mainchain = create_wallet_mainchain(self.session)
         wallet_sidechain_did = create_wallet_sidechain_did(self.session)
         wallet_sidechain_token = wallet_mainchain
-        wallet_sidechain_eth = create_wallet_sidechain_eth(self.web3, eth_password)
+        wallet_sidechain_eth = create_wallet_sidechain_eth(self.web3)
 
         response = {
             'result': {
@@ -69,12 +66,12 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                     },
                     'eth': {
                         'address': wallet_sidechain_eth['address'],
-                        'password': wallet_sidechain_eth['password']
+                        'private_key': wallet_sidechain_eth['private_key']
                     }
                 },
             }
         }
-        status_message = 'Successfuly created wallets'
+        status_message = 'Successfully created wallets'
         status = True
 
         return wallet_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
@@ -190,12 +187,12 @@ def create_wallet_sidechain_did(session):
     return result
 
 
-def create_wallet_sidechain_eth(w3, password):
+def create_wallet_sidechain_eth(w3):
     result = {}
     # Create account
-    eth_address = w3.parity.personal.newAccount(password)
-    result['address'] = eth_address
-    result['password'] = password
+    account = w3.eth.account.create(secrets.token_hex(32))
+    result['address'] = account.address
+    result['private_key'] = account.privateKey.hex()
     return result
 
 
