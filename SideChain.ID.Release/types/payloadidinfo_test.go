@@ -68,14 +68,14 @@ func TestPayloadDID_Serialize(t *testing.T) {
 	payload1 := randomPayloadDID()
 	buf := new(bytes.Buffer)
 	payload1.Serialize(buf, DIDInfoVersion)
-	payload2 := &PayloadDIDInfo{}
+	payload2 := &Operation{}
 	payload2.Deserialize(buf, DIDInfoVersion)
 	assert.True(t, paylaodDIDInfoEqual(payload1, payload2))
 }
 
 func TestJavaDigest(t *testing.T) {
 	targetDigest := "B7943F86927374CA7A7ECFBAF8F2F2405BEBF781AD8843A551012A2B188FA5A5"
-	var payloadDid PayloadDIDInfo
+	var payloadDid Operation
 	payloadDid.Header.Specification = "elastos/did/1.0"
 	payloadDid.Header.Operation = "create"
 	payloadDid.Payload = "ICAiZG9jIjogewogICAgImlkIjogImRpZDplbGFzdG9zOmljSjR6MkRVTHJIRXpZU3ZqS05KcEt5aH\n" +
@@ -99,7 +99,7 @@ func TestJavaDigest(t *testing.T) {
 	fmt.Println(digestHexStr)
 }
 
-func paylaodDIDInfoEqual(first *PayloadDIDInfo, second *PayloadDIDInfo) bool {
+func paylaodDIDInfoEqual(first *Operation, second *Operation) bool {
 	return didHeaderEqual(&first.Header, &second.Header) &&
 		first.Payload == second.Payload &&
 		didProofEqual(&first.Proof, &second.Proof) &&
@@ -173,11 +173,11 @@ func didAuthEqual(first []interface{}, second []interface{}) bool {
 	return true
 }
 
-func randomPayloadDID() *PayloadDIDInfo {
+func randomPayloadDID() *Operation {
 	info := new(DIDPayloadInfo)
 	json.Unmarshal(didPayloadBytes, info)
 
-	return &PayloadDIDInfo{
+	return &Operation{
 		Header: DIDHeaderInfo{
 			Specification: "elastos/did/1.0",
 			Operation:     getRandomOperation(),
@@ -207,7 +207,7 @@ func TestRandomPlayDID(t *testing.T) {
 	fmt.Printf("payLoadDidInfo %s\n", data)
 }
 
-func randomPayloadDIDNoAuth() *PayloadDIDInfo {
+func randomPayloadDIDNoAuth() *Operation {
 	info := &DIDPayloadInfo{
 		ID: randomString(),
 		PublicKey: []DIDPublicKeyInfo{
@@ -220,7 +220,7 @@ func randomPayloadDIDNoAuth() *PayloadDIDInfo {
 		},
 	}
 	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
-	return &PayloadDIDInfo{
+	return &Operation{
 		Header: DIDHeaderInfo{
 			Specification: "elastos/did/1.0",
 			Operation:     getRandomOperation(),
@@ -235,7 +235,7 @@ func randomPayloadDIDNoAuth() *PayloadDIDInfo {
 	}
 }
 
-func randomPayloadDIDAll() *PayloadDIDInfo {
+func randomPayloadDIDAll() *Operation {
 	info := &DIDPayloadInfo{
 		ID: randomString(),
 		PublicKey: []DIDPublicKeyInfo{
@@ -255,7 +255,7 @@ func randomPayloadDIDAll() *PayloadDIDInfo {
 	}
 
 	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
-	return &PayloadDIDInfo{
+	return &Operation{
 		Header: DIDHeaderInfo{
 			Specification: "elastos/did/1.0",
 			Operation:     getRandomOperation(),
@@ -270,7 +270,7 @@ func randomPayloadDIDAll() *PayloadDIDInfo {
 	}
 }
 
-func randomPayloadNoContrller() *PayloadDIDInfo {
+func randomPayloadNoContrller() *Operation {
 	info := &DIDPayloadInfo{
 		ID: randomString(),
 		PublicKey: []DIDPublicKeyInfo{
@@ -288,7 +288,7 @@ func randomPayloadNoContrller() *PayloadDIDInfo {
 		},
 	}
 	fmt.Printf("randomPayloadDIDAll DIDPayloadInfo %+v \n", info)
-	return &PayloadDIDInfo{
+	return &Operation{
 		Header: DIDHeaderInfo{
 			Specification: "elastos/did/1.0",
 			Operation:     getRandomOperation(),
