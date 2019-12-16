@@ -1,51 +1,51 @@
 {
-  "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+  "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
   "publicKey" : [ {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key2",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#key2",
     "type" : "ECDSAsecp256r1",
-    "controller" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-    "publicKeyBase58" : "eutGFcoBxFhVRN857tCMTds9sMBNXSSW6XQoAPJ7LiAW"
+    "controller" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
+    "publicKeyBase58" : "i9gUdHsdEdieF8VX6uyTcbp9tM9p1dNWLGkvADucTGXR"
   }, {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key3",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#key3",
     "type" : "ECDSAsecp256r1",
-    "controller" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-    "publicKeyBase58" : "guYm69ws1axrT5tEaftaeB9bRDgNx2zuUq92TU7vxSsb"
+    "controller" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
+    "publicKeyBase58" : "wBWrP5SEfTdtnNqMPRuRwNiNn2z3Ah2n7XNm2uoewx1u"
   }, {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#primary",
     "type" : "ECDSAsecp256r1",
-    "controller" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-    "publicKeyBase58" : "iShbegV5nmtX328bH4zfk5BHfomhKV19zMz47ouG6roQ"
+    "controller" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
+    "publicKeyBase58" : "feboMVgCNSDgCvFxrH7Hjz4mNiPJqxgRc95GTkvqCe2m"
   }, {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#recovery",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#recovery",
     "type" : "ECDSAsecp256r1",
-    "controller" : "did:elastos:ikEYk4MJszQMLJxe39SKmG5qFV3aa76aAN",
-    "publicKeyBase58" : "q4aaMAPigYweuGwxxmGqa5BkUxPHH35LYntpEab5Rpeh"
+    "controller" : "did:elastos:iXctoH13jPtsQDVKHWXHmtvEvuXYcXfi4r",
+    "publicKeyBase58" : "ktpb5ZReUERttigGX2qc4ryzrXecw1rRpa4RPW6ZYDLb"
   } ],
-  "authentication" : [ "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key2", "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key3", "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary" ],
-  "authorization" : [ "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#recovery" ],
+  "authentication" : [ "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#key2", "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#key3", "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#primary" ],
+  "authorization" : [ "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#recovery" ],
   "verifiableCredential" : [ {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#email",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#email",
     "type" : [ "BasicProfileCredential", "EmailCredential", "InternetAccountCredential" ],
-    "issuer" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM",
-    "issuanceDate" : "2019-12-10T03:34:35Z",
-    "expirationDate" : "2024-12-10T03:34:35Z",
+    "issuer" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr",
+    "issuanceDate" : "2019-12-16T04:06:00Z",
+    "expirationDate" : "2024-12-16T04:06:00Z",
     "credentialSubject" : {
-      "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+      "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
       "email" : "john@example.com"
     },
     "proof" : {
       "type" : "ECDSAsecp256r1",
-      "verificationMethod" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#primary",
-      "signature" : "uqLJRgB-DHOcYNkbylVkSaH4ETx_ZIgkvaXlTm8GXf0Cvf7j-AAVRkfN5p2q-FhEoSrPDoNb4romalaozl-rDQ"
+      "verificationMethod" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr#primary",
+      "signature" : "ynCXEdY0CNpdVfxYE6nz1cM520dHI3uhwuqatcqKGTqRo-lnZEAAMibO1y57A6o1pOEDrcTZPL0P4ibutQas6g"
     }
   }, {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#profile",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#profile",
     "type" : [ "BasicProfileCredential", "SelfProclaimedCredential" ],
-    "issuer" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-    "issuanceDate" : "2019-12-10T03:34:35Z",
-    "expirationDate" : "2024-12-10T03:34:35Z",
+    "issuer" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
+    "issuanceDate" : "2019-12-16T04:06:00Z",
+    "expirationDate" : "2024-12-16T04:06:00Z",
     "credentialSubject" : {
-      "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+      "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
       "email" : "john@example.com",
       "gender" : "Male",
       "language" : "English",
@@ -55,28 +55,28 @@
     },
     "proof" : {
       "type" : "ECDSAsecp256r1",
-      "verificationMethod" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary",
-      "signature" : "kPWMNElJ9R5cfzsm6DaLEQVTlAxIAM1kxg97bbTbh50FTUlD2EyxnxQgnk5LRJ02VU2cytdd3_qcWnfOqiVatQ"
+      "verificationMethod" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#primary",
+      "signature" : "9_x5KfV1SNTaVBnuU6tJUKikFupfYn5oFID1GJrO6A4K2UOaCZkR5RjWmAIpgETREYS0yoVF3KCg0NArfPXkYw"
     }
   } ],
   "service" : [ {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#carrier",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#carrier",
     "type" : "CarrierAddress",
     "serviceEndpoint" : "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d"
   }, {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#openid",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#openid",
     "type" : "OpenIdConnectVersion1.0Service",
     "serviceEndpoint" : "https://openid.example.com/"
   }, {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#vcr",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#vcr",
     "type" : "CredentialRepositoryService",
     "serviceEndpoint" : "https://did.example.com/credentials"
   } ],
-  "expires" : "2024-12-10T03:34:35Z",
+  "expires" : "2024-12-16T04:06:00Z",
   "proof" : {
     "type" : "ECDSAsecp256r1",
-    "created" : "2019-12-10T03:34:35Z",
-    "creator" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary",
-    "signatureValue" : "M-splLMMye7g6dPEQdPzOZRz97o4nzVorIAahkmpI0elq-_gaW9hEMKEVW3d8fvM6EyCD6t3p2QQLGS4p9j-gw"
+    "created" : "2019-12-16T04:06:00Z",
+    "creator" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#primary",
+    "signatureValue" : "SqeqSCz4WOjjamMdO-ys_oIWjmmBB7at6mD6R9cD5UnjUeH3ybvLwOGihJ0a5Eo5gCc7lHb5eEgHComarsQW9g"
   }
 }

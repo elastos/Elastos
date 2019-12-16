@@ -184,7 +184,7 @@ public final class DIDStore {
 		int blanks = 0;
 		int i = 0;
 
-		while (i < nextIndex || blanks < 10) {
+		while (i < nextIndex || blanks < 20) {
 			HDKey.DerivedKey key = privateIdentity.derive(i++);
 			DID did = new DID(DID.METHOD, key.getAddress());
 
@@ -194,7 +194,6 @@ public final class DIDStore {
 				storeDid(doc);
 
 				// Save private key
-				// TODO: get real private key bytes
 				storePrivateKey(did, doc.getDefaultPublicKey(),
 						key.serialize(),storepass);
 
@@ -223,7 +222,6 @@ public final class DIDStore {
 		DID did = new DID(DID.METHOD, key.getAddress());
 		DIDURL id = new DIDURL(did, "primary");
 
-		// TODO: get real private key bytes
 		storePrivateKey(did, id, key.serialize(), storepass);
 
 		DIDDocument.Builder db = new DIDDocument.Builder(did);

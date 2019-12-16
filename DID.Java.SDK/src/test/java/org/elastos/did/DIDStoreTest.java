@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,9 +39,14 @@ import java.util.Map;
 import org.elastos.did.adapter.DummyAdapter;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class DIDStoreTest {
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 	@Test
 	public void testCreateEmptyStore() throws DIDStoreException {
     	TestData testData = new TestData();
@@ -456,6 +462,79 @@ public class DIDStoreTest {
 
 		assertFalse(store.containsCredential(test.getSubject().toString(), "twitter"));
 		assertFalse(store.containsCredential(test.getSubject().toString(), "passport"));
+	}
+
+	@Test
+	public void testCompatibility() throws DIDException {
+		URL url = this.getClass().getResource("/teststore");
+		File dir = new File(url.getPath());
+		System.out.println(dir.getAbsolutePath());
+
+		DIDAdapter adapter = new DummyAdapter();
+   		DIDStore.initialize("filesystem", dir.getAbsolutePath(), adapter);
+
+       	DIDStore store = DIDStore.getInstance();
+
+       	List<DID> dids = store.listDids(DIDStore.DID_ALL);
+       	assertEquals(2, dids.size());
+
+       	for (DID did : dids) {
+       		if (did.getAlias().equals("Issuer")) {
+       			List<DIDURL> vcs = store.listCredentials(did);
+       			assertEquals(1, vcs.size());
+
+       			DIDURL id = vcs.get(0);
+       			assertEquals("Profile", id.getAlias());
+
+       			assertNotNull(store.loadCredential(did, id));
+       		} else if (did.getAlias().equals("Test")) {
+       			List<DIDURL> vcs = store.listCredentials(did);
+       			assertEquals(4, vcs.size());
+
+       			for (DIDURL id : vcs) {
+       				assertTrue(id.getAlias().equals("Profile")
+       						|| id.getAlias().equals("Email")
+       						|| id.getAlias().equals("Passport")
+       						|| id.getAlias().equals("Twitter"));
+
+       				assertNotNull(store.loadCredential(did, id));
+       			}
+       		}
+       	}
+	}
+
+	@Test
+	public void testCompatibilityNewDIDWithWrongPass() throws DIDException {
+		expectedEx.expect(DIDStoreException.class);
+		expectedEx.expectMessage("Decrypt private key error, maybe wrong store password.");
+
+		URL url = this.getClass().getResource("/teststore");
+		File dir = new File(url.getPath());
+
+		DIDAdapter adapter = new DummyAdapter();
+   		DIDStore.initialize("filesystem", dir.getAbsolutePath(), adapter);
+
+       	DIDStore store = DIDStore.getInstance();
+
+       	DIDDocument doc = store.newDid("wrongpass");
+       	// Dead code
+       	assertNull(doc);
+	}
+
+	@Test
+	public void testCompatibilityNewDID() throws DIDException {
+		URL url = this.getClass().getResource("/teststore");
+		File dir = new File(url.getPath());
+
+		DIDAdapter adapter = new DummyAdapter();
+   		DIDStore.initialize("filesystem", dir.getAbsolutePath(), adapter);
+
+       	DIDStore store = DIDStore.getInstance();
+
+       	DIDDocument doc = store.newDid(TestConfig.storePass);
+       	assertNotNull(doc);
+
+       	store.deleteDid(doc.getSubject());
 	}
 
 	private void createDataForPerformanceTest() throws DIDException {

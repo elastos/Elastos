@@ -1,16 +1,16 @@
 {
-  "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#twitter",
+  "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#twitter",
   "type" : [ "InternetAccountCredential", "TwitterCredential" ],
-  "issuer" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM",
-  "issuanceDate" : "2019-12-10T03:34:38Z",
-  "expirationDate" : "2024-12-10T03:34:38Z",
+  "issuer" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr",
+  "issuanceDate" : "2019-12-16T04:06:09Z",
+  "expirationDate" : "2024-12-16T04:06:09Z",
   "credentialSubject" : {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
     "twitter" : "@john"
   },
   "proof" : {
     "type" : "ECDSAsecp256r1",
-    "verificationMethod" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#primary",
-    "signature" : "M_0QsJWnawa3zQXkxniFJ9TwBjiXTQL7X8o6NYnCe4zF9O2TPne4BhOa3ZBQAly-GNZuLrgIAmkeTHgh58CbdQ"
+    "verificationMethod" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr#primary",
+    "signature" : "iCbzJo3lUuvxpol-zSbt6-HIFx5i40jRtYxO_pkRHKJ06c3bN0dWfr8Ip7o4bU3slJ0CKqIdtZm62EDoxNyXHw"
   }
 }

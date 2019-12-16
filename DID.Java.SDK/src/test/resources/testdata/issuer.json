@@ -1,20 +1,20 @@
 {
-  "id" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM",
+  "id" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr",
   "publicKey" : [ {
-    "id" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#primary",
+    "id" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr#primary",
     "type" : "ECDSAsecp256r1",
-    "controller" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM",
-    "publicKeyBase58" : "yMj7M912i1w4fveJJXpLqV22hcvAQqQHJiTES2ATamwJ"
+    "controller" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr",
+    "publicKeyBase58" : "e2k4S8urjfqwCF5NXPYWJFnMBJ8ew3LkUPbTx4PJZ768"
   } ],
-  "authentication" : [ "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#primary" ],
+  "authentication" : [ "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr#primary" ],
   "verifiableCredential" : [ {
-    "id" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#profile",
+    "id" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr#profile",
     "type" : [ "BasicProfileCredential", "SelfProclaimedCredential" ],
-    "issuer" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM",
-    "issuanceDate" : "2019-12-10T03:34:35Z",
-    "expirationDate" : "2024-12-10T03:34:35Z",
+    "issuer" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr",
+    "issuanceDate" : "2019-12-16T04:06:00Z",
+    "expirationDate" : "2024-12-16T04:06:00Z",
     "credentialSubject" : {
-      "id" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM",
+      "id" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr",
       "email" : "issuer@example.com",
       "language" : "English",
       "name" : "Test Issuer",
@@ -22,15 +22,15 @@
     },
     "proof" : {
       "type" : "ECDSAsecp256r1",
-      "verificationMethod" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#primary",
-      "signature" : "I4dPMpez0Pn3vbM3O_cg1JzMHLH0xcBosWZr6R2JZtc1TAgq1ztqHTlH_k7LEjtxV1MP-NMlOTEXYm8NNrQKUg"
+      "verificationMethod" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr#primary",
+      "signature" : "vkVOO8GMU_sYIGvU2iucpuVlB9zOjaRWt3L7s8RSTT2e5Fs5oIj8vMaP2VVBnACIhw0VhhwZIa-NMJDR-i3j-A"
     }
   } ],
-  "expires" : "2024-12-10T03:34:35Z",
+  "expires" : "2024-12-16T04:06:00Z",
   "proof" : {
     "type" : "ECDSAsecp256r1",
-    "created" : "2019-12-10T03:34:35Z",
-    "creator" : "did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#primary",
-    "signatureValue" : "wj7MaoWZ3dEW4k3X0lZ_pua8oFaNK5AnvREt7qH0gn4zUD377v4NSu80_2oTE5g60PqNCU7wK_aGlllLh_mU3w"
+    "created" : "2019-12-16T04:06:00Z",
+    "creator" : "did:elastos:inPPveR1tSuBHWF236UdJhkHm9LQHXEqTr#primary",
+    "signatureValue" : "LZrnDD1zeMnDI-mNBfC_jEdy81dv4cR9b1GJTW2dJ9Lz8PGiB_bk-fvsXHpen8hFux6mFoiK_KZPnbRPMZD12w"
   }
 }

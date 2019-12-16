@@ -38,12 +38,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestDataGenerator {
-	private File outputDir;
+	private File testDataDir;
 	private DIDAdapter adapter;
 	private DIDDocument issuer;
 	private DIDDocument test;
 
-	private String init() throws IOException, DIDException {
+	private String init(String storeRoot) throws IOException, DIDException {
 		adapter = new SPVAdapter(TestConfig.walletDir,
 				TestConfig.walletId, TestConfig.networkConfig,
 				TestConfig.resolver, new SPVAdapter.PasswordCallback() {
@@ -53,23 +53,25 @@ public class TestDataGenerator {
 					}
 				});
 
-    	TestData.deleteFile(new File(TestConfig.storeRoot));
-    	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
+		TestData.deleteFile(new File(storeRoot));
+    	DIDStore.initialize("filesystem", storeRoot, adapter);
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
 		DIDStore store = DIDStore.getInstance();
     	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
     			TestConfig.passphrase, TestConfig.storePass, true);
 
-    	outputDir = new File(TestConfig.tempDir + File.separator + "DIDTestFiles");
-    	outputDir.mkdirs();
+    	testDataDir = new File(TestConfig.tempDir + File.separator +
+    			"DIDTestFiles" + File.separator + "testdata");
+    	testDataDir.mkdirs();
+
 
     	return mnemonic;
 	}
 
 	private void createTestIssuer() throws DIDException, IOException {
 		DIDStore store = DIDStore.getInstance();
-		DIDDocument doc = store.newDid(TestConfig.storePass);
+		DIDDocument doc = store.newDid(TestConfig.storePass, "Issuer");
 
 		System.out.print("Generate issuer DID: " + doc.getSubject() + "...");
 
@@ -91,6 +93,7 @@ public class TestDataGenerator {
 		db.addCredential(vc);
 		issuer = db.seal(TestConfig.storePass);
 		store.storeDid(issuer);
+		store.storeCredential(vc, "Profile");
 
 		DIDURL id = issuer.getDefaultPublicKey();
 		String sk = store.loadPrivateKey(issuer.getSubject(), id);
@@ -131,9 +134,12 @@ public class TestDataGenerator {
 				new DID(DID.METHOD, temp.getAddress()).toString(),
 				temp.getPublicKeyBase58());
 
-		db.addService("openid", "OpenIdConnectVersion1.0Service", "https://openid.example.com/");
-		db.addService("vcr", "CredentialRepositoryService", "https://did.example.com/credentials");
-		db.addService("carrier", "CarrierAddress", "carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d");
+		db.addService("openid", "OpenIdConnectVersion1.0Service",
+				"https://openid.example.com/");
+		db.addService("vcr", "CredentialRepositoryService",
+				"https://did.example.com/credentials");
+		db.addService("carrier", "CarrierAddress",
+				"carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d");
 
 		Issuer selfIssuer = new Issuer(doc);
 		Issuer.CredentialBuilder cb = selfIssuer.issueFor(doc.getSubject());
@@ -158,14 +164,17 @@ public class TestDataGenerator {
 		props.put("email", "john@example.com");
 
 		VerifiableCredential vcEmail = cb.id("email")
-				.type("BasicProfileCredential", "InternetAccountCredential", "EmailCredential")
+				.type("BasicProfileCredential",
+						"InternetAccountCredential", "EmailCredential")
 				.properties(props)
 				.seal(TestConfig.storePass);
 
 		db.addCredential(vcProfile);
 		db.addCredential(vcEmail);
 		test = db.seal(TestConfig.storePass);
-		store.storeDid(test);
+		store.storeDid(test, "Test");
+		store.storeCredential(vcProfile, "Profile");
+		store.storeCredential(vcEmail, "Email");
 
 		DIDURL id = test.getDefaultPublicKey();
 		String sk = store.loadPrivateKey(test.getSubject(), id);
@@ -223,6 +232,7 @@ public class TestDataGenerator {
 				.type("BasicProfileCredential", "SelfProclaimedCredential")
 				.properties(props)
 				.seal(TestConfig.storePass);
+		store.storeCredential(vcPassport, "Passport");
 
 		json = vcPassport.toString(true);
 		writeTo("vc-passport.normalized.json", json);
@@ -248,6 +258,7 @@ public class TestDataGenerator {
 				.type("InternetAccountCredential", "TwitterCredential")
 				.properties(props)
 				.seal(TestConfig.storePass);
+		store.storeCredential(vcTwitter, "Twitter");
 
 		json = vcTwitter.toString(true);
 		writeTo("vc-twitter.normalized.json", json);
@@ -263,7 +274,8 @@ public class TestDataGenerator {
 		// Presentation with above credentials
 		System.out.print("Generate presentation...");
 
-		VerifiablePresentation.Builder pb = VerifiablePresentation.createFor(test.getSubject());
+		VerifiablePresentation.Builder pb = VerifiablePresentation.createFor(
+				test.getSubject());
 
 		VerifiablePresentation vp = pb.credentials(vcProfile, vcEmail)
 				.credentials(vcPassport)
@@ -282,7 +294,8 @@ public class TestDataGenerator {
 	}
 
 	public void createTestFiles() throws IOException, DIDException {
-		init();
+		init(TestConfig.tempDir + File.separator +
+    			"DIDTestFiles" + File.separator + "teststore");
 		createTestIssuer();
 		createTestDocument();
 	}
@@ -290,7 +303,7 @@ public class TestDataGenerator {
 	public void createTestDidsForRestore()
 			throws IOException, DIDException, InterruptedException {
 		System.out.print("Generate mnemonic for restore...");
-		String mnemonic = init();
+		String mnemonic = init(TestConfig.storeRoot);
 		writeTo("mnemonic.restore", mnemonic);
 		System.out.println("OK");
 
@@ -344,7 +357,8 @@ public class TestDataGenerator {
 	}
 
 	private void writeTo(String fileName, String content) throws IOException {
-		Writer out = new FileWriter(outputDir.getPath() + File.separator + fileName);
+		Writer out = new FileWriter(testDataDir.getPath()
+				+ File.separator + fileName);
 		out.write(content);
 		out.close();
 

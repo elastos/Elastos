@@ -130,14 +130,21 @@ public class HDKey {
 		}
 
 		public static DerivedKey deserialize(byte[] privateKeyBytes) {
+			byte[] extendedPrivateKeyBytes = new byte[82];
+			System.arraycopy(privateKeyBytes, 0,
+					extendedPrivateKeyBytes, 46, 32);
+
+			byte[] hash = Sha256.sha256Twice(extendedPrivateKeyBytes, 0, 78);
+			System.arraycopy(hash, 0, extendedPrivateKeyBytes, 78, 4);
+
 			ExtendedPrivateKey privateKey = ExtendedPrivateKey
-					.deserializer().deserialize(privateKeyBytes);
+					.deserializer().deserialize(extendedPrivateKeyBytes);
 
 			return new DerivedKey(privateKey);
 		}
 
 		public byte[] serialize() {
-			return privateKey.extendedKeyByteArray();
+			return privateKey.getKeyBytes();
 		}
 
 		public byte[] getPublicKeyBytes() {
