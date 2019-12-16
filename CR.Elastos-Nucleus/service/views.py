@@ -113,10 +113,9 @@ def create_wallet(request):
         form = CreateWalletForm(request.POST)
         if form.is_valid():
             api_key = form.cleaned_data.get('api_key')
-            eth_password = form.cleaned_data.get('eth_password')
             try:
                 wallet = Wallet()
-                response = wallet.create_wallet(api_key, eth_password)
+                response = wallet.create_wallet(api_key)
                 if response.status:
                     content = json.loads(response.output)['result']
                     wallet_mainchain = content['mainchain']
@@ -275,17 +274,18 @@ def deploy_eth_contract(request):
         # Purge old requests for housekeeping.
         UploadFile.objects.filter(did=did).delete()
 
-        eth_account_address = request.POST['eth_account_address']
-        eth_account_password = request.POST['eth_account_password']
-        api_key = request.POST['api_key']
         form = DeployETHContractForm(request.POST, request.FILES, initial={'did': did})
         if form.is_valid():
+            api_key = form.cleaned_data.get('api_key')
+            eth_account_address = form.cleaned_data.get('eth_account_address')
+            eth_private_key = form.cleaned_data.get('eth_private_key')
+            eth_gas = form.cleaned_data.get('eth_gas')
             form.save()
             temp_file = UploadFile.objects.get(did=did)
             file_path = temp_file.uploaded_file.path
             try:
                 sidechain_eth = SidechainEth()
-                response = sidechain_eth.deploy_eth_contract(api_key, eth_account_address, eth_account_password, file_path)
+                response = sidechain_eth.deploy_eth_contract(api_key, eth_account_address, eth_private_key, eth_gas, file_path)
                 data = json.loads(response.output)
                 if response.status:
                     temp_file.delete()
