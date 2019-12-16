@@ -21,7 +21,7 @@ namespace Elastos {
 			} TCompare;
 
 			T Get(const uint256 &hash) const {
-				typename std::set<T>::const_iterator it;
+				typename std::set<T, TCompare>::const_iterator it;
 				it = std::find_if(_elements.begin(), _elements.end(), [&hash](const T &e) {
 					return hash == e->GetHash();
 				});
@@ -52,10 +52,34 @@ namespace Elastos {
 				return _elements.size();
 			}
 
-			void Remove(const T &e) {
-				typename std::set<T>::const_iterator it = _elements.find(e);
-				if (it != _elements.end())
+			bool Remove(const T &e) {
+				return _elements.erase(e) > 0;
+			}
+
+			bool RemoveMatchPrevHash(const uint256 &hash) {
+				typename std::set<T, TCompare>::const_iterator it;
+				it = std::find_if(_elements.cbegin(), _elements.cend(), [&hash](const T &e) {
+					return hash == e->GetPrevBlockHash();
+				});
+
+				if (it != _elements.end()) {
 					_elements.erase(it);
+					return true;
+				}
+
+				return false;
+			}
+
+			T GetMatchPrevHash(const uint256 &hash) const {
+				typename std::set<T, TCompare>::const_iterator it;
+				it = std::find_if(_elements.cbegin(), _elements.cend(), [&hash](const T &e) {
+					return hash == e->GetPrevBlockHash();
+				});
+
+				if (it != _elements.end())
+					return *it;
+
+				return nullptr;
 			}
 
 			void Clear() {

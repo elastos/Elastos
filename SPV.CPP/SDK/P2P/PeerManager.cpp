@@ -201,7 +201,7 @@ namespace Elastos {
 			for (size_t i = 0; i < blocks.size(); i++) {
 				assert(blocks[i]->GetHeight() !=
 					   BLOCK_UNKNOWN_HEIGHT); // height must be saved/restored along with serialized block
-				_orphans.insert(blocks[i]);
+				_orphans.Insert(blocks[i]);
 
 				if ((blocks[i]->GetHeight() % BLOCK_DIFFICULTY_INTERVAL) == 0 &&
 					(block == nullptr || blocks[i]->GetHeight() > block->GetHeight()))
@@ -213,29 +213,11 @@ namespace Elastos {
 			if (block == nullptr)
 				block = earlistBlock;
 
-			uint256 hash;
 			while (block != nullptr) {
 				_blocks.Insert(block);
 				_lastBlock = block;
-
-				hash = block->GetPrevBlockHash();
-				for (std::set<MerkleBlockPtr>::const_iterator it = _orphans.cbegin(); it != _orphans.cend();) {
-					if (hash == (*it)->GetPrevBlockHash()) {
-						it = _orphans.erase(it);
-						break;
-					} else {
-						++it;
-					}
-				}
-
-				hash = block->GetHash();
-				block = nullptr;
-				for (std::set<MerkleBlockPtr>::const_iterator it = _orphans.cbegin(); it != _orphans.cend(); ++it) {
-					if (hash == (*it)->GetPrevBlockHash()) {
-						block = *it;
-						break;
-					}
-				}
+				_orphans.Remove(block);
+				block = _orphans.GetMatchPrevHash(block->GetHash());
 			}
 		}
 
@@ -713,7 +695,7 @@ namespace Elastos {
 			_wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
 			_wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 
-			_orphans.clear(); // clear out orphans that may have been received on an old filter
+			_orphans.Clear(); // clear out orphans that may have been received on an old filter
 			_lastOrphan = nullptr;
 			_filterUpdateHeight = _lastBlock->GetHeight();
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
@@ -1387,14 +1369,15 @@ namespace Elastos {
 						_connectFailureCount = 0; // reset failure count once we know our initial request didn't timeout
 					}
 				} else if (!prev) { // block is an orphan
-					PEER_DEBUG(peer, "relayed orphan block {}, previous {}, last block is {}, height {}",
+					PEER_DEBUG(peer, "relayed orphan block {}:{}, previous {}, last block is {}:{}",
 							   block->GetHash().GetHex(),
+							   block->GetHeight(),
 							   block->GetPrevBlockHash().GetHex(),
 							   _lastBlock->GetHash().GetHex(),
 							   _lastBlock->GetHeight());
 
-					if (block->GetHeight() + 7 * 24 * 60 * 60 <
-						time(nullptr)) { // ignore orphans older than one week ago
+					if (block->GetTimestamp() + 7 * 24 * 60 * 60 < time(nullptr)) { // ignore orphans older than one week ago
+						peer->info("ignore orphan #{}", block->GetHeight());
 					} else {
 						// call getblocks, unless we already did with the previous block, or we're still syncing
 						if (_lastBlock->GetHeight() >= peer->GetLastBlock() &&
@@ -1404,7 +1387,7 @@ namespace Elastos {
 							peer->SendMessage(MSG_GETBLOCKS, getBlocksParameter);
 						}
 
-						_orphans.insert(block); // BUG: limit total orphans to avoid memory exhaustion attack
+						_orphans.Insert(block); // BUG: limit total orphans to avoid memory exhaustion attack
 						_lastOrphan = block;
 						peer->ScheduleDisconnect(PROTOCOL_TIMEOUT); // reschedule sync timeout
 					}
@@ -1459,19 +1442,14 @@ namespace Elastos {
 					_blocks.Insert(block);
 
 					if (b != nullptr && b != block) {
-						for(std::set<MerkleBlockPtr>::iterator it = _orphans.begin(); it != _orphans.end(); ++it) {
-							if ((*it)->IsEqual(b.get()))	{
-								_orphans.erase(it);
-								break;
-							}
-						}
+						_orphans.Remove(b);
 						if (_lastOrphan == b) _lastOrphan = nullptr;
 					}
 				} else if (_lastBlock->GetHeight() < peer->GetLastBlock() &&
 					block->GetHeight() >
 							   _lastBlock->GetHeight() + 1) { // special case, new block mined durring rescan
 					peer->info("marking new block #{} as orphan until rescan completes", block->GetHeight());
-					_orphans.insert(block); // mark as orphan til we're caught up
+					_orphans.Insert(block); // mark as orphan til we're caught up
 					_lastOrphan = block;
 				} else if (block->GetHeight() <= _chainParams->LastCheckpoint().Height()) { // old fork
 					peer->info("ignoring block on fork older than most recent checkpoint, block #{}, hash: {}",
@@ -1522,13 +1500,10 @@ namespace Elastos {
 					if (block->GetHeight() > _estimatedHeight) _estimatedHeight = block->GetHeight();
 
 					// check if the next block was received as an orphan
-					uint256 prevBlockHash = block->GetHash();
-					for (std::set<MerkleBlockPtr>::iterator it = _orphans.begin(); it != _orphans.end(); ++it) {
-						if ((*it)->GetPrevBlockHash() == prevBlockHash) {
-							next = *it;
-							_orphans.erase(it);
-							break;
-						}
+					MerkleBlockPtr nextBlock = _orphans.GetMatchPrevHash(block->GetHash());
+					if (nextBlock) {
+						next = nextBlock;
+						_orphans.Remove(nextBlock);
 					}
 				}
 

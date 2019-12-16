@@ -284,7 +284,7 @@ namespace Elastos {
 			BloomFilterPtr _bloomFilter;
 			double _fpRate, _averageTxPerBlock;
 			BlockSet _blocks;
-			std::set<MerkleBlockPtr> _orphans;
+			BlockSet _orphans;
 			BlockSet _checkpoints;
 			MerkleBlockPtr _lastBlock, _lastOrphan;
 			std::vector<TransactionPeerList> _txRelays, _txRequests;
