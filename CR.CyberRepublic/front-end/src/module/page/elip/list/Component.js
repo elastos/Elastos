@@ -104,12 +104,17 @@ export default class extends BaseComponent {
   }
 
   searchChangedHandler = search => {
+    this.props.updateFilters({ search })
     this.setState({ search: search.trim() }, this.debouncedRefetch)
   }
 
   handleFilter = () => {
     const { isVisitableFilter } = this.state
     this.setState({ isVisitableFilter: !isVisitableFilter })
+  }
+
+  handleSearchChange = e => {
+    this.setState({ search: e.target.value })
   }
 
   handleStatusChange = filter => {
@@ -239,7 +244,8 @@ export default class extends BaseComponent {
     const searchInput = (
       <Col lg={8} md={12} sm={12} xs={24}>
         <StyledSearch
-          defaultValue={this.state.search}
+          value={this.state.search}
+          onChange={this.handleSearchChange}
           onSearch={this.searchChangedHandler}
           placeholder={I18N.get('developer.search.search.placeholder')}
         />

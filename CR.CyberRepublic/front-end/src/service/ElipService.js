@@ -75,6 +75,6 @@ export default class extends BaseService {
   }
 
   async updateFilters(filters) {
-    await this.dispatch(this.selfRedux.actions.filters_update(filters))
+    this.dispatch(this.selfRedux.actions.filters_update(filters))
   }
 }

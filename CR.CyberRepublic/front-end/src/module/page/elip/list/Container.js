@@ -3,6 +3,8 @@ import { createContainer } from '@/util'
 import Component from './Component'
 import ElipService from '@/service/ElipService'
 
+const excludeFilters = (value, key) => (key !== 'search')
+
 const defaultFilters = {
   search: '',
   filter: '',
@@ -16,10 +18,13 @@ const mapState = state => ({
   currentUserId: state.user.current_user_id,
   isLogin: state.user.is_login,
   isSecretary: state.user.is_secretary,
-  filters: _.isEmpty(state.elip.filters)
-    ? defaultFilters
-    : state.elip.filters,
-  isVisitableFilter: !_.isEqual(defaultFilters, state.suggestion.filters),
+  filters: _.isEmpty(state.elip.filters) ? defaultFilters : state.elip.filters,
+  isVisitableFilter: _.isEmpty(state.elip.filters)
+    ? false
+    : !_.isEqual(
+      _.filter(defaultFilters, excludeFilters),
+      _.filter(state.elip.filters, excludeFilters)
+    )
 })
 
 const mapDispatch = () => {

@@ -30,7 +30,7 @@ class SearchBox extends Component {
   }
 
   render() {
-    const { value } = this.props
+    const { value, onChange } = this.props
     const SEARCH_FILTER_TEXTS = {
       TITLE: I18N.get('suggestion.search.title'),
       NUMBER: I18N.get('suggestion.search.number'),
@@ -52,7 +52,8 @@ class SearchBox extends Component {
           ))}
         </Select>
         <Input.Search
-          defaultValue={value}
+          value={value}
+          onChange={onChange}
           onSearch={this.handleSearch}
           placeholder={I18N.get('suggestion.form.search')}
         />

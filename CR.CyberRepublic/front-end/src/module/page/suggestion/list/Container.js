@@ -9,6 +9,8 @@ import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'
 import Component from './Component'
 
+const excludeFilters = (value, key) => (key !== 'search')
+
 const defaultFilters = {
   referenceStatus: false,
   infoNeeded: false,
@@ -35,7 +37,12 @@ const mapState = (state) => {
     filters: _.isEmpty(state.suggestion.filters)
       ? defaultFilters
       : state.suggestion.filters,
-    isVisitableFilter: !_.isEqual(defaultFilters, state.suggestion.filters),
+    isVisitableFilter: _.isEmpty(state.suggestion.filters)
+      ? false
+      : !_.isEqual(
+        _.filter(defaultFilters, excludeFilters),
+        _.filter(state.suggestion.filters, excludeFilters)
+      ),
     isLogin: state.user.is_login,
     isSecretary: state.user.is_secretary,
     user: state.user

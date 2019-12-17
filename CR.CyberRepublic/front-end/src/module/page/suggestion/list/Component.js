@@ -114,6 +114,10 @@ export default class extends StandardPage {
     this.setState({ isVisitableFilter: !isVisitableFilter })
   }
 
+  handleSearchChange = e => {
+    this.setState({ search: e.target.value })
+  }
+
   handleStatusChange = status => {
     this.setState({ status })
   }
@@ -212,7 +216,7 @@ export default class extends StandardPage {
             style={{ margin: '24px 0 48px' }}
           >
             <Col xs={24} sm={12} style={{ paddingTop: 24 }}>
-              <SearchBox search={this.handleSearch} value={this.state.search} />
+              <SearchBox search={this.handleSearch} onChange={this.handleSearchChange} value={this.state.search} />
             </Col>
             {filterNode}
             <Col xs={24} sm={8} style={{ textAlign: 'right', paddingTop: 24 }}>
