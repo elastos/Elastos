@@ -22,6 +22,7 @@ import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.AssetskFragment;
 import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.common.bean.ISubWalletListEntity;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
@@ -35,6 +36,7 @@ import org.elastos.wallet.ela.ui.main.MainActivity;
 import org.elastos.wallet.ela.ui.mine.adapter.ContactRecAdapetr;
 import org.elastos.wallet.ela.ui.mine.fragment.AboutFragment;
 import org.elastos.wallet.ela.ui.mine.fragment.ContactDetailFragment;
+import org.elastos.wallet.ela.ui.mine.fragment.MessageListFragment;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.RxEnum;
@@ -54,9 +56,6 @@ import butterknife.OnClick;
 
 public class MineFragment extends BaseFragment implements CommonRvListener, NewBaseViewData {
 
-
-    @BindView(R.id.statusbarutil_fake_status_bar_view)
-    View statusbarutilFakeStatusBarView;
     @BindView(R.id.iv_title_left)
     ImageView ivTitleLeft;
     @BindView(R.id.tv_title)
@@ -105,8 +104,9 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
 
     @Override
     protected void initView(View view) {
-
-        tvTitle.setText(R.string.setting);
+        ivTitleRight.setVisibility(View.VISIBLE);
+        ivTitleRight.setImageResource(R.mipmap.mine_message_center);
+        tvTitle.setText(R.string.mine);
         ivTitleLeft.setVisibility(View.GONE);
         sp = new SPUtil(getContext());
         llLanguge.getChildAt(sp.getLanguage()).setSelected(true);
@@ -123,10 +123,15 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
             new AddDIDPresenter().getAllSubWallets(wallet.getWalletId(), this);
 
         }
+
+        if (sp.isOpenRedPoint() && ((AssetskFragment.messageList != null && AssetskFragment.messageList.size() > 0) || CacheUtil.getUnReadMessage().size() > 0)) {
+            //有新消息
+            ivTitleRight.setImageResource(R.mipmap.mine_message_center_red);
+        }
     }
 
     @OnClick({R.id.rl_language, R.id.rl_contact, R.id.tv_chinese, R.id.tv_english,
-            R.id.iv_contact_add, R.id.rl_about, R.id.rl_did})
+            R.id.iv_contact_add, R.id.rl_about, R.id.rl_did,R.id.iv_title_right})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_chinese:
@@ -204,6 +209,10 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
                     ((BaseFragment) getParentFragment()).start(DIDListFragment.class, bundle1);
                 }
                 break;
+            case R.id.iv_title_right:
+                //消息中心
+                ((BaseFragment) getParentFragment()).start(MessageListFragment.class);
+                break;
         }
     }
 
@@ -246,6 +255,17 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
             draftList = (ArrayList<DIDInfoEntity>) result.getObj();
             //保存草稿成功
             tvDid.setVisibility(View.GONE);
+        }
+        if (integer == RxEnum.NOTICE.ordinal()) {
+            //新的消息通知
+            if (sp.isOpenRedPoint()) {
+                ivTitleRight.setImageResource(R.mipmap.mine_message_center_red);
+            }
+        }if (integer == RxEnum.READNOTICE.ordinal()) {
+            //新的消息通知
+            if (sp.isOpenRedPoint()) {
+                ivTitleRight.setImageResource(R.mipmap.mine_message_center);
+            }
         }
     }
 
@@ -329,7 +349,7 @@ public class MineFragment extends BaseFragment implements CommonRvListener, NewB
                 DIDListEntity didListEntity = JSON.parseObject(((CommmonStringEntity) baseEntity).getData(), DIDListEntity.class);
                 if (didListEntity != null && didListEntity.getDID() != null && didListEntity.getDID().size() > 0) {
 
-                    for (DIDInfoEntity didBean:didListEntity.getDID()){
+                    for (DIDInfoEntity didBean : didListEntity.getDID()) {
                         didBean.setWalletId((String) o);
                     }
                     if (tvDid.getVisibility() == View.VISIBLE) {

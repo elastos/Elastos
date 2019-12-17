@@ -297,6 +297,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         for (int i = 0; i < list.size(); i++) {
             if (mAdapter.getDataMap().get(i)) {
                 nodelist.add(list.get(i).getOwnerpublickey());
+               // nodelist.add("03d835419df96c76b4b7bd5e56b1ed9362c80186ce3b35cd962dec2232040b0f8b");
             }
         }
         if (nodelist.size() > 36) {

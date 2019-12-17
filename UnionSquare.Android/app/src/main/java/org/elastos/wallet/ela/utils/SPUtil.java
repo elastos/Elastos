@@ -169,4 +169,26 @@ public class SPUtil {
         edit.putString("deviceId", id);
         edit.commit();
     }
+
+    //是不是打开消息通知红点
+    public boolean isOpenRedPoint() {
+        return getSharedPreferences(detrust_fileName).getBoolean("openReadPoint", true);
+    }
+
+    //设置是不是打开消息通知红点
+    public void setOpenRedPoint(boolean tag) {
+        SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
+        edit.putBoolean("openReadPoint", tag);
+        edit.commit();
+    } //是不是打开消息通知
+    public boolean isOpenSendMsg() {
+        return getSharedPreferences(detrust_fileName).getBoolean("openSendMsg", true);
+    }
+
+    //设置是不是打开消息通知
+    public void setOpenSendMsg(boolean tag) {
+        SharedPreferences.Editor edit = getSharedPreferences(detrust_fileName).edit();
+        edit.putBoolean("openSendMsg", tag);
+        edit.commit();
+    }
 }

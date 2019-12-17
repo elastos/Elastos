@@ -71,6 +71,8 @@ public enum RxEnum {
     EDITSOCIAL,//编辑社交账号
     IPVALID,//节点ip可用
     AGREE,//cr注册同意协议
+    NOTICE,//消息通知
+    READNOTICE//看完消息通知
 
    /* enum Type {
         CoinBase, // 创币交易

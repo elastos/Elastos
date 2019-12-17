@@ -47,11 +47,14 @@ import org.elastos.wallet.ela.ui.Assets.viewdata.AssetsViewData;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
 import org.elastos.wallet.ela.ui.common.listener.CommonRvListener1;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.mine.bean.MessageEntity;
+import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.MyUtil;
 import org.elastos.wallet.ela.utils.QrBean;
 import org.elastos.wallet.ela.utils.RxEnum;
+import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.ScanQRcodeUtil;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -59,6 +62,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +108,7 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     public void onSaveInstanceState(Bundle outState) {
         realmUtil.updateSubWalletDetial(listMap);
+        CacheUtil.setUnReadMessage(messageList);
         super.onSaveInstanceState(outState);
     }
 
@@ -444,25 +449,32 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     }
 
+    public static List<MessageEntity> messageList;
+
     @Override
     public synchronized void OnTxPublished(JSONObject jsonObject) {
+        SPUtil sp = new SPUtil(getContext());
+        if (!sp.isOpenSendMsg()) {
+            return;
+        }
         try {
             String hash = jsonObject.getString("hash");
             String transferType = transactionMap.get(hash);
-            if (transferType == null) {
+            if (TextUtils.isEmpty(transferType)) {
                 return;
             }
             String chainId = jsonObject.getString("ChainID");
+            String transferTypeDes = getString(R.string.transfertype13);
             try {
                 if (chainId.equals(MyWallet.IDChain)) {
-                    transferType = getString(getContext().getResources().getIdentifier("sidetransfertype" + transferType, "string",
+                    transferTypeDes = getString(getContext().getResources().getIdentifier("sidetransfertype" + transferType, "string",
                             getContext().getPackageName()));
                 } else {
-                    transferType = getString(getContext().getResources().getIdentifier("transfertype" + transferType, "string",
+                    transferTypeDes = getString(getContext().getResources().getIdentifier("transfertype" + transferType, "string",
                             getContext().getPackageName()));
                 }
             } catch (Exception e) {
-                transferType = getString(R.string.transfertype13);
+                Log.i("transferTypeDes", e.getMessage());
             }
             String resultString = jsonObject.getString("result");
             String masterWalletID = jsonObject.getString("MasterWalletID");
@@ -484,13 +496,25 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
             }
             Notification notification = new NotificationCompat.Builder(getContext(), "default")
                     .setContentTitle(MyUtil.getAppName(getContext()))
-                    .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferType + reason + ".")
+                    .setContentText("【" + walleName + getString(R.string.wallet) + "】" + transferTypeDes + reason + ".")
                     .setWhen(System.currentTimeMillis())
                     .setSmallIcon(R.mipmap.icon_ela)
                     .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.icon_ela))
                     .build();
             manager.notify(1, notification);
-
+            if (messageList == null) {
+                messageList = new ArrayList<>();
+            }
+            MessageEntity messageEntity = new MessageEntity();
+            messageEntity.setReason(reason);
+            messageEntity.setTransferType(transferType);
+            messageEntity.setWalletName(walleName);
+            messageEntity.setTime(new Date().getTime() / 1000);
+            messageEntity.setHash(hash);
+            messageEntity.setChainId(chainId);
+            messageList.remove(messageEntity);
+            messageList.add(messageEntity);
+            post(RxEnum.NOTICE.ordinal(), null, null);
 
         } catch (Exception e) {
             Log.i(getClass().getSimpleName(), e.getMessage());
@@ -626,9 +650,10 @@ public class AssetskFragment extends BaseFragment implements AssetsViewData, Com
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         //存储所有同步状态
         realmUtil.updateSubWalletDetial(listMap);
+        CacheUtil.setUnReadMessage(messageList);
+        super.onDestroy();
     }
 
     @Override

@@ -586,4 +586,9 @@
     <string name="nocandidates">No Candidate</string>
     <string name="nocandidatenode">No Candidate Node</string>
     <string name="plzinputport">请输入端口号</string>
+    <string name="upisnewest">以上为最新消息</string>
+    <string name="nomessagenow">暂无消息</string>
+    <string name="messagecenter">消息中心</string>
+    <string name="openredpoint">红点开关</string>
+    <string name="sendmsg">信息推送</string>
 </resources>
