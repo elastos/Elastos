@@ -28,15 +28,24 @@ const { RangePicker } = DatePicker
 export default class extends BaseComponent {
   constructor(props) {
     super(props)
+
+    const { isVisitableFilter } = this.props
+    const {
+      search,
+      filter,
+      creationDate,
+      author,
+      type
+    } = this.props.filters
     this.state = {
       list: [],
-      search: '',
-      isVisitableFilter: false,
-      filter: '',
       loading: true,
-      creationDate: [],
-      author: '',
-      type: ''
+      isVisitableFilter,
+      search,
+      filter,
+      creationDate,
+      author,
+      type,
     }
     this.debouncedRefetch = _.debounce(this.refetch.bind(this), 300)
   }
@@ -120,10 +129,26 @@ export default class extends BaseComponent {
   }
 
   handleClearFilter = () => {
-    this.setState({ search: '', filter: '', creationDate: [], author: '', type: '' })
+    const defaultFiltes = this.props.getDefaultFilters()
+    this.setState({ ...defaultFiltes })
+    this.props.clearFilters()
   }
 
   handleApplyFilter = () => {
+    const {
+      search,
+      filter,
+      creationDate,
+      author,
+      type
+    } = this.state
+    this.props.updateFilters({
+      search,
+      filter,
+      creationDate,
+      author,
+      type
+    })
     this.refetch()
   }
 

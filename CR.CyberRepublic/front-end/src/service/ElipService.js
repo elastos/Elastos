@@ -73,4 +73,8 @@ export default class extends BaseService {
     })
     return rs
   }
+
+  async updateFilters(filters) {
+    await this.dispatch(this.selfRedux.actions.filters_update(filters))
+  }
 }

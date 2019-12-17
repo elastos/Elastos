@@ -309,7 +309,6 @@ export default class extends BaseService {
   }
 
   async updateFilters(filters) {
-    console.log(filters)
     await this.dispatch(this.selfRedux.actions.filters_update(filters))
   }
 }
