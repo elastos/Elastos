@@ -93,9 +93,9 @@ class TestData: XCTestCase {
         return TestData.testDocument!
     }
     
-    func loadCredential(_ fileName: String) throws -> VerifiableCredential {
+    func loadCredential(_ fileName: String, _ type: String) throws -> VerifiableCredential {
         let buldle = Bundle(for: type(of: self))
-        let jsonstr = buldle.path(forResource: fileName, ofType: "json")
+        let jsonstr = buldle.path(forResource: fileName, ofType: type)
         let vc: VerifiableCredential = try VerifiableCredential.fromJson(jsonstr!)
         if DIDStore.isInitialized() {
             try DIDStore.shareInstance()?.storeCredential(vc)
@@ -105,28 +105,28 @@ class TestData: XCTestCase {
     
     public func loadProfileCredential() throws -> VerifiableCredential {
         if TestData.profileVc == nil {
-            TestData.profileVc = try loadCredential("vc-profile")
+            TestData.profileVc = try loadCredential("vc-profile", "json")
         }
         return TestData.profileVc!
     }
     
     public func loadEmailCredential() throws -> VerifiableCredential {
         if TestData.emailVc == nil {
-            TestData.emailVc = try loadCredential("vc-email")
+            TestData.emailVc = try loadCredential("vc-email", "json")
         }
         return TestData.emailVc!
     }
     
     public func loadPassportCredential() throws -> VerifiableCredential {
         if TestData.passportVc == nil {
-            TestData.passportVc = try loadCredential("vc-passport")
+            TestData.passportVc = try loadCredential("vc-passport", "json")
         }
         return TestData.passportVc!
     }
     
     public func loadTwitterCredential() throws -> VerifiableCredential {
         if TestData.twitterVc == nil {
-            TestData.twitterVc = try loadCredential("vc-twitter")
+            TestData.twitterVc = try loadCredential("vc-twitter", "json")
         }
         return TestData.twitterVc!
     }
@@ -140,99 +140,99 @@ class TestData: XCTestCase {
         return TestData.testVp!
     }
     
-    func loadText(_ fileName: String) throws -> String {
+    func loadText(_ fileName: String, _ type: String) throws -> String {
         let bl = Bundle(for: type(of: self))
-        let jsonstr = bl.path(forResource: fileName, ofType: "json")
+        let jsonstr = bl.path(forResource: fileName, ofType: type)
         return jsonstr!
     }
     
     public func loadIssuerCompactJson() throws -> String {
         if TestData.issuerCompactJson == nil {
-            TestData.issuerCompactJson = try loadText("issuer.compact")
+            TestData.issuerCompactJson = try loadText("issuer.compact", "json")
         }
         return TestData.issuerCompactJson!
     }
     
     public func loadIssuerNormalizedJson() throws -> String {
         if TestData.issuerNormalizedJson == nil {
-            TestData.issuerNormalizedJson = try loadText("issuer.normalized")
+            TestData.issuerNormalizedJson = try loadText("issuer.normalized", "json")
         }
         return TestData.issuerNormalizedJson!
     }
     
     public func loadTestCompactJson() throws -> String {
         if TestData.testCompactJson == nil {
-            TestData.testCompactJson = try loadText("document.compact")
+            TestData.testCompactJson = try loadText("document.compact", "json")
         }
         return TestData.testCompactJson!
     }
     
     public func loadTestNormalizedJson() throws -> String {
         if TestData.testNormalizedJson == nil {
-            TestData.testNormalizedJson = try loadText("document.normalized")
+            TestData.testNormalizedJson = try loadText("document.normalized", "json")
         }
         return TestData.testNormalizedJson!
     }
     
     public func loadProfileVcCompactJson() throws -> String {
         if TestData.profileVcCompactJson == nil {
-            TestData.profileVcCompactJson = try loadText("vc-profile.compact")
+            TestData.profileVcCompactJson = try loadText("vc-profile.compact", "json")
         }
         return TestData.profileVcCompactJson!
     }
     
     public func loadProfileVcNormalizedJson() throws -> String {
         if TestData.profileVcNormalizedJson == nil {
-            TestData.profileVcNormalizedJson = try loadText("vc-profile.normalized")
+            TestData.profileVcNormalizedJson = try loadText("vc-profile.normalized", "json")
         }
         return TestData.profileVcNormalizedJson!
     }
     
     public func loadEmailVcCompactJson() throws -> String {
         if TestData.emailVcCompactJson == nil {
-            TestData.emailVcCompactJson = try loadText("vc-email.compact")
+            TestData.emailVcCompactJson = try loadText("vc-email.compact", "json")
         }
         return TestData.emailVcCompactJson!
     }
     
     public func loadEmailVcNormalizedJson() throws -> String {
         if TestData.emailVcNormalizedJson == nil {
-            TestData.emailVcNormalizedJson = try loadText("vc-email.normalized")
+            TestData.emailVcNormalizedJson = try loadText("vc-email.normalized", "json")
         }
         return TestData.emailVcNormalizedJson!
     }
     
     public func loadPassportVcCompactJson() throws -> String {
         if TestData.passportVcCompactJson == nil {
-            TestData.passportVcCompactJson = try loadText("vc-passport.compact")
+            TestData.passportVcCompactJson = try loadText("vc-passport.compact", "json")
         }
         return TestData.passportVcCompactJson!
     }
     
     public func loadPassportVcNormalizedJson() throws -> String {
         if TestData.passportVcNormalizedJson == nil {
-            TestData.passportVcNormalizedJson = try loadText("vc-passport.normalized")
+            TestData.passportVcNormalizedJson = try loadText("vc-passport.normalized", "json")
         }
         return TestData.passportVcNormalizedJson!
     }
     
     public func loadTwitterVcCompactJson() throws -> String {
         if TestData.twitterVcCompactJson == nil {
-            TestData.twitterVcCompactJson = try loadText("vc-twitter.compact")
+            TestData.twitterVcCompactJson = try loadText("vc-twitter.compact", "json")
         }
         return TestData.twitterVcCompactJson!
     }
     
     public func loadTwitterVcNormalizedJson() throws -> String {
         if TestData.twitterVcNormalizedJson == nil {
-            TestData.twitterVcNormalizedJson = try loadText("vc-twitter.normalized")
+            TestData.twitterVcNormalizedJson = try loadText("vc-twitter.normalized", "json")
         }
         return TestData.twitterVcNormalizedJson!
     }
     
     public func loadPresentationNormalizedJson() throws -> String {
         if TestData.testVpNormalizedJson == nil {
-            TestData.testVpNormalizedJson = try loadText("vp.normalized")
+            TestData.testVpNormalizedJson = try loadText("vp.normalized", "json")
         }
         return TestData.testVpNormalizedJson!
     }
@@ -240,7 +240,7 @@ class TestData: XCTestCase {
     public func loadRestoreMnemonic() throws -> String {
         if TestData.restoreMnemonic == nil {
             // TODO: load test
-            TestData.restoreMnemonic = try loadText("mnemonic.restore")
+            TestData.restoreMnemonic = try loadText("mnemonic", "restore")
         }
         return TestData.restoreMnemonic!
     }
@@ -248,7 +248,7 @@ class TestData: XCTestCase {
     public func deleteFile() throws -> String {
         if TestData.restoreMnemonic == nil {
             // TODO: load test
-            TestData.restoreMnemonic = try loadText("mnemonic.restore")
+            TestData.restoreMnemonic = try loadText("mnemonic", "restore")
         }
         return TestData.restoreMnemonic!
     }
