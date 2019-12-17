@@ -90,7 +90,7 @@ def main():
         try:
             wallet = Wallet()
             print("\n--> View Wallet")
-            # Mainchain preloaded wallet address on private net
+            # Mainchain
             response = wallet.view_wallet('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'mainchain', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             json_output = json.loads(response.output)
             if response.status:
@@ -99,7 +99,7 @@ def main():
             else:
                 print("Error Message: ", response.status_message)
 
-            # DID sidechain preloaded wallet address on private net
+            # DID sidechain
             response = wallet.view_wallet('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'did', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             json_output = json.loads(response.output)
             if response.status:
@@ -108,7 +108,7 @@ def main():
             else:
                 print("Error Message: ", response.status_message)
 
-            # Token sidechain preloaded wallet address on private net
+            # Token sidechain
             response = wallet.view_wallet('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'token', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             json_output = json.loads(response.output)
             if response.status:
@@ -117,7 +117,7 @@ def main():
             else:
                 print("Error Message: ", response.status_message)
 
-            # Eth sidechain preloaded wallet address on private net
+            # Eth sidechain
             response = wallet.view_wallet('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'eth', '0x282c2795B9722d638778f5a1A0045c60b330F1A0')
             json_output = json.loads(response.output)
             if response.status:
@@ -133,7 +133,7 @@ def main():
         try:
             wallet = Wallet()
             print("\n--> Request ELA")
-            # Mainchain preloaded wallet address on private net
+            # Mainchain
             response = wallet.request_ela('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'mainchain', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             json_output = json.loads(response.output)
             if response.status:
@@ -142,7 +142,7 @@ def main():
             else:
                 print("Error Message: ", response.status_message)
 
-            # DID sidechain preloaded wallet address on private net
+            # DID sidechain
             response = wallet.request_ela('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'did', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             json_output = json.loads(response.output)
             if response.status:
@@ -151,7 +151,7 @@ def main():
             else:
                 print("Error Message: ", response.status_message)
 
-            # Token sidechain preloaded wallet address on private net
+            # Token sidechain
             response = wallet.request_ela('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'token', 'EQeMkfRk3JzePY7zpUSg5ZSvNsWedzqWXN')
             json_output = json.loads(response.output)
             if response.status:
@@ -160,7 +160,7 @@ def main():
             else:
                 print("Error Message: ", response.status_message)
             
-            # Eth sidechain preloaded wallet address on private net
+            # Eth sidechain
             response = wallet.request_ela('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU', 'eth', '0x282c2795B9722d638778f5a1A0045c60b330F1A0')
             json_output = json.loads(response.output)
             if response.status:
