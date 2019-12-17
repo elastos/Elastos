@@ -13,10 +13,8 @@
 #include <WalletCore/Base58.h>
 #include <WalletCore/HDKeychain.h>
 #include <WalletCore/CoinInfo.h>
-#include <Plugin/Transaction/Asset.h>
 
 #include <fstream>
-#include <boost/filesystem.hpp>
 
 using namespace Elastos::ElaWallet;
 

@@ -1,6 +1,6 @@
 include(ProjectDefaults)
 
-file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
+file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp" "*.c")
 aux_source_directory(../Core/bcash SPVCORE_BCASH_SOURCE_FILES)
 aux_source_directory(../Core/ SPVCORE_SOURCE_FILES)
 set(SPVSDK_SOURCE_FILES
