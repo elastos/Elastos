@@ -65,7 +65,7 @@ class IDChainOperationsTest: XCTestCase {
             didStrings.add(id.description)
         }
         let bl = Bundle(for: type(of: self))
-        let jsonstr = bl.path(forResource: "dids.restore", ofType: "")
+        let jsonstr = bl.path(forResource: "dids", ofType: "restore")
         // TODO: 按行读取
         
     }

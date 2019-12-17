@@ -2,11 +2,11 @@ import Foundation
 
 public class DIDDocument: NSObject {
     public var subject: DID?
-    private var publicKeys: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
-    private var authentications: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
-    private var authorizations: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
-    private var credentials: OrderedDictionary<DIDURL, VerifiableCredential> = OrderedDictionary()
-    private var services: OrderedDictionary<DIDURL, Service> = OrderedDictionary()
+    public var publicKeys: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
+    public var authentications: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
+    public var authorizations: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
+    public var credentials: OrderedDictionary<DIDURL, VerifiableCredential> = OrderedDictionary()
+    public var services: OrderedDictionary<DIDURL, Service> = OrderedDictionary()
     public var expires: Date?
     
     public var cinputs: [CVarArg]?

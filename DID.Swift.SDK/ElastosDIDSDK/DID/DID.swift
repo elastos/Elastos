@@ -7,7 +7,7 @@ public class DID: NSObject {
     public var methodSpecificId: String!
     public var alias: String = ""
 
-    init(_ method: String, _ methodSpecificId: String) {
+    public init(_ method: String, _ methodSpecificId: String) {
         self.method = method
         self.methodSpecificId = methodSpecificId
     }

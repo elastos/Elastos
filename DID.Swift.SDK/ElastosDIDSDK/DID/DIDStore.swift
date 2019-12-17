@@ -55,11 +55,7 @@ public class DIDStore: NSObject {
     public static func isInitialized() -> Bool {
         return instance != nil
     }
-    
-    func getAdapter() -> DIDAdapter {
-        return backend.adapter
-    }
-    
+
     public func containsPrivateIdentity() throws -> Bool {
         return try storage.containsPrivateIdentity()
     }

@@ -34,6 +34,8 @@
 		11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */; };
 		11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9C623545A5700453218 /* DIDStoreTests.swift */; };
 		11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DA0796238B929F0066CC86 /* SPVAdaptor.swift */; };
+		11E09CBC23A8DB5A009B6A8D /* IssuerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E09CBB23A8DB5A009B6A8D /* IssuerTest.swift */; };
+		11E09CBE23A8E033009B6A8D /* TestDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */; };
 		11E7519F23A7570A0022C592 /* TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E7519E23A7570A0022C592 /* TestData.swift */; };
 		11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E751A423A75A120022C592 /* DummyAdapter.swift */; };
 		11E751C023A762000022C592 /* vc-profile.json in Resources */ = {isa = PBXBuildFile; fileRef = 11E751A623A761FC0022C592 /* vc-profile.json */; };
@@ -250,6 +252,8 @@
 		11DA06EA238B7B760066CC86 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ElastosDIDSDKTests/spvadapter/lib/libboost_thread.a; sourceTree = "<group>"; };
 		11DA06FE238B7C8F0066CC86 /* ElastosDIDSDKTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ElastosDIDSDKTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		11DA0796238B929F0066CC86 /* SPVAdaptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SPVAdaptor.swift; sourceTree = "<group>"; };
+		11E09CBB23A8DB5A009B6A8D /* IssuerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssuerTest.swift; sourceTree = "<group>"; };
+		11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestDataGenerator.swift; sourceTree = "<group>"; };
 		11E7519E23A7570A0022C592 /* TestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestData.swift; sourceTree = "<group>"; };
 		11E751A423A75A120022C592 /* DummyAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DummyAdapter.swift; sourceTree = "<group>"; };
 		11E751A623A761FC0022C592 /* vc-profile.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "vc-profile.json"; sourceTree = "<group>"; };
@@ -445,12 +449,14 @@
 				11DA0796238B929F0066CC86 /* SPVAdaptor.swift */,
 				116CAA56236008FD00BBEE4F /* TestUtils */,
 				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
-				11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */,
-				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
-				11E7519E23A7570A0022C592 /* TestData.swift */,
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
-				11054F1C239D1B31008A4500 /* DIDURLTest.swift */,
 				11054F1E239D2088008A4500 /* DIDTest.swift */,
+				11054F1C239D1B31008A4500 /* DIDURLTest.swift */,
+				11E751DA23A774DD0022C592 /* IDChainOperationsTest.swift */,
+				11E09CBB23A8DB5A009B6A8D /* IssuerTest.swift */,
+				11E7519E23A7570A0022C592 /* TestData.swift */,
+				11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */,
+				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
 				1182866A2395194000F1BBA3 /* BulkCreate.swift */,
 				116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
@@ -834,12 +840,14 @@
 				1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */,
 				1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */,
 				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,
+				11E09CBC23A8DB5A009B6A8D /* IssuerTest.swift in Sources */,
 				11054F1F239D2088008A4500 /* DIDTest.swift in Sources */,
 				11E7519F23A7570A0022C592 /* TestData.swift in Sources */,
 				11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */,
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
+				11E09CBE23A8E033009B6A8D /* TestDataGenerator.swift in Sources */,
 				11E751DB23A774DD0022C592 /* IDChainOperationsTest.swift in Sources */,
 				11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */,
 				1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */,
