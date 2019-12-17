@@ -37,4 +37,4 @@ wrapt==1.11.2
 grpcio==1.24.3
 grpcio-tools==1.24.3
 solidity-parser==0.0.7
-elastos-adenine==0.1.6
+elastos-adenine==0.1.7
