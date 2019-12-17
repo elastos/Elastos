@@ -24,8 +24,8 @@ class IDChainOperationsTest: XCTestCase {
                 let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
                 wait(for: [lock], timeout: 30)
             }
-            let doc = store.newDid(storePass)
-            let success = store.publishDid(doc, storePass)
+            let doc = try store.newDid(storePass)
+            let success = try store.publishDid(doc, storePass)
             XCTAssertTrue(success)
             print("Published new DID: \(doc.subject)")
             
@@ -34,7 +34,7 @@ class IDChainOperationsTest: XCTestCase {
             while true {
                 let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
                 wait(for: [lock], timeout: 30)
-                resolved = store.resolveDid(doc.subject, true)
+                resolved = try store.resolveDid(doc.subject!, true)
                 if resolved != nil {
                     print("OK")
                     break
@@ -43,26 +43,26 @@ class IDChainOperationsTest: XCTestCase {
                     print("...")
                 }
             }
-            XCTAssertEqual(doc.subject, resolved.subject)
-            XCTAssertTrue(resolved.isValid)
+            XCTAssertEqual(doc.subject!, resolved!.subject)
+            XCTAssertTrue(try resolved!.isValid())
         } catch {
             
         }
     }
     
     public func testRestore() throws {
-        let testData: TestData = TestData()
-        testData.setupStore(false)
-        let store: DIDStore = try DIDStore.shareInstance()
+        let testData: TestData = try TestData()
+        try testData.setupStore(false)
+        let store: DIDStore = try DIDStore.shareInstance()!
         let mnemonic: String = try testData.loadRestoreMnemonic()
-        store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
-        store.synchronize(storePass)
+        try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
+        try store.synchronize(storePass)
         
-        let dids: Array<DID> = store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
+        let dids: Array<DID> = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
         var didStrings: Array<String> = []
         XCTAssertEqual(5, dids.count)
-        for item in dids {
-            didStrings.add(id.description)
+        for id in dids {
+            didStrings.append(id.description)
         }
         let bl = Bundle(for: type(of: self))
         let jsonstr = bl.path(forResource: "dids", ofType: "restore")

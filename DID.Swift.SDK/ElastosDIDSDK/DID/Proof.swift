@@ -1,14 +1,14 @@
 import Foundation
 
 public class Proof {
-    var type: String!
-    var created: Date?
-    var creator: DIDURL?
-    var signature: String!
-    var verificationMethod: DIDURL!
+    public var type: String!
+    public var created: Date?
+    public var creator: DIDURL?
+    public var signature: String!
+    public var verificationMethod: DIDURL!
     
-    var realm: String?
-    var nonce: String?
+    public var realm: String?
+    public var nonce: String?
     
     // init for document
     init(_ type: String, _ created: Date, _ creator: DIDURL, _ signature: String) {

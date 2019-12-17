@@ -9,7 +9,8 @@ public class DIDURL: NSObject {
     public var fragment: String!
     private var listener: DURLListener?
     private var url: String!
-    
+    public var alias: String = ""
+
     public init(_ id: DID, _ fragment: String) throws {
         self.did = id
         self.fragment = fragment

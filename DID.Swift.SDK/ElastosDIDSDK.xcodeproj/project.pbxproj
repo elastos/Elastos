@@ -23,7 +23,6 @@
 		1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
 		116AC38A23A5FA410076BDC7 /* LRUCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116AC38523A5FA410076BDC7 /* LRUCache.swift */; };
-		116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */; };
 		116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA572360092D00BBEE4F /* TestUtils.swift */; };
 		1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182866A2395194000F1BBA3 /* BulkCreate.swift */; };
 		119338DD237E4DB800C4998E /* TestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119338DC237E4DB800C4998E /* TestConfig.swift */; };
@@ -208,7 +207,6 @@
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		116AC38523A5FA410076BDC7 /* LRUCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LRUCache.swift; sourceTree = "<group>"; };
-		116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreCreateTests.swift; sourceTree = "<group>"; };
 		116CAA572360092D00BBEE4F /* TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestUtils.swift; path = TestUtils/TestUtils.swift; sourceTree = "<group>"; };
 		1182866A2395194000F1BBA3 /* BulkCreate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkCreate.swift; sourceTree = "<group>"; };
 		119338DC237E4DB800C4998E /* TestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestConfig.swift; path = TestUtils/TestConfig.swift; sourceTree = "<group>"; };
@@ -458,7 +456,6 @@
 				11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */,
 				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
 				1182866A2395194000F1BBA3 /* BulkCreate.swift */,
-				116CAA53236008B000BBEE4F /* DIDStoreCreateTests.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
 				11DA06FE238B7C8F0066CC86 /* ElastosDIDSDKTests-Bridging-Header.h */,
 			);
@@ -846,7 +843,6 @@
 				11054F1D239D1B31008A4500 /* DIDURLTest.swift in Sources */,
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
-				116CAA54236008B000BBEE4F /* DIDStoreCreateTests.swift in Sources */,
 				11E09CBE23A8E033009B6A8D /* TestDataGenerator.swift in Sources */,
 				11E751DB23A774DD0022C592 /* IDChainOperationsTest.swift in Sources */,
 				11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */,

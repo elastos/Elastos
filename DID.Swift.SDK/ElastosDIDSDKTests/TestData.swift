@@ -66,8 +66,8 @@ class TestData: XCTestCase {
         }
     }
     
-    func importPrivateKey(_ id: DIDURL, _ fileName: String) throws {
-        let skBase58: String = try loadText(fileName)
+    func importPrivateKey(_ id: DIDURL, _ fileName: String, _ type: String) throws {
+        let skBase58: String = try loadText(fileName, type)
         let data = skBase58.data(using: .utf8)
         let udata = [UInt8](data!)
         let keyBase58: String = Base58.base58FromBytes(udata)
