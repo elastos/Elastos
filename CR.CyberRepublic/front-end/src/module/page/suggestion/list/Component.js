@@ -275,6 +275,7 @@ export default class extends StandardPage {
   }
 
   handleSearch = (filter, search) => {
+    this.props.updateFilters({ search })
     this.setState({ search, filter }, this.debouncedRefetch)
   }
 
