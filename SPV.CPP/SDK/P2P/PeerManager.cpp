@@ -1461,8 +1461,9 @@ namespace Elastos {
 					if (block->GetHeight() > _lastBlock->GetHeight()) { // check if fork is now longer than main chain
 						b = block;
 						b2 = _lastBlock;
-
+						std::vector<MerkleBlockPtr> longerChain;
 						while (b && b2 && !b->IsEqual(b2.get())) { // walk back to where the fork joins the main chain
+							longerChain.insert(longerChain.begin(), b);
 							b = _blocks.Get(b->GetPrevBlockHash());
 							if (b && b->GetHeight() < b2->GetHeight()) b2 = _blocks.Get(b2->GetPrevBlockHash());
 						}
@@ -1472,17 +1473,17 @@ namespace Elastos {
 
 						_wallet->SetTxUnconfirmedAfter(b->GetHeight());  // mark tx after the join point as unconfirmed
 
-						b = block;
-
-						while (b && b2 &&
-							b->GetHeight() > b2->GetHeight()) { // set transaction heights for new main chain
-							uint32_t height = b->GetHeight(), timestamp = b->GetTimestamp();
-
-							txHashes.clear();
-							b->MerkleBlockTxHashes(txHashes);
-							b = _blocks.Get(b->GetPrevBlockHash());
-							if (txHashes.size() > 0)
-								_wallet->UpdateTransactions(txHashes, height, timestamp);
+						for (std::vector<MerkleBlockPtr>::iterator it = longerChain.begin(); it != longerChain.end(); ++it) {
+							b = *it;
+							if (b2->GetHash() == b->GetPrevBlockHash()) {
+								uint32_t height = b->GetHeight();
+								uint32_t timestamp = b->GetTimestamp();
+								txHashes.clear();
+								b->MerkleBlockTxHashes(txHashes);
+								if (!txHashes.empty())
+									_wallet->UpdateTransactions(txHashes, height, timestamp);
+								b2 = b;
+							}
 						}
 
 						_lastBlock = block;

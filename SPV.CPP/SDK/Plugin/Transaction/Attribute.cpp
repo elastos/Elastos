@@ -72,10 +72,10 @@ namespace Elastos {
 				return false;
 			}
 
-//			if (!isValid()) {
-//				Log::error("invalid attribute usage: {}", (uint8_t)_usage);
-//				return false;
-//			}
+			if (!IsValid()) {
+				Log::error("invalid attribute usage: {}", (uint8_t)_usage);
+				return false;
+			}
 
 			if (!istream.ReadVarBytes(_data)) {
 				Log::error("Attribute deserialize data fail");

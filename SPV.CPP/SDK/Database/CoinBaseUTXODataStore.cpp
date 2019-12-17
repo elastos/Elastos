@@ -188,7 +188,7 @@ namespace Elastos {
 						return false;
 					}
 
-					if (!_sqlite->BindInt(stmt, 1, 1) ||
+					if (!_sqlite->BindInt(stmt, 1, spentUTXO[i]->Spent() ? 1 : 0) ||
 						!_sqlite->BindText(stmt, 2, hash, nullptr) ||
 						!_sqlite->BindInt(stmt, 3, index)) {
 						Log::error("bind args");

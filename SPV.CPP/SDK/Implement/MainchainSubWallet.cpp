@@ -714,6 +714,7 @@ namespace Elastos {
 				const std::string &amount,
 				const std::string &memo) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			ArgInfo("pubkey: {}", crPublicKey);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("memo: {}", memo);
 
