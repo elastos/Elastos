@@ -92,6 +92,44 @@ class Milestones extends Component {
     return milestonesTrigger[index]
   }
 
+  renderSquare(item, index, isBigSquare = false, isAutoLink = false) {
+    const date = <div>{moment(item.date).format('MMM D, YYYY')}</div>
+    const version = (
+      <div className="square-content">
+        {isAutoLink ? (
+          <p
+            dangerouslySetInnerHTML={{
+              __html: linkifyStr(item.version)
+            }}
+          />
+        ) : (
+          <p>{item.version}</p>
+        )}
+      </div>
+    )
+    const moreBtn = (
+      <Button type="link" onClick={() => this.handleClickSwitchChange(index)}>
+        {this.getMilestoneTrigger(index).clickedSwitch
+          ? I18N.get('suggestion.plan.hideDetail')
+          : I18N.get('suggestion.plan.showDetail')}
+      </Button>
+    )
+
+    return isBigSquare ? (
+      <BigSquare>
+        {date}
+        {version}
+        {moreBtn}
+      </BigSquare>
+    ) : (
+      <Square>
+        {date}
+        {version}
+        {moreBtn}
+      </Square>
+    )
+  }
+
   render() {
     const { milestones } = this.state
     const { editable } = this.props
@@ -104,26 +142,16 @@ class Milestones extends Component {
               <Milestone key={index}>
                 {visible ? (
                   <MilestoneItem>
-                    <Square
-                      className={
-                        this.getMilestoneTrigger(index).clickedSwitch
-                          ? 'big-square'
-                          : ''
+                    <Popover
+                      content={this.renderSquare(item, index, true)}
+                      trigger="click"
+                      overlayStyle={{}}
+                      visible={this.getMilestoneTrigger(index).clickedSwitch}
+                      onVisibleChange={isVisible => this.handleClickSwitchChange(index)
                       }
                     >
-                      <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                      <div className="square-content">
-                        <p>{item.version}</p>
-                      </div>
-                      <Button
-                        type="link"
-                        onClick={() => this.handleClickSwitchChange(index)}
-                      >
-                        {this.getMilestoneTrigger(index).clickedSwitch
-                          ? I18N.get('suggestion.plan.hideDetail')
-                          : I18N.get('suggestion.plan.showDetail')}
-                      </Button>
-                    </Square>
+                      <Square>{this.renderSquare(item, index)}</Square>
+                    </Popover>
                     <MilestoneEdit>
                       <Popover
                         content={
@@ -138,8 +166,7 @@ class Milestones extends Component {
                         }
                         trigger="click"
                         visible={this.getMilestoneTrigger(index).clicked}
-                        onVisibleChange={isVisible =>
-                          this.handleClickChange(index, isVisible)
+                        onVisibleChange={isVisible => this.handleClickChange(index, isVisible)
                         }
                         placement="top"
                       >
@@ -155,30 +182,16 @@ class Milestones extends Component {
                 ) : (
                   <Fragment>
                     <MilestoneItem>
-                      <Square
-                        className={
-                          this.getMilestoneTrigger(index).clickedSwitch
-                            ? 'big-square'
-                            : ''
+                      <Popover
+                        content={this.renderSquare(item, index, true)}
+                        trigger="click"
+                        overlayStyle={{}}
+                        visible={this.getMilestoneTrigger(index).clickedSwitch}
+                        onVisibleChange={isVisible => this.handleClickSwitchChange(index)
                         }
                       >
-                        <div>{moment(item.date).format('MMM D, YYYY')}</div>
-                        <div className="square-content">
-                          <p
-                            dangerouslySetInnerHTML={{
-                              __html: linkifyStr(item.version)
-                            }}
-                          />
-                        </div>
-                        <Button
-                          type="link"
-                          onClick={() => this.handleClickSwitchChange(index)}
-                        >
-                          {this.getMilestoneTrigger(index).clickedSwitch
-                            ? I18N.get('suggestion.plan.hideDetail')
-                            : I18N.get('suggestion.plan.showDetail')}
-                        </Button>
-                      </Square>
+                        <Square>{this.renderSquare(item, index, false, true)}</Square>
+                      </Popover>
                       <MilestoneEdit>
                         <Circle />
                       </MilestoneEdit>
@@ -216,6 +229,8 @@ export default Milestones
 const Wrapper = styled.div`
   margin-bottom: 32px;
   padding-bottom: 24px;
+  overflow-x: auto;
+  overflow-y: visible;
 `
 
 const Timeline = styled.div`
@@ -233,34 +248,11 @@ const MilestoneItem = styled.div`
   position: relative;
   width: 150px;
   height: 109px;
-
-  > div.big-square {
-    position: absolute;
-    left: -72.5px;
-    z-index: 1;
-    width: 295px;
-
-    > div {
-      &:first-child {
-        margin-top: 20px;
-      }
-      &.square-content {
-        width: 100%;
-        padding: 0 20px;
-        > p {
-          padding: 0;
-          text-align: center;
-          overflow-wrap: break-word;
-          white-space: normal;
-        }
-      }
-    }
-  }
 `
 const Square = styled.div`
   position: absolute;
   width: 100%;
-  bottom: 20px;
+  bottom: 12px;
   background: #0f2631;
   color: #fff;
   display: flex;
@@ -293,6 +285,53 @@ const Square = styled.div`
     -webkit-box-shadow: none;
     box-shadow: none;
     height: 17px;
+    flex: 17px;
+    margin: 0 0 13px 0;
+    > span {
+      vertical-align: top;
+      font-family: Synthese;
+      font-size: 12px;
+      line-height: 17px;
+    }
+  }
+`
+const BigSquare = styled.div`
+  position: absolute;
+  width: 295px;
+  left: -135.5px;
+  bottom: 5px;
+  background: #0f2631;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 20px;
+  > div {
+    margin-top: 4px;
+    &:first-child {
+      margin-top: 20px;
+    }
+    &.square-content {
+      width: 100%;
+      padding: 0 20px;
+      > p {
+        padding: 0;
+        text-align: center;
+        overflow-wrap: break-word;
+        white-space: normal;
+      }
+    }
+  }
+  > button.ant-btn {
+    display: inline-block;
+    color: #1DE9B6;
+    background-color: transparent;
+    border-color: transparent;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    height: 17px;
+    flex: 17px;
     margin: 0 0 13px 0;
     > span {
       vertical-align: top;
@@ -305,6 +344,9 @@ const Square = styled.div`
 const MilestoneEdit = styled.div`
   position: relative;
   top: 97px;
+  > button.ant-btn > i {
+    vertical-align: baseline;
+  }
 `
 const Circle = styled.div`
   height: 16px;
@@ -326,6 +368,7 @@ const Action = styled.div`
     border-color: unset;
     > i {
       color: #1de9b6;
+      vertical-align: baseline;
     }
   }
   &:after {
