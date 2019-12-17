@@ -77,17 +77,17 @@ const renderRichContent = (data, key, title) => {
     rc = (
       <div>
         <PlanSubtitle>
-          {I18N.get('suggestion.plan.teamInfo')}
-        </PlanSubtitle>
-        <TeamInfoList
-          list={data.plan.teamInfo}
-          editable={false}
-        />
-        <PlanSubtitle>
           {I18N.get('suggestion.plan.milestones')}
         </PlanSubtitle>
         <Milestones
           initialValue={data.plan.milestone}
+          editable={false}
+        />
+        <PlanSubtitle>
+          {I18N.get('suggestion.plan.teamInfo')}
+        </PlanSubtitle>
+        <TeamInfoList
+          list={data.plan.teamInfo}
           editable={false}
         />
       </div>
