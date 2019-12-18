@@ -137,9 +137,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
         tvTitle.setText(mContext.getString(R.string.my_list_candidates));
-        if (netList == null || netList.size() == 0) {
+        if (netList == null ) {
             //没有来着接口的节点列表数据
-            return;
+            netList=new ArrayList<>();
         }
         registReceiver();
         // 为Adapter准备数据
@@ -449,7 +449,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             case "createVoteProducerTransaction":
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 intent.putExtra("amount", num);
-                intent.putExtra("maxBalance", maxBalance);
                 intent.putExtra("wallet", wallet);
                 intent.putExtra("chainId", MyWallet.ELA);
                 intent.putExtra("attributes", data);

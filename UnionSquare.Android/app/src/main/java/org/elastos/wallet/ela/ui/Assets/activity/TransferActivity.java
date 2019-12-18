@@ -23,8 +23,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.math.BigDecimal;
-
 import butterknife.BindView;
 import butterknife.OnClick;
 
@@ -90,12 +88,13 @@ public class TransferActivity extends BaseActivity {
         }
         amount = data.getStringExtra("amount");
         if ("MAX".equals(amount)) {
-            String maxBalance = data.getStringExtra("maxBalance");
-            amount = NumberiUtil.maxNumberFormat(Arith.sub(maxBalance, fee).divide(new BigDecimal(MyWallet.RATE_S)), 12);
+            tvAmount.setText("MAX");
+        } else {
+            tvAmount.setText(NumberiUtil.numberFormat(amount, 8) + " ELA");
         }
         wallet = data.getParcelableExtra("wallet");
         tvAddress.setText(toAddress);
-        tvAmount.setText(NumberiUtil.numberFormat(amount,8) + " ELA");
+
         //tvCharge.setText(NumberiUtil.maxNumberFormat(new BigDecimal(((double) fee) / MyWallet.RATE + "").toPlainString(), 12) + " " + chainId);//0.0001
         tvCharge.setText(NumberiUtil.maxNumberFormat(Arith.div(fee + "", MyWallet.RATE_S), 12) + " ELA");//0.0001
 
@@ -111,6 +110,8 @@ public class TransferActivity extends BaseActivity {
                 break;
             case Constant.SUPERNODEVOTE:
             case Constant.CRVOTE:
+            case Constant.WITHDRAWSUPERNODE:
+            case Constant.WITHDRAWCR:
 
                 //超级节点投票  cr投票
                 rlRate.setVisibility(View.GONE);

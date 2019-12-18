@@ -113,9 +113,9 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
         tvTitle.setText(getString(R.string.crcvote));
-        if (netList == null || netList.size() == 0) {
+        if (netList == null) {
             //没有来自接口的节点列表数据
-            return;
+            netList=new ArrayList<>();
         }
         registReceiver();
         // 为Adapter准备数据
@@ -294,6 +294,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
         } else {
             mAdapter.initDateStaus(true);
+            mAdapter.equalDataMapELA(mAdapter.getList().size());
             mAdapter.notifyDataSetChanged();
             resetCountAndAvaliable();
             cbSelectall.setChecked(true);
