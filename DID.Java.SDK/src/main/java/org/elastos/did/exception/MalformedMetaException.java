@@ -20,20 +20,24 @@
  * SOFTWARE.
  */
 
-package org.elastos.did;
+package org.elastos.did.exception;
 
-public final class TestConfig {
-	public final static boolean verbose = false;
+public class MalformedMetaException extends DIDStoreException {
+	private static final long serialVersionUID = 3633945564100769501L;
 
-	public final static String tempDir = "/PATH/TO/TEMP";
+	public MalformedMetaException() {
+        super();
+    }
 
-	public final static String storeRoot = "/PATH/TO/DIDStore";
-    public final static String storePass = "passwd";
-    public final static String passphrase = "secret";
+    public MalformedMetaException(String message) {
+        super(message);
+    }
 
-    public final static String walletDir = "/PATH/TO/WALLET";
-    public final static String walletId = "test";
-    public final static String walletPassword = "passwd";
-    public final static String networkConfig = "/PATH/TO/privnet.json";
-    public final static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
+    public MalformedMetaException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public MalformedMetaException(Throwable cause) {
+        super(cause);
+    }
 }

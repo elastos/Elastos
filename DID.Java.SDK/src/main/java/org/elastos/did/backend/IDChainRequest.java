@@ -48,6 +48,7 @@ public class IDChainRequest {
 	private static final String HEADER = "header";
 	private static final String SPECIFICATION = "specification";
 	private static final String OPERATION = "operation";
+	private static final String PREVIOUS_TXID = "previousTxid";
 	private static final String PAYLOAD = "payload";
 	private static final String PROOF = Constants.proof;
 	private static final String KEY_TYPE = Constants.type;
@@ -66,6 +67,7 @@ public class IDChainRequest {
 	// header
 	private String specification;
 	private Operation operation;
+	private String previousTxid;
 
 	// payload
 	private DID did;
@@ -91,9 +93,10 @@ public class IDChainRequest {
 		return request;
 	}
 
-	public static IDChainRequest update(DIDDocument doc, DIDURL signKey,
-			String storepass) throws DIDStoreException {
+	public static IDChainRequest update(DIDDocument doc, String previousTxid,
+			DIDURL signKey, String storepass) throws DIDStoreException {
 		IDChainRequest request = new IDChainRequest(Operation.UPDATE);
+		request.setPreviousTxid(previousTxid);
 		request.setPayload(doc);
 		request.seal(signKey, storepass);
 
@@ -111,6 +114,14 @@ public class IDChainRequest {
 
 	public Operation getOperation() {
 		return operation;
+	}
+
+	public String getPreviousTxid() {
+		return previousTxid;
+	}
+
+	private void setPreviousTxid(String previousTxid) {
+		this.previousTxid = previousTxid;
 	}
 
 	public String getPayload() {
@@ -167,13 +178,30 @@ public class IDChainRequest {
 	}
 
 	private void seal(DIDURL signKey, String storepass) throws DIDStoreException {
+		String prevtxid = operation == Operation.UPDATE ? previousTxid : "";
+
 		byte[][] inputs = new byte[][] {
 			specification.getBytes(),
 			operation.toString().getBytes(),
+			prevtxid.getBytes(),
 			payload.getBytes()
 		};
 
 		this.signature = DIDStore.getInstance().sign(did, signKey, storepass, inputs);
+
+		if (operation == Operation.UPDATE) {
+			System.out.println("---- " + this.signature);
+
+			inputs = new byte[][] {
+				specification.getBytes(),
+				operation.toString().getBytes(),
+				payload.getBytes()
+			};
+
+			String sig = DIDStore.getInstance().sign(did, signKey, storepass, inputs);
+			System.out.println("==== " + sig);
+		}
+
 		this.signKey = signKey;
 		this.keyType = Constants.defaultPublicKeyType;
 	}
@@ -212,6 +240,11 @@ public class IDChainRequest {
 
 		generator.writeFieldName(OPERATION);
 		generator.writeString(operation.toString());
+
+		if (operation == Operation.UPDATE) {
+			generator.writeFieldName(PREVIOUS_TXID);
+			generator.writeString(previousTxid);
+		}
 
 		generator.writeEndObject();
 
@@ -281,6 +314,12 @@ public class IDChainRequest {
 		Operation op = Operation.valueOf(opstr.toUpperCase());
 
 		IDChainRequest request = new IDChainRequest(op);
+
+		if (op == Operation.UPDATE) {
+			String txid = JsonHelper.getString(header, PREVIOUS_TXID, false,
+					null, PREVIOUS_TXID, clazz);
+			request.setPreviousTxid(txid);
+		}
 
 		String payload = JsonHelper.getString(node, PAYLOAD, false,
 				null, PAYLOAD, clazz);

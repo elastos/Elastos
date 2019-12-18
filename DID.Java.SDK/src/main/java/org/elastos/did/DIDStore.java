@@ -26,11 +26,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.elastos.did.backend.DIDBackend;
+import org.elastos.did.backend.IDTransactionInfo;
+import org.elastos.did.backend.ResolveResult;
+import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.did.exception.MalformedDIDURLException;
 import org.elastos.did.exception.MalformedDocumentException;
+import org.elastos.did.meta.CredentialMeta;
+import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.Aes256cbc;
 import org.elastos.did.util.Base64;
 import org.elastos.did.util.EcdsaSigner;
@@ -188,11 +194,14 @@ public final class DIDStore {
 			HDKey.DerivedKey key = privateIdentity.derive(i++);
 			DID did = new DID(DID.METHOD, key.getAddress());
 
-			DIDDocument doc = backend.resolve(did);
-			if (doc != null) {
-				// TODO: check local conflict
-				storeDid(doc);
+			DIDDocument doc = null;
+			try {
+				doc = resolveDidFromBackend(did);
+			} catch (MalformedDocumentException ignore) {
+				continue;
+			}
 
+			if (doc != null) {
 				// Save private key
 				storePrivateKey(did, doc.getDefaultPublicKey(),
 						key.serialize(),storepass);
@@ -227,7 +236,8 @@ public final class DIDStore {
 		DIDDocument.Builder db = new DIDDocument.Builder(did);
 		db.addAuthenticationKey(id, key.getPublicKeyBase58());
 		DIDDocument doc = db.seal(storepass);
-		storeDid(doc, alias);
+		storeDid(doc);
+		doc.setAlias(alias);
 
 		storage.storePrivateIdentityIndex(nextIndex);
 		privateIdentity.wipe();
@@ -263,24 +273,24 @@ public final class DIDStore {
 	}
 
 	public boolean updateDid(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDStoreException {
+			throws DIDException, DIDStoreException {
 		if (doc == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		return backend.update(doc, signKey, storepass);
+		return backend.update(doc, doc.getTransactionId(), signKey, storepass);
 	}
 
 	public boolean updateDid(DIDDocument doc, String signKey, String storepass)
-			throws MalformedDIDURLException, DIDStoreException {
+			throws MalformedDIDURLException, DIDException, DIDStoreException {
 		DIDURL id = signKey == null ? null : new DIDURL(doc.getSubject(), signKey);
 		return updateDid(doc, id, storepass);
 	}
 
 	public boolean updateDid(DIDDocument doc, String storepass)
-			throws DIDStoreException {
+			throws DIDException, DIDStoreException {
 		return updateDid(doc, (DIDURL)null, storepass);
 	}
 
@@ -317,15 +327,59 @@ public final class DIDStore {
 		return deactivateDid(did, (DIDURL)null, storepass);
 	}
 
+	public DIDDocument resolveDidFromBackend(DID did)
+			throws DIDStoreException, MalformedDocumentException {
+		ResolveResult rr = null;
+		try {
+			rr = backend.resolve(did);
+		} catch (DIDResolveException e) {
+			throw new DIDStoreException(e);
+		}
+
+		if (!rr.getDid().equals(did)) // Wrong result, should never happen.
+			throw new DIDStoreException("Resolved result not matched with request DID.");
+
+		DIDMeta meta;
+		IDTransactionInfo ti;
+
+		switch (rr.getStatus()) {
+		case ResolveResult.STATUS_VALID:
+		case ResolveResult.STATUS_EXPIRED:
+			ti = rr.getTransactionInfo(0);
+			DIDDocument doc = ti.getRequest().getDocument();
+			storeDid(doc);
+
+			// Patch or create meta
+			meta = loadDidMeta(did);
+			meta.setTransactionId(ti.getTransactionId());
+			meta.setUpdated(ti.getTimestamp());
+			storeDidMeta(did, meta);
+			return doc;
+
+		case ResolveResult.STATUS_DEACTIVATED:
+			ti = rr.getTransactionInfo(0);
+
+			// Patch or create meta
+			meta = loadDidMeta(did);
+			meta.setTransactionId(ti.getTransactionId());
+			meta.setUpdated(ti.getTimestamp());
+			meta.setDeactivated(true);
+			storeDidMeta(did, meta);
+			return null;
+
+		case ResolveResult.STATUS_NOT_FOUND:
+			return null;
+		}
+
+		return null;
+	}
+
 	public DIDDocument resolveDid(DID did, boolean force)
 			throws DIDStoreException, MalformedDocumentException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
-		DIDDocument doc = backend.resolve(did);
-		if (doc != null)
-			storeDid(doc);
-
+		DIDDocument doc = resolveDidFromBackend(did);
 		if (doc == null && !force)
 			doc = loadDid(did);
 
@@ -352,7 +406,7 @@ public final class DIDStore {
 	public void storeDid(DIDDocument doc, String alias)
 			throws DIDStoreException {
 		storeDid(doc);
-		storeDidAlias(doc.getSubject(), alias);
+		doc.setAlias(alias);
 	}
 
 	public void storeDid(DIDDocument doc) throws DIDStoreException {
@@ -365,51 +419,51 @@ public final class DIDStore {
 			didCache.put(doc.getSubject(), doc);
 	}
 
-	public void storeDidAlias(DID did, String alias)
+	protected void storeDidMeta(DID did, DIDMeta meta)
 			throws DIDStoreException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
-		storage.storeDidAlias(did, alias);
+		storage.storeDidMeta(did, meta);
 
 		if (didCache != null) {
 			DIDDocument doc = didCache.get(did);
 			if (doc != null)
-				doc.setAliasInternal(alias);
+				doc.setMeta(meta);
 		}
 	}
 
-	public void storeDidAlias(String did, String alias)
+	protected void storeDidMeta(String did, DIDMeta meta)
 			throws MalformedDIDException, DIDStoreException {
-		storeDidAlias(new DID(did), alias);
+		storeDidMeta(new DID(did), meta);
 	}
 
-	public String loadDidAlias(DID did) throws DIDStoreException {
+	protected DIDMeta loadDidMeta(DID did) throws DIDStoreException {
 		if (did == null)
 			throw new IllegalArgumentException();
 
-		String alias = null;
+		DIDMeta meta = null;
 		DIDDocument doc = null;
 
 		if (didCache != null) {
 			doc = didCache.get(did);
 			if (doc != null) {
-				alias = doc.getAliasInternal();
-				if (alias != null)
-					return alias;
+				meta = doc.getMeta(false);
+				if (meta != null)
+					return meta;
 			}
 		}
 
-		alias = storage.loadDidAlias(did);
+		meta = storage.loadDidMeta(did);
 		if (doc != null)
-			doc.setAliasInternal(alias);
+			doc.setMeta(meta);
 
-		return alias;
+		return meta;
 	}
 
-	public String loadDidAlias(String did)
+	protected DIDMeta loadDidMeta(String did)
 			throws MalformedDIDException, DIDStoreException {
-		return loadDidAlias(new DID(did));
+		return loadDidMeta(new DID(did));
 	}
 
 	public DIDDocument loadDid(DID did)
@@ -469,8 +523,7 @@ public final class DIDStore {
 	public void storeCredential(VerifiableCredential credential, String alias)
 			throws DIDStoreException {
 		storeCredential(credential);
-		storeCredentialAlias(credential.getSubject().getId(),
-				credential.getId(), alias);
+		credential.setAlias(alias);
 	}
 
 	public void storeCredential(VerifiableCredential credential)
@@ -484,57 +537,57 @@ public final class DIDStore {
 			vcCache.put(credential.getId(), credential);
 	}
 
-	public void storeCredentialAlias(DID did, DIDURL id, String alias)
+	protected void storeCredentialMeta(DID did, DIDURL id, CredentialMeta meta)
 			throws DIDStoreException {
 		if (did == null || id == null)
 			throw new IllegalArgumentException();
 
-		storage.storeCredentialAlias(did, id, alias);
+		storage.storeCredentialMeta(did, id, meta);
 
 		if (vcCache != null) {
 			VerifiableCredential vc = vcCache.get(id);
 			if (vc != null) {
-				vc.setAliasInternal(alias);
+				vc.setMeta(meta);
 			}
 		}
 	}
 
-	public void storeCredentialAlias(String did, String id, String alias)
+	protected void storeCredentialMeta(String did, String id, CredentialMeta meta)
 			throws  MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
 		DID _did = new DID(did);
-		storeCredentialAlias(_did, new DIDURL(_did, id), alias);
+		storeCredentialMeta(_did, new DIDURL(_did, id), meta);
 	}
 
-	public String loadCredentialAlias(DID did, DIDURL id)
+	protected CredentialMeta loadCredentialMeta(DID did, DIDURL id)
 			throws DIDStoreException {
 		if (did == null || id == null)
 			throw new IllegalArgumentException();
 
-		String alias = null;
+		CredentialMeta meta = null;
 		VerifiableCredential vc = null;
 
 		if (vcCache != null) {
 			vc = vcCache.get(id);
 			if (vc != null) {
-				alias = vc.getAliasInternal();
-				if (alias != null)
-					return alias;
+				meta = vc.getMeta(false);
+				if (meta != null)
+					return meta;
 			}
 		}
 
-		alias = storage.loadCredentialAlias(did, id);
+		meta = storage.loadCredentialMeta(did, id);
 		if (vc != null)
-			vc.setAliasInternal(alias);
+			vc.setMeta(meta);
 
-		return alias;
+		return meta;
 	}
 
-	public String loadCredentialAlias(String did, String id)
+	protected CredentialMeta loadCredentialMeta(String did, String id)
 			throws  MalformedDIDException, MalformedDIDURLException,
 			DIDStoreException {
 		DID _did = new DID(did);
-		return loadCredentialAlias(_did, new DIDURL(_did, id));
+		return loadCredentialMeta(_did, new DIDURL(_did, id));
 	}
 
 	public VerifiableCredential loadCredential(DID did, DIDURL id)

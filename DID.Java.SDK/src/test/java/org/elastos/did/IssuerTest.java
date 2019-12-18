@@ -31,10 +31,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDURL;
-import org.elastos.did.Issuer;
-import org.elastos.did.VerifiableCredential;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.util.HDKey;
 import org.junit.Rule;
@@ -56,7 +52,7 @@ public class IssuerTest {
 
 		Issuer issuer = new Issuer(issuerDoc.getSubject(), signKey);
 
-		assertEquals(issuer.getDid(), issuer.getDid());
+		assertEquals(issuerDoc.getSubject(), issuer.getDid());
 		assertEquals(signKey, issuer.getSignKey());
 	}
 
@@ -94,7 +90,7 @@ public class IssuerTest {
 		Issuer issuer = new Issuer(issuerDoc, signKey);
 
 		// Dead code.
-		assertEquals(issuer.getDid(), issuer.getDid());
+		assertEquals(issuerDoc.getSubject(), issuer.getDid());
 	}
 
 	@Test

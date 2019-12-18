@@ -65,7 +65,8 @@ public class SPVAdapter implements DIDAdapter {
 	private final static native int createIdTransaction(long handle,
 			String payload, String memo, String password);
 
-	private final static native String resolve(long handle, String did);
+	private final static native String resolve(long handle,
+			String did, boolean all);
 
 	public boolean isAvailable() {
 		return isAvailable(handle);
@@ -83,7 +84,7 @@ public class SPVAdapter implements DIDAdapter {
 	}
 
 	@Override
-	public String resolve(String did) {
-		return resolve(handle, did);
+	public String resolve(String did, boolean all) {
+		return resolve(handle, did, all);
 	}
 }

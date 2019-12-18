@@ -27,6 +27,8 @@ import java.util.List;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDocumentException;
+import org.elastos.did.meta.CredentialMeta;
+import org.elastos.did.meta.DIDMeta;
 
 public interface DIDStoreBackend {
 	// Root private identity
@@ -41,9 +43,9 @@ public interface DIDStoreBackend {
 	public int loadPrivateIdentityIndex() throws DIDStoreException;
 
 	// DIDs
-	public void storeDidAlias(DID did, String alias) throws DIDStoreException;
+	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStoreException;
 
-	public String loadDidAlias(DID did) throws DIDStoreException;
+	public DIDMeta loadDidMeta(DID did) throws DIDStoreException;
 
 	public void storeDid(DIDDocument doc) throws DIDStoreException;
 
@@ -57,10 +59,10 @@ public interface DIDStoreBackend {
 	public List<DID> listDids(int filter) throws DIDStoreException;
 
 	// Credentials
-	public void storeCredentialAlias(DID did, DIDURL id, String alias)
+	public void storeCredentialMeta(DID did, DIDURL id, CredentialMeta meta)
 			throws DIDStoreException;
 
-	public String loadCredentialAlias(DID did, DIDURL id)
+	public CredentialMeta loadCredentialMeta(DID did, DIDURL id)
 			throws DIDStoreException;
 
 	public void storeCredential(VerifiableCredential credential)

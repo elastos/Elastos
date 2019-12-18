@@ -54,6 +54,20 @@ public final class Constants {
 	public final static String defaultPublicKeyType = "ECDSAsecp256r1";
 	public final static String defaultPresentationType = "VerifiablePresentation";
 
+	public final static String did = "did";
+	public final static String status = "status";
+	public final static String alias = "alias";
+	public final static String txid = "txid";
+	public final static String transaction = "transaction";
+	public final static String timestamp = "timestamp";
+	public final static String operation = "operation";
+	public final static String deactivated = "deactivated";
+
+	public final static String result = "result";
+	public final static String error = "error";
+	public final static String errorCode = "code";
+	public final static String errorMessage = "message";
+
 	public final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 	public final static String DATE_FORMAT_ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 

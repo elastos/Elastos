@@ -93,6 +93,23 @@ public class JsonHelper {
 		return value;
 	}
 
+	public static <E extends DIDException> int getInteger(JsonNode node,
+			String name, boolean optional, int ref, String hint,
+			Class<E> exceptionClass) throws E {
+		JsonNode vn = node.get(name);
+		if (vn == null) {
+			if (optional)
+				return ref;
+			else
+				throw ExceptionFactory.create(exceptionClass, "Missing " + hint + ".");
+		}
+
+		if (!vn.isNumber())
+			throw ExceptionFactory.create(exceptionClass, "Invalid " + hint + " value.");
+
+		return vn.asInt(ref);
+	}
+
 	public static <E extends DIDException> DID getDid(JsonNode node,
 			String name, boolean optional, DID ref, String hint,
 			Class<E> exceptionClass) throws E {

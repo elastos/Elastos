@@ -22,8 +22,12 @@
 
 package org.elastos.did;
 
+import java.util.Date;
+
 import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedDIDException;
+import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
@@ -34,7 +38,7 @@ public class DID implements Comparable<DID> {
 	private String method;
 	private String methodSpecificId;
 
-	private String alias;
+	private DIDMeta meta;
 
 	protected DID() {
 	}
@@ -71,27 +75,41 @@ public class DID implements Comparable<DID> {
 		this.methodSpecificId = methodSpecificId;
 	}
 
-	protected void setAliasInternal(String alias) {
-		this.alias = alias != null ? alias : "";
+	protected void setMeta(DIDMeta meta) {
+		this.meta = meta;
 	}
 
-	public void setAlias(String alias) throws DIDException {
-		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeDidAlias(this, alias);
+	protected DIDMeta getMeta(boolean force) throws DIDStoreException {
+		if (meta != null)
+			return meta;
 
-		setAliasInternal(alias);
+		if (force && DIDStore.isInitialized())
+			this.meta = DIDStore.getInstance().loadDidMeta(this);
+
+		return meta;
+	}
+
+	public void setAlias(String alias) throws DIDStoreException {
+		getMeta(true).setAlias(alias);;
+
+		if (DIDStore.isInitialized())
+			DIDStore.getInstance().storeDidMeta(this, meta);
 	}
 
 	public String getAlias() throws DIDException {
-		if (alias == null) {
-			if (DIDStore.isInitialized())
-				alias = DIDStore.getInstance().loadDidAlias(this);
+		return getMeta(true).getAlias();
+	}
 
-			if (alias == null)
-				alias = "";
-		}
+	public String getTransactionId() throws DIDException {
+		return getMeta(true).getTransactionId();
+	}
 
-		return alias;
+	public Date getUpdated() throws DIDException {
+		return getMeta(true).getUpdated();
+	}
+
+	public boolean isDeactivated() throws DIDException {
+		return getMeta(true).isDeactivated();
 	}
 
 	public DIDDocument resolve() throws DIDException {

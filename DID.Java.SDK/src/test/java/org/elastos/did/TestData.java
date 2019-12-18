@@ -75,7 +75,7 @@ public final class TestData {
 
 		if (dummyBackend) {
 			if (TestData.dummyAdapter == null)
-				TestData.dummyAdapter = new DummyAdapter();
+				TestData.dummyAdapter = new DummyAdapter(TestConfig.verbose);
 			adapter = TestData.dummyAdapter;
 		} else {
 			if (TestData.spvAdapter == null)

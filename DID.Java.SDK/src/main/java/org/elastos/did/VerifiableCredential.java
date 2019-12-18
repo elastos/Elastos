@@ -40,7 +40,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
+import org.elastos.did.meta.CredentialMeta;
 import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -56,7 +58,7 @@ public class VerifiableCredential extends DIDObject {
 	private CredentialSubject subject;
 	private Proof proof;
 
-	private String alias;
+	private CredentialMeta meta;
 
 	static public class CredentialSubject {
 		private DID id;
@@ -289,33 +291,49 @@ public class VerifiableCredential extends DIDObject {
 		return expirationDate;
 	}
 
-	protected void setAliasInternal(String alias) {
-		this.alias = alias != null ? alias : "";
+	protected void setMeta(CredentialMeta meta) {
+		this.meta = meta;
 	}
 
-	public void setAlias(String alias) throws DIDException {
+	protected CredentialMeta getMeta(boolean force) throws DIDStoreException {
+		if (meta != null)
+			return meta;
+
+		if (force && DIDStore.isInitialized())
+			this.meta = DIDStore.getInstance().loadCredentialMeta(
+					getSubject().getId(), getId());
+
+		return meta;
+	}
+
+	public void setExtra(String name, String value) throws DIDStoreException {
+		if (name == null || name.isEmpty())
+			throw new IllegalArgumentException();
+
+		getMeta(true).setExtra(name, value);
+
 		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeCredentialAlias(getSubject().getId(),
-					getId(), alias);
-
-		setAliasInternal(alias);
+			DIDStore.getInstance().storeCredentialMeta(
+					getSubject().getId(), getId(), meta);
 	}
 
-	public String getAliasInternal() {
-		return alias;
+	public String getExtra(String name) throws DIDException {
+		if (name == null || name.isEmpty())
+			throw new IllegalArgumentException();
+
+		return getMeta(true).getExtra(name);
+	}
+
+	public void setAlias(String alias) throws DIDStoreException {
+		getMeta(true).setAlias(alias);;
+
+		if (DIDStore.isInitialized())
+			DIDStore.getInstance().storeCredentialMeta(
+					getSubject().getId(), getId(), meta);
 	}
 
 	public String getAlias() throws DIDException {
-		if (alias == null) {
-			if (DIDStore.isInitialized())
-				alias = DIDStore.getInstance().loadCredentialAlias(
-						getSubject().getId(), getId());
-
-			if (alias == null)
-				alias = "";
-		}
-
-		return alias;
+		return getMeta(true).getAlias();
 	}
 
 	public boolean isSelfProclaimed() {

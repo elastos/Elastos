@@ -26,7 +26,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedDIDURLException;
+import org.elastos.did.meta.CredentialMeta;
 import org.elastos.did.parser.DIDURLBaseListener;
 import org.elastos.did.parser.DIDURLParser;
 import org.elastos.did.parser.ParserHelper;
@@ -38,7 +40,7 @@ public class DIDURL implements Comparable<DIDURL> {
 	private Map<String, String> query;
 	private String fragment;
 
-	private String alias;
+	private CredentialMeta meta;
 
 	public DIDURL(DID id, String fragment) {
 		if (id == null)
@@ -160,12 +162,23 @@ public class DIDURL implements Comparable<DIDURL> {
 		this.fragment = fragment;
 	}
 
-	protected void setAliasInternal(String alias) {
-		this.alias = alias != null ? alias : "";
+	protected void setMeta(CredentialMeta meta) {
+		this.meta = meta;
+	}
+
+	protected CredentialMeta getMeta(boolean force) throws DIDStoreException {
+		if (meta != null)
+			return meta;
+
+		if (force && DIDStore.isInitialized())
+			this.meta = DIDStore.getInstance().loadCredentialMeta(
+					this.getDid(), this);
+
+		return meta;
 	}
 
 	public String getAlias() throws DIDException {
-		return alias != null ? alias : "";
+		return getMeta(true).getAlias();
 	}
 
 	@Override

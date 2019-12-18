@@ -20,20 +20,40 @@
  * SOFTWARE.
  */
 
-package org.elastos.did;
+package org.elastos.did.meta;
 
-public final class TestConfig {
-	public final static boolean verbose = false;
+import org.elastos.did.Constants;
+import org.elastos.did.exception.MalformedMetaException;
 
-	public final static String tempDir = "/PATH/TO/TEMP";
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-	public final static String storeRoot = "/PATH/TO/DIDStore";
-    public final static String storePass = "passwd";
-    public final static String passphrase = "secret";
+public class CredentialMeta extends Metadata {
+	private String alias;
 
-    public final static String walletDir = "/PATH/TO/WALLET";
-    public final static String walletId = "test";
-    public final static String walletPassword = "passwd";
-    public final static String networkConfig = "/PATH/TO/privnet.json";
-    public final static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
+	public void setAlias(String alias) {
+		this.alias = alias;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public static CredentialMeta fromString(String metadata)
+			throws MalformedMetaException {
+		return fromString(metadata, CredentialMeta.class);
+	}
+
+	@Override
+	protected void fromNode(JsonNode node) throws MalformedMetaException {
+		JsonNode value = node.get(Constants.alias);
+		if (value != null)
+			setAlias(value.asText());
+	}
+
+	@Override
+	protected void toNode(ObjectNode node) {
+		if (alias != null)
+			node.put(Constants.alias, alias);
+	}
 }

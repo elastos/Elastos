@@ -39,6 +39,8 @@ import java.util.List;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDocumentException;
+import org.elastos.did.meta.CredentialMeta;
+import org.elastos.did.meta.DIDMeta;
 
 /*
  * FileSystem DID Store: storage layout
@@ -50,11 +52,11 @@ import org.elastos.did.exception.MalformedDocumentException;
  *      - index							[Last derive index]
  *    + ids
  *      + ixxxxxxxxxxxxxxx0 			[DID root, named by id specific string]
- *        - .meta						[Meta for DID, alias only, OPTIONAL]
+ *        - .meta						[Meta for DID, json format, OPTIONAL]
  *        - document					[DID document, json format]
  *        + credentials				    [Credentials root, OPTIONAL]
  *          + credential-id-0           [Credential root, named by id' fragment]
- *            - .meta					[Meta for credential, alias only, OPTONAL]
+ *            - .meta					[Meta for credential, json format, OPTONAL]
  *            - credential				[Credential, json format]
  *          + ...
  *          + credential-id-N
@@ -307,24 +309,25 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 	}
 
 	@Override
-	public void storeDidAlias(DID did, String alias) throws DIDStoreException {
+	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStoreException {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(), META_FILE);
+			String metadata = meta != null ? meta.toString() : null;
 
-			if (alias == null || alias.isEmpty())
+			if (metadata == null || metadata.isEmpty())
 				file.delete();
 			else
-				writeText(file, alias);
+				writeText(file, metadata);
 		} catch (IOException e) {
 			throw new DIDStoreException("Write alias error.", e);
 		}
 	}
 
 	@Override
-	public String loadDidAlias(DID did) throws DIDStoreException {
+	public DIDMeta loadDidMeta(DID did) throws DIDStoreException {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(), META_FILE);
-			return readText(file);
+			return DIDMeta.fromString(readText(file));
 		} catch (IOException e) {
 			throw new DIDStoreException("Read alias error.", e);
 		}
@@ -350,7 +353,9 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 			if (!file.exists())
 				return null;
 
-			return DIDDocument.fromJson(new FileInputStream(file));
+			DIDDocument doc = DIDDocument.fromJson(new FileInputStream(file));
+			doc.setMeta(loadDidMeta(did));
+			return doc;
 		} catch (IOException e) {
 			throw new DIDStoreException("Load DIDDocument error.", e);
 		}
@@ -410,8 +415,8 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 		for (File didRoot : children) {
 			DID did = new DID(DID.METHOD, didRoot.getName());
 			try {
-				did.setAliasInternal(loadDidAlias(did));
-			} catch (DIDStoreException ignore) {
+				did.setMeta(loadDidMeta(did));
+			} catch (Exception ignore) {
 			}
 
 			dids.add(did);
@@ -421,28 +426,29 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 	}
 
 	@Override
-	public void storeCredentialAlias(DID did, DIDURL id, String alias)
+	public void storeCredentialMeta(DID did, DIDURL id, CredentialMeta meta)
 			throws DIDStoreException {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
+			String metadata = meta != null ? meta.toString() : null;
 
-			if (alias == null || alias.isEmpty())
+			if (metadata == null || metadata.isEmpty())
 				file.delete();
 			else
-				writeText(file, alias);
+				writeText(file, metadata);
 		} catch (IOException e) {
 			throw new DIDStoreException("Write alias error.", e);
 		}
 	}
 
 	@Override
-	public String loadCredentialAlias(DID did, DIDURL id)
+	public CredentialMeta loadCredentialMeta(DID did, DIDURL id)
 			throws DIDStoreException {
 		try {
 			File file = getFile(DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
-			return readText(file);
+			return CredentialMeta.fromString(readText(file));
 		} catch (IOException e) {
 			throw new DIDStoreException("Read alias error.", e);
 		}
@@ -472,7 +478,17 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 			if (!file.exists())
 				return null;
 
-			return VerifiableCredential.fromJson(new FileInputStream(file));
+			VerifiableCredential vc;
+			vc = VerifiableCredential.fromJson(new FileInputStream(file));
+
+			try {
+				vc.setMeta(loadCredentialMeta(did, id));
+			} catch (Exception e) {
+				// any error when load meta, just delete it.
+				storeCredentialMeta(did, id, null);
+			}
+
+			return vc;
 		} catch (IOException e) {
 			throw new DIDStoreException("Load VerifiableCredential error.", e);
 		}
@@ -538,7 +554,12 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 		for (File credential : children) {
 			try {
 				DIDURL id = new DIDURL(did, credential.getName());
-				id.setAliasInternal(loadCredentialAlias(did, id));
+				try {
+					id.setMeta(loadCredentialMeta(did, id));
+				} catch (Exception e) {
+					// any error when load meta, just delete it.
+					storeCredentialMeta(did, id, null);
+				}
 				credentials.add(id);
 			} catch (DIDStoreException ignore) {
 			}

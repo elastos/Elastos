@@ -23,10 +23,11 @@
 package org.elastos.did;
 
 import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDResolveException;
 
 public interface DIDAdapter {
 	public boolean createIdTransaction(String payload, String memo)
 			throws DIDException;
 
-	public String resolve(String did) throws DIDException;
+	public String resolve(String did, boolean all) throws DIDResolveException;
 }

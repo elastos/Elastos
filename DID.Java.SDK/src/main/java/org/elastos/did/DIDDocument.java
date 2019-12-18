@@ -43,6 +43,7 @@ import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
 import org.elastos.did.exception.MalformedDIDURLException;
 import org.elastos.did.exception.MalformedDocumentException;
+import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.Base58;
 import org.elastos.did.util.Base64;
 import org.elastos.did.util.EcdsaSigner;
@@ -63,9 +64,8 @@ public class DIDDocument {
 	private Map<DIDURL, Service> services;
 	private Date expires;
 	private Proof proof;
-	private boolean deactivated;
 
-	private String alias;
+	private DIDMeta meta;
 
 	public static class PublicKey extends DIDObject {
 		private DID controller;
@@ -306,7 +306,6 @@ public class DIDDocument {
 	}
 
 	private DIDDocument() {
-		this.deactivated = false;
 	}
 
 	protected DIDDocument(DID subject) {
@@ -794,31 +793,54 @@ public class DIDDocument {
 		this.proof = proof;
 	}
 
-	protected void setAliasInternal(String alias) {
-		this.alias = alias != null ? alias : "";
+	protected void setMeta(DIDMeta meta) {
+		this.meta = meta;
 	}
 
-	public void setAlias(String alias) throws DIDException {
+	protected DIDMeta getMeta(boolean force) throws DIDStoreException {
+		if (meta != null)
+			return meta;
+
+		if (force && DIDStore.isInitialized())
+			this.meta = DIDStore.getInstance().loadDidMeta(getSubject());
+
+		return meta;
+	}
+
+	public void setExtra(String name, String value) throws DIDStoreException {
+		if (name == null || name.isEmpty())
+			throw new IllegalArgumentException();
+
+		getMeta(true).setExtra(name, value);
+
 		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeDidAlias(getSubject(), alias);
-
-		setAliasInternal(alias);
+			DIDStore.getInstance().storeDidMeta(getSubject(), meta);
 	}
 
-	protected String getAliasInternal() {
-		return alias;
+	public String getExtra(String name) throws DIDException {
+		if (name == null || name.isEmpty())
+			throw new IllegalArgumentException();
+
+		return getMeta(true).getExtra(name);
+	}
+
+	public void setAlias(String alias) throws DIDStoreException {
+		getMeta(true).setAlias(alias);;
+
+		if (DIDStore.isInitialized())
+			DIDStore.getInstance().storeDidMeta(getSubject(), meta);
 	}
 
 	public String getAlias() throws DIDException {
-		if (alias == null) {
-			if (DIDStore.isInitialized())
-				alias = DIDStore.getInstance().loadDidAlias(getSubject());
+		return getMeta(true).getAlias();
+	}
 
-			if (alias == null)
-				alias = "";
-		}
+	public String getTransactionId() throws DIDException {
+		return getMeta(true).getTransactionId();
+	}
 
-		return alias;
+	public Date getUpdated() throws DIDException {
+		return getMeta(true).getUpdated();
 	}
 
 	public boolean isExpired() {
@@ -830,12 +852,8 @@ public class DIDDocument {
 		return now.after(expireDate);
 	}
 
-	public boolean isDeactivated() {
-		return deactivated;
-	}
-
-	protected void setDeactivated(boolean deactivated) {
-		this.deactivated = deactivated;
+	public boolean isDeactivated() throws DIDException {
+		return getMeta(true).isDeactivated();
 	}
 
 	public boolean isGenuine() {
@@ -851,7 +869,7 @@ public class DIDDocument {
 		return verify(proof.getCreator(), proof.getSignature(), json.getBytes());
 	}
 
-	public boolean isValid() {
+	public boolean isValid() throws DIDException {
 		return !isDeactivated() && !isExpired() && isGenuine();
 	}
 

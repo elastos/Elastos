@@ -22,6 +22,8 @@
 
 package org.elastos.did.backend;
 
+import java.io.IOException;
+
 import org.elastos.did.DID;
 import org.elastos.did.DIDAdapter;
 import org.elastos.did.DIDDocument;
@@ -56,45 +58,35 @@ public class DIDBackend {
 		}
 	}
 
-	public DIDDocument resolve(DID did) throws DIDStoreException {
+	public ResolveResult resolve(DID did) throws DIDResolveException {
+		String res = adapter.resolve(did.getMethodSpecificId(), false);
+		if (res == null)
+			return null;
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = null;
+
 		try {
-			String res = adapter.resolve(did.getMethodSpecificId());
-			if (res == null)
-				return null;
-
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode node = mapper.readTree(res);
-
-			JsonNode result = node.get("result");
-			if (result.isNull()) {
-				/*
-				JsonNode error = node.get("error");
-				throw new DIDResolveException("Resolve DID error("
-						+ error.get("code").longValue() + ": "
-						+ error.get("message").textValue());
-				*/
-				return null;
-			}
-
-			if (!result.isArray() || result.size() < 1)
-				throw new DIDResolveException(
-						"Resolve DID error, unknown resolved response.");
-
-			result = result.get(0);
-			IDChainRequest request = IDChainRequest.fromJson(result);
-
-			if (!request.isValid())
-				throw new DIDResolveException("Signature verify failed.");
-
-			return request.getDocument();
-		} catch (Exception e) {
-			throw new DIDStoreException("Resolve DID error.", e);
+			node = mapper.readTree(res);
+		} catch (IOException e) {
+			throw new DIDResolveException("Parse resolved json error.", e);
 		}
+
+		JsonNode result = node.get("result");
+		if (result == null || result.isNull()) {
+			JsonNode error = node.get("error");
+			throw new DIDResolveException("Resolve DID error("
+					+ error.get("code").longValue() + "): "
+					+ error.get("message").textValue());
+		}
+
+		return ResolveResult.fromJson(result);
 	}
 
-	public boolean update(DIDDocument doc, DIDURL signKey,
+	public boolean update(DIDDocument doc, String previousTxid, DIDURL signKey,
 			String storepass) throws DIDStoreException {
-		IDChainRequest request = IDChainRequest.update(doc, signKey, storepass);
+		IDChainRequest request = IDChainRequest.update(doc,
+				previousTxid, signKey, storepass);
 		String json = request.toJson(true);
 
 		try {
