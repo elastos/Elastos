@@ -72,9 +72,6 @@ type CRCProposalTracking struct {
 	// The hash of proposal tracking document.
 	DocumentHash common.Uint256
 
-	// The hash of proposal tracking opinion.
-	OpinionHash common.Uint256
-
 	// The stage of proposal.
 	Stage uint8
 
@@ -89,6 +86,9 @@ type CRCProposalTracking struct {
 
 	// The signature of new proposal leader.
 	NewLeaderSign []byte
+
+	// The hash of proposal tracking opinion.
+	SecretaryOpinionHash common.Uint256
 
 	// The signature of secretary general.
 	SecretaryGeneralSign []byte
@@ -114,10 +114,6 @@ func (p *CRCProposalTracking) SerializeUnsigned(w io.Writer, version byte) error
 
 	if err := p.DocumentHash.Serialize(w); err != nil {
 		return errors.New("failed to serialize DocumentHash")
-	}
-
-	if err := p.OpinionHash.Serialize(w); err != nil {
-		return errors.New("failed to serialize OpinionHash")
 	}
 
 	if err := common.WriteUint8(w, p.Stage); err != nil {
@@ -148,6 +144,10 @@ func (p *CRCProposalTracking) Serialize(w io.Writer, version byte) error {
 		return errors.New("failed to serialize NewLeaderSign")
 	}
 
+	if err := p.SecretaryOpinionHash.Serialize(w); err != nil {
+		return errors.New("failed to serialize SecretaryOpinionHash")
+	}
+
 	if err := common.WriteVarBytes(w, p.SecretaryGeneralSign); err != nil {
 		return errors.New("failed to serialize SecretaryGeneralSign")
 	}
@@ -168,10 +168,6 @@ func (p *CRCProposalTracking) DeserializeUnSigned(r io.Reader, version byte) err
 
 	if err = p.DocumentHash.Deserialize(r); err != nil {
 		return errors.New("failed to deserialize DocumentHash")
-	}
-
-	if err = p.OpinionHash.Deserialize(r); err != nil {
-		return errors.New("failed to deserialize OpinionHash")
 	}
 
 	if p.Stage, err = common.ReadUint8(r); err != nil {
@@ -210,8 +206,11 @@ func (p *CRCProposalTracking) Deserialize(r io.Reader, version byte) error {
 	}
 	p.NewLeaderSign = newLeaderSign
 
-	sgSign, err := common.ReadVarBytes(r, crypto.SignatureLength,
-		"secretary general signature")
+	if err = p.SecretaryOpinionHash.Deserialize(r); err != nil {
+		return errors.New("failed to deserialize SecretaryOpinionHash")
+	}
+
+	sgSign, err := common.ReadVarBytes(r, crypto.SignatureLength, "secretary general signature")
 	if err != nil {
 		return errors.New("failed to deserialize SecretaryGeneralSign")
 	}

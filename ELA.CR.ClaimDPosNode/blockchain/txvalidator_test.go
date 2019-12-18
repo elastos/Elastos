@@ -1600,6 +1600,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 	code2 := getCodeByPubKeyStr(crPublicKeyStr)
 
 	draftData := randomBytes(10)
+	opinionHash := randomBytes(10)
 	txn := new(types.Transaction)
 	txn.TxType = types.CRCProposal
 	txn.Version = types.TxVersion09
@@ -1608,6 +1609,7 @@ func (s *txValidatorTestSuite) getCRCProposalTx(publicKeyStr, privateKeyStr,
 		SponsorPublicKey: publicKey1,
 		CRSponsorDID:     *getDid(code2),
 		DraftHash:        common.Hash(draftData),
+		CROpinionHash:    common.Hash(opinionHash),
 		Budgets:          []common.Fixed64{1e8, 1e8, 1e8},
 	}
 
@@ -1841,9 +1843,9 @@ func (s *txValidatorTestSuite) getCRCProposalTrackingTx(
 		ProposalHash:         proposalHash,
 		Stage:                stage,
 		DocumentHash:         common.Hash(documentData),
-		OpinionHash:          common.Hash(opinionHash),
 		LeaderPubKey:         leaderPublicKey,
 		NewLeaderPubKey:      newLeaderPublicKey,
+		SecretaryOpinionHash: common.Hash(opinionHash),
 	}
 
 	signBuf := new(bytes.Buffer)
