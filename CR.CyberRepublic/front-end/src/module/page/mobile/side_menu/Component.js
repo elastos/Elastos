@@ -39,6 +39,7 @@ export default class extends BaseComponent {
           'constitution/1',
           'whitepaper',
           'council',
+          'candidates',
           'what-is-new',
           'elips'
         ],
@@ -125,7 +126,11 @@ export default class extends BaseComponent {
               <Menu.Item key="landing">{I18N.get('0012')}</Menu.Item>
 
               <Menu.Item key="council">
-                {I18N.get('navigation.council')}
+                {I18N.get('navigation.council.title')}
+              </Menu.Item>
+
+              <Menu.Item key="candidates">
+                {I18N.get('navigation.council.submenu.candidate')}
               </Menu.Item>
 
               <Menu.Item key="whitepaper">
