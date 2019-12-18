@@ -64,6 +64,15 @@ public class DummyAdapter implements DIDAdapter {
         return sb.toString();
     }
 
+	private IDTransactionInfo getLastTransaction(DID did) {
+		for (IDTransactionInfo ti : idtxs) {
+			if (ti.getDid().equals(did))
+				return ti;
+		}
+
+		return null;
+	}
+
 	@Override
 	public boolean createIdTransaction(String payload, String memo)
 			throws DIDException {
@@ -75,11 +84,45 @@ public class DummyAdapter implements DIDAdapter {
 						+ "[" + request.getDid() + "]");
 				System.out.println("    " + request.toJson(false));
 
-				if (request.getOperation() != IDChainRequest.Operation.DEACRIVATE)
+				if (request.getOperation() != IDChainRequest.Operation.DEACTIVATE)
 					System.out.println("    " + request.getDocument().toString());
 			}
 
-			IDTransactionInfo ti = new IDTransactionInfo(generateTxid(),
+			if (!request.isValid())
+				throw new DIDException("Invalid ID transaction request.");
+
+			IDTransactionInfo ti = getLastTransaction(request.getDid());
+
+			switch (request.getOperation()) {
+			case CREATE:
+				if (ti != null)
+					throw new DIDException("DID already exist.");
+
+				break;
+
+			case UPDATE:
+				if (ti == null)
+					throw new DIDException("DID not exist.");
+
+				if (ti.getOperation() == IDChainRequest.Operation.DEACTIVATE)
+					throw new DIDException("DID already dactivated.");
+
+				if (!request.getPreviousTxid().equals(ti.getTransactionId()))
+					throw new DIDException("Previous transaction id missmatch.");
+
+				break;
+
+			case DEACTIVATE:
+				if (ti == null)
+					throw new DIDException("DID not exist.");
+
+				if (ti.getOperation() == IDChainRequest.Operation.DEACTIVATE)
+					throw new DIDException("DID already dactivated.");
+
+				break;
+			}
+
+			ti = new IDTransactionInfo(generateTxid(),
 					Calendar.getInstance(Constants.UTC).getTime(), request);
 			idtxs.add(0, ti);
 
@@ -115,20 +158,20 @@ public class DummyAdapter implements DIDAdapter {
 			generator.writeStringField("did", target.toString());
 
 			int status = 3;
-			for (IDTransactionInfo ti : idtxs) {
-				if (ti.getDid().equals(target)) {
-					if (ti.getOperation() == IDChainRequest.Operation.DEACRIVATE)
-						status = 2;
-					else {
-						if (ti.getRequest().getDocument().isExpired())
-							status = 1;
-						else
-							status = 0;
-					}
-
-					matched = true;
+			IDTransactionInfo last = getLastTransaction(target);
+			if (last != null) {
+				if (last.getOperation() == IDChainRequest.Operation.DEACTIVATE) {
+					status = 2;
+			    } else {
+					if (last.getRequest().getDocument().isExpired())
+						status = 1;
+					else
+						status = 0;
 				}
+
+				matched = true;
 			}
+
 			generator.writeNumberField("status", status);
 
 			if (status != 3) {

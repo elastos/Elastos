@@ -39,6 +39,8 @@ import java.util.Map;
 import org.elastos.did.adapter.DummyAdapter;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
+import org.elastos.did.meta.DIDMeta;
+import org.elastos.did.util.HDKey;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -176,6 +178,131 @@ public class DIDStoreTest {
 
     	assertTrue(resolved.isValid());
     }
+
+	@Test
+	public void testUpdateDid() throws DIDException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDStore store = DIDStore.getInstance();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc, TestConfig.storePass);
+
+    	DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+
+    	// Update
+    	DIDDocument.Builder db = resolved.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	DIDDocument newDoc = db.seal(TestConfig.storePass);
+    	assertEquals(2, newDoc.getPublicKeyCount());
+    	assertEquals(2, newDoc.getAuthenticationKeyCount());
+
+    	store.updateDid(newDoc, TestConfig.storePass);
+
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+    	assertEquals(newDoc.toString(), resolved.toString());
+
+    	// Update again
+    	db = resolved.edit();
+    	key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key2", key.getPublicKeyBase58());
+    	newDoc = db.seal(TestConfig.storePass);
+    	assertEquals(3, newDoc.getPublicKeyCount());
+    	assertEquals(3, newDoc.getAuthenticationKeyCount());
+
+    	store.updateDid(newDoc, TestConfig.storePass);
+
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+    	assertEquals(newDoc.toString(), resolved.toString());
+	}
+
+	@Test
+	public void testUpdateNonExistedDid() throws DIDException {
+		expectedEx.expect(DIDStoreException.class);
+		expectedEx.expectMessage("Create ID transaction error.");
+
+		TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDStore store = DIDStore.getInstance();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+    	// fake a txid
+    	DIDMeta meta = new DIDMeta();
+    	meta.setTransactionId("12345678");
+    	store.storeDidMeta(doc.getSubject(), meta);
+
+    	// Update will fail
+    	store.updateDid(doc, TestConfig.storePass);
+	}
+
+	@Test
+	public void testDeactivateDidAfterCreate() throws DIDException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDStore store = DIDStore.getInstance();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc, TestConfig.storePass);
+
+    	DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+
+    	store.deactivateDid(doc.getSubject(), TestConfig.storePass);
+
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNull(resolved);
+	}
+
+	@Test
+	public void testDeactivateDidAfterUpdate() throws DIDException {
+    	TestData testData = new TestData();
+    	testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDStore store = DIDStore.getInstance();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc, TestConfig.storePass);
+
+    	DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+
+    	// Update
+    	DIDDocument.Builder db = resolved.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	DIDDocument newDoc = db.seal(TestConfig.storePass);
+    	assertEquals(2, newDoc.getPublicKeyCount());
+    	assertEquals(2, newDoc.getAuthenticationKeyCount());
+
+    	store.updateDid(newDoc, TestConfig.storePass);
+
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+    	assertEquals(newDoc.toString(), resolved.toString());
+
+    	store.deactivateDid(newDoc.getSubject(), TestConfig.storePass);
+
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNull(resolved);
+	}
 
 	@Test
 	public void testBulkCreate() throws DIDException {

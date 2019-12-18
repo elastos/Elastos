@@ -56,7 +56,7 @@ public class IDChainRequest {
 	private static final String SIGNATURE = Constants.signature;
 
 	public enum Operation {
-		CREATE, UPDATE, DEACRIVATE;
+		CREATE, UPDATE, DEACTIVATE;
 
 		@Override
 		public String toString() {
@@ -105,7 +105,7 @@ public class IDChainRequest {
 
 	public static IDChainRequest deactivate(DID did, DIDURL signKey,
 			String storepass) throws DIDStoreException {
-		IDChainRequest request = new IDChainRequest(Operation.DEACRIVATE);
+		IDChainRequest request = new IDChainRequest(Operation.DEACTIVATE);
 		request.setPayload(did);
 		request.seal(signKey, storepass);
 
@@ -121,7 +121,7 @@ public class IDChainRequest {
 	}
 
 	private void setPreviousTxid(String previousTxid) {
-		this.previousTxid = previousTxid;
+		this.previousTxid = previousTxid != null ? previousTxid : "";
 	}
 
 	public String getPayload() {
@@ -154,7 +154,7 @@ public class IDChainRequest {
 
 	private void setPayload(String payload) throws DIDResolveException {
 		try {
-			if (operation != Operation.DEACRIVATE) {
+			if (operation != Operation.DEACTIVATE) {
 				String json = new String(Base64.decode(payload,
 						Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
 
@@ -188,27 +188,13 @@ public class IDChainRequest {
 		};
 
 		this.signature = DIDStore.getInstance().sign(did, signKey, storepass, inputs);
-
-		if (operation == Operation.UPDATE) {
-			System.out.println("---- " + this.signature);
-
-			inputs = new byte[][] {
-				specification.getBytes(),
-				operation.toString().getBytes(),
-				payload.getBytes()
-			};
-
-			String sig = DIDStore.getInstance().sign(did, signKey, storepass, inputs);
-			System.out.println("==== " + sig);
-		}
-
 		this.signKey = signKey;
 		this.keyType = Constants.defaultPublicKeyType;
 	}
 
 	public boolean isValid() throws DIDException {
 		DIDDocument doc;
-		if (operation != Operation.DEACRIVATE) {
+		if (operation != Operation.DEACTIVATE) {
 			doc = this.doc;
 			if (!doc.isAuthenticationKey(signKey))
 				return false;
@@ -219,9 +205,12 @@ public class IDChainRequest {
 				return false;
 		}
 
+		String prevtxid = operation == Operation.UPDATE ? previousTxid : "";
+
 		byte[][] inputs = new byte[][] {
 			specification.getBytes(),
 			operation.toString().getBytes(),
+			prevtxid.getBytes(),
 			payload.getBytes()
 		};
 
