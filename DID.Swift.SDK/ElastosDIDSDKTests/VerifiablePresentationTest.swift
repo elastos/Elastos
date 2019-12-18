@@ -55,8 +55,8 @@ class VerifiablePresentationTest: XCTestCase {
             XCTAssertNotNil(normalized)
             XCTAssertTrue(try normalized.isGenuine())
             XCTAssertTrue(try normalized.isValid())
-            XCTAssertEqual(testData.loadPresentationNormalizedJson(), normalized.description())
-            XCTAssertEqual(testData.loadPresentationNormalizedJson(), vp.description())
+            XCTAssertEqual(try testData.loadPresentationNormalizedJson(), normalized.description)
+            XCTAssertEqual(try testData.loadPresentationNormalizedJson(), vp.description)
         }catch {
             
         }

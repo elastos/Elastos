@@ -69,7 +69,7 @@ class DIDStoreTests: XCTestCase {
             path = storePath + "/" + "private" + "/" + "index"
             XCTAssertTrue(testData.existsFile(path))
             
-            DIDStore.creatInstance("filesystem", storePath, DummyAdapter())
+            try DIDStore.creatInstance("filesystem", storePath, DummyAdapter())
             
             store = try DIDStore.shareInstance()!
             XCTAssertTrue(try store.containsPrivateIdentity())
@@ -137,7 +137,7 @@ class DIDStoreTests: XCTestCase {
             path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
             XCTAssertFalse(testData.existsFile(path))
             
-            resolved = store.resolveDid(doc.subject!, true)
+            resolved = try store.resolveDid(doc.subject!, true)!
             XCTAssertNotNil(resolved)
             XCTAssertEqual(doc.subject, resolved.subject)
             XCTAssertEqual(doc.proof.signature, resolved.proof.signature)
@@ -381,18 +381,18 @@ class DIDStoreTests: XCTestCase {
             try vc.setAlias("Passport")
             
             let store = try DIDStore.shareInstance()!
-            var path = storePath + "/ids/" + test.subject.methodSpecificId + "/credentials/" + "twitter/" + "credential"
-            XCTAssertTrue(TestData.exists(path))
+            var path = storePath + "/ids/" + test.subject!.methodSpecificId + "/credentials/twitter/credential"
+            XCTAssertTrue(testData.exists(path))
             
-            path = storePath + "/" + "ids" + "/" + test.subject.methodSpecificId + "/" + "credentials" + "/" + "twitter" + "/" + ".meta"
-            XCTAssertTrue(TestData.exists(path))
+            path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId + "/" + "credentials" + "/" + "twitter" + "/" + ".meta"
+            XCTAssertTrue(testData.exists(path))
             
-            path = storePath + "/" + "ids" + "/" + test.subject.methodSpecificId + "/" + "credentials" + "/" + "passport" + "/" + "credential"
-            XCTAssertTrue(TestData.exists(path))
+            path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId + "/" + "credentials" + "/" + "passport" + "/" + "credential"
+            XCTAssertTrue(testData.exists(path))
             
-            path = storePath + "/" + "ids" + "/" + test.subject.methodSpecificId
+            path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "passport" + "/" + ".meta"
-            XCTAssertTrue(TestData.exists(path))
+            XCTAssertTrue(testData.exists(path))
             
             var deleted: Bool = try store.deleteCredential(test.subject!, DIDURL(test.subject!, "twitter"))
             XCTAssertTrue(deleted)
@@ -404,14 +404,14 @@ class DIDStoreTests: XCTestCase {
             XCTAssertFalse(deleted)
             
             path = storePath + "/" + "ids"
-                + "/" + test.subject.methodSpecificId
+                + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "twitter"
-            XCTAssertFalse(TestData.exists(path))
+            XCTAssertFalse(testData.exists(path))
             
             path = storePath + "/" + "ids"
-                + "/" + test.subject.getMethodSpecificId
+                + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "passport"
-            XCTAssertFalse(TestData.exists(path))
+            XCTAssertFalse(testData.exists(path))
             
             XCTAssertTrue(try store.containsCredential(test.subject!.description, "email"))
             XCTAssertTrue(try store.containsCredential(test.subject!.description, "profile"))
@@ -427,7 +427,7 @@ class DIDStoreTests: XCTestCase {
         do {
             let store: DIDStore = try  DIDStore.shareInstance()!
             
-            var props: Dictionary<String, String> = [:]
+            var props: OrderedDictionary<String, String> = OrderedDictionary()
             props["name"] = "John"
             props["gender"] = "Male"
             props["nation"] = "Singapore"
@@ -442,8 +442,8 @@ class DIDStoreTests: XCTestCase {
                 let issuer: Issuer = try Issuer(doc)
                 issuer.credential.types = ["BasicProfileCredential", "SelfProclaimedCredential"]
                 issuer.credential.subject.properties = props
-                issuer.credential.seal(storePass)
-                store.storeCredential(credential)
+//                issuer.seal(storePass)
+//                store.storeCredential(credential)
             }
         } catch {
             print(error)
@@ -453,12 +453,13 @@ class DIDStoreTests: XCTestCase {
     func testStorePerformance(_ cached: Bool) {
         do {
             let adapter: DIDAdapter = DummyAdapter()
-            TestData.deleteFile(storePath)
+            let testData: TestData = TestData()
+            testData.deleteFile(storePath)
             if (cached){
-                DIDStore.creted("filesystem", storePath, adapter)
+                try DIDStore.creatInstance("filesystem", storePath, adapter)
             }
             else {
-                DIDStore.creted("filesystem", storePath, adapter, 0, 0)
+                try DIDStore.creatInstance("filesystem", storePath, adapter, 0, 0)
             }
             
             let store: DIDStore = try DIDStore.shareInstance()!

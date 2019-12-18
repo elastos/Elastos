@@ -1,7 +1,7 @@
 
 import Foundation
 import ElastosDIDSDK
-
+/*
 class FakeConsoleAdaptor: DIDAdaptor {
     
     func createIdTransaction(_ payload: String, _ memo: String?) throws -> Bool {
@@ -20,3 +20,4 @@ class FakeConsoleAdaptor: DIDAdaptor {
         return nil
     }
 }
+*/

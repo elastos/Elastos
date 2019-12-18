@@ -10,11 +10,11 @@ class IDChainOperationsTest: XCTestCase {
             try testData.setupStore(false)
             try testData.initIdentity()
             let store: DIDStore = try DIDStore.shareInstance()!
-            XCTAssertTrue(store.getAdapter())
-            let adapter: SPVAdapter = store.getAdapter()
+//            XCTAssertTrue(store.getAdapter())
+            let adapter: SPVAdaptor = store.getAdapter() as! SPVAdaptor
             
             while true {
-                if adapter.isAvailable() {
+                if try adapter.isAvailable() {
                     print("OK")
                     break
                 }
@@ -27,24 +27,23 @@ class IDChainOperationsTest: XCTestCase {
             let doc = try store.newDid(storePass)
             let success = try store.publishDid(doc, storePass)
             XCTAssertTrue(success)
-            print("Published new DID: \(doc.subject)")
+            print("Published new DID: \(doc.subject!)")
             
-            let resolved: DIDDocument?
             print("Try to resolve new published DID.")
             while true {
                 let lock = XCTestExpectation(description: "******** Waiting for wallet available, Waiting 30s")
                 wait(for: [lock], timeout: 30)
-                resolved = try store.resolveDid(doc.subject!, true)
+                let resolved = try store.resolveDid(doc.subject!, true)
                 if resolved != nil {
                     print("OK")
+                    XCTAssertEqual(doc.subject!, resolved!.subject)
+                    XCTAssertTrue(try resolved!.isValid())
                     break
                 }
                 else {
                     print("...")
                 }
             }
-            XCTAssertEqual(doc.subject!, resolved!.subject)
-            XCTAssertTrue(try resolved!.isValid())
         } catch {
             
         }

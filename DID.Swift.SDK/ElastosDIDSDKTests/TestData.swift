@@ -30,7 +30,7 @@ class TestData: XCTestCase {
     private static var restoreMnemonic: String?
 
     public func setupStore(_ dummyBackend: Bool) throws {
-        var adapter: DIDAdapter
+        var adapter: DIDAdapter = DummyAdapter()
         if dummyBackend {
             if TestData.dummyAdapter == nil {
                 TestData.dummyAdapter = DummyAdapter() as? DIDAdapter
@@ -45,8 +45,7 @@ class TestData: XCTestCase {
             deleteFile(storePath)
             adapter = TestData.spvAdapter!
         }
-        
-      try DIDStore.creatInstance("filesystem", storePath, adapter)
+        try DIDStore.creatInstance("filesystem", storePath, adapter)
     }
     
     public func initIdentity() throws -> String {
@@ -64,6 +63,7 @@ class TestData: XCTestCase {
             let store: DIDStore = try DIDStore.shareInstance()!
             try store.storeDid(doc)
         }
+        return doc
     }
     
     func importPrivateKey(_ id: DIDURL, _ fileName: String, _ type: String) throws {
@@ -77,7 +77,7 @@ class TestData: XCTestCase {
     func loadTestIssuer() throws -> DIDDocument {
         if TestData.testIssuer == nil {
             TestData.testIssuer = try loadDIDDocument("issuer")
-            try importPrivateKey((TestData.testIssuer?.getDefaultPublicKey())!, "issuer.primary.sk")
+            try importPrivateKey((TestData.testIssuer?.getDefaultPublicKey())!, "issuer.primary", "sk")
         }
         return TestData.testIssuer!
     }
@@ -87,15 +87,15 @@ class TestData: XCTestCase {
         if TestData.testDocument == nil {
             TestData.testDocument = try loadDIDDocument("document")
         }
-        try importPrivateKey((TestData.testDocument?.getDefaultPublicKey())!, "document.primary.sk")
-        try importPrivateKey(TestData.testDocument!.getPublicKey("key2")!.id, "document.key2.sk")
-        try importPrivateKey(TestData.testDocument!.getPublicKey("key3")!.id, "document.key3.sk")
+        try importPrivateKey((TestData.testDocument?.getDefaultPublicKey())!, "document.primary", "sk")
+        try importPrivateKey(TestData.testDocument!.getPublicKey("key2")!.id, "document.key2", "sk")
+        try importPrivateKey(TestData.testDocument!.getPublicKey("key3")!.id, "document.key3", "sk")
         return TestData.testDocument!
     }
     
-    func loadCredential(_ fileName: String, _ type: String) throws -> VerifiableCredential {
+    func loadCredential(_ fileName: String, _ type_: String) throws -> VerifiableCredential {
         let buldle = Bundle(for: type(of: self))
-        let jsonstr = buldle.path(forResource: fileName, ofType: type)
+        let jsonstr = buldle.path(forResource: fileName, ofType: type_)
         let vc: VerifiableCredential = try VerifiableCredential.fromJson(jsonstr!)
         if DIDStore.isInitialized() {
             try DIDStore.shareInstance()?.storeCredential(vc)
@@ -140,9 +140,9 @@ class TestData: XCTestCase {
         return TestData.testVp!
     }
     
-    func loadText(_ fileName: String, _ type: String) throws -> String {
+    func loadText(_ fileName: String, _ type_: String) throws -> String {
         let bl = Bundle(for: type(of: self))
-        let jsonstr = bl.path(forResource: fileName, ofType: type)
+        let jsonstr = bl.path(forResource: fileName, ofType: type_)
         return jsonstr!
     }
     

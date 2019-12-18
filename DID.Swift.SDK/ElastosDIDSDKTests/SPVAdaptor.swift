@@ -4,7 +4,7 @@ import ElastosDIDSDK
 import SPVAdapter
 
 public typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
-public class SPVAdaptor: DIDAdaptor {
+public class SPVAdaptor: DIDAdapter {
     var walletDir: String!
     var walletId: String!
     var network: String!

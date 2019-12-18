@@ -3,7 +3,7 @@ import XCTest
 import ElastosDIDSDK
 
 class BulkCreate: XCTestCase {
-    
+    /*
     var adapter: SPVAdaptor!
     var timeout: Double = 1800.0
     
@@ -74,5 +74,5 @@ class BulkCreate: XCTestCase {
             // Put the code you want to measure the time of here.
         }
     }
-
+*/
 }

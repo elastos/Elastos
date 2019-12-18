@@ -1,10 +1,15 @@
 
 import XCTest
-import SPVAdapter
 import ElastosDIDSDK
+import SPVAdapter
 
-class DummyAdapter: DIDAdaptor {
-
-
-
+class DummyAdapter: DIDAdapter {
+ 
+    func createIdTransaction(_ payload: String, _ memo: String?) throws -> Bool {
+        return false
+    }
+    
+    func resolve(_ did: String) throws -> String? {
+        return nil
+    }
 }
