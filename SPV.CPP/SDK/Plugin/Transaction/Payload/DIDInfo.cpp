@@ -21,8 +21,11 @@ namespace Elastos {
 
 		}
 
-		DIDHeaderInfo::DIDHeaderInfo(const std::string &specification, const std::string &operation) :
-				_specification(specification), _operation(operation) {
+		DIDHeaderInfo::DIDHeaderInfo(const std::string &specification, const std::string &operation,
+		                             const std::string &preTxID) :
+				_specification(specification),
+				_operation(operation),
+				_previousTxid(preTxID) {
 
 		}
 
@@ -42,6 +45,14 @@ namespace Elastos {
 			_operation = operation;
 		}
 
+		void DIDHeaderInfo::SetPreviousTxid(const std::string &txid) {
+			_previousTxid = txid;
+		}
+
+		const std::string &DIDHeaderInfo::PreviousTxid() const {
+			return _previousTxid;
+		}
+
 		size_t DIDHeaderInfo::EstimateSize(uint8_t version) const {
 			ByteStream stream;
 			size_t size = 0;
@@ -51,12 +62,20 @@ namespace Elastos {
 			size += stream.WriteVarUint(_operation.size());
 			size += _operation.size();
 
+			if (_operation == UPDATE_DID) {
+				size += stream.WriteVarUint(_previousTxid.size());
+				size += _previousTxid.size();
+			}
+
 			return size;
 		}
 
 		void DIDHeaderInfo::Serialize(ByteStream &stream, uint8_t version) const {
 			stream.WriteVarString(_specification);
 			stream.WriteVarString(_operation);
+			if (_operation == UPDATE_DID) {
+				stream.WriteVarString(_previousTxid);
+			}
 		}
 
 		bool DIDHeaderInfo::Deserialize(const ByteStream &stream, uint8_t version) {
@@ -70,6 +89,13 @@ namespace Elastos {
 				return false;
 			}
 
+			if (_operation == UPDATE_DID)  {
+				if (!stream.ReadVarString(_previousTxid)) {
+					Log::error("DIDHeaderInfo deserialize: previousTxid");
+					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -77,12 +103,19 @@ namespace Elastos {
 			nlohmann::json j;
 			j["specification"] = _specification;
 			j["operation"] = _operation;
+			if (_operation == UPDATE_DID) {
+				j["previousTxid"] =  _previousTxid;
+			}
 			return j;
 		}
 
 		void DIDHeaderInfo::FromJson(const nlohmann::json &j, uint8_t version) {
 			_specification = j["specification"].get<std::string>();
 			_operation = j["operation"].get<std::string>();
+
+			if (_operation == UPDATE_DID) {
+				_previousTxid = j["previousTxid"].get<std::string>();
+			}
 		}
 
 		DIDPubKeyInfo::DIDPubKeyInfo() {
@@ -129,6 +162,26 @@ namespace Elastos {
 
 		void DIDPubKeyInfo::SetPublicKeyBase58(const std::string &pubkey) {
 			_publicKeyBase58 = pubkey;
+		}
+
+		void DIDPubKeyInfo::ToOrderedJson(JsonGenerator *generator) const {
+			JsonGenerator_WriteStartObject(generator);
+
+			JsonGenerator_WriteFieldName(generator, "id");
+			JsonGenerator_WriteString(generator, _id.c_str());
+
+			JsonGenerator_WriteFieldName(generator, "type");
+			JsonGenerator_WriteString(generator, _type.c_str());
+
+			if (!_controller.empty()) {
+				JsonGenerator_WriteFieldName(generator, "controller");
+				JsonGenerator_WriteString(generator, _controller.c_str());
+			}
+
+			JsonGenerator_WriteFieldName(generator, "publicKeyBase58");
+			JsonGenerator_WriteString(generator, _publicKeyBase58.c_str());
+
+			JsonGenerator_WriteEndObject(generator);
 		}
 
 		nlohmann::json DIDPubKeyInfo::ToJson(uint8_t version) const {
@@ -349,6 +402,22 @@ namespace Elastos {
 			return _alipay;
 		}
 
+		void CredentialSubject::ToOrderedJson(JsonGenerator *generator) const {
+			JsonGenerator_WriteStartObject(generator);
+
+			nlohmann::json jProperties = ToJson(0);
+			std::map<std::string, std::string> properties = jProperties;
+			properties.erase("id");
+
+			JsonGenerator_WriteStringField(generator, "id", _id.c_str());
+
+			for (std::map<std::string, std::string>::iterator it = properties.begin(); it != properties.end();  ++it) {
+				JsonGenerator_WriteStringField(generator, it->first.c_str(), it->second.c_str());
+			}
+
+			JsonGenerator_WriteEndObject(generator);
+		}
+
 		nlohmann::json CredentialSubject::ToJson(uint8_t version) const {
 			nlohmann::json j;
 
@@ -384,6 +453,10 @@ namespace Elastos {
 				j["avatar"] = _avatar;
 			}
 
+			if (_address.size() > 0) {
+				j["address"] = _address;
+			}
+
 			if (_email.size() > 0) {
 				j["email"] = _email;
 			}
@@ -392,8 +465,16 @@ namespace Elastos {
 				j["phone"] = _phone;
 			}
 
+			if (_city.size() > 0) {
+				j["city"] = _city;
+			}
+
 			if (_nation.size() > 0) {
 				j["nation"] = _nation;
+			}
+
+			if (_language.size() > 0) {
+				j["language"] = _language;
 			}
 
 			if (_descript.size() > 0) {
@@ -460,14 +541,25 @@ namespace Elastos {
 			if (j.find("avatar") != j.end())
 				_avatar = j["avatar"].get<std::string>();
 
+			if (j.find("address") != j.end()) {
+				_address =  j["address"].get<std::string>();
+			}
+
 			if (j.find("email") != j.end())
 				_email = j["email"].get<std::string>();
 
 			if (j.find("phone") != j.end())
 				_phone = j["phone"].get<std::string>();
 
+			if (j.find("city") != j.end()) {
+				_city =  j["city"].get<std::string>();
+			}
+
 			if (j.find("nation") != j.end())
 				_nation = j["nation"].get<std::string>();
+
+			if (j.find("language") != j.end())
+				_language = j["language"].get<std::string>();
 
 			if (j.find("descript") != j.end())
 				_descript = j["descript"].get<std::string>();
@@ -533,6 +625,16 @@ namespace Elastos {
 
 		const std::string &ServiceEndpoint::GetService() const {
 			return _serviceEndpoint;
+		}
+
+		void ServiceEndpoint::ToOrderedJson(JsonGenerator *generator) const {
+			JsonGenerator_WriteStartObject(generator);
+
+			JsonGenerator_WriteStringField(generator, "id", _id.c_str());
+			JsonGenerator_WriteStringField(generator, "type", _type.c_str());
+			JsonGenerator_WriteStringField(generator, "serviceEndpoint", _serviceEndpoint.c_str());
+
+			JsonGenerator_WriteEndObject(generator);
 		}
 
 		nlohmann::json ServiceEndpoint::ToJson(uint8_t version) const {
@@ -612,10 +714,41 @@ namespace Elastos {
 			return _proof;
 		}
 
+		void VerifiableCredential::ToOrderedJson(JsonGenerator *generator) const {
+			JsonGenerator_WriteStartObject(generator);
+
+			JsonGenerator_WriteFieldName(generator, "id");
+			JsonGenerator_WriteString(generator, _id.c_str());
+
+			JsonGenerator_WriteFieldName(generator, "type");
+			JsonGenerator_WriteStartArray(generator);
+			for (size_t i = 0; i <  _types.size(); ++i) {
+				JsonGenerator_WriteString(generator, _types[i].c_str());
+			}
+			JsonGenerator_WriteEndArray(generator);
+
+			JsonGenerator_WriteFieldName(generator, "issuer");
+			JsonGenerator_WriteString(generator, _issuer.c_str());
+
+			JsonGenerator_WriteFieldName(generator, "issuanceDate");
+			JsonGenerator_WriteString(generator, _issuanceDate.c_str());
+
+			JsonGenerator_WriteFieldName(generator, "expirationDate");
+			JsonGenerator_WriteString(generator, _expirationDate.c_str());
+
+			JsonGenerator_WriteFieldName(generator, "credentialSubject");
+			_credentialSubject.ToOrderedJson(generator);
+
+			JsonGenerator_WriteFieldName(generator, "proof");
+			_proof.ToOrderJson(generator);
+
+			JsonGenerator_WriteEndObject(generator);
+		}
+
 		nlohmann::json VerifiableCredential::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["id"] = _id;
-			j["types"] = _types;
+			j["type"] = _types;
 			j["issuer"] = _issuer;
 			j["issuanceDate"] = _issuanceDate;
 			j["expirationDate"] = _expirationDate;
@@ -628,9 +761,9 @@ namespace Elastos {
 		void VerifiableCredential::FromJson(const nlohmann::json &j, uint8_t version) {
 			_id = j["id"].get<std::string>();
 
-			if (j.find("types") != j.end()) {
+			if (j.find("type") != j.end()) {
 				_types.clear();
-				std::vector<std::string> types = j["types"];
+				std::vector<std::string> types = j["type"];
 				_types = types;
 
 			}
@@ -655,6 +788,81 @@ namespace Elastos {
 				_proof.FromJson(j["proof"], version);
 			}
 
+		}
+
+		DIDPayloadProof::DIDPayloadProof() :_type(DID_DEFAULT_TYPE) {
+
+		}
+
+		DIDPayloadProof::~DIDPayloadProof() {
+
+		}
+
+		void DIDPayloadProof::SetType(const std::string &type) {
+			_type = type;
+		}
+
+		const std::string &DIDPayloadProof::GetType() const {
+			return _type;
+		}
+
+		void DIDPayloadProof::SetCreateDate(const std::string &date) {
+			_created = date;
+		}
+
+		const std::string &DIDPayloadProof::GetCreatedDate() const {
+			return _created;
+		}
+
+		void DIDPayloadProof::SetCreator(const std::string &creator) {
+			_creator = creator;
+		}
+
+		const std::string &DIDPayloadProof::GetCreator() const {
+			return _creator;
+		}
+
+		void DIDPayloadProof::SetSignature(const std::string &signature) {
+			_signatureValue = signature;
+		}
+
+		const std::string &DIDPayloadProof::GetSignature() const {
+			return _signatureValue;
+		}
+
+		nlohmann::json DIDPayloadProof::ToJson(uint8_t version) const {
+			nlohmann::json j;
+
+			j["type"] = _type;
+
+			if (!_created.empty()){
+				j["created"] = _created;
+			}
+
+			if (!_creator.empty()){
+				j["creator"] = _creator;
+			}
+
+			j["signatureValue"] = _signatureValue;
+			return j;
+		}
+
+		void DIDPayloadProof::FromJson(const nlohmann::json &j, uint8_t version) {
+			if (j.find("type") != j.end()) {
+				_type = j["type"].get<std::string>();
+			} else {
+				_type = DID_DEFAULT_TYPE;
+			}
+
+			if (j.find("created") != j.end()) {
+				_created = j["created"].get<std::string>();
+			}
+
+			if (j.find("creator") != j.end()) {
+				_creator = j["creator"].get<std::string>();
+			}
+
+			_signatureValue = j["signatureValue"].get<std::string>();
 		}
 
 		DIDPayloadInfo::DIDPayloadInfo() {
@@ -721,6 +929,51 @@ namespace Elastos {
 			_expires = expires;
 		}
 
+		void DIDPayloadInfo::SetProof(const DIDPayloadProof &proof) {
+			_proof = proof;
+		}
+
+		const DIDPayloadProof &DIDPayloadInfo::GetProof() const {
+			return _proof;
+		}
+
+		bool DIDPayloadInfo::IsValid() const {
+			bool verifiedSign = false;
+
+			if (_proof.GetType() != DID_DEFAULT_TYPE) {
+				Log::error("unsupport did type");
+				return false;
+			}
+
+			std::string proofID = _proof.GetCreator();
+			if (proofID.empty()) {
+				proofID = PRIMARY_KEY;
+			}
+
+			if (proofID[0] == '#') {
+				proofID = _id + proofID;
+			}
+
+			for (DIDPubKeyInfoArray::const_iterator it = _publickey.cbegin(); it != _publickey.cend(); ++it) {
+				std::string pubkeyID = (*it).ID();
+				if (pubkeyID[0] == '#')
+					pubkeyID = _id + pubkeyID;
+
+				if (proofID == pubkeyID) {
+					bytes_t signature = Base64::DecodeURL(_proof.GetSignature());
+					bytes_t pubkey = Base58::Decode((*it).PublicKeyBase58());
+					Key key;
+					key.SetPubKey(pubkey);
+					if (key.Verify(ToOrderedJson(), signature)) {
+						verifiedSign = true;
+					}
+					break;
+				}
+			}
+
+			return verifiedSign;
+		}
+
 		nlohmann::json DIDPayloadInfo::ToJson(uint8_t version) const {
 			nlohmann::json j;
 			j["id"] = _id;
@@ -763,7 +1016,67 @@ namespace Elastos {
 				j["service"] = jService;
 			}
 
+			j["proof"] = _proof.ToJson(version);
+
 			return j;
+		}
+
+		std::string DIDPayloadInfo::ToOrderedJson() const {
+			JsonGenerator generator, *pGenerator;
+			pGenerator = JsonGenerator_Initialize(&generator);
+			JsonGenerator_WriteStartObject(pGenerator);
+
+			JsonGenerator_WriteFieldName(pGenerator, "id");
+			JsonGenerator_WriteString(pGenerator, _id.c_str());
+
+			JsonGenerator_WriteFieldName(pGenerator, "publicKey");
+			JsonGenerator_WriteStartArray(pGenerator);
+			for (DIDPubKeyInfoArray::const_iterator it = _publickey.cbegin(); it != _publickey.cend(); ++it)
+				(*it).ToOrderedJson(pGenerator);
+			JsonGenerator_WriteEndArray(pGenerator);
+
+			JsonGenerator_WriteFieldName(pGenerator, "authentication");
+			JsonGenerator_WriteStartArray(pGenerator);
+			for (DIDPubKeyInfoArray::const_iterator it = _authentication.cbegin(); it != _authentication.cend(); ++it)
+				JsonGenerator_WriteString(pGenerator, (*it).ID().c_str());
+			JsonGenerator_WriteEndArray(pGenerator);
+
+			if (_authorization.size()) {
+				JsonGenerator_WriteFieldName(pGenerator, "authorization");
+				JsonGenerator_WriteStartArray(pGenerator);
+				for (DIDPubKeyInfoArray::const_iterator it = _authorization.cbegin(); it != _authorization.cend(); ++it)
+					JsonGenerator_WriteString(pGenerator, (*it).ID().c_str());
+				JsonGenerator_WriteEndArray(pGenerator);
+			}
+
+			if (_verifiableCredential.size()) {
+				JsonGenerator_WriteFieldName(pGenerator, "verifiableCredential");
+				JsonGenerator_WriteStartArray(pGenerator);
+				for (VerifiableCredentialArray::const_iterator it = _verifiableCredential.cbegin();
+				     it != _verifiableCredential.cend(); ++it) {
+					(*it).ToOrderedJson(pGenerator);
+				}
+				JsonGenerator_WriteEndArray(pGenerator);
+			}
+
+			if (_services.size()) {
+				JsonGenerator_WriteFieldName(pGenerator, "service");
+				JsonGenerator_WriteStartArray(pGenerator);
+				for (ServiceEndpoints::const_iterator it = _services.cbegin(); it != _services.cend(); ++it)
+					(*it).ToOrderedJson(pGenerator);
+				JsonGenerator_WriteEndArray(pGenerator);
+			}
+
+			if (_expires.size()){
+				JsonGenerator_WriteStringField(pGenerator, "expires", _expires.c_str());
+			}
+
+			JsonGenerator_WriteEndObject(pGenerator);
+
+			const char *pjson = JsonGenerator_Finish(pGenerator);
+			std::string json = pjson;
+			free((void *)pjson);
+			return json;
 		}
 
 		void DIDPayloadInfo::FromJson(const nlohmann::json &j, uint8_t version) {
@@ -812,6 +1125,10 @@ namespace Elastos {
 					serviceEndpoint.FromJson(*it, version);
 					_services.push_back(serviceEndpoint);
 				}
+			}
+
+			if (j.find("proof") != j.end()) {
+				_proof.FromJson(j["proof"], version);
 			}
 
 		}
@@ -890,6 +1207,18 @@ namespace Elastos {
 			}
 
 			return true;
+		}
+
+		void DIDProofInfo::ToOrderJson(JsonGenerator *generator) const {
+			JsonGenerator_WriteStartObject(generator);
+
+			JsonGenerator_WriteStringField(generator, "type", _type.c_str());
+
+			JsonGenerator_WriteStringField(generator, "verificationMethod", _verificationMethod.c_str());
+
+			JsonGenerator_WriteStringField(generator, "signature", _signature.c_str());
+
+			JsonGenerator_WriteEndObject(generator);
 		}
 
 		nlohmann::json DIDProofInfo::ToJson(uint8_t version) const {
@@ -1013,13 +1342,18 @@ namespace Elastos {
 			bool verifiedSign = false;
 
 			if (_proof.Type() != DID_DEFAULT_TYPE) {
-				Log::error("unsupport did type");
+				Log::error("unsupport did type {}", _proof.Type());
 				return false;
 			}
 
 			std::string proofID = _proof.VerificationMethod();
 			if (proofID.empty()) {
 				Log::error("VerificationMethod of proof is empty");
+				return false;
+			}
+
+			if (!_payloadInfo.IsValid()) {
+				Log::error("did document verify signature fail");
 				return false;
 			}
 

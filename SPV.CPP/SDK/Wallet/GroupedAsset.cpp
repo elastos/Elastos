@@ -164,7 +164,7 @@ namespace Elastos {
 			}
 
 			totalOutputAmount = amount - feeAmount;
-			if (totalInputAmount < totalOutputAmount + feeAmount) {
+			if (totalInputAmount < totalOutputAmount + feeAmount || totalOutputAmount <= 0) {
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
 			}
 

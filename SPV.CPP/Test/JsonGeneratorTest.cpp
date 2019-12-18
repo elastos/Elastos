@@ -27,7 +27,9 @@ TEST_CASE("JsonGenerator test", "[JsonGenerator]") {
 		JsonGenerator_WriteEndArray(pGenerator);
 
 		JsonGenerator_WriteEndObject(pGenerator);
-		std::string jsonString = JsonGenerator_Finish(pGenerator);
+		const char *presult = JsonGenerator_Finish(pGenerator);
+		std::string jsonString = presult;
+		free((void *)presult);
 
 		REQUIRE(jsonString == "{\"id\":\"hello\",\"publicKey\":[\"pk1\",\"pk2\",\"pk3\"]}");
 	}

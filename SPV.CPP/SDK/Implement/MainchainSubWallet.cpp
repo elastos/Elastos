@@ -333,7 +333,7 @@ namespace Elastos {
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
-			ErrorChecker::CheckParam(bgAmount < 0, Error::CreateTransaction, "output amount should big than zero");
+			ErrorChecker::CheckParam(bgAmount <= 0, Error::CreateTransaction, "output amount should big than zero");
 
 			AddressPtr fromAddress = _walletManager->GetWallet()->GetOwnerDepositAddress();
 
@@ -718,7 +718,7 @@ namespace Elastos {
 
 			AddressPtr fromAddress(new Address(PrefixDeposit, bytes_t(crPublicKey)));
 			ErrorChecker::CheckParam(!fromAddress->Valid(), Error::InvalidArgument, "invalid crPublicKey");
-			ErrorChecker::CheckParam(bgAmount < 0, Error::CreateTransaction, "output amount should big than zero");
+			ErrorChecker::CheckParam(bgAmount <= 0, Error::CreateTransaction, "output amount should big than zero");
 
 			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
 			TransactionPtr tx = _walletManager->GetWallet()->CreateRetrieveTransaction(

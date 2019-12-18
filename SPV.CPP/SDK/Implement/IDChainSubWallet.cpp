@@ -347,7 +347,7 @@ namespace Elastos {
 			ArgInfo("didInfo: {}", didInfo.dump());
 			ArgInfo("paypassword: *");
 
-			const std::string verificationMethod = "#primary";
+			const std::string verificationMethod = PRIMARY_KEY;
 			std::string signDID = "";
 
 			ErrorChecker::CheckParam(didInfo.empty() || !didInfo.is_object(), Error::InvalidArgument,
@@ -365,6 +365,16 @@ namespace Elastos {
 			ErrorChecker::CheckParam(operation != "create" && operation != "update" && operation != "deactivate",
 									 Error::InvalidArgument, "invalid operation");
 
+			std::string previousTxid = "";
+			if (operation == UPDATE_DID) {
+				ErrorChecker::CheckParam(didInfo.find("previousTxid") == didInfo.end(),
+				                         Error::InvalidArgument, "invalid previousTxid");
+				previousTxid = didInfo["previousTxid"].get<std::string>();
+
+				uint256 txid(previousTxid);
+				ErrorChecker::CheckParam(txid.GetHex() != previousTxid, Error::InvalidArgument, "invalid previousTxid");
+			}
+
 			nlohmann::json pubKeyInfoArray = didInfo["publicKey"];
 			ErrorChecker::CheckJsonArray(pubKeyInfoArray, 1, "pubKeyInfoArray");
 
@@ -374,7 +384,7 @@ namespace Elastos {
 			expirationDate << std::put_time(localtime_r(&expiresTimeStamp, &dateTm), "%FT%TZ");
 			ErrorChecker::CheckInternetDate(expirationDate.str());
 
-			DIDHeaderInfo headerInfo("elastos/did/1.0", operation);
+			DIDHeaderInfo headerInfo("elastos/did/1.0", operation, previousTxid);
 
 			DIDPubKeyInfoArray didPubKeyInfoArray;
 			for (nlohmann::json::iterator it = pubKeyInfoArray.begin(); it != pubKeyInfoArray.end(); ++it) {
@@ -417,13 +427,19 @@ namespace Elastos {
 			payloadInfo.SetPublickKey(didPubKeyInfoArray);
 			payloadInfo.SetVerifiableCredential(verifiableCredentials);
 
+			std::string orderedJson = payloadInfo.ToOrderedJson();
+			std::string signature = Sign(signDID, orderedJson, payPasswd);
+			DIDPayloadProof proof;
+			proof.SetSignature(Base64::EncodeURL(signature));
+			payloadInfo.SetProof(proof);
+
 			DIDInfo didInfoPayload;
 			didInfoPayload.SetDIDHeader(headerInfo);
 			didInfoPayload.SetDIDPlayloadInfo(payloadInfo);
 
 			std::string sourceData = headerInfo.Specification() + headerInfo.Operation() + didInfoPayload.DIDPayloadString();
 
-			std::string signature = Sign(signDID, sourceData, payPasswd);
+			signature = Sign(signDID, sourceData, payPasswd);
 			DIDProofInfo didProofInfo(verificationMethod, Base64::EncodeURL(signature));
 			didInfoPayload.SetDIDProof(didProofInfo);
 
@@ -524,6 +540,9 @@ namespace Elastos {
 			const DIDPayloadInfo &payloadInfo = didInfo->DIDPayload();
 
 			summary["operation"] = header.Operation();
+			if (header.Operation() == UPDATE_DID) {
+				summary["previousTxid"] = header.PreviousTxid();
+			}
 			summary["id"] = payloadInfo.ID().substr(sizeof(PREFIX_DID) - 1);
 			summary["issuanceDate"] = didDetailPtr->GetIssuanceTime();
 

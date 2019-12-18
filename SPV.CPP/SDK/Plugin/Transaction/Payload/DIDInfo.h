@@ -7,11 +7,15 @@
 
 #include "IPayload.h"
 
-namespace Elastos {
+#include <Common/JsonGenerator.h>
+
+  namespace Elastos {
 	namespace ElaWallet {
 
 #define DID_DEFAULT_TYPE "ECDSAsecp256r1"
 #define PREFIX_DID "did:elastos:"
+#define UPDATE_DID "update"
+#define PRIMARY_KEY "#primary"
 
 		class DIDHeaderInfo {
 		public:
@@ -19,7 +23,8 @@ namespace Elastos {
 
 			~DIDHeaderInfo();
 
-			DIDHeaderInfo(const std::string &specification, const std::string &operation);
+			DIDHeaderInfo(const std::string &specification, const std::string &operation,
+			              const std::string &preTxID = "");
 
 			const std::string &Specification() const;
 
@@ -28,6 +33,10 @@ namespace Elastos {
 			const std::string &Operation() const;
 
 			void SetOperation(const std::string &operation);
+
+			void SetPreviousTxid(const std::string &txid);
+
+			const std::string &PreviousTxid() const;
 
 		public:
 			virtual size_t EstimateSize(uint8_t version) const;
@@ -43,6 +52,7 @@ namespace Elastos {
 		private:
 			std::string _specification;
 			std::string _operation;
+			std::string _previousTxid;
 		};
 
 		class DIDPubKeyInfo {
@@ -73,6 +83,8 @@ namespace Elastos {
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+			void ToOrderedJson(JsonGenerator *generator) const;
 
 		private:
 			std::string _id;
@@ -169,6 +181,8 @@ namespace Elastos {
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+			void ToOrderedJson(JsonGenerator *generator) const;
 		private:
 			void init();
 
@@ -180,10 +194,12 @@ namespace Elastos {
 			std::string _gender;
 			std::string _birthday;
 			std::string _avatar;
+			std::string _address;
 			std::string _email;
 			std::string _phone;
+			std::string _city;
 			std::string _nation;
-
+			std::string _language;
 			std::string _descript;
 
 			std::string _homePage;
@@ -231,6 +247,8 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
+			void ToOrderJson(JsonGenerator *generator) const;
+
 		private:
 			std::string _type;
 			std::string _verificationMethod;
@@ -261,6 +279,8 @@ namespace Elastos {
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+			void ToOrderedJson(JsonGenerator *generator) const;
 
 		private:
 			std::string _id;
@@ -304,6 +324,8 @@ namespace Elastos {
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+			void ToOrderedJson(JsonGenerator *generator) const;
 		private:
 			std::string _id;
 			std::vector<std::string> _types;
@@ -315,6 +337,39 @@ namespace Elastos {
 		};
 
 		typedef std::vector<VerifiableCredential> VerifiableCredentialArray;
+
+		class DIDPayloadProof {
+		public:
+			DIDPayloadProof();
+
+			~DIDPayloadProof();
+
+			void SetType(const std::string &type);
+
+			const std::string &GetType() const;
+
+			void SetCreateDate(const std::string &date);
+
+			const std::string &GetCreatedDate() const;
+
+			void SetCreator(const std::string &creator);
+
+			const std::string &GetCreator() const;
+
+			void SetSignature(const std::string &signature);
+
+			const std::string &GetSignature() const;
+
+			virtual nlohmann::json ToJson(uint8_t version) const;
+
+			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+		private:
+			std::string _type;
+			std::string _created;
+			std::string _creator;
+			std::string _signatureValue;
+		};
 
 		class DIDPayloadInfo {
 		public:
@@ -350,9 +405,18 @@ namespace Elastos {
 
 			void SetExpires(const std::string &expires);
 
+			void SetProof(const DIDPayloadProof &proof);
+
+			const DIDPayloadProof &GetProof() const;
+
+		public:
+			virtual bool IsValid() const;
+
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+			std::string ToOrderedJson() const;
 
 		private:
 			std::string _id;
@@ -362,6 +426,7 @@ namespace Elastos {
 			VerifiableCredentialArray _verifiableCredential; // contain 0 or 1
 			ServiceEndpoints _services; // contain 0 or 1
 			std::string _expires;
+			DIDPayloadProof _proof;
 		};
 
 

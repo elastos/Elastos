@@ -850,6 +850,7 @@ static int diddoc(int argc, char *argv[]) {
 		std::string didName;
 		std::string operation;
 		std::string publicKey;
+		std::string previousTxid;
 		uint64_t expires;
 		nlohmann::json pubKey = R"({"id":"#primary"})"_json;
 		nlohmann::json publicKeys;
@@ -862,6 +863,11 @@ static int diddoc(int argc, char *argv[]) {
 
 		std::cout << "Enter operation: ";
 		std::getline(std::cin, operation);
+
+		if (operation == "update") {
+			std::cout << "Enter previous txid: ";
+			std::getline(std::cin, previousTxid);
+		}
 
 		std::cout << "Enter public key: ";
 		std::getline(std::cin, publicKey);
@@ -877,6 +883,7 @@ static int diddoc(int argc, char *argv[]) {
 		j["operation"] = operation;
 		j["publicKey"] = publicKeys;
 		j["expires"] = expires;
+		j["previousTxid"] = previousTxid;
 
 		std::string password = getpass("Enter payment password: ");
 		nlohmann::json payload = subWallet->GenerateDIDInfoPayload(j, password);
@@ -944,6 +951,25 @@ static int didsign(int argc, char *argv[]) {
 	return 0;
 }
 
+// didInfo
+static int didInfo(int argc, char *argv[]) {
+	checkParam(2);
+	checkCurrentWallet();
+	std::string did = argv[1];
+	try {
+		IIDChainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ID);
+
+		nlohmann::json info = subWallet->GetResolveDIDInfo(0, 1, did);
+		std::cout << info.dump(4) << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
+	return 0;
+}
+
 // did
 static int did(int argc, char *argv[]) {
 	checkCurrentWallet();
@@ -954,6 +980,24 @@ static int did(int argc, char *argv[]) {
 
 		nlohmann::json didlist = subWallet->GetAllDID(0, 20);
 		std::cout << didlist.dump(4) << std::endl;
+	} catch (const std::exception &e) {
+		exceptionError(e);
+		return ERRNO_APP;
+	}
+
+	return 0;
+}
+
+// public keys
+static int publickeys(int argc, char *argv[]) {
+	checkCurrentWallet();
+
+	try {
+		IIDChainSubWallet *subWallet;
+		getSubWallet(subWallet, currentWallet, CHAINID_ID);
+
+		nlohmann::json list = subWallet->GetAllPublicKeys(0, 20);
+		std::cout << list.dump(4) << std::endl;
 	} catch (const std::exception &e) {
 		exceptionError(e);
 		return ERRNO_APP;
@@ -1869,8 +1913,10 @@ struct command {
 	{"passwd",     passwd,         "                                                 Change password of wallet."},
 	{"diddoc",     diddoc,         "                                                 Create DID document."},
 	{"didtx",      didtx,          "[didDocFilepath]                                 Create DID transaction."},
+	{"didinfo",    didInfo,        "[did]                                            Get Resolve DID Info."},
 	{"didsign",    didsign,        "DID digest                                       Sign `digest` with private key of DID."},
 	{"did",        did,            "                                                 List did of IDChain"},
+	{"publickeys", publickeys,     "                                                 List public keys of IDChain"},
 	{"sync",       _sync,          "chainID (start | stop)                           Start or stop sync of wallet"},
 	{"open",       _open,          "chainID                                          Open wallet of `chainID`."},
 	{"close",      _close,         "chainID                                          Close wallet of `chainID`."},
