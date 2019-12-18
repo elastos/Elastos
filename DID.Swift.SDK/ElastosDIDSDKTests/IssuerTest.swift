@@ -35,7 +35,6 @@ class IssuerTest: XCTestCase {
             XCTAssertEqual(issuerDoc.getDefaultPublicKey(), issuer.signKey)
             
         } catch  {
-            
         }
     }
     

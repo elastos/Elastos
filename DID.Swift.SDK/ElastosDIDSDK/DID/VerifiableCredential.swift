@@ -275,14 +275,14 @@ public class VerifiableCredential: DIDObject {
         return json
     }
     
-    public func toExternalForm(_ normalized: Bool) -> String {
+    public func description(_ normalized: Bool) -> String {
         let dic = toJson(normalized, false)
         let json = JsonHelper.creatJsonString(dic: dic)
         return json
     }
     
     public override var description: String{
-        return toExternalForm(false)
+        return description(false)
     }
 
 }

@@ -30,6 +30,8 @@
 		11A6B15C238FD79000D3C1F1 /* libhdkey.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A6B15A238FD77E00D3C1F1 /* libhdkey.a */; };
 		11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */; };
 		11CA2F8B23530E40009A2067 /* Antlr4.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 110AD2F8234E431D006578D6 /* Antlr4.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		11D03AD423A9D05600549296 /* VerifiableCredentialTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D03AD323A9D05600549296 /* VerifiableCredentialTest.swift */; };
+		11D03ADA23A9D50200549296 /* VerifiablePresentationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D03AD923A9D50200549296 /* VerifiablePresentationTest.swift */; };
 		11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */; };
 		11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D4B9C623545A5700453218 /* DIDStoreTests.swift */; };
 		11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DA0796238B929F0066CC86 /* SPVAdaptor.swift */; };
@@ -216,6 +218,8 @@
 		11A6B159238FD77E00D3C1F1 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "Externals/HDKey/lib/-iphonesimulator/libcrypto.a"; sourceTree = "<group>"; };
 		11A6B15A238FD77E00D3C1F1 /* libhdkey.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhdkey.a; path = "Externals/HDKey/lib/-iphonesimulator/libhdkey.a"; sourceTree = "<group>"; };
 		11CA74B1235E06B7006E66F7 /* Base64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base64.swift; sourceTree = "<group>"; };
+		11D03AD323A9D05600549296 /* VerifiableCredentialTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiableCredentialTest.swift; sourceTree = "<group>"; };
+		11D03AD923A9D50200549296 /* VerifiablePresentationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiablePresentationTest.swift; sourceTree = "<group>"; };
 		11D3C04A23815A3200875E51 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = Externals/libhdkey/libspvsdk.a; sourceTree = "<group>"; };
 		11D3C04F23815A3200875E51 /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = Externals/libhdkey/libsqlite3.a; sourceTree = "<group>"; };
 		11D3C05223815AAF00875E51 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = Externals/libhdkey/libboost_thread.a; sourceTree = "<group>"; };
@@ -454,6 +458,8 @@
 				11E09CBB23A8DB5A009B6A8D /* IssuerTest.swift */,
 				11E7519E23A7570A0022C592 /* TestData.swift */,
 				11E09CBD23A8E033009B6A8D /* TestDataGenerator.swift */,
+				11D03AD323A9D05600549296 /* VerifiableCredentialTest.swift */,
+				11D03AD923A9D50200549296 /* VerifiablePresentationTest.swift */,
 				110BE6DB236152100026ACC6 /* FakeConsoleAdaptor.swift */,
 				1182866A2395194000F1BBA3 /* BulkCreate.swift */,
 				1155D94A2352FACE00DF8C9D /* Info.plist */,
@@ -846,6 +852,8 @@
 				11E09CBE23A8E033009B6A8D /* TestDataGenerator.swift in Sources */,
 				11E751DB23A774DD0022C592 /* IDChainOperationsTest.swift in Sources */,
 				11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */,
+				11D03AD423A9D05600549296 /* VerifiableCredentialTest.swift in Sources */,
+				11D03ADA23A9D50200549296 /* VerifiablePresentationTest.swift in Sources */,
 				1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */,
 				111F4B7B239E315C00FEE4E0 /* Base64.swift in Sources */,
 				11DA0797238B92A00066CC86 /* SPVAdaptor.swift in Sources */,
