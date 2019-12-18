@@ -161,8 +161,7 @@ DIDDocument *DIDRequest_FromJson(cJSON *json)
 {
     DIDRequest req;
     cJSON *item, *field = NULL;
-    const char *op;
-    char *docJson;
+    char *op, *docJson;
     DID *subject;
     size_t len;
 
@@ -177,14 +176,18 @@ DIDDocument *DIDRequest_FromJson(cJSON *json)
     if (!field || !cJSON_IsString(field) ||
             strcmp(cJSON_GetStringValue(field), spec))
         return NULL;
+    req.header.spec = (char *)spec;
 
     field = cJSON_GetObjectItem(item, "operation");
-    if (!field || (strcmp(cJSON_GetStringValue(field), "create") &&
-            strcmp(cJSON_GetStringValue(field), "update")))
+    if (!field)
         return NULL;
 
-    strcpy(req.header.spec, spec);
-    strcpy(req.header.op, cJSON_GetStringValue(field));
+    op = cJSON_GetStringValue(field);
+    if (!strcmp(op, "create") || !strcmp(op, "update") ||
+            !strcmp(op, "deactivate"))
+        req.header.op = op;
+    else
+        return NULL;
 
     item = cJSON_GetObjectItem(json, "payload");
     if (!item || !cJSON_IsString(item))

@@ -20,12 +20,15 @@
  * SOFTWARE.
  */
 
-#ifndef __PUBDID_TEST_SUITES_H__
-#define __PUBDID_TEST_SUITES_H__
+#ifndef __VC_TEST_SUITES_H__
+#define __VC_TEST_SUITES_H__
 
-DECL_TESTSUITE(didrequest_test);
+DECL_TESTSUITE(cred_fromjson_test);
+DECL_TESTSUITE(cred_getelem_test);
 
-#define DEFINE_PUBDID_TESTSUITES \
-    DEFINE_TESTSUITE(didrequest_test)
+#define DEFINE_VC_TESTSUITES \
+    DEFINE_TESTSUITE(cred_fromjson_test), \
+    DEFINE_TESTSUITE(cred_getelem_test)
 
-#endif /* __PUBDID_TEST_SUITES_H__ */
+#endif /* __VC_TEST_SUITES_H__ */
+

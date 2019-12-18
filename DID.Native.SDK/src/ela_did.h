@@ -371,7 +371,7 @@ DID_API const char *DIDURL_GetFragment(DIDURL *id);
  *      len              [in] The buffer size of idstring.
  * @param
  *      compact          [in] Id string is compact or not.
- *                       1 represents compact, 0 represents not compact.
+ *                       true represents compact, flase represents not compact.
  * @return
  *      If no error occurs, return id string.
  *      Otherwise, return NULL.
@@ -1628,6 +1628,17 @@ DID_API DIDStore* DIDStore_GetInstance(void);
  * Deinitialize DIDStore.
  */
 DID_API void DIDStore_Deinitialize(void);
+
+/**
+ * \~English
+ * Check if it has private identity or not.
+ *
+ * @param
+ *      store                 [in] The handle to DIDStore.
+ * @return
+ *      ture if it has identity, false if it has not.
+ */
+DID_API bool DIDStore_HasPrivateIdentity(DIDStore *store);
 
 /**
  * \~English

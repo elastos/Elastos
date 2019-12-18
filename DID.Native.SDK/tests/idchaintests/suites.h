@@ -20,19 +20,12 @@
  * SOFTWARE.
  */
 
-#ifndef __DID_TEST_SUITES_H__
-#define __DID_TEST_SUITES_H__
+#ifndef __IDCHAIN_TEST_SUITES_H__
+#define __IDCHAIN_TEST_SUITES_H__
 
-DECL_TESTSUITE(did_constructor_test);
-DECL_TESTSUITE(did_operation_test);
-DECL_TESTSUITE(didurl_constructor_test);
-DECL_TESTSUITE(didurl_operation_test);
+DECL_TESTSUITE(idchain_operation_test);
 
-#define DEFINE_DID_TESTSUITES \
-    DEFINE_TESTSUITE(did_constructor_test), \
-    DEFINE_TESTSUITE(did_operation_test), \
-    DEFINE_TESTSUITE(didurl_constructor_test), \
-    DEFINE_TESTSUITE(didurl_operation_test)
+#define DEFINE_IDCHAIN_TESTSUITES \
+    DEFINE_TESTSUITE(idchain_operation_test)
 
-#endif /* __DID_TEST_SUITES_H__ */
-
+#endif /* __IDCHAIN_TEST_SUITES_H__ */

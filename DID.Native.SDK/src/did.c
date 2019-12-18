@@ -67,7 +67,7 @@ static int parse_id_string(char *id, char *fragment, const char *idstring, DID *
     s = idstring + sizeof(elastos_did_prefix) - 1;
     for (e = s; *e != '#' && *e != '?' && *e != '/' && *e != '\x0'; e++);
     len = e - s;
-    if (len >= MAX_ID_SPECIFIC_STRING)
+    if (len >= MAX_ID_SPECIFIC_STRING || len == 0)
         return -1;
 
     strncpy(id, s, len);
@@ -268,15 +268,16 @@ char *DIDURL_ToString(DIDURL *id, char *idstring, size_t len, bool compact)
     if (expect_len >= len)
         return NULL;
 
-    if (compact)
+    if (compact) {
         size = snprintf(idstring, len, "#%s", id->fragment);
         if (size < 0 || size > len)
             return NULL;
-    else
+    } else {
         size = snprintf(idstring, len, "%s%s#%s", elastos_did_prefix,
             id->did.idstring, id->fragment);
         if (size < 0 || size > len)
             return NULL;
+    }
 
     return idstring;
 }
@@ -323,6 +324,7 @@ void DIDURL_Destroy(DIDURL *id)
         return;
 
     free(id);
+    id = NULL;
 }
 
 DIDDocument *DID_Resolve(DID *did)

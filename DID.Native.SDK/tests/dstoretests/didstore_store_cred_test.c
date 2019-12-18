@@ -11,7 +11,6 @@
 #include "constant.h"
 #include "loader.h"
 #include "ela_did.h"
-#include "didtest_adapter.h"
 #include "did.h"
 #include "credential.h"
 
@@ -19,12 +18,6 @@
 
 static DID did;
 static Credential *credential;
-static DIDAdapter *adapter;
-
-static const char *getpassword(const char *walletDir, const char *walletId)
-{
-    return storepass;
-}
 
 static void test_didstore_store_cred(void)
 {
@@ -40,42 +33,34 @@ static void test_didstore_store_cred(void)
 
 static int didstore_storecred_test_suite_init(void)
 {
-    char _path[PATH_MAX], _dir[TEST_LEN];
-    char *storePath, *walletDir;
+    char _path[PATH_MAX];
+    const char *storePath;
     DIDStore *store;
     DIDDocument *doc;
-
-    walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
-    if (!adapter)
-        return -1;
+    int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = DIDStore_Initialize(storePath, adapter);
-    if (!store)
+    rc = TestData_SetupStore(storePath);
+    if (rc < 0)
         return -1;
 
-    doc = DIDDocument_FromJson(global_did_string);
-    if(!doc) {
-        TestDIDAdapter_Destroy(adapter);
+    doc = DIDDocument_FromJson(TestData_LoadDocJson());
+    if(!doc)
         return -1;
-    }
 
     DID_Copy(&did, DIDDocument_GetSubject(doc));
     DIDDocument_Destroy(doc);
 
-    credential = Credential_FromJson(global_cred_string, &did);
-    if(!credential) {
-        TestDIDAdapter_Destroy(adapter);
+    credential = Credential_FromJson(TestData_LoadVcEmailJson(), &did);
+    if(!credential)
         return -1;
-    }
 
     return 0;
 }
 
 static int didstore_storecred_test_suite_cleanup(void)
 {
-    TestDIDAdapter_Destroy(adapter);
+    TestData_Free();
     Credential_Destroy(credential);
     DIDStore_Deinitialize();
     return 0;

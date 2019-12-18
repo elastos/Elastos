@@ -72,9 +72,15 @@ int PublicKey_ToJson(JsonGenerator *gen, PublicKey *pk, int compact)
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "id",
         DIDURL_ToString(&pk->id, id, sizeof(id), compact)));
-    if (!compact || !DID_Equals(&pk->id.did, &pk->controller))
+    if (!compact) {
+        CHECK(JsonGenerator_WriteStringField(gen, "type", pk->type));
         CHECK(JsonGenerator_WriteStringField(gen, "controller",
-            DID_ToString(&pk->controller, id, sizeof(id))));
+                DID_ToString(&pk->controller, id, sizeof(id))));
+    } else {
+        if (!DID_Equals(&pk->id.did, &pk->controller))
+            CHECK(JsonGenerator_WriteStringField(gen, "controller",
+                   DID_ToString(&pk->controller, id, sizeof(id))));
+    }
     CHECK(JsonGenerator_WriteStringField(gen, "publicKeyBase58", pk->publicKeyBase58));
     CHECK(JsonGenerator_WriteEndObject(gen));
 
@@ -134,7 +140,8 @@ int Service_ToJson(JsonGenerator *gen, Service *service, int compact)
     CHECK(JsonGenerator_WriteStartObject(gen));
     CHECK(JsonGenerator_WriteStringField(gen, "id",
         DIDURL_ToString(&service->id, id, sizeof(id), compact)));
-    CHECK(JsonGenerator_WriteStringField(gen, "type", service->type));
+    if (!compact)
+       CHECK(JsonGenerator_WriteStringField(gen, "type", service->type));
     CHECK(JsonGenerator_WriteStringField(gen, "serviceEndpoint", service->endpoint));
     CHECK(JsonGenerator_WriteEndObject(gen));
 
@@ -174,9 +181,9 @@ static int proof_toJson(JsonGenerator *gen, DIDDocument *doc, int compact)
     if (!compact)
         CHECK(JsonGenerator_WriteStringField(gen, "type", doc->proof.type));
     CHECK(JsonGenerator_WriteStringField(gen, "created", get_time_string(&doc->proof.created)));
-    CHECK(JsonGenerator_WriteStringField(gen, "creater",
+    CHECK(JsonGenerator_WriteStringField(gen, "creator",
             DIDURL_ToString(&doc->proof.creater, id, sizeof(id), compact)));
-    CHECK(JsonGenerator_WriteStringField(gen, "signature", doc->proof.signatureValue));
+    CHECK(JsonGenerator_WriteStringField(gen, "signatureValue", doc->proof.signatureValue));
     CHECK(JsonGenerator_WriteEndObject(gen));
     return 0;
 }
@@ -185,7 +192,7 @@ static int proof_toJson(JsonGenerator *gen, DIDDocument *doc, int compact)
 static int add_to_publickeys(DIDDocument *document, PublicKey *pk, KeyType keytype)
 {
     PublicKey **pks, **pk_array = NULL;
-    size_t *size;
+    size_t size;
 
     assert(document);
     assert(pk);
@@ -193,15 +200,15 @@ static int add_to_publickeys(DIDDocument *document, PublicKey *pk, KeyType keyty
     switch (keytype) {
         case KeyType_Authentication:
             pk_array = document->authentication.pks;
-            size = &document->authentication.size;
+            size = document->authentication.size;
             break;
         case KeyType_Authorization:
             pk_array = document->authorization.pks;
-            size = &document->authorization.size;
+            size = document->authorization.size;
             break;
         case KeyType_PublicKey:
             pk_array = document->publickeys.pks;
-            size = &document->publickeys.size;
+            size = document->publickeys.size;
             break;
         default:
             return -1;
@@ -211,14 +218,26 @@ static int add_to_publickeys(DIDDocument *document, PublicKey *pk, KeyType keyty
         pks = (PublicKey**)calloc(1, sizeof(PublicKey*));
     else
         pks = realloc(pk_array,
-                     (*size + 1) * sizeof(PublicKey*));
+                     (size + 1) * sizeof(PublicKey*));
 
     if (!pks)
         return -1;
+    pks[size] = pk;
 
-    pks[*size] = pk;
-    pk_array = pks;
-    *size++;
+    switch(keytype) {
+        case KeyType_Authentication:
+            document->authentication.pks = pks;
+            document->authentication.size++;
+            break;
+        case KeyType_Authorization:
+            document->authorization.pks = pks;
+            document->authorization.size++;
+            break;
+        case KeyType_PublicKey:
+            document->publickeys.pks = pks;
+            document->publickeys.size++;
+            break;
+    }
 
     return 0;
 }
@@ -486,6 +505,43 @@ static int Parser_Services(DIDDocument *document, cJSON *json)
     return 0;
 }
 
+static int Parser_Proof(DIDDocument *document, cJSON *json)
+{
+    cJSON *item;
+
+    assert(document);
+    assert(json);
+
+    item = cJSON_GetObjectItem(json, "type");
+    if (item) {
+        if ((cJSON_IsString(item) && strlen(item->valuestring) + 1 > MAX_TYPE) ||
+                !cJSON_IsString(item))
+            return -1;
+        else
+            strcpy(document->proof.type, item->valuestring);
+    }
+    else
+        strcpy(document->proof.type, ProofType);
+
+    item = cJSON_GetObjectItem(json, "created");
+    if (!item || !cJSON_IsString(item) ||
+            parse_time(&document->proof.created, item->valuestring) == -1)
+        return -1;
+
+    item = cJSON_GetObjectItem(json, "creator");
+    if (!item || !cJSON_IsString(item) ||
+            parse_didurl(&document->proof.creater, item->valuestring, &document->did) == -1)
+        return -1;
+
+    item = cJSON_GetObjectItem(json, "signatureValue");
+    if (!item || !cJSON_IsString(item) ||
+            (strlen(item->valuestring) + 1 > MAX_SIGN))
+        return -1;
+    strcpy(document->proof.signatureValue, item->valuestring);
+
+    return 0;
+}
+
 static bool check_auth_publickey(DIDDocument *document, DIDURL *keyid, KeyType keytype)
 {
     PublicKey **pks;
@@ -651,6 +707,11 @@ DIDDocument *DIDDocument_FromJson(const char *json)
             Parser_Services(doc, item) == -1))
         goto errorExit;
 
+    item = cJSON_GetObjectItem(root, "proof");
+    if (!item || !cJSON_IsObject(item) ||
+            Parser_Proof(doc, item) == -1)
+        goto errorExit;
+
     cJSON_Delete(root);
 
     return doc;
@@ -705,10 +766,11 @@ int DIDDocument_ToJson_Internal(JsonGenerator *gen, DIDDocument *doc,
     }
 
     CHECK(JsonGenerator_WriteStringField(gen, "expires", get_time_string(&doc->expires)));
-    CHECK(JsonGenerator_WriteEndObject(gen));
-
-    if (!forsign)
+    if (!forsign) {
+        CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
         CHECK(proof_toJson(gen, doc, compact));
+    }
+    CHECK(JsonGenerator_WriteEndObject(gen));
 
     return 0;
 }
@@ -762,6 +824,7 @@ void DIDDocument_Destroy(DIDDocument *document)
         free(document->credentials.credentials);
 
     free(document);
+    document = NULL;
 }
 
 bool DIDDocument_IsDeactivated(DIDDocument *document)
@@ -1728,7 +1791,7 @@ int DIDDocument_Verify(DIDDocument *document, DIDURL *keyid, char *sig,
     PublicKey *publickey;
     uint8_t binkey[PUBLICKEY_BYTES];
 
-    if (!document || !keyid || !sig || count <= 0)
+    if (!document || !sig || count <= 0)
         return -1;
 
     if (!keyid)

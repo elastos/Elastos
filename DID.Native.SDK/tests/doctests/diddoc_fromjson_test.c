@@ -8,13 +8,10 @@
 #include "ela_did.h"
 #include "loader.h"
 
-#define  TEST_LEN    512
-
-static DIDDocument *document;
-
 static void test_diddoc_from_json(void)
 {
-    document = DIDDocument_FromJson(global_did_string);
+    DIDDocument *document;
+    document = DIDDocument_FromJson(TestData_LoadDocJson());
     CU_ASSERT_PTR_NOT_NULL_FATAL(document);
     DIDDocument_Destroy(document);
 }
@@ -26,6 +23,7 @@ static int diddoc_test_fromjson_suite_init(void)
 
 static int diddoc_test_fromjson_suite_cleanup(void)
 {
+    TestData_Free();
     return 0;
 }
 

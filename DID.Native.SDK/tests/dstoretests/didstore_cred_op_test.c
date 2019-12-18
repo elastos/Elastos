@@ -10,17 +10,13 @@
 
 #include "constant.h"
 #include "loader.h"
-#include "didtest_adapter.h"
 #include "ela_did.h"
 #include "credential.h"
 #include "did.h"
 #include "didstore.h"
 
-#define  TEST_LEN    512
-
 static DID did;
 static Credential *credential;
-static DIDAdapter *adapter;
 
 int get_cred_hint(CredentialEntry *entry, void *context)
 {
@@ -29,7 +25,6 @@ int get_cred_hint(CredentialEntry *entry, void *context)
 
     printf("\n credential: %s#%s, hint: %s\n",
             entry->id.did.idstring, entry->id.fragment, entry->hint);
-    free(entry);
     return 0;
 }
 
@@ -100,39 +95,32 @@ static void test_didstore_delete_cred(void)
 
 static int didstore_cred_op_test_suite_init(void)
 {
-    char _path[PATH_MAX], _dir[TEST_LEN];
-    char *storePath, *walletDir;
+    char _path[PATH_MAX];
+    const char *storePath;
     DIDStore *store;
-
-    walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
-    if (!adapter)
-        return -1;
+    int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = DIDStore_Initialize(storePath, adapter);
-    if (!store) {
-        TestDIDAdapter_Destroy(adapter);
+    rc = TestData_SetupStore(storePath);
+    if (rc < 0)
         return -1;
-    }
 
-    DIDDocument *doc = DIDDocument_FromJson(global_did_string);
+    DIDDocument *doc = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!doc) {
         DIDStore_Deinitialize();
-        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
     DID_Copy(&did, DIDDocument_GetSubject(doc));
     DIDDocument_Destroy(doc);
 
-    credential = Credential_FromJson(global_cred_string, &did);
+    credential = Credential_FromJson(TestData_LoadVcEmailJson(), &did);
     if(!credential) {
         DIDStore_Deinitialize();
-        TestDIDAdapter_Destroy(adapter);
         return -1;
     }
 
+    store = DIDStore_GetInstance();
     return DIDStore_StoreCredential(store, credential, "me");
 }
 
@@ -140,7 +128,7 @@ static int didstore_cred_op_test_suite_cleanup(void)
 {
     DIDStore *store = DIDStore_GetInstance();
 
-    TestDIDAdapter_Destroy(adapter);
+    TestData_Free();
     Credential_Destroy(credential);
     DIDStore_DeleteDID(store, &did);
     DIDStore_Deinitialize();

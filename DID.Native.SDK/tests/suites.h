@@ -50,7 +50,7 @@ typedef struct TestSuite {
 #include "vctests/suites.h"
 #include "didtests/suites.h"
 #include "doctests/suites.h"
-#include "pubdidtests/suites.h"
+#include "idchaintests/suites.h"
 #include "dstoretests/suites.h"
 
 TestSuite suites[] = {
@@ -58,7 +58,7 @@ TestSuite suites[] = {
     DEFINE_VC_TESTSUITES,
     DEFINE_DOC_TESTSUITES,
     DEFINE_DSTORE_TESTSUITES,
-    DEFINE_PUBDID_TESTSUITES,
+    DEFINE_IDCHAIN_TESTSUITES,
     DEFINE_TESTSUITE_NULL
 };
 

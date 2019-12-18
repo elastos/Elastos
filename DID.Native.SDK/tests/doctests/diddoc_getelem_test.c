@@ -176,24 +176,25 @@ static void test_diddoc_get_expires(void)
 
 static int diddoc_getelem_test_suite_init(void)
 {
-    document = DIDDocument_FromJson(global_did_string);
+    document = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!document)
         return -1;
 
-    strcpy(id.did.idstring, "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN");
-    strcpy(id.fragment, "default");
-    strcpy(auth_id.did.idstring, "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN");
+    strcpy(id.did.idstring, "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
+    strcpy(id.fragment, "primary");
+    strcpy(auth_id.did.idstring, "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
     strcpy(auth_id.fragment, "recovery");
-    strcpy(cred_id.did.idstring, "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN");
-    strcpy(cred_id.fragment, "crdential-1");
-    strcpy(service_id.did.idstring, "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN");
-    strcpy(service_id.fragment, "openid");
+    strcpy(cred_id.did.idstring, "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
+    strcpy(cred_id.fragment, "email");
+    strcpy(service_id.did.idstring, "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
+    strcpy(service_id.fragment, "carrier");
 
     return 0;
 }
 
 static int diddoc_getelem_test_suite_cleanup(void)
 {
+    TestData_Free();
     DIDDocument_Destroy(document);
     return 0;
 }

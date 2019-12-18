@@ -289,15 +289,21 @@ static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
     CHECK(types_toJson(gen, cred));
     if (!compact) {
         DID_ToString(&cred->issuer, id, sizeof(id));
-        CHECK(JsonGenerator_WriteStringField(gen, "issuer", id));
+        CHECK(JsonGenerator_WriteStringField(gen, "issuer",
+                DID_ToString(&cred->issuer, id, sizeof(id))));
+    } else {
+        if (!DID_Equals(&cred->issuer, &cred->subject.id))
+            CHECK(JsonGenerator_WriteStringField(gen, "issuer",
+                    DID_ToString(&cred->issuer, id, sizeof(id))));
     }
     CHECK(JsonGenerator_WriteStringField(gen, "issuanceDate",
         get_time_string(&cred->issuanceDate)));
     CHECK(JsonGenerator_WriteFieldName(gen, "credentialSubject"));
     CHECK(subject_toJson(gen, cred, compact));
-    CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
-    if (!forsign)
+    if (!forsign) {
+        CHECK(JsonGenerator_WriteFieldName(gen, "proof"));
         CHECK(proof_toJson(gen, cred, compact));
+    }
     CHECK(JsonGenerator_WriteEndObject(gen));
 
     return 0;

@@ -13,14 +13,14 @@ static DID *did;
 
 static void test_cred_fromjson(void)
 {
-    Credential *credential = Credential_FromJson(global_cred_string, did);
+    Credential *credential = Credential_FromJson(TestData_LoadVcEmailJson(), did);
     CU_ASSERT_PTR_NOT_NULL_FATAL(credential);
     Credential_Destroy(credential);
 }
 
 static int cred_fromjson_test_suite_init(void)
 {
-    doc = DIDDocument_FromJson(global_did_string);
+    doc = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!doc)
         return -1;
 
@@ -31,6 +31,7 @@ static int cred_fromjson_test_suite_init(void)
 
 static int cred_fromjson_test_suite_cleanup(void)
 {
+    TestData_Free();
     DIDDocument_Destroy(doc);
     return 0;
 }

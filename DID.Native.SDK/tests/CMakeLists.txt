@@ -34,22 +34,27 @@ if(HAVE_SYS_RESOURCE_H)
     add_definitions(-DHAVE_SYS_RESOURCE_H=1)
 endif()
 
+check_include_file(glob.h HAVE_GLOB_H)
+if(HAVE_GLOB_H)
+    add_definitions(-DHAVE_GLOB_H=1)
+endif()
+
+file(GLOB UTILITY_SOURCE "utility/*.c")
 file(GLOB VC-TESTS "vctests/*.c")
 file(GLOB DID-TESTS "didtests/*.c")
 file(GLOB DOC-TESTS "doctests/*.c")
-file(GLOB PUBDID-TESTS "pubdidtests/*.c")
+file(GLOB IDCHAIN-TESTS "idchaintests/*.c")
 file(GLOB DSTORE-TESTS "dstoretests/*.c")
 #file(GLOB VP-TESTS "vptests/*.c")
 #file(GLOB ISSUER-TESTS "issuertests/*.c")
 
 set(SRC
-    constant.c
-    loader.c
     tests.c
+    ${UTILITY_SOURCE}
     ${VC-TESTS}
     ${DID-TESTS}
     ${DOC-TESTS}
-    ${PUBDID-TESTS}
+    ${IDCHAIN-TESTS}
     ${DSTORE-TESTS}
     #${VP-TESTS}
     #${ISSUER-TESTS}
@@ -98,7 +103,7 @@ else()
 endif()
 
 include_directories(
-    pubdidtests
+    utility
     .
     ../src
     ../src/utility
@@ -122,6 +127,5 @@ install(TARGETS didtest
     ARCHIVE DESTINATION "lib"
     LIBRARY DESTINATION "lib")
 
-#install(FILES qualified.json qualifiedbp.json cred.json
 install(DIRECTORY resources
     DESTINATION "etc/did")

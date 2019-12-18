@@ -734,10 +734,13 @@ static DIDDocument *create_document(DID *did, const char *key, const char *store
     DID controller;
     const char *data;
     int rc;
-    char signature[SIGNATURE_BYTES * 2];
+    char signature[SIGNATURE_BYTES * 2 + 16];
 
     assert(did);
     assert(key);
+    assert(*key);
+    assert(storepass);
+    assert(*storepass);
 
     DIDDocument *document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
     if (!document)
@@ -789,7 +792,7 @@ static DIDDocument *create_document(DID *did, const char *key, const char *store
 /////////////////////////////////////////////////////////////////////////
 DIDStore* DIDStore_Initialize(const char *root, DIDAdapter *adapter)
 {
-    if (!root || !adapter)
+    if (!root || !*root || !adapter)
         return NULL;
 
     DIDStore_Deinitialize();
@@ -1126,7 +1129,7 @@ int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *id,
         const char *type, DIDStore_GetCredHintCallback *callback, void *context)
 {
     const char *path = NULL, *meta_path = NULL, *hint;
-    CredentialEntry *entry;
+    CredentialEntry entry;
     Cred_Hint ch;
     int rc;
 
@@ -1138,16 +1141,16 @@ int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *id,
         if (test_path(path) > 0) {
             if ((type && has_type(did, path, type) == true) || !type) {
                 meta_path = get_file_path(store, DIDStore_CredentialMeta, did->idstring, id->fragment, 0);
-                if (meta_path && load_files(meta_path, &hint) == 0) {
-                    strcpy((char*)entry->hint, hint);
+                if (meta_path && load_files(meta_path, &hint) == 0 && !*hint) {
+                    strcpy(entry.hint, hint);
                     free((char*)hint);
+                } else {
+                    *entry.hint = 0;
                 }
-                else
-                    strcpy((char*)entry->hint, "");
 
-                strcpy((char*)entry->id.did.idstring, id->did.idstring);
-                strcpy((char*)entry->id.fragment, id->fragment);
-                callback(entry, NULL);
+                strcpy(entry.id.did.idstring, id->did.idstring);
+                strcpy(entry.id.fragment, id->fragment);
+                callback(&entry, NULL);
                 return 0;
             }
             return -1;
@@ -1261,7 +1264,6 @@ static int refresh_did_fromchain(DIDStore *store, const char *storepass,
     assert(storepass);
     assert(*storepass);
     assert(seed);
-    assert(did);
 
     masterkey = HDkey_GetMasterPublicKey(seed, 0, &_mk);
     if (!masterkey)
@@ -1306,6 +1308,22 @@ static int refresh_did_fromchain(DIDStore *store, const char *storepass,
     return index;
 }
 
+bool DIDStore_HasPrivateIdentity(DIDStore *store)
+{
+    const char *encrpted_seed;
+    int rc;
+
+    if (!store)
+        return false;
+
+    rc = load_files(get_file_path(store, DIDStore_Rootkey, "private", NULL, 0),
+            &encrpted_seed);
+    if (rc)
+        return false;
+
+    return strlen(encrpted_seed) > 0;
+}
+
 int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
         const char *passphrase, const char *storepass, const int language, bool force)
 {
@@ -1340,7 +1358,7 @@ int DIDStore_InitPrivateIdentity(DIDStore *store, const char *mnemonic,
 DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char *hint)
 {
     int index;
-    unsigned char privatekeybase64[PRIVATEKEY_BYTES * 2];
+    unsigned char privatekeybase64[MAX_PRIVATEKEY_BASE64];
     uint8_t publickey[PUBLICKEY_BYTES];
     uint8_t privatekey[PRIVATEKEY_BYTES];
     char publickeybase58[MAX_PUBLICKEY_BASE58];
@@ -1362,23 +1380,22 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
         return NULL;
     }
 
-    base58_encode(publickeybase58, publickey, sizeof(publickey));
+    if (!HDkey_GetSubPrivateKey(seed, 0, 0, index, privatekey) ||
+        encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
+        DIDStore_StorePrivateKey(store, &did, "primary", (const char *)privatekeybase64) == -1) {
+        memset(seed, 0, sizeof(seed));
+        return NULL;
+    }
 
+    base58_encode(publickeybase58, publickey, sizeof(publickey));
     document = create_document(&did, publickeybase58, storepass);
     if (!document) {
         memset(seed, 0, sizeof(seed));
+        DIDStore_DeleteDID(store, &did);
         return NULL;
     }
 
     if (DIDStore_StoreDID(store, document, hint) == -1) {
-        memset(seed, 0, sizeof(seed));
-        DIDDocument_Destroy(document);
-        return NULL;
-    }
-
-    if (!HDkey_GetSubPrivateKey(seed, 0, 0, index, privatekey) ||
-        encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
-        DIDStore_StorePrivateKey(store, &did, "primary", (const char *)privatekeybase64) == -1) {
         memset(seed, 0, sizeof(seed));
         DIDStore_DeleteDID(store, &did);
         DIDDocument_Destroy(document);

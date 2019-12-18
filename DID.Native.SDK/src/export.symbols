@@ -109,6 +109,7 @@ _Credential_IsValid
 # DIDStore
 _DIDStore_Initialize
 _DIDStore_Deinitialize
+_DIDStore_HasPrivateIdentity
 _DIDStore_InitPrivateIdentity
 _DIDStore_NewDID
 _DIDStore_Sign

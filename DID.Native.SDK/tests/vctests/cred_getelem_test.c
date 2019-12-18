@@ -4,13 +4,13 @@
 #include <unistd.h>
 #endif
 #include <CUnit/Basic.h>
+#include <limits.h>
 
 #include "loader.h"
 #include "ela_did.h"
+#include "constant.h"
 
 static Credential *credential;
-
-static const char *idstring = "icJ4z2DULrHEzYSvjKNJpKyhqFDxvYV7pN";
 
 static void test_cred_get_id(void)
 {
@@ -18,24 +18,24 @@ static void test_cred_get_id(void)
     CU_ASSERT_PTR_NOT_NULL_FATAL(cred_id);
 
     DID *cred_did = DIDURL_GetDid(cred_id);
-    CU_ASSERT_STRING_EQUAL_FATAL(DID_GetMethodSpecificId(cred_did), idstring);
+    CU_ASSERT_STRING_EQUAL_FATAL(DID_GetMethodSpecificId(cred_did), method_specific_string);
 }
 
 static void test_cred_get_type_count(void)
 {
     ssize_t size = Credential_GetTypeCount(credential);
-    CU_ASSERT_EQUAL(size, 2);
+    CU_ASSERT_EQUAL(size, 3);
 }
 
 static void test_cred_get_types(void)
 {
-    const char *types[2];
+    const char *types[3];
 
     ssize_t size = Credential_GetTypeCount(credential);
-    CU_ASSERT_EQUAL(size, 2);
+    CU_ASSERT_EQUAL(size, 3);
 
     size = Credential_GetTypes(credential, types, size);
-    CU_ASSERT_EQUAL(size, 2);
+    CU_ASSERT_EQUAL(size, 3);
     return;
 }
 
@@ -53,6 +53,12 @@ static void test_cred_get_issuance_date(void)
 
 static void test_cred_get_expirate_data(void)
 {
+    DIDStore *store;
+    DIDDocument *doc;
+
+    doc = DIDDocument_FromJson(TestData_LoadIssuerJson());
+    store = DIDStore_GetInstance();
+    int rc = DIDStore_StoreDID(store, doc, "");
     time_t time = Credential_GetExpirationDate(credential);
     CU_ASSERT_NOT_EQUAL(time, 0);
 }
@@ -60,31 +66,31 @@ static void test_cred_get_expirate_data(void)
 static void test_cred_get_property_count(void)
 {
     ssize_t size = Credential_GetPropertyCount(credential);
-    CU_ASSERT_EQUAL(size, 4);
+    CU_ASSERT_EQUAL(size, 2);
 }
 
 static void test_cred_get_properties(void)
 {
-    Property *properties[4];
+    Property *properties[2];
 
     ssize_t size = Credential_GetPropertyCount(credential);
-    CU_ASSERT_EQUAL(size, 4);
+    CU_ASSERT_EQUAL(size, 2);
 
     size = Credential_GetProperties(credential, properties, size);
-    CU_ASSERT_EQUAL(size, 4);
+    CU_ASSERT_EQUAL(size, 2);
     return;
 }
 
 static void test_cred_get_property(void)
 {
-    Property *pro = Credential_GetProperty(credential, "nickname");
+    Property *pro = Credential_GetProperty(credential, "email");
     CU_ASSERT_PTR_NOT_NULL(pro);
 }
 
 static void test_cred_add_property(void)
 {
     ssize_t size = Credential_AddProperty(credential, "phone", "13188673423");
-    CU_ASSERT_EQUAL(size, 5);
+    CU_ASSERT_EQUAL(size, 3);
 }
 
 static void test_cred_get_proof_method(void)
@@ -107,14 +113,33 @@ static void test_cred_proof_signature(void)
 
 static int cred_getelem_test_suite_init(void)
 {
-    DIDDocument *doc = DIDDocument_FromJson(global_did_string);
-    if(!doc)
+    char _path[PATH_MAX];
+    const char *storePath;
+    DIDStore *store;
+    DIDDocument *document;
+    int rc;
+
+    storePath = get_store_path(_path, "/servet");
+    rc = TestData_SetupStore(storePath);
+    if (rc < 0)
         return -1;
 
-    DID *did = DIDDocument_GetSubject(doc);
+    document = DIDDocument_FromJson(TestData_LoadDocJson());
+    if(!document) {
+        DIDStore_Deinitialize();
+        return -1;
+    }
 
-    credential = Credential_FromJson(global_cred_string, did);
-    DIDDocument_Destroy(doc);
+    store = DIDStore_GetInstance();
+    rc = DIDStore_StoreDID(store, document, "");
+    if (rc) {
+        DIDStore_Deinitialize();
+        return -1;
+    }
+
+    credential = Credential_FromJson(TestData_LoadVcEmailJson(),
+            DIDDocument_GetSubject(document));
+    DIDDocument_Destroy(document);
     if(!credential)
         return -1;
 
@@ -123,7 +148,9 @@ static int cred_getelem_test_suite_init(void)
 
 static int cred_getelem_test_suite_cleanup(void)
 {
+    TestData_Free();
     Credential_Destroy(credential);
+    DIDStore_Deinitialize();
     return 0;
 }
 

@@ -10,19 +10,10 @@
 
 #include "constant.h"
 #include "loader.h"
-#include "didtest_adapter.h"
 #include "ela_did.h"
-
-#define  TEST_LEN    512
 
 static DIDDocument *document;
 static DID *did;
-static DIDAdapter *adapter;
-
-static const char *getpassword(const char *walletDir, const char *walletId)
-{
-    return storepass;
-}
 
 static void test_didstore_store_did(void)
 {
@@ -41,27 +32,20 @@ static void test_didstore_store_did(void)
     DIDStore_DeleteDID(store, did);
 }
 
-static int didstore_store_test_suite_init(void)
+static int didstore_storedid_test_suite_init(void)
 {
-    char _path[PATH_MAX], _dir[TEST_LEN];
-    char *storePath, *walletDir;
+    char _path[PATH_MAX];
+    const char *storePath;
     DIDStore *store;
-
-    walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
-    if (!adapter)
-        return -1;
+    int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = DIDStore_Initialize(storePath, adapter);
-    if (!store) {
-        TestDIDAdapter_Destroy(adapter);
+    rc = TestData_SetupStore(storePath);
+    if (rc < 0)
         return -1;
-    }
 
-    document = DIDDocument_FromJson(global_did_string);
+    document = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!document) {
-        TestDIDAdapter_Destroy(adapter);
         DIDStore_Deinitialize();
         return -1;
     }
@@ -69,7 +53,6 @@ static int didstore_store_test_suite_init(void)
     did = DIDDocument_GetSubject(document);
     if (!did) {
         DIDDocument_Destroy(document);
-        TestDIDAdapter_Destroy(adapter);
         DIDStore_Deinitialize();
         return -1;
     }
@@ -77,9 +60,8 @@ static int didstore_store_test_suite_init(void)
     return 0;
 }
 
-static int didstore_store_test_suite_cleanup(void)
+static int didstore_storedid_test_suite_cleanup(void)
 {
-    TestDIDAdapter_Destroy(adapter);
     DIDDocument_Destroy(document);
     DIDStore_Deinitialize();
     return 0;
@@ -91,8 +73,8 @@ static CU_TestInfo cases[] = {
 };
 
 static CU_SuiteInfo suite[] = {
-    {   "didstore did test",    didstore_store_test_suite_init,    didstore_store_test_suite_cleanup,      NULL, NULL, cases },
-    {    NULL,                  NULL,                         NULL,                            NULL, NULL, NULL  }
+    { "didstore did test", didstore_storedid_test_suite_init, didstore_storedid_test_suite_cleanup, NULL, NULL, cases },
+    {  NULL,               NULL,                              NULL,                                 NULL, NULL, NULL  }
 };
 
 CU_SuiteInfo* didstore_store_did_test_suite_info(void)

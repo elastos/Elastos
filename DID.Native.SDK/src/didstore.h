@@ -37,12 +37,12 @@ typedef struct DIDBackend    DIDBackend;
 
 struct DIDEntry {
     DID did;
-    const char hint[MAX_HINT_LEN];
+    char hint[MAX_HINT_LEN];
 };
 
 struct CredentialEntry {
     DIDURL id;
-    const char hint[MAX_HINT_LEN];
+    char hint[MAX_HINT_LEN];
 };
 
 struct DIDStore {

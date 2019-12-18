@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "ela_did.h"
 #include "spvadapter.h"
@@ -24,6 +27,18 @@ static int TestDIDAdaptor_CreateIdTransaction(DIDAdapter *_adapter, const char *
 
     password = adapter->passwordCallback((const char *)adapter->walletDir,
             (const char *)adapter->walletId);
+
+    printf("Waiting for wallet available");
+    while (true) {
+        if (SpvDidAdapter_IsAvailable(adapter->impl)) {
+            printf(" OK");
+            break;
+        } else {
+            printf(".");
+            sleep(30);
+        }
+    }
+
     return SpvDidAdapter_CreateIdTransaction(adapter->impl, payload, memo, password);
 }
 
@@ -80,6 +95,7 @@ void TestDIDAdapter_Destroy(DIDAdapter *_adapter)
     free(adapter->walletId);
 
     free(adapter);
+    adapter = NULL;
 }
 
 

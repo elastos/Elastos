@@ -25,14 +25,12 @@
 
 DECL_TESTSUITE(diddoc_fromjson_test);
 DECL_TESTSUITE(diddoc_getelem_test);
-DECL_TESTSUITE(diddoc_arelem_test);
 DECL_TESTSUITE(diddoc_base_test);
 DECL_TESTSUITE(diddoc_sign_test);
 
 #define DEFINE_DOC_TESTSUITES \
     DEFINE_TESTSUITE(diddoc_fromjson_test), \
     DEFINE_TESTSUITE(diddoc_getelem_test), \
-    DEFINE_TESTSUITE(diddoc_arelem_test), \
     DEFINE_TESTSUITE(diddoc_base_test), \
     DEFINE_TESTSUITE(diddoc_sign_test)
 

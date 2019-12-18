@@ -10,16 +10,12 @@
 
 #include "loader.h"
 #include "constant.h"
-#include "didtest_adapter.h"
 #include "ela_did.h"
 #include "did.h"
 #include "didstore.h"
 
-#define  TEST_LEN    512
-
 static DIDDocument *document;
 static DID *did;
-static DIDAdapter *adapter;
 
 int get_did_hint(DIDEntry *entry, void *context)
 {
@@ -29,11 +25,6 @@ int get_did_hint(DIDEntry *entry, void *context)
     printf("\n did: %s, hint: %s\n", entry->did.idstring, entry->hint);
     free(entry);
     return 0;
-}
-
-static const char *getpassword(const char *walletDir, const char *walletId)
-{
-    return storepass;
 }
 
 static void test_didstore_contain_did(void)
@@ -83,25 +74,18 @@ static void test_didstore_delete_did(void)
 
 static int didstore_did_op_test_suite_init(void)
 {
-    char _path[PATH_MAX], _dir[TEST_LEN];
-    char *storePath, *walletDir;
+    char _path[PATH_MAX];
+    const char *storePath;
     DIDStore *store;
-
-    walletDir = get_wallet_path(_dir, "/.didwallet");
-    adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
-    if (!adapter)
-        return -1;
+    int rc;
 
     storePath = get_store_path(_path, "/servet");
-    store = DIDStore_Initialize(storePath, adapter);
-    if (!store) {
-        TestDIDAdapter_Destroy(adapter);
+    rc = TestData_SetupStore(storePath);
+    if (rc < 0)
         return -1;
-    }
 
-    document = DIDDocument_FromJson(global_did_string);
+    document = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!document) {
-        TestDIDAdapter_Destroy(adapter);
         DIDStore_Deinitialize();
         return -1;
     }
@@ -109,11 +93,11 @@ static int didstore_did_op_test_suite_init(void)
     did = DIDDocument_GetSubject(document);
     if (!did) {
         DIDDocument_Destroy(document);
-        TestDIDAdapter_Destroy(adapter);
         DIDStore_Deinitialize();
         return -1;
     }
 
+    store = DIDStore_GetInstance();
     return DIDStore_StoreDID(store, document, "littlefish");
 }
 
@@ -121,7 +105,7 @@ static int didstore_did_op_test_suite_cleanup(void)
 {
     DIDStore *store = DIDStore_GetInstance();
 
-    TestDIDAdapter_Destroy(adapter);
+    TestData_Free();
     DIDDocument_Destroy(document);
     DIDStore_DeleteDID(store, did);
     DIDStore_Deinitialize();

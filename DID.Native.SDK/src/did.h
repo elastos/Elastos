@@ -38,6 +38,7 @@ extern "C" {
 
 #define MAX_TYPE                        64
 #define MAX_PUBLICKEY_BASE58            64
+#define MAX_PRIVATEKEY_BASE64           80
 #define MAX_ENDPOINT                    256
 
 struct DID {
