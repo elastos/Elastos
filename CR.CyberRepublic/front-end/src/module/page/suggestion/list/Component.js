@@ -114,6 +114,10 @@ export default class extends StandardPage {
     this.setState({ isVisitableFilter: !isVisitableFilter })
   }
 
+  handleFilterChange = filter => {
+    this.setState({ filter })
+  }
+
   handleSearchChange = e => {
     this.setState({ search: e.target.value })
   }
@@ -193,7 +197,7 @@ export default class extends StandardPage {
   }
 
   ord_renderContent() {
-    const { isVisitableFilter } = this.state
+    const { isVisitableFilter, search, filter } = this.state
     const { isSecretary } = this.props
     const headerNode = this.renderHeader()
     const filterNode = this.renderFilters()
@@ -204,9 +208,7 @@ export default class extends StandardPage {
 
     return (
       <div>
-        <Meta
-          title="Cyber Republic - Elastos"
-        />
+        <Meta title="Cyber Republic - Elastos" />
         <div className="suggestion-header">{headerNode}</div>
         <SuggestionContainer className="p_SuggestionList">
           <Row
@@ -216,7 +218,13 @@ export default class extends StandardPage {
             style={{ margin: '24px 0 48px' }}
           >
             <Col xs={24} sm={12} style={{ paddingTop: 24 }}>
-              <SearchBox search={this.handleSearch} onChange={this.handleSearchChange} value={this.state.search} />
+              <SearchBox
+                search={this.handleSearch}
+                onChange={this.handleSearchChange}
+                value={search}
+                filterValue={filter}
+                onFilterChange={this.handleFilterChange}
+              />
             </Col>
             {filterNode}
             <Col xs={24} sm={8} style={{ textAlign: 'right', paddingTop: 24 }}>
@@ -275,7 +283,7 @@ export default class extends StandardPage {
   }
 
   handleSearch = (filter, search) => {
-    this.props.updateFilters({ search })
+    this.props.updateFilters({ search, filter })
     this.setState({ search, filter }, this.debouncedRefetch)
   }
 

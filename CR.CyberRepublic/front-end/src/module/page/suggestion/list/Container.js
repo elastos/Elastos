@@ -3,20 +3,21 @@ import {
   createContainer,
 } from '@/util'
 import {
-  SUGGESTION_STATUS
+  SUGGESTION_STATUS,
+  SUGGESTION_SEARCH_FILTERS
 } from '@/constant'
 import SuggestionService from '@/service/SuggestionService'
 import CommentService from '@/service/CommentService'
 import Component from './Component'
 
-const excludeFilters = (value, key) => (key !== 'search')
+const excludeFilters = (value, key) => !['search', 'filter'].includes(key)
 
 const defaultFilters = {
   referenceStatus: false,
   infoNeeded: false,
   underConsideration: false,
   search: '',
-  filter: '',
+  filter: SUGGESTION_SEARCH_FILTERS.TITLE,
   status: SUGGESTION_STATUS.ACTIVE,
   budgetRequested: '',
   creationDate: [],
