@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -76,6 +77,8 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     TextView tv_signupfor;
     @BindView(R.id.srl)
     SmartRefreshLayout srl;
+    @BindView(R.id.ll_no)
+    LinearLayout llNo;
     private RealmUtil realmUtil = new RealmUtil();
     private Wallet wallet = realmUtil.queryDefauleWallet();
     SignUpPresenter signUpPresenter = new SignUpPresenter();
@@ -282,6 +285,11 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
 
 
                 }
+            }
+            if (netList == null || netList.size() == 0) {
+                llNo.setVisibility(View.VISIBLE);
+            } else {
+                llNo.setVisibility(View.GONE);
             }
             setRecyclerview();
             setRecyclerview1();

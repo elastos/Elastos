@@ -53,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
                     android:layout_centerHorizontal="true"
-                    android:text="0.0%"
+                    android:text="--"
                     android:textSize="18sp" />
 
 
@@ -88,7 +88,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
                     android:layout_centerHorizontal="true"
-                    android:text="0"
+                    android:text="--"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
             </RelativeLayout>
@@ -123,7 +123,7 @@
                     android:layout_alignParentBottom="true"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="@dimen/px30"
-                    android:text="0"
+                    android:text="--"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
             </RelativeLayout>
@@ -198,6 +198,26 @@
                     android:layout_marginTop="@dimen/px22"
                     android:layout_marginRight="@dimen/px10"
                     android:visibility="gone" />
+                <LinearLayout
+                    android:id="@+id/ll_no"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    >
+
+                    <ImageView
+                        android:layout_width="160dp"
+                        android:layout_height="160dp"
+                        android:src="@mipmap/no_core" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="25dp"
+                        android:text="@string/nocandidatenode" />
+
+                </LinearLayout>
             </RelativeLayout>
         </com.scwang.smartrefresh.layout.SmartRefreshLayout>
     </com.qmuiteam.qmui.layout.QMUILinearLayout>

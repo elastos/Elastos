@@ -23,7 +23,9 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.find.presenter.VoteFirstPresenter;
 import org.elastos.wallet.ela.ui.find.viewdata.RegisteredProducerInfoViewData;
@@ -183,7 +185,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                 );
                 break;
             case R.id.sb_tq:
-                showWarmPromptInput();
+                presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
+                        Arith.mulRemoveZero(available, MyWallet.RATE_S).toPlainString(), this);
                 break;
 
             case R.id.sb_up:
@@ -205,8 +208,18 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-
+        Intent intent;
         switch (methodName) {
+            case "createRetrieveDepositTransaction":
+                intent = new Intent(getActivity(), TransferActivity.class);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("type", Constant.WITHDRAWSUPERNODE);
+                intent.putExtra("amount", available);
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("attributes", ((CommmonStringEntity) baseEntity).getData());
+
+                startActivity(intent);
+                break;
             case "getDepositcoin":
                 GetdePositcoinBean getdePositcoinBean = (GetdePositcoinBean) baseEntity;
                 available = getdePositcoinBean.getData().getResult().getAvailable();
@@ -214,7 +227,7 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                 sbtq.setVisibility(View.VISIBLE);
                 break;
             case "getFee":
-                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent = new Intent(getActivity(), VoteTransferActivity.class);
                 intent.putExtra("wallet", wallet);
                 if (curentNode.getState().equals("Canceled")) {
                     //提取按钮

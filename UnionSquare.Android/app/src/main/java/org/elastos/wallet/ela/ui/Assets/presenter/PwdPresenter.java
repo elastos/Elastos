@@ -177,17 +177,6 @@ public class PwdPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseActivity);
     }
 
-    //取回押金交易
-    public void createRetrieveDepositTransaction(String masterWalletID, String chainID, String amount, BaseActivity baseActivity) {
-        Observer observer = createObserver(baseActivity, "createRetrieveDepositTransaction");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().createRetrieveDepositTransaction(masterWalletID, chainID, amount);
-            }
-        });
-        subscriberObservable(observer, observable, baseActivity);
-    }
 
     //创建交易
     public void createCancelProducerTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, BaseActivity baseActivity) {
@@ -213,17 +202,6 @@ public class PwdPresenter extends NewPresenterAbstract {
         subscriberObservable(observer, observable, baseActivity);
     }
 
-    //取回押金交易
-    public void createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String crPublickey, String amount, String memo, BaseActivity baseActivity) {
-        Observer observer = createObserver(baseActivity, "createRetrieveCRDepositTransaction");
-        Observable observable = createObservable(new ObservableListener() {
-            @Override
-            public BaseEntity subscribe() {
-                return baseActivity.getMyWallet().createRetrieveCRDepositTransaction(masterWalletID, chainID, crPublickey, amount, memo);
-            }
-        });
-        subscriberObservable(observer, observable, baseActivity);
-    }
 
     //注销cr
     public void createUnregisterCRTransaction(String masterWalletID, String chainID, String fromAddress, String payloadJson, BaseActivity baseActivity) {

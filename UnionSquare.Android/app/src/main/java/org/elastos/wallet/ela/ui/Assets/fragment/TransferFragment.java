@@ -258,7 +258,6 @@ public class TransferFragment extends BaseFragment implements CommonBalanceViewD
         intent.putExtra("toAddress", address);
         intent.putExtra("wallet", wallet);
         intent.putExtra("chainId", chainId);
-        intent.putExtra("maxBalance", maxBalance);
         intent.putExtra("attributes", data);
         intent.putExtra("type", Constant.TRANFER);
         startActivity(intent);

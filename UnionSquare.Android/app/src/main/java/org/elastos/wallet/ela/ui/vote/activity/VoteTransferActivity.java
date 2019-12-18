@@ -82,6 +82,7 @@ public class VoteTransferActivity extends BaseActivity {
 
                 break;
             case Constant.CRSIGNUP:
+            case Constant.SUPERNODESIGN:
                 tvTitle.setText(getString(R.string.electiondeposit));
 
                 break;

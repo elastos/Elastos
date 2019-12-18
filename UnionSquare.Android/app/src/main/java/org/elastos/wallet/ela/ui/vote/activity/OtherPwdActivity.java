@@ -113,16 +113,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
                     case Constant.DIDSIGNUP:
                         presenter.generateDIDInfoPayload(wallet.getWalletId(), inputJson, pwd, this);
                         break;
-                    case Constant.WITHDRAWSUPERNODE:
-                        presenter.createRetrieveDepositTransaction(wallet.getWalletId(), MyWallet.ELA,
-                                Arith.sub(Arith.mulRemoveZero(amount, MyWallet.RATE_S), "10000").toPlainString(), this);
 
-                        break;
-                    case Constant.WITHDRAWCR:
-                        presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
-                                Arith.sub(Arith.mulRemoveZero(amount, MyWallet.RATE_S), "10000").toPlainString(), "", this);
-
-                        break;
 
                 }
                 break;
@@ -194,9 +185,7 @@ public class OtherPwdActivity extends BaseActivity implements CommmonStringWithM
             case "createRegisterProducerTransaction":
             case "createRegisterCRTransaction":
             case "createUpdateCRTransaction":
-            case "createRetrieveDepositTransaction":
             case "createCancelProducerTransaction":
-            case "createRetrieveCRDepositTransaction":
             case "createUnregisterCRTransaction":
             case "createIDTransaction":
                 presenter.signTransaction(wallet.getWalletId(), chainId, ((CommmonStringEntity) baseEntity).getData(), pwd, this);

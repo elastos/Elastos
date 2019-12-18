@@ -33,4 +33,16 @@ public class ElectoralAffairsPresenter extends NewPresenterAbstract {
         Observer observer = createObserver(baseFragment, "getDepositcoin");
         subscriberObservable(observer, observable, baseFragment);
     }
+
+    //取回押金交易
+    public void createRetrieveDepositTransaction(String masterWalletID, String chainID, String amount, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "createRetrieveDepositTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createRetrieveDepositTransaction(masterWalletID, chainID, amount);
+            }
+        });
+        subscriberObservable(observer, observable, baseFragment);
+    }
 }

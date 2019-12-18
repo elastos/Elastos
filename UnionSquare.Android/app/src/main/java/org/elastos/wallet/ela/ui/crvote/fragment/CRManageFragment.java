@@ -22,7 +22,9 @@ import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
+import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
 import org.elastos.wallet.ela.ui.crvote.bean.CRDePositcoinBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
 import org.elastos.wallet.ela.ui.crvote.bean.CRMenberInfoBean;
@@ -33,6 +35,7 @@ import org.elastos.wallet.ela.ui.vote.SuperNodeList.NodeInfoBean;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.utils.AppUtlis;
+import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClipboardUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
@@ -135,9 +138,11 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
         did = data.getString("did", "");
         info = data.getString("info", "");
         CRListBean.DataBean.ResultBean.CrcandidatesinfoBean curentNode = (CRListBean.DataBean.ResultBean.CrcandidatesinfoBean) data.getSerializable("curentNode");
+        if (curentNode == null) {
+            return;
+        }
 
         presenter = new CRManagePresenter();
-
         //这里只会有 "Registered", "Canceled"分别代表, 已注册过, 已注销(不知道可不可提取)
         if (status.equals("Canceled")) {
             //已经注销了
@@ -192,7 +197,9 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                 );
                 break;
             case R.id.sb_tq:
-                showWarmPromptInput();
+                presenter.createRetrieveCRDepositTransaction(wallet.getWalletId(), MyWallet.ELA, ownerPublicKey,
+                        Arith.mulRemoveZero(available, MyWallet.RATE_S).toPlainString(), "", this);
+
                 break;
 
             case R.id.sb_up:
@@ -256,10 +263,19 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
-
+        Intent intent;
         switch (methodName) {
+            case "createRetrieveCRDepositTransaction":
+                intent = new Intent(getActivity(), TransferActivity.class);
+                intent.putExtra("wallet", wallet);
+                intent.putExtra("type", Constant.WITHDRAWCR);
+                intent.putExtra("amount", available);
+                intent.putExtra("chainId", MyWallet.ELA);
+                intent.putExtra("attributes", ((CommmonStringEntity) baseEntity).getData());
+                startActivity(intent);
+                break;
             case "getFee":
-                Intent intent = new Intent(getActivity(), VoteTransferActivity.class);
+                intent = new Intent(getActivity(), VoteTransferActivity.class);
                 intent.putExtra("wallet", wallet);
                 if (status.equals("Canceled")) {
                     //提取按钮

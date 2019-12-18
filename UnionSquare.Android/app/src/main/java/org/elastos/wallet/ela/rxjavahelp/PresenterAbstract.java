@@ -12,6 +12,8 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonStringWithiMethNameEntity;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.Log;
 
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -30,25 +32,25 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
     @Deprecated
     protected void subscriberObservable(Observer subscriber,
                                         Observable observable) {
-        observable.subscribeOn(Schedulers.io())
+        observable.unsubscribeOn(Schedulers.io()).subscribeOn(Schedulers.io())
+                .throttleFirst(2, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .unsubscribeOn(Schedulers.io())
                 .subscribe(subscriber);
     }
 
     protected void subscriberObservable(Observer subscriber,
                                         Observable observable, BaseFragment baseFragment) {
-        observable.compose(baseFragment.bindToLife()).subscribeOn(Schedulers.io())
+        observable.compose(baseFragment.bindToLife()).unsubscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io()).throttleFirst(1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .unsubscribeOn(Schedulers.io())
                 .subscribe(subscriber);
     }
 
     protected void subscriberObservable(Observer subscriber,
                                         Observable observable, BaseActivity baseActivity) {
-        observable.compose(baseActivity.bindToLife()).subscribeOn(Schedulers.io())
+        observable.compose(baseActivity.bindToLife()).unsubscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io()).throttleFirst(1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .unsubscribeOn(Schedulers.io())
                 .subscribe(subscriber);
     }
 
@@ -60,7 +62,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                 emitter.onNext(listener.subscribe());
                 emitter.onComplete();
             }
-        });
+        }).onTerminateDetach();
     }
 
 
@@ -120,7 +122,7 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                     dismissProgessDialog(dialog);
                 }
                 if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())
-                        ||MyWallet.errorCodeDoInMeathed.equals(value.getCode())){
+                        || MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
                     lisener.onNextLisenner(value);
                 } else {
                     showTips(value);
@@ -154,9 +156,9 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
         this.context = baseActivity;
         Dialog dialog;
         if (isShowDialog) {
-            dialog=initProgressDialog(context);
-        }else {
-            dialog=null;
+            dialog = initProgressDialog(context);
+        } else {
+            dialog = null;
         }
         SubscriberOnNextLisenner lisener = LisenerFactor.create(listener);
         lisener.setViewData((BaseViewData) baseActivity);
@@ -177,16 +179,17 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
                     dismissProgessDialog(dialog);
                 }
                 if (MyWallet.SUCCESSCODE.equals(value.getCode()) || "0".equals(value.getCode())
-                        ||MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
+                        || MyWallet.errorCodeDoInMeathed.equals(value.getCode())) {
                     lisener.onNextLisenner(value);
                 } else {
                     showTips(value);
 
                 }
-                if (value instanceof CommmonStringWithiMethNameEntity){
+                if (value instanceof CommmonStringWithiMethNameEntity) {
                     Log.e(TAG, "onNext:" + value.toString());
-                }else {
-                Log.e(TAG, "onNext:" + value);}
+                } else {
+                    Log.e(TAG, "onNext:" + value);
+                }
 
             }
 

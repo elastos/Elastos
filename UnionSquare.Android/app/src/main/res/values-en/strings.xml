@@ -183,7 +183,7 @@
     <string name="no_voting_records">No voting records</string>
     <string name="changes_voting">Change voting</string>
     <string name="registration_deposit">Deposit</string>
-    <string name="please_enter_ticket">Enter number of votes</string>
+    <string name="please_enter_ticket">Enter number</string>
     <string name="lack_of_balance">Insufficient balance</string>
     <string name="transfertype0">Coinbase Transaction</string>
     <string name="transfertype1">Register Asset Transaction </string>

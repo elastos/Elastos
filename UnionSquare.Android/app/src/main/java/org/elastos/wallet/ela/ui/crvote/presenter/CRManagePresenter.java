@@ -5,8 +5,6 @@ import org.elastos.wallet.ela.net.RetrofitManager;
 import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
 import org.elastos.wallet.ela.rxjavahelp.NewPresenterAbstract;
 import org.elastos.wallet.ela.rxjavahelp.ObservableListener;
-import org.elastos.wallet.ela.ui.common.listener.CommonStringWithiMethNameListener;
-import org.elastos.wallet.ela.ui.common.listener.ServerCommonObjectWithMNListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +17,19 @@ public class CRManagePresenter extends NewPresenterAbstract {
         Map<String, String> map = new HashMap();
         map.put("did", did);
         Observable observable = RetrofitManager.getApiService(baseFragment.getContext()).getCRDepositcoin(map);
-        Observer observer = createObserver( baseFragment, "getCRDepositcoin");
+        Observer observer = createObserver(baseFragment, "getCRDepositcoin");
+        subscriberObservable(observer, observable, baseFragment);
+    }
+
+    //取回押金交易
+    public void createRetrieveCRDepositTransaction(String masterWalletID, String chainID, String crPublickey, String amount, String memo, BaseFragment baseFragment) {
+        Observer observer = createObserver(baseFragment, "createRetrieveCRDepositTransaction");
+        Observable observable = createObservable(new ObservableListener() {
+            @Override
+            public BaseEntity subscribe() {
+                return baseFragment.getMyWallet().createRetrieveCRDepositTransaction(masterWalletID, chainID, crPublickey, amount, memo);
+            }
+        });
         subscriberObservable(observer, observable, baseFragment);
     }
 }

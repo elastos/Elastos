@@ -86,7 +86,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
     ImageView ivToSelect;
     @BindView(R.id.recyclerview1)
     RecyclerView recyclerview1;
-
+    @BindView(R.id.ll_no)
+    LinearLayout llNo;
     @BindView(R.id.tv_signupfor)
     TextView tv_signupfor;
     @BindView(R.id.srl)
@@ -156,7 +157,9 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 closeAdd();
                 break;
             case R.id.cb_selectall:
-
+                if (netList == null || netList.size() == 0) {
+                    return;
+                }
                 //全选
                 if (((CheckBox) view).isChecked()) {
                     curentAdapter.addAllPositionAndNotify();
@@ -226,7 +229,11 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 }
                 break;
             case R.id.iv_toselect:
-                //批量加入购物车 当展示这种页面ivSwichlist会隐藏
+                //切换购物车模式
+                if (netList == null || netList.size() == 0) {
+                    return;
+                }
+                // 当展示这种页面ivSwichlist会隐藏
                 if (ivSwichlist.getVisibility() == View.VISIBLE) {
                     ivToSelect.setImageResource(R.mipmap.found_vote_finish);
                     ivSwichlist.setVisibility(View.GONE);
@@ -257,6 +264,9 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         ivSwichlist.setVisibility(View.VISIBLE);
         llBottom2.setVisibility(View.GONE);
         llBottom1.setVisibility(View.VISIBLE);
+        if (netList == null || netList.size() == 0) {
+            return;
+        }
         curentAdapter.setShowCheckbox(false);
        /* curentAdapter.removeAllPosition();
         if (cbSelectall.isChecked()) {
@@ -349,10 +359,15 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             }
         }
 
+        if (netList == null || netList.size() == 0) {
+            llNo.setVisibility(View.VISIBLE);
+        } else {
+            llNo.setVisibility(View.GONE);
+        }
         setRecyclerview();
         setRecyclerview1();
-
         pageNum++;
+
     }
 
     /**
