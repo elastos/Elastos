@@ -50,11 +50,8 @@ namespace Elastos {
 
 			nlohmann::json GetBalanceInfo();
 
-			TransactionPtr CreateRetrieveDepositTx(uint8_t type,
-												   const PayloadPtr &payload,
-												   const OutputArray &outputs,
-												   const AddressPtr &fromAddress,
-												   const std::string &memo);
+			TransactionPtr CreateRetrieveDepositTx(uint8_t type, const PayloadPtr &payload, const BigInt &amount,
+												   const AddressPtr &fromAddress, const std::string &memo);
 
 			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo, bool max);
 

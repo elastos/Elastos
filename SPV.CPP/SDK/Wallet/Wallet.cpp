@@ -217,6 +217,20 @@ namespace Elastos {
 			return tx;
 		}
 
+		TransactionPtr Wallet::CreateRetrieveTransaction(uint8_t type, const PayloadPtr &payload, const BigInt &amount,
+														 const AddressPtr &fromAddress, const std::string &memo) {
+			std::string m;
+
+			if (!memo.empty())
+				m = "type:text,msg:" + memo;
+
+			TransactionPtr tx = _groupedAssets[Asset::GetELAAssetID()]->CreateRetrieveDepositTx(type, payload, amount, fromAddress, m);
+			tx->SetVersion(Transaction::TxVersion::V09);
+
+			tx->FixIndex();
+			return tx;
+		}
+
 		TransactionPtr Wallet::CreateTransaction(uint8_t type,
 												 const PayloadPtr &payload,
 												 const AddressPtr &fromAddress,
@@ -234,12 +248,7 @@ namespace Elastos {
 
 			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
-			TransactionPtr tx;
-			if (fromAddress->Valid() &&
-				(_subAccount->IsProducerDepositAddress(fromAddress) || _subAccount->IsCRDepositAddress(fromAddress)))
-				tx = _groupedAssets[assetID]->CreateRetrieveDepositTx(type, payload, outputs, fromAddress, memo);
-			else
-				tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max);
+			TransactionPtr tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max);
 
 			if (assetID != Asset::GetELAAssetID())
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);

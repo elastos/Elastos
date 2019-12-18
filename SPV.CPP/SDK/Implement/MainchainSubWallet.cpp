@@ -333,19 +333,13 @@ namespace Elastos {
 			BigInt bgAmount;
 			bgAmount.setDec(amount);
 
+			ErrorChecker::CheckParam(bgAmount < 0, Error::CreateTransaction, "output amount should big than zero");
+
 			AddressPtr fromAddress = _walletManager->GetWallet()->GetOwnerDepositAddress();
 
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, *receiveAddr)));
-
 			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
-			TransactionPtr tx = CreateTx(Transaction::returnDepositCoin, payload, fromAddress, outputs, memo);
-
-			if (tx->GetOutputs().size() > 1) {
-				tx->RemoveOutput(tx->GetOutputs().back());
-				tx->FixIndex();
-			}
+			TransactionPtr tx = _walletManager->GetWallet()->CreateRetrieveTransaction(
+				Transaction::returnDepositCoin, payload, bgAmount, fromAddress, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -724,18 +718,11 @@ namespace Elastos {
 
 			AddressPtr fromAddress(new Address(PrefixDeposit, bytes_t(crPublicKey)));
 			ErrorChecker::CheckParam(!fromAddress->Valid(), Error::InvalidArgument, "invalid crPublicKey");
-
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
-			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, *receiveAddr)));
+			ErrorChecker::CheckParam(bgAmount < 0, Error::CreateTransaction, "output amount should big than zero");
 
 			PayloadPtr payload = PayloadPtr(new ReturnDepositCoin());
-			TransactionPtr tx = CreateTx(Transaction::returnCRDepositCoin, payload, fromAddress, outputs, memo);
-
-			if (tx->GetOutputs().size() > 1) {
-				tx->RemoveOutput(tx->GetOutputs().back());
-				tx->FixIndex();
-			}
+			TransactionPtr tx = _walletManager->GetWallet()->CreateRetrieveTransaction(
+				Transaction::returnCRDepositCoin, payload, bgAmount, fromAddress, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

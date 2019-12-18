@@ -123,9 +123,11 @@ namespace Elastos {
 
 		TransactionPtr GroupedAsset::CreateRetrieveDepositTx(uint8_t type,
 															 const PayloadPtr &payload,
-															 const OutputArray &outputs,
+															 const BigInt &amount,
 															 const AddressPtr &fromAddress,
 															 const std::string &memo) {
+			uint64_t feeAmount;
+			BigInt totalInputAmount, totalOutputAmount;
 			TransactionPtr tx = TransactionPtr(new Transaction(type, payload));
 
 			std::string nonce = std::to_string((std::rand() & 0xFFFFFFFF));
@@ -133,8 +135,6 @@ namespace Elastos {
 
 			if (!memo.empty())
 				tx->AddAttribute(AttributePtr(new Attribute(Attribute::Memo, bytes_t(memo.c_str(), memo.size()))));
-
-			tx->SetOutputs(outputs);
 
 			_parent->Lock();
 
@@ -146,6 +146,8 @@ namespace Elastos {
 					continue;
 
 				if (*fromAddress == *(*u)->Output()->Addr()) {
+					totalInputAmount += (*u)->Output()->Amount();
+
 					tx->AddInput(InputPtr(new TransactionInput((*u)->Hash(), (*u)->Index())));
 					bytes_t code;
 					std::string path;
@@ -153,12 +155,24 @@ namespace Elastos {
 					tx->AddUniqueProgram(ProgramPtr(new Program(path, code, bytes_t())));
 				}
 			}
+			feeAmount = CalculateFee(_parent->_feePerKb, tx->EstimateSize());
 
 			_parent->Unlock();
 
 			if (tx->GetInputs().empty()) {
 				ErrorChecker::ThrowLogicException(Error::DepositNotFound, "Deposit utxo not found");
 			}
+
+			totalOutputAmount = amount - feeAmount;
+			if (totalInputAmount < totalOutputAmount + feeAmount) {
+				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
+			}
+
+			// change
+			AddressPtr receiveAddress = _parent->_subAccount->UnusedAddresses(1, 0)[0];
+			tx->AddOutput(OutputPtr(new TransactionOutput(totalOutputAmount, *receiveAddress)));
+
+			tx->SetFee(feeAmount);
 
 			return tx;
 		}
