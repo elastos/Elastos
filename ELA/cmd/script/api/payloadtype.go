@@ -937,6 +937,15 @@ func newCRCProposal(L *lua.LState) int {
 		needSign = false
 	}
 	draftHash, err := common.Uint256FromHexString(draftHashStr)
+	crOpinionHashStr := L.ToString(7)
+	opinionHash := &common.Uint256{}
+	if crOpinionHashStr != "" {
+		var err error
+		opinionHash, err = common.Uint256FromHexString(crOpinionHashStr)
+		if err != nil {
+			return 1
+		}
+	}
 	if err != nil {
 		fmt.Println("wrong draft proposal hash")
 		os.Exit(1)
@@ -980,6 +989,7 @@ func newCRCProposal(L *lua.LState) int {
 		DraftHash:        *draftHash,
 		Budgets:          budgets,
 		Recipient:        *recipient,
+		CROpinionHash:    *opinionHash,
 	}
 
 	if needSign {
@@ -1170,13 +1180,13 @@ func newCRCProposalTracking(L *lua.LState) int {
 	newLeaderPublicKeyStr := L.ToString(7)
 	newLeaderPrivateKeyStr := L.ToString(8)
 	sgPrivateKeyStr := L.ToString(9)
-	opinionHashStr := L.ToString(10)
+	secretaryOpinionHashStr := L.ToString(10)
 	proposalHash, _ := common.Uint256FromHexString(proposalHashStr)
 	documentHash, _ := common.Uint256FromHexString(documentHashStr)
 	opinionHash := &common.Uint256{}
-	if opinionHashStr != "" {
+	if secretaryOpinionHashStr != "" {
 		var err error
-		opinionHash, err = common.Uint256FromHexString(opinionHashStr)
+		opinionHash, err = common.Uint256FromHexString(secretaryOpinionHashStr)
 		if err != nil {
 			return 1
 		}
@@ -1191,7 +1201,7 @@ func newCRCProposalTracking(L *lua.LState) int {
 		ProposalTrackingType: payload.CRCProposalTrackingType(proposalTrackingType),
 		ProposalHash:         *proposalHash,
 		DocumentHash:         *documentHash,
-		OpinionHash:          *opinionHash,
+		SecretaryOpinionHash: *opinionHash,
 		Stage:                uint8(stage),
 		LeaderPubKey:         leaderPublicKey,
 		NewLeaderPubKey:      newLeaderPublicKey,

@@ -29,7 +29,7 @@ local fee = getFee()
 local proposal_tracking_type = getProposalTrackingType()
 local proposal_hash = getProposalHash()
 local document_hash = getDocumentHash()
-local opinion_hash = getOpinionHash()
+local secretar_opinion_hash = getSecretaryOpinionHash()
 local stage = getStage()
 local leader_pubkey = getLeaderPubkey()
 local leader_privkey = getLeaderPrivkey()
@@ -71,7 +71,7 @@ print("fee:", fee)
 print("proposal tracking type:", proposal_tracking_type)
 print("proposal hash:", proposal_hash)
 print("document hash:", document_hash)
-print("opinion hash:", opinion_hash)
+print("secretar opinion hash:", secretar_opinion_hash)
 print("stage:", stage)
 print("leader_pubkey:", leader_pubkey)
 print("leader_privkey:", leader_privkey)
@@ -81,7 +81,7 @@ print("secretary general privkey:", secretary_general_privkey)
 
 local cp_payload =crcproposaltracking.new(proposal_tracking_type,proposal_hash,
         document_hash, stage, leader_pubkey, leader_privkey, new_leader_pubkey,
-         new_leader_privkey, secretary_general_privkey, opinion_hash)
+         new_leader_privkey, secretary_general_privkey, secretar_opinion_hash)
 print(cp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime

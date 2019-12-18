@@ -609,6 +609,7 @@ func crpPayloadEqual(payload1 *payload.CRCProposal, payload2 *payload.CRCProposa
 		bytes.Equal(payload1.SponsorPublicKey, payload2.SponsorPublicKey) &&
 		payload1.CRSponsorDID.IsEqual(payload2.CRSponsorDID) &&
 		payload1.DraftHash.IsEqual(payload2.DraftHash) &&
+		payload1.CROpinionHash.IsEqual(payload2.CROpinionHash) &&
 		budgetsEqual(payload1.Budgets, payload2.Budgets) &&
 		bytes.Equal(payload1.Sign, payload2.Sign) &&
 		bytes.Equal(payload1.CRSign, payload2.CRSign)
@@ -678,7 +679,7 @@ func ctpPayloadEqual(payload1 *payload.CRCProposalTracking, payload2 *payload.CR
 	return payload1.ProposalTrackingType == payload2.ProposalTrackingType &&
 		payload1.ProposalHash.IsEqual(payload2.ProposalHash) &&
 		payload1.DocumentHash.IsEqual(payload2.DocumentHash) &&
-		payload1.OpinionHash.IsEqual(payload2.OpinionHash) &&
+		payload1.SecretaryOpinionHash.IsEqual(payload2.SecretaryOpinionHash) &&
 		payload1.Stage == payload2.Stage &&
 		bytes.Equal(payload1.LeaderPubKey, payload2.LeaderPubKey) &&
 		bytes.Equal(payload1.NewLeaderPubKey, payload2.NewLeaderPubKey) &&
@@ -833,6 +834,7 @@ func randomCRCProposalPayload() *payload.CRCProposal {
 		Budgets:          randomBudgets(),
 		Sign:             randomBytes(64),
 		CRSign:           randomBytes(64),
+		CROpinionHash:    *randomUint256(),
 	}
 }
 
@@ -841,13 +843,13 @@ func randomCRCProposalTrackingPayload() *payload.CRCProposalTracking {
 		ProposalTrackingType: payload.CRCProposalTrackingType(rand.Uint32()),
 		ProposalHash:         *randomUint256(),
 		DocumentHash:         *randomUint256(),
-		OpinionHash:          *randomUint256(),
 		Stage:                randomUint8(),
 		LeaderPubKey:         randomBytes(33),
 		NewLeaderPubKey:      randomBytes(35),
 		LeaderSign:           randomBytes(64),
 		NewLeaderSign:        randomBytes(64),
 		SecretaryGeneralSign: randomBytes(64),
+		SecretaryOpinionHash: *randomUint256(),
 	}
 }
 
