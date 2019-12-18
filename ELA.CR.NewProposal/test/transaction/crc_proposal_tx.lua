@@ -34,6 +34,7 @@ local draft_hash = getDraftHash()
 
 local budgets = getBudgets()
 local recipient = getToAddr()
+local cr_opinion_hash = getCROpinionHash()
 
 if fee == 0
     then
@@ -65,6 +66,7 @@ print("recipient", recipient)
 print("public key:", cr_pubkey)
 print("proposal type:", proposal_type)
 print("draft proposal hash:", draft_hash)
+print("cr opinion hash:", cr_opinion_hash)
 print("budgets:")
 print("-----------------------")
 for i, v in pairs(budgets) do
@@ -74,7 +76,7 @@ print("-----------------------")
 
 -- crc proposal payload: crPublickey, proposalType, draftData, budgets, recipient, wallet
 local cp_payload =crcproposal.new(cr_pubkey, proposal_type, draft_hash, budgets,
-        recipient, wallet)
+        recipient, wallet, cr_opinion_hash)
 print(cp_payload:get())
 
 -- transaction: version, txType, payloadVersion, payload, locktime
