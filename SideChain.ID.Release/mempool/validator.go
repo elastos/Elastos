@@ -15,6 +15,7 @@ import (
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/types/base64url"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
+	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
@@ -347,7 +348,13 @@ func (v *validator) checkDIDOperation(header *id.DIDHeaderInfo,
 			return errors.New("DID WRONG OPERATION ALREADY EXIST")
 		} else if header.Operation == id.Update_DID_Operation {
 			//check PreviousTxid
-			if lastTXData.TXID != header.PreviousTxid {
+			hash, err := common.Uint256FromHexString(header.PreviousTxid)
+			if err != nil {
+				return err
+			}
+			preTXID := service.ToReversedString(*hash)
+
+			if lastTXData.TXID != preTXID {
 				return errors.New("PreviousTxid IS NOT CORRECT")
 			}
 		}

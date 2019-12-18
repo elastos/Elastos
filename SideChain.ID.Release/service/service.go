@@ -117,12 +117,19 @@ type RpcTranasactionData struct {
 	Operation RpcOperation `json:"operation"`
 }
 
-func (rpcTxData *RpcTranasactionData) FromTranasactionData(txData id.TranasactionData) {
-	rpcTxData.TXID = txData.TXID
+func (rpcTxData *RpcTranasactionData) FromTranasactionData(txData id.
+	TranasactionData) bool {
+	hash, err := common.Uint256FromHexString(txData.TXID)
+	if err != nil {
+		return false
+	}
+
+	rpcTxData.TXID = service.ToReversedString(*hash)
 	rpcTxData.Timestamp = txData.Timestamp
 	rpcTxData.Operation.Header = txData.Operation.Header
 	rpcTxData.Operation.Payload = txData.Operation.Payload
 	rpcTxData.Operation.Proof = txData.Operation.Proof
+	return true
 }
 
 func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
@@ -178,7 +185,10 @@ func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
 	for index, txData := range txsData {
 		rpcPayloadDid.DID = txData.Operation.PayloadInfo.ID
 		tempTXData := new(RpcTranasactionData)
-		tempTXData.FromTranasactionData(txData)
+		succe := tempTXData.FromTranasactionData(txData)
+		if succe == false {
+			continue
+		}
 		rpcPayloadDid.RpcTXDatas = append(rpcPayloadDid.RpcTXDatas, *tempTXData)
 		if index == 0 {
 			if txData.Operation.Header.Operation == "deactivate" {
