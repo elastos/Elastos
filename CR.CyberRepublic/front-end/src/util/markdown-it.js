@@ -1,6 +1,5 @@
 import DOMPurify from 'dompurify'
 import markdownIt from 'markdown-it'
-import markdownItMermaid from '@liradb2000/markdown-it-mermaid'
 import taskLists from 'markdown-it-task-lists'
 import sub from 'markdown-it-sub'
 import sup from 'markdown-it-sup'
@@ -18,7 +17,6 @@ const mdi = markdownIt({
   linkify: true, // Autoconvert URL-like text to links
   typographer: true // Enable some language-neutral replacement + quotes beautification
 })
-  .use(markdownItMermaid)
   .use(taskLists)
   .use(footnote)
   .use(sub)
