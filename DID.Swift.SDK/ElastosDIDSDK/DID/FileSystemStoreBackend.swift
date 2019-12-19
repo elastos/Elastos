@@ -165,7 +165,7 @@ public class FileSystemStoreBackend: DIDStoreBackend {
         guard exist else {
             throw DIDStoreError.failue("No did.")
         }
-        return try DIDDocument.fromJson(path)
+        return try DIDDocument.fromJson(path: path)
     }
     
     public override func containsDid(_ did: DID) throws -> Bool {
@@ -285,7 +285,7 @@ public class FileSystemStoreBackend: DIDStoreBackend {
         let privateKeyPath: String = try getFile(path) ?? ""
         
         // Delete before storing , Java no
-        try _ = deletePrivateKey(did, id)
+//        try _ = deletePrivateKey(did, id)
         let fileManager: FileManager = FileManager.default
         let dir: String = PathExtracter(path).dirNamePart()
         try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
@@ -332,6 +332,7 @@ public class FileSystemStoreBackend: DIDStoreBackend {
     public override func deletePrivateKey(_ did: DID, _ id: DIDURL) throws -> Bool {
         let path: String = storeRootPath + "/" + FileSystemStoreBackend.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStoreBackend.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath = try getFile(path)
+        let re =  try exists(path)
         let fileExists = FileManager.default.fileExists(atPath: privateKeyPath!, isDirectory: nil)
         
         if fileExists {

@@ -100,7 +100,7 @@ class IDChainRequest: NSObject {
             let endIndex = json.index(json.startIndex, offsetBy: c)
             json = String(json[json.startIndex..<endIndex])
             
-            doc = try DIDDocument.fromJson(json: json)
+            doc = try DIDDocument.fromJson(json)
             did = doc?.subject
         } else {
             did = try DID(payload)

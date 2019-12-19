@@ -64,16 +64,19 @@ public class DIDStore: NSObject {
         let cinput: UnsafePointer<UInt8> = input.withUnsafeBytes{ (by: UnsafePointer<UInt8>) -> UnsafePointer<UInt8> in
             return by
         }
-        let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 108)
+        let base64url: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: 2048)
           let re = encrypt_to_base64(base64url, passwd, cinput, input.count)
         guard re >= 0 else {
             throw DIDStoreError.failue("encryptToBase64 error.")
         }
-        return String(cString: base64url)
+        var json: String = String(cString: base64url)
+        let endIndex = json.index(json.startIndex, offsetBy: re)
+        json = String(json[json.startIndex..<endIndex])
+        return json
     }
     
     private func decryptFromBase64(_ passwd: String ,_ input: String) throws -> UnsafeMutablePointer<UInt8>  {
-        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 108)
+        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 2048)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
             throw DIDStoreError.failue("decryptFromBase64 error.")
@@ -82,7 +85,7 @@ public class DIDStore: NSObject {
     }
     
     private func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
-        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 108)
+        let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 2048)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
             throw DIDStoreError.failue("decryptFromBase64 error.")
@@ -496,7 +499,7 @@ public class DIDStore: NSObject {
     }
 
     public func sign(_ did: DID, _ id: DIDURL?, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
-        let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 88)
+        let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 2048)
         var privatekeys: UnsafeMutablePointer<UInt8>
         if id == nil {
             let doc = try resolveDid(did)

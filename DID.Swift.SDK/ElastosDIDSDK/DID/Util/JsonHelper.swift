@@ -44,6 +44,16 @@ public class JsonHelper {
         return try DIDURL(value)
     }
     
+    class func getDidUrl(_ str: String, _ ref: DID?, _ hint: String) throws -> DIDURL {
+        var value: String = ""
+        let fragment: String = String(str.prefix(1))
+        if ref != nil && fragment == "#" {
+            value = String(value.suffix(value.count - 1))
+            return try DIDURL(ref!, value)
+        }
+        return try DIDURL(value)
+    }
+    
     class func getString(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: String?, _ hint: String) throws -> String {
         let vn = dic[name]
         if vn == nil {

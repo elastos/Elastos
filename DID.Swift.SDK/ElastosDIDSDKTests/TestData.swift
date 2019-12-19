@@ -54,10 +54,10 @@ class TestData: XCTestCase {
         return mnemonic
     }
     
-    func loadDIDDocument(_ fileName: String) throws -> DIDDocument {
+    func loadDIDDocument(_ fileName: String, _ type_: String) throws -> DIDDocument {
         let bundle = Bundle(for: type(of: self))
-        let jsonPath = bundle.path(forResource: fileName, ofType: "json")
-        let doc: DIDDocument = try DIDDocument.fromJson(jsonPath!)
+        let jsonPath = bundle.path(forResource: fileName, ofType: type_)
+        let doc: DIDDocument = try DIDDocument.fromJson(path: jsonPath!)
         
         if DIDStore.isInitialized() {
             let store: DIDStore = try DIDStore.shareInstance()!
@@ -68,15 +68,15 @@ class TestData: XCTestCase {
     
     func importPrivateKey(_ id: DIDURL, _ fileName: String, _ type: String) throws {
         let skBase58: String = try loadText(fileName, type)
-        let data = skBase58.data(using: .utf8)
-        let udata = [UInt8](data!)
-        let keyBase58: String = Base58.base58FromBytes(udata)
-        try DIDStore.shareInstance()?.storePrivateKey(id.did, id, keyBase58, storePass)
+//        let data = skBase58.data(using: .utf8)
+//        let udata = [UInt8](data!)
+//        let keyBase58: String = Base58.base58FromBytes(udata)
+        try DIDStore.shareInstance()?.storePrivateKey(id.did, id, skBase58, storePass)
     }
     
     func loadTestIssuer() throws -> DIDDocument {
         if TestData.testIssuer == nil {
-            TestData.testIssuer = try loadDIDDocument("issuer")
+            TestData.testIssuer = try loadDIDDocument("issuer", "json")
             try importPrivateKey((TestData.testIssuer?.getDefaultPublicKey())!, "issuer.primary", "sk")
         }
         return TestData.testIssuer!
@@ -85,7 +85,7 @@ class TestData: XCTestCase {
     func loadTestDocument() throws -> DIDDocument {
         _ = try loadTestIssuer()
         if TestData.testDocument == nil {
-            TestData.testDocument = try loadDIDDocument("document")
+            TestData.testDocument = try loadDIDDocument("document", "json")
         }
         try importPrivateKey((TestData.testDocument?.getDefaultPublicKey())!, "document.primary", "sk")
         try importPrivateKey(TestData.testDocument!.getPublicKey("key2")!.id, "document.key2", "sk")
@@ -95,8 +95,9 @@ class TestData: XCTestCase {
     
     func loadCredential(_ fileName: String, _ type_: String) throws -> VerifiableCredential {
         let buldle = Bundle(for: type(of: self))
-        let jsonstr = buldle.path(forResource: fileName, ofType: type_)
-        let vc: VerifiableCredential = try VerifiableCredential.fromJson(jsonstr!)
+        let filepath = buldle.path(forResource: fileName, ofType: type_)
+        let json = try! String(contentsOf: URL(fileURLWithPath: filepath!), encoding: .utf8)
+        let vc: VerifiableCredential = try VerifiableCredential.fromJson(json)
         if DIDStore.isInitialized() {
             try DIDStore.shareInstance()?.storeCredential(vc)
         }
@@ -142,8 +143,10 @@ class TestData: XCTestCase {
     
     func loadText(_ fileName: String, _ type_: String) throws -> String {
         let bl = Bundle(for: type(of: self))
-        let jsonstr = bl.path(forResource: fileName, ofType: type_)
-        return jsonstr!
+        let filepath = bl.path(forResource: fileName, ofType: type_)
+        let json = try! String(contentsOf: URL(fileURLWithPath: filepath!), encoding: .utf8)
+
+        return json
     }
     
     public func loadIssuerCompactJson() throws -> String {

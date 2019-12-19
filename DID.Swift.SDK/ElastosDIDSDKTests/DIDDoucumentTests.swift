@@ -10,26 +10,26 @@ class DIDDoucumentTests: XCTestCase {
     var documentPath: String!
     var normalizedPath: String!
     
-    override func setUp() {
-        super.setUp()
-        
-        let bundle = Bundle(for: type(of: self))
-        compactPath = bundle.path(forResource: "compact", ofType: "json")!
-        documentPath = bundle.path(forResource: "testdiddoc", ofType: "json")!
-        normalizedPath = bundle.path(forResource: "normalized", ofType: "json")!
-    }
-    
-    override func tearDown() {
-        compactPath = nil
-        documentPath = nil
-        normalizedPath = nil
-        super.tearDown()
-    }
+//    override func setUp() {
+//        super.setUp()
+//
+//        let bundle = Bundle(for: type(of: self))
+//        compactPath = bundle.path(forResource: "compact", ofType: "json")!
+//        documentPath = bundle.path(forResource: "testdiddoc", ofType: "json")!
+//        normalizedPath = bundle.path(forResource: "normalized", ofType: "json")!
+//    }
+//
+//    override func tearDown() {
+//        compactPath = nil
+//        documentPath = nil
+//        normalizedPath = nil
+//        super.tearDown()
+//    }
     
     func loadTestDocument() throws -> DIDDocument {
         let bundle = Bundle(for: type(of: self))
         let path = bundle.path(forResource: "testdiddoc", ofType: "json")!
-        let doc = try DIDDocument.fromJson(path)
+        let doc = try DIDDocument.fromJson(path: path)
         return doc
     }
     
@@ -960,14 +960,14 @@ class DIDDoucumentTests: XCTestCase {
             try testData.initIdentity()
             
             let doc: DIDDocument = try testData.loadTestDocument()
-            var json = try doc.description(false)
+
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
-            var data = Data()
             let pkid: DIDURL = try DIDURL(doc.subject!, "primary")
             
-            for i in 0..<10 {
+            for _ in 0..<10 {
+                var json = try doc.description(false)
                 var inputs: [CVarArg] = [json, json.count]
                 var count: Int = inputs.count / 2
                 var sig: String = try doc.sign(pkid, storePass, count, inputs)

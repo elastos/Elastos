@@ -496,11 +496,11 @@ public class DIDDocument: NSObject {
         try parseService(json)
         expires = try DateFormater.getDate(json, Constants.expires, true, nil, "expires")
         
-        let re = json[Constants.proof] as! String
-        if re == "" {
+        let poorf = json[Constants.proof] as! OrderedDictionary<String, Any>
+        if poorf.count == 0 {
             throw MalformedDocumentError.failue("Missing proof.")
         }
-        proof = try Proof.fromJson_dc(json, defaultPk)
+        proof = try Proof.fromJson_dc(poorf, defaultPk)
     }
     
     // 解析公钥
@@ -574,9 +574,8 @@ public class DIDDocument: NSObject {
                 let object: OrderedDictionary<String, Any> = obj as! OrderedDictionary<String, Any>
                 pk = try DIDPublicKey.fromJson(object, subject!)
             }else {
-                let objString: String = obj as! String
-                let didUrl: DIDURL = try DIDURL(objString)
-                pk = publicKeys[didUrl]!
+                let id: DIDURL = try JsonHelper.getDidUrl(obj as! String, subject, "authorization publicKey id")
+                pk = publicKeys[id]!
             }
             _ = try addAuthorizationKey(pk)
         }
@@ -621,7 +620,7 @@ public class DIDDocument: NSObject {
         }
     }
     
-    public class func fromJson(_ path: String) throws -> DIDDocument{
+    public class func fromJson(path: String) throws -> DIDDocument{
         
         let doc: DIDDocument = DIDDocument()
         let urlPath = URL(fileURLWithPath: path)
@@ -635,7 +634,7 @@ public class DIDDocument: NSObject {
         return doc
     }
     
-    public class func fromJson(json: String) throws -> DIDDocument {
+    public class func fromJson(_ json: String) throws -> DIDDocument {
         let doc: DIDDocument = DIDDocument()
         try doc.parse(json: json)
         return doc

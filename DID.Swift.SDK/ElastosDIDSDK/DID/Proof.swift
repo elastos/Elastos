@@ -112,7 +112,7 @@ public class Proof {
         
         let created: Date = try DateFormater.getDate(json, Constants.created, true, nil, "")!
         
-        var creator = try JsonHelper.getDidUrl(json, Constants.creator, true, refSignKey.did, "document proof creator")
+        let creator = try JsonHelper.getDidUrl(json, Constants.creator, true, refSignKey.did, "document proof creator")
         
         let signature: String = try JsonHelper.getString(json, Constants.signatureValue, false, nil, "document proof signature")
         return Proof(type, created, creator, signature)
