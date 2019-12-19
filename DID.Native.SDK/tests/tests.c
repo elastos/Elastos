@@ -52,60 +52,14 @@ int sys_coredump_set(bool enable)
 }
 #endif
 
-static void usage(void)
-{
-    printf("Did API unit tests.\n");
-    printf("\n");
-}
-
 int main(int argc, char *argv[])
 {
     TestSuite *ts;
     CU_ErrorCode rc;
 
-    const char *did_file = NULL;
-    const char *didbp_file = NULL;
-    const char *cred_file = NULL;
-
-    int opt;
-    int idx;
-
-    struct option options[] = {
-        { "did",            required_argument,  NULL, 'd' },
-        { "didbp",          required_argument,  NULL, 'b'},
-        { "credential",     required_argument,  NULL, 'c' },
-        { "help",           no_argument,        NULL, 'h' },
-        { NULL,             0,                  NULL,  0  }
-    };
-
 #ifdef HAVE_SYS_RESOURCE_H
     sys_coredump_set(true);
 #endif
-
-    while ((opt = getopt_long(argc, argv, "d:b:c:h:r:?", options, &idx)) != -1) {
-        switch (opt) {
-        case 'd':
-            did_file = optarg;
-			break;
-        case 'c':
-            cred_file = optarg;
-			break;
-        case 'b':
-            didbp_file = optarg;
-            break;
-        case 'h':
-        case '?':
-            usage();
-            return -1;
-        }
-    }
-
-    if (did_file && load_file(did_file, Load_Doc) == -1)
-        return -1;
-    if (didbp_file && load_file(didbp_file, Load_Docbp) == -1)
-        return -1;
-    if (cred_file && load_file(cred_file, Load_Credential) == -1)
-        return -1;
 
     if (CUE_SUCCESS != CU_initialize_registry()) {
         return CU_get_error();
@@ -125,11 +79,6 @@ int main(int argc, char *argv[])
     CU_basic_run_tests();
 
     CU_cleanup_registry();
-
-    if(global_did_string)
-	    free(global_did_string);
-    if(global_cred_string)
-        free(global_cred_string);
 
     return CU_get_error();
 }

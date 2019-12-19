@@ -90,17 +90,9 @@ _Credential_GetProperty
 _Credential_GetProofMethod
 _Credential_GetProofType
 _Credential_GetProofSignture
-_Credential_SetId
 _Credential_AddType
-_Credential_SetIssuer
-_Credential_SetIssuanceDate
 _Credential_SetExpirationDate
-_Credential_SetSubjectId
 _Credential_AddProperty
-_Credential_SetProofMethod
-_Credential_SetProofType
-_Credential_SetProofSignture
-_Credential_Issue
 _Credential_Verify
 _Credential_IsExpired
 _Credential_IsGenuine
@@ -146,7 +138,6 @@ _Mnemonic_free
 # Presentation
 _Presentation_Create
 _Presentation_Destroy
-_Presentation_Sign
 _Presentation_Verify
 _Presentation_ToJson
 _Presentation_FromJson
