@@ -85,7 +85,7 @@ class IssuerTest: XCTestCase {
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let testDoc: DIDDocument = try testData.loadTestDocument()
             
-            var props: OrderedDictionary<String, String> = OrderedDictionary()
+            var props: Dictionary<String, String> = [: ]
             props["name"] = "John"
             props["gender"] = "Male"
             props["nation"] = "Singapore"
@@ -94,9 +94,9 @@ class IssuerTest: XCTestCase {
             props["twitter"] = "@john"
             
             let issuer: Issuer =  try Issuer(issuerDoc)
-            let vc: VerifiableCredential = issuer.seal("testCredential", ["BasicProfileCredential", "InternetAccountCredential"], props, storePass)
+            let vc: VerifiableCredential = try issuer.seal("testCredential", ["BasicProfileCredential", "InternetAccountCredential"], props, storePass)
             
-            let vcId: DIDURL = DIDURL(testDoc.subject, "testCredential")
+            let vcId: DIDURL = try DIDURL(testDoc.subject!, "testCredential")
             
             XCTAssertEqual(vcId, vc.id)
             XCTAssertTrue(vc.types.contains("BasicProfileCredential"))
@@ -113,9 +113,9 @@ class IssuerTest: XCTestCase {
             XCTAssertEqual("john@example.com", vc.subject.getProperty("email"))
             XCTAssertEqual("@john", vc.subject.getProperty("twitter"))
             
-            XCTAssertFalse(vc.isExpired())
-            XCTAssertTrue(vc.isGenuine())
-            XCTAssertTrue(vc.isValid())
+            XCTAssertFalse(try vc.isExpired())
+            XCTAssertTrue(try vc.isGenuine())
+            XCTAssertTrue(try vc.isValid())
         }
         catch {
             
@@ -135,25 +135,25 @@ class IssuerTest: XCTestCase {
             props["language"] = "English"
             props["email"] = "issuer@example.com"
             let issuer: Issuer =  try Issuer(issuerDoc)
-            let vc: VerifiableCredential = issuer.seal("myCredential", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
+            let vc: VerifiableCredential = try issuer.seal("myCredential", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
             
-            let vcId: DIDURL = DIDURL(testDoc.subject, "myCredential")
+            let vcId: DIDURL = try DIDURL(issuerDoc.subject!, "myCredential")
             XCTAssertEqual(vcId, vc.id)
             XCTAssertTrue(vc.types.contains("BasicProfileCredential"))
             XCTAssertTrue(vc.types.contains("SelfProclaimedCredential"))
             XCTAssertFalse(vc.types.contains("InternetAccountCredential"))
             
             XCTAssertEqual(issuerDoc.subject, vc.issuer)
-            XCTAssertEqual(testDoc.subject, vc.subject.id)
+            XCTAssertEqual(issuerDoc.subject, vc.subject.id)
             
             XCTAssertEqual("Testing Issuer", vc.subject.getProperty("name"))
             XCTAssertEqual("Singapore", vc.subject.getProperty("nation"))
             XCTAssertEqual("English", vc.subject.getProperty("language"))
             XCTAssertEqual("issuer@example.com", vc.subject.getProperty("email"))
             
-            XCTAssertFalse(vc.isExpired())
-            XCTAssertTrue(vc.isGenuine())
-            XCTAssertTrue(vc.isValid())
+            XCTAssertFalse(try vc.isExpired())
+            XCTAssertTrue(try vc.isGenuine())
+            XCTAssertTrue(try vc.isValid())
         }
         catch {
             

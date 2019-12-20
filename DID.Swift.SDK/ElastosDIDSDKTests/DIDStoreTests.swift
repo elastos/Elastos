@@ -427,7 +427,7 @@ class DIDStoreTests: XCTestCase {
         do {
             let store: DIDStore = try  DIDStore.shareInstance()!
             
-            var props: OrderedDictionary<String, String> = OrderedDictionary()
+            var props: Dictionary<String, String> = [: ]
             props["name"] = "John"
             props["gender"] = "Male"
             props["nation"] = "Singapore"
@@ -440,10 +440,8 @@ class DIDStoreTests: XCTestCase {
                 let doc: DIDDocument = try store.newDid(storePass, alias)
                 
                 let issuer: Issuer = try Issuer(doc)
-                issuer.credential.types = ["BasicProfileCredential", "SelfProclaimedCredential"]
-                issuer.credential.subject.properties = props
-//                issuer.seal(storePass)
-//                store.storeCredential(credential)
+                let vc: VerifiableCredential = try issuer.seal("cred-1", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
+                try store.storeCredential(vc)
             }
         } catch {
             print(error)
