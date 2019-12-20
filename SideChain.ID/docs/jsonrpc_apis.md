@@ -115,26 +115,26 @@ result sample:
 ```
 #### resolvedid
 
-description: get registered id transactions' payloads by id and getall. 
+description: get registered id transactions' payloads by did and getall. 
 If request argument getall is false then request result returns newest 
-transaction's payload otherwise request result returns all this id's transactions' 
+transaction's payload otherwise request result returns all this did's transactions' 
 payloads
 
 parameters:
 
-| name   | type     | description                 |
-| ----   | ---------| ----------------------------|
-| id     | string   | id of identification        |
-| all    | bool     | whether get all payloads    |
+| name | type   | description              |
+| ---- | ------ | ------------------------ |
+| did  | string | did of identification    |
+| all  | bool   | whether get all payloads |
 
-results: id transactions' payloads information
+results: did transactions' payloads information
 
 argument sample:
 ```json
 {
 "method": "resolvedid",
   "params":{
-  	"id": "ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
+  	"did": "ifawgWFmZRLXN1JVmqpXcNRurhB1zyHNcf",
   	"all": false
   }
 }
