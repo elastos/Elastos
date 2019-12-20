@@ -1205,9 +1205,9 @@ func newCRCProposalTracking(L *lua.LState) int {
 		Stage:                uint8(stage),
 		LeaderPubKey:         leaderPublicKey,
 		NewLeaderPubKey:      newLeaderPublicKey,
-		LeaderSign:           nil,
-		NewLeaderSign:        nil,
-		SecretaryGeneralSign: nil,
+		LeaderSign:           []byte{},
+		NewLeaderSign:        []byte{},
+		SecretaryGeneralSign: []byte{},
 	}
 
 	signBuf := new(bytes.Buffer)
@@ -1215,7 +1215,7 @@ func newCRCProposalTracking(L *lua.LState) int {
 	sig, _ := crypto.Sign(leaderPrivateKey, signBuf.Bytes())
 	cPayload.LeaderSign = sig
 
-	if newLeaderPublicKeyStr != "" && newLeaderPrivateKeyStr != "" {
+	if len(newLeaderPublicKey) != 0 && len(newLeaderPrivateKey) != 0 {
 		common.WriteVarBytes(signBuf, sig)
 		crSig, _ := crypto.Sign(newLeaderPrivateKey, signBuf.Bytes())
 		cPayload.NewLeaderSign = crSig
