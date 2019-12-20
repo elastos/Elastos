@@ -29,6 +29,8 @@ func Benchmark_SingleBlock_ProcessBlock(b *testing.B) {
 	LoadParams(&singleBlockParams)
 
 	currentHeight := singleBlockGen.GetChain().GetHeight()
+	// set pressure with max block size
+	singleBlockGen.SetPressure(true, 8000000)
 	err := singleBlockGen.Generate(currentHeight + 1)
 	if err != nil {
 		b.Error(err)
