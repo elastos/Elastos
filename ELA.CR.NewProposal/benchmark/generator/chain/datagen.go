@@ -35,10 +35,18 @@ type DataGen struct {
 	prevBlockHash  common.Uint256
 	foundationAddr string
 	dataDir        string
+
+	pressure       bool
+	pressureTxSize int
 }
 
 func (g *DataGen) GetChain() *blockchain.BlockChain {
 	return g.chain
+}
+
+func (g *DataGen) SetPressure(enable bool, size int) {
+	g.pressure = enable
+	g.pressureTxSize = size
 }
 
 func (g *DataGen) Generate(height uint32) (err error) {
@@ -52,7 +60,7 @@ func (g *DataGen) Generate(height uint32) (err error) {
 		process = g.fastProcess
 	}
 
-	for i := g.chain.GetHeight(); i <= height; i++ {
+	for i := g.chain.GetHeight(); i < height; i++ {
 		if err = process(i); err != nil {
 			return
 		}
@@ -63,7 +71,7 @@ func (g *DataGen) Generate(height uint32) (err error) {
 
 func (g *DataGen) fastProcess(height uint32) (err error) {
 	var txs []*types.Transaction
-	if txs, err = g.txRepo.GenerateTxs(height); err != nil {
+	if txs, err = g.generateTxs(height); err != nil {
 		return
 	}
 
@@ -81,7 +89,7 @@ func (g *DataGen) fastProcess(height uint32) (err error) {
 
 func (g *DataGen) normalProcess(height uint32) (err error) {
 	var txs []*types.Transaction
-	if txs, err = g.txRepo.GenerateTxs(height); err != nil {
+	if txs, err = g.generateTxs(height); err != nil {
 		return
 	}
 
@@ -100,7 +108,7 @@ func (g *DataGen) normalProcess(height uint32) (err error) {
 
 func (g *DataGen) minimalProcess(height uint32) (err error) {
 	var txs []*types.Transaction
-	if txs, err = g.txRepo.GenerateTxs(height); err != nil {
+	if txs, err = g.generateTxs(height); err != nil {
 		return
 	}
 
@@ -115,6 +123,15 @@ func (g *DataGen) minimalProcess(height uint32) (err error) {
 		return
 	}
 	return
+}
+
+func (g *DataGen) generateTxs(
+	height uint32) (txs []*types.Transaction, err error) {
+	if g.pressure {
+		return g.txRepo.GeneratePressureTxs(height, g.pressureTxSize)
+	} else {
+		return g.txRepo.GenerateTxs(height)
+	}
 }
 
 func (g *DataGen) generateBlock(
@@ -227,6 +244,8 @@ func FromTxRepository(dataDir string, interrupt <-chan struct{},
 		foundationAddr: foundationAddr,
 		prevBlockHash:  chainParams.GenesisBlock.Hash(),
 		dataDir:        dataDir,
+		pressure:       false,
+		pressureTxSize: 8000000,
 		pow: pow.NewService(
 			&pow.Config{
 				PayToAddr:   foundationAddr,
