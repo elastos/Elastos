@@ -368,12 +368,8 @@ namespace Elastos {
 
 			std::string previousTxid = "";
 			if (operation == UPDATE_DID) {
-				ErrorChecker::CheckParam(didInfo.find("previousTxid") == didInfo.end(),
-				                         Error::InvalidArgument, "invalid previousTxid");
-				previousTxid = didInfo["previousTxid"].get<std::string>();
-
-				uint256 txid(previousTxid);
-				ErrorChecker::CheckParam(txid.GetHex() != previousTxid, Error::InvalidArgument, "invalid previousTxid");
+				DIDDetailPtr detailPtr = GetDIDInfo(did);
+				previousTxid = detailPtr->GetTxHash();
 			}
 
 			nlohmann::json pubKeyInfoArray = didInfo["publicKey"];
