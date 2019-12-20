@@ -58,7 +58,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
 
         #rate limiter
-        service_name = 'Sign'
+        service_name = 'UploadAndSign'
         rate_limiter = RateLimiter()
         result = rate_limiter.get_last_access_count(request.api_key, service_name)
 
