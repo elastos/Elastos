@@ -91,6 +91,11 @@ public class DummyAdapter implements DIDAdapter {
 			if (!request.isValid())
 				throw new DIDException("Invalid ID transaction request.");
 
+			if (request.getOperation() != IDChainRequest.Operation.DEACTIVATE) {
+				if (!request.getDocument().isValid())
+					throw new DIDException("Invalid DID Document.");
+			}
+
 			IDTransactionInfo ti = getLastTransaction(request.getDid());
 
 			switch (request.getOperation()) {

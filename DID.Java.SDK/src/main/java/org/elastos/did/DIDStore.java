@@ -184,7 +184,7 @@ public final class DIDStore {
 
 		HDKey privateIdentity = loadPrivateIdentity(storepass);
 		if (privateIdentity == null)
-			throw new DIDStoreException("DID Store not contains private identity.");
+			throw new DIDStoreException("DID Store does not contains private identity.");
 
 		int nextIndex = storage.loadPrivateIdentityIndex();
 		int blanks = 0;
@@ -197,7 +197,9 @@ public final class DIDStore {
 			DIDDocument doc = null;
 			try {
 				doc = resolveDidFromBackend(did);
-			} catch (MalformedDocumentException ignore) {
+			} catch (Exception ignore) {
+				// TODO: throws exception if necessary
+				blanks++;
 				continue;
 			}
 

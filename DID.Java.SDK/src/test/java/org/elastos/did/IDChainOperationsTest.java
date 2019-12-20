@@ -23,6 +23,7 @@
 package org.elastos.did;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import org.elastos.did.adapter.SPVAdapter;
 import org.elastos.did.exception.DIDException;
+import org.elastos.did.util.HDKey;
 import org.junit.Test;
 
 public class IDChainOperationsTest {
@@ -46,7 +48,7 @@ public class IDChainOperationsTest {
     	assertTrue(store.getAdapter() instanceof SPVAdapter);
     	SPVAdapter adapter = (SPVAdapter)store.getAdapter();
 
-		System.out.print("Waiting for wallet available");
+		System.out.print("Waiting for wallet available to create DID");
     	while (true) {
     		if (adapter.isAvailable()) {
     			System.out.println(" OK");
@@ -61,18 +63,17 @@ public class IDChainOperationsTest {
 			}
     	}
 
+    	// Create new DID and publish to ID sidechain.
     	DIDDocument doc = store.newDid(TestConfig.storePass);
     	Boolean success = store.publishDid(doc, TestConfig.storePass);
     	assertTrue(success);
     	System.out.println("Published new DID: " + doc.getSubject());
+    	System.out.println("DID transaction id:" + doc.getTransactionId());
 
+    	// Resolve new DID document
     	DIDDocument resolved;
-		System.out.print("Try to resolve new published DID.");
+		System.out.print("Try to resolve new published DID");
     	while (true) {
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
-			}
     		try {
 	    		resolved = store.resolveDid(doc.getSubject(), true);
 	    		if (resolved != null) {
@@ -84,10 +85,221 @@ public class IDChainOperationsTest {
     		} catch (Exception ignore) {
     			System.out.print("x");
     		}
+
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
     	}
 
     	assertEquals(doc.getSubject(), resolved.getSubject());
     	assertTrue(resolved.isValid());
+	}
+
+	@Test
+	public void testUpdateAndResolve() throws DIDException {
+    	TestData testData = new TestData();
+    	testData.setupStore(false);
+    	testData.initIdentity();
+
+    	DIDStore store = DIDStore.getInstance();
+    	assertTrue(store.getAdapter() instanceof SPVAdapter);
+    	SPVAdapter adapter = (SPVAdapter)store.getAdapter();
+
+		System.out.print("Waiting for wallet available to create DID");
+    	while (true) {
+    		if (adapter.isAvailable()) {
+    			System.out.println(" OK");
+    			break;
+    		} else {
+    			System.out.print(".");
+    		}
+
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
+    	}
+
+    	// Create new DID and publish to ID sidechain.
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	Boolean success = store.publishDid(doc, TestConfig.storePass);
+    	assertTrue(success);
+    	System.out.println("Published new DID: " + doc.getSubject());
+
+    	// Resolve new DID document
+		System.out.print("Waiting for create transaction confirm");
+    	while (true) {
+      		try {
+    			Thread.sleep(30000);
+    		} catch (InterruptedException ignore) {
+    		}
+
+    		if (adapter.isAvailable()) {
+    			System.out.println(" OK");
+    			break;
+    		} else {
+    			System.out.print(".");
+    		}
+    	}
+
+    	DIDDocument resolved;
+    	System.out.print("Try to resolve new published DID");
+    	while (true) {
+    		try {
+	    		resolved = store.resolveDid(doc.getSubject(), true);
+	    		if (resolved != null) {
+	    			System.out.println(" OK");
+	    			break;
+	    		} else {
+	    			System.out.print(".");
+	    		}
+    		} catch (Exception ignore) {
+    			System.out.print("x");
+    		}
+
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
+    	}
+
+    	assertEquals(doc.getSubject(), resolved.getSubject());
+    	assertTrue(resolved.isValid());
+
+    	// Update
+		System.out.print("Waiting for wallet available to update DID");
+    	while (true) {
+    		if (adapter.isAvailable()) {
+    			System.out.println(" OK");
+    			break;
+    		} else {
+    			System.out.print(".");
+    		}
+
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
+    	}
+
+    	DIDDocument.Builder db = resolved.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+    	DIDDocument newDoc = db.seal(TestConfig.storePass);
+    	assertEquals(2, newDoc.getPublicKeyCount());
+    	assertEquals(2, newDoc.getAuthenticationKeyCount());
+
+    	store.updateDid(newDoc, TestConfig.storePass);
+
+		System.out.print("Waiting for update transaction confirm");
+    	while (true) {
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
+
+    		if (adapter.isAvailable()) {
+    			System.out.println(" OK");
+    			break;
+    		} else {
+    			System.out.print(".");
+    		}
+    	}
+
+		System.out.print("Try to resolve updated DID.");
+    	while (true) {
+    		try {
+	    		resolved = store.resolveDid(doc.getSubject(), true);
+	    		if (resolved != null) {
+	    			System.out.println(" OK");
+	    			break;
+	    		} else {
+	    			System.out.print(".");
+	    		}
+    		} catch (Exception ignore) {
+    			System.out.print("x");
+    		}
+
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
+    	}
+
+    	assertEquals(doc.getSubject(), resolved.getSubject());
+    	assertTrue(resolved.isValid());
+
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+    	assertEquals(newDoc.toString(), resolved.toString());
+
+    	// Update
+		System.out.print("Waiting for wallet available to update DID");
+    	while (true) {
+    		if (adapter.isAvailable()) {
+    			System.out.println(" OK");
+    			break;
+    		} else {
+    			System.out.print(".");
+    		}
+
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
+    	}
+
+    	db = resolved.edit();
+    	key = TestData.generateKeypair();
+    	db.addAuthenticationKey("key2", key.getPublicKeyBase58());
+    	newDoc = db.seal(TestConfig.storePass);
+    	assertEquals(3, newDoc.getPublicKeyCount());
+    	assertEquals(3, newDoc.getAuthenticationKeyCount());
+
+    	store.updateDid(newDoc, TestConfig.storePass);
+
+		System.out.print("Waiting for update transaction confirm");
+    	while (true) {
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
+
+    		if (adapter.isAvailable()) {
+    			System.out.println(" OK");
+    			break;
+    		} else {
+    			System.out.print(".");
+    		}
+    	}
+
+		System.out.print("Try to resolve updated DID.");
+    	while (true) {
+    		try {
+	    		resolved = store.resolveDid(doc.getSubject(), true);
+	    		if (resolved != null) {
+	    			System.out.println(" OK");
+	    			break;
+	    		} else {
+	    			System.out.print(".");
+	    		}
+    		} catch (Exception ignore) {
+    			System.out.print("x");
+    		}
+
+    		try {
+				Thread.sleep(30000);
+			} catch (InterruptedException ignore) {
+			}
+    	}
+
+    	assertEquals(doc.getSubject(), resolved.getSubject());
+    	assertTrue(resolved.isValid());
+
+    	resolved = store.resolveDid(doc.getSubject(), true);
+    	assertNotNull(resolved);
+    	assertEquals(newDoc.toString(), resolved.toString());
 	}
 
 	@Test(timeout = 900000)
