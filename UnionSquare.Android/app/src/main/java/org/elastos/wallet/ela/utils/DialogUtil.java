@@ -47,9 +47,9 @@ public class DialogUtil {
     private static Dialog httpialog = null;//全局的滚动条
 
     public synchronized Dialog getHttpDialog(Context context, String msg) {
-       /* if (httpialog != null) {
-            return httpialog;
-        }*/
+        if (context == null) {
+            return null;
+        }
         View v = LayoutInflater.from(context).inflate(R.layout.loading_dialog, null);// 得到加载view
         LinearLayout layout = v.findViewById(R.id.dialog_view);// 加载布局
         ImageView spaceshipImage = v.findViewById(R.id.img);

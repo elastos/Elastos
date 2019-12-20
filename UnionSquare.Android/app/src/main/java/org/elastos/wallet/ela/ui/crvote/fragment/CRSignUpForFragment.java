@@ -26,6 +26,7 @@ import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -79,7 +80,8 @@ public class CRSignUpForFragment extends BaseFragment implements CommmonStringVi
         presenter = new CRSignUpPresenter();
 
         registReceiver();
-
+        MatcherUtil.editTextFormat(etDotname,100);
+        MatcherUtil.editTextFormat(etUrl,100);
     }
 
 

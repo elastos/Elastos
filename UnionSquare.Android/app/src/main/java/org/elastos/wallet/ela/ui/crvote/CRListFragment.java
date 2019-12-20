@@ -119,7 +119,6 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
     @Override
     protected void initView(View view) {
-        netList = new ArrayList<>();
         setToobar(toolbar, toolbarTitle, getString(R.string.crcvote), getString(R.string.voting_rules));
         presenter = new CRlistPresenter();
         //presenter.getCROwnerPublicKey(wallet.getWalletId(), MyWallet.ELA, this);
@@ -334,7 +333,9 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
 
 
     public void onGetVoteList(List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> data) {
-
+        if (netList == null) {
+            netList = new ArrayList<>();
+        }
         if (pageNum == 1) {
             netList.clear();
         } else if (data == null || data.size() == 0) {
