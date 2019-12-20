@@ -5,7 +5,7 @@ public class CredentialSubject {
     public var id: DID!
     public var properties: OrderedDictionary<String, String>!
     
-    init(_ id: DID) {
+    public init(_ id: DID) {
         self.id = id
         properties = OrderedDictionary()
     }

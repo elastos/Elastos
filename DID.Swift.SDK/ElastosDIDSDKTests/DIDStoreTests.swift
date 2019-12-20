@@ -281,40 +281,40 @@ class DIDStoreTests: XCTestCase {
             // Store test data into current store
             try testData.loadTestIssuer()
             let test: DIDDocument = try testData.loadTestDocument()
-            var vc: VerifiableCredential = try testData.loadProfileCredential()
-            try vc.setAlias("MyProfile")
+            var vc = try testData.loadProfileCredential()
+            try vc!.setAlias("MyProfile")
             vc = try testData.loadEmailCredential()
-            try vc.setAlias("Email")
+            try vc!.setAlias("Email")
             vc = try testData.loadTwitterCredential()
-            try vc.setAlias("Twitter")
+            try vc!.setAlias("Twitter")
             vc = try testData.loadPassportCredential()
-            try vc.setAlias("Passport")
+            try vc!.setAlias("Passport")
             
             let store: DIDStore = try! DIDStore.shareInstance()!
             
             var id: DIDURL = try DIDURL(test.subject!, "profile")
             vc = try store.loadCredential(test.subject!, id)
             XCTAssertNotNil(vc)
-            XCTAssertEqual("MyProfile", vc.alias)
-            XCTAssertEqual(test.subject, vc.subject.id)
-            XCTAssertEqual(id, vc.id)
-            XCTAssertTrue(try vc.isValid())
+            XCTAssertEqual("MyProfile", vc!.alias)
+            XCTAssertEqual(test.subject, vc!.subject.id)
+            XCTAssertEqual(id, vc!.id)
+            XCTAssertTrue(try vc!.isValid())
             
             // try with full id string
             vc = try store.loadCredential(test.subject!.description, id.description)!
             XCTAssertNotNil(vc)
-            XCTAssertEqual("MyProfile", vc.alias)
-            XCTAssertEqual(test.subject, vc.subject.id)
-            XCTAssertEqual(id, vc.id)
-            XCTAssertTrue(try vc.isValid())
+            XCTAssertEqual("MyProfile", vc!.alias)
+            XCTAssertEqual(test.subject, vc!.subject.id)
+            XCTAssertEqual(id, vc!.id)
+            XCTAssertTrue(try vc!.isValid())
             
             id = try DIDURL(test.subject!, "twitter")
             vc = try store.loadCredential(test.subject!.description, "twitter")!
             XCTAssertNotNil(vc)
-            XCTAssertEqual("Twitter", vc.alias)
-            XCTAssertEqual(test.subject, vc.subject.id)
-            XCTAssertEqual(id, vc.id)
-            XCTAssertTrue(try vc.isValid())
+            XCTAssertEqual("Twitter", vc!.alias)
+            XCTAssertEqual(test.subject, vc!.subject.id)
+            XCTAssertEqual(id, vc!.id)
+            XCTAssertTrue(try vc!.isValid())
             
             vc = try  store.loadCredential(test.subject!.description, "notExist")!
             XCTAssertNil(vc)
@@ -338,14 +338,14 @@ class DIDStoreTests: XCTestCase {
             // Store test data into current store
             try testData.loadTestIssuer()
             let test: DIDDocument = try testData.loadTestDocument()
-            var vc: VerifiableCredential = try testData.loadProfileCredential()
-            try vc.setAlias("MyProfile")
+            var vc = try testData.loadProfileCredential()
+            try vc!.setAlias("MyProfile")
             vc = try testData.loadEmailCredential()
-            try vc.setAlias("Email")
+            try vc!.setAlias("Email")
             vc = try testData.loadTwitterCredential()
-            try vc.setAlias("Twitter")
+            try vc!.setAlias("Twitter")
             vc = try testData.loadPassportCredential()
-            try vc.setAlias("Passport")
+            try vc!.setAlias("Passport")
             let store: DIDStore = try DIDStore.shareInstance()!
             
             var vcs: Array<DIDURL> = try store.listCredentials(test.subject!)
@@ -371,14 +371,14 @@ class DIDStoreTests: XCTestCase {
             // Store test data into current store
             try testData.loadTestIssuer()
             let test: DIDDocument = try testData.loadTestDocument()
-            var vc: VerifiableCredential = try testData.loadProfileCredential()
-            try vc.setAlias("MyProfile")
+            var vc = try testData.loadProfileCredential()
+            try vc!.setAlias("MyProfile")
             vc = try testData.loadEmailCredential()
-            try vc.setAlias("Email")
+            try vc!.setAlias("Email")
             vc = try testData.loadTwitterCredential()
-            try vc.setAlias("Twitter")
+            try vc!.setAlias("Twitter")
             vc = try testData.loadPassportCredential()
-            try vc.setAlias("Passport")
+            try vc!.setAlias("Passport")
             
             let store = try DIDStore.shareInstance()!
             var path = storePath + "/ids/" + test.subject!.methodSpecificId + "/credentials/twitter/credential"

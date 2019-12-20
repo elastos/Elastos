@@ -73,8 +73,7 @@ class IssuerTest: XCTestCase {
             // Dead code.
             XCTAssertEqual(issuer.getDid(), issuer.getDid())
         }
-        catch {
-            
+        catch {  
         }
     }
     
@@ -86,7 +85,7 @@ class IssuerTest: XCTestCase {
             let issuerDoc: DIDDocument = try testData.loadTestIssuer()
             let testDoc: DIDDocument = try testData.loadTestDocument()
             
-            var props: Dictionary<String, String> = [:]
+            var props: OrderedDictionary<String, String> = OrderedDictionary()
             props["name"] = "John"
             props["gender"] = "Male"
             props["nation"] = "Singapore"
@@ -95,34 +94,28 @@ class IssuerTest: XCTestCase {
             props["twitter"] = "@john"
             
             let issuer: Issuer =  try Issuer(issuerDoc)
-            /*
-             Issuer.CredentialBuilder cb = issuer.issueFor(testDoc.getSubject());
-             VerifiableCredential vc = cb.id("testCredential")
-             .type("BasicProfileCredential", "InternetAccountCredential")
-             .properties(props)
-             .seal(TestConfig.storePass);
-             
-             DIDURL vcId = new DIDURL(testDoc.getSubject(), "testCredential");
-             
-             assertEquals(vcId, vc.getId());
-             assertTrue(Arrays.asList(vc.getTypes()).contains("BasicProfileCredential"));
-             assertTrue(Arrays.asList(vc.getTypes()).contains("InternetAccountCredential"));
-             assertFalse(Arrays.asList(vc.getTypes()).contains("SelfProclaimedCredential"));
-             
-             assertEquals(issuerDoc.getSubject(), vc.getIssuer());
-             assertEquals(testDoc.getSubject(), vc.getSubject().getId());
-             
-             assertEquals("John", vc.getSubject().getProperty("name"));
-             assertEquals("Male", vc.getSubject().getProperty("gender"));
-             assertEquals("Singapore", vc.getSubject().getProperty("nation"));
-             assertEquals("English", vc.getSubject().getProperty("language"));
-             assertEquals("john@example.com", vc.getSubject().getProperty("email"));
-             assertEquals("@john", vc.getSubject().getProperty("twitter"));
-             
-             assertFalse(vc.isExpired());
-             assertTrue(vc.isGenuine());
-             assertTrue(vc.isValid());
-             */
+            let vc: VerifiableCredential = issuer.seal("testCredential", ["BasicProfileCredential", "InternetAccountCredential"], props, storePass)
+            
+            let vcId: DIDURL = DIDURL(testDoc.subject, "testCredential")
+            
+            XCTAssertEqual(vcId, vc.id)
+            XCTAssertTrue(vc.types.contains("BasicProfileCredential"))
+            XCTAssertTrue(vc.types.contains("InternetAccountCredential"))
+            XCTAssertFalse(vc.types.contains("SelfProclaimedCredential"))
+            
+            XCTAssertEqual(issuerDoc.subject, vc.issuer)
+            XCTAssertEqual(testDoc.subject, vc.subject.id)
+            
+            XCTAssertEqual("John", vc.subject.getProperty("name"))
+            XCTAssertEqual("Male", vc.subject.getProperty("gender"))
+            XCTAssertEqual("Singapore", vc.subject.getProperty("nation"))
+            XCTAssertEqual("English", vc.subject.getProperty("language"))
+            XCTAssertEqual("john@example.com", vc.subject.getProperty("email"))
+            XCTAssertEqual("@john", vc.subject.getProperty("twitter"))
+            
+            XCTAssertFalse(vc.isExpired())
+            XCTAssertTrue(vc.isGenuine())
+            XCTAssertTrue(vc.isValid())
         }
         catch {
             
@@ -142,33 +135,25 @@ class IssuerTest: XCTestCase {
             props["language"] = "English"
             props["email"] = "issuer@example.com"
             let issuer: Issuer =  try Issuer(issuerDoc)
-            /*
-             Issuer.CredentialBuilder cb = issuer.issueFor(issuerDoc.getSubject());
-             VerifiableCredential vc = cb.id("myCredential")
-             .type("BasicProfileCredential", "SelfProclaimedCredential")
-             .properties(props)
-             .seal(TestConfig.storePass);
-             
-             DIDURL vcId = new DIDURL(issuerDoc.getSubject(), "myCredential");
-             
-             assertEquals(vcId, vc.getId());
-             
-             assertTrue(Arrays.asList(vc.getTypes()).contains("BasicProfileCredential"));
-             assertTrue(Arrays.asList(vc.getTypes()).contains("SelfProclaimedCredential"));
-             assertFalse(Arrays.asList(vc.getTypes()).contains("InternetAccountCredential"));
-             
-             assertEquals(issuerDoc.getSubject(), vc.getIssuer());
-             assertEquals(issuerDoc.getSubject(), vc.getSubject().getId());
-             
-             assertEquals("Testing Issuer", vc.getSubject().getProperty("name"));
-             assertEquals("Singapore", vc.getSubject().getProperty("nation"));
-             assertEquals("English", vc.getSubject().getProperty("language"));
-             assertEquals("issuer@example.com", vc.getSubject().getProperty("email"));
-             
-             assertFalse(vc.isExpired());
-             assertTrue(vc.isGenuine());
-             assertTrue(vc.isValid());
-             */
+            let vc: VerifiableCredential = issuer.seal("myCredential", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
+            
+            let vcId: DIDURL = DIDURL(testDoc.subject, "myCredential")
+            XCTAssertEqual(vcId, vc.id)
+            XCTAssertTrue(vc.types.contains("BasicProfileCredential"))
+            XCTAssertTrue(vc.types.contains("SelfProclaimedCredential"))
+            XCTAssertFalse(vc.types.contains("InternetAccountCredential"))
+            
+            XCTAssertEqual(issuerDoc.subject, vc.issuer)
+            XCTAssertEqual(testDoc.subject, vc.subject.id)
+            
+            XCTAssertEqual("Testing Issuer", vc.subject.getProperty("name"))
+            XCTAssertEqual("Singapore", vc.subject.getProperty("nation"))
+            XCTAssertEqual("English", vc.subject.getProperty("language"))
+            XCTAssertEqual("issuer@example.com", vc.subject.getProperty("email"))
+            
+            XCTAssertFalse(vc.isExpired())
+            XCTAssertTrue(vc.isGenuine())
+            XCTAssertTrue(vc.isValid())
         }
         catch {
             

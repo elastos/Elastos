@@ -498,7 +498,7 @@ public class DIDStore: NSObject {
         return try deletePrivateKey(_did, DIDURL(_did, id))
     }
 
-    public func sign(_ did: DID, _ id: DIDURL?, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
+    public func sign(_ did: DID, _ id: DIDURL? = nil, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 2048)
         var privatekeys: UnsafeMutablePointer<UInt8>
         if id == nil {
@@ -530,10 +530,5 @@ public class DIDStore: NSObject {
         }
         return String(cString: sig)
     }
-    
-    public func sign(_ did: DID, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
-        return try sign(did, nil, storepass, count, inputs)
-    }
-
 }
 

@@ -13,7 +13,7 @@ public class VerifiableCredential: DIDObject {
     private let  RULE_GENUINE: Int = 2
     private let  RULE_VALID: Int = 3
 
-    override init() {
+    public override init() {
         super.init()
     }
     
@@ -146,11 +146,11 @@ public class VerifiableCredential: DIDObject {
         var value: String
         
         // id
-        if normalized && ref != nil && id.did.isEqual(ref) {
-            value = "#" + id.fragment!
+        if normalized || ref != nil && id.did.isEqual(ref) {
+            value = id.toExternalForm()
         }
         else {
-            value = id.toExternalForm()
+            value = "#" + id.fragment!
         }
         dic[Constants.id] = value
         
@@ -165,7 +165,7 @@ public class VerifiableCredential: DIDObject {
         dic[Constants.type] = strs
         
         // issuer
-        if !normalized || !(issuer.isEqual(subject.id)) {
+        if normalized || issuer != subject.id {
             dic[Constants.issuer] = issuer.toExternalForm()
         }
         

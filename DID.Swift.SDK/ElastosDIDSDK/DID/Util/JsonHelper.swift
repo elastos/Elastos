@@ -45,7 +45,7 @@ public class JsonHelper {
     }
     
     class func getDidUrl(_ str: String, _ ref: DID?, _ hint: String) throws -> DIDURL {
-        var value: String = ""
+        var value: String = str
         let fragment: String = String(str.prefix(1))
         if ref != nil && fragment == "#" {
             value = String(value.suffix(value.count - 1))

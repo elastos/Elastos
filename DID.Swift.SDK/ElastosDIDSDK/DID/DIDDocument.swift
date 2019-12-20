@@ -8,12 +8,9 @@ public class DIDDocument: NSObject {
     public var credentials: OrderedDictionary<DIDURL, VerifiableCredential> = OrderedDictionary()
     public var services: OrderedDictionary<DIDURL, Service> = OrderedDictionary()
     public var expires: Date?
-    
-    public var cinputs: [CVarArg]?
     public var proof: Proof!
     public var deactivated: Bool!
     public var alias: String = ""
-//    public var edit: Bool
     
     override init() {
         super.init()
@@ -171,11 +168,11 @@ public class DIDDocument: NSObject {
         return try selectEntry(authentications, DIDURL(subject!, id), type)
     }
 
-    public func getAuthenticationKey(_ id: DIDURL) throws -> DIDPublicKey {
+    public func getAuthenticationKey(_ id: DIDURL) throws -> DIDPublicKey? {
         return try getEntry(authentications, id)
     }
     
-    public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey {
+    public func getAuthenticationKey(_ id: String) throws -> DIDPublicKey? {
         return try getEntry(authentications, DIDURL(subject!, id))
     }
     
@@ -210,7 +207,7 @@ public class DIDDocument: NSObject {
                 pk_ = key!
             }
         }
-        guard authentications[pk.id] == nil else {
+        guard authentications[pk_.id] == nil else {
             return false
         }
         authentications[pk_.id] = pk_
@@ -231,22 +228,22 @@ public class DIDDocument: NSObject {
     }
     
     public func getAuthorizationKeys() -> Array<DIDPublicKey> {
-        return getEntries(authentications)
+        return getEntries(authorizations)
     }
     
     public func selectAuthorizationKeys(_ id: DIDURL?, _ type: String?) throws -> Array<DIDPublicKey> {
-        return try selectEntry(authentications, id, type)
+        return try selectEntry(authorizations, id, type)
     }
     
     public func selectAuthorizationKeys(_ id: String, _ type: String?) throws -> Array<DIDPublicKey> {
-        return try selectEntry(authentications, DIDURL(id), type)
+        return try selectEntry(authorizations, DIDURL(id), type)
     }
     
     public func getAuthorizationKey(_ id: DIDURL) throws -> DIDPublicKey? {
-        return try getEntry(authentications, id)
+        return try getEntry(authorizations, id)
     }
     
-    public func getAuthorizationKey(_ id: String) throws -> DIDPublicKey {
+    public func getAuthorizationKey(_ id: String) throws -> DIDPublicKey? {
         return try getEntry(authorizations, DIDURL(subject!, id))
     }
     
@@ -304,11 +301,11 @@ public class DIDDocument: NSObject {
         return try selectEntry(credentials, DIDURL(subject!, id), type)
     }
     
-    public func getCredential(_ id: DIDURL) throws -> VerifiableCredential {
+    public func getCredential(_ id: DIDURL) throws -> VerifiableCredential? {
         return try getEntry(credentials, id)
     }
     
-    public func getCredential(_ id: String) throws -> VerifiableCredential {
+    public func getCredential(_ id: String) throws -> VerifiableCredential? {
         return try getEntry(credentials, DIDURL(subject!, id))
     }
     
@@ -457,8 +454,7 @@ public class DIDDocument: NSObject {
             let mre = UnsafeMutablePointer<Int8>.init(mutating: re)
             return mre
         }
-        self.cinputs = cinputs
-        let c_inputs = getVaList(self.cinputs!)
+        let c_inputs = getVaList(cinputs)
         
         let re = ecdsa_verify_base64v(csignature, cpk, Int32(count), c_inputs)
         return re == 0 ? true : false
@@ -552,7 +548,6 @@ public class DIDDocument: NSObject {
                 pk = publicKeys[didUrl]!
             }
             _ = try addAuthenticationKey(pk)
-            _ = addPublicKey(pk)
         }
     }
     
@@ -587,15 +582,14 @@ public class DIDDocument: NSObject {
         guard (crs != nil) else {
             return
         }
-        let credentials = crs as? Array<OrderedDictionary<String, Any>>
-        guard (credentials != nil) else {
+        let cdentials = crs as? Array<OrderedDictionary<String, Any>>
+        guard (cdentials != nil) else {
             throw MalformedDocumentError.failue("Invalid credential, should be an array.")
         }
-        guard credentials!.count != 0  else {
+        guard cdentials!.count != 0  else {
             return
         }
-        
-        try credentials!.forEach{ obj in
+        try cdentials!.forEach{ obj in
             let vc: VerifiableCredential = try VerifiableCredential.fromJson(obj, subject!)
             _ = addCredential(vc)
         }
@@ -971,12 +965,9 @@ public class DIDDocument: NSObject {
         return list
     }
     
-    private func getEntry<T: DIDObject>(_ entries: OrderedDictionary<DIDURL, T>, _ id: DIDURL) throws -> T {
+    private func getEntry<T: DIDObject>(_ entries: OrderedDictionary<DIDURL, T>, _ id: DIDURL) throws -> T? {
         let re = entries[id]
-        guard re != nil else {
-            throw DIDError.failue("No Entry")
-        }
-        return re!
+        return re
     }
     
     private func removeEntry(_ entriesType: String, _ id: DIDURL) -> Bool {

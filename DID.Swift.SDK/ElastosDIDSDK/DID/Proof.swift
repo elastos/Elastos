@@ -45,12 +45,12 @@ public class Proof {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         //type:
-        if !normalized || !(type == Constants.defaultPublicKeyType) {
+        if normalized || type != Constants.defaultPublicKeyType {
             dic[Constants.type] = type
         }
         
         // method:
-        if normalized && verificationMethod.did != ref {
+        if normalized || verificationMethod.did != ref {
              value = verificationMethod.toExternalForm()
         }
         else {

@@ -10,22 +10,6 @@ class DIDDoucumentTests: XCTestCase {
     var documentPath: String!
     var normalizedPath: String!
     
-//    override func setUp() {
-//        super.setUp()
-//
-//        let bundle = Bundle(for: type(of: self))
-//        compactPath = bundle.path(forResource: "compact", ofType: "json")!
-//        documentPath = bundle.path(forResource: "testdiddoc", ofType: "json")!
-//        normalizedPath = bundle.path(forResource: "normalized", ofType: "json")!
-//    }
-//
-//    override func tearDown() {
-//        compactPath = nil
-//        documentPath = nil
-//        normalizedPath = nil
-//        super.tearDown()
-//    }
-    
     func loadTestDocument() throws -> DIDDocument {
         let bundle = Bundle(for: type(of: self))
         let path = bundle.path(forResource: "testdiddoc", ofType: "json")!
@@ -135,6 +119,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(try DIDURL(doc.subject!, "key3"), pks[0].id)
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -178,6 +163,7 @@ class DIDDoucumentTests: XCTestCase {
             
         } catch  {
             print(error)
+            XCTFail()
         }
     }
     
@@ -215,10 +201,10 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertTrue(try doc.isValid())
             
             // Check existence
-            var pk: DIDPublicKey = try doc.getPublicKey("recovery")!
+            var pk = try doc.getPublicKey("recovery")
             XCTAssertNil(pk)
             
-            pk = try doc.getPublicKey("key2")!
+            pk = try doc.getPublicKey("key2")
             XCTAssertNil(pk)
             
             // Check the final count.
@@ -227,6 +213,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(0, doc.getAuthorizationKeyCount())
         } catch {
             print(error)
+            XCTFail()
         }
         
     }
@@ -256,14 +243,14 @@ class DIDDoucumentTests: XCTestCase {
             }
             
             // AuthenticationKey getter
-            var pk: DIDPublicKey = try doc.getAuthenticationKey("primary")
+            var pk = try doc.getAuthenticationKey("primary")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "primary"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "primary"), pk!.id)
             
             var id: DIDURL = try DIDURL(doc.subject!, "key3")
             pk = try doc.getAuthenticationKey(id)
             XCTAssertNotNil(pk)
-            XCTAssertEqual(id, pk.id)
+            XCTAssertEqual(id, pk!.id)
             
             // Key not exist, should fail.
             pk = try doc.getAuthenticationKey("notExist")
@@ -293,6 +280,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(try DIDURL(doc.subject!, "key2"), pks[0].id)
         } catch {
             print(error)
+            XCTFail()
         }
         
     }
@@ -346,21 +334,21 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertTrue(try doc.isValid())
             
             // Check existence
-            var pk: DIDPublicKey = try doc.getAuthenticationKey("test1")
+            var pk = try doc.getAuthenticationKey("test1")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "test1"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "test1"), pk!.id)
             
             pk = try doc.getAuthenticationKey("test2")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "test2"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "test2"), pk!.id)
             
             pk = try doc.getAuthenticationKey("test3")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "test3"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "test3"), pk!.id)
             
             pk = try doc.getAuthenticationKey("test4")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "test4"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "test4"), pk!.id)
             
             // Check the final count.
             XCTAssertEqual(8, doc.getPublicKeyCount())
@@ -368,6 +356,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(1, doc.getAuthorizationKeyCount())
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -377,7 +366,7 @@ class DIDDoucumentTests: XCTestCase {
             try testData.setupStore(true)
             try testData.initIdentity()
             
-            
+        
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
@@ -416,7 +405,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertTrue(try doc.isValid())
             
             // Check existence
-            var pk: DIDPublicKey = try doc.getAuthenticationKey("test1")
+            var pk = try doc.getAuthenticationKey("test1")
             XCTAssertNil(pk)
             
             pk = try doc.getAuthenticationKey("test2")
@@ -431,6 +420,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(1, doc.getAuthorizationKeyCount())
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -459,20 +449,20 @@ class DIDDoucumentTests: XCTestCase {
             }
             
             // AuthorizationKey getter
-            var pk: DIDPublicKey = try doc.getAuthorizationKey("recovery")
+            var pk = try doc.getAuthorizationKey("recovery")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "recovery"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "recovery"), pk!.id)
             
             var id: DIDURL = try DIDURL(doc.subject!, "recovery")
             pk = try doc.getAuthorizationKey(id)!
             XCTAssertNotNil(pk)
-            XCTAssertEqual(id, pk.id)
+            XCTAssertEqual(id, pk!.id)
             
             // Key not exist, should fail.
             pk = try doc.getAuthorizationKey("notExistKey")
             XCTAssertNil(pk)
             id = try DIDURL(doc.subject!, "notExistKey")
-            pk = try doc.getAuthorizationKey(id)!
+            pk = try doc.getAuthorizationKey(id)
             XCTAssertNil(pk)
             
             // Selector
@@ -488,6 +478,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(1, pks.count)
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -543,20 +534,20 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
-            var pk: DIDPublicKey = try doc.getAuthorizationKey("test1")
+            var pk = try doc.getAuthorizationKey("test1")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "test1"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "test1"), pk!.id)
             pk = try doc.getAuthorizationKey("test2")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "test2"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "test2"), pk!.id)
             pk = try doc.getAuthorizationKey("test3")
             
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "test3"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "test3"), pk!.id)
             
             pk = try doc.getAuthorizationKey("test4")
             XCTAssertNotNil(pk)
-            XCTAssertEqual(try DIDURL(doc.subject!, "test4"), pk.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "test4"), pk!.id)
             
             // Check the final key count.
             XCTAssertEqual(8, doc.getPublicKeyCount())
@@ -564,6 +555,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(5, doc.getAuthorizationKeyCount())
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -607,7 +599,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertTrue(try doc.isValid())
             
             // Check existence
-            var pk: DIDPublicKey = try doc.getAuthorizationKey("test1")
+            var pk = try doc.getAuthorizationKey("test1")
             XCTAssertNil(pk)
             
             pk = try doc.getAuthorizationKey("test2")
@@ -622,6 +614,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(1, doc.getAuthorizationKeyCount())
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -647,13 +640,13 @@ class DIDDoucumentTests: XCTestCase {
                 XCTAssertTrue(re)
             }
             // Credential getter.
-            var vc: VerifiableCredential = try doc.getCredential("profile")
+            var vc = try doc.getCredential("profile")
             XCTAssertNotNil(vc)
-            XCTAssertEqual(try DIDURL(doc.subject!, "profile"), vc.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "profile"), vc!.id)
             
             vc = try doc.getCredential(DIDURL(doc.subject!, "email"))
             XCTAssertNotNil(vc)
-            XCTAssertEqual(try DIDURL(doc.subject!, "email"), vc.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "email"), vc!.id)
             
             // Credential not exist.
             vc = try doc.getCredential("notExistVc")
@@ -677,6 +670,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(0, vcs.count)
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -690,16 +684,16 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             // Add credentials.
-            var vc: VerifiableCredential = try testData.loadPassportCredential()
-            var success: Bool = doc.addCredential(vc)
+            var vc = try testData.loadPassportCredential()
+            var success: Bool = doc.addCredential(vc!)
             XCTAssertTrue(success)
             
             vc = try testData.loadTwitterCredential()
-            success = doc.addCredential(vc)
+            success = doc.addCredential(vc!)
             XCTAssertTrue(success)
             
             // Credential already exist, should fail.
-            success = doc.addCredential(vc)
+            success = doc.addCredential(vc!)
             XCTAssertFalse(success)
             
             doc = try doc.seal(storePass)
@@ -709,17 +703,18 @@ class DIDDoucumentTests: XCTestCase {
             // Check new added credential.
             vc = try doc.getCredential("passport")
             XCTAssertNotNil(vc)
-            XCTAssertEqual(try DIDURL(doc.subject!, "passport"), vc.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "passport"), vc!.id)
             
             let id: DIDURL = try DIDURL(doc.subject!, "twitter")
-            vc = try doc.getCredential(id)
+            vc = try doc.getCredential(id)!
             XCTAssertNotNil(vc)
-            XCTAssertEqual(id, vc.id)
+            XCTAssertEqual(id, vc!.id)
             
             // Should contains 3 credentials.
             XCTAssertEqual(4, doc.getCredentialCount())
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -734,12 +729,12 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertTrue(try doc.isValid())
             
             // Add test credentials.
-            var vc: VerifiableCredential = try testData.loadPassportCredential()
-            var success: Bool = doc.addCredential(vc)
+            var vc = try testData.loadPassportCredential()
+            var success: Bool = doc.addCredential(vc!)
             XCTAssertTrue(success)
             
             vc = try testData.loadTwitterCredential()
-            success = doc.addCredential(vc)
+            success = doc.addCredential(vc!)
             XCTAssertTrue(success)
             // Remove credentials
             success = try doc.removeCredential("profile")
@@ -769,6 +764,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(2, doc.getCredentialCount())
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -794,18 +790,18 @@ class DIDDoucumentTests: XCTestCase {
             }
             
             // Service getter, should success.
-            var svc: Service = try doc.getService("openid")!
+            var svc = try doc.getService("openid")
             XCTAssertNotNil(svc)
-            XCTAssertEqual(try DIDURL(doc.subject!, "openid"), svc.id)
-            XCTAssertEqual("OpenIdConnectVersion1.0Service", svc.type)
-            XCTAssertEqual("https://openid.example.com/", svc.endpoint)
+            XCTAssertEqual(try DIDURL(doc.subject!, "openid"), svc!.id)
+            XCTAssertEqual("OpenIdConnectVersion1.0Service", svc!.type)
+            XCTAssertEqual("https://openid.example.com/", svc!.endpoint)
             
             svc = try doc.getService(DIDURL(doc.subject!, "vcr"))!
             XCTAssertNotNil(svc)
-            XCTAssertEqual(try DIDURL(doc.subject!, "vcr"), svc.id)
+            XCTAssertEqual(try DIDURL(doc.subject!, "vcr"), svc!.id)
             
             // Service not exist, should fail.
-            svc = try doc.getService("notExistService")!
+            svc = try doc.getService("notExistService")
             XCTAssertNil(svc)
             
             // Service selector.
@@ -829,6 +825,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(0, svcs.count)
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -869,6 +866,7 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual("Service.Testing", svcs[0].type)
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -897,16 +895,16 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
-            var svc: Service = try doc.getService("openid")!
+            var svc = try doc.getService("openid")
             XCTAssertNil(svc)
             
-            svc = try doc.getService(DIDURL(doc.subject!, "vcr"))!
+            svc = try doc.getService(DIDURL(doc.subject!, "vcr"))
             XCTAssertNil(svc)
             
             // Check the final count
             XCTAssertEqual(1, doc.getServiceCount())
         } catch {
-            print(error)
+            XCTFail()
         }
     }
     
@@ -950,6 +948,8 @@ class DIDDoucumentTests: XCTestCase {
             XCTAssertEqual(try testData.loadTestCompactJson(), try normalized.description(false))
             XCTAssertEqual(try testData.loadTestCompactJson(), try doc.description(false))
         } catch {
+            print(error)
+            XCTFail()
         }
     }
     
@@ -993,6 +993,7 @@ class DIDDoucumentTests: XCTestCase {
             }
         } catch {
             print(error)
+            XCTFail()
         }
     }
 

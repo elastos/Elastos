@@ -44,27 +44,27 @@ class VerifiableCredentialTest: XCTestCase {
             try testData.setupStore(true)
             let test: DIDDocument = try testData.loadTestDocument()
             
-            let vc: VerifiableCredential = try testData.loadProfileCredential()
+            let vc = try testData.loadProfileCredential()
             
-            XCTAssertEqual(try DIDURL(test.subject!, "profile"), vc.id)
-            XCTAssertTrue((vc.types).contains("BasicProfileCredential"))
-            XCTAssertTrue((vc.types).contains("SelfProclaimedCredential"))
+            XCTAssertEqual(try DIDURL(test.subject!, "profile"), vc!.id)
+            XCTAssertTrue((vc!.types).contains("BasicProfileCredential"))
+            XCTAssertTrue((vc!.types).contains("SelfProclaimedCredential"))
             
-            XCTAssertEqual(test.subject, vc.issuer)
-            XCTAssertEqual(test.subject, vc.subject.id)
+            XCTAssertEqual(test.subject, vc!.issuer)
+            XCTAssertEqual(test.subject, vc!.subject.id)
             
-            XCTAssertEqual("John", vc.subject.getProperty("name"))
-            XCTAssertEqual("Male", vc.subject.getProperty("gender"))
-            XCTAssertEqual("Singapore", vc.subject.getProperty("nation"))
-            XCTAssertEqual("English", vc.subject.getProperty("language"))
-            XCTAssertEqual("john@example.com", vc.subject.getProperty("email"))
-            XCTAssertEqual("@john", vc.subject.getProperty("twitter"))
-            XCTAssertNotNil(vc.issuanceDate)
-            XCTAssertNotNil(vc.expirationDate)
+            XCTAssertEqual("John", vc!.subject.getProperty("name"))
+            XCTAssertEqual("Male", vc!.subject.getProperty("gender"))
+            XCTAssertEqual("Singapore", vc!.subject.getProperty("nation"))
+            XCTAssertEqual("English", vc!.subject.getProperty("language"))
+            XCTAssertEqual("john@example.com", vc!.subject.getProperty("email"))
+            XCTAssertEqual("@john", vc!.subject.getProperty("twitter"))
+            XCTAssertNotNil(vc!.issuanceDate)
+            XCTAssertNotNil(vc!.expirationDate)
             
-            XCTAssertFalse(try vc.isExpired())
-            XCTAssertTrue(try vc.isGenuine())
-            XCTAssertTrue(try vc.isValid())
+            XCTAssertFalse(try vc!.isExpired())
+            XCTAssertTrue(try vc!.isGenuine())
+            XCTAssertTrue(try vc!.isValid())
         }
         catch {
             
@@ -92,7 +92,8 @@ class VerifiableCredentialTest: XCTestCase {
             XCTAssertEqual(try testData.loadTwitterVcCompactJson(), vc.description(false))
         }
         catch {
-            
+         print(error)
+            XCTFail()
         }
     }
     
@@ -106,15 +107,15 @@ class VerifiableCredentialTest: XCTestCase {
             json = try testData.loadProfileVcCompactJson()
             let compact: VerifiableCredential = try VerifiableCredential.fromJson(json)
             
-            let vc: VerifiableCredential = try testData.loadProfileCredential()
+            let vc = try testData.loadProfileCredential()
             
             XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), normalized.description(true))
             XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), compact.description(true))
-            XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), vc.description(true))
+            XCTAssertEqual(try testData.loadProfileVcNormalizedJson(), vc!.description(true))
             
             XCTAssertEqual(try testData.loadProfileVcCompactJson(), normalized.description(false))
             XCTAssertEqual(try testData.loadProfileVcCompactJson(), compact.description(false))
-            XCTAssertEqual(try testData.loadProfileVcCompactJson(), vc.description(false))
+            XCTAssertEqual(try testData.loadProfileVcCompactJson(), vc!.description(false))
         }
         catch {
             

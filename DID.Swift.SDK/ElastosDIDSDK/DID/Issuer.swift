@@ -5,26 +5,30 @@ public class Issuer {
     public var didDocument: DIDDocument?
     public var signKey: DIDURL!
     public var target: DID?
-    public var credential: VerifiableCredential!
 
-    public init(_ doc: DIDDocument, _ signKey: DIDURL) throws {
-       _ = try Issuer(doc, signKey)
+    public init(_ doc: DIDDocument, _ signKey: DIDURL? = nil) throws {
+       self.didDocument = doc
+       self.signKey = signKey
+       if (signKey == nil) {
+           self.signKey = didDocument!.getDefaultPublicKey()
+       } else {
+           if (try !(didDocument!.isAuthenticationKey((self.signKey)))){
+               throw DIDError.failue("Invalid sign key id.")
+           }
+           
+           if (try !didDocument!.hasPrivateKey(self.signKey)){
+               throw DIDError.failue("No private key.")
+           }
+       }
     }
     
-    public init(_ doc: DIDDocument) throws {
-        _ = try Issuer(doc, nil)
-    }
-    
-    public init(_ did: DID, _ signKey: DIDURL?) throws {
+    public init(_ did: DID, _ signKey: DIDURL? = nil) throws {
         self.signKey = signKey
         self.target = did
         self.didDocument = try did.resolve()
         guard self.didDocument != nil else {
             throw DIDError.failue("Can not resolve DID.")
         }
-        self.credential = VerifiableCredential()
-        self.credential.subject = CredentialSubject(self.target!)
-        self.credential.issuer = didDocument?.subject
         if signKey == nil {
             self.signKey = self.didDocument?.getDefaultPublicKey()
         } else {
@@ -37,27 +41,6 @@ public class Issuer {
             throw DIDError.failue("No private key.")
         }
     }
-
-    public convenience init(_ did: DID) throws {
-        try self.init(did, nil)
-    }
-    
-    private init(_ doc: DIDDocument, _ signKey: DIDURL?) throws {
-        
-        self.didDocument = doc
-        self.signKey = signKey
-        if (signKey == nil) {
-            self.signKey = didDocument!.getDefaultPublicKey()
-        } else {
-            if (try !(didDocument!.isAuthenticationKey((self.signKey)))){
-                throw DIDError.failue("Invalid sign key id.")
-            }
-            
-            if (try !didDocument!.hasPrivateKey(self.signKey)){
-                throw DIDError.failue("No private key.")
-            }
-        }
-    }
     
     public func getDid() -> DID {
         return (didDocument?.subject!)!
@@ -67,22 +50,26 @@ public class Issuer {
         return signKey
     }
     
-    public func sign(_ passphrase: String) throws -> VerifiableCredential {
-        
-        self.credential.issuanceDate = Date()
-        let json: String = self.credential.toJsonForSign(false)
-        guard !json.isEmpty else {
-            throw DIDError.failue("No json.")
+    public func seal(_ id: String, _ type: Array<String>, _ properties: Dictionary<String, String>, _ storepass: String) throws -> VerifiableCredential {
+        let credential: VerifiableCredential = VerifiableCredential()
+        credential.issuer = didDocument?.subject
+        credential.subject = CredentialSubject(self.target!)
+        credential.id = try DIDURL(target!, id)
+        credential.types = type
+        let date = DateFormater.currentDate()
+        credential.issuanceDate = date
+        if credential.expirationDate == nil {
+            let edate = DateFormater.currentDateToWantDate(Constants.MAX_VALID_YEARS)
+            credential.expirationDate = edate
         }
+        let dic = credential.toJson(true, true)
+        let json = JsonHelper.creatJsonString(dic: dic)
         let inputs: [CVarArg] = [json, json.count]
-        let count = inputs.count / 2
-        let sig: String = (try didDocument?.sign(signKey, passphrase, count, inputs))!
-        let proof: Proof = Proof(Constants.defaultPublicKeyType, signKey, sig)
-        credential.proof = proof
+        let count: Int = inputs.count / 2
+        let sig: String = try (didDocument?.sign(signKey, storepass, count, inputs))!
         
-        // Should clean credential member
-        let vc: VerifiableCredential = credential
-        // TODO: CLEAR
-        return vc
+        let proof = Proof.init(Constants.defaultPublicKeyType, signKey, sig)
+        credential.proof = proof
+        return credential
     }
 }
