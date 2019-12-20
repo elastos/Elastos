@@ -98,3 +98,12 @@ func (header *Header) Hash() common.Uint256 {
 	header.SerializeNoAux(buf)
 	return common.Hash(buf.Bytes())
 }
+
+func (header *Header) GetSize() int {
+	buf := new(bytes.Buffer)
+	if err := header.Serialize(buf); err != nil {
+		return InvalidBlockSize
+	}
+
+	return buf.Len()
+}

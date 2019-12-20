@@ -822,7 +822,7 @@ func checkTransactionDepositOutpus(bc *BlockChain, txn *Transaction) error {
 
 func checkTransactionSize(txn *Transaction) error {
 	size := txn.GetSize()
-	if size <= 0 || size > int(pact.MaxBlockSize) {
+	if size <= 0 || size > int(pact.MaxBlockContextSize) {
 		return fmt.Errorf("Invalid transaction size: %d bytes", size)
 	}
 

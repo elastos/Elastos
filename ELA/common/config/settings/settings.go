@@ -245,17 +245,23 @@ func (s *Settings) initNetSetting() (err error) {
 			return err
 		}
 		s.params = config.DefaultParams.RegNet()
-		pact.MaxBlockSize = 2000000
 	} else {
 		if err := s.mainNetDefault(s.conf); err != nil {
 			return err
 		}
 		s.params = &config.DefaultParams
-		pact.MaxBlockSize = 2000000
 	}
 
 	if s.conf.MaxBlockSize > 0 {
-		pact.MaxBlockSize = s.conf.MaxBlockSize
+		pact.MaxBlockContextSize = s.conf.MaxBlockSize
+	} else {
+		pact.MaxBlockContextSize = 2000000
+	}
+
+	if s.conf.MaxBlockHeaderSize > 0 {
+		pact.MaxBlockHeaderSize = s.conf.MaxBlockHeaderSize
+	} else {
+		pact.MaxBlockHeaderSize = 1000
 	}
 
 	config.Parameters = s.conf

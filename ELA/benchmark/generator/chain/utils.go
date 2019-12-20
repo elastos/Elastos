@@ -196,7 +196,7 @@ func quickGenerateBlock(pow *pow.Service, prevHash *common.Uint256,
 
 	for _, tx := range txs {
 		size := totalTxsSize + tx.GetSize()
-		if size > int(pact.MaxBlockSize) {
+		if size > int(pact.MaxBlockContextSize) {
 			continue
 		}
 		totalTxsSize = size
