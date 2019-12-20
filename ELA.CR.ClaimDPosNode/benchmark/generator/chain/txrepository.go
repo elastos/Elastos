@@ -32,21 +32,40 @@ func (r *TxRepository) SetFoundationUTXO(utxo *types.UTXO) {
 	r.foundationUTXO = *utxo
 }
 
+func (r *TxRepository) GeneratePressureTxs(
+	height uint32, size int) (txs []*types.Transaction, err error) {
+	if height <= r.params.PrepareStartHeight {
+		return
+	}
+
+	totalTxSize := 0
+	var txn *types.Transaction
+	txs = make([]*types.Transaction, 0)
+	for {
+		txn, err = r.generateTx()
+		if err != nil {
+			return
+		}
+		txs = append(txs, txn)
+
+		txSize := txn.GetSize()
+		if totalTxSize + txSize > size {
+			break
+		}
+		totalTxSize += txSize
+	}
+	r.updateUTXOs(txs)
+
+	return
+}
+
 func (r *TxRepository) GenerateTxs(
 	height uint32) (txs []*types.Transaction, err error) {
 	if height <= r.params.PrepareStartHeight {
 		return
 	}
 
-	refCount := uint32(0)
-	if height > r.params.RandomStartHeight {
-		count := int64(0)
-		if r.params.MaxRefersCount > r.params.MinRefersCount {
-			referRange := r.params.MaxRefersCount - r.params.MinRefersCount
-			count = rand.Int63n(int64(referRange))
-		}
-		refCount = r.params.MinRefersCount + uint32(count)
-	}
+	refCount := r.calculateRefCount(height)
 
 	// tx consume UTXOs
 	var txn *types.Transaction
@@ -70,6 +89,19 @@ func (r *TxRepository) GenerateTxs(
 	r.updateByAllocateFundTx(txn)
 
 	return
+}
+
+func (r *TxRepository) calculateRefCount(height uint32) uint32 {
+	refCount := uint32(0)
+	if height > r.params.RandomStartHeight {
+		count := int64(0)
+		if r.params.MaxRefersCount > r.params.MinRefersCount {
+			referRange := r.params.MaxRefersCount - r.params.MinRefersCount
+			count = rand.Int63n(int64(referRange))
+		}
+		refCount = r.params.MinRefersCount + uint32(count)
+	}
+	return refCount
 }
 
 func (r *TxRepository) Serialize(w io.Writer) (err error) {
