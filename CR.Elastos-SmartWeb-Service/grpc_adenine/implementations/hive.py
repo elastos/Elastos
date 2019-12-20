@@ -5,6 +5,7 @@ from requests import Session
 from grpc_adenine import settings
 from grpc_adenine.stubs import hive_pb2
 from grpc_adenine.stubs import hive_pb2_grpc
+from grpc_adenine.implementations.utils import validate_api_key
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 
 
@@ -53,9 +54,9 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         # Validate the API Key
         api_key = request.api_key
-        # api_status = validate_api_key(api_key)
-        # if not api_status:
-        #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            return hive_pb2.Response(output='', status_message='API Key could not be verified', status=False)
 
         #rate limiter
         service_name = 'UploadAndSign'

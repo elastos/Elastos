@@ -1,9 +1,8 @@
 import datetime
 import pytz
-from grpc_adenine.database import db_engine
+from grpc_adenine.database import (connection as db)
 from grpc_adenine.database.user_api_relation import UserApiRelations
 from sqlalchemy.sql import exists
-from sqlalchemy.orm import sessionmaker
 
 
 def validate_api_key(api_key):
