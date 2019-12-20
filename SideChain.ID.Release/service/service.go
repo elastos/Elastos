@@ -102,7 +102,7 @@ func (s *HttpService) GetNodeState(param http.Params) (interface{}, error) {
 type RpcPayloadDIDInfo struct {
 	DID        string                `json:"did"`
 	Status     int                   `json:"status"`
-	RpcTXDatas []RpcTranasactionData `json:"transaction"`
+	RpcTXDatas []RpcTranasactionData `json:"transaction,omitempty"`
 }
 
 type RpcOperation struct {
@@ -135,18 +135,20 @@ func (rpcTxData *RpcTranasactionData) FromTranasactionData(txData id.
 func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
 	var didDocState DidDocState
 	didDocState = NonExist
-	idParam, ok := param.String("id")
+	idParam, ok := param.String("did")
 	if !ok {
-		return nil, http.NewError(int(service.InvalidParams), "id is null")
+		return nil, http.NewError(int(service.InvalidParams), "did is null")
 	}
+
+	var did string
 	//remove DID_ELASTOS_PREFIX
 	if id.IsURIHasPrefix(idParam) {
-		idParam = id.GetDIDFromUri(idParam)
+		did = id.GetDIDFromUri(idParam)
 	}
 	//check is valid address
-	_, err := common.Uint168FromAddress(idParam)
+	_, err := common.Uint168FromAddress(did)
 	if err != nil {
-		return nil, http.NewError(int(service.InvalidParams), "invalid id")
+		return nil, http.NewError(int(service.InvalidParams), "invalid did")
 	}
 	isGetAll, ok := param.Bool("all")
 	if !ok {
@@ -154,15 +156,17 @@ func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	buf.WriteString(idParam)
+	buf.WriteString(did)
+
+	var rpcPayloadDid RpcPayloadDIDInfo
 
 	expiresHeight, err := s.store.GetExpiresHeight(buf.Bytes())
 	if err != nil {
-		return nil, http.NewError(int(service.InvalidParams),
-			"this id did not have data on this chain")
-	}
+		rpcPayloadDid.DID = idParam
+		rpcPayloadDid.Status = NonExist
+		return rpcPayloadDid, nil
 
-	var rpcPayloadDid RpcPayloadDIDInfo
+	}
 
 	var txsData []id.TranasactionData
 	if isGetAll {

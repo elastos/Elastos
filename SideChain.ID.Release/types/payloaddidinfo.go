@@ -250,6 +250,14 @@ func (p *Operation) Deserialize(r io.Reader, version byte) error {
 }
 
 func (p *Operation) GetData() []byte {
-	dataString := p.Header.Specification + p.Header.Operation + p.Payload
+	var dataString string
+	if p.Header.Operation == Update_DID_Operation {
+		dataString = p.Header.Specification + p.Header.Operation + p.Header.
+			PreviousTxid + p.Payload
+
+	} else {
+		dataString = p.Header.Specification + p.Header.Operation + p.Payload
+
+	}
 	return []byte(dataString)
 }
