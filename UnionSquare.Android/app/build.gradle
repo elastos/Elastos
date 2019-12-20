@@ -99,6 +99,7 @@ android {
                 cppFlags "-Wl,--no-warn-search-mismatch"
             }
         }
+        signingConfig signingConfigs.relsease
         sourceSets {
             main {
                 jniLibs.srcDirs = ['src/main/jni/libs']

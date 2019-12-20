@@ -285,9 +285,10 @@ public class DialogUtil {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (dialog != null)
+                if (dialog.isShowing()) {
                     dialog.dismiss();
-                listener.affireBtnClick(null);
+                    listener.affireBtnClick(null);
+                }
             }
         }, 2888);//3秒后执行Runnable中的run方法
         dialog.show();
