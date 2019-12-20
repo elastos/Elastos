@@ -231,6 +231,9 @@ public class PresenterAbstract implements DialogInterface.OnCancelListener {
 
     protected Dialog initProgressDialog(Context context) {
         Dialog dialog = new DialogUtil().getHttpDialog(context, "loading...");
+        if (dialog==null){
+            return null;
+        }
         dialog.setOnCancelListener(this);
         dialog.show();
         //  dialog.dismiss();

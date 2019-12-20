@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
 import com.allen.library.SuperButton;
 import com.blankj.utilcode.util.ToastUtils;
 
@@ -25,17 +24,16 @@ import org.elastos.wallet.ela.ui.common.bean.CommmonLongEntity;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRSignUpPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteTransferActivity;
 import org.elastos.wallet.ela.ui.vote.bean.Area;
-import org.elastos.wallet.ela.ui.vote.bean.ElectoralAffairsBean;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -93,6 +91,7 @@ public class UpdateInformationFragment extends BaseFragment implements NewBaseVi
         ownerPublicKey = bean.getOwnerpublickey();
         etPublickey.setText(bean.getNodepublickey());
         super.setExtraData(data);
+        MatcherUtil.editTextFormat(etUrl, 100);
 
     }
 

@@ -29,6 +29,7 @@ import org.elastos.wallet.ela.ui.vote.fragment.AreaCodeFragment;
 import org.elastos.wallet.ela.utils.AppUtlis;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
@@ -70,6 +71,7 @@ public class UpdateCRInformationFragment extends BaseFragment implements NewBase
     protected void initView(View view) {
         setToobar(toolbar, toolbarTitle, getString(R.string.update_information));
         registReceiver();
+        MatcherUtil.editTextFormat(etUrl,100);
     }
 
     @Override

@@ -26,10 +26,10 @@ import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.ClearEditText;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.MatcherUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
 import org.elastos.wallet.ela.utils.listener.WarmPromptListener;
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
@@ -77,6 +77,8 @@ public class SignUpForFragment extends BaseFragment implements CommmonStringWith
         //获取公钥
         presenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
         registReceiver();
+        MatcherUtil.editTextFormat(etUrl, 100);
+        MatcherUtil.editTextFormat(etDotname, 100);
     }
 
     public static SignUpForFragment newInstance() {

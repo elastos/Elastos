@@ -125,7 +125,7 @@
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_weight="2"
                         android:text="@string/menberdid"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
@@ -151,9 +151,9 @@
 
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_weight="2"
                         android:text="@string/the_current_number"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
@@ -181,9 +181,9 @@
 
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_weight="2"
                         android:text="@string/vote_of"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
@@ -212,7 +212,7 @@
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_weight="2"
                         android:text="@string/country_region"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
@@ -241,8 +241,7 @@
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-
+                        android:layout_weight="2"
                         android:text="@string/officeweb"
                         android:textColor="@color/qmui_config_color_50_white"
                         android:textSize="13sp" />
@@ -322,15 +321,19 @@
             android:orientation="vertical">
 
             <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/iv_icon1"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_marginTop="26dp"
-                android:src="@mipmap/found_vote_initial" />
+                android:src="@mipmap/found_vote_initial_circle" />
 
 
             <TextView
                 android:id="@+id/tv_quit"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_marginRight="15dp"
+                android:layout_marginLeft="15dp"
+                android:gravity="center"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="@string/hasquit"

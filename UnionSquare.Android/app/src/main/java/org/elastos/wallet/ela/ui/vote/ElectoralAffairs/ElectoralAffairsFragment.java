@@ -85,6 +85,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
     SuperButton sb_up;
     @BindView(R.id.iv_icon)
     AppCompatImageView ivIcon;
+    @BindView(R.id.iv_icon1)
+    AppCompatImageView ivIcon1;
     @BindView(R.id.line_info)
     View lineInfo;
     @BindView(R.id.tv_info)
@@ -260,6 +262,8 @@ public class ElectoralAffairsFragment extends BaseFragment implements NewBaseVie
                 String imgUrl = t.getOrg().getBranding().getLogo_256();
                 GlideApp.with(ElectoralAffairsFragment.this).load(imgUrl)
                         .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                GlideApp.with(ElectoralAffairsFragment.this).load(imgUrl)
+                        .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon1);
                 //获取节点简介
                 NodeInfoBean.OrgBean.CandidateInfoBean infoBean = t.getOrg().getCandidate_info();
                 if (infoBean != null) {

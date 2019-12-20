@@ -81,6 +81,8 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
     SuperButton sb_up;
     @BindView(R.id.iv_icon)
     AppCompatImageView ivIcon;
+    @BindView(R.id.iv_icon1)
+    AppCompatImageView ivIcon1;
     @BindView(R.id.line_info)
     View lineInfo;
     @BindView(R.id.tv_info)
@@ -233,6 +235,8 @@ public class CRManageFragment extends BaseFragment implements NewBaseViewData {
                     String imgUrl = t.getOrg().getBranding().getLogo_256();
                     GlideApp.with(CRManageFragment.this).load(imgUrl)
                             .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon);
+                    GlideApp.with(CRManageFragment.this).load(imgUrl)
+                            .error(R.mipmap.found_vote_initial_circle).circleCrop().into(ivIcon1);
                 } catch (Exception e) {
                 }
                 try {
