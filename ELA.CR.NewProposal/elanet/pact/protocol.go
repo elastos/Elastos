@@ -31,8 +31,11 @@ const (
 	MaxTxPoolSize = 20000000
 )
 
-// MaxBlockSize is the maximum number of bytes allowed per block.
-var MaxBlockSize uint32 = 8000000
+// MaxBlockContextSize is the maximum number of bytes allowed per block context.
+var MaxBlockContextSize uint32 = 8000000
+
+// MaxBlockHeaderSize is the maximum number of bytes allowed per block header.
+var MaxBlockHeaderSize uint32 = 1000
 
 // ServiceFlag identifies services supported by a peer.
 type ServiceFlag uint64

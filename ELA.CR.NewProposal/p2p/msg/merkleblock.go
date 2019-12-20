@@ -39,7 +39,7 @@ func (msg *MerkleBlock) CMD() string {
 }
 
 func (msg *MerkleBlock) MaxLength() uint32 {
-	return pact.MaxBlockSize
+	return pact.MaxBlockContextSize + pact.MaxBlockHeaderSize
 }
 
 func (msg *MerkleBlock) Serialize(w io.Writer) error {
