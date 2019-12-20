@@ -40,8 +40,8 @@ def main():
             response = hive.upload_and_sign('9A5Fy8jDxsJQSDdU4thLZs9fwDmtVzBU',
                                             '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99',
                                             'test/sample.txt')
-            json_output = json.loads(response.output)
             if response.status:
+                json_output = json.loads(response.output)
                 for i in json_output['result']:
                     print(i, ':', json_output['result'][i])
             else:
