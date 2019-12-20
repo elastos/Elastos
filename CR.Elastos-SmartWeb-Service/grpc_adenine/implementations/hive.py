@@ -5,9 +5,9 @@ from requests import Session
 from grpc_adenine import settings
 from grpc_adenine.stubs import hive_pb2
 from grpc_adenine.stubs import hive_pb2_grpc
-from grpc_adenine.implementations.utils import validate_api_key
+from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key
 from grpc_adenine.implementations.rate_limiter import RateLimiter
-
+from cryptography.fernet import Fernet
 
 class Hive(hive_pb2_grpc.HiveServicer):
 
@@ -76,11 +76,16 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         # reading the file content
         request_input = json.loads(request.input)
-        file_contents = request_input['file']
+        
+        #encoding and encrypting
+        key = config('ENCRYPTION_KEY')
+        file_contents = request_input['file'].encode()
+        fernet = Fernet(key)
+        encrypted_message = fernet.encrypt(file_contents)
 
         # upload file to hive
         api_url_base = config('PRIVATE_NET_IP_ADDRESS') + config('HIVE_PORT') + settings.HIVE_API_ADD_FILE
-        response = self.session.get(api_url_base, files={'file': file_contents}, headers=self.headers['hive'])
+        response = self.session.get(api_url_base, files={'file': encrypted_message}, headers=self.headers['hive'])
         data = json.loads(response.text)
         file_hash = data['Hash']
 
@@ -113,9 +118,25 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         # Validate the API Key
         api_key = request.api_key
-        # api_status = validate_api_key(api_key)
-        # if not api_status:
-        #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            return hive_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+
+        #rate limiter
+        service_name = 'VerifyAndShow'
+        rate_limiter = RateLimiter()
+        result = rate_limiter.get_last_access_count(request.api_key, service_name)
+
+        if result is not False:
+            if(result["diff"]<86400):
+                if(settings.VERIFY_AND_SHOW_LIMIT>result["access_count"]):
+                    rate_limiter.add_access_count(result["user_api_id"], service_name, 'increment')
+                else:
+                    return hive_pb2.Response(output="", status_message='Number of daily access limit exceeded', status=False)
+            else:
+                rate_limiter.add_access_count(result["user_api_id"], service_name, 'reset')
+        else:
+            rate_limiter.add_new_access_entry(request.api_key, service_name)
 
         # verify the hash key
         request_input = json.loads(request.input)
@@ -151,5 +172,8 @@ class Hive(hive_pb2_grpc.HiveServicer):
         # show content
         api_url_base = config('PRIVATE_NET_IP_ADDRESS') + config('HIVE_PORT') + settings.HIVE_API_RETRIEVE_FILE + "{}"
         response = self.session.get(api_url_base.format(request_input['hash']))
-        data = response.text
-        return hive_pb2.Response(output=data, status_message='Success', status=True)
+        
+        #decrypt message
+        fernet = Fernet(key)
+        decrypted_message = fernet.decrypt(response.text)
+        return hive_pb2.Response(output=decrypted_message.decode(), status_message='Success', status=True)
