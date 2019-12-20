@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package store
 
@@ -22,7 +22,7 @@ var eventStore *DposStore
 
 //fixme clean event store for next unit test
 func TestEventStore_Open(t *testing.T) {
-	log.Init(0, 20, 100)
+	log.Init("elastos", 0, 20, 100)
 
 	store, err := NewDposStore(test.DataPath, &config.DefaultParams)
 	if err != nil {

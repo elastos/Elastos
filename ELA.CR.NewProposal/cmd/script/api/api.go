@@ -170,7 +170,7 @@ func initLedger(L *lua.LState) int {
 	logLevel := uint8(L.ToInt(1))
 
 	log.NewDefault(test.NodeLogPath, logLevel, 0, 0)
-	dlog.Init(logLevel, 0, 0)
+	dlog.Init("elastos", logLevel, 0, 0)
 
 	ledger := blockchain.Ledger{}
 	chainStore, err := blockchain.NewChainStore(test.DataPath, chainParams.GenesisBlock)

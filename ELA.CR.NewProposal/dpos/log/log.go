@@ -1,23 +1,26 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package log
 
 import (
+	"path/filepath"
+
 	elaLog "github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 )
 
 const (
-	dposLogDir = "elastos/logs/dpos/"
+	dposLogPath = "logs/dpos/"
 )
 
 var logger *elaLog.Logger
 
-func Init(level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
-	logger = elaLog.NewLogger(dposLogDir, level, maxPerLogSizeMb, maxLogsSizeMb)
+func Init(dir string, level uint8, maxPerLogSizeMb, maxLogsSizeMb int64) {
+	path := filepath.Join(dir, dposLogPath)
+	logger = elaLog.NewLogger(path, level, maxPerLogSizeMb, maxLogsSizeMb)
 	p2p.UseLogger(logger)
 }
 

@@ -461,6 +461,12 @@ func newSettings() *settings {
 		ParamName:    "CheckAddressHeight"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.CheckRewardHeightFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "CheckRewardHeight",
+		ParamName:    "CheckRewardHeight"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.CRCOnlyDPOSHeightFlag,
 		DefaultValue: uint32(0),
 		ConfigPath:   "CRCOnlyDPOSHeight",
@@ -644,10 +650,10 @@ func newSettings() *settings {
 				return errors.New("invalid enable arbiter value")
 			}
 			conf.DPoSConfiguration.EnableArbiter = enable
-			// When arbiter service enabled, IP address must be set.
-			return checkHost(conf.DPoSConfiguration.IPAddress)
+			return nil
 		},
-		ParamName: ""})
+		ConfigPath: "DPoSConfiguration.EnableArbiter",
+		ParamName:  ""})
 
 	result.Add(&settingItem{
 		Flag:         cmdcom.DPoSMagicFlag,
