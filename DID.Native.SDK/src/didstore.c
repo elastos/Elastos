@@ -1272,7 +1272,7 @@ static int refresh_did_fromchain(DIDStore *store, const char *storepass,
     index = get_last_index(store);
     last_index = index;
 
-    while (last_index - index <= 20) {
+    while (last_index - index <= 1) {
         if (!HDkey_GetSubPublicKey(masterkey, 0, last_index, last_publickey))
             return -1;
 

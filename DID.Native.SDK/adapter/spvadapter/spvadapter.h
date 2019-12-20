@@ -37,7 +37,8 @@ DID_API int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter);
 DID_API int SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         const char *payload, const char *memo, const char *password);
 
-DID_API const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did);
+DID_API const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter,
+        const char *did, int all);
 
 DID_API void SpvDidAdapter_FreeMemory(SpvDidAdapter *adapter, void *mem);
 

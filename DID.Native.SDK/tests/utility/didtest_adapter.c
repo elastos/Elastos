@@ -49,7 +49,7 @@ static const char *TestDIDAdapter_Resolver(DIDAdapter *_adapter, const char *did
     if (!adapter || !did)
         return NULL;
 
-    return SpvDidAdapter_Resolve(adapter->impl, did);
+    return SpvDidAdapter_Resolve(adapter->impl, did, 0);
 }
 
 DIDAdapter *TestDIDAdapter_Create(const char *walletDir, const char *walletId,

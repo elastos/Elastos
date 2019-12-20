@@ -189,8 +189,8 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
     { SWIG_JavaNullPointerException, "java/lang/NullPointerException" },
     { SWIG_JavaDirectorPureVirtual, "java/lang/RuntimeException" },
     { SWIG_JavaUnknownError,  "java/lang/UnknownError" },
-    { SWIG_DIDStoreException, "org/elastos/did/DIDStoreException" },
-    { SWIG_DIDResolveException, "org/elastos/did/DIDResolveException" },
+    { SWIG_DIDStoreException, "org/elastos/did/exception/DIDStoreException" },
+    { SWIG_DIDResolveException, "org/elastos/did/exception/DIDResolveException" },
     { (SWIG_JavaExceptionCodes)0,  "java/lang/UnknownError" }
   };
   const SWIG_JavaExceptions_t *except_ptr = java_exceptions;
@@ -344,7 +344,7 @@ SWIGEXPORT jint JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransact
 }
 
 
-SWIGEXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_resolve(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jDid) {
+SWIGEXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_resolve(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jDid, jboolean jAll) {
   SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
   char *did = NULL;
   char *result = NULL;
@@ -364,7 +364,7 @@ SWIGEXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_resolve(JNIEn
       return 0;
   }
 
-  result = (char *)SpvDidAdapter_Resolve(handle,(char const *)did);
+  result = (char *)SpvDidAdapter_Resolve(handle,(char const *)did,(int)jAll);
   (*jenv)->ReleaseStringUTFChars(jenv, jDid, (const char *)did);
 
   if (result) {

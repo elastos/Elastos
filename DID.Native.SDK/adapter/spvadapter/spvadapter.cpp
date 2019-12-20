@@ -328,16 +328,15 @@ static size_t HttpRequestBodyReadCallback(void *dest, size_t size,
     return 0;
 }
 
-#define DID_RESOLVE_REQUEST "{\"method\":\"getidtxspayloads\",\"params\":{\"id\":\"%s\",\"all\":false}}"
-#define DID_PREFIX          "did:elastos:"
-#define DID_RREFIX_LEN      12
+#define DID_RESOLVE_REQUEST "{\"method\":\"resolvedid\",\"params\":{\"id\":\"%s\",\"all\":%s}}"
 
 // Caller need free the pointer
-const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did)
+const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did, int all)
 {
     HttpRequestBody request;
     HttpResponseBody response;
     char buffer[256];
+    const char *forAll;
 
     if (!adapter || !did || !adapter->resolver)
         return NULL;
@@ -346,12 +345,10 @@ const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did)
     if (strlen(did) > 64)
         return NULL;
 
-    // skip did prefix "did:elastos:"
-    if (strncmp(did, DID_PREFIX, DID_RREFIX_LEN) == 0)
-        did += DID_RREFIX_LEN;
+    forAll = !all ? "false" : "true";
 
     request.used = 0;
-    request.sz = sprintf(buffer, DID_RESOLVE_REQUEST, did);
+    request.sz = sprintf(buffer, DID_RESOLVE_REQUEST, did, forAll);
     request.data = buffer;
 
     CURL *curl = curl_easy_init();

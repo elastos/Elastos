@@ -112,7 +112,7 @@ const char *DIDRequest_Sign(DIDRequest_Type type, DID *did, DIDURL *signKey,
     DIDStore *store;
 
     if (!did || !signKey || !data || !storepass || !*storepass
-            || (type < RequestType_Create) && (type > RequestType_Deactivate))
+            || ((type < RequestType_Create) && (type > RequestType_Deactivate)))
         return NULL;
 
     store = DIDStore_GetInstance();
@@ -197,7 +197,7 @@ DIDDocument *DIDRequest_FromJson(cJSON *json)
 
     len = strlen(req.payload) + 1;
     docJson = (char*)malloc(len);
-    len = base64_url_decode(docJson, req.payload);
+    len = base64_url_decode((uint8_t *)docJson, req.payload);
     if (len <= 0) {
         free(docJson);
         return NULL;

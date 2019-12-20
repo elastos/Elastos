@@ -7,6 +7,7 @@ _DID_GetMethod
 _DID_GetMethodSpecificId
 _DID_ToString
 _DID_Equals
+_DID_Compare
 _DID_Copy
 _DID_Destroy
 
@@ -17,6 +18,7 @@ _DIDURL_GetDid
 _DIDURL_GetFragment
 _DIDURL_ToString
 _DIDURL_Equals
+_DIDURL_Compare
 _DIDURL_Copy
 _DIDURL_Destroy
 
@@ -99,6 +101,7 @@ _Credential_IsGenuine
 _Credential_IsValid
 
 # DIDStore
+_DIDStore_GetInstance
 _DIDStore_Initialize
 _DIDStore_Deinitialize
 _DIDStore_HasPrivateIdentity
