@@ -396,6 +396,7 @@ namespace Elastos {
 					(*it)["publicKeyBase58"] = Base58::Encode(pubkey);
 				}
 				pubKeyInfo.FromJson(*it, 0);
+				pubKeyInfo.AutoFill(id);
 				didPubKeyInfoArray.push_back(pubKeyInfo);
 
 				size_t index = pubKeyInfo.ID().find_last_of("#", pubKeyInfo.ID().size() - 1);
@@ -437,7 +438,13 @@ namespace Elastos {
 			didInfoPayload.SetDIDHeader(headerInfo);
 			didInfoPayload.SetDIDPlayloadInfo(payloadInfo);
 
-			std::string sourceData = headerInfo.Specification() + headerInfo.Operation() + didInfoPayload.DIDPayloadString();
+			std::string sourceData = "";
+			if (headerInfo.Operation() == UPDATE_DID) {
+				sourceData = headerInfo.Specification() + headerInfo.Operation() + headerInfo.PreviousTxid() + didInfoPayload.DIDPayloadString();
+			} else {
+				sourceData = headerInfo.Specification() + headerInfo.Operation() + didInfoPayload.DIDPayloadString();
+			}
+
 
 			signature = Sign(signDID, sourceData, payPasswd);
 			DIDProofInfo didProofInfo(verificationMethod, Base64::EncodeURL(signature));

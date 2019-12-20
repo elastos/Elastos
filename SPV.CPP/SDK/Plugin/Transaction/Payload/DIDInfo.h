@@ -86,6 +86,7 @@
 
 			void ToOrderedJson(JsonGenerator *generator) const;
 
+			void AutoFill(const std::string &did);
 		private:
 			std::string _id;
 			std::string _type;

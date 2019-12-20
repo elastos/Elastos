@@ -206,7 +206,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 
 TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 	nlohmann::json didPayloadJSON = R"(
-{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJleHBpcmVzIjoiMTk3MC0wMS0wMVQwODozMzo0NFoiLCJpZCI6ImRpZDplbGFzdG9zOmlvTkRBMlBqTGczZHB6WE54Y0tYUEJVdHFnS0IydmpmM0oiLCJwcm9vZiI6eyJzaWduYXR1cmVWYWx1ZSI6IjViUVhlQUVmeWdtYVhkbmlMcEI0MTM4a01jRHFLdHVObi1BSXVMbHNRT1RBX3lZcEdZQi1lWnB3TTJuOHM3QWphbVpNeXlMelQyNkxEeFVpQjdOZ2RRIiwidHlwZSI6IkVDRFNBc2VjcDI1NnIxIn0sInB1YmxpY0tleSI6W3siaWQiOiIjcHJpbWFyeSIsInB1YmxpY0tleUJhc2U1OCI6IjI0YUV0ckthUVN0MjFncm9qSlpEV0J4YUQzVkV2RGptY01jN1g1MkFSMXM1cyIsInR5cGUiOiJFQ0RTQXNlY3AyNTZyMSJ9XSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlt7ImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImRpZE5hbWUiOiJ0ZXN0In0sImV4cGlyYXRpb25EYXRlIjoiIiwiaWQiOiJkaWQ6ZWxhc3Rvczppb05EQTJQakxnM2RwelhOeGNLWFBCVXRxZ0tCMnZqZjNKIiwiaXNzdWFuY2VEYXRlIjoiMjAxOS0xMi0xOFQxNzo0NDowNFoiLCJpc3N1ZXIiOiIiLCJwcm9vZiI6eyJzaWduYXR1cmUiOiIiLCJ0eXBlIjoiIiwidmVyaWZpY2F0aW9uTWV0aG9kIjoiIn0sInR5cGUiOlsiU2VsZlByb2NsYWltZWRDcmVkZW50aWFsIl19XX0","proof":{"verificationMethod":"#primary","signature":"f-wfLWQ3paOaxkya7iWzMZecUoG5gmVvG6ofUc6EvvvRSa8yWQuppOwdoN9_g7aDB4U0Qjap-57Q-5P9xdW3Tw"}}
+{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlhVlB6U2NEanRtd0Z6dzVxeUFlaU44THJ5VW5GS2ZjOVgiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJpNXlMM1JuaFJuc21mWERTMUZ2dVFWN1V3RzdQNjVLS1lUeUtyQnlaMTNzQSJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwiZXhwaXJlcyI6IjIwMjQtMTItMTlUMTM6MTU6MDBaIiwicHJvb2YiOnsiY3JlYXRlZCI6IjIwMTktMTItMTlUMTM6MTU6MDBaIiwic2lnbmF0dXJlVmFsdWUiOiJ6bllNM3RKT1lGdVAybmhCUWxyZWlIVVFJVWR1Vi1rQWhOWlRGSExXMTh1NFJHeFYwVXV2ZWR1OXBIRkdXOTdZYzZuYWM3QmFMYnJ4ZjVNQVEwRXVNZyJ9fQ","proof":{"type":"ECDSAsecp256r1","verificationMethod":"did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X#primary","signature":"r67jkThJ-3UaamdfRIy5VaP8UeYevZWpVrkeCkjBF4-eV-hHH3cZ3bcDXnv2H75DzgD01mt_GxwgKK8rH4UoJg"}}
 )"_json;
 
 
@@ -231,8 +231,8 @@ TEST_CASE("new tx with type and payload", "[IDTransaction]") {
 	REQUIRE(header.Operation() == "create");
 
 	const DIDPayloadInfo &didPayloadInfo = didInfo->DIDPayload();
-	REQUIRE(didPayloadInfo.ID() == "did:elastos:ioNDA2PjLg3dpzXNxcKXPBUtqgKB2vjf3J");
+	REQUIRE(didPayloadInfo.ID() == "did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X");
 	REQUIRE(didPayloadInfo.PublicKeyInfo().size() == 1);
-	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].ID() == "#primary");
-	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "24aEtrKaQSt21grojJZDWBxaD3VEvDjmcMc7X52AR1s5s");
+	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].ID() == "did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X#primary");
+	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "i5yL3RnhRnsmfXDS1FvuQV7UwG7P65KKYTyKrByZ13sA");
 }

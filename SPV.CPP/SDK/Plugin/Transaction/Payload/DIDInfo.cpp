@@ -164,6 +164,16 @@ namespace Elastos {
 			_publicKeyBase58 = pubkey;
 		}
 
+		void DIDPubKeyInfo::AutoFill(const std::string &did) {
+			if (_id[0] == '#') {
+				_id = did + _id;
+			}
+
+			if (_controller.empty() && !_publicKeyBase58.empty()) {
+				_controller = did;
+			}
+		}
+
 		void DIDPubKeyInfo::ToOrderedJson(JsonGenerator *generator) const {
 			JsonGenerator_WriteStartObject(generator);
 
@@ -173,10 +183,8 @@ namespace Elastos {
 			JsonGenerator_WriteFieldName(generator, "type");
 			JsonGenerator_WriteString(generator, _type.c_str());
 
-			if (!_controller.empty()) {
-				JsonGenerator_WriteFieldName(generator, "controller");
-				JsonGenerator_WriteString(generator, _controller.c_str());
-			}
+			JsonGenerator_WriteFieldName(generator, "controller");
+			JsonGenerator_WriteString(generator, _controller.c_str());
 
 			JsonGenerator_WriteFieldName(generator, "publicKeyBase58");
 			JsonGenerator_WriteString(generator, _publicKeyBase58.c_str());
@@ -939,7 +947,6 @@ namespace Elastos {
 
 		bool DIDPayloadInfo::IsValid() const {
 			bool verifiedSign = false;
-
 			if (_proof.GetType() != DID_DEFAULT_TYPE) {
 				Log::error("unsupport did type");
 				return false;
@@ -1086,6 +1093,7 @@ namespace Elastos {
 			for (nlohmann::json::iterator it = jPubKey.begin(); it != jPubKey.end(); ++it) {
 				DIDPubKeyInfo pubKeyInfo;
 				pubKeyInfo.FromJson(*it, version);
+				pubKeyInfo.AutoFill(_id);
 				_publickey.push_back(pubKeyInfo);
 			}
 
@@ -1094,6 +1102,7 @@ namespace Elastos {
 				for (nlohmann::json::iterator it = jAuthentication.begin(); it != jAuthentication.end(); ++it) {
 					DIDPubKeyInfo pubKeyInfo;
 					pubKeyInfo.FromJson(*it, version);
+					pubKeyInfo.AutoFill(_id);
 					_authentication.push_back(pubKeyInfo);
 				}
 			}
@@ -1103,6 +1112,7 @@ namespace Elastos {
 				for (nlohmann::json::iterator it = jAuthorization.begin(); it != jAuthorization.end(); ++it) {
 					DIDPubKeyInfo pubKeyInfo;
 					pubKeyInfo.FromJson(*it, version);
+					pubKeyInfo.AutoFill(_id);
 					_authorization.push_back(pubKeyInfo);
 				}
 			}
@@ -1360,7 +1370,13 @@ namespace Elastos {
 			if (proofID[0] == '#')
 				proofID = _payloadInfo.ID() + proofID;
 
-			std::string sourceData = _header.Specification() + _header.Operation() + _payload;
+			std::string sourceData = "";
+			if (_header.Operation() == UPDATE_DID) {
+				sourceData = _header.Specification() + _header.Operation() + _header.PreviousTxid() + _payload;
+			} else {
+				sourceData = _header.Specification() + _header.Operation() + _payload;
+			}
+
 			const DIDPubKeyInfoArray &pubkeyInfoArray = _payloadInfo.PublicKeyInfo();
 			for (DIDPubKeyInfoArray::const_iterator it = pubkeyInfoArray.cbegin(); it != pubkeyInfoArray.cend(); ++it) {
 				std::string pubkeyID = (*it).ID();
