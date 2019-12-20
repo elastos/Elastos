@@ -66,7 +66,7 @@ func NewUtxoCacheDB() *UtxoCacheDB {
 
 func TestTxPoolInit(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
-	dplog.Init(0, 0, 0)
+	dplog.Init("elastos", 0, 0, 0)
 
 	params := &config.DefaultParams
 	blockchain.FoundationAddress = params.Foundation

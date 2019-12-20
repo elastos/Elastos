@@ -200,6 +200,10 @@ var (
 		Name:  "checkaddressheight",
 		Usage: "defines the height begin to check output hash",
 	}
+	CheckRewardHeightFlag = cli.StringFlag{
+		Name:  "checkrewardheight",
+		Usage: "defines the height begin to check reward",
+	}
 	EnableArbiterFlag = cli.StringFlag{
 		Name:  "arbiter",
 		Usage: "indicates where or not to enable DPoS arbiter switch",

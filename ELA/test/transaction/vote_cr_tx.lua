@@ -90,7 +90,7 @@ print("charge", charge)
 
 if vote_candidates_num == vote_candidate_votes_num then
 -- votecontent: vote_type, vote_candidates, vote_candidate_votes
-    local vote_content = votecontent.new(vote_type, vote_candidates, vote_candidate_votes)
+    local vote_content = votecontent.newcr(vote_type, vote_candidates, vote_candidate_votes)
     print("vote_content", vote_content:get())
 
     -- outputpayload

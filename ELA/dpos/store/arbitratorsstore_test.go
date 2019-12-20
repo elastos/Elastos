@@ -25,7 +25,7 @@ import (
 var arbitratorsStore *DposStore
 
 func TestArbitratorsStore_Open(t *testing.T) {
-	log.Init(0, 20, 100)
+	log.Init("elastos", 0, 20, 100)
 
 	store, err := NewDposStore(test.DataPath, &config.DefaultParams)
 	if err != nil {
