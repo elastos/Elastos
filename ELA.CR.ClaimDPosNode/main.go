@@ -253,7 +253,8 @@ func startNode(c *cli.Context, st *settings) {
 
 	var arbitrator *dpos.Arbitrator
 	if act != nil {
-		dlog.Init(uint8(st.Config().PrintLevel), st.Config().MaxPerLogSize, st.Config().MaxLogsSize)
+		dlog.Init(flagDataDir, uint8(st.Config().PrintLevel),
+			st.Config().MaxPerLogSize, st.Config().MaxLogsSize)
 		arbitrator, err = dpos.NewArbitrator(act, dpos.Config{
 			EnableEventLog:    true,
 			EnableEventRecord: false,

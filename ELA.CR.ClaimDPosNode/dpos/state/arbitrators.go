@@ -496,11 +496,14 @@ func (a *arbitrators) getNeedConnectArbiters() []peer.PID {
 		pids[common.BytesToHexString(p.GetNodePublicKey())] = pid
 	}
 
-	for _, v := range a.currentArbitrators {
-		key := common.BytesToHexString(v.GetNodePublicKey())
-		var pid peer.PID
-		copy(pid[:], v.GetNodePublicKey())
-		pids[key] = pid
+	if height != a.State.chainParams.CRCOnlyDPOSHeight-
+		a.State.chainParams.PreConnectOffset {
+		for _, v := range a.currentArbitrators {
+			key := common.BytesToHexString(v.GetNodePublicKey())
+			var pid peer.PID
+			copy(pid[:], v.GetNodePublicKey())
+			pids[key] = pid
+		}
 	}
 
 	for _, v := range a.nextArbitrators {
