@@ -293,9 +293,10 @@ public class DialogUtil {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (dialog != null)
+                if (dialog.isShowing()) {
                     dialog.dismiss();
-                listener.affireBtnClick(null);
+                    listener.affireBtnClick(null);
+                }
             }
         }, 2888);//3秒后执行Runnable中的run方法
         dialog.show();
@@ -460,6 +461,7 @@ public class DialogUtil {
         });
         dialog.show();
     }
+
     public void showCommonWarmPrompt1(BaseActivity activity, String contentStr, String textSure, String textCancel, boolean pop, NewWarmPromptListener listener) {
         Dialog dialog = getDialogs(activity, R.layout.dialog_settingtip1);
 
@@ -497,6 +499,7 @@ public class DialogUtil {
         });
         dialog.show();
     }
+
     public static void showComTextPopup(EditText view, Context context, List<String> textList) {
         int x = view.getWidth();
         RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(context).inflate(R.layout.popup_text, null);

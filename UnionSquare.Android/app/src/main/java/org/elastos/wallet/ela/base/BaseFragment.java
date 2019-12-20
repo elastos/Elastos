@@ -322,7 +322,8 @@ public abstract class BaseFragment<T extends BaseContract.Basepresenter> extends
 
     /*弹出当前页面*/
     public void popBackFragment() {
-        getBaseActivity().onBackPressed();
+        if (getBaseActivity() != null)
+            getBaseActivity().onBackPressed();
     }
 
 
