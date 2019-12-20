@@ -5,6 +5,7 @@ from requests import Session
 from grpc_adenine import settings
 from grpc_adenine.stubs import hive_pb2
 from grpc_adenine.stubs import hive_pb2_grpc
+from grpc_adenine.implementations.rate_limiter import RateLimiter
 
 
 class Hive(hive_pb2_grpc.HiveServicer):
@@ -55,6 +56,22 @@ class Hive(hive_pb2_grpc.HiveServicer):
         # api_status = validate_api_key(api_key)
         # if not api_status:
         #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+
+        #rate limiter
+        service_name = 'Sign'
+        rate_limiter = RateLimiter()
+        result = rate_limiter.get_last_access_count(request.api_key, service_name)
+
+        if result is not False:
+            if(result["diff"]<86400):
+                if(settings.UPLOAD_AND_SIGN_LIMIT>result["access_count"]):
+                    rate_limiter.add_access_count(result["user_api_id"], service_name, 'increment')
+                else:
+                    return hive_pb2.Response(output="", status_message='Number of daily access limit exceeded', status=False)
+            else:
+                rate_limiter.add_access_count(result["user_api_id"], service_name, 'reset')
+        else:
+            rate_limiter.add_new_access_entry(request.api_key, service_name)
 
         # reading the file content
         request_input = json.loads(request.input)

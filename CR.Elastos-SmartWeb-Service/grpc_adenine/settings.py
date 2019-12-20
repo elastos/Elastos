@@ -27,3 +27,7 @@ DID_SERVICE_API_VERIFY = '/1/verify'
 # Hive
 HIVE_API_ADD_FILE = '/api/v0/file/add'
 HIVE_API_RETRIEVE_FILE = '/api/v0/file/cat?arg='
+
+#Rate Limiter
+UPLOAD_AND_SIGN_LIMIT = 8
+VERIFY_AND_SHOW_LIMIT = 5
