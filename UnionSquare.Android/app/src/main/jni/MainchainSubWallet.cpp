@@ -605,7 +605,7 @@ static jstring JNICALL CreateRetrieveCRDepositTransaction(JNIEnv *env, jobject c
         msgException = e.what();
     }
 
-    env->ReleaseStringUTFChars(jcrPublicKey, amount);
+    env->ReleaseStringUTFChars(jcrPublicKey, crPublicKey);
     env->ReleaseStringUTFChars(jamount, amount);
     env->ReleaseStringUTFChars(jmemo, memo);
 
