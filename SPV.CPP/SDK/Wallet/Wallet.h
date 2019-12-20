@@ -107,7 +107,7 @@ namespace Elastos {
 			// returns the first unused external address
 			AddressPtr GetReceiveAddress() const;
 
-			size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool containInternal) const;
+			size_t GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const;
 
 			size_t GetAllDID(AddressArray &did, uint32_t start, size_t count) const;
 
@@ -146,8 +146,8 @@ namespace Elastos {
 													 const AddressPtr &fromAddress, const std::string &memo);
 
 			TransactionPtr CreateTransaction(uint8_t type, const PayloadPtr &payload,
-											 const AddressPtr &fromAddress, const std::vector<OutputPtr> &outputs,
-											 const std::string &memo, bool max);
+											 const AddressPtr &fromAddress, const OutputArray &outputs,
+											 const std::string &memo, bool max = false);
 
 			bool ContainsTransaction(const TransactionPtr &transaction);
 

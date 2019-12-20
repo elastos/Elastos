@@ -647,12 +647,21 @@ static int _switch(int argc, char *argv[]) {
 	return 0;
 }
 
-// address chainID
+// address chainID [internal]
 static int address(int argc, char *argv[]) {
-	checkParam(2);
 	checkCurrentWallet();
 
-	std::string chainID = argv[1];
+	std::string chainID;
+	bool internal = false;
+	if (argc == 2) {
+		chainID = argv[1];
+	} else if (argc == 3 && std::string(argv[2]) == "internal") {
+		chainID = argv[1];
+		internal = true;
+	} else {
+		invalidCmdError();
+		return ERRNO_CMD;
+	}
 
 	try {
 		ISubWallet *subWallet;
@@ -667,10 +676,11 @@ static int address(int argc, char *argv[]) {
 		do {
 			if (show) {
 				start = cntPerPage * (curPage - 1);
-				nlohmann::json addrJosn = subWallet->GetAllAddress(start, cntPerPage);
+				nlohmann::json addrJosn = subWallet->GetAllAddress(start, cntPerPage, internal);
 				nlohmann::json addr = addrJosn["Addresses"];
 				max = addrJosn["MaxCount"];
 
+				printf("%d / %d\n", curPage, (max + cntPerPage) / cntPerPage);
 				for (nlohmann::json::iterator it = addr.begin(); it != addr.end(); ++it)
 					std::cout << *it << std::endl;
 			}
@@ -1928,7 +1938,7 @@ struct command {
 	{"fixpeer",    fixpeer,        "chainID ip port                                  Set fixed peer to sync."},
 	{"transfer",   transfer,       "chainID address amount                           Transfer ELA from `chainID`."},
 	{"receive",    _receive,       "chainID                                          Get receive address of `chainID`."},
-	{"address",    address,        "chainID                                          Get the revceive address of chainID."},
+	{"address",    address,        "chainID [internal]                               Get the revceive addresses or change addresses of chainID."},
 	{"proposal",   proposal,       "(sponsor | crsponsor)                            Sponsor sign proposal or cr sponsor create proposal tx."},
 	{"deposit",    deposit,        "amount address                                   Deposit to sidechain from mainchain."},
 	{"withdraw",   withdraw,       "amount address                                   Withdraw from sidechain to mainchain."},

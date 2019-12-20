@@ -702,8 +702,10 @@ namespace Elastos {
 
 			AddressArray specialAddresses = _wallet->GetAllSpecialAddresses();
 
-			AddressArray addrs, allDID;
-			_wallet->GetAllAddresses(addrs, 0, UINT32_MAX, true);
+			AddressArray addrs, addrInternal, allDID;
+			_wallet->GetAllAddresses(addrs, 0, UINT32_MAX, false);
+			_wallet->GetAllAddresses(addrInternal, 0, UINT32_MAX, true);
+			addrs.insert(addrs.end(), addrInternal.begin(), addrInternal.end());
 			_wallet->GetAllDID(allDID, 0, UINT32_MAX);
 
 			UTXOArray utxos = _wallet->GetAllUTXO("");

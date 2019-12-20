@@ -62,8 +62,7 @@ namespace Elastos {
 
 			virtual std::string CreateAddress();
 
-			virtual nlohmann::json GetAllAddress(uint32_t start,
-												 uint32_t count) const;
+			virtual nlohmann::json GetAllAddress(uint32_t start, uint32_t count, bool internal = false) const;
 
 			virtual nlohmann::json GetAllPublicKeys(uint32_t start, uint32_t count) const;
 
@@ -164,14 +163,6 @@ namespace Elastos {
 					  const ChainConfigPtr &config,
 					  MasterWallet *parent,
 					  const std::string &netType);
-
-			TransactionPtr CreateTx(
-				uint8_t type,
-				const PayloadPtr &payload,
-				const AddressPtr &fromAddress,
-				const std::vector<OutputPtr> &outputs,
-				const std::string &memo,
-				bool max = false) const;
 
 			TransactionPtr CreateConsolidateTx(
 				const std::string &memo,

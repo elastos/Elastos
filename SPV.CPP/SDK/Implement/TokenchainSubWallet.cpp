@@ -39,7 +39,8 @@ namespace Elastos {
 				uint8_t precision,
 				const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("name: {}", name);
 			ArgInfo("desc: {}", description);
 			ArgInfo("registerToAddr: {}", registerToAddress);
@@ -51,7 +52,7 @@ namespace Elastos {
 			BigInt assetAmount;
 			assetAmount.setDec(registerAmount);
 
-			ErrorChecker::CheckParam(_walletManager->GetWallet()->AssetNameExist(name), Error::InvalidArgument,
+			ErrorChecker::CheckParam(wallet->AssetNameExist(name), Error::InvalidArgument,
 									 "asset name already registered");
 			Address address(registerToAddress);
 			ErrorChecker::CheckParam(!address.Valid(), Error::InvalidArgument, "invalid address");
@@ -60,18 +61,20 @@ namespace Elastos {
 			AssetPtr asset(new Asset(name, description, precision));
 			PayloadPtr payload = PayloadPtr(new RegisterAsset(asset, assetAmount.getUint64(), address.ProgramHash()));
 
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			outputs.emplace_back(OutputPtr(new TransactionOutput(BigInt(1000000000), *receiveAddr, Asset::GetELAAssetID())));
 			AddressPtr fromAddr(new Address());
 
-			TransactionPtr tx = CreateTx(Transaction::registerAsset, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::registerAsset, payload, fromAddr, outputs, memo);
 
 			assetAmount *= BigInt(TOKEN_ASSET_PRECISION, 10);
 			tx->AddOutput(OutputPtr(new TransactionOutput(assetAmount, address, asset->GetHash())));
 
-			if (tx->GetOutputs().size() > 0)
+			if (tx->GetOutputs().size() > 0) {
 				tx->RemoveOutput(tx->GetOutputs().front());
+				tx->FixIndex();
+			}
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -84,8 +87,8 @@ namespace Elastos {
 		TokenchainSubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
 											   const std::string &amount, const std::string &assetID,
 											   const std::string &memo) {
-
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("toAddr: {}", toAddress);
 			ArgInfo("amount: {}", amount);
@@ -95,7 +98,7 @@ namespace Elastos {
 			ErrorChecker::CheckBigIntAmount(amount);
 			uint256 asset = uint256(assetID);
 
-			AssetPtr assetInfo = _walletManager->GetWallet()->GetAsset(asset);
+			AssetPtr assetInfo = wallet->GetAsset(asset);
 			ErrorChecker::CheckParam(assetInfo == nullptr, Error::InvalidArgument, "asset not found: " + assetID);
 
 			uint8_t invalidPrecision = Asset::MaxPrecision - assetInfo->GetPrecision();
@@ -109,13 +112,13 @@ namespace Elastos {
 
 			ErrorChecker::CheckParam((bnAmount % bn) != 0, Error::InvalidArgument, "amount exceed max presicion");
 
-			std::vector<OutputPtr> outputs;
+			OutputArray outputs;
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr, asset)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
 			PayloadPtr payload = PayloadPtr(new TransferAsset());
-			TransactionPtr tx = CreateTx(Transaction::transferAsset, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferAsset, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

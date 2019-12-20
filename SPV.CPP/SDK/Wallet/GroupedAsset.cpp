@@ -168,7 +168,6 @@ namespace Elastos {
 				ErrorChecker::ThrowLogicException(Error::BalanceNotEnough, "Available balance is not enough");
 			}
 
-			// change
 			AddressPtr receiveAddress = _parent->_subAccount->UnusedAddresses(1, 0)[0];
 			tx->AddOutput(OutputPtr(new TransactionOutput(totalOutputAmount, *receiveAddress)));
 

@@ -118,7 +118,8 @@ namespace Elastos {
 
 		nlohmann::json
 		IDChainSubWallet::CreateIDTransaction(const nlohmann::json &payloadJson, const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("payload: {}", payloadJson.dump());
 			ArgInfo("memo: {}", memo);
 
@@ -147,7 +148,7 @@ namespace Elastos {
 			outputs.push_back(OutputPtr(new TransactionOutput(0, receiveAddr, Asset::GetELAAssetID())));
 			AddressPtr fromAddr(new Address());
 
-			TransactionPtr tx = CreateTx(IDTransaction::didTransaction, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(IDTransaction::didTransaction, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

@@ -99,14 +99,14 @@ namespace Elastos {
 			return address;
 		}
 
-		nlohmann::json SubWallet::GetAllAddress(uint32_t start, uint32_t count) const {
+		nlohmann::json SubWallet::GetAllAddress(uint32_t start, uint32_t count, bool internal) const {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("start: {}", start);
 			ArgInfo("count: {}", count);
 
 			nlohmann::json j;
 			AddressArray addresses;
-			size_t maxCount = _walletManager->GetWallet()->GetAllAddresses(addresses, start, count, false);
+			size_t maxCount = _walletManager->GetWallet()->GetAllAddresses(addresses, start, count, internal);
 
 			std::vector<std::string> addrString;
 			for (size_t i = 0; i < addresses.size(); ++i) {
@@ -188,32 +188,6 @@ namespace Elastos {
 			ArgInfo("remove callback done");
 		}
 
-		TransactionPtr SubWallet::CreateTx(uint8_t type, const PayloadPtr &payload, const AddressPtr &fromAddress,
-										   const std::vector<OutputPtr> &outputs,
-		                                   const std::string &memo, bool max) const {
-			for (const OutputPtr &output : outputs) {
-				ErrorChecker::CheckParam(!output->Addr()->Valid(), Error::CreateTransaction,
-				                         "invalid receiver address");
-
-				ErrorChecker::CheckParam(output->Amount() < 0, Error::CreateTransaction,
-				                         "output amount should big than zero");
-			}
-
-			std::string m;
-
-			if (!memo.empty())
-				m = "type:text,msg:" + memo;
-
-			TransactionPtr tx = _walletManager->GetWallet()->CreateTransaction(type, payload, fromAddress, outputs, m, max);
-
-			if (_info->GetChainID() == "ELA")
-				tx->SetVersion(Transaction::TxVersion::V09);
-
-			tx->FixIndex();
-
-			return tx;
-		}
-
 		TransactionPtr SubWallet::CreateConsolidateTx(const std::string &memo, const uint256 &asset) const {
 			std::string m;
 
@@ -289,7 +263,8 @@ namespace Elastos {
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
 		                                            const std::string &amount, const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("toAddr: {}", toAddress);
 			ArgInfo("amount: {}", amount);
@@ -305,13 +280,14 @@ namespace Elastos {
 				bnAmount.setDec(amount);
 			}
 
-			std::vector<OutputPtr> outputs;
+			OutputArray outputs;
 			Address receiveAddr(toAddress);
 			outputs.push_back(OutputPtr(new TransactionOutput(bnAmount, receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
 			PayloadPtr payload = PayloadPtr(new TransferAsset());
-			TransactionPtr tx = CreateTx(Transaction::transferAsset, payload, fromAddr, outputs, memo, max);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferAsset,
+																			   payload, fromAddr, outputs, memo, max);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

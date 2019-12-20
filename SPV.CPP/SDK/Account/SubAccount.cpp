@@ -83,18 +83,22 @@ namespace Elastos {
 			return false;
 		}
 
-		size_t SubAccount::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool containInternal) const {
+		size_t SubAccount::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const {
 			addr.clear();
+			size_t maxCount = 0;
 
-			AddressArray result;
-			result = _externalChain;
-			if (containInternal)
-				result.insert(result.end(), _internalChain.begin(), _internalChain.end());
+			if (internal) {
+				maxCount = _internalChain.size();
 
-			size_t maxCount = result.size();
+				for (size_t i = start, cnt = 0; i < _internalChain.size() && cnt < count; ++i, ++cnt)
+					addr.push_back(_internalChain[i]);
+			} else {
+				maxCount = _externalChain.size();
 
-			for (size_t i = start, cnt = 0; i < maxCount && cnt < count; ++i, ++cnt)
-				addr.push_back(result[i]);
+				for (size_t i = start, cnt = 0; i < _externalChain.size() && cnt < count; ++i, ++cnt)
+					addr.push_back(_externalChain[i]);
+
+			}
 
 			return maxCount;
 		}

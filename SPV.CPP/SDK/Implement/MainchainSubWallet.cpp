@@ -81,7 +81,8 @@ namespace Elastos {
 																	const std::string &amount,
 																	const std::string &sideChainAddress,
 																	const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("sideChainID: {}", sideChainID);
 			ArgInfo("amount: {}", amount);
@@ -98,12 +99,12 @@ namespace Elastos {
 			PayloadPtr payload = PayloadPtr(new TransferCrossChainAsset({info}));
 
 			ChainConfigPtr configPtr =  _parent->GetChainConfig(sideChainID);
-			std::vector<OutputPtr> outputs;
+			OutputArray outputs;
 			Address receiveAddr(configPtr->GenesisAddress());
 			outputs.emplace_back(OutputPtr(new TransactionOutput(value + _config->MinFee(), receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -207,6 +208,7 @@ namespace Elastos {
 			const nlohmann::json &payloadJson,
 			const std::string &amount,
 			const std::string &memo) {
+			WalletPtr wallet = _walletManager->GetWallet();
 
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
@@ -233,12 +235,12 @@ namespace Elastos {
 
 			bytes_t pubkey = static_cast<ProducerInfo *>(payload.get())->GetPublicKey();
 
-			std::vector<OutputPtr> outputs;
+			OutputArray outputs;
 			Address receiveAddr(PrefixDeposit, pubkey);
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(Transaction::registerProducer, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::registerProducer, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -252,7 +254,8 @@ namespace Elastos {
 			const nlohmann::json &payloadJson,
 			const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJson.dump());
 			ArgInfo("memo: {}", memo);
@@ -265,12 +268,12 @@ namespace Elastos {
 												  "Payload format err: " + std::string(e.what()));
 			}
 
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), *receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(Transaction::updateProducer, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::updateProducer, payload, fromAddr, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -289,7 +292,8 @@ namespace Elastos {
 			const nlohmann::json &payloadJson,
 			const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJson.dump());
 			ArgInfo("memo: {}", memo);
@@ -302,12 +306,12 @@ namespace Elastos {
 												  "Payload format err: " + std::string(e.what()));
 			}
 
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), *receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(Transaction::cancelProducer, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::cancelProducer, payload, fromAddr, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -582,7 +586,8 @@ namespace Elastos {
 				const std::string &amount,
 				const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJSON.dump());
 			ArgInfo("amount: {}", amount);
@@ -614,10 +619,10 @@ namespace Elastos {
 			receiveAddr.SetRedeemScript(PrefixDeposit, code);
 			AddressPtr fromAddr(new Address(fromAddress));
 
-			std::vector<OutputPtr> outputs;
+			OutputArray outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount, receiveAddr)));
 
-			TransactionPtr tx = CreateTx(Transaction::registerCR, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::registerCR, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
@@ -630,7 +635,8 @@ namespace Elastos {
 				const std::string &fromAddress,
 				const nlohmann::json &payloadJSON,
 				const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJSON.dump());
 			ArgInfo("memo: {}", memo);
@@ -643,12 +649,12 @@ namespace Elastos {
 				                                  "Payload format err: " + std::string(e.what()));
 			}
 
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), *receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(Transaction::updateCR, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::updateCR, payload, fromAddr, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -667,7 +673,8 @@ namespace Elastos {
 				const std::string &fromAddress,
 				const nlohmann::json &payloadJSON,
 				const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("payload: {}", payloadJSON.dump());
 			ArgInfo("memo: {}", memo);
@@ -684,12 +691,12 @@ namespace Elastos {
 				                                  "Payload format err: " + std::string(e.what()));
 			}
 
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), *receiveAddr)));
 			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(Transaction::unregisterCR, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::unregisterCR, payload, fromAddr, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -994,7 +1001,8 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateCRCProposalTransaction(nlohmann::json crSignedProposal,
 		                                                                const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("crSignedProposal: {}", crSignedProposal.dump());
 			ArgInfo("memo: {}", memo);
 
@@ -1007,12 +1015,12 @@ namespace Elastos {
 			PayloadPtr payload = PayloadPtr(new CRCProposal());
 			payload->FromJson(crSignedProposal, 0);
 
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
-			std::vector<OutputPtr> outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
+			OutputArray outputs;
 			outputs.push_back(OutputPtr(new TransactionOutput(BigInt(0), *receiveAddr)));
 			AddressPtr fromAddr(new Address(""));
 
-			TransactionPtr tx = CreateTx(Transaction::crcProposal, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposal, payload, fromAddr, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -1117,7 +1125,8 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateCRCProposalReviewTransaction(const nlohmann::json &proposalReview,
 		                                                                      const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("proposalReview: {}", proposalReview.dump());
 			ArgInfo("memo: {}", memo);
 
@@ -1133,12 +1142,12 @@ namespace Elastos {
 				                                  "Payload format err: " + std::string(e.what()));
 			}
 
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			outputs.push_back(OutputPtr(new TransactionOutput(0, *receiveAddr)));
 			AddressPtr fromAddr(new Address(""));
 
-			TransactionPtr tx = CreateTx(Transaction::crcProposalReview, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposalReview, payload, fromAddr, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());
@@ -1359,7 +1368,8 @@ namespace Elastos {
 		nlohmann::json
 		MainchainSubWallet::CreateProposalTrackingTransaction(const nlohmann::json &SecretaryGeneralSignedPayload,
 		                                  const std::string &memo) {
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("SecretaryGeneralSignedPayload: {}", SecretaryGeneralSignedPayload.dump());
 			ArgInfo("memo: {}", memo);
 
@@ -1388,12 +1398,12 @@ namespace Elastos {
 				                         "new leader public key is empty");
 			}
 
-			std::vector<OutputPtr> outputs;
-			AddressPtr receiveAddr = _walletManager->GetWallet()->GetReceiveAddress();
+			OutputArray outputs;
+			AddressPtr receiveAddr = wallet->GetReceiveAddress();
 			outputs.push_back(OutputPtr(new TransactionOutput(0, *receiveAddr)));
 			AddressPtr fromAddr(new Address(""));
 
-			TransactionPtr tx = CreateTx(Transaction::crcProposalTracking, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::crcProposalTracking, payload, fromAddr, outputs, memo);
 
 			if (tx->GetOutputs().size() > 1) {
 				tx->RemoveOutput(tx->GetOutputs().front());

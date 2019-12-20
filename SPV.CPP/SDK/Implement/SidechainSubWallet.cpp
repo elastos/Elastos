@@ -38,7 +38,8 @@ namespace Elastos {
 			const std::string &mainChainAddress,
 			const std::string &memo) {
 
-			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
+			WalletPtr wallet = _walletManager->GetWallet();
+			ArgInfo("{} {}", wallet->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("amount: {}", amount);
 			ArgInfo("mainChainAddr: {}", mainChainAddress);
@@ -62,7 +63,7 @@ namespace Elastos {
 			outputs.push_back(OutputPtr(new TransactionOutput(bgAmount + _config->MinFee(), Address(ELA_SIDECHAIN_DESTROY_ADDR))));
 			AddressPtr fromAddr(new Address(fromAddress));
 
-			TransactionPtr tx = CreateTx(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
+			TransactionPtr tx = wallet->CreateTransaction(Transaction::transferCrossChainAsset, payload, fromAddr, outputs, memo);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);

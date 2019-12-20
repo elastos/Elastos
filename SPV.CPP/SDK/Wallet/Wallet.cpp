@@ -219,12 +219,12 @@ namespace Elastos {
 
 		TransactionPtr Wallet::CreateRetrieveTransaction(uint8_t type, const PayloadPtr &payload, const BigInt &amount,
 														 const AddressPtr &fromAddress, const std::string &memo) {
-			std::string m;
+			std::string memoFixed;
 
 			if (!memo.empty())
-				m = "type:text,msg:" + memo;
+				memoFixed = "type:text,msg:" + memo;
 
-			TransactionPtr tx = _groupedAssets[Asset::GetELAAssetID()]->CreateRetrieveDepositTx(type, payload, amount, fromAddress, m);
+			TransactionPtr tx = _groupedAssets[Asset::GetELAAssetID()]->CreateRetrieveDepositTx(type, payload, amount, fromAddress, memoFixed);
 			tx->SetVersion(Transaction::TxVersion::V09);
 
 			tx->FixIndex();
@@ -234,9 +234,21 @@ namespace Elastos {
 		TransactionPtr Wallet::CreateTransaction(uint8_t type,
 												 const PayloadPtr &payload,
 												 const AddressPtr &fromAddress,
-												 const std::vector<OutputPtr> &outputs,
+												 const OutputArray &outputs,
 												 const std::string &memo,
 												 bool max) {
+			for (const OutputPtr &output : outputs) {
+				ErrorChecker::CheckParam(!output->Addr()->Valid(), Error::CreateTransaction,
+										 "invalid receiver address");
+
+				ErrorChecker::CheckParam(output->Amount() < 0, Error::CreateTransaction,
+										 "output amount should big than zero");
+			}
+
+			std::string memoFixed;
+
+			if (!memo.empty())
+				memoFixed = "type:text,msg:" + memo;
 
 			ErrorChecker::CheckParam(!IsAssetUnique(outputs), Error::InvalidAsset, "asset is not unique in outputs");
 
@@ -248,10 +260,14 @@ namespace Elastos {
 
 			ErrorChecker::CheckParam(!containAsset, Error::InvalidAsset, "asset not found: " + assetID.GetHex());
 
-			TransactionPtr tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memo, max);
+			TransactionPtr tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memoFixed, max);
 
-			if (assetID != Asset::GetELAAssetID())
+			if (assetID == Asset::GetELAAssetID())
+				tx->SetVersion(Transaction::TxVersion::V09);
+			else
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);
+
+			tx->FixIndex();
 
 			return tx;
 		}
@@ -625,9 +641,9 @@ namespace Elastos {
 			return _subAccount->UnusedAddresses(1, 0)[0];
 		}
 
-		size_t Wallet::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool containInternal) const {
+		size_t Wallet::GetAllAddresses(AddressArray &addr, uint32_t start, size_t count, bool internal) const {
 			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->GetAllAddresses(addr, start, count, containInternal);
+			return _subAccount->GetAllAddresses(addr, start, count, internal);
 		}
 
 		size_t Wallet::GetAllDID(AddressArray &did, uint32_t start, size_t count) const {

@@ -82,7 +82,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 
 			SECTION("Standard address sign test") {
 				AddressArray addresses;
-				subAccount1->GetAllAddresses(addresses, 0, 100, true);
+				subAccount1->GetAllAddresses(addresses, 0, 100, false);
 
 				REQUIRE(!addresses.empty());
 				bytes_t redeemScript;
@@ -99,7 +99,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				REQUIRE(tx->IsSigned());
 
 
-				subAccount2->GetAllAddresses(addresses, 0, 100, true);
+				subAccount2->GetAllAddresses(addresses, 0, 100, false);
 
 				tx->ClearPrograms();
 				REQUIRE(subAccount2->GetCodeAndPath(addresses.front(), redeemScript, path));
@@ -165,7 +165,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				SubAccountPtr multiSignSubAccount(new SubAccount(multiSignAccount, coinIndex));
 				multiSignSubAccount->Init();
 				AddressArray addresses;
-				multiSignSubAccount->GetAllAddresses(addresses, 0, 1, true);
+				multiSignSubAccount->GetAllAddresses(addresses, 0, 1, false);
 				REQUIRE(!addresses.empty());
 				bytes_t redeemScript;
 				std::string path;
@@ -200,7 +200,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				SubAccountPtr ms1(new SubAccount(multiSignAccount1, coinIndex));
 				ms1->Init();
 				AddressArray addresses1;
-				ms1->GetAllAddresses(addresses1, 0, 10, true);
+				ms1->GetAllAddresses(addresses1, 0, 10, false);
 
 				cosigners.clear();
 				cosigners.push_back(PublicKeyRing(account1->RequestPubKey().getHex(), multiSignPubKey1));
@@ -213,7 +213,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				SubAccountPtr ms2(new SubAccount(multiSignAccount2, coinIndex));
 				ms2->Init();
 				AddressArray addresses2;
-				ms2->GetAllAddresses(addresses2, 0, 10, true);
+				ms2->GetAllAddresses(addresses2, 0, 10, false);
 
 				cosigners.clear();
 				cosigners.push_back(PublicKeyRing(account1->RequestPubKey().getHex(), multiSignPubKey1));
@@ -226,7 +226,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				SubAccountPtr ms3(new SubAccount(multiSignAccount3, coinIndex));
 				ms3->Init();
 				AddressArray addresses3;
-				ms3->GetAllAddresses(addresses3, 0, 10, true);
+				ms3->GetAllAddresses(addresses3, 0, 10, false);
 
 				cosigners.clear();
 				cosigners.push_back(PublicKeyRing(account1->RequestPubKey().getHex(), multiSignPubKey1));
@@ -239,7 +239,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				SubAccountPtr ms4(new SubAccount(multiSignAccount4, coinIndex));
 				ms4->Init();
 				AddressArray addresses4;
-				ms4->GetAllAddresses(addresses4, 0, 10, true);
+				ms4->GetAllAddresses(addresses4, 0, 10, false);
 
 				cosigners.clear();
 				cosigners.push_back(PublicKeyRing(account1->RequestPubKey().getHex(), multiSignPubKey1));
@@ -253,7 +253,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 				SubAccountPtr ms5(new SubAccount(multiSignAccount5, coinIndex));
 				ms5->Init();
 				AddressArray addresses5;
-				ms5->GetAllAddresses(addresses5, 0, 10, true);
+				ms5->GetAllAddresses(addresses5, 0, 10, false);
 
 				REQUIRE(!addresses1.empty());
 				REQUIRE(addresses1.size() == addresses2.size());
@@ -300,7 +300,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		ms1->Init();
 
 		AddressArray addr1;
-		size_t count1 = ms1->GetAllAddresses(addr1, 0, 1, true);
+		size_t count1 = ms1->GetAllAddresses(addr1, 0, 1, false);
 		REQUIRE(count1 >= 1);
 		REQUIRE(addr1[0]->String() == "8W6TRf4ZxyTaDZdJs4Gd8dwFkvb62dVN1r");
 
@@ -311,7 +311,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		SubAccountPtr ms2(new SubAccount(account2, 0));
 		ms2->Init();
 		AddressArray addr2;
-		size_t count2 = ms2->GetAllAddresses(addr2, 0, 1, true);
+		size_t count2 = ms2->GetAllAddresses(addr2, 0, 1, false);
 		REQUIRE_THROWS(account2->MasterPubKey() == nullptr);
 		REQUIRE_THROWS(account2->MultiSignSigner() == nullptr);
 		REQUIRE(count2 >= 1);
@@ -349,7 +349,7 @@ TEST_CASE("Sign transaction test", "[SignTransaction]") {
 		REQUIRE(account3->CosignerIndex() == -1);
 		REQUIRE(account3->Readonly() == true);
 		AddressArray addr3;
-		size_t count3 = ms3->GetAllAddresses(addr3, 0, 1, true);
+		size_t count3 = ms3->GetAllAddresses(addr3, 0, 1, false);
 		REQUIRE(count3 == count2);
 		REQUIRE(addr3[0]->String() == "8W6TRf4ZxyTaDZdJs4Gd8dwFkvb62dVN1r");
 	}
