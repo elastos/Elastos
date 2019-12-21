@@ -85,7 +85,7 @@ public class DummyAdapter implements DIDAdapter {
 				System.out.println("    " + request.toJson(false));
 
 				if (request.getOperation() != IDChainRequest.Operation.DEACTIVATE)
-					System.out.println("    " + request.getDocument().toString());
+					System.out.println("    " + request.getDocument().toString(true));
 			}
 
 			if (!request.isValid())

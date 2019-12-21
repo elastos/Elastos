@@ -30,306 +30,565 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.elastos.did.adapter.SPVAdapter;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.util.HDKey;
 import org.junit.Test;
 
+//@RunWith(Parameterized.class)
 public class IDChainOperationsTest {
+	/*
+	@Parameterized.Parameters
+	public static Object[][] data() {
+		return new Object[50][0];
+	}
+	*/
+
 	@Test
 	public void testPublishAndResolve() throws DIDException {
-    	TestData testData = new TestData();
-    	testData.setupStore(false);
-    	testData.initIdentity();
+		TestData testData = new TestData();
+		testData.setupStore(false);
+		testData.initIdentity();
 
-    	DIDStore store = DIDStore.getInstance();
-    	assertTrue(store.getAdapter() instanceof SPVAdapter);
-    	SPVAdapter adapter = (SPVAdapter)store.getAdapter();
+		DIDStore store = DIDStore.getInstance();
+		SPVAdapter adapter = null;
 
-		System.out.print("Waiting for wallet available to create DID");
-    	while (true) {
-    		if (adapter.isAvailable()) {
-    			System.out.println(" OK");
-    			break;
-    		} else {
-    			System.out.print(".");
-    		}
+		// need synchronize?
+		if (store.getAdapter() instanceof SPVAdapter)
+			adapter = (SPVAdapter)store.getAdapter();
 
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
+		if (adapter != null) {
+			System.out.print("Waiting for wallet available to create DID");
+			while (true) {
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
+
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
 			}
-    	}
+		}
 
-    	// Create new DID and publish to ID sidechain.
-    	DIDDocument doc = store.newDid(TestConfig.storePass);
-    	Boolean success = store.publishDid(doc, TestConfig.storePass);
-    	assertTrue(success);
-    	System.out.println("Published new DID: " + doc.getSubject());
-    	System.out.println("DID transaction id:" + doc.getTransactionId());
+		// Create new DID and publish to ID sidechain.
+		DIDDocument doc = store.newDid(TestConfig.storePass);
+		Boolean success = store.publishDid(doc, TestConfig.storePass);
+		assertTrue(success);
+		System.out.println("Published new DID: " + doc.getSubject());
 
-    	// Resolve new DID document
-    	DIDDocument resolved;
-		System.out.print("Try to resolve new published DID");
-    	while (true) {
-    		try {
-	    		resolved = store.resolveDid(doc.getSubject(), true);
-	    		if (resolved != null) {
-	    			System.out.println(" OK");
-	    			break;
-	    		} else {
-	    			System.out.print(".");
-	    		}
-    		} catch (Exception ignore) {
-    			System.out.print("x");
-    		}
+		// Resolve new DID document
+		if (adapter != null) {
+			System.out.print("Try to resolve new published DID");
+			while (true) {
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
 
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
+				try {
+					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					if (rdoc != null) {
+						System.out.println(" OK");
+						break;
+					} else {
+						System.out.print(".");
+					}
+				} catch (Exception ignore) {
+					System.out.print("x");
+				}
 			}
-    	}
+		}
 
-    	assertEquals(doc.getSubject(), resolved.getSubject());
-    	assertTrue(resolved.isValid());
+		DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+		assertEquals(doc.getSubject(), resolved.getSubject());
+		assertTrue(resolved.isValid());
+		assertEquals(doc.toString(true), resolved.toString(true));
 	}
 
 	@Test
 	public void testUpdateAndResolve() throws DIDException {
-    	TestData testData = new TestData();
-    	testData.setupStore(false);
-    	testData.initIdentity();
+		TestData testData = new TestData();
+		testData.setupStore(false);
+		testData.initIdentity();
 
-    	DIDStore store = DIDStore.getInstance();
-    	assertTrue(store.getAdapter() instanceof SPVAdapter);
-    	SPVAdapter adapter = (SPVAdapter)store.getAdapter();
+		DIDStore store = DIDStore.getInstance();
+		SPVAdapter adapter = null;
 
-		System.out.print("Waiting for wallet available to create DID");
-    	while (true) {
-    		if (adapter.isAvailable()) {
-    			System.out.println(" OK");
-    			break;
-    		} else {
-    			System.out.print(".");
-    		}
+		// need synchronize?
+		if (store.getAdapter() instanceof SPVAdapter)
+			adapter = (SPVAdapter)store.getAdapter();
 
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
+		if (adapter != null) {
+			System.out.print("Waiting for wallet available to create DID");
+			while (true) {
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
+
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
 			}
-    	}
+		}
 
-    	// Create new DID and publish to ID sidechain.
-    	DIDDocument doc = store.newDid(TestConfig.storePass);
-    	Boolean success = store.publishDid(doc, TestConfig.storePass);
-    	assertTrue(success);
-    	System.out.println("Published new DID: " + doc.getSubject());
+		// Create new DID and publish to ID sidechain.
+		DIDDocument doc = store.newDid(TestConfig.storePass);
+		Boolean success = store.publishDid(doc, TestConfig.storePass);
+		assertTrue(success);
+		System.out.println("Published new DID: " + doc.getSubject());
 
-    	// Resolve new DID document
-		System.out.print("Waiting for create transaction confirm");
-    	while (true) {
-      		try {
-    			Thread.sleep(30000);
-    		} catch (InterruptedException ignore) {
-    		}
+		// Resolve new DID document
+		if (adapter != null) {
+			System.out.print("Waiting for create transaction confirm");
+			while (true) {
+		  		try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
 
-    		if (adapter.isAvailable()) {
-    			System.out.println(" OK");
-    			break;
-    		} else {
-    			System.out.print(".");
-    		}
-    	}
-
-    	DIDDocument resolved;
-    	System.out.print("Try to resolve new published DID");
-    	while (true) {
-    		try {
-	    		resolved = store.resolveDid(doc.getSubject(), true);
-	    		if (resolved != null) {
-	    			System.out.println(" OK");
-	    			break;
-	    		} else {
-	    			System.out.print(".");
-	    		}
-    		} catch (Exception ignore) {
-    			System.out.print("x");
-    		}
-
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
-			}
-    	}
-
-    	assertEquals(doc.getSubject(), resolved.getSubject());
-    	assertTrue(resolved.isValid());
-
-    	// Update
-		System.out.print("Waiting for wallet available to update DID");
-    	while (true) {
-    		if (adapter.isAvailable()) {
-    			System.out.println(" OK");
-    			break;
-    		} else {
-    			System.out.print(".");
-    		}
-
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
-			}
-    	}
-
-    	DIDDocument.Builder db = resolved.edit();
-    	HDKey.DerivedKey key = TestData.generateKeypair();
-    	db.addAuthenticationKey("key1", key.getPublicKeyBase58());
-    	DIDDocument newDoc = db.seal(TestConfig.storePass);
-    	assertEquals(2, newDoc.getPublicKeyCount());
-    	assertEquals(2, newDoc.getAuthenticationKeyCount());
-
-    	store.updateDid(newDoc, TestConfig.storePass);
-
-		System.out.print("Waiting for update transaction confirm");
-    	while (true) {
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
 			}
 
-    		if (adapter.isAvailable()) {
-    			System.out.println(" OK");
-    			break;
-    		} else {
-    			System.out.print(".");
-    		}
-    	}
+			System.out.print("Try to resolve new published DID");
+			while (true) {
+				try {
+					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					if (rdoc != null) {
+						System.out.println(" OK");
+						break;
+					} else {
+						System.out.print(".");
+					}
+				} catch (Exception ignore) {
+					System.out.print("x");
+				}
 
-		System.out.print("Try to resolve updated DID.");
-    	while (true) {
-    		try {
-	    		resolved = store.resolveDid(doc.getSubject(), true);
-	    		if (resolved != null) {
-	    			System.out.println(" OK");
-	    			break;
-	    		} else {
-	    			System.out.print(".");
-	    		}
-    		} catch (Exception ignore) {
-    			System.out.print("x");
-    		}
-
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
 			}
-    	}
+		}
 
-    	assertEquals(doc.getSubject(), resolved.getSubject());
-    	assertTrue(resolved.isValid());
+		DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+		assertEquals(doc.getSubject(), resolved.getSubject());
+		assertTrue(resolved.isValid());
+		assertEquals(doc.toString(true), resolved.toString(true));
 
-    	resolved = store.resolveDid(doc.getSubject(), true);
-    	assertNotNull(resolved);
-    	assertEquals(newDoc.toString(), resolved.toString());
+		String lastTxid = resolved.getTransactionId();
+		System.out.println("Last transaction id: " + lastTxid);
 
-    	// Update
-		System.out.print("Waiting for wallet available to update DID");
-    	while (true) {
-    		if (adapter.isAvailable()) {
-    			System.out.println(" OK");
-    			break;
-    		} else {
-    			System.out.print(".");
-    		}
+		// Update
+		DIDDocument.Builder db = resolved.edit();
+		HDKey.DerivedKey key = TestData.generateKeypair();
+		db.addAuthenticationKey("key1", key.getPublicKeyBase58());
+		doc = db.seal(TestConfig.storePass);
+		assertEquals(2, doc.getPublicKeyCount());
+		assertEquals(2, doc.getAuthenticationKeyCount());
 
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
-			}
-    	}
+		success = store.updateDid(doc, TestConfig.storePass);
+		assertTrue(success);
+		System.out.println("Updated DID: " + doc.getSubject());
 
-    	db = resolved.edit();
-    	key = TestData.generateKeypair();
-    	db.addAuthenticationKey("key2", key.getPublicKeyBase58());
-    	newDoc = db.seal(TestConfig.storePass);
-    	assertEquals(3, newDoc.getPublicKeyCount());
-    	assertEquals(3, newDoc.getAuthenticationKeyCount());
+		if (adapter != null) {
+			System.out.print("Waiting for update transaction confirm");
+			while (true) {
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
 
-    	store.updateDid(newDoc, TestConfig.storePass);
-
-		System.out.print("Waiting for update transaction confirm");
-    	while (true) {
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
 			}
 
-    		if (adapter.isAvailable()) {
-    			System.out.println(" OK");
-    			break;
-    		} else {
-    			System.out.print(".");
-    		}
-    	}
+			System.out.print("Try to resolve updated DID.");
+			while (true) {
+				try {
+					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
+						System.out.println(" OK");
+						break;
+					} else {
+						System.out.print(".");
+					}
+				} catch (Exception ignore) {
+					System.out.print("x");
+				}
 
-		System.out.print("Try to resolve updated DID.");
-    	while (true) {
-    		try {
-	    		resolved = store.resolveDid(doc.getSubject(), true);
-	    		if (resolved != null) {
-	    			System.out.println(" OK");
-	    			break;
-	    		} else {
-	    			System.out.print(".");
-	    		}
-    		} catch (Exception ignore) {
-    			System.out.print("x");
-    		}
-
-    		try {
-				Thread.sleep(30000);
-			} catch (InterruptedException ignore) {
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
 			}
-    	}
+		}
 
-    	assertEquals(doc.getSubject(), resolved.getSubject());
-    	assertTrue(resolved.isValid());
+		resolved = store.resolveDid(doc.getSubject(), true);
+		assertEquals(doc.getSubject(), resolved.getSubject());
+		assertTrue(resolved.isValid());
+		assertEquals(doc.toString(true), resolved.toString(true));
 
-    	resolved = store.resolveDid(doc.getSubject(), true);
-    	assertNotNull(resolved);
-    	assertEquals(newDoc.toString(), resolved.toString());
+		lastTxid = resolved.getTransactionId();
+		System.out.println("Last transaction id: " + lastTxid);
+
+		// Update
+		db = resolved.edit();
+		key = TestData.generateKeypair();
+		db.addAuthenticationKey("key2", key.getPublicKeyBase58());
+		doc = db.seal(TestConfig.storePass);
+		assertEquals(3, doc.getPublicKeyCount());
+		assertEquals(3, doc.getAuthenticationKeyCount());
+
+		success = store.updateDid(doc, TestConfig.storePass);
+		assertTrue(success);
+		System.out.println("Updated DID: " + doc.getSubject());
+
+		if (adapter != null) {
+			System.out.print("Waiting for update transaction confirm");
+			while (true) {
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
+			}
+
+			System.out.print("Try to resolve updated DID.");
+			while (true) {
+				try {
+					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
+						System.out.println(" OK");
+						break;
+					} else {
+						System.out.print(".");
+					}
+				} catch (Exception ignore) {
+					System.out.print("x");
+				}
+
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+			}
+		}
+
+		resolved = store.resolveDid(doc.getSubject(), true);
+		assertEquals(doc.getSubject(), resolved.getSubject());
+		assertTrue(resolved.isValid());
+		assertEquals(doc.toString(true), resolved.toString(true));
+
+		lastTxid = resolved.getTransactionId();
+		System.out.println("Last transaction id: " + lastTxid);
+	}
+
+	@Test
+	public void testUpdateAndResolveWithCredentials() throws DIDException {
+		TestData testData = new TestData();
+		testData.setupStore(false);
+		testData.initIdentity();
+
+		DIDStore store = DIDStore.getInstance();
+		SPVAdapter adapter = null;
+
+		// need synchronize?
+		if (store.getAdapter() instanceof SPVAdapter)
+			adapter = (SPVAdapter)store.getAdapter();
+
+		if (adapter != null) {
+			System.out.print("Waiting for wallet available to create DID");
+			while (true) {
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
+
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+			}
+		}
+
+		// Create new DID and publish to ID sidechain.
+		DIDDocument doc = store.newDid(TestConfig.storePass);
+
+		Issuer selfIssuer = new Issuer(doc);
+		Issuer.CredentialBuilder cb = selfIssuer.issueFor(doc.getSubject());
+
+		Map<String, String> props= new HashMap<String, String>();
+		props.put("name", "John");
+		props.put("gender", "Male");
+		props.put("nation", "Singapore");
+		props.put("language", "English");
+		props.put("email", "john@example.com");
+		props.put("twitter", "@john");
+
+		VerifiableCredential vc = cb.id("profile")
+				.type("BasicProfileCredential", "SelfProclaimedCredential")
+				.properties(props)
+				.seal(TestConfig.storePass);
+		assertNotNull(vc);
+
+		DIDDocument.Builder db = doc.edit();
+		db.addCredential(vc);
+		doc = db.seal(TestConfig.storePass);
+		assertNotNull(doc);
+		assertEquals(1, doc.getCredentialCount());
+
+		Boolean success = store.publishDid(doc, TestConfig.storePass);
+		assertTrue(success);
+		System.out.println("Published new DID: " + doc.getSubject());
+
+		// Resolve new DID document
+		if (adapter != null) {
+			System.out.print("Waiting for create transaction confirm");
+			while (true) {
+		  		try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
+			}
+
+			System.out.print("Try to resolve new published DID");
+			while (true) {
+				try {
+					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					if (rdoc != null) {
+						System.out.println(" OK");
+						break;
+					} else {
+						System.out.print(".");
+					}
+				} catch (Exception ignore) {
+					System.out.print("x");
+				}
+
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+			}
+		}
+
+		DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
+		assertEquals(doc.getSubject(), resolved.getSubject());
+		assertTrue(resolved.isValid());
+		assertEquals(doc.toString(true), resolved.toString(true));
+
+		String lastTxid = resolved.getTransactionId();
+		System.out.println("Last transaction id: " + lastTxid);
+
+		// Update
+		selfIssuer = new Issuer(resolved);
+		cb = selfIssuer.issueFor(resolved.getSubject());
+
+		props.clear();
+		props.put("nation", "Singapore");
+		props.put("passport", "S653258Z07");
+
+		vc = cb.id("passport")
+				.type("BasicProfileCredential", "SelfProclaimedCredential")
+				.properties(props)
+				.seal(TestConfig.storePass);
+		assertNotNull(vc);
+
+		db = resolved.edit();
+		db.addCredential(vc);
+		doc = db.seal(TestConfig.storePass);
+		assertNotNull(doc);
+		assertEquals(2, doc.getCredentialCount());
+
+		success = store.updateDid(doc, TestConfig.storePass);
+		assertTrue(success);
+		System.out.println("Updated DID: " + doc.getSubject());
+
+		if (adapter != null) {
+			System.out.print("Waiting for update transaction confirm");
+			while (true) {
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
+			}
+
+			System.out.print("Try to resolve updated DID.");
+			while (true) {
+				try {
+					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
+						System.out.println(" OK");
+						break;
+					} else {
+						System.out.print(".");
+					}
+				} catch (Exception ignore) {
+					System.out.print("x");
+				}
+
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+			}
+		}
+
+		resolved = store.resolveDid(doc.getSubject(), true);
+		assertEquals(doc.getSubject(), resolved.getSubject());
+		assertTrue(resolved.isValid());
+		assertEquals(doc.toString(true), resolved.toString(true));
+
+		lastTxid = resolved.getTransactionId();
+		System.out.println("Last transaction id: " + lastTxid);
+
+		// Update
+		selfIssuer = new Issuer(resolved);
+		cb = selfIssuer.issueFor(resolved.getSubject());
+
+		props.clear();
+		props.put("Abc", "Abc");
+		props.put("abc", "abc");
+		props.put("Foobar", "Foobar");
+		props.put("foobar", "foobar");
+		props.put("zoo", "zoo");
+		props.put("Zoo", "Zoo");
+
+		vc = cb.id("test")
+				.type("TestCredential", "SelfProclaimedCredential")
+				.properties(props)
+				.seal(TestConfig.storePass);
+		assertNotNull(vc);
+
+		db = resolved.edit();
+		db.addCredential(vc);
+		doc = db.seal(TestConfig.storePass);
+		assertNotNull(doc);
+		assertEquals(3, doc.getCredentialCount());
+
+		success = store.updateDid(doc, TestConfig.storePass);
+		assertTrue(success);
+		System.out.println("Updated DID: " + doc.getSubject());
+
+		if (adapter != null) {
+			System.out.print("Waiting for update transaction confirm");
+			while (true) {
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+
+				if (adapter.isAvailable()) {
+					System.out.println(" OK");
+					break;
+				} else {
+					System.out.print(".");
+				}
+			}
+
+			System.out.print("Try to resolve updated DID.");
+			while (true) {
+				try {
+					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
+						System.out.println(" OK");
+						break;
+					} else {
+						System.out.print(".");
+					}
+				} catch (Exception ignore) {
+					System.out.print("x");
+				}
+
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignore) {
+				}
+			}
+		}
+
+		resolved = store.resolveDid(doc.getSubject(), true);
+		assertEquals(doc.getSubject(), resolved.getSubject());
+		assertTrue(resolved.isValid());
+		assertEquals(doc.toString(true), resolved.toString(true));
+
+		lastTxid = resolved.getTransactionId();
+		System.out.println("Last transaction id: " + lastTxid);
 	}
 
 	@Test(timeout = 900000)
 	public void testRestore() throws DIDException, IOException {
-    	TestData testData = new TestData();
-    	testData.setupStore(false);
+		TestData testData = new TestData();
+		testData.setupStore(false);
 
-    	DIDStore store = DIDStore.getInstance();
+		DIDStore store = DIDStore.getInstance();
 
-    	String mnemonic = testData.loadRestoreMnemonic();
+		String mnemonic = testData.loadRestoreMnemonic();
 
-    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
-    			TestConfig.passphrase, TestConfig.storePass, true);
+		store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+				TestConfig.passphrase, TestConfig.storePass, true);
 
-    	store.synchronize(TestConfig.storePass);
+		System.out.println("Synchronizing from IDChain...");
+		store.synchronize(TestConfig.storePass);
+		System.out.println("OK");
 
-    	List<DID> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
-    	assertEquals(5, dids.size());
+		List<DID> dids = store.listDids(DIDStore.DID_HAS_PRIVATEKEY);
+		assertEquals(5, dids.size());
 
-    	ArrayList<String> didStrings = new ArrayList<String>(dids.size());
-    	for (DID id : dids)
-    		didStrings.add(id.toString());
+		ArrayList<String> didStrings = new ArrayList<String>(dids.size());
+		for (DID id : dids)
+			didStrings.add(id.toString());
 
-    	BufferedReader input = new BufferedReader(new InputStreamReader(
+		BufferedReader input = new BufferedReader(new InputStreamReader(
 				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
 
-    	String did;
-    	while ((did = input.readLine()) != null) {
-    		assertTrue(didStrings.contains(did));
-    	}
+		String did;
+		while ((did = input.readLine()) != null) {
+			assertTrue(didStrings.contains(did));
+		}
 
 		input.close();
 	}

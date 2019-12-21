@@ -59,7 +59,7 @@ public class DIDBackend {
 	}
 
 	public ResolveResult resolve(DID did) throws DIDResolveException {
-		String res = adapter.resolve(did.getMethodSpecificId(), false);
+		String res = adapter.resolve(did.toString(), false);
 		if (res == null)
 			return null;
 
