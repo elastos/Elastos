@@ -270,21 +270,6 @@ func (s *State) rollbackTo(height uint32) error {
 	return s.history.RollbackTo(height)
 }
 
-// finishVoting will close all voting util next voting period
-func (s *State) finishVoting(dids []common.Uint168) *StateKeyFrame {
-	for _, v := range dids {
-		if _, ok := s.Candidates[v]; !ok {
-			log.Warnf("not found active candidate %s when finish voting",
-				v.String())
-		}
-		delete(s.Candidates, v)
-	}
-	s.history = utils.NewHistory(maxHistoryCapacity)
-
-	result := s.StateKeyFrame.Snapshot()
-	return result
-}
-
 // processTransactions takes the transactions and the height when they have been
 // packed into a block.  Then loop through the transactions to update CR
 // state and votes according to transactions content.
