@@ -5,7 +5,7 @@ from requests import Session
 from grpc_adenine import settings
 from grpc_adenine.stubs import hive_pb2
 from grpc_adenine.stubs import hive_pb2_grpc
-from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key
+from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, get_encryption_salt
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from cryptography.fernet import Fernet
 
@@ -78,7 +78,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         request_input = json.loads(request.input)
         
         #encoding and encrypting
-        key = config('ENCRYPTION_KEY')
+        key = get_encrypt_key(request_input['private_key'])
         file_contents = request_input['file'].encode()
         fernet = Fernet(key)
         encrypted_message = fernet.encrypt(file_contents)
@@ -174,6 +174,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
         response = self.session.get(api_url_base.format(request_input['hash']))
         
         #decrypt message
+        key = get_encrypt_key(request_input['private_key'])
         fernet = Fernet(key)
         decrypted_message = fernet.decrypt(response.text)
         return hive_pb2.Response(output=decrypted_message.decode(), status_message='Success', status=True)
