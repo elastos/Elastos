@@ -6,7 +6,7 @@ class VerifiablePresentationTest: XCTestCase {
     
     func testReadPresentation() {
         do {
-            var testData: TestData = TestData()
+            let testData: TestData = TestData()
             try testData.setupStore(true)
             
             // For integrity check
@@ -34,6 +34,7 @@ class VerifiablePresentationTest: XCTestCase {
             XCTAssertTrue(try vp.isValid())
         }
         catch {
+            XCTFail()
         }
     }
     
@@ -58,7 +59,7 @@ class VerifiablePresentationTest: XCTestCase {
             XCTAssertEqual(try testData.loadPresentationNormalizedJson(), normalized.description)
             XCTAssertEqual(try testData.loadPresentationNormalizedJson(), vp.description)
         }catch {
-            
+            XCTFail()
         }
     }
 }

@@ -50,7 +50,7 @@ class IDChainOperationsTest: XCTestCase {
     }
     
     public func testRestore() throws {
-        let testData: TestData = try TestData()
+        let testData: TestData = TestData()
         try testData.setupStore(false)
         let store: DIDStore = try DIDStore.shareInstance()!
         let mnemonic: String = try testData.loadRestoreMnemonic()
@@ -64,9 +64,12 @@ class IDChainOperationsTest: XCTestCase {
             didStrings.append(id.description)
         }
         let bl = Bundle(for: type(of: self))
-        let jsonstr = bl.path(forResource: "dids", ofType: "restore")
-        // TODO: 按行读取
-        
+        let path = bl.path(forResource: "dids", ofType: "restore")!
+        let jsonstr = try String(contentsOfFile: path)
+        let jsonArry = jsonstr.components(separatedBy: "\n")
+        for did: String in jsonArry {
+            XCTAssertTrue(didStrings.contains(did))
+        }
     }
 
 }

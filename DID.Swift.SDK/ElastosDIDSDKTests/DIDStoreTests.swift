@@ -9,22 +9,6 @@ class DIDStoreTests: XCTestCase {
     static var primaryDid: DID!
     var adapter: SPVAdaptor!
     
-    override func setUp() {
-        /*
-         do {
-         let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "test111111"})
-         adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
-         //            TestUtils.deleteFile(storePath)
-         try DIDStore.creatInstance("filesystem", storePath, adapter)
-         store = try DIDStore.shareInstance()!
-         let mnemonic: String = HDKey.generateMnemonic(0)
-         try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
-         } catch {
-         print(error)
-         }
-         */
-    }
-    
     func testCreateEmptyStore() {
         do {
             let testData: TestData = TestData()
@@ -37,6 +21,7 @@ class DIDStoreTests: XCTestCase {
             _ = testData.existsFile(path)
         } catch {
             print("testCreateEmptyStore error: \(error)")
+            XCTFail()
         }
     }
     /*
@@ -49,7 +34,7 @@ class DIDStoreTests: XCTestCase {
      store.newDid(TestConfig.storePass, "this will be fail");
      }
      */
-    func test10InitPrivateIdentity0() {
+    func testInitPrivateIdentity0() {
         do {
             let testData: TestData = TestData()
             try testData.setupStore(true)
@@ -59,11 +44,7 @@ class DIDStoreTests: XCTestCase {
             
             _ = try testData.initIdentity()
             XCTAssertTrue(try store.containsPrivateIdentity())
-            XCTAssertFalse(try store.containsPrivateIdentity())
-            
-            _ = try testData.initIdentity()
-            XCTAssertTrue(try store.containsPrivateIdentity())
-            
+                        
             var path = storePath + "/" + "private" + "/" + "key"
             XCTAssertTrue(testData.existsFile(path))
             path = storePath + "/" + "private" + "/" + "index"
@@ -75,6 +56,7 @@ class DIDStoreTests: XCTestCase {
             XCTAssertTrue(try store.containsPrivateIdentity())
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -90,7 +72,7 @@ class DIDStoreTests: XCTestCase {
             let doc: DIDDocument = try store.newDid(storePass, alias)
             XCTAssertTrue(try doc.isValid())
             
-            var resolved: DIDDocument = try store.resolveDid(doc.subject!, true)!
+            var resolved = try store.resolveDid(doc.subject!, true)
             XCTAssertNil(resolved)
             
             _ = try store.publishDid(doc, storePass)
@@ -106,13 +88,14 @@ class DIDStoreTests: XCTestCase {
             resolved = try store.resolveDid(doc.subject!, true)!
             
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(alias, resolved.alias)
-            XCTAssertEqual(doc.subject, resolved.subject)
-            XCTAssertEqual(doc.proof.signature, resolved.proof.signature)
+            XCTAssertEqual(alias, resolved!.alias)
+            XCTAssertEqual(doc.subject, resolved!.subject)
+            XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
             
-            XCTAssertTrue(try resolved.isValid())
+            XCTAssertTrue(try resolved!.isValid())
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -144,6 +127,7 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertTrue(try resolved.isValid())
         } catch {
+            XCTFail()
         }
     }
     
@@ -159,7 +143,7 @@ class DIDStoreTests: XCTestCase {
                 let doc: DIDDocument = try store.newDid(storePass, alias)
                 XCTAssertTrue(try doc.isValid())
                 
-                var resolved: DIDDocument = try store.resolveDid(doc.subject!, true)!
+                var resolved = try store.resolveDid(doc.subject!, true)
                 XCTAssertNil(resolved)
                 
                 try store.publishDid(doc, storePass)
@@ -170,12 +154,12 @@ class DIDStoreTests: XCTestCase {
                 path = storePath + "/ids/" + doc.subject!.methodSpecificId + "/.meta"
                 XCTAssertTrue(testData.existsFile(path))
                 
-                resolved = try store.resolveDid(doc.subject!, true)!
+                resolved = try store.resolveDid(doc.subject!, true)
                 XCTAssertNotNil(resolved)
-                XCTAssertEqual(alias, resolved.alias)
-                XCTAssertEqual(doc.subject, resolved.subject)
-                XCTAssertEqual(doc.proof.signature, resolved.proof.signature)
-                XCTAssertTrue(try resolved.isValid())
+                XCTAssertEqual(alias, resolved!.alias)
+                XCTAssertEqual(doc.subject, resolved!.subject)
+                XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
+                XCTAssertTrue(try resolved!.isValid())
                 
                 var dids: Array<DID> = try store.listDids(DIDStore.DID_ALL)
                 XCTAssertEqual(100, dids.count)
@@ -187,7 +171,7 @@ class DIDStoreTests: XCTestCase {
                 XCTAssertEqual(0, dids.count)
             }
         } catch {
-            
+            XCTFail()
         }
     }
     
@@ -216,23 +200,22 @@ class DIDStoreTests: XCTestCase {
                 var deleted: Bool = try store.deleteDid(did)
                 XCTAssertTrue(deleted)
                 
-                var path = storePath + "/ids/" + did.methodSpecificId
+                let path = storePath + "/ids/" + did.methodSpecificId
                 XCTAssertFalse(testData.exists(path))
                 
                 deleted = try store.deleteDid(did)
                 XCTAssertFalse(deleted)
-                
-                var remains: Array<DID> = try store.listDids(DIDStore.DID_ALL)
-                XCTAssertEqual(80, remains.count)
-                
-                remains = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
-                XCTAssertEqual(80, remains.count)
-                
-                remains = try store.listDids(DIDStore.DID_NO_PRIVATEKEY)
-                XCTAssertEqual(0, remains.count)
             }
-        } catch  {
+            var remains: Array<DID> = try store.listDids(DIDStore.DID_ALL)
+            XCTAssertEqual(80, remains.count)
             
+            remains = try store.listDids(DIDStore.DID_HAS_PRIVATEKEY)
+            XCTAssertEqual(80, remains.count)
+            
+            remains = try store.listDids(DIDStore.DID_NO_PRIVATEKEY)
+            XCTAssertEqual(0, remains.count)
+        } catch  {
+            XCTFail()
         }
     }
     
@@ -268,7 +251,7 @@ class DIDStoreTests: XCTestCase {
             XCTAssertEqual(0, dids.count)
         }
         catch {
-            
+            XCTFail()
         }
     }
     
@@ -295,28 +278,28 @@ class DIDStoreTests: XCTestCase {
             var id: DIDURL = try DIDURL(test.subject!, "profile")
             vc = try store.loadCredential(test.subject!, id)
             XCTAssertNotNil(vc)
-            XCTAssertEqual("MyProfile", vc!.alias)
+            XCTAssertEqual("MyProfile", try vc!.getAlias())
             XCTAssertEqual(test.subject, vc!.subject.id)
             XCTAssertEqual(id, vc!.id)
             XCTAssertTrue(try vc!.isValid())
             
             // try with full id string
-            vc = try store.loadCredential(test.subject!.description, id.description)!
+            vc = try store.loadCredential(test.subject!.description, id.description)
             XCTAssertNotNil(vc)
-            XCTAssertEqual("MyProfile", vc!.alias)
+            XCTAssertEqual("MyProfile", try vc!.getAlias())
             XCTAssertEqual(test.subject, vc!.subject.id)
             XCTAssertEqual(id, vc!.id)
             XCTAssertTrue(try vc!.isValid())
             
             id = try DIDURL(test.subject!, "twitter")
-            vc = try store.loadCredential(test.subject!.description, "twitter")!
+            vc = try store.loadCredential(test.subject!.description, "twitter")
             XCTAssertNotNil(vc)
-            XCTAssertEqual("Twitter", vc!.alias)
+            XCTAssertEqual("Twitter", try vc!.getAlias())
             XCTAssertEqual(test.subject, vc!.subject.id)
             XCTAssertEqual(id, vc!.id)
             XCTAssertTrue(try vc!.isValid())
             
-            vc = try  store.loadCredential(test.subject!.description, "notExist")!
+            vc = try  store.loadCredential(test.subject!.description, "notExist")
             XCTAssertNil(vc)
             
             id = try DIDURL(test.subject!, "twitter")
@@ -325,7 +308,7 @@ class DIDStoreTests: XCTestCase {
             XCTAssertFalse(try store.containsCredential(test.subject!.description, "notExist"))
         }
         catch {
-            
+            XCTFail()
         }
     }
     
@@ -354,11 +337,12 @@ class DIDStoreTests: XCTestCase {
                 var re = id.fragment == "profile" || id.fragment == "email" || id.fragment == "twitter" || id.fragment == "passport"
                 XCTAssertTrue(re)
                 
-                re = id.alias == "MyProfile" || id.alias == "email" || id.alias == "twitter" || id.alias == "passport"
+                re = id.alias == "MyProfile" || id.alias == "Email" || id.alias == "Twitter" || id.alias == "Passport"
                 XCTAssertTrue(re)
             }
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -382,17 +366,17 @@ class DIDStoreTests: XCTestCase {
             
             let store = try DIDStore.shareInstance()!
             var path = storePath + "/ids/" + test.subject!.methodSpecificId + "/credentials/twitter/credential"
-            XCTAssertTrue(testData.exists(path))
+            XCTAssertTrue(testData.existsFile(path))
             
             path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId + "/" + "credentials" + "/" + "twitter" + "/" + ".meta"
-            XCTAssertTrue(testData.exists(path))
+            XCTAssertTrue(testData.existsFile(path))
             
             path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId + "/" + "credentials" + "/" + "passport" + "/" + "credential"
-            XCTAssertTrue(testData.exists(path))
+            XCTAssertTrue(testData.existsFile(path))
             
             path = storePath + "/" + "ids" + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "passport" + "/" + ".meta"
-            XCTAssertTrue(testData.exists(path))
+            XCTAssertTrue(testData.existsFile(path))
             
             var deleted: Bool = try store.deleteCredential(test.subject!, DIDURL(test.subject!, "twitter"))
             XCTAssertTrue(deleted)
@@ -406,12 +390,12 @@ class DIDStoreTests: XCTestCase {
             path = storePath + "/" + "ids"
                 + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "twitter"
-            XCTAssertFalse(testData.exists(path))
+            XCTAssertFalse(testData.existsFile(path))
             
             path = storePath + "/" + "ids"
                 + "/" + test.subject!.methodSpecificId
                 + "/" + "credentials" + "/" + "passport"
-            XCTAssertFalse(testData.exists(path))
+            XCTAssertFalse(testData.existsFile(path))
             
             XCTAssertTrue(try store.containsCredential(test.subject!.description, "email"))
             XCTAssertTrue(try store.containsCredential(test.subject!.description, "profile"))
@@ -420,6 +404,7 @@ class DIDStoreTests: XCTestCase {
             XCTAssertFalse(try store.containsCredential(test.subject!.description, "passport"))
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -440,11 +425,12 @@ class DIDStoreTests: XCTestCase {
                 let doc: DIDDocument = try store.newDid(storePass, alias)
                 
                 let issuer: Issuer = try Issuer(doc)
-                let vc: VerifiableCredential = try issuer.seal("cred-1", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
+                let vc: VerifiableCredential = try issuer.seal(for: doc.subject!, "cred-1", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
                 try store.storeCredential(vc)
             }
         } catch {
             print(error)
+            XCTFail()
         }
     }
     
@@ -452,7 +438,7 @@ class DIDStoreTests: XCTestCase {
         do {
             let adapter: DIDAdapter = DummyAdapter()
             let testData: TestData = TestData()
-            testData.deleteFile(storePath)
+            TestData.deleteFile(storePath)
             if (cached){
                 try DIDStore.creatInstance("filesystem", storePath, adapter)
             }
@@ -493,6 +479,7 @@ class DIDStoreTests: XCTestCase {
             
         } catch {
             print(error)
+            XCTFail()
         }
     }
     

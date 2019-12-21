@@ -19,8 +19,7 @@ class DIDURLTest: XCTestCase {
     }
 
     func testConstructor(){
-        do {
-            
+        do {            
             var testURL: String = testDID
             var url: DIDURL = try DIDURL(testURL)
             XCTAssertEqual(testURL, url.description)

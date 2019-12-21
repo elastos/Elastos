@@ -65,8 +65,8 @@ public class DID: NSObject {
         return super.isEqual(object)
     }
 
-    public func resolve() throws -> DIDDocument {
-        return try DIDStore.shareInstance()!.resolveDid(self)!
+    public func resolve() throws -> DIDDocument? {
+        return try DIDStore.shareInstance()!.resolveDid(self)
     }
 }
 

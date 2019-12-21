@@ -34,18 +34,18 @@ class TestData: XCTestCase {
         var adapter: DIDAdapter = DummyAdapter()
         if dummyBackend {
             if TestData.dummyAdapter == nil {
-                TestData.dummyAdapter = DummyAdapter() as? DIDAdapter
+                TestData.dummyAdapter = DummyAdapter()
                 adapter = TestData.dummyAdapter!
             }
         }
         else {
             if TestData.spvAdapter == nil {
                 let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "test111111"})
-                TestData.spvAdapter = (SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock) as? DIDAdapter)
+                TestData.spvAdapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
             }
-            deleteFile(storePath)
             adapter = TestData.spvAdapter!
         }
+        TestData.deleteFile(storePath)
         try DIDStore.creatInstance("filesystem", storePath, adapter)
     }
     
@@ -133,8 +133,12 @@ class TestData: XCTestCase {
     public func loadPresentation() throws -> VerifiablePresentation {
         if testVp == nil {
             let bl = Bundle(for: type(of: self))
-            let jsonstr = bl.path(forResource: "vp", ofType: "json")
-            testVp = try VerifiablePresentation.fromJson(jsonstr!)
+            let path = bl.path(forResource: "vp", ofType: "json")
+            let urlPath = URL(fileURLWithPath: path!)
+            let json = try String(contentsOf: urlPath)
+            var jsonString = json.replacingOccurrences(of: " ", with: "")
+            jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
+            testVp = try VerifiablePresentation.fromJson(jsonString)
         }
         return testVp!
     }
@@ -264,7 +268,7 @@ class TestData: XCTestCase {
         return try TestData.rootKey!.derive(TestData.index!)
     }
 
-    func deleteFile(_ path: String) {
+   class func deleteFile(_ path: String) {
         do {
             let filemanager: FileManager = FileManager.default
             var isdir = ObjCBool.init(false)

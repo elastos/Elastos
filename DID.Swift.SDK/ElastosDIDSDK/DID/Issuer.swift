@@ -50,11 +50,11 @@ public class Issuer {
         return signKey
     }
     
-    public func seal(_ id: String, _ type: Array<String>, _ properties: Dictionary<String, String>, _ storepass: String) throws -> VerifiableCredential {
+    public func seal(for did : DID, _ id: String, _ type: Array<String>, _ properties: Dictionary<String, String>, _ storepass: String) throws -> VerifiableCredential {
         let credential: VerifiableCredential = VerifiableCredential()
         credential.issuer = didDocument?.subject
-        credential.subject = CredentialSubject(self.target!)
-        credential.id = try DIDURL(target!, id)
+        credential.subject = CredentialSubject(did)
+        credential.id = try DIDURL(did, id)
         credential.types = type
         let date = DateFormater.currentDate()
         credential.issuanceDate = date

@@ -60,7 +60,14 @@ public class DerivedKey: NSObject {
     }
     
     public func getPublicKeyBase58() throws -> String {
-        return try Base58.base58FromBytes(getPublicKeyBytes())
+        var pkData: Data = try getPublicKeyData()
+        let base58: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 2048)
+        let d = pkData.withUnsafeMutableBytes { re -> UnsafeMutablePointer<UInt8> in
+            return re
+        }
+        base58_encode(base58, d, pkData.count)
+        let base58Str = String(cString: base58)
+        return base58Str
     }
     
     public class func getIdString(_ pk: [UInt8]) -> String {

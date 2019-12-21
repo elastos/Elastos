@@ -30,9 +30,8 @@ public class CredentialSubject {
     
     func toJson(_ ref: DID?, _ normalized: Bool) -> OrderedDictionary< String, Any> {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
-        let c = (ref != nil && normalized)
         // id
-        if !c || id != ref {
+        if normalized || ref == nil || id != ref {
             dic[Constants.id] = id.toExternalForm()
         }
         

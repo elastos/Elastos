@@ -72,10 +72,10 @@ public class DIDPublicKey: DIDObject {
         let keyBase58 = try JsonHelper.getString(dic, Constants.publicKeyBase58,
         false, nil, "publicKeyBase58")
             
-        return DIDPublicKey(id, type, controller!, keyBase58)
+        return DIDPublicKey(id!, type, controller!, keyBase58)
     }
     
-    public func toJson(_ ref: DID, _ normalized: Bool) -> OrderedDictionary<String, Any> {
+    public func toJson_dc(_ ref: DID, _ normalized: Bool) -> OrderedDictionary<String, Any> {
         var dict: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         

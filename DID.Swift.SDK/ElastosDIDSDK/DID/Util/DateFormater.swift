@@ -1,7 +1,7 @@
 
 import Foundation
 
-class DateFormater {
+public class DateFormater {
     
     class func getDate(_ dic: OrderedDictionary<String, Any>, _ name: String, _ optional: Bool, _ ref: Date?, _ hint: String) throws -> Date? {
         let vn = dic[name]
@@ -24,13 +24,14 @@ class DateFormater {
         
         let formatter = Foundation.DateFormatter()
         formatter.dateFormat = Constants.DATE_FORMAT
+        formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss'Z'"
         formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
         let date: Date  = formatter.date(from: value) ?? Date()
         
         return date
     }
     
-    class func format(_ date: Date) -> String{
+   public class func format(_ date: Date) -> String{
         var formatter = Foundation.DateFormatter()
         formatter = Foundation.DateFormatter()
         formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss'Z'"
@@ -39,7 +40,7 @@ class DateFormater {
         return localDate
     }
     
-    class func currentDateToWantDate(_ year: Int)-> Date {
+    public class func currentDateToWantDate(_ year: Int)-> Date {
         let current = Date()
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(abbreviation: "UTC")!
@@ -60,7 +61,7 @@ class DateFormater {
         return useDate
     }
     
-    class func currentDate()-> Date {
+   public class func currentDate()-> Date {
         let current = Date()
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(abbreviation: "UTC")!
@@ -79,7 +80,7 @@ class DateFormater {
         return realDate
     }
     
-    class func setExpires(_ expire: Date) -> Date {
+  public class func setExpires(_ expire: Date) -> Date {
         
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(abbreviation: "UTC")!
@@ -89,7 +90,7 @@ class DateFormater {
         return date
     }
     
-    class func comporsDate(_ expireDate: Date, _ defaultDate: Date) -> Bool {
+   public class func comporsDate(_ expireDate: Date, _ defaultDate: Date) -> Bool {
         return  defaultDate > expireDate
     }
 }

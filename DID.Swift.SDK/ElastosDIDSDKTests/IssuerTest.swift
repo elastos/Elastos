@@ -18,7 +18,7 @@ class IssuerTest: XCTestCase {
             XCTAssertEqual(issuer.getDid(), issuer.getDid())
             XCTAssertEqual(signKey, issuer.signKey)
         } catch {
-            
+            XCTFail()
         }
     }
     
@@ -35,6 +35,7 @@ class IssuerTest: XCTestCase {
             XCTAssertEqual(issuerDoc.getDefaultPublicKey(), issuer.signKey)
             
         } catch  {
+            XCTFail()
         }
     }
     
@@ -57,7 +58,7 @@ class IssuerTest: XCTestCase {
             // Dead code.
             XCTAssertEqual(issuer.getDid(), issuer.getDid())
         } catch {
-            
+            XCTFail()
         }
     }
     
@@ -73,7 +74,8 @@ class IssuerTest: XCTestCase {
             // Dead code.
             XCTAssertEqual(issuer.getDid(), issuer.getDid())
         }
-        catch {  
+        catch {
+            XCTFail()
         }
     }
     
@@ -94,7 +96,7 @@ class IssuerTest: XCTestCase {
             props["twitter"] = "@john"
             
             let issuer: Issuer =  try Issuer(issuerDoc)
-            let vc: VerifiableCredential = try issuer.seal("testCredential", ["BasicProfileCredential", "InternetAccountCredential"], props, storePass)
+            let vc: VerifiableCredential = try issuer.seal(for: testDoc.subject!,"testCredential", ["BasicProfileCredential", "InternetAccountCredential"], props, storePass)
             
             let vcId: DIDURL = try DIDURL(testDoc.subject!, "testCredential")
             
@@ -118,7 +120,7 @@ class IssuerTest: XCTestCase {
             XCTAssertTrue(try vc.isValid())
         }
         catch {
-            
+            XCTFail()
         }
     }
     
@@ -135,7 +137,7 @@ class IssuerTest: XCTestCase {
             props["language"] = "English"
             props["email"] = "issuer@example.com"
             let issuer: Issuer =  try Issuer(issuerDoc)
-            let vc: VerifiableCredential = try issuer.seal("myCredential", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
+            let vc: VerifiableCredential = try issuer.seal(for: issuerDoc.subject!, "myCredential", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
             
             let vcId: DIDURL = try DIDURL(issuerDoc.subject!, "myCredential")
             XCTAssertEqual(vcId, vc.id)
@@ -156,7 +158,7 @@ class IssuerTest: XCTestCase {
             XCTAssertTrue(try vc.isValid())
         }
         catch {
-            
+            XCTFail()
         }
     }
     

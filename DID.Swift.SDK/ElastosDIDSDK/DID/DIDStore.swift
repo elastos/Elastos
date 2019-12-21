@@ -29,12 +29,10 @@ public class DIDStore: NSObject {
         guard type == "filesystem" else {
             throw DIDStoreError.failue("Unsupported store type:\(type)")
         }
-
-        if instance == nil {
-            let storage = try FileSystemStoreBackend(location)
-            instance = DIDStore(initialCacheCapacity, maxCacheCapacity,
-            adapter, storage)
-        }
+        
+        let storage = try FileSystemStoreBackend(location)
+        instance = DIDStore(initialCacheCapacity, maxCacheCapacity,
+                            adapter, storage)
     }
     
     public static func creatInstance(_ type: String, _ location: String, _ adapter: DIDAdapter) throws {
@@ -75,7 +73,7 @@ public class DIDStore: NSObject {
         return json
     }
     
-    private func decryptFromBase64(_ passwd: String ,_ input: String) throws -> UnsafeMutablePointer<UInt8>  {
+    public func decryptFromBase64(_ passwd: String ,_ input: String) throws -> UnsafeMutablePointer<UInt8>  {
         let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 2048)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
@@ -84,7 +82,7 @@ public class DIDStore: NSObject {
         return plain
     }
     
-    private func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
+    public func decryptFromBase64(_ passwd: String ,_ input: String) throws -> Data {
         let plain: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 2048)
         let re = decrypt_from_base64(plain, passwd, input)
         guard re >= 0 else {
@@ -171,8 +169,7 @@ public class DIDStore: NSObject {
         _ = try doc.addAuthenticationKey(id, try key.getPublicKeyBase58())
         
         doc = try doc.seal(storepass)
-        try storeDid(doc, alias!)
-        
+        try storeDid(doc, alias ?? "")
         try storage.storePrivateIdentityIndex(nextIndex)
         
         return doc
@@ -232,7 +229,7 @@ public class DIDStore: NSObject {
         if doc !== nil {
             try storeDid(doc!)
         }
-        if (!force){
+        if (doc == nil && !force){
                 doc = try loadDid(did)
             }
         return doc
@@ -390,7 +387,7 @@ public class DIDStore: NSObject {
     }
     
     
-    public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential {
+    public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
         var vc = vcCache.get(id)
         let count = vcCache.getCount()
 
@@ -405,8 +402,8 @@ public class DIDStore: NSObject {
             let v = vc as! VerifiableCredential
             vcCache.put(v.id, data: v)
         }
-        let v = vc as! VerifiableCredential
-        return v
+
+        return vc as? VerifiableCredential
     }
     
     public func loadCredential(_ did: String, _ id: String) throws -> VerifiableCredential? {
@@ -468,7 +465,7 @@ public class DIDStore: NSObject {
        try storePrivateKey(_did, DIDURL(_did, id), privateKey, storepass)
     }
     
-    func loadPrivateKey(_ did: DID, id: DIDURL) throws -> String {
+   public func loadPrivateKey(_ did: DID, id: DIDURL) throws -> String {
         return try storage.loadPrivateKey(did, id)
     }
     
@@ -500,15 +497,17 @@ public class DIDStore: NSObject {
 
     public func sign(_ did: DID, _ id: DIDURL? = nil, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
         let sig: UnsafeMutablePointer<Int8> = UnsafeMutablePointer<Int8>.allocate(capacity: 2048)
-        var privatekeys: UnsafeMutablePointer<UInt8>
-        if id == nil {
-            let doc = try resolveDid(did)
-            let id_1 = doc!.getDefaultPublicKey()
-            privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id_1))
-        }
-        else {
-         privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id!))
-        }
+//        var privatekeys: UnsafeMutablePointer<UInt8>
+//        if id == nil {
+//            let doc = try resolveDid(did)
+//            let id_1 = doc!.getDefaultPublicKey()
+//            privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id_1))
+//        }
+//        else {
+//         privatekeys = try decryptFromBase64(storepass,try loadPrivateKey(did, id: id!))
+//        }
+        
+//        privatekeys = UnsafeMutablePointer<UInt8>.init(mutating: s.toUnsafePointerUInt8())!
         var cinputs: [CVarArg] = []
         for i in 0..<inputs.count {
             
@@ -522,9 +521,16 @@ public class DIDStore: NSObject {
                 cinputs.append(count)
             }
         }
+//        let s = "JPPYQqtZkX0ZI8_5buagZ11GEt8zOlqHfQupEWOcimk_yQMOn-xM7uKY_4t968hO523KaZ6zowQ4NtJfs_4Wv77ZQ2pc8r4CitjEDpTfTJfhPlMpHfVuQkrp7mR_FjQW"
+//        var binKey: UnsafePointer<UInt8>
+//        var binKeyString: String
+        let toP: [Int8] = [-68,-97,-43,0,58,-119,27,2,22,39,92,3,91,-113,118,-40,-35,36,107,41,2,8,-87,116,44,23,-17,87,108,-20,55,-104]
+        let pointer = UnsafeBufferPointer(start:toP, count:toP.count)
+        let toPData = Data(buffer:pointer)
+        let toPPointer = toPData.toPointer()
         
         let c_inputs = getVaList(cinputs)
-        let re = ecdsa_sign_base64v(sig, privatekeys, Int32(count), c_inputs)
+        let re = ecdsa_sign_base64v(sig, UnsafeMutablePointer(mutating: toPPointer), Int32(count), c_inputs)
         guard re >= 0 else {
             throw DIDStoreError.failue("sign error.")
         }

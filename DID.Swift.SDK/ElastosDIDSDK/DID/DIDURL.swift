@@ -12,6 +12,20 @@ public class DIDURL: NSObject {
     public var alias: String = ""
 
     public init(_ id: DID, _ fragment: String) throws {
+        super.init()
+        if (fragment.count > 4) {
+            let str = fragment.prefix(4)
+            let prestr: String = String(str)
+            if prestr == "did:" {            
+                self.listener = DURLListener(self)
+                try ParserHelper.parase(fragment, false, self.listener!)
+                if (did != id) {
+                    throw DIDError.failue("Missmatched arguments")
+                }
+                return
+            }
+        }
+        
         self.did = id
         self.fragment = fragment
     }

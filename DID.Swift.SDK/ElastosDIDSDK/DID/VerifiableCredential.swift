@@ -7,7 +7,7 @@ public class VerifiableCredential: DIDObject {
     public var expirationDate: Date?
     public var subject: CredentialSubject!
     public var proof: Proof!
-    public var alias: String!
+    var alias: String!
     
     private let  RULE_EXPIRE: Int = 1
     private let  RULE_GENUINE: Int = 2
@@ -35,12 +35,25 @@ public class VerifiableCredential: DIDObject {
         self.alias = alias
     }
     
+    public func getAlias() throws -> String {
+        if (alias == nil) {
+            if (DIDStore.isInitialized()) {
+                alias = try DIDStore.shareInstance()?.loadCredentialAlias(subject.id, id)
+            }
+            
+            if (alias == nil) {
+                alias = ""
+            }
+        }
+        return alias
+    }
+    
     public func isSelfProclaimed() throws -> Bool {
         return issuer.isEqual(subject.id)
     }
     
     private func traceCheck(_ rule: Int) throws -> Bool {
-        let controllerDoc: DIDDocument = try subject.id.resolve()
+        let controllerDoc: DIDDocument = try subject.id.resolve()!
         switch rule {
         case RULE_EXPIRE: do {
             if controllerDoc.isExpired() {
@@ -81,7 +94,7 @@ public class VerifiableCredential: DIDObject {
     }
 
     private func checkGenuine() throws -> Bool {
-        let issuerDoc: DIDDocument = try issuer.resolve()
+        let issuerDoc: DIDDocument = try issuer.resolve()!
         
         // Credential should signed by authentication key.
         if (try !issuerDoc.isAuthenticationKey(proof.verificationMethod)){
@@ -109,7 +122,7 @@ public class VerifiableCredential: DIDObject {
     }
 
     public func verify() throws -> Bool {
-        let issuerDoc: DIDDocument = try issuer.resolve()
+        let issuerDoc: DIDDocument = try issuer.resolve()!
         let json: String = toJsonForSign(false)
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
@@ -130,7 +143,7 @@ public class VerifiableCredential: DIDObject {
     }
     
     public func toJson(_ ref: DID, _ normalized: Bool, _ forSign: Bool) -> OrderedDictionary<String, Any> {
-        return toJson(ref: nil, normalized, forSign)
+        return toJson(ref: ref, normalized, forSign)
     }
     
     public func toJson(_ ref: DID, _ normalized: Bool) -> OrderedDictionary<String, Any> {
@@ -146,7 +159,7 @@ public class VerifiableCredential: DIDObject {
         var value: String
         
         // id
-        if normalized || ref != nil && id.did.isEqual(ref) {
+        if normalized || ref == nil || id.did != ref {
             value = id.toExternalForm()
         }
         else {
@@ -226,7 +239,7 @@ public class VerifiableCredential: DIDObject {
     
     func parse(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws {
         // id
-        let id: DIDURL = try JsonHelper.getDidUrl(json, Constants.id, ref, "crendential id")
+        let id: DIDURL = try JsonHelper.getDidUrl(json, Constants.id, ref, "crendential id")!
         self.id = id
         
         // type
@@ -284,5 +297,4 @@ public class VerifiableCredential: DIDObject {
     public override var description: String{
         return description(false)
     }
-
 }

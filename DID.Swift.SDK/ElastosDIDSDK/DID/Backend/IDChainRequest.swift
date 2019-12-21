@@ -1,6 +1,6 @@
 import Foundation
 
-class IDChainRequest: NSObject {
+public class IDChainRequest: NSObject {
     
     private static let CURRENT_SPECIFICATION: String = "elastos/did/1.0"
     
@@ -13,7 +13,7 @@ class IDChainRequest: NSObject {
     private static let KEY_ID: String = Constants.verificationMethod
     private static let SIGNATURE: String = Constants.signature
     
-    enum Operation: Int {
+  public enum Operation: Int {
         case CREATE = 0
         case UPDATE = 1
         case DEACRIVATE
@@ -212,7 +212,7 @@ class IDChainRequest: NSObject {
         KEY_ID)
         let sig = try JsonHelper.getString(proof, SIGNATURE, false,
         nil, SIGNATURE)
-        try request.setProof(keyType, signKey, sig)
+        try request.setProof(keyType, signKey!, sig)
         
         return request
     }

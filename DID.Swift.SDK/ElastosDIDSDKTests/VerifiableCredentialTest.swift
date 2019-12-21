@@ -32,7 +32,7 @@ class VerifiableCredentialTest: XCTestCase {
             XCTAssertTrue(try vc.isValid())
         }
         catch {
-            
+            XCTFail()
         }
     }
     
@@ -67,7 +67,7 @@ class VerifiableCredentialTest: XCTestCase {
             XCTAssertTrue(try vc!.isValid())
         }
         catch {
-            
+            XCTFail()
         }
     }
     
@@ -118,7 +118,7 @@ class VerifiableCredentialTest: XCTestCase {
             XCTAssertEqual(try testData.loadProfileVcCompactJson(), vc!.description(false))
         }
         catch {
-            
+            XCTFail()
         }
     }
 

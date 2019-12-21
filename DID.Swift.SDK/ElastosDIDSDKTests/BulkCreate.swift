@@ -3,7 +3,7 @@ import XCTest
 import ElastosDIDSDK
 
 class BulkCreate: XCTestCase {
-    /*
+
     var adapter: SPVAdaptor!
     var timeout: Double = 1800.0
     
@@ -37,10 +37,10 @@ class BulkCreate: XCTestCase {
                 let hint: String = "my did \(i)"
                 let doc: DIDDocument = try store.newDid(storePass, hint)
                 let path: String = storePath + "/ids/" + doc.subject!.methodSpecificId + "/document"
-                XCTAssertTrue(TestUtils.existsFile(path))
+//                XCTAssertTrue(TestUtils.existsFile(path))
 
-                let path2: String = storePath + "/ids/." + doc.subject!.methodSpecificId + ".meta"
-                XCTAssertTrue(TestUtils.existsFile(path2))
+//                let path2: String = storePath + "/ids/." + doc.subject!.methodSpecificId + ".meta"
+//                XCTAssertTrue(TestUtils.existsFile(path2))
 
                 _ = try store.publishDid(doc, storePass)
 
@@ -74,5 +74,4 @@ class BulkCreate: XCTestCase {
             // Put the code you want to measure the time of here.
         }
     }
-*/
 }

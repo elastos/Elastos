@@ -39,7 +39,7 @@ public class DIDStoreBackend {
         throws { }
 
     public func loadCredential(_ did: DID, _ id: DIDURL)
-        throws -> VerifiableCredential { return VerifiableCredential() }
+        throws -> VerifiableCredential? { return nil }
 
     public func containsCredentials(_ did: DID) throws -> Bool { return false }
 

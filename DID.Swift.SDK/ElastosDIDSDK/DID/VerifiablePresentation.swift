@@ -1,7 +1,7 @@
 
 import Foundation
 
-public class VerifiablePresentation: NSObject {
+public class VerifiablePresentation: NSObject{
    public var type: String!
    public var created: Date!
    public var credentials: OrderedDictionary<DIDURL, VerifiableCredential>!
@@ -21,11 +21,11 @@ public class VerifiablePresentation: NSObject {
         credentials![credential.id] = credential
     }
     
-    public func getCredential(_ id: DIDURL) throws -> VerifiableCredential {
-        return credentials![id]!
+    public func getCredential(_ id: DIDURL) throws -> VerifiableCredential? {
+        return credentials![id]
     }
     
-    public func getCredential(_ id: String) throws -> VerifiableCredential {
+    public func getCredential(_ id: String) throws -> VerifiableCredential? {
         return try getCredential(DIDURL(getSigner(), id))
     }
     
@@ -35,7 +35,7 @@ public class VerifiablePresentation: NSObject {
     
     public func isGenuine() throws -> Bool {
         let signer: DID = getSigner()
-        let signerDoc: DIDDocument = try signer.resolve()
+        let signerDoc: DIDDocument = try signer.resolve()!
 
         // Check the integrity of signer' document.
         if (try !signerDoc.isGenuine()) {
@@ -70,7 +70,7 @@ public class VerifiablePresentation: NSObject {
     
     public func isValid() throws -> Bool {
         let signer: DID = getSigner()
-        let signerDoc: DIDDocument = try signer.resolve()
+        let signerDoc: DIDDocument = try signer.resolve()!
 
         // Check the validity of signer' document.
         if (try !signerDoc.isValid()){
@@ -144,7 +144,7 @@ public class VerifiablePresentation: NSObject {
         guard d != nil else {
            throw MalformedCredentialError.failue("Missing credentials.")
         }
-        let proof: Proof = try Proof.fromJson_vp(presentation, nil)
+        let proof: Proof = try Proof.fromJson_vp(d as! OrderedDictionary<String, Any>, nil)
         self.proof = proof
     }
     
@@ -178,7 +178,7 @@ public class VerifiablePresentation: NSObject {
         dic[Constants.type] = type
 
         // created
-        dic[Constants.created] = created
+        dic[Constants.created] = DateFormater.format(created)
 
         // credentials
         var arr: Array<OrderedDictionary<String, Any>> = []
@@ -214,5 +214,34 @@ public class VerifiablePresentation: NSObject {
     
     public override var description: String {
         return toExternalForm()
+    }
+    
+    class public func seal(for did : DID, _ credentials: Array<VerifiableCredential>, _ realm: String, _ nonce: String, _ storepass: String) throws -> VerifiablePresentation {
+        let signer = try did.resolve()
+        if (signer == nil) {
+            throw DIDError.failue("Can not resolve DID.")
+        }
+        
+        let signKey = signer!.getDefaultPublicKey()
+        if try !signer!.isAuthorizationKey(signKey) {
+            throw DIDError.failue("Invalid sign key id.")
+        }
+        if (try signer!.hasPrivateKey(signKey)) {
+            throw DIDError.failue("No private key.")
+        }
+        let presentation: VerifiablePresentation = VerifiablePresentation()
+        for vc in credentials {
+            presentation.addCredential(vc)
+        }
+        
+        let dic = presentation.toJson(true)
+        let json = JsonHelper.creatJsonString(dic: dic)
+        let inputs: [CVarArg] = [json, json.count]
+        let count: Int = inputs.count / 2
+        let sig = try signer?.sign(signKey, storepass, count, inputs)
+        let proof = Proof(signKey, realm, nonce, sig!)
+        presentation.proof = proof
+        
+        return presentation
     }
 }

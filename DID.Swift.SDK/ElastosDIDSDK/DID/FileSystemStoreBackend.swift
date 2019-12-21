@@ -113,6 +113,11 @@ public class FileSystemStoreBackend: DIDStoreBackend {
             throw DIDStoreError.failue("Directory \(tagFilePath) unsupported version.")
         }
     }
+
+    public override func containsPrivateIdentity() throws -> Bool {
+        let path = try getHDPrivateKeyFile(false)
+        return try exists(path)
+    }
     
     public override func storePrivateIdentity(_ key: String) throws {
         let path = try getHDPrivateKeyFile(true)
@@ -182,17 +187,39 @@ public class FileSystemStoreBackend: DIDStoreBackend {
     public override func listDids(_ filter: Int) throws -> Array<DID>{
         var arr: Array<DID> = []
         let path = storeRootPath + "/" + FileSystemStoreBackend.DID_DIR
-        _ = try exists(path)
+        let re = try exists_dir(path)
+        guard re else {
+            return []
+        }
 
         let fileManager = FileManager.default
-        let enumerator = try! fileManager.contentsOfDirectory(atPath: path)
+        let enumerator = try fileManager.contentsOfDirectory(atPath: path)
         for element: String in enumerator {
-            if !element.hasSuffix(".meta") {
+            var hasPrivateKey: Bool = false
+            hasPrivateKey = try containsPrivateKeys(element)
+            
+            if filter == DIDStore.DID_HAS_PRIVATEKEY {
+                
+            }
+            else if filter == DIDStore.DID_NO_PRIVATEKEY {
+                hasPrivateKey = !hasPrivateKey
+            }
+            else if filter == DIDStore.DID_ALL {
+                hasPrivateKey = true
+            }
+         
+            if hasPrivateKey {
                 let did: DID = DID(DID.METHOD, element)
+                did.alias = try loadDidAlias(did)
                 arr.append(did)
             }
         }
         return arr
+    }
+    
+    private func containsPrivateKeys(_ didstr: String) throws -> Bool {
+        let did: DID = DID(DID.METHOD, didstr)
+        return try containsPrivateKeys(did)
     }
     
     public override func storeCredentialAlias(_ did: DID, _ id: DIDURL, _ alias: String?) throws {
@@ -221,11 +248,10 @@ public class FileSystemStoreBackend: DIDStoreBackend {
         handle?.write(data)
     }
     
-    public override func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential {
+    public override func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
         let path: String = storeRootPath + "/" + FileSystemStoreBackend.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStoreBackend.CREDENTIALS_DIR + "/" + id.fragment + "/" + FileSystemStoreBackend.CREDENTIAL_FILE
-
         guard try exists(path) else {
-             throw DIDStoreError.failue("No credential.")
+             return nil
         }
         return try VerifiableCredential.fromJsonInPath(path)
     }
@@ -249,10 +275,10 @@ public class FileSystemStoreBackend: DIDStoreBackend {
     }
     
     override public func deleteCredential(_ did: DID, _ id: DIDURL) throws -> Bool {
-        let targetPath = storeRootPath + "/" + FileSystemStoreBackend.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStoreBackend.CREDENTIALS_DIR + "/." + id.fragment
+        let targetPath = storeRootPath + "/" + FileSystemStoreBackend.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStoreBackend.CREDENTIALS_DIR + "/" + id.fragment
         let path = try getFile(targetPath)
-        if try exists(path!) {
-            _ = try deleteFile(path!)
+        if try exists_dir(path!) {
+            return try deleteFile(path!)
         }
         return false
     }
@@ -267,10 +293,10 @@ public class FileSystemStoreBackend: DIDStoreBackend {
         let enumerator = try fileManager.contentsOfDirectory(atPath: dir)
         var arr: Array<DIDURL> = []
         for element: String in enumerator  {
-            if !element.hasSuffix(".meta") {
-                let didUrl: DIDURL = try DIDURL(did, element)
-                arr.append(didUrl)
-            }
+            // if !element.hasSuffix(".meta")
+            let didUrl: DIDURL = try DIDURL(did, element)
+            didUrl.alias = try loadCredentialAlias(did, didUrl)
+            arr.append(didUrl)
         }
         return arr
     }
@@ -297,6 +323,7 @@ public class FileSystemStoreBackend: DIDStoreBackend {
     public override func loadPrivateKey(_ did: DID, _ id: DIDURL) throws -> String {
         let path: String = storeRootPath + "/" + FileSystemStoreBackend.DID_DIR + "/" + did.methodSpecificId + "/" + FileSystemStoreBackend.PRIVATEKEYS_DIR + "/" + id.fragment
         let privateKeyPath = try getFile(path)
+//        return "JPPYQqtZkX0ZI8_5buagZ11GEt8zOlqHfQupEWOcimk_yQMOn-xM7uKY_4t968hO523KaZ6zowQ4NtJfs_4Wv77ZQ2pc8r4CitjEDpTfTJfhPlMpHfVuQkrp7mR_FjQW"
         return try! String(contentsOfFile:privateKeyPath!, encoding: String.Encoding.utf8)
     }
     
@@ -310,12 +337,12 @@ public class FileSystemStoreBackend: DIDStoreBackend {
             return false
         }
         
-        var keys: [URL] = []
+        var keys: [String] = []
         if let dirContents = fileManager.enumerator(atPath: path) {
             // determine whether files are hidden or not
-            for case let url as URL in dirContents {
+            while let url = dirContents.nextObject() as? String  {
                 // Not hiding files
-                if url.absoluteString.first?.description != "." {
+                if url.first!.description != "." {
                     keys.append(url)
                 }
             }
@@ -387,15 +414,7 @@ public class FileSystemStoreBackend: DIDStoreBackend {
         var isDir = ObjCBool.init(false)
         let fileExists = fileManager.fileExists(atPath: path, isDirectory: &isDir)
         // If path is a folder, traverse the subfiles under the folder and delete them
-        var re: Bool = false
-        if fileExists && isDir.boolValue {
-            if let dirContents = fileManager.enumerator(atPath: path) {
-                
-                for case let url as URL in dirContents {
-                    re = try deleteFile(url.absoluteString)
-                }
-            }
-        }
+        let re: Bool = false
         guard fileExists else {
             return re
         }

@@ -12,7 +12,7 @@ public class Service: DIDObject {
         let id = try JsonHelper.getDidUrl(json, Constants.id, ref, "service' id")
         let type = try JsonHelper.getString(json,Constants.type, false, nil, "service' type")
         let endpoint = try JsonHelper.getString(json,Constants.serviceEndpoint, false, nil, "service' endpoint")
-        return Service(id, type, endpoint)
+        return Service(id!, type, endpoint)
     }
     
     public func toJson(_ ref: DID, _ normalized: Bool) -> OrderedDictionary<String, Any> {

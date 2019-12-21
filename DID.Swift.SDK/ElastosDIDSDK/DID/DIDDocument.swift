@@ -131,7 +131,7 @@ public class DIDDocument: NSObject {
         // Cann't remove default public key
         if (getDefaultPublicKey().isEqual(id)) { return false }
         if force {
-            _ =  removeAuthorizationKey(id)
+            _ = removeAuthenticationKey(id)
             _ = removeAuthorizationKey(id)
         }
         else {
@@ -177,11 +177,7 @@ public class DIDDocument: NSObject {
     }
     
     public func isAuthenticationKey(_ id: DIDURL) throws -> Bool {
-        do {
-            return try getAuthenticationKey(id) != nil
-        } catch {
-            return false
-        }
+        return try getAuthenticationKey(id) != nil
     }
     
     public func isAuthenticationKey(_ id: String) throws -> Bool {
@@ -397,7 +393,8 @@ public class DIDDocument: NSObject {
             return false
         }
         
-        let json = try toJson(nil, true, true)
+        var json = try toJson(nil, true, true)
+//        json = "{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKey\":[{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key2\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"eutGFcoBxFhVRN857tCMTds9sMBNXSSW6XQoAPJ7LiAW\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key3\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"guYm69ws1axrT5tEaftaeB9bRDgNx2zuUq92TU7vxSsb\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"iShbegV5nmtX328bH4zfk5BHfomhKV19zMz47ouG6roQ\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#recovery\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:ikEYk4MJszQMLJxe39SKmG5qFV3aa76aAN\",\"publicKeyBase58\":\"q4aaMAPigYweuGwxxmGqa5BkUxPHH35LYntpEab5Rpeh\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#test1\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"222tZmLz1mVbyGoWCf6Z2PWjLs4RSacYprsxwT6afpTQG\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#test2\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"248ETpWypfBAPYvZyrVZSxyt6f1awHd81j1kFG74aJpCy\"}],\"authentication\":[\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key2\",\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key3\",\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary\"],\"authorization\":[\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#recovery\"],\"verifiableCredential\":[{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#email\",\"type\":[\"BasicProfileCredential\",\"EmailCredential\",\"InternetAccountCredential\"],\"issuer\":\"did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM\",\"issuanceDate\":\"2019-12-10T03:34:35Z\",\"expirationDate\":\"2024-12-10T03:34:35Z\",\"credentialSubject\":{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"email\":\"john@example.com\"},\"proof\":{\"type\":\"ECDSAsecp256r1\",\"verificationMethod\":\"did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#primary\",\"signature\":\"uqLJRgB-DHOcYNkbylVkSaH4ETx_ZIgkvaXlTm8GXf0Cvf7j-AAVRkfN5p2q-FhEoSrPDoNb4romalaozl-rDQ\"}},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#profile\",\"type\":[\"BasicProfileCredential\",\"SelfProclaimedCredential\"],\"issuer\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"issuanceDate\":\"2019-12-10T03:34:35Z\",\"expirationDate\":\"2024-12-10T03:34:35Z\",\"credentialSubject\":{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"email\":\"john@example.com\",\"gender\":\"Male\",\"language\":\"English\",\"name\":\"John\",\"nation\":\"Singapore\",\"twitter\":\"@john\"},\"proof\":{\"type\":\"ECDSAsecp256r1\",\"verificationMethod\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary\",\"signature\":\"kPWMNElJ9R5cfzsm6DaLEQVTlAxIAM1kxg97bbTbh50FTUlD2EyxnxQgnk5LRJ02VU2cytdd3_qcWnfOqiVatQ\"}}],\"service\":[{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#carrier\",\"type\":\"CarrierAddress\",\"serviceEndpoint\":\"carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#openid\",\"type\":\"OpenIdConnectVersion1.0Service\",\"serviceEndpoint\":\"https://openid.example.com/\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#vcr\",\"type\":\"CredentialRepositoryService\",\"serviceEndpoint\":\"https://did.example.com/credentials\"}],\"expires\":\"2024-12-10T03:34:35Z\"}"
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
         
@@ -669,7 +666,7 @@ public class DIDDocument: NSObject {
      *   - creator
      *   - signatureValue
      */
-    public func toJson(_ path: String?, _ normalized: Bool, _ forSign: Bool) throws -> String {
+    public func toJson(_ path: String? = nil, _ normalized: Bool, _ forSign: Bool) throws -> String {
            var dic: OrderedDictionary<String, Any> = OrderedDictionary()
            // subject
            dic[Constants.id] = subject?.toExternalForm()
@@ -678,7 +675,7 @@ public class DIDDocument: NSObject {
            publicKeys = DIDURLComparator.DIDOrderedDictionaryComparator(publicKeys)
            var pks: Array<OrderedDictionary<String, Any>> = []
            publicKeys.forEach { (didUrl, pk) in
-               let dic = pk.toJson(subject!, normalized)
+               let dic = pk.toJson_dc(subject!, normalized)
                pks.append(dic)
            }
            dic[Constants.publicKey] = pks
@@ -778,7 +775,7 @@ public class DIDDocument: NSObject {
 
     // ----------------------------------------
     public func addPublicKey(_ id: DIDURL, _ controller: DID, _ pk: String) throws -> Bool {
-        guard Base58.bytesFromBase58(pk).count != HDKey.PUBLICKEY_BYTES else {
+        guard Base58.bytesFromBase58(pk).count == HDKey.PUBLICKEY_BYTES else {
             throw DIDError.failue("Invalid public key.")
         }
         let key: DIDPublicKey = DIDPublicKey(id, controller, pk)
@@ -802,6 +799,9 @@ public class DIDDocument: NSObject {
     }
     public func addAuthenticationKey(_ id: DIDURL) throws -> Bool {
         let pk = try getPublicKey(id)
+        guard pk != nil else {
+            return false
+        }
         return try addAuthenticationKey(pk!)
     }
     
@@ -827,6 +827,9 @@ public class DIDDocument: NSObject {
     
     public func addAuthorizationKey(_ id: DIDURL) throws -> Bool {
         let pk = try getPublicKey(id)
+        guard pk != nil else {
+            return false
+        }
         return try addAuthorizationKey(pk!)
     }
     
@@ -854,11 +857,11 @@ public class DIDDocument: NSObject {
         let doc = try controller.resolve()
         var k: DIDURL
         if key == nil {
-            k = doc.getDefaultPublicKey()
+            k = doc!.getDefaultPublicKey()
         }else {
             k = key!
         }
-        let refPk = try doc.getPublicKey(k)
+        let refPk = try doc!.getPublicKey(k)
         
         // The public key should belongs to controller
         if (refPk!.controller! != controller) {
@@ -918,11 +921,13 @@ public class DIDDocument: NSObject {
     
     public func seal(_ storepass: String) throws -> DIDDocument {
         let signKey: DIDURL = getDefaultPublicKey()
-        let json = try toJson(nil, true, true)
+        var json = try toJson(nil, true, true)
+//        json = "{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKey\":[{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key2\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"eutGFcoBxFhVRN857tCMTds9sMBNXSSW6XQoAPJ7LiAW\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key3\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"guYm69ws1axrT5tEaftaeB9bRDgNx2zuUq92TU7vxSsb\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"iShbegV5nmtX328bH4zfk5BHfomhKV19zMz47ouG6roQ\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#recovery\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:ikEYk4MJszQMLJxe39SKmG5qFV3aa76aAN\",\"publicKeyBase58\":\"q4aaMAPigYweuGwxxmGqa5BkUxPHH35LYntpEab5Rpeh\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#test1\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"222tZmLz1mVbyGoWCf6Z2PWjLs4RSacYprsxwT6afpTQG\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#test2\",\"type\":\"ECDSAsecp256r1\",\"controller\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"publicKeyBase58\":\"248ETpWypfBAPYvZyrVZSxyt6f1awHd81j1kFG74aJpCy\"}],\"authentication\":[\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key2\",\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#key3\",\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary\"],\"authorization\":[\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#recovery\"],\"verifiableCredential\":[{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#email\",\"type\":[\"BasicProfileCredential\",\"EmailCredential\",\"InternetAccountCredential\"],\"issuer\":\"did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM\",\"issuanceDate\":\"2019-12-10T03:34:35Z\",\"expirationDate\":\"2024-12-10T03:34:35Z\",\"credentialSubject\":{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"email\":\"john@example.com\"},\"proof\":{\"type\":\"ECDSAsecp256r1\",\"verificationMethod\":\"did:elastos:ieoAQzYjxvGHJLfNzQ2oT7WsbeSpxdbrXM#primary\",\"signature\":\"uqLJRgB-DHOcYNkbylVkSaH4ETx_ZIgkvaXlTm8GXf0Cvf7j-AAVRkfN5p2q-FhEoSrPDoNb4romalaozl-rDQ\"}},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#profile\",\"type\":[\"BasicProfileCredential\",\"SelfProclaimedCredential\"],\"issuer\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"issuanceDate\":\"2019-12-10T03:34:35Z\",\"expirationDate\":\"2024-12-10T03:34:35Z\",\"credentialSubject\":{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY\",\"email\":\"john@example.com\",\"gender\":\"Male\",\"language\":\"English\",\"name\":\"John\",\"nation\":\"Singapore\",\"twitter\":\"@john\"},\"proof\":{\"type\":\"ECDSAsecp256r1\",\"verificationMethod\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary\",\"signature\":\"kPWMNElJ9R5cfzsm6DaLEQVTlAxIAM1kxg97bbTbh50FTUlD2EyxnxQgnk5LRJ02VU2cytdd3_qcWnfOqiVatQ\"}}],\"service\":[{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#carrier\",\"type\":\"CarrierAddress\",\"serviceEndpoint\":\"carrier://X2tDd1ZTErwnHNot8pTdhp7C7Y9FxMPGD8ppiasUT4UsHH2BpF1d\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#openid\",\"type\":\"OpenIdConnectVersion1.0Service\",\"serviceEndpoint\":\"https://openid.example.com/\"},{\"id\":\"did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#vcr\",\"type\":\"CredentialRepositoryService\",\"serviceEndpoint\":\"https://did.example.com/credentials\"}],\"expires\":\"2024-12-10T03:34:35Z\"}"
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
         let sig = try sign(signKey, storepass, count, inputs)
-        
+        let re = try verify(signKey, sig, count, inputs)
+
         let proof = Proof(signKey, sig)
         self.proof = proof
         return self
