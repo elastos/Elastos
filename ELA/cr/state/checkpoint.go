@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/checkpoint"
 	"github.com/elastos/Elastos.ELA/core/types"
+	"github.com/elastos/Elastos.ELA/utils"
 )
 
 const (
@@ -46,9 +47,11 @@ func (c *Checkpoint) OnRollbackTo(height uint32) error {
 	keyFrame := NewKeyFrame()
 	if height < c.StartHeight() {
 		committee := &Committee{
-			state:    NewState(c.committee.params),
-			params:   c.committee.params,
-			KeyFrame: *keyFrame,
+			state:        NewState(c.committee.params),
+			params:       c.committee.params,
+			KeyFrame:     *keyFrame,
+			firstHistory: utils.NewHistory(maxHistoryCapacity),
+			lastHistory:  utils.NewHistory(maxHistoryCapacity),
 		}
 		c.initFromCommittee(committee)
 		c.committee.Recover(c)
