@@ -16,6 +16,31 @@ def validate_api_key(api_key):
     return result
 
 
+def check_rate_limit(rate_limiter, api_key, service_name):
+    response = {}
+    limiter = rate_limiter["limiter"]
+    limit = rate_limiter["limit"]
+    result = limiter.get_last_access_count(api_key, service_name)
+    if result:
+        if result["diff"] < 86400:
+            if limit > result["access_count"]:
+                limiter.add_access_count(result["user_api_id"], service_name, 'increment')
+            else:
+                response = {
+                    'result': {
+                        'API': service_name,
+                        'daily_limit': limit,
+                        'num_requests': result['access_count']
+                    }
+                }
+                return response
+        else:
+            limiter.add_access_count(result["user_api_id"], service_name, 'reset')
+    else:
+        limiter.add_new_access_entry(api_key, service_name)
+    return response
+
+
 def get_time():
     return datetime.datetime.now(pytz.timezone('America/New_York')).strftime("%Y-%m-%d %H:%M:%S %z")
 

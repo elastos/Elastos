@@ -9,6 +9,9 @@ from web3.middleware import geth_poa_middleware
 
 from grpc_adenine import settings
 from grpc_adenine.implementations import WalletAddresses, WalletAddressesETH
+from grpc_adenine.implementations.rate_limiter import RateLimiter
+from grpc_adenine.implementations.utils import validate_api_key, check_rate_limit
+from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs import wallet_pb2
 from grpc_adenine.stubs import wallet_pb2_grpc
 
@@ -28,13 +31,27 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                          request_kwargs={'timeout': 60}))
         # We need this since our eth sidechain is POA
         self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        self.rate_limiter = {
+            "limiter": RateLimiter(),
+            "limit": 1
+        }
 
     def CreateWallet(self, request, context):
-        # Validate the API Key
+
         api_key = request.api_key
-        # api_status = validate_api_key(api_key)
-        # if not api_status:
-        #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+        # Validate the API Key
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            return wallet_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+
+        # Check whether the user is able to use this API by checking their rate limiter
+        service_name = 'CreateWallet'
+        self.rate_limiter["limit"] = settings.CREATE_WALLET_LIMIT
+        response = check_rate_limit(self.rate_limiter, api_key, service_name)
+        if response:
+            return wallet_pb2.Response(output=json.dumps(response),
+                                       status_message='Number of daily access limit exceeded',
+                                       status=False)
 
         # Create wallets
         wallet_mainchain = create_wallet_mainchain(self.session)
@@ -77,11 +94,21 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         return wallet_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
 
     def ViewWallet(self, request, context):
-        # Validate the API Key
+
         api_key = request.api_key
-        # api_status = validate_api_key(api_key)
-        # if not api_status:
-        #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+        # Validate the API Key
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            return wallet_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+
+        # Check whether the user is able to use this API by checking their rate limiter
+        service_name = 'ViewWallet'
+        self.rate_limiter["limit"] = settings.VIEW_WALLET_LIMIT
+        response = check_rate_limit(self.rate_limiter, api_key, service_name)
+        if response:
+            return wallet_pb2.Response(output=json.dumps(response),
+                                       status_message='Number of daily access limit exceeded',
+                                       status=False)
 
         request_input = json.loads(request.input)
         chain = request_input['chain']
@@ -103,11 +130,21 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         return wallet_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)
 
     def RequestELA(self, request, context):
-        # Validate the API Key
+
         api_key = request.api_key
-        # api_status = validate_api_key(api_key)
-        # if not api_status:
-        #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+        # Validate the API Key
+        api_status = validate_api_key(api_key)
+        if not api_status:
+            return wallet_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+
+        # Check whether the user is able to use this API by checking their rate limiter
+        service_name = 'RequestELA'
+        self.rate_limiter["limit"] = settings.REQUEST_ELA_LIMIT
+        response = check_rate_limit(self.rate_limiter, api_key, service_name)
+        if response:
+            return wallet_pb2.Response(output=json.dumps(response),
+                                       status_message='Number of daily access limit exceeded',
+                                       status=False)
 
         request_input = json.loads(request.input)
         chain = request_input['chain']
@@ -153,7 +190,7 @@ def create_wallet_mainchain(session):
     # Generate mnemonics
     generate_mnemonics_url = config('PRIVATE_NET_IP_ADDRESS') + config(
         'WALLET_SERVICE_URL') + settings.WALLET_API_GENERATE_MNEMONIC
-    response = session.get(generate_mnemonics_url)
+    response = session.get(generate_mnemonics_url, timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)
     mnemonic = data['result']
     result['mnemonic'] = mnemonic
@@ -165,7 +202,7 @@ def create_wallet_mainchain(session):
         "mnemonic": mnemonic,
         "index": 1
     }
-    response = session.post(retrieve_wallet_url, data=json.dumps(req_data))
+    response = session.post(retrieve_wallet_url, data=json.dumps(req_data), timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)['result']
     result['private_key'] = data['privateKey']
     result['public_key'] = data['publicKey']
@@ -177,7 +214,7 @@ def create_wallet_sidechain_did(session):
     result = {}
     # Create DID
     create_did_url = config('PRIVATE_NET_IP_ADDRESS') + config('DID_SERVICE_URL') + settings.DID_SERVICE_API_CREATE_DID
-    response = session.get(create_did_url)
+    response = session.get(create_did_url, timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)['result']
     result['mnemonic'] = ''
     result['private_key'] = data['privateKey']
@@ -221,7 +258,7 @@ def view_wallet_general(session, chain, address):
                 "address": address
             }
         }
-    response = session.post(get_balance_url, data=json.dumps(d))
+    response = session.post(get_balance_url, data=json.dumps(d), timeout=REQUEST_TIMEOUT)
     data = json.loads(response.text)
     balance = data['result']
     return balance
