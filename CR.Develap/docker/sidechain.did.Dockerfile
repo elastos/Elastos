@@ -28,6 +28,7 @@ RUN curl https://glide.sh/get | sh
 # cwd
 WORKDIR /go/src/github.com/elastos/Elastos.ELA.SideChain.ID
 
+RUN glide cc && glide update && glide install
 RUN make
 
 # alpine3.10
