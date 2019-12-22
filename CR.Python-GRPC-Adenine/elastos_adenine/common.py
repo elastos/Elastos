@@ -26,3 +26,7 @@ class Common:
     def generate_api_request(self, secret_key, did):
         response = self.stub.GenerateAPIRequest(common_pb2.Request(secret_key=secret_key, did=did))
         return response
+
+    def get_api_key_request(self, secret_key, did):
+        response = self.stub.GetAPIKey(common_pb2.Request(secret_key=secret_key, did=did))
+        return response

@@ -19,6 +19,11 @@ class CommonStub(object):
         request_serializer=common__pb2.Request.SerializeToString,
         response_deserializer=common__pb2.Response.FromString,
         )
+    self.GetAPIKey = channel.unary_unary(
+        '/common.Common/GetAPIKey',
+        request_serializer=common__pb2.Request.SerializeToString,
+        response_deserializer=common__pb2.Response.FromString,
+        )
 
 
 class CommonServicer(object):
@@ -32,11 +37,23 @@ class CommonServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def GetAPIKey(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_CommonServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'GenerateAPIRequest': grpc.unary_unary_rpc_method_handler(
           servicer.GenerateAPIRequest,
+          request_deserializer=common__pb2.Request.FromString,
+          response_serializer=common__pb2.Response.SerializeToString,
+      ),
+      'GetAPIKey': grpc.unary_unary_rpc_method_handler(
+          servicer.GetAPIKey,
           request_deserializer=common__pb2.Request.FromString,
           response_serializer=common__pb2.Response.SerializeToString,
       ),

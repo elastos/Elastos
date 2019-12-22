@@ -32,6 +32,18 @@ def main():
             print(e)
         finally:
             common.close()
+    elif service == "get_api_key":
+        try:
+            common = Common()
+            response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), 'qhfiueq98dqwbd')
+            if response.status:
+                print("Api Key: " + response.api_key)
+            else:
+                print("Error Message: " + response.status_message)
+        except Exception as e:
+            print(e)
+        finally:
+            common.close()
     elif service == "upload_and_sign":
         try:
             hive = Hive()
