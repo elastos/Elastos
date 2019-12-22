@@ -112,7 +112,7 @@
 
 			const std::string &GetValue(const std::string &key);
 
-			bool HashProperties(const std::string &key) const;
+			bool HasProperties(const std::string &key) const;
 
 			void AddProperties(const std::string &key, const std::string &value);
 

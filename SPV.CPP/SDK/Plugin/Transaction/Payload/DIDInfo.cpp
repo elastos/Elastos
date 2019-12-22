@@ -255,11 +255,11 @@ namespace Elastos {
 		}
 
 		const std::string &CredentialSubject::GetValue(const std::string &key) {
-			ErrorChecker::CheckParam(!HashProperties(key), Error::InvalidArgument, "invalid key");
+			ErrorChecker::CheckParam(!HasProperties(key), Error::InvalidArgument, "invalid key");
 			return _properties[key];
 		}
 
-		bool CredentialSubject::HashProperties(const std::string &key) const {
+		bool CredentialSubject::HasProperties(const std::string &key) const {
 			return _properties.find(key) != _properties.end();
 		}
 

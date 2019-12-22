@@ -860,7 +860,6 @@ static int diddoc(int argc, char *argv[]) {
 		std::string didName;
 		std::string operation;
 		std::string publicKey;
-		std::string previousTxid;
 		uint64_t expires;
 		nlohmann::json pubKey = R"({"id":"#primary"})"_json;
 		nlohmann::json publicKeys;
@@ -873,11 +872,6 @@ static int diddoc(int argc, char *argv[]) {
 
 		std::cout << "Enter operation: ";
 		std::getline(std::cin, operation);
-
-		if (operation == "update") {
-			std::cout << "Enter previous txid: ";
-			std::getline(std::cin, previousTxid);
-		}
 
 		std::cout << "Enter public key: ";
 		std::getline(std::cin, publicKey);
@@ -893,7 +887,6 @@ static int diddoc(int argc, char *argv[]) {
 		j["operation"] = operation;
 		j["publicKey"] = publicKeys;
 		j["expires"] = expires;
-		j["previousTxid"] = previousTxid;
 
 		std::string password = getpass("Enter payment password: ");
 		nlohmann::json payload = subWallet->GenerateDIDInfoPayload(j, password);

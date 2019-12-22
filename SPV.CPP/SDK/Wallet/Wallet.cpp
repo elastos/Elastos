@@ -15,6 +15,7 @@
 #include <Plugin/Transaction/IDTransaction.h>
 #include <Plugin/Transaction/TransactionOutput.h>
 #include <Plugin/Transaction/Payload/RegisterAsset.h>
+#include <Plugin/Registry.h>
 #include <Wallet/UTXO.h>
 
 #include <ISubWallet.h>
@@ -262,10 +263,12 @@ namespace Elastos {
 
 			TransactionPtr tx = _groupedAssets[assetID]->CreateTxForOutputs(type, payload, outputs, fromAddress, memoFixed, max);
 
-			if (assetID == Asset::GetELAAssetID())
-				tx->SetVersion(Transaction::TxVersion::V09);
-			else
+			if (assetID != Asset::GetELAAssetID())
 				_groupedAssets[Asset::GetELAAssetID()]->AddFeeForTx(tx);
+
+			if (_chainID == CHAINID_MAINCHAIN) {
+				tx->SetVersion(Transaction::TxVersion::V09);
+			}
 
 			tx->FixIndex();
 

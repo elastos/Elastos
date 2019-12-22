@@ -140,7 +140,7 @@ namespace Elastos {
 					}
 
 					if (!istream.ReadVarString(value.Info)) {
-						Log::error("Payload register identification deserialize proof fail");
+						Log::error("Payload register identification deserialize info fail");
 						return false;
 					}
 					content.Values.push_back(value);

@@ -237,11 +237,11 @@ namespace Elastos {
 		IDChainSubWallet::GetVerifiableCredentialTypes(const CredentialSubject &subject) const {
 			std::vector<std::string> types;
 
-			if (subject.HashProperties("didName")) {
+			if (subject.HasProperties("didName")) {
 				types.push_back("SelfProclaimedCredential");
 			}
 
-			if (subject.HashProperties("name")) {
+			if (subject.HasProperties("name")) {
 				types.push_back("BasicProfileCredential");
 			}
 
@@ -249,16 +249,16 @@ namespace Elastos {
 				types.push_back("ElastosIDteriaCredential");
 			}
 
-			if (subject.HashProperties("phone")) {
+			if (subject.HasProperties("phone")) {
 				types.push_back("PhoneCredential");
 			}
 
-			if (subject.HashProperties("email") || subject.HashProperties("wechat") || subject.HashProperties("weibo")
-			    || subject.HashProperties("twitter") || subject.HashProperties("facebook")
-			    || subject.HashProperties("MicrosoftPassport") || subject.HashProperties("googleAccount")
-			    || subject.HashProperties("homePage") || subject.HashProperties("taobao")
-			    || subject.HashProperties("qq") || subject.HashProperties("telegram") || subject.HashProperties("im")
-			    || subject.HashProperties("url")) {
+			if (subject.HasProperties("email") || subject.HasProperties("wechat") || subject.HasProperties("weibo")
+			    || subject.HasProperties("twitter") || subject.HasProperties("facebook")
+			    || subject.HasProperties("MicrosoftPassport") || subject.HasProperties("googleAccount")
+			    || subject.HasProperties("homePage") || subject.HasProperties("taobao")
+			    || subject.HasProperties("qq") || subject.HasProperties("telegram") || subject.HasProperties("im")
+			    || subject.HasProperties("url")) {
 				types.push_back("InternetAccountCredential");
 			}
 			return types;
@@ -413,11 +413,13 @@ namespace Elastos {
 
 			VerifiableCredential selfProclaimed = GetSelfProclaimedCredential(did, didName, operation);
 			selfProclaimed.SetID(id);
+			selfProclaimed.AutoFill(id);
 			verifiableCredentials.push_back(selfProclaimed);
 
 			if (didInfo.find("credentialSubject") != didInfo.end()) {
 				VerifiableCredential verifiableCredential = GetPersonalInfoCredential(didInfo);
 				verifiableCredential.SetID(id);
+				verifiableCredential.AutoFill(id);
 				verifiableCredentials.push_back(verifiableCredential);
 			}
 
@@ -578,7 +580,7 @@ namespace Elastos {
 
 			const VerifiableCredentialArray &verifiableCredentialArray = payloadInfo.GetVerifiableCredential();
 			for (size_t i = 0; i < verifiableCredentialArray.size(); ++i) {
-				if (!verifiableCredentialArray[i].GetCredentialSubject().HashProperties("didName")) {
+				if (!verifiableCredentialArray[i].GetCredentialSubject().HasProperties("didName")) {
 					CredentialSubject subject = verifiableCredentialArray[i].GetCredentialSubject();
 					summary["didName"] = subject.GetValue("didName");
 				} else if (isDetail) {
