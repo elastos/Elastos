@@ -69,7 +69,18 @@ class TestData: XCTestCase {
     
     func importPrivateKey(_ id: DIDURL, _ fileName: String, _ type: String) throws {
         let skBase58: String = try loadText(fileName, type)
-        try DIDStore.shareInstance()?.storePrivateKey(id.did, id, skBase58, storePass)
+        let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
+        let cp = skBase58.toUnsafePointerInt8()
+        let re = base58_decode(buffer, cp)
+        print(re)
+        let temp = UnsafeRawPointer(buffer)
+        .bindMemory(to: UInt8.self, capacity: re)
+        
+        let data = Data(bytes: temp, count: re)
+        let intArray = [UInt8](data).map { Int8(bitPattern: $0) }
+        print(intArray)
+
+        try DIDStore.shareInstance()?.storePrivateKey(id.did, id, data, storePass)
     }
     
     func loadTestIssuer() throws -> DIDDocument {
@@ -327,3 +338,40 @@ class TestData: XCTestCase {
         return useDate
     }
 }
+
+extension String {
+    var asciiArray: [UInt32] {
+        return unicodeScalars.filter{$0.isASCII}.map{$0.value}
+    }
+    
+    func toUnsafePointerUInt8() -> UnsafePointer<UInt8>? {
+        guard let data = self.data(using: .utf8) else {
+            return nil
+        }
+        
+        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: data.count)
+        let stream = OutputStream(toBuffer: buffer, capacity: data.count)
+        stream.open()
+        let value = data.withUnsafeBytes {
+            $0.baseAddress?.assumingMemoryBound(to: UInt8.self)
+        }
+        guard let val = value else {
+            return nil
+        }
+        stream.write(val, maxLength: data.count)
+        stream.close()
+        
+        return UnsafePointer<UInt8>(buffer)
+    }
+    
+    func toUnsafePointerInt8() -> UnsafePointer<Int8>? {
+        let str: NSString = self as NSString
+        let strUnsafe = str.utf8String
+        return strUnsafe
+    }
+    
+    func toUnsafeMutablePointerInt8() -> UnsafeMutablePointer<Int8>? {
+        return strdup(self)
+    }
+}
+
