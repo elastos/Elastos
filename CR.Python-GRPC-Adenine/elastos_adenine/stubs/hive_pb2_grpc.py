@@ -14,11 +14,6 @@ class HiveStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.Sign = channel.unary_unary(
-        '/hive.Hive/Sign',
-        request_serializer=hive__pb2.Request.SerializeToString,
-        response_deserializer=hive__pb2.Response.FromString,
-        )
     self.UploadAndSign = channel.unary_unary(
         '/hive.Hive/UploadAndSign',
         request_serializer=hive__pb2.Request.SerializeToString,
@@ -34,13 +29,6 @@ class HiveStub(object):
 class HiveServicer(object):
   """The service definition.
   """
-
-  def Sign(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
 
   def UploadAndSign(self, request, context):
     # missing associated documentation comment in .proto file
@@ -59,11 +47,6 @@ class HiveServicer(object):
 
 def add_HiveServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'Sign': grpc.unary_unary_rpc_method_handler(
-          servicer.Sign,
-          request_deserializer=hive__pb2.Request.FromString,
-          response_serializer=hive__pb2.Response.SerializeToString,
-      ),
       'UploadAndSign': grpc.unary_unary_rpc_method_handler(
           servicer.UploadAndSign,
           request_deserializer=hive__pb2.Request.FromString,
