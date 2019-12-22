@@ -29,10 +29,7 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
                          request_kwargs={'timeout': 60}))
         # We need this since our eth sidechain is POA
         self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-        self.rate_limiter = {
-            "limiter": RateLimiter(),
-            "limit": 1
-        }
+        self.rate_limiter = RateLimiter()
 
     def DeployEthContract(self, request, context):
 
@@ -40,12 +37,15 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            return sidechain_eth_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+            response = {
+                'result': {
+                    'API_Key': api_key
+                }
+            }
+            return sidechain_eth_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        service_name = 'DeployEthContract'
-        self.rate_limiter["limit"] = settings.DEPLOY_ETH_CONTRACT_LIMIT
-        response = check_rate_limit(self.rate_limiter, api_key, service_name)
+        response = check_rate_limit(self.rate_limiter, settings.DEPLOY_ETH_CONTRACT_LIMIT, api_key, self.DeployEthContract.__name__)
         if response:
             return sidechain_eth_pb2.Response(output=json.dumps(response),
                                               status_message='Number of daily access limit exceeded',
@@ -126,12 +126,15 @@ class SidechainEth(sidechain_eth_pb2_grpc.SidechainEthServicer):
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            return sidechain_eth_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+            response = {
+                'result': {
+                    'API_Key': api_key
+                }
+            }
+            return sidechain_eth_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        service_name = 'WatchEthContract'
-        self.rate_limiter["limit"] = settings.WATCH_ETH_CONTRACT_LIMIT
-        response = check_rate_limit(self.rate_limiter, api_key, service_name)
+        response = check_rate_limit(self.rate_limiter, settings.WATCH_ETH_CONTRACT_LIMIT, api_key, self.WatchEthContract.__name__)
         if response:
             return sidechain_eth_pb2.Response(output=json.dumps(response),
                                               status_message='Number of daily access limit exceeded',

@@ -31,10 +31,7 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
                          request_kwargs={'timeout': 60}))
         # We need this since our eth sidechain is POA
         self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-        self.rate_limiter = {
-            "limiter": RateLimiter(),
-            "limit": 1
-        }
+        self.rate_limiter = RateLimiter()
 
     def CreateWallet(self, request, context):
 
@@ -42,12 +39,15 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            return wallet_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+            response = {
+                'result': {
+                    'API_Key': api_key
+                }
+            }
+            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        service_name = 'CreateWallet'
-        self.rate_limiter["limit"] = settings.CREATE_WALLET_LIMIT
-        response = check_rate_limit(self.rate_limiter, api_key, service_name)
+        response = check_rate_limit(self.rate_limiter, settings.CREATE_WALLET_LIMIT, api_key, self.CreateWallet.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
                                        status_message='Number of daily access limit exceeded',
@@ -99,12 +99,15 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            return wallet_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+            response = {
+                'result': {
+                    'API_Key': api_key
+                }
+            }
+            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        service_name = 'ViewWallet'
-        self.rate_limiter["limit"] = settings.VIEW_WALLET_LIMIT
-        response = check_rate_limit(self.rate_limiter, api_key, service_name)
+        response = check_rate_limit(self.rate_limiter, settings.VIEW_WALLET_LIMIT, api_key, self.ViewWallet.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
                                        status_message='Number of daily access limit exceeded',
@@ -135,12 +138,15 @@ class Wallet(wallet_pb2_grpc.WalletServicer):
         # Validate the API Key
         api_status = validate_api_key(api_key)
         if not api_status:
-            return wallet_pb2.Response(output='', status_message='API Key could not be verified', status=False)
+            response = {
+                'result': {
+                    'API_Key': api_key
+                }
+            }
+            return wallet_pb2.Response(output=json.dumps(response), status_message='API Key could not be verified', status=False)
 
         # Check whether the user is able to use this API by checking their rate limiter
-        service_name = 'RequestELA'
-        self.rate_limiter["limit"] = settings.REQUEST_ELA_LIMIT
-        response = check_rate_limit(self.rate_limiter, api_key, service_name)
+        response = check_rate_limit(self.rate_limiter, settings.REQUEST_ELA_LIMIT, api_key, self.RequestELA.__name__)
         if response:
             return wallet_pb2.Response(output=json.dumps(response),
                                        status_message='Number of daily access limit exceeded',

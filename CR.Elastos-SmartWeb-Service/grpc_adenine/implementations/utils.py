@@ -16,15 +16,13 @@ def validate_api_key(api_key):
     return result
 
 
-def check_rate_limit(rate_limiter, api_key, service_name):
+def check_rate_limit(rate_limiter, limit, api_key, service_name):
     response = {}
-    limiter = rate_limiter["limiter"]
-    limit = rate_limiter["limit"]
-    result = limiter.get_last_access_count(api_key, service_name)
+    result = rate_limiter.get_last_access_count(api_key, service_name)
     if result:
         if result["diff"] < 86400:
             if limit > result["access_count"]:
-                limiter.add_access_count(result["user_api_id"], service_name, 'increment')
+                rate_limiter.add_access_count(result["user_api_id"], service_name, 'increment')
             else:
                 response = {
                     'result': {
@@ -35,9 +33,9 @@ def check_rate_limit(rate_limiter, api_key, service_name):
                 }
                 return response
         else:
-            limiter.add_access_count(result["user_api_id"], service_name, 'reset')
+            rate_limiter.add_access_count(result["user_api_id"], service_name, 'reset')
     else:
-        limiter.add_new_access_entry(api_key, service_name)
+        rate_limiter.add_new_access_entry(api_key, service_name)
     return response
 
 
