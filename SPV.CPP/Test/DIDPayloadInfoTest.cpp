@@ -32,23 +32,23 @@ static void initCredentialSubject(CredentialSubject &subject) {
 	std::string alipay = "alipay@223.com";
 
 	subject.SetID(did);
-	subject.SetName(name);
-	subject.SetNickName(nickName);
-	subject.SetGender(gender);
-	subject.SetBirthday(birthday);
-	subject.SetAvatar(avatar);
-	subject.SetEmail(email);
-	subject.SetPhone(phone);
-	subject.SetNation(nation);
-	subject.SetDescript(desc);
-	subject.SetHomePage(homePage);
-	subject.SetGoogleAccount(googleAccount);
-	subject.SetMicrosoftPassport(microsoftPassport);
-	subject.SetFacebook(facebook);
-	subject.SetTwitter(twitter);
-	subject.SetWeibo(weibo);
-	subject.SetWechat(wechat);
-	subject.SetAlipay(alipay);
+	subject.AddProperties("name", name);
+	subject.AddProperties("nickName", nickName);
+	subject.AddProperties("gender", gender);
+	subject.AddProperties("birthday", birthday);
+	subject.AddProperties("avatar", avatar);
+	subject.AddProperties("email", email);
+	subject.AddProperties("phone", phone);
+	subject.AddProperties("nation", nation);
+	subject.AddProperties("descript", desc);
+	subject.AddProperties("url", homePage);
+	subject.AddProperties("googleAccount", googleAccount);
+	subject.AddProperties("microsoftPassport", microsoftPassport);
+	subject.AddProperties("facebook", facebook);
+	subject.AddProperties("twitter", twitter);
+	subject.AddProperties("weibo", weibo);
+	subject.AddProperties("wechat", wechat);
+	subject.AddProperties("alipay", alipay);
 }
 
 static void initVerifiableCredential(VerifiableCredential &veriffiableCredential) {
@@ -85,23 +85,23 @@ TEST_CASE("CredentialSubject test", "[CredentialSubject]") {
 		subject2.FromJson(j, 0);
 
 		REQUIRE(subject2.ID() == subject.ID());
-		REQUIRE(subject2.GetName() == subject.GetName());
-		REQUIRE(subject2.GetNickName() == subject.GetNickName());
-		REQUIRE(subject2.GetGender() == subject.GetGender());
-		REQUIRE(subject2.GetBirthday() == subject.GetBirthday());
-		REQUIRE(subject2.GetAvatar() == subject.GetAvatar());
-		REQUIRE(subject2.GetEmail() == subject.GetEmail());
-		REQUIRE(subject2.GetPhone() == subject.GetPhone());
-		REQUIRE(subject2.GetNation() == subject.GetNation());
-		REQUIRE(subject2.GetDescript() == subject.GetDescript());
-		REQUIRE(subject2.GetHomePage() == subject.GetHomePage());
-		REQUIRE(subject2.GetGoogleAccount() == subject.GetGoogleAccount());
-		REQUIRE(subject2.GetMicrosoftPassport() == subject.GetMicrosoftPassport());
-		REQUIRE(subject2.GetFacebook() == subject.GetFacebook());
-		REQUIRE(subject2.GetTwitter() == subject.GetTwitter());
-		REQUIRE(subject2.GetWeibo() == subject.GetWeibo());
-		REQUIRE(subject2.GetWechat() == subject.GetWechat());
-		REQUIRE(subject2.GetAlipay() == subject.GetAlipay());
+		REQUIRE(subject2.GetValue("name") == subject.GetValue("name"));
+		REQUIRE(subject2.GetValue("nickName") == subject.GetValue("nickName"));
+		REQUIRE(subject2.GetValue("gender") == subject.GetValue("gender"));
+		REQUIRE(subject2.GetValue("birthday") == subject.GetValue("birthday"));
+		REQUIRE(subject2.GetValue("avatar") == subject.GetValue("avatar"));
+		REQUIRE(subject2.GetValue("email") == subject.GetValue("email"));
+		REQUIRE(subject2.GetValue("phone") == subject.GetValue("phone"));
+		REQUIRE(subject2.GetValue("nation") == subject.GetValue("nation"));
+		REQUIRE(subject2.GetValue("descript") == subject.GetValue("descript"));
+		REQUIRE(subject2.GetValue("url") == subject.GetValue("url"));
+		REQUIRE(subject2.GetValue("googleAccount") == subject.GetValue("googleAccount"));
+		REQUIRE(subject2.GetValue("microsoftPassport") == subject.GetValue("microsoftPassport"));
+		REQUIRE(subject2.GetValue("facebook") == subject.GetValue("facebook"));
+		REQUIRE(subject2.GetValue("twitter") == subject.GetValue("twitter"));
+		REQUIRE(subject2.GetValue("weibo") == subject.GetValue("weibo"));
+		REQUIRE(subject2.GetValue("wechat") == subject.GetValue("wechat"));
+		REQUIRE(subject2.GetValue("alipay") == subject.GetValue("alipay"));
 	}
 }
 
@@ -140,23 +140,23 @@ TEST_CASE("VerifiableCredential test", "[VerifiableCredential]") {
 			CredentialSubject subject2 = veriffiableCredential2.GetCredentialSubject();
 
 			REQUIRE(subject2.ID() == subject.ID());
-			REQUIRE(subject2.GetName() == subject.GetName());
-			REQUIRE(subject2.GetNickName() == subject.GetNickName());
-			REQUIRE(subject2.GetGender() == subject.GetGender());
-			REQUIRE(subject2.GetBirthday() == subject.GetBirthday());
-			REQUIRE(subject2.GetAvatar() == subject.GetAvatar());
-			REQUIRE(subject2.GetEmail() == subject.GetEmail());
-			REQUIRE(subject2.GetPhone() == subject.GetPhone());
-			REQUIRE(subject2.GetNation() == subject.GetNation());
-			REQUIRE(subject2.GetDescript() == subject.GetDescript());
-			REQUIRE(subject2.GetHomePage() == subject.GetHomePage());
-			REQUIRE(subject2.GetGoogleAccount() == subject.GetGoogleAccount());
-			REQUIRE(subject2.GetMicrosoftPassport() == subject.GetMicrosoftPassport());
-			REQUIRE(subject2.GetFacebook() == subject.GetFacebook());
-			REQUIRE(subject2.GetTwitter() == subject.GetTwitter());
-			REQUIRE(subject2.GetWeibo() == subject.GetWeibo());
-			REQUIRE(subject2.GetWechat() == subject.GetWechat());
-			REQUIRE(subject2.GetAlipay() == subject.GetAlipay());
+			REQUIRE(subject2.GetValue("name") == subject.GetValue("name"));
+			REQUIRE(subject2.GetValue("nickName") == subject.GetValue("nickName"));
+			REQUIRE(subject2.GetValue("gender") == subject.GetValue("gender"));
+			REQUIRE(subject2.GetValue("birthday") == subject.GetValue("birthday"));
+			REQUIRE(subject2.GetValue("avatar") == subject.GetValue("avatar"));
+			REQUIRE(subject2.GetValue("email") == subject.GetValue("email"));
+			REQUIRE(subject2.GetValue("phone") == subject.GetValue("phone"));
+			REQUIRE(subject2.GetValue("nation") == subject.GetValue("nation"));
+			REQUIRE(subject2.GetValue("descript") == subject.GetValue("descript"));
+			REQUIRE(subject2.GetValue("url") == subject.GetValue("url"));
+			REQUIRE(subject2.GetValue("googleAccount") == subject.GetValue("googleAccount"));
+			REQUIRE(subject2.GetValue("microsoftPassport") == subject.GetValue("microsoftPassport"));
+			REQUIRE(subject2.GetValue("facebook") == subject.GetValue("facebook"));
+			REQUIRE(subject2.GetValue("twitter") == subject.GetValue("twitter"));
+			REQUIRE(subject2.GetValue("weibo") == subject.GetValue("weibo"));
+			REQUIRE(subject2.GetValue("wechat") == subject.GetValue("wechat"));
+			REQUIRE(subject2.GetValue("alipay") == subject.GetValue("alipay"));
 
 			DIDProofInfo proofInfo = veriffiableCredential.Proof();
 			DIDProofInfo proofInfo2 = veriffiableCredential2.Proof();
@@ -280,23 +280,23 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 			CredentialSubject subject2 = veriffiableCredentials2[i].GetCredentialSubject();
 
 			REQUIRE(subject2.ID() == subject.ID());
-			REQUIRE(subject2.GetName() == subject.GetName());
-			REQUIRE(subject2.GetNickName() == subject.GetNickName());
-			REQUIRE(subject2.GetGender() == subject.GetGender());
-			REQUIRE(subject2.GetBirthday() == subject.GetBirthday());
-			REQUIRE(subject2.GetAvatar() == subject.GetAvatar());
-			REQUIRE(subject2.GetEmail() == subject.GetEmail());
-			REQUIRE(subject2.GetPhone() == subject.GetPhone());
-			REQUIRE(subject2.GetNation() == subject.GetNation());
-			REQUIRE(subject2.GetDescript() == subject.GetDescript());
-			REQUIRE(subject2.GetHomePage() == subject.GetHomePage());
-			REQUIRE(subject2.GetGoogleAccount() == subject.GetGoogleAccount());
-			REQUIRE(subject2.GetMicrosoftPassport() == subject.GetMicrosoftPassport());
-			REQUIRE(subject2.GetFacebook() == subject.GetFacebook());
-			REQUIRE(subject2.GetTwitter() == subject.GetTwitter());
-			REQUIRE(subject2.GetWeibo() == subject.GetWeibo());
-			REQUIRE(subject2.GetWechat() == subject.GetWechat());
-			REQUIRE(subject2.GetAlipay() == subject.GetAlipay());
+			REQUIRE(subject2.GetValue("name") == subject.GetValue("name"));
+			REQUIRE(subject2.GetValue("nickName") == subject.GetValue("nickName"));
+			REQUIRE(subject2.GetValue("gender") == subject.GetValue("gender"));
+			REQUIRE(subject2.GetValue("birthday") == subject.GetValue("birthday"));
+			REQUIRE(subject2.GetValue("avatar") == subject.GetValue("avatar"));
+			REQUIRE(subject2.GetValue("email") == subject.GetValue("email"));
+			REQUIRE(subject2.GetValue("phone") == subject.GetValue("phone"));
+			REQUIRE(subject2.GetValue("nation") == subject.GetValue("nation"));
+			REQUIRE(subject2.GetValue("descript") == subject.GetValue("descript"));
+			REQUIRE(subject2.GetValue("url") == subject.GetValue("url"));
+			REQUIRE(subject2.GetValue("googleAccount") == subject.GetValue("googleAccount"));
+			REQUIRE(subject2.GetValue("microsoftPassport") == subject.GetValue("microsoftPassport"));
+			REQUIRE(subject2.GetValue("facebook") == subject.GetValue("facebook"));
+			REQUIRE(subject2.GetValue("twitter") == subject.GetValue("twitter"));
+			REQUIRE(subject2.GetValue("weibo") == subject.GetValue("weibo"));
+			REQUIRE(subject2.GetValue("wechat") == subject.GetValue("wechat"));
+			REQUIRE(subject2.GetValue("alipay") == subject.GetValue("alipay"));
 
 			DIDProofInfo proofInfo = veriffiableCredentials[i].Proof();
 			DIDProofInfo proofInfo2 = veriffiableCredentials2[i].Proof();
@@ -318,17 +318,27 @@ TEST_CASE("DIDPayloadInfo test", "[DIDPayloadInfo]") {
 	}
 
 	SECTION("DIDPayloadInfo FromJson from json") {
-		nlohmann::json normalizeJson = R"(
-{"id":"did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X","publicKey":[{"id":"did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X#primary","type":"ECDSAsecp256r1","controller":"did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X","publicKeyBase58":"i5yL3RnhRnsmfXDS1FvuQV7UwG7P65KKYTyKrByZ13sA"}],"authentication":["did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X#primary"],"expires":"2024-12-19T13:15:00Z","proof":{"type":"ECDSAsecp256r1","created":"2019-12-19T13:15:00Z","creator":"did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X#primary","signatureValue":"znYM3tJOYFuP2nhBQlreiHUQIUduV-kAhNZTFHLW18u4RGxV0Uuvedu9pHFGW97Yc6nac7BaLbrxf5MAQ0EuMg"}}
-)"_json;
+		std::vector<nlohmann::json> list;
+		list.push_back(R"(
+{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","publicKey":[{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","type":"ECDSAsecp256r1","controller":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","publicKeyBase58":"kN614vs5PcGmgR4rqonH42zCrLRtTshZmWQWs8b88g9c"}],"authentication":["did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary"],"verifiableCredential":[{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#passport","type":["BasicProfileCredential","SelfProclaimedCredential"],"issuer":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","issuanceDate":"2019-12-21T08:53:15Z","expirationDate":"2024-12-21T08:53:15Z","credentialSubject":{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","nation":"Singapore","passport":"S653258Z07"},"proof":{"type":"ECDSAsecp256r1","verificationMethod":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signature":"z4JvU998ufqKAqZnUIuaInMP5fpI4aE5A8TKO9nDAJ-gqtL-sU2d3f2cir9j52Hy4q4qpRfr03uZ4p6jKDQ8QA"}},{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#profile","type":["BasicProfileCredential","SelfProclaimedCredential"],"issuer":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","issuanceDate":"2019-12-21T08:53:15Z","expirationDate":"2024-12-21T08:53:15Z","credentialSubject":{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","email":"john@example.com","gender":"Male","language":"English","name":"John","nation":"Singapore","twitter":"@john"},"proof":{"type":"ECDSAsecp256r1","verificationMethod":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signature":"di7sNPUuDmicIBIp_0V2OFtKZ0GybdS2ZqKmxHG1rwaK40iqH-uGPsVd693wU3qMYnx3lfoUCu6IksFPhq7zCQ"}},{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#test","type":["SelfProclaimedCredential","TestCredential"],"issuer":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","issuanceDate":"2019-12-21T08:53:15Z","expirationDate":"2024-12-21T08:53:15Z","credentialSubject":{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","Abc":"Abc","Foobar":"Foobar","Zoo":"Zoo","abc":"abc","foobar":"foobar","zoo":"zoo"},"proof":{"type":"ECDSAsecp256r1","verificationMethod":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signature":"sEs3hjEIwiqs0HjTqtYli6uVDBYUmJDcjNfXgGjtCordgu9gYyjfELAxCOvClPaq-VRjpdAYPCfxIlKgKKBp7w"}}],"expires":"2024-12-21T08:53:15Z","proof":{"type":"ECDSAsecp256r1","created":"2019-12-21T08:53:15Z","creator":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signatureValue":"X10t9dOr-88CyLA6Er-F5MU0STnhOtLQjsBgvh_bM_acDiqmPbWjIBxPNhe9fz-sCIVbCwFMzwvm2G-yGoalmA"}}
+)"_json);
 
-		DIDPayloadInfo didPayloadInfo;
-		didPayloadInfo.FromJson(normalizeJson, 0);
+		list.push_back(R"(
+{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","publicKey":[{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","type":"ECDSAsecp256r1","controller":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","publicKeyBase58":"kN614vs5PcGmgR4rqonH42zCrLRtTshZmWQWs8b88g9c"}],"authentication":["did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary"],"verifiableCredential":[{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#passport","type":["BasicProfileCredential","SelfProclaimedCredential"],"issuer":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","issuanceDate":"2019-12-21T08:53:15Z","expirationDate":"2024-12-21T08:53:15Z","credentialSubject":{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","nation":"Singapore","passport":"S653258Z07"},"proof":{"type":"ECDSAsecp256r1","verificationMethod":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signature":"z4JvU998ufqKAqZnUIuaInMP5fpI4aE5A8TKO9nDAJ-gqtL-sU2d3f2cir9j52Hy4q4qpRfr03uZ4p6jKDQ8QA"}},{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#profile","type":["BasicProfileCredential","SelfProclaimedCredential"],"issuer":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","issuanceDate":"2019-12-21T08:53:15Z","expirationDate":"2024-12-21T08:53:15Z","credentialSubject":{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","email":"john@example.com","gender":"Male","language":"English","name":"John","nation":"Singapore","twitter":"@john"},"proof":{"type":"ECDSAsecp256r1","verificationMethod":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signature":"di7sNPUuDmicIBIp_0V2OFtKZ0GybdS2ZqKmxHG1rwaK40iqH-uGPsVd693wU3qMYnx3lfoUCu6IksFPhq7zCQ"}}],"expires":"2024-12-21T08:53:15Z","proof":{"type":"ECDSAsecp256r1","created":"2019-12-21T08:53:15Z","creator":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signatureValue":"jBvNlGVaD43lGzXtWnbpT_774igwdejwMQWdyjNbva7IAoOKmlnW1y6F1zEGzCig14CqVCgLVkdO7Mmjmapqrg"}}
+)"_json);
 
-		REQUIRE(didPayloadInfo.IsValid());
-		REQUIRE(didPayloadInfo.ID() == "did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X");
-		REQUIRE(didPayloadInfo.PublicKeyInfo().size() == 1);
-		REQUIRE(didPayloadInfo.PublicKeyInfo()[0].ID() == "did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X#primary");
-		REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "i5yL3RnhRnsmfXDS1FvuQV7UwG7P65KKYTyKrByZ13sA");
+		list.push_back(R"(
+{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","publicKey":[{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","type":"ECDSAsecp256r1","controller":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","publicKeyBase58":"kN614vs5PcGmgR4rqonH42zCrLRtTshZmWQWs8b88g9c"}],"authentication":["did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary"],"verifiableCredential":[{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#profile","type":["BasicProfileCredential","SelfProclaimedCredential"],"issuer":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","issuanceDate":"2019-12-21T08:53:15Z","expirationDate":"2024-12-21T08:53:15Z","credentialSubject":{"id":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R","email":"john@example.com","gender":"Male","language":"English","name":"John","nation":"Singapore","twitter":"@john"},"proof":{"type":"ECDSAsecp256r1","verificationMethod":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signature":"di7sNPUuDmicIBIp_0V2OFtKZ0GybdS2ZqKmxHG1rwaK40iqH-uGPsVd693wU3qMYnx3lfoUCu6IksFPhq7zCQ"}}],"expires":"2024-12-21T08:53:15Z","proof":{"type":"ECDSAsecp256r1","created":"2019-12-21T08:53:15Z","creator":"did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary","signatureValue":"wNplK-NHPi5orZdr7KceQ2ATrPbi3AfxDmEq4FQYPOGa4ABAQKaiNZjQIad1THWuIRzyhgtAQVYJ96lSDml0bg"}}
+)"_json);
+
+		for(size_t i = 0; i < list.size(); ++i) {
+			DIDPayloadInfo didPayloadInfo;
+			didPayloadInfo.FromJson(list[i], 0);
+			REQUIRE(didPayloadInfo.IsValid());
+			REQUIRE(didPayloadInfo.ID() == "did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R");
+			REQUIRE(didPayloadInfo.PublicKeyInfo().size() == 1);
+			REQUIRE(didPayloadInfo.PublicKeyInfo()[0].ID() == "did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary");
+			REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "kN614vs5PcGmgR4rqonH42zCrLRtTshZmWQWs8b88g9c");
+		}
 	}
 }

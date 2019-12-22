@@ -205,34 +205,49 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 }
 
 TEST_CASE("new tx with type and payload", "[IDTransaction]") {
-	nlohmann::json didPayloadJSON = R"(
-{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlhVlB6U2NEanRtd0Z6dzVxeUFlaU44THJ5VW5GS2ZjOVgiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJpNXlMM1JuaFJuc21mWERTMUZ2dVFWN1V3RzdQNjVLS1lUeUtyQnlaMTNzQSJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwiZXhwaXJlcyI6IjIwMjQtMTItMTlUMTM6MTU6MDBaIiwicHJvb2YiOnsiY3JlYXRlZCI6IjIwMTktMTItMTlUMTM6MTU6MDBaIiwic2lnbmF0dXJlVmFsdWUiOiJ6bllNM3RKT1lGdVAybmhCUWxyZWlIVVFJVWR1Vi1rQWhOWlRGSExXMTh1NFJHeFYwVXV2ZWR1OXBIRkdXOTdZYzZuYWM3QmFMYnJ4ZjVNQVEwRXVNZyJ9fQ","proof":{"type":"ECDSAsecp256r1","verificationMethod":"did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X#primary","signature":"r67jkThJ-3UaamdfRIy5VaP8UeYevZWpVrkeCkjBF4-eV-hHH3cZ3bcDXnv2H75DzgD01mt_GxwgKK8rH4UoJg"}}
-)"_json;
+	std::vector<nlohmann::json> list;
+	list.push_back(R"(
+{"header":{"specification":"elastos/did/1.0","operation":"create"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlmVVBhcG83dlJUQXQyYzd5dGQ0QnJib295SzdCN0dwNFIiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJrTjYxNHZzNVBjR21nUjRycW9uSDQyekNyTFJ0VHNoWm1XUVdzOGI4OGc5YyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlt7ImlkIjoiI3Byb2ZpbGUiLCJ0eXBlIjpbIkJhc2ljUHJvZmlsZUNyZWRlbnRpYWwiLCJTZWxmUHJvY2xhaW1lZENyZWRlbnRpYWwiXSwiaXNzdWFuY2VEYXRlIjoiMjAxOS0xMi0yMVQwODo1MzoxNVoiLCJleHBpcmF0aW9uRGF0ZSI6IjIwMjQtMTItMjFUMDg6NTM6MTVaIiwiY3JlZGVudGlhbFN1YmplY3QiOnsiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiZ2VuZGVyIjoiTWFsZSIsImxhbmd1YWdlIjoiRW5nbGlzaCIsIm5hbWUiOiJKb2huIiwibmF0aW9uIjoiU2luZ2Fwb3JlIiwidHdpdHRlciI6IkBqb2huIn0sInByb29mIjp7InZlcmlmaWNhdGlvbk1ldGhvZCI6IiNwcmltYXJ5Iiwic2lnbmF0dXJlIjoiZGk3c05QVXVEbWljSUJJcF8wVjJPRnRLWjBHeWJkUzJacUtteEhHMXJ3YUs0MGlxSC11R1BzVmQ2OTN3VTNxTVlueDNsZm9VQ3U2SWtzRlBocTd6Q1EifX1dLCJleHBpcmVzIjoiMjAyNC0xMi0yMVQwODo1MzoxNVoiLCJwcm9vZiI6eyJjcmVhdGVkIjoiMjAxOS0xMi0yMVQwODo1MzoxNVoiLCJzaWduYXR1cmVWYWx1ZSI6IndOcGxLLU5IUGk1b3JaZHI3S2NlUTJBVHJQYmkzQWZ4RG1FcTRGUVlQT0dhNEFCQVFLYWlOWmpRSWFkMVRIV3VJUnp5aGd0QVFWWUo5NmxTRG1sMGJnIn19","proof":{"verificationMethod":"#primary","signature":"506QI2nkxhwLmqxJW3zMIOyIhsdx66H5ZdxKOYhHeb1BGFFLaXVR2yfXPLgNfueNPQpX8oK2A1YpmMVyc3XYfQ"}}
+)"_json);
 
+	list.push_back(R"(
+{"header":{"specification":"elastos/did/1.0","operation":"update","previousTxid":"97b366a8c7193be0d1d9073de920dd0b"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlmVVBhcG83dlJUQXQyYzd5dGQ0QnJib295SzdCN0dwNFIiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJrTjYxNHZzNVBjR21nUjRycW9uSDQyekNyTFJ0VHNoWm1XUVdzOGI4OGc5YyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlt7ImlkIjoiI3Bhc3Nwb3J0IiwidHlwZSI6WyJCYXNpY1Byb2ZpbGVDcmVkZW50aWFsIiwiU2VsZlByb2NsYWltZWRDcmVkZW50aWFsIl0sImlzc3VhbmNlRGF0ZSI6IjIwMTktMTItMjFUMDg6NTM6MTVaIiwiZXhwaXJhdGlvbkRhdGUiOiIyMDI0LTEyLTIxVDA4OjUzOjE1WiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hdGlvbiI6IlNpbmdhcG9yZSIsInBhc3Nwb3J0IjoiUzY1MzI1OFowNyJ9LCJwcm9vZiI6eyJ2ZXJpZmljYXRpb25NZXRob2QiOiIjcHJpbWFyeSIsInNpZ25hdHVyZSI6Ino0SnZVOTk4dWZxS0FxWm5VSXVhSW5NUDVmcEk0YUU1QThUS085bkRBSi1ncXRMLXNVMmQzZjJjaXI5ajUySHk0cTRxcFJmcjAzdVo0cDZqS0RROFFBIn19LHsiaWQiOiIjcHJvZmlsZSIsInR5cGUiOlsiQmFzaWNQcm9maWxlQ3JlZGVudGlhbCIsIlNlbGZQcm9jbGFpbWVkQ3JlZGVudGlhbCJdLCJpc3N1YW5jZURhdGUiOiIyMDE5LTEyLTIxVDA4OjUzOjE1WiIsImV4cGlyYXRpb25EYXRlIjoiMjAyNC0xMi0yMVQwODo1MzoxNVoiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJnZW5kZXIiOiJNYWxlIiwibGFuZ3VhZ2UiOiJFbmdsaXNoIiwibmFtZSI6IkpvaG4iLCJuYXRpb24iOiJTaW5nYXBvcmUiLCJ0d2l0dGVyIjoiQGpvaG4ifSwicHJvb2YiOnsidmVyaWZpY2F0aW9uTWV0aG9kIjoiI3ByaW1hcnkiLCJzaWduYXR1cmUiOiJkaTdzTlBVdURtaWNJQklwXzBWMk9GdEtaMEd5YmRTMlpxS214SEcxcndhSzQwaXFILXVHUHNWZDY5M3dVM3FNWW54M2xmb1VDdTZJa3NGUGhxN3pDUSJ9fV0sImV4cGlyZXMiOiIyMDI0LTEyLTIxVDA4OjUzOjE1WiIsInByb29mIjp7ImNyZWF0ZWQiOiIyMDE5LTEyLTIxVDA4OjUzOjE1WiIsInNpZ25hdHVyZVZhbHVlIjoiakJ2TmxHVmFENDNsR3pYdFduYnBUXzc3NGlnd2RlandNUVdkeWpOYnZhN0lBb09LbWxuVzF5NkYxekVHekNpZzE0Q3FWQ2dMVmtkTzdNbWptYXBxcmcifX0","proof":{"verificationMethod":"#primary","signature":"qRcQALdDIPZUJOZW75td0_ROxVxIibbFVncfCKPmw_17-g-8-3LlKMcRvrojrjrekDFYua0-sDo5248C7ZomxA"}}
+)"_json);
 
-	PayloadPtr payload = PayloadPtr(new DIDInfo());
-	payload->FromJson(didPayloadJSON, 0);
-	TransactionPtr tx1 = TransactionPtr(new IDTransaction(IDTransaction::didTransaction, payload));
-	initTransaction(*tx1, Transaction::TxVersion::Default);
+	list.push_back(R"(
+{"header":{"specification":"elastos/did/1.0","operation":"update","previousTxid":"2c1dea205a25705d9085cdf03e28c72c"},"payload":"eyJpZCI6ImRpZDplbGFzdG9zOmlmVVBhcG83dlJUQXQyYzd5dGQ0QnJib295SzdCN0dwNFIiLCJwdWJsaWNLZXkiOlt7ImlkIjoiI3ByaW1hcnkiLCJwdWJsaWNLZXlCYXNlNTgiOiJrTjYxNHZzNVBjR21nUjRycW9uSDQyekNyTFJ0VHNoWm1XUVdzOGI4OGc5YyJ9XSwiYXV0aGVudGljYXRpb24iOlsiI3ByaW1hcnkiXSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlt7ImlkIjoiI3Bhc3Nwb3J0IiwidHlwZSI6WyJCYXNpY1Byb2ZpbGVDcmVkZW50aWFsIiwiU2VsZlByb2NsYWltZWRDcmVkZW50aWFsIl0sImlzc3VhbmNlRGF0ZSI6IjIwMTktMTItMjFUMDg6NTM6MTVaIiwiZXhwaXJhdGlvbkRhdGUiOiIyMDI0LTEyLTIxVDA4OjUzOjE1WiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hdGlvbiI6IlNpbmdhcG9yZSIsInBhc3Nwb3J0IjoiUzY1MzI1OFowNyJ9LCJwcm9vZiI6eyJ2ZXJpZmljYXRpb25NZXRob2QiOiIjcHJpbWFyeSIsInNpZ25hdHVyZSI6Ino0SnZVOTk4dWZxS0FxWm5VSXVhSW5NUDVmcEk0YUU1QThUS085bkRBSi1ncXRMLXNVMmQzZjJjaXI5ajUySHk0cTRxcFJmcjAzdVo0cDZqS0RROFFBIn19LHsiaWQiOiIjcHJvZmlsZSIsInR5cGUiOlsiQmFzaWNQcm9maWxlQ3JlZGVudGlhbCIsIlNlbGZQcm9jbGFpbWVkQ3JlZGVudGlhbCJdLCJpc3N1YW5jZURhdGUiOiIyMDE5LTEyLTIxVDA4OjUzOjE1WiIsImV4cGlyYXRpb25EYXRlIjoiMjAyNC0xMi0yMVQwODo1MzoxNVoiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJnZW5kZXIiOiJNYWxlIiwibGFuZ3VhZ2UiOiJFbmdsaXNoIiwibmFtZSI6IkpvaG4iLCJuYXRpb24iOiJTaW5nYXBvcmUiLCJ0d2l0dGVyIjoiQGpvaG4ifSwicHJvb2YiOnsidmVyaWZpY2F0aW9uTWV0aG9kIjoiI3ByaW1hcnkiLCJzaWduYXR1cmUiOiJkaTdzTlBVdURtaWNJQklwXzBWMk9GdEtaMEd5YmRTMlpxS214SEcxcndhSzQwaXFILXVHUHNWZDY5M3dVM3FNWW54M2xmb1VDdTZJa3NGUGhxN3pDUSJ9fSx7ImlkIjoiI3Rlc3QiLCJ0eXBlIjpbIlNlbGZQcm9jbGFpbWVkQ3JlZGVudGlhbCIsIlRlc3RDcmVkZW50aWFsIl0sImlzc3VhbmNlRGF0ZSI6IjIwMTktMTItMjFUMDg6NTM6MTVaIiwiZXhwaXJhdGlvbkRhdGUiOiIyMDI0LTEyLTIxVDA4OjUzOjE1WiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7IkFiYyI6IkFiYyIsIkZvb2JhciI6IkZvb2JhciIsIlpvbyI6IlpvbyIsImFiYyI6ImFiYyIsImZvb2JhciI6ImZvb2JhciIsInpvbyI6InpvbyJ9LCJwcm9vZiI6eyJ2ZXJpZmljYXRpb25NZXRob2QiOiIjcHJpbWFyeSIsInNpZ25hdHVyZSI6InNFczNoakVJd2lxczBIalRxdFlsaTZ1VkRCWVVtSkRjak5mWGdHanRDb3JkZ3U5Z1l5amZFTEF4Q092Q2xQYXEtVlJqcGRBWVBDZnhJbEtnS0tCcDd3In19XSwiZXhwaXJlcyI6IjIwMjQtMTItMjFUMDg6NTM6MTVaIiwicHJvb2YiOnsiY3JlYXRlZCI6IjIwMTktMTItMjFUMDg6NTM6MTVaIiwic2lnbmF0dXJlVmFsdWUiOiJYMTB0OWRPci04OEN5TEE2RXItRjVNVTBTVG5oT3RMUWpzQmd2aF9iTV9hY0RpcW1QYldqSUJ4UE5oZTlmei1zQ0lWYkN3Rk16d3ZtMkcteUdvYWxtQSJ9fQ","proof":{"verificationMethod":"#primary","signature":"HaqDwD5J7fqOE0fSCYXqXiDa1tkJJBwKVzf9Nt_kEqKgD8yLPqybM41FS4mEOC_H04s0QkvDNKxVTCN8CeIjiA"}}
+)"_json);
 
-	ByteStream stream;
-	tx1->Serialize(stream);
+	for (size_t i = 0; i < list.size(); ++i) {
+		PayloadPtr payload = PayloadPtr(new DIDInfo());
+		payload->FromJson(list[i], 0);
+		TransactionPtr tx1 = TransactionPtr(new IDTransaction(IDTransaction::didTransaction, payload));
+		initTransaction(*tx1, Transaction::TxVersion::Default);
 
-	TransactionPtr tx2 = TransactionPtr(new IDTransaction());
-	tx2->Deserialize(stream);
+		ByteStream stream;
+		tx1->Serialize(stream);
 
-	verifyTransaction(*tx1, *tx2, false);
+		TransactionPtr tx2 = TransactionPtr(new IDTransaction());
+		tx2->Deserialize(stream);
 
-	DIDInfo *didInfo = dynamic_cast<DIDInfo *>(tx2->GetPayload());
+		verifyTransaction(*tx1, *tx2, false);
 
-	REQUIRE(didInfo->IsValid());
-	const DIDHeaderInfo &header = didInfo->DIDHeader();
-	REQUIRE(header.Specification() == "elastos/did/1.0");
-	REQUIRE(header.Operation() == "create");
+		DIDInfo *didInfo = dynamic_cast<DIDInfo *>(tx2->GetPayload());
 
-	const DIDPayloadInfo &didPayloadInfo = didInfo->DIDPayload();
-	REQUIRE(didPayloadInfo.ID() == "did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X");
-	REQUIRE(didPayloadInfo.PublicKeyInfo().size() == 1);
-	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].ID() == "did:elastos:iaVPzScDjtmwFzw5qyAeiN8LryUnFKfc9X#primary");
-	REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "i5yL3RnhRnsmfXDS1FvuQV7UwG7P65KKYTyKrByZ13sA");
+		REQUIRE(didInfo->IsValid());
+		const DIDHeaderInfo &header = didInfo->DIDHeader();
+		REQUIRE(header.Specification() == "elastos/did/1.0");
+		if (i == 0) {
+			REQUIRE(header.Operation() == "create");
+		} else {
+			REQUIRE(header.Operation() == "update");
+		}
+
+		const DIDPayloadInfo &didPayloadInfo = didInfo->DIDPayload();
+		REQUIRE(didPayloadInfo.ID() == "did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R");
+		REQUIRE(didPayloadInfo.PublicKeyInfo().size() == 1);
+		REQUIRE(didPayloadInfo.PublicKeyInfo()[0].ID() == "did:elastos:ifUPapo7vRTAt2c7ytd4BrbooyK7B7Gp4R#primary");
+		REQUIRE(didPayloadInfo.PublicKeyInfo()[0].PublicKeyBase58() == "kN614vs5PcGmgR4rqonH42zCrLRtTshZmWQWs8b88g9c");
+	}
+
 }

@@ -228,186 +228,43 @@ namespace Elastos {
 		}
 
 		CredentialSubject::CredentialSubject() {
-			init();
 		}
 
 		CredentialSubject::~CredentialSubject() {
 
 		}
 
-		void CredentialSubject::init() {
-			_id = "";
-			_didName = "";
-			_name = "";
-			_nickname = "";
-			_gender = "";
-			_birthday = "";
-			_avatar = "";
-			_email = "";
-			_phone = "";
-			_nation = "";
-			_descript = "";
-			_homePage = "";
-			_googleAccount = "";
-			_microsoftPassport = "";
-			_facebook = "";
-			_twitter = "";
-			_weibo = "";
-			_wechat = "";
-			_alipay = "";
-		}
-
 		void CredentialSubject::SetID(const std::string &id) {
 			ErrorChecker::CheckParam(id.find(PREFIX_DID) == std::string::npos, Error::InvalidArgument, "invalid id");
 			_id = id;
+			AddProperties("id", id);
 		}
 
 		const std::string &CredentialSubject::ID() const {
 			return _id;
 		}
 
-		void CredentialSubject::SetDIDName(const std::string &didName) {
-			_didName = didName;
+		void CredentialSubject::AutoFill(const std::string &did) {
+			if (_id.empty()) {
+				_id = did;
+			}
 		}
 
-		const std::string &CredentialSubject::GetDIDName() const {
-			return _didName;
+		const std::map<std::string, std::string> &CredentialSubject::GetProperties() const {
+			return _properties;
 		}
 
-		void CredentialSubject::SetName(const std::string &name) {
-			_name = name;
+		const std::string &CredentialSubject::GetValue(const std::string &key) {
+			ErrorChecker::CheckParam(!HashProperties(key), Error::InvalidArgument, "invalid key");
+			return _properties[key];
 		}
 
-		const std::string &CredentialSubject::GetName() const {
-			return _name;
+		bool CredentialSubject::HashProperties(const std::string &key) const {
+			return _properties.find(key) != _properties.end();
 		}
 
-		void CredentialSubject::SetNickName(const std::string &nickName) {
-			_nickname = nickName;
-		}
-
-		const std::string &CredentialSubject::GetNickName() const {
-			return _nickname;
-		}
-
-		void CredentialSubject::SetGender(const std::string &gender) {
-			_gender = gender;
-		}
-
-		const std::string &CredentialSubject::GetGender() const {
-			return _gender;
-		}
-
-		void CredentialSubject::SetBirthday(const std::string birthday) {
-			_birthday = birthday;
-		}
-
-		const std::string &CredentialSubject::GetBirthday() const {
-			return _birthday;
-		}
-
-		void CredentialSubject::SetAvatar(const std::string &avatar) {
-			_avatar = avatar;
-		}
-
-		const std::string &CredentialSubject::GetAvatar() const {
-			return _avatar;
-		}
-
-		void CredentialSubject::SetEmail(const std::string &email) {
-			_email = email;
-		}
-
-		const std::string &CredentialSubject::GetEmail() const {
-			return _email;
-		}
-
-		void CredentialSubject::SetPhone(const std::string &phone) {
-			_phone = phone;
-		}
-
-		const std::string CredentialSubject::GetPhone() const {
-			return _phone;
-		}
-
-		void CredentialSubject::SetNation(const std::string &nation) {
-			_nation = nation;
-		}
-
-		const std::string &CredentialSubject::GetNation() const {
-			return _nation;
-		}
-
-		void CredentialSubject::SetDescript(const std::string &descript) {
-			_descript = descript;
-		}
-
-		const std::string &CredentialSubject::GetDescript() const {
-			return _descript;
-		}
-
-		void CredentialSubject::SetHomePage(const std::string &homePage) {
-			_homePage = homePage;
-		}
-
-		const std::string &CredentialSubject::GetHomePage() const {
-			return _homePage;
-		}
-
-		void CredentialSubject::SetGoogleAccount(const std::string &googleAccount) {
-			_googleAccount = googleAccount;
-		}
-
-		const std::string &CredentialSubject::GetGoogleAccount() const {
-			return _googleAccount;
-		}
-
-		void CredentialSubject::SetMicrosoftPassport(const std::string &microsoftPassport) {
-			_microsoftPassport = microsoftPassport;
-		}
-
-		const std::string &CredentialSubject::GetMicrosoftPassport() const {
-			return _microsoftPassport;
-		}
-
-		void CredentialSubject::SetFacebook(const std::string &facebook) {
-			_facebook = facebook;
-		}
-
-		const std::string &CredentialSubject::GetFacebook() const {
-			return _facebook;
-		}
-
-		void CredentialSubject::SetTwitter(const std::string &twitter) {
-			_twitter = twitter;
-		}
-
-		const std::string &CredentialSubject::GetTwitter() const {
-			return _twitter;
-		}
-
-		void CredentialSubject::SetWeibo(const std::string &weibo) {
-			_weibo = weibo;
-		}
-
-		const std::string &CredentialSubject::GetWeibo() const {
-			return _weibo;
-		}
-
-		void CredentialSubject::SetWechat(const std::string &wechat) {
-			_wechat = wechat;
-		}
-
-		const std::string &CredentialSubject::GetWechat() const {
-			return _wechat;
-		}
-
-		void CredentialSubject::SetAlipay(const std::string &alipay) {
-			_alipay = alipay;
-		}
-
-		const std::string &CredentialSubject::GetAlipay() const {
-			return _alipay;
+		void CredentialSubject::AddProperties(const std::string &key, const std::string &value) {
+			_properties[key] = value;
 		}
 
 		void CredentialSubject::ToOrderedJson(JsonGenerator *generator) const {
@@ -427,100 +284,8 @@ namespace Elastos {
 		}
 
 		nlohmann::json CredentialSubject::ToJson(uint8_t version) const {
-			nlohmann::json j;
-
-			if (_id.size() > 0) {
-				j["id"] = _id;
-			}
-
-			if (_didName.size() > 0) {
-				j["didName"] = _didName;
-			}
-
-			if (_name.size() > 0) {
-				j["name"] = _name;
-			}
-
-			if (_name.size() > 0) {
-				j["name"] = _name;
-			}
-
-			if (_nickname.size() > 0) {
-				j["nickname"] = _nickname;
-			}
-
-			if (_gender.size() > 0) {
-				j["gender"] = _gender;
-			}
-
-			if (_birthday.size() > 0) {
-				j["birthday"] = _birthday;
-			}
-
-			if (_avatar.size() > 0) {
-				j["avatar"] = _avatar;
-			}
-
-			if (_address.size() > 0) {
-				j["address"] = _address;
-			}
-
-			if (_email.size() > 0) {
-				j["email"] = _email;
-			}
-
-			if (_phone.size() > 0) {
-				j["phone"] = _phone;
-			}
-
-			if (_city.size() > 0) {
-				j["city"] = _city;
-			}
-
-			if (_nation.size() > 0) {
-				j["nation"] = _nation;
-			}
-
-			if (_language.size() > 0) {
-				j["language"] = _language;
-			}
-
-			if (_descript.size() > 0) {
-				j["descript"] = _descript;
-			}
-
-			if (_homePage.size() > 0) {
-				j["homePage"] = _homePage;
-			}
-
-			if (_googleAccount.size() > 0) {
-				j["googleAccount"] = _googleAccount;
-			}
-
-			if (_microsoftPassport.size() > 0) {
-				j["microsoftPassport"] = _microsoftPassport;
-			}
-
-			if (_facebook.size() > 0) {
-				j["facebook"] = _facebook;
-			}
-
-			if (_twitter.size() > 0) {
-				j["twitter"] = _twitter;
-			}
-
-			if (_weibo.size() > 0) {
-				j["weibo"] = _weibo;
-			}
-
-			if (_wechat.size() > 0) {
-				j["wechat"] = _wechat;
-			}
-
-			if (_alipay.size() > 0) {
-				j["alipay"] = _alipay;
-			}
-
+			nlohmann::json j(_properties);
+			j["id"] = _id;
 			return j;
 		}
 
@@ -530,71 +295,11 @@ namespace Elastos {
 				ErrorChecker::CheckParam(_id.find(PREFIX_DID) == std::string::npos, Error::InvalidArgument, "invalid id");
 			}
 
-			if (j.find("didName") != j.end()) {
-				_didName = j["didName"].get<std::string>();
+			nlohmann::json jdata = j;
+			for (nlohmann::json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+				std::string key = it.key();
+				_properties[key] = it.value();
 			}
-
-			if (j.find("name") != j.end())
-				_name = j["name"].get<std::string>();
-
-			if (j.find("nickname") != j.end())
-				_nickname = j["nickname"].get<std::string>();
-
-			if (j.find("gender") != j.end())
-				_gender = j["gender"].get<std::string>();
-
-			if (j.find("birthday") != j.end())
-				_birthday = j["birthday"].get<std::string>();
-
-			if (j.find("avatar") != j.end())
-				_avatar = j["avatar"].get<std::string>();
-
-			if (j.find("address") != j.end()) {
-				_address =  j["address"].get<std::string>();
-			}
-
-			if (j.find("email") != j.end())
-				_email = j["email"].get<std::string>();
-
-			if (j.find("phone") != j.end())
-				_phone = j["phone"].get<std::string>();
-
-			if (j.find("city") != j.end()) {
-				_city =  j["city"].get<std::string>();
-			}
-
-			if (j.find("nation") != j.end())
-				_nation = j["nation"].get<std::string>();
-
-			if (j.find("language") != j.end())
-				_language = j["language"].get<std::string>();
-
-			if (j.find("descript") != j.end())
-				_descript = j["descript"].get<std::string>();
-
-			if (j.find("homePage") != j.end())
-				_homePage = j["homePage"].get<std::string>();
-
-			if (j.find("googleAccount") != j.end())
-				_googleAccount = j["googleAccount"].get<std::string>();
-
-			if (j.find("microsoftPassport") != j.end())
-				_microsoftPassport = j["microsoftPassport"].get<std::string>();
-
-			if (j.find("facebook") != j.end())
-				_facebook = j["facebook"].get<std::string>();
-
-			if (j.find("twitter") != j.end())
-				_twitter = j["twitter"].get<std::string>();
-
-			if (j.find("weibo") != j.end())
-				_weibo = j["weibo"].get<std::string>();
-
-			if (j.find("wechat") != j.end())
-				_wechat = j["wechat"].get<std::string>();
-
-			if (j.find("alipay") != j.end())
-				_alipay = j["alipay"].get<std::string>();
 		}
 
 		ServiceEndpoint::ServiceEndpoint() : _id(""), _type(""), _serviceEndpoint("") {
@@ -664,6 +369,7 @@ namespace Elastos {
 
 			if (j.find("serviceEndpoint") != j.end())
 				_serviceEndpoint = j["serviceEndpoint"].get<std::string>();
+
 		}
 
 		VerifiableCredential::VerifiableCredential() {
@@ -722,6 +428,19 @@ namespace Elastos {
 			return _proof;
 		}
 
+		void VerifiableCredential::AutoFill(const std::string &did) {
+			if (_id[0] == '#') {
+				_id = did + _id;
+			}
+
+			_credentialSubject.AutoFill(did);
+			_proof.AutoFill(did);
+
+			if (_issuer.empty()) {
+				_issuer = did;
+			}
+		}
+
 		void VerifiableCredential::ToOrderedJson(JsonGenerator *generator) const {
 			JsonGenerator_WriteStartObject(generator);
 
@@ -730,9 +449,15 @@ namespace Elastos {
 
 			JsonGenerator_WriteFieldName(generator, "type");
 			JsonGenerator_WriteStartArray(generator);
-			for (size_t i = 0; i <  _types.size(); ++i) {
-				JsonGenerator_WriteString(generator, _types[i].c_str());
+
+			std::map<std::string, std::string> sortedTypes;
+			for (const std::string &type : _types) {
+				sortedTypes[type] = "";
 			}
+			for (std::map<std::string, std::string>::iterator it = sortedTypes.begin(); it != sortedTypes.end(); ++it) {
+				JsonGenerator_WriteString(generator, (*it).first.c_str());
+			}
+
 			JsonGenerator_WriteEndArray(generator);
 
 			JsonGenerator_WriteFieldName(generator, "issuer");
@@ -741,8 +466,10 @@ namespace Elastos {
 			JsonGenerator_WriteFieldName(generator, "issuanceDate");
 			JsonGenerator_WriteString(generator, _issuanceDate.c_str());
 
-			JsonGenerator_WriteFieldName(generator, "expirationDate");
-			JsonGenerator_WriteString(generator, _expirationDate.c_str());
+			if (!_expirationDate.empty()) {
+				JsonGenerator_WriteFieldName(generator, "expirationDate");
+				JsonGenerator_WriteString(generator, _expirationDate.c_str());
+			}
 
 			JsonGenerator_WriteFieldName(generator, "credentialSubject");
 			_credentialSubject.ToOrderedJson(generator);
@@ -1124,6 +851,7 @@ namespace Elastos {
 				for (nlohmann::json::iterator it = jVerifiableCredential.begin(); it != jVerifiableCredential.end(); ++it) {
 					VerifiableCredential verifiableCredential;
 					verifiableCredential.FromJson(*it, version);
+					verifiableCredential.AutoFill(_id);
 					_verifiableCredential.push_back(verifiableCredential);
 				}
 			}
@@ -1217,6 +945,12 @@ namespace Elastos {
 			}
 
 			return true;
+		}
+
+		void DIDProofInfo::AutoFill(const std::string &did) {
+			if (_verificationMethod[0] == '#') {
+				_verificationMethod = did + _verificationMethod;
+			}
 		}
 
 		void DIDProofInfo::ToOrderJson(JsonGenerator *generator) const {

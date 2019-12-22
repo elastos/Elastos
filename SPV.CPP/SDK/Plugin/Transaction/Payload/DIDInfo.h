@@ -106,77 +106,15 @@
 
 			const std::string &ID() const;
 
-			void SetName(const std::string &name);
+			void AutoFill(const std::string &did);
 
-			const std::string &GetName() const;
+			const std::map<std::string, std::string> &GetProperties() const;
 
-			void SetDIDName(const std::string &didName);
+			const std::string &GetValue(const std::string &key);
 
-			const std::string &GetDIDName() const;
+			bool HashProperties(const std::string &key) const;
 
-			void SetNickName(const std::string &nickName);
-
-			const std::string &GetNickName() const;
-
-			void SetGender(const std::string &gender);
-
-			const std::string &GetGender() const;
-
-			void SetBirthday(const std::string birthday);
-
-			const std::string &GetBirthday() const;
-
-			void SetAvatar(const std::string &avatar);
-
-			const std::string &GetAvatar() const;
-
-			void SetEmail(const std::string &email);
-
-			const std::string &GetEmail() const;
-
-			void SetPhone(const std::string &phone);
-
-			const std::string GetPhone() const;
-
-			void SetNation(const std::string &nation);
-
-			const std::string &GetNation() const;
-
-			void SetDescript(const std::string &descript);
-
-			const std::string &GetDescript() const;
-
-			void SetHomePage(const std::string &homePage);
-
-			const std::string &GetHomePage() const;
-
-			void SetGoogleAccount(const std::string &googleAccount);
-
-			const std::string &GetGoogleAccount() const;
-
-			void SetMicrosoftPassport(const std::string &microsoftPassport);
-
-			const std::string &GetMicrosoftPassport() const;
-
-			void SetFacebook(const std::string &facebook);
-
-			const std::string &GetFacebook() const;
-
-			void SetTwitter(const std::string &twitter);
-
-			const std::string &GetTwitter() const;
-
-			void SetWeibo(const std::string &weibo);
-
-			const std::string &GetWeibo() const;
-
-			void SetWechat(const std::string &wechat);
-
-			const std::string &GetWechat() const;
-
-			void SetAlipay(const std::string &alipay);
-
-			const std::string &GetAlipay() const;
+			void AddProperties(const std::string &key, const std::string &value);
 
 		public:
 			virtual nlohmann::json ToJson(uint8_t version) const;
@@ -184,33 +122,10 @@
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
 
 			void ToOrderedJson(JsonGenerator *generator) const;
-		private:
-			void init();
 
 		private:
 			std::string _id;
-			std::string _didName;
-			std::string _name;
-			std::string _nickname;
-			std::string _gender;
-			std::string _birthday;
-			std::string _avatar;
-			std::string _address;
-			std::string _email;
-			std::string _phone;
-			std::string _city;
-			std::string _nation;
-			std::string _language;
-			std::string _descript;
-
-			std::string _homePage;
-			std::string _googleAccount;
-			std::string _microsoftPassport;
-			std::string _facebook;
-			std::string _twitter;
-			std::string _weibo;
-			std::string _wechat;
-			std::string _alipay;
+			std::map<std::string, std::string> _properties;
 
 		};
 
@@ -247,6 +162,8 @@
 			virtual nlohmann::json ToJson(uint8_t version) const;
 
 			virtual void FromJson(const nlohmann::json &j, uint8_t version);
+
+			void AutoFill(const std::string &did);
 
 			void ToOrderJson(JsonGenerator *generator) const;
 
@@ -320,6 +237,8 @@
 			void SetProof(const DIDProofInfo &proof);
 
 			const DIDProofInfo &Proof() const;
+
+			void AutoFill(const std::string &did);
 
 		public:
 			virtual nlohmann::json ToJson(uint8_t version) const;

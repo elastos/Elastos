@@ -164,7 +164,7 @@ namespace Elastos {
 			VerifiableCredential selfProclaimed;
 
 			CredentialSubject selfProclaimedSubject;
-			selfProclaimedSubject.SetDIDName(didName);
+			selfProclaimedSubject.AddProperties("didName", didName);
 
 			selfProclaimed.SetCredentialSubject(selfProclaimedSubject);
 
@@ -237,11 +237,11 @@ namespace Elastos {
 		IDChainSubWallet::GetVerifiableCredentialTypes(const CredentialSubject &subject) const {
 			std::vector<std::string> types;
 
-			if (subject.GetDIDName().size() > 0) {
+			if (subject.HashProperties("didName")) {
 				types.push_back("SelfProclaimedCredential");
 			}
 
-			if (subject.GetName().size() > 0) {
+			if (subject.HashProperties("name")) {
 				types.push_back("BasicProfileCredential");
 			}
 
@@ -249,14 +249,16 @@ namespace Elastos {
 				types.push_back("ElastosIDteriaCredential");
 			}
 
-			if (subject.GetPhone().size() > 0) {
+			if (subject.HashProperties("phone")) {
 				types.push_back("PhoneCredential");
 			}
 
-			if (subject.GetAlipay().size() > 0 || subject.GetWechat().size() > 0 || subject.GetWeibo().size() > 0
-			    || subject.GetTwitter().size() > 0 || subject.GetFacebook().size() > 0
-			    || subject.GetMicrosoftPassport().size() > 0 || subject.GetGoogleAccount().size() > 0
-			    || subject.GetHomePage().size() > 0 || subject.GetEmail().size() > 0) {
+			if (subject.HashProperties("email") || subject.HashProperties("wechat") || subject.HashProperties("weibo")
+			    || subject.HashProperties("twitter") || subject.HashProperties("facebook")
+			    || subject.HashProperties("MicrosoftPassport") || subject.HashProperties("googleAccount")
+			    || subject.HashProperties("homePage") || subject.HashProperties("taobao")
+			    || subject.HashProperties("qq") || subject.HashProperties("telegram") || subject.HashProperties("im")
+			    || subject.HashProperties("url")) {
 				types.push_back("InternetAccountCredential");
 			}
 			return types;
@@ -576,8 +578,9 @@ namespace Elastos {
 
 			const VerifiableCredentialArray &verifiableCredentialArray = payloadInfo.GetVerifiableCredential();
 			for (size_t i = 0; i < verifiableCredentialArray.size(); ++i) {
-				if (!verifiableCredentialArray[i].GetCredentialSubject().GetDIDName().empty()) {
-					summary["didName"] = verifiableCredentialArray[i].GetCredentialSubject().GetDIDName();
+				if (!verifiableCredentialArray[i].GetCredentialSubject().HashProperties("didName")) {
+					CredentialSubject subject = verifiableCredentialArray[i].GetCredentialSubject();
+					summary["didName"] = subject.GetValue("didName");
 				} else if (isDetail) {
 					nlohmann::json credentialSubject = verifiableCredentialArray[i].GetCredentialSubject().ToJson(0);
 					if (credentialSubject.find("id") != credentialSubject.end()) {
