@@ -29,7 +29,8 @@ class Users(db.Model):
         self.created_on = created_on
         self.last_logged_on = last_logged_on
 
-    def __repr__(self):
-        return '<Users %r>' % self.name
+    def _repr_(self):
+        return "(did={})"\
+            .format(self.name)
 
 
