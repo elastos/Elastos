@@ -15,22 +15,24 @@ def validate_api_key(api_key):
     result = db.query(exists().where(UserApiRelations.api_key == api_key)).scalar()
     return result
 
+
 def get_time():
     return datetime.datetime.now(pytz.timezone('America/New_York')).strftime("%Y-%m-%d %H:%M:%S %z")
 
+
 def get_encryption_salt():
-	return os.urandom(16)
+    return os.urandom(16)
 
-def get_encrypt_key(key):    
-	encoded = key.encode() 
-	salt = config('ENCRYPTION_SALT').encode()
-	kdf = PBKDF2HMAC(
-    	algorithm=hashes.SHA256(),
-    	length=32,
-    	salt=salt,
-    	iterations=100000,
-    	backend=default_backend()
-	)
-	key = base64.urlsafe_b64encode(kdf.derive(encoded))
-	return key
 
+def get_encrypt_key(key):
+    encoded = key.encode()
+    salt = config('ENCRYPTION_SALT').encode()
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(encoded))
+    return key

@@ -24,31 +24,6 @@ class Hive(hive_pb2_grpc.HiveServicer):
             "hive": headers_hive
         }
 
-    def Sign(self, request, context):
-
-        # Validate the API Key
-        api_key = request.api_key
-        # api_status = validate_api_key(api_key)
-        # if not api_status:
-        #       return adenine_io_pb2.Response(output='', status_message='API Key could not be verified', status=False)
-
-        PRIVATE_NET_IP_ADDRESS = config('PRIVATE_NET_IP_ADDRESS')
-        DID_SERVICE_URL = config('DID_SERVICE_URL')
-        did_api_url = PRIVATE_NET_IP_ADDRESS + DID_SERVICE_URL + settings.DID_SERVICE_API_SIGN
-
-        # Signing a message
-        response = self.session.post(did_api_url, data=request.input, headers=self.headers['general'])
-        data = json.loads(response.text)
-
-        if data['status'] == 200:
-            status_message = 'Success'
-            status = True
-        else:
-            status_message = 'Error'
-            status = False
-
-        return hive_pb2.Response(output=json.dumps(data['result']), status_message=status_message,
-                                 status=status)
 
     def UploadAndSign(self, request, context):
 
