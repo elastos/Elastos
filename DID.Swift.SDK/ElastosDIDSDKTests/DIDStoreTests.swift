@@ -487,8 +487,8 @@ class DIDStoreTests: XCTestCase {
         testStorePerformance(true)
     }
     
-    func testStoreWithoutCache() {
-        testStorePerformance(false)
-    }
+//    func testStoreWithoutCache() {
+//        testStorePerformance(false)
+//    }
 }
 
