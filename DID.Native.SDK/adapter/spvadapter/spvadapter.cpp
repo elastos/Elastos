@@ -328,7 +328,7 @@ static size_t HttpRequestBodyReadCallback(void *dest, size_t size,
     return 0;
 }
 
-#define DID_RESOLVE_REQUEST "{\"method\":\"resolvedid\",\"params\":{\"id\":\"%s\",\"all\":%s}}"
+#define DID_RESOLVE_REQUEST "{\"method\":\"resolvedid\",\"params\":{\"did\":\"%s\",\"all\":%s}}"
 
 // Caller need free the pointer
 const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did, int all)
