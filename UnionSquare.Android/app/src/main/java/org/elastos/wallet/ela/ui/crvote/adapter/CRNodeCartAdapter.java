@@ -197,6 +197,15 @@ public class CRNodeCartAdapter extends RecyclerView.Adapter<CRNodeCartAdapter.My
         }
     }
 
+    // 初始化dataMap的数据
+    public void initAllCurentBalance() {
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).setCurentBalance(null);
+            }
+        }
+    }
+
     public void setDateStaus(int size, boolean status) {
         if (list != null) {
             for (int i = 0; i < size; i++) {
