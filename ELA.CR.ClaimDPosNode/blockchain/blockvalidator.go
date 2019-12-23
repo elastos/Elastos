@@ -59,8 +59,9 @@ func (b *BlockChain) CheckBlockSanity(block *Block) error {
 	}
 
 	// A block must not have more transactions than the max block payload.
-	if numTx > pact.MaxTxPerBlock {
-		return errors.New("[PowCheckBlockSanity]  block contains too many transactions")
+	if uint32(numTx) > pact.MaxTxPerBlock {
+		return errors.New("[PowCheckBlockSanity]  block contains too many" +
+			" transactions, tx count: " + strconv.FormatInt(int64(numTx), 10))
 	}
 
 	// A block header must not exceed the maximum allowed block payload when
