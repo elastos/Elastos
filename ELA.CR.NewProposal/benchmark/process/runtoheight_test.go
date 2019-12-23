@@ -20,19 +20,21 @@ var (
 		MinRefersCount:     100,
 		AddressCount:       100,
 	}
-	runToHeightGen    = initRunToHeightGen()
-	runToHeightParams ProcessParams
 )
 
 func Benchmark_RunToHeight_RunToHeight(b *testing.B) {
-	LoadParams(&runToHeightParams)
+	benchProc(b, func(b *testing.B) {
+		runToHeightGen := initRunToHeightGen()
 
-	if err := runToHeightGen.Generate(300); err != nil {
-		fmt.Println(err)
-	}
+		b.ResetTimer()
+		if err := runToHeightGen.Generate(300); err != nil {
+			fmt.Println(err)
+		}
+		b.StopTimer()
 
-	runToHeightGen.Exit()
-	os.RemoveAll(tempPath)
+		runToHeightGen.Exit()
+		os.RemoveAll(tempPath)
+	})
 }
 
 func initRunToHeightGen() *genchain.DataGen {
@@ -42,6 +44,5 @@ func initRunToHeightGen() *genchain.DataGen {
 		fmt.Println(err.Error())
 		return nil
 	}
-	SaveParams(&runToHeightParams)
 	return gen
 }
