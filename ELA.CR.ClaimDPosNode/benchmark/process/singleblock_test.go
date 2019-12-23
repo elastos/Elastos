@@ -16,32 +16,96 @@ import (
 	"github.com/elastos/Elastos.ELA/utils/test"
 )
 
-var (
-	singleBlockGen    = newBlockChain()
-	singleBlockParams ProcessParams
-)
-
 type ProcessParams struct {
-	Ledger            blockchain.Ledger
+	Ledger            *blockchain.Ledger
 	FoundationAddress common.Uint168
+	MaxTxPerBlock     uint32
 }
 
-func Benchmark_SingleBlock_ProcessBlock(b *testing.B) {
-	originMaxTxPerBlock := pact.MaxTxPerBlock
-	pact.MaxTxPerBlock = 100000
+// benchmark about processing single block and add tx into tx pool
+func Benchmark_SingleBlock_Normal_GenerateBlock(b *testing.B) {
+	benchProc(b, func(b *testing.B) {
+		singleBlockGen := newBlockChain()
+		currentHeight := singleBlockGen.GetChain().GetHeight()
+		// set pressure with max block size
+		singleBlockGen.SetPressure(true, 8000000)
+		singleBlockGen.SetGenerateMode(genchain.Normal)
 
-	LoadParams(&singleBlockParams)
+		b.ResetTimer()
+		err := singleBlockGen.Generate(currentHeight + 1)
+		b.StopTimer()
 
-	currentHeight := singleBlockGen.GetChain().GetHeight()
-	// set pressure with max block size
-	singleBlockGen.SetPressure(true, 8000000)
-	err := singleBlockGen.Generate(currentHeight + 1)
-	if err != nil {
-		b.Error(err)
-	}
-
-	pact.MaxTxPerBlock = originMaxTxPerBlock
+		if err != nil {
+			b.Error(err)
+		}
+	})
 }
+
+// benchmark about processing single block
+//func Benchmark_SingleBlock_Normal_ProcessBlock(b *testing.B) {
+//	benchProc(b, func(b *testing.B) {
+//		singleBlockGen := newBlockChain()
+//		currentHeight := singleBlockGen.GetChain().GetHeight()
+//		// set pressure with max block size
+//		singleBlockGen.SetPressure(true, 8000000)
+//		singleBlockGen.SetGenerateMode(genchain.Normal)
+//		singleBlockGen.EnableProcessDataTimer(&genchain.ProcessDataTimeCounter{
+//			StartTimer: func() { b.ResetTimer() },
+//			StopTimer:  func() { b.StopTimer() },
+//		})
+//
+//		err := singleBlockGen.Generate(currentHeight + 1)
+//
+//		if err != nil {
+//			b.Error(err)
+//		}
+//	})
+//}
+
+// benchmark about storing single block data into database
+//func Benchmark_SingleBlock_Fast_StoreBlockOnly(b *testing.B) {
+//	benchProc(b, func(b *testing.B) {
+//		singleBlockGen := newBlockChain()
+//		currentHeight := singleBlockGen.GetChain().GetHeight()
+//		// set pressure with max block size
+//		singleBlockGen.SetPressure(true, 8000000)
+//		singleBlockGen.SetGenerateMode(genchain.Fast)
+//		singleBlockGen.EnableProcessDataTimer(&genchain.ProcessDataTimeCounter{
+//			StartTimer: func() { b.ResetTimer() },
+//			StopTimer:  func() { b.StopTimer() },
+//		})
+//
+//		err := singleBlockGen.Generate(currentHeight + 1)
+//
+//		if err != nil {
+//			b.Error(err)
+//		}
+//	})
+//}
+
+// benchmark about storing single block data into database without add into
+// tx pool
+//func Benchmark_SingleBlock_Minimal_StoreBlockOnly(b *testing.B) {
+//	benchProc(b, func(b *testing.B) {
+//		singleBlockGen := newBlockChain()
+//		currentHeight := singleBlockGen.GetChain().GetHeight()
+//		// set pressure with max block size
+//		singleBlockGen.SetPressure(true, 8000000)
+//		singleBlockGen.SetGenerateMode(genchain.Minimal)
+//		singleBlockGen.SetPrevBlockHash(
+//			*singleBlockGen.GetChain().BestChain.Hash)
+//		singleBlockGen.EnableProcessDataTimer(&genchain.ProcessDataTimeCounter{
+//			StartTimer: func() { b.ResetTimer() },
+//			StopTimer:  func() { b.StopTimer() },
+//		})
+//
+//		err := singleBlockGen.Generate(currentHeight + 1)
+//
+//		if err != nil {
+//			b.Error(err)
+//		}
+//	})
+//}
 
 func newBlockChain() *genchain.DataGen {
 	gen, err := genchain.LoadDataGen(
@@ -50,16 +114,29 @@ func newBlockChain() *genchain.DataGen {
 		fmt.Println(err.Error())
 		return nil
 	}
-	SaveParams(&singleBlockParams)
 	return gen
 }
 
-func SaveParams(params *ProcessParams) {
-	params.Ledger = *blockchain.DefaultLedger
-	params.FoundationAddress = blockchain.FoundationAddress
+func benchProc(b *testing.B, action func(b *testing.B)) {
+	params := beginBench()
+	for i := 0; i < b.N; i++ {
+		action(b)
+	}
+	endBench(params)
 }
 
-func LoadParams(params *ProcessParams) {
-	blockchain.DefaultLedger = &params.Ledger
+func beginBench() *ProcessParams {
+	params := &ProcessParams{
+		Ledger:            blockchain.DefaultLedger,
+		FoundationAddress: blockchain.FoundationAddress,
+		MaxTxPerBlock:     pact.MaxTxPerBlock,
+	}
+	pact.MaxTxPerBlock = 100000
+	return params
+}
+
+func endBench(params *ProcessParams) {
+	blockchain.DefaultLedger = params.Ledger
 	blockchain.FoundationAddress = params.FoundationAddress
+	pact.MaxTxPerBlock = params.MaxTxPerBlock
 }
