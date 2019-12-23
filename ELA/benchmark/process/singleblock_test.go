@@ -12,6 +12,7 @@ import (
 	genchain "github.com/elastos/Elastos.ELA/benchmark/generator/chain"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/elanet/pact"
 	"github.com/elastos/Elastos.ELA/utils/test"
 )
 
@@ -26,6 +27,9 @@ type ProcessParams struct {
 }
 
 func Benchmark_SingleBlock_ProcessBlock(b *testing.B) {
+	originMaxTxPerBlock := pact.MaxTxPerBlock
+	pact.MaxTxPerBlock = 100000
+
 	LoadParams(&singleBlockParams)
 
 	currentHeight := singleBlockGen.GetChain().GetHeight()
@@ -35,6 +39,8 @@ func Benchmark_SingleBlock_ProcessBlock(b *testing.B) {
 	if err != nil {
 		b.Error(err)
 	}
+
+	pact.MaxTxPerBlock = originMaxTxPerBlock
 }
 
 func newBlockChain() *genchain.DataGen {

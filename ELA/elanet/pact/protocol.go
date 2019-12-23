@@ -21,9 +21,6 @@ const (
 	// EBIP001Version is the protocol version starts to support SPV protocol.
 	EBIP001Version uint32 = 10001
 
-	// MaxTxPerBlock is the maximux number of transactions allowed per block.
-	MaxTxPerBlock = 10000
-
 	// MaxBlocksPerMsg is the maximum number of blocks allowed per message.
 	MaxBlocksPerMsg = 500
 
@@ -31,11 +28,16 @@ const (
 	MaxTxPoolSize = 20000000
 )
 
-// MaxBlockContextSize is the maximum number of bytes allowed per block context.
-var MaxBlockContextSize uint32 = 8000000
+var (
+	// MaxBlockContextSize is the maximum number of bytes allowed per block context.
+	MaxBlockContextSize uint32 = 8000000
 
-// MaxBlockHeaderSize is the maximum number of bytes allowed per block header.
-var MaxBlockHeaderSize uint32 = 1000
+	// MaxBlockHeaderSize is the maximum number of bytes allowed per block header.
+	MaxBlockHeaderSize uint32 = 1000
+
+	// MaxTxPerBlock is the maximux number of transactions allowed per block.
+	MaxTxPerBlock uint32 = 10000
+)
 
 // ServiceFlag identifies services supported by a peer.
 type ServiceFlag uint64
