@@ -23,6 +23,10 @@ var (
 	// unspentIndexKey is the key of the unspent index and the db bucket used
 	// to house it.
 	unspentIndexKey = []byte("unspentbyhashidx")
+
+	// hashIndexBucketName is the name of the db bucket used to house to the
+	// block hash -> block height index.
+	hashIndexBucketName = []byte("hashidx")
 )
 
 func toByteArray(source []uint16) []byte {
@@ -98,10 +102,16 @@ func putUnspent(dbTx database.Tx, unspents map[common.Uint256][]uint16) error {
 	return nil
 }
 
+type TxnInfo struct {
+	txn         *types.Transaction
+	blockHeight uint32
+}
+
 // UnspentIndex implements a unspent set by tx hash index. That is to say,
 // it supports querying all unspent index by their tx hash.
 type UnspentIndex struct {
-	db database.DB
+	db   database.DB
+	txns map[common.Uint256]*TxnInfo
 }
 
 // Init initializes the hash-based unspent index. This is part of the Indexer
@@ -147,6 +157,10 @@ func (idx *UnspentIndex) ConnectBlock(dbTx database.Tx, block *types.Block) erro
 			continue
 		}
 		txnHash := txn.Hash()
+		idx.txns[txnHash] = &TxnInfo{
+			txn:         txn,
+			blockHeight: block.Height,
+		}
 		for index := range txn.Outputs {
 			unspents[txnHash] = append(unspents[txnHash], uint16(index))
 		}
@@ -173,9 +187,19 @@ func (idx *UnspentIndex) ConnectBlock(dbTx database.Tx, block *types.Block) erro
 		}
 	}
 
-	e := putUnspent(dbTx, unspents)
-	if e != nil {
-		return e
+	for txHash, value := range unspents {
+		if len(value) == 0 {
+			delete(idx.txns, txHash)
+			err := dbRemoveUnspentIndexEntry(dbTx, &txHash)
+			if err != nil {
+				return err
+			}
+		} else {
+			err := dbPutUnspentIndexEntry(dbTx, &txHash, value)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -193,8 +217,12 @@ func (idx *UnspentIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) e
 			continue
 		}
 		// remove all utxos created by this transaction
-		txHash := txn.Hash()
-		err := dbRemoveUnspentIndexEntry(dbTx, &txHash)
+		txnHash := txn.Hash()
+		idx.txns[txnHash] = &TxnInfo{
+			txn:         txn,
+			blockHeight: block.Height,
+		}
+		err := dbRemoveUnspentIndexEntry(dbTx, &txnHash)
 		if err != nil {
 			return err
 		}
@@ -216,12 +244,56 @@ func (idx *UnspentIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) e
 		}
 	}
 
-	e := putUnspent(dbTx, unspents)
-	if e != nil {
-		return e
+	for txHash, value := range unspents {
+		if len(value) == 0 {
+			delete(idx.txns, txHash)
+			err := dbRemoveUnspentIndexEntry(dbTx, &txHash)
+			if err != nil {
+				return err
+			}
+		} else {
+			err := dbPutUnspentIndexEntry(dbTx, &txHash, value)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
+}
+
+func (idx *UnspentIndex) FetchTx(txID common.Uint256) (*types.Transaction, uint32, error) {
+	if txnInfo, ok := idx.txns[txID]; ok {
+		return txnInfo.txn, txnInfo.blockHeight, nil
+	}
+
+	var txn *types.Transaction
+	var height uint32
+	err := idx.db.View(func(dbTx database.Tx) error {
+		var err error
+		var blockHash *common.Uint256
+		txn, blockHash, err = dbFetchTx(dbTx, &txID)
+		height, err = dbFetchHeightByHash(dbTx, blockHash)
+		return err
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return txn, height, nil
+}
+
+// dbFetchHeightByHash uses an existing database transaction to retrieve the
+// height for the provided hash from the index.
+func dbFetchHeightByHash(dbTx database.Tx, hash *common.Uint256) (uint32, error) {
+	meta := dbTx.Metadata()
+	hashIndex := meta.Bucket(hashIndexBucketName)
+	serializedHeight := hashIndex.Get(hash[:])
+	if serializedHeight == nil {
+		return 0, fmt.Errorf("block %s is not in the main chain", hash)
+	}
+
+	return byteOrder.Uint32(serializedHeight), nil
 }
 
 // NewUnspentIndex returns a new instance of an indexer that is used to create a
@@ -232,5 +304,8 @@ func (idx *UnspentIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) e
 // turn is used by the blockchain package.  This allows the index to be
 // seamlessly maintained along with the chain.
 func NewUnspentIndex(db database.DB) *UnspentIndex {
-	return &UnspentIndex{db}
+	return &UnspentIndex{
+		db:   db,
+		txns: make(map[common.Uint256]*TxnInfo),
+	}
 }

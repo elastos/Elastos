@@ -54,7 +54,7 @@ type IndexManager interface {
 
 	// FetchTx retrieval a transaction and a block hash where it
 	// located by transaction hash
-	FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint256, error)
+	FetchTx(txID common.Uint256) (*types.Transaction, uint32, error)
 
 	// FetchUnspent retrieval the unspent set of transaction by its hash
 	FetchUnspent(txID common.Uint256) ([]uint16, error)
