@@ -360,18 +360,7 @@ func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, uint32, error) {
 }
 
 func (c *ChainStoreFFLDB) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
-	txn, blockHash, err := c.indexManager.FetchTx(txID)
-	var height uint32
-	err = c.db.View(func(dbTx database.Tx) error {
-		var err error
-		height, err = dbFetchHeightByHash(dbTx, blockHash)
-		return err
-	})
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return txn, height, nil
+	return c.indexManager.FetchTx(txID)
 }
 
 func (c *ChainStoreFFLDB) InitIndex(chain indexers.IChain, interrupt <-chan struct{}) error {

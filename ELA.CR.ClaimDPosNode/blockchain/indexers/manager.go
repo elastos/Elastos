@@ -130,6 +130,7 @@ func dbIndexDisconnectBlock(dbTx database.Tx, indexer Indexer, block *types.Bloc
 type Manager struct {
 	db             database.DB
 	enabledIndexes []Indexer
+	txStore        ITxStore
 }
 
 // Ensure the Manager type implements the blockchain.IndexManager interface.
@@ -465,19 +466,8 @@ func (m *Manager) DisconnectBlock(dbTx database.Tx, block *types.Block) error {
 	return nil
 }
 
-func (m *Manager) FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint256, error) {
-	var txn *types.Transaction
-	var hash *common.Uint256
-	err := m.db.View(func(dbTx database.Tx) error {
-		var err error
-		txn, hash, err = dbFetchTx(dbTx, &txID)
-		return err
-	})
-	if err != nil {
-		return nil, &common.EmptyHash, err
-	}
-
-	return txn, hash, nil
+func (m *Manager) FetchTx(txID common.Uint256) (*types.Transaction, uint32, error) {
+	return m.txStore.FetchTx(txID)
 }
 
 func (m *Manager) FetchUnspent(txID common.Uint256) ([]uint16, error) {
@@ -525,13 +515,14 @@ func (m *Manager) IsTx3Exist(txHash *common.Uint256) bool {
 func NewManager(db database.DB) *Manager {
 	txIndex := NewTxIndex(db)
 	unspentIndex := NewUnspentIndex(db)
-	utxoIndex := NewUtxoIndex(db, txIndex)
+	utxoIndex := NewUtxoIndex(db, unspentIndex)
 	tx3Index := NewTx3Index(db)
 	var enabledIndexes []Indexer
 	enabledIndexes = append(enabledIndexes, txIndex, unspentIndex, utxoIndex, tx3Index)
 	return &Manager{
 		db:             db,
 		enabledIndexes: enabledIndexes,
+		txStore:        unspentIndex,
 	}
 }
 

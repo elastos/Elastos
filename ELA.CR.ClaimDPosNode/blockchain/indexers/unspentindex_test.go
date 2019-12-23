@@ -112,6 +112,18 @@ func TestUnspentIndexInit(t *testing.T) {
 		assert.NoError(t, err)
 		err = dbPutUnspentIndexEntry(dbTx, &unspentIndexReferTx2, []uint16{unspentIndexReferIndex2})
 		assert.NoError(t, err)
+		testUnspentIndex.txns[unspentIndexReferTx1] = &TxnInfo{
+			txn: &types.Transaction{
+				LockTime: 10,
+			},
+			blockHeight: 1,
+		}
+		testUnspentIndex.txns[unspentIndexReferTx2] = &TxnInfo{
+			txn: &types.Transaction{
+				LockTime: 20,
+			},
+			blockHeight: 1,
+		}
 
 		// check the initialization
 		indexes, err := dbFetchUnspentIndexEntry(dbTx, &unspentIndexReferTx1)
@@ -128,6 +140,26 @@ func TestUnspentIndex_ConnectBlock(t *testing.T) {
 	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
 		err := testUnspentIndex.ConnectBlock(dbTx, unspentIndexBlock)
 		assert.NoError(t, err)
+
+		// the unspent txn should be cached
+		assert.Equal(t, &TxnInfo{
+			txn:         unspentIndexCoinbase,
+			blockHeight: unspentIndexBlock.Height,
+		}, testUnspentIndex.txns[unspentIndexCoinbase.Hash()])
+		assert.Equal(t, &TxnInfo{
+			txn:         testUnspentIndexTx1,
+			blockHeight: unspentIndexBlock.Height,
+		}, testUnspentIndex.txns[testUnspentIndexTx1.Hash()])
+		assert.Equal(t, &TxnInfo{
+			txn:         testUnspentIndexTx2,
+			blockHeight: unspentIndexBlock.Height,
+		}, testUnspentIndex.txns[testUnspentIndexTx2.Hash()])
+
+		// the spent txn should be removed
+		_, ok1 := testUnspentIndex.txns[unspentIndexReferTx1]
+		assert.False(t, ok1)
+		_, ok2 := testUnspentIndex.txns[unspentIndexReferTx2]
+		assert.False(t, ok2)
 
 		// input items should be removed from db
 		indexes, err := dbFetchUnspentIndexEntry(dbTx, &unspentIndexReferTx1)
@@ -159,6 +191,18 @@ func TestUnspentIndex_DisconnectBlock(t *testing.T) {
 	_ = unspentIndexDB.Update(func(dbTx database.Tx) error {
 		err := testUnspentIndex.DisconnectBlock(dbTx, unspentIndexBlock)
 		assert.NoError(t, err)
+
+		// the spent txn should be removed
+		_, ok1 := testUnspentIndex.txns[unspentIndexReferTx1]
+		assert.False(t, ok1)
+		_, ok2 := testUnspentIndex.txns[unspentIndexReferTx2]
+		assert.False(t, ok2)
+
+		// the refer txn should be cached
+		//_, ok1 := testUnspentIndex.txns[unspentIndexReferTx1]
+		//assert.True(t, ok1)
+		//_, ok2 := testUnspentIndex.txns[unspentIndexReferTx2]
+		//assert.True(t, ok2)
 
 		// input items should be added in db
 		indexes, err := dbFetchUnspentIndexEntry(dbTx, &unspentIndexReferTx1)

@@ -99,7 +99,7 @@ func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
 	utxoCache = NewUTXOCache(utxoCacheDB)
 
 	// get tx reference form db and cache it first time.
-	reference, err := utxoCache.GetTxReference(spendTx)
+	reference, err := utxoCache.getTxReference(spendTx)
 	assert.NoError(t, err)
 	for input, output := range reference {
 		assert.Equal(t, referTx.Hash(), input.Previous.TxID)
@@ -115,7 +115,7 @@ func TestUTXOCache_GetTxReferenceInfo(t *testing.T) {
 	_, _, err = utxoCacheDB.GetTransaction(referTx.Hash())
 	assert.Equal(t, "leveldb: not found", err.Error())
 
-	reference, err = utxoCache.GetTxReference(spendTx)
+	reference, err = utxoCache.getTxReference(spendTx)
 	assert.NoError(t, err)
 	for input, output := range reference {
 		assert.Equal(t, referTx.Hash(), input.Previous.TxID)
@@ -136,7 +136,7 @@ func TestUTXOCache_CleanSpent(t *testing.T) {
 func TestUTXOCache_CleanCache(t *testing.T) {
 	utxoCacheDB.SetTransaction(referTx)
 
-	reference, err := utxoCache.GetTxReference(spendTx)
+	reference, err := utxoCache.getTxReference(spendTx)
 	assert.NoError(t, err)
 	for input, output := range reference {
 		assert.Equal(t, referTx.Hash(), input.Previous.TxID)
@@ -152,7 +152,7 @@ func TestUTXOCache_CleanCache(t *testing.T) {
 	assert.Equal(t, "leveldb: not found", err.Error())
 
 	utxoCache.CleanCache()
-	_, err = utxoCache.GetTxReference(spendTx)
+	_, err = utxoCache.getTxReference(spendTx)
 	assert.Equal(t,
 		"GetTxReference failed, transaction not found, leveldb: not found",
 		err.Error())
