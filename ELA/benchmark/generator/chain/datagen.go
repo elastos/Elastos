@@ -26,6 +26,11 @@ const (
 	maxTxPerBlock = math.MaxUint32
 )
 
+type ProcessDataTimeCounter struct {
+	StartTimer func()
+	StopTimer  func()
+}
+
 type DataGen struct {
 	txRepo         *TxRepository
 	chain          *blockchain.BlockChain
@@ -36,6 +41,7 @@ type DataGen struct {
 	foundationAddr string
 	dataDir        string
 
+	counter        *ProcessDataTimeCounter
 	pressure       bool
 	pressureTxSize int
 }
@@ -47,6 +53,18 @@ func (g *DataGen) GetChain() *blockchain.BlockChain {
 func (g *DataGen) SetPressure(enable bool, size int) {
 	g.pressure = enable
 	g.pressureTxSize = size
+}
+
+func (g *DataGen) SetGenerateMode(mode GenerationMod) {
+	g.txRepo.Params().Mode = mode
+}
+
+func (g *DataGen) SetPrevBlockHash(hash common.Uint256) {
+	g.prevBlockHash = hash
+}
+
+func (g *DataGen) EnableProcessDataTimer(counter *ProcessDataTimeCounter) {
+	g.counter = counter
 }
 
 func (g *DataGen) Generate(height uint32) (err error) {
@@ -80,9 +98,13 @@ func (g *DataGen) fastProcess(height uint32) (err error) {
 		return
 	}
 
-	if err = g.storeData(block); err != nil {
+	g.counterProcess(func() {
+		err = g.storeData(block)
+	})
+	if err != nil {
 		return
 	}
+
 	g.txPool.CleanSubmittedTransactions(block)
 	return
 }
@@ -98,7 +120,10 @@ func (g *DataGen) normalProcess(height uint32) (err error) {
 		return
 	}
 
-	if _, _, err = g.chain.ProcessBlock(block, nil); err != nil {
+	g.counterProcess(func() {
+		_, _, err = g.chain.ProcessBlock(block, nil)
+	})
+	if err != nil {
 		return
 	}
 
@@ -119,10 +144,23 @@ func (g *DataGen) minimalProcess(height uint32) (err error) {
 	}
 	g.prevBlockHash = block.Hash()
 
-	if err = g.storeData(block); err != nil {
+	g.counterProcess(func() {
+		err = g.storeData(block)
+	})
+	if err != nil {
 		return
 	}
 	return
+}
+
+func (g *DataGen) counterProcess(action func()) {
+	if g.counter != nil {
+		g.counter.StartTimer()
+		action()
+		g.counter.StopTimer()
+	} else {
+		action()
+	}
 }
 
 func (g *DataGen) generateTxs(
@@ -246,6 +284,7 @@ func FromTxRepository(dataDir string, interrupt <-chan struct{},
 		dataDir:        dataDir,
 		pressure:       false,
 		pressureTxSize: 8000000,
+		counter:        nil,
 		pow: pow.NewService(
 			&pow.Config{
 				PayToAddr:   foundationAddr,
