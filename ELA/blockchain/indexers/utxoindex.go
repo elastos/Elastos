@@ -125,8 +125,8 @@ func dbFetchUtxoIndexEntryByHeight(dbTx database.Tx, programHash *common.Uint168
 
 // UtxoIndex implements a utxo by tx hash index.
 type UtxoIndex struct {
-	db    database.DB
-	store ITxStore
+	db      database.DB
+	txStore ITxStore
 }
 
 // Init initializes the hash-based utxo index. This is part of the Indexer
@@ -194,7 +194,7 @@ func (idx *UtxoIndex) ConnectBlock(dbTx database.Tx, block *types.Block) error {
 		}
 		// inputs process
 		for _, input := range txn.Inputs {
-			referTx, height, err := idx.store.FetchTx(input.Previous.TxID)
+			referTx, height, err := idx.txStore.FetchTx(input.Previous.TxID)
 			if err != nil {
 				return err
 			}
@@ -257,7 +257,7 @@ func (idx *UtxoIndex) DisconnectBlock(dbTx database.Tx, block *types.Block) erro
 			continue
 		}
 		for _, input := range txn.Inputs {
-			referTx, height, err := idx.store.FetchTx(input.Previous.TxID)
+			referTx, height, err := idx.txStore.FetchTx(input.Previous.TxID)
 			if err != nil {
 				return err
 			}
