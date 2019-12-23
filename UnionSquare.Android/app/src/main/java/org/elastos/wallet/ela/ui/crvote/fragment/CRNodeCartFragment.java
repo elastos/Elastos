@@ -115,7 +115,7 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
         tvTitle.setText(getString(R.string.crcvote));
         if (netList == null) {
             //没有来自接口的节点列表数据
-            netList=new ArrayList<>();
+            netList = new ArrayList<>();
         }
         registReceiver();
         // 为Adapter准备数据
@@ -265,6 +265,10 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
      */
     private void doCheckMuil(boolean tag, boolean checkSelectNuber) {
         if (!tag) {
+            if (checkSelectNuber) {
+                //检查选中的数量36的情况下取消全选
+                mAdapter.initAllCurentBalance();
+            }
             mAdapter.initDateStaus(false);
             mAdapter.notifyDataSetChanged();
             tvAmount.setText(getString(R.string.totle) + "0 ELA");

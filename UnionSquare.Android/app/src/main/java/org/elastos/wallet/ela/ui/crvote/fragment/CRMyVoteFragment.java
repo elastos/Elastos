@@ -172,14 +172,14 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
         @Override
         protected void convert(BaseViewHolder helper, Recorder item) {
             helper.setText(R.id.tv_name, item.name);
-            helper.setText(R.id.tv_ticketnum, item.ticketNum + getString(R.string.ticket));
+            helper.setText(R.id.tv_ticketnum, item.ticketNum + mContext.getString(R.string.ticket));
             if (item.no == Integer.MAX_VALUE) {
                 helper.setText(R.id.tv_no, "- -");
-                helper.setTextColor(R.id.tv_no, getContext().getResources().getColor(R.color.whiter50));
-                helper.setTextColor(R.id.tv_name, getContext().getResources().getColor(R.color.whiter50));
+                helper.setTextColor(R.id.tv_no, mContext.getResources().getColor(R.color.whiter50));
+                helper.setTextColor(R.id.tv_name, mContext.getResources().getColor(R.color.whiter50));
             } else {
-                helper.setTextColor(R.id.tv_no, getContext().getResources().getColor(R.color.whiter));
-                helper.setTextColor(R.id.tv_name, getContext().getResources().getColor(R.color.whiter));
+                helper.setTextColor(R.id.tv_no, mContext.getResources().getColor(R.color.whiter));
+                helper.setTextColor(R.id.tv_name,mContext.getResources().getColor(R.color.whiter));
                 helper.setText(R.id.tv_no, "NO." + item.no);
 
             }
