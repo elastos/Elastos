@@ -25,10 +25,9 @@ package org.elastos.did;
 import java.util.List;
 import java.util.Map;
 
-import org.elastos.did.backend.DIDBackend;
-import org.elastos.did.backend.IDTransactionInfo;
-import org.elastos.did.backend.ResolveResult;
+import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDExpiredException;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedCredentialException;
@@ -51,71 +50,49 @@ public final class DIDStore {
 	public static final int DID_NO_PRIVATEKEY = 1;
 	public static final int DID_ALL	= 2;
 
-	private static DIDStore instance;
-
 	private Map<DID, DIDDocument> didCache;
 	private Map<DIDURL, VerifiableCredential> vcCache;
 
-	private DIDBackend backend;
-	private DIDStoreBackend storage;
+	private DIDStorage storage;
 
 	private DIDStore(int initialCacheCapacity, int maxCacheCapacity,
-			DIDAdapter adapter, DIDStoreBackend storage) {
+			DIDStorage storage) {
 		if (maxCacheCapacity > 0) {
 			this.didCache = LRUCache.createInstance(initialCacheCapacity, maxCacheCapacity);
 			this.vcCache = LRUCache.createInstance(initialCacheCapacity, maxCacheCapacity);
 		}
 
-		this.backend = new DIDBackend(adapter);
 		this.storage = storage;
 	}
 
-	public static void initialize(String type, String location,
-			DIDAdapter adapter, int initialCacheCapacity, int maxCacheCapacity)
+	public static DIDStore open(String type, String location,
+			int initialCacheCapacity, int maxCacheCapacity)
 			throws DIDStoreException {
-		if (type == null || location == null ||
-				location.isEmpty() || adapter == null ||
+		if (type == null || location == null || location.isEmpty() ||
 				maxCacheCapacity < initialCacheCapacity)
 			throw new IllegalArgumentException();
 
 		if (!type.equals("filesystem"))
 			throw new DIDStoreException("Unsupported store type: " + type);
 
-		DIDStoreBackend storage = new FileSystemStoreBackend(location);
-		instance = new DIDStore(initialCacheCapacity, maxCacheCapacity,
-				adapter, storage);
+		DIDStorage storage = new FileSystemStorage(location);
+		return new DIDStore(initialCacheCapacity, maxCacheCapacity, storage);
 	}
 
-	public static void initialize(String type, String location,
-			DIDAdapter adapter) throws DIDStoreException {
-		initialize(type, location, adapter,
-				CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY);
-	}
-
-	public static boolean isInitialized() {
-		return instance != null;
-	}
-
-	public static DIDStore getInstance() throws DIDStoreException {
-		if (instance == null)
-			throw new DIDStoreException("Store not initialized.");
-
-		return instance;
-	}
-
-	protected DIDAdapter getAdapter() {
-		return backend.getAdapter();
+	public static DIDStore open(String type, String location)
+			throws DIDStoreException {
+		return open(type, location, CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY);
 	}
 
 	public boolean containsPrivateIdentity() throws DIDStoreException {
 		return storage.containsPrivateIdentity();
 	}
 
-	protected static String encryptToBase64(String passwd, byte[] input)
+	protected static String encryptToBase64(byte[] input, String passwd)
 			throws DIDStoreException {
 		byte[] cipher;
 		try {
-			cipher = Aes256cbc.encrypt(passwd, input);
+			cipher = Aes256cbc.encrypt(input, passwd);
 		} catch (Exception e) {
 			throw new DIDStoreException("Encrypt key error.", e);
 		}
@@ -124,12 +101,12 @@ public final class DIDStore {
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 
-	protected static byte[] decryptFromBase64(String storepass, String input)
+	protected static byte[] decryptFromBase64(String input, String storepass)
 			throws DIDStoreException {
 		byte[] cipher = Base64.decode(input,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 		try {
-			return Aes256cbc.decrypt(storepass, cipher);
+			return Aes256cbc.decrypt(cipher, storepass);
 		} catch (Exception e) {
 			throw new DIDStoreException("Decrypt private key error, maybe wrong store password.", e);
 		}
@@ -155,8 +132,8 @@ public final class DIDStore {
 
 		// Save seed instead of root private key,
 		// keep compatible with Native SDK
-		String encryptedIdentity = encryptToBase64(storepass,
-				privateIdentity.getSeed());
+		String encryptedIdentity = encryptToBase64(
+				privateIdentity.getSeed(), storepass);
 		storage.storePrivateIdentity(encryptedIdentity);
 		storage.storePrivateIdentityIndex(0);
 
@@ -174,11 +151,12 @@ public final class DIDStore {
 		if (!containsPrivateIdentity())
 			return null;
 
-		byte[] seed = decryptFromBase64(storepass, storage.loadPrivateIdentity());
+		byte[] seed = decryptFromBase64(storage.loadPrivateIdentity(), storepass);
 		return HDKey.fromSeed(seed);
 	}
 
-	public void synchronize(String storepass) throws DIDStoreException  {
+	public void synchronize(String storepass)
+			throws DIDStoreException, DIDException  {
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
 
@@ -196,8 +174,12 @@ public final class DIDStore {
 
 			DIDDocument doc = null;
 			try {
-				doc = resolveDidFromBackend(did);
-			} catch (Exception ignore) {
+				doc = DIDBackend.getInstance().resolve(did, true);
+			} catch (DIDExpiredException e) {
+				continue;
+			} catch (DIDDeactivatedException e) {
+				continue;
+			} catch (DIDResolveException e) {
 				// TODO: throws exception if necessary
 				blanks++;
 				continue;
@@ -218,7 +200,7 @@ public final class DIDStore {
 		}
 	}
 
-	public DIDDocument newDid(String storepass, String alias)
+	public DIDDocument newDid(String alias, String storepass)
 			throws DIDStoreException {
 		if (storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException("Invalid password.");
@@ -235,7 +217,7 @@ public final class DIDStore {
 
 		storePrivateKey(did, id, key.serialize(), storepass);
 
-		DIDDocument.Builder db = new DIDDocument.Builder(did);
+		DIDDocument.Builder db = new DIDDocument.Builder(did, this);
 		db.addAuthenticationKey(id, key.getPublicKeyBase58());
 		DIDDocument doc = db.seal(storepass);
 		storeDid(doc);
@@ -249,40 +231,41 @@ public final class DIDStore {
 	}
 
 	public DIDDocument newDid(String storepass) throws DIDStoreException {
-		return newDid(storepass, null);
+		return newDid(null, storepass);
 	}
 
 	public boolean publishDid(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDStoreException {
+			throws DIDStoreException, DIDException {
 		if (doc == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		return backend.create(doc, signKey, storepass);
+		return DIDBackend.getInstance().create(doc, signKey, storepass);
 	}
 
 	public boolean publishDid(DIDDocument doc, String signKey, String storepass)
-			throws MalformedDIDURLException, DIDStoreException {
+			throws MalformedDIDURLException, DIDStoreException, DIDException {
 		DIDURL id = signKey == null ? null : new DIDURL(doc.getSubject(), signKey);
 		return publishDid(doc, id, storepass);
 	}
 
 	public boolean publishDid(DIDDocument doc, String storepass)
-			throws DIDStoreException {
+			throws DIDStoreException, DIDException {
 		return publishDid(doc, (DIDURL)null, storepass);
 	}
 
 	public boolean updateDid(DIDDocument doc, DIDURL signKey, String storepass)
-			throws DIDException, DIDStoreException {
+			throws DIDException, DIDStoreException, DIDException {
 		if (doc == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		return backend.update(doc, doc.getTransactionId(), signKey, storepass);
+		return DIDBackend.getInstance().update(doc,
+				doc.getTransactionId(), signKey, storepass);
 	}
 
 	public boolean updateDid(DIDDocument doc, String signKey, String storepass)
@@ -297,112 +280,36 @@ public final class DIDStore {
 	}
 
 	public boolean deactivateDid(DID did, DIDURL signKey, String storepass)
-			throws DIDStoreException {
+			throws DIDStoreException, DIDException {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
 		if (signKey == null) {
 			try {
-				DIDDocument doc = resolveDid(did);
+				DIDDocument doc = DIDBackend.getInstance().resolve(did);
 				if (doc == null)
 					throw new DIDStoreException("Can not resolve DID document.");
 
 				signKey = doc.getDefaultPublicKey();
-			} catch (MalformedDocumentException e) {
+			} catch (DIDResolveException e) {
 				throw new DIDStoreException(e);
 			}
 		}
 
-		return backend.deactivate(did, signKey, storepass);
+		return DIDBackend.getInstance().deactivate(did, signKey, storepass);
 
 		// TODO: how to handle locally?
 	}
 
 	public boolean deactivateDid(DID did, String signKey, String storepass)
-			throws MalformedDIDURLException, DIDStoreException {
+			throws MalformedDIDURLException, DIDStoreException, DIDException {
 		DIDURL id = signKey == null ? null : new DIDURL(did, signKey);
 		return deactivateDid(did, id, storepass);
 	}
 
 	public boolean deactivateDid(DID did, String storepass)
-			throws DIDStoreException {
+			throws DIDStoreException, DIDException {
 		return deactivateDid(did, (DIDURL)null, storepass);
-	}
-
-	public DIDDocument resolveDidFromBackend(DID did)
-			throws DIDStoreException, MalformedDocumentException {
-		ResolveResult rr = null;
-		try {
-			rr = backend.resolve(did);
-		} catch (DIDResolveException e) {
-			throw new DIDStoreException(e);
-		}
-
-		if (!rr.getDid().equals(did)) // Wrong result, should never happen.
-			throw new DIDStoreException("Resolved result not matched with request DID.");
-
-		DIDMeta meta;
-		IDTransactionInfo ti;
-
-		switch (rr.getStatus()) {
-		case ResolveResult.STATUS_VALID:
-		case ResolveResult.STATUS_EXPIRED:
-			ti = rr.getTransactionInfo(0);
-			DIDDocument doc = ti.getRequest().getDocument();
-			storeDid(doc);
-
-			// Patch or create meta
-			meta = loadDidMeta(did);
-			meta.setTransactionId(ti.getTransactionId());
-			meta.setUpdated(ti.getTimestamp());
-			storeDidMeta(did, meta);
-			return doc;
-
-		case ResolveResult.STATUS_DEACTIVATED:
-			ti = rr.getTransactionInfo(0);
-
-			// Patch or create meta
-			meta = loadDidMeta(did);
-			meta.setTransactionId(ti.getTransactionId());
-			meta.setUpdated(ti.getTimestamp());
-			meta.setDeactivated(true);
-			storeDidMeta(did, meta);
-			return null;
-
-		case ResolveResult.STATUS_NOT_FOUND:
-			return null;
-		}
-
-		return null;
-	}
-
-	public DIDDocument resolveDid(DID did, boolean force)
-			throws DIDStoreException, MalformedDocumentException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
-		DIDDocument doc = resolveDidFromBackend(did);
-		if (doc == null && !force)
-			doc = loadDid(did);
-
-		return doc;
-	}
-
-	public DIDDocument resolveDid(String did, boolean force)
-			throws MalformedDIDException, MalformedDocumentException,
-			DIDStoreException  {
-		return resolveDid(new DID(did), force);
-	}
-
-	public DIDDocument resolveDid(DID did)
-			throws DIDStoreException, MalformedDocumentException {
-		return resolveDid(did, false);
-	}
-
-	public DIDDocument resolveDid(String did)
-			throws MalformedDIDException, MalformedDocumentException,
-			DIDStoreException  {
-		return resolveDid(did, false);
 	}
 
 	public void storeDid(DIDDocument doc, String alias)
@@ -417,15 +324,20 @@ public final class DIDStore {
 
 		storage.storeDid(doc);
 
+		// TODO: Check me!!!
+		DIDMeta meta = loadDidMeta(doc.getSubject());
+		meta.merge(doc.getMeta());
+		meta.setStore(this);
+		doc.setMeta(meta);
+
+		storage.storeDidMeta(doc.getSubject(), meta);
+
 		if (didCache != null)
 			didCache.put(doc.getSubject(), doc);
 	}
 
 	protected void storeDidMeta(DID did, DIDMeta meta)
 			throws DIDStoreException {
-		if (did == null)
-			throw new IllegalArgumentException();
-
 		storage.storeDidMeta(did, meta);
 
 		if (didCache != null) {
@@ -450,7 +362,7 @@ public final class DIDStore {
 		if (didCache != null) {
 			doc = didCache.get(did);
 			if (doc != null) {
-				meta = doc.getMeta(false);
+				meta = doc.getMeta();
 				if (meta != null)
 					return meta;
 			}
@@ -482,6 +394,11 @@ public final class DIDStore {
 		}
 
 		doc = storage.loadDid(did);
+		if (doc != null) {
+			doc.setMeta(storage.loadDidMeta(did));
+			doc.getMeta().setStore(this);
+		}
+
 		if (doc != null && didCache != null)
 			didCache.put(doc.getSubject(), doc);
 
@@ -519,7 +436,15 @@ public final class DIDStore {
 	}
 
 	public List<DID> listDids(int filter) throws DIDStoreException {
-		return storage.listDids(filter);
+		List<DID> dids = storage.listDids(filter);
+
+		for (DID did : dids) {
+			DIDMeta meta = loadDidMeta(did);
+			meta.setStore(this);
+			did.setMeta(meta);
+		}
+
+		return dids;
 	}
 
 	public void storeCredential(VerifiableCredential credential, String alias)
@@ -534,6 +459,17 @@ public final class DIDStore {
 			throw new IllegalArgumentException();
 
 		storage.storeCredential(credential);
+
+		// TODO: Check me!!!
+		CredentialMeta meta = loadCredentialMeta(
+				credential.getSubject().getId(), credential.getId());
+		meta.merge(credential.getMeta());
+		meta.setStore(this);
+		credential.setMeta(meta);
+
+		credential.getMeta().setStore(this);
+		storage.storeCredentialMeta(credential.getSubject().getId(),
+				credential.getId(), meta);
 
 		if (vcCache != null)
 			vcCache.put(credential.getId(), credential);
@@ -572,7 +508,7 @@ public final class DIDStore {
 		if (vcCache != null) {
 			vc = vcCache.get(id);
 			if (vc != null) {
-				meta = vc.getMeta(false);
+				meta = vc.getMeta();
 				if (meta != null)
 					return meta;
 			}
@@ -665,7 +601,15 @@ public final class DIDStore {
 		if (did == null)
 			throw new IllegalArgumentException();
 
-		return storage.listCredentials(did);
+		List<DIDURL> ids = storage.listCredentials(did);
+
+		for (DIDURL id : ids) {
+			CredentialMeta meta = loadCredentialMeta(did, id);
+			meta.setStore(this);
+			id.setMeta(meta);
+		}
+
+		return ids;
 	}
 
 	public List<DIDURL> listCredentials(String did)
@@ -697,7 +641,7 @@ public final class DIDStore {
 				storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
-		String encryptedKey = encryptToBase64(storepass, privateKey);
+		String encryptedKey = encryptToBase64(privateKey, storepass);
 		storage.storePrivateKey(did, id, encryptedKey);
 	}
 
@@ -762,7 +706,7 @@ public final class DIDStore {
 
 		if (id == null) {
 			try {
-				DIDDocument doc = resolveDid(did);
+				DIDDocument doc = loadDid(did);
 				if (doc == null)
 					throw new DIDStoreException("Can not resolve DID document.");
 
@@ -772,7 +716,7 @@ public final class DIDStore {
 			}
 		}
 
-		byte[] binKey = decryptFromBase64(storepass, loadPrivateKey(did, id));
+		byte[] binKey = decryptFromBase64(loadPrivateKey(did, id), storepass);
 		HDKey.DerivedKey key = HDKey.DerivedKey.deserialize(binKey);
 
 		byte[] sig = EcdsaSigner.sign(key.getPrivateKeyBytes(), data);

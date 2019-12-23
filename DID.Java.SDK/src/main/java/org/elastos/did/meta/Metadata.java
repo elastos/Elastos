@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.elastos.did.DIDStore;
 import org.elastos.did.exception.MalformedMetaException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public abstract class Metadata {
 	private final static String EXTRA_PREFIX = "X-";
 
+	private DIDStore store;
 	private Map<String, String> extra;
 
 	protected void setExtraInternal(String name, String value) {
@@ -51,6 +53,18 @@ public abstract class Metadata {
 
 	protected Map<String, String> getExtra() {
 		return extra;
+	}
+
+	public void setStore(DIDStore store) {
+		this.store = store;
+	}
+
+	public DIDStore getStore() {
+		return store;
+	}
+
+	public boolean attachedStore() {
+		return store != null;
 	}
 
 	public void setExtra(String name, String value) {
@@ -75,6 +89,7 @@ public abstract class Metadata {
 		try {
 			meta = clazz.newInstance();
 		} catch (Exception e) {
+			// should never go here!!!
 			return null;
 		}
 
@@ -120,5 +135,10 @@ public abstract class Metadata {
 		}
 
 		return node.size() != 0 ? node.toString() : null;
+	}
+
+	public void merge(Metadata meta) {
+		if (meta != null && meta.extra != null)
+			extra.putAll(meta.extra);
 	}
 }

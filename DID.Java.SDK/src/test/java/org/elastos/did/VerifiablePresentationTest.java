@@ -30,11 +30,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 
-import org.elastos.did.Constants;
-import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDURL;
-import org.elastos.did.VerifiableCredential;
-import org.elastos.did.VerifiablePresentation;
 import org.elastos.did.exception.DIDException;
 import org.junit.Test;
 
@@ -77,14 +72,14 @@ public class VerifiablePresentationTest {
 	@Test
 	public void testBuild() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		DIDStore store = testData.setupStore(true);
 
 		// For integrity check
 		testData.loadTestIssuer();
 		DIDDocument testDoc = testData.loadTestDocument();
 
 		VerifiablePresentation.Builder pb = VerifiablePresentation.createFor(
-				testDoc.getSubject());
+				testDoc.getSubject(), store);
 
 		VerifiablePresentation vp = pb.credentials(testData.loadProfileCredential())
 				.credentials(testData.loadEmailCredential())

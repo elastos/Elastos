@@ -30,9 +30,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDURL;
-import org.elastos.did.VerifiableCredential;
 import org.elastos.did.exception.DIDException;
 import org.junit.Test;
 

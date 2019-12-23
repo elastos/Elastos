@@ -295,13 +295,9 @@ public class VerifiableCredential extends DIDObject {
 		this.meta = meta;
 	}
 
-	protected CredentialMeta getMeta(boolean force) throws DIDStoreException {
-		if (meta != null)
-			return meta;
-
-		if (force && DIDStore.isInitialized())
-			this.meta = DIDStore.getInstance().loadCredentialMeta(
-					getSubject().getId(), getId());
+	protected CredentialMeta getMeta() {
+		if (meta == null)
+			meta = new CredentialMeta();
 
 		return meta;
 	}
@@ -310,30 +306,30 @@ public class VerifiableCredential extends DIDObject {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		getMeta(true).setExtra(name, value);
+		getMeta().setExtra(name, value);
 
-		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeCredentialMeta(
-					getSubject().getId(), getId(), meta);
+		if (getMeta().attachedStore())
+			getMeta().getStore().storeCredentialMeta(getSubject().getId(),
+					getId(), meta);
 	}
 
-	public String getExtra(String name) throws DIDException {
+	public String getExtra(String name) {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		return getMeta(true).getExtra(name);
+		return getMeta().getExtra(name);
 	}
 
 	public void setAlias(String alias) throws DIDStoreException {
-		getMeta(true).setAlias(alias);;
+		getMeta().setAlias(alias);
 
-		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeCredentialMeta(
-					getSubject().getId(), getId(), meta);
+		if (getMeta().attachedStore())
+			getMeta().getStore().storeCredentialMeta(getSubject().getId(),
+					getId(), meta);
 	}
 
-	public String getAlias() throws DIDException {
-		return getMeta(true).getAlias();
+	public String getAlias() {
+		return getMeta().getAlias();
 	}
 
 	public boolean isSelfProclaimed() {

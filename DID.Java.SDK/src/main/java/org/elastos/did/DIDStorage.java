@@ -30,7 +30,7 @@ import org.elastos.did.exception.MalformedDocumentException;
 import org.elastos.did.meta.CredentialMeta;
 import org.elastos.did.meta.DIDMeta;
 
-public interface DIDStoreBackend {
+public interface DIDStorage {
 	// Root private identity
 	public boolean containsPrivateIdentity() throws DIDStoreException;
 

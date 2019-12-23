@@ -470,15 +470,30 @@ public class VerifiablePresentation {
 		return toJson(false);
 	}
 
-	public static Builder createFor(DID did, DIDURL signKey) throws DIDException {
-		if (did == null)
+	public static Builder createFor(DID did, DIDURL signKey, DIDStore store)
+			throws DIDException {
+		if (did == null || store == null)
 			throw new IllegalArgumentException();
 
-		return new Builder(did, signKey);
+		DIDDocument signer = store.loadDid(did);
+		if (signer == null)
+			throw new DIDException("Can not load DID.");
+
+		if (signKey == null) {
+			signKey = signer.getDefaultPublicKey();
+		} else {
+			if (!signer.isAuthenticationKey(signKey))
+				throw new DIDException("Invalid sign key id.");
+		}
+
+		if (!signer.hasPrivateKey(signKey))
+			throw new DIDException("No private key.");
+
+		return new Builder(signer, signKey, store);
 	}
 
-	public static Builder createFor(DID did) throws DIDException {
-		return new Builder(did, null);
+	public static Builder createFor(DID did, DIDStore store) throws DIDException {
+		return createFor(did, null, store);
 	}
 
 	public static class Builder {
@@ -488,21 +503,9 @@ public class VerifiablePresentation {
 		private String nonce;
 		private VerifiablePresentation presentation;
 
-		protected Builder(DID did, DIDURL signKey) throws DIDException {
-			this.signer = did.resolve();
-			if (signer == null)
-				throw new DIDException("Can not resolve DID.");
-
-			if (signKey == null) {
-				signKey = signer.getDefaultPublicKey();
-			} else {
-				if (!signer.isAuthenticationKey(signKey))
-					throw new DIDException("Invalid sign key id.");
-			}
-
-			if (!signer.hasPrivateKey(signKey))
-				throw new DIDException("No private key.");
-
+		protected Builder(DIDDocument signer, DIDURL signKey, DIDStore store)
+				throws DIDException {
+			this.signer = signer;
 			this.signKey = signKey;
 			this.presentation = new VerifiablePresentation();
 		}

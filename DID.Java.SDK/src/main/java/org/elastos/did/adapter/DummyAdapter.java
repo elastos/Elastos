@@ -22,8 +22,9 @@
 
 package org.elastos.did.adapter;
 
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Random;
@@ -36,6 +37,7 @@ import org.elastos.did.backend.IDTransactionInfo;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDResolveException;
 
+import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -138,8 +140,9 @@ public class DummyAdapter implements DIDAdapter {
 	}
 
 	@Override
-	public String resolve(String did, boolean all) throws DIDResolveException {
-		Writer out = new StringWriter(4096);
+	public InputStream resolve(String requestId, String did, boolean all)
+			throws DIDResolveException {
+		ByteArrayOutputStream os = new ByteArrayOutputStream(4096);
 		JsonFactory factory = new JsonFactory();
 		boolean matched = false;
 
@@ -150,10 +153,10 @@ public class DummyAdapter implements DIDAdapter {
 			did = "did:elastos:" + did;
 
 		try {
-			JsonGenerator generator = factory.createGenerator(out);
+			JsonGenerator generator = factory.createGenerator(os, JsonEncoding.UTF8);
 			generator.writeStartObject();
 
-			generator.writeNullField("id");
+			generator.writeStringField("id", requestId);
 			generator.writeStringField("jsonrpc", "2.0");
 			generator.writeFieldName("result");
 			generator.writeStartObject();
@@ -203,6 +206,10 @@ public class DummyAdapter implements DIDAdapter {
 		if (verbose)
 			System.out.println(matched ? "success" : "failed");
 
-		return out.toString();
+		return new ByteArrayInputStream(os.toByteArray());
+	}
+
+	public void reset() {
+		idtxs.clear();
 	}
 }

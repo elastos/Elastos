@@ -41,10 +41,6 @@ public class DIDMeta extends Metadata {
 	private String txid;
 	private String alias;
 
-	public DIDMeta() {
-		super();
-	}
-
 	public void setAlias(String alias) {
 		this.alias = alias;
 	}
@@ -119,5 +115,29 @@ public class DIDMeta extends Metadata {
 
 		if (updated != null)
 			node.put(Constants.timestamp, dateFormat.format(updated));
+	}
+
+	@Override
+	public void merge(Metadata meta) {
+		if (meta == null)
+			return;
+
+		if (!(meta instanceof DIDMeta))
+			throw new IllegalArgumentException();
+
+		DIDMeta m = (DIDMeta)meta;
+
+		if (m.alias != null)
+			alias = m.alias;
+
+		deactivated = m.deactivated;
+
+		if (m.txid != null)
+			txid = m.txid;
+
+		if (m.updated != null)
+			updated = m.updated;
+
+		super.merge(meta);
 	}
 }

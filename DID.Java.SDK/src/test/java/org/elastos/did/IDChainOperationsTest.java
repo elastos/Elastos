@@ -41,6 +41,7 @@ import org.junit.Test;
 
 //@RunWith(Parameterized.class)
 public class IDChainOperationsTest {
+	private static final boolean DUMMY_TEST = true;
 	/*
 	@Parameterized.Parameters
 	public static Object[][] data() {
@@ -51,15 +52,14 @@ public class IDChainOperationsTest {
 	@Test
 	public void testPublishAndResolve() throws DIDException {
 		TestData testData = new TestData();
-		testData.setupStore(false);
+		DIDStore store = testData.setupStore(DUMMY_TEST);
 		testData.initIdentity();
 
-		DIDStore store = DIDStore.getInstance();
 		SPVAdapter adapter = null;
 
 		// need synchronize?
-		if (store.getAdapter() instanceof SPVAdapter)
-			adapter = (SPVAdapter)store.getAdapter();
+		if (DIDBackend.getInstance().getAdapter() instanceof SPVAdapter)
+			adapter = (SPVAdapter)DIDBackend.getInstance().getAdapter();
 
 		if (adapter != null) {
 			System.out.print("Waiting for wallet available to create DID");
@@ -80,9 +80,11 @@ public class IDChainOperationsTest {
 
 		// Create new DID and publish to ID sidechain.
 		DIDDocument doc = store.newDid(TestConfig.storePass);
+		DID did = doc.getSubject();
+
 		Boolean success = store.publishDid(doc, TestConfig.storePass);
 		assertTrue(success);
-		System.out.println("Published new DID: " + doc.getSubject());
+		System.out.println("Published new DID: " + did);
 
 		// Resolve new DID document
 		if (adapter != null) {
@@ -94,7 +96,7 @@ public class IDChainOperationsTest {
 				}
 
 				try {
-					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					DIDDocument rdoc = did.resolve(true);
 					if (rdoc != null) {
 						System.out.println(" OK");
 						break;
@@ -107,8 +109,8 @@ public class IDChainOperationsTest {
 			}
 		}
 
-		DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
-		assertEquals(doc.getSubject(), resolved.getSubject());
+		DIDDocument resolved = did.resolve(true);
+		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 	}
@@ -116,15 +118,14 @@ public class IDChainOperationsTest {
 	@Test
 	public void testUpdateAndResolve() throws DIDException {
 		TestData testData = new TestData();
-		testData.setupStore(false);
+		DIDStore store = testData.setupStore(DUMMY_TEST);
 		testData.initIdentity();
 
-		DIDStore store = DIDStore.getInstance();
 		SPVAdapter adapter = null;
 
 		// need synchronize?
-		if (store.getAdapter() instanceof SPVAdapter)
-			adapter = (SPVAdapter)store.getAdapter();
+		if (DIDBackend.getInstance().getAdapter() instanceof SPVAdapter)
+			adapter = (SPVAdapter)DIDBackend.getInstance().getAdapter();
 
 		if (adapter != null) {
 			System.out.print("Waiting for wallet available to create DID");
@@ -145,9 +146,11 @@ public class IDChainOperationsTest {
 
 		// Create new DID and publish to ID sidechain.
 		DIDDocument doc = store.newDid(TestConfig.storePass);
+		DID did = doc.getSubject();
+
 		Boolean success = store.publishDid(doc, TestConfig.storePass);
 		assertTrue(success);
-		System.out.println("Published new DID: " + doc.getSubject());
+		System.out.println("Published new DID: " + did);
 
 		// Resolve new DID document
 		if (adapter != null) {
@@ -169,7 +172,7 @@ public class IDChainOperationsTest {
 			System.out.print("Try to resolve new published DID");
 			while (true) {
 				try {
-					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					DIDDocument rdoc = did.resolve(true);
 					if (rdoc != null) {
 						System.out.println(" OK");
 						break;
@@ -187,8 +190,9 @@ public class IDChainOperationsTest {
 			}
 		}
 
-		DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
-		assertEquals(doc.getSubject(), resolved.getSubject());
+		DIDDocument resolved = did.resolve(true);
+		store.storeDid(resolved);
+		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
@@ -205,7 +209,7 @@ public class IDChainOperationsTest {
 
 		success = store.updateDid(doc, TestConfig.storePass);
 		assertTrue(success);
-		System.out.println("Updated DID: " + doc.getSubject());
+		System.out.println("Updated DID: " + did);
 
 		if (adapter != null) {
 			System.out.print("Waiting for update transaction confirm");
@@ -226,7 +230,7 @@ public class IDChainOperationsTest {
 			System.out.print("Try to resolve updated DID.");
 			while (true) {
 				try {
-					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					DIDDocument rdoc = did.resolve(true);
 					if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
 						System.out.println(" OK");
 						break;
@@ -244,8 +248,9 @@ public class IDChainOperationsTest {
 			}
 		}
 
-		resolved = store.resolveDid(doc.getSubject(), true);
-		assertEquals(doc.getSubject(), resolved.getSubject());
+		resolved = did.resolve(true);
+		store.storeDid(resolved);
+		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
@@ -262,7 +267,7 @@ public class IDChainOperationsTest {
 
 		success = store.updateDid(doc, TestConfig.storePass);
 		assertTrue(success);
-		System.out.println("Updated DID: " + doc.getSubject());
+		System.out.println("Updated DID: " + did);
 
 		if (adapter != null) {
 			System.out.print("Waiting for update transaction confirm");
@@ -283,7 +288,7 @@ public class IDChainOperationsTest {
 			System.out.print("Try to resolve updated DID.");
 			while (true) {
 				try {
-					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					DIDDocument rdoc = did.resolve(true);
 					if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
 						System.out.println(" OK");
 						break;
@@ -301,8 +306,9 @@ public class IDChainOperationsTest {
 			}
 		}
 
-		resolved = store.resolveDid(doc.getSubject(), true);
-		assertEquals(doc.getSubject(), resolved.getSubject());
+		resolved = did.resolve(true);
+		store.storeDid(resolved);
+		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
@@ -313,15 +319,14 @@ public class IDChainOperationsTest {
 	@Test
 	public void testUpdateAndResolveWithCredentials() throws DIDException {
 		TestData testData = new TestData();
-		testData.setupStore(false);
+		DIDStore store = testData.setupStore(DUMMY_TEST);
 		testData.initIdentity();
 
-		DIDStore store = DIDStore.getInstance();
 		SPVAdapter adapter = null;
 
 		// need synchronize?
-		if (store.getAdapter() instanceof SPVAdapter)
-			adapter = (SPVAdapter)store.getAdapter();
+		if (DIDBackend.getInstance().getAdapter() instanceof SPVAdapter)
+			adapter = (SPVAdapter)DIDBackend.getInstance().getAdapter();
 
 		if (adapter != null) {
 			System.out.print("Waiting for wallet available to create DID");
@@ -342,9 +347,10 @@ public class IDChainOperationsTest {
 
 		// Create new DID and publish to ID sidechain.
 		DIDDocument doc = store.newDid(TestConfig.storePass);
+		DID did = doc.getSubject();
 
 		Issuer selfIssuer = new Issuer(doc);
-		Issuer.CredentialBuilder cb = selfIssuer.issueFor(doc.getSubject());
+		Issuer.CredentialBuilder cb = selfIssuer.issueFor(did);
 
 		Map<String, String> props= new HashMap<String, String>();
 		props.put("name", "John");
@@ -368,7 +374,7 @@ public class IDChainOperationsTest {
 
 		Boolean success = store.publishDid(doc, TestConfig.storePass);
 		assertTrue(success);
-		System.out.println("Published new DID: " + doc.getSubject());
+		System.out.println("Published new DID: " + did);
 
 		// Resolve new DID document
 		if (adapter != null) {
@@ -390,7 +396,7 @@ public class IDChainOperationsTest {
 			System.out.print("Try to resolve new published DID");
 			while (true) {
 				try {
-					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					DIDDocument rdoc = did.resolve(true);
 					if (rdoc != null) {
 						System.out.println(" OK");
 						break;
@@ -408,8 +414,9 @@ public class IDChainOperationsTest {
 			}
 		}
 
-		DIDDocument resolved = store.resolveDid(doc.getSubject(), true);
-		assertEquals(doc.getSubject(), resolved.getSubject());
+		DIDDocument resolved = did.resolve(true);
+		store.storeDid(resolved);
+		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
@@ -418,7 +425,7 @@ public class IDChainOperationsTest {
 
 		// Update
 		selfIssuer = new Issuer(resolved);
-		cb = selfIssuer.issueFor(resolved.getSubject());
+		cb = selfIssuer.issueFor(did);
 
 		props.clear();
 		props.put("nation", "Singapore");
@@ -438,7 +445,7 @@ public class IDChainOperationsTest {
 
 		success = store.updateDid(doc, TestConfig.storePass);
 		assertTrue(success);
-		System.out.println("Updated DID: " + doc.getSubject());
+		System.out.println("Updated DID: " + did);
 
 		if (adapter != null) {
 			System.out.print("Waiting for update transaction confirm");
@@ -459,7 +466,7 @@ public class IDChainOperationsTest {
 			System.out.print("Try to resolve updated DID.");
 			while (true) {
 				try {
-					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					DIDDocument rdoc = did.resolve(true);
 					if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
 						System.out.println(" OK");
 						break;
@@ -477,8 +484,9 @@ public class IDChainOperationsTest {
 			}
 		}
 
-		resolved = store.resolveDid(doc.getSubject(), true);
-		assertEquals(doc.getSubject(), resolved.getSubject());
+		resolved = did.resolve(true);
+		store.storeDid(resolved);
+		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
@@ -487,7 +495,7 @@ public class IDChainOperationsTest {
 
 		// Update
 		selfIssuer = new Issuer(resolved);
-		cb = selfIssuer.issueFor(resolved.getSubject());
+		cb = selfIssuer.issueFor(did);
 
 		props.clear();
 		props.put("Abc", "Abc");
@@ -511,7 +519,7 @@ public class IDChainOperationsTest {
 
 		success = store.updateDid(doc, TestConfig.storePass);
 		assertTrue(success);
-		System.out.println("Updated DID: " + doc.getSubject());
+		System.out.println("Updated DID: " + did);
 
 		if (adapter != null) {
 			System.out.print("Waiting for update transaction confirm");
@@ -532,7 +540,7 @@ public class IDChainOperationsTest {
 			System.out.print("Try to resolve updated DID.");
 			while (true) {
 				try {
-					DIDDocument rdoc = store.resolveDid(doc.getSubject(), true);
+					DIDDocument rdoc = did.resolve(true);
 					if (rdoc != null && rdoc.getTransactionId() != lastTxid) {
 						System.out.println(" OK");
 						break;
@@ -550,8 +558,9 @@ public class IDChainOperationsTest {
 			}
 		}
 
-		resolved = store.resolveDid(doc.getSubject(), true);
-		assertEquals(doc.getSubject(), resolved.getSubject());
+		resolved = did.resolve(true);
+		store.storeDid(resolved);
+		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
 
@@ -562,9 +571,7 @@ public class IDChainOperationsTest {
 	@Test(timeout = 900000)
 	public void testRestore() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(false);
-
-		DIDStore store = DIDStore.getInstance();
+		DIDStore store = testData.setupStore(false);
 
 		String mnemonic = testData.loadRestoreMnemonic();
 

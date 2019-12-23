@@ -29,7 +29,6 @@ import java.io.Writer;
 import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.DIDDocument;
-import org.elastos.did.DIDStore;
 import org.elastos.did.DIDURL;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDResolveException;
@@ -187,7 +186,7 @@ public class IDChainRequest {
 			payload.getBytes()
 		};
 
-		this.signature = DIDStore.getInstance().sign(did, signKey, storepass, inputs);
+		this.signature = doc.sign(signKey, storepass, inputs);
 		this.signKey = signKey;
 		this.keyType = Constants.defaultPublicKeyType;
 	}
@@ -199,7 +198,7 @@ public class IDChainRequest {
 			if (!doc.isAuthenticationKey(signKey))
 				return false;
 		} else {
-			doc = DIDStore.getInstance().loadDid(did);
+			doc = did.resolve();
 			if (!doc.isAuthenticationKey(signKey) &&
 					!doc.isAuthorizationKey(signKey))
 				return false;

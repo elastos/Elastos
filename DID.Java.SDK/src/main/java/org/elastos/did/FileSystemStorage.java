@@ -72,7 +72,7 @@ import org.elastos.did.meta.DIDMeta;
  *      + ixxxxxxxxxxxxxxxN
  *
  */
-class FileSystemStoreBackend implements DIDStoreBackend {
+class FileSystemStorage implements DIDStorage {
 	private static final byte[] STORE_MAGIC = { 0x00, 0x0D, 0x01, 0x0D };
 	private static final byte[] STORE_VERSION = { 0x00, 0x00, 0x00, 0x02 };
 	private static final int STORE_META_SIZE = 8;
@@ -93,7 +93,7 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 
 	private File storeRoot;
 
-	FileSystemStoreBackend(String dir) throws DIDStoreException {
+	FileSystemStorage(String dir) throws DIDStoreException {
 		if (dir == null)
 			throw new IllegalArgumentException();
 
@@ -353,9 +353,7 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 			if (!file.exists())
 				return null;
 
-			DIDDocument doc = DIDDocument.fromJson(new FileInputStream(file));
-			doc.setMeta(loadDidMeta(did));
-			return doc;
+			return DIDDocument.fromJson(new FileInputStream(file));
 		} catch (IOException e) {
 			throw new DIDStoreException("Load DIDDocument error.", e);
 		}
@@ -414,11 +412,6 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 
 		for (File didRoot : children) {
 			DID did = new DID(DID.METHOD, didRoot.getName());
-			try {
-				did.setMeta(loadDidMeta(did));
-			} catch (Exception ignore) {
-			}
-
 			dids.add(did);
 		}
 
@@ -478,17 +471,7 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 			if (!file.exists())
 				return null;
 
-			VerifiableCredential vc;
-			vc = VerifiableCredential.fromJson(new FileInputStream(file));
-
-			try {
-				vc.setMeta(loadCredentialMeta(did, id));
-			} catch (Exception e) {
-				// any error when load meta, just delete it.
-				storeCredentialMeta(did, id, null);
-			}
-
-			return vc;
+			return VerifiableCredential.fromJson(new FileInputStream(file));
 		} catch (IOException e) {
 			throw new DIDStoreException("Load VerifiableCredential error.", e);
 		}
@@ -552,17 +535,8 @@ class FileSystemStoreBackend implements DIDStoreBackend {
 		ArrayList<DIDURL> credentials = new ArrayList<DIDURL>(size);
 
 		for (File credential : children) {
-			try {
-				DIDURL id = new DIDURL(did, credential.getName());
-				try {
-					id.setMeta(loadCredentialMeta(did, id));
-				} catch (Exception e) {
-					// any error when load meta, just delete it.
-					storeCredentialMeta(did, id, null);
-				}
-				credentials.add(id);
-			} catch (DIDStoreException ignore) {
-			}
+			DIDURL id = new DIDURL(did, credential.getName());
+			credentials.add(id);
 		}
 
 		return credentials;

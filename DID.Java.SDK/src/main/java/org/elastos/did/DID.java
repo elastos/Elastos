@@ -79,41 +79,63 @@ public class DID implements Comparable<DID> {
 		this.meta = meta;
 	}
 
-	protected DIDMeta getMeta(boolean force) throws DIDStoreException {
-		if (meta != null)
-			return meta;
-
-		if (force && DIDStore.isInitialized())
-			this.meta = DIDStore.getInstance().loadDidMeta(this);
+	protected DIDMeta getMeta() {
+		if (meta == null)
+			meta = new DIDMeta();
 
 		return meta;
 	}
 
+	public void setExtra(String name, String value) throws DIDStoreException {
+		if (name == null || name.isEmpty())
+			throw new IllegalArgumentException();
+
+		getMeta().setExtra(name, value);
+
+		if (getMeta().attachedStore())
+			getMeta().getStore().storeDidMeta(this, meta);
+	}
+
+	public String getExtra(String name) {
+		if (name == null || name.isEmpty())
+			throw new IllegalArgumentException();
+
+		return getMeta().getExtra(name);
+	}
+
 	public void setAlias(String alias) throws DIDStoreException {
-		getMeta(true).setAlias(alias);;
+		getMeta().setAlias(alias);
 
-		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeDidMeta(this, meta);
+		if (getMeta().attachedStore())
+			getMeta().getStore().storeDidMeta(this, meta);
 	}
 
-	public String getAlias() throws DIDException {
-		return getMeta(true).getAlias();
+	public String getAlias() {
+		return getMeta().getAlias();
 	}
 
-	public String getTransactionId() throws DIDException {
-		return getMeta(true).getTransactionId();
+	public String getTransactionId() {
+		return getMeta().getTransactionId();
 	}
 
-	public Date getUpdated() throws DIDException {
-		return getMeta(true).getUpdated();
+	public Date getUpdated() {
+		return getMeta().getUpdated();
 	}
 
 	public boolean isDeactivated() throws DIDException {
-		return getMeta(true).isDeactivated();
+		return getMeta().isDeactivated();
+	}
+
+	public DIDDocument resolve(boolean force) throws DIDException {
+		DIDDocument doc = DIDBackend.getInstance().resolve(this, force);
+		if (doc != null)
+			setMeta(doc.getMeta());
+
+		return doc;
 	}
 
 	public DIDDocument resolve() throws DIDException {
-		return DIDStore.getInstance().resolveDid(this);
+		return resolve(false);
 	}
 
 	@Override

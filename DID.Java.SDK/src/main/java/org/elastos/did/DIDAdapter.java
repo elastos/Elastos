@@ -22,6 +22,8 @@
 
 package org.elastos.did;
 
+import java.io.InputStream;
+
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDResolveException;
 
@@ -29,5 +31,6 @@ public interface DIDAdapter {
 	public boolean createIdTransaction(String payload, String memo)
 			throws DIDException;
 
-	public String resolve(String did, boolean all) throws DIDResolveException;
+	public InputStream resolve(String requestId, String did, boolean all)
+			throws DIDResolveException;
 }

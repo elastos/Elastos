@@ -22,13 +22,24 @@
 
 package org.elastos.did.adapter;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
+
 import org.elastos.did.DIDAdapter;
 import org.elastos.did.exception.DIDException;
+import org.elastos.did.exception.DIDResolveException;
+
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 public class SPVAdapter implements DIDAdapter {
-	static {
-		System.loadLibrary("spvadapterjni");
-	}
+	private URL url;
 
 	private String walletDir;
 	private String walletId;
@@ -37,13 +48,27 @@ public class SPVAdapter implements DIDAdapter {
 	private long handle;
 	private PasswordCallback passwordCallback;
 
+	static {
+		System.loadLibrary("spvadapterjni");
+	}
+
 	public interface PasswordCallback {
 		public String getPassword(String walletDir, String walletId);
 	}
 
 	public SPVAdapter(String walletDir, String walletId, String network,
-			String resolver, PasswordCallback passwordCallback) {
-		handle = create(walletDir, walletId, network, resolver);
+			String resolver, PasswordCallback passwordCallback)
+			throws DIDResolveException {
+		if (resolver == null || resolver.isEmpty())
+			throw new IllegalArgumentException();
+
+		try {
+			this.url = new URL(resolver);
+		} catch (MalformedURLException e) {
+			throw new DIDResolveException(e);
+		}
+
+		handle = create(walletDir, walletId, network, "");
 		this.walletDir = walletDir;
 		this.walletId = walletId;
 		this.network = network;
@@ -84,7 +109,40 @@ public class SPVAdapter implements DIDAdapter {
 	}
 
 	@Override
-	public String resolve(String did, boolean all) {
-		return resolve(handle, did, all);
+	public InputStream resolve(String requestId, String did, boolean all)
+			throws DIDResolveException {
+		try {
+			HttpsURLConnection connection = (HttpsURLConnection)url.openConnection();
+			connection.setRequestMethod("POST");
+			connection.setRequestProperty("User-Agent",
+					"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setRequestProperty("Accept", "application/json");
+			connection.setDoOutput(true);
+			connection.connect();
+
+			OutputStream os = connection.getOutputStream();
+			JsonFactory factory = new JsonFactory();
+			JsonGenerator generator = factory.createGenerator(os, JsonEncoding.UTF8);
+			generator.writeStartObject();
+			generator.writeStringField("id", requestId);
+			generator.writeStringField("method", "resolvedid");
+			generator.writeFieldName("params");
+			generator.writeStartObject();
+			generator.writeStringField("did", did);
+			generator.writeBooleanField("all", all);
+			generator.writeEndObject();
+			generator.writeEndObject();
+			generator.close();
+			os.close();
+
+			int code = connection.getResponseCode();
+			if (code != 200)
+				return null;
+
+			return connection.getInputStream();
+		} catch (IOException e) {
+			throw new DIDResolveException("Network error.", e);
+		}
 	}
 }

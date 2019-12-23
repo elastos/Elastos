@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elastos.did.adapter.SPVAdapter;
+import org.elastos.did.backend.ResolverCache;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.util.Base58;
 import org.elastos.did.util.HDKey;
@@ -42,6 +43,7 @@ public class TestDataGenerator {
 	private DIDAdapter adapter;
 	private DIDDocument issuer;
 	private DIDDocument test;
+	private DIDStore store;
 
 	private String init(String storeRoot) throws IOException, DIDException {
 		adapter = new SPVAdapter(TestConfig.walletDir,
@@ -53,11 +55,13 @@ public class TestDataGenerator {
 					}
 				});
 
+		ResolverCache.reset();
+		DIDBackend.initialize(adapter);
+
 		TestData.deleteFile(new File(storeRoot));
-    	DIDStore.initialize("filesystem", storeRoot, adapter);
+		store = DIDStore.open("filesystem", storeRoot);
 
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-		DIDStore store = DIDStore.getInstance();
     	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
     			TestConfig.passphrase, TestConfig.storePass, true);
 
@@ -70,7 +74,6 @@ public class TestDataGenerator {
 	}
 
 	private void createTestIssuer() throws DIDException, IOException {
-		DIDStore store = DIDStore.getInstance();
 		DIDDocument doc = store.newDid(TestConfig.storePass, "Issuer");
 
 		System.out.print("Generate issuer DID: " + doc.getSubject() + "...");
@@ -113,7 +116,6 @@ public class TestDataGenerator {
 	}
 
 	private void createTestDocument() throws DIDException, IOException {
-		DIDStore store = DIDStore.getInstance();
 		DIDDocument doc = store.newDid(TestConfig.storePass);
 
 		// Test document with two embedded credentials
@@ -275,7 +277,7 @@ public class TestDataGenerator {
 		System.out.print("Generate presentation...");
 
 		VerifiablePresentation.Builder pb = VerifiablePresentation.createFor(
-				test.getSubject());
+				test.getSubject(), store);
 
 		VerifiablePresentation vp = pb.credentials(vcProfile, vcEmail)
 				.credentials(vcPassport)
@@ -307,7 +309,6 @@ public class TestDataGenerator {
 		writeTo("mnemonic.restore", mnemonic);
 		System.out.println("OK");
 
-    	DIDStore store = DIDStore.getInstance();
     	StringBuffer dids = new StringBuffer();
 
     	System.out.println("Generate DIDs for restore......");
@@ -330,8 +331,9 @@ public class TestDataGenerator {
 	    	while (true) {
 	    		Thread.sleep(30000);
 	    		try {
-		    		DIDDocument d = store.resolveDid(doc.getSubject(), true);
+		    		DIDDocument d = doc.getSubject().resolve(true);
 		    		if (d != null) {
+		    			store.storeDid(d);
 		    			System.out.println(" OK");
 		    			break;
 		    		} else {

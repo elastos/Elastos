@@ -336,6 +336,7 @@ public class DIDDocument {
 
 		this.expires = doc.expires;
 		this.proof = doc.proof;
+		this.meta = doc.meta;
 	}
 
 	private <K, V extends DIDObject> int getEntryCount(Map<K, V> entries) {
@@ -457,7 +458,10 @@ public class DIDDocument {
 		if (getEntry(publicKeys, id) == null)
 			return false;
 
-		return DIDStore.getInstance().containsPrivateKey(getSubject(), id);
+		if (!getMeta().attachedStore())
+			return false;
+
+		return getMeta().getStore().containsPrivateKey(getSubject(), id);
 	}
 
 	public boolean hasPrivateKey(String id)
@@ -515,7 +519,8 @@ public class DIDDocument {
 		boolean removed = removeEntry(publicKeys, id);
 		if (removed) {
 			try {
-				DIDStore.getInstance().deletePrivateKey(getSubject(), id);
+				if (getMeta().attachedStore())
+					getMeta().getStore().deletePrivateKey(getSubject(), id);
 			} catch (DIDStoreException ignore) {
 				// TODO: CHECKME!
 			}
@@ -797,12 +802,9 @@ public class DIDDocument {
 		this.meta = meta;
 	}
 
-	protected DIDMeta getMeta(boolean force) throws DIDStoreException {
-		if (meta != null)
-			return meta;
-
-		if (force && DIDStore.isInitialized())
-			this.meta = DIDStore.getInstance().loadDidMeta(getSubject());
+	protected DIDMeta getMeta() {
+		if (meta == null)
+			meta = new DIDMeta();
 
 		return meta;
 	}
@@ -811,36 +813,40 @@ public class DIDDocument {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		getMeta(true).setExtra(name, value);
+		getMeta().setExtra(name, value);
 
-		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeDidMeta(getSubject(), meta);
+		if (getMeta().attachedStore())
+			getMeta().getStore().storeDidMeta(getSubject(), meta);
 	}
 
-	public String getExtra(String name) throws DIDException {
+	public String getExtra(String name) {
 		if (name == null || name.isEmpty())
 			throw new IllegalArgumentException();
 
-		return getMeta(true).getExtra(name);
+		return getMeta().getExtra(name);
 	}
 
 	public void setAlias(String alias) throws DIDStoreException {
-		getMeta(true).setAlias(alias);;
+		getMeta().setAlias(alias);
 
-		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeDidMeta(getSubject(), meta);
+		if (getMeta().attachedStore())
+			getMeta().getStore().storeDidMeta(getSubject(), meta);
 	}
 
-	public String getAlias() throws DIDException {
-		return getMeta(true).getAlias();
+	public String getAlias() {
+		return getMeta().getAlias();
 	}
 
-	public String getTransactionId() throws DIDException {
-		return getMeta(true).getTransactionId();
+	public String getTransactionId() {
+		return getMeta().getTransactionId();
 	}
 
-	public Date getUpdated() throws DIDException {
-		return getMeta(true).getUpdated();
+	public Date getUpdated() {
+		return getMeta().getUpdated();
+	}
+
+	public boolean isDeactivated() throws DIDException {
+		return getMeta().isDeactivated();
 	}
 
 	public boolean isExpired() {
@@ -850,10 +856,6 @@ public class DIDDocument {
 		expireDate.setTime(expires);
 
 		return now.after(expireDate);
-	}
-
-	public boolean isDeactivated() throws DIDException {
-		return getMeta(true).isDeactivated();
 	}
 
 	public boolean isGenuine() {
@@ -885,16 +887,19 @@ public class DIDDocument {
 
 	public String sign(DIDURL id, String storepass, byte[] ... data)
 			throws DIDStoreException {
-		if (id == null || storepass == null || storepass.isEmpty() || data == null)
+		if (id == null || data == null ||
+				storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
-		return DIDStore.getInstance().sign(getSubject(), id, storepass, data);
+		if (!getMeta().attachedStore())
+			throw new DIDStoreException("Not attached with DID store.");
+
+		return getMeta().getStore().sign(getSubject(), id, storepass, data);
 	}
 
 	public String sign(String id, String storepass, byte[] ... data)
 			throws MalformedDIDURLException, DIDStoreException {
-		return DIDStore.getInstance().sign(getSubject(),
-				new DIDURL(getSubject(), id), storepass, data);
+		return sign(new DIDURL(getSubject(), id), storepass, data);
 	}
 
 	public boolean verify(String signature, byte[] ... data)
@@ -1303,8 +1308,9 @@ public class DIDDocument {
 	public static class Builder {
 		private DIDDocument document;
 
-		protected Builder(DID did) {
+		protected Builder(DID did, DIDStore store) {
 			this.document = new DIDDocument(did);
+			this.document.getMeta().setStore(store);
 		}
 
 		protected Builder(DIDDocument doc) {

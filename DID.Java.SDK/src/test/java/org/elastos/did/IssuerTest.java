@@ -44,13 +44,13 @@ public class IssuerTest {
 	@Test
 	public void newIssuerTestWithSignKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		DIDStore store = testData.setupStore(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 
 		DIDURL signKey = issuerDoc.getDefaultPublicKey();
 
-		Issuer issuer = new Issuer(issuerDoc.getSubject(), signKey);
+		Issuer issuer = new Issuer(issuerDoc.getSubject(), signKey, store);
 
 		assertEquals(issuerDoc.getSubject(), issuer.getDid());
 		assertEquals(signKey, issuer.getSignKey());
@@ -59,11 +59,11 @@ public class IssuerTest {
 	@Test
 	public void newIssuerTestWithoutSignKey() throws DIDException, IOException {
 		TestData testData = new TestData();
-		testData.setupStore(true);
+		DIDStore store = testData.setupStore(true);
 
 		DIDDocument issuerDoc = testData.loadTestIssuer();
 
-		Issuer issuer = new Issuer(issuerDoc.getSubject());
+		Issuer issuer = new Issuer(issuerDoc.getSubject(), store);
 
 		assertEquals(issuerDoc.getSubject(), issuer.getDid());
 		assertEquals(issuerDoc.getDefaultPublicKey(), issuer.getSignKey());

@@ -54,8 +54,8 @@ public class Aes256cbc {
 		md.doFinal(iv, 0);
 	}
 
-	public static byte[] encrypt(String passwd, byte[] plain, int offset,
-			int length) throws CryptoException {
+	public static byte[] encrypt(byte[] plain, int offset, int length,
+			String passwd) throws CryptoException {
 		byte[] key = new byte[32];
 		byte[] iv = new byte[16];
 
@@ -78,18 +78,18 @@ public class Aes256cbc {
 		return secret;
 	}
 
-	public static byte[] encrypt(String passwd, byte[] plain, int offset)
+	public static byte[] encrypt(byte[] plain, int offset, String passwd)
 			throws CryptoException {
-		return encrypt(passwd, plain, offset, plain.length - offset);
+		return encrypt(plain, offset, plain.length - offset, passwd);
 	}
 
-	public static byte[] encrypt(String passwd, byte[] plain)
+	public static byte[] encrypt(byte[] plain, String passwd)
 			throws CryptoException {
-		return encrypt(passwd, plain, 0, plain.length);
+		return encrypt(plain, 0, plain.length, passwd);
 	}
 
-	public static byte[] decrypt(String passwd, byte[] secret, int offset,
-			int length) throws CryptoException {
+	public static byte[] decrypt(byte[] secret, int offset, int length,
+			String passwd) throws CryptoException {
 		byte[] key = new byte[32];
 		byte[] iv = new byte[16];
 
@@ -112,39 +112,39 @@ public class Aes256cbc {
         return plain;
 	}
 
-	public static byte[] decrypt(String passwd, byte[] secret, int offset)
+	public static byte[] decrypt(byte[] secret, int offset, String passwd)
 			throws CryptoException {
-		return decrypt(passwd, secret, offset, secret.length - offset);
+		return decrypt(secret, offset, secret.length - offset, passwd);
 	}
 
-	public static byte[] decrypt(String passwd, byte[] secret)
+	public static byte[] decrypt(byte[] secret, String passwd)
 			throws CryptoException {
-		return decrypt(passwd, secret, 0, secret.length);
+		return decrypt(secret, 0, secret.length, passwd);
 	}
 
-	public static String encryptToBase64(String passwd, byte[] plain,
-			int offset, int length) throws CryptoException {
-		byte[] secret = encrypt(passwd, plain, offset, length);
+	public static String encryptToBase64(byte[] plain, int offset, int length,
+			String passwd) throws CryptoException {
+		byte[] secret = encrypt(plain, offset, length, passwd);
 
 		return Base64.encodeToString(secret,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 	}
 
-	public static String encryptToBase64(String passwd, byte[] plain, int offset)
+	public static String encryptToBase64(byte[] plain, int offset, String passwd)
 			throws CryptoException {
-		return encryptToBase64(passwd, plain, offset, plain.length - offset);
+		return encryptToBase64(plain, offset, plain.length - offset, passwd);
 	}
 
-	public static String encryptToBase64(String passwd, byte[] plain)
+	public static String encryptToBase64(byte[] plain, String passwd)
 			throws CryptoException {
-		return encryptToBase64(passwd, plain, 0, plain.length);
+		return encryptToBase64(plain, 0, plain.length, passwd);
 	}
 
-	public static byte[] decryptFromBase64(String passwd, String secret)
+	public static byte[] decryptFromBase64(String secret, String passwd)
 			throws CryptoException {
 		byte[] secretBytes =   Base64.decode(secret,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 
-		return decrypt(passwd, secretBytes);
+		return decrypt(secretBytes, passwd);
 	}
 }

@@ -25,7 +25,6 @@ package org.elastos.did;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.exception.MalformedDIDURLException;
 import org.elastos.did.meta.CredentialMeta;
@@ -166,21 +165,41 @@ public class DIDURL implements Comparable<DIDURL> {
 		this.meta = meta;
 	}
 
-	protected CredentialMeta getMeta(boolean force) throws DIDStoreException {
-		if (meta != null)
-			return meta;
-
-		if (force && DIDStore.isInitialized())
-			this.meta = DIDStore.getInstance().loadCredentialMeta(
-					this.getDid(), this);
+	protected CredentialMeta getMeta() {
+		if (meta == null)
+			meta = new CredentialMeta();
 
 		return meta;
 	}
 
-	public String getAlias() throws DIDException {
-		return getMeta(true).getAlias();
+	public void setExtra(String name, String value) throws DIDStoreException {
+		if (name == null || name.isEmpty())
+			throw new IllegalArgumentException();
+
+		getMeta().setExtra(name, value);
+
+		if (getMeta().attachedStore())
+			getMeta().getStore().storeCredentialMeta(this.getDid(), this, meta);
 	}
 
+	public String getExtra(String name) {
+		if (name == null || name.isEmpty())
+			throw new IllegalArgumentException();
+
+		return getMeta().getExtra(name);
+	}
+
+	public void setAlias(String alias) throws DIDStoreException {
+		getMeta().setAlias(alias);
+
+		if (getMeta().attachedStore())
+			if (getMeta().attachedStore())
+				getMeta().getStore().storeCredentialMeta(this.getDid(), this, meta);
+	}
+
+	public String getAlias() {
+		return getMeta().getAlias();
+	}
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(512);

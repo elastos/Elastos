@@ -34,7 +34,7 @@ public class Aes256cbcTest {
 
 	@Test
 	public void testEncrypt() throws Exception {
-		byte[] cipher = Aes256cbc.encrypt(passwd, plain.getBytes());
+		byte[] cipher = Aes256cbc.encrypt(plain.getBytes(), passwd);
 		byte[] expected = Base64.decode(cipherBase64,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 
@@ -45,7 +45,7 @@ public class Aes256cbcTest {
 	public void testDecrypt() throws Exception {
 		byte[] cipher = Base64.decode(cipherBase64,
 				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
-		byte[] plainBytes = Aes256cbc.decrypt(passwd, cipher);
+		byte[] plainBytes = Aes256cbc.decrypt(cipher, passwd);
 		byte[] expected = plain.getBytes();
 
 		assertArrayEquals(expected, plainBytes);
@@ -53,14 +53,14 @@ public class Aes256cbcTest {
 
 	@Test
 	public void testEncryptToBase64() throws Exception {
-		String cipher = Aes256cbc.encryptToBase64(passwd, plain.getBytes());
+		String cipher = Aes256cbc.encryptToBase64(plain.getBytes(), passwd);
 
 		assertEquals(cipherBase64, cipher);
 	}
 
 	@Test
 	public void testDecryptFromBase64() throws Exception {
-		byte[] plainBytes = Aes256cbc.decryptFromBase64(passwd, cipherBase64);
+		byte[] plainBytes = Aes256cbc.decryptFromBase64(cipherBase64, passwd);
 		byte[] expected = plain.getBytes();
 
 		assertArrayEquals(expected, plainBytes);
@@ -72,7 +72,7 @@ public class Aes256cbcTest {
 		String passwd = "password";
 		String base64 = "uK7mHw5JHRD2WS-BmA2b_4mUPD9WhttY9uAC_aw9Tdc";
 
-		String cipher = Aes256cbc.encryptToBase64(passwd, plain.getBytes());
+		String cipher = Aes256cbc.encryptToBase64(plain.getBytes(), passwd);
 
 		assertEquals(base64, cipher);
 	}

@@ -23,6 +23,7 @@
 package org.elastos.did.backend;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedList;
@@ -116,7 +117,7 @@ public class ResolveResult {
 		Class<DIDResolveException> exceptionClass = DIDResolveException.class;
 
 		if (result == null || result.size() == 0)
-			return null;
+			throw new DIDResolveException("Empty resolve result.");
 
 		DID did = JsonHelper.getDid(result, Constants.did, false, null,
 				"Resolved result DID", exceptionClass);
@@ -152,5 +153,29 @@ public class ResolveResult {
 		} catch (IOException e) {
 			throw new DIDResolveException("Parse resolve result error.", e);
 		}
+	}
+
+	public static ResolveResult fromJson(Reader in)
+			throws DIDResolveException {
+		if (in == null)
+			throw new IllegalArgumentException();
+
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode result = mapper.readTree(in);
+			return fromJson(result);
+		} catch (IOException e) {
+			throw new DIDResolveException("Parse resolve result error.", e);
+		}
+	}
+
+	@Override
+	public String toString() {
+		try {
+			return toJson();
+		} catch (IOException ignore) {
+		}
+
+		return super.toString();
 	}
 }

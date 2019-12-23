@@ -46,22 +46,23 @@ public class Issuer {
 		this(doc, null);
 	}
 
-	public Issuer(DID did, DIDURL signKey) throws DIDException {
-		if (did == null)
+	public Issuer(DID did, DIDURL signKey, DIDStore store) throws DIDException {
+		if (did == null || store == null)
 			throw new IllegalArgumentException();
 
-		DIDDocument doc = did.resolve();
+		DIDDocument doc = store.loadDid(did);
 		if (doc == null)
 			throw new DIDException("Can not resolve DID.");
 
 		init(doc, signKey);
 	}
 
-	public Issuer(DID did) throws DIDException {
-		this(did, null);
+	public Issuer(DID did, DIDStore store) throws DIDException {
+		this(did, null, store);
 	}
 
-	private void init(DIDDocument doc, DIDURL signKey) throws DIDException {
+	private void init(DIDDocument doc, DIDURL signKey)
+			throws DIDException {
 		this.self = doc;
 
 		if (signKey == null) {
@@ -71,7 +72,7 @@ public class Issuer {
 				throw new DIDException("Invalid sign key id.");
 		}
 
-		if (!self.hasPrivateKey(signKey))
+		if (!doc.hasPrivateKey(signKey))
 			throw new DIDException("No private key.");
 
 		this.signKey = signKey;

@@ -30,13 +30,13 @@ import java.io.Reader;
 
 import org.elastos.did.adapter.DummyAdapter;
 import org.elastos.did.adapter.SPVAdapter;
+import org.elastos.did.backend.ResolverCache;
 import org.elastos.did.exception.DIDException;
-import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.util.Base58;
 import org.elastos.did.util.HDKey;
 
 public final class TestData {
-	private static DIDAdapter dummyAdapter;
+	private static DummyAdapter dummyAdapter;
 	private static DIDAdapter spvAdapter;
 	private static HDKey rootKey;
 	private static int index;
@@ -70,12 +70,19 @@ public final class TestData {
 
 	private String restoreMnemonic;
 
-	public void setupStore(boolean dummyBackend) throws DIDStoreException {
+	private DIDStore store;
+
+	public DIDStore setupStore(boolean dummyBackend) throws DIDException {
 		DIDAdapter adapter;
+
+		ResolverCache.reset();
 
 		if (dummyBackend) {
 			if (TestData.dummyAdapter == null)
 				TestData.dummyAdapter = new DummyAdapter(TestConfig.verbose);
+			else
+				TestData.dummyAdapter.reset();
+
 			adapter = TestData.dummyAdapter;
 		} else {
 			if (TestData.spvAdapter == null)
@@ -90,13 +97,15 @@ public final class TestData {
 			adapter = TestData.spvAdapter;
 		}
 
+		DIDBackend.initialize(adapter);
     	deleteFile(new File(TestConfig.storeRoot));
-    	DIDStore.initialize("filesystem", TestConfig.storeRoot, adapter);
+    	store = DIDStore.open("filesystem", TestConfig.storeRoot);
+    	return store;
 	}
 
 	public String initIdentity() throws DIDException {
     	String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
-    	DIDStore.getInstance().initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
+    	store.initPrivateIdentity(Mnemonic.ENGLISH, mnemonic,
     			TestConfig.passphrase, TestConfig.storePass, true);
 
     	return mnemonic;
@@ -109,10 +118,8 @@ public final class TestData {
 		DIDDocument doc = DIDDocument.fromJson(input);
 		input.close();
 
-		if (DIDStore.isInitialized()) {
-			DIDStore store = DIDStore.getInstance();
+		if (store != null) {
 			store.storeDid(doc);
-			//store.publishDid(doc, TestConfig.storePass);
 		}
 
 		return doc;
@@ -123,8 +130,7 @@ public final class TestData {
 		String skBase58 = loadText(fileName);
 		byte[] sk = Base58.decode(skBase58);
 
-		DIDStore.getInstance().storePrivateKey(id.getDid(), id, sk,
-				TestConfig.storePass);
+		store.storePrivateKey(id.getDid(), id, sk, TestConfig.storePass);
 	}
 
 	public DIDDocument loadTestIssuer() throws DIDException, IOException {
@@ -132,6 +138,8 @@ public final class TestData {
 			testIssuer = loadDIDDocument("issuer.json");
 
 			importPrivateKey(testIssuer.getDefaultPublicKey(), "issuer.primary.sk");
+
+			store.publishDid(testIssuer, TestConfig.storePass);
 		}
 
 		return testIssuer;
@@ -140,12 +148,15 @@ public final class TestData {
 	public DIDDocument loadTestDocument() throws DIDException, IOException {
 		loadTestIssuer();
 
-		if (testDocument == null)
+		if (testDocument == null) {
 			testDocument = loadDIDDocument("document.json");
 
-		importPrivateKey(testDocument.getDefaultPublicKey(), "document.primary.sk");
-		importPrivateKey(testDocument.getPublicKey("key2").getId(), "document.key2.sk");
-		importPrivateKey(testDocument.getPublicKey("key3").getId(), "document.key3.sk");
+			importPrivateKey(testDocument.getDefaultPublicKey(), "document.primary.sk");
+			importPrivateKey(testDocument.getPublicKey("key2").getId(), "document.key2.sk");
+			importPrivateKey(testDocument.getPublicKey("key3").getId(), "document.key3.sk");
+
+			store.publishDid(testDocument, TestConfig.storePass);
+		}
 
 		return testDocument;
 	}
@@ -157,8 +168,8 @@ public final class TestData {
 		VerifiableCredential vc = VerifiableCredential.fromJson(input);
 		input.close();
 
-		if (DIDStore.isInitialized())
-			DIDStore.getInstance().storeCredential(vc);
+		if (store != null)
+			store.storeCredential(vc);
 
 		return vc;
 	}

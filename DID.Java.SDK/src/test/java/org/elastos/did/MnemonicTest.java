@@ -41,8 +41,8 @@ public class MnemonicTest {
 
 			// Try to use the mnemonic create root identity.
 			TestData testData = new TestData();
-			testData.setupStore(true);
-	    	DIDStore.getInstance().initPrivateIdentity(i, mnemonic,
+			DIDStore store = testData.setupStore(true);
+	    	store.initPrivateIdentity(i, mnemonic,
 	    			TestConfig.passphrase, TestConfig.storePass, true);
 
 			mnemonic = mnemonic + "z";
@@ -63,8 +63,8 @@ public class MnemonicTest {
 
 			// Try to use the mnemonic create root identity.
 			TestData testData = new TestData();
-			testData.setupStore(true);
-	    	DIDStore.getInstance().initPrivateIdentity(i, mnemonic,
+			DIDStore store = testData.setupStore(true);
+	    	store.initPrivateIdentity(i, mnemonic,
 	    			TestConfig.passphrase, TestConfig.storePass, true);
 
 			mnemonic = mnemonic + "z";
