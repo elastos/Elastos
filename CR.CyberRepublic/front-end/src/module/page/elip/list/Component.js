@@ -286,11 +286,17 @@ export default class extends BaseComponent {
                   value={filter}
                   onChange={this.handleStatusChange}
                 >
-                  {_.map(ELIP_STATUS, value => (
-                    <Select.Option key={value} value={value}>
-                      {I18N.get(`elip.status.${value}`)}
-                    </Select.Option>
-                  ))}
+                  {isLogin
+                    ? _.map(ELIP_STATUS, value => (
+                        <Select.Option key={value} value={value}>
+                          {I18N.get(`elip.status.${value}`)}
+                        </Select.Option>
+                      ))
+                    : _.map([ELIP_STATUS.DRAFT, ELIP_STATUS.SUBMITTED_AS_PROPOSAL], value => (
+                        <Select.Option key={value} value={value}>
+                          {I18N.get(`elip.status.${value}`)}
+                        </Select.Option>
+                      ))}
                 </Select>
               </FilterItem>
             </FilterContent>

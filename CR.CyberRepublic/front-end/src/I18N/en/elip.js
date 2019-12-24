@@ -42,11 +42,11 @@ export default {
     creationDate: 'Creation Date'
   },
   status: {
-    [ELIP_STATUS.WAIT_FOR_REVIEW]: 'SUBMIT FOR REVIEW',
+    [ELIP_STATUS.WAIT_FOR_REVIEW]: 'WAIT FOR REVIEW',
     [ELIP_STATUS.REJECTED]: 'REJECTED',
     [ELIP_STATUS.DRAFT]: 'DRAFT',
     [ELIP_STATUS.SUBMITTED]: 'SUBMITTED',
-    [ELIP_STATUS.SUBMITTED_AS_PROPOSAL]: 'Submitted as Proposal'
+    [ELIP_STATUS.SUBMITTED_AS_PROPOSAL]: 'SUBMITTED AS PROPOSAL'
   },
   show: 'Show',
   filter: {
