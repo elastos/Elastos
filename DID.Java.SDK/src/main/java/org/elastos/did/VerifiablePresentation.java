@@ -520,9 +520,10 @@ public class VerifiablePresentation {
 					throw new IllegalArgumentException("Credential '" +
 							vc.getId() + "' not match with requested did");
 
-				if (!vc.isValid())
-					throw new IllegalArgumentException("Credential '" +
-							vc.getId() + "' is invalid");
+				// TODO: integrity check?
+				// if (!vc.isValid())
+				//	throw new IllegalArgumentException("Credential '" +
+				//			vc.getId() + "' is invalid");
 
 				presentation.addCredential(vc);
 			}

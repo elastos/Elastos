@@ -25,10 +25,9 @@ package org.elastos.did.adapter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import org.elastos.did.DIDAdapter;
 import org.elastos.did.exception.DIDException;
@@ -112,7 +111,7 @@ public class SPVAdapter implements DIDAdapter {
 	public InputStream resolve(String requestId, String did, boolean all)
 			throws DIDResolveException {
 		try {
-			HttpsURLConnection connection = (HttpsURLConnection)url.openConnection();
+			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 			connection.setRequestMethod("POST");
 			connection.setRequestProperty("User-Agent",
 					"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");

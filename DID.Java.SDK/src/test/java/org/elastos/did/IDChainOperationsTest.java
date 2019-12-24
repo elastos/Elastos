@@ -41,7 +41,7 @@ import org.junit.Test;
 
 //@RunWith(Parameterized.class)
 public class IDChainOperationsTest {
-	private static final boolean DUMMY_TEST = true;
+	private static final boolean DUMMY_TEST = false;
 	/*
 	@Parameterized.Parameters
 	public static Object[][] data() {

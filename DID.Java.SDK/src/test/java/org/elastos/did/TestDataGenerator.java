@@ -74,7 +74,7 @@ public class TestDataGenerator {
 	}
 
 	private void createTestIssuer() throws DIDException, IOException {
-		DIDDocument doc = store.newDid(TestConfig.storePass, "Issuer");
+		DIDDocument doc = store.newDid("Issuer", TestConfig.storePass);
 
 		System.out.print("Generate issuer DID: " + doc.getSubject() + "...");
 
@@ -100,7 +100,7 @@ public class TestDataGenerator {
 
 		DIDURL id = issuer.getDefaultPublicKey();
 		String sk = store.loadPrivateKey(issuer.getSubject(), id);
-		byte[] binSk = DIDStore.decryptFromBase64(TestConfig.storePass, sk);
+		byte[] binSk = DIDStore.decryptFromBase64(sk, TestConfig.storePass);
 		writeTo("issuer." + id.getFragment() + ".sk", Base58.encode(binSk));
 
 		String json = issuer.toString(true);
@@ -180,7 +180,7 @@ public class TestDataGenerator {
 
 		DIDURL id = test.getDefaultPublicKey();
 		String sk = store.loadPrivateKey(test.getSubject(), id);
-		byte[] binSk = DIDStore.decryptFromBase64(TestConfig.storePass, sk);
+		byte[] binSk = DIDStore.decryptFromBase64(sk, TestConfig.storePass);
 		writeTo("document." + id.getFragment() + ".sk", Base58.encode(binSk));
 
 		String json = test.toString(true);
@@ -205,7 +205,8 @@ public class TestDataGenerator {
 		json = vcProfile.toString(false);
 		writeTo("vc-profile.compact.json", json);
 
-		System.out.println(vcProfile.isValid() ? "OK" : "Error");
+		//System.out.println(vcProfile.isValid() ? "OK" : "Error");
+		System.out.println("OK");
 
 		// email credential
 		System.out.print("Generate credential: " + vcEmail.getId() + "...");
@@ -218,7 +219,8 @@ public class TestDataGenerator {
 		json = vcEmail.toString(false);
 		writeTo("vc-email.compact.json", json);
 
-		System.out.println(vcEmail.isValid() ? "OK" : "Error");
+		//System.out.println(vcEmail.isValid() ? "OK" : "Error");
+		System.out.println("OK");
 
 		// Passport credential
 		id = new DIDURL(test.getSubject(), "passport");
@@ -245,7 +247,8 @@ public class TestDataGenerator {
 		json = vcPassport.toString(false);
 		writeTo("vc-passport.compact.json", json);
 
-		System.out.println(vcPassport.isValid() ? "OK" : "Error");
+		//System.out.println(vcPassport.isValid() ? "OK" : "Error");
+		System.out.println("OK");
 
 		// Twitter credential
 		id = new DIDURL(test.getSubject(), "twitter");
@@ -271,7 +274,8 @@ public class TestDataGenerator {
 		json = vcTwitter.toString(false);
 		writeTo("vc-twitter.compact.json", json);
 
-		System.out.println(vcPassport.isValid() ? "OK" : "Error");
+		//System.out.println(vcPassport.isValid() ? "OK" : "Error");
+		System.out.println("OK");
 
 		// Presentation with above credentials
 		System.out.print("Generate presentation...");
@@ -292,7 +296,8 @@ public class TestDataGenerator {
 		json = formatJson(json);
 		writeTo("vp.json", json);
 
-		System.out.println(vcPassport.isValid() ? "OK" : "Error");
+		//System.out.println(vcPassport.isValid() ? "OK" : "Error");
+		System.out.println("OK");
 	}
 
 	public void createTestFiles() throws IOException, DIDException {

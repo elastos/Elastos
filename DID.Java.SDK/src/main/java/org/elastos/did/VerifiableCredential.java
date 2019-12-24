@@ -342,6 +342,9 @@ public class VerifiableCredential extends DIDObject {
 
 	private boolean traceCheck(int rule) throws DIDException {
 		DIDDocument controllerDoc = subject.id.resolve();
+		if (controllerDoc == null)
+			return false;
+
 		switch (rule) {
 		case RULE_EXPIRE:
 			if (controllerDoc.isExpired())
@@ -502,11 +505,6 @@ public class VerifiableCredential extends DIDObject {
 	private void parse(JsonNode node, DID ref) throws MalformedCredentialException {
 		Class<MalformedCredentialException> clazz = MalformedCredentialException.class;
 
-		// id
-		DIDURL id = JsonHelper.getDidUrl(node, Constants.id,
-				ref, "crendential id", clazz);
-		setId(id);
-
 		// type
 		JsonNode valueNode = node.get(Constants.type);
 		if (valueNode == null)
@@ -539,6 +537,11 @@ public class VerifiableCredential extends DIDObject {
 		if (valueNode == null)
 			throw new MalformedCredentialException("Missing credentialSubject.");
 		subject = CredentialSubject.fromJson(valueNode, ref);
+
+		// id
+		DIDURL id = JsonHelper.getDidUrl(node, Constants.id,
+				ref != null ? ref : subject.getId(), "crendential id", clazz);
+		setId(id);
 
 		// IMPORTANT: help resolve full method in proof
 		if (issuer == null)
