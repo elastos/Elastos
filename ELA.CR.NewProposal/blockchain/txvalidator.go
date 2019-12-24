@@ -1252,12 +1252,12 @@ func (b *BlockChain) checkRegisterProducerTransaction(txn *Transaction) error {
 		return errors.New("invalid payload")
 	}
 
-	if err := checkStringField(info.NickName, "NickName"); err != nil {
+	if err := checkStringField(info.NickName, "NickName", false); err != nil {
 		return err
 	}
 
 	// check url
-	if err := checkStringField(info.Url, "Url"); err != nil {
+	if err := checkStringField(info.Url, "Url", true); err != nil {
 		return err
 	}
 
@@ -1476,12 +1476,12 @@ func (b *BlockChain) checkUpdateProducerTransaction(txn *Transaction) error {
 	}
 
 	// check nick name
-	if err := checkStringField(info.NickName, "NickName"); err != nil {
+	if err := checkStringField(info.NickName, "NickName", false); err != nil {
 		return err
 	}
 
 	// check url
-	if err := checkStringField(info.Url, "Url"); err != nil {
+	if err := checkStringField(info.Url, "Url", true); err != nil {
 		return err
 	}
 
@@ -1550,12 +1550,12 @@ func (b *BlockChain) checkRegisterCRTransaction(txn *Transaction,
 		return errors.New("invalid payload")
 	}
 
-	if err := checkStringField(info.NickName, "NickName"); err != nil {
+	if err := checkStringField(info.NickName, "NickName", false); err != nil {
 		return err
 	}
 
 	// check url
-	if err := checkStringField(info.Url, "Url"); err != nil {
+	if err := checkStringField(info.Url, "Url", true); err != nil {
 		return err
 	}
 
@@ -1636,12 +1636,12 @@ func (b *BlockChain) checkUpdateCRTransaction(txn *Transaction,
 		return errors.New("invalid payload")
 	}
 
-	if err := checkStringField(info.NickName, "NickName"); err != nil {
+	if err := checkStringField(info.NickName, "NickName", false); err != nil {
 		return err
 	}
 
 	// check url
-	if err := checkStringField(info.Url, "Url"); err != nil {
+	if err := checkStringField(info.Url, "Url", true); err != nil {
 		return err
 	}
 
@@ -2738,9 +2738,9 @@ func getConfirmSigners(
 	return result
 }
 
-func checkStringField(rawStr string, field string) error {
-	if len(rawStr) == 0 || len(rawStr) > MaxStringLength {
-		return fmt.Errorf("Field %s has invalid string length.", field)
+func checkStringField(rawStr string, field string, allowEmpty bool) error {
+	if (!allowEmpty && len(rawStr) == 0) || len(rawStr) > MaxStringLength {
+		return fmt.Errorf("field %s has invalid string length", field)
 	}
 
 	return nil

@@ -1,6 +1,7 @@
 {
   "Configuration": {
     "ActiveNet": "testnet",
+    "Magic":2018111,
     "PowConfiguration": {
       "PayToAddr": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
       "MinerInfo": "ELA",
