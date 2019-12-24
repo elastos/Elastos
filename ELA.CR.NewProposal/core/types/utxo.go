@@ -14,31 +14,39 @@ import (
 
 type UTXO struct {
 	TxID  common.Uint256
-	Index uint32
+	Index uint16
 	Value common.Fixed64
 }
 
-func (uu *UTXO) Serialize(w io.Writer) {
-	uu.TxID.Serialize(w)
-	common.WriteUint32(w, uu.Index)
-	uu.Value.Serialize(w)
+func (u *UTXO) Serialize(w io.Writer) error {
+	if err := u.TxID.Serialize(w); err != nil {
+		return err
+	}
+	if err := common.WriteUint16(w, u.Index); err != nil {
+		return err
+	}
+	if err := u.Value.Serialize(w); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (uu *UTXO) Deserialize(r io.Reader) error {
-	uu.TxID.Deserialize(r)
-
-	index, err := common.ReadUint32(r)
-	uu.Index = uint32(index)
+func (u *UTXO) Deserialize(r io.Reader) error {
+	if err := u.TxID.Deserialize(r); err != nil {
+		return err
+	}
+	index, err := common.ReadUint16(r)
 	if err != nil {
 		return err
 	}
-
-	uu.Value.Deserialize(r)
-
+	u.Index = index
+	if err := u.Value.Deserialize(r); err != nil {
+		return err
+	}
 	return nil
 }
-func (uu *UTXO) Hash() common.Uint256 {
+func (u *UTXO) Hash() common.Uint256 {
 	buf := new(bytes.Buffer)
-	uu.Serialize(buf)
+	u.Serialize(buf)
 	return common.Uint256(common.Sha256D(buf.Bytes()))
 }

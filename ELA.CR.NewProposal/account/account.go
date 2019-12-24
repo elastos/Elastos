@@ -7,7 +7,6 @@ package account
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/core/contract"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -61,12 +60,6 @@ func NewAccount() (*Account, error) {
 }
 
 func NewAccountWithPrivateKey(privateKey []byte) (*Account, error) {
-	priKeyLen := len(privateKey)
-
-	if priKeyLen != 32 && priKeyLen != 96 && priKeyLen != 104 {
-		return nil, errors.New("invalid private key")
-	}
-
 	pubKey := crypto.NewPubKey(privateKey)
 	signatureContract, err := contract.CreateStandardContract(pubKey)
 	if err != nil {
