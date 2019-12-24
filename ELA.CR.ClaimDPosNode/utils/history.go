@@ -5,7 +5,9 @@
 
 package utils
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // change holds a change and it's rollback function.
 type change struct {
@@ -98,9 +100,9 @@ func (h *History) Append(height uint32, execute func(), rollback func()) {
 
 	// if cached changes not created, create a new cache instance.
 	if h.cachedChanges == nil {
-		if h.height != 0 && height != h.height+1 {
-			errMsg := fmt.Errorf("state history not continuously,"+
-				" expect %d got %d", h.height+1, height)
+		if h.height != 0 && height <= h.height {
+			errMsg := fmt.Errorf("state history failed, expect larger "+
+				"than %d got %d", h.height, height)
 			panic(errMsg)
 		}
 		h.cachedChanges = &HeightChanges{height: height}
@@ -183,11 +185,10 @@ func (h *History) SeekTo(height uint32) error {
 // RollbackTo restores state to height, and remove all histories after height.
 // If no enough histories to rollback return error.
 func (h *History) RollbackTo(height uint32) error {
-	// check whether history is enough for rollback
-	limitHeight := h.height - uint32(len(h.changes))
-	if height < limitHeight {
+	// check whether history is allowed for rollback.
+	if height >= h.height {
 		return fmt.Errorf("rollback to %d overflow history capacity,"+
-			" at most rollback to %d", height, limitHeight)
+			" at least rollback to %d", height, h.height)
 	}
 
 	// rollback and reset tempChanges before rollback.
@@ -199,11 +200,13 @@ func (h *History) RollbackTo(height uint32) error {
 	}
 
 	// rollback from last history.
-	for h.height > height {
-		h.changes[len(h.changes)-1].rollback()
-		h.changes = h.changes[:len(h.changes)-1]
-		h.height = h.height - 1
+	for i := len(h.changes) - 1; i >= 0; i-- {
+		if h.changes[i].height > height {
+			h.changes[i].rollback()
+			h.changes = h.changes[:i]
+		}
 	}
+	h.height = height
 
 	return nil
 }
