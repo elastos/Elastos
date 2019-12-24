@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package wallet
 
@@ -137,7 +137,7 @@ func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint
 	for op, coin := range coins {
 		utxos = append(utxos, &types.UTXO{
 			TxID:  op.TxID,
-			Index: uint32(op.Index),
+			Index: op.Index,
 			Value: coin.Output.Value,
 		})
 	}

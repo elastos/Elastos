@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 //
 
-package main
+package settings
 
 import (
 	"bytes"
@@ -29,15 +29,6 @@ import (
 )
 
 const (
-	// dataPath indicates the path storing the chain data.
-	dataPath = "data"
-
-	// logPath indicates the path storing the node log.
-	nodeLogPath = "logs/node"
-
-	// checkpointPath indicates the path storing the checkpoint data
-	checkpointPath = "checkpoints"
-
 	// cmdValueSplitter defines the splitter to split raw string into a
 	// string array
 	cmdValueSplitter = ","
@@ -170,7 +161,7 @@ func (s *settingItem) initByConfig(params *config.Params,
 	}
 }
 
-type settings struct {
+type Settings struct {
 	items   []settingItem
 	conf    *config.Configuration
 	params  *config.Params
@@ -178,21 +169,21 @@ type settings struct {
 }
 
 // Config return the loaded config parameters to running the ELA node.
-func (s *settings) Config() *config.Configuration {
+func (s *Settings) Config() *config.Configuration {
 	return s.conf
 }
 
 // Params return a pointer to the parameters specific to the currently
 // active ELA network.
-func (s *settings) Params() *config.Params {
+func (s *Settings) Params() *config.Params {
 	return s.params
 }
 
-func (s *settings) SetContext(c *cli.Context) {
+func (s *Settings) SetContext(c *cli.Context) {
 	s.context = c
 }
 
-func (s *settings) Flags() []cli.Flag {
+func (s *Settings) Flags() []cli.Flag {
 	result := make([]cli.Flag, 0, len(s.items))
 	for _, v := range s.items {
 		if v.Flag != nil {
@@ -202,7 +193,7 @@ func (s *settings) Flags() []cli.Flag {
 	return result
 }
 
-func (s *settings) InitParamsValue() {
+func (s *Settings) InitParamsValue() {
 	if err := s.initNetSetting(); err != nil {
 		cmdcom.PrintErrorMsg(err.Error())
 		os.Exit(1)
@@ -216,11 +207,11 @@ func (s *settings) InitParamsValue() {
 	}
 }
 
-func (s *settings) Add(item *settingItem) {
+func (s *Settings) Add(item *settingItem) {
 	s.items = append(s.items, *item)
 }
 
-func (s *settings) initNetSetting() (err error) {
+func (s *Settings) initNetSetting() (err error) {
 	var testNet, regTest bool
 	switch strings.ToLower(s.conf.ActiveNet) {
 	case "testnet", "test":
@@ -254,17 +245,23 @@ func (s *settings) initNetSetting() (err error) {
 			return err
 		}
 		s.params = config.DefaultParams.RegNet()
-		pact.MaxBlockSize = 2000000
 	} else {
 		if err := s.mainNetDefault(s.conf); err != nil {
 			return err
 		}
 		s.params = &config.DefaultParams
-		pact.MaxBlockSize = 2000000
 	}
 
 	if s.conf.MaxBlockSize > 0 {
-		pact.MaxBlockSize = s.conf.MaxBlockSize
+		pact.MaxBlockContextSize = s.conf.MaxBlockSize
+	} else {
+		pact.MaxBlockContextSize = 2000000
+	}
+
+	if s.conf.MaxBlockHeaderSize > 0 {
+		pact.MaxBlockHeaderSize = s.conf.MaxBlockHeaderSize
+	} else {
+		pact.MaxBlockHeaderSize = 1000
 	}
 
 	config.Parameters = s.conf
@@ -281,8 +278,8 @@ func (s *settings) initNetSetting() (err error) {
 	return
 }
 
-func newSettings() *settings {
-	result := &settings{
+func NewSettings() *Settings {
+	result := &Settings{
 		items: make([]settingItem, 0),
 	}
 
@@ -810,7 +807,7 @@ func newSettings() *settings {
 	return result
 }
 
-func (s *settings) SetupConfig() {
+func (s *Settings) SetupConfig() {
 	configPath := s.context.String("conf")
 	file, err := s.loadConfigFile(configPath)
 	if err != nil {
@@ -825,7 +822,7 @@ func (s *settings) SetupConfig() {
 }
 
 // loadConfigFile read configuration parameters through the config file.
-func (s *settings) loadConfigFile(path string) (*config.Configuration, error) {
+func (s *Settings) loadConfigFile(path string) (*config.Configuration, error) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -873,7 +870,7 @@ func checkHost(host string) error {
 }
 
 // mainNetDefault set the default parameters for main net usage.
-func (s *settings) mainNetDefault(cfg *config.Configuration) error {
+func (s *Settings) mainNetDefault(cfg *config.Configuration) error {
 	if err := s.trySetUintPortValue(cmdcom.InfoPortFlag.Name, &cfg.HttpInfoPort,
 		20333); err != nil {
 		return err
@@ -891,7 +888,7 @@ func (s *settings) mainNetDefault(cfg *config.Configuration) error {
 }
 
 // testNetDefault set the default parameters for test net usage.
-func (s *settings) testNetDefault(cfg *config.Configuration) error {
+func (s *Settings) testNetDefault(cfg *config.Configuration) error {
 	if err := s.trySetUintPortValue(cmdcom.InfoPortFlag.Name, &cfg.HttpInfoPort,
 		21333); err != nil {
 		return err
@@ -909,7 +906,7 @@ func (s *settings) testNetDefault(cfg *config.Configuration) error {
 }
 
 // regNetDefault set the default parameters for reg net usage.
-func (s *settings) regNetDefault(cfg *config.Configuration) error {
+func (s *Settings) regNetDefault(cfg *config.Configuration) error {
 	if err := s.trySetUintPortValue(cmdcom.InfoPortFlag.Name, &cfg.HttpInfoPort,
 		22333); err != nil {
 		return err
@@ -926,7 +923,7 @@ func (s *settings) regNetDefault(cfg *config.Configuration) error {
 		&cfg.HttpJsonPort, 22336)
 }
 
-func (s *settings) trySetPortValue(cliFlag string, value *int,
+func (s *Settings) trySetPortValue(cliFlag string, value *int,
 	defaultValue int) error {
 	if s.context.IsSet(cliFlag) {
 		info, err := strconv.ParseInt(s.context.String(
@@ -941,7 +938,7 @@ func (s *settings) trySetPortValue(cliFlag string, value *int,
 	return nil
 }
 
-func (s *settings) trySetUintPortValue(cliFlag string, value *uint16,
+func (s *Settings) trySetUintPortValue(cliFlag string, value *uint16,
 	defaultValue uint16) error {
 	if s.context.IsSet(cliFlag) {
 		info, err := strconv.ParseUint(s.context.String(

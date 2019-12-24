@@ -19,3 +19,6 @@ elastos*/
 /bin
 /go.sum
 keystore
+*.out
+*.test
+benchmark/process/run-to-height

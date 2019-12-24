@@ -30,7 +30,7 @@ var (
 		Payload: &payload.RegisterAsset{
 			Asset: payload.Asset{
 				Name:      "ELA",
-				Precision: 0x08,
+				Precision: ELAPrecision,
 				AssetType: 0x00,
 			},
 			Amount:     0 * 100000000,
@@ -101,6 +101,9 @@ var (
 
 	// ELAAssetID represents the asset ID of ELA coin.
 	ELAAssetID = elaAsset.Hash()
+
+	// ELAPrecision represents the precision of ELA coin.
+	ELAPrecision = byte(0x08)
 
 	// DestructionAddress indicates the "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
 	// destruction address.

@@ -74,6 +74,9 @@ type IFFLDBChainStore interface {
 	// Get block from file db.
 	GetBlock(hash Uint256) (*DposBlock, error)
 
+	// Get block from file db.
+	GetOldBlock(hash Uint256) (*Block, error)
+
 	// Get block header from file db.
 	GetHeader(hash Uint256) (*Header, error)
 
@@ -90,4 +93,13 @@ type IFFLDBChainStore interface {
 
 	// InitIndex use to initialize the index manager
 	InitIndex(chain indexers.IChain, interrupt <-chan struct{}) error
+
+	// Get unspent by transaction hash
+	GetUnspent(txID Uint256) ([]uint16, error)
+
+	// Get utxo by program hash
+	GetUTXO(programHash *Uint168) ([]*UTXO, error)
+
+	// IsTx3Exist use to find if tx3 exist in db
+	IsTx3Exist(txHash *Uint256) bool
 }

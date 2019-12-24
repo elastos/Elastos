@@ -24,10 +24,11 @@ import (
 )
 
 const (
-	// blockDbNamePrefix is the prefix for the block database name.  The
-	// database type is appended to this value to form the full block
-	// database name.
-	blockDbNamePrefix = "blocks"
+	// blockDbName is the block database name.
+	blockDbName = "blocks"
+
+	// oldBlockDbName is the old block database name.
+	oldBlockDbName = "blocks_ffldb"
 )
 
 type ChainStoreFFLDB struct {
@@ -41,7 +42,7 @@ type ChainStoreFFLDB struct {
 }
 
 func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
-	fflDB, err := LoadBlockDB(dataDir)
+	fflDB, err := LoadBlockDB(dataDir, blockDbName)
 	if err != nil {
 		return nil, err
 	}
@@ -58,12 +59,8 @@ func NewChainStoreFFLDB(dataDir string) (IFFLDBChainStore, error) {
 }
 
 // dbPath returns the path to the block database given a database type.
-func blockDbPath(dataPath, dbType string) string {
+func blockDbPath(dataPath, dbName string) string {
 	// The database name is based on the database type.
-	dbName := blockDbNamePrefix + "_" + dbType
-	if dbType == "sqlite" {
-		dbName = dbName + ".db"
-	}
 	dbPath := filepath.Join(dataPath, dbName)
 	return dbPath
 }
@@ -73,14 +70,14 @@ func blockDbPath(dataPath, dbType string) string {
 // contains additional logic such warning the user if there are multiple
 // databases which consume space on the file system and ensuring the regression
 // test database is clean when in regression test mode.
-func LoadBlockDB(dataPath string) (database.DB, error) {
+func LoadBlockDB(dataPath string, dbName string) (database.DB, error) {
 	// The memdb backend does not have a file path associated with it, so
 	// handle it uniquely.  We also don't want to worry about the multiple
 	// database type warnings when running with the memory database.
 
 	// The database name is based on the database type.
 	dbType := "ffldb"
-	dbPath := blockDbPath(dataPath, dbType)
+	dbPath := blockDbPath(dataPath, dbName)
 
 	log.Infof("Loading block database from '%s'", dbPath)
 	db, err := database.Open(dbType, dbPath, wire.MainNet)
@@ -233,6 +230,26 @@ func (c *ChainStoreFFLDB) RollbackBlock(b *Block, node *BlockNode,
 	return err
 }
 
+func (c *ChainStoreFFLDB) GetOldBlock(hash Uint256) (*Block, error) {
+	var blkBytes []byte
+	err := c.db.View(func(dbTx database.Tx) error {
+		var err error
+		blkBytes, err = dbTx.FetchBlock(&hash)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	b := new(Block)
+	err = b.Deserialize(bytes.NewReader(blkBytes))
+	if err != nil {
+		return nil, errors.New("failed to deserialize block")
+	}
+
+	return b, nil
+}
+
 func (c *ChainStoreFFLDB) GetBlock(hash Uint256) (*DposBlock, error) {
 	c.mtx.RLock()
 	if block, exist := c.blocksCache[hash]; exist {
@@ -343,20 +360,21 @@ func (c *ChainStoreFFLDB) BlockExists(hash *Uint256) (bool, uint32, error) {
 }
 
 func (c *ChainStoreFFLDB) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
-	txn, blockHash, err := c.indexManager.FetchTx(txID)
-	var height uint32
-	err = c.db.View(func(dbTx database.Tx) error {
-		var err error
-		height, err = dbFetchHeightByHash(dbTx, blockHash)
-		return err
-	})
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return txn, height, nil
+	return c.indexManager.FetchTx(txID)
 }
 
 func (c *ChainStoreFFLDB) InitIndex(chain indexers.IChain, interrupt <-chan struct{}) error {
 	return c.indexManager.Init(chain, interrupt)
+}
+
+func (c *ChainStoreFFLDB) GetUnspent(txID Uint256) ([]uint16, error) {
+	return c.indexManager.FetchUnspent(txID)
+}
+
+func (c *ChainStoreFFLDB) GetUTXO(programHash *Uint168) ([]*UTXO, error) {
+	return c.indexManager.FetchUTXO(programHash)
+}
+
+func (c *ChainStoreFFLDB) IsTx3Exist(txHash *Uint256) bool {
+	return c.indexManager.IsTx3Exist(txHash)
 }

@@ -54,7 +54,16 @@ type IndexManager interface {
 
 	// FetchTx retrieval a transaction and a block hash where it
 	// located by transaction hash
-	FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint256, error)
+	FetchTx(txID common.Uint256) (*types.Transaction, uint32, error)
+
+	// FetchUnspent retrieval the unspent set of transaction by its hash
+	FetchUnspent(txID common.Uint256) ([]uint16, error)
+
+	// FetchUTXO retrieval the utxo set of a account address
+	FetchUTXO(programHash *common.Uint168) ([]*types.UTXO, error)
+
+	// IsTx3Exist use to find if tx3 exist in db
+	IsTx3Exist(txHash *common.Uint256) bool
 }
 
 // Indexer provides a generic interface for an indexer that is managed by an
@@ -82,6 +91,12 @@ type Indexer interface {
 	// DisconnectBlock is invoked when a block has been disconnected from
 	// the main chain.
 	DisconnectBlock(database.Tx, *types.Block) error
+}
+
+type ITxStore interface {
+	// FetchTx retrieval a transaction and a block hash where it
+	// located by transaction hash
+	FetchTx(txID common.Uint256) (*types.Transaction, uint32, error)
 }
 
 // AssertError identifies an error that indicates an internal code consistency
