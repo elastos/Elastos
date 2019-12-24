@@ -25,9 +25,6 @@ const (
 	// ActivateDuration is about how long we should activate from pending or
 	// inactive state.
 	ActivateDuration = 6
-
-	// CacheCRVotesSize indicate the size to cache votes information.
-	CacheCRVotesSize = 6
 )
 
 // State hold all CR candidates related information, and process block by block
@@ -36,14 +33,6 @@ type State struct {
 	StateKeyFrame
 	manager *ProposalManager
 
-	tryStartVotingPeriod func(height uint32)
-	processImpeachment   func(height uint32, member []byte, votes common.Fixed64,
-		history *utils.History)
-	processCRCAppropriation func(tx *types.Transaction, height uint32,
-		history *utils.History)
-	processCRCRelatedAmount func(tx *types.Transaction, height uint32,
-		history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
-		committeeInputsAmounts map[string]common.Fixed64)
 	getHistoryMember func(code []byte) *CRMember
 	getTxReference   func(tx *types.Transaction) (
 		map[*types.Input]*types.Output, error)
@@ -58,14 +47,6 @@ func (s *State) SetManager(manager *ProposalManager) {
 }
 
 type FunctionsConfig struct {
-	TryStartVotingPeriod func(height uint32)
-	ProcessImpeachment   func(height uint32, member []byte, votes common.Fixed64,
-		history *utils.History)
-	ProcessCRCAppropriation func(tx *types.Transaction, height uint32,
-		history *utils.History)
-	ProcessCRCRelatedAmount func(tx *types.Transaction, height uint32,
-		history *utils.History, foundationInputsAmounts map[string]common.Fixed64,
-		committeeInputsAmounts map[string]common.Fixed64)
 	GetHistoryMember func(code []byte) *CRMember
 	GetTxReference   func(tx *types.Transaction) (
 		map[*types.Input]*types.Output, error)
@@ -74,10 +55,6 @@ type FunctionsConfig struct {
 // registerFunctions set the tryStartVotingPeriod and processImpeachment function
 // to change member state.
 func (s *State) registerFunctions(cfg *FunctionsConfig) {
-	s.tryStartVotingPeriod = cfg.TryStartVotingPeriod
-	s.processImpeachment = cfg.ProcessImpeachment
-	s.processCRCAppropriation = cfg.ProcessCRCAppropriation
-	s.processCRCRelatedAmount = cfg.ProcessCRCRelatedAmount
 	s.getHistoryMember = cfg.GetHistoryMember
 	s.getTxReference = cfg.GetTxReference
 }
@@ -195,157 +172,10 @@ func (s *State) IsCRTransaction(tx *types.Transaction) bool {
 	return false
 }
 
-// ProcessBlock takes a block and it's confirm to update CR state and
-// votes accordingly.
-func (s *State) ProcessBlock(block *types.Block, confirm *payload.Confirm,
-	circulation common.Fixed64) {
-
-	s.processTransactions(block.Transactions, block.Height)
-	if s.manager != nil {
-		s.manager.updateProposals(block.Height, circulation, s.history)
-	}
-	if s.tryStartVotingPeriod != nil {
-		s.tryStartVotingPeriod(block.Height)
-	}
-	s.history.Commit(block.Height)
-}
-
-// processElectionBlock takes a block and it's confirm to update CR member state
-// and proposals accordingly, only in election period and not in voting period.
-func (s *State) processElectionBlock(block *types.Block, circulation common.Fixed64) {
-	for _, tx := range block.Transactions {
-		s.processElectionTransaction(tx, block.Height)
-	}
-	if s.manager != nil {
-		s.manager.updateProposals(block.Height, circulation, s.history)
-	}
-	if s.tryStartVotingPeriod != nil {
-		s.tryStartVotingPeriod(block.Height)
-	}
-
-	s.history.Commit(block.Height)
-}
-
-// processElectionTransaction take a transaction and the height it has been
-// packed into a block, then update CR members state and proposals according to
-// the transaction content.
-func (s *State) processElectionTransaction(tx *types.Transaction, height uint32) {
-	switch tx.TxType {
-	case types.TransferAsset:
-		s.processVotes(tx, height)
-		s.processDeposit(tx, height)
-
-	case types.ReturnCRDepositCoin:
-		s.returnDeposit(tx, height)
-		s.processDeposit(tx, height)
-
-	case types.CRCProposal:
-		if s.manager != nil {
-			s.manager.registerProposal(tx, height, s.history)
-		}
-	case types.CRCProposalReview:
-		if s.manager != nil {
-			s.manager.proposalReview(tx, height, s.history)
-		}
-	case types.CRCAppropriation:
-		s.processCRCAppropriation(tx, height, s.history)
-	case types.CRCProposalTracking:
-		if s.manager != nil {
-			s.manager.proposalTracking(tx, height, s.history)
-		}
-	case types.CRCProposalWithdraw:
-		if s.manager != nil {
-			s.manager.proposalWithdraw(tx, height, s.history)
-		}
-	}
-
-	s.processCancelVotes(tx, height)
-	s.processCRCAddressRelatedTx(tx, height)
-
-}
-
 // rollbackTo restores the database state to the given height, if no enough
 // history to rollback to return error.
 func (s *State) rollbackTo(height uint32) error {
 	return s.history.RollbackTo(height)
-}
-
-// processTransactions takes the transactions and the height when they have been
-// packed into a block.  Then loop through the transactions to update CR
-// state and votes according to transactions content.
-func (s *State) processTransactions(txs []*types.Transaction, height uint32) {
-	for _, tx := range txs {
-		s.processTransaction(tx, height)
-	}
-
-	// Check if any pending producers has got 6 confirms, set them to activate.
-	activateCandidateFromPending :=
-		func(key common.Uint168, candidate *Candidate) {
-			s.history.Append(height, func() {
-				candidate.state = Active
-				s.Candidates[key] = candidate
-			}, func() {
-				candidate.state = Pending
-				s.Candidates[key] = candidate
-			})
-		}
-
-	pendingCandidates := s.getCandidates(Pending)
-
-	if len(pendingCandidates) > 0 {
-		for _, candidate := range pendingCandidates {
-			if height-candidate.registerHeight+1 >= ActivateDuration {
-				activateCandidateFromPending(candidate.info.DID, candidate)
-			}
-		}
-	}
-}
-
-// processTransaction take a transaction and the height it has been packed into
-// a block, then update producers state and votes according to the transaction
-// content.
-func (s *State) processTransaction(tx *types.Transaction, height uint32) {
-	switch tx.TxType {
-	case types.RegisterCR:
-		s.registerCR(tx, height)
-
-	case types.UpdateCR:
-		s.updateCR(tx.Payload.(*payload.CRInfo), height)
-
-	case types.UnregisterCR:
-		s.unregisterCR(tx.Payload.(*payload.UnregisterCR), height)
-
-	case types.TransferAsset:
-		s.processVotes(tx, height)
-		s.processDeposit(tx, height)
-
-	case types.ReturnCRDepositCoin:
-		s.returnDeposit(tx, height)
-		s.processDeposit(tx, height)
-
-	case types.CRCProposal:
-		if s.manager != nil {
-			s.manager.registerProposal(tx, height, s.history)
-		}
-
-	case types.CRCProposalReview:
-		if s.manager != nil {
-			s.manager.proposalReview(tx, height, s.history)
-		}
-	case types.CRCProposalTracking:
-		if s.manager != nil {
-			s.manager.proposalTracking(tx, height, s.history)
-		}
-	case types.CRCProposalWithdraw:
-		if s.manager != nil {
-			s.manager.proposalWithdraw(tx, height, s.history)
-		}
-	case types.CRCAppropriation:
-		s.processCRCAppropriation(tx, height, s.history)
-	}
-
-	s.processCancelVotes(tx, height)
-	s.processCRCAddressRelatedTx(tx, height)
 }
 
 // registerCR handles the register CR transaction.
@@ -448,38 +278,6 @@ func (s *State) updateCandidateInfo(origin *payload.CRInfo, update *payload.CRIn
 	candidate.info = *update
 }
 
-// processVotes takes a transaction, if the transaction including any vote
-// inputs or outputs, validate and update CR votes.
-func (s *State) processVotes(tx *types.Transaction, height uint32) {
-	if tx.Version >= types.TxVersion09 {
-		for i, output := range tx.Outputs {
-			if output.Type != types.OTVote {
-				continue
-			}
-			p, _ := output.Payload.(*outputpayload.VoteOutput)
-			if p.Version < outputpayload.VoteProducerAndCRVersion {
-				continue
-			}
-
-			// process CRC content
-			var exist bool
-			for _, content := range p.Contents {
-				if content.VoteType == outputpayload.CRC ||
-					content.VoteType == outputpayload.CRCProposal ||
-					content.VoteType == outputpayload.CRCImpeachment {
-					exist = true
-					break
-				}
-			}
-			if exist {
-				op := types.NewOutPoint(tx.Hash(), uint16(i))
-				s.Votes[op.ReferKey()] = struct{}{}
-				s.processVoteOutput(output, height)
-			}
-		}
-	}
-}
-
 // processDeposit takes a transaction output with deposit program hash.
 func (s *State) processDeposit(tx *types.Transaction, height uint32) {
 	for i, output := range tx.Outputs {
@@ -567,44 +365,6 @@ func (s *State) getDIDByDepositHash(hash common.Uint168) (common.Uint168, bool) 
 	return did, ok
 }
 
-// processVoteOutput takes a transaction output with vote payload.
-func (s *State) processVoteOutput(output *types.Output, height uint32) {
-	p := output.Payload.(*outputpayload.VoteOutput)
-	for _, vote := range p.Contents {
-		for _, cv := range vote.CandidateVotes {
-			switch vote.VoteType {
-			case outputpayload.CRC:
-				did, err := common.Uint168FromBytes(cv.Candidate)
-				if err != nil {
-					continue
-				}
-				candidate := s.getCandidate(*did)
-				if candidate == nil {
-					continue
-				}
-				v := cv.Votes
-				s.history.Append(height, func() {
-					candidate.votes += v
-				}, func() {
-					candidate.votes -= v
-				})
-
-			case outputpayload.CRCProposal:
-				proposalHash, _ := common.Uint256FromBytes(cv.Candidate)
-				proposalState := s.manager.getProposal(*proposalHash)
-				v := cv.Votes
-				s.history.Append(height, func() {
-					proposalState.VotersRejectAmount += v
-				}, func() {
-					proposalState.VotersRejectAmount -= v
-				})
-			case outputpayload.CRCImpeachment:
-				s.processImpeachment(height, cv.Candidate, cv.Votes, s.history)
-			}
-		}
-	}
-}
-
 // processCancelVotes takes a transaction, if the transaction takes a previous
 // vote output then try to subtract the vote.
 func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
@@ -633,21 +393,35 @@ func (s *State) processCancelVotes(tx *types.Transaction, height uint32) {
 	}
 }
 
-// processCRCRelatedAmount takes a transaction, if the transaction takes a previous
-// output to CRC related address then try to subtract the vote.
-func (s *State) processCRCAddressRelatedTx(tx *types.Transaction, height uint32) {
-	for i, output := range tx.Outputs {
-		if output.ProgramHash.IsEqual(s.params.CRCFoundation) {
-			op := types.NewOutPoint(tx.Hash(), uint16(i))
-			s.CRCFoundationOutputs[op.ReferKey()] = output.Value
-		} else if output.ProgramHash.IsEqual(s.params.CRCCommitteeAddress) {
-			op := types.NewOutPoint(tx.Hash(), uint16(i))
-			s.CRCCommitteeOutputs[op.ReferKey()] = output.Value
-		}
+// processVoteCRC record candidate votes.
+func (s *State) processVoteCRC(height uint32, cv outputpayload.CandidateVotes) {
+	did, err := common.Uint168FromBytes(cv.Candidate)
+	if err != nil {
+		return
 	}
+	candidate := s.getCandidate(*did)
+	if candidate == nil {
+		return
+	}
+	v := cv.Votes
+	s.history.Append(height, func() {
+		candidate.votes += v
+	}, func() {
+		candidate.votes -= v
+	})
+}
 
-	s.processCRCRelatedAmount(tx, height, s.history,
-		s.CRCFoundationOutputs, s.CRCCommitteeOutputs)
+// processVoteCRCProposal record proposal reject votes.
+func (s *State) processVoteCRCProposal(height uint32,
+	cv outputpayload.CandidateVotes) {
+	proposalHash, _ := common.Uint256FromBytes(cv.Candidate)
+	proposalState := s.manager.getProposal(*proposalHash)
+	v := cv.Votes
+	s.history.Append(height, func() {
+		proposalState.VotersRejectAmount += v
+	}, func() {
+		proposalState.VotersRejectAmount -= v
+	})
 }
 
 // processVoteCancel takes a previous vote output and decrease CR votes.

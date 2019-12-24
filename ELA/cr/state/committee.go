@@ -8,7 +8,6 @@ package state
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"sort"
 	"sync"
 
@@ -197,12 +196,13 @@ func (c *Committee) ProcessBlock(block *types.Block, confirm *payload.Confirm) {
 	// If in election period and not in voting period, deal with TransferAsset
 	// ReturnCRDepositCoin CRCProposal type of transaction only.
 	isVoting := c.isInVotingPeriod(block.Height)
-
 	if isVoting {
-		c.state.ProcessBlock(block, confirm, c.CirculationAmount)
+		c.ProcessBlockInVotingPeriod(block)
 	} else {
-		c.state.processElectionBlock(block, c.CirculationAmount)
+		c.processBlockInElectionPeriod(block)
 	}
+	c.manager.updateProposals(block.Height, c.CirculationAmount)
+	c.tryStartVotingPeriod(block.Height)
 	c.freshCirculationAmount(c.lastHistory, block.Height, block.Height)
 
 	if c.shouldChange(block.Height) {
@@ -220,7 +220,7 @@ func (c *Committee) changeCommittee(height uint32) {
 	}
 	err := c.changeCommitteeMembers(height)
 	if err != nil {
-		log.Error("[ProcessBlock] change committee members error: ", err)
+		log.Warn("[ProcessBlock] change committee members error: ", err)
 		return
 	}
 
@@ -328,10 +328,10 @@ func (c *Committee) tryInitCRCRelatedAddressBalance(height uint32) {
 		}, func() {
 			c.recordBalanceHeight = 0
 		})
+		c.firstHistory.Commit(height)
 		log.Infof("record balance at height of %d, balance of CRC "+
 			"foundation is %s, balance of CRC committee address is %s",
 			bestHeight, c.CRCFoundationBalance, c.CRCCommitteeBalance)
-
 	}
 }
 
@@ -368,7 +368,7 @@ func (c *Committee) tryStartVotingPeriod(height uint32) {
 
 	lastVotingStartHeight := c.LastVotingStartHeight
 	inElectionPeriod := c.InElectionPeriod
-	c.state.history.Append(height, func() {
+	c.lastHistory.Append(height, func() {
 		var normalCount uint32
 		for _, m := range c.Members {
 			if m.MemberState == MemberElected {
@@ -514,24 +514,17 @@ func (c *Committee) getHistoryMember(code []byte) *CRMember {
 func (c *Committee) RollbackTo(height uint32) error {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
-	lastCommitHeight := c.LastCommitteeHeight
-
-	if height >= lastCommitHeight {
-		if height > c.state.history.Height() {
-			return fmt.Errorf("can't rollback to height: %d", height)
-		}
-
-		if err := c.state.rollbackTo(height); err != nil {
-			log.Warn("state rollback err: ", err)
-		}
-	} else {
-		point := c.getCheckpoint(height)
-		if point == nil {
-			return errors.New("can't find checkpoint")
-		}
-
-		c.state.StateKeyFrame = point.StateKeyFrame
-		c.KeyFrame = point.KeyFrame
+	if err := c.lastHistory.RollbackTo(height); err != nil {
+		log.Warn("committee last history rollback err:", err)
+	}
+	if err := c.manager.history.RollbackTo(height); err != nil {
+		log.Warn("manager rollback err:", err)
+	}
+	if err := c.state.rollbackTo(height); err != nil {
+		log.Warn("state rollback err:", err)
+	}
+	if err := c.firstHistory.RollbackTo(height); err != nil {
+		log.Warn("committee first history rollback err:", err)
 	}
 	return nil
 }
@@ -871,12 +864,8 @@ func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
 	c.broadcast = cfg.Broadcast
 	c.appendToTxpool = cfg.AppendToTxpool
 	c.state.registerFunctions(&FunctionsConfig{
-		TryStartVotingPeriod:    c.tryStartVotingPeriod,
-		ProcessImpeachment:      c.processImpeachment,
-		ProcessCRCAppropriation: c.processCRCAppropriation,
-		ProcessCRCRelatedAmount: c.processCRCRelatedAmount,
-		GetHistoryMember:        c.getHistoryMember,
-		GetTxReference:          cfg.GetTxReference,
+		GetHistoryMember: c.getHistoryMember,
+		GetTxReference:   cfg.GetTxReference,
 	})
 	c.getUTXO = cfg.GetUTXO
 	c.getHeight = cfg.GetHeight

@@ -68,7 +68,8 @@ func (status ProposalStatus) String() string {
 // ProposalManager used to manage all proposals existing in block chain.
 type ProposalManager struct {
 	ProposalKeyFrame
-	params *config.Params
+	params  *config.Params
+	history *utils.History
 }
 
 // existDraft judge if specified draft (that related to a proposal) exist.
@@ -129,25 +130,26 @@ func (p *ProposalManager) getProposal(hash common.Uint256) *ProposalState {
 
 // updateProposals will update proposals' status.
 func (p *ProposalManager) updateProposals(height uint32,
-	circulation common.Fixed64, history *utils.History) {
+	circulation common.Fixed64) {
 	for k, v := range p.Proposals {
 		switch v.Status {
 		case Registered:
 			if p.shouldEndCRCVote(k, height) {
-				p.transferRegisteredState(v, height, history)
+				p.transferRegisteredState(v, height)
 			}
 		case CRAgreed:
 			if p.shouldEndPublicVote(k, height) {
-				p.transferCRAgreedState(v, height, circulation, history)
+				p.transferCRAgreedState(v, height, circulation)
 			}
 		}
 	}
+	p.history.Commit(height)
 }
 
 // transferRegisteredState will transfer the Registered state by CR agreement
 // count.
 func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
-	height uint32, history *utils.History) {
+	height uint32) {
 	agreedCount := uint32(0)
 	for _, v := range proposal.CRVotes {
 		if v == payload.Approve {
@@ -158,7 +160,7 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 	oriVoteStartHeight := proposal.VoteStartHeight
 
 	if agreedCount >= p.params.CRAgreementCount {
-		history.Append(height, func() {
+		p.history.Append(height, func() {
 			proposal.Status = CRAgreed
 			proposal.VoteStartHeight = height
 		}, func() {
@@ -166,7 +168,7 @@ func (p *ProposalManager) transferRegisteredState(proposal *ProposalState,
 			proposal.VoteStartHeight = oriVoteStartHeight
 		})
 	} else {
-		history.Append(height, func() {
+		p.history.Append(height, func() {
 			proposal.Status = CRCanceled
 		}, func() {
 			proposal.Status = Registered
@@ -193,16 +195,16 @@ func (p *ProposalManager) availableWithdrawalAmount(hash common.Uint256) common.
 
 // transferCRAgreedState will transfer CRAgreed state by votes' reject amount.
 func (p *ProposalManager) transferCRAgreedState(proposal *ProposalState,
-	height uint32, circulation common.Fixed64, history *utils.History) {
+	height uint32, circulation common.Fixed64) {
 	if proposal.VotersRejectAmount >= common.Fixed64(float64(circulation)*
 		p.params.VoterRejectPercentage/100.0) {
-		history.Append(height, func() {
+		p.history.Append(height, func() {
 			proposal.Status = VoterCanceled
 		}, func() {
 			proposal.Status = CRAgreed
 		})
 	} else {
-		history.Append(height, func() {
+		p.history.Append(height, func() {
 			proposal.Status = VoterAgreed
 			proposal.CurrentStage = 1
 		}, func() {
@@ -387,7 +389,8 @@ func (p *ProposalManager) proposalTracking(tx *types.Transaction,
 
 func NewProposalManager(params *config.Params) *ProposalManager {
 	return &ProposalManager{
-		params:           params,
 		ProposalKeyFrame: *NewProposalKeyFrame(),
+		params:           params,
+		history:          utils.NewHistory(maxHistoryCapacity),
 	}
 }
