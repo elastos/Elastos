@@ -61,6 +61,7 @@ namespace Elastos {
 
 		void SpvService::PublishTransaction(const TransactionPtr &tx) {
 			if (GetPeerManager()->GetConnectStatus() != Peer::Connected) {
+				GetPeerManager()->CancelTimer();
 				GetPeerManager()->ConnectLaster(0);
 			}
 
