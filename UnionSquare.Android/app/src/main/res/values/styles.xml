@@ -171,4 +171,12 @@
         <item name="android:textSize">14sp</item>
     </style>
 
+    <style name="mTablayout" parent="Base.Widget.Design.TabLayout">
+        <item name="tabIndicatorColor">@color/whiter</item>
+        <item name="tabIndicatorHeight">2dp</item>
+        <item name="tabSelectedTextColor">@color/whiter</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/whiter</item>
+    </style>
+
 </resources>

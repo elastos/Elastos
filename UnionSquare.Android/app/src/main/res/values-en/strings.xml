@@ -591,4 +591,10 @@
     <string name="messagecenter">消息中心</string>
     <string name="openredpoint">红点开关</string>
     <string name="sendmsg">信息推送</string>
+    <string name="total">全部</string>
+    <string name="menberreview">委员评议</string>
+    <string name="publishing">公示中</string>
+    <string name="executing">执行中</string>
+    <string name="finish">已完成</string>
+    <string name="abolished">已废止</string>
 </resources>

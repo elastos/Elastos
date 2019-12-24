@@ -15,6 +15,7 @@ import org.elastos.wallet.ela.ui.common.listener.CommonRvListener;
 import org.elastos.wallet.ela.ui.crvote.CRListFragment;
 import org.elastos.wallet.ela.ui.crvote.bean.FindListBean;
 import org.elastos.wallet.ela.ui.find.adapter.FindListRecAdapter;
+import org.elastos.wallet.ela.ui.proposal.ProposalFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeListFragment;
 
 import java.util.ArrayList;
@@ -51,11 +52,16 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         bean1.setResouceId(R.mipmap.found_dpos_icon);
         bean1.setUpText(getString(R.string.supernode_election));
         bean1.setDownText(getString(R.string.findlistdown1));
+        FindListBean bean2 = new FindListBean();
+        bean2.setResouceId(R.mipmap.found_cr_proposal);
+        bean2.setUpText(getString(R.string.findlistup2));
+        bean2.setDownText(getString(R.string.findlistdown2));
         FindListBean bean4 = new FindListBean();
         bean4.setResouceId(R.mipmap.found_cr_vote);
         bean4.setUpText(getString(R.string.findlistup4));
         bean4.setDownText(getString(R.string.findlistdown4));
         list.add(bean1);
+        list.add(bean2);
         list.add(bean4);
         //  list.add(R.mipmap.found_card_id);
         //list.add(R.mipmap.found_card_paradrop);
@@ -93,6 +99,9 @@ public class FindFragment extends BaseFragment implements CommonRvListener {
         if (position == 0) {
             ((BaseFragment) getParentFragment()).start(SuperNodeListFragment.class);
         } else if (position == 1) {
+            //社区提案
+            ((BaseFragment) getParentFragment()).start(ProposalFragment.class);
+        }else if (position == 2) {
             ((BaseFragment) getParentFragment()).start(CRListFragment.class);
         }
     }

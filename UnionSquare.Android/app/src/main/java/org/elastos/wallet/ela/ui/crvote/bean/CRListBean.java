@@ -101,7 +101,7 @@ public class CRListBean extends BaseEntity {
             this.result = result;
         }
 
-        public static class ResultBean implements Serializable {
+        public static class ResultBean implements Serializable, Parcelable {
             /**
              * crcandidatesinfo : [{"code":"2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac","did":"im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH","nickname":"raocr","url":"http://52.80.54.227:9000/","location":93,"state":"Active","votes":"0","index":0}]
              * totalvotes : 0
@@ -136,7 +136,7 @@ public class CRListBean extends BaseEntity {
                 this.crcandidatesinfo = crcandidatesinfo;
             }
 
-            public class CrcandidatesinfoBean implements Comparable<CrcandidatesinfoBean>, Parcelable, Serializable {
+            public static class CrcandidatesinfoBean implements Comparable<CrcandidatesinfoBean>, Serializable, Parcelable {
                 /**
                  * code : 2102c632e27b19260d80d58a857d2acd9eb603f698445cc07ba94d52296468706331ac
                  * did : im4yHzAA68RRUCf8gXD6i43rJYHK9VJqLH
@@ -306,7 +306,7 @@ public class CRListBean extends BaseEntity {
                     this.voterate = in.readString();
                 }
 
-                public final Parcelable.Creator<CrcandidatesinfoBean> CREATOR = new Parcelable.Creator<CrcandidatesinfoBean>() {
+                public static final Parcelable.Creator<CrcandidatesinfoBean> CREATOR = new Parcelable.Creator<CrcandidatesinfoBean>() {
                     @Override
                     public CrcandidatesinfoBean createFromParcel(Parcel source) {
                         return new CrcandidatesinfoBean(source);
@@ -318,6 +318,39 @@ public class CRListBean extends BaseEntity {
                     }
                 };
             }
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel dest, int flags) {
+                dest.writeString(this.totalvotes);
+                dest.writeInt(this.totalcounts);
+                dest.writeTypedList(this.crcandidatesinfo);
+            }
+
+            public ResultBean() {
+            }
+
+            protected ResultBean(Parcel in) {
+                this.totalvotes = in.readString();
+                this.totalcounts = in.readInt();
+                this.crcandidatesinfo = in.createTypedArrayList(CrcandidatesinfoBean.CREATOR);
+            }
+
+            public static final Parcelable.Creator<ResultBean> CREATOR = new Parcelable.Creator<ResultBean>() {
+                @Override
+                public ResultBean createFromParcel(Parcel source) {
+                    return new ResultBean(source);
+                }
+
+                @Override
+                public ResultBean[] newArray(int size) {
+                    return new ResultBean[size];
+                }
+            };
         }
     }
 }
