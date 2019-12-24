@@ -35,6 +35,7 @@ type TxPool struct {
 	sidechainTxList     map[Uint256]*Transaction // sidechain tx pool
 	ownerPublicKeys     map[string]struct{}
 	nodePublicKeys      map[string]struct{}
+	codes               map[string]struct{}
 	crDIDs              map[Uint168]struct{}
 	specialTxList       map[Uint256]struct{} // specialTxList holds the payload hashes of all illegal transactions and inactive arbitrators transactions
 	crcProposals        map[Uint256]struct{}
@@ -49,6 +50,7 @@ type TxPool struct {
 	tempSidechainTxList     map[Uint256]*Transaction
 	tempOwnerPublicKeys     map[string]struct{}
 	tempNodePublicKeys      map[string]struct{}
+	tempCodes               map[string]struct{}
 	tempCRDIDs              map[Uint168]struct{}
 	tempSpecialTxList       map[Uint256]struct{}
 	tempCRCProposals        map[Uint256]struct{}
@@ -107,8 +109,8 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 		return errCode
 	}
 	//verify transaction by pool with lock
+	defer mp.clearTemp()
 	if errCode := mp.verifyTransactionWithTxnPool(tx); errCode != nil {
-		mp.clearTemp()
 		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", tx.Hash())
 		return errCode
 	}
@@ -121,7 +123,6 @@ func (mp *TxPool) appendToTxPool(tx *Transaction) elaerr.ELAError {
 	}
 
 	mp.commitTemp()
-	mp.clearTemp()
 
 	// Add the transaction to mem pool
 	mp.txnList[txHash] = tx
@@ -271,6 +272,8 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 						continue
 					}
 					mp.delOwnerPublicKey(BytesToHexString(cpPayload.OwnerPublicKey))
+				case ReturnDepositCoin:
+					mp.delCode(BytesToHexString(tx.Programs[0].Code))
 				case RegisterCR:
 					rcPayload, ok := tx.Payload.(*payload.CRInfo)
 					if !ok {
@@ -326,6 +329,8 @@ func (mp *TxPool) cleanTransactions(blockTxs []*Transaction) {
 					mp.delCRCProposalTracking(cptPayload.ProposalHash)
 				case CRCAppropriation:
 					mp.hasCRCAppropriation = false
+				case ReturnCRDepositCoin:
+					mp.delCode(BytesToHexString(tx.Programs[0].Code))
 				}
 
 				deleteCount++
@@ -526,6 +531,12 @@ func (mp *TxPool) verifyProducerRelatedTx(txn *Transaction) elaerr.ELAError {
 			log.Warn(err)
 			return elaerr.Simple(elaerr.ErrTxPoolDPoSTxDuplicate, err)
 		}
+	case ReturnDepositCoin:
+		err := mp.verifyDuplicateCode(BytesToHexString(txn.Programs[0].Code))
+		if err != nil {
+			log.Warn(err)
+			return elaerr.Simple(elaerr.ErrTxPoolDPoSTxDuplicate, err)
+		}
 	case IllegalProposalEvidence, IllegalVoteEvidence, IllegalBlockEvidence,
 		IllegalSidechainEvidence, InactiveArbitrators:
 		illegalData, ok := txn.Payload.(payload.DPOSIllegalData)
@@ -628,6 +639,12 @@ func (mp *TxPool) verifyCRRelatedTx(txn *Transaction) elaerr.ELAError {
 		}
 	case CRCAppropriation:
 		if err := mp.verifyDuplicateCRCAppropriation(); err != nil {
+			log.Warn(err)
+			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
+		}
+	case ReturnCRDepositCoin:
+		err := mp.verifyDuplicateCode(BytesToHexString(txn.Programs[0].Code))
+		if err != nil {
 			log.Warn(err)
 			return elaerr.Simple(elaerr.ErrTxPoolCRTxDuplicate, err)
 		}
@@ -756,6 +773,24 @@ func (mp *TxPool) addNodePublicKey(nodePublicKey string) {
 
 func (mp *TxPool) delNodePublicKey(nodePublicKey string) {
 	delete(mp.nodePublicKeys, nodePublicKey)
+}
+
+func (mp *TxPool) verifyDuplicateCode(code string) error {
+	_, ok := mp.codes[code]
+	if ok {
+		return errors.New("this code in being processed")
+	}
+	mp.addCode(code)
+
+	return nil
+}
+
+func (mp *TxPool) addCode(code string) {
+	mp.tempCodes[code] = struct{}{}
+}
+
+func (mp *TxPool) delCode(code string) {
+	delete(mp.codes, code)
 }
 
 func (mp *TxPool) verifyDuplicateCRAndNickname(did Uint168,
@@ -1103,6 +1138,8 @@ func (mp *TxPool) clearTemp() {
 	mp.tempOwnerPublicKeys = make(map[string]struct{})
 	mp.tempNodePublicKeys = make(map[string]struct{})
 	mp.tempSpecialTxList = make(map[Uint256]struct{})
+	mp.tempCodes = make(map[string]struct{})
+	mp.tempCRDIDs = make(map[Uint168]struct{})
 	mp.tempCRDIDs = make(map[Uint168]struct{})
 	mp.tempCRCProposals = make(map[Uint256]struct{})
 	mp.tempCRCProposalReview = make(map[string]struct{})
@@ -1125,6 +1162,9 @@ func (mp *TxPool) commitTemp() {
 	}
 	for k, v := range mp.tempNodePublicKeys {
 		mp.nodePublicKeys[k] = v
+	}
+	for k, v := range mp.tempCodes {
+		mp.codes[k] = v
 	}
 	for k, v := range mp.tempCRDIDs {
 		mp.crDIDs[k] = v
@@ -1159,6 +1199,7 @@ func NewTxPool(params *config.Params) *TxPool {
 		ownerPublicKeys:         make(map[string]struct{}),
 		nodePublicKeys:          make(map[string]struct{}),
 		specialTxList:           make(map[Uint256]struct{}),
+		codes:                   make(map[string]struct{}),
 		crDIDs:                  make(map[Uint168]struct{}),
 		crcProposals:            make(map[Uint256]struct{}),
 		producerNicknames:       make(map[string]struct{}),
@@ -1171,6 +1212,7 @@ func NewTxPool(params *config.Params) *TxPool {
 		tempOwnerPublicKeys:     make(map[string]struct{}),
 		tempNodePublicKeys:      make(map[string]struct{}),
 		tempSpecialTxList:       make(map[Uint256]struct{}),
+		tempCodes:               make(map[string]struct{}),
 		tempCRDIDs:              make(map[Uint168]struct{}),
 		tempCRCProposals:        make(map[Uint256]struct{}),
 		tempProducerNicknames:   make(map[string]struct{}),

@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -81,17 +82,27 @@ func CreateTransaction(c *cli.Context) error {
 		outputs = []*OutputInfo{{to, amount}}
 	}
 
-	lockStr := c.String("lock")
-	lock := uint64(0)
-	if lockStr != "" {
-		lock, err = strconv.ParseUint(lockStr, 10, 32)
+	outputLockStr := c.String("outputlock")
+	outputLock := uint64(0)
+	if outputLockStr != "" {
+		outputLock, err = strconv.ParseUint(outputLockStr, 10, 32)
 		if err != nil {
-			return errors.New("invalid lock height")
+			return errors.New("invalid output lock height")
+		}
+	}
+
+	txLockStr := c.String("txlock")
+	txLock := uint64(0)
+	if txLockStr != "" {
+		txLock, err = strconv.ParseUint(txLockStr, 10, 32)
+		if err != nil {
+			return errors.New("invalid transaction lock height")
 		}
 	}
 
 	var txn *types.Transaction
-	txn, err = createTransaction(walletPath, from, *fee, uint32(lock), outputs...)
+	txn, err = createTransaction(walletPath, from, *fee, uint32(outputLock),
+		uint32(txLock), outputs...)
 	if err != nil {
 		return errors.New("create transaction failed: " + err.Error())
 	}
@@ -142,12 +153,16 @@ func createInputs(fromAddr string, totalAmount common.Fixed64) ([]*types.Input,
 	for _, utxo := range UTXOs {
 		txIDReverse, _ := hex.DecodeString(utxo.TxID)
 		txID, _ := common.Uint256FromBytes(common.BytesReverse(txIDReverse))
+		sequence := math.MaxUint32
+		if utxo.OutputLock > 0 {
+			sequence = math.MaxUint32 - 1
+		}
 		input := &types.Input{
 			Previous: types.OutPoint{
 				TxID:  *txID,
 				Index: uint16(utxo.VOut),
 			},
-			Sequence: 4294967295,
+			Sequence: uint32(sequence),
 		}
 		txInputs = append(txInputs, input)
 		amount, err := common.StringToFixed64(utxo.Amount)
@@ -252,7 +267,8 @@ func createVoteOutputs(output *OutputInfo, candidateList []string) ([]*types.Out
 	return txOutputs, nil
 }
 
-func createTransaction(walletPath string, from string, fee common.Fixed64, lockedUntil uint32, outputs ...*OutputInfo) (*types.Transaction, error) {
+func createTransaction(walletPath string, from string, fee common.Fixed64, outputLock uint32,
+	txLock uint32, outputs ...*OutputInfo) (*types.Transaction, error) {
 	// check output
 	if len(outputs) == 0 {
 		return nil, errors.New("invalid transaction target")
@@ -265,7 +281,7 @@ func createTransaction(walletPath string, from string, fee common.Fixed64, locke
 	}
 
 	// create outputs
-	txOutputs, totalAmount, err := createNormalOutputs(outputs, fee, lockedUntil)
+	txOutputs, totalAmount, err := createNormalOutputs(outputs, fee, outputLock)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +315,7 @@ func createTransaction(walletPath string, from string, fee common.Fixed64, locke
 		Inputs:     txInputs,
 		Outputs:    txOutputs,
 		Programs:   []*pg.Program{txProgram},
-		LockTime:   0,
+		LockTime:   txLock,
 	}, nil
 }
 
