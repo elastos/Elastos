@@ -160,7 +160,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 		tx = TxMemPool.GetTransaction(hash)
 		if tx == nil {
 			return ResponsePack(UnknownTransaction,
-				"cannot find transaction in blockchain and transactionpool")
+				"caÏÏnnot find transaction in blockchain and transactionpool")
 		}
 	} else {
 		hash, err := Chain.GetBlockHash(height)

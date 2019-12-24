@@ -66,10 +66,12 @@ func (s *txValidatorTestSuite) SetupSuite() {
 		s.Error(err)
 	}
 	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
-		GetHeight: func() uint32 {
-			return s.CurrentHeight
-		},
+		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
+		GetUTXO:                          chainStore.GetFFLDB().GetUTXO,
+		GetHeight:                        func() uint32 { return s.CurrentHeight },
+		CreateCRAppropriationTransaction: s.Chain.CreateCRCAppropriationTransaction,
 	})
+
 	if err := s.Chain.Init(nil); err != nil {
 		s.Error(err)
 	}
@@ -1068,10 +1070,31 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 		Parameter: nil,
 	}}
 
+	s.CurrentHeight = 1
+	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
+	s.Chain.state = state.NewState(s.Chain.chainParams, nil, func(programHash common.Uint168) (common.Fixed64,
+		error) {
+		amount := common.Fixed64(0)
+		utxos, err := s.Chain.db.GetFFLDB().GetUTXO(&programHash)
+		if err != nil {
+			return amount, err
+		}
+		for _, utxo := range utxos {
+			amount += utxo.Value
+		}
+		return amount, nil
+	})
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
+		GetUTXO:                          s.Chain.db.GetFFLDB().GetUTXO,
+		GetHeight:                        func() uint32 { return s.CurrentHeight },
+		CreateCRAppropriationTransaction: s.Chain.CreateCRCAppropriationTransaction,
+	})
 	block := &types.Block{
 		Transactions: []*types.Transaction{
 			txn,
 		},
+		Header: types.Header{Height:s.CurrentHeight},
 	}
 	s.Chain.state.ProcessBlock(block, nil)
 
@@ -1085,6 +1108,8 @@ func (s *txValidatorTestSuite) TestCheckUpdateProducerTransaction() {
 		NetAddress:     "",
 	}
 	txn.Payload = updatePayload
+	s.CurrentHeight++
+	block.Header = types.Header{Height:s.CurrentHeight}
 	s.Chain.state.ProcessBlock(block, nil)
 
 	s.EqualError(s.Chain.checkUpdateProducerTransaction(txn), "field NickName has invalid string length")
@@ -1999,13 +2024,22 @@ func (s *txValidatorTestSuite) TestCheckUpdateCRTransaction() {
 	registerCRTxn1 := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
 	registerCRTxn2 := s.getRegisterCRTx(publicKeyStr2, privateKeyStr2, nickName2)
 
+	s.CurrentHeight=1
+	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
+		GetUTXO:                          s.Chain.db.GetFFLDB().GetUTXO,
+		GetHeight:                        func() uint32 { return s.CurrentHeight },
+		CreateCRAppropriationTransaction: s.Chain.CreateCRCAppropriationTransaction,
+	})
 	block := &types.Block{
 		Transactions: []*types.Transaction{
 			registerCRTxn1,
 			registerCRTxn2,
 		},
+		Header: types.Header{Height:s.CurrentHeight},
 	}
-	s.Chain.crCommittee.GetState().ProcessBlock(block, nil, 0)
+	s.Chain.crCommittee.ProcessBlock(block, nil)
 
 	//ok nothing wrong
 	hash2, err := getDepositAddress(publicKeyStr2)
@@ -2100,12 +2134,21 @@ func (s *txValidatorTestSuite) TestCheckUnregisterCRTransaction() {
 
 	//register a cr to unregister
 	registerCRTxn := s.getRegisterCRTx(publicKeyStr1, privateKeyStr1, nickName1)
+	s.CurrentHeight=1
+	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
+		GetUTXO:                          s.Chain.db.GetFFLDB().GetUTXO,
+		GetHeight:                        func() uint32 { return s.CurrentHeight },
+		CreateCRAppropriationTransaction: s.Chain.CreateCRCAppropriationTransaction,
+	})
 	block := &types.Block{
 		Transactions: []*types.Transaction{
 			registerCRTxn,
 		},
+		Header: types.Header{Height:s.CurrentHeight},
 	}
-	s.Chain.crCommittee.GetState().ProcessBlock(block, nil, 0)
+	s.Chain.crCommittee.ProcessBlock(block, nil)
 	//ok
 	txn := s.getUnregisterCRTx(publicKeyStr1, privateKeyStr1)
 	err := s.Chain.checkUnRegisterCRTransaction(txn, votingHeight)
@@ -2538,14 +2581,21 @@ func (s *txValidatorTestSuite) TestCheckTransactionDepositUTXO() {
 }
 
 func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
-	height := uint32(1)
+	s.CurrentHeight=1
+	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
+		GetUTXO:                          s.Chain.db.GetFFLDB().GetUTXO,
+		GetHeight:                        func() uint32 { return s.CurrentHeight },
+		CreateCRAppropriationTransaction: s.Chain.CreateCRCAppropriationTransaction,
+	})
 	_, pk, _ := crypto.GenerateKeyPair()
 	depositCont, _ := contract.CreateDepositContractByPubKey(pk)
 	publicKey, _ := pk.EncodePoint(true)
 	// register CR
 	s.Chain.state.ProcessBlock(&types.Block{
 		Header: types.Header{
-			Height: height,
+			Height: s.CurrentHeight,
 		},
 		Transactions: []*types.Transaction{
 			{
@@ -2565,18 +2615,18 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 			},
 		},
 	}, nil)
-	height++
+	s.CurrentHeight++
 	producer := s.Chain.state.GetProducer(publicKey)
 	s.True(producer.State() == state.Pending, "register producer failed")
 
 	for i := 0; i < 6; i++ {
 		s.Chain.state.ProcessBlock(&types.Block{
 			Header: types.Header{
-				Height: height,
+				Height: s.CurrentHeight,
 			},
 			Transactions: []*types.Transaction{},
 		}, nil)
-		height++
+		s.CurrentHeight++
 	}
 	s.True(producer.State() == state.Active, "active producer failed")
 
@@ -2606,7 +2656,7 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 	// cancel CR
 	s.Chain.state.ProcessBlock(&types.Block{
 		Header: types.Header{
-			Height: height,
+			Height: s.CurrentHeight,
 		},
 		Transactions: []*types.Transaction{
 			{
@@ -2617,7 +2667,7 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 			},
 		},
 	}, nil)
-	height++
+	s.CurrentHeight++
 	s.True(producer.State() == state.Canceled, "cancel producer failed")
 
 	// check a return deposit coin transaction with wrong code.
@@ -2651,7 +2701,7 @@ func (s *txValidatorTestSuite) TestCheckReturnDepositCoinTransaction() {
 }
 
 func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
-	height := uint32(1)
+	s.CurrentHeight=1
 	_, pk, _ := crypto.GenerateKeyPair()
 	cont, _ := contract.CreateStandardContract(pk)
 	code := cont.Code
@@ -2661,11 +2711,17 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 
 	s.Chain.chainParams.CRVotingStartHeight = uint32(1)
 	s.Chain.chainParams.CRCommitteeStartHeight = uint32(3000)
-
+	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
+		GetUTXO:                          s.Chain.db.GetFFLDB().GetUTXO,
+		GetHeight:                        func() uint32 { return s.CurrentHeight },
+		CreateCRAppropriationTransaction: s.Chain.CreateCRCAppropriationTransaction,
+	})
 	// register CR
-	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+	s.Chain.crCommittee.ProcessBlock(&types.Block{
 		Header: types.Header{
-			Height: height,
+			Height: s.CurrentHeight,
 		},
 		Transactions: []*types.Transaction{
 			{
@@ -2683,19 +2739,19 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 				},
 			},
 		},
-	}, nil, 0)
-	height++
+	}, nil)
+	s.CurrentHeight++
 	candidate := s.Chain.crCommittee.GetCandidate(*did)
 	s.True(candidate.State() == crstate.Pending, "register CR failed")
 
 	for i := 0; i < 6; i++ {
-		s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+		s.Chain.crCommittee.ProcessBlock(&types.Block{
 			Header: types.Header{
-				Height: height,
+				Height: s.CurrentHeight,
 			},
 			Transactions: []*types.Transaction{},
-		}, nil, 0)
-		height++
+		}, nil)
+		s.CurrentHeight++
 	}
 	s.True(candidate.State() == crstate.Active, "active CR failed")
 
@@ -2724,9 +2780,9 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	s.EqualError(err, "signer must be refundable")
 
 	// unregister CR
-	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+	s.Chain.crCommittee.ProcessBlock(&types.Block{
 		Header: types.Header{
-			Height: height,
+			Height: s.CurrentHeight,
 		},
 		Transactions: []*types.Transaction{
 			{
@@ -2736,8 +2792,8 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 				},
 			},
 		},
-	}, nil, 0)
-	height++
+	}, nil)
+	s.CurrentHeight++
 	s.True(candidate.State() == crstate.Canceled, "canceled CR failed")
 
 	publicKey2 := "030a26f8b4ab0ea219eb461d1e454ce5f0bd0d289a6a64ffc0743dab7bd5be0be9"
@@ -2775,15 +2831,15 @@ func (s *txValidatorTestSuite) TestCheckReturnCRDepositCoinTransaction() {
 	s.NoError(err)
 
 	// return CR deposit coin.
-	s.Chain.crCommittee.GetState().ProcessBlock(&types.Block{
+	s.Chain.crCommittee.ProcessBlock(&types.Block{
 		Header: types.Header{
-			Height: height,
+			Height: s.CurrentHeight,
 		},
 		Transactions: []*types.Transaction{
 			rdTx,
 		},
-	}, nil, 0)
-	height++
+	}, nil)
+	s.CurrentHeight++
 
 	// check a return cr deposit coin transaction with the amount has returned.
 	err = s.Chain.checkReturnCRDepositCoinTransaction(
@@ -2907,14 +2963,23 @@ func (s *txValidatorTestSuite) TestCheckVoteOutputs() {
 	registerCRTxn2 := s.getRegisterCRTx(publicKey2, privateKeyStr2, "nickName2")
 	registerCRTxn3 := s.getRegisterCRTx(publicKey3, privateKeyStr3, "nickName3")
 
+	s.CurrentHeight=1
+	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
+		GetUTXO:                          s.Chain.db.GetFFLDB().GetUTXO,
+		GetHeight:                        func() uint32 { return s.CurrentHeight },
+		CreateCRAppropriationTransaction: s.Chain.CreateCRCAppropriationTransaction,
+	})
 	block := &types.Block{
 		Transactions: []*types.Transaction{
 			registerCRTxn1,
 			registerCRTxn2,
 			registerCRTxn3,
 		},
+		Header:types.Header{Height:s.CurrentHeight},
 	}
-	s.Chain.crCommittee.GetState().ProcessBlock(block, nil, 0)
+	s.Chain.crCommittee.ProcessBlock(block, nil)
 	code1 := getCodeByPubKeyStr(publicKey1)
 	code2 := getCodeByPubKeyStr(publicKey2)
 	code3 := getCodeByPubKeyStr(publicKey3)
@@ -3385,6 +3450,15 @@ func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
 
 	crcCommiteeAddressHash, _ := common.Uint168FromAddress(crcCommiteeAddressStr)
 	s.Chain.chainParams.CRCCommitteeAddress = *crcCommiteeAddressHash
+
+	s.CurrentHeight=1
+	s.Chain.crCommittee = crstate.NewCommittee(s.Chain.chainParams)
+	s.Chain.crCommittee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
+		GetTxReference:                   s.Chain.UTXOCache.GetTxReference,
+		GetUTXO:                          s.Chain.db.GetFFLDB().GetUTXO,
+		GetHeight:                        func() uint32 { return s.CurrentHeight },
+		CreateCRAppropriationTransaction: s.Chain.CreateCRCAppropriationTransaction,
+	})
 
 	var txOutputs []*types.Output
 	txOutput := &types.Output{
