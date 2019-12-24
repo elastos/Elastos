@@ -800,30 +800,19 @@ func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 	return ResponsePack(Success, result)
 }
 
-//Asset
+// GetAssetByHash always return ELA asset
+// Deprecated: It may be removed in the next version
 func GetAssetByHash(param Params) map[string]interface{} {
-	str, ok := param.String("hash")
-	if !ok {
-		return ResponsePack(InvalidParams, "")
+	asset := payload.RegisterAsset{
+		Asset: payload.Asset{
+			Name:      "ELA",
+			Precision: config.ELAPrecision,
+			AssetType: 0x00,
+		},
+		Amount:     0 * 100000000,
+		Controller: common.Uint168{},
 	}
-	hashBytes, err := FromReversedString(str)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-	var hash common.Uint256
-	err = hash.Deserialize(bytes.NewReader(hashBytes))
-	if err != nil {
-		return ResponsePack(InvalidAsset, "")
-	}
-	asset, err := Store.GetAsset(hash)
-	if err != nil {
-		return ResponsePack(UnknownAsset, "")
-	}
-	if false {
-		w := new(bytes.Buffer)
-		asset.Serialize(w)
-		return ResponsePack(Success, common.BytesToHexString(w.Bytes()))
-	}
+
 	return ResponsePack(Success, asset)
 }
 
@@ -832,49 +821,40 @@ func GetBalanceByAddr(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-
-	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	programHash, err := common.Uint168FromAddress(address)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid address, "+err.Error())
+	}
+	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	var balance common.Fixed64 = 0
-	for _, u := range unspent {
-		for _, v := range u {
-			balance = balance + v.Value
-		}
+	for _, u := range utxos {
+		balance = balance + u.Value
 	}
+
 	return ResponsePack(Success, balance.String())
 }
 
+// Deprecated: May be removed in the next version
 func GetBalanceByAsset(param Params) map[string]interface{} {
 	address, ok := param.String("addr")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	assetIDStr, ok := param.String("assetid")
-	if !ok {
-		return ResponsePack(InvalidParams, "")
-	}
-	assetIDBytes, err := FromReversedString(assetIDStr)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-	assetID, err := common.Uint256FromBytes(assetIDBytes)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
 
-	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	programHash, err := common.Uint168FromAddress(address)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid address, "+err.Error())
+	}
+	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	var balance common.Fixed64 = 0
-	for k, u := range unspent {
-		for _, v := range u {
-			if assetID.IsEqual(k) {
-				balance = balance + v.Value
-			}
-		}
+	for _, u := range utxos {
+		balance = balance + u.Value
 	}
 	return ResponsePack(Success, balance.String())
 }
@@ -884,17 +864,17 @@ func GetReceivedByAddress(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "need a parameter named address")
 	}
-
-	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	programHash, err := common.Uint168FromAddress(address)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid address, "+err.Error())
+	}
+	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
-
 	var balance common.Fixed64 = 0
-	for _, u := range unspent {
-		for _, v := range u {
-			balance = balance + v.Value
-		}
+	for _, u := range utxos {
+		balance = balance + u.Value
 	}
 
 	return ResponsePack(Success, balance.String())
@@ -916,7 +896,11 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid amount!")
 	}
-	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	programHash, err := common.Uint168FromAddress(address)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid address, "+err.Error())
+	}
+	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
@@ -930,35 +914,35 @@ func GetUTXOsByAmount(param Params) map[string]interface{} {
 		}
 	}
 	totalAmount := common.Fixed64(0)
-	for _, unspent := range unspent[config.ELAAssetID] {
+	for _, utxo := range utxos {
 		if totalAmount >= *amount {
 			break
 		}
-		tx, height, err := Store.GetTransaction(unspent.TxID)
+		tx, height, err := Store.GetTransaction(utxo.TxID)
 		if err != nil {
 			return ResponsePack(InternalError, "unknown transaction "+
-				unspent.TxID.String()+" from persisted utxo")
+				utxo.TxID.String()+" from persisted utxo")
 		}
 		if utxoType == "vote" && (tx.Version < TxVersion09 ||
-			tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].Type != OTVote) {
+			tx.Version >= TxVersion09 && tx.Outputs[utxo.Index].Type != OTVote) {
 			continue
 		}
 		if utxoType == "normal" && tx.Version >= TxVersion09 &&
-			tx.Outputs[unspent.Index].Type == OTVote {
+			tx.Outputs[utxo.Index].Type == OTVote {
 			continue
 		}
 		if tx.TxType == CoinBase && bestHeight-height < config.DefaultParams.CoinbaseMaturity {
 			continue
 		}
-		totalAmount += unspent.Value
+		totalAmount += utxo.Value
 		result = append(result, UTXOInfo{
 			TxType:        byte(tx.TxType),
-			TxID:          ToReversedString(unspent.TxID),
+			TxID:          ToReversedString(utxo.TxID),
 			AssetID:       ToReversedString(config.ELAAssetID),
-			VOut:          unspent.Index,
-			Amount:        unspent.Value.String(),
+			VOut:          utxo.Index,
+			Amount:        utxo.Value.String(),
 			Address:       address,
-			OutputLock:    tx.Outputs[unspent.Index].OutputLock,
+			OutputLock:    tx.Outputs[utxo.Index].OutputLock,
 			Confirmations: bestHeight - height + 1,
 		})
 	}
@@ -1018,35 +1002,38 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 	}
 	for _, address := range addresses {
-		unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+		programHash, err := common.Uint168FromAddress(address)
+		if err != nil {
+			return ResponsePack(InvalidParams, "invalid address, "+err.Error())
+		}
+		utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 		if err != nil {
 			return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 		}
-
-		for _, unspent := range unspent[config.ELAAssetID] {
-			tx, height, err := Store.GetTransaction(unspent.TxID)
+		for _, utxo := range utxos {
+			tx, height, err := Store.GetTransaction(utxo.TxID)
 			if err != nil {
 				return ResponsePack(InternalError,
-					"unknown transaction "+unspent.TxID.String()+" from persisted utxo")
+					"unknown transaction "+utxo.TxID.String()+" from persisted utxo")
 			}
 			if utxoType == "vote" && (tx.Version < TxVersion09 ||
-				tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].Type != OTVote) {
+				tx.Version >= TxVersion09 && tx.Outputs[utxo.Index].Type != OTVote) {
 				continue
 			}
-			if utxoType == "normal" && tx.Version >= TxVersion09 && tx.Outputs[unspent.Index].Type == OTVote {
+			if utxoType == "normal" && tx.Version >= TxVersion09 && tx.Outputs[utxo.Index].Type == OTVote {
 				continue
 			}
-			if unspent.Value == 0 {
+			if utxo.Value == 0 {
 				continue
 			}
 			result = append(result, UTXOInfo{
 				TxType:        byte(tx.TxType),
-				TxID:          ToReversedString(unspent.TxID),
+				TxID:          ToReversedString(utxo.TxID),
 				AssetID:       ToReversedString(config.ELAAssetID),
-				VOut:          unspent.Index,
-				Amount:        unspent.Value.String(),
+				VOut:          utxo.Index,
+				Amount:        utxo.Value.String(),
 				Address:       address,
-				OutputLock:    tx.Outputs[unspent.Index].OutputLock,
+				OutputLock:    tx.Outputs[utxo.Index].OutputLock,
 				Confirmations: bestHeight - height + 1,
 			})
 		}
@@ -1304,34 +1291,40 @@ func GetUnspends(param Params) map[string]interface{} {
 
 	type UTXOUnspentInfo struct {
 		TxID  string `json:"Txid"`
-		Index uint32 `json:"Index"`
+		Index uint16 `json:"Index"`
 		Value string `json:"Value"`
 	}
 	type Result struct {
 		AssetID   string            `json:"AssetId"`
 		AssetName string            `json:"AssetName"`
-		Utxo      []UTXOUnspentInfo `json:"Utxo"`
+		UTXO      []UTXOUnspentInfo `json:"UTXO"`
 	}
 	var results []Result
 
-	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	programHash, err := common.Uint168FromAddress(address)
+	if err != nil {
+		return ResponsePack(InvalidParams, "invalid address, "+err.Error())
+	}
+	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
-	for k, u := range unspent {
-		asset, err := Store.GetAsset(k)
-		if err != nil {
-			return ResponsePack(InternalError, "")
-		}
+	for _, u := range utxos {
 		var unspendsInfo []UTXOUnspentInfo
-		for _, v := range u {
-			unspendsInfo = append(unspendsInfo, UTXOUnspentInfo{ToReversedString(v.TxID), v.Index, v.Value.String()})
-		}
-		results = append(results, Result{ToReversedString(k), asset.Name, unspendsInfo})
+		unspendsInfo = append(unspendsInfo, UTXOUnspentInfo{
+			ToReversedString(u.TxID),
+			u.Index,
+			u.Value.String()})
+
+		results = append(results, Result{
+			ToReversedString(config.ELAAssetID),
+			"ELA",
+			unspendsInfo})
 	}
 	return ResponsePack(Success, results)
 }
 
+// Deprecated: May be removed in the next version
 func GetUnspendOutput(param Params) map[string]interface{} {
 	addr, ok := param.String("addr")
 	if !ok {
@@ -1341,32 +1334,22 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	assetID, ok := param.String("assetid")
-	if !ok {
-		return ResponsePack(InvalidParams, "")
-	}
-	bys, err := FromReversedString(assetID)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
 
-	var assetHash common.Uint256
-	if err := assetHash.Deserialize(bytes.NewReader(bys)); err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
 	type UTXOUnspentInfo struct {
 		TxID  string `json:"Txid"`
-		Index uint32 `json:"Index"`
+		Index uint16 `json:"Index"`
 		Value string `json:"Value"`
 	}
-	infos, err := Store.GetUnspentFromProgramHash(*programHash, assetHash)
+	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 	if err != nil {
-		return ResponsePack(InvalidParams, "")
-
+		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	var UTXOoutputs []UTXOUnspentInfo
-	for _, v := range infos {
-		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{TxID: ToReversedString(v.TxID), Index: v.Index, Value: v.Value.String()})
+	for _, utxo := range utxos {
+		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{
+			TxID:  ToReversedString(utxo.TxID),
+			Index: utxo.Index,
+			Value: utxo.Value.String()})
 	}
 	return ResponsePack(Success, UTXOoutputs)
 }
@@ -1950,22 +1933,21 @@ func VoteStatus(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "Invalid address: "+address)
 	}
-
-	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	var total common.Fixed64
 	var voting common.Fixed64
-	for _, unspent := range unspent[config.ELAAssetID] {
-		tx, _, err := Store.GetTransaction(unspent.TxID)
+	for _, utxo := range utxos {
+		tx, _, err := Store.GetTransaction(utxo.TxID)
 		if err != nil {
-			return ResponsePack(InternalError, "unknown transaction "+unspent.TxID.String()+" from persisted utxo")
+			return ResponsePack(InternalError, "unknown transaction "+utxo.TxID.String()+" from persisted utxo")
 		}
-		if tx.Outputs[unspent.Index].Type == OTVote {
-			voting += unspent.Value
+		if tx.Outputs[utxo.Index].Type == OTVote {
+			voting += utxo.Value
 		}
-		total += unspent.Value
+		total += utxo.Value
 	}
 
 	pending := false
@@ -2014,20 +1996,13 @@ func GetDepositCoin(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid publickey to programHash")
 	}
-	address, err := programHash.ToAddress()
-	if err != nil {
-		return ResponsePack(InvalidParams, "invalid programHash")
-	}
-
-	unspent, err := Wallet.ListUnspent(address, ChainParams.EnableUtxoDB)
+	utxos, err := Store.GetFFLDB().GetUTXO(programHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "list unspent failed, "+err.Error())
 	}
 	var balance common.Fixed64 = 0
-	for _, u := range unspent {
-		for _, v := range u {
-			balance = balance + v.Value
-		}
+	for _, utxo := range utxos {
+		balance = balance + utxo.Value
 	}
 	var deducted common.Fixed64 = 0
 	//todo get deducted coin

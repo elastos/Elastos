@@ -130,6 +130,7 @@ func dbIndexDisconnectBlock(dbTx database.Tx, indexer Indexer, block *types.Bloc
 type Manager struct {
 	db             database.DB
 	enabledIndexes []Indexer
+	txStore        ITxStore
 }
 
 // Ensure the Manager type implements the blockchain.IndexManager interface.
@@ -428,34 +429,6 @@ func (m *Manager) Init(chain IChain, interrupt <-chan struct{}) error {
 	return nil
 }
 
-// dbFetchTx looks up the passed transaction hash in the transaction index and
-// loads it from the database.
-func dbFetchTx(dbTx database.Tx, hash *common.Uint256) (*types.Transaction, *common.Uint256, error) {
-	// Look up the location of the transaction.
-	blockRegion, err := dbFetchTxIndexEntry(dbTx, hash)
-	if err != nil {
-		return nil, &common.EmptyHash, err
-	}
-	if blockRegion == nil {
-		return nil, &common.EmptyHash, fmt.Errorf("transaction %v not found", hash)
-	}
-
-	// Load the raw transaction bytes from the database.
-	txBytes, err := dbTx.FetchBlockRegion(blockRegion)
-	if err != nil {
-		return nil, &common.EmptyHash, err
-	}
-
-	// Deserialize the transaction.
-	var txn types.Transaction
-	err = txn.Deserialize(bytes.NewReader(txBytes))
-	if err != nil {
-		return nil, &common.EmptyHash, err
-	}
-
-	return &txn, blockRegion.Hash, nil
-}
-
 // ConnectBlock must be invoked when a block is extending the main chain.  It
 // keeps track of the state of each index it is managing, performs some sanity
 // checks, and invokes each indexer.
@@ -493,19 +466,46 @@ func (m *Manager) DisconnectBlock(dbTx database.Tx, block *types.Block) error {
 	return nil
 }
 
-func (m *Manager) FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint256, error) {
-	var txn *types.Transaction
-	var hash *common.Uint256
+func (m *Manager) FetchTx(txID common.Uint256) (*types.Transaction, uint32, error) {
+	return m.txStore.FetchTx(txID)
+}
+
+func (m *Manager) FetchUnspent(txID common.Uint256) ([]uint16, error) {
+	var indexes []uint16
 	err := m.db.View(func(dbTx database.Tx) error {
 		var err error
-		txn, hash, err = dbFetchTx(dbTx, &txID)
+		indexes, err = dbFetchUnspentIndexEntry(dbTx, &txID)
 		return err
 	})
 	if err != nil {
-		return nil, &common.EmptyHash, err
+		return nil, err
 	}
 
-	return txn, hash, nil
+	return indexes, nil
+}
+
+func (m *Manager) FetchUTXO(programHash *common.Uint168) ([]*types.UTXO, error) {
+	var utxos []*types.UTXO
+	err := m.db.View(func(dbTx database.Tx) error {
+		var err error
+		utxos, err = dbFetchUtxoIndexEntry(dbTx, programHash)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return utxos, nil
+}
+
+func (m *Manager) IsTx3Exist(txHash *common.Uint256) bool {
+	exist := false
+	_ = m.db.View(func(dbTx database.Tx) error {
+		exist = dbFetchTx3IndexEntry(dbTx, txHash)
+		return nil
+	})
+
+	return exist
 }
 
 // NewManager returns a new index manager with the provided indexes enabled.
@@ -513,12 +513,16 @@ func (m *Manager) FetchTx(txID common.Uint256) (*types.Transaction, *common.Uint
 // The manager returned satisfies the blockchain.IndexManager interface and thus
 // cleanly plugs into the normal blockchain processing path.
 func NewManager(db database.DB) *Manager {
-	var enabledIndexes []Indexer
 	txIndex := NewTxIndex(db)
-	enabledIndexes = append(enabledIndexes, txIndex)
+	unspentIndex := NewUnspentIndex(db)
+	utxoIndex := NewUtxoIndex(db, unspentIndex)
+	tx3Index := NewTx3Index(db)
+	var enabledIndexes []Indexer
+	enabledIndexes = append(enabledIndexes, txIndex, unspentIndex, utxoIndex, tx3Index)
 	return &Manager{
 		db:             db,
 		enabledIndexes: enabledIndexes,
+		txStore:        unspentIndex,
 	}
 }
 
