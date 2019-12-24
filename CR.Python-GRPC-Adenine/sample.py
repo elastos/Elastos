@@ -19,8 +19,8 @@ def main():
     results = parser.parse_args()
     service = results.service
 
-    did_to_use = 'qhfiueq98dqwbd'
-    api_key_to_use = 'w7Lgiq3HZ0839Pv8WXfpev4yIxQsK57Klf0OI51pTYQGjcDOHe9Rw2ihmhvPMgtX'
+    did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
+    api_key_to_use = 'rPXZtiANM8x2bCantfuUT4APP14C79wzJNnvy8E5OTmBnAhchryZsdagjNmzFfLb'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     if service == "generate_api":
@@ -70,10 +70,10 @@ def main():
             # Verify and Show
             print("\n--> Verify and Show")
             request_input = {
-                "msg": "516D595855343131556B45444B7636415231767551444677626F36426A644A37564E57587A533847794D7537375A",
+                "msg": "516D56756E44527673387A436878576B76424B3771364D4E766E71646B646D424A4B313863437834504E37664547",
                 "pub": "022316EB57646B0444CB97BE166FBE66454EB00631422E03893EE49143B4718AB8",
-                "sig": "637333147D104F71433195F5D3A0C90B2115A38A00D7460C1D901718189076951083BBA8EF06E70212D035119A8636DDA0680E5F8D3748B45F4AA5E117B99886",
-                "hash": "QmYXU411UkEDKv6AR1vuQDFwbo6BjdJ7VNWXzS8GyMu77Z",
+                "sig": "E36334F561A2D3CD0068937A4F3F19E9EB605009B5D9C7A28E91064A4F874888432C0065BC60DDC1791FDBAFA1A28587BA57AA63C6C0ED0DB715A6574F8C7BF2",
+                "hash": "QmVunDRvs8zChxWkvBK7q6MNvnqdkdmBJK18cCx4PN7fEG",
                 "private_key": private_key_to_use
             }
             response = hive.verify_and_show(api_key_to_use, request_input)
@@ -187,7 +187,7 @@ def main():
             # For production GMUnet, this won't work
             print("\n--> Deploy ETH Contract")
             response = sidechain_eth.deploy_eth_contract(api_key_to_use, '0x4505b967d56f84647eb3a40f7c365f7d87a88bc3',
-                                                         '0xf98fa0f1e6b6772077591ba9eefe68b227c59d9103477a4db3c411feec919abb', 200000, 'test/HelloWorld.sol')
+                                                         '0xf98fa0f1e6b6772077591ba9eefe68b227c59d9103477a4db3c411feec919abb', 2000000, 'test/HelloWorld.sol')
             if response.output:
                 json_output = json.loads(response.output)
                 print("Status Message :", response.status_message)
@@ -202,7 +202,7 @@ def main():
             sidechain_eth = SidechainEth()
             print("\n--> Watch ETH Contract")
             response = sidechain_eth.watch_eth_contract(api_key_to_use,
-                                                         '0x3Be3523392B71E9FC7F944C30Ff4a3cBD2363f90', 'HelloWorld',
+                                                         '0x099E99A9f9668Cc6176c27F73da0b11B7DF42705', 'HelloWorld',
                                                         'QmXYqHg8gRnDkDreZtXJgqkzmjujvrAr5n6KXexmfTGqHd')
             if response.output:
                 json_output = json.loads(response.output)
