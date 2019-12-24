@@ -861,26 +861,24 @@ func (a *arbitrators) resetNextArbiterByCRC(height uint32) error {
 	a.nextArbitrators = make([]ArbiterMember, 0)
 
 	if height >= a.chainParams.CRCommitteeStartHeight {
-		if a.crCommittee.LastCommitteeHeight > a.crcChangedHeight {
-			crMembers := a.crCommittee.GetAllMembers()
-			if len(crMembers) != len(a.chainParams.CRCArbiters) {
-				return errors.New("CRC members count mismatch with CRC arbiters")
-			}
-
-			a.crcArbiters = map[common.Uint168]ArbiterMember{}
-			for i, v := range a.chainParams.CRCArbiters {
-				pk, err := common.HexStringToBytes(v)
-				if err != nil {
-					return err
-				}
-				ar, err := NewCRCArbiter(pk, crMembers[i])
-				if err != nil {
-					return err
-				}
-				a.crcArbiters[ar.GetOwnerProgramHash()] = ar
-			}
-			a.crcChangedHeight = a.crCommittee.LastCommitteeHeight
+		crMembers := a.crCommittee.GetAllMembers()
+		if len(crMembers) != len(a.chainParams.CRCArbiters) {
+			return errors.New("CRC members count mismatch with CRC arbiters")
 		}
+
+		a.crcArbiters = map[common.Uint168]ArbiterMember{}
+		for i, v := range a.chainParams.CRCArbiters {
+			pk, err := common.HexStringToBytes(v)
+			if err != nil {
+				return err
+			}
+			ar, err := NewCRCArbiter(pk, crMembers[i])
+			if err != nil {
+				return err
+			}
+			a.crcArbiters[ar.GetOwnerProgramHash()] = ar
+		}
+		a.crcChangedHeight = a.crCommittee.LastCommitteeHeight
 	}
 
 	for _, v := range a.crcArbiters {
