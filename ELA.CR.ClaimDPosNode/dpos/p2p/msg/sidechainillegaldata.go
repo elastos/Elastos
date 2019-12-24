@@ -21,7 +21,7 @@ func (msg *SidechainIllegalData) CMD() string {
 }
 
 func (msg *SidechainIllegalData) MaxLength() uint32 {
-	return pact.MaxBlockSize
+	return pact.MaxBlockContextSize
 }
 
 func (msg *SidechainIllegalData) Serialize(w io.Writer) error {

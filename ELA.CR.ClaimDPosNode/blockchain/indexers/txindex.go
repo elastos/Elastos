@@ -6,6 +6,7 @@
 package indexers
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -191,7 +192,7 @@ func dbPutTxIndexEntry(dbTx database.Tx, txHash *common.Uint256, serializedData 
 // there is no entry for the provided hash, nil will be returned for the both
 // the region and the error.
 func dbFetchTxIndexEntry(dbTx database.Tx, txHash *common.Uint256) (*database.BlockRegion, error) {
-	// Load the record from the database and return now if it doesn't exist.
+	// Load the record from the database and return nil if it doesn't exist.
 	txIndex := dbTx.Metadata().Bucket(txIndexKey)
 	serializedData := txIndex.Get(txHash[:])
 	if len(serializedData) == 0 {
@@ -283,6 +284,34 @@ func dbRemoveTxIndexEntries(dbTx database.Tx, block *types.Block) error {
 	}
 
 	return nil
+}
+
+// dbFetchTx looks up the passed transaction hash in the transaction index and
+// loads it from the database.
+func dbFetchTx(dbTx database.Tx, hash *common.Uint256) (*types.Transaction, *common.Uint256, error) {
+	// Look up the location of the transaction.
+	blockRegion, err := dbFetchTxIndexEntry(dbTx, hash)
+	if err != nil {
+		return nil, &common.EmptyHash, err
+	}
+	if blockRegion == nil {
+		return nil, &common.EmptyHash, fmt.Errorf("transaction %v not found", hash)
+	}
+
+	// Load the raw transaction bytes from the database.
+	txBytes, err := dbTx.FetchBlockRegion(blockRegion)
+	if err != nil {
+		return nil, &common.EmptyHash, err
+	}
+
+	// Deserialize the transaction.
+	var txn types.Transaction
+	err = txn.Deserialize(bytes.NewReader(txBytes))
+	if err != nil {
+		return nil, &common.EmptyHash, err
+	}
+
+	return &txn, blockRegion.Hash, nil
 }
 
 // TxIndex implements a transaction by hash index.  That is to say, it supports

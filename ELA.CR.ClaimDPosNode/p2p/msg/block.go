@@ -27,5 +27,5 @@ func (msg *Block) CMD() string {
 }
 
 func (msg *Block) MaxLength() uint32 {
-	return pact.MaxBlockSize
+	return pact.MaxBlockContextSize + pact.MaxBlockHeaderSize
 }

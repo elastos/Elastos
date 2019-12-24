@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/common/config/settings"
 	"github.com/elastos/Elastos.ELA/common/log"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/state"
@@ -169,7 +170,7 @@ var (
 )
 
 // The default amount of logging is none.
-func setupLog(c *cli.Context, s *settings) {
+func setupLog(c *cli.Context, s *settings.Settings) {
 	flagDataDir := c.String("datadir")
 	path := filepath.Join(flagDataDir, nodeLogPath)
 
