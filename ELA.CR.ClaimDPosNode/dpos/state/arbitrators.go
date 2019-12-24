@@ -208,10 +208,11 @@ func (a *arbitrators) RollbackTo(height uint32) error {
 		return fmt.Errorf("can't rollback to height: %d", height)
 	}
 
-	if err := a.State.RollbackTo(height); err != nil {
+	if err := a.DecreaseChainHeight(height); err != nil {
 		return err
 	}
-	return a.DecreaseChainHeight(height)
+
+	return a.State.RollbackTo(height)
 }
 
 func (a *arbitrators) GetDutyIndexByHeight(height uint32) (index int) {
@@ -314,10 +315,6 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 
 	a.mtx.Lock()
 
-	if block.Height > a.bestHeight()-MaxSnapshotLength {
-		a.snapshot(block.Height)
-	}
-
 	changeType, versionHeight := a.getChangeType(block.Height + 1)
 	switch changeType {
 	case updateNext:
@@ -339,6 +336,10 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 		notify = false
 	}
 	a.illegalBlocksPayloadHashes = make(map[common.Uint256]interface{})
+
+	if block.Height > a.bestHeight()-MaxSnapshotLength {
+		a.snapshot(block.Height)
+	}
 
 	a.mtx.Unlock()
 
@@ -462,7 +463,7 @@ func (a *arbitrators) DecreaseChainHeight(height uint32) error {
 	a.mtx.Lock()
 	a.degradation.RollbackTo(height)
 
-	checkpoints := a.getSnapshot(height + 1)
+	checkpoints := a.getSnapshot(height)
 	if checkpoints != nil {
 		for _, v := range checkpoints {
 			a.recoverFromCheckPoints(v)

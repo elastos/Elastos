@@ -320,15 +320,21 @@ The `from` parameter specifies the transfer-out account address. The default val
 The `to` parameter specifies the transfer-in account address.
 
 -- tomany
-
 The `tomany` parameter specifies the file which saves multiple outputs.
 
 --amount
 The `amount` parameter specifies the transfer amount.
 
 --fee
-
 The `fee` parameter specifies the transfer fee cost.
+
+--outputlock
+The `outputlock` parameter specifies the block height when the received asset can be spent.
+
+--txlock
+The `txlock` parameter specifies the block height when the transaction can be packaged.
+
+The details of `outputlock` and `txlock` specification in the document [Locking_transaction_recognition](Locking_transaction_recognition.md).
 
 #### 2.1.1 Build standard signature transaction
 

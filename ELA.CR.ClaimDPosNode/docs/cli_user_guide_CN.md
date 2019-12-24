@@ -315,6 +315,12 @@ XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ
 
 -- fee <fee> 用于设定交易的手续费。浮点类型。
 
+-- outputlock <lock height> 用于设定 output 的锁定高度。 
+
+-- txlock <lock height> 用于设定交易的锁定高度。
+
+outputlock, txlock 参数使用方式可参考文档 [Locking_transaction_recognition](Locking_transaction_recognition.md)。
+
 #### 2.1.1 构造单签交易
 
 ```

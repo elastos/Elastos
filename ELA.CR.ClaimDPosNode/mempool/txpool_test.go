@@ -20,6 +20,7 @@ import (
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
 	"github.com/elastos/Elastos.ELA/core/types"
 	"github.com/elastos/Elastos.ELA/core/types/payload"
 	"github.com/elastos/Elastos.ELA/crypto"
@@ -279,10 +280,23 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	tx6.Inputs = []*types.Input{input4}
 
 	tx7 := new(types.Transaction)
-	tx7.TxType = types.CRCProposal
+	tx7.TxType = types.ReturnDepositCoin
 	tx7.Version = types.TxVersion09
-	tx7.Payload = &payload.CRCProposal{
-		DraftHash: common.Uint256{1, 2, 3},
+	tx7.Programs = []*program.Program{
+		&program.Program{
+			Code:      []byte{11},
+			Parameter: nil,
+		},
+	}
+
+	tx8 := new(types.Transaction)
+	tx8.TxType = types.ReturnCRDepositCoin
+	tx8.Version = types.TxVersion09
+	tx8.Programs = []*program.Program{
+		&program.Program{
+			Code:      []byte{22},
+			Parameter: nil,
+		},
 	}
 
 	// 2. Add tx1 and tx2 into store and input UTXO list
@@ -341,14 +355,25 @@ func TestTxPool_VerifyDuplicateCRTx(t *testing.T) {
 	errCode = txPool.verifyCRRelatedTx(tx3)
 	assert.True(t, errCode == nil)
 
-	// 13. Verify CR related tx
-	errCode = txPool.verifyCRRelatedTx(tx7)
+	// 13. Verify ReturnDepositCoin tx
+	errCode = txPool.verifyProducerRelatedTx(tx7)
 	assert.True(t, errCode == nil)
 	txPool.commitTemp()
 
-	// 14. Verify CR related tx
-	errCode = txPool.verifyCRRelatedTx(tx7)
+	// 14. Verify same ReturnDepositCoin tx again
+	errCode = txPool.verifyProducerRelatedTx(tx7)
+	assert.True(t, errCode.Code() == elaerr.ErrTxPoolDPoSTxDuplicate)
+	txPool.clearTemp()
+
+	// 15. Verify ReturnCRDepositCoin tx
+	errCode = txPool.verifyCRRelatedTx(tx8)
+	assert.True(t, errCode == nil)
+	txPool.commitTemp()
+
+	// 16. Verify same ReturnCRDepositCoin tx again
+	errCode = txPool.verifyCRRelatedTx(tx8)
 	assert.True(t, errCode.Code() == elaerr.ErrTxPoolCRTxDuplicate)
+	txPool.clearTemp()
 }
 
 func TestTxPool_CleanSidechainTx(t *testing.T) {
