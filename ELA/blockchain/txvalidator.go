@@ -818,7 +818,7 @@ func checkTransactionDepositOutpus(bc *BlockChain, txn *Transaction) error {
 
 func checkTransactionSize(txn *Transaction) error {
 	size := txn.GetSize()
-	if size <= 0 || size > int(pact.MaxBlockSize) {
+	if size <= 0 || size > int(pact.MaxBlockContextSize) {
 		return fmt.Errorf("Invalid transaction size: %d bytes", size)
 	}
 
@@ -826,24 +826,9 @@ func checkTransactionSize(txn *Transaction) error {
 }
 
 func checkAssetPrecision(txn *Transaction) error {
-	if len(txn.Outputs) == 0 {
-		return nil
-	}
-	assetOutputs := make(map[common.Uint256][]*Output)
-
-	for _, v := range txn.Outputs {
-		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
-	}
-	for k, outputs := range assetOutputs {
-		asset, err := DefaultLedger.GetAsset(k)
-		if err != nil {
-			return errors.New("The asset not exist in local blockchain.")
-		}
-		precision := asset.Precision
-		for _, output := range outputs {
-			if !checkAmountPrecise(output.Value, precision) {
-				return errors.New("The precision of asset is incorrect.")
-			}
+	for _, output := range txn.Outputs {
+		if !checkAmountPrecise(output.Value, config.ELAPrecision) {
+			return errors.New("the precision of asset is incorrect")
 		}
 	}
 	return nil
@@ -1450,7 +1435,7 @@ func (b *BlockChain) checkActivateProducerTransaction(txn *Transaction,
 			return err
 		}
 
-		utxos, err := b.db.GetUnspentFromProgramHash(*programHash, config.ELAAssetID)
+		utxos, err := b.db.GetFFLDB().GetUTXO(programHash)
 		if err != nil {
 			return err
 		}

@@ -18,7 +18,9 @@ import (
 // possibly fit into a merkle block.  Since each transaction is represented by
 // a single bit, this is the max number of transactions per block divided by
 // 8 bits per byte.  Then an extra one to cover partials.
-const maxFlagsPerMerkleBlock = pact.MaxTxPerBlock / 8
+func maxFlagsPerMerkleBlock () uint32 {
+	return pact.MaxTxPerBlock / 8
+}
 
 // Ensure MerkleBlock implement p2p.Message interface.
 var _ p2p.Message = (*MerkleBlock)(nil)
@@ -39,21 +41,21 @@ func (msg *MerkleBlock) CMD() string {
 }
 
 func (msg *MerkleBlock) MaxLength() uint32 {
-	return pact.MaxBlockSize
+	return pact.MaxBlockContextSize + pact.MaxBlockHeaderSize
 }
 
 func (msg *MerkleBlock) Serialize(w io.Writer) error {
 	// Read num transaction hashes and limit to max.
 	numHashes := len(msg.Hashes)
-	if numHashes > pact.MaxTxPerBlock {
+	if uint32(numHashes) > pact.MaxTxPerBlock {
 		str := fmt.Sprintf("too many transaction hashes for message "+
 			"[count %v, max %v]", numHashes, pact.MaxTxPerBlock)
 		return common.FuncError("MerkleBlock.Serialize", str)
 	}
 	numFlagBytes := len(msg.Flags)
-	if numFlagBytes > maxFlagsPerMerkleBlock {
+	if uint32(numFlagBytes) > maxFlagsPerMerkleBlock() {
 		str := fmt.Sprintf("too many flag bytes for message [count %v, "+
-			"max %v]", numFlagBytes, maxFlagsPerMerkleBlock)
+			"max %v]", numFlagBytes, maxFlagsPerMerkleBlock())
 		return common.FuncError("MerkleBlock.Serialize", str)
 	}
 
@@ -103,7 +105,7 @@ func (msg *MerkleBlock) Deserialize(r io.Reader) error {
 		msg.Hashes = append(msg.Hashes, hash)
 	}
 
-	msg.Flags, err = common.ReadVarBytes(r, maxFlagsPerMerkleBlock,
+	msg.Flags, err = common.ReadVarBytes(r, maxFlagsPerMerkleBlock(),
 		"merkle block flags size")
 	return err
 }

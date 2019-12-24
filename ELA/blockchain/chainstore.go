@@ -24,6 +24,8 @@ const (
 	BlocksCacheSize = 2
 )
 
+var oldLevelDB *LevelDB
+
 type ProducerState byte
 
 type ProducerInfo struct {
@@ -46,9 +48,9 @@ type ChainStore struct {
 	persistMutex sync.Mutex
 }
 
-func NewChainStore(dataDir string, genesisBlock *Block) (
-	IChainStore, error) {
+func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
+	oldLevelDB = db
 	if err != nil {
 		return nil, err
 	}
@@ -63,10 +65,6 @@ func NewChainStore(dataDir string, genesisBlock *Block) (
 		blocksCache:      make(map[Uint256]*Block),
 	}
 
-	if err := s.init(genesisBlock); err != nil {
-		log.Debug("chain store not contain genesis block")
-	}
-
 	return s, nil
 }
 
@@ -76,67 +74,6 @@ func (c *ChainStore) Close() {
 	if err := c.fflDB.Close(); err != nil {
 		log.Error("fflDB close failed:", err)
 	}
-	if err := c.IStore.Close(); err != nil {
-		log.Error("IStore close failed:", err)
-	}
-}
-
-func (c *ChainStore) init(genesisBlock *Block) error {
-	prefix := []byte{byte(CFGVersion)}
-	version, err := c.Get(prefix)
-	if err != nil {
-		version = []byte{0x00}
-	}
-
-	if version[0] == 0x00 {
-		// batch delete old data
-		c.NewBatch()
-		iter := c.NewIterator(nil)
-		for iter.Next() {
-			c.BatchDelete(iter.Key())
-		}
-		iter.Release()
-
-		err := c.BatchCommit()
-		if err != nil {
-			return err
-		}
-
-		// persist genesis block
-		hash := genesisBlock.Hash()
-		genesisBlockNode := NewBlockNode(&genesisBlock.Header, &hash)
-		err = c.persist(genesisBlock, genesisBlockNode, nil,
-			CalcPastMedianTime(genesisBlockNode))
-		if err != nil {
-			return err
-		}
-
-		// put version to db
-		err = c.Put(prefix, []byte{0x01})
-		if err != nil {
-			return err
-		}
-	}
-
-	// GenesisBlock should exist in chain
-	// Or the bookkeepers are not consistent with the chain
-	hash := genesisBlock.Hash()
-	if !c.IsBlockInStore(&hash) {
-		return errors.New("genesis block is not consistent with the chain")
-	}
-
-	// Get Current Block
-	currentBlockPrefix := []byte{byte(SYSCurrentBlock)}
-	data, err := c.Get(currentBlockPrefix)
-	if err != nil {
-		return err
-	}
-
-	r := bytes.NewReader(data)
-	var blockHash Uint256
-	blockHash.Deserialize(r)
-	c.currentBlockHeight, err = ReadUint32(r)
-	return err
 }
 
 func (c *ChainStore) IsTxHashDuplicate(txID Uint256) bool {
@@ -159,6 +96,10 @@ func (c *ChainStore) isTxHashDuplicate(txhash Uint256) bool {
 }
 
 func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool {
+	return c.GetFFLDB().IsTx3Exist(&sidechainTxHash)
+}
+
+func (c *ChainStore) isSidechainTxHashDuplicate(sidechainTxHash Uint256) bool {
 	prefix := []byte{byte(IXSideChainTx)}
 	_, err := c.Get(append(prefix, sidechainTxHash.Bytes()...))
 	if err != nil {
@@ -169,6 +110,31 @@ func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool {
 }
 
 func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
+	if len(txn.Inputs) == 0 {
+		return false
+	}
+	for i := 0; i < len(txn.Inputs); i++ {
+		txID := txn.Inputs[i].Previous.TxID
+		unspents, err := c.GetFFLDB().GetUnspent(txID)
+		if err != nil {
+			return true
+		}
+		findFlag := false
+		for k := 0; k < len(unspents); k++ {
+			if unspents[k] == txn.Inputs[i].Previous.Index {
+				findFlag = true
+				break
+			}
+		}
+		if !findFlag {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c *ChainStore) isDoubleSpend(txn *Transaction) bool {
 	if len(txn.Inputs) == 0 {
 		return false
 	}
@@ -482,28 +448,9 @@ func (c *ChainStore) getBlockHeader(hash Uint256) (*Header, error) {
 
 func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
-	c.NewBatch()
-	if err := c.RollbackTransactions(b); err != nil {
-		return err
-	}
-	if err := c.RollbackUnspendUTXOs(b); err != nil {
-		return err
-	}
-	if err := c.RollbackUnspend(b); err != nil {
-		return err
-	}
-	if err := c.RollbackConfirm(b); err != nil {
-		return err
-	}
-
 	if err := c.fflDB.RollbackBlock(b, node, confirm, medianTimePast); err != nil {
 		return err
 	}
-
-	if err := c.BatchCommit(); err != nil {
-		return err
-	}
-
 	atomic.StoreUint32(&c.currentBlockHeight, b.Height-1)
 
 	return nil
@@ -514,26 +461,10 @@ func (c *ChainStore) persist(b *Block, node *BlockNode,
 	c.persistMutex.Lock()
 	defer c.persistMutex.Unlock()
 
-	c.NewBatch()
-	if err := c.PersistTransactions(b); err != nil {
+	if err := c.fflDB.SaveBlock(b, node, confirm, medianTimePast); err != nil {
 		return err
 	}
-	if err := c.persistUTXOs(b); err != nil {
-		return err
-	}
-	if err := c.persistUnspend(b); err != nil {
-		return err
-	}
-	if err := c.persistConfirm(confirm); err != nil {
-		return err
-	}
-	// todo save genesis block at same time
-	if b.Height != 0 {
-		if err := c.fflDB.SaveBlock(b, node, confirm, medianTimePast); err != nil {
-			return err
-		}
-	}
-	return c.BatchCommit()
+	return nil
 }
 
 func (c *ChainStore) GetFFLDB() IFFLDBChainStore {

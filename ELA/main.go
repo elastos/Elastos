@@ -18,7 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/blockchain"
 	cmdcom "github.com/elastos/Elastos.ELA/cmd/common"
 	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/config/settings"
 	"github.com/elastos/Elastos.ELA/common/log"
 	"github.com/elastos/Elastos.ELA/core/types"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
@@ -26,7 +26,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/account"
 	dlog "github.com/elastos/Elastos.ELA/dpos/log"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/elanet/routes"
 	"github.com/elastos/Elastos.ELA/mempool"
@@ -44,6 +43,17 @@ import (
 	"github.com/elastos/Elastos.ELA/wallet"
 
 	"github.com/urfave/cli"
+)
+
+const (
+	// dataPath indicates the path storing the chain data.
+	dataPath = "data"
+
+	// logPath indicates the path storing the node log.
+	nodeLogPath = "logs/node"
+
+	// checkpointPath indicates the path storing the checkpoint data
+	checkpointPath = "checkpoints"
 )
 
 var (
@@ -66,7 +76,7 @@ func main() {
 }
 
 func setupNode() *cli.App {
-	appSettings := newSettings()
+	appSettings := settings.NewSettings()
 
 	app := cli.NewApp()
 	app.Name = "ela"
@@ -110,7 +120,7 @@ func setupNode() *cli.App {
 	return app
 }
 
-func startNode(c *cli.Context, st *settings) {
+func startNode(c *cli.Context, st *settings.Settings) {
 	// Enable http profiling server if requested.
 	if st.Config().ProfilePort != 0 {
 		go utils.StartPProf(st.Config().ProfilePort)
@@ -127,7 +137,7 @@ func startNode(c *cli.Context, st *settings) {
 		if err != nil {
 			printErrorAndExit(err)
 		}
-		act, err = account.Open(password, st.params.WalletPath)
+		act, err = account.Open(password, st.Params().WalletPath)
 		if err != nil {
 			printErrorAndExit(err)
 		}
@@ -150,13 +160,6 @@ func startNode(c *cli.Context, st *settings) {
 	defer chainStore.Close()
 	ledger.Store = chainStore // fixme
 
-	var dposStore store.IDposStore
-	dposStore, err = store.NewDposStore(dataDir, st.Params())
-	if err != nil {
-		printErrorAndExit(err)
-	}
-	defer dposStore.Close()
-
 	txMemPool := mempool.NewTxPool(st.Params())
 	blockMemPool := mempool.NewBlockPool(st.Params())
 	blockMemPool.Store = chainStore
@@ -171,7 +174,7 @@ func startNode(c *cli.Context, st *settings) {
 			error) {
 			amount := common.Fixed64(0)
 			utxos, err := blockchain.DefaultLedger.Store.
-				GetUnspentFromProgramHash(programHash, config.ELAAssetID)
+				GetFFLDB().GetUTXO(&programHash)
 			if err != nil {
 				return amount, err
 			}
@@ -192,8 +195,8 @@ func startNode(c *cli.Context, st *settings) {
 	if err := chain.Init(interrupt.C); err != nil {
 		printErrorAndExit(err)
 	}
-	if err := chain.InitFFLDBFromChainStore(interrupt.C, pgBar.Start,
-		pgBar.Increase, false); err != nil {
+	if err := chain.MigrateOldDB(interrupt.C, pgBar.Start,
+		pgBar.Increase, dataDir, st.Params()); err != nil {
 		printErrorAndExit(err)
 	}
 	pgBar.Stop()
@@ -217,8 +220,8 @@ func startNode(c *cli.Context, st *settings) {
 	if act != nil {
 		routesCfg.PID = act.PublicKeyBytes()
 		routesCfg.Addr = fmt.Sprintf("%s:%d",
-			st.params.DPoSIPAddress,
-			st.params.DPoSDefaultPort)
+			st.Params().DPoSIPAddress,
+			st.Params().DPoSDefaultPort)
 		routesCfg.Sign = act.Sign
 	}
 
@@ -240,7 +243,7 @@ func startNode(c *cli.Context, st *settings) {
 
 	committee.RegisterFuncitons(&crstate.CommitteeFuncsConfig{
 		GetTxReference:                   chain.UTXOCache.GetTxReference,
-		GetUnspentFromProgramHash:        chainStore.GetUnspentFromProgramHash,
+		GetUTXO:                          chainStore.GetFFLDB().GetUTXO,
 		GetHeight:                        chainStore.GetHeight,
 		CreateCRAppropriationTransaction: chain.CreateCRCAppropriationTransaction,
 		IsCurrent:                        server.IsCurrent,
@@ -259,7 +262,7 @@ func startNode(c *cli.Context, st *settings) {
 			EnableEventRecord: false,
 			ChainParams:       st.Params(),
 			Arbitrators:       arbiters,
-			Store:             dposStore,
+			Store:             nil,
 			Server:            server,
 			TxMemPool:         txMemPool,
 			BlockMemPool:      blockMemPool,
