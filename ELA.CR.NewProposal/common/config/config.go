@@ -67,10 +67,11 @@ type Configuration struct {
 	CRCOnlyDPOSHeight           uint32            `json:"CRCOnlyDPOSHeight"`
 	PublicDPOSHeight            uint32            `json:"PublicDPOSHeight"`
 	EnableActivateIllegalHeight uint32            `json:"EnableActivateIllegalHeight"`
+	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
 	CRVotingStartHeight         uint32            `json:"CRVotingStartHeight"`
 	CRCommitteeStartHeight      uint32            `json:"CRCommitteeStartHeight"`
 	MaxCommitteeProposalCount   uint32            `json:"MaxCommitteeProposalCount"`
-	CheckRewardHeight           uint32            `json:"CheckRewardHeight"`
+	VoteStatisticsHeight        uint32            `json:"VoteStatisticsHeight"`
 	ProfilePort                 uint32            `json:"ProfilePort"`
 	MaxBlockSize                uint32            `json:"MaxBlockSize"`
 	EnableHistory               bool              `json:"EnableHistory"`

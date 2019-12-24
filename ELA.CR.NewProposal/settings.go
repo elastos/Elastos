@@ -497,6 +497,12 @@ func newSettings() *settings {
 		ParamName:    "MaxCommitteeProposalCount"})
 
 	result.Add(&settingItem{
+		Flag:         cmdcom.VoteStatisticsHeightFlag,
+		DefaultValue: uint32(0),
+		ConfigPath:   "VoteStatisticsHeight",
+		ParamName:    "VoteStatisticsHeight"})
+
+	result.Add(&settingItem{
 		Flag:         cmdcom.EnableActivateIllegalHeightFlag,
 		DefaultValue: uint32(0),
 		ConfigPath:   "EnableActivateIllegalHeight",

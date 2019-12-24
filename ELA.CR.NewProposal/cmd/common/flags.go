@@ -55,9 +55,13 @@ var (
 		Name:  "fee",
 		Usage: "the transfer `<fee>` of the transaction",
 	}
-	TransactionLockFlag = cli.StringFlag{
-		Name:  "lock",
-		Usage: "the `<lock time>` to specify when the received asset can be spent",
+	TransactionOutputLockFlag = cli.StringFlag{
+		Name:  "outputlock",
+		Usage: "the `<lock height>` to specify when the received asset can be spent",
+	}
+	TransactionTxLockFlag = cli.StringFlag{
+		Name:  "txlock",
+		Usage: "the `<lock height>` to specify when the transaction can be packaged",
 	}
 	TransactionHexFlag = cli.StringFlag{
 		Name:  "hex",
@@ -229,6 +233,10 @@ var (
 	MaxCommitteeProposalCount = cli.StringFlag{
 		Name:  "maxcommitteeproposalcount",
 		Usage: "defines max count of the proposal that one cr can proposal",
+	}
+	VoteStatisticsHeightFlag = cli.StringFlag{
+		Name:  "votestatisticsheight",
+		Usage: "defines the height to fix vote statistics error",
 	}
 	EnableActivateIllegalHeightFlag = cli.StringFlag{
 		Name: "enableactivateillegalheight",
