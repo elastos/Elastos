@@ -25,6 +25,9 @@ const (
 	// ActivateDuration is about how long we should activate from pending or
 	// inactive state.
 	ActivateDuration = 6
+
+	// CacheCRVotesSize indicate the size to cache votes information.
+	CacheCRVotesSize = 6
 )
 
 // State hold all CR candidates related information, and process block by block

@@ -274,11 +274,9 @@ func TestState_ProcessBlock_MixedCRProcessing(t *testing.T) {
 
 func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 	keyframe := randomStateKeyFrame(5, true)
-	state := State{
-		params:        &config.DefaultParams,
-		StateKeyFrame: *keyframe,
-		history:       utils.NewHistory(maxHistoryCapacity),
-	}
+	state := NewState(&config.DefaultParams)
+	state.StateKeyFrame = *keyframe
+	state.history = utils.NewHistory(maxHistoryCapacity)
 	height := uint32(1)
 
 	activeDIDs := make([][]byte, 0, 5)
@@ -287,7 +285,7 @@ func TestState_ProcessBlock_VotingAndCancel(t *testing.T) {
 		activeDIDs = append(activeDIDs, k.Bytes())
 	}
 
-	registerFuncs(&state)
+	registerFuncs(state)
 	references := make(map[*types.Input]*types.Output)
 	state.getTxReference = func(tx *types.Transaction) (
 		map[*types.Input]*types.Output, error) {
@@ -381,7 +379,7 @@ func TestState_ProcessBlock_DepositAndReturnDeposit(t *testing.T) {
 		Outputs: []*types.Output{
 			{
 				ProgramHash: *depositCont.ToProgramHash(),
-				Value:       common.Fixed64(1000*1e8),
+				Value:       common.Fixed64(1000 * 1e8),
 			},
 		},
 	}

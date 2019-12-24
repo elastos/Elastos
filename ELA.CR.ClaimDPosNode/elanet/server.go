@@ -580,7 +580,7 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 			if doneChan != nil {
 				doneChan <- struct{}{}
 			}
-			return errors.New("not found block")
+			return errors.New("block not found")
 		}
 	}
 	block.HaveConfirm = false
@@ -623,12 +623,16 @@ func (s *server) pushConfirmedBlockMsg(sp *serverPeer, hash *common.Uint256, don
 	waitChan <-chan struct{}) error {
 
 	// Fetch the block from the database.
-	block, err := s.chain.GetDposBlockByHash(*hash)
+	block, _ := s.chain.GetDposBlockByHash(*hash)
 	if block == nil {
-		if doneChan != nil {
-			doneChan <- struct{}{}
+		// Fetch the block from the block pool.
+		block, _ = s.blockMemPool.GetDposBlockByHash(*hash)
+		if block == nil || !block.HaveConfirm {
+			if doneChan != nil {
+				doneChan <- struct{}{}
+			}
+			return errors.New("confirmed block not found")
 		}
-		return err
 	}
 
 	// Once we have fetched data wait for any previous operation to finish.
