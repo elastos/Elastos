@@ -14,11 +14,11 @@ Users table is mapped to the elastos_console database. Users table has the user 
 
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    did = db.Column(db.String(50), unique=True, nullable=False)
+    did = db.Column(db.String(64), unique=True, nullable=False)
     created_on = db.Column(db.DateTime, nullable=False)
     last_logged_on = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, did, name, email, created_on=None, last_logged_on=None):
+    def __init__(self, did, created_on=None, last_logged_on=None):
         self.did = did
         if created_on is None:
             created_on = datetime.utcnow()
