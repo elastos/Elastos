@@ -230,8 +230,6 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		AnnounceAddr:       cfg.AnnounceAddr,
 	})
 
-	cfg.Store.StartEventRecord()
-
 	a := Arbitrator{
 		cfg:            cfg,
 		account:        account,

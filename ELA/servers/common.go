@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package servers
 
@@ -206,7 +206,7 @@ type UTXOInfo struct {
 	TxType        byte   `json:"txtype"`
 	TxID          string `json:"txid"`
 	AssetID       string `json:"assetid"`
-	VOut          uint32 `json:"vout"`
+	VOut          uint16 `json:"vout"`
 	Address       string `json:"address"`
 	Amount        string `json:"amount"`
 	OutputLock    uint32 `json:"outputlock"`

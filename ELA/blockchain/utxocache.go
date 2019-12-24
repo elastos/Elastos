@@ -47,6 +47,23 @@ func (up *UTXOCache) insertReference(input *types.Input, output *types.Output) {
 }
 
 func (up *UTXOCache) GetTxReference(tx *types.Transaction) (map[*types.Input]*types.Output, error) {
+	result := make(map[*types.Input]*types.Output)
+	for _, input := range tx.Inputs {
+		prevTx, _, err := up.db.GetTransaction(input.Previous.TxID)
+		if err != nil {
+			return nil, errors.New("GetTxReference failed, " + err.Error())
+		}
+		if int(input.Previous.Index) >= len(prevTx.Outputs) {
+			return nil, errors.New("GetTxReference failed, refIdx out of range")
+		}
+
+		result[input] = prevTx.Outputs[input.Previous.Index]
+	}
+
+	return result, nil
+}
+
+func (up *UTXOCache) getTxReference(tx *types.Transaction) (map[*types.Input]*types.Output, error) {
 	up.Lock()
 	defer up.Unlock()
 

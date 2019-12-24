@@ -12,7 +12,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA/account"
 	"github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/common/config"
 	"github.com/elastos/Elastos.ELA/core/types"
@@ -30,14 +29,13 @@ type Committee struct {
 	params  *config.Params
 	manager *ProposalManager
 
-	getCheckpoint             func(height uint32) *Checkpoint
-	getUnspentFromProgramHash func(programHash common.Uint168,
-		assetid common.Uint256) ([]*types.UTXO, error)
+	getCheckpoint            func(height uint32) *Checkpoint
 	getHeight                func() uint32
 	isCurrent                func() bool
 	broadcast                func(msg p2p.Message)
 	appendToTxpool           func(transaction *types.Transaction) elaerr.ELAError
 	createCRCAppropriationTx func() (*types.Transaction, error)
+	getUTXO                  func(programHash *common.Uint168) ([]*types.UTXO, error)
 
 	recordBalanceHeight uint32
 }
@@ -271,24 +269,21 @@ func (c *Committee) resetCRCCommitteeUsedAmount() {
 func (c *Committee) tryInitCRCRelatedAddressBalance() {
 	if c.recordBalanceHeight == 0 {
 		height := c.getHeight()
-		utxos, _ := c.getUnspentFromProgramHash(c.params.CRCFoundation,
-			*account.SystemAssetID)
 		var foundationBalance common.Fixed64
+		utxos, _ := c.getUTXO(&c.params.CRCFoundation)
 		for _, u := range utxos {
 			foundationBalance += u.Value
 			op := types.NewOutPoint(u.TxID, uint16(u.Index))
 			c.state.CRCFoundationOutputs[op.ReferKey()] = u.Value
 		}
-		utxos, _ = c.getUnspentFromProgramHash(c.params.CRCCommitteeAddress,
-			*account.SystemAssetID)
 		var committeeBalance common.Fixed64
+		utxos, _ = c.getUTXO(&c.params.CRCCommitteeAddress)
 		for _, u := range utxos {
 			committeeBalance += u.Value
 			op := types.NewOutPoint(u.TxID, uint16(u.Index))
 			c.state.CRCCommitteeOutputs[op.ReferKey()] = u.Value
 		}
-		utxos, _ = c.getUnspentFromProgramHash(c.params.DestroyELAAddress,
-			*account.SystemAssetID)
+		utxos, _ = c.getUTXO(&c.params.DestroyELAAddress)
 		var destroyBalance common.Fixed64
 		for _, u := range utxos {
 			destroyBalance += u.Value
@@ -763,13 +758,12 @@ func (c *Committee) GetProposalByDraftHash(draftHash common.Uint256) *ProposalSt
 type CommitteeFuncsConfig struct {
 	GetTxReference func(tx *types.Transaction) (
 		map[*types.Input]*types.Output, error)
-	GetUnspentFromProgramHash func(programHash common.Uint168,
-		assetid common.Uint256) ([]*types.UTXO, error)
 	GetHeight                        func() uint32
 	CreateCRAppropriationTransaction func() (*types.Transaction, error)
 	IsCurrent                        func() bool
 	Broadcast                        func(msg p2p.Message)
 	AppendToTxpool                   func(transaction *types.Transaction) elaerr.ELAError
+	GetUTXO                          func(programHash *common.Uint168) ([]*types.UTXO, error)
 }
 
 func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
@@ -785,7 +779,7 @@ func (c *Committee) RegisterFuncitons(cfg *CommitteeFuncsConfig) {
 		GetHistoryMember:        c.getHistoryMember,
 		GetTxReference:          cfg.GetTxReference,
 	})
-	c.getUnspentFromProgramHash = cfg.GetUnspentFromProgramHash
+	c.getUTXO = cfg.GetUTXO
 	c.getHeight = cfg.GetHeight
 }
 
