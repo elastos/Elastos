@@ -127,7 +127,7 @@ class DIDDoucumentTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())

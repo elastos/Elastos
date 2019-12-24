@@ -532,10 +532,8 @@ public class DIDStore: NSObject {
                 cinputs.append(count)
             }
         }
-        let toP: [Int8] = [-68,-97,-43,0,58,-119,27,2,22,39,92,3,91,-113,118,-40,-35,36,107,41,2,8,-87,116,44,23,-17,87,108,-20,55,-104]
-        let pointer = UnsafeBufferPointer(start:toP, count:toP.count)
-        let toPData = Data(buffer:pointer)
-        let toPPointer = toPData.toPointer()
+
+        let toPPointer = privatekeys.toPointer()
         
         let c_inputs = getVaList(cinputs)
         // UnsafeMutablePointer(mutating: toPPointer)
