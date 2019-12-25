@@ -43,10 +43,6 @@ def get_time():
     return datetime.datetime.now(pytz.timezone('America/New_York')).strftime("%Y-%m-%d %H:%M:%S %z")
 
 
-def get_encryption_salt():
-    return os.urandom(16)
-
-
 def get_encrypt_key(key):
     encoded = key.encode()
     salt = config('ENCRYPTION_SALT').encode()

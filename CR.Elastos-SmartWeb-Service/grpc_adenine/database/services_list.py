@@ -7,6 +7,7 @@ from sqlalchemy import ForeignKey
 ServicesList table is mapped to the elastos_console database. It maps the User with its api key.
 """
 
+
 class ServicesLists(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_api_id = db.Column(db.Integer, db.ForeignKey('user_api_relations.id'), nullable=False)
@@ -23,5 +24,5 @@ class ServicesLists(db.Model):
         self.access_count = access_count
 
     def __repr__(self):
-        return "(user_api_id:{}, service_name:{}, last_access:{}, access_count:{})"\
-                .format(self.user_api_id, self.service_name, self.last_access, self.access_count)
+        return "(user_api_id:{}, service_name:{}, last_access:{}, access_count:{})" \
+            .format(self.user_api_id, self.service_name, self.last_access, self.access_count)

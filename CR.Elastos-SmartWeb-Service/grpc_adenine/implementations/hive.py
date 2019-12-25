@@ -6,7 +6,7 @@ from grpc_adenine import settings
 from grpc_adenine.settings import REQUEST_TIMEOUT
 from grpc_adenine.stubs import hive_pb2
 from grpc_adenine.stubs import hive_pb2_grpc
-from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, get_encryption_salt, check_rate_limit
+from grpc_adenine.implementations.utils import validate_api_key, get_encrypt_key, check_rate_limit
 from grpc_adenine.implementations.rate_limiter import RateLimiter
 from cryptography.fernet import Fernet
 
