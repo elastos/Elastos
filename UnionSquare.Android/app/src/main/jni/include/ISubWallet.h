@@ -87,6 +87,7 @@ namespace Elastos {
 			 * Get all created addresses in json format. The parameters of start and count are used for purpose of paging.
 			 * @param start specify start index of all addresses list.
 			 * @param count specify count of addresses we need.
+			 * @param internal indicate if addresses are change(internal) address or not.
 			 * @return addresses in JSON format.
 			 *
 			 * example:
@@ -97,7 +98,8 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json GetAllAddress(
 					uint32_t start,
-					uint32_t count) const = 0;
+					uint32_t count,
+					bool internal = false) const = 0;
 
 			/**
 			 * Get all created public key list in JSON format. The parameters of start and count are used for the purpose of paging.

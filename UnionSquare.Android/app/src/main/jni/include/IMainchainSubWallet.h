@@ -149,13 +149,33 @@ namespace Elastos {
 			 * @param stake        Vote amount in sela. "-1" means max.
 			 * @param publicKeys   Public keys array in JSON format.
 			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @invalidCandidates  invalid candidate except current vote candidates. Such as:
+			  						[
+								      	{
+								            "Type":"CRC",
+								            "Candidates":[
+								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+								            ]
+								        },
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+								            ]
+								        }
+								    ]
+			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
 			 */
 			virtual nlohmann::json CreateVoteProducerTransaction(
 					const std::string &fromAddress,
 					const std::string &stake,
 					const nlohmann::json &pubicKeys,
-					const std::string &memo) = 0;
+					const std::string &memo,
+					const nlohmann::json &invalidCandidates) = 0;
 
 			/**
 			 * Get vote information of current wallet.
@@ -298,12 +318,32 @@ namespace Elastos {
 			 *                          "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
 			 *                     }
 			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+			  						[
+								      	{
+								            "Type":"CRC",
+								            "Candidates":[
+								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+								            ]
+								        },
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+								            ]
+								        }
+								    ]
+			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
 			 */
 			virtual nlohmann::json CreateVoteCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &votes,
-				const std::string &memo) = 0;
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates) = 0;
 
 			/**
 			 * Get CR vote information of current wallet.
@@ -473,12 +513,32 @@ namespace Elastos {
 			 *                          "92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7": "200000000"
 			 *                     }
 			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+			  						[
+								      	{
+								            "Type":"CRC",
+								            "Candidates":[
+								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+								            ]
+								        },
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+								            ]
+								        }
+								    ]
+			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
 			 */
 			virtual nlohmann::json CreateVoteCRCProposalTransaction(
 					const std::string &fromAddress,
 					const nlohmann::json &votes,
-					const std::string &memo) = 0;
+					const std::string &memo,
+					const nlohmann::json &invalidCandidates) = 0;
 
 			/**
 			 * Create impeachment crc transaction.
@@ -491,12 +551,32 @@ namespace Elastos {
 			 *                          "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww": "200000000"
 			 *                     }
 			 * @param memo         Remarks string. Can be empty string.
-			 * @return             The transaction in JSON format to be signed and published.
+			 * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+			  						[
+								      	{
+								            "Type":"CRC",
+								            "Candidates":[
+								                "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+								                "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+								                "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+								            ]
+								        },
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								                "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+								                "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+								                "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+								            ]
+								        }
+								    ]
+			 * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
 			 */
 			virtual nlohmann::json CreateImpeachmentCRCTransaction(
 					const std::string &fromAddress,
 					const nlohmann::json &votes,
-					const std::string &memo) = 0;
+					const std::string &memo,
+					const nlohmann::json &invalidCandidates) = 0;
 
 
 			/**
