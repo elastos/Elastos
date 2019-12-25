@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"time"
+
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 	"github.com/elastos/Elastos.ELA.SideChain/interfaces"
@@ -132,6 +134,27 @@ func (rpcTxData *RpcTranasactionData) FromTranasactionData(txData id.
 	return true
 }
 
+func (s *HttpService) getTxTime(txid string) (error, uint32) {
+	hash, err := common.Uint256FromHexString(txid)
+	if err != nil {
+		return errors.New("txid error"), 0
+	}
+
+	var header interfaces.Header
+	_, height, err := s.cfg.Chain.GetTransaction(*hash)
+
+	bHash, err := s.cfg.Chain.GetBlockHash(height)
+	if err != nil {
+		return errors.New("unkown block"), 0
+	}
+	header, err = s.cfg.Chain.GetHeader(bHash)
+	if err != nil {
+		return errors.New("unkown block header"), 0
+
+	}
+	return nil, header.GetTimeStamp()
+}
+
 func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
 	var didDocState DidDocState
 	didDocState = NonExist
@@ -144,7 +167,10 @@ func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
 	//remove DID_ELASTOS_PREFIX
 	if id.IsURIHasPrefix(idParam) {
 		did = id.GetDIDFromUri(idParam)
+	} else {
+		did = idParam
 	}
+
 	//check is valid address
 	_, err := common.Uint168FromAddress(did)
 	if err != nil {
@@ -188,11 +214,17 @@ func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
 	}
 	for index, txData := range txsData {
 		rpcPayloadDid.DID = txData.Operation.PayloadInfo.ID
+		err, timestamp := s.getTxTime(txData.TXID)
+		if err != nil {
+			continue
+		}
 		tempTXData := new(RpcTranasactionData)
 		succe := tempTXData.FromTranasactionData(txData)
 		if succe == false {
 			continue
 		}
+
+		tempTXData.Timestamp = time.Unix(int64(timestamp), 0).Format(time.RFC3339)
 		rpcPayloadDid.RpcTXDatas = append(rpcPayloadDid.RpcTXDatas, *tempTXData)
 		if index == 0 {
 			if txData.Operation.Header.Operation == "deactivate" {
@@ -475,6 +507,12 @@ func GetPayloadInfo(p types.Payload, pVersion byte) service.PayloadInfo {
 		}
 		obj.Contents = contents
 		return obj
+	case *id.Operation:
+		operation := new(RpcOperation)
+		operation.Header = object.Header
+		operation.Payload = object.Payload
+		operation.Proof = object.Proof
+		return operation
 	}
 	return nil
 }
