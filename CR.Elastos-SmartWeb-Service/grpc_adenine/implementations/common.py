@@ -28,44 +28,36 @@ class Common(common_pb2_grpc.CommonServicer):
             s = Session()
             api_present = s.query(UserApiRelations).filter_by(api_key=api_key).first()
 
-            if api_present is None:
-                result = s.query(Users).filter_by(did=check_did).first()
+            if api_present:
+                while api_present.api_key == api_key:
+                    api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(string_length))
 
-                if result is None:
-                    user = Users(
-                        did=check_did,
-                        created_on=date_now,
-                        last_logged_on=date_now
-                    )
-                    s.add(user)
-                    s.commit()
-                    insert = s.query(Users).filter_by(did=check_did).first()
-                    user_api = UserApiRelations(
-                        user_id=insert.id,
-                        api_key=api_key
-                    )
-                    s.add(user_api)
-                    s.commit()
-                    s.close()
+            result = s.query(Users).filter_by(did=check_did).first()
 
-                elif result.did == check_did:
-                    insert = s.query(UserApiRelations).filter_by(user_id=result.id).first()
-                    insert.api_key = api_key
-                    s.commit()
-                    s.close()
-
-                    return common_pb2.Response(api_key=api_key, status_message='Success', status=True)
-                else:
-                    return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
-            
-            elif api_present.api_key == api_key:
-                new_api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(string_length))
-                return common_pb2.Response(api_key=new_api_key, status_message='Success', status=True)
-            
+            if result:
+                insert = s.query(UserApiRelations).filter_by(user_id=result.id).first()
+                insert.api_key = api_key
+                s.commit()
+                s.close()
             else:
-                return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
-
-    
+                user = Users(
+                    did=check_did,
+                    created_on=date_now,
+                    last_logged_on=date_now
+                )
+                s.add(user)
+                s.commit()
+                insert = s.query(Users).filter_by(did=check_did).first()
+                user_api = UserApiRelations(
+                    user_id=insert.id,
+                    api_key=api_key
+                )
+                s.add(user_api)
+                s.commit()
+                s.close()
+            return common_pb2.Response(api_key=api_key, status_message='Success', status=True)
+        else:
+            return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
 
     def GetAPIKey(self, request, context):
 
@@ -79,10 +71,12 @@ class Common(common_pb2_grpc.CommonServicer):
             show_did = request.did
             result = s.query(Users).filter_by(did=show_did).first()
 
-            if result.did == show_did:
+            if result:
                 get_api_key = s.query(UserApiRelations).filter_by(user_id=result.id).first()
                 got_api_key = get_api_key.api_key
                 s.close()
                 return common_pb2.Response(api_key=got_api_key, status_message='Success', status=True)
+            else:
+                return common_pb2.Response(api_key='', status_message='No such API Key exists', status=False)
         else:
             return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
