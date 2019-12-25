@@ -176,7 +176,7 @@ type DIDPayloadInfo struct {
 	PublicKey      []DIDPublicKeyInfo `json:"publicKey"`
 	Authentication []interface{}      `json:"authentication"`
 	Authorization  []interface{}      `json:"authorization"`
-	Expires        string             `json:expires`
+	Expires        string             `json:"expires"`
 }
 
 // payload of DID transaction
@@ -189,9 +189,26 @@ type Operation struct {
 }
 
 type TranasactionData struct {
-	TXID      string    `json:txid`
-	Timestamp string    `json:timestamp`
-	Operation Operation `json:operation`
+	TXID      string    `json:"txid"`
+	Timestamp string    `json:"timestamp"`
+	Operation Operation `json:"operation"`
+}
+
+func (p *TranasactionData) Serialize(w io.Writer, version byte) error {
+	if err := common.WriteVarString(w, p.TXID); err != nil {
+		return errors.New("[TranasactionData], TXID serialize failed")
+	}
+
+	if err := common.WriteVarString(w, p.Timestamp); err != nil {
+		return errors.New("[TranasactionData], Timestamp serialize failed")
+	}
+
+	if err := p.Operation.Serialize(w, version); err != nil {
+		return errors.New("[TranasactionData] Operation serialize failed," +
+			"" + err.Error())
+	}
+
+	return nil
 }
 
 func (p *Operation) Data(version byte) []byte {
