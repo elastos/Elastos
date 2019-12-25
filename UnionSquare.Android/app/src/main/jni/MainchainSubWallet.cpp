@@ -290,13 +290,14 @@ static jstring JNICALL GetOwnerPublicKey(JNIEnv *env, jobject clazz, jlong jProx
     return publicKey;
 }
 
-#define JNI_CreateVoteProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateVoteProducerTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                      jstring jfromAddress,
                                                      jstring jstake,
                                                      jstring jPublicKeys,
-                                                     jstring jMemo) {
+                                                     jstring jMemo,
+                                                     jstring jinvalidCandidates) {
 
     bool exception = false;
     std::string msgException;
@@ -305,6 +306,7 @@ static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz,
     const char *stake = env->GetStringUTFChars(jstake, NULL);
     const char *publicKeys = env->GetStringUTFChars(jPublicKeys, NULL);
     const char *memo = env->GetStringUTFChars(jMemo, NULL);
+    const char *invalidCandidates = env->GetStringUTFChars(jinvalidCandidates, NULL);
 
     jstring tx = NULL;
 
@@ -312,7 +314,8 @@ static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz,
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json txJson = wallet->CreateVoteProducerTransaction(fromAddress, stake,
                                                                       nlohmann::json::parse(
-                                                                              publicKeys), memo);
+                                                                              publicKeys), memo,
+                                                                              invalidCandidates);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -323,6 +326,7 @@ static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz,
     env->ReleaseStringUTFChars(jstake, stake);
     env->ReleaseStringUTFChars(jPublicKeys, publicKeys);
     env->ReleaseStringUTFChars(jMemo, memo);
+    env->ReleaseStringUTFChars(jinvalidCandidates, invalidCandidates);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());
@@ -616,25 +620,29 @@ static jstring JNICALL CreateRetrieveCRDepositTransaction(JNIEnv *env, jobject c
     return tx;
 }
 
-#define JNI_CreateVoteCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateVoteCRTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL CreateVoteCRTransaction(JNIEnv *env, jobject clazz, jlong jProxy,
                                                jstring jfromAddress,
                                                jstring jvotes,
-                                               jstring jmemo) {
+                                               jstring jmemo,
+                                               jstring jinvalidCandidates) {
     bool exception = false;
     std::string msgException;
 
     const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
     const char *votes = env->GetStringUTFChars(jvotes, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
+    const char *invalidCandidates = env->GetStringUTFChars(jinvalidCandidates, NULL);
 
     jstring tx = NULL;
 
     try {
         IMainchainSubWallet *wallet = (IMainchainSubWallet *) jProxy;
         nlohmann::json txJson = wallet->CreateVoteCRTransaction(fromAddress,
-                                                                nlohmann::json::parse(votes), memo);
+                                                                nlohmann::json::parse(votes),
+                                                                memo,
+                                                                invalidCandidates);
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -644,6 +652,7 @@ static jstring JNICALL CreateVoteCRTransaction(JNIEnv *env, jobject clazz, jlong
     env->ReleaseStringUTFChars(jfromAddress, fromAddress);
     env->ReleaseStringUTFChars(jvotes, votes);
     env->ReleaseStringUTFChars(jmemo, memo);
+    env->ReleaseStringUTFChars(jinvalidCandidates, invalidCandidates);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());
@@ -810,13 +819,14 @@ CreateCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
     return result;
 }
 
-#define JNI_CreateVoteCRCProposalTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateVoteCRCProposalTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL
 CreateVoteCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
                                  jstring jfromAddress,
                                  jstring jvotes,
-                                 jstring jmemo) {
+                                 jstring jmemo,
+                                 jstring jinvalidCandidates) {
 
     bool exception = false;
     std::string msgException;
@@ -825,13 +835,15 @@ CreateVoteCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletPro
     const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
     const char *votes = env->GetStringUTFChars(jvotes, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
+    const char *invalidCandidates = env->GetStringUTFChars(jinvalidCandidates, NULL);
 
     IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
 
     try {
         nlohmann::json j = subWallet->CreateVoteCRCProposalTransaction(fromAddress,
                                                                        nlohmann::json::parse(votes),
-                                                                       memo);
+                                                                       memo,
+                                                                       invalidCandidates);
         result = env->NewStringUTF(j.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -841,6 +853,7 @@ CreateVoteCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletPro
     env->ReleaseStringUTFChars(jfromAddress, fromAddress);
     env->ReleaseStringUTFChars(jvotes, votes);
     env->ReleaseStringUTFChars(jmemo, memo);
+    env->ReleaseStringUTFChars(jinvalidCandidates, invalidCandidates);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());
@@ -850,13 +863,14 @@ CreateVoteCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletPro
 
 }
 
-#define JNI_CreateImpeachmentCRCTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+#define JNI_CreateImpeachmentCRCTransaction "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
 
 static jstring JNICALL
 CreateImpeachmentCRCTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProxy,
                                 jstring jfromAddress,
                                 jstring jvotes,
-                                jstring jmemo) {
+                                jstring jmemo,
+                                jstring jinvalidCandidates) {
     bool exception = false;
     std::string msgException;
     jstring result = NULL;
@@ -864,13 +878,15 @@ CreateImpeachmentCRCTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProx
     const char *fromAddress = env->GetStringUTFChars(jfromAddress, NULL);
     const char *votes = env->GetStringUTFChars(jvotes, NULL);
     const char *memo = env->GetStringUTFChars(jmemo, NULL);
+    const char *invalidCandidates = env->GetStringUTFChars(jinvalidCandidates, NULL);
 
     IMainchainSubWallet *subWallet = (IMainchainSubWallet *) jSubWalletProxy;
 
     try {
         nlohmann::json j = subWallet->CreateImpeachmentCRCTransaction(fromAddress,
                                                                       nlohmann::json::parse(votes),
-                                                                      memo);
+                                                                      memo,
+                                                                      invalidCandidates);
         result = env->NewStringUTF(j.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -880,6 +896,7 @@ CreateImpeachmentCRCTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProx
     env->ReleaseStringUTFChars(jfromAddress, fromAddress);
     env->ReleaseStringUTFChars(jvotes, votes);
     env->ReleaseStringUTFChars(jmemo, memo);
+    env->ReleaseStringUTFChars(jinvalidCandidates, invalidCandidates);
 
     if (exception) {
         ThrowWalletException(env, msgException.c_str());
