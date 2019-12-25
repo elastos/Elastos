@@ -14,6 +14,15 @@ class GenerateAPIKeyForm(forms.Form):
         self.fields['did'].widget = HiddenInput()
 
 
+class GenerateAPIKeyForm(forms.Form):
+    did = forms.CharField(max_length=64)
+
+    def __init__(self, *args, **kwargs):
+        super(GenerateAPIKeyForm, self).__init__(*args, **kwargs)
+        self.fields['did'].required = False
+        self.fields['did'].widget = HiddenInput()
+
+
 class UploadAndSignForm(forms.ModelForm):
     network = forms.ChoiceField(choices = NETWORK_GMU, label="", initial='', widget=forms.Select(), required=True)
     private_key = forms.CharField(max_length=300)
