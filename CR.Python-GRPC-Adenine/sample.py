@@ -20,7 +20,7 @@ def main():
     service = results.service
 
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'rPXZtiANM8x2bCantfuUT4APP14C79wzJNnvy8E5OTmBnAhchryZsdagjNmzFfLb'
+    api_key_to_use = 'HETusrauCqXlBQdKH0xcnxzioTaQ6HEXkfu3Wz9xJNJHqi2lt6rftuhMxEzdxHIr'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
     if service == "generate_api":
