@@ -1,10 +1,15 @@
 package org.elastos.wallet.ela.ui.vote.NodeCart;
 
 
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.AppCompatTextView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -16,6 +21,7 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.blankj.utilcode.util.ToastUtils;
 
 import org.elastos.wallet.R;
@@ -24,18 +30,23 @@ import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.bean.BusEvent;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.Assets.activity.TransferActivity;
 import org.elastos.wallet.ela.ui.Assets.bean.BalanceEntity;
 import org.elastos.wallet.ela.ui.Assets.fragment.transfer.SignFragment;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonGetBalancePresenter;
 import org.elastos.wallet.ela.ui.Assets.viewdata.CommonBalanceViewData;
-import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.common.bean.CommmonStringEntity;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.vote.activity.VoteActivity;
 import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.Constant;
 import org.elastos.wallet.ela.utils.DialogUtil;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.listener.NewWarmPromptListener;
@@ -53,7 +64,7 @@ import butterknife.OnClick;
 /**
  * 节点购车车
  */
-public class NodeCartFragment extends BaseFragment implements CommonBalanceViewData, CommmonStringWithMethNameViewData, AdapterView.OnItemClickListener {
+public class NodeCartFragment extends BaseFragment implements CommonBalanceViewData, NewBaseViewData, AdapterView.OnItemClickListener, DialogInterface.OnCancelListener {
 
 
     @BindView(R.id.iv_title_left)
@@ -111,7 +122,10 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean> netList;
     int curentPage = 0;//0 首页 1已选择 2未选择
     private String maxBalance = "0";
-
+    private JSONArray otherUnActiveVote;
+    private Dialog dialog;
+    Runnable runable;
+    Handler handler;
 
     @Override
     protected int getLayoutId() {
@@ -130,6 +144,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         sb_suger.setProgress((int) (Double.parseDouble(data.getString("zb", "0")) * 100));
         //netList后期还承担未选择list
         netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
+        otherUnActiveVote = (JSONArray) data.getSerializable("otherUnActiveVote");
     }
 
     @Override
@@ -137,9 +152,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         ivTitleRight.setVisibility(View.VISIBLE);
         ivTitleRight.setImageResource(R.mipmap.found_vote_edit);
         tvTitle.setText(mContext.getString(R.string.my_list_candidates));
-        if (netList == null ) {
+        if (netList == null) {
             //没有来着接口的节点列表数据
-            netList=new ArrayList<>();
+            netList = new ArrayList<>();
         }
         registReceiver();
         // 为Adapter准备数据
@@ -266,6 +281,39 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
                 //立即投票 删除 添加
                 switch (curentPage) {
                     case 0:
+                        if (otherUnActiveVote.size() < 1) {//1代表需要几种类型的其他列表 拓展做准备
+                            //有数据没请求到
+                            initProgressDialog(getBaseActivity());
+                            boolean hasCRC = false;
+                            for (int i = 0; i < otherUnActiveVote.size(); i++) {
+                                JSONObject jsonObject = (JSONObject) otherUnActiveVote.get(i);
+                                if ("CRC".equals(jsonObject.getString("Type"))) {
+                                    hasCRC = true;
+                                    break;
+                                }
+
+                            }
+                            if (!hasCRC) {
+                                new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
+                            }
+
+                            if (handler == null) {
+                                handler = new Handler();
+                                runable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (otherUnActiveVote.size() < 1 && dialog != null && dialog.isShowing()) {
+                                            dialog.dismiss();
+                                            doVote();
+                                        }
+                                    }
+                                };
+                            } else {
+                                handler.removeCallbacks(runable);
+                            }
+                            handler.postDelayed(runable, 30000);
+                            return;
+                        }
                         doVote();
                         break;
 
@@ -297,7 +345,6 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         for (int i = 0; i < list.size(); i++) {
             if (mAdapter.getDataMap().get(i)) {
                 nodelist.add(list.get(i).getOwnerpublickey());
-               // nodelist.add("03d835419df96c76b4b7bd5e56b1ed9362c80186ce3b35cd962dec2232040b0f8b");
             }
         }
         if (nodelist.size() > 36) {
@@ -399,12 +446,12 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             num = result.getName();
             String amount;
             if ("MAX".equals(num)) {
-                amount = "-1";
+                amount = Arith.sub(maxBalance, 1000000).toPlainString();
             } else {
                 amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
             }
             presenter.createVoteProducerTransaction(wallet.getWalletId(), MyWallet.ELA, "",
-                    amount, String.valueOf(JSONArray.parseArray(JSON.toJSONString(nodelist))), "", true, this);
+                    amount, String.valueOf(JSONArray.parseArray(JSON.toJSONString(nodelist))), "", otherUnActiveVote.toString(), this);
 
         }
         if (integer == RxEnum.TRANSFERSUCESS.ordinal()) {
@@ -440,24 +487,25 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     }
 
 
-    @Override
-    public void onGetCommonData(String methodname, String data) {
-        //  Double sl = Double.parseDouble(num) * MyWallet.RATE_;
-        switch (methodname) {
+    private void showOpenDraftWarm(String attributesJson, String status) {
+        new DialogUtil().showCommonWarmPrompt(getBaseActivity(), getString(R.string.notsufficientfundskeepornot),
+                getString(R.string.sure), getString(R.string.cancel), false, new WarmPromptListener() {
+                    @Override
+                    public void affireBtnClick(View view) {
+                        goTransferActivity(attributesJson, status);
+                    }
+                });
+    }
 
-            //创建投票交易
-            case "createVoteProducerTransaction":
-                Intent intent = new Intent(getActivity(), TransferActivity.class);
-                intent.putExtra("amount", num);
-                intent.putExtra("wallet", wallet);
-                intent.putExtra("chainId", MyWallet.ELA);
-                intent.putExtra("attributes", data);
-                intent.putExtra("transType", 1001);
-                intent.putExtra("type", Constant.SUPERNODEVOTE);
-                startActivity(intent);
-                break;
-
-        }
+    private void goTransferActivity(String attributesJson, String status) {
+        Intent intent = new Intent(getActivity(), TransferActivity.class);
+        intent.putExtra("amount", num);
+        intent.putExtra("wallet", wallet);
+        intent.putExtra("chainId", MyWallet.ELA);
+        intent.putExtra("attributes", attributesJson);
+        intent.putExtra("type", Constant.SUPERNODEVOTE);
+        intent.putExtra("transType", 1001);
+        startActivity(intent);
     }
 
     //点击全选按钮
@@ -506,5 +554,84 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         setSelectAllStatus(((MyAdapter) arg0.getAdapter()));
 
 
+    }
+
+    protected void initProgressDialog(Context context) {
+        dialog = new DialogUtil().getHttpDialog(context, "loading...");
+        dialog.setOnCancelListener(this);
+        if (!dialog.isShowing()) {
+            dialog.show();
+        }
+
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        doVote();
+    }
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+
+            //创建投票交易
+            case "createVoteProducerTransaction":
+                String attributes = ((CommmonStringEntity) baseEntity).getData();
+                JSONObject attributesJson = JSON.parseObject(attributes);
+                String status = attributesJson.getString("DropVotes");
+                if (!TextUtils.isEmpty(status) && !status.equals("[]")) {
+                    showOpenDraftWarm(attributes, status);
+                    break;
+                }
+                goTransferActivity(attributes, status);
+                break;
+            case "getCRlist":
+                if (handler != null && runable != null) {
+                    handler.removeCallbacks(runable);
+                }
+                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+
+                JSONObject depiositUnActiveVote = new JSONObject();
+                List<String> didList = new ArrayList<>();
+                for (int i = 0; i < crList.size(); i++) {
+                    CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = crList.get(i);
+                    if (!bean.getState().equals("Active")) {
+                        didList.add(bean.getDid());
+                    }
+                }
+                //判断是否包含
+                depiositUnActiveVote.put("Type", "CRC");
+                depiositUnActiveVote.put("Candidates", JSON.toJSON(didList));
+                boolean hasCRC = false;
+                for (int i = 0; i < otherUnActiveVote.size(); i++) {
+                    JSONObject jsonObject = (JSONObject) otherUnActiveVote.get(i);
+                    if ("CRC".equals(jsonObject.getString("Type"))) {
+                        hasCRC = true;
+                        break;
+                    }
+
+                }
+                if (!hasCRC) {
+                    otherUnActiveVote.add(depiositUnActiveVote);
+                }
+                Log.i("??", otherUnActiveVote.toString());
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                    doVote();
+                }
+
+                break;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        dialog = null;
+        if (handler != null && runable != null) {
+            handler.removeCallbacks(runable);
+            handler = null;
+            runable = null;
+        }
+        super.onDestroy();
     }
 }

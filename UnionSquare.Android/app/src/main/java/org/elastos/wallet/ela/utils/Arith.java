@@ -65,7 +65,7 @@ public class Arith {
     }
 
     /**
-     * 提供精确的乘法运算。
+     * 提供精确的乘法运算。取整
      *
      * @param v1 被乘数
      * @param v2 乘数

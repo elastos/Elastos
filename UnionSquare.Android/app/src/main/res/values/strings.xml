@@ -601,4 +601,5 @@
     <string name="executing">执行中</string>
     <string name="finish">已完成</string>
     <string name="abolished">已废止</string>
+    <string name="notsufficientfundskeepornot">账户余额不足，将使之前的投票结果失效。是否继续交易？</string>
 </resources>

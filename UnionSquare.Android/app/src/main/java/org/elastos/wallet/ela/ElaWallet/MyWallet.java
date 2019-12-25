@@ -1084,7 +1084,7 @@ public class MyWallet {
 
             String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo);
 
-            return new CommmonStringWithiMethNameEntity(SUCCESSCODE, txJson, "createVoteProducerTransaction");
+            return new CommmonStringEntity(SUCCESSCODE, txJson);
             // successProcess(cc, txJson);
         } catch (WalletException e) {
             return exceptionProcess(e, formatWalletName(masterWalletID, chainID) + " create vote producer tx");

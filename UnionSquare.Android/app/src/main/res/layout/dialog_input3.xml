@@ -51,18 +51,19 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/et_content"
         android:layout_marginTop="24dp"
-        android:gravity="center_horizontal"
+        android:gravity="center"
         android:orientation="horizontal">
 
         <TextView
-
             android:id="@+id/tv_sure"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
             android:background="@color/surebutton"
             android:gravity="center"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:text="@string/sure"
             android:textColor="@color/whiter"
             android:textSize="16sp" />
@@ -70,9 +71,11 @@
         <TextView
             android:id="@+id/tv_cancel"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:text="@string/cancel"
             android:textColor="@color/whiter"
             android:textSize="16sp" />
@@ -80,9 +83,11 @@
         <TextView
             android:id="@+id/tv_nosure"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:text="@string/deleteanywal"
             android:textColor="@color/red1"
             android:textSize="16sp" />

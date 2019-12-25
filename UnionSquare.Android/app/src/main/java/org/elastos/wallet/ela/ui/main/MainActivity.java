@@ -136,7 +136,7 @@ public class MainActivity extends BaseActivity implements MainViewData {
     }
 
     private void init() {
-        moveTestConfigFiles2RootPath(this);
+       // moveTestConfigFiles2RootPath(this);
     }
 
     private void setLanguage() {

@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
@@ -50,10 +51,13 @@ import org.elastos.wallet.ela.ui.crvote.fragment.CRSignUpForFragment;
 import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.did.entity.AllPkEntity;
 import org.elastos.wallet.ela.ui.did.presenter.AddDIDPresenter;
+import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
+import org.elastos.wallet.ela.ui.vote.bean.VoteListBean;
 import org.elastos.wallet.ela.utils.Arith;
 import org.elastos.wallet.ela.utils.CacheUtil;
 import org.elastos.wallet.ela.utils.DialogUtil;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.RxEnum;
 import org.elastos.wallet.ela.utils.SPUtil;
@@ -125,7 +129,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         //获取公钥
         srl.setOnRefreshListener(this);
         srl.setOnLoadMoreListener(this);
-
+        new VoteListPresenter().getDepositVoteList("1", "all", this, false);
         //获取选举状态
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
         addDIDPresenter = new AddDIDPresenter();
@@ -191,6 +195,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
             case R.id.tv_going_to_vote:
                 bundle = new Bundle();
                 bundle.putSerializable("netList", netList);
+                bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 start(CRNodeCartFragment.class, bundle);
                 break;
             case R.id.tv_signupfor:
@@ -409,11 +414,39 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         return drawable;
     }
 
+    JSONArray otherUnActiveVote = new JSONArray();
 
     @Override
     public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
 
         switch (methodName) {
+            case "getDepositVoteList":
+                VoteListBean dataResponse = (VoteListBean) baseEntity;
+                List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = dataResponse.getData().getResult().getProducers();
+                JSONObject depiositUnActiveVote = new JSONObject();
+                List<String> ownerpublickeyList = new ArrayList<>();
+                for (int i = 0; i < depositList.size(); i++) {
+                    VoteListBean.DataBean.ResultBean.ProducersBean bean = depositList.get(i);
+                    if (!bean.getState().equals("Active")) {
+                        ownerpublickeyList.add(bean.getOwnerpublickey());
+                    }
+                }
+                depiositUnActiveVote.put("Type", "Delegate");
+                depiositUnActiveVote.put("Candidates", JSON.toJSON(ownerpublickeyList));
+                boolean hasDelegate = false;
+                for (int i = 0; i < otherUnActiveVote.size(); i++) {
+                    JSONObject jsonObject = (JSONObject) otherUnActiveVote.get(i);
+                    if ("Delegate".equals(jsonObject.getString("Type"))) {
+                        hasDelegate = true;
+                        break;
+                    }
+
+                }
+                if (!hasDelegate) {
+                    otherUnActiveVote.add(depiositUnActiveVote);
+                }
+                Log.i("??", otherUnActiveVote.toString());
+                break;
             case "getAllSubWallets":
                 ISubWalletListEntity subWalletListEntity = (ISubWalletListEntity) baseEntity;
                 for (SubWallet subWallet : subWalletListEntity.getData()) {
@@ -450,7 +483,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     start(CRSignUpForFragment.class, bundle);
                 } else {
                     //如何是点击需要刷新全部数据  如果是刚打来 获得数据
-                    presenter.getCRlist(pageNum, pageSize, "all", this);
+                    presenter.getCRlist(pageNum, pageSize, "all", this, true);
                 }
                 //如果是是点击创建或者管理  跳转相应页面
 
@@ -545,6 +578,8 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         pageNum = 1;
         is = false;
         curentNode = null;
+        otherUnActiveVote.clear();
+        new VoteListPresenter().getDepositVoteList("1", "all", this, false);
         presenter.getRegisteredCRInfo(wallet.getWalletId(), MyWallet.ELA, this);
     }
 
@@ -554,7 +589,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         if (did == null) {
             presenter.getActiveCRlist(pageNum, pageSize, CRListFragment.this);
         } else {
-            presenter.getCRlist(pageNum, pageSize, "all", this);
+            presenter.getCRlist(pageNum, pageSize, "all", this, true);
         }
 
     }

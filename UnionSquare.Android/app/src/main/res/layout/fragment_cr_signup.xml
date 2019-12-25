@@ -56,7 +56,6 @@
             android:background="@null"
             android:hint="@string/plzinputnickmust"
             android:inputType="text"
-            android:maxLength="50"
             android:maxLines="1" />
 
         <View style="@style/line1" />
@@ -93,7 +92,6 @@
             android:background="@null"
             android:hint="@string/plzinputcrurl"
             android:maxLines="1"
-            android:maxLength="100"
             android:singleLine="true" />
 
         <View style="@style/line1" />
