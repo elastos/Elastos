@@ -7,10 +7,6 @@ from decouple import config
 
 from login.models import DIDUser
 from service.models import UserServiceSessionVars
-<<<<<<< HEAD
-=======
-
->>>>>>> Adding more vars to session to be easily retrieved later
 
 def login_required(function):
     def wrapper(request, *args, **kw):
