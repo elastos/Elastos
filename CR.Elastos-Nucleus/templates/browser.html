@@ -1,0 +1,16 @@
+{% extends "base.html" %} 
+
+{% block content %}
+<!--<div class="container-fluid">-->
+<div class="row flex-xl-nowrap">
+
+  <!-- Center Utilities -->
+  <main class="col-12 col-xl-12 bd-content" role="main">
+    {% block browsertitle %}{% endblock %}
+    <div class="card-body">
+      {% block browser %}{% endblock %}
+    </div>
+  </main>
+</div>
+<!--</div>-->
+{% endblock content %}

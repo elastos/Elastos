@@ -27,6 +27,11 @@ Now install virtualenv by running the following:
 pip3 install virtualenv
 ```
 
+If on a Mac, make sure to install openssl
+```
+brew install openssl
+```
+
 ## How to Run
 
 First, clone the repository into the current directory:

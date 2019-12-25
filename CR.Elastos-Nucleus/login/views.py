@@ -23,7 +23,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes, force_text
 
-from console_main.views import login_required
+from console_main.views import login_required, populate_session_vars_from_database
 from .models import DIDUser, DIDRequest
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from .tokens import account_activation_token
@@ -58,6 +58,7 @@ def check_ela_auth(request):
                 redirect_url = "/login/home"
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 request.session['logged_in'] = True
+                populate_session_vars_from_database(request, request.session['did'])
                 messages.success(request, "Logged in successfully!")
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)

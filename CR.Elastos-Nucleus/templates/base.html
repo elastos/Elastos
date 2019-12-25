@@ -1,48 +1,52 @@
 {% load sass_tags %} {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WJ72STL0EZ"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+        window.dataLayer = window.dataLayer || [];
 
-      gtag('config', 'G-WJ72STL0EZ');
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+
+        gtag('config', 'G-WJ72STL0EZ');
     </script>
 
     <!-- Required meta tags -->
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
 
     <!-- Bootstrap CSS -->
     <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-      crossorigin="anonymous"
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+            crossorigin="anonymous"
     />
 
     <!-- Sass files -->
     <link
-      href="{% sass_src 'scss/sidebar.scss' %}"
-      rel="stylesheet"
-      type="text/css"
+            href="{% sass_src 'scss/sidebar.scss' %}"
+            rel="stylesheet"
+            type="text/css"
     />
     <link
-      href="{% sass_src 'scss/nav.scss' %}"
-      rel="stylesheet"
-      type="text/css"
+            href="{% sass_src 'scss/nav.scss' %}"
+            rel="stylesheet"
+            type="text/css"
     />
 
     <link
-      rel="stylesheet"
-      type="text/css"
-      href="{% static 'css/styles.css' %}"
+            rel="stylesheet"
+            type="text/css"
+            href="{% static 'css/styles.css' %}"
     />
 
     <!-- Title -->
@@ -53,186 +57,249 @@
 
     <!-- Header -->
     <header class="sticky-top">
-      <nav
-        class="navbar sticky-top navbar-expand-lg navbar-dark flex-column flex-md-row bd-navbar"
-      >
-        <a class="navbar-brand" href="/#">
-          <img src="{% static 'images/logo.png' %}" width="30" height="30" class="d-inline-block align-top" alt=""/>
-          <strong>Nucleus Console</strong>
-        </a>
-          {% if request.session.logged_in == True %}
-              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                  <span class="navbar-oggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse">
-                  <ul class="navbar-nav">
-                      <li class="nav-item active">
-                          <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF" data-toggle="collapse" data-target="#menu_services" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
-                              Services
-                          </button>
-                      </li>
-                      <li class="nav-item">
-                          <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF">Profile</button>
-                      </li>
-                      <li class="nav-item">
-                          <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF" data-toggle="collapse" data-target="#menu_playground" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
-                              Playground
-                          </button>
-                      </li>
-                      <li class="nav-item">
-                          <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF" data-toggle="collapse" data-target="#menu_applications" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
-                              Applications
-                          </button>
-                      </li>
-                      <li class="nav-item">
-                          <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF" data-toggle="collapse" data-target="#menu_workspaces" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
-                              Workspace
-                          </button>
-                      </li>
-                  </ul>
-              </div>
+        <nav
+                class="navbar sticky-top navbar-expand-lg navbar-dark flex-column flex-md-row bd-navbar"
+        >
+            <a class="navbar-brand" href="/#">
+                <img src="{% static 'images/logo.png' %}" width="30" height="30" class="d-inline-block align-top"
+                     alt=""/>
+                <strong>Nucleus Console</strong>
+            </a>
+            {% if request.session.logged_in == True %}
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-oggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse">
+                    <ul class="navbar-nav">
+                        <li class="nav-item active">
+                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
+                                    data-toggle="collapse" data-target="#menu_services"
+                                    aria-controls="navbarToggleExternalContent" aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                Services
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'login:home' %}">
+                                <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF">Feed</button>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
+                                    data-toggle="collapse" data-target="#menu_playground"
+                                    aria-controls="navbarToggleExternalContent" aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                Playground
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
+                                    data-toggle="collapse" data-target="#menu_applications"
+                                    aria-controls="navbarToggleExternalContent" aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                Applications
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="text-white" type="button" style="background: transparent ; border: #FFFFFF"
+                                    data-toggle="collapse" data-target="#menu_workspaces"
+                                    aria-controls="navbarToggleExternalContent" aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                Workspace
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
-              <div class="dropdown">
-                  <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
-                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
-                      <a class="dropdown-item" href="{%  url 'login:edit_profile' %}">Edit Profile</a>
-                      <a class="dropdown-item" href="{%  url 'login:sign_out' %}">Log Out</a>
-                  </div>
-              </div>
-         {% endif %}
-      </nav>
-    {% if request.session.logged_in == True %}
-        <div class="pos-f-t">
-            <div class="collapse mx-auto" id="menu_services">
-                <div class="bg-primary p-2 text-center">
-                    <div class="row">
-                        <div class="col-sm-4">History</div>
-                        <div class="col-sm-8">
-                            <div class="btn-group dropright">
-                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    General
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{%  url 'service:generate_key' %}">Generate API Key</a>
-                                </div>
-                            </div><br> <br>
-                            <div class="btn-group dropright">
-                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Elastos Hive
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{%  url 'service:upload_and_sign' %}">Upload and Sign</a>
-                                    <a class="dropdown-item" href="{%  url 'service:verify_and_show' %}">Verify and Show</a>
-                                </div>
-                            </div><br> <br>
-                            <div class="btn-group dropright">
-                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Wallet
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{%  url 'service:create_wallet' %}">Create Wallet</a>
-                                    <a class="dropdown-item" href="{%  url 'service:view_wallet' %}">View Wallet</a>
-                                    <a class="dropdown-item" href="{%  url 'service:request_ela' %}">Request ELA</a>
-                                </div>
-                            </div><br> <br>
-                            <div class="btn-group dropright">
-                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Ethereum Sidechain
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{%  url 'service:deploy_eth_contract' %}">Deploy ETH Contract</a>
-                                    <a class="dropdown-item" href="{%  url 'service:watch_eth_contract' %}">Watch ETH Contract</a>
-                                    <a class="dropdown-item" href="{%  url 'service:run_eth_contract' %}">Run ETH Contract</a>
-                                </div>
-                            </div>
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="accountDropdown"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
+                        <a class="dropdown-item" href="{% url 'login:edit_profile' %}">Edit Profile</a>
+                        <a class="dropdown-item" href="{% url 'login:sign_out' %}">Log Out</a>
+                    </div>
+                </div>
+            {% endif %}
+        </nav>
+        {% if request.session.logged_in == True %}
+            <div class="pos-f-t">
+                <div class="collapse mx-auto" id="menu_services">
+                    <div class="bg-primary p-2 text-center">
+                        <div class="row">
+                            <li class="col-md-3" style="list-style-type:none">
+                                <ul>
+                                    <li class="dropdown-header"
+                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                        Recently Opened
+                                    </li>
+                                    <!-- Recently Opened Services go here -->
+                                </ul>
+                            </li>
+
+                            <li class="col-md-3" style="list-style-type:none">
+                                <ul>
+                                    <li class="dropdown-header"
+                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                        General
+                                    </li>
+                                    <a href="{% url 'service:generate_key' %}"
+                                       style="color:black; text-decoration:none">Generate API Key</a> <br> <br> <br>
+                                    <li style="list-style-type:none" class="divider"></li>
+                                    <li class="dropdown-header"
+                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                        Elastos Hive
+                                    </li>
+                                    <a href="{% url 'service:upload_and_sign' %}"
+                                       style="color:black; text-decoration:none">Upload and Sign</a> <br>
+                                    <a href="{% url 'service:verify_and_show' %}"
+                                       style="color:black; text-decoration:none">Verify and Show</a>
+
+                                </ul>
+                            </li>
+                            <li class="col-md-3" style="list-style-type:none">
+                                <ul>
+                                    <li class="dropdown-header"
+                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                        Wallet
+                                    </li>
+                                    <a href="{% url 'service:create_wallet' %}"
+                                       style="color:black; text-decoration:none">Create Wallet</a> <br>
+                                    <a href="{% url 'service:view_wallet' %}" style="color:black; text-decoration:none">View
+                                        Wallet</a> <br>
+                                    <a href="{% url 'service:request_ela' %}" style="color:black; text-decoration:none">Request
+                                        ELA</a>
+                                    <li class="divider" style="list-style-type:none"></li>
+                                    <li class="dropdown-header"
+                                        style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                        Ethereum Sidechain
+                                    </li>
+                                    <a href="{% url 'service:deploy_eth_contract' %}"
+                                       style="color:black; text-decoration:none">Deploy ETH Contract</a> <br>
+                                    <a href="{% url 'service:watch_eth_contract' %}"
+                                       style="color:black; text-decoration:none">Watch ETH Contract</a> <br>
+                                    <a href="{% url 'service:run_eth_contract' %}"
+                                       style="color:black; text-decoration:none">Run ETH Contract</a> <br>
+                                </ul>
+                            </li>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="pos-f-t">
-          <div class="collapse mx-auto" id="menu_playground">
-            <div class="bg-primary p-2 text-center">
-                <a class="dropdown-item" href="#">Golang</a>
-                <a class="dropdown-item" href="#">Python</a>
-                <a class="dropdown-item" href="#">elastOS</a>
+
+            <div class="pos-f-t">
+              <div class="collapse mx-auto" id="menu_playground">
+                  <div class="bg-primary p-2 text-center">
+                      <a class="dropdown-item" href="#">Golang[COMING SOON]</a>
+                      <a class="dropdown-item" href="#">Python[COMING SOON]</a>
+                      <a class="dropdown-item" href="#">elastOS[COMING SOON]</a>
+                  </div>
+              </div>
             </div>
+
+            <div class="pos-f-t">
+              <div class="collapse mx-auto" id="menu_applications">
+                  <div class="bg-primary p-2 text-center">
+                      <div class="row">
+                        <li class="col-md-3" style="list-style-type:none">
+                          <ul>
+                              <li class="dropdown-header"
+                                  style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                  
+                              </li>
+                          </ul>
+                        </li>
+
+                          <li class="col-md-3" style="list-style-type:none">
+                              <ul>
+                                <li class="dropdown-header" style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                  Browser
+                                </li>
+                                <a href="{% url 'browser:mainchain' %}" style="color:black; text-decoration:none">Mainchain Browser</a><br>
+                                <a href="{% url 'browser:sidechain_did' %}" style="color:black; text-decoration:none">DID Sidechain Browser</a><br>
+                                <a href="{% url 'browser:sidechain_token' %}" style="color:black; text-decoration:none">Token Sidechain Browser</a><br>
+                                <a href="{% url 'browser:sidechain_neo' %}" style="color:black; text-decoration:none">NEO Sidechain Browser[COMING SOON]</a><br>
+                                <a href="{% url 'browser:sidechain_eth' %}" style="color:black; text-decoration:none">ETH Sidechain Browser</a><br>
+                              </ul>
+                          </li>
+                          <li class="col-md-3" style="list-style-type:none">
+                              <ul>
+                                  <li class="dropdown-header" style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
+                                    elastOS Tools
+                                  </li>
+                                  <a href="{% url 'service:create_wallet' %}"
+                                     style="color:black; text-decoration:none">DApp Store Dashboard[COMING SOON]</a> <br>
+                                  <a href="{% url 'service:view_wallet' %}" style="color:black; text-decoration:none">Deploy DApp[COMING SOON]</a> <br>
+                                  <a href="{% url 'service:request_ela' %}" style="color:black; text-decoration:none">Deploy Vault[COMING SOON]</a>
+                              </ul>
+                          </li>
+                      </div>
+                  </div>
+              </div>
           </div>
-        </div>
-        <div class="pos-f-t">
-          <div class="collapse mx-auto" id="menu_applications">
-            <div class="bg-primary p-2 text-center">
-                <a class="dropdown-item" href="#">Mainchain Browser</a>
-                <a class="dropdown-item" href="#">DID Sidechain Browser</a>
-                <a class="dropdown-item" href="#">Token Sidechain Browser[COMING SOON]</a>
-                <a class="dropdown-item" href="#">Ethereum Sidechain Browser</a>
-                <a class="dropdown-item" href="#">NEO Sidechain Browser[COMING SOON]</a>
-                <a class="dropdown-item" href="#">elastOS DApp Store Dashboard[COMING SOON]</a>
+
+            <div class="pos-f-t">
+                <div class="collapse mx-auto" id="menu_workspaces">
+                    <div class="bg-primary p-2 text-center">
+                        <a class="dropdown-item" href="#">Deploy your private net[COMING SOON]</a>
+                        <a class="dropdown-item" href="#">Deploy your testnet nodes[COMING SOON]</a>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-        <div class="pos-f-t">
-          <div class="collapse mx-auto" id="menu_workspaces">
-            <div class="bg-primary p-2 text-center">
-                <a class="dropdown-item" href="#">Deploy your private net[COMING SOON]</a>
-                <a class="dropdown-item" href="#">Deploy your testnet nodes[COMING SOON]</a>
-                <!-- <a class="dropdown-item" href="#">Deploy your elastOS vault</a>-->
-                <a class="dropdown-item" href="#">Deploy your DApp to elastOS[COMING SOON]</a>
-            </div>
-          </div>
-        </div>
-    {% endif %}
+        {% endif %}
     </header>
-  </head>
-  <body>
+</head>
+<body>
 
-    <!-- Body Content -->
-    <div class="django_messages">
-      {% if messages %}
-          {% for message in messages %}
-              <p class="alert alert-info">{{ message }}</p>
-          {% endfor %}
-      {% endif %}
-    </div>
+<!-- Body Content -->
+<div class="django_messages">
+    {% if messages %}
+        {% for message in messages %}
+            <p class="alert alert-info">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+</div>
 
-    <div class=container-fluid">
-      {% block content %}
-      {% endblock %}
-    </div>
+<div class=container-fluid">
+    {% block content %}
+    {% endblock %}
+</div>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container text-center">
+<!-- Footer -->
+<footer class="footer">
+    <div class="container text-center">
         <p>
-          <a class="link" href="http://www.cyberrepublic.org" target="_blank"
+            <a class="link" href="http://www.cyberrepublic.org" target="_blank"
             >Cyberrepublic.org</a
-          >
-          <a class="link" href="https://github.com/cyber-republic/" target="_blank"
+            >
+            <a class="link" href="https://github.com/cyber-republic/" target="_blank"
             >Report</a
-          >
+            >
         </p>
         <p class="copyright">
-          Copyright © 2019 Cyber Republic. All Rights Reserved.
+            Copyright © 2019 Cyber Republic. All Rights Reserved.
         </p>
-      </div>
-    </footer>
+    </div>
+</footer>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script
-      src="https://code.jquery.com/jquery-3.4.1.js"
-      integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-      crossorigin="anonymous"
-    ></script>
-  </body>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script
+        src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"
+></script>
+<!-- Google Prettify for code syntax highlighting -->
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js??lang=python&lang=go;skin=sons-of-obsidian"></script>
+</body>
 </html>

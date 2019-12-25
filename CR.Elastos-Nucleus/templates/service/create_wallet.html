@@ -74,7 +74,7 @@
         <p class="card-text">
           ETH Sidechain:<br>
           Address: {{ wallet_eth.address }}<br>
-          Password: {{ wallet_eth.private_key }}
+          Private Key: {{ wallet_eth.private_key }}
         </p>
         <a href="{% url "service:create_wallet" %}" methods="GET">
             <button class="btn-default">

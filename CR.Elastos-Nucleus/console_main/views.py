@@ -6,6 +6,7 @@ from django.urls import reverse
 from decouple import config
 
 from login.models import DIDUser
+from service.models import UserAPIKeys
 
 
 def login_required(function):
@@ -42,3 +43,11 @@ def landing(request):
         request.session['did'] = user.did
         request.session['logged_in'] = True
     return render(request, 'landing.html', context)
+
+
+def populate_session_vars_from_database(request, did):
+    api_key = ''
+    if UserAPIKeys.objects.filter(did=did):
+        obj = UserAPIKeys.objects.get(did=did)
+        api_key = obj.api_key
+    request.session['api_key'] = api_key

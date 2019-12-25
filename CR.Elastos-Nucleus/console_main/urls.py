@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^at/', include('admin_tools.urls')),
     url(r'^$', views.landing, name="landing"),
     url(r'^service/', include('service.urls'), name='service'),
+    url(r'^browser/', include('browser.urls'), name='browser'),
     url(r'^login/', include('login.urls'), name='login'),
     url(r'^qr_code/', include(qr_code_urls, namespace='qr_code')),
 ]

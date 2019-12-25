@@ -1,25 +1,28 @@
 {% extends 'base.html' %} 
-{% load static %} 
-
+{% load static %}
+{% load django_simple_cookie_consent_tags %}
 {% block title %}
   <title>Landing - Elastos Nucleus</title>
+    {% display_cookie_consent %}
 {% endblock title %}
 
 {% block scripts %}
-<script>
-  function myFunction() {
-    document.getElementById("myDropdown").classList.toggle("show");
-  }
-
-  window.onclick = function(e) {
-    if (!e.target.matches(".dropbtn")) {
-      var myDropdown = document.getElementById("myDropdown");
-      if (myDropdown.classList.contains("show")) {
-        myDropdown.classList.remove("show");
+    <script>
+      function myFunction() {
+        document.getElementById("myDropdown").classList.toggle("show");
       }
-    }
-  };
-</script>
+
+      window.onclick = function(e) {
+        if (!e.target.matches(".dropbtn")) {
+          var myDropdown = document.getElementById("myDropdown");
+          if (myDropdown.classList.contains("show")) {
+            myDropdown.classList.remove("show");
+          }
+        }
+      };
+
+    </script>
+
 {% endblock %} 
 
 {% block content %}
@@ -56,7 +59,7 @@
               <div class="col-12 col-md-10 col-lg-7">
                 <div class="section-title text-center">
                   <h2 class="font-alt">Our Mission</h2>
-                  <p>Ponec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  <p>The console will effectively lower the barrier to entry for new developers entering the blockchain space as it will allow them to easily experiment with Elastos services directly on the browser before deciding to develop their decentralized applications.</p>
                 </div>
               </div>
           </div>
@@ -67,8 +70,8 @@
                 <div class="feature-box-01  sm-m-15px-t" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
                   <svg><use xlink:href="#sketching"></use></svg>
                   <div class="feature-content">
-                    <h5 class="font-alt">Title</h5>
-                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                    <h5 class="font-alt">Integrated Playground</h5>
+                    <p>Developers can directly write code on the browser and be able to test and execute their functions using various Elastos technologies.</p>
                   </div>
                 </div>
               </div>
@@ -76,8 +79,8 @@
                 <div class="feature-box-01 sm-m-0px-t" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
                   <svg><use xlink:href="#command_line"></use></svg>
                   <div class="feature-content">
-                    <h5 class="font-alt">Title</h5>
-                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                    <h5 class="font-alt">Interactive Services</h5>
+                    <p>Each service has a different page with full interactivity, documentation and samples of code in various languages that developers can easily “plug-and-play” into their own applications to quickly get started in integrating Elastos technology.</p>
                   </div>
                 </div>
               </div>
@@ -85,8 +88,8 @@
                 <div class="feature-box-01" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
-                    <h5 class="font-alt">Title</h5>
-                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                    <h5 class="font-alt">Elastos in a Box</h5>
+                    <p>The goal is to make it very easy to deploy a private network for the entire Elastos infrastructure so other universities and third parties can also use the same image to deploy their own net.</p>
                   </div>
                 </div>
               </div>
@@ -94,59 +97,235 @@
       </div>
   </main>
 
-  <!-- Features Row -->
-  <main class="bd-masthead" id="content3" role="main" style="background-color: #ffffff;">
+  <!-- Services Row -->
+  <main class="bd-masthead" id="content2" role="main" style="background-color: #ffffff;">
       <div class="container">
 
             <!-- Description -->
             <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
               <div class="col-12 col-md-10 col-lg-7">
                 <div class="section-title text-center">
-                  <h2 class="font-alt">Start Developing Today</h2>
-                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  <h2 class="font-alt">Explore Our Services</h2>
+                  <p>The console provides a variety of services thats let students and developers all over the world utilize Elastos ecosystem services in a complete developer environment with necessary tools and the use of docker containers.</p>
                 </div>
               </div>
             </div>
 
-            <!-- Features -->
+            <!-- Services -->
             <div class="row" style="margin-top: 15px;">
               <div class="col-3">
-                <div class="feature-box-01  sm-m-15px-t">
+                <div class="feature-box-01" style="background: #ffffff;">
                   <svg><use xlink:href="#sketching"></use></svg>
                   <div class="feature-content">
-                    <h5 class="font-alt">Title</h5>
-                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+                    <h5 class="font-alt">
+                      <a href="/service/generate_key" style="color: #212529;">
+                        Generate Key
+                      </a>
+                    </h5>
                   </div>
                 </div>
               </div>
               <div class="col-3">
-                <div class="feature-box-01 sm-m-0px-t">
+                <div class="feature-box-01" style="background: #ffffff;">
                   <svg><use xlink:href="#command_line"></use></svg>
                   <div class="feature-content">
-                    <h5 class="font-alt">Title</h5>
-                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+                    <h5 class="font-alt">
+                      <a href="/service/upload_and_sign" style="color: #212529;">
+                        Upload And Sign
+                      </a>
+                    </h5>
                   </div>
                 </div>
               </div>
               <div class="col-3">
-                <div class="feature-box-01">
+                <div class="feature-box-01" style="background: #ffffff;">
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
-                    <h5 class="font-alt">Title</h5>
-                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+                    <h5 class="font-alt">
+                      <a href="/service/verify_and_show" style="color: #212529;">
+                        Verify And Show
+                      </a>
+                    </h5>
+                  </div>
+                </div>
+              </div> <!-- col -->
+              <div class="col-3">
+                <div class="feature-box-01" style="background: #ffffff;">
+                  <svg><use xlink:href="#biz_discussion"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">
+                      <a href="/service/request_ela" style="color: #212529;">
+                        Request ELA
+                      </a>
+                    </h5>
                   </div>
                 </div>
               </div>
               <div class="col-3">
-                <div class="feature-box-01">
+                <div class="feature-box-01" style="background: #ffffff;">
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
-                    <h5 class="font-alt">Title</h5>
-                    <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+                    <h5 class="font-alt">
+                      <a href="/service/create_wallet" style="color: #212529;">
+                        Create Wallet
+                      </a>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="feature-box-01" style="background: #ffffff;">
+                  <svg><use xlink:href="#biz_discussion"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">
+                      <a href="/service/run_eth_contract" style="color: #212529;">
+                        Run Contract
+                      </a>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="feature-box-01" style="background: #ffffff;">
+                  <svg><use xlink:href="#biz_discussion"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">
+                      <a href="/service/deploy_eth_contract" style="color: #212529;">
+                        Deploy Contract
+                      </a>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="feature-box-01" style="background: #ffffff;">
+                  <svg><use xlink:href="#biz_discussion"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">
+                      <a href="/service/deploy_elastos_dapp" style="color: #212529;">
+                        Deploy DApp
+                      </a>
+                    </h5>
                   </div>
                 </div>
               </div>
           </div>
       </div>
-  </main>
+</main>
+
+<!-- News Row -->
+<main class="bd-masthead" id="content3" role="main" style="background-color: #f2f6f8;">
+    <div class="container">
+
+        <!-- Description -->
+        <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
+            <div class="col-12 col-md-10 col-lg-7">
+              <div class="section-title text-center">
+                <h2 class="font-alt">Recent News</h2>
+                <p>Be up to date with all the latest news regarding not just the console, but the work we are doing with the Elastos Smartweb Services, GMU net, and the building blocks to construct the next breakthrough technology.</p>
+              </div>
+            </div>
+        </div>
+
+        <!-- News -->
+        <div class="row" style="margin-top: 15px;">
+            <div class="col-12 col-md-4 ">
+              <div class="feature-box-01  sm-m-15px-t" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+                <svg><use xlink:href="#sketching"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">Title</h5>
+                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="feature-box-01 sm-m-0px-t" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+                <svg><use xlink:href="#command_line"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">Title</h5>
+                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                </div>
+              </div>
+            </div>
+  
+            <div class="col-12 col-md-4">
+              <div class="feature-box-01" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">Title</h5>
+                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Tutorials Row -->
+<main class="bd-masthead" id="content2" role="main" style="background-color: #ffffff;">
+    <div class="container">
+
+          <!-- Description -->
+          <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
+            <div class="col-12 col-md-10 col-lg-7">
+              <div class="section-title text-center">
+                <h2 class="font-alt">Start Developing Today</h2>
+                <p>The console provides a variety of services thats let students and developers all over the world utilize Elastos ecosystem services in a complete developer environment with necessary tools and the use of docker containers.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Services -->
+          <div class="row" style="margin-top: 15px;">
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #ffffff;">
+                <svg><use xlink:href="#sketching"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/generate_key" style="color: #212529;">
+                      Generate Key
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #ffffff;">
+                <svg><use xlink:href="#command_line"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/upload_and_sign" style="color: #212529;">
+                      Upload And Sign
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #ffffff;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/verify_and_show" style="color: #212529;">
+                      Verify And Show
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div> <!-- col -->
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #ffffff;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/request_ela" style="color: #212529;">
+                      Request ELA
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+</main>
 {% endblock %}

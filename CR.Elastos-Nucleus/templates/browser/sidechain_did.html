@@ -1,0 +1,23 @@
+{% extends "browser.html" %} 
+{% load static %} 
+
+{% block title %}
+<title>DID Sidechain Browser - Elastos Nucleus</title>
+{% endblock title %} 
+
+{% block browsertitle %}
+<h5 class="card-header">DID Sidechain Browser</h5>
+{% endblock browsertitle %} 
+
+{% block browser %}
+    <form  class="form-group" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Switch</button>
+    </form>
+    {% if network == 'mainnet' %}
+        <embed src="https://idchain.elastos.org/" style="width:100%; height: 1500px;">
+    {% else %}
+        <p>There is no browser available yet for {{ network }}</p>  
+    {% endif %}
+{% endblock browser %}

@@ -1,5 +1,5 @@
 {% extends 'base.html' %} 
-{% load static %} 
+{% load static %}
 
 {% block title %}
   <title>Home - Elastos Nucleus</title>
@@ -17,22 +17,22 @@
       <div class="carousel-item active" style="background-color: #0958a7;">
           <img class="d-block w-100" src="..." alt="First slide">
           <div class="carousel-caption d-none d-md-block text-white">
-            <h3>Title</h3>
-            <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+            <h3>Account Management</h3>
+            <p>View any deployed apps, API keys, and more on your account page</p>
           </div>
       </div>
       <div class="carousel-item" style="background-color: #0958a7;">
           <img class="d-block w-100" src="..." alt="Second slide">
           <div class="carousel-caption d-none d-md-block text-white">
-            <h3>Title</h3>
-            <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+            <h3>ELA Requesting</h3>
+            <p>Use our Request ELA service to play around with fake ELA and all its functionalities</p>
           </div>
       </div>
       <div class="carousel-item" style="background-color: #0958a7;">
           <img class="d-block w-100" src="..." alt="Third slide">
           <div class="carousel-caption d-none d-md-block text-white">
-            <h3>Title</h3>
-            <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.</p>
+            <h3>View Tutorials</h3>
+            <p>New to the console? Watch some tutorials to get started.</p>
           </div>
       </div>
     </div>
@@ -47,15 +47,16 @@
   </div>
 
   <!-- Services Row -->
-  <main class="bd-masthead" id="content2" role="main" style="background-color: #eff4f7;">
-      <div class="container">
+  <main class="bd-masthead" id="content2" role="main"  style="background-color: #ffffff;">
+      <div class="row">
+          <div class="container col-8" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
 
             <!-- Description -->
-            <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
+            <div class="row justify-content-left m-45px-b md-m-20px-b sm-m-15px-b border" style="background-color: #eff4f7; padding-top: 7.5px; padding-bottom: 7.5px;">
               <div class="col-12 col-md-10 col-lg-7">
-                <div class="section-title text-center">
-                  <h2 class="font-alt">Explore Our Services</h2>
-                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                <div class="section-title text-left">
+                  <h2 class="font-alt">Console Services</h2>
+                  <p>Check all of our services and see your most recent visits.</p>
                 </div>
               </div>
             </div>
@@ -67,7 +68,7 @@
                   <svg><use xlink:href="#sketching"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">
-                      <a href="/service/generateKey" style="color: #212529;">
+                      <a href="/service/generate_key" style="color: #212529;">
                         Generate Key
                       </a>
                     </h5>
@@ -79,7 +80,7 @@
                   <svg><use xlink:href="#command_line"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">
-                      <a href="/service/uploadAndSign" style="color: #212529;">
+                      <a href="/service/upload_and_sign" style="color: #212529;">
                         Upload And Sign
                       </a>
                     </h5>
@@ -91,7 +92,7 @@
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">
-                      <a href="/service/verifyAndShow" style="color: #212529;">
+                      <a href="/service/verify_and_show" style="color: #212529;">
                         Verify And Show
                       </a>
                     </h5>
@@ -103,7 +104,7 @@
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">
-                      <a href="/service/requestELA" style="color: #212529;">
+                      <a href="/service/request_ela" style="color: #212529;">
                         Request ELA
                       </a>
                     </h5>
@@ -115,8 +116,8 @@
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">
-                      <a href="/service/voteSupernodes" style="color: #212529;">
-                        Vote Supernodes
+                      <a href="/service/create_wallet" style="color: #212529;">
+                        Create Wallet
                       </a>
                     </h5>
                   </div>
@@ -127,7 +128,7 @@
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">
-                      <a href="/service/runContract" style="color: #212529;">
+                      <a href="/service/run_eth_contract" style="color: #212529;">
                         Run Contract
                       </a>
                     </h5>
@@ -139,8 +140,8 @@
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">
-                      <a href="/service/saveDidData" style="color: #212529;">
-                        Save DID Data
+                      <a href="/service/deploy_eth_contract" style="color: #212529;">
+                        Deploy Contract
                       </a>
                     </h5>
                   </div>
@@ -151,62 +152,317 @@
                   <svg><use xlink:href="#biz_discussion"></use></svg>
                   <div class="feature-content">
                     <h5 class="font-alt">
-                      <a href="/service/retrieveDidData" style="color: #212529;">
-                        Retrieve DID Data
+                      <a href="/service/deploy_elastos_dapp" style="color: #212529;">
+                        Deploy DApp
                       </a>
                     </h5>
                   </div>
                 </div>
               </div>
+            </div>
           </div>
+      
+
+        <div class="container col-3" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+
+          <!-- Description -->
+          <div class="row justify-content-left m-45px-b md-m-20px-b sm-m-15px-b border" style="background-color: #eff4f7; padding-top: 7.5px; padding-bottom: 7.5px;">
+            <div class="col-3 col-md-10 col-lg-7">
+              <div class="section-title text-left">
+                <h2 class="font-alt">Most Viewed</h2>
+              </div>
+            </div>
+          </div>
+
+          <!-- Services -->
+          <div class="row" style="margin-top: 15px;">
+            
+          </div>
+        </div>
       </div>
+  
 </main>
 
-<!-- News Row -->
-<main class="bd-masthead" id="content3" role="main" style="background-color: #ffffff;">
-    <div class="container">
+<!-- Services Row -->
+<main class="bd-masthead" id="content2" role="main"  style="background-color: #ffffff;">
+    <div class="row">
+        <div class="container col-3" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
 
-        <!-- Description -->
-        <div class="row justify-content-center m-45px-b md-m-20px-b sm-m-15px-b">
-            <div class="col-12 col-md-10 col-lg-7">
-              <div class="section-title text-center">
-                <h2 class="font-alt">Recent News</h2>
-                <p>Ponec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+            <!-- Description -->
+            <div class="row justify-content-left m-45px-b md-m-20px-b sm-m-15px-b border" style="background-color: #eff4f7; padding-top: 7.5px; padding-bottom: 7.5px;">
+              <div class="col-3 col-md-10 col-lg-7">
+                <div class="section-title text-left">
+                  <h2 class="font-alt">User Activity</h2>
+                </div>
               </div>
+            </div>
+    
+            <!-- Services -->
+            <div class="row" style="margin-top: 15px;">
+              
             </div>
         </div>
 
-        <!-- News -->
-        <div class="row" style="margin-top: 15px;">
-            <div class="col-12 col-md-4 ">
-              <div class="feature-box-01  sm-m-15px-t" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+        <div class="container col-8" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+
+          <!-- Description -->
+          <div class="row justify-content-left m-45px-b md-m-20px-b sm-m-15px-b border" style="background-color: #eff4f7; padding-top: 7.5px; padding-bottom: 7.5px;">
+            <div class="col-12 col-md-10 col-lg-7">
+              <div class="section-title text-left">
+                <h2 class="font-alt">Deployed DApps</h2>
+                <p>Manage and configure all DApps deployed onto ElastOS.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Services -->
+          <div class="row" style="margin-top: 15px;">
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
                 <svg><use xlink:href="#sketching"></use></svg>
                 <div class="feature-content">
-                  <h5 class="font-alt">Title</h5>
-                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  <h5 class="font-alt">
+                    <a href="/service/generate_key" style="color: #212529;">
+                      Generate Key
+                    </a>
+                  </h5>
                 </div>
               </div>
             </div>
-            <div class="col-12 col-md-4">
-              <div class="feature-box-01 sm-m-0px-t" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
                 <svg><use xlink:href="#command_line"></use></svg>
                 <div class="feature-content">
-                  <h5 class="font-alt">Title</h5>
-                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  <h5 class="font-alt">
+                    <a href="/service/upload_and_sign" style="color: #212529;">
+                      Upload And Sign
+                    </a>
+                  </h5>
                 </div>
               </div>
             </div>
-  
-            <div class="col-12 col-md-4">
-              <div class="feature-box-01" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
                 <svg><use xlink:href="#biz_discussion"></use></svg>
                 <div class="feature-content">
-                  <h5 class="font-alt">Title</h5>
-                  <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+                  <h5 class="font-alt">
+                    <a href="/service/verify_and_show" style="color: #212529;">
+                      Verify And Show
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div> <!-- col -->
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/request_ela" style="color: #212529;">
+                      Request ELA
+                    </a>
+                  </h5>
                 </div>
               </div>
             </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/create_wallet" style="color: #212529;">
+                      Create Wallet
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/run_eth_contract" style="color: #212529;">
+                      Run Contract
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/deploy_eth_contract" style="color: #212529;">
+                      Deploy Contract
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/deploy_elastos_dapp" style="color: #212529;">
+                      Deploy DApp
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+    </div>
+
+</main>
+
+<!-- Services Row -->
+<main class="bd-masthead" id="content2" role="main"  style="background-color: #ffffff;">
+    <div class="row">
+        <div class="container col-8" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+
+          <!-- Description -->
+          <div class="row justify-content-left m-45px-b md-m-20px-b sm-m-15px-b border" style="background-color: #eff4f7; padding-top: 7.5px; padding-bottom: 7.5px;">
+            <div class="col-12 col-md-10 col-lg-7">
+              <div class="section-title text-left">
+                <h2 class="font-alt">Service Tutorials</h2>
+                <p>New to the console? Explore the many tutorials that will help you get started.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Services -->
+          <div class="row" style="margin-top: 15px;">
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#sketching"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/generate_key" style="color: #212529;">
+                      Generate Key
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#command_line"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/upload_and_sign" style="color: #212529;">
+                      Upload And Sign
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/verify_and_show" style="color: #212529;">
+                      Verify And Show
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div> <!-- col -->
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/request_ela" style="color: #212529;">
+                      Request ELA
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/create_wallet" style="color: #212529;">
+                      Create Wallet
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/run_eth_contract" style="color: #212529;">
+                      Run Contract
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/deploy_eth_contract" style="color: #212529;">
+                      Deploy Contract
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="feature-box-01" style="background: #eff4f7;">
+                <svg><use xlink:href="#biz_discussion"></use></svg>
+                <div class="feature-content">
+                  <h5 class="font-alt">
+                    <a href="/service/deploy_elastos_dapp" style="color: #212529;">
+                      Deploy DApp
+                    </a>
+                  </h5>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    
+
+      <div class="container col-3" style="box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.1);">
+
+        <!-- Description -->
+        <div class="row justify-content-left m-45px-b md-m-20px-b sm-m-15px-b border" style="background-color: #eff4f7; padding-top: 7.5px; padding-bottom: 7.5px;">
+          <div class="col-3 col-md-10 col-lg-7">
+            <div class="section-title text-left">
+              <h2 class="font-alt">Feedback</h2>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services -->
+        <div class="row" style="margin-top: 15px;">
+            <div class="col-12">
+                <div class="feature-box-01" style="background: #eff4f7;">
+                  <svg><use xlink:href="#biz_discussion"></use></svg>
+                  <div class="feature-content">
+                    <h5 class="font-alt">
+                      <a href="/service/suggest_service" style="color: #212529;">
+                        Suggest Service
+                      </a>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+        </div>
+      </div>
     </div>
 </main>
 {% endblock %}
