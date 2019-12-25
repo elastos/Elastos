@@ -50,15 +50,21 @@ class Common(common_pb2_grpc.CommonServicer):
 
                 elif result.did == check_did:
                     insert = s.query(UserApiRelations).filter_by(user_id = result.id).first()
-                    # print(insert.api_key)
                     insert.api_key = api_key
-                    # print(insert.api_key)
                     s.commit()
                     s.close()
 
                     return common_pb2.Response(api_key=api_key, status_message='Success', status=True)
                 else:
                     return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
+            
+            elif api_present.api_key == api_key:
+                new_api_key = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(string_length))
+                return common_pb2.Response(api_key=new_api_key, status_message='Success', status=True)
+            
+            else:
+                return common_pb2.Response(api_key='', status_message='Authentication Error', status=False)
+
     
     def GetAPIKey(self, request, context):
 
