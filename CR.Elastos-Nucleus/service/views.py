@@ -5,7 +5,7 @@ from decouple import config
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
-from console_main.views import login_required
+from console_main.views import login_required, populate_session_vars_from_database
 from django.contrib import messages
 from django.urls import reverse
 
@@ -18,7 +18,7 @@ from .forms import GenerateAPIKeyForm
 from .forms import UploadAndSignForm, VerifyAndShowForm
 from .forms import CreateWalletForm, ViewWalletForm, RequestELAForm
 from .forms import DeployETHContractForm, WatchETHContractForm
-from .models import UploadFile , UserAPIKeys
+from .models import UploadFile, UserServiceSessionVars
 
 
 @login_required
@@ -41,9 +41,10 @@ def generate_key(request):
                     response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did)
                     if response.status:
                         api_key = response.api_key
-                        obj, created = UserAPIKeys.objects.update_or_create(did=did,
-                                                                            defaults={'did': did, 'api_key': api_key})
+                        obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                                                                                       defaults={'did': did, 'api_key': api_key})
                         obj.save()
+                        populate_session_vars_from_database(request, did)
                         output['get_api_key'] = True
                     else:
                         got_error = True
@@ -51,9 +52,10 @@ def generate_key(request):
                     response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
                     if response.status:
                         api_key = response.api_key
-                        obj, created = UserAPIKeys.objects.update_or_create(did=did,
-                                                                            defaults={'did': did, 'api_key': api_key})
+                        obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                                                                                       defaults={'did': did, 'api_key': api_key})
                         obj.save()
+                        populate_session_vars_from_database(request, did)
                         output['generate_api_key'] = True
                     else:
                         got_error = True
@@ -84,6 +86,12 @@ def upload_and_sign(request):
     with open(os.path.join(module_dir, 'sample_code/go/upload_and_sign.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     did = request.session['did']
+    sample_code = {}
+    module_dir = os.path.dirname(__file__)  
+    with open(os.path.join(module_dir, 'sample_code/python/upload_and_sign.py'), 'r') as myfile:
+        sample_code['python'] = myfile.read()
+    with open(os.path.join(module_dir, 'sample_code/go/upload_and_sign.go'), 'r') as myfile:
+        sample_code['go'] = myfile.read()
     if request.method == 'POST':
         # Purge old requests for housekeeping.
         UploadFile.objects.filter(did=did).delete()
@@ -118,12 +126,13 @@ def upload_and_sign(request):
             finally:
                 hive.close()
     else:
-        form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key']})
+        form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'], 'private_key': request.session['private_key_mainchain']})
         return render(request, "service/upload_and_sign.html", {'form': form, 'output': False, 'sample_code': sample_code})
 
 
 @login_required
 def verify_and_show(request):
+    did = request.session['did']
     sample_code = {}
     module_dir = os.path.dirname(__file__)  
     with open(os.path.join(module_dir, 'sample_code/python/verify_and_show.py'), 'r') as myfile:
@@ -157,12 +166,13 @@ def verify_and_show(request):
             finally:
                 hive.close()
     else:
-        form = VerifyAndShowForm(initial={'api_key': request.session['api_key']})
+        form = VerifyAndShowForm(initial={'api_key': request.session['api_key'], 'private_key': request.session['private_key_mainchain'], 'public_key': request.session['public_key_mainchain']})
         return render(request, 'service/verify_and_show.html', {'output': False, 'form': form, 'sample_code': sample_code})
 
 
 @login_required
 def create_wallet(request):
+    did = request.session['did']
     sample_code = {}
     module_dir = os.path.dirname(__file__)  
     with open(os.path.join(module_dir, 'sample_code/python/create_wallet.py'), 'r') as myfile:
@@ -183,6 +193,21 @@ def create_wallet(request):
                     wallet_did = content['sidechain']['did']
                     wallet_token = content['sidechain']['token']
                     wallet_eth = content['sidechain']['eth']
+                    obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
+                                                                                   defaults={'did': did,
+                                                                                             'api_key': api_key,
+                                                                                             'mnemonic_mainchain': wallet_mainchain['mnemonic'],
+                                                                                             'public_key_mainchain': wallet_mainchain['public_key'],
+                                                                                             'private_key_mainchain': wallet_mainchain['private_key'],
+                                                                                             'address_mainchain': wallet_mainchain['address'],
+                                                                                             'private_key_did': wallet_did['private_key'],
+                                                                                             'public_key_did': wallet_did['public_key'],
+                                                                                             'address_did': wallet_did['address'],
+                                                                                             'did_did': wallet_did['did'],
+                                                                                             'address_eth': wallet_eth['address'],
+                                                                                             'private_key_eth': wallet_eth['private_key']})
+                    obj.save()
+                    populate_session_vars_from_database(request, did)
                     return render(request, "service/create_wallet.html", { 'output': True, 'wallet_mainchain': wallet_mainchain,
                         'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth, 'sample_code': sample_code })
                 else:
@@ -207,10 +232,10 @@ def view_wallet(request):
     with open(os.path.join(module_dir, 'sample_code/go/view_wallet.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     form_to_display = {
-        'mainchain': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'mainchain'}),
-        'did': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'did'}),
-        'token': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'token'}),
-        'eth': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'eth'})
+        'mainchain': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'mainchain', 'address': request.session['address_mainchain']}),
+        'did': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'did', 'address': request.session['address_did']}),
+        'token': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'token', 'address': request.session['address_mainchain']}),
+        'eth': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'eth', 'address': request.session['address_eth']})
     }
     output = {
         'mainchain': False,
@@ -279,10 +304,10 @@ def request_ela(request):
     with open(os.path.join(module_dir, 'sample_code/go/request_ela.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     form_to_display = {
-        'mainchain': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'mainchain'}),
-        'did': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'did'}),
-        'token': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'token'}),
-        'eth': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'eth'})
+        'mainchain': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'mainchain', 'address': request.session['address_mainchain']}),
+        'did': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'did', 'address': request.session['address_did']}),
+        'token': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'token', 'address': request.session['address_mainchain']}),
+        'eth': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'eth', 'address': request.session['address_eth']})
     }
     output = {
         'mainchain': False,
@@ -386,7 +411,7 @@ def deploy_eth_contract(request):
             finally:
                 sidechain_eth.close()
     else:
-        form = DeployETHContractForm(initial={'did': did, 'api_key': request.session['api_key']})
+        form = DeployETHContractForm(initial={'did': did, 'api_key': request.session['api_key'], 'eth_account_address': request.session['address_eth'], 'eth_private_key': request.session['private_key_eth'], 'eth_gas': 2000000})
         return render(request, "service/deploy_eth_contract.html", {'form': form, 'output': False, 'sample_code': sample_code})
 
 

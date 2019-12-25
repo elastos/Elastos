@@ -17,6 +17,19 @@ class UploadFile(models.Model):
         super(UploadFile, self).delete(*args, **kwargs)
 
 
-class UserAPIKeys(models.Model):
+class UserServiceSessionVars(models.Model):
     did = models.CharField(max_length=64)
     api_key = models.CharField(max_length=64)
+
+    mnemonic_mainchain = models.CharField(max_length=300)
+    private_key_mainchain = models.CharField(max_length=300)
+    public_key_mainchain = models.CharField(max_length=300)
+    address_mainchain = models.CharField(max_length=64)
+
+    private_key_did = models.CharField(max_length=300)
+    public_key_did = models.CharField(max_length=300)
+    address_did = models.CharField(max_length=64)
+    did_did = models.CharField(max_length=64)
+
+    address_eth = models.CharField(max_length=64)
+    private_key_eth = models.CharField(max_length=300)

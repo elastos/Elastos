@@ -6,8 +6,7 @@ from django.urls import reverse
 from decouple import config
 
 from login.models import DIDUser
-from service.models import UserAPIKeys
-
+from service.models import UserServiceSessionVars
 
 def login_required(function):
     def wrapper(request, *args, **kw):
@@ -42,12 +41,52 @@ def landing(request):
         request.session['email'] = user.email
         request.session['did'] = user.did
         request.session['logged_in'] = True
+        populate_session_vars_from_database(request, user.did)
     return render(request, 'landing.html', context)
 
 
 def populate_session_vars_from_database(request, did):
     api_key = ''
-    if UserAPIKeys.objects.filter(did=did):
-        obj = UserAPIKeys.objects.get(did=did)
+
+    mnemonic_mainchain = ''
+    private_key_mainchain = ''
+    public_key_mainchain = ''
+    address_mainchain = ''
+
+    private_key_did = ''
+    public_key_did = ''
+    address_did = ''
+    did_did = ''
+
+    address_eth = ''
+    private_key_eth = ''
+    if UserServiceSessionVars.objects.filter(did=did):
+        obj = UserServiceSessionVars.objects.get(did=did)
         api_key = obj.api_key
+
+        mnemonic_mainchain = obj.mnemonic_mainchain
+        private_key_mainchain = obj.private_key_mainchain
+        public_key_mainchain = obj.public_key_mainchain
+        address_mainchain = obj.address_mainchain
+
+        private_key_did = obj.private_key_did
+        public_key_did = obj.public_key_did
+        address_did = obj.address_did
+        did_did = obj.did_did
+
+        address_eth = obj.address_eth
+        private_key_eth = obj.private_key_eth
     request.session['api_key'] = api_key
+
+    request.session['mnemonic_mainchain'] = mnemonic_mainchain
+    request.session['private_key_mainchain'] = private_key_mainchain
+    request.session['public_key_mainchain'] = public_key_mainchain
+    request.session['address_mainchain'] = address_mainchain
+
+    request.session['private_key_did'] = private_key_did
+    request.session['public_key_did'] = public_key_did
+    request.session['address_did'] = address_did
+    request.session['did_did'] = did_did
+
+    request.session['address_eth'] = address_eth
+    request.session['private_key_eth'] = private_key_eth
