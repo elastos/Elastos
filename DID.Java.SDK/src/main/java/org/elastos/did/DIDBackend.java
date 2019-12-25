@@ -43,6 +43,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DIDBackend {
+	private final static String ID = "id";
+	private final static String RESULT = "result";
+	private final static String ERROR = "error";
+	private final static String ERROR_CODE = "code";
+	private final static String ERROR_MESSAGE = "message";
+
 	private static final long DEFAULT_TTL = 24 * 60 * 60 * 1000;
 	private static final Charset utf8 = Charset.forName("UTF-8");
 	private static DIDBackend instance;
@@ -72,7 +78,7 @@ public class DIDBackend {
 		return adapter;
 	}
 
-	// ttl in minutes
+	// Time to live in minutes
 	public void setTTL(long ttl) {
 		this.ttl = ttl > 0 ? (ttl * 60 * 1000) : 0;
 	}
@@ -82,15 +88,16 @@ public class DIDBackend {
 	}
 
 	private String generateRequestId() {
-        StringBuffer sb = new StringBuffer();
-        while(sb.length() < 16){
-            sb.append(Integer.toHexString(random.nextInt()));
-        }
+		StringBuffer sb = new StringBuffer();
 
-        return sb.toString();
-    }
+		while(sb.length() < 16)
+			sb.append(Integer.toHexString(random.nextInt()));
 
-	private ResolveResult resolveFromBackend(DID did) throws DIDResolveException {
+		return sb.toString();
+	}
+
+	private ResolveResult resolveFromBackend(DID did)
+			throws DIDResolveException {
 		String requestId = generateRequestId();
 
 		InputStream is = adapter.resolve(requestId, did.toString(), false);
@@ -107,16 +114,17 @@ public class DIDBackend {
 		}
 
 		// Check response id, should equals requestId
-		JsonNode id = node.get("id");
-		if (id == null || id.textValue() == null || !id.textValue().equals(requestId))
+		JsonNode id = node.get(ID);
+		if (id == null || id.textValue() == null ||
+				!id.textValue().equals(requestId))
 			throw new DIDResolveException("Missmatched resolve result with request.");
 
-		JsonNode result = node.get("result");
+		JsonNode result = node.get(RESULT);
 		if (result == null || result.isNull()) {
-			JsonNode error = node.get("error");
+			JsonNode error = node.get(ERROR);
 			throw new DIDResolveException("Resolve DID error("
-					+ error.get("code").longValue() + "): "
-					+ error.get("message").textValue());
+					+ error.get(ERROR_CODE).longValue() + "): "
+					+ error.get(ERROR_MESSAGE).textValue());
 		}
 
 		ResolveResult rr = ResolveResult.fromJson(result);
@@ -166,19 +174,10 @@ public class DIDBackend {
 		}
 	}
 
-	/*
-	 * public DIDDocument resolve(String did, boolean force) throws
-	 * DIDResolveException, MalformedDIDException { return resolve(new DID(did),
-	 * force); }
-	 */
 	public DIDDocument resolve(DID did) throws DIDResolveException {
 		return resolve(did, false);
 	}
 
-	/*
-	 * public DIDDocument resolve(String did) throws DIDResolveException,
-	 * MalformedDIDException { return resolve(new DID(did)); }
-	 */
 	protected boolean create(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		IDChainRequest request = IDChainRequest.create(doc, signKey, storepass);

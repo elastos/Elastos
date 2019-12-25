@@ -29,7 +29,6 @@ import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.util.JsonHelper;
@@ -40,6 +39,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ResolveResult {
+	private final static String DID = "did";
+	private final static String STATUS = "status";
+	private final static String TRANSACTION = "transaction";
+
 	public static final int STATUS_VALID = 0;
 	public static final int STATUS_EXPIRED = 1;
 	public static final int STATUS_DEACTIVATED = 2;
@@ -89,11 +92,11 @@ public class ResolveResult {
 
 		generator.writeStartObject();
 
-		generator.writeStringField(Constants.did, did.toString());
-		generator.writeNumberField(Constants.status, status);
+		generator.writeStringField(DID, did.toString());
+		generator.writeNumberField(STATUS, status);
 
 		if (status != STATUS_NOT_FOUND) {
-			generator.writeFieldName(Constants.transaction);
+			generator.writeFieldName(TRANSACTION);
 			generator.writeStartArray();
 
 			for (IDTransactionInfo ti : idtxs)
@@ -119,16 +122,16 @@ public class ResolveResult {
 		if (result == null || result.size() == 0)
 			throw new DIDResolveException("Empty resolve result.");
 
-		DID did = JsonHelper.getDid(result, Constants.did, false, null,
+		DID did = JsonHelper.getDid(result, DID, false, null,
 				"Resolved result DID", exceptionClass);
 
-		int status = JsonHelper.getInteger(result, Constants.status, false, -1,
+		int status = JsonHelper.getInteger(result, STATUS, false, -1,
 					"Resolved status", exceptionClass);
 
 		ResolveResult rr = new ResolveResult(did, status);
 
 		if (status != STATUS_NOT_FOUND) {
-			JsonNode txs = result.get(Constants.transaction);
+			JsonNode txs = result.get(TRANSACTION);
 			if (txs == null || !txs.isArray() || txs.size() == 0)
 				throw new DIDResolveException("Invalid resolve result, missing transaction.");
 

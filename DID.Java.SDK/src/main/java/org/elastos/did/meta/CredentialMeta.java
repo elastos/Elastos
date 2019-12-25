@@ -22,13 +22,14 @@
 
 package org.elastos.did.meta;
 
-import org.elastos.did.Constants;
 import org.elastos.did.exception.MalformedMetaException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class CredentialMeta extends Metadata {
+	private final static String ALIAS = "alias";
+
 	private String alias;
 
 	public void setAlias(String alias) {
@@ -46,7 +47,7 @@ public class CredentialMeta extends Metadata {
 
 	@Override
 	protected void fromNode(JsonNode node) throws MalformedMetaException {
-		JsonNode value = node.get(Constants.alias);
+		JsonNode value = node.get(ALIAS);
 		if (value != null)
 			setAlias(value.asText());
 	}
@@ -54,7 +55,7 @@ public class CredentialMeta extends Metadata {
 	@Override
 	protected void toNode(ObjectNode node) {
 		if (alias != null)
-			node.put(Constants.alias, alias);
+			node.put(ALIAS, alias);
 	}
 
 	@Override

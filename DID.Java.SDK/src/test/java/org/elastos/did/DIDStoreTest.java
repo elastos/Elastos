@@ -717,4 +717,28 @@ public class DIDStoreTest {
 	public void testStoreWithoutCache() throws DIDException {
 		testStorePerformance(false);
 	}
+
+	@Test
+	public void testMultipleStore() throws DIDException {
+		DIDStore[] stores = new DIDStore[10];
+		DIDDocument[] docs = new DIDDocument[10];
+
+		for (int i = 0; i < stores.length; i++) {
+			stores[i] = DIDStore.open("filesystem", TestConfig.storeRoot + i);
+			assertNotNull(stores[i]);
+			String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);
+			stores[i].initPrivateIdentity(Mnemonic.ENGLISH, mnemonic, "", TestConfig.storePass);
+		}
+
+		for (int i = 0; i < stores.length; i++) {
+			docs[i] = stores[i].newDid(TestConfig.storePass);
+			assertNotNull(docs[i]);
+		}
+
+		for (int i = 0; i < stores.length; i++) {
+			DIDDocument doc = stores[i].loadDid(docs[i].getSubject());
+			assertNotNull(doc);
+			assertEquals(docs[i].toString(true), doc.toString(true));
+		}
+	}
 }

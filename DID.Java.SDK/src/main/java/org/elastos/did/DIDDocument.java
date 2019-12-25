@@ -56,6 +56,25 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DIDDocument {
+	private final static String ID = "id";
+	private final static String PUBLICKEY = "publicKey";
+	private final static String TYPE = "type";
+	private final static String CONTROLLER = "controller";
+	private final static String PUBLICKEY_BASE58 = "publicKeyBase58";
+	private final static String AUTHENTICATION = "authentication";
+	private final static String AUTHORIZATION = "authorization";
+	private final static String SERVICE = "service";
+	private final static String VERIFIABLE_CREDENTIAL = "verifiableCredential";
+	private final static String SERVICE_ENDPOINT = "serviceEndpoint";
+	private final static String EXPIRES = "expires";
+	private final static String PROOF = "proof";
+	private final static String CREATOR = "creator";
+	private final static String CREATED = "created";
+	private final static String SIGNATURE_VALUE = "signatureValue";
+
+	private final static String DEFAULT_PUBLICKEY_TYPE = Constants.DEFAULT_PUBLICKEY_TYPE;
+	private final static int MAX_VALID_YEARS = Constants.MAX_VALID_YEARS;
+
 	private DID subject;
 	private Map<DIDURL, PublicKey> publicKeys;
 	private Map<DIDURL, PublicKey> authentications;
@@ -78,7 +97,7 @@ public class DIDDocument {
 		}
 
 		protected PublicKey(DIDURL id, DID controller, String keyBase58) {
-			this(id, Constants.defaultPublicKeyType, controller, keyBase58);
+			this(id, DEFAULT_PUBLICKEY_TYPE, controller, keyBase58);
 		}
 
 		public DID getController() {
@@ -115,17 +134,17 @@ public class DIDDocument {
 				throws MalformedDocumentException {
 			Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
 
-			DIDURL id = JsonHelper.getDidUrl(node, Constants.id,
-						ref, "publicKey' id", clazz);
+			DIDURL id = JsonHelper.getDidUrl(node, ID,
+					ref, "publicKey' id", clazz);
 
-			String type = JsonHelper.getString(node, Constants.type, true,
-						Constants.defaultPublicKeyType, "publicKey' type", clazz);
+			String type = JsonHelper.getString(node, TYPE, true,
+					DEFAULT_PUBLICKEY_TYPE, "publicKey' type", clazz);
 
-			DID controller = JsonHelper.getDid(node, Constants.controller,
-						true, ref, "publicKey' controller", clazz);
+			DID controller = JsonHelper.getDid(node, CONTROLLER,
+					true, ref, "publicKey' controller", clazz);
 
-			String keyBase58 = JsonHelper.getString(node, Constants.publicKeyBase58,
-						false, null, "publicKeyBase58", clazz);
+			String keyBase58 = JsonHelper.getString(node, PUBLICKEY_BASE58,
+					false, null, "publicKeyBase58", clazz);
 
 			return new PublicKey(id, type, controller, keyBase58);
 		}
@@ -137,7 +156,7 @@ public class DIDDocument {
 			generator.writeStartObject();
 
 			// id
-			generator.writeFieldName(Constants.id);
+			generator.writeFieldName(ID);
 			if (normalized || ref == null || !getId().getDid().equals(ref))
 				value = getId().toString();
 			else
@@ -145,19 +164,19 @@ public class DIDDocument {
 			generator.writeString(value);
 
 			// type
-			if (normalized || !getType().equals(Constants.defaultPublicKeyType)) {
-				generator.writeFieldName(Constants.type);
+			if (normalized || !getType().equals(DEFAULT_PUBLICKEY_TYPE)) {
+				generator.writeFieldName(TYPE);
 				generator.writeString(getType());
 			}
 
 			// controller
 			if (normalized || ref == null || !controller.equals(ref)) {
-				generator.writeFieldName(Constants.controller);
+				generator.writeFieldName(CONTROLLER);
 				generator.writeString(controller.toString());
 			}
 
 			// publicKeyBase58
-			generator.writeFieldName(Constants.publicKeyBase58);
+			generator.writeFieldName(PUBLICKEY_BASE58);
 			generator.writeString(keyBase58);
 
 			generator.writeEndObject();
@@ -180,13 +199,13 @@ public class DIDDocument {
 				throws MalformedDocumentException {
 			Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
 
-			DIDURL id = JsonHelper.getDidUrl(node, Constants.id,
+			DIDURL id = JsonHelper.getDidUrl(node, ID,
 					ref, "service' id", clazz);
 
-			String type = JsonHelper.getString(node, Constants.type, false,
+			String type = JsonHelper.getString(node, TYPE, false,
 					null, "service' type", clazz);
 
-			String endpoint = JsonHelper.getString(node, Constants.serviceEndpoint,
+			String endpoint = JsonHelper.getString(node, SERVICE_ENDPOINT,
 					false, null, "service' endpoint", clazz);
 
 			return new Service(id, type, endpoint);
@@ -199,7 +218,7 @@ public class DIDDocument {
 			generator.writeStartObject();
 
 			// id
-			generator.writeFieldName(Constants.id);
+			generator.writeFieldName(ID);
 			if (normalized || ref == null || !getId().getDid().equals(ref))
 				value = getId().toString();
 			else
@@ -207,11 +226,11 @@ public class DIDDocument {
 			generator.writeString(value);
 
 			// type
-			generator.writeFieldName(Constants.type);
+			generator.writeFieldName(TYPE);
 			generator.writeString(getType());
 
 			// endpoint
-			generator.writeFieldName(Constants.serviceEndpoint);
+			generator.writeFieldName(SERVICE_ENDPOINT);
 			generator.writeString(endpoint);
 
 			generator.writeEndObject();
@@ -232,7 +251,7 @@ public class DIDDocument {
 		}
 
 		protected Proof(DIDURL creator, String signature) {
-			this(Constants.defaultPublicKeyType,
+			this(DEFAULT_PUBLICKEY_TYPE,
 					Calendar.getInstance(Constants.UTC).getTime(),
 					creator, signature);
 		}
@@ -257,19 +276,18 @@ public class DIDDocument {
 				throws MalformedDocumentException {
 			Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
 
-			String type = JsonHelper.getString(node, Constants.type,
-					true, Constants.defaultPublicKeyType,
-					"document proof type", clazz);
+			String type = JsonHelper.getString(node, TYPE, true,
+					DEFAULT_PUBLICKEY_TYPE, "document proof type", clazz);
 
-			Date created = JsonHelper.getDate(node, Constants.created,
+			Date created = JsonHelper.getDate(node, CREATED,
 					true, null, "proof created date", clazz);
 
-			DIDURL creator = JsonHelper.getDidUrl(node, Constants.creator, true,
+			DIDURL creator = JsonHelper.getDidUrl(node, CREATOR, true,
 					refSignKey.getDid(), "document proof creator", clazz);
 			if (creator == null)
 				creator = refSignKey;
 
-			String signature = JsonHelper.getString(node, Constants.signatureValue,
+			String signature = JsonHelper.getString(node, SIGNATURE_VALUE,
 					false, null, "document proof signature", clazz);
 
 			return new Proof(type, created, creator, signature);
@@ -280,25 +298,25 @@ public class DIDDocument {
 			generator.writeStartObject();
 
 			// type
-			if (normalized || !type.equals(Constants.defaultPublicKeyType)) {
-				generator.writeFieldName(Constants.type);
+			if (normalized || !type.equals(DEFAULT_PUBLICKEY_TYPE)) {
+				generator.writeFieldName(TYPE);
 				generator.writeString(type);
 			}
 
 			// created
 			if (created != null) {
-				generator.writeFieldName(Constants.created);
-				generator.writeString(JsonHelper.format(created));
+				generator.writeFieldName(CREATED);
+				generator.writeString(JsonHelper.formatDate(created));
 			}
 
 			// creator
 			if (normalized) {
-				generator.writeFieldName(Constants.creator);
+				generator.writeFieldName(CREATOR);
 				generator.writeString(creator.toString());
 			}
 
 			// signature
-			generator.writeFieldName(Constants.signatureValue);
+			generator.writeFieldName(SIGNATURE_VALUE);
 			generator.writeString(signature);
 
 			generator.writeEndObject();
@@ -864,7 +882,7 @@ public class DIDDocument {
 			return false;
 
 		// Unsupported public key type;
-		if (!proof.getType().equals(Constants.defaultPublicKeyType))
+		if (!proof.getType().equals(DEFAULT_PUBLICKEY_TYPE))
 			return false;
 
 		String json = toJson(true, true);
@@ -958,15 +976,15 @@ public class DIDDocument {
 	private void parse(JsonNode doc) throws MalformedDocumentException {
 		Class<MalformedDocumentException> clazz = MalformedDocumentException.class;
 
-		setSubject(JsonHelper.getDid(doc, Constants.id,
+		setSubject(JsonHelper.getDid(doc, ID,
 				false, null, "subject", clazz));
 
-		JsonNode node = doc.get(Constants.publicKey);
+		JsonNode node = doc.get(PUBLICKEY);
 		if (node == null)
 			throw new MalformedDocumentException("Missing publicKey.");
 		parsePublicKey(node);
 
-		node = doc.get(Constants.authentication);
+		node = doc.get(AUTHENTICATION);
 		if (node != null)
 			parseAuthentication(node);
 
@@ -978,22 +996,21 @@ public class DIDDocument {
 		if (isAuthenticationKey(defaultPk))
 			addAuthenticationKey(getPublicKey(defaultPk));
 
-		node = doc.get(Constants.authorization);
+		node = doc.get(AUTHORIZATION);
 		if (node != null)
 			parseAuthorization(node);
 
-		node = doc.get(Constants.credential);
+		node = doc.get(VERIFIABLE_CREDENTIAL);
 		if (node != null)
 			parseCredential(node);
 
-		node = doc.get(Constants.service);
+		node = doc.get(SERVICE);
 		if (node != null)
 			parseService(node);
 
-		expires = JsonHelper.getDate(doc, Constants.expires,
-				true, null, "expires", clazz);
+		expires = JsonHelper.getDate(doc, EXPIRES, true, null, "expires", clazz);
 
-		node = doc.get(Constants.proof);
+		node = doc.get(PROOF);
 		if (node == null)
 			throw new MalformedDocumentException("Missing proof.");
 		setProof(Proof.fromJson(node, defaultPk));
@@ -1183,18 +1200,18 @@ public class DIDDocument {
 		generator.writeStartObject();
 
 		// subject
-		generator.writeFieldName(Constants.id);
+		generator.writeFieldName(ID);
 		generator.writeString(getSubject().toString());
 
 		// publicKey
-		generator.writeFieldName(Constants.publicKey);
+		generator.writeFieldName(PUBLICKEY);
 		generator.writeStartArray();
 		for (PublicKey pk : publicKeys.values())
 			pk.toJson(generator, getSubject(), normalized);
 		generator.writeEndArray();
 
 		// authentication
-		generator.writeFieldName(Constants.authentication);
+		generator.writeFieldName(AUTHENTICATION);
 		generator.writeStartArray();
 		for (PublicKey pk : authentications.values()) {
 			String value;
@@ -1210,7 +1227,7 @@ public class DIDDocument {
 
 		// authorization
 		if (authorizations != null && authorizations.size() != 0) {
-			generator.writeFieldName(Constants.authorization);
+			generator.writeFieldName(AUTHORIZATION);
 			generator.writeStartArray();
 			for (PublicKey pk : authorizations.values()) {
 				String value;
@@ -1227,7 +1244,7 @@ public class DIDDocument {
 
 		// credential
 		if (credentials != null && credentials.size() != 0) {
-			generator.writeFieldName(Constants.credential);
+			generator.writeFieldName(VERIFIABLE_CREDENTIAL);
 			generator.writeStartArray();
 			for (VerifiableCredential vc : credentials.values())
 				vc.toJson(generator, getSubject(), normalized);
@@ -1236,7 +1253,7 @@ public class DIDDocument {
 
 		// service
 		if (services != null && services.size() != 0) {
-			generator.writeFieldName(Constants.service);
+			generator.writeFieldName(SERVICE);
 			generator.writeStartArray();
 			for (Service svc : services.values())
 				svc.toJson(generator, getSubject(), normalized);
@@ -1245,13 +1262,13 @@ public class DIDDocument {
 
 		// expires
 		if (expires != null) {
-			generator.writeFieldName(Constants.expires);
-			generator.writeString(JsonHelper.format(expires));
+			generator.writeFieldName(EXPIRES);
+			generator.writeString(JsonHelper.formatDate(expires));
 		}
 
 		// proof
 		if (proof != null && !forSign) {
-			generator.writeFieldName(Constants.proof);
+			generator.writeFieldName(PROOF);
 			proof.toJson(generator, normalized);
 		}
 
@@ -1582,7 +1599,7 @@ public class DIDDocument {
 
 		private Calendar getMaxExpires() {
 			Calendar cal = Calendar.getInstance(Constants.UTC);
-			cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
+			cal.add(Calendar.YEAR, MAX_VALID_YEARS);
 			return cal;
 		}
 

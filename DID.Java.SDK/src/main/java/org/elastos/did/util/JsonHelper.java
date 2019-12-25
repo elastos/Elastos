@@ -216,20 +216,23 @@ public class JsonHelper {
 			throw ExceptionFactory.create(exceptionClass, "Invalid " + hint + " value.");
 
 		try {
-			return dateFormat.parse(value);
-		} catch (ParseException e) {
-		}
-
-		// Failback to ISO 8601 format.
-		try {
-			return isoDateFormat.parse(value);
+			return parseDate(value);
 		} catch (ParseException e) {
 			throw ExceptionFactory.create(exceptionClass, "Invalid " + hint + ": " + value, e);
 		}
 	}
 
-	public static String format(Date date) {
+	public static String formatDate(Date date) {
 		return dateFormat.format(date);
 	}
 
+	public static Date parseDate(String dataStr) throws ParseException {
+		try {
+			return dateFormat.parse(dataStr);
+		} catch (ParseException ignore) {
+		}
+
+		// Failback to ISO 8601 format.
+		return isoDateFormat.parse(dataStr);
+	}
 }

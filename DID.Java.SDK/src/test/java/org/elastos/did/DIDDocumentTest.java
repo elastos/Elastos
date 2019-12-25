@@ -57,7 +57,7 @@ public class DIDDocumentTest {
 
 		for (PublicKey pk : pks) {
 			assertEquals(doc.getSubject(), pk.getId().getDid());
-			assertEquals(Constants.defaultPublicKeyType, pk.getType());
+			assertEquals(Constants.DEFAULT_PUBLICKEY_TYPE, pk.getType());
 
 			if (pk.getId().getFragment().equals("recovery"))
 				assertNotEquals(doc.getSubject(), pk.getController());
@@ -94,7 +94,7 @@ public class DIDDocumentTest {
 
 		// Selector
 		id = doc.getDefaultPublicKey();
-		pks = doc.selectPublicKeys(id, Constants.defaultPublicKeyType);
+		pks = doc.selectPublicKeys(id, Constants.DEFAULT_PUBLICKEY_TYPE);
 		assertEquals(1, pks.size());
 		assertEquals(new DIDURL(doc.getSubject(), "primary"), pks.get(0).getId());
 
@@ -102,10 +102,10 @@ public class DIDDocumentTest {
 		assertEquals(1, pks.size());
 		assertEquals(new DIDURL(doc.getSubject(), "primary"), pks.get(0).getId());
 
-		pks = doc.selectPublicKeys((DIDURL)null, Constants.defaultPublicKeyType);
+		pks = doc.selectPublicKeys((DIDURL)null, Constants.DEFAULT_PUBLICKEY_TYPE);
 		assertEquals(4, pks.size());
 
-		pks = doc.selectPublicKeys("key2", Constants.defaultPublicKeyType);
+		pks = doc.selectPublicKeys("key2", Constants.DEFAULT_PUBLICKEY_TYPE);
 		assertEquals(1, pks.size());
 		assertEquals(new DIDURL(doc.getSubject(), "key2"), pks.get(0).getId());
 
@@ -224,7 +224,7 @@ public class DIDDocumentTest {
 
 		for (PublicKey pk : pks) {
 			assertEquals(doc.getSubject(), pk.getId().getDid());
-			assertEquals(Constants.defaultPublicKeyType, pk.getType());
+			assertEquals(Constants.DEFAULT_PUBLICKEY_TYPE, pk.getType());
 
 			assertEquals(doc.getSubject(), pk.getController());
 
@@ -253,7 +253,7 @@ public class DIDDocumentTest {
 
 		// selector
 		id = new DIDURL(doc.getSubject(), "key3");
-		pks = doc.selectAuthenticationKeys(id, Constants.defaultPublicKeyType);
+		pks = doc.selectAuthenticationKeys(id, Constants.DEFAULT_PUBLICKEY_TYPE);
 		assertEquals(1, pks.size());
 		assertEquals(id, pks.get(0).getId());
 
@@ -261,10 +261,10 @@ public class DIDDocumentTest {
 		assertEquals(1, pks.size());
 		assertEquals(id, pks.get(0).getId());
 
-		pks = doc.selectAuthenticationKeys((DIDURL)null, Constants.defaultPublicKeyType);
+		pks = doc.selectAuthenticationKeys((DIDURL)null, Constants.DEFAULT_PUBLICKEY_TYPE);
 		assertEquals(3, pks.size());
 
-		pks = doc.selectAuthenticationKeys("key2", Constants.defaultPublicKeyType);
+		pks = doc.selectAuthenticationKeys("key2", Constants.DEFAULT_PUBLICKEY_TYPE);
 		assertEquals(1, pks.size());
 		assertEquals(new DIDURL(doc.getSubject(), "key2"), pks.get(0).getId());
 
@@ -427,7 +427,7 @@ public class DIDDocumentTest {
 
 		for (PublicKey pk : pks) {
 			assertEquals(doc.getSubject(), pk.getId().getDid());
-			assertEquals(Constants.defaultPublicKeyType, pk.getType());
+			assertEquals(Constants.DEFAULT_PUBLICKEY_TYPE, pk.getType());
 
 			assertNotEquals(doc.getSubject(), pk.getController());
 
@@ -454,7 +454,7 @@ public class DIDDocumentTest {
 
 		// Selector
 		id = new DIDURL(doc.getSubject(), "recovery");
-		pks = doc.selectAuthorizationKeys(id, Constants.defaultPublicKeyType);
+		pks = doc.selectAuthorizationKeys(id, Constants.DEFAULT_PUBLICKEY_TYPE);
 		assertEquals(1, pks.size());
 		assertEquals(id, pks.get(0).getId());
 
@@ -462,7 +462,7 @@ public class DIDDocumentTest {
 		assertEquals(1, pks.size());
 		assertEquals(id, pks.get(0).getId());
 
-		pks = doc.selectAuthorizationKeys((DIDURL)null, Constants.defaultPublicKeyType);
+		pks = doc.selectAuthorizationKeys((DIDURL)null, Constants.DEFAULT_PUBLICKEY_TYPE);
 		assertEquals(1, pks.size());
 	}
 
@@ -891,6 +891,7 @@ public class DIDDocumentTest {
 		testData.initIdentity();
 
 		DIDDocument compact = DIDDocument.fromJson(testData.loadTestCompactJson());
+		System.out.println(compact.toString(true));
 		assertNotNull(compact);
 		assertTrue(compact.isValid());
 

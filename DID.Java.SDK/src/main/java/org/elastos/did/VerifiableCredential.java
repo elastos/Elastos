@@ -51,6 +51,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class VerifiableCredential extends DIDObject {
+	private final static String ID = "id";
+	private final static String TYPE = "type";
+	private final static String ISSUER = "issuer";
+	private final static String ISSUANCE_DATE = "issuanceDate";
+	private final static String EXPIRATION_DATE = "expirationDate";
+	private final static String CREDENTIAL_SUBJECT = "credentialSubject";
+	private final static String PROOF = "proof";
+	private final static String VERIFICATION_METHOD = "verificationMethod";
+	private final static String SIGNATURE = "signature";
+
+	private final static String DEFAULT_PUBLICKEY_TYPE = Constants.DEFAULT_PUBLICKEY_TYPE;
+
 	private List<String> types;
 	private DID issuer;
 	private Date issuanceDate;
@@ -100,7 +112,7 @@ public class VerifiableCredential extends DIDObject {
 			Class<MalformedCredentialException> clazz = MalformedCredentialException.class;
 
 			// id
-			DID id = JsonHelper.getDid(node, Constants.id, ref != null, ref,
+			DID id = JsonHelper.getDid(node, ID, ref != null, ref,
 					"crendentialSubject id", clazz);
 
 			CredentialSubject cs = new CredentialSubject(id);
@@ -110,7 +122,7 @@ public class VerifiableCredential extends DIDObject {
 			while (props.hasNext()) {
 				prop = props.next();
 
-				if (prop.getKey().equals(Constants.id))
+				if (prop.getKey().equals(ID))
 					continue;
 
 				cs.addProperty(prop.getKey(), prop.getValue().asText());
@@ -127,7 +139,7 @@ public class VerifiableCredential extends DIDObject {
 
 			// id
 			if (normalized || ref == null || !getId().equals(ref)) {
-				generator.writeFieldName(Constants.id);
+				generator.writeFieldName(ID);
 				generator.writeString(getId().toString());
 			}
 
@@ -168,15 +180,13 @@ public class VerifiableCredential extends DIDObject {
 				throws MalformedCredentialException {
 			Class<MalformedCredentialException> clazz = MalformedCredentialException.class;
 
-			String type = JsonHelper.getString(node, Constants.type,
-					true, Constants.defaultPublicKeyType,
-					"crendential proof type", clazz);
+			String type = JsonHelper.getString(node, TYPE, true,
+					DEFAULT_PUBLICKEY_TYPE, "crendential proof type", clazz);
 
-			DIDURL method = JsonHelper.getDidUrl(node,
-					Constants.verificationMethod, ref,
+			DIDURL method = JsonHelper.getDidUrl(node, VERIFICATION_METHOD, ref,
 					"crendential proof verificationMethod", clazz);
 
-			String signature = JsonHelper.getString(node, Constants.signature,
+			String signature = JsonHelper.getString(node, SIGNATURE,
 					false, null, "crendential proof signature", clazz);
 
 			return new Proof(type, method, signature);
@@ -187,14 +197,14 @@ public class VerifiableCredential extends DIDObject {
 			generator.writeStartObject();
 
 			// type
-			if (normalized || !type.equals(Constants.defaultPublicKeyType)) {
-				generator.writeFieldName(Constants.type);
+			if (normalized || !type.equals(DEFAULT_PUBLICKEY_TYPE)) {
+				generator.writeFieldName(TYPE);
 				generator.writeString(type);
 			}
 
 			// method
 			String value;
-			generator.writeFieldName(Constants.verificationMethod);
+			generator.writeFieldName(VERIFICATION_METHOD);
 			if (normalized || ref == null || !verificationMethod.getDid().equals(ref))
 				value = verificationMethod.toString();
 			else
@@ -202,7 +212,7 @@ public class VerifiableCredential extends DIDObject {
 			generator.writeString(value);
 
 			// signature
-			generator.writeFieldName(Constants.signature);
+			generator.writeFieldName(SIGNATURE);
 			generator.writeString(signature);
 
 			generator.writeEndObject();
@@ -413,7 +423,7 @@ public class VerifiableCredential extends DIDObject {
 			return false;
 
 		// Unsupported public key type;
-		if (!proof.getType().equals(Constants.defaultPublicKeyType))
+		if (!proof.getType().equals(DEFAULT_PUBLICKEY_TYPE))
 			return false;
 
 		String json = toJson(true, true);
@@ -506,7 +516,7 @@ public class VerifiableCredential extends DIDObject {
 		Class<MalformedCredentialException> clazz = MalformedCredentialException.class;
 
 		// type
-		JsonNode valueNode = node.get(Constants.type);
+		JsonNode valueNode = node.get(TYPE);
 		if (valueNode == null)
 			throw new MalformedCredentialException("Missing credential type.");
 
@@ -521,25 +531,25 @@ public class VerifiableCredential extends DIDObject {
 		}
 
 		// issuer
-		issuer = JsonHelper.getDid(node, Constants.issuer,
+		issuer = JsonHelper.getDid(node, ISSUER,
 				true, ref, "crendential issuer", clazz);
 
 		// issuanceDate
-		issuanceDate = JsonHelper.getDate(node, Constants.issuanceDate,
+		issuanceDate = JsonHelper.getDate(node, ISSUANCE_DATE,
 				false, null, "credential issuanceDate", clazz);
 
 		// expirationDate
-		expirationDate = JsonHelper.getDate(node, Constants.expirationDate,
+		expirationDate = JsonHelper.getDate(node, EXPIRATION_DATE,
 				true, null, "credential expirationDate", clazz);
 
 		// credentialSubject
-		valueNode = node.get(Constants.credentialSubject);
+		valueNode = node.get(CREDENTIAL_SUBJECT);
 		if (valueNode == null)
 			throw new MalformedCredentialException("Missing credentialSubject.");
 		subject = CredentialSubject.fromJson(valueNode, ref);
 
 		// id
-		DIDURL id = JsonHelper.getDidUrl(node, Constants.id,
+		DIDURL id = JsonHelper.getDidUrl(node, ID,
 				ref != null ? ref : subject.getId(), "crendential id", clazz);
 		setId(id);
 
@@ -548,7 +558,7 @@ public class VerifiableCredential extends DIDObject {
 			issuer = subject.getId();
 
 		// proof
-		valueNode = node.get(Constants.proof);
+		valueNode = node.get(PROOF);
 		if (valueNode == null)
 			throw new MalformedCredentialException("Missing credential proof.");
 		proof = Proof.fromJson(valueNode, issuer);
@@ -626,7 +636,7 @@ public class VerifiableCredential extends DIDObject {
 
 		// id
 		String value;
-		generator.writeFieldName(Constants.id);
+		generator.writeFieldName(ID);
 
 		if (normalized || ref == null || !getId().getDid().equals(ref))
 			value = getId().toString();
@@ -636,7 +646,7 @@ public class VerifiableCredential extends DIDObject {
 		generator.writeString(value);
 
 		// type
-		generator.writeFieldName(Constants.type);
+		generator.writeFieldName(TYPE);
 		generator.writeStartArray();
 		Collections.sort(types);
 		for (String s : types) {
@@ -646,27 +656,27 @@ public class VerifiableCredential extends DIDObject {
 
 		// issuer
 		if (normalized || !issuer.equals(subject.getId())) {
-			generator.writeFieldName(Constants.issuer);
+			generator.writeFieldName(ISSUER);
 			generator.writeString(issuer.toString());
 		}
 
 		// issuanceDate
-		generator.writeFieldName(Constants.issuanceDate);
-		generator.writeString(JsonHelper.format(issuanceDate));
+		generator.writeFieldName(ISSUANCE_DATE);
+		generator.writeString(JsonHelper.formatDate(issuanceDate));
 
 		// expirationDate
 		if (expirationDate != null) {
-			generator.writeFieldName(Constants.expirationDate);
-			generator.writeString(JsonHelper.format(expirationDate));
+			generator.writeFieldName(EXPIRATION_DATE);
+			generator.writeString(JsonHelper.formatDate(expirationDate));
 		}
 
 		// credentialSubject
-		generator.writeFieldName(Constants.credentialSubject);
+		generator.writeFieldName(CREDENTIAL_SUBJECT);
 		subject.toJson(generator, ref, normalized);
 
 		// proof
 		if (!forSign ) {
-			generator.writeFieldName(Constants.proof);
+			generator.writeFieldName(PROOF);
 			proof.toJson(generator, issuer, normalized);
 		}
 

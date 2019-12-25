@@ -25,54 +25,12 @@ package org.elastos.did;
 import java.util.TimeZone;
 
 public final class Constants {
-	public final static String id = "id";
-	public final static String publicKey = "publicKey";
-	public final static String type = "type";
-	public final static String controller = "controller";
-	public final static String publicKeyBase58 = "publicKeyBase58";
-	public final static String authentication = "authentication";
-	public final static String authorization = "authorization";
-	public final static String service = "service";
-	public final static String serviceEndpoint = "serviceEndpoint";
-	public final static String expires = "expires";
-	public final static String creator = "creator";
-
-	public final static String credential = "verifiableCredential";
-	public final static String issuer = "issuer";
-	public final static String issuanceDate = "issuanceDate";
-	public final static String expirationDate = "expirationDate";
-	public final static String credentialSubject = "credentialSubject";
-	public final static String proof = "proof";
-	public final static String created = "created";
-	public final static String verifiableCredential = "verifiableCredential";
-	public final static String verificationMethod = "verificationMethod";
-	public final static String signature = "signature";
-	public final static String signatureValue = "signatureValue";
-	public final static String nonce = "nonce";
-	public final static String realm = "realm";
-
-	public final static String defaultPublicKeyType = "ECDSAsecp256r1";
-	public final static String defaultPresentationType = "VerifiablePresentation";
-
-	public final static String did = "did";
-	public final static String status = "status";
-	public final static String alias = "alias";
-	public final static String txid = "txid";
-	public final static String transaction = "transaction";
-	public final static String timestamp = "timestamp";
-	public final static String operation = "operation";
-	public final static String deactivated = "deactivated";
-
-	public final static String result = "result";
-	public final static String error = "error";
-	public final static String errorCode = "code";
-	public final static String errorMessage = "message";
+	public final static String DEFAULT_PUBLICKEY_TYPE = "ECDSAsecp256r1";
 
 	public final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 	public final static String DATE_FORMAT_ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
+	public final static int MAX_VALID_YEARS = 5;
 
 	public final static TimeZone UTC = TimeZone.getTimeZone("UTC");
-
-	public final static int MAX_VALID_YEARS = 5;
 }

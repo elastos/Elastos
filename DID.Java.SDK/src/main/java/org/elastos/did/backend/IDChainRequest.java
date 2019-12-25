@@ -49,10 +49,12 @@ public class IDChainRequest {
 	private static final String OPERATION = "operation";
 	private static final String PREVIOUS_TXID = "previousTxid";
 	private static final String PAYLOAD = "payload";
-	private static final String PROOF = Constants.proof;
-	private static final String KEY_TYPE = Constants.type;
-	private static final String KEY_ID = Constants.verificationMethod;
-	private static final String SIGNATURE = Constants.signature;
+	private static final String PROOF = "proof";
+	private static final String KEY_TYPE = "type";
+	private static final String VERIFICATION_METHOD = "verificationMethod";
+	private static final String SIGNATURE = "signature";
+
+	private static final String DEFAULT_PUBLICKEY_TYPE = Constants.DEFAULT_PUBLICKEY_TYPE;
 
 	public enum Operation {
 		CREATE, UPDATE, DEACTIVATE;
@@ -188,7 +190,7 @@ public class IDChainRequest {
 
 		this.signature = doc.sign(signKey, storepass, inputs);
 		this.signKey = signKey;
-		this.keyType = Constants.defaultPublicKeyType;
+		this.keyType = DEFAULT_PUBLICKEY_TYPE;
 	}
 
 	public boolean isValid() throws DIDException {
@@ -255,7 +257,7 @@ public class IDChainRequest {
 			keyId = "#" + signKey.getFragment();
 		}
 
-		generator.writeFieldName(KEY_ID);
+		generator.writeFieldName(VERIFICATION_METHOD);
 		generator.writeString(keyId);
 
 
@@ -318,12 +320,12 @@ public class IDChainRequest {
 			throw new DIDResolveException("Missing proof.");
 
 		String keyType = JsonHelper.getString(proof, KEY_TYPE, true,
-				Constants.defaultPublicKeyType, KEY_TYPE, clazz);
-		if (!keyType.equals(Constants.defaultPublicKeyType))
+				DEFAULT_PUBLICKEY_TYPE, KEY_TYPE, clazz);
+		if (!keyType.equals(DEFAULT_PUBLICKEY_TYPE))
 			throw new DIDResolveException("Unknown signature key type.");
 
-		DIDURL signKey = JsonHelper.getDidUrl(proof, KEY_ID, request.getDid(),
-				KEY_ID, clazz);
+		DIDURL signKey = JsonHelper.getDidUrl(proof, VERIFICATION_METHOD,
+				request.getDid(), VERIFICATION_METHOD, clazz);
 		//if (doc.getAuthenticationKey(signKey) == null)
 		//	throw new DIDResolveException("Unknown signature key.");
 

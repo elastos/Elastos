@@ -53,6 +53,9 @@ public class DIDURL implements Comparable<DIDURL> {
 
 				return;
 			}
+
+			if (fragment.startsWith("#"))
+				fragment = fragment.substring(1);
 		}
 
 		this.did = id;

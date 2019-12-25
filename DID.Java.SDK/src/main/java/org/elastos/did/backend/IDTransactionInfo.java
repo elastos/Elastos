@@ -25,7 +25,6 @@ package org.elastos.did.backend;
 import java.io.IOException;
 import java.util.Date;
 
-import org.elastos.did.Constants;
 import org.elastos.did.DID;
 import org.elastos.did.exception.DIDResolveException;
 import org.elastos.did.util.JsonHelper;
@@ -34,6 +33,10 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class IDTransactionInfo {
+	private final static String TXID = "txid";
+	private final static String TIMESTAMP = "timestamp";
+	private final static String OPERATION = "operation";
+
 	private String txId;
 	private Date timestamp;
 	private IDChainRequest request;
@@ -71,10 +74,9 @@ public class IDTransactionInfo {
 
 	public void toJson(JsonGenerator generator) throws IOException {
 		generator.writeStartObject();
-		generator.writeStringField(Constants.txid, getTransactionId());
-		generator.writeStringField(Constants.timestamp,
-				JsonHelper.format(getTimestamp()));
-		generator.writeFieldName(Constants.operation);
+		generator.writeStringField(TXID, getTransactionId());
+		generator.writeStringField(TIMESTAMP, JsonHelper.formatDate(getTimestamp()));
+		generator.writeFieldName(OPERATION);
 		request.toJson(generator, false);
 		generator.writeEndObject();
 	}
@@ -86,13 +88,13 @@ public class IDTransactionInfo {
 		if (node == null || node.size() == 0)
 			return null;
 
-		String txid = JsonHelper.getString(node, Constants.txid, false, null,
+		String txid = JsonHelper.getString(node, TXID, false, null,
 				"transaction id", exceptionClass);
 
-		Date timestamp = JsonHelper.getDate(node, Constants.timestamp, false,
+		Date timestamp = JsonHelper.getDate(node, TIMESTAMP, false,
 				null, "transaction timestamp", exceptionClass);
 
-		JsonNode reqNode = node.get(Constants.operation);
+		JsonNode reqNode = node.get(OPERATION);
 		if (reqNode == null)
 			throw new DIDResolveException("Missing ID operation.");
 

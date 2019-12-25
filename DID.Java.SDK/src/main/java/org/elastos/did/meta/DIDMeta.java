@@ -23,18 +23,19 @@
 package org.elastos.did.meta;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.elastos.did.Constants;
 import org.elastos.did.exception.MalformedMetaException;
+import org.elastos.did.util.JsonHelper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class DIDMeta extends Metadata {
-	private final static SimpleDateFormat dateFormat =
-			new SimpleDateFormat(Constants.DATE_FORMAT);
+	private final static String TXID = "txid";
+	private final static String TIMESTAMP = "timestamp";
+	private final static String ALIAS = "alias";
+	private final static String DEACTIVATED = "deactivated";
 
 	private boolean deactivated;
 	private Date updated;
@@ -80,22 +81,22 @@ public class DIDMeta extends Metadata {
 
 	@Override
 	protected void fromNode(JsonNode node) throws MalformedMetaException {
-		JsonNode value = node.get(Constants.alias);
+		JsonNode value = node.get(ALIAS);
 		if (value != null)
 			setAlias(value.asText());
 
-		value = node.get(Constants.deactivated);
+		value = node.get(DEACTIVATED);
 		if (value != null)
 			setDeactivated(value.asBoolean());
 
-		value = node.get(Constants.txid);
+		value = node.get(TXID);
 		if (value != null)
 			setTransactionId(value.asText());
 
-		value = node.get(Constants.timestamp);
+		value = node.get(TIMESTAMP);
 		if (value != null) {
 			try {
-				Date updated = dateFormat.parse(value.asText());
+				Date updated = JsonHelper.parseDate(value.asText());
 				setUpdated(updated);
 			} catch (ParseException ignore) {
 			}
@@ -105,16 +106,16 @@ public class DIDMeta extends Metadata {
 	@Override
 	protected void toNode(ObjectNode node) {
 		if (alias != null)
-			node.put(Constants.alias, alias);
+			node.put(ALIAS, alias);
 
 		if (deactivated)
-			node.put(Constants.deactivated, true);
+			node.put(DEACTIVATED, true);
 
 		if (txid != null)
-			node.put(Constants.txid, txid);
+			node.put(TXID, txid);
 
 		if (updated != null)
-			node.put(Constants.timestamp, dateFormat.format(updated));
+			node.put(TIMESTAMP, JsonHelper.formatDate(updated));
 	}
 
 	@Override

@@ -32,6 +32,9 @@ import org.elastos.did.exception.MalformedCredentialException;
 import org.elastos.did.exception.MalformedDIDException;
 
 public class Issuer {
+	private static final String DEFAULT_PUBLICKEY_TYPE = Constants.DEFAULT_PUBLICKEY_TYPE;
+	private static final int MAX_VALID_YEARS = Constants.MAX_VALID_YEARS;
+
 	private DIDDocument self;
 	private DIDURL signKey;
 
@@ -142,7 +145,7 @@ public class Issuer {
 			Calendar cal = Calendar.getInstance(Constants.UTC);
 			if (credential.getIssuanceDate() != null)
 				cal.setTime(credential.getIssuanceDate());
-			cal.add(Calendar.YEAR, Constants.MAX_VALID_YEARS);
+			cal.add(Calendar.YEAR, MAX_VALID_YEARS);
 
 			return cal;
 		}
@@ -215,7 +218,7 @@ public class Issuer {
 			String sig = self.sign(signKey, storepass, json.getBytes());
 
 			VerifiableCredential.Proof proof = new VerifiableCredential.Proof(
-					Constants.defaultPublicKeyType, signKey, sig);
+					DEFAULT_PUBLICKEY_TYPE, signKey, sig);
 			credential.setProof(proof);
 
 			// Invalidate builder

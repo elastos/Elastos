@@ -47,6 +47,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class VerifiablePresentation {
+	public final static String DEFAULT_PRESENTATION_TYPE = "VerifiablePresentation";
+
+	private final static String TYPE = "type";
+	private final static String VERIFIABLE_CREDENTIAL = "verifiableCredential";
+	private final static String CREATED = "created";
+	private final static String PROOF = "proof";
+	private final static String NONCE = "nonce";
+	private final static String REALM = "realm";
+	private final static String VERIFICATION_METHOD = "verificationMethod";
+	private final static String SIGNATURE = "signature";
+
+	private final static String DEFAULT_PUBLICKEY_TYPE = Constants.DEFAULT_PUBLICKEY_TYPE;
+
 	private String type;
 	private Date created;
 	private Map<DIDURL, VerifiableCredential> credentials;
@@ -70,7 +83,7 @@ public class VerifiablePresentation {
 
 		protected Proof(DIDURL method, String realm,
 				String nonce, String signature) {
-			this(Constants.defaultPublicKeyType, method, realm, nonce, signature);
+			this(DEFAULT_PUBLICKEY_TYPE, method, realm, nonce, signature);
 		}
 
 	    public String getType() {
@@ -97,21 +110,19 @@ public class VerifiablePresentation {
 				throws MalformedPresentationException {
 			Class<MalformedPresentationException> clazz = MalformedPresentationException.class;
 
-			String type = JsonHelper.getString(node, Constants.type,
-					true, Constants.defaultPublicKeyType,
-					"presentation proof type", clazz);
+			String type = JsonHelper.getString(node, TYPE, true,
+					DEFAULT_PUBLICKEY_TYPE, "presentation proof type", clazz);
 
-			DIDURL method = JsonHelper.getDidUrl(node,
-					Constants.verificationMethod, ref,
+			DIDURL method = JsonHelper.getDidUrl(node, VERIFICATION_METHOD, ref,
 					"presentation proof verificationMethod", clazz);
 
-			String realm = JsonHelper.getString(node, Constants.realm,
+			String realm = JsonHelper.getString(node, REALM,
 					false, null, "presentation proof realm", clazz);
 
-			String nonce = JsonHelper.getString(node, Constants.nonce,
+			String nonce = JsonHelper.getString(node, NONCE,
 					false, null, "presentation proof nonce", clazz);
 
-			String signature = JsonHelper.getString(node, Constants.signature,
+			String signature = JsonHelper.getString(node, SIGNATURE,
 					false, null, "presentation proof signature", clazz);
 
 			return new Proof(type, method, realm, nonce, signature);
@@ -121,23 +132,23 @@ public class VerifiablePresentation {
 			generator.writeStartObject();
 
 			// type
-			generator.writeFieldName(Constants.type);
+			generator.writeFieldName(TYPE);
 			generator.writeString(type);
 
 			// method
-			generator.writeFieldName(Constants.verificationMethod);
+			generator.writeFieldName(VERIFICATION_METHOD);
 			generator.writeString(verificationMethod.toString());
 
 			// realm
-			generator.writeFieldName(Constants.realm);
+			generator.writeFieldName(REALM);
 			generator.writeString(realm);
 
 			// nonce
-			generator.writeFieldName(Constants.nonce);
+			generator.writeFieldName(NONCE);
 			generator.writeString(nonce);
 
 			// signature
-			generator.writeFieldName(Constants.signature);
+			generator.writeFieldName(SIGNATURE);
 			generator.writeString(signature);
 
 			generator.writeEndObject();
@@ -145,7 +156,7 @@ public class VerifiablePresentation {
 	}
 
 	protected VerifiablePresentation() {
-		type = Constants.defaultPresentationType;
+		type = DEFAULT_PRESENTATION_TYPE;
 
 		Calendar cal = Calendar.getInstance(Constants.UTC);
 		created = cal.getTime();
@@ -211,7 +222,7 @@ public class VerifiablePresentation {
 			return false;
 
 		// Unsupported public key type;
-		if (!proof.getType().equals(Constants.defaultPublicKeyType))
+		if (!proof.getType().equals(DEFAULT_PUBLICKEY_TYPE))
 			return false;
 
 		// Credential should signed by authentication key.
@@ -242,7 +253,7 @@ public class VerifiablePresentation {
 			return false;
 
 		// Unsupported public key type;
-		if (!proof.getType().equals(Constants.defaultPublicKeyType))
+		if (!proof.getType().equals(DEFAULT_PUBLICKEY_TYPE))
 			return false;
 
 		// Credential should signed by authentication key.
@@ -305,23 +316,23 @@ public class VerifiablePresentation {
 	private void parse(JsonNode presentation) throws MalformedPresentationException {
 		Class<MalformedPresentationException> clazz = MalformedPresentationException.class;
 
-		String type = JsonHelper.getString(presentation, Constants.type,
+		String type = JsonHelper.getString(presentation, TYPE,
 				false, null, "presentation type", clazz);
-		if (!type.contentEquals(Constants.defaultPresentationType))
+		if (!type.contentEquals(DEFAULT_PRESENTATION_TYPE))
 			throw new MalformedPresentationException("Unknown presentation type: " + type);
 		else
 			setType(type);
 
-		Date created = JsonHelper.getDate(presentation, Constants.created,
+		Date created = JsonHelper.getDate(presentation, CREATED,
 				false, null, "presentation created date", clazz);
 		setCreated(created);
 
-		JsonNode node = presentation.get(Constants.verifiableCredential);
+		JsonNode node = presentation.get(VERIFIABLE_CREDENTIAL);
 		if (node == null)
 			throw new MalformedPresentationException("Missing credentials.");
 		parseCredential(node);
 
-		node = presentation.get(Constants.proof);
+		node = presentation.get(PROOF);
 		if (node == null)
 			throw new MalformedPresentationException("Missing credentials.");
 		Proof proof = Proof.fromJson(node, null);
@@ -399,15 +410,15 @@ public class VerifiablePresentation {
 		generator.writeStartObject();
 
 		// type
-		generator.writeFieldName(Constants.type);
+		generator.writeFieldName(TYPE);
 		generator.writeString(type);
 
 		// created
-		generator.writeFieldName(Constants.created);
-		generator.writeString(JsonHelper.format(created));
+		generator.writeFieldName(CREATED);
+		generator.writeString(JsonHelper.formatDate(created));
 
 		// credentials
-		generator.writeFieldName(Constants.verifiableCredential);
+		generator.writeFieldName(VERIFIABLE_CREDENTIAL);
 		generator.writeStartArray();
 		for (VerifiableCredential vc : credentials.values())
 			vc.toJson(generator, null, true);
@@ -415,7 +426,7 @@ public class VerifiablePresentation {
 
 		// proof
 		if (!forSign ) {
-			generator.writeFieldName(Constants.proof);
+			generator.writeFieldName(PROOF);
 			proof.toJson(generator);
 		}
 

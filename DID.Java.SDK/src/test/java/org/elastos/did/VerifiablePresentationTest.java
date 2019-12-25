@@ -45,7 +45,7 @@ public class VerifiablePresentationTest {
 
 		VerifiablePresentation vp = testData.loadPresentation();
 
-		assertEquals(Constants.defaultPresentationType, vp.getType());
+		assertEquals(VerifiablePresentation.DEFAULT_PRESENTATION_TYPE, vp.getType());
 		assertEquals(testDoc.getSubject(), vp.getSigner());
 
 		assertEquals(4, vp.getCredentialCount());
@@ -91,7 +91,7 @@ public class VerifiablePresentationTest {
 
 		assertNotNull(vp);
 
-		assertEquals(Constants.defaultPresentationType, vp.getType());
+		assertEquals(VerifiablePresentation.DEFAULT_PRESENTATION_TYPE, vp.getType());
 		assertEquals(testDoc.getSubject(), vp.getSigner());
 
 		assertEquals(4, vp.getCredentialCount());
