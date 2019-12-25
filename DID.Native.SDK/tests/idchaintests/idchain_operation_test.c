@@ -17,7 +17,7 @@ static DIDDocument *document;
 
 static void test_idchain_publishdid(void)
 {
-    int rc;
+    char *txid;
     DIDURL *signkey;
     DIDStore *store;
     DIDDocument *doc = NULL;
@@ -31,8 +31,9 @@ static void test_idchain_publishdid(void)
     }
 
     store = DIDStore_GetInstance();
-    rc = DIDStore_PublishDID(store, document, signkey, storepass);
-    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    txid = (char *)DIDStore_PublishDID(store, document, signkey, storepass);
+    CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
+    free(txid);
 
     did = DIDDocument_GetSubject(document);
     CU_ASSERT_PTR_NOT_NULL(did);
@@ -56,7 +57,7 @@ static void test_idchain_publishdid(void)
 
 static void test_idchain_updatedid(void)
 {
-    int rc;
+    char *txid;
     DIDURL *signkey;
     DIDStore *store;
 
@@ -67,13 +68,14 @@ static void test_idchain_updatedid(void)
     }
 
     store = DIDStore_GetInstance();
-    rc = DIDStore_UpdateDID(store, document, signkey, storepass);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    txid = (char *)DIDStore_UpdateDID(store, document, signkey, storepass);
+    CU_ASSERT_NOT_EQUAL(txid, NULL);
+    free(txid);
 }
 
 static void test_idchain_deactivatedid(void)
 {
-    int rc;
+    char *txid;
     DIDURL *signkey;
     DIDStore *store;
 
@@ -84,8 +86,9 @@ static void test_idchain_deactivatedid(void)
     }
 
     store = DIDStore_GetInstance();
-    rc = DIDStore_DeactivateDID(store, DIDDocument_GetSubject(document), signkey, storepass);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    txid = (char *)DIDStore_DeactivateDID(store, DIDDocument_GetSubject(document), signkey, storepass);
+    CU_ASSERT_NOT_EQUAL(txid, NULL);
+    free(txid);
 }
 
 static int idchain_operation_test_suite_init(void)

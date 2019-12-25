@@ -150,7 +150,7 @@ typedef struct DIDStore         DIDStore;
 typedef struct DIDAdapter      DIDAdapter;
 
 struct DIDAdapter {
-    int (*createIdTransaction) (DIDAdapter *adapter, const char *payload, const char *memo);
+    const char* (*createIdTransaction) (DIDAdapter *adapter, const char *payload, const char *memo);
     const char* (*resolve) (DIDAdapter *adapter, const char *did);
 };
 /**
@@ -1981,7 +1981,7 @@ DID_API void DIDStore_DeletePrivateKey(DIDStore *store, DID *did, DIDURL *keyid)
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
+DID_API const char *DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass);
 
 /**
@@ -1997,7 +1997,7 @@ DID_API int DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
+DID_API const char *DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass);
 
 /**
@@ -2013,8 +2013,8 @@ DID_API int DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,
-        const char *storepass);
+DID_API const char *DIDStore_DeactivateDID(DIDStore *store, DID *did,
+        DIDURL *signKey, const char *storepass);
 
 /**
  * \~English

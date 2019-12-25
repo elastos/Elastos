@@ -271,7 +271,7 @@ static void test_base64_compatible(void)
     for (int i = 0; i < 256; i++) {
         intput[i] = i;
 
-        base64_url_encode(base64, intput, i+1);
+        base64_url_encode(base64, (uint8_t *)intput, i+1);
 
         CU_ASSERT_STRING_EQUAL(base64output[i], base64);
     }
@@ -281,11 +281,11 @@ static void test_encrypt_compatible(void)
 {
     char base64[512];
     char *passwd = "secret";
-    uint8_t *plain = "The quick brown fox jumps over the lazy dog.";
+    char *plain = "The quick brown fox jumps over the lazy dog.";
     const char *base_compatible = "TBimuq42IyD6FsoZK0AoCOt75uiL_gEepZTpgu59RYSV-NR-fqxsYfx0cyyzGacX";
     uint8_t data[128];
 
-    encrypt_to_base64(base64, passwd, plain, strlen(plain));
+    encrypt_to_base64(base64, passwd, (uint8_t *)plain, strlen(plain));
     CU_ASSERT_STRING_EQUAL(base64, base_compatible);
 
     decrypt_from_base64(data, passwd, base64);
@@ -296,10 +296,10 @@ static void test_encrypt_decrypt(void)
 {
     char base64[512];
     char *passwd = "password";
-    uint8_t *plain = "brown bear what do you see";
+    char *plain = "brown bear what do you see";
     uint8_t data[128];
 
-    encrypt_to_base64(base64, passwd, plain, strlen(plain));
+    encrypt_to_base64(base64, passwd, (uint8_t *)plain, strlen(plain));
     decrypt_from_base64(data, passwd, base64);
     CU_ASSERT_NSTRING_EQUAL(data, plain, strlen(plain));
 }

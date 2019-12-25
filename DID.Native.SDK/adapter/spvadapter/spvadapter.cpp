@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <curl/curl.h>
 
@@ -218,6 +219,9 @@ int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter)
         return 0;
 
     try {
+        // Force sync
+        adapter->idWallet->SyncStart();
+
         auto result = adapter->idWallet->GetAllTransaction(0, 1, "");
         auto count = result["MaxCount"];
         if (count < 1)
@@ -225,7 +229,7 @@ int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter)
 
         auto tx = result["Transactions"][0];
         std::string confirm = tx["ConfirmStatus"];
-        if (std::stoi(confirm) > 2)
+        if (std::stoi(confirm) >= 2)
             return 1;
     } catch (...) {
         return 0;
@@ -234,11 +238,11 @@ int SpvDidAdapter_IsAvailable(SpvDidAdapter *adapter)
     return 0;
 }
 
-int SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
+const char * SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         const char *payload, const char *memo, const char *password)
 {
     if (!adapter || !payload || !password)
-        return -1;
+        return NULL;
 
     if (!memo)
         memo = "";
@@ -249,12 +253,13 @@ int SpvDidAdapter_CreateIdTransaction(SpvDidAdapter *adapter,
         auto tx = adapter->idWallet->CreateIDTransaction(payloadJson, memo);
         tx = adapter->idWallet->SignTransaction(tx, password);
         tx = adapter->idWallet->PublishTransaction(tx);
-        // std::cout << "ID Transaction: " << tx["TxHash"] << std::endl;
+        std::string txid = tx["TxHash"];
+        return strdup(txid.c_str());
     } catch (...) {
-        return -1;
+        return NULL;
     }
 
-    return 0;
+    return NULL;
 }
 
 typedef struct HttpResponseBody {

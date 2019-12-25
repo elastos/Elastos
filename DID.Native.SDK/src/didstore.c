@@ -1471,14 +1471,14 @@ DIDDocument *DIDStore_ResolveDID(DIDStore *store, DID *did, bool force)
     return document;
 }
 
-int DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
+const char *DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass)
 {
     if (!store || !document || !storepass || !*storepass)
-        return -1;
+        return NULL;
 
     if (DIDStore_StoreDID(store, document, "") == -1)
-        return -1;
+        return NULL;
 
     if (!signKey)
         signKey = DIDDocument_GetDefaultPublicKey(document);
@@ -1486,36 +1486,36 @@ int DIDStore_PublishDID(DIDStore *store, DIDDocument *document,
     return DIDBackend_Create(&store->backend, document, signKey, storepass);
 }
 
-int DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
+const char *DIDStore_UpdateDID(DIDStore *store, DIDDocument *document,
         DIDURL *signKey, const char *storepass)
 {
     if (!store || !document || !signKey || !storepass || !*storepass)
-        return -1;
+        return NULL;
 
     if (!signKey)
         signKey = DIDDocument_GetDefaultPublicKey(document);
 
     if (DIDStore_StoreDID(store, document, "") == -1)
-        return -1;
+        return NULL;
 
     return DIDBackend_Update(&store->backend, document, signKey, storepass);
 }
 
-int DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,
+const char *DIDStore_DeactivateDID(DIDStore *store, DID *did, DIDURL *signKey,
         const char *storepass)
 {
     if (!store || !did || !signKey || !storepass || !*storepass)
-        return -1;
+        return NULL;
 
     if (!signKey) {
         DIDDocument *doc = DIDStore_ResolveDID(store, did, false);
         if (!doc)
-            return -1;
+            return NULL;
 
         signKey = DIDDocument_GetDefaultPublicKey(doc);
         DIDDocument_Destroy(doc);
         if (!signKey)
-            return -1;
+            return NULL;
     }
 
     return DIDBackend_Deactivate(&store->backend, did, signKey, storepass);

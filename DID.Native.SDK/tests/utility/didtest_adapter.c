@@ -17,13 +17,13 @@ typedef struct TestDIDAdaptor {
     char *walletId;
 } TestDIDAdaptor;
 
-static int TestDIDAdaptor_CreateIdTransaction(DIDAdapter *_adapter, const char *payload, const char *memo)
+static const char *TestDIDAdaptor_CreateIdTransaction(DIDAdapter *_adapter, const char *payload, const char *memo)
 {
     TestDIDAdaptor *adapter = (TestDIDAdaptor*)_adapter;
     const char *password;
 
     if (!adapter || !payload)
-        return -1;
+        return NULL;
 
     password = adapter->passwordCallback((const char *)adapter->walletDir,
             (const char *)adapter->walletId);

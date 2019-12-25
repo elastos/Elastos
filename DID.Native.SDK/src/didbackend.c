@@ -29,76 +29,76 @@
 #include "didrequest.h"
 #include "didbackend.h"
 
-int DIDBackend_Create(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
-        const char *storepass)
+const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
+        DIDURL *signkey, const char *storepass)
 {
-    int ret;
+    const char *ret;
     const char *docstring, *reqstring;
 
     if (!backend || !backend->adapter || !document || !signkey || !storepass ||
             !*storepass)
-        return -1;
+        return NULL;
 
     docstring = DIDDocument_ToJson(document, 1, 0);
     if (!docstring)
-        return -1;
+        return NULL;
 
     reqstring = DIDRequest_Sign(RequestType_Create, DIDDocument_GetSubject(document),
             signkey, docstring, storepass);
 
     free((char*)docstring);
     if (!reqstring)
-        return -1;
+        return NULL;
 
     ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
     return ret;
 }
 
-int DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
+const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
         const char *storepass)
 {
-    int ret;
+    const char *ret;
     const char *docstring, *reqstring;
 
     if (!backend || !backend->adapter || !document || !signkey || !storepass ||
             !*storepass)
-        return -1;
+        return NULL;
 
     docstring = DIDDocument_ToJson(document, 1, 0);
     if (!docstring)
-        return -1;
+        return NULL;
 
     reqstring = DIDRequest_Sign(RequestType_Update, DIDDocument_GetSubject(document),
             signkey, docstring, storepass);
     free((char*)docstring);
     if (!reqstring)
-        return -1;
+        return NULL;
 
     ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);
     return ret;
 }
 
-int DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey,
+const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey,
         const char *storepass)
 {
-    int ret;
+    const char *ret;
     char data[MAX_DID], *datastring;
     const char *reqstring;
 
     if (!backend || !backend->adapter || !did || !signKey || !storepass ||
             !*storepass)
-        return -1;
+        return NULL;
 
     datastring = DID_ToString(did, data, MAX_DID);
     if (!reqstring)
-        return -1;
+        return NULL;
 
     reqstring = DIDRequest_Sign(RequestType_Deactivate, did,
             signKey, datastring, storepass);
     if (!reqstring)
-        return -1;
+        return NULL;
 
     ret = backend->adapter->createIdTransaction(backend->adapter, reqstring, "");
     free((char*)reqstring);

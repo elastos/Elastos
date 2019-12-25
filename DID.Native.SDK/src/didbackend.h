@@ -36,14 +36,14 @@ typedef struct DIDBackend {
 
 DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did);
 
-int DIDBackend_Create(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
-        const char *storepass);
+const char *DIDBackend_Create(DIDBackend *backend, DIDDocument *document,
+        DIDURL *signkey, const char *storepass);
 
-int DIDBackend_Update(DIDBackend *backend, DIDDocument *document, DIDURL *signkey,
-        const char *storepass);
+const char *DIDBackend_Update(DIDBackend *backend, DIDDocument *document,
+        DIDURL *signkey, const char *storepass);
 
-int DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey,
-        const char *storepass);
+const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did,
+        DIDURL *signKey, const char *storepass);
 
 #ifdef __cplusplus
 }

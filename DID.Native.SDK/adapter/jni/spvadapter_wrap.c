@@ -293,12 +293,13 @@ SWIGEXPORT jboolean JNICALL Java_org_elastos_did_adapter_SPVAdapter_isAvailable(
   return (jboolean)(result != 0);
 }
 
-SWIGEXPORT jint JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransaction(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload, jstring jMemo, jstring jPassword) {
+SWIGEXPORT jstring JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransaction(JNIEnv *jenv, jclass jcls, jlong jHandle, jstring jPayload, jstring jMemo, jstring jPassword) {
   SpvDidAdapter *handle = (SpvDidAdapter *)jHandle;
   char *payload = NULL;
   char *memo = NULL;
   char *password = NULL;
-  int result;
+  char *result;
+  jstring jresult = 0;
 
   (void)jenv;
   (void)jcls;
@@ -307,11 +308,11 @@ SWIGEXPORT jint JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransact
     payload = (char *)(*jenv)->GetStringUTFChars(jenv, jPayload, 0);
     if (!payload) {
       SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "Invalid DID transaction payload.");
-      return -1;
+      return 0;
     }
   } else {
       SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "Invalid DID transaction payload.");
-      return -1;
+      return 0;
   }
 
   if (jPassword) {
@@ -319,7 +320,7 @@ SWIGEXPORT jint JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransact
     if (!password) {
       (*jenv)->ReleaseStringUTFChars(jenv, jPayload, (const char *)payload);
       SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "Invalid payment password.");
-      return -1;
+      return 0;
     }
   } else {
     password = "";
@@ -329,18 +330,21 @@ SWIGEXPORT jint JNICALL Java_org_elastos_did_adapter_SPVAdapter_createIdTransact
     memo = (char *)(*jenv)->GetStringUTFChars(jenv, jMemo, 0);
   }
 
-  result = SpvDidAdapter_CreateIdTransaction(handle,(char const *)payload,(char const *)memo,(char const *)password);
+  result = (char *)SpvDidAdapter_CreateIdTransaction(handle,(char const *)payload,(char const *)memo,(char const *)password);
 
   if (payload) (*jenv)->ReleaseStringUTFChars(jenv, jPayload, (const char *)payload);
   if (memo) (*jenv)->ReleaseStringUTFChars(jenv, jMemo, (const char *)memo);
   if (password) (*jenv)->ReleaseStringUTFChars(jenv, jPassword, (const char *)password);
 
-  if (result < 0) {
+  if (result) {
+    jresult = (*jenv)->NewStringUTF(jenv, (const char *)result);
+    SpvDidAdapter_FreeMemory(handle,result);
+  } else {
     SWIG_JavaThrowException(jenv, SWIG_DIDStoreException, "DID adapter create ID teansaction failed.");
-    return -1;
+    return 0;
   }
 
-  return (jint)result;
+  return jresult;
 }
 
 
