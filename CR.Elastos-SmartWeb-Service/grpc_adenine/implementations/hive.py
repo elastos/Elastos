@@ -89,7 +89,7 @@ class Hive(hive_pb2_grpc.HiveServicer):
 
         del data['status']
         response = {
-            'result': data
+            'result': data['result']
         }
 
         return hive_pb2.Response(output=json.dumps(response), status_message=status_message, status=status)

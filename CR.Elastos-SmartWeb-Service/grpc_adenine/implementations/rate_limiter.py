@@ -56,9 +56,6 @@ class RateLimiter:
         date_now = datetime.datetime.now().strftime(self.date_format)
         api_key_data = self.session.query(UserApiRelations).filter_by(api_key=api_key).first()
 
-        print(api_key_data)
-        print(api_key_data.id)
-
         services_lists = ServicesLists(
             user_api_id=api_key_data.id,
             service_name=service_name,
