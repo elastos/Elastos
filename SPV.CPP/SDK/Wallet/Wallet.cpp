@@ -194,13 +194,10 @@ namespace Elastos {
 			_feePerKb = fee;
 		}
 
-		uint64_t Wallet::GetDefaultFeePerKb() {
-			return DEFAULT_FEE_PER_KB;
-		}
-
 		// only support asset of ELA
-		TransactionPtr Wallet::Vote(const VoteContent &voteContent, const std::string &memo, bool max) {
-			return _groupedAssets[Asset::GetELAAssetID()]->Vote(voteContent, memo, max);
+		TransactionPtr Wallet::Vote(const VoteContent &voteContent, const std::string &memo, bool max,
+		                            VoteContentArray &dropedVotes) {
+			return _groupedAssets[Asset::GetELAAssetID()]->Vote(voteContent, memo, max, dropedVotes);
 		}
 
 		TransactionPtr Wallet::Consolidate(const std::string &memo, const uint256 &assetID) {
@@ -695,11 +692,6 @@ namespace Elastos {
 			return _subAccount->OwnerPubKey();
 		}
 
-		bytes_t Wallet::GetCROwnerPublicKey() const {
-			boost::mutex::scoped_lock scopedLock(lock);
-			return _subAccount->DIDPubKey();
-		}
-
 		bool Wallet::IsDepositAddress(const AddressPtr &addr) const {
 			boost::mutex::scoped_lock scopedLock(lock);
 
@@ -764,24 +756,15 @@ namespace Elastos {
 			return key.Sign(msg);
 		}
 
-		bytes_t Wallet::SignWithCROwnerKey(const bytes_t &msg, const std::string &payPasswd) {
-			boost::mutex::scoped_lock scopedLock(lock);
-			Key key = _subAccount->DeriveDIDKey(payPasswd);
-			return key.Sign(msg);
-		}
-
 		std::vector<TransactionPtr> Wallet::TxUnconfirmedBefore(uint32_t blockHeight) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			std::vector<TransactionPtr> result;
 
 			for (size_t i = _transactions.size(); i > 0; --i) {
 				if (_transactions[i - 1]->GetBlockHeight() >= blockHeight) {
-					result.push_back(_transactions[i - 1]);
-				} else {
-					break;
+					result.insert(result.begin(), _transactions[i - 1]);
 				}
 			}
-			std::reverse(result.begin(), result.end());
 
 			return result;
 		}

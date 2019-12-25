@@ -53,7 +53,8 @@ namespace Elastos {
 			TransactionPtr CreateRetrieveDepositTx(uint8_t type, const PayloadPtr &payload, const BigInt &amount,
 												   const AddressPtr &fromAddress, const std::string &memo);
 
-			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo, bool max);
+			TransactionPtr Vote(const VoteContent &voteContent, const std::string &memo, bool max,
+			                    VoteContentArray &dropedVotes);
 
 			TransactionPtr Consolidate(const std::string &memo);
 

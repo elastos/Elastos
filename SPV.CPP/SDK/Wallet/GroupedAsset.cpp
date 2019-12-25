@@ -176,7 +176,8 @@ namespace Elastos {
 			return tx;
 		}
 
-		TransactionPtr GroupedAsset::Vote(const VoteContent &voteContent, const std::string &memo, bool max) {
+		TransactionPtr GroupedAsset::Vote(const VoteContent &voteContent, const std::string &memo, bool max,
+		                                  VoteContentArray &dropedVotes) {
 			bytes_t code;
 			std::string path;
 			uint64_t txSize = 0, feeAmount = 0;
@@ -185,6 +186,7 @@ namespace Elastos {
 			bool lastUTXOPending = false;
 			UTXOPtr firstInput;
 			BigInt totalOutputAmount;
+			dropedVotes.clear();
 
 			ErrorChecker::CheckCondition(max && voteContent.GetType() == VoteContent::CRC, Error::InvalidArgument,
 										 "Unsupport max for CRC vote");
@@ -349,6 +351,7 @@ namespace Elastos {
 				} else {
 					Log::warn("drop old vote content type: {} amount: {}", oldVoteContent[i].GetType(),
 							  oldVoteAmount[i].getDec());
+					dropedVotes.push_back(oldVoteContent[i]);
 				}
 			}
 

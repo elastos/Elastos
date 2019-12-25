@@ -1428,8 +1428,16 @@ static int vote(int argc, char *argv[]) {
 			std::cout << "Enter vote cr with JSON format: " << std::endl;
 			std::string voteJson;
 			std::cin >> voteJson;
-
-			tx = subWallet->CreateVoteCRTransaction("", nlohmann::json::parse(voteJson), "");
+			nlohmann::json invalidProducer = R"(
+[
+								        {
+								            "Type":"Delegate",
+								            "Candidates":[
+								            ]
+								        }
+								    ]
+)"_json;
+			tx = subWallet->CreateVoteCRTransaction("", nlohmann::json::parse(voteJson), "", invalidProducer);
 		} else if (voteType == "dpos") {
 			std::cout << "Enter number of votes:";
 			std::string stake;
@@ -1445,7 +1453,7 @@ static int vote(int argc, char *argv[]) {
 			std::cin >> pubKeys;
 			recoveryTTYSetting(&told);
 
-			tx = subWallet->CreateVoteProducerTransaction("", stake, nlohmann::json::parse(pubKeys), "");
+			tx = subWallet->CreateVoteProducerTransaction("", stake, nlohmann::json::parse(pubKeys), "", nlohmann::json::parse("[]"));
 		} else {
 			invalidCmdError();
 			return ERRNO_APP;

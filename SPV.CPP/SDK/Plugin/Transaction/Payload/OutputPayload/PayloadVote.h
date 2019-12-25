@@ -63,6 +63,8 @@ namespace Elastos {
 
 			std::string GetTypeString() const;
 
+			void SetCandidateVotes(const std::vector<CandidateVotes> &candidateVotes);
+
 			const std::vector<CandidateVotes> &GetCandidateVotes() const;
 
 			void SetAllCandidateVotes(uint64_t votes);

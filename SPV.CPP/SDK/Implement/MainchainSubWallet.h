@@ -66,7 +66,8 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const std::string &stake,
 					const nlohmann::json &publicKeys,
-					const std::string &memo);
+					const std::string &memo,
+					const nlohmann::json &invalidCandidates);
 
 			virtual	nlohmann::json GetVotedProducerList() const;
 
@@ -104,7 +105,8 @@ namespace Elastos {
 			virtual nlohmann::json CreateVoteCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &votes,
-				const std::string &memo);
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates);
 
 			virtual	nlohmann::json GetVotedCRList() const;
 
@@ -133,11 +135,13 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateVoteCRCProposalTransaction(const std::string &fromAddress,
 			                                                        const nlohmann::json &votes,
-			                                                        const std::string &memo);
+			                                                        const std::string &memo,
+			                                                        const nlohmann::json &invalidCandidates);
 
 			virtual nlohmann::json CreateImpeachmentCRCTransaction(const std::string &fromAddress,
 			                                                       const nlohmann::json &votes,
-			                                                       const std::string &memo);
+			                                                       const std::string &memo,
+			                                                       const nlohmann::json &invalidCandidates);
 
 			virtual nlohmann::json LeaderProposalTrackDigest(uint8_t type,
 			                                                 const std::string &proposalHash,
@@ -172,6 +176,8 @@ namespace Elastos {
 			                                      const std::string &sponsorSignature = "",
 			                                      const std::string &crSponsorSignature = "") const;
 			void InitData();
+
+			void FilterVoteCandidates(TransactionPtr &tx, const nlohmann::json &invalidCandidates) const;
 		protected:
 			friend class MasterWallet;
 
@@ -180,7 +186,8 @@ namespace Elastos {
 							   MasterWallet *parent,
 							   const std::string &netType);
 
-			TransactionPtr CreateVoteTx(const VoteContent &voteContent, const std::string &memo, bool max);
+			TransactionPtr CreateVoteTx(const VoteContent &voteContent, const std::string &memo, bool max,
+			                            VoteContentArray &dropedVotes);
 
 		private:
 			std::vector<TransactionPtr> _crList;

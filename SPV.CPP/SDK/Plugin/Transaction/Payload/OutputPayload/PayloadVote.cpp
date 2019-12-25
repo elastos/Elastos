@@ -114,6 +114,10 @@ namespace Elastos {
 			return "Unknow";
 		}
 
+		void VoteContent::SetCandidateVotes(const std::vector<CandidateVotes> &candidateVotes) {
+			_candidates = candidateVotes;
+		}
+
 		const std::vector<CandidateVotes> &VoteContent::GetCandidateVotes() const {
 			return _candidates;
 		}

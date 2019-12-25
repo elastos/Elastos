@@ -113,13 +113,14 @@ namespace Elastos {
 			return result;
 		}
 
-		TransactionPtr MainchainSubWallet::CreateVoteTx(const VoteContent &voteContent, const std::string &memo, bool max) {
+		TransactionPtr MainchainSubWallet::CreateVoteTx(const VoteContent &voteContent, const std::string &memo,
+		                                                bool max, VoteContentArray &dropedVotes) {
 			std::string m;
 
 			if (!memo.empty())
 				m = "type:text,msg:" + memo;
 
-			TransactionPtr tx = _walletManager->GetWallet()->Vote(voteContent, m, max);
+			TransactionPtr tx = _walletManager->GetWallet()->Vote(voteContent, m, max, dropedVotes);
 
 			if (_info->GetChainID() == "ELA")
 				tx->SetVersion(Transaction::TxVersion::V09);
@@ -369,17 +370,67 @@ namespace Elastos {
 			return address;
 		}
 
+		void MainchainSubWallet::FilterVoteCandidates(TransactionPtr &tx,
+		                                              const nlohmann::json &invalidCandidates) const {
+			OutputPayloadPtr &outputPayload = tx->GetOutputs()[0]->GetPayload();
+			PayloadVote *pv = dynamic_cast<PayloadVote *>(outputPayload.get());
+			ErrorChecker::CheckCondition(!pv, Error::InvalidTransaction, "invalid vote tx");
+
+			nlohmann::json result;
+			std::vector<VoteContent> voteContent = pv->GetVoteContent();
+			if (voteContent.size() <= 1 || invalidCandidates.size() <= 0) {
+				return;
+			}
+
+			for (std::vector<VoteContent>::iterator it = voteContent.begin() + 1; it != voteContent.end(); ++it) {
+				std::string type = (*it).GetTypeString();
+
+				std::set<std::string> invalidList;
+				for (size_t i = 0; i < invalidCandidates.size(); ++i) {
+					if ((invalidCandidates[i]["Type"].get<std::string>()) == type) {
+						invalidList = invalidCandidates[i]["Candidates"].get<std::set<std::string>>();
+						break;
+					}
+				}
+
+				if (invalidList.size() <= 0) {
+					return;
+				}
+
+				std::vector<CandidateVotes> candidatesVotes = (*it).GetCandidateVotes();
+				for (std::vector<CandidateVotes>::iterator i = candidatesVotes.begin(); i != candidatesVotes.end();) {
+					std::string candidate = (*i).GetCandidate().getHex();
+					if ((*it).GetType() == VoteContent::CRC || (*it).GetType() == VoteContent::CRCImpeachment) {
+						uint168 programHash((*i).GetCandidate());
+						Address didAddress(programHash);
+						candidate = didAddress.String();
+					}
+
+					if (invalidList.find(candidate) != invalidList.end()) {
+						i = candidatesVotes.erase(i);
+					} else {
+						++i;
+					}
+				}
+				(*it).SetCandidateVotes(candidatesVotes);
+			}
+
+			pv->SetVoteContent(voteContent);
+		}
+
 		nlohmann::json MainchainSubWallet::CreateVoteProducerTransaction(
 			const std::string &fromAddress,
 			const std::string &stake,
 			const nlohmann::json &publicKeys,
-			const std::string &memo) {
+			const std::string &memo,
+			const nlohmann::json &invalidCandidates) {
 
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("stake: {}", stake);
 			ArgInfo("pubkeys: {}", publicKeys.dump());
 			ArgInfo("memo: {}", memo);
+			ArgInfo("invalidCandidates: {}", invalidCandidates.dump());
 
 			bool max = false;
 			BigInt bgStake;
@@ -394,6 +445,8 @@ namespace Elastos {
 			// -1 means max
 			ErrorChecker::CheckParam(bgStake <= 0 && !max, Error::Code::VoteStakeError, "Vote stake should not be zero");
 
+			ErrorChecker::CheckJsonArray(invalidCandidates, 0, "invalidCandidates is error json format");
+
 			VoteContent voteContent(VoteContent::Delegate);
 			for (nlohmann::json::const_iterator it = publicKeys.cbegin(); it != publicKeys.cend(); ++it) {
 				if (!(*it).is_string()) {
@@ -407,10 +460,18 @@ namespace Elastos {
 			ErrorChecker::CheckParam(voteContent.GetCandidateVotes().empty(), Error::InvalidArgument,
 									 "Candidate vote list should not be empty");
 
-			TransactionPtr tx = CreateVoteTx(voteContent, memo, max);
+			VoteContentArray dropedList;
+			TransactionPtr tx = CreateVoteTx(voteContent, memo, max, dropedList);
+			FilterVoteCandidates(tx, invalidCandidates);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
+
+			std::vector<std::string> dropedTypes;
+			for(VoteContentArray::iterator it = dropedList.begin(); it != dropedList.end(); ++it) {
+				dropedTypes.push_back((*it).GetTypeString());
+			}
+			result["DropVotes"] = dropedTypes;
 
 			ArgInfo("r => {}", result.dump());
 			return result;
@@ -740,13 +801,16 @@ namespace Elastos {
 		nlohmann::json MainchainSubWallet::CreateVoteCRTransaction(
 				const std::string &fromAddress,
 				const nlohmann::json &votes,
-				const std::string &memo) {
+				const std::string &memo,
+				const nlohmann::json &invalidCandidates) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("votes: {}", votes.dump());
 			ArgInfo("memo: {}", memo);
+			ArgInfo("invalidCandidates: {}", invalidCandidates.dump());
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
+			ErrorChecker::CheckJsonArray(invalidCandidates, 0, "invalidCandidates is error json format");
 
 			BigInt bgStake = 0;
 
@@ -771,10 +835,19 @@ namespace Elastos {
 				voteContent.AddCandidate(CandidateVotes(candidate, value));
 			}
 
-			TransactionPtr tx = CreateVoteTx(voteContent, memo, false);
+			VoteContentArray dropedList;
+			TransactionPtr tx = CreateVoteTx(voteContent, memo, false, dropedList);
+
+			FilterVoteCandidates(tx, invalidCandidates);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
+
+			std::vector<std::string> dropedTypes;
+			for(VoteContentArray::iterator it = dropedList.begin(); it != dropedList.end(); ++it) {
+				dropedTypes.push_back((*it).GetTypeString());
+			}
+			result["DropVotes"] = dropedTypes;
 
 			ArgInfo("r => {}", result.dump());
 
@@ -1163,14 +1236,15 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateVoteCRCProposalTransaction(const std::string &fromAddress,
 		                                                                    const nlohmann::json &votes,
-		                                                                    const std::string &memo) {
+		                                                                    const std::string &memo,
+		                                                                    const nlohmann::json &invalidCandidates) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("votes: {}", votes.dump());
 			ArgInfo("memo: {}", memo);
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
-
+			ErrorChecker::CheckJsonArray(invalidCandidates, 0, "invalidCandidates is error json format");
 			BigInt bgStake = 0;
 
 			VoteContent voteContent(VoteContent::CRCProposal);
@@ -1189,10 +1263,18 @@ namespace Elastos {
 				voteContent.AddCandidate(CandidateVotes(candidate, value));
 			}
 
-			TransactionPtr tx = CreateVoteTx(voteContent, memo, false);
+			VoteContentArray dropedList;
+			TransactionPtr tx = CreateVoteTx(voteContent, memo, false, dropedList);
+			FilterVoteCandidates(tx, invalidCandidates);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
+
+			std::vector<std::string> dropedTypes;
+			for(VoteContentArray::iterator it = dropedList.begin(); it != dropedList.end(); ++it) {
+				dropedTypes.push_back((*it).GetTypeString());
+			}
+			result["DropVotes"] = dropedTypes;
 
 			ArgInfo("r => {}", result.dump());
 
@@ -1201,14 +1283,15 @@ namespace Elastos {
 
 		nlohmann::json MainchainSubWallet::CreateImpeachmentCRCTransaction(const std::string &fromAddress,
 		                                                                   const nlohmann::json &votes,
-		                                                                   const std::string &memo) {
+		                                                                   const std::string &memo,
+		                                                                   const nlohmann::json &invalidCandidates) {
 			ArgInfo("{} {}", _walletManager->GetWallet()->GetWalletID(), GetFunName());
 			ArgInfo("fromAddr: {}", fromAddress);
 			ArgInfo("votes: {}", votes.dump());
 			ArgInfo("memo: {}", memo);
 
 			ErrorChecker::CheckParam(!votes.is_object(), Error::Code::JsonFormatError, "votes is error json format");
-
+			ErrorChecker::CheckJsonArray(invalidCandidates, 0, "invalidCandidates is error json format");
 			BigInt bgStake = 0;
 
 			VoteContent voteContent(VoteContent::CRCImpeachment);
@@ -1230,11 +1313,18 @@ namespace Elastos {
 
 				voteContent.AddCandidate(CandidateVotes(candidate, value));
 			}
-
-			TransactionPtr tx = CreateVoteTx(voteContent, memo, false);
+			VoteContentArray dropedList;
+			TransactionPtr tx = CreateVoteTx(voteContent, memo, false, dropedList);
+			FilterVoteCandidates(tx, invalidCandidates);
 
 			nlohmann::json result;
 			EncodeTx(result, tx);
+
+			std::vector<std::string> dropedTypes;
+			for(VoteContentArray::iterator it = dropedList.begin(); it != dropedList.end(); ++it) {
+				dropedTypes.push_back((*it).GetTypeString());
+			}
+			result["DropVotes"] = dropedTypes;
 
 			ArgInfo("r => {}", result.dump());
 
