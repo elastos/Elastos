@@ -95,9 +95,9 @@ namespace Elastos {
 				std::vector<uint256> txHashes;
 				for (i = 0; i < transactions.size(); i++) {
 					if (_peer->KnownTxHashSet().find(transactions[i]) != _peer->KnownTxHashSet().end()) {
-						FireHasTx(hash);
+						FireHasTx(transactions[i]);
 					} else {
-						txHashes.push_back(hash);
+						txHashes.push_back(transactions[i]);
 					}
 				}
 
