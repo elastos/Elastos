@@ -233,12 +233,33 @@ services:
     container_name: privnet-wallet-service
     image: cyberrepublic/elastos-wallet-service:privnet-v0.6
     user: "${UID}:${GID}"
+    volumes:
+      - ${PWD}/restful-services/wallet/application-mainchain-did.properties:/home/elauser/application.properties
     depends_on:
       - privnet-mainchain-node
     ports:
       - 8091:8080
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8091/api/1/currHeight"]
+      interval: 30s
+      timeout: 120s
+      retries: 5
+    networks:
+      - blockchain
+    tty: true 
+
+  privnet-wallet-service-tokensidechain:
+    container_name: privnet-wallet-service-tokensidechain
+    image: cyberrepublic/elastos-wallet-service:privnet-v0.6
+    user: "${UID}:${GID}"
+    volumes:
+      - ${PWD}/restful-services/wallet/application-mainchain-token.properties:/home/elauser/application.properties
+    depends_on:
+      - privnet-mainchain-node
+    ports:
+      - 8093:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8093/api/1/currHeight"]
       interval: 30s
       timeout: 120s
       retries: 5

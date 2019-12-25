@@ -13,10 +13,10 @@ Mining: EQ4QhsYRwuBbNBXc8BPW972xA9ANByKt6U
 curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "ENqDYUYURsHpp1wQ8LBdTLba4JhEvSDXEw","privateKey": "79aaa0b2df79e82e687063ff7fd03579130095ec93aa2d1861ee669aabff69c3"}],"receiver": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","amount": "16000000"}]}' localhost:8091/api/1/transfer
 
 # Send from reserve to mainchain addr 1
-curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr","amount": "100000"}]}' localhost:8091/api/1/transfer
+curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EYSLC2mgk5KTLEATK6hRYJ77Umnt1Zv72N","amount": "3000000"}]}' localhost:8091/api/1/transfer
 
 # Send from reserve to mainchain addr 2
-curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY","amount": "100000"}]}' localhost:8091/api/1/transfer
+curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD","amount": "3000000"}]}' localhost:8091/api/1/transfer
 
 # Send from reserve to DID sidechain addr
 curl -X POST -H "Content-Type: application/json" -d '{"sender": [{"address": "EUSa4vK5BkKXpGE3NoiUt695Z9dWVJ495s","privateKey": "109a5fb2b7c7abd0f2fa90b0a295e27de7104e768ab0294a47a1dd25da1f68a8"}],"receiver": [{"address": "EKsSQae7goc5oGGxwvgbUxkMsiQhC9ZfJ3","amount": "100000"}]}' localhost:8091/api/1/cross/m2d/transfer
@@ -54,14 +54,14 @@ NOTE: You gotta use owner's public key here. Also, as soon as ELA is taken out o
 curl -X POST -H "Content-Type: application/json" -d '{
       "sender":[
           {
-              "address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
+              "address":"EYSLC2mgk5KTLEATK6hRYJ77Umnt1Zv72N",
               "privateKey":"a24ee48f308189d46a5f050f326e76779b6508d8c8aaf51a7152b903b9f42f80"
           }
       ],
       "memo":"Voting for Noderators",
       "receiver":[
           {
-              "address":"EPqoMcoHxWMJcV3pCAsGsjkoTdi6DBnKqr",
+              "address":"EYSLC2mgk5KTLEATK6hRYJ77Umnt1Zv72N",
               "amount":"50000",
               "candidatePublicKeys":["03aa307d123cf3f181e5b9cc2839c4860a27caf5fb329ccde2877c556881451007"]
           }
@@ -72,14 +72,14 @@ curl -X POST -H "Content-Type: application/json" -d '{
 curl -X POST -H "Content-Type: application/json" -d '{
       "sender":[
           {
-              "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+              "address":"ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD",
               "privateKey":"ff6dc625cf986eae4365f69c30035608fa47518e5ada4ad99b7cbc5df7683c30"
           }
       ],
       "memo":"Voting for KP Supernode",
       "receiver":[
           {
-              "address":"EZzfPQYxAKPR9zSPAG161WsmnucwVqzcLY",
+              "address":"ELpKMgPAvvFnRR32AKgYhGkXM1s4wZ6ZjD",
               "amount":"60000",
               "candidatePublicKeys":["03521eb1f20fcb7a792aeed2f747f278ae7d7b38474ee571375ebe1abb3fa2cbbb"]
           }

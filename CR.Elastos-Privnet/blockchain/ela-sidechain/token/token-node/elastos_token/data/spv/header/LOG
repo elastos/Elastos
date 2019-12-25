@@ -88,3 +88,19 @@
 19:33:03.520951 table@compaction committed F-2 S-12KiB Ke·0 D·88 T·34.830179ms
 19:33:03.521050 table@remove removed @17
 19:33:03.521110 table@remove removed @16
+=============== Dec 13, 2019 (UTC) ===============
+15:15:53.638982 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+15:15:53.639064 version@stat F·[0 1] S·133KiB[0B 133KiB] Sc·[0.00 0.00]
+15:15:53.639082 db@open opening
+15:15:53.639119 journal@recovery F·1
+15:15:53.639392 journal@recovery recovering @21
+15:15:53.656596 memdb@flush created L0@24 N·2 S·343B "H0\f..\x10a\xed,v1728":"I<\x02\x00\x00,v1729"
+15:15:53.656885 version@stat F·[1 1] S·133KiB[343B 133KiB] Sc·[0.25 0.00]
+15:15:53.684611 db@janitor F·5 G·1
+15:15:53.684621 db@janitor removing table-20
+15:15:53.684719 db@open done T·45.632129ms
+15:16:07.106810 table@compaction L0·1 -> L1·1 S·133KiB Q·1736
+15:16:07.123397 table@build created L1@27 N·1149 S·132KiB "B,v1725":"I\xff\x01\x00\x00,v1542"
+15:16:07.123454 version@stat F·[0 1] S·132KiB[0B 132KiB] Sc·[0.00 0.00]
+15:16:07.130033 table@compaction committed F-1 S-470B Ke·0 D·1 T·22.984866ms
+15:16:07.134378 table@remove removed @23

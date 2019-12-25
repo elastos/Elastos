@@ -60,3 +60,13 @@
 19:33:03.495666 version@stat F·[2] S·822B[822B] Sc·[0.50]
 19:33:03.521903 db@janitor F·4 G·0
 19:33:03.521940 db@open done T·35.703769ms
+=============== Dec 13, 2019 (UTC) ===============
+15:15:53.686091 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+15:15:53.686202 version@stat F·[2] S·822B[822B] Sc·[0.50]
+15:15:53.686260 db@open opening
+15:15:53.686343 journal@recovery F·1
+15:15:53.687526 journal@recovery recovering @14
+15:15:53.693538 memdb@flush created L0@16 N·1 S·150B "F0\f..\x10a\xed,v15":"F0\f..\x10a\xed,v15"
+15:15:53.693793 version@stat F·[3] S·972B[972B] Sc·[0.75]
+15:15:53.712746 db@janitor F·5 G·0
+15:15:53.712774 db@open done T·26.492293ms
