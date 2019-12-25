@@ -47,8 +47,8 @@ public class MainchainSubWallet extends SubWallet {
         return GetOwnerPublicKey(mMainchainProxy);
     }
 
-    public String CreateVoteProducerTransaction(String fromAddress, String stake, String publicKeys, String memo) throws WalletException {
-        return CreateVoteProducerTransaction(mMainchainProxy, fromAddress, stake, publicKeys, memo);
+    public String CreateVoteProducerTransaction(String fromAddress, String stake, String publicKeys, String memo, String invalidCandidates) throws WalletException {
+        return CreateVoteProducerTransaction(mMainchainProxy, fromAddress, stake, publicKeys, memo, invalidCandidates);
     }
 
     public String GetVotedProducerList() throws WalletException {
@@ -88,8 +88,8 @@ public class MainchainSubWallet extends SubWallet {
         return CreateRetrieveCRDepositTransaction(mMainchainProxy, crPublickey, amount, memo);
     }
 
-    public String CreateVoteCRTransaction(String fromAddress, String votes, String memo) throws WalletException {
-        return CreateVoteCRTransaction(mMainchainProxy, fromAddress, votes, memo);
+    public String CreateVoteCRTransaction(String fromAddress, String votes, String memo, String invalidCandidates) throws WalletException {
+        return CreateVoteCRTransaction(mMainchainProxy, fromAddress, votes, memo, invalidCandidates);
     }
 
     public String GetVotedCRList() throws WalletException {
@@ -112,12 +112,12 @@ public class MainchainSubWallet extends SubWallet {
         return CreateCRCProposalTransaction(mMainchainProxy, crSignedProposal, memo);
     }
 
-    public String CreateVoteCRCProposalTransaction(String fromAddress, String votes, String memo) throws WalletException {
-        return CreateVoteCRCProposalTransaction(mMainchainProxy, fromAddress, votes, memo);
+    public String CreateVoteCRCProposalTransaction(String fromAddress, String votes, String memo, String invalidCandidates) throws WalletException {
+        return CreateVoteCRCProposalTransaction(mMainchainProxy, fromAddress, votes, memo, invalidCandidates);
     }
 
-    public String CreateImpeachmentCRCTransaction(String fromAddress, String votes, String memo) throws WalletException {
-        return CreateImpeachmentCRCTransaction(mMainchainProxy, fromAddress, votes, memo);
+    public String CreateImpeachmentCRCTransaction(String fromAddress, String votes, String memo, String invalidCandidates) throws WalletException {
+        return CreateImpeachmentCRCTransaction(mMainchainProxy, fromAddress, votes, memo, invalidCandidates);
     }
 
     public String GenerateCRCProposalReview(String proposalHash, byte voteResult, String crDID, String payPasswd) throws WalletException {
@@ -163,7 +163,7 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String GetOwnerPublicKey(long proxy);
 
-    private native String CreateVoteProducerTransaction(long proxy, String fromAddress, String stake, String publicKeys, String memo);
+    private native String CreateVoteProducerTransaction(long proxy, String fromAddress, String stake, String publicKeys, String memo, String invalidCandidates);
 
     private native String GetVotedProducerList(long proxy);
 
@@ -183,7 +183,7 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String CreateRetrieveCRDepositTransaction(long Proxy, String crPublickey, String amount, String memo);
 
-    private native String CreateVoteCRTransaction(long Proxy, String fromAddress, String votes, String memo);
+    private native String CreateVoteCRTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
 
     private native String GetVotedCRList(long Proxy);
 
@@ -195,9 +195,9 @@ public class MainchainSubWallet extends SubWallet {
 
     private native String CreateCRCProposalTransaction(long Proxy, String crSignedProposal, String memo);
 
-    private native String CreateVoteCRCProposalTransaction(long Proxy, String fromAddress, String votes, String memo);
+    private native String CreateVoteCRCProposalTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
 
-    private native String CreateImpeachmentCRCTransaction(long Proxy, String fromAddress, String votes, String memo);
+    private native String CreateImpeachmentCRCTransaction(long Proxy, String fromAddress, String votes, String memo, String invalidCandidates);
 
     private native String GenerateCRCProposalReview(long Proxy, String proposalHash, byte voteResult, String crDID, String payPasswd);
 

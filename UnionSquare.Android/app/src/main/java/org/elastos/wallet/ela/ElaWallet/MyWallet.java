@@ -1066,8 +1066,8 @@ public class MyWallet {
     // args[3]: long   stake
     // args[4]: String publicKeys JSONArray
     // args[5]: String memo
-    // args[6]: boolean useVotedUTXO
-    public BaseEntity createVoteProducerTransaction(String masterWalletID, String chainID, String fromAddress, String stake, String publicKeys, String memo, boolean useVotedUTXO) {
+    // args[6]: String invalidCandidates
+    public BaseEntity createVoteProducerTransaction(String masterWalletID, String chainID, String fromAddress, String stake, String publicKeys, String memo, String invalidCandidates) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1082,7 +1082,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo);
+            String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, invalidCandidates);
 
             return new CommmonStringEntity(SUCCESSCODE, txJson);
             // successProcess(cc, txJson);
@@ -1478,9 +1478,11 @@ public class MyWallet {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: String amount
-    // args[3]: String memo
-    public BaseEntity createVoteCRTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo) {
+    // args[2]: String fromAddress
+    // args[3]: String votes
+    // args[4]: String memo
+    // args[5]: String invalidCandidates
+    public BaseEntity createVoteCRTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo, String invalidCandidates) {
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
@@ -1495,7 +1497,7 @@ public class MyWallet {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
-            String tx = mainchainSubWallet.CreateVoteCRTransaction(fromAddress, votes, memo);
+            String tx = mainchainSubWallet.CreateVoteCRTransaction(fromAddress, votes, memo, invalidCandidates);
 
             return new CommmonStringEntity(SUCCESSCODE, tx);
         } catch (WalletException e) {
