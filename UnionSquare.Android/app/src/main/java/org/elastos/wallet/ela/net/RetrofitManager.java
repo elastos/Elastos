@@ -26,9 +26,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class RetrofitManager {
-    private static long CONNECT_TIMEOUT = 25L;
-    private static long READ_TIMEOUT = 10L;
-    private static long WRITE_TIMEOUT = 10L;
+    private static long CONNECT_TIMEOUT = 30L;
+    private static long READ_TIMEOUT = 30L;
+    private static long WRITE_TIMEOUT = 30L;
     //设缓存有效期为1天
     private static final long CACHE_STALE_SEC = 60 * 60 * 24 * 1;
     //查询缓存的Cache-Control设置，为if-only-cache时只查询缓存而不会请求服务器，max-stale可以配合设置缓存失效时间

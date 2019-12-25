@@ -419,7 +419,7 @@
     <string name="menberpk">Candidate Public Key</string>
     <string name="menberdid">Candidate DID</string>
     <string name="maxvote">Maximum Voting Rights About：</string>
-    <string name="equaldivision">Distribute Evenly</string>
+    <string name="equaldivision">All &#38; Average</string>
     <string name="currentrank">Current Ranking：</string>
     <string name="ticketnum">Total Votes：</string>
     <string name="plzinputpercent">Enter Percentage</string>
@@ -531,4 +531,5 @@
     <string name="iagree">I have read and agreed with the above provisions</string>
     <string name="nocandidates">No Candidate</string>
     <string name="nocandidatenode">No Candidate Node</string>
+    <string name="notsufficientfundskeepornot">Insufficient account balance will invalidate previous voting results.Continue trading？</string>
 </resources>

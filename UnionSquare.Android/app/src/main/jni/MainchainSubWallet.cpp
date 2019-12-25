@@ -315,7 +315,8 @@ static jstring JNICALL CreateVoteProducerTransaction(JNIEnv *env, jobject clazz,
         nlohmann::json txJson = wallet->CreateVoteProducerTransaction(fromAddress, stake,
                                                                       nlohmann::json::parse(
                                                                               publicKeys), memo,
-                                                                              invalidCandidates);
+                                                                      nlohmann::json::parse(
+                                                                              invalidCandidates));
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -642,7 +643,8 @@ static jstring JNICALL CreateVoteCRTransaction(JNIEnv *env, jobject clazz, jlong
         nlohmann::json txJson = wallet->CreateVoteCRTransaction(fromAddress,
                                                                 nlohmann::json::parse(votes),
                                                                 memo,
-                                                                invalidCandidates);
+                                                                nlohmann::json::parse(
+                                                                        invalidCandidates));
         tx = env->NewStringUTF(txJson.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -843,7 +845,8 @@ CreateVoteCRCProposalTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletPro
         nlohmann::json j = subWallet->CreateVoteCRCProposalTransaction(fromAddress,
                                                                        nlohmann::json::parse(votes),
                                                                        memo,
-                                                                       invalidCandidates);
+                                                                       nlohmann::json::parse(
+                                                                               invalidCandidates));
         result = env->NewStringUTF(j.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;
@@ -886,7 +889,8 @@ CreateImpeachmentCRCTransaction(JNIEnv *env, jobject clazz, jlong jSubWalletProx
         nlohmann::json j = subWallet->CreateImpeachmentCRCTransaction(fromAddress,
                                                                       nlohmann::json::parse(votes),
                                                                       memo,
-                                                                      invalidCandidates);
+                                                                      nlohmann::json::parse(
+                                                                              invalidCandidates));
         result = env->NewStringUTF(j.dump().c_str());
     } catch (const std::exception &e) {
         exception = true;

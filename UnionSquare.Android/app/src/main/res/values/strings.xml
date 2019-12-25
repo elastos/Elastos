@@ -535,4 +535,5 @@
     <string name="iagree">我已阅读并同意以上条款</string>
     <string name="nocandidates">暂无候选委员</string>
     <string name="nocandidatenode">暂无候选节点</string>
+    <string name="notsufficientfundskeepornot">账户余额不足，将使之前的投票结果失效。是否继续交易？</string>
 </resources>

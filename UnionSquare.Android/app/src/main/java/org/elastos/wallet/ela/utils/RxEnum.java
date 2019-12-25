@@ -67,6 +67,7 @@ public enum RxEnum {
     KEEPDRAFT,//保存草稿
     IPVALID,//节点ip可用
     AGREE,//cr注册同意协议
+    GETDEPOSITVOTR,//列表其他获得非active数据
 
    /* enum Type {
         CoinBase, // 创币交易

@@ -13,15 +13,15 @@ public class CRNodeCartPresenter extends NewPresenterAbstract {
 
     //提交投票
     public void createVoteCRTransaction(String masterWalletID, String chainID, String fromAddress, String votes, String memo
-            , BaseFragment baseFragment) {
+            , String unActiveData, BaseFragment baseFragment) {
         Observer observer = createObserver(baseFragment, "createVoteCRTransaction");
         Observable observable = createObservable(new ObservableListener() {
             @Override
             public BaseEntity subscribe() {
-                return baseFragment.getMyWallet().createVoteCRTransaction(masterWalletID, chainID, fromAddress, votes, memo);
+                return baseFragment.getMyWallet().createVoteCRTransaction(masterWalletID, chainID, fromAddress, votes, memo, unActiveData);
             }
         });
-        subscriberObservable(observer, observable);
+        subscriberObservable(observer, observable, baseFragment);
     }
 
 }

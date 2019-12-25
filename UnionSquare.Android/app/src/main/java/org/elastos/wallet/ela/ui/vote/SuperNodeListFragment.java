@@ -14,6 +14,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.layout.QMUILinearLayout;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -25,10 +28,13 @@ import org.elastos.wallet.ela.ElaWallet.MyWallet;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.table.Wallet;
+import org.elastos.wallet.ela.rxjavahelp.BaseEntity;
+import org.elastos.wallet.ela.rxjavahelp.NewBaseViewData;
 import org.elastos.wallet.ela.ui.common.viewdata.CommmonStringWithMethNameViewData;
+import org.elastos.wallet.ela.ui.crvote.bean.CRListBean;
+import org.elastos.wallet.ela.ui.crvote.presenter.CRlistPresenter;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.ElectoralAffairsFragment;
 import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VoteListPresenter;
-import org.elastos.wallet.ela.ui.vote.ElectoralAffairs.VotelistViewData;
 import org.elastos.wallet.ela.ui.vote.NodeCart.NodeCartFragment;
 import org.elastos.wallet.ela.ui.vote.NodeInformation.NodeInformationFragment;
 import org.elastos.wallet.ela.ui.vote.SuperNodeList.SuperNodeListAdapter;
@@ -38,6 +44,7 @@ import org.elastos.wallet.ela.ui.vote.myVote.MyVoteFragment;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpForFragment;
 import org.elastos.wallet.ela.ui.vote.signupfor.SignUpPresenter;
 import org.elastos.wallet.ela.utils.DividerItemDecoration;
+import org.elastos.wallet.ela.utils.Log;
 import org.elastos.wallet.ela.utils.NumberiUtil;
 import org.elastos.wallet.ela.utils.SPUtil;
 
@@ -50,7 +57,7 @@ import butterknife.OnClick;
 /**
  * 超级节点选举
  */
-public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, CommmonStringWithMethNameViewData, VotelistViewData, OnRefreshListener {
+public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, CommmonStringWithMethNameViewData, NewBaseViewData, OnRefreshListener {
 
 
     @BindView(R.id.toolbar_title)
@@ -107,6 +114,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             //获取pk
             signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
         }
+        new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
 
     }
 
@@ -137,6 +145,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 bundle = new Bundle();
                 bundle.putString("zb", zb);
                 bundle.putSerializable("netList", netList);
+                bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 start(NodeCartFragment.class, bundle);
                 break;
             case R.id.tv_signupfor:
@@ -211,8 +220,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             case "getPublicKeyForVote":
                 publicKey = data;
                 //有自已的投票就排第一
-                new VoteListPresenter().votelistbean("1", "all", this);
-                //  onGetPk(data);
+                new VoteListPresenter().getDepositVoteList("1", "all", this, true);
                 break;
         }
     }
@@ -241,9 +249,48 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
-    @Override
-    public void onGetVoteList(VoteListBean dataResponse) {
 
+
+    JSONArray otherUnActiveVote = new JSONArray();
+
+    @Override
+    public void onGetData(String methodName, BaseEntity baseEntity, Object o) {
+        switch (methodName) {
+            case "getCRlist":
+                List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
+                JSONObject depiositUnActiveVote = new JSONObject();
+                List<String> didList = new ArrayList<>();
+                for (int i = 0; i < crList.size(); i++) {
+                    CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = crList.get(i);
+                    if (!bean.getState().equals("Active")) {
+                        didList.add(bean.getDid());
+                    }
+                }
+                depiositUnActiveVote.put("Type", "CRC");
+                depiositUnActiveVote.put("Candidates", JSON.toJSON(didList));
+                boolean hasCRC = false;
+                for (int i = 0; i < otherUnActiveVote.size(); i++) {
+                    JSONObject jsonObject = (JSONObject) otherUnActiveVote.get(i);
+                    if ("CRC".equals(jsonObject.getString("Type"))) {
+                        hasCRC = true;
+                        break;
+                    }
+
+                }
+                if (!hasCRC) {
+                    otherUnActiveVote.add(depiositUnActiveVote);
+                }
+                Log.i("??", otherUnActiveVote.toString());
+                break;
+            case "getDepositVoteList":
+                onGetDepositVoteList((VoteListBean) baseEntity);
+                break;
+
+
+        }
+    }
+
+    private void onGetDepositVoteList(VoteListBean dataResponse) {
         zb = dataResponse.getData().getResult().getTotalvoterate();//全局占有率
         tv_zb.setText(NumberiUtil.numberFormat(Double.parseDouble(zb) * 100 + "", 2) + "%");
         tv_num.setText(dataResponse.getData().getResult().getTotalvotes().split("\\.")[0]);//totalvotes": "
@@ -294,25 +341,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             setRecyclerview();
             setRecyclerview1();
         }
-
-
-
-       /* //0 普通单签 1单签只读 2普通多签 3多签只读
-        if (wallet.getType() == 0 || wallet.getType() == 1) {
-            //获取公钥
-            if (TextUtils.isEmpty(publicKey)) {
-                signUpPresenter.getPublicKeyForVote(wallet.getWalletId(), MyWallet.ELA, this);
-            } else {
-                onGetPk(publicKey);
-            }
-        } else {
-            setRecyclerview();
-            setRecyclerview1();
-        }*/
-
-
     }
-
     private Drawable getDrawable(int id) {
         Drawable drawable = getResources().getDrawable(id);
         drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
@@ -324,7 +353,9 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         onErrorRefreshLayout(srl);
         is = false;
         curentNode = null;
-        new VoteListPresenter().votelistbean("1", "all", this);
-
+        otherUnActiveVote.clear();
+        new VoteListPresenter().getDepositVoteList("1", "all", this, true);
+        new CRlistPresenter().getCRlist(1, 1000, "all", this, false);
     }
+
 }
