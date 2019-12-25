@@ -108,7 +108,7 @@ public class TransferActivity extends BaseActivity {
                 //转账
                 rlRate.setVisibility(View.GONE);
                 break;
-            case Constant.SUPERNODESIGN:
+            case Constant.SUPERNODEVOTE:
             case Constant.CRVOTE:
             case Constant.WITHDRAWSUPERNODE:
             case Constant.WITHDRAWCR:

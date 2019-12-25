@@ -13,6 +13,7 @@ public class Constant {
     public static final String SUPERNODESIGN = "supernodevote";//超级节点参选
     public static final String CRSIGNUP = "crsignup";//cr注册
     public static final String DIDSIGNUP = "didsignup";//did注册
+    public static final String SUPERNODEVOTE = "nodecrvote";//cr投票
     public static final String CRVOTE = "crvote";//cr投票
     public static final String TOWHOL = "towhole";//零钱换整
     public static final String UPDATENODEINFO= "updatenodeinfo";//超级节点更新参选信息
