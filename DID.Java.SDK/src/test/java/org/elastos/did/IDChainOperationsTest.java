@@ -596,6 +596,9 @@ public class IDChainOperationsTest {
 		String did;
 		while ((did = input.readLine()) != null) {
 			assertTrue(didStrings.contains(did));
+			DIDDocument doc = store.loadDid(did);
+			assertNotNull(doc);
+			assertEquals(did, doc.getSubject().toString());
 		}
 
 		input.close();

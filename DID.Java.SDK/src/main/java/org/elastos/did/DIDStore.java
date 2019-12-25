@@ -190,6 +190,8 @@ public final class DIDStore {
 				storePrivateKey(did, doc.getDefaultPublicKey(),
 						key.serialize(),storepass);
 
+				storeDid(doc);
+
 				if (i >= nextIndex)
 					storage.storePrivateIdentityIndex(i);
 
@@ -331,6 +333,9 @@ public final class DIDStore {
 		doc.setMeta(meta);
 
 		storage.storeDidMeta(doc.getSubject(), meta);
+
+		for (VerifiableCredential vc : doc.getCredentials())
+			storeCredential(vc);
 
 		if (didCache != null)
 			didCache.put(doc.getSubject(), doc);
