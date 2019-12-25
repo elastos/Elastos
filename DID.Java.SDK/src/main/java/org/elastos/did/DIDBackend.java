@@ -178,7 +178,7 @@ public class DIDBackend {
 		return resolve(did, false);
 	}
 
-	protected boolean create(DIDDocument doc, DIDURL signKey, String storepass)
+	protected String create(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		IDChainRequest request = IDChainRequest.create(doc, signKey, storepass);
 		String json = request.toJson(true);
@@ -190,7 +190,7 @@ public class DIDBackend {
 		}
 	}
 
-	protected boolean update(DIDDocument doc, String previousTxid,
+	protected String update(DIDDocument doc, String previousTxid,
 			DIDURL signKey, String storepass) throws DIDStoreException {
 		IDChainRequest request = IDChainRequest.update(doc,
 				previousTxid, signKey, storepass);
@@ -203,7 +203,7 @@ public class DIDBackend {
 		}
 	}
 
-	protected boolean deactivate(DID did, DIDURL signKey, String storepass)
+	protected String deactivate(DID did, DIDURL signKey, String storepass)
 			throws DIDStoreException {
 		IDChainRequest request = IDChainRequest.deactivate(did, signKey, storepass);
 		String json = request.toJson(true);

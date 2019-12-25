@@ -724,6 +724,7 @@ public class DIDStoreTest {
 		DIDDocument[] docs = new DIDDocument[10];
 
 		for (int i = 0; i < stores.length; i++) {
+			TestData.deleteFile(new File(TestConfig.storeRoot + i));
 			stores[i] = DIDStore.open("filesystem", TestConfig.storeRoot + i);
 			assertNotNull(stores[i]);
 			String mnemonic = Mnemonic.generate(Mnemonic.ENGLISH);

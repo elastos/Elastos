@@ -23,7 +23,6 @@
 package org.elastos.did;
 
 public final class TestConfig {
-	/*
 	public final static boolean verbose = false;
 
 	public final static String tempDir = "/PATH/TO/TEMP";
@@ -36,20 +35,5 @@ public final class TestConfig {
 	public final static String walletId = "test";
 	public final static String walletPassword = "passwd";
 	public final static String networkConfig = "/PATH/TO/privnet.json";
-	public final static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
-	*/
-
-	public final static boolean verbose = true;
-
-	public final static String tempDir = "/Users/jingyu/Temp";
-
-	public final static String storeRoot = "/Users/jingyu/Temp/DIDStore";
-	public final static String storePass = "passwd";
-	public final static String passphrase = "secret";
-
-	public final static String walletDir = "/Users/jingyu/.didwallet";
-	public final static String walletId = "test";
-	public final static String walletPassword = "helloworld";
-	public final static String networkConfig = "/Users/jingyu/Projects/Elastos/DID/Native.SDK.jy/adapter/wallet/privnet.json";
 	public final static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
 }

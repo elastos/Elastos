@@ -82,8 +82,8 @@ public class IDChainOperationsTest {
 		DIDDocument doc = store.newDid(TestConfig.storePass);
 		DID did = doc.getSubject();
 
-		Boolean success = store.publishDid(doc, TestConfig.storePass);
-		assertTrue(success);
+		String txid = store.publishDid(doc, TestConfig.storePass);
+		assertNotNull(txid);
 		System.out.println("Published new DID: " + did);
 
 		// Resolve new DID document
@@ -148,8 +148,8 @@ public class IDChainOperationsTest {
 		DIDDocument doc = store.newDid(TestConfig.storePass);
 		DID did = doc.getSubject();
 
-		Boolean success = store.publishDid(doc, TestConfig.storePass);
-		assertTrue(success);
+		String txid = store.publishDid(doc, TestConfig.storePass);
+		assertNotNull(txid);
 		System.out.println("Published new DID: " + did);
 
 		// Resolve new DID document
@@ -207,8 +207,8 @@ public class IDChainOperationsTest {
 		assertEquals(2, doc.getPublicKeyCount());
 		assertEquals(2, doc.getAuthenticationKeyCount());
 
-		success = store.updateDid(doc, TestConfig.storePass);
-		assertTrue(success);
+		txid = store.updateDid(doc, TestConfig.storePass);
+		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
 		if (adapter != null) {
@@ -265,8 +265,8 @@ public class IDChainOperationsTest {
 		assertEquals(3, doc.getPublicKeyCount());
 		assertEquals(3, doc.getAuthenticationKeyCount());
 
-		success = store.updateDid(doc, TestConfig.storePass);
-		assertTrue(success);
+		txid = store.updateDid(doc, TestConfig.storePass);
+		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
 		if (adapter != null) {
@@ -320,7 +320,8 @@ public class IDChainOperationsTest {
 	public void testUpdateAndResolveWithCredentials() throws DIDException {
 		TestData testData = new TestData();
 		DIDStore store = testData.setupStore(DUMMY_TEST);
-		testData.initIdentity();
+		String mnemonic = testData.initIdentity();
+		System.out.println("Mnemonic: " + mnemonic);
 
 		SPVAdapter adapter = null;
 
@@ -372,8 +373,8 @@ public class IDChainOperationsTest {
 		assertNotNull(doc);
 		assertEquals(1, doc.getCredentialCount());
 
-		Boolean success = store.publishDid(doc, TestConfig.storePass);
-		assertTrue(success);
+		String txid = store.publishDid(doc, TestConfig.storePass);
+		assertNotNull(txid);
 		System.out.println("Published new DID: " + did);
 
 		// Resolve new DID document
@@ -443,8 +444,8 @@ public class IDChainOperationsTest {
 		assertNotNull(doc);
 		assertEquals(2, doc.getCredentialCount());
 
-		success = store.updateDid(doc, TestConfig.storePass);
-		assertTrue(success);
+		txid = store.updateDid(doc, TestConfig.storePass);
+		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
 		if (adapter != null) {
@@ -517,8 +518,8 @@ public class IDChainOperationsTest {
 		assertNotNull(doc);
 		assertEquals(3, doc.getCredentialCount());
 
-		success = store.updateDid(doc, TestConfig.storePass);
-		assertTrue(success);
+		txid = store.updateDid(doc, TestConfig.storePass);
+		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
 		if (adapter != null) {

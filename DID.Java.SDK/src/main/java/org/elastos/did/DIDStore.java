@@ -234,7 +234,7 @@ public final class DIDStore {
 		return newDid(null, storepass);
 	}
 
-	public boolean publishDid(DIDDocument doc, DIDURL signKey, String storepass)
+	public String publishDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException, DIDException {
 		if (doc == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -245,18 +245,18 @@ public final class DIDStore {
 		return DIDBackend.getInstance().create(doc, signKey, storepass);
 	}
 
-	public boolean publishDid(DIDDocument doc, String signKey, String storepass)
+	public String publishDid(DIDDocument doc, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException, DIDException {
 		DIDURL id = signKey == null ? null : new DIDURL(doc.getSubject(), signKey);
 		return publishDid(doc, id, storepass);
 	}
 
-	public boolean publishDid(DIDDocument doc, String storepass)
+	public String publishDid(DIDDocument doc, String storepass)
 			throws DIDStoreException, DIDException {
 		return publishDid(doc, (DIDURL)null, storepass);
 	}
 
-	public boolean updateDid(DIDDocument doc, DIDURL signKey, String storepass)
+	public String updateDid(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDException, DIDStoreException, DIDException {
 		if (doc == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -268,18 +268,18 @@ public final class DIDStore {
 				doc.getTransactionId(), signKey, storepass);
 	}
 
-	public boolean updateDid(DIDDocument doc, String signKey, String storepass)
+	public String updateDid(DIDDocument doc, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDException, DIDStoreException {
 		DIDURL id = signKey == null ? null : new DIDURL(doc.getSubject(), signKey);
 		return updateDid(doc, id, storepass);
 	}
 
-	public boolean updateDid(DIDDocument doc, String storepass)
+	public String updateDid(DIDDocument doc, String storepass)
 			throws DIDException, DIDStoreException {
 		return updateDid(doc, (DIDURL)null, storepass);
 	}
 
-	public boolean deactivateDid(DID did, DIDURL signKey, String storepass)
+	public String deactivateDid(DID did, DIDURL signKey, String storepass)
 			throws DIDStoreException, DIDException {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
@@ -301,13 +301,13 @@ public final class DIDStore {
 		// TODO: how to handle locally?
 	}
 
-	public boolean deactivateDid(DID did, String signKey, String storepass)
+	public String deactivateDid(DID did, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException, DIDException {
 		DIDURL id = signKey == null ? null : new DIDURL(did, signKey);
 		return deactivateDid(did, id, storepass);
 	}
 
-	public boolean deactivateDid(DID did, String storepass)
+	public String deactivateDid(DID did, String storepass)
 			throws DIDStoreException, DIDException {
 		return deactivateDid(did, (DIDURL)null, storepass);
 	}

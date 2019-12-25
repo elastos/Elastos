@@ -76,7 +76,7 @@ public class DummyAdapter implements DIDAdapter {
 	}
 
 	@Override
-	public boolean createIdTransaction(String payload, String memo)
+	public String createIdTransaction(String payload, String memo)
 			throws DIDException {
 		try {
 			IDChainRequest request = IDChainRequest.fromJson(payload);
@@ -133,7 +133,7 @@ public class DummyAdapter implements DIDAdapter {
 					Calendar.getInstance(Constants.UTC).getTime(), request);
 			idtxs.add(0, ti);
 
-			return true;
+			return ti.getTransactionId();
 		} catch (DIDException e) {
 			throw new DIDException("Parse ID Transaction payload error.", e);
 		}
