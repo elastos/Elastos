@@ -1,3 +1,5 @@
-INSERT INTO USERS VALUES (1, '564732BHUFET34', 'User1', 'user1@elastos.org', current_timestamp, current_timestamp) ON CONFLICT (id) DO NOTHING;
+INSERT INTO USERS VALUES (1, '564732BHUFET34', current_timestamp, current_timestamp) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO USER_API_RELATIONS VALUES (1, 1, 'KHBOsth7b3WbOTVzZqGUEhOY8rPreYFM') ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO SERVICES_LISTS VALUES (1, 1, 'Sign', current_timestamp, 0) ON CONFLICT (id) DO NOTHING;

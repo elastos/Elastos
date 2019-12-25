@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='common',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\x06\x63ommon\"*\n\x07Request\x12\x12\n\nsecret_key\x18\x01 \x01(\t\x12\x0b\n\x03\x64id\x18\x02 \x01(\t\"C\n\x08Response\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\x43\n\x06\x43ommon\x12\x39\n\x12GenerateAPIRequest\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\x06\x63ommon\"*\n\x07Request\x12\x12\n\nsecret_key\x18\x01 \x01(\t\x12\x0b\n\x03\x64id\x18\x02 \x01(\t\"C\n\x08Response\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32u\n\x06\x43ommon\x12\x39\n\x12GenerateAPIRequest\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x12\x30\n\tGetAPIKey\x12\x0f.common.Request\x1a\x10.common.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -135,12 +135,21 @@ _COMMON = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=137,
-  serialized_end=204,
+  serialized_end=254,
   methods=[
   _descriptor.MethodDescriptor(
     name='GenerateAPIRequest',
     full_name='common.Common.GenerateAPIRequest',
     index=0,
+    containing_service=None,
+    input_type=_REQUEST,
+    output_type=_RESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetAPIKey',
+    full_name='common.Common.GetAPIKey',
+    index=1,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,

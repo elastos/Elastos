@@ -5,6 +5,7 @@ package common;
 // The common service definition.
 service Common {
   rpc GenerateAPIRequest (Request) returns (Response) {}
+  rpc GetAPIKey (Request) returns (Response) {}
 }
 
 // The request message.

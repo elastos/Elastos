@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='hive',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\nhive.proto\x12\x04hive\")\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\r\n\x05input\x18\x02 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32\x93\x01\n\x04Hive\x12\'\n\x04Sign\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x12\x30\n\rUploadAndSign\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x12\x30\n\rVerifyAndShow\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\nhive.proto\x12\x04hive\")\n\x07Request\x12\x0f\n\x07\x61pi_key\x18\x01 \x01(\t\x12\r\n\x05input\x18\x02 \x01(\t\"B\n\x08Response\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x16\n\x0estatus_message\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\x08\x32j\n\x04Hive\x12\x30\n\rUploadAndSign\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x12\x30\n\rVerifyAndShow\x12\r.hive.Request\x1a\x0e.hive.Response\"\x00\x62\x06proto3')
 )
 
 
@@ -134,22 +134,13 @@ _HIVE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=132,
-  serialized_end=279,
+  serialized_start=131,
+  serialized_end=237,
   methods=[
-  _descriptor.MethodDescriptor(
-    name='Sign',
-    full_name='hive.Hive.Sign',
-    index=0,
-    containing_service=None,
-    input_type=_REQUEST,
-    output_type=_RESPONSE,
-    serialized_options=None,
-  ),
   _descriptor.MethodDescriptor(
     name='UploadAndSign',
     full_name='hive.Hive.UploadAndSign',
-    index=1,
+    index=0,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,
@@ -158,7 +149,7 @@ _HIVE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='VerifyAndShow',
     full_name='hive.Hive.VerifyAndShow',
-    index=2,
+    index=1,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,

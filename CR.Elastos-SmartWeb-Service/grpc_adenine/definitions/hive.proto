@@ -4,7 +4,6 @@ package hive;
 
 // The service definition.
 service Hive {
-  rpc Sign (Request) returns (Response) {}
   rpc UploadAndSign (Request) returns (Response) {}
   rpc VerifyAndShow (Request) returns (Response) {}
 }
