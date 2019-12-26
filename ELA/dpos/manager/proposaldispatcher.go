@@ -23,11 +23,10 @@ import (
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 )
 
 type ProposalDispatcherConfig struct {
-	store.EventStoreAnalyzerConfig
+	EventAnalyzerConfig
 	EventMonitor *log.EventMonitor
 	Consensus    *Consensus
 	Network      DPOSNetwork
@@ -58,7 +57,7 @@ type ProposalDispatcher struct {
 	currentInactiveArbitratorTx *types.Transaction
 	signedTxs                   map[common.Uint256]interface{}
 
-	eventAnalyzer  *store.EventStoreAnalyzer
+	eventAnalyzer  *eventAnalyzer
 	illegalMonitor *IllegalBehaviorMonitor
 }
 
@@ -844,8 +843,7 @@ func NewDispatcherAndIllegalMonitor(cfg ProposalDispatcherConfig) (
 		pendingVotes:           make(map[common.Uint256]*payload.DPOSProposalVote),
 		signedTxs:              make(map[common.Uint256]interface{}),
 		firstBadNetworkRecover: true,
-		eventAnalyzer: store.NewEventStoreAnalyzer(store.EventStoreAnalyzerConfig{
-			Store:       cfg.Store,
+		eventAnalyzer: newEventStoreAnalyzer(EventAnalyzerConfig{
 			Arbitrators: cfg.Arbitrators,
 		}),
 	}

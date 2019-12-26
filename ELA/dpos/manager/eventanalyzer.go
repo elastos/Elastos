@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 // 
 
-package store
+package manager
 
 import (
 	"sort"
@@ -13,19 +13,18 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
 
-type EventStoreAnalyzerConfig struct {
-	Store       IDposStore
+type EventAnalyzerConfig struct {
 	Arbitrators state.Arbitrators
 }
 
-type EventStoreAnalyzer struct {
-	cfg EventStoreAnalyzerConfig
+type eventAnalyzer struct {
+	cfg EventAnalyzerConfig
 
 	viewCount  uint32
 	voteEvents map[common.Uint256]string // vote hash as key, signer as value
 }
 
-func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (result []string) {
+func (e *eventAnalyzer) ParseInactiveArbitrators() (result []string) {
 
 	viewCount := e.GetLastConsensusViewCount()
 
@@ -76,26 +75,26 @@ func (e *EventStoreAnalyzer) ParseInactiveArbitrators() (result []string) {
 	return result
 }
 
-func (e *EventStoreAnalyzer) IncreaseLastConsensusViewCount() {
+func (e *eventAnalyzer) IncreaseLastConsensusViewCount() {
 	e.viewCount++
 }
 
-func (e *EventStoreAnalyzer) AppendConsensusVote(vote *payload.DPOSProposalVote) {
+func (e *eventAnalyzer) AppendConsensusVote(vote *payload.DPOSProposalVote) {
 	if vote != nil {
 		e.voteEvents[vote.Hash()] = common.BytesToHexString(vote.Signer)
 	}
 }
 
-func (e *EventStoreAnalyzer) Clear() {
+func (e *eventAnalyzer) Clear() {
 	e.viewCount = 0
 	e.voteEvents = map[common.Uint256]string{}
 }
 
-func (e *EventStoreAnalyzer) GetLastConsensusViewCount() uint32 {
+func (e *eventAnalyzer) GetLastConsensusViewCount() uint32 {
 	return e.viewCount
 }
 
-func (e *EventStoreAnalyzer) GetLastConsensusVoteSignerHistory() []string {
+func (e *eventAnalyzer) GetLastConsensusVoteSignerHistory() []string {
 	result := make([]string, 0, len(e.voteEvents))
 	for _, v := range e.voteEvents {
 		result = append(result, v)
@@ -103,8 +102,8 @@ func (e *EventStoreAnalyzer) GetLastConsensusVoteSignerHistory() []string {
 	return result
 }
 
-func NewEventStoreAnalyzer(cfg EventStoreAnalyzerConfig) *EventStoreAnalyzer {
-	return &EventStoreAnalyzer{
+func newEventStoreAnalyzer(cfg EventAnalyzerConfig) *eventAnalyzer {
+	return &eventAnalyzer{
 		cfg:        cfg,
 		viewCount:  0,
 		voteEvents: map[common.Uint256]string{},

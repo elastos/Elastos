@@ -21,7 +21,6 @@ import (
 	dmsg "github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	dpeer "github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/mempool"
 	"github.com/elastos/Elastos.ELA/p2p"
@@ -36,7 +35,6 @@ const (
 
 type DPOSNetworkConfig struct {
 	ProposalDispatcher *ProposalDispatcher
-	Store              store.IDposStore
 	PublicKey          []byte
 	AnnounceAddr       func()
 }

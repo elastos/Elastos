@@ -21,7 +21,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core/types"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/elanet/netsync"
 	"github.com/elastos/Elastos.ELA/elanet/peer"
@@ -95,14 +94,6 @@ func startDstNode() {
 	}
 	defer chainStore.Close()
 	ledger.Store = chainStore
-
-	var dposStore store.IDposStore
-	dposStore, err = store.NewDposStore(dataDir, dstSettings.Params())
-	if err != nil {
-		logger.Error(err)
-		return
-	}
-	defer dposStore.Close()
 
 	txMemPool := mempool.NewTxPool(dstSettings.Params())
 	blockMemPool := mempool.NewBlockPool(dstSettings.Params())
