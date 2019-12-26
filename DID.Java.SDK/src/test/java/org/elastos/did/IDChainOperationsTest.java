@@ -593,12 +593,24 @@ public class IDChainOperationsTest {
 		BufferedReader input = new BufferedReader(new InputStreamReader(
 				getClass().getClassLoader().getResourceAsStream("testdata/dids.restore")));
 
-		String did;
-		while ((did = input.readLine()) != null) {
-			assertTrue(didStrings.contains(did));
+		String didstr;
+		while ((didstr = input.readLine()) != null) {
+			assertTrue(didStrings.contains(didstr));
+
+			DID did = new DID(didstr);
 			DIDDocument doc = store.loadDid(did);
 			assertNotNull(doc);
-			assertEquals(did, doc.getSubject().toString());
+			assertEquals(did, doc.getSubject());
+			assertEquals(4, doc.getCredentialCount());
+
+			List<DIDURL> vcs = store.listCredentials(did);
+			assertEquals(4, vcs.size());
+
+			for (DIDURL id : vcs) {
+				VerifiableCredential vc = store.loadCredential(did, id);
+				assertNotNull(vc);
+				assertEquals(id, vc.getId());
+			}
 		}
 
 		input.close();

@@ -331,6 +331,62 @@ public class TestDataGenerator {
 	    	}
 
 	    	DIDDocument doc = store.newDid(TestConfig.storePass);
+
+			Issuer selfIssuer = new Issuer(doc);
+			Issuer.CredentialBuilder cb = selfIssuer.issueFor(doc.getSubject());
+
+			Map<String, String> props = new HashMap<String, String>();
+			props.put("name", "John");
+			props.put("nation", "Singapore");
+			props.put("language", "English");
+			props.put("email", "john@example.com");
+
+			VerifiableCredential vcProfile = cb.id("profile")
+					.type("BasicProfileCredential", "SelfProclaimedCredential")
+					.properties(props)
+					.seal(TestConfig.storePass);
+
+			cb = selfIssuer.issueFor(doc.getSubject());
+
+			props.clear();
+			props.put("email", "john@gmail.com");
+
+			VerifiableCredential vcEmail = cb.id("email")
+					.type("BasicProfileCredential",
+							"InternetAccountCredential", "EmailCredential")
+					.properties(props)
+					.seal(TestConfig.storePass);
+
+			cb = selfIssuer.issueFor(doc.getSubject());
+
+			props.clear();
+			props.put("nation", "Singapore");
+			props.put("passport", "S653258Z07");
+
+			VerifiableCredential vcPassport = cb.id("passport")
+					.type("BasicProfileCredential", "SelfProclaimedCredential")
+					.properties(props)
+					.seal(TestConfig.storePass);
+
+			cb = selfIssuer.issueFor(doc.getSubject());
+
+			props.clear();
+			props.put("twitter", "@john");
+
+			VerifiableCredential vcTwitter = cb.id("twitter")
+					.type("InternetAccountCredential", "TwitterCredential")
+					.properties(props)
+					.seal(TestConfig.storePass);
+
+			DIDDocument.Builder db = doc.edit();
+			db.addCredential(vcProfile);
+			db.addCredential(vcEmail);
+			db.addCredential(vcPassport);
+			db.addCredential(vcTwitter);
+			doc = db.seal(TestConfig.storePass);
+
+			store.storeDid(doc);
+
     		System.out.print("******** Publishing DID: " + doc.getSubject());
 	    	store.publishDid(doc, TestConfig.storePass);
 	    	while (true) {
