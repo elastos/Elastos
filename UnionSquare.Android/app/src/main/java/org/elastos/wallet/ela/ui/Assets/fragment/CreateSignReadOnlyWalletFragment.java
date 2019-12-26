@@ -100,13 +100,13 @@ public class CreateSignReadOnlyWalletFragment extends BaseFragment implements Co
     @Override
     public void onGetCommonData(String methodname, String data) {
         if (data != null) {
-            new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this);
+            new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this,null);
         }
 
     }
 
     @Override
-    public void onCreateSubWallet(String data) {
+    public void onCreateSubWallet(String data,Object view) {
         if (data != null) {
             //创建Mainchain子钱包
             RealmUtil realmUtil = new RealmUtil();

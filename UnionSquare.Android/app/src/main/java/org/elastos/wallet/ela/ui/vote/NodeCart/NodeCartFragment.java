@@ -593,10 +593,12 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
 
                 JSONObject depiositUnActiveVote = new JSONObject();
                 List<String> didList = new ArrayList<>();
-                for (int i = 0; i < crList.size(); i++) {
-                    CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = crList.get(i);
-                    if (!bean.getState().equals("Active")) {
-                        didList.add(bean.getDid());
+                if (crList != null && crList.size() > 0) {
+                    for (int i = 0; i < crList.size(); i++) {
+                        CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = crList.get(i);
+                        if (!bean.getState().equals("Active")) {
+                            didList.add(bean.getDid());
+                        }
                     }
                 }
                 //判断是否包含

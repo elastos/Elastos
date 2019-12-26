@@ -166,13 +166,13 @@ public class ImportMnemonicFragment extends BaseFragment implements ImportMnemon
 
     @Override
     public void onImportMnemonic(String data) {
-        new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this);
+        new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this,null);
 
 
     }
 
     @Override
-    public void onCreateSubWallet(String data) {
+    public void onCreateSubWallet(String data,Object o) {
         RealmUtil realmUtil = new RealmUtil();
         if (data != null) {
             //创建Mainchain子钱包

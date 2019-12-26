@@ -81,7 +81,7 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
         } else {
             //添加子
             v.setSelected(!v.isSelected());
-            commonCreateSubWalletPresenter.createSubWallet(walletId, (String) o, this);
+            commonCreateSubWalletPresenter.createSubWallet(walletId, (String) o, this,v);
         }
     }
 
@@ -90,8 +90,7 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
                 getString(R.string.sure), getString(R.string.cancel), false, new WarmPromptListener() {
                     @Override
                     public void affireBtnClick(View view) {
-                        v.setSelected(!v.isSelected());
-                        commonDestorySubWalletPresenter.destroySubWallet(walletId, (String) o, AddAssetFragment.this);
+                        commonDestorySubWalletPresenter.destroySubWallet(walletId, (String) o, AddAssetFragment.this,v);
                     }
                 });
     }
@@ -103,11 +102,13 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
     }
 
     @Override
-    public void onCreateSubWallet(String data) {
+    public void onCreateSubWallet(String data, Object o) {
         new RealmUtil().updateSubWalletDetial(walletId, data, new RealmTransactionAbs() {
             @Override
             public void onSuccess() {
                 post(RxEnum.UPDATAPROPERTY.ordinal(), null, walletId);
+                post(RxEnum.ADDPROPERTY.ordinal(), null, null);
+                ((View) o).setSelected(true);
                 popBackFragment();
             }
         });
@@ -115,7 +116,7 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
     }
 
     @Override
-    public void onDestorySubWallet(String data) {
+    public void onDestorySubWallet(String data, Object o) {
         new RealmUtil().deleteSubWallet(walletId, data);
         //删除did草稿
         ArrayList<DIDInfoEntity> info = CacheUtil.getDIDInfoList();
@@ -128,6 +129,9 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
         }
         CacheUtil.setDIDInfoList(info);
         post(RxEnum.UPDATAPROPERTY.ordinal(), null, walletId);
+        post(RxEnum.DELETEPROPERTY.ordinal(), null, null);
+        ((View) o).setSelected(false);
+
         popBackFragment();
     }
 }
