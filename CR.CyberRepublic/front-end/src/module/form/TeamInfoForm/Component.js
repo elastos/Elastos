@@ -86,12 +86,6 @@ class TeamInfoForm extends BaseComponent {
             {...formItemLayout}
           >
             {getFieldDecorator('info', {
-              rules: [
-                {
-                  required: true,
-                  message: I18N.get('suggestion.form.error.required')
-                }
-              ],
               initialValue: item && item.info ? item.info : ''
             })(
               <CodeMirrorEditor
