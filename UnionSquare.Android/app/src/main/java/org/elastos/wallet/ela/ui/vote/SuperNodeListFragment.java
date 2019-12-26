@@ -250,7 +250,6 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
     }
 
 
-
     JSONArray otherUnActiveVote = new JSONArray();
 
     @Override
@@ -260,10 +259,12 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 List<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean> crList = ((CRListBean) baseEntity).getData().getResult().getCrcandidatesinfo();
                 JSONObject depiositUnActiveVote = new JSONObject();
                 List<String> didList = new ArrayList<>();
-                for (int i = 0; i < crList.size(); i++) {
-                    CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = crList.get(i);
-                    if (!bean.getState().equals("Active")) {
-                        didList.add(bean.getDid());
+                if (crList != null && crList.size() > 0) {
+                    for (int i = 0; i < crList.size(); i++) {
+                        CRListBean.DataBean.ResultBean.CrcandidatesinfoBean bean = crList.get(i);
+                        if (!bean.getState().equals("Active")) {
+                            didList.add(bean.getDid());
+                        }
                     }
                 }
                 depiositUnActiveVote.put("Type", "CRC");
@@ -342,6 +343,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
             setRecyclerview1();
         }
     }
+
     private Drawable getDrawable(int id) {
         Drawable drawable = getResources().getDrawable(id);
         drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());

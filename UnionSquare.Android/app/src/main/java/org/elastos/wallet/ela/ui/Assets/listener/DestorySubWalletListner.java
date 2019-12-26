@@ -9,6 +9,6 @@ public class DestorySubWalletListner extends SubscriberOnNextLisenner {
     @Override
     protected void onNextLisenner(BaseEntity t) {
 
-        (  (CommonDestorySubWalletViewData) getViewData()).onDestorySubWallet(((CommmonStringEntity)t).getData());
+        ((CommonDestorySubWalletViewData) getViewData()).onDestorySubWallet(((CommmonStringEntity) t).getData(), getObj());
     }
 }

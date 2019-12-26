@@ -119,11 +119,11 @@ public class ImportKeystoreFragment extends BaseFragment implements ImportKeysto
 
     @Override
     public void onImportKeystore(String data) {
-        new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this);
+        new CommonCreateSubWalletPresenter().createSubWallet(masterWalletID, MyWallet.ELA, this,null);
     }
 
     @Override
-    public void onCreateSubWallet(String data) {
+    public void onCreateSubWallet(String data,Object o) {
 
         if (data != null) {
             //创建Mainchain子钱包

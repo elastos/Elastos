@@ -425,14 +425,15 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
                 if (handler != null && runable != null) {
                     handler.removeCallbacks(runable);
                 }
-                VoteListBean dataResponse = (VoteListBean) baseEntity;
-                List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = dataResponse.getData().getResult().getProducers();
+                List<VoteListBean.DataBean.ResultBean.ProducersBean> depositList = ((VoteListBean) baseEntity).getData().getResult().getProducers();
                 JSONObject depiositUnActiveVote = new JSONObject();
                 List<String> ownerpublickeyList = new ArrayList<>();
-                for (int i = 0; i < depositList.size(); i++) {
-                    VoteListBean.DataBean.ResultBean.ProducersBean bean = depositList.get(i);
-                    if (!bean.getState().equals("Active")) {
-                        ownerpublickeyList.add(bean.getOwnerpublickey());
+                if (depositList != null && depositList.size() > 0) {
+                    for (int i = 0; i < depositList.size(); i++) {
+                        VoteListBean.DataBean.ResultBean.ProducersBean bean = depositList.get(i);
+                        if (!bean.getState().equals("Active")) {
+                            ownerpublickeyList.add(bean.getOwnerpublickey());
+                        }
                     }
                 }
                 //判断是否包含

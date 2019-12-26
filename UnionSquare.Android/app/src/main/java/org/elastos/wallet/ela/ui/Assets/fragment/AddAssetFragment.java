@@ -10,7 +10,6 @@ import org.elastos.wallet.R;
 import org.elastos.wallet.ela.base.BaseFragment;
 import org.elastos.wallet.ela.db.RealmUtil;
 import org.elastos.wallet.ela.db.listener.RealmTransactionAbs;
-import org.elastos.wallet.ela.db.table.SubWallet;
 import org.elastos.wallet.ela.ui.Assets.adapter.AddAssetRecAdapetr;
 import org.elastos.wallet.ela.ui.Assets.presenter.AddAssetPresenter;
 import org.elastos.wallet.ela.ui.Assets.presenter.CommonCreateSubWalletPresenter;
@@ -72,10 +71,10 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
         //条目的点击事件
         if (view.isSelected()) {
             //删除子
-            commonDestorySubWalletPresenter.destroySubWallet(walletId, (String) o, this);
+            commonDestorySubWalletPresenter.destroySubWallet(walletId, (String) o, this, view);
         } else {
             //添加子
-            commonCreateSubWalletPresenter.createSubWallet(walletId, (String) o, this);
+            commonCreateSubWalletPresenter.createSubWallet(walletId, (String) o, this, view);
         }
     }
 
@@ -86,11 +85,13 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
     }
 
     @Override
-    public void onCreateSubWallet(String data) {
-        new RealmUtil().updateSubWalletDetial(walletId,data, new RealmTransactionAbs() {
+    public void onCreateSubWallet(String data, Object o) {
+        new RealmUtil().updateSubWalletDetial(walletId, data, new RealmTransactionAbs() {
             @Override
             public void onSuccess() {
                 post(RxEnum.UPDATAPROPERTY.ordinal(), null, null);
+                post(RxEnum.ADDPROPERTY.ordinal(), null, null);
+                ((View) o).setSelected(true);
                 popBackFragment();
             }
         });
@@ -98,9 +99,11 @@ public class AddAssetFragment extends BaseFragment implements CommonRvListener1,
     }
 
     @Override
-    public void onDestorySubWallet(String data) {
+    public void onDestorySubWallet(String data, Object o) {
         new RealmUtil().deleteSubWallet(walletId, data);
         post(RxEnum.UPDATAPROPERTY.ordinal(), null, null);
+        post(RxEnum.DELETEPROPERTY.ordinal(), null, null);
+        ((View) o).setSelected(false);
         popBackFragment();
     }
 }

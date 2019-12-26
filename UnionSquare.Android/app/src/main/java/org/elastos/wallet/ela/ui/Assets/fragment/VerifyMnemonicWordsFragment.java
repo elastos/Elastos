@@ -142,13 +142,13 @@ public class VerifyMnemonicWordsFragment extends BaseFragment implements Creater
     @Override
     public void onCreateMasterWallet(String baseInfo) {
         if (baseInfo != null) {
-            new CommonCreateSubWalletPresenter().createSubWallet(createWalletBean.getMasterWalletID(), MyWallet.ELA, this);
+            new CommonCreateSubWalletPresenter().createSubWallet(createWalletBean.getMasterWalletID(), MyWallet.ELA, this,null);
 
         }
     }
 
     @Override
-    public void onCreateSubWallet(String data) {
+    public void onCreateSubWallet(String data,Object o) {
         if (data != null) {
             //创建Mainchain子钱包
             Wallet masterWallet = realmUtil.updateWalletDetial(createWalletBean.getMasterWalletName(), createWalletBean.getMasterWalletID(), data);
