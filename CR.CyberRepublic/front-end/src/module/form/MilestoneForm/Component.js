@@ -52,7 +52,12 @@ class MilestoneForm extends BaseComponent {
                 }
               ],
               initialValue: item && item.date
-            })(<DatePicker suffixIcon={<DatePickerIcon />} />)}
+            })(
+              <DatePicker
+                suffixIcon={<DatePickerIcon />}
+                placeholder={I18N.get('suggestion.plan.selectDate')}
+              />
+            )}
           </FormItem>
           <FormItem
             label={I18N.get('suggestion.plan.goal')}
