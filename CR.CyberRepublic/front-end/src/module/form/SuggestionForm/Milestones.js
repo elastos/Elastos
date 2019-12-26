@@ -19,7 +19,8 @@ class Milestones extends Component {
         index: -1,
         clicked: false,
         clickedSwitch: false
-      }
+      },
+      toggleCreateForm: false
     }
   }
 
@@ -34,15 +35,19 @@ class Milestones extends Component {
   handleSubmit = values => {
     const { milestones, milestonesTrigger } = this.state
     const { onChange } = this.props
-    this.setState({ milestones: [...milestones, values] }, () => {
-      onChange({ milestone: this.state.milestones })
-    })
-    this.setState({
-      milestonesTrigger: {
-        ...milestonesTrigger,
-        [milestones.length]: { clicked: false, clickedSwitch: false }
+    this.setState(
+      {
+        milestones: [...milestones, values],
+        milestonesTrigger: {
+          ...milestonesTrigger,
+          [milestones.length]: { clicked: false, clickedSwitch: false }
+        },
+        toggleCreateForm: false
+      },
+      () => {
+        onChange({ milestone: this.state.milestones })
       }
-    })
+    )
   }
 
   handleEdit = (index, values) => {
@@ -81,6 +86,14 @@ class Milestones extends Component {
           : true
       }
     })
+  }
+
+  handleVisibleChange = visible => {
+    this.setState({ toggleCreateForm: visible })
+  }
+
+  hideCreateForm = () => {
+    this.setState({ toggleCreateForm: false })
   }
 
   getMilestoneTrigger = index => {
@@ -135,7 +148,7 @@ class Milestones extends Component {
   }
 
   render() {
-    const { milestones } = this.state
+    const { milestones, toggleCreateForm } = this.state
     const { editable } = this.props
     const visible = editable === false ? editable : true
     return (
@@ -167,6 +180,9 @@ class Milestones extends Component {
                               index
                             }}
                             onSubmit={this.handleEdit}
+                            hidePopover={() => {
+                              this.handleClickChange(index, false)
+                            }}
                           />
                         }
                         trigger="click"
@@ -213,9 +229,16 @@ class Milestones extends Component {
           <Action visible={visible}>
             {visible && (
               <Popover
-                content={<MilestoneForm onSubmit={this.handleSubmit} />}
+                content={
+                  <MilestoneForm
+                    onSubmit={this.handleSubmit}
+                    hidePopover={this.hideCreateForm}
+                  />
+                }
                 trigger="click"
                 placement="top"
+                visible={toggleCreateForm}
+                onVisibleChange={this.handleVisibleChange}
               >
                 <CircleButton>+</CircleButton>
               </Popover>
