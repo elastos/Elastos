@@ -185,11 +185,7 @@ func initLedger(L *lua.LState) int {
 	}
 	arbiters.RegisterFunction(chainStore.GetHeight,
 		func(height uint32) (*types.Block, error) {
-			hash, err := ledger.Blockchain.GetBlockHash(height)
-			if err != nil {
-				return nil, err
-			}
-			return chainStore.GetBlock(hash)
+			return nil, nil
 		}, nil)
 
 	var interrupt = signal.NewInterrupt()
