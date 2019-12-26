@@ -75,7 +75,10 @@ class TeamInfoSection extends Component {
             span={10}
             style={{ display: 'flex', justifyContent: 'flex-end' }}
           >
-            <Button onClick={this.showModal}>
+            <Button
+              onClick={this.showModal}
+              style={{ color: '#000000', borderColor: '#000000' }}
+            >
               {I18N.get('suggestion.plan.createTeamInfo')}
             </Button>
           </Col>

@@ -2,9 +2,10 @@ import React from 'react'
 import BaseComponent from '@/model/BaseComponent'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button } from 'antd'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import DeleteSvgIcon from './DeleteSvgIcon'
+import EditSvgIcon from './EditSvgIcon'
 
 class TeamInfoList extends BaseComponent {
   handleDelete = index => {
@@ -22,10 +23,16 @@ class TeamInfoList extends BaseComponent {
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th style={{ width: '15%' }}>{I18N.get('suggestion.plan.teamMember')}</th>
+            <th style={{ width: '15%' }}>
+              {I18N.get('suggestion.plan.teamMember')}
+            </th>
             <th style={{ width: '15%' }}>{I18N.get('suggestion.plan.role')}</th>
-            <th style={{ width: '30%' }}>{I18N.get('suggestion.plan.responsibility')}</th>
-            <th style={{ width: '30%' }}>{I18N.get('suggestion.plan.moreInfo')}</th>
+            <th style={{ width: '30%' }}>
+              {I18N.get('suggestion.plan.responsibility')}
+            </th>
+            <th style={{ width: '30%' }}>
+              {I18N.get('suggestion.plan.moreInfo')}
+            </th>
             {visible && (
               <th style={{ width: '10%' }}>
                 {I18N.get('suggestion.plan.action')}
@@ -34,36 +41,33 @@ class TeamInfoList extends BaseComponent {
           </StyledRow>
         </StyledHead>
         <tbody>
-          {list && list.map((item, index) => (
-            <StyledRow key={index}>
-              <td>{item.member}</td>
-              <td>{item.role}</td>
-              <td>
-                <MarkdownPreview content={item.responsibility} />
-              </td>
-              <td>
-                <MarkdownPreview content={item.info} />
-              </td>
-              {visible && (
+          {list &&
+            list.map((item, index) => (
+              <StyledRow key={index}>
+                <td>{item.member}</td>
+                <td>{item.role}</td>
                 <td>
-                  <Button
-                    size="small"
-                    type="danger"
-                    shape="circle"
-                    icon="delete"
-                    onClick={this.handleDelete.bind(this, index)}
-                  />
-                  <Button
-                    size="small"
-                    type="primary"
-                    shape="circle"
-                    icon="edit"
-                    onClick={this.handleEdit.bind(this, index)}
-                  />
+                  <MarkdownPreview content={item.responsibility} />
                 </td>
-              )}
-            </StyledRow>
-          ))}
+                <td>
+                  <MarkdownPreview content={item.info} />
+                </td>
+                {visible && (
+                  <td>
+                    <EditSvgIcon
+                      type="edit"
+                      onClick={this.handleEdit.bind(this, index)}
+                      style={{ marginRight: 24, cursor: 'pointer' }}
+                    />
+                    <DeleteSvgIcon
+                      type="delete"
+                      onClick={this.handleDelete.bind(this, index)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </td>
+                )}
+              </StyledRow>
+            ))}
         </tbody>
       </StyledTable>
     )
