@@ -597,5 +597,5 @@
     <string name="executing">执行中</string>
     <string name="finish">已完成</string>
     <string name="abolished">已废止</string>
-    <string name="notsufficientfundskeepornot">Insufficient account balance will invalidate previous voting results.Continue trading？</string>
+    <string name="notsufficientfundskeepornot">Previous vote is invalid due to insufficient balance. Continue?</string>
 </resources>
