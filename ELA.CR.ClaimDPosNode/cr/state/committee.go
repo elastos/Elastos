@@ -571,6 +571,7 @@ func (c *Committee) processCurrentMembers(height uint32) {
 	}
 	for _, m := range c.Members {
 		c.state.depositInfo[m.Info.DID].Penalty = c.getMemberPenalty(height, m)
+		c.state.depositInfo[m.Info.DID].Refundable = true
 		c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = m
 	}
 
