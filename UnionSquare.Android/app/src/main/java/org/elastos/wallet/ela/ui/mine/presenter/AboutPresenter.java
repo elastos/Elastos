@@ -46,15 +46,16 @@ public class AboutPresenter extends PresenterAbstract {
                         && MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET) {
                     moveWalletFile(baseFragment.getContext());
                 }
-                return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext()) + "", "moveLogFile");
+                moveLogFile(baseFragment.getContext(),"/spvsdk1.log");
+                return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext(),"/spvsdk.log") + "", "moveLogFile");
             }
         });
         subscriberObservable(observer, observable, baseFragment);
     }
 
-    private static String moveLogFile(Context context) {
+    private static String moveLogFile(Context context,String logName) {
         String rootPath = context.getFilesDir().getParent();
-        File file = new File(rootPath + "/spvsdk.log");
+        File file = new File(rootPath +logName );
         if (!file.exists()) {
             return null;
         }
@@ -72,7 +73,7 @@ public class AboutPresenter extends PresenterAbstract {
             }
 
 
-            OutputStream fosto = new FileOutputStream(file1 + "/spvsdk.log");
+            OutputStream fosto = new FileOutputStream(file1 + logName);
             byte bt[] = new byte[1024];
             int c = 0;
             while ((c = is.read(bt)) > 0) {
@@ -80,7 +81,7 @@ public class AboutPresenter extends PresenterAbstract {
             }
             is.close();
             fosto.close();
-            return file1.getAbsolutePath() + "/spvsdk.log";
+            return file1.getAbsolutePath() + logName;
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;
