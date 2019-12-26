@@ -24,8 +24,6 @@ const (
 	BlocksCacheSize = 2
 )
 
-var oldLevelDB *LevelDB
-
 type ProducerState byte
 
 type ProducerInfo struct {
@@ -48,9 +46,8 @@ type ChainStore struct {
 	persistMutex sync.Mutex
 }
 
-func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
+func NewChainStore(dataDir string) (IChainStore, error) {
 	db, err := NewLevelDB(filepath.Join(dataDir, "chain"))
-	oldLevelDB = db
 	if err != nil {
 		return nil, err
 	}
@@ -66,6 +63,10 @@ func NewChainStore(dataDir string, genesisBlock *Block) (IChainStore, error) {
 	}
 
 	return s, nil
+}
+
+func (c *ChainStore) CloseLeveldb() {
+	c.IStore.Close()
 }
 
 func (c *ChainStore) Close() {

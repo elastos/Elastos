@@ -28,7 +28,7 @@ func newBlockChain(path string, params *config.Params,
 	arbiters, err := state.NewArbitrators(
 		params, committee, nil)
 
-	chainStore, err := blockchain.NewChainStore(path, params.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(path)
 	if err != nil {
 		return nil, err
 	}

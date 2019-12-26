@@ -32,8 +32,7 @@ func TestService_Init(t *testing.T) {
 	log.NewDefault(test.NodeLogPath, 0, 0, 0)
 
 	params := &config.DefaultParams
-	chainStore, err := blockchain.NewChainStore(filepath.Join(
-		test.DataPath, "service"), config.DefaultParams.GenesisBlock)
+	chainStore, err := blockchain.NewChainStore(filepath.Join(test.DataPath, "service"))
 	if err != nil {
 		t.Error(err)
 	}
