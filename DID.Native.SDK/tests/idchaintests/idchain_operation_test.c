@@ -14,12 +14,12 @@
 #include "did.h"
 
 static DIDDocument *document;
+static DIDStore *store;
 
 static void test_idchain_publishdid(void)
 {
     char *txid;
     DIDURL *signkey;
-    DIDStore *store;
     DIDDocument *doc = NULL;
     DID *did;
     int i = 0;
@@ -30,7 +30,6 @@ static void test_idchain_publishdid(void)
         return;
     }
 
-    store = DIDStore_GetInstance();
     txid = (char *)DIDStore_PublishDID(store, document, signkey, storepass);
     CU_ASSERT_NOT_EQUAL_FATAL(txid, NULL);
     free(txid);
@@ -59,7 +58,6 @@ static void test_idchain_updatedid(void)
 {
     char *txid;
     DIDURL *signkey;
-    DIDStore *store;
 
     signkey = DIDDocument_GetDefaultPublicKey(document);
     if (!signkey) {
@@ -67,7 +65,6 @@ static void test_idchain_updatedid(void)
         return;
     }
 
-    store = DIDStore_GetInstance();
     txid = (char *)DIDStore_UpdateDID(store, document, signkey, storepass);
     CU_ASSERT_NOT_EQUAL(txid, NULL);
     free(txid);
@@ -77,7 +74,6 @@ static void test_idchain_deactivatedid(void)
 {
     char *txid;
     DIDURL *signkey;
-    DIDStore *store;
 
     signkey = DIDDocument_GetDefaultPublicKey(document);
     if (!signkey) {
@@ -85,7 +81,6 @@ static void test_idchain_deactivatedid(void)
         return;
     }
 
-    store = DIDStore_GetInstance();
     txid = (char *)DIDStore_DeactivateDID(store, DIDDocument_GetSubject(document), signkey, storepass);
     CU_ASSERT_NOT_EQUAL(txid, NULL);
     free(txid);
@@ -96,14 +91,12 @@ static int idchain_operation_test_suite_init(void)
     int rc;
     char _path[PATH_MAX];
     const char *storePath, *mnemonic;
-    DIDStore *store;
 
     storePath = get_store_path(_path, "/idchain");
-    rc = TestData_SetupStore(storePath);
-    if (rc < 0)
+    store = TestData_SetupStore(storePath);
+    if (!store)
         return -1;
 
-    store = DIDStore_GetInstance();
     mnemonic = Mnemonic_Generate(0);
     printf("\n#### mnemonic: %s\n", mnemonic);
     rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, true);
@@ -120,9 +113,8 @@ static int idchain_operation_test_suite_init(void)
 
 static int idchain_operation_test_suite_cleanup(void)
 {
-    TestData_Free();
     DIDDocument_Destroy(document);
-    DIDStore_Deinitialize();
+    TestData_Free();
     return 0;
 }
 

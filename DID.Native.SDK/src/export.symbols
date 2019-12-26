@@ -14,6 +14,7 @@ _DID_Destroy
 # DIDURL
 _DIDURL_FromString
 _DIDURL_New
+_DIDURL_FromDid
 _DIDURL_GetDid
 _DIDURL_GetFragment
 _DIDURL_ToString
@@ -30,17 +31,20 @@ _DIDDocument_IsDeactivated
 _DIDDocument_IsGenuine
 _DIDDocument_IsExpires
 _DIDDocument_IsValid
-_DIDDocument_AddPublicKey
-_DIDDocument_RemovePublicKey
-_DIDDocument_AddAuthenticationKey
-_DIDDocument_RemoveAuthenticationKey
-_DIDDocument_AddAuthorizationKey
-_DIDDocument_AuthorizationDid
-_DIDDocument_RemoveAuthorizationKey
-_DIDDocument_AddCredential
-_DIDDocument_RemoveCredential
-_DIDDocument_AddService
-_DIDDocument_RemoveService
+_DIDDocument_Modify
+_DIDDocumentBuilder_Seal
+_DIDDocumentBuilder_Destroy
+_DIDDocumentBuilder_AddPublicKey
+_DIDDocumentBuilder_RemovePublicKey
+_DIDDocumentBuilder_AddAuthenticationKey
+_DIDDocumentBuilder_RemoveAuthenticationKey
+_DIDDocumentBuilder_AddAuthorizationKey
+_DIDDocumentBuilder_AuthorizationDid
+_DIDDocumentBuilder_RemoveAuthorizationKey
+_DIDDocumentBuilder_AddCredential
+_DIDDocumentBuilder_RemoveCredential
+_DIDDocumentBuilder_AddService
+_DIDDocumentBuilder_RemoveService
 _DIDDocument_GetSubject
 _DIDDocument_GetPublicKeyCount
 _DIDDocument_GetPublicKey
@@ -84,6 +88,7 @@ _Credential_GetId
 _Credential_GetTypeCount
 _Credential_GetTypes
 _Credential_GetIssuer
+_Credential_GetOwner
 _Credential_GetIssuanceDate
 _Credential_GetExpirationDate
 _Credential_GetPropertyCount
@@ -99,6 +104,7 @@ _Credential_Verify
 _Credential_IsExpired
 _Credential_IsGenuine
 _Credential_IsValid
+_Credential_IsSelfProclaimed
 
 # DIDStore
 _DIDStore_GetInstance

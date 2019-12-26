@@ -18,13 +18,12 @@
 
 static DID did;
 static Credential *credential;
+static DIDStore *store;
 
 static void test_didstore_store_cred(void)
 {
     int rc;
-    DIDStore *store;
 
-    store = DIDStore_GetInstance();
     rc = DIDStore_StoreCredential(store, credential, "me");
     CU_ASSERT_NOT_EQUAL(rc, -1);
 
@@ -35,13 +34,12 @@ static int didstore_storecred_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     DIDDocument *doc;
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    rc = TestData_SetupStore(storePath);
-    if (rc < 0)
+    store = TestData_SetupStore(storePath);
+    if (!store)
         return -1;
 
     doc = DIDDocument_FromJson(TestData_LoadDocJson());
@@ -60,20 +58,19 @@ static int didstore_storecred_test_suite_init(void)
 
 static int didstore_storecred_test_suite_cleanup(void)
 {
-    TestData_Free();
     Credential_Destroy(credential);
-    DIDStore_Deinitialize();
+    TestData_Free();
     return 0;
 }
 
 static CU_TestInfo cases[] = {
-    {   "test_didstore_store_cred",            test_didstore_store_cred     },
+    {   "test_didstore_store_cred",            test_didstore_store_cred    },
     {   NULL,                                  NULL                        }
 };
 
 static CU_SuiteInfo suite[] = {
-    {   "didstore did test",    didstore_storecred_test_suite_init,    didstore_storecred_test_suite_cleanup,      NULL, NULL, cases },
-    {    NULL,                  NULL,                                  NULL,                            NULL, NULL, NULL  }
+    { "didstore store cred test", didstore_storecred_test_suite_init, didstore_storecred_test_suite_cleanup, NULL, NULL, cases },
+    {  NULL,                      NULL,                               NULL,                                  NULL, NULL, NULL  }
 };
 
 CU_SuiteInfo* didstore_store_cred_test_suite_info(void)

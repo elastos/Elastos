@@ -116,6 +116,11 @@ typedef struct Service          Service;
 typedef struct DIDDocument      DIDDocument;
 /**
  * \~English
+ * A DIDDocument Builder to modify DIDDocument elems.
+ */
+typedef struct DIDDocumentBuilder DIDDocumentBuilder;
+/**
+ * \~English
  * A issuer is the did to issue credential. Issuer includes issuer's did and
  * issuer's sign key.
  */
@@ -337,6 +342,20 @@ DID_API DIDURL *DIDURL_New(const char *method_specific_string, const char *fragm
 
 /**
  * \~English
+ * Create a new DID URL according to DID and fragment.
+ *
+ * @param
+ *      did                       [in] A pointer to DID.
+ * @param
+ *      fragment                  [in] The portion of a DID URL.
+ * @return
+ *      If no error occurs, return the handle to DID URL.
+ *      Otherwise, return NULL.
+ */
+DID_API DIDURL *DIDURL_FromDid(DID *did, const char *fragment);
+
+/**
+ * \~English
  * Get DID from DID URL.
  *
  * @param
@@ -530,13 +549,52 @@ DID_API DID* DIDDocument_GetSubject(DIDDocument *document);
 
 /**
  * \~English
+ * Get DIDDocument Builder to modify document.
+ *
+ * @param
+ *      document             [in] A handle to DID Document.
+ * @return
+ *      If no error occurs, return a handle to DID.
+ *      Otherwise, return NULL.
+ */
+DID_API DIDDocumentBuilder* DIDDocument_Modify(DIDDocument *document);
+
+/**
+ * \~English
+ * Destroy DIDDocument Builder.
+ *
+ * @param
+ *      builder             [in] A handle to DIDDocument Builder.
+ * @return
+ *      If no error occurs, return a handle to DID.
+ *      Otherwise, return NULL.
+ */
+DID_API void DIDDocumentBuilder_Destroy(DIDDocumentBuilder *builder);
+
+/**
+ * \~English
+ * Finish modiy document.
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      storepass            [in] Pass word to sign.
+ * @return
+ *      If no error occurs, return a handle to DIDDocument.
+ *      Otherwise, return NULL.
+ */
+DID_API DIDDocument *DIDDocumentBuilder_Seal(DIDDocumentBuilder *builder,
+            const char *storepass);
+
+/**
+ * \~English
  * Add public key to DID Document.
  * Each public key has an identifier (id) of its own, a type, and a controller,
  * as well as other properties publicKeyBase58 depend on which depend on
  * what type of key it is.
  *
  * @param
- *      document             [in] A handle to DID Document.
+ *      bulder               [in] A handle to DIDDocument Builder.
  * @param
  *      key                  [in] An identifier of public key.
  * @param
@@ -547,15 +605,15 @@ DID_API DID* DIDDocument_GetSubject(DIDDocument *document);
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_AddPublicKey(DIDDocument *document, DIDURL *keyid,
-        DID *controller, const char *key);
+DID_API int DIDDocumentBuilder_AddPublicKey(DIDDocumentBuilder *bulder,
+        DIDURL *keyid, DID *controller, const char *key);
 
 /**
  * \~English
  * Remove specified public key from DID Document.
  *
  * @param
- *      document             [in] A handle to DID Document.
+ *      bulder               [in] A handle to DIDDocument Builder.
  * @param
  *      key                  [in] An identifier of public key.
  * @param
@@ -563,7 +621,166 @@ DID_API int DIDDocument_AddPublicKey(DIDDocument *document, DIDURL *keyid,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocument_RemovePublicKey(DIDDocument *document, DIDURL *keyid, bool force);
+DID_API int DIDDocumentBuilder_RemovePublicKey(DIDDocumentBuilder *bulder,
+        DIDURL *keyid, bool force);
+
+/**
+ * \~English
+ * Add public key to Authenticate.
+ * Authentication is the mechanism by which the controller(s) of a DID can
+ * cryptographically prove that they are associated with that DID.
+ * A DID Document must include an authentication property.
+ *
+ * @param
+ *      bulder               [in] A handle to DIDDocument Builder.
+ * @param
+ *      key                  [in] An identifier of public key.
+ * @param
+ *      controller           [in] A controller property, identifies
+ *                              the controller of the corresponding private key.
+ * @param
+ *      key                  [in] Key property depend on key type.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *bulder,
+        DIDURL *keyid, const char *key);
+
+/**
+ * \~English
+ * Remove authentication key from Authenticate.
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      key                  [in] An identifier of public key.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuiler_RemoveAuthenticationKey(DIDDocumentBuilder *bulder,
+        DIDURL *keyid);
+
+/**
+ * \~English
+ * Add public key to authorizate.
+ * Authorization is the mechanism used to state
+ * how operations may be performed on behalf of the DID subject.
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      key                  [in] An identifier of authorization key.
+ * @param
+ *      controller           [in] A controller property, identifies
+ *                              the controller of the corresponding private key.
+ * @param
+ *      key                  [in] Key property depend on key type.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuiler_AddAuthorizationKey(DIDDocumentBuilder *builder,
+        DIDURL *keyid, DID *controller, const char *key);
+
+/**
+ * \~English
+ * Add Authorization key to Authentication array according to DID.
+ * Authentication is the mechanism by which the controller(s) of a DID can
+ * cryptographically prove that they are associated with that DID.
+ * A DID Document must include an authentication property.
+ *
+ * @param
+ *      controller           [in] A controller property, identifies
+ *                              the controller of the corresponding private key.
+ * @param
+ *      keyid                [in] An identifier of public key.
+ * @param
+ *      key                  [in] Key property depend on key type.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuilder_AuthorizationDid(DIDDocumentBuilder *builder,
+        DIDURL *keyid, DID *controller, DIDURL *authorkeyid);
+
+/**
+ * \~English
+ * Remove authorization key from authorizate.
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      key                  [in] An identifier of authorization key.
+ * @param
+ *      controller           [in] A controller property, identifies
+ *                              the controller of the corresponding private key.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuilder_RemoveAuthorizationKey(DIDDocumentBuilder *builder,
+        DIDURL *keyid);
+
+/**
+ * \~English
+ * Add one credential to credential array.
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      credential           [in] The handle to Credential.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuilder_AddCredential(DIDDocumentBuilder *builder,
+        Credential *credential);
+
+/**
+ * \~English
+ * Remove specified credential from credential array.
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      credential           [in] The handle to Credential.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuilder_RemoveCredential(DIDDocumentBuilder *builder,
+        DIDURL *credid);
+
+/**
+ * \~English
+ * Add one Service to services array.
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      id                   [in] The identifier of Service.
+ * @param
+ *      type                 [in] The type of Service.
+ * @param
+ *      point                [in] ServiceEndpoint property is a valid URI.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuilder_AddService(DIDDocumentBuilder *builder,
+        DIDURL *serviceid, const char *type, const char *point);
+
+/**
+ * \~English
+ * Remove specified Service to services array.
+ *
+ * @param
+ *      builder              [in] A handle to DIDDocument Builder.
+ * @param
+ *      id                   [in] The identifier of Service.
+ * @param
+ *      type                 [in] The type of Service.
+ * @param
+ *      point                [in] ServiceEndpoint property is a valid URI.
+ * @return
+ *      0 on success, -1 if an error occurred.
+ */
+DID_API int DIDDocumentBuilder_RemoveService(DIDDocumentBuilder *builder,
+        DIDURL *serviceid);
 
 /**
  * \~English
@@ -638,40 +855,6 @@ DID_API ssize_t DIDDocument_SelectPublicKeys(DIDDocument *document, const char *
  */
 DID_API DIDURL *DIDDocument_GetDefaultPublicKey(DIDDocument *document);
 
-/**
- * \~English
- * Add public key to Authenticate.
- * Authentication is the mechanism by which the controller(s) of a DID can
- * cryptographically prove that they are associated with that DID.
- * A DID Document must include an authentication property.
- *
- * @param
- *      document             [in] A handle to DID Document.
- * @param
- *      key                  [in] An identifier of public key.
- * @param
- *      controller           [in] A controller property, identifies
- *                              the controller of the corresponding private key.
- * @param
- *      key                  [in] Key property depend on key type.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_AddAuthenticationKey(DIDDocument *document, DIDURL *keyid,
-        const char *key);
-
-/**
- * \~English
- * Remove authentication key from Authenticate.
- *
- * @param
- *      document             [in] A handle to DID Document.
- * @param
- *      key                  [in] An identifier of public key.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_RemoveAuthenticationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -738,26 +921,6 @@ DID_API PublicKey *DIDDocument_GetAuthenticationKey(DIDDocument *document, DIDUR
 DID_API ssize_t DIDDocument_SelectAuthenticationKeys(DIDDocument *document, const char *type,
         DIDURL *keyid, PublicKey **pks, size_t size);
 
-/**
- * \~English
- * Add public key to authorizate.
- * Authorization is the mechanism used to state
- * how operations may be performed on behalf of the DID subject.
- *
- * @param
- *      document             [in] A handle to DID Document.
- * @param
- *      key                  [in] An identifier of authorization key.
- * @param
- *      controller           [in] A controller property, identifies
- *                              the controller of the corresponding private key.
- * @param
- *      key                  [in] Key property depend on key type.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_AddAuthorizationKey(DIDDocument *document, DIDURL *keyid,
-        DID *controller, const char *key);
 
 /**
  * \~English
@@ -784,42 +947,6 @@ DID_API bool DIDDocument_IsAuthenticationKey(DIDDocument *document, DIDURL *keyi
  *      true if has authorization key, or false.
  */
 DID_API bool DIDDocument_IsAuthorizationKey(DIDDocument *document, DIDURL *keyid);
-
-/**
- * \~English
- * Add Authorization key to Authentication array according to DID.
- * Authentication is the mechanism by which the controller(s) of a DID can
- * cryptographically prove that they are associated with that DID.
- * A DID Document must include an authentication property.
- *
- * @param
- *      controller           [in] A controller property, identifies
- *                              the controller of the corresponding private key.
- * @param
- *      keyid                [in] An identifier of public key.
- * @param
- *      key                  [in] Key property depend on key type.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_AuthorizationDid(DIDDocument *document, DIDURL *keyid,
-        DID *controller, DIDURL *authorkeyid);
-
-/**
- * \~English
- * Remove authorization key from authorizate.
- *
- * @param
- *      document             [in] A handle to DID Document.
- * @param
- *      key                  [in] An identifier of authorization key.
- * @param
- *      controller           [in] A controller property, identifies
- *                              the controller of the corresponding private key.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_RemoveAuthorizationKey(DIDDocument *document, DIDURL *keyid);
 
 /**
  * \~English
@@ -883,31 +1010,7 @@ DID_API PublicKey *DIDDocument_GetAuthorizationKey(DIDDocument *document, DIDURL
 DID_API ssize_t DIDDocument_SelectAuthorizationKeys(DIDDocument *document, const char *type,
         DIDURL *keyid, PublicKey **pks, size_t size);
 
-/**
- * \~English
- * Add one credential to credential array.
- *
- * @param
- *      document             [in] A handle to DID Document.
- * @param
- *      credential           [in] The handle to Credential.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_AddCredential(DIDDocument *document, Credential *credential);
 
-/**
- * \~English
- * Remove specified credential from credential array.
- *
- * @param
- *      document             [in] A handle to DID Document.
- * @param
- *      credential           [in] The handle to Credential.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_RemoveCredential(DIDDocument *document, DIDURL *credid);
 /**
  * \~English
  * Get the count of credentials.
@@ -969,40 +1072,6 @@ DID_API Credential *DIDDocument_GetCredential(DIDDocument *document, DIDURL *cre
 DID_API ssize_t DIDDocument_SelectCredentials(DIDDocument *document, const char *type,
         DIDURL *credid, Credential **creds, size_t size);
 
-/**
- * \~English
- * Add one Service to services array.
- *
- * @param
- *      document             [in] A handle to DID Document.
- * @param
- *      id                   [in] The identifier of Service.
- * @param
- *      type                 [in] The type of Service.
- * @param
- *      point                [in] ServiceEndpoint property is a valid URI.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_AddService(DIDDocument *document, DIDURL *serviceid,
-        const char *type, const char *point);
-
-/**
- * \~English
- * Remove specified Service to services array.
- *
- * @param
- *      document             [in] A handle to DID Document.
- * @param
- *      id                   [in] The identifier of Service.
- * @param
- *      type                 [in] The type of Service.
- * @param
- *      point                [in] ServiceEndpoint property is a valid URI.
- * @return
- *      0 on success, -1 if an error occurred.
- */
-DID_API int DIDDocument_RemoveService(DIDDocument *document, DIDURL *serviceid);
 
 /**
  * \~English
@@ -1028,7 +1097,8 @@ DID_API ssize_t DIDDocument_GetServiceCount(DIDDocument *document);
  * @return
  *      size of services on success, -1 if an error occurred.
  */
-DID_API ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services, size_t size);
+DID_API ssize_t DIDDocument_GetServices(DIDDocument *document, Service **services,
+        size_t size);
 
 /**
  * \~English
@@ -1259,6 +1329,18 @@ DID_API void Credential_Destroy(Credential *cred);
 
 /**
  * \~English
+ * Check Credential is self claimed or not.
+ *
+ * @param
+ *      cred                 [in] A handle to Credential.
+ * @return
+ *      true if Credential is self claimed.
+ *      Otherwise, return false.
+ */
+DID_API bool Credential_IsSelfProclaimed(Credential *cred);
+
+/**
+ * \~English
  * Get id property from Credential.
  *
  * @param
@@ -1383,10 +1465,10 @@ DID_API ssize_t Credential_GetProperties(Credential *cred, Property **properties
  * @param
  *      name                 [in] The key of property.
  * @return
- *      If no error occurs, return the handle to property.
+ *      If no error occurs, return property string.
  *      Otherwise, return NULL.
  */
-DID_API Property *Credential_GetProperty(Credential *cred, const char *name);
+DID_API const char *Credential_GetProperty(Credential *cred, const char *name);
 
 /**
  * \~English
@@ -1946,13 +2028,13 @@ DID_API bool DIDStore_ContainPrivateKey(DIDStore *store, DID *did, DIDURL *keyid
  * @param
  *      did                     [in] The handle to DID.
  * @param
- *      fragment                [in] The fragment of public key identifier.
+ *      id                      [in] The handle to public key identifier.
   * @param
  *      privatekey              [in] Private key string.
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDStore_StorePrivateKey(DIDStore *store, DID *did, const char *fragment,
+DID_API int DIDStore_StorePrivateKey(DIDStore *store, DID *did, DIDURL *id,
         const char *privatekey);
 
 /**

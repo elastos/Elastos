@@ -83,8 +83,8 @@ static void test_cred_get_properties(void)
 
 static void test_cred_get_property(void)
 {
-    Property *pro = Credential_GetProperty(credential, "email");
-    CU_ASSERT_PTR_NOT_NULL(pro);
+    const char *value = Credential_GetProperty(credential, "email");
+    CU_ASSERT_PTR_NOT_NULL(value);
 }
 
 static void test_cred_add_property(void)
@@ -120,20 +120,19 @@ static int cred_getelem_test_suite_init(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    rc = TestData_SetupStore(storePath);
-    if (rc < 0)
+    store = TestData_SetupStore(storePath);
+    if (!store)
         return -1;
 
     document = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!document) {
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
-    store = DIDStore_GetInstance();
     rc = DIDStore_StoreDID(store, document, "");
     if (rc) {
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
@@ -148,9 +147,8 @@ static int cred_getelem_test_suite_init(void)
 
 static int cred_getelem_test_suite_cleanup(void)
 {
-    TestData_Free();
     Credential_Destroy(credential);
-    DIDStore_Deinitialize();
+    TestData_Free();
     return 0;
 }
 

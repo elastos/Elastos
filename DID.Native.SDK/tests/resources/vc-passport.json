@@ -1,17 +1,17 @@
 {
-  "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#passport",
+  "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#passport",
   "type" : [ "BasicProfileCredential", "SelfProclaimedCredential" ],
-  "issuer" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-  "issuanceDate" : "2019-12-10T03:34:38Z",
-  "expirationDate" : "2024-12-10T03:34:38Z",
+  "issuer" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
+  "issuanceDate" : "2019-12-16T04:06:07Z",
+  "expirationDate" : "2024-12-16T04:06:07Z",
   "credentialSubject" : {
-    "id" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+    "id" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu",
     "nation" : "Singapore",
     "passport" : "S653258Z07"
   },
   "proof" : {
     "type" : "ECDSAsecp256r1",
-    "verificationMethod" : "did:elastos:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY#primary",
-    "signature" : "jWZ92DruQ4csJ7WEz3YIksqveGsbKeHBLvI0iIW5oVRh0QbqMbdmr1lDkMHY_QPKC0V8oSY4oezARsoRamkj2g"
+    "verificationMethod" : "did:elastos:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu#primary",
+    "signature" : "ooZ4__3HEYX2exC6cSz2Btz4DNtKSNfLsO1-xxUG2JALkdAeZxoNvtMX-LFOcCRPb57jF3fa_SlN99hDIKAHvQ"
   }
 }

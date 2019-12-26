@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -28,83 +30,44 @@
 #endif
 #include <openssl/opensslv.h>
 #include <cjson/cJSON.h>
+#include <time.h>
 
 #include "common.h"
 #include "did.h"
 
 #define DID_MAX_LEN      512
-#define DOC_BUFFER_LEN   512
 
-const char *get_time_string(time_t *p_time)
+const char *get_time_string(char *timestring, size_t len, time_t *p_time)
 {
-    static char time_string[DOC_BUFFER_LEN];
-    time_t *temp_time;
-    struct tm *ptm;
+    time_t t;
+    struct tm tm;
 
-    if (!p_time)
+    if (len < DOC_BUFFER_LEN || !p_time)
         return NULL;
 
-    temp_time = p_time;
+    if (*p_time == 0)
+        time(&t);
+    else
+        t = *p_time;
 
-    if (*temp_time == 0)
-        time(temp_time);
+    gmtime_r(&t, &tm);
+    strftime(timestring, 80, "%Y-%m-%dT%H:%M:%SZ", &tm);
 
-    ptm = gmtime(temp_time);
-    strftime(time_string, 80, "%FT%H:%M:%SZ", ptm);
-    return time_string;
+    return timestring;
 }
 
 int parse_time(time_t *time, const char *string)
 {
-    char *ptr;
-    struct tm ptm;
-    size_t len;
-    char string_copy[DID_MAX_LEN];
+    struct tm tm;
 
     if (!time || !string)
         return -1;
 
-    memset(&ptm, 0, sizeof(ptm));
+    memset(&tm, 0, sizeof(tm));
 
-    len = strlen(string);
-    if (string[len - 1] != 'Z')
+    if (!strptime(string, "%Y-%m-%dT%H:%M:%SZ", &tm))
         return -1;
 
-    strcpy(string_copy, string);
-    string_copy[len-1] = '\0';      //remove the last 'Z'
-
-    ptr = strrchr(string_copy, ':');
-    if (!ptr)
-        return -1;
-    ptm.tm_sec = atoi(ptr + sizeof(char));
-    *ptr = '\0';
-
-    ptr = strrchr(string_copy, ':');
-    if (!ptr)
-        return -1;
-    ptm.tm_min = atoi(ptr + sizeof(char));
-    *ptr = '\0';
-
-    ptr = strrchr(string_copy, 'T');
-    if (!ptr)
-        return -1;
-    ptm.tm_hour = atoi(ptr + sizeof(char));
-    *ptr = '\0';
-
-    ptr = strrchr(string_copy, '-');
-    if (!ptr)
-        return -1;
-    ptm.tm_mday = atoi(ptr + sizeof(char));
-    *ptr = '\0';
-
-    ptr = strrchr(string_copy, '-');
-    if (!ptr)
-        return -1;
-    ptm.tm_mon = atoi(ptr + sizeof(char) -1);
-    *ptr = '\0';
-
-    ptm.tm_year = atoi(string_copy) - 1900;
-
-    *time = mktime(&ptm);
+    *time = timegm(&tm);
     return 0;
 }

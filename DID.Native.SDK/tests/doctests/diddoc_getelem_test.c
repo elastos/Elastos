@@ -180,13 +180,13 @@ static int diddoc_getelem_test_suite_init(void)
     if(!document)
         return -1;
 
-    strcpy(id.did.idstring, "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
+    strcpy(id.did.idstring, "iYpQMwheDxySqivocSJaoprcoDTqQsDYAu");
     strcpy(id.fragment, "primary");
-    strcpy(auth_id.did.idstring, "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
+    strcpy(auth_id.did.idstring, "iYpQMwheDxySqivocSJaoprcoDTqQsDYAu");
     strcpy(auth_id.fragment, "recovery");
-    strcpy(cred_id.did.idstring, "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
+    strcpy(cred_id.did.idstring, "iYpQMwheDxySqivocSJaoprcoDTqQsDYAu");
     strcpy(cred_id.fragment, "email");
-    strcpy(service_id.did.idstring, "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
+    strcpy(service_id.did.idstring, "iYpQMwheDxySqivocSJaoprcoDTqQsDYAu");
     strcpy(service_id.fragment, "carrier");
 
     return 0;

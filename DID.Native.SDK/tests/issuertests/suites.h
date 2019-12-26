@@ -23,11 +23,11 @@
 #ifndef __ISSUER_TEST_SUITES_H__
 #define __ISSUER_TEST_SUITES_H__
 
-DECL_TESTSUITE(issuer_initial_test);
-DECL_TESTSUITE(issuer_store_did_test);
+DECL_TESTSUITE(issuer_create_test);
+DECL_TESTSUITE(issuer_issuevc_test);
 
 #define DEFINE_ISSUER_TESTSUITES \
-    DEFINE_TESTSUITE(issuer_initial_test), \
-    DEFINE_TESTSUITE(issuer_store_did_test)
+    DEFINE_TESTSUITE(issuer_create_test), \
+    DEFINE_TESTSUITE(issuer_issuevc_test)
 
 #endif /* __ISSUER_TEST_SUITES_H__ */

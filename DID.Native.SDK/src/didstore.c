@@ -60,7 +60,7 @@
 
 DIDStore *storeInstance = NULL;
 
-static char *StoreTag = "/.DIDStore";
+static char *StoreTag = "/.meta";
 static char MAGIC[] = { 0x00, 0x0D, 0x01, 0x0D };
 static char VERSION[] = { 0x00, 0x00, 0x00, 0x01 };
 static const char *ProofType = "ECDSAsecp256r1";
@@ -72,13 +72,14 @@ typedef enum DIDStore_Type {
     DIDStore_DID,
     DIDStore_DIDMeta,
     DIDStore_Doc,
+    DIDStore_CredentialRoot,
     DIDStore_Credential,
     DIDStore_CredentialMeta,
     DIDStore_PrivateKey
 } DIDStore_Type;
 
 static const char* methods[] = { "", "key", "index", "", "", "document",
-            "credentials", "credentials", "privatekeys"};
+            "credentials", "credentials", "credentials", "privatekeys"};
 
 typedef struct DID_Hint {
     DIDStore *store;
@@ -195,7 +196,7 @@ static void delete_file(const char *path)
 }
 
 static const char *get_file_root(DIDStore *store, DIDStore_Type type,
-        const char *didstring, int create)
+        const char *didstring, const char *fragment, int create)
 {
     static __thread char file_root[PATH_MAX];
     int len;
@@ -220,7 +221,7 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
             return NULL;
     }
 
-    if (type == DIDStore_DID || type == DIDStore_DIDMeta)
+    if (type == DIDStore_DID)
         return file_root;
 
     len = snprintf(file_suffix, sizeof(file_suffix), "/%s", didstring);
@@ -232,10 +233,26 @@ static const char *get_file_root(DIDStore *store, DIDStore_Type type,
     if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
         return NULL;
 
-    if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex)
+    if (type == DIDStore_Doc || type == DIDStore_Rootkey ||
+            type == DIDStore_RootIndex || type == DIDStore_DIDMeta)
        return file_root;
 
     len = snprintf(file_suffix, sizeof(file_suffix), "/%s", methods[type]);
+    if (len < 0 || len > sizeof(file_suffix))
+        return NULL;
+
+    strcat(file_root, file_suffix);
+
+    if (create && test_path(file_root) < 0 && mkdir(file_root, S_IRWXU) == -1)
+        return NULL;
+
+    if (type == DIDStore_CredentialRoot)
+        return file_root;
+
+    if (!fragment)
+        return NULL;
+
+    len = snprintf(file_suffix, sizeof(file_suffix), "/%s", fragment);
     if (len < 0 || len > sizeof(file_suffix))
         return NULL;
 
@@ -257,15 +274,15 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
     if (type > DIDStore_PrivateKey || (type > DIDStore_Root && !didstring))
         return NULL;
 
-    root = get_file_root(store, type, didstring, create);
+    root = get_file_root(store, type, didstring, fragment, create);
     if (!root)
         return NULL;
 
     if (type == DIDStore_Root)
         return root;
 
-	if (type == DIDStore_DID)
-		return get_file_root(store, DIDStore_Doc, didstring, create);
+	if (type == DIDStore_DID || type == DIDStore_CredentialRoot)
+		return get_file_root(store, DIDStore_Doc, didstring, fragment, create);
 
 	if (type == DIDStore_Doc || type == DIDStore_Rootkey || type == DIDStore_RootIndex) {
 		len = snprintf(file_path, sizeof(file_path), "%s/%s", root, methods[type]);
@@ -275,26 +292,15 @@ static const char *get_file_path(DIDStore *store, DIDStore_Type type,
 		return file_path;
 	}
 
-    if (type == DIDStore_DIDMeta) {
-        len = snprintf(file_path, sizeof(file_path), "%s/.%s.meta", root, didstring);
+    if (type == DIDStore_DIDMeta || type == DIDStore_CredentialMeta) {
+        len = snprintf(file_path, sizeof(file_path), "%s/.meta", root);
         if (len < 0 || len > sizeof(file_path))
             return NULL;
 
         return file_path;
     }
 
-    if (!fragment)
-        return NULL;
-
-    if (type == DIDStore_CredentialMeta) {
-        len = snprintf(file_path, sizeof(file_path), "%s/.%s.meta", root, fragment);
-        if (len < 0 || len > sizeof(file_path))
-            return NULL;
-
-        return file_path;
-    }
-
-    len = snprintf(file_path, sizeof(file_path), "%s/%s", root, fragment);
+    len = snprintf(file_path, sizeof(file_path), "%s/%s", root, "credential");
     if (len < 0 || len > sizeof(file_path))
         return NULL;
 
@@ -729,12 +735,11 @@ static int list_credential_helper(const char *path, void *context)
 
 static DIDDocument *create_document(DID *did, const char *key, const char *storepass)
 {
-    PublicKey *publickey;
+    DIDDocument *document;
     DIDURL id;
     DID controller;
-    const char *data;
     int rc;
-    char signature[SIGNATURE_BYTES * 2 + 16];
+    DIDDocumentBuilder *builder;
 
     assert(did);
     assert(key);
@@ -742,50 +747,37 @@ static DIDDocument *create_document(DID *did, const char *key, const char *store
     assert(storepass);
     assert(*storepass);
 
-    DIDDocument *document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
+    /*DIDDocument *document = (DIDDocument*)calloc(1, sizeof(DIDDocument));
     if (!document)
-        return NULL;
-
-    if (DID_Copy(&document->did, did) == -1) {
-        DIDDocument_Destroy(document);
-        return NULL;
-    }
+        return NULL;*/
 
     strcpy((char*)controller.idstring, did->idstring);
     strcpy((char*)id.did.idstring, did->idstring);
     strcpy((char*)id.fragment, "primary");
 
-    if (DIDDocument_AddPublicKey(document, &id, &controller, key) == -1) {
-        DIDDocument_Destroy(document);
+    builder = DIDDocument_Modify(NULL);
+    if (!builder)
+        return NULL;
+
+    if (DID_Copy(&builder->document->did, did) == -1) {
+        DIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
 
-    if (DIDDocument_AddAuthenticationKey(document, &id, key) == -1) {
-        DIDDocument_Destroy(document);
+    if (DIDDocumentBuilder_AddPublicKey(builder, &id, &controller, key) == -1) {
+        DIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
 
-    DIDDocument_SetExpires(document, 0);
-
-    data = DIDDocument_ToJson(document, 0, 1);
-    if (!data) {
-        DIDDocument_Destroy(document);
+    if (DIDDocumentBuilder_AddAuthenticationKey(builder, &id, key) == -1) {
+        DIDDocumentBuilder_Destroy(builder);
         return NULL;
     }
 
-    rc = DIDDocument_Sign(document, &id, storepass, signature, 1,
-            (unsigned char*)data, strlen(data));
-    free((char*)data);
-    if (rc) {
-        DIDDocument_Destroy(document);
-        return NULL;
-    }
+    DIDDocument_SetExpires(builder->document, 0);
 
-    strcpy(document->proof.type, ProofType);
-    time(&document->proof.created);
-    DIDURL_Copy(&document->proof.creater, &id);
-    strcpy(document->proof.signatureValue, signature);
-
+    document = DIDDocumentBuilder_Seal(builder, storepass);
+    DIDDocumentBuilder_Destroy(builder);
     return document;
 }
 
@@ -862,7 +854,7 @@ int DIDStore_StoreDID(DIDStore *store, DIDDocument *document, const char *hint)
             return 0;
 		else {
 			delete_file(path);
-			const char *did_path = get_file_root(store, DIDStore_DID, document->did.idstring, 0);
+			const char *did_path = get_file_root(store, DIDStore_DID, document->did.idstring, NULL, 0);
 			if (is_empty(did_path) == false)
 				delete_file(did_path);
 		}
@@ -939,14 +931,15 @@ int DIDStore_ListDID(DIDStore *store, DIDStore_GetDIDHintCallback *callback,
         void *context)
 {
     ssize_t size = 0;
-    char *dir_path;
+    char dir_path[PATH_MAX];
     DID_Hint dh;
     int rc;
 
     if (!store || !callback)
         return -1;
 
-    dir_path = store->root;
+    strcpy(dir_path, store->root);
+    strcat(dir_path, "/ids");
     rc = test_path(dir_path);
     if (rc < 0)
         return -1;
@@ -1040,7 +1033,7 @@ bool DIDStore_ContainsCredentials(DIDStore *store, DID *did)
     if (!store || !did)
         return false;
 
-    path = get_file_root(store, DIDStore_Credential, did->idstring, 0);
+    path = get_file_root(store, DIDStore_CredentialRoot, did->idstring, NULL, 0);
     rc = test_path(path);
     if (rc < 0)
         return false;
@@ -1076,7 +1069,7 @@ void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id)
 {
     const char *root, *path, *meta_path;
 
-    if (!store || !did || !id || !DIDStore_ContainsCredentials(store, did))
+    if (!store || !did || !id)
         return;
 
     path = get_file_path(store, DIDStore_Credential, did->idstring, id->fragment, 0);
@@ -1087,7 +1080,7 @@ void DIDStore_DeleteCredential(DIDStore *store, DID *did, DIDURL *id)
     if (test_path(meta_path) > 0)
         delete_file(meta_path);
 
-    root = get_file_root(store, DIDStore_Credential, did->idstring, 0);
+    root = get_file_root(store, DIDStore_Credential, did->idstring, id->fragment, 0);
     if (root && !is_empty(root))
         delete_file(root);
 
@@ -1105,7 +1098,7 @@ int DIDStore_ListCredentials(DIDStore *store, DID *did,
     if (!store || !did || !callback)
         return -1;
 
-    dir_path = get_file_root(store, DIDStore_Credential, did->idstring, 0);
+    dir_path = get_file_root(store, DIDStore_CredentialRoot, did->idstring, NULL, 0);
     rc = test_path(dir_path);
     if (rc < 0)
         return -1;
@@ -1158,7 +1151,7 @@ int DIDStore_SelectCredentials(DIDStore *store, DID *did, DIDURL *id,
         return -1;
     }
 
-    path = get_file_root(store, DIDStore_Credential, did->idstring, 0);
+    path = get_file_root(store, DIDStore_Credential, did->idstring, NULL, 0);
 
     rc = test_path(path);
     if (rc < 0)
@@ -1186,7 +1179,7 @@ bool DIDSotre_ContainPrivateKeys(DIDStore *store, DID *did)
     if (!store || !did)
         return false;
 
-    dir_path = get_file_root(store, DIDStore_PrivateKey, did->idstring, 0);
+    dir_path = get_file_root(store, DIDStore_PrivateKey, did->idstring, NULL, 0);
 
     return is_empty(dir_path);
 }
@@ -1211,15 +1204,19 @@ bool DIDStore_ContainPrivateKey(DIDStore *store, DID *did, DIDURL *id)
     return true;
 }
 
-int DIDStore_StorePrivateKey(DIDStore *store, DID *did, const char *fragment,
+int DIDStore_StorePrivateKey(DIDStore *store, DID *did, DIDURL *id,
         const char *privatekey)
 {
     size_t len;
-    const char *path;
+    const char *path, *fragment;
 
-    if (!store || !did || !fragment || !privatekey)
+    if (!store || !did || !id || !privatekey)
         return -1;
 
+    if (!DID_Equals(DIDURL_GetDid(id), did))
+        return -1;
+
+    fragment = DIDURL_GetFragment(id);
     path = get_file_path(store, DIDStore_PrivateKey, did->idstring, fragment, 1);
     if (!path)
         return -1;
@@ -1293,9 +1290,12 @@ static int refresh_did_fromchain(DIDStore *store, const char *storepass,
             if (rc < 0)
                 return -1;
 
+            DIDURL id;
+            DID_Copy(&id.did, &last_did);
+            strcpy(id.fragment, "primary");
             if (!HDkey_GetSubPrivateKey(seed, 0, 0, last_index, privatekey) ||
                 encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
-                DIDStore_StorePrivateKey(store, &last_did, "primary", (const char *)privatekeybase64) == -1) {
+                DIDStore_StorePrivateKey(store, &last_did, &id, (const char *)privatekeybase64) == -1) {
                 DIDStore_DeleteDID(store, &last_did);
                 //TODO: check need destroy document
                 return -1;
@@ -1380,9 +1380,12 @@ DIDDocument *DIDStore_NewDID(DIDStore *store, const char *storepass, const char 
         return NULL;
     }
 
+    DIDURL id;
+    DID_Copy(&id.did, &did);
+    strcpy(id.fragment, "primary");
     if (!HDkey_GetSubPrivateKey(seed, 0, 0, index, privatekey) ||
         encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
-        DIDStore_StorePrivateKey(store, &did, "primary", (const char *)privatekeybase64) == -1) {
+        DIDStore_StorePrivateKey(store, &did, &id, (const char *)privatekeybase64) == -1) {
         memset(seed, 0, sizeof(seed));
         return NULL;
     }

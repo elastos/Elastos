@@ -238,6 +238,27 @@ DIDURL *DIDURL_New(const char *method_specific_string, const char *fragment)
     return id;
 }
 
+DID_API DIDURL *DIDURL_FromDid(DID *did, const char *fragment)
+{
+    DIDURL *id;
+
+    if (!did || !fragment || !*fragment ||
+            strlen(fragment) >= MAX_FRAGMENT)
+        return NULL;
+
+    id = (DIDURL*)calloc(1, sizeof(DIDURL));
+    if (!id)
+        return NULL;
+
+    if (DID_Copy(&id->did, did) == -1) {
+        free(id);
+        return NULL;
+    }
+
+    strcpy(id->fragment, fragment);
+    return id;
+}
+
 DID *DIDURL_GetDid(DIDURL *id)
 {
     if (!id)

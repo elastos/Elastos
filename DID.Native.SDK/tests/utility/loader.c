@@ -14,22 +14,28 @@
 #include <glob.h>
 #endif
 #include <fcntl.h>
-#include <crystal.h>
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 #include "constant.h"
 #include "loader.h"
 #include "didtest_adapter.h"
+#include "crypto.h"
+#include "HDkey.h"
+#include "did.h"
 
 typedef struct TestData {
+    DIDStore *store;
     DIDAdapter *adapter;
 
+    DIDDocument *issuerdoc;
     char *issuerJson;
     char *issuerCompactJson;
     char *issuerNormalizedJson;
 
+    DIDDocument *doc;
     char *docJson;
     char *docCompactJson;
     char *docNormalizedJson;
@@ -106,7 +112,7 @@ static char *load_file(const char *file)
     }
 
     bufferlen = st.st_size;
-    readstring = calloc(1, bufferlen);
+    readstring = calloc(1, bufferlen + 1);
     if (!readstring)
         return NULL;
 
@@ -120,17 +126,18 @@ static char *load_file(const char *file)
 
 static const char *getpassword(const char *walletDir, const char *walletId)
 {
-    return storepass;
+    return walletpass;
 }
 
 char *get_file_path(char *path, size_t size, int count, ...)
 {
     va_list list;
-    int totalsize = 1;
+    int totalsize = 0;
 
     if (!path || size <= 0 || count <= 0)
         return NULL;
 
+    *path = 0;
     va_start(list, count);
     for (int i = 0; i < count; i++) {
         const char *suffix = va_arg(list, const char*);
@@ -139,10 +146,7 @@ char *get_file_path(char *path, size_t size, int count, ...)
         if (totalsize > size)
             return NULL;
 
-        if (i == 0)
-            strncpy(path, suffix, len + 1);
-        else
-            strncat(path, suffix, len + 1);
+        strncat(path, suffix, len+1);
     }
     va_end(list);
 
@@ -263,23 +267,51 @@ bool dir_exist(const char* path)
 }
 
 /////////////////////////////////////
-int TestData_SetupStore(const char *root)
+static int import_privatekey(DIDURL *id, const char *file)
+{
+    char *skbase;
+    DIDStore *store;
+    uint8_t privatekey[PRIVATEKEY_BYTES];
+    char privatekeybase64[MAX_PRIVATEKEY_BASE64];
+
+    if (!id || !file || !*file)
+        return -1;
+
+    skbase = load_file(file);
+    if (!skbase || !*skbase)
+        return -1;
+
+    if (base58_decode(privatekey, skbase) != PRIVATEKEY_BYTES) {
+        free(skbase);
+        return -1;
+    }
+
+    store = DIDStore_GetInstance();
+    if (encrypt_to_base64((char *)privatekeybase64, storepass, privatekey, sizeof(privatekey)) == -1 ||
+        DIDStore_StorePrivateKey(store, DIDURL_GetDid(id), id, (const char *)privatekeybase64) == -1) {
+        free(skbase);
+        return -1;
+    }
+
+    return 0;
+}
+
+DIDStore *TestData_SetupStore(const char *root)
 {
     char _dir[PATH_MAX],_path[PATH_MAX];
     char *walletDir, *storePath;
-    DIDStore *store;
 
     if (!root || !*root)
-        return -1;
+        return NULL;
 
     if (!testdata.adapter) {
-        walletDir = get_wallet_path(_dir, "/.wallet");
+        walletDir = get_wallet_path(_dir, walletdir);
         testdata.adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
     }
 
     delete_file(root);
-    store = DIDStore_Initialize(root, testdata.adapter);
-    return store ? 0 : -1;
+    testdata.store = DIDStore_Initialize(root, testdata.adapter);
+    return testdata.store;
 }
 
 const char *TestData_LoadIssuerJson(void)
@@ -309,7 +341,7 @@ const char *TestData_LoadIssuerNormJson(void)
 const char *TestData_LoadDocJson(void)
 {
     if (!testdata.docJson)
-        testdata.docJson = load_file("doc.json");
+        testdata.docJson = load_file("document.json");
 
     return testdata.docJson;
 }
@@ -317,7 +349,7 @@ const char *TestData_LoadDocJson(void)
 const char *TestData_LoadDocCompJson(void)
 {
     if (!testdata.docCompactJson)
-        testdata.docCompactJson = load_file("doc.compact.json");
+        testdata.docCompactJson = load_file("document.compact.json");
 
     return testdata.docCompactJson;
 }
@@ -325,7 +357,7 @@ const char *TestData_LoadDocCompJson(void)
 const char *TestData_LoadDocNormJson(void)
 {
     if (!testdata.docNormalizedJson)
-        testdata.docNormalizedJson = load_file("doc.normalized.json");
+        testdata.docNormalizedJson = load_file("document.normalized.json");
 
     return testdata.docNormalizedJson;
 }
@@ -442,11 +474,73 @@ const char *TestData_LoadVpNormJson(void)
     return testdata.vpNormalizedJson;
 }
 
+DIDDocument *TestData_LoadDoc(void)
+{
+    DIDURL *id;
+    DID *subject;
+    int rc;
+
+    const char *docstring = TestData_LoadDocJson();
+    if (!docstring || !*docstring)
+        return NULL;
+
+    testdata.doc = DIDDocument_FromJson(docstring);
+    if (!testdata.doc)
+        return NULL;
+    subject = DIDDocument_GetSubject(testdata.doc);
+
+    id = DIDURL_FromDid(subject, "key2");
+    rc = import_privatekey(id, "doc.key2.sk");
+    DIDURL_Destroy(id);
+    if (rc)
+        return NULL;
+
+    id = DIDURL_FromDid(subject, "key3");
+    rc = import_privatekey(id, "doc.key3.sk");
+    DIDURL_Destroy(id);
+    if (rc)
+        return NULL;
+
+    id = DIDURL_FromDid(subject, "primary");
+    rc = import_privatekey(id, "doc.primary.sk");
+    DIDURL_Destroy(id);
+    if (rc)
+        return testdata.doc;
+}
+
+DIDDocument *TestData_LoadIssuerDoc(void)
+{
+    DIDURL *id;
+    DID *subject;
+    int rc;
+
+    const char *docstring = TestData_LoadIssuerJson();
+    if (!docstring || !*docstring)
+        return NULL;
+
+    testdata.issuerdoc = DIDDocument_FromJson(docstring);
+    if (!testdata.issuerdoc)
+        return NULL;
+    subject = DIDDocument_GetSubject(testdata.issuerdoc);
+
+    id = DIDURL_FromDid(subject, "primary");
+    rc = import_privatekey(id, "issuer.primary.sk");
+    DIDURL_Destroy(id);
+    if (rc)
+        return NULL;
+
+    return testdata.issuerdoc;
+}
+
 void TestData_Free(void)
 {
+    DIDStore_Deinitialize();
+
     if (testdata.adapter)
         TestDIDAdapter_Destroy(testdata.adapter);
 
+    if (testdata.issuerdoc)
+        DIDDocument_Destroy(testdata.issuerdoc);
     if (testdata.issuerJson)
         free(testdata.issuerJson);
     if (testdata.issuerCompactJson)
@@ -454,6 +548,8 @@ void TestData_Free(void)
     if (testdata.issuerNormalizedJson)
         free(testdata.issuerNormalizedJson);
 
+    if (testdata.doc)
+        DIDDocument_Destroy(testdata.doc);
     if (testdata.docJson)
         free(testdata.docJson);
     if (testdata.docCompactJson)
@@ -498,4 +594,39 @@ void TestData_Free(void)
         free(testdata.restoreMnemonic);
 
     memset(&testdata, 0, sizeof(testdata));
+}
+
+/////////////////////////////////////////
+const char *Generater_Publickey(char *publickeybase58, size_t size)
+{
+    const char *mnemonic;
+    uint8_t seed[SEED_BYTES];
+    uint8_t publickey[PUBLICKEY_BYTES];
+    MasterPublicKey _mk, *masterkey;
+
+    if (size < MAX_PUBLICKEY_BASE58)
+        return NULL;
+
+    mnemonic = Mnemonic_Generate(0);
+    if (!mnemonic || !*mnemonic)
+        return NULL;
+
+    if (!HDkey_GetSeedFromMnemonic(mnemonic, "", 0, seed)) {
+        Mnemonic_free((char*)mnemonic);
+        return NULL;
+    }
+
+    masterkey = HDkey_GetMasterPublicKey(seed, 0, &_mk);
+    if (!masterkey) {
+        Mnemonic_free((char*)mnemonic);
+        return NULL;
+    }
+
+    if (!HDkey_GetSubPublicKey(masterkey, 0, 0, publickey)) {
+        Mnemonic_free((char*)mnemonic);
+        return NULL;
+    }
+
+    base58_encode(publickeybase58, publickey, sizeof(publickey));
+    return publickeybase58;
 }

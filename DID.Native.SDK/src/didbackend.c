@@ -108,14 +108,15 @@ const char *DIDBackend_Deactivate(DIDBackend *backend, DID *did, DIDURL *signKey
 DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
 {
     int rc;
-   const char *data;
+    const char *data;
     cJSON *root, *item, *field;
     DIDDocument *document;
+    char _idstring[MAX_DID];
 
     if (!backend || !did)
         return NULL;
 
-    data = backend->adapter->resolve(backend->adapter, DID_GetMethodSpecificId(did));
+    data = backend->adapter->resolve(backend->adapter, DID_ToString(did, _idstring, sizeof(_idstring)));
     if (!data)
         return NULL;
 
@@ -128,15 +129,52 @@ DIDDocument *DIDBackend_Resolve(DIDBackend *backend, DID *did)
         return NULL;
 
     item = cJSON_GetObjectItem(root, "result");
-    if (!item || !cJSON_IsArray(item)) {
-        cJSON_Delete(root);
-        return NULL;
-    }
+    if (!item || !cJSON_IsObject(item))
+        goto errorExit;
 
-    field = cJSON_GetArrayItem(item, 0);
+    field = cJSON_GetObjectItem(item, "did");
+    if (!field || !cJSON_IsString(field))
+        goto errorExit;
+
+    if (strcmp(DID_ToString(did, _idstring, sizeof(_idstring)), field->valuestring))
+        goto errorExit;
+
+    field = cJSON_GetObjectItem(item, "status");
+    if (!field || !cJSON_IsNumber(field))
+        goto errorExit;
+
+    //todo: check status
+    if (field->valueint != 0)
+        goto errorExit;
+
+    field = cJSON_GetObjectItem(item, "transaction");
+    if (!field || !cJSON_IsArray(field))
+        goto errorExit;
+
+    item = cJSON_GetArrayItem(field, 0);
+    if (!item || !cJSON_IsObject(item))
+        goto errorExit;
+
+    field = cJSON_GetObjectItem(item, "txid");
+    if (!field || !cJSON_IsString(field))
+        goto errorExit;
+    //todo: store txid in meta file;
+
+    field = cJSON_GetObjectItem(item, "timestamp");
+    if (!field || !cJSON_IsString(field))
+        goto errorExit;
+    //todo : store timestamp in meta file;
+
+    field = cJSON_GetObjectItem(item, "operation");
+    if (!field || !cJSON_IsObject(field))
+        goto errorExit;
+
     document = DIDRequest_FromJson(field);
-
     cJSON_Delete(root);
     return document;
+
+errorExit:
+    cJSON_Delete(root);
+    return NULL;
 }
 

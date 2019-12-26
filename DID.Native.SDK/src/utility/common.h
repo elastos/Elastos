@@ -34,7 +34,9 @@ typedef struct DIDURL      DIDURL;
 typedef struct DID         DID;
 typedef struct DIDDocument DIDDocument;
 
-const char *get_time_string(time_t *p_time);
+#define DOC_BUFFER_LEN   512
+
+const char *get_time_string(char *timestring, size_t len, time_t *p_time);
 
 int parse_time(time_t *time, const char *string);
 

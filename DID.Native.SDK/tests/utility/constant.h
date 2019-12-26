@@ -1,9 +1,11 @@
 #ifndef __CONTANTS_H__
 #define __CONTANTS_H__
 
+const char *walletdir;
 const char *walletId;
 const char *network;
 const char *resolver;
+const char *walletpass;
 const char *storepass;
 
 const char *type;

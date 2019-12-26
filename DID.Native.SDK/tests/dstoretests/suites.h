@@ -37,3 +37,6 @@ DECL_TESTSUITE(didstore_cred_op_test);
     DEFINE_TESTSUITE(didstore_cred_op_test)
 
 #endif /* __DSTORE_TEST_SUITES_H__ */
+
+
+

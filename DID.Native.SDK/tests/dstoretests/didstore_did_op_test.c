@@ -16,6 +16,7 @@
 
 static DIDDocument *document;
 static DID *did;
+static DIDStore *store;
 
 int get_did_hint(DIDEntry *entry, void *context)
 {
@@ -30,9 +31,7 @@ int get_did_hint(DIDEntry *entry, void *context)
 static void test_didstore_contain_did(void)
 {
     bool rc;
-    DIDStore *store;
 
-    store = DIDStore_GetInstance();
     rc = DIDStore_ContainsDID(store, did);
     CU_ASSERT_NOT_EQUAL(rc, false);
 }
@@ -40,9 +39,7 @@ static void test_didstore_contain_did(void)
 static void test_didstore_list_did(void)
 {
     int rc;
-    DIDStore *store;
 
-    store = DIDStore_GetInstance();
     rc = DIDStore_ListDID(store, get_did_hint, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
@@ -50,9 +47,7 @@ static void test_didstore_list_did(void)
 static void test_didstore_load_did(void)
 {
     DIDDocument *doc;
-    DIDStore *store;
 
-    store = DIDStore_GetInstance();
     doc = DIDStore_LoadDID(store, did);
     CU_ASSERT_PTR_NOT_NULL(doc);
 
@@ -61,9 +56,6 @@ static void test_didstore_load_did(void)
 
 static void test_didstore_delete_did(void)
 {
-    DIDStore *store;
-
-    store = DIDStore_GetInstance();
     if(DIDStore_ContainsDID(store, did) == true) {
         DIDStore_DeleteDID(store, did);
     }
@@ -76,39 +68,34 @@ static int didstore_did_op_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    rc = TestData_SetupStore(storePath);
-    if (rc < 0)
+    store = TestData_SetupStore(storePath);
+    if (!store)
         return -1;
 
     document = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!document) {
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
     did = DIDDocument_GetSubject(document);
     if (!did) {
         DIDDocument_Destroy(document);
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
-    store = DIDStore_GetInstance();
     return DIDStore_StoreDID(store, document, "littlefish");
 }
 
 static int didstore_did_op_test_suite_cleanup(void)
 {
-    DIDStore *store = DIDStore_GetInstance();
-
-    TestData_Free();
     DIDDocument_Destroy(document);
     DIDStore_DeleteDID(store, did);
-    DIDStore_Deinitialize();
+    TestData_Free();
     return 0;
 }
 

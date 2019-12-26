@@ -291,6 +291,8 @@ static size_t HttpResponseBodyWriteCallback(char *ptr,
         if (new_sz <= last_try)
             new_sz = response->sz + length;
 
+        new_sz += 16;
+
         new_data = realloc(response->data, new_sz);
         if (!new_data) {
             response->used = 0;
@@ -385,6 +387,7 @@ const char *SpvDidAdapter_Resolve(SpvDidAdapter *adapter, const char *did, int a
         return NULL;
     }
 
+    ((char *)response.data)[response.used] = 0;
     return (const char *)response.data;
 }
 

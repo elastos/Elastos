@@ -14,13 +14,11 @@
 
 static DIDDocument *document;
 static DID *did;
+static DIDStore *store;
 
 static void test_didstore_store_did(void)
 {
     int rc;
-    DIDStore *store;
-
-    store = DIDStore_GetInstance();
 
     rc = DIDStore_StoreDID(store, document, "");
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -36,24 +34,23 @@ static int didstore_storedid_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    rc = TestData_SetupStore(storePath);
-    if (rc < 0)
+    store = TestData_SetupStore(storePath);
+    if (!store)
         return -1;
 
     document = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!document) {
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
     did = DIDDocument_GetSubject(document);
     if (!did) {
         DIDDocument_Destroy(document);
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
@@ -63,7 +60,7 @@ static int didstore_storedid_test_suite_init(void)
 static int didstore_storedid_test_suite_cleanup(void)
 {
     DIDDocument_Destroy(document);
-    DIDStore_Deinitialize();
+    TestData_Free();
     return 0;
 }
 

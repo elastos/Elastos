@@ -276,6 +276,7 @@ static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
         int compact, int forsign)
 {
     char id[MAX_DIDURL];
+    char _timestring[DOC_BUFFER_LEN];
 
     assert(gen);
     assert(gen->buffer);
@@ -297,7 +298,7 @@ static int Credential_ToJson_Internal(JsonGenerator *gen,  Credential *cred,
                     DID_ToString(&cred->issuer, id, sizeof(id))));
     }
     CHECK(JsonGenerator_WriteStringField(gen, "issuanceDate",
-        get_time_string(&cred->issuanceDate)));
+        get_time_string(_timestring, sizeof(_timestring), &cred->issuanceDate)));
     CHECK(JsonGenerator_WriteFieldName(gen, "credentialSubject"));
     CHECK(subject_toJson(gen, cred, compact));
     if (!forsign) {
@@ -320,6 +321,16 @@ void Credential_Destroy(Credential *cred)
     free_types(cred);
     free_subject(cred);
     free(cred);
+}
+
+bool Credential_IsSelfProclaimed(Credential *cred)
+{
+    DIDURL *id;
+
+    if (!cred)
+        return false;
+
+    return DID_Equals(Credential_GetOwner(cred), Credential_GetIssuer(cred));
 }
 
 DIDURL *Credential_GetId(Credential *cred)
@@ -422,7 +433,7 @@ ssize_t Credential_GetProperties(Credential *cred, Property **properties,
     return (ssize_t)actual_size;
 }
 
-Property *Credential_GetProperty(Credential *cred, const char *name)
+const char *Credential_GetProperty(Credential *cred, const char *name)
 {
     Property *property;
     size_t i;
@@ -432,9 +443,8 @@ Property *Credential_GetProperty(Credential *cred, const char *name)
 
     for (i = 0; i < cred->subject.infos.size; i++) {
         property = cred->subject.infos.properties[i];
-        if (!strcmp(name, property->key)) {
-            return property;
-        }
+        if (!strcmp(name, property->key))
+            return property->value;
     }
 
     return NULL;
@@ -823,31 +833,35 @@ bool Credential_IsGenuine(Credential *cred)
 
 bool Credential_IsValid(Credential *cred)
 {
-    DID *owner, *issuer;
-    DIDDocument *doc, *issuerdoc;
+    DID *did;
+    DIDDocument *doc;
 
     if (!cred)
         return false;
 
-    owner = Credential_GetOwner(cred);
-    if (!owner)
+    did = Credential_GetOwner(cred);
+    if (!did)
         return false;
 
-    doc = DID_Resolve(owner);
+    doc = DID_Resolve(did);
     if (!doc || !DIDDocument_IsValid(doc)) {
         DIDDocument_Destroy(doc);
         return false;
     }
 
     DIDDocument_Destroy(doc);
-    issuer = Credential_GetIssuer(cred);
-    if (!issuer)
-        return false;
 
-    doc = DID_Resolve(issuer);
-    if (!doc || !DIDDocument_IsValid(doc)) {
+    if (!Credential_IsSelfProclaimed(cred)) {
+        did = Credential_GetIssuer(cred);
+        if (!did)
+            return false;
+
+        doc = DID_Resolve(did);
+        if (!doc || !DIDDocument_IsValid(doc)) {
+            DIDDocument_Destroy(doc);
+            return false;
+        }
         DIDDocument_Destroy(doc);
-        return false;
     }
 
     return Credential_IsGenuine(cred) && !Credential_IsExpired(cred);

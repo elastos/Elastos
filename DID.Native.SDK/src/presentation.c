@@ -62,6 +62,7 @@ static int Presentation_ToJson_Internal(JsonGenerator *gen, Presentation *pre,
         int compact, int forsign)
 {
     char id[MAX_DIDURL];
+    char _timestring[DOC_BUFFER_LEN];
 
     assert(gen);
     assert(gen->buffer);
@@ -70,7 +71,8 @@ static int Presentation_ToJson_Internal(JsonGenerator *gen, Presentation *pre,
     CHECK(JsonGenerator_WriteStartObject(gen));
     if (!compact)
         CHECK(JsonGenerator_WriteStringField(gen, "type", pre->type));
-    CHECK(JsonGenerator_WriteStringField(gen, "created", get_time_string(&pre->created)));
+    CHECK(JsonGenerator_WriteStringField(gen, "created",
+            get_time_string(_timestring, sizeof(_timestring), &pre->created)));
     CHECK(JsonGenerator_WriteFieldName(gen, "verifiableCredential"));
     CredentialArray_ToJson(gen, pre->credentials.credentials,
             pre->credentials.size, compact);

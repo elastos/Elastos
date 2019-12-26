@@ -36,6 +36,7 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey)
 {
     Issuer *issuer;
     DIDDocument *doc;
+    DIDStore *store;
     bool isAuthKey;
 
     if (!did)
@@ -53,6 +54,12 @@ Issuer *Issuer_Create(DID *did, DIDURL *signkey)
             DIDDocument_Destroy(doc);
             return NULL;
         }
+    }
+
+    store = DIDStore_GetInstance();
+    if (!DIDStore_ContainPrivateKey(store, did, signkey)) {
+        DIDDocument_Destroy(doc);
+        return NULL;
     }
 
     issuer = (Issuer*)calloc(1, sizeof(Issuer));

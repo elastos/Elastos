@@ -20,7 +20,7 @@ static void test_did_fromString(void)
 
 static void test_did_fromString_error(void)
 {
-    DID *did = DID_FromString("did:example:icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY");
+    DID *did = DID_FromString("did:example:iYpQMwheDxySqivocSJaoprcoDTqQsDYAu");
     CU_ASSERT_PTR_NULL(did);
     DID_Destroy(did);
 

@@ -18,7 +18,7 @@
 
 static DIDDocument *document;
 static DID *did;
-static DIDAdapter *adapter;
+static DIDStore *store;
 static const char *data = "abcdefghijklmnopqrstuvwxyz";
 static const char *wdata = "abc";
 static char signature[SIGNATURE_BYTES * 2 + 16];
@@ -75,34 +75,31 @@ static int diddoc_sign_test_suite_init(void)
 {
     int rc;
     char _path[PATH_MAX];
-    const char *storePath;
-    DIDStore *store;
-    const char *mnemonic;
+    const char *storePath, *mnemonic;
 
     storePath = get_store_path(_path, "/idchain");
-    rc = TestData_SetupStore(storePath);
-    if (rc < 0)
+    store = TestData_SetupStore(storePath);
+    if (!store)
         return -1;
 
-    store = DIDStore_GetInstance();
     mnemonic = Mnemonic_Generate(0);
     printf("\n#### mnemonic: %s\n", mnemonic);
     rc = DIDStore_InitPrivateIdentity(store, mnemonic, "", storepass, 0, true);
     if (rc < 0) {
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
     document = DIDStore_NewDID(store, storepass, "littlefish");
     if(!document) {
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
     did = DIDDocument_GetSubject(document);
     if (!did) {
         DIDDocument_Destroy(document);
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
@@ -111,12 +108,10 @@ static int diddoc_sign_test_suite_init(void)
 
 static int diddoc_sign_test_suite_cleanup(void)
 {
-    DIDStore *store = DIDStore_GetInstance();
-
-    TestData_Free();
     DIDDocument_Destroy(document);
     DIDStore_DeleteDID(store, did);
-    DIDStore_Deinitialize();
+    TestData_Free();
+
     return 0;
 }
 

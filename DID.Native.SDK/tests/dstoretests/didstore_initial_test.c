@@ -11,15 +11,18 @@
 #include "constant.h"
 #include "loader.h"
 #include "ela_did.h"
+#include "diddocument.h"
 #include "didtest_adapter.h"
 
 static const char *privateindex = "/private/index";
 static const char *privatekey = "/private/key";
 static const char *storedirroot = "/ids";
+static const char *metastring = "/.meta";
+static const char *alias = "little fish";
 
 static const char *getpassword(const char *walletDir, const char *walletId)
 {
-    return storepass;
+    return walletpass;
 }
 
 static void test_didstore_newdid(void)
@@ -27,20 +30,19 @@ static void test_didstore_newdid(void)
     char _storepath[PATH_MAX], _path[PATH_MAX];
     const char *storePath;
     char *path;
+    DIDDocument *doc, *loaddoc;
     DIDStore *store;
-    DIDDocument *doc, *resolvedoc;
-    bool hasidentity;
+    bool hasidentity, isEquals;
     int rc;
 
     storePath = get_store_path(_storepath, "/servet");
-    rc = TestData_SetupStore(storePath);
-    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), storetag,
             strlen(storetag));
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    store = DIDStore_GetInstance();
     hasidentity = DIDStore_HasPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
@@ -60,7 +62,79 @@ static void test_didstore_newdid(void)
             strlen(privatekey));
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    doc = DIDStore_NewDID(store, storepass, "little fish");
+    doc = DIDStore_NewDID(store, storepass, alias);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(doc);
+    //printf("##### doc signature: %s\n", doc->proof.signatureValue);
+    CU_ASSERT_TRUE_FATAL(DIDDocument_IsValid(doc));
+
+    DID *did = DIDDocument_GetSubject(doc);
+    const char *idstring = DID_GetMethodSpecificId(did);
+
+    path = get_file_path(_path, PATH_MAX, 5, storePath, strlen(storePath),
+            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring,
+            strlen(idstring), docstring, strlen(docstring));
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
+    path = get_file_path(_path, PATH_MAX, 5, storePath, strlen(storePath),
+            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring,
+            strlen(idstring), metastring, strlen(metastring));
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
+    CU_ASSERT_STRING_EQUAL(DIDStore_GetDIDHint(store, did), alias);
+    loaddoc = DIDStore_LoadDID(store, did);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(loaddoc);
+
+    isEquals = DID_Equals(DIDDocument_GetSubject(doc), DIDDocument_GetSubject(loaddoc));
+    CU_ASSERT_TRUE(isEquals);
+
+    rc = strcmp(doc->proof.signatureValue, loaddoc->proof.signatureValue);
+    CU_ASSERT_NOT_EQUAL_FATAL(isEquals, 0);
+
+    CU_ASSERT_TRUE_FATAL(DIDDocument_IsValid(loaddoc));
+    //add by chenyu
+    const char *data = DIDDocument_ToJson(loaddoc, 0, 0);
+    //printf("#### load document: %s\n", data);
+    TestData_Free();
+}
+
+static void test_didstore_newdid_withouAlias(void)
+{
+    char _storepath[PATH_MAX], _path[PATH_MAX];
+    const char *storePath;
+    char *path;
+    DIDDocument *doc, *loaddoc;
+    DIDStore *store;
+    bool hasidentity, isEquals;
+    int rc;
+
+    storePath = get_store_path(_storepath, "/servet");
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
+
+    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), storetag,
+            strlen(storetag));
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
+    hasidentity = DIDStore_HasPrivateIdentity(store);
+    CU_ASSERT_FALSE(hasidentity);
+
+    const char *newmnemonic = Mnemonic_Generate(0);
+    rc = DIDStore_InitPrivateIdentity(store, newmnemonic, "", storepass, 0, false);
+    Mnemonic_free((void*)newmnemonic);
+    CU_ASSERT_NOT_EQUAL_FATAL(rc, -1);
+
+    hasidentity = DIDStore_HasPrivateIdentity(store);
+    CU_ASSERT_TRUE_FATAL(hasidentity);
+
+    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), privateindex,
+            strlen(privateindex));
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
+    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), privatekey,
+            strlen(privatekey));
+    CU_ASSERT_TRUE_FATAL(file_exist(path));
+
+    doc = DIDStore_NewDID(store, storepass, NULL);
     CU_ASSERT_PTR_NOT_NULL_FATAL(doc);
     CU_ASSERT_TRUE_FATAL(DIDDocument_IsValid(doc));
 
@@ -68,18 +142,16 @@ static void test_didstore_newdid(void)
     const char *idstring = DID_GetMethodSpecificId(did);
 
     path = get_file_path(_path, PATH_MAX, 5, storePath, strlen(storePath),
-            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring, strlen(idstring),
-            docstring, strlen(docstring));
+            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring,
+            strlen(idstring), docstring, strlen(docstring));
     CU_ASSERT_TRUE_FATAL(file_exist(path));
 
-    //Todo: check meta file.
+    path = get_file_path(_path, PATH_MAX, 5, storePath, strlen(storePath),
+            storedirroot, strlen(storedirroot), "/", 1, (char*)idstring,
+            strlen(idstring), metastring, strlen(metastring));
+    CU_ASSERT_FALSE_FATAL(file_exist(path));
 
-    DIDStore_Deinitialize();
-}
-
-static void test_didstore_newdid_withouhint(void)
-{
-    //Todo:
+    CU_ASSERT_PTR_NULL_FATAL(DIDStore_GetDIDHint(store, did));
     return;
 }
 
@@ -94,7 +166,7 @@ static void test_didstore_initial_error(void)
     store = DIDStore_Initialize(storePath, NULL);
     CU_ASSERT_PTR_NULL(store);
 
-    walletDir = get_wallet_path(_path, "/.wallet");
+    walletDir = get_wallet_path(_path, walletdir);
     adapter = TestDIDAdapter_Create(walletDir, walletId, network, resolver, getpassword);
     CU_ASSERT_PTR_NOT_NULL_FATAL(adapter);
 
@@ -106,6 +178,7 @@ static void test_didstore_initial_error(void)
 static void test_didstore_privateIdentity_error(void)
 {
     char _path[PATH_MAX];
+    char _temp[PATH_MAX];
     const char *storePath;
     char *path;
     DIDStore *store;
@@ -113,8 +186,8 @@ static void test_didstore_privateIdentity_error(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    rc = TestData_SetupStore(storePath);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
     store = DIDStore_GetInstance();
     hasidentity = DIDStore_HasPrivateIdentity(store);
@@ -129,15 +202,15 @@ static void test_didstore_privateIdentity_error(void)
     hasidentity = DIDStore_HasPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), privateindex,
+    path = get_file_path(_temp, PATH_MAX, 2, storePath, strlen(storePath), privateindex,
             strlen(privateindex));
     CU_ASSERT_FALSE(file_exist(path));
 
-    path = get_file_path(_path, PATH_MAX, 2, storePath, strlen(storePath), privatekey,
+    path = get_file_path(_temp, PATH_MAX, 2, storePath, strlen(storePath), privatekey,
             strlen(privatekey));
     CU_ASSERT_FALSE(file_exist(path));
 
-    DIDStore_Deinitialize();
+    TestData_Free();
 }
 
 static void test_didstore_newdid_emptystore(void)
@@ -150,34 +223,32 @@ static void test_didstore_newdid_emptystore(void)
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    rc = TestData_SetupStore(storePath);
-    CU_ASSERT_NOT_EQUAL(rc, -1);
+    store = TestData_SetupStore(storePath);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(store);
 
-    store = DIDStore_GetInstance();
     hasidentity = DIDStore_HasPrivateIdentity(store);
     CU_ASSERT_FALSE(hasidentity);
 
     doc = DIDStore_NewDID(store, storepass, "little fish");
     CU_ASSERT_PTR_NULL_FATAL(doc);
+    DIDDocument_Destroy(doc);
 
-    DIDStore_Deinitialize();
+    TestData_Free();
 }
 
 static int didstore_initial_test_suite_init(void)
 {
-    TestData_Free();
     return 0;
 }
 
 static int didstore_initial_test_suite_cleanup(void)
 {
-    TestData_Free();
     return 0;
 }
 
 static CU_TestInfo cases[] = {
     {  "test_didstore_newdid",                test_didstore_newdid               },
-    {  "test_didstore_newdid_withouhint",     test_didstore_newdid_withouhint    },
+    {  "test_didstore_newdid_withouAlias",    test_didstore_newdid_withouAlias   },
     {  "test_didstore_initial_error",         test_didstore_initial_error        },
     {  "test_didstore_privateIdentity_error", test_didstore_privateIdentity_error},
     {  "test_didstore_newdid_emptystore",     test_didstore_newdid_emptystore    },

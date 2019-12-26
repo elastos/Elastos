@@ -17,6 +17,7 @@
 
 static DID did;
 static Credential *credential;
+static DIDStore *store;
 
 int get_cred_hint(CredentialEntry *entry, void *context)
 {
@@ -30,38 +31,27 @@ int get_cred_hint(CredentialEntry *entry, void *context)
 
 static const char *getpassword(const char *walletDir, const char *walletId)
 {
-    return storepass;
+    return walletpass;
 }
 
 static void test_didstore_contain_creds(void)
 {
     bool rc;
-    DIDStore *store;
-
-    store = DIDStore_GetInstance();
 
     rc = DIDStore_ContainsCredentials(store, &did);
-    CU_ASSERT_NOT_EQUAL(rc, false);
+    CU_ASSERT_TRUE(rc);
     rc = DIDStore_ContainsCredential(store, &did, &(credential->id));
-    CU_ASSERT_NOT_EQUAL(rc, false);
+    CU_ASSERT_TRUE(rc);
 }
 
 static void test_didstore_list_cred(void)
 {
-    DIDStore *store;
-
-    store = DIDStore_GetInstance();
-
     int rc = DIDStore_ListCredentials(store, &did, get_cred_hint, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
 }
 
 static void test_didstore_select_cred(void)
 {
-    DIDStore *store;
-
-    store = DIDStore_GetInstance();
-
     int rc = DIDStore_SelectCredentials(store, &did, &(credential->id),
             "BasicProfileCredential", get_cred_hint, NULL);
     CU_ASSERT_NOT_EQUAL(rc, -1);
@@ -69,10 +59,7 @@ static void test_didstore_select_cred(void)
 
 static void test_didstore_load_cred(void)
 {
-    DIDStore *store;
     Credential *cred;
-
-    store = DIDStore_GetInstance();
 
     cred = DIDStore_LoadCredential(store, &did, &(credential->id));
     CU_ASSERT_PTR_NOT_NULL(cred);
@@ -82,9 +69,6 @@ static void test_didstore_load_cred(void)
 
 static void test_didstore_delete_cred(void)
 {
-    DIDStore *store;
-
-    store = DIDStore_GetInstance();
     if(DIDStore_ContainsCredential(store, &did, &(credential->id)) == true) {
         DIDStore_DeleteCredential(store, &did, &(credential->id));
     }
@@ -97,17 +81,16 @@ static int didstore_cred_op_test_suite_init(void)
 {
     char _path[PATH_MAX];
     const char *storePath;
-    DIDStore *store;
     int rc;
 
     storePath = get_store_path(_path, "/servet");
-    rc = TestData_SetupStore(storePath);
-    if (rc < 0)
+    store = TestData_SetupStore(storePath);
+    if (!store)
         return -1;
 
     DIDDocument *doc = DIDDocument_FromJson(TestData_LoadDocJson());
     if(!doc) {
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
@@ -116,22 +99,18 @@ static int didstore_cred_op_test_suite_init(void)
 
     credential = Credential_FromJson(TestData_LoadVcEmailJson(), &did);
     if(!credential) {
-        DIDStore_Deinitialize();
+        TestData_Free();
         return -1;
     }
 
-    store = DIDStore_GetInstance();
     return DIDStore_StoreCredential(store, credential, "me");
 }
 
 static int didstore_cred_op_test_suite_cleanup(void)
 {
-    DIDStore *store = DIDStore_GetInstance();
-
-    TestData_Free();
     Credential_Destroy(credential);
     DIDStore_DeleteDID(store, &did);
-    DIDStore_Deinitialize();
+    TestData_Free();
     return 0;
 }
 
