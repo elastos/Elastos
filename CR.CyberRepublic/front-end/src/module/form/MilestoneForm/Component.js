@@ -4,6 +4,7 @@ import { Form, Input, DatePicker } from 'antd'
 import styled from 'styled-components'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
+import DatePickerIcon from './DatePickerIcon'
 
 const { TextArea } = Input
 const FormItem = Form.Item
@@ -46,7 +47,7 @@ class MilestoneForm extends BaseComponent {
               }
             ],
             initialValue: item && item.date
-          })(<DatePicker />)}
+          })(<DatePicker suffixIcon={<DatePickerIcon />} />)}
         </FormItem>
         <FormItem label={I18N.get('suggestion.plan.goal')} {...formItemLayout}>
           {getFieldDecorator('version', {
