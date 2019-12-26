@@ -177,6 +177,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                     bundle.putBoolean("is", is);
                     bundle.putInt("pos", pos);
                 }*/
+                bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 bundle.putSerializable("netList", netList);
                 start(CRMyVoteFragment.class, bundle);
                 break;
@@ -299,7 +300,7 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
         Bundle bundle = new Bundle();
         bundle.putInt("postion", position);
         bundle.putSerializable("netList", netList);
-
+        bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
         start(CRInformationFragment.class, bundle);
     }
 

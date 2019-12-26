@@ -46,7 +46,7 @@ public class AboutPresenter extends PresenterAbstract {
                         && MyApplication.currentWalletNet != WalletNet.ALPHAMAINNET) {
                     moveWalletFile(baseFragment.getContext());
                 }
-                moveLogFile(baseFragment.getContext(),"/spvsdk1.log");
+                moveLogFile(baseFragment.getContext(),"/spvsdk.1.log");
                 return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext(),"/spvsdk.log") + "", "moveLogFile");
             }
         });

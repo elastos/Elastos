@@ -100,10 +100,7 @@ public class CRMyVoteFragment extends BaseFragment implements NewBaseViewData, C
     //变更投票
     @OnClick(R.id.ll_bgtp)
     public void onViewClicked() {
-        Bundle bundle = new Bundle();
-
-        bundle.putSerializable("netList", (Serializable) netList);
-        start(CRNodeCartFragment.class, bundle);
+        start(CRNodeCartFragment.class, getArguments());
     }
 
     BigDecimal ticketSum = new BigDecimal(0);
