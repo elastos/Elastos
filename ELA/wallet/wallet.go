@@ -119,19 +119,6 @@ func (w *Wallet) ImportAddress(address string, enableUtxoDB bool) error {
 
 func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint256][]*types.UTXO,
 	error) {
-	if enableUtxoDB {
-		programHash, err := common.Uint168FromAddress(address)
-		if err != nil {
-			return nil, err
-		}
-		unspent, err := Store.GetUnspentsFromProgramHash(*programHash)
-		if err != nil {
-			return nil, err
-		}
-
-		return unspent, nil
-	}
-
 	coins := w.ListCoins(address)
 	utxos := make([]*types.UTXO, 0)
 	for op, coin := range coins {

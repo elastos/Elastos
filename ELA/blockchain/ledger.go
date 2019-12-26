@@ -10,7 +10,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/core/types"
-	"github.com/elastos/Elastos.ELA/core/types/payload"
 	crstate "github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/state"
 )
@@ -31,18 +30,6 @@ type Ledger struct {
 //check weather the transaction contains the doubleSpend.
 func (l *Ledger) IsDoubleSpend(Tx *Transaction) bool {
 	return DefaultLedger.Store.IsDoubleSpend(Tx)
-}
-
-//Get the DefaultLedger.
-//Note: the later version will support the mutiLedger.So this func mybe expired later.
-
-//Get the Asset from store.
-func (l *Ledger) GetAsset(assetID Uint256) (*payload.Asset, error) {
-	asset, err := l.Store.GetAsset(assetID)
-	if err != nil {
-		return nil, errors.New("[Ledger],GetAsset failed with assetID =" + assetID.String())
-	}
-	return asset, nil
 }
 
 //Get Block With Height.
