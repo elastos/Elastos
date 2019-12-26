@@ -22,7 +22,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/dtime"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 	. "github.com/elastos/Elastos.ELA/dpos/manager"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/p2p/msg"
 
 	"github.com/yuin/gopher-lua"
@@ -97,8 +96,7 @@ func newDposManager(L *lua.LState) int {
 		Account:      mockManager.Account,
 		ChainParams:  &config.DefaultParams,
 		TimeSource:   medianTime,
-		EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
-			Store:       nil,
+		EventAnalyzerConfig: EventAnalyzerConfig{
 			Arbitrators: a,
 		},
 	})
@@ -111,7 +109,6 @@ func newDposManager(L *lua.LState) int {
 		mockManager.Peer.Broadcast)
 	n.Initialize(DPOSNetworkConfig{
 		ProposalDispatcher: mockManager.Dispatcher,
-		Store:              nil,
 	})
 	n.SetListener(dposManager)
 

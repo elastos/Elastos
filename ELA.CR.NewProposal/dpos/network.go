@@ -21,7 +21,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/msg"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/mempool"
 	elap2p "github.com/elastos/Elastos.ELA/p2p"
 	elamsg "github.com/elastos/Elastos.ELA/p2p/msg"
@@ -50,7 +49,6 @@ type network struct {
 	listener           manager.NetworkEventListener
 	proposalDispatcher *manager.ProposalDispatcher
 	peersLock          sync.Mutex
-	store              store.IDposStore
 	publicKey          []byte
 	announceAddr       func()
 
@@ -71,7 +69,6 @@ type network struct {
 
 func (n *network) Initialize(dnConfig manager.DPOSNetworkConfig) {
 	n.proposalDispatcher = dnConfig.ProposalDispatcher
-	n.store = dnConfig.Store
 	n.publicKey = dnConfig.PublicKey
 	n.announceAddr = dnConfig.AnnounceAddr
 }
