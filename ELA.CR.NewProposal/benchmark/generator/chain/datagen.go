@@ -26,7 +26,7 @@ const (
 	maxTxPerBlock = math.MaxUint32
 )
 
-type ProcessDataTimeCounter struct {
+type TimeCounter struct {
 	StartTimer func()
 	StopTimer  func()
 }
@@ -41,9 +41,10 @@ type DataGen struct {
 	foundationAddr string
 	dataDir        string
 
-	counter        *ProcessDataTimeCounter
-	pressure       bool
-	pressureTxSize int
+	processDataCounter *TimeCounter
+	addToTxPoolCount   *TimeCounter
+	pressure           bool
+	pressureTxSize     int
 }
 
 func (g *DataGen) GetChain() *blockchain.BlockChain {
@@ -63,8 +64,12 @@ func (g *DataGen) SetPrevBlockHash(hash common.Uint256) {
 	g.prevBlockHash = hash
 }
 
-func (g *DataGen) EnableProcessDataTimer(counter *ProcessDataTimeCounter) {
-	g.counter = counter
+func (g *DataGen) EnableProcessDataTimer(counter *TimeCounter) {
+	g.processDataCounter = counter
+}
+
+func (g *DataGen) EnableAddToTxPoolTimer(counter *TimeCounter) {
+	g.addToTxPoolCount = counter
 }
 
 func (g *DataGen) Generate(height uint32) (err error) {
@@ -98,7 +103,7 @@ func (g *DataGen) fastProcess(height uint32) (err error) {
 		return
 	}
 
-	g.counterProcess(func() {
+	g.countProcess(g.processDataCounter, func() {
 		err = g.storeData(block)
 	})
 	if err != nil {
@@ -120,7 +125,7 @@ func (g *DataGen) normalProcess(height uint32) (err error) {
 		return
 	}
 
-	g.counterProcess(func() {
+	g.countProcess(g.processDataCounter, func() {
 		_, _, err = g.chain.ProcessBlock(block, nil)
 	})
 	if err != nil {
@@ -144,7 +149,7 @@ func (g *DataGen) minimalProcess(height uint32) (err error) {
 	}
 	g.prevBlockHash = block.Hash()
 
-	g.counterProcess(func() {
+	g.countProcess(g.processDataCounter, func() {
 		err = g.storeData(block)
 	})
 	if err != nil {
@@ -153,11 +158,11 @@ func (g *DataGen) minimalProcess(height uint32) (err error) {
 	return
 }
 
-func (g *DataGen) counterProcess(action func()) {
-	if g.counter != nil {
-		g.counter.StartTimer()
+func (g *DataGen) countProcess(counter *TimeCounter, action func()) {
+	if counter != nil {
+		counter.StartTimer()
 		action()
-		g.counter.StopTimer()
+		counter.StopTimer()
 	} else {
 		action()
 	}
@@ -174,11 +179,13 @@ func (g *DataGen) generateTxs(
 
 func (g *DataGen) generateBlock(
 	txs []*types.Transaction) (block *types.Block, err error) {
-	for _, v := range txs {
-		if err = g.txPool.AppendToTxPool(v); err != nil {
-			return
+	g.countProcess(g.addToTxPoolCount, func() {
+		for _, v := range txs {
+			if err = g.txPool.AppendToTxPool(v); err != nil {
+				return
+			}
 		}
-	}
+	})
 
 	if block, err = g.pow.GenerateBlock(g.foundationAddr,
 		maxTxPerBlock); err != nil {
@@ -275,16 +282,16 @@ func FromTxRepository(dataDir string, interrupt <-chan struct{},
 
 	txPool := mempool.NewTxPool(chainParams)
 	return &DataGen{
-		txRepo:         repo,
-		chainParams:    chainParams,
-		chain:          chain,
-		txPool:         txPool,
-		foundationAddr: foundationAddr,
-		prevBlockHash:  chainParams.GenesisBlock.Hash(),
-		dataDir:        dataDir,
-		pressure:       false,
-		pressureTxSize: 8000000,
-		counter:        nil,
+		txRepo:             repo,
+		chainParams:        chainParams,
+		chain:              chain,
+		txPool:             txPool,
+		foundationAddr:     foundationAddr,
+		prevBlockHash:      chainParams.GenesisBlock.Hash(),
+		dataDir:            dataDir,
+		pressure:           false,
+		pressureTxSize:     8000000,
+		processDataCounter: nil,
 		pow: pow.NewService(
 			&pow.Config{
 				PayToAddr:   foundationAddr,
