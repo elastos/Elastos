@@ -531,5 +531,5 @@
     <string name="iagree">I have read and agreed with the above provisions</string>
     <string name="nocandidates">No Candidate</string>
     <string name="nocandidatenode">No Candidate Node</string>
-    <string name="notsufficientfundskeepornot">Insufficient account balance will invalidate previous voting results.Continue trading？</string>
+    <string name="notsufficientfundskeepornot">Previous vote is invalid due to insufficient balance. Continue?</string>
 </resources>
