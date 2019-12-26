@@ -20,7 +20,6 @@ import (
 	dp2p "github.com/elastos/Elastos.ELA/dpos/p2p"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/dpos/state"
-	"github.com/elastos/Elastos.ELA/dpos/store"
 	"github.com/elastos/Elastos.ELA/elanet"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/mempool"
@@ -29,9 +28,7 @@ import (
 
 type Config struct {
 	EnableEventLog    bool
-	EnableEventRecord bool
 	Arbitrators       state.Arbitrators
-	Store             store.IDposStore
 	Server            elanet.Server
 	TxMemPool         *mempool.TxPool
 	BlockMemPool      *mempool.BlockPool
@@ -190,12 +187,6 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		eventMonitor.RegisterListener(eventLogs)
 	}
 
-	if cfg.EnableEventRecord {
-		eventRecorder := &store.EventRecord{}
-		eventRecorder.Initialize(cfg.Store)
-		eventMonitor.RegisterListener(eventRecorder)
-	}
-
 	dposHandlerSwitch := manager.NewHandler(manager.DPOSHandlerConfig{
 		Network:     network,
 		Manager:     dposManager,
@@ -214,8 +205,7 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 			Account:      account,
 			ChainParams:  cfg.ChainParams,
 			TimeSource:   medianTime,
-			EventStoreAnalyzerConfig: store.EventStoreAnalyzerConfig{
-				Store:       cfg.Store,
+			EventAnalyzerConfig: manager.EventAnalyzerConfig{
 				Arbitrators: cfg.Arbitrators,
 			},
 		})
@@ -225,7 +215,6 @@ func NewArbitrator(account account.Account, cfg Config) (*Arbitrator, error) {
 		network, illegalMonitor, cfg.BlockMemPool, cfg.TxMemPool, cfg.Broadcast)
 	network.Initialize(manager.DPOSNetworkConfig{
 		ProposalDispatcher: proposalDispatcher,
-		Store:              cfg.Store,
 		PublicKey:          account.PublicKeyBytes(),
 		AnnounceAddr:       cfg.AnnounceAddr,
 	})
