@@ -533,7 +533,7 @@ static int Parser_Proof(DIDDocument *document, cJSON *json)
 
     item = cJSON_GetObjectItem(json, "creator");
     if (item && (!cJSON_IsString(item) ||
-            parse_didurl(&document->proof.creater, item->valuestring, &document->did)) == -1)
+            parse_didurl(&document->proof.creater, item->valuestring, &document->did) == -1))
         return -1;
 
     if (!item && DIDURL_Copy(&document->proof.creater,

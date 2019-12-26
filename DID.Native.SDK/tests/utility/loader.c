@@ -505,7 +505,9 @@ DIDDocument *TestData_LoadDoc(void)
     rc = import_privatekey(id, "doc.primary.sk");
     DIDURL_Destroy(id);
     if (rc)
-        return testdata.doc;
+        return NULL;
+
+    return testdata.doc;
 }
 
 DIDDocument *TestData_LoadIssuerDoc(void)

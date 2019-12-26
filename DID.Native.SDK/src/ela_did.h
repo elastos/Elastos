@@ -657,7 +657,7 @@ DID_API int DIDDocumentBuilder_AddAuthenticationKey(DIDDocumentBuilder *bulder,
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuiler_RemoveAuthenticationKey(DIDDocumentBuilder *bulder,
+DID_API int DIDDocumentBuilder_RemoveAuthenticationKey(DIDDocumentBuilder *bulder,
         DIDURL *keyid);
 
 /**
@@ -678,7 +678,7 @@ DID_API int DIDDocumentBuiler_RemoveAuthenticationKey(DIDDocumentBuilder *bulder
  * @return
  *      0 on success, -1 if an error occurred.
  */
-DID_API int DIDDocumentBuiler_AddAuthorizationKey(DIDDocumentBuilder *builder,
+DID_API int DIDDocumentBuilder_AddAuthorizationKey(DIDDocumentBuilder *builder,
         DIDURL *keyid, DID *controller, const char *key);
 
 /**
