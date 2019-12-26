@@ -539,15 +539,15 @@ func (c *Committee) isInVotingPeriod(height uint32) bool {
 
 func (c *Committee) changeCommitteeMembers(height uint32) (
 	[]common.Uint168, error) {
+	// Process current members.
+	c.processCurrentMembers(height)
+
 	candidates, err := c.getActiveCRCandidatesDesc()
 	if err != nil {
 		c.InElectionPeriod = false
 		c.LastVotingStartHeight = height
 		return nil, err
 	}
-
-	// Process current members.
-	c.processCurrentMembers(height)
 
 	result := make([]common.Uint168, 0, c.params.CRMemberCount)
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
@@ -565,6 +565,10 @@ func (c *Committee) changeCommitteeMembers(height uint32) (
 }
 
 func (c *Committee) processCurrentMembers(height uint32) {
+	if len(c.Members) == 0 {
+		return
+	}
+
 	if _, ok := c.HistoryMembers[c.state.CurrentSession]; !ok {
 		c.HistoryMembers[c.state.CurrentSession] =
 			make(map[common.Uint168]*CRMember)
@@ -572,6 +576,7 @@ func (c *Committee) processCurrentMembers(height uint32) {
 	for _, m := range c.Members {
 		c.state.depositInfo[m.Info.DID].Penalty = c.getMemberPenalty(height, m)
 		c.state.depositInfo[m.Info.DID].Refundable = true
+		c.state.depositInfo[m.Info.DID].DepositAmount -= MinDepositAmount
 		c.HistoryMembers[c.state.CurrentSession][m.Info.DID] = m
 	}
 
