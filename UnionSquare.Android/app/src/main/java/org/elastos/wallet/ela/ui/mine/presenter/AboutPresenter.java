@@ -44,7 +44,7 @@ public class AboutPresenter extends PresenterAbstract {
                 if (MyApplication.chainID > 0) {
                     moveWalletFile(baseFragment.getContext());
                 }
-                moveLogFile(baseFragment.getContext(),"/spvsdk1.log");
+                moveLogFile(baseFragment.getContext(),"/spvsdk.1.log");
                 return new CommmonStringWithiMethNameEntity(MyWallet.SUCCESSCODE, moveLogFile(baseFragment.getContext(),"/spvsdk.log") + "", "moveLogFile");
             }
         });

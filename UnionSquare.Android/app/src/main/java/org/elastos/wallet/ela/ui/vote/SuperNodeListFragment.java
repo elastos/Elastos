@@ -127,6 +127,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
                 bundle = new Bundle();
                 bundle.putString("zb", zb);
                 bundle.putSerializable("netList", netList);
+                bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
                 start(MyVoteFragment.class, bundle);
                 break;
             case R.id.tv_title_right:
@@ -177,6 +178,7 @@ public class SuperNodeListFragment extends BaseFragment implements BaseQuickAdap
         bundle.putString("zb", zb);
         bundle.putSerializable("bean", netList.get(position));
         bundle.putSerializable("netList", netList);
+        bundle.putSerializable("otherUnActiveVote", otherUnActiveVote);
         start(NodeInformationFragment.class, bundle);
     }
 

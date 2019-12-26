@@ -215,10 +215,7 @@ public class NodeInformationFragment extends BaseFragment {
 
                 break;
             case R.id.sb_ckhxlb:
-                Bundle bundle = new Bundle();
-                bundle.putString("zb", zb);
-                bundle.putSerializable("netList", (Serializable) netlist);
-                start(NodeCartFragment.class, bundle);
+                start(NodeCartFragment.class, getArguments());
                 break;
         }
     }

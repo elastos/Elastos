@@ -202,9 +202,7 @@ public class CRInformationFragment extends BaseFragment {
 
                 break;
             case R.id.sb_ckhxlb:
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("netList", netlist);
-                start(CRNodeCartFragment.class, bundle);
+                start(CRNodeCartFragment.class, getArguments());
                 break;
         }
     }
