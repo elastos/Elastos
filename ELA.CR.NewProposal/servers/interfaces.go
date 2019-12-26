@@ -1462,6 +1462,10 @@ type RpcCrCandidatesInfo struct {
 	TotalCounts          uint64               `json:"totalcounts"`
 }
 
+type RpcSecretaryGeneral struct {
+	SecretaryGeneral string `json:"secretarygeneral"`
+}
+
 //single cr member info
 type RpcCrMemberInfo struct {
 	Code             string `json:"code"`
@@ -1622,6 +1626,13 @@ func ListProducers(param Params) map[string]interface{} {
 		TotalCounts:       uint64(count),
 	}
 
+	return ResponsePack(Success, result)
+}
+
+func GetSecretaryGeneral(param Params) map[string]interface{} {
+	result := &RpcSecretaryGeneral{
+		SecretaryGeneral: ChainParams.SecretaryGeneral,
+	}
 	return ResponsePack(Success, result)
 }
 
