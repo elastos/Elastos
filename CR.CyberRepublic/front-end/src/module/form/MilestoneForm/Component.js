@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Form, Input, Button, DatePicker } from 'antd'
+import { Form, Input, DatePicker } from 'antd'
 import styled from 'styled-components'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
@@ -33,7 +33,7 @@ class MilestoneForm extends BaseComponent {
       colon: false
     }
     return (
-      <Form onSubmit={this.handleSubmit}>
+      <Form style={{ width: 330 }}>
         <FormItem
           label={I18N.get('suggestion.plan.publishDate')}
           {...formItemLayout}
@@ -48,10 +48,7 @@ class MilestoneForm extends BaseComponent {
             initialValue: item && item.date
           })(<DatePicker />)}
         </FormItem>
-        <FormItem
-          label={I18N.get('suggestion.plan.goal')}
-          {...formItemLayout}
-        >
+        <FormItem label={I18N.get('suggestion.plan.goal')} {...formItemLayout}>
           {getFieldDecorator('version', {
             rules: [
               {
@@ -60,10 +57,10 @@ class MilestoneForm extends BaseComponent {
               }
             ],
             initialValue: item && item.version
-          })(<TextArea rows={5} />)}
+          })(<TextArea rows={8} style={{ resize: 'none' }} />)}
         </FormItem>
         <Actions>
-          <Button type="primary" htmlType="submit" size="default">
+          <Button onClick={this.handleSubmit}>
             {item
               ? I18N.get('suggestion.form.button.update')
               : I18N.get('suggestion.form.button.create')}
@@ -84,7 +81,15 @@ export default Form.create()(MilestoneForm)
 const Actions = styled.div`
   display: flex;
   justify-content: center;
-  > button {
-    margin: 0 8px;
-  }
+`
+const Button = styled.div`
+  margin: -8px 8px 12px;
+  background-color: #008d85;
+  width: 90px;
+  height: 32px;
+  font-size: 13px;
+  line-height: 32px;
+  text-align: center;
+  color: #ffffff;
+  cursor: pointer;
 `

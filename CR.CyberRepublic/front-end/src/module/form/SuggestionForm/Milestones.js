@@ -108,7 +108,11 @@ class Milestones extends Component {
       </div>
     )
     const moreBtn = (
-      <Button type="link" onClick={() => this.handleClickSwitchChange(index)}>
+      <Button
+        type="link"
+        onClick={() => this.handleClickSwitchChange(index)}
+        style={{ margin: '8px 0 16px' }}
+      >
         {this.getMilestoneTrigger(index).clickedSwitch
           ? I18N.get('suggestion.plan.hideDetail')
           : I18N.get('suggestion.plan.showDetail')}
@@ -147,7 +151,8 @@ class Milestones extends Component {
                       trigger="click"
                       overlayStyle={{}}
                       visible={this.getMilestoneTrigger(index).clickedSwitch}
-                      onVisibleChange={isVisible => this.handleClickSwitchChange(index)
+                      onVisibleChange={isVisible =>
+                        this.handleClickSwitchChange(index)
                       }
                     >
                       <Square>{this.renderSquare(item, index)}</Square>
@@ -166,7 +171,8 @@ class Milestones extends Component {
                         }
                         trigger="click"
                         visible={this.getMilestoneTrigger(index).clicked}
-                        onVisibleChange={isVisible => this.handleClickChange(index, isVisible)
+                        onVisibleChange={isVisible =>
+                          this.handleClickChange(index, isVisible)
                         }
                         placement="top"
                       >
@@ -187,10 +193,13 @@ class Milestones extends Component {
                         trigger="click"
                         overlayStyle={{}}
                         visible={this.getMilestoneTrigger(index).clickedSwitch}
-                        onVisibleChange={isVisible => this.handleClickSwitchChange(index)
+                        onVisibleChange={isVisible =>
+                          this.handleClickSwitchChange(index)
                         }
                       >
-                        <Square>{this.renderSquare(item, index, false, true)}</Square>
+                        <Square>
+                          {this.renderSquare(item, index, false, true)}
+                        </Square>
                       </Popover>
                       <MilestoneEdit>
                         <Circle />
@@ -208,7 +217,7 @@ class Milestones extends Component {
                 trigger="click"
                 placement="top"
               >
-                <Button size="small" shape="circle" icon="plus" />
+                <CircleButton>+</CircleButton>
               </Popover>
             )}
           </Action>
@@ -279,10 +288,9 @@ const Square = styled.div`
   }
   > button.ant-btn {
     display: inline-block;
-    color: #1DE9B6;
+    color: #1de9b6;
     background-color: transparent;
     border-color: transparent;
-    -webkit-box-shadow: none;
     box-shadow: none;
     height: 17px;
     flex: 17px;
@@ -325,10 +333,9 @@ const BigSquare = styled.div`
   }
   > button.ant-btn {
     display: inline-block;
-    color: #1DE9B6;
+    color: #1de9b6;
     background-color: transparent;
     border-color: transparent;
-    -webkit-box-shadow: none;
     box-shadow: none;
     height: 17px;
     flex: 17px;
@@ -344,8 +351,10 @@ const BigSquare = styled.div`
 const MilestoneEdit = styled.div`
   position: relative;
   top: 97px;
-  > button.ant-btn > i {
-    vertical-align: baseline;
+  > button.ant-btn {
+    background-color: #1de9b6;
+    box-shadow: none;
+    border-color: transparent;
   }
 `
 const Circle = styled.div`
@@ -356,21 +365,11 @@ const Circle = styled.div`
   margin: 8px auto -8px;
 `
 const Action = styled.div`
-  padding-left: 110px;
+  padding-left: 60px;
   padding-right: ${props => (props.visible === false ? '0' : '150px')};
   border-bottom: 1px solid #ced6e3;
   position: relative;
   padding-bottom: 24px;
-  > button {
-    position: absolute;
-    bottom: -12px;
-    background: #0f2631;
-    border-color: unset;
-    > i {
-      color: #1de9b6;
-      vertical-align: baseline;
-    }
-  }
   &:after {
     content: '>';
     position: absolute;
@@ -378,4 +377,20 @@ const Action = styled.div`
     bottom: ${props => (props.visible === false ? '-8px' : '-17px')};
     color: #ced6e3;
   }
+`
+const CircleButton = styled.div`
+  position: absolute;
+  bottom: -12px;
+  background: #ffffff;
+  border: 1px solid #008d85;
+  height: 24px;
+  width: 24px;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1de9b6;
+  font-family: sans-serif;
 `
