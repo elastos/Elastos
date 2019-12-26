@@ -79,8 +79,7 @@ func (s *txValidatorSpecialTxTestSuite) SetupSuite() {
 		s.arbitratorsPriKeys = append(s.arbitratorsPriKeys, a)
 	}
 
-	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "special"),
-		config.DefaultParams.GenesisBlock)
+	chainStore, err := NewChainStore(filepath.Join(test.DataPath, "special"))
 	if err != nil {
 		s.Error(err)
 	}

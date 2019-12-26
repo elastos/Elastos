@@ -57,6 +57,7 @@ type IChainStore interface {
 	IsBlockInStore(hash *Uint256) bool
 
 	Close()
+	CloseLeveldb()
 }
 
 // IChainStore provides func with store package.

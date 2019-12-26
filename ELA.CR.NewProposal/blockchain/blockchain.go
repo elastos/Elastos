@@ -152,7 +152,7 @@ func (b *BlockChain) MigrateOldDB(
 	}
 	defer func() {
 		oldFFLDB.Close()
-		oldLevelDB.Close()
+		b.db.CloseLeveldb()
 	}()
 	oldChainStoreFFLDB := &ChainStoreFFLDB{
 		db:               oldFFLDB,
@@ -249,7 +249,7 @@ func (b *BlockChain) MigrateOldDB(
 
 			// Delete the old database files include "chain", "blocks_ffldb" and "dpos".
 			oldFFLDB.Close()
-			oldLevelDB.Close()
+			b.db.CloseLeveldb()
 			os.RemoveAll(filepath.Join(dataDir, oldBlockDbName))
 			os.RemoveAll(filepath.Join(dataDir, "chain"))
 			os.RemoveAll(filepath.Join(dataDir, "dpos"))
