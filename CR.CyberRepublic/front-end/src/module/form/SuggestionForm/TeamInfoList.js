@@ -4,8 +4,8 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
-import DeleteSvgIcon from './DeleteSvgIcon'
-import EditSvgIcon from './EditSvgIcon'
+import DeleteSvgIcon from '@/module/common/DeleteSvgIcon'
+import EditSvgIcon from '@/module/common/EditSvgIcon'
 
 class TeamInfoList extends BaseComponent {
   handleDelete = index => {

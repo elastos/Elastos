@@ -1,10 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button } from 'antd'
 import BaseComponent from '@/model/BaseComponent'
 import I18N from '@/I18N'
 import MarkdownPreview from '@/module/common/MarkdownPreview'
+import DeleteSvgIcon from '@/module/common/DeleteSvgIcon'
+import EditSvgIcon from '@/module/common/EditSvgIcon'
 
 class PaymentList extends BaseComponent {
   handleDelete = index => {
@@ -22,10 +23,18 @@ class PaymentList extends BaseComponent {
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th style={{ width: '10%' }}>{I18N.get('suggestion.budget.payment')} #</th>
-            <th style={{ width: '15%' }}>{I18N.get('suggestion.budget.amount')}(ELA)</th>
-            <th style={{ width: '35%' }}>{I18N.get('suggestion.budget.reasons')}</th>
-            <th style={{ width: '30%' }}>{I18N.get('suggestion.budget.criteria')}</th>
+            <th style={{ width: '10%' }}>
+              {I18N.get('suggestion.budget.payment')} #
+            </th>
+            <th style={{ width: '15%' }}>
+              {I18N.get('suggestion.budget.amount')}(ELA)
+            </th>
+            <th style={{ width: '35%' }}>
+              {I18N.get('suggestion.budget.reasons')}
+            </th>
+            <th style={{ width: '30%' }}>
+              {I18N.get('suggestion.budget.criteria')}
+            </th>
             {visible && (
               <th style={{ width: '10%' }}>
                 {I18N.get('suggestion.budget.action')}
@@ -34,36 +43,35 @@ class PaymentList extends BaseComponent {
           </StyledRow>
         </StyledHead>
         <tbody>
-          {list && list.map((item, index) => (
-            <StyledRow key={index}>
-              <td>{index + 1}</td>
-              <td>{item.amount}</td>
-              <td>
-                <MarkdownPreview content={item.reasons ? item.reasons : ''} />
-              </td>
-              <td>
-                <MarkdownPreview content={item.criteria ? item.criteria : ''} />
-              </td>
-              {visible && (
+          {list &&
+            list.map((item, index) => (
+              <StyledRow key={index}>
+                <td>{index + 1}</td>
+                <td>{item.amount}</td>
                 <td>
-                  <Button
-                    size="small"
-                    type="danger"
-                    shape="circle"
-                    icon="delete"
-                    onClick={this.handleDelete.bind(this, index)}
-                  />
-                  <Button
-                    size="small"
-                    type="primary"
-                    shape="circle"
-                    icon="edit"
-                    onClick={this.handleEdit.bind(this, index)}
+                  <MarkdownPreview content={item.reasons ? item.reasons : ''} />
+                </td>
+                <td>
+                  <MarkdownPreview
+                    content={item.criteria ? item.criteria : ''}
                   />
                 </td>
-              )}
-            </StyledRow>
-          ))}
+                {visible && (
+                  <td>
+                    <EditSvgIcon
+                      type="edit"
+                      onClick={this.handleEdit.bind(this, index)}
+                      style={{ marginRight: 24, cursor: 'pointer' }}
+                    />
+                    <DeleteSvgIcon
+                      type="delete"
+                      onClick={this.handleDelete.bind(this, index)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </td>
+                )}
+              </StyledRow>
+            ))}
         </tbody>
       </StyledTable>
     )
