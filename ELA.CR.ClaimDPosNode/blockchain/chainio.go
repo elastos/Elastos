@@ -1,8 +1,3 @@
-// Copyright (c) 2017-2019 The Elastos Foundation
-// Use of this source code is governed by an MIT
-// license that can be found in the LICENSE file.
-//
-
 // Copyright (c) 2013-2016 The btcsuite developers
 // Copyright (c) 2017-2019 Elastos Foundation
 // Use of this source code is governed by an MIT

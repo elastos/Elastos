@@ -21,7 +21,6 @@ type IChainStore interface {
 
 	SaveBlock(b *Block, node *BlockNode, confirm *payload.Confirm,
 		medianTimePast time.Time) error
-	GetBlock(hash Uint256) (*Block, error)
 	IsDoubleSpend(tx *Transaction) bool
 
 	GetConfirm(hash Uint256) (*payload.Confirm, error)

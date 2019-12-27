@@ -135,21 +135,6 @@ func (w *Wallet) ListUnspent(address string, enableUtxoDB bool) (map[common.Uint
 }
 
 func (w *Wallet) RescanWallet() error {
-	bestHeight := Chain.GetHeight()
-	for i := uint32(0); i <= bestHeight; i++ {
-		hash, err := Chain.GetBlockHash(i)
-		if err != nil {
-			return err
-		}
-		block, err := Store.GetBlock(hash)
-		if err != nil {
-			return err
-		}
-		w.OnBlockSaved(&types.DposBlock{
-			Block: block,
-		})
-	}
-
 	return nil
 }
 

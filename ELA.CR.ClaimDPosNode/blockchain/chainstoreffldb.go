@@ -29,6 +29,8 @@ const (
 
 	// oldBlockDbName is the old block database name.
 	oldBlockDbName = "blocks_ffldb"
+
+	BlocksCacheSize = 2
 )
 
 type ChainStoreFFLDB struct {
