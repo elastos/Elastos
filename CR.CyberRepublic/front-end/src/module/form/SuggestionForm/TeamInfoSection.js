@@ -87,7 +87,7 @@ class TeamInfoSection extends Component {
           visible={this.state.visible}
           onCancel={this.hideModal}
           footer={null}
-          width="70%"
+          width="60%"
         >
           {this.state.visible === true ? (
             <TeamInfoForm

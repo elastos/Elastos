@@ -64,15 +64,6 @@ class BudgetForm extends Component {
     const { getFieldDecorator } = this.props.form
     const { item } = this.props
     const milestone = this.getMilestone()
-    const formItemLayout = {
-      labelCol: {
-        span: 24
-      },
-      wrapperCol: {
-        span: 24
-      },
-      colon: false
-    }
     return (
       <Wrapper>
         <Title>{I18N.get('suggestion.budget.create')}</Title>
@@ -81,7 +72,7 @@ class BudgetForm extends Component {
             <span>*</span>
             {`${I18N.get('suggestion.budget.amount')} (ELA)`}
           </Label>
-          <FormItem {...formItemLayout}>
+          <FormItem>
             {getFieldDecorator('amount', {
               rules: [
                 {
@@ -101,7 +92,7 @@ class BudgetForm extends Component {
             <span>*</span>
             {I18N.get('suggestion.budget.reasons')}
           </Label>
-          <FormItem {...formItemLayout}>
+          <FormItem>
             {getFieldDecorator('reasons', {
               rules: [
                 {
@@ -141,7 +132,7 @@ class BudgetForm extends Component {
               </Tabs>
             )}
           </StyledTabs>
-          <FormItem {...formItemLayout}>
+          <FormItem>
             {getFieldDecorator('criteria', {
               rules: [
                 {
@@ -220,7 +211,6 @@ const Actions = styled.div`
     margin: 0 8px;
   }
 `
-
 const StyledTabs = styled.div`
   .ant-tabs {
     margin-top: 16px;
