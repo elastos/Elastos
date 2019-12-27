@@ -36,8 +36,8 @@ class Component extends BaseComponent {
     if (callback) callback(activeKey)
   }
 
-  init=(editor) => {
-    const {activeKey} = this.props
+  init = editor => {
+    const { activeKey } = this.props
     this.props.init && this.props.init(activeKey, editor)
   }
 
@@ -85,6 +85,9 @@ Component.propTypes = {
 export default Component
 
 const Wrapper = styled.div`
+  .cm-s-base16-light.CodeMirror {
+    background: #fff;
+  }
   .CodeMirror {
     min-height: 200px;
     height: unset;
@@ -95,7 +98,7 @@ const Wrapper = styled.div`
     line-height: 1.5;
   }
   .CodeMirror-scroll {
-    padding: 16px 20px 30px 20px;
+    padding: 16px 11px 30px 11px;
     overflow: auto !important;
     min-height: 200px;
     margin-right: 0;

@@ -1,14 +1,22 @@
-import React from 'react'
+import React, { Fragment, Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Form, Input, Button } from 'antd'
-import BaseComponent from '@/model/BaseComponent'
+import { Form, Input, Button, Tabs } from 'antd'
 import CodeMirrorEditor from '@/module/common/CodeMirrorEditor'
 import I18N from '@/I18N'
+import moment from 'moment/moment'
 
 const FormItem = Form.Item
+const { TabPane } = Tabs
 
-class BudgetForm extends BaseComponent {
+class BudgetForm extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      activeKey: '0'
+    }
+  }
+
   handleSubmit = e => {
     e.stopPropagation() // prevent event bubbling
     e.preventDefault()
@@ -25,9 +33,37 @@ class BudgetForm extends BaseComponent {
     return (!isNaN(value) && reg.test(value)) || value === '' ? cb() : cb(true)
   }
 
-  ord_render() {
+  handleTabChange = activeKey => {
+    this.setState({ activeKey })
+  }
+
+  getMilestone = () => {
+    const { item } = this.props
+    let milestone
+    if (item) {
+      milestone = item.plan && item.plan.milestone
+    } else {
+      const draft = localStorage.getItem('draft-suggestion')
+      if (draft) {
+        const rs = JSON.parse(draft)
+        milestone = rs.plan && rs.plan.milestone
+      }
+    }
+    return milestone
+  }
+
+  renderTabText(date) {
+    return (
+      <TabText className="tab-text">
+        {moment(date).format('MMM DD, YYYY')}
+      </TabText>
+    )
+  }
+
+  render() {
     const { getFieldDecorator } = this.props.form
     const { item } = this.props
+    const milestone = this.getMilestone()
     const formItemLayout = {
       labelCol: {
         span: 24
@@ -38,48 +74,50 @@ class BudgetForm extends BaseComponent {
       colon: false
     }
     return (
-      <Form onSubmit={this.handleSubmit}>
-        <FormItem
-          label={`${I18N.get('suggestion.budget.amount')}(ELA)`}
-          {...formItemLayout}
-        >
-          {getFieldDecorator('amount', {
-            rules: [
-              {
-                required: true,
-                message: I18N.get('suggestion.form.error.required')
-              },
-              {
-                message: I18N.get('suggestion.form.error.isNaN'),
-                validator: this.validateAmount
-              }
-            ],
-            initialValue: item && item.amount ? item.amount : ''
-          })(<Input />)}
-        </FormItem>
-        <StyledFormItem>
+      <Wrapper>
+        <Title>{I18N.get('suggestion.budget.create')}</Title>
+        <Form onSubmit={this.handleSubmit}>
           <FormItem
-            label={I18N.get('suggestion.budget.reasons')}
+            label={`${I18N.get('suggestion.budget.amount')}(ELA)`}
             {...formItemLayout}
           >
-            {getFieldDecorator('reasons', {
+            {getFieldDecorator('amount', {
               rules: [
                 {
                   required: true,
                   message: I18N.get('suggestion.form.error.required')
+                },
+                {
+                  message: I18N.get('suggestion.form.error.isNaN'),
+                  validator: this.validateAmount
                 }
               ],
-              initialValue: item && item.reasons ? item.reasons : ''
-            })(
-              <CodeMirrorEditor
-                content={item && item.reasons ? item.reasons : ''}
-                activeKey="reasons"
-                name="reasons"
-              />
-            )}
+              initialValue: item && item.amount ? item.amount : ''
+            })(<Input />)}
           </FormItem>
-        </StyledFormItem>
-        <StyledFormItem>
+          <StyledFormItem>
+            <FormItem
+              label={I18N.get('suggestion.budget.reasons')}
+              {...formItemLayout}
+            >
+              {getFieldDecorator('reasons', {
+                rules: [
+                  {
+                    required: true,
+                    message: I18N.get('suggestion.form.error.required')
+                  }
+                ],
+                initialValue: item && item.reasons ? item.reasons : ''
+              })(
+                <CodeMirrorEditor
+                  content={item && item.reasons ? item.reasons : ''}
+                  activeKey="reasons"
+                  name="reasons-editor"
+                />
+              )}
+            </FormItem>
+          </StyledFormItem>
+
           <FormItem
             label={I18N.get('suggestion.budget.criteria')}
             {...formItemLayout}
@@ -88,30 +126,49 @@ class BudgetForm extends BaseComponent {
               rules: [{ required: true, message: '' }],
               initialValue: item && item.criteria ? item.criteria : ''
             })(
-              <CodeMirrorEditor
-                content={item && item.criteria ? item.criteria : ''}
-                activeKey="criteria"
-                name="criteria"
-              />
+              <StyledTabs>
+                <Desc>{I18N.get('suggestion.budget.desc')}</Desc>
+                {milestone && (
+                  <Tabs
+                    size="small"
+                    tabBarGutter={4}
+                    animated={false}
+                    activeKey={this.state.activeKey}
+                    onChange={this.handleTabChange}
+                  >
+                    {milestone.map((item, index) => (
+                      <TabPane tab={this.renderTabText(item.date)} key={index}>
+                        {item.version}
+                      </TabPane>
+                    ))}
+                  </Tabs>
+                )}
+                <CodeMirrorEditor
+                  content={item && item.criteria ? item.criteria : ''}
+                  activeKey="criteria"
+                  name="criteria-editor"
+                />
+              </StyledTabs>
             )}
           </FormItem>
-        </StyledFormItem>
-        <Actions>
-          <Button
-            className="cr-btn cr-btn-default"
-            onClick={() => {
-              this.props.onCancel()
-            }}
-          >
-            {I18N.get('suggestion.cancel')}
-          </Button>
-          <Button className="cr-btn cr-btn-primary" htmlType="submit">
-            {item
-              ? I18N.get('suggestion.form.button.update')
-              : I18N.get('suggestion.form.button.create')}
-          </Button>
-        </Actions>
-      </Form>
+
+          <Actions>
+            <Button
+              className="cr-btn cr-btn-default"
+              onClick={() => {
+                this.props.onCancel()
+              }}
+            >
+              {I18N.get('suggestion.cancel')}
+            </Button>
+            <Button className="cr-btn cr-btn-primary" htmlType="submit">
+              {item
+                ? I18N.get('suggestion.form.button.update')
+                : I18N.get('suggestion.form.button.create')}
+            </Button>
+          </Actions>
+        </Form>
+      </Wrapper>
     )
   }
 }
@@ -124,6 +181,22 @@ BudgetForm.propTypes = {
 
 export default Form.create()(BudgetForm)
 
+const Wrapper = styled.div`
+  max-width: 700px;
+  margin: 0 auto;
+`
+const Title = styled.div`
+  font-size: 30px;
+  line-height: 42px;
+  color: #000000;
+  text-align: center;
+  margin-bottom: 42px;
+`
+const Desc = styled.div`
+  font-size: 13px;
+  line-height: 18px;
+  color: #000000;
+`
 const Actions = styled.div`
   display: flex;
   justify-content: center;
@@ -131,10 +204,53 @@ const Actions = styled.div`
     margin: 0 8px;
   }
 `
-
 const StyledFormItem = styled.div`
   .ant-col-24.ant-form-item-label {
     padding: 0;
     margin-bottom: -12px;
   }
+`
+const StyledTabs = styled.div`
+  .ant-tabs {
+    margin: 8px 0;
+  }
+  .ant-tabs-bar {
+    border-bottom: none;
+  }
+  .ant-tabs-ink-bar {
+    height: 1px;
+    background-color: #008d85;
+  }
+  .ant-tabs .ant-tabs-small-bar .ant-tabs-tab {
+    padding: 4px 8px;
+  }
+  .ant-tabs-nav .ant-tabs-tab-active {
+    background: rgba(29, 233, 182, 0.1);
+    border: 1px solid #008d85;
+    border-bottom: none;
+    margin-right: 8px !important;
+    .tab-text {
+      color: #008d85;
+      font-weight: 500;
+    }
+  }
+  .ant-tabs-tab-prev.ant-tabs-tab-arrow-show,
+  .ant-tabs-tab-next.ant-tabs-tab-arrow-show {
+    width: 18px;
+  }
+  .ant-tabs-tab-prev-icon,
+  .ant-tabs-tab-next-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #2a3c57;
+    color: #1de9b6;
+    line-height: 18px;
+  }
+`
+const TabText = styled.div`
+  font-size: 13px;
+  line-height: 18px;
+  color: rgba(3, 30, 40, 0.3);
+  padding-bottom: 2px;
 `

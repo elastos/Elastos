@@ -140,7 +140,8 @@ class C extends BaseComponent {
   validatePlan = (rule, value, cb) => {
     if (value && _.isEmpty(value.teamInfo)) {
       return cb(true)
-    } if (value && _.isEmpty(value.milestone)) {
+    }
+    if (value && _.isEmpty(value.milestone)) {
       return cb(true)
     }
     return cb()
@@ -231,8 +232,7 @@ class C extends BaseComponent {
     const hasError = _.has(this.state.errorKeys, id)
     return (
       <TabText hasErr={hasError}>
-        {I18N.get(`suggestion.fields.${id}`)}
-*
+        {I18N.get(`suggestion.fields.${id}`)}*
       </TabText>
     )
   }
