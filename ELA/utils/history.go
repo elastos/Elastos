@@ -5,9 +5,7 @@
 
 package utils
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // change holds a change and it's rollback function.
 type change struct {

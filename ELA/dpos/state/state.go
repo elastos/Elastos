@@ -549,9 +549,14 @@ func (s *State) IsAbleToRecoverFromUnderstaffedState() bool {
 }
 
 // LeaveEmergency will reset EmergencyInactiveArbiters variable
-func (s *State) LeaveEmergency() {
+func (s *State) LeaveEmergency(history *utils.History, height uint32) {
 	s.mtx.Lock()
-	s.EmergencyInactiveArbiters = map[string]struct{}{}
+	oriArbiters := s.EmergencyInactiveArbiters
+	history.Append(height, func() {
+		s.EmergencyInactiveArbiters = map[string]struct{}{}
+	}, func() {
+		s.EmergencyInactiveArbiters = oriArbiters
+	})
 	s.mtx.Unlock()
 }
 

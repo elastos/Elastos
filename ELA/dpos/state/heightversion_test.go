@@ -214,8 +214,9 @@ func TestArbitrators_GetNextOnDutyArbitratorV0(t *testing.T) {
 func TestArbitrators_GetNextOnDutyArbitrator(t *testing.T) {
 	bestHeight = arbiters.State.chainParams.CRCOnlyDPOSHeight - 1
 	arbiters.dutyIndex = 0
-	arbiters.updateNextArbitrators(bestHeight + 1)
-	arbiters.changeCurrentArbitrators()
+	arbiters.updateNextArbitrators(bestHeight+1, bestHeight+1)
+	arbiters.changeCurrentArbitrators(bestHeight + 1)
+	arbiters.history.Commit(bestHeight + 1)
 
 	sortedArbiters := arbiters.State.chainParams.CRCArbiters
 	sort.Slice(sortedArbiters, func(i, j int) bool {
