@@ -1514,9 +1514,10 @@ namespace Elastos {
 
 				for (i = 0, b = block; b && i < saveCount; i++) {
 					assert(b->GetHeight() != BLOCK_UNKNOWN_HEIGHT); // verify all blocks to be saved are in the chain
-					if (_blocks.Get(b->GetPrevBlockHash()))
+					MerkleBlockPtr prvBlock = _blocks.Get(b->GetPrevBlockHash());
+					if (prvBlock)
 						saveBlocks.push_back(b);
-					b = _blocks.Get(b->GetPrevBlockHash());
+					b = prvBlock;
 				}
 
 				// make sure the set of blocks to be saved starts at a difficulty interval

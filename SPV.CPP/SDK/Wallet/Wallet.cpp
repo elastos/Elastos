@@ -358,6 +358,7 @@ namespace Elastos {
 					for (size_t i = _transactions.size(); i > 0; i--) {
 						if (_transactions[i - 1]->IsEqual(tx.get())) {
 							_transactions.erase(_transactions.begin() + i - 1);
+							_allTx.Remove(tx);
 							break;
 						}
 					}
