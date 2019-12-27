@@ -112,15 +112,13 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
     }
 
     @Override
-    protected void initInjector() {
-
-    }
-
-    @Override
     protected void setExtraData(Bundle data) {
         super.setExtraData(data);
         netList = (ArrayList<CRListBean.DataBean.ResultBean.CrcandidatesinfoBean>) data.getSerializable("netList");
         otherUnActiveVote = (JSONArray) data.getSerializable("otherUnActiveVote");
+        if (otherUnActiveVote == null) {
+            otherUnActiveVote = new JSONArray();
+        }
     }
 
     @Override
@@ -269,7 +267,6 @@ public class CRNodeCartFragment extends BaseFragment implements CommonBalanceVie
 
         }
     }
-
 
 
     private void doVote() {

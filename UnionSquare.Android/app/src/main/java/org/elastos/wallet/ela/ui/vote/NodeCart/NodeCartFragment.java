@@ -145,6 +145,9 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
         //netList后期还承担未选择list
         netList = (ArrayList<VoteListBean.DataBean.ResultBean.ProducersBean>) data.getSerializable("netList");
         otherUnActiveVote = (JSONArray) data.getSerializable("otherUnActiveVote");
+        if (otherUnActiveVote == null) {
+            otherUnActiveVote = new JSONArray();
+        }
     }
 
     @Override
