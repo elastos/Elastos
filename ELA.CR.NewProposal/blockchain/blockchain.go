@@ -161,9 +161,7 @@ func (b *BlockChain) MigrateOldDB(
 		blocksCache:      make(map[Uint256]*DposBlock),
 	}
 	oldChainStore := &ChainStore{
-		fflDB:            oldChainStoreFFLDB,
-		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
-		blocksCache:      make(map[Uint256]*Block),
+		fflDB: oldChainStoreFFLDB,
 	}
 	oldChain, err := New(oldChainStore, params, nil, nil)
 	if err != nil {

@@ -20,10 +20,6 @@ import (
 	_ "github.com/elastos/Elastos.ELA/database/ffldb"
 )
 
-const (
-	BlocksCacheSize = 2
-)
-
 type ProducerState byte
 
 type ProducerInfo struct {
@@ -33,17 +29,10 @@ type ProducerInfo struct {
 }
 
 type ChainStore struct {
-	IStore
-
-	fflDB IFFLDBChainStore
-
+	levelDB            IStore
+	fflDB              IFFLDBChainStore
 	currentBlockHeight uint32
-
-	mtx              sync.RWMutex
-	blockHashesCache []Uint256
-	blocksCache      map[Uint256]*Block
-
-	persistMutex sync.Mutex
+	persistMutex       sync.Mutex
 }
 
 func NewChainStore(dataDir string) (IChainStore, error) {
@@ -56,17 +45,15 @@ func NewChainStore(dataDir string) (IChainStore, error) {
 		return nil, err
 	}
 	s := &ChainStore{
-		IStore:           db,
-		fflDB:            fflDB,
-		blockHashesCache: make([]Uint256, 0, BlocksCacheSize),
-		blocksCache:      make(map[Uint256]*Block),
+		levelDB: db,
+		fflDB:   fflDB,
 	}
 
 	return s, nil
 }
 
 func (c *ChainStore) CloseLeveldb() {
-	c.IStore.Close()
+	c.levelDB.Close()
 }
 
 func (c *ChainStore) Close() {
@@ -157,65 +144,6 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 	return reference, nil
 }
 
-func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
-	c.mtx.RLock()
-	if block, exist := c.blocksCache[hash]; exist {
-		c.mtx.RUnlock()
-		return block, nil
-	}
-	c.mtx.RUnlock()
-	var b = new(Block)
-	prefix := []byte{byte(DATAHeader)}
-	data, err := c.Get(append(prefix, hash.Bytes()...))
-	if err != nil {
-		return nil, err
-	}
-
-	r := bytes.NewReader(data)
-
-	// first 8 bytes is sys_fee
-	_, err = ReadUint64(r)
-	if err != nil {
-		return nil, err
-	}
-
-	// Deserialize block data
-	if err := b.Header.Deserialize(r); err != nil {
-		return nil, err
-	}
-
-	//Transactions
-	count, err := ReadUint32(r)
-	if err != nil {
-		return nil, err
-	}
-	b.Transactions = make([]*Transaction, count)
-	for i := range b.Transactions {
-		var hash Uint256
-		if err := hash.Deserialize(r); err != nil {
-			return nil, err
-		}
-		tx, _, err := c.GetTransaction(hash)
-		if err != nil {
-			return nil, err
-		}
-		b.Transactions[i] = tx
-	}
-
-	if c.blocksCache != nil {
-		c.mtx.Lock()
-		if len(c.blockHashesCache) >= BlocksCacheSize {
-			delete(c.blocksCache, c.blockHashesCache[0])
-			c.blockHashesCache = c.blockHashesCache[1:BlocksCacheSize]
-		}
-		c.blockHashesCache = append(c.blockHashesCache, hash)
-		c.blocksCache[hash] = b
-		c.mtx.Unlock()
-	}
-
-	return b, nil
-}
-
 func (c *ChainStore) rollback(b *Block, node *BlockNode,
 	confirm *payload.Confirm, medianTimePast time.Time) error {
 	if err := c.fflDB.RollbackBlock(b, node, confirm, medianTimePast); err != nil {
@@ -288,7 +216,7 @@ func (c *ChainStore) persistBlock(b *Block, node *BlockNode,
 func (c *ChainStore) GetConfirm(hash Uint256) (*payload.Confirm, error) {
 	var confirm = new(payload.Confirm)
 	prefix := []byte{byte(DATAConfirm)}
-	confirmBytes, err := c.Get(append(prefix, hash.Bytes()...))
+	confirmBytes, err := c.levelDB.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
 	}
