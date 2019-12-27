@@ -400,21 +400,13 @@ func (s *server) handleQuery(state *peerState, querymsg interface{}) {
 		// something goes wrong, we try next. If all attempts are failed
 		// return an send message failed error.
 		sent := false
-		done := make(chan error, 1)
 		state.forAllPeers(func(sp *serverPeer) {
 			if !sent && sp.PID().Equal(msg.pid) {
-				sp.QueueMessage(msg.msg, done)
-				if err := <-done; err == nil {
-					sent = true
-				}
+				sp.QueueMessage(msg.msg, nil)
 			}
 		})
 
-		if !sent {
-			msg.reply <- ErrSendMessageFailed
-		} else {
-			msg.reply <- nil
-		}
+		msg.reply <- nil
 
 	case getConnCountMsg:
 		connected := int32(0)
