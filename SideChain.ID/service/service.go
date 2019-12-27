@@ -224,7 +224,7 @@ func (s *HttpService) ResolveDID(param http.Params) (interface{}, error) {
 			continue
 		}
 
-		tempTXData.Timestamp = time.Unix(int64(timestamp), 0).Format(time.RFC3339)
+		tempTXData.Timestamp = time.Unix(int64(timestamp), 0).UTC().String()
 		rpcPayloadDid.RpcTXDatas = append(rpcPayloadDid.RpcTXDatas, *tempTXData)
 		if index == 0 {
 			if txData.Operation.Header.Operation == "deactivate" {
