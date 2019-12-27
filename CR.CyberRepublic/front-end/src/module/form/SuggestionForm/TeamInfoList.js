@@ -26,15 +26,15 @@ class TeamInfoList extends BaseComponent {
             <th style={{ width: '15%' }}>
               {I18N.get('suggestion.plan.teamMember')}
             </th>
-            <th style={{ width: '15%' }}>{I18N.get('suggestion.plan.role')}</th>
+            <th style={{ width: '20%' }}>{I18N.get('suggestion.plan.role')}</th>
             <th style={{ width: '30%' }}>
               {I18N.get('suggestion.plan.responsibility')}
             </th>
-            <th style={{ width: '30%' }}>
+            <th style={{ width: '20%' }}>
               {I18N.get('suggestion.plan.moreInfo')}
             </th>
             {visible && (
-              <th style={{ width: '10%' }}>
+              <th style={{ width: '15%' }}>
                 {I18N.get('suggestion.plan.action')}
               </th>
             )}

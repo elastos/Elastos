@@ -373,7 +373,7 @@ const BigSquare = styled.div`
 `
 const MilestoneEdit = styled.div`
   position: relative;
-  top: 97px;
+  top: 101px;
   > button.ant-btn {
     background-color: #1de9b6;
     box-shadow: none;

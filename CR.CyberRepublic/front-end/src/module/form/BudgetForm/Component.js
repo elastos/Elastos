@@ -13,7 +13,8 @@ class BudgetForm extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      activeKey: '0'
+      activeKey:
+        props.item && props.item.milestoneKey ? props.item.milestoneKey : '0'
     }
   }
 
@@ -23,6 +24,7 @@ class BudgetForm extends Component {
     const { form, onSubmit } = this.props
     form.validateFields((err, values) => {
       if (!err) {
+        values.milestoneKey = this.state.activeKey
         onSubmit(values)
       }
     })
@@ -38,17 +40,13 @@ class BudgetForm extends Component {
   }
 
   getMilestone = () => {
-    const { item } = this.props
     let milestone
-    if (item) {
-      milestone = item.plan && item.plan.milestone
-    } else {
-      const draft = localStorage.getItem('draft-suggestion')
-      if (draft) {
-        const rs = JSON.parse(draft)
-        milestone = rs.plan && rs.plan.milestone
-      }
+    const draft = localStorage.getItem('draft-suggestion')
+    if (draft) {
+      const rs = JSON.parse(draft)
+      milestone = rs.plan && rs.plan.milestone
     }
+
     return milestone
   }
 
