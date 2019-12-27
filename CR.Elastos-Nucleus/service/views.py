@@ -66,7 +66,7 @@ def generate_key(request):
                     return redirect(reverse('service:generate_key'))
                 else:
                     request.session['api_key'] = api_key
-                    return render(request, "service/generate_key.html", {'output': output, 'api_key': api_key})
+                    return render(request, "service/generate_key.html", {'output': output, 'api_key': api_key, 'sample_code': sample_code})
             except Exception as e:
                 messages.success(request, "Could not generate an API key. Please try again")
                 return redirect(reverse('service:generate_key'))
