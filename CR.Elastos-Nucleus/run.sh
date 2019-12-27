@@ -17,7 +17,7 @@ sleep 7
 
 # Migrate the database
 # Collect all static content
-rm -rf static/
+rm -rf www/
 echo "yes" | python3 manage.py collectstatic
 
 python3 manage.py makemigrations

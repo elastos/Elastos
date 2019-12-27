@@ -14,7 +14,7 @@ django-extensions==2.2.5
 django-sass-processor==0.7.4
 django-simple-cookie-consent==0.1.1
 djangorestframework==3.10.3
-elastos-adenine==0.1.8
+elastos-adenine==0.1.9
 ExtensionClass==4.4
 fastecdsa==1.7.5
 grpcio==1.24.3

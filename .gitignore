@@ -27,7 +27,12 @@ tools/server.*
 tools/.postgres-data
 
 # static files
-static/
+www/
 
 # uploaded files
 media/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

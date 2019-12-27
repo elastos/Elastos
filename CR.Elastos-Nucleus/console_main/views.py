@@ -1,4 +1,3 @@
-from django.contrib import messages
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -7,6 +6,7 @@ from decouple import config
 
 from login.models import DIDUser
 from service.models import UserServiceSessionVars
+
 
 def login_required(function):
     def wrapper(request, *args, **kw):
@@ -23,19 +23,19 @@ def landing(request):
     development = config('DEVELOPMENT', default=False, cast=bool)
     context = {'development': development}
     if development:
-        email = "test@nucleusconsole.com"
+        email = config('SUPERUSER_USER')
         try:
             user = DIDUser.objects.get(email=email)
         except(TypeError, ValueError, OverflowError, DIDUser.DoesNotExist):
             user = DIDUser()
             user.email = email
-            user.name = "Test User"
-            user.set_password("admin")
-            user.did = "test"
-            user.is_active = True
-            user.is_staff = True
-            user.is_superuser = True
-            user.save()
+        user.name = "Test User"
+        user.set_password(config('SUPERUSER_PASSWORD'))
+        user.did = "test"
+        user.is_active = True
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         request.session['name'] = user.name
         request.session['email'] = user.email
