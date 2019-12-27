@@ -22,18 +22,51 @@
 
 package org.elastos.did;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 public final class TestConfig {
-	public final static boolean verbose = false;
+	public static String networkConfig;
+	public static String resolver;
 
-	public final static String tempDir = "/PATH/TO/TEMP";
+	public static boolean verbose;
 
-	public final static String storeRoot = "/PATH/TO/DIDStore";
-	public final static String storePass = "passwd";
-	public final static String passphrase = "secret";
+	public static String passphrase;
 
-	public final static String walletDir = "/PATH/TO/WALLET";
-	public final static String walletId = "test";
-	public final static String walletPassword = "passwd";
-	public final static String networkConfig = "/PATH/TO/privnet.json";
-	public final static String resolver = "https://coreservices-didsidechain-privnet.elastos.org";
+	public static String tempDir;
+
+	public static String storeRoot;
+	public static String storePass;
+
+	public static String walletDir;
+	public static String walletId;
+	public static String walletPassword;
+
+	static {
+		InputStream input = TestConfig.class
+				.getClassLoader().getResourceAsStream("test.conf");
+
+		Properties config = new Properties();
+		try {
+			config.load(input);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		networkConfig = config.getProperty("network");
+		resolver = config.getProperty("resolver");
+		verbose = Boolean.valueOf(config.getProperty("dummystore.verbose"));
+
+		passphrase = config.getProperty("mnemnoic.passphrase");
+
+		tempDir = config.getProperty("temp.dir");
+
+		storeRoot = config.getProperty("store.root");
+		storePass = config.getProperty("store.pass");
+
+		walletDir = config.getProperty("wallet.dir");
+		walletId = config.getProperty("wallet.id");
+		walletPassword = config.getProperty("wallet.password");
+	}
 }
