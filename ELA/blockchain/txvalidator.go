@@ -33,6 +33,9 @@ const (
 	// MaxStringLength is the maximum length of a string field.
 	MaxStringLength = 100
 
+	// Category Data length limit not exceeding 4096 characters
+	MaxCategoryDataStringLength = 4096
+
 	// ELIPBudgetsCount indicates budgets count of ELIP.
 	ELIPBudgetsCount = 2
 
@@ -2042,6 +2045,10 @@ func (b *BlockChain) checkCRCProposalTransaction(txn *Transaction,
 	// Check type of proposal.
 	if proposal.ProposalType.Name() == "Unknown" {
 		return errors.New("type of proposal should be known")
+	}
+
+	if len(proposal.CategoryData) > MaxCategoryDataStringLength {
+		return errors.New("The Proposal category data cannot be more than 4096 characters")
 	}
 
 	if proposal.ProposalType == payload.ELIP &&

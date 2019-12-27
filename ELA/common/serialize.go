@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2019 The Elastos Foundation
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
-// 
+//
 
 package common
 
@@ -220,7 +220,7 @@ func WriteVarUint(w io.Writer, val uint64) error {
 		if err != nil {
 			return err
 		}
-		return WriteUint16(w,  uint16(val))
+		return WriteUint16(w, uint16(val))
 	}
 
 	if val <= math.MaxUint32 {

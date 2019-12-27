@@ -16,28 +16,35 @@ import (
 
 const (
 	// Normal indicates the normal types of proposal.
-	Normal CRCProposalType = 0x00
+	Normal CRCProposalType = 0x0000
 
 	// ELIP indicates elastos improvement type of proposal.
-	ELIP CRCProposalType = 0x01
+	ELIP CRCProposalType = 0x0100
+	// Used to identify process-related elips
+	FLOWELIP CRCProposalType = 0x0101
+	// Used to flag Elastos design issues
+	INFOELIP CRCProposalType = 0x0102
 
-	// Code indicates the code upgrade types of proposals.
-	Code CRCProposalType = 0x02
+	// MainChainUpgradeCode indicates the code upgrade types of proposals.
+	MainChainUpgradeCode CRCProposalType = 0x0200
 
-	// SideChain indicates the side chain related types of proposals.
-	SideChain CRCProposalType = 0x03
-
-	// ChangeSponsor indicates the change proposal sponsor types of proposals.
-	ChangeSponsor CRCProposalType = 0x04
-
-	// CloseProposal indicates the close proposal types of proposals.
-	CloseProposal CRCProposalType = 0x05
+	// SideChainUpgradeCode indicates the side chain related types of proposals.
+	SideChainUpgradeCode CRCProposalType = 0x0300
+	// Registration of side chain
+	RegisterSideChain CRCProposalType = 0x0301
 
 	// SecretaryGeneral indicates the vote secretary general types of proposals.
-	SecretaryGeneral CRCProposalType = 0x06
+	SecretaryGeneral CRCProposalType = 0x0400
+	// ChangeSponsor indicates the change proposal sponsor types of proposals.
+	ChangeSponsor CRCProposalType = 0x0401
+	// CloseProposal indicates the close proposal types of proposals.
+	CloseProposal CRCProposalType = 0x0402
+
+	// Common information used to define consensus governance
+	DappConsensus CRCProposalType = 0x0500
 )
 
-type CRCProposalType byte
+type CRCProposalType uint16
 
 func (pt CRCProposalType) Name() string {
 	switch pt {
@@ -45,10 +52,10 @@ func (pt CRCProposalType) Name() string {
 		return "Normal"
 	case ELIP:
 		return "ELIP"
-	case Code:
-		return "Code"
-	case SideChain:
-		return "SideChain"
+	case MainChainUpgradeCode:
+		return "MainChainUpgradeCode"
+	case SideChainUpgradeCode:
+		return "SideChainUpgradeCode"
 	case ChangeSponsor:
 		return "ChangeSponsor"
 	case CloseProposal:
@@ -72,6 +79,11 @@ const (
 type CRCProposal struct {
 	// The type of current proposal.
 	ProposalType CRCProposalType
+
+	// Used to store category data
+	// with a length limit not exceeding 4096 characters
+	CategoryData string
+
 	// Public key of sponsor.
 	SponsorPublicKey []byte
 	// The hash of draft proposal.
@@ -106,8 +118,13 @@ func (p *CRCProposal) Data(version byte) []byte {
 }
 
 func (p *CRCProposal) SerializeUnsigned(w io.Writer, version byte) error {
-	if _, err := w.Write([]byte{byte(p.ProposalType)}); err != nil {
+
+	if err := common.WriteElement(w, p.ProposalType); err != nil {
 		return errors.New("failed to serialize ProposalType")
+	}
+
+	if err := common.WriteVarString(w, p.CategoryData); err != nil {
+		return errors.New("[CRCProposal], Category Data serialize failed")
 	}
 
 	if err := common.WriteVarBytes(w, p.SponsorPublicKey); err != nil {
@@ -156,11 +173,15 @@ func (p *CRCProposal) Serialize(w io.Writer, version byte) error {
 }
 
 func (p *CRCProposal) DeserializeUnSigned(r io.Reader, version byte) error {
-	pType, err := common.ReadBytes(r, 1)
+	err := common.ReadElement(r, &p.ProposalType)
 	if err != nil {
-		return err
+		return errors.New("[CRCProposal], ProposalType deserialize failed")
 	}
-	p.ProposalType = CRCProposalType(pType[0])
+
+	p.CategoryData, err = common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[CRCProposal], Category data deserialize failed")
+	}
 
 	p.SponsorPublicKey, err = common.ReadVarBytes(r, crypto.NegativeBigLength, "sponsor")
 	if err != nil {
