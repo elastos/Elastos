@@ -77,10 +77,11 @@ class BudgetForm extends Component {
       <Wrapper>
         <Title>{I18N.get('suggestion.budget.create')}</Title>
         <Form onSubmit={this.handleSubmit}>
-          <FormItem
-            label={`${I18N.get('suggestion.budget.amount')}(ELA)`}
-            {...formItemLayout}
-          >
+          <Label>
+            <span>*</span>
+            {`${I18N.get('suggestion.budget.amount')} (ELA)`}
+          </Label>
+          <FormItem {...formItemLayout}>
             {getFieldDecorator('amount', {
               rules: [
                 {
@@ -95,60 +96,66 @@ class BudgetForm extends Component {
               initialValue: item && item.amount ? item.amount : ''
             })(<Input />)}
           </FormItem>
-          <StyledFormItem>
-            <FormItem
-              label={I18N.get('suggestion.budget.reasons')}
-              {...formItemLayout}
-            >
-              {getFieldDecorator('reasons', {
-                rules: [
-                  {
-                    required: true,
-                    message: I18N.get('suggestion.form.error.required')
-                  }
-                ],
-                initialValue: item && item.reasons ? item.reasons : ''
-              })(
-                <CodeMirrorEditor
-                  content={item && item.reasons ? item.reasons : ''}
-                  activeKey="reasons"
-                  name="reasons-editor"
-                />
-              )}
-            </FormItem>
-          </StyledFormItem>
 
-          <FormItem
-            label={I18N.get('suggestion.budget.criteria')}
-            {...formItemLayout}
-          >
+          <Label gutter={-8}>
+            <span>*</span>
+            {I18N.get('suggestion.budget.reasons')}
+          </Label>
+          <FormItem {...formItemLayout}>
+            {getFieldDecorator('reasons', {
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
+              initialValue: item && item.reasons ? item.reasons : ''
+            })(
+              <CodeMirrorEditor
+                content={item && item.reasons ? item.reasons : ''}
+                activeKey="reasons"
+                name="reasons-editor"
+              />
+            )}
+          </FormItem>
+
+          <Label>
+            <span>*</span>
+            {I18N.get('suggestion.budget.criteria')}
+          </Label>
+          <StyledTabs>
+            <Desc>{I18N.get('suggestion.budget.desc')}</Desc>
+            {milestone && (
+              <Tabs
+                size="small"
+                tabBarGutter={4}
+                animated={false}
+                activeKey={this.state.activeKey}
+                onChange={this.handleTabChange}
+              >
+                {milestone.map((item, index) => (
+                  <TabPane tab={this.renderTabText(item.date)} key={index}>
+                    {item.version}
+                  </TabPane>
+                ))}
+              </Tabs>
+            )}
+          </StyledTabs>
+          <FormItem {...formItemLayout}>
             {getFieldDecorator('criteria', {
-              rules: [{ required: true, message: '' }],
+              rules: [
+                {
+                  required: true,
+                  message: I18N.get('suggestion.form.error.required')
+                }
+              ],
               initialValue: item && item.criteria ? item.criteria : ''
             })(
-              <StyledTabs>
-                <Desc>{I18N.get('suggestion.budget.desc')}</Desc>
-                {milestone && (
-                  <Tabs
-                    size="small"
-                    tabBarGutter={4}
-                    animated={false}
-                    activeKey={this.state.activeKey}
-                    onChange={this.handleTabChange}
-                  >
-                    {milestone.map((item, index) => (
-                      <TabPane tab={this.renderTabText(item.date)} key={index}>
-                        {item.version}
-                      </TabPane>
-                    ))}
-                  </Tabs>
-                )}
-                <CodeMirrorEditor
-                  content={item && item.criteria ? item.criteria : ''}
-                  activeKey="criteria"
-                  name="criteria-editor"
-                />
-              </StyledTabs>
+              <CodeMirrorEditor
+                content={item && item.criteria ? item.criteria : ''}
+                activeKey="criteria"
+                name="criteria-editor"
+              />
             )}
           </FormItem>
 
@@ -185,6 +192,15 @@ const Wrapper = styled.div`
   max-width: 700px;
   margin: 0 auto;
 `
+const Label = styled.div`
+  font-size: 17px;
+  color: #000;
+  display: block;
+  margin-bottom: ${props => (props.gutter ? props.gutter : 10)}px;
+  > span {
+    color: #ff0000;
+  }
+`
 const Title = styled.div`
   font-size: 30px;
   line-height: 42px;
@@ -204,15 +220,10 @@ const Actions = styled.div`
     margin: 0 8px;
   }
 `
-const StyledFormItem = styled.div`
-  .ant-col-24.ant-form-item-label {
-    padding: 0;
-    margin-bottom: -12px;
-  }
-`
+
 const StyledTabs = styled.div`
   .ant-tabs {
-    margin: 8px 0;
+    margin-top: 16px;
   }
   .ant-tabs-bar {
     border-bottom: none;
