@@ -1,0 +1,3 @@
+[submodule "src/django-qr-code"]
+	path = CR.Elastos-Nucleus/src/django-qr-code
+	url = https://github.com/dprog-philippe-docourt/django-qr-code
