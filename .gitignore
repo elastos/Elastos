@@ -29,8 +29,12 @@ tools/.postgres-data
 # static files
 www/
 
+# logs
+elastos-nucleus.log
+queries.log
+
 # uploaded files
-media/
+documents/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

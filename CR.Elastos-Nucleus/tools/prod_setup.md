@@ -10,3 +10,11 @@ Django Registration Form: https://simpleisbetterthancomplex.com/tutorial/2017/02
 Django confirmation email: https://medium.com/@frfahim/django-registration-with-confirmation-email-bb5da011e4ef
 
  
+ 
+AWS Beanstalk Setup:
+- https://www.1strategy.com/blog/2017/05/23/tutorial-django-elastic-beanstalk/
+- https://dzone.com/articles/making-django-elastic-beanstalk-and-aws-rds-play-w
+- https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/configuring-https-elb.html
+- http://truelogic.org/wordpress/2018/11/23/how-to-host-an-external-domain-with-aws-elastic-beanstalk-on-both-http-and-https/
+- https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-beanstalk-environment.html#routing-to-beanstalk-environment-create-alias-procedure
+- https://www.vincit.fi/en/deploying-django-elastic-beanstalk-https-redirects-functional-health-checks/
