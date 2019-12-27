@@ -40,7 +40,8 @@ class ImplementationPlan extends Component {
 export default ImplementationPlan
 
 const Title = styled.div`
-  font-weight: 500;
-  font-size: 16px;
-  margin-bottom: 16px;
+  font-size: 17px;
+  line-height: 24px;
+  color: #000000;
+  margin-bottom: 20px;
 `

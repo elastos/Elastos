@@ -125,7 +125,8 @@ export default {
     reasons: '理由',
     criteria: '支付标准',
     action: '操作',
-    desc: '请基于里程碑填写'
+    desc: '请基于里程碑填写：',
+    schedule: '支出计划'
   },
   plan: {
     teamMember: '团队成员',

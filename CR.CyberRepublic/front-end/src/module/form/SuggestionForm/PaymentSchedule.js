@@ -77,9 +77,12 @@ class PaymentSchedule extends Component {
     const { paymentItems, index } = this.state
     return (
       <Wrapper>
-        <Button onClick={this.showModal}>
-          {I18N.get('suggestion.budget.create')}
-        </Button>
+        <Header>
+          <Label>{I18N.get('suggestion.budget.schedule')}</Label>
+          <Button onClick={this.showModal}>
+            {I18N.get('suggestion.budget.create')}
+          </Button>
+        </Header>
         {paymentItems.length ? (
           <PaymentList
             list={paymentItems}
@@ -116,3 +119,21 @@ PaymentSchedule.propTypes = {
 export default PaymentSchedule
 
 const Wrapper = styled.div``
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .ant-btn {
+    border: 1px solid #000000;
+    color: #000000;
+    &:hover {
+      border: 1px solid #008d85;
+      color: #008d85;
+    }
+  }
+`
+const Label = styled.div`
+  font-size: 17px;
+  line-height: 24px;
+  color: #000000;
+`

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, Modal, Row, Col } from 'antd'
+import { Button, Modal } from 'antd'
 import I18N from '@/I18N'
 import TeamInfoForm from '@/module/form/TeamInfoForm/Container'
 import TeamInfoList from './TeamInfoList'
@@ -69,20 +69,12 @@ class TeamInfoSection extends Component {
     const { teamInfos, index } = this.state
     return (
       <Wrapper>
-        <Row>
-          <Col span={14}>{title}</Col>
-          <Col
-            span={10}
-            style={{ display: 'flex', justifyContent: 'flex-end' }}
-          >
-            <Button
-              onClick={this.showModal}
-              style={{ color: '#000000', borderColor: '#000000' }}
-            >
-              {I18N.get('suggestion.plan.createTeamInfo')}
-            </Button>
-          </Col>
-        </Row>
+        <Header>
+          <Label>{title}</Label>
+          <Button onClick={this.showModal}>
+            {I18N.get('suggestion.plan.createTeamInfo')}
+          </Button>
+        </Header>
         {teamInfos.length ? (
           <TeamInfoList
             list={teamInfos}
@@ -120,4 +112,23 @@ export default TeamInfoSection
 
 const Wrapper = styled.div`
   margin-bottom: 24px;
+`
+const Header = styled.div`
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .ant-btn {
+    border: 1px solid #000000;
+    color: #000000;
+    &:hover {
+      border: 1px solid #008d85;
+      color: #008d85;
+    }
+  }
+`
+const Label = styled.div`
+  font-size: 17px;
+  line-height: 24px;
+  color: #000000;
 `

@@ -128,7 +128,8 @@ export default {
     reasons: 'Reasons',
     criteria: 'Criteria of Payment',
     action: 'Action',
-    desc: 'Based on milestone selected below:'
+    desc: 'Based on milestone selected below:',
+    schedule: 'Payment Schedule'
   },
   plan: {
     teamMember: 'Team Member',
