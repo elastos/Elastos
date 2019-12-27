@@ -66,6 +66,7 @@ public class VoteActivity extends BaseActivity {
                 return false;
             }
         });
+        NumberiUtil.editTestFormat(etPwd,8);
       /*  etPwd.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
