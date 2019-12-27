@@ -436,7 +436,8 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
     public void onBalance(BalanceEntity data) {
         Intent intent = new Intent(getContext(), VoteActivity.class);
         maxBalance = data.getBalance();
-        intent.putExtra("maxBalance", data.getBalance());
+        maxBalance = Arith.sub(maxBalance, 1000000).toPlainString();
+        intent.putExtra("maxBalance",maxBalance);
         startActivity(intent);
     }
 
@@ -449,7 +450,7 @@ public class NodeCartFragment extends BaseFragment implements CommonBalanceViewD
             num = result.getName();
             String amount;
             if ("MAX".equals(num)) {
-                amount = Arith.sub(maxBalance, 1000000).toPlainString();
+                amount =maxBalance;
             } else {
                 amount = Arith.mulRemoveZero(num, MyWallet.RATE_S).toPlainString();
             }
