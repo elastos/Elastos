@@ -23,6 +23,7 @@ import (
 	"github.com/elastos/Elastos.ELA/cr/state"
 	"github.com/elastos/Elastos.ELA/dpos/p2p/peer"
 	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/utils"
 )
 
 type ChangeType byte
@@ -84,6 +85,8 @@ type arbitrators struct {
 	lastCheckPointHeight uint32
 
 	forceChanged bool
+
+	history *utils.History
 }
 
 func (a *arbitrators) Start() {
@@ -204,15 +207,12 @@ func (a *arbitrators) ProcessSpecialTxPayload(p types.Payload,
 }
 
 func (a *arbitrators) RollbackTo(height uint32) error {
-	if height > a.history.Height() {
-		return fmt.Errorf("can't rollback to height: %d", height)
-	}
+	a.mtx.Lock()
+	a.degradation.RollbackTo(height)
+	err := a.State.RollbackTo(height)
+	a.mtx.Unlock()
 
-	if err := a.DecreaseChainHeight(height); err != nil {
-		return err
-	}
-
-	return a.State.RollbackTo(height)
+	return err
 }
 
 func (a *arbitrators) GetDutyIndexByHeight(height uint32) (index int) {
@@ -267,11 +267,11 @@ func (a *arbitrators) ForceChange(height uint32) error {
 		return err
 	}
 
-	if err := a.updateNextArbitrators(height + 1); err != nil {
+	if err := a.updateNextArbitrators(height+1, height); err != nil {
 		return err
 	}
 
-	if err := a.changeCurrentArbitrators(); err != nil {
+	if err := a.changeCurrentArbitrators(height); err != nil {
 		return err
 	}
 
@@ -297,12 +297,12 @@ func (a *arbitrators) tryHandleError(height uint32, err error) error {
 }
 
 func (a *arbitrators) normalChange(height uint32) error {
-	if err := a.changeCurrentArbitrators(); err != nil {
+	if err := a.changeCurrentArbitrators(height); err != nil {
 		log.Warn("[NormalChange] change current arbiters error: ", err)
 		return err
 	}
 
-	if err := a.updateNextArbitrators(height + 1); err != nil {
+	if err := a.updateNextArbitrators(height+1, height); err != nil {
 		log.Warn("[NormalChange] update next arbiters error: ", err)
 		return err
 	}
@@ -312,13 +312,14 @@ func (a *arbitrators) normalChange(height uint32) error {
 
 func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 	var notify = true
+	var snapshotVotes = true
 
 	a.mtx.Lock()
 
 	changeType, versionHeight := a.getChangeType(block.Height + 1)
 	switch changeType {
 	case updateNext:
-		if err := a.updateNextArbitrators(versionHeight); err != nil {
+		if err := a.updateNextArbitrators(versionHeight, block.Height); err != nil {
 			panic(fmt.Sprintf("[IncreaseChainHeight] update next arbiters at height: %d, error: %s", block.Height, err))
 		}
 	case normalChange:
@@ -332,10 +333,22 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 		}
 	case none:
 		a.accumulateReward(block)
-		a.dutyIndex++
 		notify = false
+		snapshotVotes = false
 	}
-	a.illegalBlocksPayloadHashes = make(map[common.Uint256]interface{})
+	oriIllegalBlocks := a.illegalBlocksPayloadHashes
+	a.history.Append(block.Height, func() {
+		a.illegalBlocksPayloadHashes = make(map[common.Uint256]interface{})
+	}, func() {
+		a.illegalBlocksPayloadHashes = oriIllegalBlocks
+	})
+	a.history.Commit(block.Height)
+
+	if snapshotVotes {
+		if err := a.snapshotVotesStates(); err != nil {
+			panic(fmt.Sprintf("snap shot votes states error:%s", err))
+		}
+	}
 
 	if block.Height > a.bestHeight()-MaxSnapshotLength {
 		a.snapshot(block.Height)
@@ -349,82 +362,117 @@ func (a *arbitrators) IncreaseChainHeight(block *types.Block) {
 }
 
 func (a *arbitrators) accumulateReward(block *types.Block) {
-	if block.Height < a.State.chainParams.PublicDPOSHeight {
+	if block.Height < a.chainParams.PublicDPOSHeight {
 		return
 	}
 
+	var accumulative common.Fixed64
+	accumulative = a.accumulativeReward
 	if block.Height < a.chainParams.CRVotingStartHeight || !a.forceChanged {
 		dposReward := a.getBlockDPOSReward(block)
-		a.accumulativeReward += dposReward
+		accumulative += dposReward
 	}
 
-	a.arbitersRoundReward = nil
-	a.finalRoundChange = 0
-	a.forceChanged = false
+	oriAccumulativeReward := a.accumulativeReward
+	oriArbitersRoundReward := a.arbitersRoundReward
+	oriFinalRoundChange := a.finalRoundChange
+	oriForceChanged := a.forceChanged
+	oriDutyIndex := a.dutyIndex
+	a.history.Append(block.Height, func() {
+		a.accumulativeReward = accumulative
+		a.arbitersRoundReward = nil
+		a.finalRoundChange = 0
+		a.forceChanged = false
+		a.dutyIndex = oriDutyIndex + 1
+	}, func() {
+		a.accumulativeReward = oriAccumulativeReward
+		a.arbitersRoundReward = oriArbitersRoundReward
+		a.finalRoundChange = oriFinalRoundChange
+		a.forceChanged = oriForceChanged
+		a.dutyIndex = oriDutyIndex
+	})
+
 }
 
 func (a *arbitrators) clearingDPOSReward(block *types.Block,
-	smoothClearing bool) error {
+	smoothClearing bool) (err error) {
 	if block.Height < a.chainParams.PublicDPOSHeight ||
 		block.Height == a.clearingHeight {
 		return nil
 	}
 
 	dposReward := a.getBlockDPOSReward(block)
+	accumulativeReward := a.accumulativeReward
 	if smoothClearing {
-		a.accumulativeReward += dposReward
+		accumulativeReward += dposReward
 		dposReward = 0
 	}
 
-	if err := a.distributeDPOSReward(block.Height,
-		a.accumulativeReward); err != nil {
-		return err
+	var change common.Fixed64
+	var roundReward map[common.Uint168]common.Fixed64
+	if roundReward, change, err = a.distributeDPOSReward(block.Height,
+		accumulativeReward); err != nil {
+		return
 	}
-	a.accumulativeReward = dposReward
-	a.clearingHeight = block.Height
+
+	oriRoundReward := a.arbitersRoundReward
+	oriAccumulativeReward := a.accumulativeReward
+	oriClearingHeight := a.clearingHeight
+	oriChange := a.finalRoundChange
+	a.history.Append(block.Height, func() {
+		a.arbitersRoundReward = roundReward
+		a.accumulativeReward = dposReward
+		a.clearingHeight = block.Height
+		a.finalRoundChange = change
+	}, func() {
+		a.arbitersRoundReward = oriRoundReward
+		a.accumulativeReward = oriAccumulativeReward
+		a.clearingHeight = oriClearingHeight
+		a.finalRoundChange = oriChange
+	})
 
 	return nil
 }
 
 func (a *arbitrators) distributeDPOSReward(height uint32,
-	reward common.Fixed64) (err error) {
-	a.arbitersRoundReward = map[common.Uint168]common.Fixed64{}
-
+	reward common.Fixed64) (roundReward map[common.Uint168]common.Fixed64,
+	change common.Fixed64, err error) {
 	var realDPOSReward common.Fixed64
 	if height >= a.chainParams.CRCommitteeStartHeight &&
 		a.crcChangedHeight > 0 {
-		realDPOSReward, err = a.distributeWithNormalArbitratorsV(reward)
+		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV(reward)
 	} else {
-		realDPOSReward, err = a.distributeWithNormalArbitratorsV0(reward)
+		roundReward, realDPOSReward, err = a.distributeWithNormalArbitratorsV0(reward)
 	}
 
 	if err != nil {
-		return err
+		return nil, 0, err
 	}
 
-	change := reward - realDPOSReward
+	change = reward - realDPOSReward
 	if change < 0 {
-		return errors.New("real dpos reward more than reward limit")
+		return nil, 0, errors.New("real dpos reward more than reward limit")
 	}
 
-	a.finalRoundChange = change
-	return nil
+	return
 }
 
-func (a *arbitrators) distributeWithNormalArbitratorsV(
-	reward common.Fixed64) (common.Fixed64, error) {
+func (a *arbitrators) distributeWithNormalArbitratorsV(reward common.Fixed64) (
+	map[common.Uint168]common.Fixed64, common.Fixed64, error) {
 	if len(a.currentArbitrators) == 0 {
-		return 0, errors.New("not found arbiters when distributeWithNormalArbitratorsV")
+		return nil, 0, errors.New("not found arbiters when " +
+			"distributeWithNormalArbitratorsV")
 	}
 
+	roundReward := map[common.Uint168]common.Fixed64{}
 	totalBlockConfirmReward := float64(reward) * 0.25
 	totalTopProducersReward := float64(reward) - totalBlockConfirmReward
 	individualBlockConfirmReward := common.Fixed64(
 		math.Floor(totalBlockConfirmReward / float64(len(a.currentArbitrators))))
 	totalVotesInRound := a.CurrentReward.TotalVotesInRound
 	if len(a.chainParams.CRCArbiters) == len(a.currentArbitrators) {
-		a.arbitersRoundReward[a.chainParams.CRCAddress] = reward
-		return reward, nil
+		roundReward[a.chainParams.CRCAddress] = reward
+		return roundReward, reward, nil
 	}
 	rewardPerVote := totalTopProducersReward / float64(totalVotesInRound)
 
@@ -444,7 +492,7 @@ func (a *arbitrators) distributeWithNormalArbitratorsV(
 				votes) * rewardPerVote))
 			r = individualBlockConfirmReward + individualProducerReward
 		}
-		a.arbitersRoundReward[rewardHash] = r
+		roundReward[rewardHash] = r
 		realDPOSReward += r
 	}
 	for _, candidate := range a.currentCandidates {
@@ -452,29 +500,11 @@ func (a *arbitrators) distributeWithNormalArbitratorsV(
 		votes := a.CurrentReward.OwnerVotesInRound[ownerHash]
 		individualProducerReward := common.Fixed64(math.Floor(float64(
 			votes) * rewardPerVote))
-		a.arbitersRoundReward[ownerHash] = individualProducerReward
+		roundReward[ownerHash] = individualProducerReward
 
 		realDPOSReward += individualProducerReward
 	}
-	return realDPOSReward, nil
-}
-
-func (a *arbitrators) DecreaseChainHeight(height uint32) error {
-	a.mtx.Lock()
-	a.degradation.RollbackTo(height)
-
-	checkpoints := a.getSnapshot(height)
-	if checkpoints != nil {
-		for _, v := range checkpoints {
-			a.recoverFromCheckPoints(v)
-			// since we don't support force change at now, length of checkpoints
-			// should be 1, so we break the loop here
-			break
-		}
-	}
-	a.mtx.Unlock()
-
-	return nil
+	return roundReward, realDPOSReward, nil
 }
 
 func (a *arbitrators) GetNeedConnectArbiters() []peer.PID {
@@ -497,8 +527,8 @@ func (a *arbitrators) getNeedConnectArbiters() []peer.PID {
 		pids[common.BytesToHexString(p.GetNodePublicKey())] = pid
 	}
 
-	if height != a.State.chainParams.CRCOnlyDPOSHeight-
-		a.State.chainParams.PreConnectOffset {
+	if height != a.chainParams.CRCOnlyDPOSHeight-
+		a.chainParams.PreConnectOffset {
 		for _, v := range a.currentArbitrators {
 			key := common.BytesToHexString(v.GetNodePublicKey())
 			var pid peer.PID
@@ -716,7 +746,7 @@ func (a *arbitrators) GetCrossChainArbitersMajorityCount() int {
 
 func (a *arbitrators) GetNextOnDutyArbitratorV(height, offset uint32) ArbiterMember {
 	// main version is >= H1
-	if height >= a.State.chainParams.CRCOnlyDPOSHeight {
+	if height >= a.chainParams.CRCOnlyDPOSHeight {
 		arbitrators := a.currentArbitrators
 		if len(arbitrators) == 0 {
 			return nil
@@ -771,20 +801,20 @@ func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
 	//		H1 -> 						[normalChange, H1]: should change to new election (that only have CRC arbiters)
 	//		H2 - PreConnectOffset -> 	[updateNext, H2]: update next arbiters and let normal arbiters prepare to connect
 	//		H2 -> 						[normalChange, H2]: should change to new election (arbiters will have both CRC and normal arbiters)
-	if height == a.State.chainParams.CRCOnlyDPOSHeight-
-		a.State.chainParams.PreConnectOffset {
-		return updateNext, a.State.chainParams.CRCOnlyDPOSHeight
-	} else if height == a.State.chainParams.CRCOnlyDPOSHeight {
-		return normalChange, a.State.chainParams.CRCOnlyDPOSHeight
-	} else if height == a.State.chainParams.PublicDPOSHeight-
-		a.State.chainParams.PreConnectOffset {
-		return updateNext, a.State.chainParams.PublicDPOSHeight
-	} else if height == a.State.chainParams.PublicDPOSHeight {
-		return normalChange, a.State.chainParams.PublicDPOSHeight
+	if height == a.chainParams.CRCOnlyDPOSHeight-
+		a.chainParams.PreConnectOffset {
+		return updateNext, a.chainParams.CRCOnlyDPOSHeight
+	} else if height == a.chainParams.CRCOnlyDPOSHeight {
+		return normalChange, a.chainParams.CRCOnlyDPOSHeight
+	} else if height == a.chainParams.PublicDPOSHeight-
+		a.chainParams.PreConnectOffset {
+		return updateNext, a.chainParams.PublicDPOSHeight
+	} else if height == a.chainParams.PublicDPOSHeight {
+		return normalChange, a.chainParams.PublicDPOSHeight
 	}
 
 	// main version >= H2
-	if height > a.State.chainParams.PublicDPOSHeight &&
+	if height > a.chainParams.PublicDPOSHeight &&
 		a.dutyIndex == len(a.currentArbitrators)-1 {
 		return normalChange, height
 	}
@@ -792,29 +822,39 @@ func (a *arbitrators) getChangeType(height uint32) (ChangeType, uint32) {
 	return none, height
 }
 
-func (a *arbitrators) changeCurrentArbitrators() error {
-	a.currentArbitrators = a.nextArbitrators
-	a.currentCandidates = a.nextCandidates
-	a.CurrentReward = a.NextReward
+func (a *arbitrators) changeCurrentArbitrators(height uint32) error {
 
-	sort.Slice(a.currentArbitrators, func(i, j int) bool {
-		return bytes.Compare(a.currentArbitrators[i].GetNodePublicKey(),
-			a.currentArbitrators[j].GetNodePublicKey()) < 0
+	oriCurrentArbitrators := a.currentArbitrators
+	oriCurrentCandidates := a.currentCandidates
+	oriCurrentReward := a.CurrentReward
+	oriDutyIndex := a.dutyIndex
+	a.history.Append(height, func() {
+		sort.Slice(a.nextArbitrators, func(i, j int) bool {
+			return bytes.Compare(a.nextArbitrators[i].GetNodePublicKey(),
+				a.nextArbitrators[j].GetNodePublicKey()) < 0
+		})
+		a.currentArbitrators = a.nextArbitrators
+		a.currentCandidates = a.nextCandidates
+		a.CurrentReward = a.NextReward
+		a.dutyIndex = 0
+	}, func() {
+		a.currentArbitrators = oriCurrentArbitrators
+		a.currentCandidates = oriCurrentCandidates
+		a.CurrentReward = oriCurrentReward
+		a.dutyIndex = oriDutyIndex
 	})
-
-	a.dutyIndex = 0
 	return nil
 }
 
-func (a *arbitrators) updateNextArbitrators(height uint32) error {
-	_, recover := a.InactiveModeSwitch(height, a.IsAbleToRecoverFromInactiveMode)
+func (a *arbitrators) updateNextArbitrators(versionHeight, height uint32) error {
+	_, recover := a.InactiveModeSwitch(versionHeight, a.IsAbleToRecoverFromInactiveMode)
 	if recover {
-		a.LeaveEmergency()
+		a.LeaveEmergency(a.history, height)
 	} else {
 		a.TryLeaveUnderStaffed(a.IsAbleToRecoverFromUnderstaffedState)
 	}
 
-	err := a.resetNextArbiterByCRC(height)
+	err := a.resetNextArbiterByCRC(versionHeight, height)
 	if err != nil {
 		return err
 	}
@@ -830,44 +870,57 @@ func (a *arbitrators) updateNextArbitrators(height uint32) error {
 			return votedProducers[i].Votes() > votedProducers[j].Votes()
 		})
 
-		producers, err := a.GetNormalArbitratorsDesc(height, count,
+		producers, err := a.GetNormalArbitratorsDesc(versionHeight, count,
 			votedProducers)
 		if err != nil {
-			if err := a.tryHandleError(height, err); err != nil {
+			if err := a.tryHandleError(versionHeight, err); err != nil {
 				return err
 			}
-			a.nextCandidates = make([]ArbiterMember, 0)
+			oriNextCandidates := a.nextCandidates
+			a.history.Append(height, func() {
+				a.nextCandidates = make([]ArbiterMember, 0)
+			}, func() {
+				a.nextCandidates = oriNextCandidates
+			})
 		} else {
-			a.nextArbitrators = append(a.nextArbitrators, producers...)
+			a.history.Append(height, func() {
+				a.nextArbitrators = append(a.nextArbitrators, producers...)
+			}, func() {
+				// next arbitrators will rollback in resetNextArbiterByCRC
+			})
 
-			candidates, err := a.GetCandidatesDesc(height, count,
+			candidates, err := a.GetCandidatesDesc(versionHeight, count,
 				votedProducers)
 			if err != nil {
 				return err
 			}
-			a.nextCandidates = candidates
+			oriNextCandidates := a.nextCandidates
+			a.history.Append(height, func() {
+				a.nextCandidates = candidates
+			}, func() {
+				a.nextCandidates = oriNextCandidates
+			})
 		}
 	} else {
-		a.nextCandidates = make([]ArbiterMember, 0)
-	}
-
-	if err := a.snapshotVotesStates(); err != nil {
-		return err
+		oriNextCandidates := a.nextCandidates
+		a.history.Append(height, func() {
+			a.nextCandidates = make([]ArbiterMember, 0)
+		}, func() {
+			a.nextCandidates = oriNextCandidates
+		})
 	}
 
 	return nil
 }
 
-func (a *arbitrators) resetNextArbiterByCRC(height uint32) error {
-	a.nextArbitrators = make([]ArbiterMember, 0)
-
-	if height >= a.chainParams.CRCommitteeStartHeight {
+func (a *arbitrators) resetNextArbiterByCRC(versionHeight uint32, height uint32) error {
+	if versionHeight >= a.chainParams.CRCommitteeStartHeight {
 		crMembers := a.crCommittee.GetAllMembers()
 		if len(crMembers) != len(a.chainParams.CRCArbiters) {
 			return errors.New("CRC members count mismatch with CRC arbiters")
 		}
 
-		a.crcArbiters = map[common.Uint168]ArbiterMember{}
+		crcArbiters := map[common.Uint168]ArbiterMember{}
 		for i, v := range a.chainParams.CRCArbiters {
 			pk, err := common.HexStringToBytes(v)
 			if err != nil {
@@ -877,14 +930,29 @@ func (a *arbitrators) resetNextArbiterByCRC(height uint32) error {
 			if err != nil {
 				return err
 			}
-			a.crcArbiters[ar.GetOwnerProgramHash()] = ar
+			crcArbiters[ar.GetOwnerProgramHash()] = ar
 		}
-		a.crcChangedHeight = a.crCommittee.LastCommitteeHeight
+
+		oriArbiters := a.crcArbiters
+		oriCRCChangedHeight := a.crcChangedHeight
+		a.history.Append(height, func() {
+			a.crcArbiters = crcArbiters
+			a.crcChangedHeight = a.crCommittee.LastCommitteeHeight
+		}, func() {
+			a.crcArbiters = oriArbiters
+			a.crcChangedHeight = oriCRCChangedHeight
+		})
 	}
 
-	for _, v := range a.crcArbiters {
-		a.nextArbitrators = append(a.nextArbitrators, v)
-	}
+	oriNextArbiters := a.nextArbitrators
+	a.history.Append(height, func() {
+		a.nextArbitrators = make([]ArbiterMember, 0)
+		for _, v := range a.crcArbiters {
+			a.nextArbitrators = append(a.nextArbitrators, v)
+		}
+	}, func() {
+		a.nextArbitrators = oriNextArbiters
+	})
 
 	return nil
 }
@@ -892,7 +960,7 @@ func (a *arbitrators) resetNextArbiterByCRC(height uint32) error {
 func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
 	producers []*Producer) ([]ArbiterMember, error) {
 	// main version >= H2
-	if height >= a.State.chainParams.PublicDPOSHeight {
+	if height >= a.chainParams.PublicDPOSHeight {
 		if len(producers) < startIndex {
 			return make([]ArbiterMember, 0), nil
 		}
@@ -916,7 +984,7 @@ func (a *arbitrators) GetCandidatesDesc(height uint32, startIndex int,
 func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 	arbitratorsCount int, producers []*Producer) ([]ArbiterMember, error) {
 	// main version >= H2
-	if height >= a.State.chainParams.PublicDPOSHeight {
+	if height >= a.chainParams.PublicDPOSHeight {
 		if len(producers) < arbitratorsCount {
 			return nil, ErrInsufficientProducer
 		}
@@ -933,7 +1001,7 @@ func (a *arbitrators) GetNormalArbitratorsDesc(height uint32,
 	}
 
 	// version [H1, H2)
-	if height >= a.State.chainParams.CRCOnlyDPOSHeight {
+	if height >= a.chainParams.CRCOnlyDPOSHeight {
 		return a.getNormalArbitratorsDescV1()
 	}
 
@@ -1212,6 +1280,7 @@ func NewArbitrators(chainParams *config.Params, committee *state.Committee,
 			understaffedSince: 0,
 			state:             DSNormal,
 		},
+		history: utils.NewHistory(maxHistoryCapacity),
 	}
 	if err := a.initArbitrators(chainParams); err != nil {
 		return nil, err

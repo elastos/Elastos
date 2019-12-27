@@ -609,7 +609,7 @@ func (c *Committee) changeCommitteeMembers(height uint32) error {
 
 func (c *Committee) processCurrentMembers(height uint32,
 	activeCandidates []*Candidate) {
-	if len(c.Members) == 0 {
+	if uint32(len(activeCandidates)) < c.params.CRMemberCount {
 		return
 	}
 
@@ -643,7 +643,8 @@ func (c *Committee) processCurrentMembers(height uint32,
 
 	newMembers := make(map[common.Uint168]*CRMember, c.params.CRMemberCount)
 	for i := 0; i < int(c.params.CRMemberCount); i++ {
-		newMembers[activeCandidates[i].info.DID] = c.generateMember(activeCandidates[i])
+		newMembers[activeCandidates[i].info.DID] =
+			c.generateMember(activeCandidates[i])
 	}
 
 	oriNicknames := utils.CopyStringSet(c.state.Nicknames)
