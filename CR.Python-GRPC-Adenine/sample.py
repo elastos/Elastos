@@ -11,7 +11,7 @@ from elastos_adenine.wallet import Wallet
 def main():
     parser = argparse.ArgumentParser(description="sample.py", add_help=False)
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
-                        help='Types of services supported: generate_api, get_api_key, upload_and_sign, '
+                        help='Types of services supported: generate_api_key, get_api_key, upload_and_sign, '
                              'verify_and_show, create_wallet, view_wallet, request_ela, deploy_eth_contract, '
                              'watch_eth_contract')
     parser.add_argument('-s', action="store", dest="service")
@@ -20,10 +20,10 @@ def main():
     service = results.service
 
     did_to_use = 'n84dqvIK9O0LIPXi27uL0aRnoR45Exdxl218eQyPDD4lW8RPov'
-    api_key_to_use = 'HETusrauCqXlBQdKH0xcnxzioTaQ6HEXkfu3Wz9xJNJHqi2lt6rftuhMxEzdxHIr'
+    api_key_to_use = 'wjCV8z6g41PcDqvAzTnQGPUrwmDuYsdRDEo9JP8sw6GR6NAogCIQgfw5MRuViU3o'
     private_key_to_use = '1F54BCD5592709B695E85F83EBDA515971723AFF56B32E175F14A158D5AC0D99'
 
-    if service == "generate_api":
+    if service == "generate_api_key":
         try:
             common = Common()
             # Generate API Key

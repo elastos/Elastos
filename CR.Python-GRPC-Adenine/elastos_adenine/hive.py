@@ -4,6 +4,7 @@ from decouple import config
 
 from .stubs import hive_pb2
 from .stubs import hive_pb2_grpc
+from elastos_adenine.settings import REQUEST_TIMEOUT
 
 
 class Hive:
@@ -27,7 +28,7 @@ class Hive:
             "privateKey": private_key,
             "msg": message
         }
-        response = self.stub.Sign(hive_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        response = self.stub.Sign(hive_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response
 
     def upload_and_sign(self, api_key, private_key, filename):
@@ -41,5 +42,5 @@ class Hive:
         return response
 
     def verify_and_show(self, api_key, request_input):
-        response = self.stub.VerifyAndShow(hive_pb2.Request(api_key=api_key, input=json.dumps(request_input)))
+        response = self.stub.VerifyAndShow(hive_pb2.Request(api_key=api_key, input=json.dumps(request_input)), timeout=REQUEST_TIMEOUT)
         return response

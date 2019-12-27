@@ -4,6 +4,7 @@ from decouple import config
 
 from .stubs import wallet_pb2
 from .stubs import wallet_pb2_grpc
+from elastos_adenine.settings import REQUEST_TIMEOUT
 
 
 class Wallet:
@@ -23,7 +24,7 @@ class Wallet:
         self._channel.close()
 
     def create_wallet(self, api_key):
-        response = self.stub.CreateWallet(wallet_pb2.Request(api_key=api_key))
+        response = self.stub.CreateWallet(wallet_pb2.Request(api_key=api_key), timeout=REQUEST_TIMEOUT)
         return response
 
     def view_wallet(self, api_key, chain, address):
@@ -31,7 +32,7 @@ class Wallet:
             'address': address,
             'chain': chain
         }
-        response = self.stub.ViewWallet(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        response = self.stub.ViewWallet(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response
 
     def request_ela(self, api_key, chain, address):
@@ -39,5 +40,5 @@ class Wallet:
             'address': address,
             'chain': chain
         }
-        response = self.stub.RequestELA(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        response = self.stub.RequestELA(wallet_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response

@@ -5,6 +5,7 @@ from decouple import config
 
 from .stubs import common_pb2
 from .stubs import common_pb2_grpc
+from elastos_adenine.settings import REQUEST_TIMEOUT
 
 
 class Common:
@@ -24,9 +25,9 @@ class Common:
         self._channel.close()
 
     def generate_api_request(self, secret_key, did):
-        response = self.stub.GenerateAPIRequest(common_pb2.Request(secret_key=secret_key, did=did))
+        response = self.stub.GenerateAPIRequest(common_pb2.Request(secret_key=secret_key, did=did), timeout=REQUEST_TIMEOUT)
         return response
 
     def get_api_key_request(self, secret_key, did):
-        response = self.stub.GetAPIKey(common_pb2.Request(secret_key=secret_key, did=did))
+        response = self.stub.GetAPIKey(common_pb2.Request(secret_key=secret_key, did=did), timeout=REQUEST_TIMEOUT)
         return response

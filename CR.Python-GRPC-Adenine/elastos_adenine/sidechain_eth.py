@@ -6,6 +6,7 @@ from solidity_parser import parser
 
 from .stubs import sidechain_eth_pb2
 from .stubs import sidechain_eth_pb2_grpc
+from elastos_adenine.settings import REQUEST_TIMEOUT
 
 
 class SidechainEth:
@@ -35,7 +36,7 @@ class SidechainEth:
             'contract_source': contract_source,
             'contract_metadata': contract_metadata,
         }
-        response = self.stub.DeployEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        response = self.stub.DeployEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response
 
     def watch_eth_contract(self, api_key, contract_address, contract_name, contract_code_hash):
@@ -44,5 +45,5 @@ class SidechainEth:
             'contract_name': contract_name,
             'contract_code_hash': contract_code_hash,
         }
-        response = self.stub.WatchEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)))
+        response = self.stub.WatchEthContract(sidechain_eth_pb2.Request(api_key=api_key, input=json.dumps(req_data)), timeout=REQUEST_TIMEOUT)
         return response
