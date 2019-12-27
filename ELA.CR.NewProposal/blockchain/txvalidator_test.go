@@ -2422,17 +2422,17 @@ func (s *txValidatorTestSuite) TestCheckCRCProposalTransaction() {
 
 	// invalid proposal type
 	txn = s.getCRCProposalTx(publicKeyStr2, privateKeyStr2, publicKeyStr1, privateKeyStr1)
-	txn.Payload.(*payload.CRCProposal).ProposalType = 0x10
+	txn.Payload.(*payload.CRCProposal).ProposalType = 0x1000
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "type of proposal should be known")
 
 	// invalid outputs of ELIP.
-	txn.Payload.(*payload.CRCProposal).ProposalType = 0x01
+	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0100
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "ELIP needs to have and only have two outputs")
 
 	// invalid budgets.
-	txn.Payload.(*payload.CRCProposal).ProposalType = 0x00
+	txn.Payload.(*payload.CRCProposal).ProposalType = 0x0000
 	s.Chain.crCommittee.CRCCommitteeBalance = common.Fixed64(10 * 1e8)
 	err = s.Chain.checkCRCProposalTransaction(txn, tenureHeight)
 	s.EqualError(err, "budgets exceeds 10% of CRC committee balance")
@@ -3377,8 +3377,7 @@ func (s *txValidatorTestSuite) TestCheckOutputProgramHash() {
 }
 
 func (s *txValidatorTestSuite) TestCreateCRCAppropriationTransaction() {
-	var crAddress string
-	crAddress = "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
+	crAddress := "ERyUmNH51roR9qfru37Kqkaok2NghR7L5U"
 	crcFoundation, _ := common.Uint168FromAddress(crAddress)
 
 	s.Chain.chainParams.CRCFoundation = *crcFoundation
