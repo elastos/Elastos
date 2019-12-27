@@ -105,7 +105,7 @@ class BudgetForm extends Component {
               <CodeMirrorEditor
                 content={item && item.reasons ? item.reasons : ''}
                 activeKey="reasons"
-                name="reasons-editor"
+                name="reasons"
               />
             )}
           </FormItem>
@@ -145,7 +145,7 @@ class BudgetForm extends Component {
               <CodeMirrorEditor
                 content={item && item.criteria ? item.criteria : ''}
                 activeKey="criteria"
-                name="criteria-editor"
+                name="criteria"
               />
             )}
           </FormItem>
@@ -180,7 +180,7 @@ BudgetForm.propTypes = {
 export default Form.create()(BudgetForm)
 
 const Wrapper = styled.div`
-  max-width: 700px;
+  max-width: 650px;
   margin: 0 auto;
 `
 const Label = styled.div`

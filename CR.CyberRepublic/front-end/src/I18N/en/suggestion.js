@@ -88,11 +88,9 @@ export default {
     addTagComment: 'Add Comment',
     confirm: 'Confirm',
     cancel: 'Cancel',
-    pleaseUpdate:
-      'Please update the Suggestion with the requested info and notify the council/community through a comment.',
+    pleaseUpdate: `Please update the Suggestion with the requested info and notify the council/community through a comment.`,
     commentsFromCouncil: 'Comments from Council/Admin:',
-    consideration:
-      'Are you sure to mark this suggestion as under council consideration?'
+    consideration: `Are you sure to mark this suggestion as under council consideration?`
   },
   tag: {
     show: 'Show',
@@ -122,7 +120,7 @@ export default {
     name: 'Author name'
   },
   budget: {
-    create: 'Add payment line',
+    create: 'Add Payment Line',
     payment: 'Payment',
     amount: 'Amount',
     reasons: 'Reasons',
@@ -136,7 +134,7 @@ export default {
     role: 'Role',
     responsibility: 'Responsibility',
     moreInfo: 'More Info',
-    createTeamInfo: 'Add team member',
+    createTeamInfo: 'Add Team Member',
     action: 'Action',
     teamInfo: 'Implementation Team',
     milestones: 'Milestones',

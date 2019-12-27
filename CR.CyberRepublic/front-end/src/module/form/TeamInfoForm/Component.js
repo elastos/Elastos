@@ -126,7 +126,7 @@ TeamInfoForm.propTypes = {
 export default Form.create()(TeamInfoForm)
 
 const Wrapper = styled.div`
-  max-width: 700px;
+  max-width: 650px;
   margin: 0 auto;
 `
 const Title = styled.div`

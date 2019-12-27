@@ -95,7 +95,7 @@ class PaymentSchedule extends Component {
           visible={this.state.visible}
           onCancel={this.hideModal}
           footer={null}
-          width="60%"
+          width={770}
         >
           {this.state.visible === true ? (
             <BudgetForm
