@@ -291,9 +291,9 @@ public class DIDStore: NSObject {
         var doc: DIDDocument?
         
         if (didCache != nil) {
-            doc = (didCache!.get(did) as! DIDDocument)
+            doc = didCache!.get(did) as? DIDDocument
             if (doc != nil) {
-                meta = doc?.meta
+                meta = doc!.meta
                 if (meta != nil) {
                     return meta!
                 }
@@ -397,7 +397,7 @@ public class DIDStore: NSObject {
         var vc: VerifiableCredential?
 
         if (vcCache != nil) {
-            vc = vcCache!.get(id) as! VerifiableCredential
+            vc = vcCache!.get(id) as? VerifiableCredential
             if (vc != nil) {
                 meta = vc?.meta
                 if (meta != nil) {
