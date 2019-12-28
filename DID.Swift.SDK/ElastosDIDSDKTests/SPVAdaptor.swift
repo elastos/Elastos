@@ -5,6 +5,7 @@ import SPVAdapter
 
 public typealias PasswordCallback = (_ walletDir: String, _ walletId: String) -> String?
 public class SPVAdaptor: DIDAdapter {
+
     var walletDir: String!
     var walletId: String!
     var network: String!
@@ -30,16 +31,16 @@ public class SPVAdaptor: DIDAdapter {
        return SPV.isAvailable(handle)
     }
     
-    public func createIdTransaction(_ payload: String, _ memo: String?) throws -> Bool {
+    public func createIdTransaction(_ payload: String, _ memo: String?) throws -> String? {
         let password = passwordCallback!(walletDir, walletId)
         if password == nil {
-            return false
+            return nil
         }
         let re = try SPV.createIdTransaction(handle, password!, payload, memo)
         return re
     }
     
-    public func resolve(_ did: String) throws -> String? {
-       return try SPV.resolve(handle, did)
+    public func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
+        return try SPV.resolve(requestId, did, all)
     }
 }

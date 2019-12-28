@@ -8,15 +8,15 @@ public class IDChainRequest: NSObject {
     private static let SPECIFICATION: String = "specification"
     private static let OPERATION: String = "operation"
     private static let PAYLOAD: String = "payload"
-    private static let PROOF: String = Constants.proof
-    private static let KEY_TYPE: String = Constants.type
+    private static let PROOF: String = Constants.PROOF
+    private static let KEY_TYPE: String = Constants.TYPE
     private static let KEY_ID: String = Constants.verificationMethod
     private static let SIGNATURE: String = Constants.signature
     
-  public enum Operation: Int {
+    public enum Operation: Int {
         case CREATE = 0
         case UPDATE = 1
-        case DEACRIVATE
+        case DEACTIVATE
         
         public func toString() -> String {
             if self.rawValue == 0 {
@@ -32,7 +32,8 @@ public class IDChainRequest: NSObject {
     // header
     public var specification: String = ""
     public var operation: Operation!
-    
+    public var previousTxid: String = ""
+
     // payload
     public var did: DID?
     public var doc: DIDDocument?
@@ -52,33 +53,34 @@ public class IDChainRequest: NSObject {
         let request: IDChainRequest = try IDChainRequest(Operation.CREATE)
         try request.setPayload(doc)
         try request.seal(signKey, storepass)
-
+        
         return request
     }
     
-    public class func update(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
+    public class func update(_ doc: DIDDocument,_ previousTxid: String, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
         let request: IDChainRequest = try IDChainRequest(Operation.UPDATE)
+        request.previousTxid = previousTxid
         try request.setPayload(doc)
         try request.seal(signKey, storepass)
-
+        
         return request
     }
     
     public class func deactivate(_ did: DID, _ signKey: DIDURL, _ storepass: String) throws -> IDChainRequest {
-        let request: IDChainRequest = try IDChainRequest(Operation.DEACRIVATE)
+        let request: IDChainRequest = try IDChainRequest(Operation.DEACTIVATE)
         try request.setPayload(did)
         try request.seal(signKey, storepass)
-
+        
         return request
     }
-
-     func setPayload(_ did: DID) throws {
+    
+    func setPayload(_ did: DID) throws {
         self.did = did
         self.doc = nil
         self.payload = did.description
     }
     
-     func setPayload(_ doc: DIDDocument) throws {
+    func setPayload(_ doc: DIDDocument) throws {
         self.did = doc.subject
         self.doc = doc
         let json = try doc.description(false)
@@ -90,9 +92,9 @@ public class IDChainRequest: NSObject {
         base64_url_encode(c_payload, c_input, payload.count)
         payload = String(cString: c_payload)
     }
-
+    
     func setPayload(_ payload: String) throws {
-        if (operation != Operation.DEACRIVATE) {
+        if (operation != Operation.DEACTIVATE) {
             let buffer: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
             let cp = payload.toUnsafePointerInt8()
             let c = base64_url_decode(buffer, cp)
@@ -118,30 +120,31 @@ public class IDChainRequest: NSObject {
     func seal(_ signKey: DIDURL, _ storepass: String) throws {
         let inputs: [CVarArg] = [specification, specification.count,
                                  operation.toString(), operation.toString().count,
+                                 previousTxid, previousTxid.count,
                                  payload, payload.count]
         let count = inputs.count / 2
-        self.signature = (try DIDStore.shareInstance()?.sign(did!, signKey, storepass, count, inputs))!
+        self.signature = (try doc?.sign(signKey, storepass, count, inputs))!
         self.signKey = signKey
         self.keyType = Constants.defaultPublicKeyType
     }
     
-   public func isValid() throws -> Bool {
+    public func isValid() throws -> Bool {
         var doc: DIDDocument
-        if (operation != Operation.DEACRIVATE) {
+        if (operation != Operation.DEACTIVATE) {
             doc = self.doc!
             if (try !doc.isAuthenticationKey(signKey!)){
                 return false
             }
         } else {
-            doc = try DIDStore.shareInstance()!.loadDid(did!)
+            doc = try did!.resolve()!
             if (try !doc.isAuthenticationKey(signKey!) && !doc.isAuthorizationKey(signKey!)){
                 return false
             }
         }
-
+        
         let inputs: [CVarArg] = [specification, specification.count, operation.toString(), operation.toString().count, payload, payload.count]
         let count = inputs.count / 2
-
+        
         return try doc.verify(signKey!, signature, count, inputs)
     }
     
@@ -187,13 +190,13 @@ public class IDChainRequest: NSObject {
         var op: Operation = .CREATE
         switch opstr {
         case "CREATE": do {
-             op = .CREATE
+            op = .CREATE
             }
         case "UPDATE": do {
-             op = .UPDATE
+            op = .UPDATE
             }
         case "DEACRIVATE": do {
-             op = .DEACRIVATE
+            op = .DEACTIVATE
             }
         default: break
             
@@ -204,19 +207,19 @@ public class IDChainRequest: NSObject {
         
         let proof = json[PROOF] as! OrderedDictionary<String, Any>
         let keyType = try JsonHelper.getString(proof, KEY_TYPE, true,
-        Constants.defaultPublicKeyType, KEY_TYPE)
+                                               Constants.defaultPublicKeyType, KEY_TYPE)
         guard (keyType == Constants.defaultPublicKeyType) else {
             throw DIDResolveError.failue("Unknown signature key type.")
         }
         let signKey = try JsonHelper.getDidUrl(proof, KEY_ID, request.did,
-        KEY_ID)
+                                               KEY_ID)
         let sig = try JsonHelper.getString(proof, SIGNATURE, false,
-        nil, SIGNATURE)
+                                           nil, SIGNATURE)
         try request.setProof(keyType, signKey!, sig)
         
         return request
     }
-
+    
     class public func fromJson(_ json: String) throws -> IDChainRequest {
         let dic: OrderedDictionary = JsonHelper.handleString(json) as! OrderedDictionary<String, Any>
         return try fromJson(dic)

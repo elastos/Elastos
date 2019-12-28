@@ -16,12 +16,12 @@ public class SPV {
         return rc == 1
     }
     
-    public class func createIdTransaction(_ handle: OpaquePointer, _ password: String, _ payload: String, _ memo: String?) throws -> Bool {
+    public class func createIdTransaction(_ handle: OpaquePointer, _ password: String, _ payload: String, _ memo: String?) throws -> String? {
         let rc = SpvDidAdapter_CreateIdTransaction(handle, payload, memo, password)
-        return rc == 0
+        return ""
     }
     
-    public class func resolve(_ handle: OpaquePointer,_ did: String) throws -> String? {
+    public class func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
         let startIndex = did.index(did.startIndex, offsetBy: 12)
         let id = String(did[startIndex..<did.endIndex])
 //        let id = "im4wF5ZqiWFB1ATd2JxuxW6HHzR5Ks3LUS"
@@ -33,9 +33,9 @@ public class SPV {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         let parameters: [String: Any] = [
             "jsonrpc": "2.0",
-            "method": "getidtxspayloads",
-            "params": ["id":id, "all": false],
-            "id": "1"
+            "method": "resolvedid",
+            "params": ["id":id, "all": all],
+            "id": requestId
         ]
         request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
         let semaphore = DispatchSemaphore(value: 0)

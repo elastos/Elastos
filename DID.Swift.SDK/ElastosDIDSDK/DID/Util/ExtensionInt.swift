@@ -24,6 +24,20 @@ extension Int {
         num -= 1
         return temp
     }
+    
+    static func randomCustom(min: Int, max: Int) -> Int {
+            //  [min, max)  [0, 100)
+            //        var x = arc4random() % UInt32(max);
+            //        return Int(x)
+            // [min, max）
+            let y = arc4random() % UInt32(max) + UInt32(min)
+            print(Int(y))
+            return Int(y)
+    }
+    
+    static func decTohex(number:Int) -> String {
+         return String(format: "%0X", number)
+     }
 }
 
 extension Data {

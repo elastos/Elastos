@@ -1,5 +1,5 @@
 
-public class DIDStoreBackend {
+public class DIDStorage {
    
     // Root private identity
     public func containsPrivateIdentity() throws -> Bool { return false }
@@ -8,14 +8,14 @@ public class DIDStoreBackend {
 
     public func loadPrivateIdentity() throws -> String { return "" }
 
-    public func  storePrivateIdentityIndex(_ index: Int) throws {}
+    public func storePrivateIdentityIndex(_ index: Int) throws {}
 
     public func loadPrivateIdentityIndex() throws -> Int { return 0 }
 
     // DIDs
-    public func storeDidAlias(_ did: DID, _ alias: String) throws { }
+    public func storeDidMeta(_ did: DID, _ alias: DIDMeta) throws { }
 
-    public func loadDidAlias(_ did: DID) throws -> String { return "" }
+    public func loadDidMeta(_ did: DID) throws -> DIDMeta { return DIDMeta() }
 
     public func storeDid(_ doc: DIDDocument) throws { }
 
@@ -29,11 +29,11 @@ public class DIDStoreBackend {
     public func listDids(_ filter: Int) throws -> Array<DID> { return [] }
 
     // Credentials
-    public func storeCredentialAlias(_ did: DID, _ id: DIDURL, _ alias: String)
+    public func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta?)
         throws { }
 
-    public func loadCredentialAlias(_ did: DID, _ id: DIDURL)
-        throws -> String { return "" }
+    public func loadCredentialMeta(_ did: DID, _ id: DIDURL)
+        throws -> CredentialMeta { return CredentialMeta() }
 
     public func storeCredential(_ credential: VerifiableCredential)
         throws { }

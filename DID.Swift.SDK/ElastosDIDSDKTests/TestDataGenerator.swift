@@ -8,20 +8,19 @@ class TestDataGenerator: XCTest {
     private var adapter: DIDAdapter!
     private var issuer: DIDDocument!
     private var test: DIDDocument!
-    
+    private var store: DIDStore!
+
     func create() throws -> String {
         do{
             let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "test111111"})
             adapter = SPVAdaptor(walletDir, walletId, networkConfig, resolver, cblock)
             //        TestUtils.deleteFile(storePath)
-            try! DIDStore.creatInstance("filesystem", storePath, adapter)
-            
-            
+            store = try DIDStore.open("filesystem", storePath)
+            DIDBackend.creatInstance(adapter)
             TestData.deleteFile(storePath)
-            try DIDStore.creatInstance("filesystem", storePath, adapter)
+            store = try DIDStore.open("filesystem", storePath)
             
             let mnemonic: String = HDKey.generateMnemonic(0)
-            let store = try DIDStore.shareInstance()
             try store!.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
             outputDir = tempDir + "/" + "DIDTestFiles"
             
@@ -35,7 +34,6 @@ class TestDataGenerator: XCTest {
     
     func createTestIssuer() throws {
         do{
-            let store: DIDStore = try DIDStore.shareInstance()!
             let doc: DIDDocument = try store.newDid(storePass)
             print("Generate issuer DID: \(doc.subject)...")
             
@@ -76,7 +74,6 @@ class TestDataGenerator: XCTest {
     
     func createTestDocument() throws {
         do {
-            let store: DIDStore = try DIDStore.shareInstance()!
             let doc = try store.newDid(storePass)
             
             // Test document with two embedded credentials
@@ -243,7 +240,6 @@ class TestDataGenerator: XCTest {
         writeTo("mnemonic.restore", mnemonic)
         print("OK")
         
-        let store = try DIDStore.shareInstance()
         var dids: String = ""
         
         print("Generate DIDs for restore......")

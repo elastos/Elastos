@@ -6,7 +6,7 @@ class BulkCreate: XCTestCase {
 
     var adapter: SPVAdaptor!
     var timeout: Double = 1800.0
-    
+    /*
     override func setUp() {
         // Put setup code here. This method is called before the invocation of each test method in the class.
         let cblock: PasswordCallback = ({(walletDir, walletId) -> String in return "test111111"})
@@ -74,4 +74,5 @@ class BulkCreate: XCTestCase {
             // Put the code you want to measure the time of here.
         }
     }
+ */
 }

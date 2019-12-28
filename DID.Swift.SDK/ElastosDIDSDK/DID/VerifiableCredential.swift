@@ -12,6 +12,7 @@ public class VerifiableCredential: DIDObject {
     private let  RULE_EXPIRE: Int = 1
     private let  RULE_GENUINE: Int = 2
     private let  RULE_VALID: Int = 3
+    public var meta: CredentialMeta = CredentialMeta()
 
     public override init() {
         super.init()
@@ -28,24 +29,27 @@ public class VerifiableCredential: DIDObject {
         self.proof = vc.proof
     }
     
-    public func setAlias(_ alias: String) throws {
-        if DIDStore.isInitialized() {
-            try DIDStore.shareInstance()!.storeCredentialAlias(subject.id, id, alias)
+    public func setExtra(_ name: String, _ value: String) throws {
+        meta.setExtra(name, value)
+        if (meta.attachedStore()) {
+            try meta.store?.storeCredentialMeta(subject.id, id, meta)
         }
-        self.alias = alias
     }
     
-    public func getAlias() throws -> String {
-        if (alias == nil) {
-            if (DIDStore.isInitialized()) {
-                alias = try DIDStore.shareInstance()?.loadCredentialAlias(subject.id, id)
-            }
-            
-            if (alias == nil) {
-                alias = ""
-            }
+    public func getExtra(_ name: String) throws -> String? {
+        return meta.getExtra(name)
+    }
+    
+    public func setAlias(_ alias: String) throws {
+        meta.alias = alias
+
+        if (meta.attachedStore()) {
+            try meta.store?.storeCredentialMeta(subject.id, id, meta)
         }
-        return alias
+    }
+
+    public func getAlias() -> String{
+        return meta.alias
     }
     
     public func isSelfProclaimed() throws -> Bool {
@@ -165,7 +169,7 @@ public class VerifiableCredential: DIDObject {
         else {
             value = "#" + id.fragment!
         }
-        dic[Constants.id] = value
+        dic[Constants.ID] = value
         
         // type
         var strs: Array<String> = []
@@ -175,11 +179,11 @@ public class VerifiableCredential: DIDObject {
         types.forEach{ str in
             strs.append(str)
         }
-        dic[Constants.type] = strs
+        dic[Constants.TYPE] = strs
         
         // issuer
         if normalized || issuer != subject.id {
-            dic[Constants.issuer] = issuer.toExternalForm()
+            dic[Constants.issuer] = issuer.description
         }
         
         // issuanceDate
@@ -200,7 +204,7 @@ public class VerifiableCredential: DIDObject {
         
         // proof
         if !forSign {
-            dic[Constants.proof] = proof.toJson_vc(issuer, normalized)
+            dic[Constants.PROOF] = proof.toJson_vc(issuer, normalized)
         }
         return dic
     }
@@ -239,11 +243,11 @@ public class VerifiableCredential: DIDObject {
     
     func parse(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws {
         // id
-        let id: DIDURL = try JsonHelper.getDidUrl(json, Constants.id, ref, "crendential id")!
+        let id: DIDURL = try JsonHelper.getDidUrl(json, Constants.ID, ref, "crendential id")!
         self.id = id
         
         // type
-        var value = json[Constants.type]
+        var value = json[Constants.TYPE]
         guard (value is Array<Any>) else {
             throw MalformedCredentialError.failue("Invalid type, should be an array.")
         }
@@ -277,7 +281,7 @@ public class VerifiableCredential: DIDObject {
         }
         
         // proof
-        value = json[Constants.proof]
+        value = json[Constants.PROOF]
         proof = try Proof.fromJson_vc(value as! OrderedDictionary<String, Any>, issuer)
         self.type = proof.type
     }

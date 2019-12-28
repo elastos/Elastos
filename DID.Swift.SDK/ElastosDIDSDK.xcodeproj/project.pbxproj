@@ -22,6 +22,16 @@
 		1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1125B57D238234FB00D396B6 /* CHDKey.swift */; };
 		1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AD2FE234E44C8006578D6 /* Base58.swift */; };
 		1155D94B2352FACE00DF8C9D /* ElastosDIDSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */; };
+		115DBD8223B3312600501983 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115DBD8123B3312600501983 /* Metadata.swift */; };
+		115DBD8423B3313D00501983 /* DIDMeta.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115DBD8323B3313D00501983 /* DIDMeta.swift */; };
+		115DBD8623B3316A00501983 /* CredentialMeta.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115DBD8523B3316A00501983 /* CredentialMeta.swift */; };
+		115DBD8823B4928A00501983 /* DIDDeactivatedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115DBD8723B4928A00501983 /* DIDDeactivatedError.swift */; };
+		115DBD8A23B492A600501983 /* ResolverCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115DBD8923B492A600501983 /* ResolverCache.swift */; };
+		115DBD8C23B492B400501983 /* ResolveResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115DBD8B23B492B400501983 /* ResolveResult.swift */; };
+		115DBD8E23B492DB00501983 /* IDTransactionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115DBD8D23B492DB00501983 /* IDTransactionInfo.swift */; };
+		115DBD9223B5EBB100501983 /* DIDExpiredError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115DBD9123B5EBB100501983 /* DIDExpiredError.swift */; };
+		11641BB523B702FC0037016B /* AbstractAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11641BB423B702FC0037016B /* AbstractAdapter.swift */; };
+		11641BBB23B715CF0037016B /* TestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11641BBA23B715CF0037016B /* TestError.swift */; };
 		116AC38A23A5FA410076BDC7 /* LRUCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116AC38523A5FA410076BDC7 /* LRUCache.swift */; };
 		116CAA582360092D00BBEE4F /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116CAA572360092D00BBEE4F /* TestUtils.swift */; };
 		1182866B2395194000F1BBA3 /* BulkCreate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182866A2395194000F1BBA3 /* BulkCreate.swift */; };
@@ -105,7 +115,7 @@
 		11E89FFA23A4C36000C81B3C /* DIDURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FCD23A4C36000C81B3C /* DIDURL.swift */; };
 		11E89FFB23A4C36000C81B3C /* DIDDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FCE23A4C36000C81B3C /* DIDDocument.swift */; };
 		11E89FFC23A4C36000C81B3C /* DIDPublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FCF23A4C36000C81B3C /* DIDPublicKey.swift */; };
-		11E89FFD23A4C36000C81B3C /* FileSystemStoreBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD023A4C36000C81B3C /* FileSystemStoreBackend.swift */; };
+		11E89FFD23A4C36000C81B3C /* FileSystemStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD023A4C36000C81B3C /* FileSystemStorage.swift */; };
 		11E89FFE23A4C36000C81B3C /* DIDStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD223A4C36000C81B3C /* DIDStoreError.swift */; };
 		11E89FFF23A4C36000C81B3C /* MalformedDIDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD323A4C36000C81B3C /* MalformedDIDError.swift */; };
 		11E8A00023A4C36000C81B3C /* MalformedDocumentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD423A4C36000C81B3C /* MalformedDocumentError.swift */; };
@@ -113,7 +123,7 @@
 		11E8A00223A4C36000C81B3C /* MalformedDIDURLError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD623A4C36000C81B3C /* MalformedDIDURLError.swift */; };
 		11E8A00323A4C36000C81B3C /* MalformedCredentialError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E89FD723A4C36000C81B3C /* MalformedCredentialError.swift */; };
 		11E8A00523A4C39400C81B3C /* DIDResolveError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E8A00423A4C39400C81B3C /* DIDResolveError.swift */; };
-		11E8A00723A4DAF200C81B3C /* DIDStoreBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E8A00623A4DAF100C81B3C /* DIDStoreBackend.swift */; };
+		11E8A00723A4DAF200C81B3C /* DIDStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E8A00623A4DAF100C81B3C /* DIDStorage.swift */; };
 		11F262AF23260CF40009C103 /* ElastosDIDSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 11F262AD23260CF40009C103 /* ElastosDIDSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
@@ -210,6 +220,16 @@
 		1126706D238CDC490086740D /* SPVAdapter.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SPVAdapter.xcodeproj; path = SPVAdapter/SPVAdapter.xcodeproj; sourceTree = "<group>"; };
 		1155D9462352FACE00DF8C9D /* ElastosDIDSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElastosDIDSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1155D94A2352FACE00DF8C9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		115DBD8123B3312600501983 /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
+		115DBD8323B3313D00501983 /* DIDMeta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDMeta.swift; sourceTree = "<group>"; };
+		115DBD8523B3316A00501983 /* CredentialMeta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialMeta.swift; sourceTree = "<group>"; };
+		115DBD8723B4928A00501983 /* DIDDeactivatedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDDeactivatedError.swift; sourceTree = "<group>"; };
+		115DBD8923B492A600501983 /* ResolverCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverCache.swift; sourceTree = "<group>"; };
+		115DBD8B23B492B400501983 /* ResolveResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolveResult.swift; sourceTree = "<group>"; };
+		115DBD8D23B492DB00501983 /* IDTransactionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDTransactionInfo.swift; sourceTree = "<group>"; };
+		115DBD9123B5EBB100501983 /* DIDExpiredError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDExpiredError.swift; sourceTree = "<group>"; };
+		11641BB423B702FC0037016B /* AbstractAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractAdapter.swift; sourceTree = "<group>"; };
+		11641BBA23B715CF0037016B /* TestError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestError.swift; sourceTree = "<group>"; };
 		116AC38523A5FA410076BDC7 /* LRUCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LRUCache.swift; sourceTree = "<group>"; };
 		116CAA572360092D00BBEE4F /* TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TestUtils.swift; path = TestUtils/TestUtils.swift; sourceTree = "<group>"; };
 		1182866A2395194000F1BBA3 /* BulkCreate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkCreate.swift; sourceTree = "<group>"; };
@@ -324,7 +344,7 @@
 		11E89FCD23A4C36000C81B3C /* DIDURL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDURL.swift; sourceTree = "<group>"; };
 		11E89FCE23A4C36000C81B3C /* DIDDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDDocument.swift; sourceTree = "<group>"; };
 		11E89FCF23A4C36000C81B3C /* DIDPublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDPublicKey.swift; sourceTree = "<group>"; };
-		11E89FD023A4C36000C81B3C /* FileSystemStoreBackend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileSystemStoreBackend.swift; sourceTree = "<group>"; };
+		11E89FD023A4C36000C81B3C /* FileSystemStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileSystemStorage.swift; sourceTree = "<group>"; };
 		11E89FD223A4C36000C81B3C /* DIDStoreError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DIDStoreError.swift; sourceTree = "<group>"; };
 		11E89FD323A4C36000C81B3C /* MalformedDIDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MalformedDIDError.swift; sourceTree = "<group>"; };
 		11E89FD423A4C36000C81B3C /* MalformedDocumentError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MalformedDocumentError.swift; sourceTree = "<group>"; };
@@ -332,7 +352,7 @@
 		11E89FD623A4C36000C81B3C /* MalformedDIDURLError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MalformedDIDURLError.swift; sourceTree = "<group>"; };
 		11E89FD723A4C36000C81B3C /* MalformedCredentialError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MalformedCredentialError.swift; sourceTree = "<group>"; };
 		11E8A00423A4C39400C81B3C /* DIDResolveError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDResolveError.swift; sourceTree = "<group>"; };
-		11E8A00623A4DAF100C81B3C /* DIDStoreBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStoreBackend.swift; sourceTree = "<group>"; };
+		11E8A00623A4DAF100C81B3C /* DIDStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIDStorage.swift; sourceTree = "<group>"; };
 		11F262AA23260CF40009C103 /* ElastosDIDSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosDIDSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		11F262AD23260CF40009C103 /* ElastosDIDSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosDIDSDK.h; sourceTree = "<group>"; };
 		11F262AE23260CF40009C103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -453,6 +473,7 @@
 				11CA74D1235E131B006E66F7 /* Resources */,
 				11E751A423A75A120022C592 /* DummyAdapter.swift */,
 				11DA0796238B929F0066CC86 /* SPVAdaptor.swift */,
+				11641BB423B702FC0037016B /* AbstractAdapter.swift */,
 				116CAA56236008FD00BBEE4F /* TestUtils */,
 				11D4B9B423535E7000453218 /* DIDDoucumentTests.swift */,
 				11D4B9C623545A5700453218 /* DIDStoreTests.swift */,
@@ -472,6 +493,16 @@
 			path = ElastosDIDSDKTests;
 			sourceTree = "<group>";
 		};
+		115DBD7C23B330DF00501983 /* Meta */ = {
+			isa = PBXGroup;
+			children = (
+				115DBD8123B3312600501983 /* Metadata.swift */,
+				115DBD8323B3313D00501983 /* DIDMeta.swift */,
+				115DBD8523B3316A00501983 /* CredentialMeta.swift */,
+			);
+			path = Meta;
+			sourceTree = "<group>";
+		};
 		116C94E8234D825B00BA9777 /* HDKey */ = {
 			isa = PBXGroup;
 			children = (
@@ -488,6 +519,7 @@
 				11CA74B1235E06B7006E66F7 /* Base64.swift */,
 				116CAA572360092D00BBEE4F /* TestUtils.swift */,
 				119338DC237E4DB800C4998E /* TestConfig.swift */,
+				11641BBA23B715CF0037016B /* TestError.swift */,
 			);
 			name = TestUtils;
 			sourceTree = "<group>";
@@ -539,6 +571,7 @@
 		11E89FA623A4C36000C81B3C /* DID */ = {
 			isa = PBXGroup;
 			children = (
+				115DBD7C23B330DF00501983 /* Meta */,
 				11E89FC023A4C36000C81B3C /* Parser */,
 				11E89FD123A4C36000C81B3C /* Exception */,
 				11E89FBD23A4C36000C81B3C /* Backend */,
@@ -546,12 +579,13 @@
 				11E89FA723A4C36000C81B3C /* Constants.swift */,
 				11E89FA823A4C36000C81B3C /* DID.swift */,
 				11E89FBB23A4C36000C81B3C /* DIDAdapter.swift */,
+				11E89FBE23A4C36000C81B3C /* DIDBackend.swift */,
 				11E89FCE23A4C36000C81B3C /* DIDDocument.swift */,
 				11E89FBC23A4C36000C81B3C /* DIDObject.swift */,
+				11E8A00623A4DAF100C81B3C /* DIDStorage.swift */,
 				11E89FA923A4C36000C81B3C /* DIDStore.swift */,
-				11E8A00623A4DAF100C81B3C /* DIDStoreBackend.swift */,
 				11E89FCD23A4C36000C81B3C /* DIDURL.swift */,
-				11E89FD023A4C36000C81B3C /* FileSystemStoreBackend.swift */,
+				11E89FD023A4C36000C81B3C /* FileSystemStorage.swift */,
 				11E89FAE23A4C36000C81B3C /* Issuer.swift */,
 				11E89FAB23A4C36000C81B3C /* VerifiableCredential.swift */,
 				11E89FAC23A4C36000C81B3C /* VerifiablePresentation.swift */,
@@ -583,8 +617,10 @@
 		11E89FBD23A4C36000C81B3C /* Backend */ = {
 			isa = PBXGroup;
 			children = (
-				11E89FBE23A4C36000C81B3C /* DIDBackend.swift */,
 				11E89FBF23A4C36000C81B3C /* IDChainRequest.swift */,
+				115DBD8923B492A600501983 /* ResolverCache.swift */,
+				115DBD8B23B492B400501983 /* ResolveResult.swift */,
+				115DBD8D23B492DB00501983 /* IDTransactionInfo.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -618,6 +654,8 @@
 				11E89FD623A4C36000C81B3C /* MalformedDIDURLError.swift */,
 				11E89FD723A4C36000C81B3C /* MalformedCredentialError.swift */,
 				11E8A00423A4C39400C81B3C /* DIDResolveError.swift */,
+				115DBD8723B4928A00501983 /* DIDDeactivatedError.swift */,
+				115DBD9123B5EBB100501983 /* DIDExpiredError.swift */,
 			);
 			path = Exception;
 			sourceTree = "<group>";
@@ -844,6 +882,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				11AF58C123823C2E002F1E1B /* FakeConsoleAdaptor.swift in Sources */,
+				11641BB523B702FC0037016B /* AbstractAdapter.swift in Sources */,
 				1137CFA92398D68D00250D4F /* CHDKey.swift in Sources */,
 				1137CFAB2398DE1C00250D4F /* Base58.swift in Sources */,
 				11D4B9B523535E7000453218 /* DIDDoucumentTests.swift in Sources */,
@@ -854,6 +893,7 @@
 				11D4B9C723545A5700453218 /* DIDStoreTests.swift in Sources */,
 				119338DD237E4DB800C4998E /* TestConfig.swift in Sources */,
 				11E09CBE23A8E033009B6A8D /* TestDataGenerator.swift in Sources */,
+				11641BBB23B715CF0037016B /* TestError.swift in Sources */,
 				11E751DB23A774DD0022C592 /* IDChainOperationsTest.swift in Sources */,
 				11E751A523A75A120022C592 /* DummyAdapter.swift in Sources */,
 				11D03AD423A9D05600549296 /* VerifiableCredentialTest.swift in Sources */,
@@ -871,24 +911,31 @@
 			files = (
 				11E89FEC23A4C36000C81B3C /* DIDBackend.swift in Sources */,
 				11E89FFB23A4C36000C81B3C /* DIDDocument.swift in Sources */,
+				115DBD8423B3313D00501983 /* DIDMeta.swift in Sources */,
 				11E89FDD23A4C36000C81B3C /* EmbeddedCredential.swift in Sources */,
 				1125B582238234FB00D396B6 /* CHDKey.swift in Sources */,
+				115DBD8A23B492A600501983 /* ResolverCache.swift in Sources */,
 				11E89FEA23A4C36000C81B3C /* DIDAdapter.swift in Sources */,
+				115DBD9223B5EBB100501983 /* DIDExpiredError.swift in Sources */,
 				11E89FDF23A4C36000C81B3C /* Proof.swift in Sources */,
 				11E89FE323A4C36000C81B3C /* DateFormater.swift in Sources */,
+				115DBD8223B3312600501983 /* Metadata.swift in Sources */,
 				11E8A00023A4C36000C81B3C /* MalformedDocumentError.swift in Sources */,
 				116AC38A23A5FA410076BDC7 /* LRUCache.swift in Sources */,
 				11E89FF623A4C36000C81B3C /* DIDURLLexer.swift in Sources */,
 				11E89FF023A4C36000C81B3C /* DIDURLBaseListener.swift in Sources */,
+				115DBD8E23B492DB00501983 /* IDTransactionInfo.swift in Sources */,
 				11E89FF723A4C36000C81B3C /* DIDURLParser.swift in Sources */,
 				11E89FDA23A4C36000C81B3C /* DIDStore.swift in Sources */,
 				11E89FE923A4C36000C81B3C /* PathExtracter.swift in Sources */,
 				11E89FFA23A4C36000C81B3C /* DIDURL.swift in Sources */,
 				11E89FD923A4C36000C81B3C /* DID.swift in Sources */,
-				11E8A00723A4DAF200C81B3C /* DIDStoreBackend.swift in Sources */,
+				11E8A00723A4DAF200C81B3C /* DIDStorage.swift in Sources */,
 				11E89FE123A4C36000C81B3C /* Service.swift in Sources */,
+				115DBD8823B4928A00501983 /* DIDDeactivatedError.swift in Sources */,
 				11E89FDC23A4C36000C81B3C /* VerifiablePresentation.swift in Sources */,
 				11E8A00323A4C36000C81B3C /* MalformedCredentialError.swift in Sources */,
+				115DBD8623B3316A00501983 /* CredentialMeta.swift in Sources */,
 				11E89FDB23A4C36000C81B3C /* VerifiableCredential.swift in Sources */,
 				11E89FE023A4C36000C81B3C /* CredentialSubject.swift in Sources */,
 				11E89FEB23A4C36000C81B3C /* DIDObject.swift in Sources */,
@@ -900,7 +947,8 @@
 				11E89FED23A4C36000C81B3C /* IDChainRequest.swift in Sources */,
 				11E89FF423A4C36000C81B3C /* ParserHelper.swift in Sources */,
 				11E89FE223A4C36000C81B3C /* DerivedKey.swift in Sources */,
-				11E89FFD23A4C36000C81B3C /* FileSystemStoreBackend.swift in Sources */,
+				11E89FFD23A4C36000C81B3C /* FileSystemStorage.swift in Sources */,
+				115DBD8C23B492B400501983 /* ResolveResult.swift in Sources */,
 				11E89FFE23A4C36000C81B3C /* DIDStoreError.swift in Sources */,
 				11E89FE823A4C36000C81B3C /* OrderedDictionary.swift in Sources */,
 				11E89FF923A4C36000C81B3C /* DIDURLListener.swift in Sources */,

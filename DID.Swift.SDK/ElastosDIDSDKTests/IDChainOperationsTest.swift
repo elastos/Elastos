@@ -7,11 +7,10 @@ class IDChainOperationsTest: XCTestCase {
     public func testPublishAndResolve() throws {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(false)
+            let store: DIDStore = try testData.setupStore(false)
             try testData.initIdentity()
-            let store: DIDStore = try DIDStore.shareInstance()!
 //            XCTAssertTrue(store.getAdapter())
-            let adapter: SPVAdaptor = store.getAdapter() as! SPVAdaptor
+            let adapter: SPVAdaptor = DIDBackend.shareInstance().adapter as! SPVAdaptor
             
             while true {
                 if try adapter.isAvailable() {
@@ -26,7 +25,7 @@ class IDChainOperationsTest: XCTestCase {
             }
             let doc = try store.newDid(storePass)
             let success = try store.publishDid(doc, storePass)
-            XCTAssertTrue(success)
+            XCTAssertTrue((success != nil))
             print("Published new DID: \(doc.subject!)")
             
             print("Try to resolve new published DID.")
@@ -51,8 +50,7 @@ class IDChainOperationsTest: XCTestCase {
     
     public func testRestore() throws {
         let testData: TestData = TestData()
-        try testData.setupStore(false)
-        let store: DIDStore = try DIDStore.shareInstance()!
+        let store: DIDStore = try testData.setupStore(false)
         let mnemonic: String = try testData.loadRestoreMnemonic()
         try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
         try store.synchronize(storePass)

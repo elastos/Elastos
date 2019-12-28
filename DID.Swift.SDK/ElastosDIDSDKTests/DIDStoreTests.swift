@@ -14,7 +14,6 @@ class DIDStoreTests: XCTestCase {
             let testData: TestData = TestData()
             try testData.setupStore(true)
             
-            let _: DIDStore = try DIDStore.shareInstance()!
             _ = testData.exists(storePath)
             
             let path = storePath + "/" + ".meta"
@@ -37,8 +36,7 @@ class DIDStoreTests: XCTestCase {
     func testInitPrivateIdentity0() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
-            var store: DIDStore = try DIDStore.shareInstance()!
+            var store: DIDStore = try testData.setupStore(true)
             
             XCTAssertFalse(try store.containsPrivateIdentity())
             
@@ -50,9 +48,8 @@ class DIDStoreTests: XCTestCase {
             path = storePath + "/" + "private" + "/" + "index"
             XCTAssertTrue(testData.existsFile(path))
             
-            try DIDStore.creatInstance("filesystem", storePath, DummyAdapter())
+           store = try DIDStore.open("filesystem", storePath)
             
-            store = try DIDStore.shareInstance()!
             XCTAssertTrue(try store.containsPrivateIdentity())
         } catch {
             print(error)
@@ -63,10 +60,9 @@ class DIDStoreTests: XCTestCase {
     func testCreateDIDWithAlias() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store: DIDStore = try testData.setupStore(true)
             _ = try testData.initIdentity()
             
-            let store: DIDStore = try DIDStore.shareInstance()!
             let alias: String = "my first did"
             
             let doc: DIDDocument = try store.newDid(storePass, alias)
@@ -88,7 +84,7 @@ class DIDStoreTests: XCTestCase {
             resolved = try store.resolveDid(doc.subject!, true)!
             
             XCTAssertNotNil(resolved)
-            XCTAssertEqual(alias, resolved!.alias)
+            XCTAssertEqual(alias, try resolved!.getAlias())
             XCTAssertEqual(doc.subject, resolved!.subject)
             XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
             
@@ -102,9 +98,8 @@ class DIDStoreTests: XCTestCase {
     func tesCreateDIDWithoutAlias() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store: DIDStore = try testData.setupStore(true)
             try testData.initIdentity()
-            let store: DIDStore = try DIDStore.shareInstance()!
             
             let doc: DIDDocument = try store.newDid(storePass)
             XCTAssertTrue(try doc.isValid())
@@ -134,9 +129,8 @@ class DIDStoreTests: XCTestCase {
     func testBulkCreate() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store: DIDStore = try testData.setupStore(true)
             try testData.initIdentity()
-            let store: DIDStore = try DIDStore.shareInstance()!
             
             for i in 0..<100 {
                 let alias: String = "my did \(i)"
@@ -156,7 +150,7 @@ class DIDStoreTests: XCTestCase {
                 
                 resolved = try store.resolveDid(doc.subject!, true)
                 XCTAssertNotNil(resolved)
-                XCTAssertEqual(alias, resolved!.alias)
+                XCTAssertEqual(alias, try resolved!.getAlias())
                 XCTAssertEqual(doc.subject, resolved!.subject)
                 XCTAssertEqual(doc.proof.signature, resolved!.proof.signature)
                 XCTAssertTrue(try resolved!.isValid())
@@ -178,9 +172,8 @@ class DIDStoreTests: XCTestCase {
     func testDeleteDID() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store: DIDStore = try testData.setupStore(true)
             try testData.initIdentity()
-            let store: DIDStore = try DIDStore.shareInstance()!
             // Create test DIDs
             var dids: Array<DID> = []
             for i in 0..<100 {
@@ -222,15 +215,13 @@ class DIDStoreTests: XCTestCase {
     func testStoreAndLoadDID() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store: DIDStore = try testData.setupStore(true)
             try testData.initIdentity()
             
             // Store test data into current store
             let issuer: DIDDocument = try testData.loadTestDocument()
             let test: DIDDocument = try testData.loadTestIssuer()
-            
-            let store: DIDStore = try DIDStore.shareInstance()!
-            
+                        
             var doc: DIDDocument = try  store.loadDid(issuer.subject!)
             XCTAssertEqual(issuer.subject, doc.subject)
             XCTAssertEqual(issuer.proof.signature, doc.proof.signature)
@@ -258,7 +249,7 @@ class DIDStoreTests: XCTestCase {
     func testLoadCredentials() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store: DIDStore = try testData.setupStore(true)
             try testData.initIdentity()
             
             // Store test data into current store
@@ -272,9 +263,7 @@ class DIDStoreTests: XCTestCase {
             try vc!.setAlias("Twitter")
             vc = try testData.loadPassportCredential()
             try vc!.setAlias("Passport")
-            
-            let store: DIDStore = try! DIDStore.shareInstance()!
-            
+                        
             var id: DIDURL = try DIDURL(test.subject!, "profile")
             vc = try store.loadCredential(test.subject!, id)
             XCTAssertNotNil(vc)
@@ -315,7 +304,7 @@ class DIDStoreTests: XCTestCase {
     func testListCredentials() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store: DIDStore = try testData.setupStore(true)
             try testData.initIdentity()
             
             // Store test data into current store
@@ -329,7 +318,6 @@ class DIDStoreTests: XCTestCase {
             try vc!.setAlias("Twitter")
             vc = try testData.loadPassportCredential()
             try vc!.setAlias("Passport")
-            let store: DIDStore = try DIDStore.shareInstance()!
             
             var vcs: Array<DIDURL> = try store.listCredentials(test.subject!)
             XCTAssertEqual(4, vcs.count)
@@ -337,7 +325,7 @@ class DIDStoreTests: XCTestCase {
                 var re = id.fragment == "profile" || id.fragment == "email" || id.fragment == "twitter" || id.fragment == "passport"
                 XCTAssertTrue(re)
                 
-                re = id.alias == "MyProfile" || id.alias == "Email" || id.alias == "Twitter" || id.alias == "Passport"
+                re = id.getAlias() == "MyProfile" || id.getAlias() == "Email" || id.getAlias() == "Twitter" || id.getAlias() == "Passport"
                 XCTAssertTrue(re)
             }
         } catch {
@@ -349,7 +337,7 @@ class DIDStoreTests: XCTestCase {
     func testDeleteCredential() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
             // Store test data into current store
@@ -364,7 +352,6 @@ class DIDStoreTests: XCTestCase {
             vc = try testData.loadPassportCredential()
             try vc!.setAlias("Passport")
             
-            let store = try DIDStore.shareInstance()!
             var path = storePath + "/ids/" + test.subject!.methodSpecificId + "/credentials/twitter/credential"
             XCTAssertTrue(testData.existsFile(path))
             
@@ -408,10 +395,8 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func createDataForPerformanceTest() {
+    func createDataForPerformanceTest(_ store: DIDStore) {
         do {
-            let store: DIDStore = try  DIDStore.shareInstance()!
-            
             var props: Dictionary<String, String> = [: ]
             props["name"] = "John"
             props["gender"] = "Male"
@@ -439,19 +424,18 @@ class DIDStoreTests: XCTestCase {
             let adapter: DIDAdapter = DummyAdapter()
             let testData: TestData = TestData()
             TestData.deleteFile(storePath)
+            var store: DIDStore
             if (cached){
-                try DIDStore.creatInstance("filesystem", storePath, adapter)
+               store = try DIDStore.open("filesystem", storePath)
             }
             else {
-                try DIDStore.creatInstance("filesystem", storePath, adapter, 0, 0)
+               store = try DIDStore.open("filesystem", storePath, 0, 0)
             }
-            
-            let store: DIDStore = try DIDStore.shareInstance()!
-            
+                        
             let mnemonic: String = HDKey.generateMnemonic(0)
             try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
             
-            createDataForPerformanceTest()
+            createDataForPerformanceTest(store)
             let dids: Array<DID> = try store.listDids(DIDStore.DID_ALL)
             XCTAssertEqual(10, dids.count)
             // TODO: TimeMillis

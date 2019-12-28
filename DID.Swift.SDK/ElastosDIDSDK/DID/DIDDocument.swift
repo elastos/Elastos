@@ -1,6 +1,24 @@
 import Foundation
 
 public class DIDDocument: NSObject {
+    private let ID: String = "id"
+    private let PUBLICKEY: String = "publicKey"
+    private let TYPE: String = "type"
+    private let CONTROLLER: String = "controller"
+    private let PUBLICKEY_BASE58: String = "publicKeyBase58"
+    private let AUTHENTICATION: String = "authentication"
+    private let AUTHORIZATION: String = "authorization"
+    private let SERVICE: String = "service"
+    private let VERIFIABLE_CREDENTIAL:String = "verifiableCredential"
+    private let SERVICE_ENDPOINT: String = "serviceEndpoint"
+    private let EXPIRES: String = "expires"
+    private let PROOF: String = "proof"
+    private let CREATOR: String = "creator"
+    private let CREATED: String = "created"
+    private let SIGNATURE_VALUE: String = "signatureValue"
+    private let DEFAULT_PUBLICKEY_TYPE: String = Constants.DEFAULT_PUBLICKEY_TYPE
+    private let MAX_VALID_YEARS: Int = Constants.MAX_VALID_YEARS
+    
     public var subject: DID?
     public var publicKeys: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
     public var authentications: OrderedDictionary<DIDURL, DIDPublicKey> = OrderedDictionary()
@@ -9,25 +27,19 @@ public class DIDDocument: NSObject {
     public var services: OrderedDictionary<DIDURL, Service> = OrderedDictionary()
     public var expires: Date?
     public var proof: Proof!
-    public var deactivated: Bool!
-    public var alias: String = ""
+    public var meta: DIDMeta = DIDMeta()
     
     override init() {
         super.init()
-        setDefaultExpires()
-        self.deactivated = false
     }
     
     public init(_ subject: DID) {
         super.init()
-        setDefaultExpires()
         self.subject = subject
-        self.deactivated = false
     }
-    
+
     public init(_ doc: DIDDocument) {
         super.init()
-        setDefaultExpires()
         // Copy constructor
         self.subject = doc.subject
         self.publicKeys = doc.publicKeys
@@ -37,6 +49,7 @@ public class DIDDocument: NSObject {
         self.services = doc.services
         self.expires = doc.expires
         self.proof = doc.proof
+        self.meta = doc.meta
     }
     
     public func getPublicKeyCount() -> Int {
@@ -46,7 +59,7 @@ public class DIDDocument: NSObject {
     public func getPublicKeys() -> Array<DIDPublicKey> {
         return getEntries(publicKeys)
     }
-    
+
     public func selectPublicKeys(_ id: String, _ type: String?) throws -> Array<DIDPublicKey> {
         var didurl: DIDURL
         do {
@@ -85,12 +98,14 @@ public class DIDDocument: NSObject {
         if (try getEntry(publicKeys, id) == nil) {
             return false
         }
-        let store = try DIDStore.shareInstance()
-        return try (store?.containsPrivateKey(subject!, id))!
+        if (!meta.attachedStore()) {
+            return false
+        }
+        
+        return try (meta.store?.containsPrivateKey(subject!, id))!
     }
     
     public func hasPrivateKey(_ id: String) throws -> Bool {
-        
         return try hasPrivateKey(DIDURL(subject!, id))
     }
     
@@ -140,10 +155,11 @@ public class DIDDocument: NSObject {
             }
         }
         let removed: Bool = removeEntry("publicKeys", id)
-        
         if removed {
             do {
-                try _ = DIDStore.shareInstance()?.deletePrivateKey(subject!, id)
+                if meta.attachedStore() {
+                    _ = try meta.store?.deletePrivateKey(subject!, id)
+                }
             } catch {
                 // TODO: CHECKME!
             }
@@ -358,23 +374,37 @@ public class DIDDocument: NSObject {
         return removeEntry("services", id)
     }
     
-    public func setAlias(_ alias: String) throws {
-        if (DIDStore.isInitialized()) {
-            try DIDStore.shareInstance()!.storeDidAlias(subject!, alias)
+    public func setExtra(_ name: String, _ value: String) throws {
+        meta.setExtra(name, value)
+        if meta.attachedStore() {
+            try meta.store?.storeDidMeta(subject!, meta)
         }
-        
-        self.alias = alias
+    }
+    
+    public func getExtra(_ name: String) -> String? {
+        return meta.getExtra(name)
+    }
+    
+    public func setAlias(_ alias: String) throws {
+        meta.alias = alias
+        if (meta.attachedStore()) {
+            try meta.store?.storeDidMeta(subject!, meta)
+        }
     }
     
     public func getAlias() throws -> String {
-        var al: String = ""
-        if (alias == "") {
-            if (DIDStore.isInitialized()) {
-                al = try DIDStore.shareInstance()!.loadDidAlias(subject!)
-            }
-        }
-        
-        return al
+        return meta.alias
+    }
+    
+    public func getTransactionId() -> String {
+        return meta.transactionId
+    }
+    public func getUpdated() -> Date? {
+        return meta.updated
+    }
+
+    public func isDeactivated() throws -> Bool {
+        return meta.isDeactivated()
     }
     
     public func isExpired() -> Bool {
@@ -401,7 +431,7 @@ public class DIDDocument: NSObject {
     }
     
     public func isValid() throws -> Bool {
-        return try !deactivated && !isExpired() && isGenuine()
+        return try !isDeactivated() && !isExpired() && isGenuine()
     }
     
     public func sign(_ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
@@ -410,12 +440,15 @@ public class DIDDocument: NSObject {
     }
     
     public func sign(_ id: DIDURL, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
-        return try (DIDStore.shareInstance()?.sign(subject!, id, storepass, count, inputs))!
+        if (!meta.attachedStore()) {
+            throw DIDStoreError.failue("Not attached with DID store.")
+        }
+        return try meta.store!.sign(subject!, id, storepass, count, inputs)
     }
     
     public func sign(_ id: String, _ storepass: String, _ count: Int, _ inputs: [CVarArg]) throws -> String {
-        
-        return try (DIDStore.shareInstance()?.sign(subject!, DIDURL(subject!, id), storepass, count, inputs))!
+    
+        return try sign(DIDURL(subject!, id), storepass, count, inputs)
     }
     
     public func verify(_ signature: String, _ count: Int, _ inputs: [CVarArg]) throws -> Bool {
@@ -472,7 +505,7 @@ public class DIDDocument: NSObject {
     }
     
     private func parse(_ json: OrderedDictionary<String, Any>) throws {
-        self.subject = try JsonHelper.getDid(json, Constants.id, false, nil, "subject")
+        self.subject = try JsonHelper.getDid(json, Constants.ID, false, nil, "subject")
         
         try parsePublicKey(json)
         try parseAuthentication(json)
@@ -486,9 +519,9 @@ public class DIDDocument: NSObject {
         try parseAuthorization(json)
         try parseCredential(json)
         try parseService(json)
-        expires = try DateFormater.getDate(json, Constants.expires, true, nil, "expires")
+        expires = try DateFormater.getDate(json, Constants.EXPIRES, true, nil, "expires")
         
-        let poorf = json[Constants.proof] as! OrderedDictionary<String, Any>
+        let poorf = json[Constants.PROOF] as! OrderedDictionary<String, Any>
         if poorf.count == 0 {
             throw MalformedDocumentError.failue("Missing proof.")
         }
@@ -516,7 +549,7 @@ public class DIDDocument: NSObject {
     
     // MARK: parseAuthentication
     private func parseAuthentication(_ json: OrderedDictionary<String, Any>) throws {
-        let authentications = json[Constants.authentication] as? Array<Any>
+        let authentications = json[Constants.AUTHENTICATION] as? Array<Any>
         
         guard (authentications != nil) else {
             throw MalformedDocumentError.failue("Invalid authentication, should be an array.")
@@ -537,7 +570,7 @@ public class DIDDocument: NSObject {
                 let str: String = String(objString[..<index])
                 var didString: String = objString
                 if str == "#" {
-                    let id: String = json[Constants.id] as! String
+                    let id: String = json[Constants.ID] as! String
                     didString = id + objString
                 }
                 let didUrl: DIDURL = try DIDURL(didString)
@@ -548,7 +581,7 @@ public class DIDDocument: NSObject {
     }
     
     private func parseAuthorization(_ json: OrderedDictionary<String, Any>) throws {
-        let aus = json[Constants.authorization]
+        let aus = json[Constants.AUTHORIZATION]
         guard (aus != nil) else {
             return
         }
@@ -592,7 +625,7 @@ public class DIDDocument: NSObject {
     }
     
     private func parseService(_ json: OrderedDictionary<String, Any>) throws {
-        let ses = json[Constants.service]
+        let ses = json[Constants.SERVICE]
         guard (ses != nil) else {
             return
         }
@@ -668,7 +701,7 @@ public class DIDDocument: NSObject {
     public func toJson(_ path: String? = nil, _ normalized: Bool, _ forSign: Bool) throws -> String {
            var dic: OrderedDictionary<String, Any> = OrderedDictionary()
            // subject
-           dic[Constants.id] = subject?.toExternalForm()
+           dic[Constants.ID] = subject?.description
            
            // publicKey
            publicKeys = DIDURLComparator.DIDOrderedDictionaryComparator(publicKeys)
@@ -677,7 +710,7 @@ public class DIDDocument: NSObject {
                let dic = pk.toJson_dc(subject!, normalized)
                pks.append(dic)
            }
-           dic[Constants.publicKey] = pks
+           dic[Constants.PUBLICKEY] = pks
            
            // authentication
            authentications = DIDURLComparator.DIDOrderedDictionaryComparator(authentications)
@@ -692,7 +725,7 @@ public class DIDDocument: NSObject {
                }
                authenPKs.append(value)
            }
-           dic[Constants.authentication] = authenPKs
+           dic[Constants.AUTHENTICATION] = authenPKs
            
            // authorization
            if authorizations.count > 0 {
@@ -707,7 +740,7 @@ public class DIDDocument: NSObject {
                    }
                    authoriPks.append(value)
                }
-               dic[Constants.authorization] = authoriPks
+               dic[Constants.AUTHORIZATION] = authoriPks
            }
            
            // credential
@@ -729,17 +762,17 @@ public class DIDDocument: NSObject {
                    let dic = service.toJson(subject!, normalized)
                    ser_s.append(dic)
                }
-               dic[Constants.service] = ser_s
+               dic[Constants.SERVICE] = ser_s
            }
            
            // expires
            if expires != nil {
-               dic[Constants.expires] = DateFormater.format(expires!)
+               dic[Constants.EXPIRES] = DateFormater.format(expires!)
            }
            
            // proof
            if !forSign {
-               dic[Constants.proof] = proof.toJson_dc(normalized)
+               dic[Constants.PROOF] = proof.toJson_dc(normalized)
            }
            
            let dicString = JsonHelper.creatJsonString(dic: dic)
@@ -919,6 +952,7 @@ public class DIDDocument: NSObject {
     }
     
     public func seal(_ storepass: String) throws -> DIDDocument {
+        setDefaultExpires()
         let signKey: DIDURL = getDefaultPublicKey()
         let json = try toJson(nil, true, true)
         let inputs: [CVarArg] = [json, json.count]

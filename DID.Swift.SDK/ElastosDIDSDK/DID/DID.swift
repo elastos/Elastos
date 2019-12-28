@@ -3,9 +3,9 @@ import Foundation
 public class DID: NSObject {
     public static let METHOD: String = "elastos"
 
-    public var method: String!
-    public var methodSpecificId: String!
-    public var alias: String = ""
+    public var method: String = ""
+    public var methodSpecificId: String = ""
+    public var meta: DIDMeta = DIDMeta()
 
     public init(_ method: String, _ methodSpecificId: String) {
         self.method = method
@@ -20,53 +20,73 @@ public class DID: NSObject {
         super.init()
         try ParserHelper.parase(did, true, DListener(self))
     }
+    
+    public func setExtra(_ name: String, _ value: String) throws {
+        self.meta.setExtra(name, value)
+        if meta.attachedStore() {
+            try meta.store!.storeDidMeta(self, meta)
+        }
+    }
+    
+    public func getExtra(_ name: String) -> String? {
+        return meta.getExtra(name)
+    }
 
     public func setAlias(_ alias: String) throws {
-        if DIDStore.isInitialized() {
-           try DIDStore.shareInstance()!.storeDidAlias(self, alias)
+        meta.alias = alias
+        if meta.attachedStore() {
+            try meta.store!.storeDidMeta(self, meta)
         }
-        self.alias = alias
     }
     
-    public func getAlias() throws -> String {
-        var al = alias
-        if (alias == "") {
-            if (DIDStore.isInitialized()){
-                al = try DIDStore.shareInstance()!.loadDidAlias(self)
-            }
-        }
-
-        return al
+    public func getAlias() -> String {
+        return meta.alias
     }
     
-    public func toExternalForm() -> String {
-        return String("did:\(method!):\(methodSpecificId!)")
+    public func getTransactionId() -> String {
+        return meta.transactionId
     }
-
+    
+    public func getUpdated() -> Date? {
+        return meta.updated
+    }
+    
+    public func isDeactivated() -> Bool {
+        return meta.isDeactivated()
+    }
+    
+    public func resolve(_ force: Bool) throws -> DIDDocument? {
+        let doc = try DIDBackend.shareInstance().resolve(self, force)
+        if doc != nil {
+            meta = doc!.meta
+        }
+        return doc
+    }
+    
+    public func resolve() throws -> DIDDocument? {
+        return try resolve(false)
+    }
+    
     public override var description: String {
-        return toExternalForm()
+        return String("did:\(method):\(methodSpecificId)")
     }
-
+    
     public override var hash: Int {
-        return (DID.METHOD + self.methodSpecificId!).hash
+        return (DID.METHOD + self.methodSpecificId).hash
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
         if object is DID {
             let did = object as! DID
-            return did.toExternalForm().isEqual(toExternalForm())
+            return did.description == description
         }
         
         if object is String {
             let did = object as! String
-            return did.isEqual(toExternalForm())
+            return did.isEqual(description)
         }
         
         return super.isEqual(object)
-    }
-
-    public func resolve() throws -> DIDDocument? {
-        return try DIDStore.shareInstance()!.resolveDid(self)
     }
 }
 

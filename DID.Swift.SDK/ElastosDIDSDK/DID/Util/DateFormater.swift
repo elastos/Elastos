@@ -31,7 +31,17 @@ public class DateFormater {
         return date
     }
     
-   public class func format(_ date: Date) -> String{
+    public class func parseDate(_ timestamp: String) -> Date? {
+        let formatter = Foundation.DateFormatter()
+        formatter.dateFormat = Constants.DATE_FORMAT
+        formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss'Z'"
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        let date = formatter.date(from: timestamp)
+        
+        return date
+    }
+    
+    public class func format(_ date: Date) -> String{
         var formatter = Foundation.DateFormatter()
         formatter = Foundation.DateFormatter()
         formatter.dateFormat = "YYYY-MM-dd'T'HH:mm:ss'Z'"

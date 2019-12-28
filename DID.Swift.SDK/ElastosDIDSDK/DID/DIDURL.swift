@@ -9,7 +9,7 @@ public class DIDURL: NSObject {
     public var fragment: String!
     private var listener: DURLListener?
     private var url: String!
-    public var alias: String = ""
+    public var meta: CredentialMeta = CredentialMeta()
 
     public init(_ id: DID, _ fragment: String) throws {
         super.init()
@@ -105,6 +105,28 @@ public class DIDURL: NSObject {
         return false
     }
     
+    public func setExtra(_ name: String, _ value: String) throws {
+        meta.setExtra(name, value)
+        if meta.attachedStore() {
+           try meta.store?.storeCredentialMeta(did, self, meta)
+        }
+    }
+    
+    public func getExtra(_ name: String) throws -> String? {
+        return meta.getExtra(name)
+    }
+    
+    public func setAlias(_ alias: String) throws {
+        meta.alias = alias
+        if (meta.attachedStore()) {
+               try meta.store?.storeCredentialMeta(did, self, meta)
+        }
+    }
+    
+    public func getAlias() -> String {
+        return meta.alias
+    }
+
     public func toExternalForm() -> String {
         let testDID: String = self.did.description
         var params: String = ""
@@ -163,8 +185,8 @@ public class DIDURL: NSObject {
     public override var hash: Int {
         let param: String = (self.parameters != nil) ? mapToString(self.parameters!, sep: ";") : ""
         let query: String = (self.query != nil) ? mapToString(self.query!, sep: "&") : ""
-        let method: String = (did.method != nil) ? String("\(did.method)") : ""
-        let methodSpecificId: String = (did.methodSpecificId != nil) ? String("\(did.methodSpecificId)") : ""
+        let method: String = did.method
+        let methodSpecificId: String = did.methodSpecificId
         let path: String = (self.path != nil) ? self.path! : ""
         let fragment: String = (self.fragment != nil) ? self.fragment! : ""
         

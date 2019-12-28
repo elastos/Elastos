@@ -123,15 +123,15 @@ public class VerifiablePresentation: NSObject{
     
     func parse(_ presentation: OrderedDictionary<String, Any>) throws {
         
-        let type: String = try JsonHelper.getString(presentation, Constants.type, false, nil, "presentation type")
+        let type: String = try JsonHelper.getString(presentation, Constants.TYPE, false, nil, "presentation type")
         guard type == Constants.defaultPresentationType else {
             throw MalformedCredentialError.failue("Unknown presentation type: \(type)")
         }
         self.type = type
-        let created: Date = try DateFormater.getDate(presentation, Constants.created, false, nil, "presentation created date")!
+        let created: Date = try DateFormater.getDate(presentation, Constants.CREATED, false, nil, "presentation created date")!
         self.created = created
         
-        var d = presentation[Constants.verifiableCredential]
+        var d = presentation[Constants.VERIFIABLE_CREDENTIAL]
         guard d != nil else {
             throw MalformedCredentialError.failue("Missing credentials.")
         }
@@ -140,7 +140,7 @@ public class VerifiablePresentation: NSObject{
         }
         try parseCredential(d as! Array<OrderedDictionary<String, Any>>)
         
-        d = presentation[Constants.proof]
+        d = presentation[Constants.PROOF]
         guard d != nil else {
            throw MalformedCredentialError.failue("Missing credentials.")
         }
@@ -175,10 +175,10 @@ public class VerifiablePresentation: NSObject{
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
 
         // type
-        dic[Constants.type] = type
+        dic[Constants.TYPE] = type
 
         // created
-        dic[Constants.created] = DateFormater.format(created)
+        dic[Constants.CREATED] = DateFormater.format(created)
 
         // credentials
         var arr: Array<OrderedDictionary<String, Any>> = []
@@ -186,12 +186,12 @@ public class VerifiablePresentation: NSObject{
            let dic = vc.toJson(true)
             arr.append(dic)
         }
-        dic[Constants.verifiableCredential] = arr
+        dic[Constants.VERIFIABLE_CREDENTIAL] = arr
 
         // proof
         if (!forSign ) {
             let d = proof?.toJson_vp()
-            dic[Constants.proof] = d
+            dic[Constants.PROOF] = d
         }
         return dic
     }

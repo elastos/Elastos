@@ -9,7 +9,7 @@ public class Proof {
     
     public var realm: String?
     public var nonce: String?
-    
+
     // init for document
     init(_ type: String, _ created: Date, _ creator: DIDURL, _ signature: String) {
         self.type = type
@@ -20,7 +20,7 @@ public class Proof {
     
     // init for document
     init(_ creator: DIDURL, _ signature: String) {
-        self.type = Constants.defaultPublicKeyType
+        self.type = Constants.DEFAULT_PUBLICKEY_TYPE
         self.created = DateFormater.currentDate()
         self.creator = creator
         self.signature = signature
@@ -42,18 +42,19 @@ public class Proof {
     }
     
     init(_ method: DIDURL, _ realm: String, _ nonce: String, _ signature: String) {
-        self.type = Constants.defaultPublicKeyType
+        self.type = Constants.DEFAULT_PUBLICKEY_TYPE
         self.verificationMethod = method
         self.realm = realm
         self.nonce = nonce
         self.signature = signature
     }
+    
     func toJson_vc(_ ref: DID, _ normalized: Bool) -> OrderedDictionary<String, Any> {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         //type:
-        if normalized || type != Constants.defaultPublicKeyType {
-            dic[Constants.type] = type
+        if normalized || type != Constants.DEFAULT_PUBLICKEY_TYPE {
+            dic[Constants.TYPE] = type
         }
         
         // method:
@@ -74,20 +75,20 @@ public class Proof {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         //type:
         if normalized || (type != Constants.defaultPublicKeyType) {
-            dic[Constants.type] = type
+            dic[Constants.TYPE] = type
         }
         
         // created
         if created != nil {
-            dic[Constants.created] = DateFormater.format(created!)
+            dic[Constants.CREATED] = DateFormater.format(created!)
         }
         
         // creator
         if (normalized) {
-            dic[Constants.creator] = creator!.toExternalForm()
+            dic[Constants.CREATOR] = creator!.toExternalForm()
         }
         // signature:
-        dic[Constants.signatureValue] = signature
+        dic[Constants.SIGNATURE_VALUE] = signature
         
         return dic
     }
@@ -96,7 +97,7 @@ public class Proof {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         var value: String
         //type:
-        dic[Constants.type] = type
+        dic[Constants.TYPE] = type
         
         // method:
         value = verificationMethod.toExternalForm()
@@ -115,29 +116,29 @@ public class Proof {
     }
     
     class func fromJson_dc(_ json: OrderedDictionary<String, Any>, _ refSignKey: DIDURL) throws -> Proof {
-        let type: String = try JsonHelper.getString(json, Constants.type, true, Constants.defaultPublicKeyType, "document proof type")
+        let type: String = try JsonHelper.getString(json, Constants.TYPE, true, Constants.defaultPublicKeyType, "document proof type")
         
-        let created: Date = try DateFormater.getDate(json, Constants.created, true, nil, "")!
+        let created: Date = try DateFormater.getDate(json, Constants.CREATED, true, nil, "")!
         
-        let creator = try JsonHelper.getDidUrl(json, Constants.creator, true, refSignKey.did, "document proof creator")
+        let creator = try JsonHelper.getDidUrl(json, Constants.CREATOR, true, refSignKey.did, "document proof creator")
         var c = creator
         if creator == nil {
             c = refSignKey
         }
-        let signature: String = try JsonHelper.getString(json, Constants.signatureValue, false, nil, "document proof signature")
+        let signature: String = try JsonHelper.getString(json, Constants.SIGNATURE_VALUE, false, nil, "document proof signature")
         return Proof(type, created, c!, signature)
     }
 
     // for VerifiableCredential
     class func fromJson_vc(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws -> Proof {
-        let type: String = try JsonHelper.getString(json, Constants.type, true, Constants.defaultPublicKeyType, "crendential proof type")
+        let type: String = try JsonHelper.getString(json, Constants.TYPE, true, Constants.defaultPublicKeyType, "crendential proof type")
         let method: DIDURL = try JsonHelper.getDidUrl(json, Constants.verificationMethod, ref, "crendential proof verificationMethod")!
         let signature: String = try JsonHelper.getString(json, Constants.signature, false, nil, "crendential proof signature")
         return Proof(type, method, signature)
     }
 
     class func fromJson_vp(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws -> Proof {
-        let type: String = try JsonHelper.getString(json, Constants.type, true, Constants.defaultPublicKeyType, "crendential proof type")
+        let type: String = try JsonHelper.getString(json, Constants.TYPE, true, Constants.defaultPublicKeyType, "crendential proof type")
         let method: DIDURL = try JsonHelper.getDidUrl(json, Constants.verificationMethod, ref, "presentation proof verificationMethod")!
          let realm: String = try JsonHelper.getString(json, Constants.realm, false, nil, "presentation proof realm")
          let nonce: String = try JsonHelper.getString(json, Constants.nonce, false, nil, "presentation proof nonce")

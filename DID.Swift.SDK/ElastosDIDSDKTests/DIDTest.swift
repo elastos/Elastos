@@ -55,7 +55,7 @@ class DIDTest: XCTestCase {
     }
 
     func testToExtermalForm() {
-        XCTAssertEqual(testDID, did.toExternalForm())
+        XCTAssertEqual(testDID, did.description)
     }
     
     func testHashCode() {

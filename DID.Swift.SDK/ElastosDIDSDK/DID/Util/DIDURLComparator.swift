@@ -12,7 +12,7 @@ class DIDURLComparator {
         var sortArray: Array<(String, Any)> = Array()
         var did: String = ""
         for (key, value) in source {
-            if key == Constants.id {
+            if key == Constants.ID {
                 did = String("\(value)")
             }
             else {
@@ -28,7 +28,7 @@ class DIDURLComparator {
         
         var result: OrderedDictionary<String, Any> = OrderedDictionary<String, Any>()
         if did != "" {
-            result[Constants.id] = did
+            result[Constants.ID] = did
         }
         for obj in sortArray {
             result[obj.0] = obj.1

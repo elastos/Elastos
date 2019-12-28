@@ -32,7 +32,7 @@ public class CredentialSubject {
         var dic: OrderedDictionary<String, Any> = OrderedDictionary()
         // id
         if normalized || ref == nil || id != ref {
-            dic[Constants.id] = id.toExternalForm()
+            dic[Constants.ID] = id.description
         }
         
         // Properties
@@ -45,10 +45,10 @@ public class CredentialSubject {
     class func fromJson(_ json: OrderedDictionary<String, Any>, _ ref: DID?) throws -> CredentialSubject {
         // id
         let op: Bool = ref != nil
-        let id: DID = try JsonHelper.getDid(json, Constants.id, op, ref, "crendentialSubject id")!
+        let id: DID = try JsonHelper.getDid(json, Constants.ID, op, ref, "crendentialSubject id")!
         let cs: CredentialSubject = CredentialSubject(id)
         json.forEach { key, value in
-            if key != Constants.id {
+            if key != Constants.ID {
                 cs.addProperty(key, value as! String)
             }
         }

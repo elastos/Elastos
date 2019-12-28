@@ -3,7 +3,7 @@ import XCTest
 import ElastosDIDSDK
 
 class TestData: XCTestCase {
-    private static var dummyAdapter: DIDAdapter?
+    private static var dummyAdapter: DummyAdapter?
     private static var spvAdapter: DIDAdapter?
     private static var rootKey: HDKey?
     private static var index: Int?
@@ -29,14 +29,21 @@ class TestData: XCTestCase {
     private var testVp: VerifiablePresentation?
     private var testVpNormalizedJson: String?
     private var restoreMnemonic: String?
+    
+    private var store: DIDStore!
 
-    public func setupStore(_ dummyBackend: Bool) throws {
+
+    public func setupStore(_ dummyBackend: Bool) throws -> DIDStore {
         var adapter: DIDAdapter = DummyAdapter()
         if dummyBackend {
             if TestData.dummyAdapter == nil {
                 TestData.dummyAdapter = DummyAdapter()
                 adapter = TestData.dummyAdapter!
             }
+            else {
+                TestData.dummyAdapter!.reset()
+            }
+            adapter = TestData.dummyAdapter!
         }
         else {
             if TestData.spvAdapter == nil {
@@ -45,13 +52,15 @@ class TestData: XCTestCase {
             }
             adapter = TestData.spvAdapter!
         }
+        DIDBackend.creatInstance(adapter)
         TestData.deleteFile(storePath)
-        try DIDStore.creatInstance("filesystem", storePath, adapter)
+        store = try DIDStore.open("filesystem", storePath)
+        return store
     }
     
     public func initIdentity() throws -> String {
         let mnemonic: String = HDKey.generateMnemonic(0)
-        try DIDStore.shareInstance()?.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
+        try store.initPrivateIdentity(0, mnemonic, passphrase, storePass, true)
         return mnemonic
     }
     
@@ -60,8 +69,7 @@ class TestData: XCTestCase {
         let jsonPath = bundle.path(forResource: fileName, ofType: type_)
         let doc: DIDDocument = try DIDDocument.fromJson(path: jsonPath!)
         
-        if DIDStore.isInitialized() {
-            let store: DIDStore = try DIDStore.shareInstance()!
+        if store != nil {
             try store.storeDid(doc)
         }
         return doc
@@ -80,7 +88,7 @@ class TestData: XCTestCase {
         let intArray = [UInt8](data).map { Int8(bitPattern: $0) }
         print(intArray)
 
-        try DIDStore.shareInstance()?.storePrivateKey(id.did, id, data, storePass)
+        try store.storePrivateKey(id.did, id, data, storePass)
     }
     
     func loadTestIssuer() throws -> DIDDocument {
@@ -107,8 +115,8 @@ class TestData: XCTestCase {
         let filepath = buldle.path(forResource: fileName, ofType: type_)
         let json = try! String(contentsOf: URL(fileURLWithPath: filepath!), encoding: .utf8)
         let vc: VerifiableCredential = try VerifiableCredential.fromJson(json)
-        if DIDStore.isInitialized() {
-            try DIDStore.shareInstance()?.storeCredential(vc)
+        if store != nil {
+            try store.storeCredential(vc)
         }
         return vc
     }

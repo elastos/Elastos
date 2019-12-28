@@ -51,7 +51,6 @@ class DIDDoucumentTests: XCTestCase {
         return doc
     }
     
-    
     func testGetPublicKey() {
         do {
             let testData: TestData = TestData()

@@ -8,56 +8,36 @@ public class DIDStore: NSObject {
     public static let DID_NO_PRIVATEKEY = 1
     public static let DID_ALL = 2
     
-    private static var instance: DIDStore!
-    private var didCache: LRUCache!
-    private var vcCache: LRUCache!
+    private var didCache: LRUCache?
+    private var vcCache: LRUCache?
     
-    private var backend: DIDBackend!
-    private var storage: DIDStoreBackend!
+    private var storage: DIDStorage!
 
-    init(_ initialCacheCapacity: Int, _ maxCacheCapacity: Int, _ adapter: DIDAdapter, _ storage: DIDStoreBackend) {
+    init(_ initialCacheCapacity: Int, _ maxCacheCapacity: Int, _ storage: DIDStorage) {
         if (maxCacheCapacity > 0) {
             self.didCache = LRUCache(maxCacheCapacity)
             self.vcCache = LRUCache(maxCacheCapacity)
         }
 
-        self.backend = DIDBackend(adapter)
         self.storage = storage
     }
-
-    public static func creatInstance(_ type: String, _ location: String, _ adapter: DIDAdapter, _ initialCacheCapacity: Int, _ maxCacheCapacity: Int) throws {
+    
+    public class func open(_ type: String, _ location: String, _ initialCacheCapacity: Int, _ maxCacheCapacity: Int) throws -> DIDStore {
         guard type == "filesystem" else {
             throw DIDStoreError.failue("Unsupported store type:\(type)")
         }
-        
-        let storage = try FileSystemStoreBackend(location)
-        instance = DIDStore(initialCacheCapacity, maxCacheCapacity,
-                            adapter, storage)
+        let storage = try FileSystemStorage(location)
+        return DIDStore(initialCacheCapacity, maxCacheCapacity, storage)
     }
     
-    public static func creatInstance(_ type: String, _ location: String, _ adapter: DIDAdapter) throws {
-        try creatInstance(type, location, adapter, CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY)
-    }
-
-    public static func shareInstance() throws -> DIDStore? {
-        guard let _ = instance else {
-            throw DIDStoreError.failue("Please call the creatInstance first.")
-        }
-        return instance
+    public class func open(_ type: String, _ location: String) throws -> DIDStore {
+        return try open(type, location, CACHE_INITIAL_CAPACITY, CACHE_MAX_CAPACITY)
     }
     
-    public func getAdapter() -> DIDAdapter {
-        return backend.adapter
-    }
-    
-    public static func isInitialized() -> Bool {
-        return instance != nil
-    }
-
     public func containsPrivateIdentity() throws -> Bool {
-        return try storage.containsPrivateIdentity()
+        return try storage!.containsPrivateIdentity()
     }
-    
+
     func encryptToBase64(_ passwd: String ,_ input: Data) throws -> String {
         let cinput: UnsafePointer<UInt8> = input.withUnsafeBytes{ (by: UnsafePointer<UInt8>) -> UnsafePointer<UInt8> in
             return by
@@ -115,8 +95,8 @@ public class DIDStore: NSObject {
         // keep compatible with Native SDK
         let seedData = privateIdentity.getSeed()
         let encryptedIdentity = try encryptToBase64(storepass, seedData)
-        try storage.storePrivateIdentity(encryptedIdentity)
-        try storage.storePrivateIdentityIndex(0)
+        try storage!.storePrivateIdentity(encryptedIdentity)
+        try storage!.storePrivateIdentityIndex(0)
     }
     
     func initPrivateIdentity(_ language: Int, _ mnemonic: String, _ passphrase: String, _ storepass: String) throws -> Void {
@@ -142,8 +122,16 @@ public class DIDStore: NSObject {
             let pks: [UInt8] = try key.getPublicKeyBytes()
             let methodIdString: String = DerivedKey.getIdString(pks)
             let did: DID = DID(DID.METHOD, methodIdString)
+            var doc: DIDDocument?
+            do {
+                doc = try DIDBackend.shareInstance().resolve(did, true)
+            } catch {
+                if error is DIDResolveError {
+                    blanks++
+                }
+                continue
+            }
             
-            let doc = try backend.resolve(did)
             if (doc != nil) {
                 // TODO: check local conflict
                 try storeDid(doc!)
@@ -192,53 +180,53 @@ public class DIDStore: NSObject {
         return try newDid(storepass, nil)
     }
     
-    public func publishDid(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> Bool {
-        return try backend.create(doc, signKey, storepass)
+    public func publishDid(_ doc: DIDDocument, _ signKey: DIDURL, _ storepass: String) throws -> String? {
+        return try DIDBackend.shareInstance().create(doc, signKey, storepass)
     }
 
-    public func publishDid(_ doc: DIDDocument, _ signKey: String, _ storepass :String) throws -> Bool {
+    public func publishDid(_ doc: DIDDocument, _ signKey: String, _ storepass :String) throws -> String? {
         return try publishDid(doc, DIDURL(doc.subject!, signKey), storepass)
     }
     
-    public func publishDid(_ doc: DIDDocument, _ storepass :String) throws -> Bool {
+    public func publishDid(_ doc: DIDDocument, _ storepass :String) throws -> String? {
         let signKey: DIDURL = doc.getDefaultPublicKey()
-        return try backend.create(doc, signKey, storepass)
+        return try DIDBackend.shareInstance().create(doc, signKey, storepass)
     }
     
-    public func updateDid(_ doc: DIDDocument,_ signKey: DIDURL,_ storepass :String) throws -> Bool {
-        return try backend.update(doc, signKey, storepass)
+    public func updateDid(_ doc: DIDDocument,_ signKey: DIDURL,_ storepass :String) throws -> String? {
+        return try DIDBackend.shareInstance().update(doc, doc.getTransactionId(), signKey, storepass)
     }
     
-    public func updateDid(_ doc: DIDDocument,_ signKey: String,_ storepass :String) throws -> Bool {
+    public func updateDid(_ doc: DIDDocument,_ signKey: String,_ storepass :String) throws -> String? {
         return try updateDid(doc, DIDURL(doc.subject!, signKey), storepass)
     }
     
-    public func updateDid(_ doc: DIDDocument, _ storepass :String) throws -> Bool {
+    public func updateDid(_ doc: DIDDocument, _ storepass :String) throws -> String? {
         let signKey: DIDURL = doc.getDefaultPublicKey()
-        return try backend.update(doc, signKey, storepass)
+        return try updateDid(doc, signKey, storepass)
     }
     
-    public func deactivateDid(_ did: DID,_ signKey: DIDURL, _ storepass :String) throws -> Bool {
+    public func deactivateDid(_ did: DID,_ signKey: DIDURL, _ storepass :String) throws -> String? {
         // TODO: how to handle locally?
-        return try backend.deactivate(did, signKey, storepass)
+        return try DIDBackend.shareInstance().deactivate(did, signKey, storepass)
     }
     
-    public func deactivateDid(_ did: DID,_ signKey: String, _ storepass :String) throws -> Bool {
+    public func deactivateDid(_ did: DID,_ signKey: String, _ storepass :String) throws -> String? {
         return try deactivateDid(did, DIDURL(did, signKey), storepass)
     }
     
-    public func deactivateDid(_ did: DID, _ storepass :String) throws -> Bool {
+    public func deactivateDid(_ did: DID, _ storepass :String) throws -> String? {
         do {
             let doc = try resolveDid(did)
             let signKey = doc!.getDefaultPublicKey()
-            return try backend.deactivate(did, signKey, storepass)
+            return try DIDBackend.shareInstance().deactivate(did, signKey, storepass)
         } catch {
             throw DIDError.failue("Can not resolve DID document.")
         }
     }
     
     public func resolveDid(_ did: DID, _ force: Bool) throws -> DIDDocument? {
-        var doc = try backend.resolve(did)
+        var doc = try DIDBackend.shareInstance().resolve(did)
         if doc !== nil {
             try storeDid(doc!)
         }
@@ -262,53 +250,70 @@ public class DIDStore: NSObject {
     
     public func storeDid(_ doc: DIDDocument, _ alias: String) throws {
         try storeDid(doc)
-        try storeDidAlias(doc.subject!, alias)
+        try doc.setAlias(alias)
     }
     
     public func storeDid(_ doc: DIDDocument) throws {
         try storage.storeDid(doc)
-        let count = didCache.getCount()
-        if count != 0 {
-            didCache.put(doc.subject!, data: doc)
+        // TODO: Check me!!!
+        let meta = try loadDidMeta(doc.subject!)
+        try meta.merge(doc.meta)
+        meta.store = self
+        doc.meta = meta
+        try storage.storeDidMeta(doc.subject!, meta)
+        for vc in doc.getCredentials() {
+            try storeCredential(vc)
         }
-    }
-
-    public func storeDidAlias(_ did: DID, _ alias: String) throws {
-        try storage.storeDidAlias(did, alias)
-        let doc = didCache.get(did)
-        if (doc != nil) {
-           let d = doc as! DIDDocument
-            d.alias = alias
+        
+        let count = didCache!.getCount()
+        if count != 0 {
+            didCache!.put(doc.subject!, data: doc)
         }
     }
     
-    public func storeDidAlias(_ did: String, _ alias: String) throws {
-        try storeDidAlias(DID(did), alias)
+    func storeDidMeta(_ did: DID, _ meta: DIDMeta) throws {
+        try storage.storeDidMeta(did, meta)
+        if (didCache != nil) {
+            let d = didCache!.get(did)
+            let doc: DIDDocument = d as! DIDDocument
+            if (d != nil) {
+                doc.meta = meta
+            }
+        }
     }
-
-    public func loadDidAlias(_ did: DID) throws -> String {
+    
+    func storeDidMeta(_ did: String, _ meta: DIDMeta) throws {
+        try storeDidMeta(try DID(did), meta)
+    }
+    
+    func loadDidMeta(_ did: DID) throws -> DIDMeta {
+        var meta: DIDMeta?
+        var doc: DIDDocument?
         
-        let doc = didCache.get(did)
-        var al: String = ""
-        if doc != nil {
-            let d = doc as! DIDDocument
-            al = d.alias
-            return al
+        if (didCache != nil) {
+            doc = (didCache!.get(did) as! DIDDocument)
+            if (doc != nil) {
+                meta = doc?.meta
+                if (meta != nil) {
+                    return meta!
+                }
+            }
         }
-        al = try storage.loadDidAlias(did)
+        
+        meta = try storage.loadDidMeta(did)
         if (doc != nil) {
-            let d = doc as! DIDDocument
-            d.alias = al
+            doc!.meta = meta!
         }
-        return al
+        
+        return meta!
     }
-
-    public func loadDidAlias(_ did: String) throws -> String {
-        return try loadDidAlias(DID(did))
+    
+    func loadDidMeta(_ did: String) throws -> DIDMeta {
+        return try loadDidMeta(DID(did))
     }
     
     public func loadDid(_ did: DID) throws -> DIDDocument {
-        var doc = didCache.get(did)
+        var doc = didCache!.get(did)
         if doc != nil {
             let d = doc as! DIDDocument
             return d
@@ -317,7 +322,7 @@ public class DIDStore: NSObject {
         doc = try storage.loadDid(did)
         if (doc != nil) {
             let d = doc as! DIDDocument
-            didCache.put(d.subject!, data: d)
+            didCache!.put(d.subject!, data: d)
         }
         let d = doc as! DIDDocument
         return d
@@ -349,60 +354,74 @@ public class DIDStore: NSObject {
     
     public func storeCredential(_ credential: VerifiableCredential, _ alias: String) throws {
         try storeCredential(credential)
-        try storeCredentialAlias(credential.subject.id, credential.id, alias)
+        try credential.setAlias(alias)
     }
     
     public func storeCredential(_ credential: VerifiableCredential ) throws {
         try storage.storeCredential(credential)
-        vcCache.put(credential.id, data: credential)
-    }
-    
-    public func storeCredentialAlias(_ did: DID, _ id: DIDURL, _ alias: String) throws {
-        try storage.storeCredentialAlias(did, id, alias)
-        let count = vcCache.getCount()
-        if count != 0 {
-            let vc = vcCache.get(id)
-            if vc != nil {
-                let v = vc as! VerifiableCredential
-                v.alias = alias
-            }
+
+        // TODO: Check me!!!
+        let meta: CredentialMeta = try loadCredentialMeta(credential.subject.id, credential.id)!
+        try meta.merge(credential.meta)
+        meta.store = self
+        credential.meta = meta
+
+        credential.meta.store = self
+        try storage.storeCredentialMeta(credential.subject.id, credential.id, meta)
+
+        if (vcCache != nil) {
+            vcCache?.put(credential.id, data: credential)
         }
     }
-    
-    public func storeCredentialAlias(_ did: String, _ id: String, _ alias: String) throws {
-        let _did = try DID(did)
-        try storeCredentialAlias(_did, try DIDURL(_did, id), alias)
-    }
-    
-    public func loadCredentialAlias(_ did: DID, _ id: DIDURL) throws -> String {
+
+    public func storeCredentialMeta(_ did: DID, _ id: DIDURL, _ meta: CredentialMeta) throws {
+        try storage.storeCredentialMeta(did, id, meta)
         
-        var al: String = ""
-        let vc = vcCache.get(id)
-        let count = vcCache.getCount()
-        if count != 0 {
-            if vc != nil {
-                let v = vc as! VerifiableCredential
-                al = v.alias
-                return al
+        if (vcCache != nil) {
+            let v = vcCache!.get(id)
+            let vc: VerifiableCredential = v as! VerifiableCredential
+            if (v != nil) {
+                vc.meta = meta
             }
         }
-        al = try storage.loadCredentialAlias(did, id)
-        if vc != nil {
-            let v = vc as! VerifiableCredential
-            v.alias = al
-        }
-        return al
     }
     
-    public func loadCredentialAlias(_ did: String, _ id: String) throws -> String {
+    public func storeCredentialMeta(_ did: String, _ id: String, _ meta: CredentialMeta) throws {
         let _did = try DID(did)
-        return try loadCredentialAlias(_did, DIDURL(_did, id))
+        try storeCredentialMeta(_did, try DIDURL(_did, id), meta)
+    }
+    
+    public func loadCredentialMeta(_ did: DID, _ id: DIDURL) throws -> CredentialMeta? {
+        
+        var meta: CredentialMeta?
+        var vc: VerifiableCredential?
+
+        if (vcCache != nil) {
+            vc = vcCache!.get(id) as! VerifiableCredential
+            if (vc != nil) {
+                meta = vc?.meta
+                if (meta != nil) {
+                    return meta!
+                }
+            }
+        }
+        meta = try storage.loadCredentialMeta(did, id)
+        if (vc != nil) {
+            vc!.meta = meta!
+        }
+        
+        return meta
+    }
+
+    public func loadCredentialMeta(_ did: String, _ id: String) throws -> CredentialMeta? {
+        let _did = try DID(did)
+        return try loadCredentialMeta(_did, DIDURL(_did, id))
     }
     
     
     public func loadCredential(_ did: DID, _ id: DIDURL) throws -> VerifiableCredential? {
-        var vc = vcCache.get(id)
-        let count = vcCache.getCount()
+        var vc = vcCache!.get(id)
+        let count = vcCache!.getCount()
 
         if count != 0 {
             if vc != nil {
@@ -413,7 +432,7 @@ public class DIDStore: NSObject {
         vc = try storage.loadCredential(did, id)
         if (vc != nil) {
             let v = vc as! VerifiableCredential
-            vcCache.put(v.id, data: v)
+            vcCache!.put(v.id, data: v)
         }
 
         return vc as? VerifiableCredential
@@ -451,7 +470,16 @@ public class DIDStore: NSObject {
     }
     
     public func listCredentials(_ did: DID) throws -> Array<DIDURL> {
-        return try storage.listCredentials(did)
+
+        var ids: Array<DIDURL> = try storage.listCredentials(did)
+
+        for id in ids {
+            let meta = try loadCredentialMeta(did, id)
+            meta!.store = self
+            id.meta = meta!
+        }
+
+        return ids
     }
     
     public func listCredentials(_ did: String) throws -> Array<DIDURL> {
