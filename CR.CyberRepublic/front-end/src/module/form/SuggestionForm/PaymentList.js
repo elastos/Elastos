@@ -23,20 +23,12 @@ class PaymentList extends BaseComponent {
       <StyledTable>
         <StyledHead>
           <StyledRow>
-            <th style={{ width: '10%' }}>
-              {I18N.get('suggestion.budget.payment')} #
-            </th>
-            <th style={{ width: '15%' }}>
-              {I18N.get('suggestion.budget.amount')}(ELA)
-            </th>
-            <th style={{ width: '30%' }}>
-              {I18N.get('suggestion.budget.reasons')}
-            </th>
-            <th style={{ width: '30%' }}>
-              {I18N.get('suggestion.budget.criteria')}
-            </th>
+            <th>{I18N.get('suggestion.budget.payment')} #</th>
+            <th>{I18N.get('suggestion.budget.amount')}(ELA)</th>
+            <th>{I18N.get('suggestion.budget.reasons')}</th>
+            <th>{I18N.get('suggestion.budget.criteria')}</th>
             {visible && (
-              <th style={{ width: '15%' }}>
+              <th style={{ width: 110 }}>
                 {I18N.get('suggestion.budget.action')}
               </th>
             )}
@@ -49,11 +41,15 @@ class PaymentList extends BaseComponent {
                 <td>{index + 1}</td>
                 <td>{item.amount}</td>
                 <td>
-                  <MarkdownPreview content={item.reasons ? item.reasons : ''} />
+                  <MarkdownPreview
+                    content={item.reasons ? item.reasons : ''}
+                    style={{ p: { margin: '1em 0' } }}
+                  />
                 </td>
                 <td>
                   <MarkdownPreview
                     content={item.criteria ? item.criteria : ''}
+                    style={{ p: { margin: '1em 0' } }}
                   />
                 </td>
                 {visible && (
@@ -61,7 +57,7 @@ class PaymentList extends BaseComponent {
                     <EditSvgIcon
                       type="edit"
                       onClick={this.handleEdit.bind(this, index)}
-                      style={{ marginRight: 24, cursor: 'pointer' }}
+                      style={{ marginRight: 22, cursor: 'pointer' }}
                     />
                     <DeleteSvgIcon
                       type="delete"
@@ -91,6 +87,7 @@ const StyledTable = styled.table`
   margin-top: 16px;
   width: 100%;
   font-size: 13px;
+  table-layout: auto;
 `
 const StyledHead = styled.thead`
   > tr {
@@ -107,7 +104,7 @@ const StyledRow = styled.tr`
   background: #f2f6fb;
   > td {
     line-height: 18px;
-    padding: 16px;
+    padding: 8px 16px;
     color: #000;
     word-break: break-all;
     > button {

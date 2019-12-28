@@ -225,9 +225,7 @@ class Milestones extends Component {
                           {this.renderSquare(item, index, false, true)}
                         </Square>
                       </Popover>
-                      <MilestoneEdit>
-                        <Circle />
-                      </MilestoneEdit>
+                      <Circle />
                     </MilestoneItem>
                   </Fragment>
                 )}
@@ -381,7 +379,7 @@ const BigSquare = styled.div`
 `
 const MilestoneEdit = styled.div`
   position: relative;
-  top: 101px;
+  top: 97px;
   > button.ant-btn {
     background-color: #1de9b6;
     box-shadow: none;
@@ -389,6 +387,8 @@ const MilestoneEdit = styled.div`
   }
 `
 const Circle = styled.div`
+  position: relative;
+  top: 101px;
   height: 16px;
   width: 16px;
   border-radius: 50%;
