@@ -1,7 +1,4 @@
-from datetime import datetime
-
 from grpc_adenine.database import (connection as db)
-from sqlalchemy import ForeignKey
 
 
 """

@@ -5,7 +5,6 @@
 from datetime import datetime
 
 from grpc_adenine.database import (connection as db)
-from sqlalchemy import ForeignKey
 
 """
 Users table is mapped to the elastos_console database. Users table has the user information which is stored in it during the registration.

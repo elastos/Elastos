@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from grpc_adenine.database import (connection as db)
-from sqlalchemy import ForeignKey
 
 """
 ServicesList table is mapped to the elastos_console database. It maps the User with its api key.
