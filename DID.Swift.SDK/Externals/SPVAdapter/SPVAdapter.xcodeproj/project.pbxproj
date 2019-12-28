@@ -29,7 +29,7 @@
 		11267062238CCC930086740D /* libc++abi.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1126705E238CCC890086740D /* libc++abi.tbd */; };
 		11267064238CCCA60086740D /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 11267063238CCC9C0086740D /* libz.tbd */; };
 		11601C9D2393712F008E407C /* ExtensionInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11601C9C2393712F008E407C /* ExtensionInt.swift */; };
-		11A6B152238F956A00D3C1F1 /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11A6B151238F956A00D3C1F1 /* spvadapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		11641BBD23B729490037016B /* spvadapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 11641BBC23B729480037016B /* spvadapter.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -89,7 +89,7 @@
 		1139AF312394B20700C609B1 /* libspvadapter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvadapter.a; path = "SPVAdapter/lib/-iphoneosimulator/libspvadapter.a"; sourceTree = "<group>"; };
 		1139AF322394B20700C609B1 /* libspvsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libspvsdk.a; path = "SPVAdapter/lib/-iphoneosimulator/libspvsdk.a"; sourceTree = "<group>"; };
 		11601C9C2393712F008E407C /* ExtensionInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtensionInt.swift; sourceTree = "<group>"; };
-		11A6B151238F956A00D3C1F1 /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
+		11641BBC23B729480037016B /* spvadapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spvadapter.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,7 +153,7 @@
 		1126702F238CCA930086740D /* header */ = {
 			isa = PBXGroup;
 			children = (
-				11A6B151238F956A00D3C1F1 /* spvadapter.h */,
+				11641BBC23B729480037016B /* spvadapter.h */,
 				11267059238CCB4C0086740D /* CSPVAdapter.swift */,
 			);
 			path = header;
@@ -223,7 +223,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11A6B152238F956A00D3C1F1 /* spvadapter.h in Headers */,
+				11641BBD23B729490037016B /* spvadapter.h in Headers */,
 				11267029238CC7120086740D /* SPVAdapter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

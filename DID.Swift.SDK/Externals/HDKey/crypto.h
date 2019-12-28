@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-#define SIGNATURE_BYTES         65 // CHECKME: 64 or 65 with length prefixed
+#define SIGNATURE_BYTES         64
 #define SHA256_BYTES            32
 
 // TODO: not a safe design, caller should provide large enough buffer

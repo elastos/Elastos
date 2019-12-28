@@ -17,8 +17,11 @@ public class SPV {
     }
     
     public class func createIdTransaction(_ handle: OpaquePointer, _ password: String, _ payload: String, _ memo: String?) throws -> String? {
-        let rc = SpvDidAdapter_CreateIdTransaction(handle, payload, memo, password)
-        return ""
+        let re = SpvDidAdapter_CreateIdTransaction(handle, payload, memo, password)
+        if re != nil {
+           return String(cString: re!)
+        }
+        return nil
     }
     
     public class func resolve(_ requestId: String, _ did: String, _ all: Bool) throws -> String? {
