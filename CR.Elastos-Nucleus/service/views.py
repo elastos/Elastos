@@ -2,7 +2,6 @@ import json
 import os
 
 from decouple import config
-from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
 from console_main.views import login_required, populate_session_vars_from_database
@@ -35,7 +34,7 @@ def generate_key(request):
         if form.is_valid():
             try:
                 common = Common()
-                got_error = False
+                error_message = None
                 output = {}
                 if 'submit_get_api_key' in request.POST:
                     response = common.get_api_key_request(config('SHARED_SECRET_ADENINE'), did)
@@ -47,7 +46,7 @@ def generate_key(request):
                         populate_session_vars_from_database(request, did)
                         output['get_api_key'] = True
                     else:
-                        got_error = True
+                        error_message = response.status_message
                 elif 'submit_generate_api_key' in request.POST:
                     response = common.generate_api_request(config('SHARED_SECRET_ADENINE'), did)
                     if response.status:
@@ -58,11 +57,12 @@ def generate_key(request):
                         populate_session_vars_from_database(request, did)
                         output['generate_api_key'] = True
                     else:
-                        got_error = True
+                        error_message = response.status_message
                 else:
-                    got_error = True
-                if got_error:
-                    messages.success(request, "Could not generate an API key. Please try again")
+                    error_message = "Invalid form submission. Please refresh the page and try generating a new API " \
+                                    "key again "
+                if error_message:
+                    messages.success(request, error_message)
                     return redirect(reverse('service:generate_key'))
                 else:
                     request.session['api_key'] = api_key

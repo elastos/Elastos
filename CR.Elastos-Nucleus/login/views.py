@@ -5,6 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 
 from django.contrib.auth import login
+from django.utils import timezone
 from fastecdsa.encoding.sec1 import SEC1Encoder
 from fastecdsa import ecdsa, curve
 from binascii import unhexlify
@@ -34,7 +35,7 @@ def check_ela_auth(request):
         return JsonResponse({'authenticated': False}, status=403)
     state = request.session['elaState']
     try:
-        recently_created_time = datetime.now() - timedelta(minutes=1)
+        recently_created_time = timezone.now() - timedelta(minutes=1)
         did_request_query_result = DIDRequest.objects.get(state=state, created_at__gte=recently_created_time)
         data = json.loads(did_request_query_result.data)
         if not data["auth"]:
@@ -224,10 +225,10 @@ def home(request):
 def sign_out(request):
     request.session.clear()
     gc.collect()
-    development = config('DEVELOPMENT', default=False, cast=bool)
-    if development:
-        messages.success(request, "You are in development mode. Unable to log out! Please re-run the server with "
-                                  "DEVELOPMENT set to False")
+    did_login = config('DIDLOGIN', default=False, cast=bool)
+    if not did_login:
+        messages.success(request, "You have disabled DID LOGIN. Unable to log out! Please re-run the server with "
+                                  "DIDLOGIN set to True")
     else:
         messages.success(request, "You have been logged out!")
     return redirect(reverse('landing'))
