@@ -11,5 +11,5 @@ docker container stop smartweb-service || true && docker container rm -f smartwe
 # Run docker container
 docker run --name smartweb-service \
   -v "$PWD/.env:/elastos-smartweb-service/.env" \
-  -p 8000:8000                                  \
+  -p 8001:8000                                  \
   cyberrepublic/elastos-smartweb-service:latest
