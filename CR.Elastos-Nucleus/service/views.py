@@ -86,13 +86,6 @@ def upload_and_sign(request):
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/upload_and_sign.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
-    did = request.session['did']
-    sample_code = {}
-    module_dir = os.path.dirname(__file__)  
-    with open(os.path.join(module_dir, 'sample_code/python/upload_and_sign.py'), 'r') as myfile:
-        sample_code['python'] = myfile.read()
-    with open(os.path.join(module_dir, 'sample_code/go/upload_and_sign.go'), 'r') as myfile:
-        sample_code['go'] = myfile.read()
     if request.method == 'POST':
         # Purge old requests for housekeeping.
         UploadFile.objects.filter(did=did).delete()
@@ -119,7 +112,7 @@ def upload_and_sign(request):
                                   {"message_hash": message_hash, "public_key": public_key, "signature": signature,
                                    "file_hash": file_hash, 'output': True, 'sample_code': sample_code})
                 else:
-                    messages.success(request, "File could not be uploaded. Please try again")
+                    messages.success(request, response.status_message)
                     return redirect(reverse('service:upload_and_sign'))
             except Exception as e:
                 messages.success(request, "File could not be uploaded. Please try again")
@@ -159,7 +152,7 @@ def verify_and_show(request):
                     content = response.output
                     return render(request, 'service/verify_and_show.html', {'output': True, 'content': content, 'sample_code': sample_code})
                 else:
-                    messages.success(request, "File could not be verified nor shown. Please try again")
+                    messages.success(request, response.status_message)
                     return redirect(reverse('service:verify_and_show'))
             except Exception as e:
                 messages.success(request, "File could not be verified nor shown. Please try again")
@@ -212,7 +205,7 @@ def create_wallet(request):
                     return render(request, "service/create_wallet.html", { 'output': True, 'wallet_mainchain': wallet_mainchain,
                         'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth, 'sample_code': sample_code })
                 else:
-                    messages.success(request, "Could not create wallet at this time. Please try again")
+                    messages.success(request, response.status_message)
                     return redirect(reverse('service:create_wallet'))
             except Exception as e:
                 messages.success(request, "Could not create wallet at this time. Please try again")
@@ -285,7 +278,7 @@ def view_wallet(request):
                     return render(request, "service/view_wallet.html", { 'output': output, 'form': form_to_display,
                         'address': address, 'balance': balance, 'sample_code': sample_code })
                 else:
-                    messages.success(request, "Could not view wallet at this time. Please try again")
+                    messages.success(request, response.status_message)
                     return redirect(reverse('service:view_wallet'))
             except Exception as e:
                 messages.success(request, "Could not view wallet at this time. Please try again")
@@ -357,7 +350,7 @@ def request_ela(request):
                     return render(request, "service/request_ela.html", { 'output': output, 'form': form_to_display,
                         'address': address, 'deposit_amount': deposit_amount, 'sample_code': sample_code })
                 else:
-                    messages.success(request, "Could not view wallet at this time. Please try again")
+                    messages.success(request, response.status_message)
                     return redirect(reverse('service:request_ela'))
             except Exception as e:
                 messages.success(request, "Could not view wallet at this time. Please try again")
@@ -404,7 +397,7 @@ def deploy_eth_contract(request):
                                   {"contract_address": contract_address, "contract_name": contract_name,
                                    "contract_code_hash": contract_code_hash, 'output': True, 'sample_code': sample_code})
                 else:
-                    messages.success(request, "Could not deploy smart contract to Eth sidechain. Please try again")
+                    messages.success(request, response.status_message)
                     return redirect(reverse('service:deploy_eth_contract'))
             except Exception as e:
                 messages.success(request, "Could not deploy smart contract to Eth sidechain. Please try again")
@@ -443,7 +436,7 @@ def watch_eth_contract(request):
                     return render(request, "service/watch_eth_contract.html", {'output': True, 'contract_address': contract_address, 'contract_name': contract_name,
                                                                                'contract_functions': contract_functions, 'contract_source': contract_source, 'sample_code': sample_code})
                 else:
-                    messages.success(request, "Could not view smart contract code at this time. Please try again")
+                    messages.success(request, response.status_message)
                     return redirect(reverse('service:watch_eth_contract'))
             except Exception as e:
                 messages.success(request, "Could not view smart contract code at this time. Please try again")

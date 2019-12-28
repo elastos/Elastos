@@ -83,7 +83,7 @@ def did_callback(request):
         if not valid:
             return JsonResponse({'message': 'Unauthorized'}, status=401)
         try:
-            recently_created_time = datetime.now() - timedelta(minutes=1)
+            recently_created_time = timezone.now() - timedelta(minutes=1)
             did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
                                                               created_at__gte=recently_created_time)
             if not did_request_query_result:
@@ -158,7 +158,7 @@ def send_email(request, to_email, user):
         'token': account_activation_token.make_token(user),
     })
     email = EmailMessage(
-        mail_subject, message, to=[to_email]
+        mail_subject, message, from_email='"Nucleus Console Support Team" <support@nucleusconsole.com>', to=[to_email]
     )
     email.content_subtype = 'html'
     email.send()
@@ -209,7 +209,7 @@ def sign_in(request):
     DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
     # Purge old requests for housekeeping. If the time denoted by 'created_by'
     # is more than 2 minutes old, delete the row
-    stale_time = datetime.now() - timedelta(minutes=2)
+    stale_time = timezone.now() - timedelta(minutes=2)
     DIDRequest.objects.filter(created_at__lte=stale_time).delete()
 
     request.session['elephant_url'] = elephant_url
