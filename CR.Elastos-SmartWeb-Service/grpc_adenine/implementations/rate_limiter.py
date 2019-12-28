@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker
 class RateLimiter:
     def __init__(self):
         self.date_format = '%Y-%m-%d %H:%M:%S.%f'
-        Session = sessionmaker(bind=db_engine)
-        self.session = Session()
+        session_maker = sessionmaker(bind=db_engine)
+        self.session = session_maker()
 
     def get_last_access_count(self, api_key, service_name):
         api_key_data = self.session.query(UserApiRelations).filter_by(api_key=api_key).first()
