@@ -29,6 +29,6 @@ RUN pip install -r requirements.txt
 ADD grpc_adenine ${SRC_DIR}/grpc_adenine
 ADD .env.example ${SRC_DIR}/.env
 
-EXPOSE 8000
+EXPOSE 8001
 
 ENTRYPOINT ["python", "./grpc_adenine/server.py"]
