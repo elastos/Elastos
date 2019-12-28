@@ -89,7 +89,3 @@ venv.bak/
 tools/privkey.pem
 tools/server.*
 tools/.postgres-data
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
