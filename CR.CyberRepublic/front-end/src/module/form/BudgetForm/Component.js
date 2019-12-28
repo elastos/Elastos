@@ -40,14 +40,13 @@ class BudgetForm extends Component {
   }
 
   getMilestone = () => {
-    let milestone
-    const draft = localStorage.getItem('draft-suggestion')
-    if (draft) {
-      const rs = JSON.parse(draft)
-      milestone = rs.plan && rs.plan.milestone
+    const milestone = sessionStorage.getItem('plan-milestone') || []
+    try {
+      const rs = JSON.parse(milestone)
+      return Array.isArray(rs) ? rs : []
+    } catch (err) {
+      return []
     }
-
-    return milestone
   }
 
   renderTabText(date) {

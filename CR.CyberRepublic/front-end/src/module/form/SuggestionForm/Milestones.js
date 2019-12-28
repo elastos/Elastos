@@ -46,6 +46,10 @@ class Milestones extends Component {
       },
       () => {
         onChange({ milestone: this.state.milestones })
+        sessionStorage.setItem(
+          'plan-milestone',
+          JSON.stringify(this.state.milestones)
+        )
       }
     )
   }
@@ -60,7 +64,11 @@ class Milestones extends Component {
       return item
     })
     this.setState({ milestones: rs, currentMilestonesTrigger: {} }, () => {
-      onChange({ milestone: milestones })
+      onChange({ milestone: this.state.milestones })
+      sessionStorage.setItem(
+        'plan-milestone',
+        JSON.stringify(this.state.milestones)
+      )
     })
   }
 

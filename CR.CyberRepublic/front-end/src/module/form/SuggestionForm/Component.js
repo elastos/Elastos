@@ -36,6 +36,18 @@ class C extends BaseComponent {
       activeKey: TAB_KEYS[0],
       errorKeys: {}
     }
+    const sugg = props.initialValues
+    if (
+      sugg &&
+      sugg.plan &&
+      typeof sugg.plan !== 'string' &&
+      sugg.plan.milestone
+    ) {
+      sessionStorage.setItem(
+        'plan-milestone',
+        JSON.stringify(sugg.plan.milestone)
+      )
+    }
   }
 
   componentDidMount() {
@@ -46,6 +58,7 @@ class C extends BaseComponent {
 
   componentWillUnmount() {
     clearInterval(this.timer)
+    sessionStorage.removeItem('plan-milestone')
   }
 
   getActiveKey(key) {
