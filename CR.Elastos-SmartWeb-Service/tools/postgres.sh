@@ -31,9 +31,9 @@ docker run -d --name smartweb-postgres \
     -v "$PWD/.postgres-data:/var/lib/postgresql/data"     \
     -v "$PWD/server.crt:/var/lib/postgresql/server.crt:ro" \
     -v "$PWD/server.key:/var/lib/postgresql/server.key:ro" \
-    -e POSTGRES_DB=smartweb_master                   \
-    -e POSTGRES_USER=gmu                         \
-    -e POSTGRES_PASSWORD=gmu                     \
+    -e POSTGRES_DB=smartweb                             \
+    -e POSTGRES_USER=gmu                                \
+    -e POSTGRES_PASSWORD=gmu                            \
     -p 5434:5432                                        \
     postgres:11-alpine                                  \
     -c ssl=on                                           \
@@ -46,5 +46,5 @@ sleep 5
 docker cp ../grpc_adenine/database/scripts/create_table_scripts.sql smartweb-postgres:/create_table_scripts.sql
 
 # Run the sql scripts 
-docker container exec -it smartweb-postgres psql -h localhost -d smartweb_master -U gmu -a -q -f /create_table_scripts.sql
+docker container exec -it smartweb-postgres psql -h localhost -d smartweb -U gmu -a -q -f /create_table_scripts.sql
 

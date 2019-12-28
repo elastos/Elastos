@@ -1,4 +1,5 @@
 from concurrent import futures
+from decouple import config
 
 import grpc
 
@@ -21,8 +22,9 @@ def serve():
     wallet_pb2_grpc.add_WalletServicer_to_server(Wallet(), server)
     hive_pb2_grpc.add_HiveServicer_to_server(Hive(), server)
     sidechain_eth_pb2_grpc.add_SidechainEthServicer_to_server(SidechainEth(), server)
-    
-    server.add_insecure_port('[::]:50051')
+
+    port = config('GRPC_SERVER_PORT')
+    server.add_insecure_port('[::]:{}'.format(port))
     server.start()
     server.wait_for_termination()
 

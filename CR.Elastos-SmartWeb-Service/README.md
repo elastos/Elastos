@@ -1,8 +1,31 @@
 # GRPC_python
 GRPC python implementation with SQL Alchemy
 
+## Start Postgres server:
+```
+cd tools
+# This script automatically runs the scripts located at grpc_adenine/database/scripts/
+./postgres.sh
+cd ..
+```
 
-## Prerequisites
+## Quickly run using docker
+Remove previous docker container:
+```
+docker container rm -f smartweb-service 
+```
+Copy environment file and change variables as needed:
+``` 
+cp .env.example .env
+```
+Run docker container
+``` 
+docker run --name smartweb-service -v "$PWD/.env:/elastos-smartweb-service/.env" -p 8000:8000 cyberrepublic/elastos-smartweb-service:latest
+```
+
+## Run without using docker
+#### Prerequisites
+
 First, install Python3:
 
 ```
@@ -37,7 +60,7 @@ Install solidity compiler:
     sudo apt-get install solc
     ```
 
-## Instructions
+#### Instructions on running
 Clone the repository
 ```
 git clone https://github.com/cyber-republic/elastos-smartweb-service.git
@@ -54,24 +77,16 @@ source venv/bin/activate
 ```
 pip3 install -r requirements.txt
 ```
-```
-cp .env.example .env
-```
-
-## Starting Postgres server:
-
-```
-cd tools
-# This script automatically runs the scripts located at grpc_adenine/database/scripts/
-./postgres.sh
-cd ..
-```
-
-## Start the server:
 
 Export Path:
 ```
 export PYTHONPATH="$PYTHONPATH:$PWD/grpc_adenine/stubs/"
+```
+
+Copy environment file and change variables as needed:
+``` 
+# Change DB_HOST from '172.17.0.1' to 'localhost'
+cp .env.example .env
 ```
 
 Run the following command:
@@ -79,14 +94,18 @@ Run the following command:
 python3 grpc_adenine/server.py
 ```
 
-### Additional Info:
+## Additional Info:
 Command to build protocol buffer files:
 ```
 cd $PWD/grpc_adenine/
 python3 -m grpc_tools.protoc -I definitions --python_out=stubs --grpc_python_out=stubs definitions/common.proto
 ```
 
-### Debugging:
+## Debugging and Development Tools:
+Build docker image:
+```
+docker build -t cyberrepublic/elastos-smartweb-service .
+```
 Connect to postgresql database
 ```
 docker container exec -it smartweb-postgres psql -h localhost -U gmu -d smartweb_master
