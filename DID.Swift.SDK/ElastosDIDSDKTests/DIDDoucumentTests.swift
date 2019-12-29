@@ -484,7 +484,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddAuthorizationKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            store = try testData.setupStore(true)
             try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()

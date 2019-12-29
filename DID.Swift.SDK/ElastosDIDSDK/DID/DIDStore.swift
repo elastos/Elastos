@@ -160,13 +160,16 @@ public class DIDStore: NSObject {
         let methodIdString: String = DerivedKey.getIdString(pks)
         let did: DID = DID(DID.METHOD, methodIdString)
         let id: DIDURL = try DIDURL(did, "primary")
+        
+        
         let privatekeyData: Data = try key.getPrivateKeyData()
-        let encryptedKey = try encryptToBase64(storepass, privatekeyData)
-        // TODO: get real private key bytes
-        let data = encryptedKey.data(using: .utf8)
-        try storePrivateKey(did, id, data!, storepass)
+//        let encryptedKey = try encryptToBase64(storepass, privatekeyData)
+//        // TODO: get real private key bytes
+//        let data = encryptedKey.data(using: .utf8)
+        try storePrivateKey(did, id, privatekeyData, storepass)
         
         var doc: DIDDocument = DIDDocument(did)
+        
         _ = try doc.addAuthenticationKey(id, try key.getPublicKeyBase58())
         
         doc = try doc.seal(self, storepass)

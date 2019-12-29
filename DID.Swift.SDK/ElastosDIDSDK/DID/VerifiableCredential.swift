@@ -57,22 +57,26 @@ public class VerifiableCredential: DIDObject {
     }
     
     private func traceCheck(_ rule: Int) throws -> Bool {
-        let controllerDoc: DIDDocument = try subject.id.resolve()!
+        let controllerDoc = try subject.id.resolve()
+        if controllerDoc == nil {
+            return false
+        }
+        
         switch rule {
         case RULE_EXPIRE: do {
-            if controllerDoc.isExpired() {
+            if controllerDoc!.isExpired() {
                 return true
             }
             break
             }
         case RULE_EXPIRE: do {
-            if try !controllerDoc.isGenuine() {
+            if try !controllerDoc!.isGenuine() {
                 return false
             }
             break
             }
         default: do {
-                if ( try !controllerDoc.isValid()) {
+                if ( try !controllerDoc!.isValid()) {
                     return false
                 }
             }

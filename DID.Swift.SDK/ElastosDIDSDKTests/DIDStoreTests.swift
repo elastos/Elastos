@@ -12,8 +12,7 @@ class DIDStoreTests: XCTestCase {
     func testCreateEmptyStore() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
-            
+            try _ = testData.setupStore(true)
             _ = testData.exists(storePath)
             
             let path = storePath + "/" + ".meta"
@@ -23,16 +22,20 @@ class DIDStoreTests: XCTestCase {
             XCTFail()
         }
     }
-    /*
-     @Test(expected = DIDStoreException.class)
-     public void testCreateDidInEmptyStore() throws DIDStoreException {
-     TestData testData = new TestData();
-     testData.setupStore(true);
-     
-     DIDStore store = DIDStore.getInstance();
-     store.newDid(TestConfig.storePass, "this will be fail");
-     }
-     */
+    
+    func testCreateDidInEmptyStore()  {
+        
+        do {
+            let testData: TestData = TestData()
+            
+            let store = try testData.setupStore(true)
+            try store.newDid(storePass, "this will be fail")
+        } catch {
+            print(error)
+            XCTAssertTrue(true)
+        }
+    }
+
     func testInitPrivateIdentity0() {
         do {
             let testData: TestData = TestData()
@@ -57,7 +60,7 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func testCreateDIDWithAlias() {
+    func testCreateDIDWithAlias() throws {
         do {
             let testData: TestData = TestData()
             let store: DIDStore = try testData.setupStore(true)
@@ -95,7 +98,55 @@ class DIDStoreTests: XCTestCase {
         }
     }
     
-    func tesCreateDIDWithoutAlias() {
+    func testUpdateDid() {
+            do {
+                let testData: TestData = TestData()
+                let store: DIDStore = try testData.setupStore(true)
+                _ = try testData.initIdentity()
+                
+                let doc: DIDDocument = try store.newDid(storePass)
+                XCTAssertTrue(try doc.isValid())
+                try store.publishDid(doc, storePass)
+                
+                var resolved = try store.resolveDid(doc.subject!, true)
+                try store.storeDid(resolved!)
+                XCTAssertNotNil(resolved)
+                
+                // Update
+    //            DIDDocument.Builder db = resolved.edit();
+                var key = try TestData.generateKeypair()
+                try resolved?.addAuthenticationKey("key1", try key.getPublicKeyBase58())
+                var newDoc = try resolved!.seal(store, storePass)
+                XCTAssertEqual(2, newDoc.getPublicKeyCount())
+                XCTAssertEqual(2, newDoc.getAuthenticationKeyCount())
+                
+                print(newDoc.getTransactionId())
+                try store.updateDid(newDoc, storePass)
+    //            resolved = doc.subject.resolve(true)
+                resolved = try doc.subject?.resolve()
+                try store.storeDid(resolved!)
+                XCTAssertNotNil(resolved)
+                XCTAssertEqual(newDoc.description, resolved?.description)
+                
+                // Update again
+                key = try TestData.generateKeypair()
+                try resolved?.addAuthenticationKey("key2", key.getPublicKeyBase58())
+                newDoc = try resolved!.seal(store, storePass)
+                XCTAssertEqual(3, newDoc.getPublicKeyCount())
+                XCTAssertEqual(3, newDoc.getAuthenticationKeyCount())
+                
+                try store.updateDid(newDoc, storePass)
+
+                resolved = try doc.subject?.resolve(true)
+                XCTAssertNotNil(resolved)
+                XCTAssertEqual(newDoc.description, resolved?.description)
+
+            } catch {
+                XCTFail()
+            }
+        }
+    
+    func testCreateDIDWithoutAlias() {
         do {
             let testData: TestData = TestData()
             let store: DIDStore = try testData.setupStore(true)
@@ -122,6 +173,7 @@ class DIDStoreTests: XCTestCase {
             
             XCTAssertTrue(try resolved.isValid())
         } catch {
+            print(error)
             XCTFail()
         }
     }
@@ -130,7 +182,7 @@ class DIDStoreTests: XCTestCase {
         do {
             let testData: TestData = TestData()
             let store: DIDStore = try testData.setupStore(true)
-            try testData.initIdentity()
+            _ = try testData.initIdentity()
             
             for i in 0..<100 {
                 let alias: String = "my did \(i)"

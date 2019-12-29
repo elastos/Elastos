@@ -410,6 +410,7 @@ public class DIDDocument: NSObject {
     public func isExpired() -> Bool {
         let now = DateFormater.currentDate()
         return DateFormater.comporsDate(expires!, now)
+
     }
     
     public func isGenuine() throws -> Bool {
@@ -423,11 +424,13 @@ public class DIDDocument: NSObject {
             return false
         }
         
-        let json = try toJson(nil, true, true)
+        var json = try toJson(nil, true, true)
+        
         let inputs: [CVarArg] = [json, json.count]
         let count = inputs.count / 2
         
         return try verify(proof.creator!, proof.signature, count, inputs)
+            
     }
     
     public func isValid() throws -> Bool {

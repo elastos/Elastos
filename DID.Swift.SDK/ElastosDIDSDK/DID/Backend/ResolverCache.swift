@@ -1,7 +1,7 @@
 
 import Foundation
 
-class ResolverCache {
+public class ResolverCache {
     private static let CACHE_INITIAL_CAPACITY = 16
     private static let CACHE_MAX_CAPACITY = 32
     private static var rootDir: String = "/Users/liaihong/Desktop/DID_iOS/home"

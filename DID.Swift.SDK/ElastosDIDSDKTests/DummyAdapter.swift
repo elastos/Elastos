@@ -110,7 +110,7 @@ class DummyAdapter: DIDAdapter {
         dic["id"] = requestId
         dic["jsonrpc"] = "2.0"
         
-        var redic: Dictionary<String, Any> = [: ]
+        var redic: OrderedDictionary<String, Any> = OrderedDictionary()
         redic["did"] = target.description
         var status:Int = 3
         let last = getLastTransaction(target)

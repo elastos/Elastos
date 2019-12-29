@@ -65,7 +65,7 @@ public class DIDBackend: NSObject {
             throw DIDResolveError.failue("Resolve DID error .")
         }
         // Check response id, should equals requestId
-        let id = result[ID] as? String
+        let id = resultJson[ID] as? String
         if id == nil || id == "" || id != requestId {
             throw DIDResolveError.failue("Missmatched resolve result with request.")
         }
@@ -190,4 +190,5 @@ public class DIDBackend: NSObject {
      }
      }
      */
+    
 }

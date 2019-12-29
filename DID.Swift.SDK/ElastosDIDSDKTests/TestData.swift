@@ -35,9 +35,11 @@ class TestData: XCTestCase {
 
     public func setupStore(_ dummyBackend: Bool) throws -> DIDStore {
         var adapter: DIDAdapter = DummyAdapter()
+        try ResolverCache.reset()
+        
         if dummyBackend {
             if TestData.dummyAdapter == nil {
-                TestData.dummyAdapter = DummyAdapter()
+                TestData.dummyAdapter = DummyAdapter(verbose)
                 adapter = TestData.dummyAdapter!
             }
             else {

@@ -10,8 +10,8 @@ public class LRUCache {
     }
     
     private let dispatchQueue = DispatchQueue(label: "com.erik.LRUCache.queue", attributes: .concurrent)
-    var cacheItems: [AnyHashable: Any] = [:]
-    private var cacheQueue: [AnyHashable] = []
+    public var cacheItems: [AnyHashable: Any] = [:]
+    public var cacheQueue: [AnyHashable] = []
     public let size: Int
     
     func getCount() -> Int {

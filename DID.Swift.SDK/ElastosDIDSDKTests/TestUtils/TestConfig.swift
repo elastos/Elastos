@@ -1,13 +1,14 @@
 
 import Foundation
 
-let tempDir: String = "/Users/liaihong/Desktop/DID_iOS/TEMP"
+let tempDir: String = "/Users/liaihong/Desktop/DID_iOS/tempDir"
 
 //let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
-let storePath: String = "/Users/liaihong/Desktop/DID_iOS/ios_DIDStore"
+let storePath: String = "/Users/liaihong/Desktop/DID_iOS/storeRoot"
 let storePass: String = "passwd"
 let passphrase: String = "secret"
 let walletPassword: String = "test111111"
+let verbose: Bool = true
 
 let walletDir: String = "/Users/liaihong/.didwallet"
 let walletId: String = "test"
