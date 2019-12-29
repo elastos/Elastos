@@ -25,6 +25,7 @@ package org.elastos.did;
 import java.util.List;
 import java.util.Map;
 
+import org.elastos.did.DIDDocument.PublicKey;
 import org.elastos.did.exception.DIDDeactivatedException;
 import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDExpiredException;
@@ -222,8 +223,8 @@ public final class DIDStore {
 		DIDDocument.Builder db = new DIDDocument.Builder(did, this);
 		db.addAuthenticationKey(id, key.getPublicKeyBase58());
 		DIDDocument doc = db.seal(storepass);
+		doc.getMeta().setAlias(alias);
 		storeDid(doc);
-		doc.setAlias(alias);
 
 		storage.storePrivateIdentityIndex(nextIndex);
 		privateIdentity.wipe();
@@ -236,10 +237,14 @@ public final class DIDStore {
 		return newDid(null, storepass);
 	}
 
-	public String publishDid(DIDDocument doc, DIDURL signKey, String storepass)
+	public String publishDid(DID did, DIDURL signKey, String storepass)
 			throws DIDStoreException, DIDException {
-		if (doc == null || storepass == null || storepass.isEmpty())
+		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
+
+		DIDDocument doc = loadDid(did);
+		if (doc == null)
+			throw new DIDStoreException("Can not find the document for " + did);
 
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
@@ -247,21 +252,31 @@ public final class DIDStore {
 		return DIDBackend.getInstance().create(doc, signKey, storepass);
 	}
 
-	public String publishDid(DIDDocument doc, String signKey, String storepass)
+	public String publishDid(String did, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException, DIDException {
-		DIDURL id = signKey == null ? null : new DIDURL(doc.getSubject(), signKey);
-		return publishDid(doc, id, storepass);
+		DID _did = new DID(did);
+		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
+		return publishDid(_did, _signKey, storepass);
 	}
 
-	public String publishDid(DIDDocument doc, String storepass)
+	public String publishDid(DID did, String storepass)
 			throws DIDStoreException, DIDException {
-		return publishDid(doc, (DIDURL)null, storepass);
+		return publishDid(did, (DIDURL)null, storepass);
 	}
 
-	public String updateDid(DIDDocument doc, DIDURL signKey, String storepass)
+	public String publishDid(String did, String storepass)
+			throws DIDStoreException, DIDException {
+		return publishDid(did, (String)null, storepass);
+	}
+
+	public String updateDid(DID did, DIDURL signKey, String storepass)
 			throws DIDException, DIDStoreException, DIDException {
-		if (doc == null || storepass == null || storepass.isEmpty())
+		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
+
+		DIDDocument doc = loadDid(did);
+		if (doc == null)
+			throw new DIDStoreException("Can not find the document for " + did);
 
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
@@ -270,48 +285,162 @@ public final class DIDStore {
 				doc.getTransactionId(), signKey, storepass);
 	}
 
-	public String updateDid(DIDDocument doc, String signKey, String storepass)
+	public String updateDid(String did, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDException, DIDStoreException {
-		DIDURL id = signKey == null ? null : new DIDURL(doc.getSubject(), signKey);
-		return updateDid(doc, id, storepass);
+		DID _did = new DID(did);
+		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
+		return updateDid(_did, _signKey, storepass);
 	}
 
-	public String updateDid(DIDDocument doc, String storepass)
+	public String updateDid(DID did, String storepass)
 			throws DIDException, DIDStoreException {
-		return updateDid(doc, (DIDURL)null, storepass);
+		return updateDid(did, (DIDURL)null, storepass);
 	}
 
+	public String updateDid(String did, String storepass)
+			throws DIDException, DIDStoreException {
+		return updateDid(did, (String)null, storepass);
+	}
+
+	// Deactivate self use authentication keys
 	public String deactivateDid(DID did, DIDURL signKey, String storepass)
 			throws DIDStoreException, DIDException {
 		if (did == null || storepass == null || storepass.isEmpty())
 			throw new IllegalArgumentException();
 
-		if (signKey == null) {
-			try {
-				DIDDocument doc = DIDBackend.getInstance().resolve(did);
-				if (doc == null)
-					throw new DIDStoreException("Can not resolve DID document.");
-
-				signKey = doc.getDefaultPublicKey();
-			} catch (DIDResolveException e) {
-				throw new DIDStoreException(e);
-			}
+		// Document should use the IDChain's copy
+		boolean localCopy = false;
+		DIDDocument doc;
+		try {
+			doc = DIDBackend.getInstance().resolve(did);
+		} catch (DIDException e) {
+			throw e;
 		}
 
-		return DIDBackend.getInstance().deactivate(did, signKey, storepass);
+		if (doc == null) {
+			// Fail-back: try to load document from local store
+			doc = loadDid(did);
+			if (doc == null)
+				throw new DIDStoreException("Can not resolve DID document.");
+			else
+				localCopy = true;
+		} else {
+			doc.getMeta().setStore(this);
+		}
 
-		// TODO: how to handle locally?
+		if (signKey == null)
+			signKey = doc.getDefaultPublicKey();
+
+		String txid = DIDBackend.getInstance().deactivate(doc, signKey, storepass);
+
+		// Save deactivated status to DID metadata
+		if (localCopy) {
+			doc.getMeta().setDeactivated(true);
+			storeDidMeta(did, doc.getMeta());
+		}
+
+		return txid;
 	}
 
-	public String deactivateDid(DID did, String signKey, String storepass)
+	public String deactivateDid(String did, String signKey, String storepass)
 			throws MalformedDIDURLException, DIDStoreException, DIDException {
-		DIDURL id = signKey == null ? null : new DIDURL(did, signKey);
-		return deactivateDid(did, id, storepass);
+		DID _did = new DID(did);
+		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
+		return deactivateDid(_did, _signKey, storepass);
 	}
 
 	public String deactivateDid(DID did, String storepass)
 			throws DIDStoreException, DIDException {
 		return deactivateDid(did, (DIDURL)null, storepass);
+	}
+
+	public String deactivateDid(String did, String storepass)
+			throws DIDStoreException, DIDException {
+		return deactivateDid(did, (String)null, storepass);
+	}
+
+	// Deactivate target DID with authorization
+	public String deactivateDid(DID target, DID did, DIDURL signKey,
+			String storepass) throws DIDStoreException, DIDException {
+		if (target == null || did == null ||
+				storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException();
+
+		// All documents should use the IDChain's copy
+		DIDDocument doc;
+		try {
+			doc = DIDBackend.getInstance().resolve(did);
+		} catch (DIDException e) {
+			throw e;
+		}
+
+		if (doc == null) {
+			// Fail-back: try to load document from local store
+			doc = loadDid(did);
+			if (doc == null)
+				throw new DIDStoreException("Can not resolve DID document.");
+		} else {
+			doc.getMeta().setStore(this);
+		}
+
+		PublicKey signPk = null;
+		if (signKey != null) {
+			signPk = doc.getAuthenticationKey(signKey);
+			if (signPk == null)
+				throw new DIDException("Not authentication key.");
+		}
+
+		DIDDocument targetDoc = DIDBackend.getInstance().resolve(target);
+		if (targetDoc == null)
+			throw new DIDResolveException("DID " + target + " not exist.");
+
+		if (targetDoc.getAuthorizationKeyCount() == 0)
+			throw new DIDException("No authorization.");
+
+		// The authorization key id in the target doc
+		DIDURL targetSignKey = null;
+
+		List<PublicKey> authorizationKeys = targetDoc.getAuthorizationKeys();
+		matchloop: for (PublicKey targetPk : authorizationKeys) {
+			if (!targetPk.getController().equals(did))
+				continue;
+
+			if (signPk != null) {
+				if (!targetPk.getPublicKeyBase58().equals(signPk.getPublicKeyBase58()))
+					continue;
+
+				targetSignKey = targetPk.getId();
+				break;
+			} else {
+				List<PublicKey> pks = doc.getAuthenticationKeys();
+				for (PublicKey pk : pks) {
+					if (pk.getPublicKeyBase58().equals(targetPk.getPublicKeyBase58())) {
+						signPk = pk;
+						signKey = signPk.getId();
+						targetSignKey = targetPk.getId();
+						break matchloop;
+					}
+				}
+			}
+		}
+
+		if (targetSignKey == null)
+			throw new DIDException("No matched authorization key.");
+
+		return DIDBackend.getInstance().deactivate(target, targetSignKey,
+				doc, signKey, storepass);
+	}
+
+	public String deactivateDid(String target, String did, String signKey,
+			String storepass) throws DIDStoreException, DIDException {
+		DID _did = new DID(did);
+		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
+		return deactivateDid(new DID(target), _did, _signKey, storepass);
+	}
+
+	public String deactivateDid(DID target, DID did, String storepass)
+			throws DIDStoreException, DIDException {
+		return deactivateDid(target, did, null, storepass);
 	}
 
 	public void storeDid(DIDDocument doc, String alias)
@@ -454,8 +583,8 @@ public final class DIDStore {
 
 	public void storeCredential(VerifiableCredential credential, String alias)
 			throws DIDStoreException {
+		credential.getMeta().setAlias(alias);
 		storeCredential(credential);
-		credential.setAlias(alias);
 	}
 
 	public void storeCredential(VerifiableCredential credential)

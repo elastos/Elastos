@@ -104,11 +104,21 @@ public class IDChainRequest {
 		return request;
 	}
 
-	public static IDChainRequest deactivate(DID did, DIDURL signKey,
+	public static IDChainRequest deactivate(DIDDocument doc, DIDURL signKey,
 			String storepass) throws DIDStoreException {
 		IDChainRequest request = new IDChainRequest(Operation.DEACTIVATE);
-		request.setPayload(did);
+		request.setPayload(doc);
 		request.seal(signKey, storepass);
+
+		return request;
+	}
+
+	public static IDChainRequest deactivate(DID target, DIDURL targetSignKey,
+			DIDDocument doc, DIDURL signKey, String storepass)
+			throws DIDStoreException {
+		IDChainRequest request = new IDChainRequest(Operation.DEACTIVATE);
+		request.setPayload(target);
+		request.seal(targetSignKey, doc, signKey, storepass);
 
 		return request;
 	}
@@ -147,10 +157,14 @@ public class IDChainRequest {
 		this.did = doc.getSubject();
 		this.doc = doc;
 
-		String json = doc.toString(false);
+		if (operation != Operation.DEACTIVATE) {
+			String json = doc.toString(false);
 
-		payload = Base64.encodeToString(json.getBytes(),
-				Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+			this.payload = Base64.encodeToString(json.getBytes(),
+					Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+		} else {
+			this.payload = doc.getSubject().toString();
+		}
 	}
 
 	private void setPayload(String payload) throws DIDResolveException {
@@ -190,6 +204,22 @@ public class IDChainRequest {
 
 		this.signature = doc.sign(signKey, storepass, inputs);
 		this.signKey = signKey;
+		this.keyType = DEFAULT_PUBLICKEY_TYPE;
+	}
+
+	private void seal(DIDURL targetSignKey, DIDDocument doc,
+			DIDURL signKey, String storepass) throws DIDStoreException {
+		String prevtxid = operation == Operation.UPDATE ? previousTxid : "";
+
+		byte[][] inputs = new byte[][] {
+			specification.getBytes(),
+			operation.toString().getBytes(),
+			prevtxid.getBytes(),
+			payload.getBytes()
+		};
+
+		this.signature = doc.sign(signKey, storepass, inputs);
+		this.signKey = targetSignKey;
 		this.keyType = DEFAULT_PUBLICKEY_TYPE;
 	}
 

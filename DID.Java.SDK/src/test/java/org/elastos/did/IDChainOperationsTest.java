@@ -82,7 +82,7 @@ public class IDChainOperationsTest {
 		DIDDocument doc = store.newDid(TestConfig.storePass);
 		DID did = doc.getSubject();
 
-		String txid = store.publishDid(doc, TestConfig.storePass);
+		String txid = store.publishDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Published new DID: " + did);
 
@@ -148,7 +148,7 @@ public class IDChainOperationsTest {
 		DIDDocument doc = store.newDid(TestConfig.storePass);
 		DID did = doc.getSubject();
 
-		String txid = store.publishDid(doc, TestConfig.storePass);
+		String txid = store.publishDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Published new DID: " + did);
 
@@ -191,10 +191,10 @@ public class IDChainOperationsTest {
 		}
 
 		DIDDocument resolved = did.resolve(true);
-		store.storeDid(resolved);
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
+		store.storeDid(resolved);
 
 		String lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
@@ -206,8 +206,9 @@ public class IDChainOperationsTest {
 		doc = db.seal(TestConfig.storePass);
 		assertEquals(2, doc.getPublicKeyCount());
 		assertEquals(2, doc.getAuthenticationKeyCount());
+		store.storeDid(doc);
 
-		txid = store.updateDid(doc, TestConfig.storePass);
+		txid = store.updateDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
@@ -249,10 +250,10 @@ public class IDChainOperationsTest {
 		}
 
 		resolved = did.resolve(true);
-		store.storeDid(resolved);
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
+		store.storeDid(resolved);
 
 		lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
@@ -264,8 +265,9 @@ public class IDChainOperationsTest {
 		doc = db.seal(TestConfig.storePass);
 		assertEquals(3, doc.getPublicKeyCount());
 		assertEquals(3, doc.getAuthenticationKeyCount());
+		store.storeDid(doc);
 
-		txid = store.updateDid(doc, TestConfig.storePass);
+		txid = store.updateDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
@@ -307,7 +309,6 @@ public class IDChainOperationsTest {
 		}
 
 		resolved = did.resolve(true);
-		store.storeDid(resolved);
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
@@ -372,8 +373,9 @@ public class IDChainOperationsTest {
 		doc = db.seal(TestConfig.storePass);
 		assertNotNull(doc);
 		assertEquals(1, doc.getCredentialCount());
+		store.storeDid(doc);
 
-		String txid = store.publishDid(doc, TestConfig.storePass);
+		String txid = store.publishDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Published new DID: " + did);
 
@@ -416,10 +418,10 @@ public class IDChainOperationsTest {
 		}
 
 		DIDDocument resolved = did.resolve(true);
-		store.storeDid(resolved);
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
+		store.storeDid(resolved);
 
 		String lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
@@ -443,8 +445,9 @@ public class IDChainOperationsTest {
 		doc = db.seal(TestConfig.storePass);
 		assertNotNull(doc);
 		assertEquals(2, doc.getCredentialCount());
+		store.storeDid(doc);
 
-		txid = store.updateDid(doc, TestConfig.storePass);
+		txid = store.updateDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
@@ -486,10 +489,10 @@ public class IDChainOperationsTest {
 		}
 
 		resolved = did.resolve(true);
-		store.storeDid(resolved);
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));
+		store.storeDid(resolved);
 
 		lastTxid = resolved.getTransactionId();
 		System.out.println("Last transaction id: " + lastTxid);
@@ -517,8 +520,9 @@ public class IDChainOperationsTest {
 		doc = db.seal(TestConfig.storePass);
 		assertNotNull(doc);
 		assertEquals(3, doc.getCredentialCount());
+		store.storeDid(doc);
 
-		txid = store.updateDid(doc, TestConfig.storePass);
+		txid = store.updateDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
@@ -560,7 +564,6 @@ public class IDChainOperationsTest {
 		}
 
 		resolved = did.resolve(true);
-		store.storeDid(resolved);
 		assertEquals(did, resolved.getSubject());
 		assertTrue(resolved.isValid());
 		assertEquals(doc.toString(true), resolved.toString(true));

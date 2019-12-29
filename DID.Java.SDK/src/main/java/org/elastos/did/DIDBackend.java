@@ -203,9 +203,23 @@ public class DIDBackend {
 		}
 	}
 
-	protected String deactivate(DID did, DIDURL signKey, String storepass)
+	protected String deactivate(DIDDocument doc, DIDURL signKey, String storepass)
 			throws DIDStoreException {
-		IDChainRequest request = IDChainRequest.deactivate(did, signKey, storepass);
+		IDChainRequest request = IDChainRequest.deactivate(doc, signKey, storepass);
+		String json = request.toJson(true);
+
+		try {
+			return adapter.createIdTransaction(json, null);
+		} catch (DIDException e) {
+			throw new DIDStoreException("Create ID transaction error.", e);
+		}
+	}
+
+	protected String deactivate(DID target, DIDURL targetSignKey,
+			DIDDocument doc, DIDURL signKey, String storepass)
+			throws DIDStoreException {
+		IDChainRequest request = IDChainRequest.deactivate(target,
+				targetSignKey, doc, signKey, storepass);
 		String json = request.toJson(true);
 
 		try {

@@ -42,7 +42,6 @@ import org.elastos.did.exception.DIDException;
 import org.elastos.did.exception.DIDStoreException;
 import org.elastos.did.meta.DIDMeta;
 import org.elastos.did.util.HDKey;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -111,7 +110,7 @@ public class DIDStoreTest {
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNull(resolved);
 
-    	store.publishDid(doc, TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	File file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + doc.getSubject().getMethodSpecificId()
@@ -148,7 +147,7 @@ public class DIDStoreTest {
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNull(resolved);
 
-    	store.publishDid(doc, TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	File file = new File(TestConfig.storeRoot + File.separator + "ids"
     			+ File.separator + doc.getSubject().getMethodSpecificId()
@@ -181,11 +180,11 @@ public class DIDStoreTest {
 
     	System.out.println(doc.getTransactionId());
 
-    	store.publishDid(doc, TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	DIDDocument resolved = doc.getSubject().resolve(true);
-    	store.storeDid(resolved);
     	assertNotNull(resolved);
+    	store.storeDid(resolved);
 
     	System.out.println(resolved.getTransactionId());
 
@@ -196,15 +195,14 @@ public class DIDStoreTest {
     	DIDDocument newDoc = db.seal(TestConfig.storePass);
     	assertEquals(2, newDoc.getPublicKeyCount());
     	assertEquals(2, newDoc.getAuthenticationKeyCount());
+    	store.storeDid(newDoc);
 
-       	System.out.println(newDoc.getTransactionId());
-
-    	store.updateDid(newDoc, TestConfig.storePass);
+    	store.updateDid(newDoc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
-    	store.storeDid(resolved);
     	assertNotNull(resolved);
     	assertEquals(newDoc.toString(), resolved.toString());
+    	store.storeDid(resolved);
 
     	// Update again
     	db = resolved.edit();
@@ -213,8 +211,9 @@ public class DIDStoreTest {
     	newDoc = db.seal(TestConfig.storePass);
     	assertEquals(3, newDoc.getPublicKeyCount());
     	assertEquals(3, newDoc.getAuthenticationKeyCount());
+    	store.storeDid(newDoc);
 
-    	store.updateDid(newDoc, TestConfig.storePass);
+    	store.updateDid(newDoc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
@@ -239,13 +238,11 @@ public class DIDStoreTest {
     	store.storeDidMeta(doc.getSubject(), meta);
 
     	// Update will fail
-    	store.updateDid(doc, TestConfig.storePass);
+    	store.updateDid(doc.getSubject(), TestConfig.storePass);
 	}
 
-	// TODO: fix later
-	@Ignore("Fix later")
 	@Test(expected = DIDDeactivatedException.class)
-	public void testDeactivateDidAfterCreate() throws DIDException {
+	public void testDeactivateSelfAfterCreate() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setupStore(true);
     	testData.initIdentity();
@@ -253,7 +250,7 @@ public class DIDStoreTest {
     	DIDDocument doc = store.newDid(TestConfig.storePass);
     	assertTrue(doc.isValid());
 
-    	store.publishDid(doc, TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
@@ -265,10 +262,8 @@ public class DIDStoreTest {
     	assertNull(resolved);
 	}
 
-	// TODO: fix later
-	@Ignore("Fix later")
 	@Test(expected = DIDDeactivatedException.class)
-	public void testDeactivateDidAfterUpdate() throws DIDException {
+	public void testDeactivateSelfAfterUpdate() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setupStore(true);
     	testData.initIdentity();
@@ -276,10 +271,11 @@ public class DIDStoreTest {
     	DIDDocument doc = store.newDid(TestConfig.storePass);
     	assertTrue(doc.isValid());
 
-    	store.publishDid(doc, TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
     	DIDDocument resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
+    	store.storeDid(resolved);
 
     	// Update
     	DIDDocument.Builder db = resolved.edit();
@@ -288,17 +284,150 @@ public class DIDStoreTest {
     	DIDDocument newDoc = db.seal(TestConfig.storePass);
     	assertEquals(2, newDoc.getPublicKeyCount());
     	assertEquals(2, newDoc.getAuthenticationKeyCount());
+    	store.storeDid(newDoc);
 
-    	store.updateDid(newDoc, TestConfig.storePass);
+    	store.updateDid(newDoc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
     	assertEquals(newDoc.toString(), resolved.toString());
+    	store.storeDid(resolved);
 
     	store.deactivateDid(newDoc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	// dead code
+    	assertNull(resolved);
+	}
+
+	@Test(expected = DIDDeactivatedException.class)
+	public void testDeactivateWithAuthorization1() throws DIDException {
+    	TestData testData = new TestData();
+    	DIDStore store = testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	DIDDocument target = store.newDid(TestConfig.storePass);
+    	DIDDocument.Builder db = target.edit();
+    	db.authorizationDid("recovery", doc.getSubject().toString());
+    	target = db.seal(TestConfig.storePass);
+    	assertNotNull(target);
+    	assertEquals(1, target.getAuthorizationKeyCount());
+    	assertEquals(doc.getSubject(), target.getAuthorizationKeys().get(0).getController());
+    	store.storeDid(target);
+
+    	store.publishDid(target.getSubject(), TestConfig.storePass);
+
+    	resolved = target.getSubject().resolve();
+    	assertNotNull(resolved);
+    	assertEquals(target.toString(), resolved.toString());
+
+    	store.deactivateDid(target.getSubject(), doc.getSubject(), TestConfig.storePass);
+
+    	resolved = target.getSubject().resolve(true);
+    	// Dead code
+    	assertNull(resolved);
+	}
+
+	@Test(expected = DIDDeactivatedException.class)
+	public void testDeactivateWithAuthorization2() throws DIDException {
+    	TestData testData = new TestData();
+    	DIDStore store = testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	DIDURL id = new DIDURL(doc.getSubject(), "key-2");
+    	db.addAuthenticationKey(id, key.getPublicKeyBase58());
+    	store.storePrivateKey(doc.getSubject(), id, key.getPrivateKeyBytes(),
+    			TestConfig.storePass);
+    	doc = db.seal(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	DIDDocument target = store.newDid(TestConfig.storePass);
+    	db = target.edit();
+    	db.addAuthorizationKey("recovery", doc.getSubject().toString(),
+    			key.getPublicKeyBase58());
+    	target = db.seal(TestConfig.storePass);
+    	assertNotNull(target);
+    	assertEquals(1, target.getAuthorizationKeyCount());
+    	assertEquals(doc.getSubject(), target.getAuthorizationKeys().get(0).getController());
+    	store.storeDid(target);
+
+    	store.publishDid(target.getSubject(), TestConfig.storePass);
+
+    	resolved = target.getSubject().resolve();
+    	assertNotNull(resolved);
+    	assertEquals(target.toString(), resolved.toString());
+
+    	store.deactivateDid(target.getSubject(), doc.getSubject(), id, TestConfig.storePass);
+
+    	resolved = target.getSubject().resolve(true);
+    	// Dead code
+    	assertNull(resolved);
+	}
+
+	@Test(expected = DIDDeactivatedException.class)
+	public void testDeactivateWithAuthorization3() throws DIDException {
+    	TestData testData = new TestData();
+    	DIDStore store = testData.setupStore(true);
+    	testData.initIdentity();
+
+    	DIDDocument doc = store.newDid(TestConfig.storePass);
+    	DIDDocument.Builder db = doc.edit();
+    	HDKey.DerivedKey key = TestData.generateKeypair();
+    	DIDURL id = new DIDURL(doc.getSubject(), "key-2");
+    	db.addAuthenticationKey(id, key.getPublicKeyBase58());
+    	store.storePrivateKey(doc.getSubject(), id, key.getPrivateKeyBytes(),
+    			TestConfig.storePass);
+    	doc = db.seal(TestConfig.storePass);
+    	assertTrue(doc.isValid());
+    	assertEquals(2, doc.getAuthenticationKeyCount());
+    	store.storeDid(doc);
+
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
+
+    	DIDDocument resolved = doc.getSubject().resolve(true);
+    	assertNotNull(resolved);
+    	assertEquals(doc.toString(), resolved.toString());
+
+    	DIDDocument target = store.newDid(TestConfig.storePass);
+    	db = target.edit();
+    	db.addAuthorizationKey("recovery", doc.getSubject().toString(),
+    			key.getPublicKeyBase58());
+    	target = db.seal(TestConfig.storePass);
+    	assertNotNull(target);
+    	assertEquals(1, target.getAuthorizationKeyCount());
+    	assertEquals(doc.getSubject(), target.getAuthorizationKeys().get(0).getController());
+    	store.storeDid(target);
+
+    	store.publishDid(target.getSubject(), TestConfig.storePass);
+
+    	resolved = target.getSubject().resolve();
+    	assertNotNull(resolved);
+    	assertEquals(target.toString(), resolved.toString());
+
+    	store.deactivateDid(target.getSubject(), doc.getSubject(), TestConfig.storePass);
+
+    	resolved = target.getSubject().resolve(true);
+    	// Dead code
     	assertNull(resolved);
 	}
 
@@ -316,7 +445,7 @@ public class DIDStoreTest {
         	DIDDocument resolved = doc.getSubject().resolve(true);
         	assertNull(resolved);
 
-        	store.publishDid(doc, TestConfig.storePass);
+        	store.publishDid(doc.getSubject(), TestConfig.storePass);
 
         	File file = new File(TestConfig.storeRoot + File.separator + "ids"
         			+ File.separator + doc.getSubject().getMethodSpecificId()
@@ -362,7 +491,7 @@ public class DIDStoreTest {
 		for (int i = 0; i < 100; i++) {
     		String alias = "my did " + i;
         	DIDDocument doc = store.newDid(alias, TestConfig.storePass);
-         	store.publishDid(doc, TestConfig.storePass);
+         	store.publishDid(doc.getSubject(), TestConfig.storePass);
          	dids.add(doc.getSubject());
     	}
 

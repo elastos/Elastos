@@ -139,7 +139,7 @@ public final class TestData {
 
 			importPrivateKey(testIssuer.getDefaultPublicKey(), "issuer.primary.sk");
 
-			store.publishDid(testIssuer, TestConfig.storePass);
+			store.publishDid(testIssuer.getSubject(), TestConfig.storePass);
 		}
 
 		return testIssuer;
@@ -155,7 +155,7 @@ public final class TestData {
 			importPrivateKey(testDocument.getPublicKey("key2").getId(), "document.key2.sk");
 			importPrivateKey(testDocument.getPublicKey("key3").getId(), "document.key3.sk");
 
-			store.publishDid(testDocument, TestConfig.storePass);
+			store.publishDid(testDocument.getSubject(), TestConfig.storePass);
 		}
 
 		return testDocument;
