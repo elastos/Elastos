@@ -5,6 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 
 from django.contrib.auth import login
+from django.utils import timezone
 from fastecdsa.encoding.sec1 import SEC1Encoder
 from fastecdsa import ecdsa, curve
 from binascii import unhexlify
@@ -34,7 +35,7 @@ def check_ela_auth(request):
         return JsonResponse({'authenticated': False}, status=403)
     state = request.session['elaState']
     try:
-        recently_created_time = datetime.now() - timedelta(minutes=1)
+        recently_created_time = timezone.now() - timedelta(minutes=1)
         did_request_query_result = DIDRequest.objects.get(state=state, created_at__gte=recently_created_time)
         data = json.loads(did_request_query_result.data)
         if not data["auth"]:
@@ -82,7 +83,7 @@ def did_callback(request):
         if not valid:
             return JsonResponse({'message': 'Unauthorized'}, status=401)
         try:
-            recently_created_time = datetime.now() - timedelta(minutes=1)
+            recently_created_time = timezone.now() - timedelta(minutes=1)
             did_request_query_result = DIDRequest.objects.get(state=data["RandomNumber"],
                                                               created_at__gte=recently_created_time)
             if not did_request_query_result:
@@ -157,7 +158,7 @@ def send_email(request, to_email, user):
         'token': account_activation_token.make_token(user),
     })
     email = EmailMessage(
-        mail_subject, message, to=[to_email]
+        mail_subject, message, from_email='"Nucleus Console Support Team" <support@nucleusconsole.com>', to=[to_email]
     )
     email.content_subtype = 'html'
     email.send()
@@ -208,7 +209,7 @@ def sign_in(request):
     DIDRequest.objects.create(state=token['state'], data=json.dumps(token['data']))
     # Purge old requests for housekeeping. If the time denoted by 'created_by'
     # is more than 2 minutes old, delete the row
-    stale_time = datetime.now() - timedelta(minutes=2)
+    stale_time = timezone.now() - timedelta(minutes=2)
     DIDRequest.objects.filter(created_at__lte=stale_time).delete()
 
     request.session['elephant_url'] = elephant_url
@@ -224,10 +225,10 @@ def home(request):
 def sign_out(request):
     request.session.clear()
     gc.collect()
-    development = config('DEVELOPMENT', default=False, cast=bool)
-    if development:
-        messages.success(request, "You are in development mode. Unable to log out! Please re-run the server with "
-                                  "DEVELOPMENT set to False")
+    did_login = config('DIDLOGIN', default=False, cast=bool)
+    if not did_login:
+        messages.success(request, "You have disabled DID LOGIN. Unable to log out! Please re-run the server with "
+                                  "DIDLOGIN set to True")
     else:
         messages.success(request, "You have been logged out!")
     return redirect(reverse('landing'))

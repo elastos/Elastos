@@ -20,9 +20,8 @@ def login_required(function):
 
 
 def landing(request):
-    development = config('DEVELOPMENT', default=False, cast=bool)
-    context = {'development': development}
-    if development:
+    did_login = config('DIDLOGIN', default=False, cast=bool)
+    if not did_login:
         email = config('SUPERUSER_USER')
         try:
             user = DIDUser.objects.get(email=email)
@@ -42,7 +41,7 @@ def landing(request):
         request.session['did'] = user.did
         request.session['logged_in'] = True
         populate_session_vars_from_database(request, user.did)
-    return render(request, 'landing.html', context)
+    return render(request, 'landing.html')
 
 
 def populate_session_vars_from_database(request, did):
