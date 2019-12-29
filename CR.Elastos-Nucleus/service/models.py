@@ -33,3 +33,13 @@ class UserServiceSessionVars(models.Model):
 
     address_eth = models.CharField(max_length=64)
     private_key_eth = models.CharField(max_length=300)
+
+
+class TrackUserPageVists(models.Model):
+    did = models.CharField(max_length=64)
+    page = models.CharField(max_length=300)  # for internal views use only. (identifier)
+    name = models.CharField(max_length=300)  # use to display name or description to user
+    url = models.CharField(max_length=400)  # give the reverse url that would normally be in template(helps reduce code)
+    last_visited = models.DateTimeField(default=timezone.now)
+    number_visits = models.PositiveIntegerField(default=0)
+    is_service = models.BooleanField(default=True)

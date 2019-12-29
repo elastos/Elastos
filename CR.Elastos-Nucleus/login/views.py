@@ -29,6 +29,8 @@ from .models import DIDUser, DIDRequest
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from .tokens import account_activation_token
 
+from service.models import TrackUserPageVists
+
 
 def check_ela_auth(request):
     if 'elaState' not in request.session.keys():
@@ -121,6 +123,7 @@ def register(request):
 
 @login_required
 def edit_profile(request):
+    recent_services = TrackUserPageVists.objects.filter(did=request.session['did']).order_by('-last_visited')[:5]
     did_user = DIDUser.objects.get(did=request.session['did'])
     if request.method == 'POST':
         form = DIDUserChangeForm(request.POST, instance=request.user)
@@ -145,7 +148,7 @@ def edit_profile(request):
                              "The email '%s' needs to be verified. Please check your email for confirmation link" % did_user.email)
             return redirect(reverse('login:home'))
         form = DIDUserChangeForm(instance=request.user)
-    return render(request, 'login/edit_profile.html', {'form': form})
+    return render(request, 'login/edit_profile.html', {'form': form , 'recent_services':recent_services})
 
 
 def send_email(request, to_email, user):
@@ -219,7 +222,10 @@ def sign_in(request):
 
 @login_required
 def home(request):
-    return render(request, 'login/home.html')
+    did = request.session['did']
+    recent_services = TrackUserPageVists.objects.filter(did=did , is_service=True).order_by('-last_visited')[:5]
+    most_visited_pages = TrackUserPageVists.objects.filter(did = did).order_by('-number_visits')[:5]
+    return render(request, 'login/home.html' , {'recent_services':recent_services , 'most_visited_pages':most_visited_pages})
 
 
 def sign_out(request):

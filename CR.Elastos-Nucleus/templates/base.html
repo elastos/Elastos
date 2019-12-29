@@ -133,7 +133,10 @@
                                         style="list-style-type:none; color: black; font-size:18px; font-weight:bold">
                                         Recently Opened
                                     </li>
-                                    <!-- Recently Opened Services go here -->
+                                    {% for item in recent_services %}
+                                         <a href="{% url  item.url  %}"
+                                            style="color:black; text-decoration:none">{{ item.name }}</a> <br>
+                                    {% endfor %}
                                 </ul>
                             </li>
 
