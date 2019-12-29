@@ -1,26 +1,13 @@
 # GRPC_python
 GRPC python implementation with SQL Alchemy
 
-## Start Postgres server:
-```
-cd tools
-# This script automatically runs the scripts located at grpc_adenine/database/scripts/
-./postgres.sh
-cd ..
-```
-
-## Quickly run using docker
-Remove previous docker container:
-```
-docker container rm -f smartweb-service 
-```
+## Run smartweb-service quickly(runs using docker)
 Copy environment file and change variables as needed:
 ``` 
 cp .env.example .env
 ```
-Run docker container
 ``` 
-docker run --name smartweb-service -v "$PWD/.env:/elastos-smartweb-service/.env" -p 8000:8000 cyberrepublic/elastos-smartweb-service:latest
+./run.sh
 ```
 
 ## Run without using docker
@@ -87,6 +74,14 @@ Copy environment file and change variables as needed:
 ``` 
 # Change DB_HOST from '172.17.0.1' to 'localhost'
 cp .env.example .env
+```
+
+Start Postgres server:
+```
+cd tools
+# This script automatically runs the scripts located at grpc_adenine/database/scripts/
+./postgres.sh
+cd ..
 ```
 
 Run the following command:
