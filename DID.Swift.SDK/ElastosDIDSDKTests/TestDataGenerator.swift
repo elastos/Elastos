@@ -46,7 +46,7 @@ class TestDataGenerator: XCTest {
             
             let vc: VerifiableCredential = try selfIssuer.seal(for: doc.subject!,"profile", ["BasicProfileCredential", "SelfProclaimedCredential"], props, storePass)
             doc.addCredential(vc)
-            issuer = try doc.seal(storePass)
+            issuer = try doc.seal(store, storePass)
             try store.storeDid(issuer)
             
             
@@ -112,7 +112,7 @@ class TestDataGenerator: XCTest {
             let vcEmail: VerifiableCredential = try selfIssuer.seal(for: doc.subject!, "email", ["BasicProfileCredential", "InternetAccountCredential", "EmailCredential"], props, storePass)
             doc.addCredential(vcProfile)
             doc.addCredential(vcEmail)
-            test = try doc.seal(storePass)
+            test = try doc.seal(store, storePass)
             try store.storeDid(test)
             
             var id = test.getDefaultPublicKey()

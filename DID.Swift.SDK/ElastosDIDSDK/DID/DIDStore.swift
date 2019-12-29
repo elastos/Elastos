@@ -169,7 +169,7 @@ public class DIDStore: NSObject {
         var doc: DIDDocument = DIDDocument(did)
         _ = try doc.addAuthenticationKey(id, try key.getPublicKeyBase58())
         
-        doc = try doc.seal(storepass)
+        doc = try doc.seal(self, storepass)
         try storeDid(doc, alias ?? "")
         try storage.storePrivateIdentityIndex(nextIndex)
         
@@ -275,8 +275,8 @@ public class DIDStore: NSObject {
         try storage.storeDidMeta(did, meta)
         if (didCache != nil) {
             let d = didCache!.get(did)
-            let doc: DIDDocument = d as! DIDDocument
             if (d != nil) {
+                let doc: DIDDocument = d as! DIDDocument
                 doc.meta = meta
             }
         }
@@ -322,6 +322,8 @@ public class DIDStore: NSObject {
         doc = try storage.loadDid(did)
         if (doc != nil) {
             let d = doc as! DIDDocument
+            d.meta = try storage.loadDidMeta(did)
+            d.meta.store = self
             didCache!.put(d.subject!, data: d)
         }
         let d = doc as! DIDDocument
@@ -349,7 +351,14 @@ public class DIDStore: NSObject {
     }
 
     public func listDids(_ filter: Int) throws -> Array<DID> {
-        return try storage.listDids(filter)
+        let dids = try storage.listDids(filter)
+        for did in dids {
+            let meta: DIDMeta = try loadDidMeta(did)
+            meta.store = self
+            did.meta = meta
+        }
+
+        return dids
     }
     
     public func storeCredential(_ credential: VerifiableCredential, _ alias: String) throws {

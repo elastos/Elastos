@@ -125,7 +125,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddPublicKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             _ = try testData.initIdentity()
             var doc: DIDDocument = try testData.loadTestDocument()
             XCTAssertNotNil(doc)
@@ -142,7 +142,7 @@ class DIDDoucumentTests: XCTestCase {
                                            try key.getPublicKeyBase58())
             XCTAssertTrue(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -169,7 +169,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemovePublicKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -195,7 +195,7 @@ class DIDDoucumentTests: XCTestCase {
             success = try doc.removePublicKey(doc.getDefaultPublicKey(), true)
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -286,7 +286,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddAuthenticationKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -328,7 +328,7 @@ class DIDDoucumentTests: XCTestCase {
             success = try doc.addAuthenticationKey("recovery")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -362,7 +362,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveAuthenticationKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
         
@@ -399,7 +399,7 @@ class DIDDoucumentTests: XCTestCase {
             success = doc.removeAuthenticationKey(doc.getDefaultPublicKey())
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -529,7 +529,7 @@ class DIDDoucumentTests: XCTestCase {
             success = try doc.addAuthorizationKey("key2")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -561,7 +561,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveAuthorizationKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -593,7 +593,7 @@ class DIDDoucumentTests: XCTestCase {
             success = try doc.removeAuthorizationKey("notExistKey")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -676,7 +676,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddCredential() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -695,7 +695,7 @@ class DIDDoucumentTests: XCTestCase {
             success = doc.addCredential(vc!)
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -720,7 +720,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveCredential() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -749,7 +749,7 @@ class DIDDoucumentTests: XCTestCase {
                                                   "notExistCredential"))
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -831,7 +831,7 @@ class DIDDoucumentTests: XCTestCase {
     func testAddService() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -851,7 +851,7 @@ class DIDDoucumentTests: XCTestCase {
             success = try doc.addService("vcr", "test", "https://www.elastos.org/test")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             
@@ -872,7 +872,7 @@ class DIDDoucumentTests: XCTestCase {
     func testRemoveService() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+            let store = try testData.setupStore(true)
             try testData.initIdentity()
             
             var doc: DIDDocument = try testData.loadTestDocument()
@@ -890,7 +890,7 @@ class DIDDoucumentTests: XCTestCase {
             success = try doc.removeService("notExistService")
             XCTAssertFalse(success)
             
-            doc = try doc.seal(storePass)
+            doc = try doc.seal(store, storePass)
             XCTAssertNotNil(doc)
             XCTAssertTrue(try doc.isValid())
             

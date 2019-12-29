@@ -951,8 +951,9 @@ public class DIDDocument: NSObject {
         return false
     }
     
-    public func seal(_ storepass: String) throws -> DIDDocument {
+    public func seal(_ store: DIDStore, _ storepass: String) throws -> DIDDocument {
         setDefaultExpires()
+        meta.store = store
         let signKey: DIDURL = getDefaultPublicKey()
         let json = try toJson(nil, true, true)
         let inputs: [CVarArg] = [json, json.count]

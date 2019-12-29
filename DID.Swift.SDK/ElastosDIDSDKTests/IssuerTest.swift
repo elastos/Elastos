@@ -42,7 +42,7 @@ class IssuerTest: XCTestCase {
     func newIssuerTestWithInvalidKey() {
         do {
             let testData: TestData = TestData()
-            try testData.setupStore(true)
+           let store = try testData.setupStore(true)
             
             var issuerDoc: DIDDocument = try testData.loadTestIssuer()
             
@@ -50,7 +50,7 @@ class IssuerTest: XCTestCase {
             let signKey: DIDURL = try DIDURL(issuerDoc.subject!, "testKey")
             try issuerDoc.addAuthenticationKey(signKey, try key.getPublicKeyBase58())
             
-            issuerDoc = try issuerDoc.seal(storePass)
+            issuerDoc = try issuerDoc.seal(store, storePass)
             XCTAssertTrue(try issuerDoc.isValid())
             
             let issuer: Issuer = try Issuer(issuerDoc, signKey)
