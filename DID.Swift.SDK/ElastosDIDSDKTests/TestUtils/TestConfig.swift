@@ -1,10 +1,10 @@
 
 import Foundation
 
-let tempDir: String = "/Users/liaihong/Desktop/test_java/TEMP"
+let tempDir: String = "/Users/liaihong/Desktop/DID_iOS/TEMP"
 
 //let storePath: String = "\(NSHomeDirectory())/Library/Caches/DIDStore"
-let storePath: String = "/Users/liaihong/Desktop/test_java/ios_DIDStore"
+let storePath: String = "/Users/liaihong/Desktop/DID_iOS/ios_DIDStore"
 let storePass: String = "passwd"
 let passphrase: String = "secret"
 let walletPassword: String = "test111111"

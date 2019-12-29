@@ -53,26 +53,59 @@ public class DIDBackend: NSObject {
         let requestId = generateRequestId()
         
         let json = try adapter.resolve(requestId, did.description, false)
+        guard json != nil else {
+            throw DIDResolveError.failue("Unknown error.")
+        }
         var jsonString = json!.replacingOccurrences(of: " ", with: "")
         jsonString = jsonString.replacingOccurrences(of: "\n", with: "")
         let resultJson = JsonHelper.handleString(jsonString) as! OrderedDictionary<String, Any>
-        let re: Array<OrderedDictionary<String, Any>> = resultJson[RESULT] as! Array<OrderedDictionary<String, Any>>
-        let result = re[0]
+        let result: OrderedDictionary<String, Any> = resultJson[RESULT] as! OrderedDictionary<String, Any>
 
         guard result.count != 0 else {
             throw DIDResolveError.failue("Resolve DID error .")
+        }
+        // Check response id, should equals requestId
+        let id = result[ID] as? String
+        if id == nil || id == "" || id != requestId {
+            throw DIDResolveError.failue("Missmatched resolve result with request.")
         }
         let rr: ResolveResult = try ResolveResult.fromJson(result)
         if rr.status != ResolveResult.STATUS_NOT_FOUND {
             try ResolverCache.store(rr)
         }
         return rr
+        /*
+         // Check response id, should equals requestId
+         JsonNode result = node.get(RESULT);
+         if (result == null || result.isNull()) {
+             JsonNode error = node.get(ERROR);
+             throw new DIDResolveException("Resolve DID error("
+                     + error.get(ERROR_CODE).longValue() + "): "
+                     + error.get(ERROR_MESSAGE).textValue());
+         }
+
+         ResolveResult rr = ResolveResult.fromJson(result);
+
+         if (rr.getStatus() != ResolveResult.STATUS_NOT_FOUND) {
+             try {
+                 ResolverCache.store(rr);
+             } catch (IOException e) {
+                 System.out.println("!!! Cache resolved resolved result error: "
+                         + e.getMessage());
+             }
+         }
+
+         return rr;
+         */
     }
     
     func resolve(_ did: DID, _ force: Bool) throws -> DIDDocument? {
         var rr: ResolveResult?
         if !force {
             rr = try ResolverCache.load(did, ttl)
+        }
+        if (rr == nil) {
+            rr = try resolveFromBackend(did)
         }
         switch rr!.status {
         case ResolveResult.STATUS_EXPIRED: do {

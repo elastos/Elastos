@@ -379,8 +379,8 @@ public class DIDStore: NSObject {
         
         if (vcCache != nil) {
             let v = vcCache!.get(id)
-            let vc: VerifiableCredential = v as! VerifiableCredential
             if (v != nil) {
+                let vc: VerifiableCredential = v as! VerifiableCredential
                 vc.meta = meta
             }
         }
