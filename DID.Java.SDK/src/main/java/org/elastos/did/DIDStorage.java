@@ -42,6 +42,10 @@ public interface DIDStorage {
 
 	public int loadPrivateIdentityIndex() throws DIDStoreException;
 
+	public void storeMnemonic(String mnemonic) throws DIDStoreException;
+
+	public String loadMnemonic() throws DIDStoreException;
+
 	// DIDs
 	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStoreException;
 

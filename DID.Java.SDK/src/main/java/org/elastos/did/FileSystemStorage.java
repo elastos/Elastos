@@ -80,6 +80,7 @@ class FileSystemStorage implements DIDStorage {
 	private static final String PRIVATE_DIR = "private";
 	private static final String HDKEY_FILE = "key";
 	private static final String INDEX_FILE = "index";
+	private static final String MNEMONIC_FILE = "mnemonic";
 
 	private static final String DID_DIR = "ids";
 	private static final String DOCUMENT_FILE = "document";
@@ -307,6 +308,27 @@ class FileSystemStorage implements DIDStorage {
 			throw new DIDStoreException("Load private identity error.", e);
 		}
 	}
+
+	@Override
+	public void storeMnemonic(String mnemonic) throws DIDStoreException {
+		try {
+			File file = getFile(true, PRIVATE_DIR, MNEMONIC_FILE);
+			writeText(file, mnemonic);
+		} catch (IOException e) {
+			throw new DIDStoreException("Store mnemonic error.", e);
+		}
+	}
+
+	@Override
+	public String loadMnemonic() throws DIDStoreException {
+		try {
+			File file = getFile(PRIVATE_DIR, MNEMONIC_FILE);
+			return readText(file);
+		} catch (IOException e) {
+			throw new DIDStoreException("Load mnemonic error.", e);
+		}
+	}
+
 
 	@Override
 	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStoreException {

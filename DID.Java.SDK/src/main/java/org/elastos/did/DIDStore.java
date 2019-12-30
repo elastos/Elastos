@@ -138,12 +138,25 @@ public final class DIDStore {
 		storage.storePrivateIdentity(encryptedIdentity);
 		storage.storePrivateIdentityIndex(0);
 
+		// Save mnemonic
+		String encryptedMnemonic = encryptToBase64(
+				mnemonic.getBytes(), storepass);
+		storage.storeMnemonic(encryptedMnemonic);
+
 		privateIdentity.wipe();
 	}
 
 	public void initPrivateIdentity(int language, String mnemonic,
 			String passphrase, String storepass) throws DIDStoreException {
 		initPrivateIdentity(language, mnemonic, passphrase, storepass, false);
+	}
+
+	public String exportMnemonic(String storepass) throws DIDStoreException {
+		if (storepass == null || storepass.isEmpty())
+			throw new IllegalArgumentException("Invalid password.");
+
+		String encryptedMnemonic = storage.loadMnemonic();
+		return new String(decryptFromBase64(encryptedMnemonic, storepass));
 	}
 
 	// initialized from saved private identity from DIDStore.

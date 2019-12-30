@@ -74,12 +74,12 @@ public class DIDStoreTest {
 	}
 
 	@Test
-	public void testInitPrivateIdentity0() throws DIDException {
+	public void testInitPrivateIdentity() throws DIDException {
     	TestData testData = new TestData();
     	DIDStore store = testData.setupStore(true);
     	assertFalse(store.containsPrivateIdentity());
 
-    	testData.initIdentity();
+    	String mnemonic = testData.initIdentity();
     	assertTrue(store.containsPrivateIdentity());
 
     	File file = new File(TestConfig.storeRoot + File.separator + "private"
@@ -92,8 +92,16 @@ public class DIDStoreTest {
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
+    	file = new File(TestConfig.storeRoot + File.separator + "private"
+    			+ File.separator + "mnemonic");
+    	assertTrue(file.exists());
+    	assertTrue(file.isFile());
+
     	store = DIDStore.open("filesystem", TestConfig.storeRoot);
     	assertTrue(store.containsPrivateIdentity());
+
+    	String exportedMnemonic = store.exportMnemonic(TestConfig.storePass);
+    	assertEquals(mnemonic, exportedMnemonic);
 	}
 
 	@Test
