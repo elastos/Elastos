@@ -893,9 +893,9 @@ export default class extends Base {
 
     let ret = null
     const postPromise = util.promisify(request.post, {multiArgs: true});
-    await postPromise({url: 'http://54.223.244.60/api/dposnoderpc/check/listcrcandidates',
-                 form: { pageNum, pageSize, state },
-                 encoding: 'utf8'
+    await postPromise({url: 'https://unionsquare.elastos.org/api/dposnoderpc/check/listcrcandidates',
+                       form: { pageNum, pageSize, state },
+                       encoding: 'utf8'
     }).then((value) => ret = value.body)
     return ret
   }
