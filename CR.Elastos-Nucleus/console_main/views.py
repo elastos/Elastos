@@ -27,6 +27,7 @@ def login_required(function):
 
 def landing(request):
     did_login = config('DIDLOGIN', default=False, cast=bool)
+    recent_services = None
     if not did_login:
         email = config('SUPERUSER_USER')
         try:
