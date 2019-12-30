@@ -73,4 +73,12 @@ public class CredentialMeta extends Metadata {
 
 		super.merge(meta);
 	}
+
+	@Override
+	public boolean isEmpty() {
+		if (alias != null)
+			return false;
+
+		return super.isEmpty();
+	}
 }

@@ -208,7 +208,7 @@ public class IDChainOperationsTest {
 		assertEquals(2, doc.getAuthenticationKeyCount());
 		store.storeDid(doc);
 
-		txid = store.updateDid(did, TestConfig.storePass);
+		txid = store.publishDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
@@ -267,7 +267,7 @@ public class IDChainOperationsTest {
 		assertEquals(3, doc.getAuthenticationKeyCount());
 		store.storeDid(doc);
 
-		txid = store.updateDid(did, TestConfig.storePass);
+		txid = store.publishDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
@@ -447,7 +447,7 @@ public class IDChainOperationsTest {
 		assertEquals(2, doc.getCredentialCount());
 		store.storeDid(doc);
 
-		txid = store.updateDid(did, TestConfig.storePass);
+		txid = store.publishDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 
@@ -522,7 +522,7 @@ public class IDChainOperationsTest {
 		assertEquals(3, doc.getCredentialCount());
 		store.storeDid(doc);
 
-		txid = store.updateDid(did, TestConfig.storePass);
+		txid = store.publishDid(did, TestConfig.storePass);
 		assertNotNull(txid);
 		System.out.println("Updated DID: " + did);
 

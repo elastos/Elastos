@@ -262,7 +262,19 @@ public final class DIDStore {
 		if (signKey == null)
 			signKey = doc.getDefaultPublicKey();
 
-		return DIDBackend.getInstance().create(doc, signKey, storepass);
+		String lastTxid = doc.getTransactionId();
+		if (lastTxid == null || lastTxid.isEmpty())
+			lastTxid = DIDBackend.getInstance().create(doc, signKey, storepass);
+		else
+			lastTxid = DIDBackend.getInstance().update(doc,
+					lastTxid, signKey, storepass);
+
+		if (lastTxid != null) {
+			doc.getMeta().setTransactionId(lastTxid);
+			storage.storeDidMeta(doc.getSubject(), doc.getMeta());
+		}
+
+		return lastTxid;
 	}
 
 	public String publishDid(String did, String signKey, String storepass)
@@ -280,39 +292,6 @@ public final class DIDStore {
 	public String publishDid(String did, String storepass)
 			throws DIDStoreException, DIDException {
 		return publishDid(did, (String)null, storepass);
-	}
-
-	public String updateDid(DID did, DIDURL signKey, String storepass)
-			throws DIDException, DIDStoreException, DIDException {
-		if (did == null || storepass == null || storepass.isEmpty())
-			throw new IllegalArgumentException();
-
-		DIDDocument doc = loadDid(did);
-		if (doc == null)
-			throw new DIDStoreException("Can not find the document for " + did);
-
-		if (signKey == null)
-			signKey = doc.getDefaultPublicKey();
-
-		return DIDBackend.getInstance().update(doc,
-				doc.getTransactionId(), signKey, storepass);
-	}
-
-	public String updateDid(String did, String signKey, String storepass)
-			throws MalformedDIDURLException, DIDException, DIDStoreException {
-		DID _did = new DID(did);
-		DIDURL _signKey = signKey == null ? null : new DIDURL(_did, signKey);
-		return updateDid(_did, _signKey, storepass);
-	}
-
-	public String updateDid(DID did, String storepass)
-			throws DIDException, DIDStoreException {
-		return updateDid(did, (DIDURL)null, storepass);
-	}
-
-	public String updateDid(String did, String storepass)
-			throws DIDException, DIDStoreException {
-		return updateDid(did, (String)null, storepass);
 	}
 
 	// Deactivate self use authentication keys
@@ -349,7 +328,7 @@ public final class DIDStore {
 		// Save deactivated status to DID metadata
 		if (localCopy) {
 			doc.getMeta().setDeactivated(true);
-			storeDidMeta(did, doc.getMeta());
+			storage.storeDidMeta(did, doc.getMeta());
 		}
 
 		return txid;
@@ -468,7 +447,6 @@ public final class DIDStore {
 
 		storage.storeDid(doc);
 
-		// TODO: Check me!!!
 		DIDMeta meta = loadDidMeta(doc.getSubject());
 		meta.merge(doc.getMeta());
 		meta.setStore(this);
@@ -607,7 +585,6 @@ public final class DIDStore {
 
 		storage.storeCredential(credential);
 
-		// TODO: Check me!!!
 		CredentialMeta meta = loadCredentialMeta(
 				credential.getSubject().getId(), credential.getId());
 		meta.merge(credential.getMeta());

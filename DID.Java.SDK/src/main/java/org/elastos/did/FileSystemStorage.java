@@ -334,7 +334,8 @@ class FileSystemStorage implements DIDStorage {
 	public void storeDidMeta(DID did, DIDMeta meta) throws DIDStoreException {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(), META_FILE);
-			String metadata = meta != null ? meta.toString() : null;
+			String metadata = (meta != null && !meta.isEmpty()) ?
+					meta.toString() : null;
 
 			if (metadata == null || metadata.isEmpty())
 				file.delete();
@@ -446,7 +447,8 @@ class FileSystemStorage implements DIDStorage {
 		try {
 			File file = getFile(true, DID_DIR, did.getMethodSpecificId(),
 					CREDENTIALS_DIR, id.getFragment(), META_FILE);
-			String metadata = meta != null ? meta.toString() : null;
+			String metadata = (meta != null && !meta.isEmpty()) ?
+					meta.toString() : null;
 
 			if (metadata == null || metadata.isEmpty())
 				file.delete();

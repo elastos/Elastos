@@ -131,7 +131,8 @@ public class DIDMeta extends Metadata {
 		if (m.alias != null)
 			alias = m.alias;
 
-		deactivated = m.deactivated;
+		if (!deactivated)
+			deactivated = m.deactivated;
 
 		if (m.txid != null)
 			txid = m.txid;
@@ -140,5 +141,13 @@ public class DIDMeta extends Metadata {
 			updated = m.updated;
 
 		super.merge(meta);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		if (alias != null || deactivated || txid != null || updated != null)
+			return false;
+
+		return super.isEmpty();
 	}
 }

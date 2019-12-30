@@ -163,11 +163,6 @@ public class DIDStoreTest {
     	assertTrue(file.exists());
     	assertTrue(file.isFile());
 
-    	file = new File(TestConfig.storeRoot + File.separator + "ids"
-    			+ File.separator + doc.getSubject().getMethodSpecificId()
-    			+ File.separator + ".meta");
-    	assertFalse(file.exists());
-
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
     	assertEquals(doc.getSubject(), resolved.getSubject());
@@ -205,7 +200,7 @@ public class DIDStoreTest {
     	assertEquals(2, newDoc.getAuthenticationKeyCount());
     	store.storeDid(newDoc);
 
-    	store.updateDid(newDoc.getSubject(), TestConfig.storePass);
+    	store.publishDid(newDoc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
@@ -221,7 +216,7 @@ public class DIDStoreTest {
     	assertEquals(3, newDoc.getAuthenticationKeyCount());
     	store.storeDid(newDoc);
 
-    	store.updateDid(newDoc.getSubject(), TestConfig.storePass);
+    	store.publishDid(newDoc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);
@@ -246,7 +241,7 @@ public class DIDStoreTest {
     	store.storeDidMeta(doc.getSubject(), meta);
 
     	// Update will fail
-    	store.updateDid(doc.getSubject(), TestConfig.storePass);
+    	store.publishDid(doc.getSubject(), TestConfig.storePass);
 	}
 
 	@Test(expected = DIDDeactivatedException.class)
@@ -294,7 +289,7 @@ public class DIDStoreTest {
     	assertEquals(2, newDoc.getAuthenticationKeyCount());
     	store.storeDid(newDoc);
 
-    	store.updateDid(newDoc.getSubject(), TestConfig.storePass);
+    	store.publishDid(newDoc.getSubject(), TestConfig.storePass);
 
     	resolved = doc.getSubject().resolve(true);
     	assertNotNull(resolved);

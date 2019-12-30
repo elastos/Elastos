@@ -141,4 +141,11 @@ public abstract class Metadata {
 		if (meta != null && meta.extra != null)
 			extra.putAll(meta.extra);
 	}
+
+	public boolean isEmpty() {
+		if (extra == null)
+			return true;
+
+		return extra.isEmpty();
+	}
 }
