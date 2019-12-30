@@ -185,11 +185,11 @@ public class CRListFragment extends BaseFragment implements BaseQuickAdapter.OnI
                 int Language = new SPUtil(getContext()).getLanguage();
                 if (Language == 0) {
                     Intent intent = new Intent("android.intent.action.VIEW");
-                    intent.setData(Uri.parse("https://news-zh.elastos.org/亦来云dpos超级节点竞选细则/"));
+                    intent.setData(Uri.parse("https://news-zh.elastos.org/cr%e5%a7%94%e5%91%98%e9%80%89%e4%b8%be%e8%a7%84%e5%88%99/?from=singlemessage"));
                     startActivity(intent);
                 } else {
                     Intent intent = new Intent("android.intent.action.VIEW");
-                    intent.setData(Uri.parse("https://news.elastos.org/elastos-dpos-supernode-election-process/"));
+                    intent.setData(Uri.parse("https://news.elastos.org/cr-council-election-rules/"));
                     startActivity(intent);
                 }
                 break;
