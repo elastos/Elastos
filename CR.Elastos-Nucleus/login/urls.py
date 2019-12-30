@@ -13,6 +13,6 @@ urlpatterns = [
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         views.activate, name="activate"),
     path('sign_in', views.sign_in, name="sign_in"),
-    path('home', views.home, name="home"),
+    path('feed', views.feed, name="feed"),
     path('sign_out', views.sign_out, name="sign_out")
 ]

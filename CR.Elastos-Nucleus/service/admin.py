@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import UploadFile, UserServiceSessionVars , TrackUserPageVists
+from .models import UploadFile, UserServiceSessionVars
 
 
 class UploadFileAdmin(admin.ModelAdmin):
@@ -9,7 +9,6 @@ class UploadFileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UploadFile, UploadFileAdmin)
-admin.site.register(TrackUserPageVists)
 
 
 class UserServiceSessionVarsAdmin(admin.ModelAdmin):
@@ -18,3 +17,4 @@ class UserServiceSessionVarsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserServiceSessionVars, UserServiceSessionVarsAdmin)
+

@@ -1,8 +1,9 @@
 import json
 import gc
+import logging
 import secrets
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.contrib.auth import login
 from django.utils import timezone
@@ -24,12 +25,13 @@ from django.utils.http import urlsafe_base64_encode
 from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes, force_text
 
-from console_main.views import login_required, populate_session_vars_from_database
+from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
+    get_recent_services
+from console_main.models import TrackUserPageVisits
+
 from .models import DIDUser, DIDRequest
 from .forms import DIDUserCreationForm, DIDUserChangeForm
 from .tokens import account_activation_token
-
-from service.models import TrackUserPageVists
 
 
 def check_ela_auth(request):
@@ -65,6 +67,7 @@ def check_ela_auth(request):
                 populate_session_vars_from_database(request, request.session['did'])
                 messages.success(request, "Logged in successfully!")
     except Exception as e:
+        logging.debug(f"Method: check_ela_auth Error: {e}")
         return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'redirect': redirect_url}, status=200)
 
@@ -93,6 +96,7 @@ def did_callback(request):
             data["auth"] = True
             DIDRequest.objects.filter(state=data["RandomNumber"]).update(data=json.dumps(data))
         except Exception as e:
+            logging.debug(f" Method: did_callback Error: {e}")
             JsonResponse({'error': str(e)}, status=404)
 
     return JsonResponse({'result': True}, status=200)
@@ -123,7 +127,9 @@ def register(request):
 
 @login_required
 def edit_profile(request):
-    recent_services = TrackUserPageVists.objects.filter(did=request.session['did']).order_by('-last_visited')[:5]
+    did = request.session['did']
+    track_page_visit(did, 'Edit Profile', 'login:edit_profile', False)
+    recent_services = get_recent_services(did)
     did_user = DIDUser.objects.get(did=request.session['did'])
     if request.method == 'POST':
         form = DIDUserChangeForm(request.POST, instance=request.user)
@@ -140,15 +146,15 @@ def edit_profile(request):
                 messages.success(request, "Please check your email to finish modifying your profile info")
             else:
                 user.save()
-            return redirect(reverse('login:home'))
+            return redirect(reverse('login:feed'))
     else:
         if did_user.is_active is False:
             send_email(request, did_user.email, did_user)
             messages.success(request,
                              "The email '%s' needs to be verified. Please check your email for confirmation link" % did_user.email)
-            return redirect(reverse('login:home'))
+            return redirect(reverse('login:feed'))
         form = DIDUserChangeForm(instance=request.user)
-    return render(request, 'login/edit_profile.html', {'form': form , 'recent_services':recent_services})
+    return render(request, 'login/edit_profile.html', {'form': form, 'recent_services': recent_services})
 
 
 def send_email(request, to_email, user):
@@ -179,7 +185,7 @@ def activate(request, uidb64, token):
         populate_session_vars_from_database(request, uid)
         request.session['logged_in'] = True
         messages.success(request, "Email has been confirmed!")
-        return redirect(reverse('login:home'))
+        return redirect(reverse('login:feed'))
     else:
         return HttpResponse('Activation link is invalid!')
 
@@ -221,11 +227,13 @@ def sign_in(request):
 
 
 @login_required
-def home(request):
+def feed(request):
     did = request.session['did']
-    recent_services = TrackUserPageVists.objects.filter(did=did , is_service=True).order_by('-last_visited')[:5]
-    most_visited_pages = TrackUserPageVists.objects.filter(did = did).order_by('-number_visits')[:5]
-    return render(request, 'login/home.html' , {'recent_services':recent_services , 'most_visited_pages':most_visited_pages})
+    track_page_visit(did, 'Feed', 'login:feed', False)
+    recent_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-last_visited')[:5]
+    recent_services = get_recent_services(did)
+    most_visited_pages = TrackUserPageVisits.objects.filter(did=did).order_by('-number_visits')[:5]
+    return render(request, 'login/feed.html', {'recent_pages': recent_pages, 'recent_services': recent_services, 'most_visited_pages': most_visited_pages})
 
 
 def sign_out(request):

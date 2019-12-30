@@ -1,13 +1,14 @@
 import json
+import logging
 import os
 
 from decouple import config
 from django.shortcuts import render, redirect
 
-from console_main.views import login_required, populate_session_vars_from_database
+from console_main.views import login_required, populate_session_vars_from_database, track_page_visit, \
+    get_recent_services
 from django.contrib import messages
 from django.urls import reverse
-from django.utils import timezone
 
 from elastos_adenine.common import Common
 from elastos_adenine.hive import Hive
@@ -19,18 +20,16 @@ from .forms import UploadAndSignForm, VerifyAndShowForm
 from .forms import CreateWalletForm, ViewWalletForm, RequestELAForm
 from .forms import DeployETHContractForm, WatchETHContractForm
 
-from .models import UploadFile, UserServiceSessionVars , TrackUserPageVists
-from django.db import models
-from django.db.models import F
+from .models import UploadFile, UserServiceSessionVars
 
 
 @login_required
 def generate_key(request):
     did = request.session['did']
-    track_page_visit(did, "Generate API Key" , 'generate_key' , "service:generate_key")
-    recent_services = TrackUserPageVists.objects.filter(did= did , is_service = True).order_by('-last_visited')[:5]
+    track_page_visit(did, "Generate API Key", "service:generate_key", True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/generate_key.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/generate_key.go'), 'r') as myfile:
@@ -47,7 +46,8 @@ def generate_key(request):
                     if response.status:
                         api_key = response.api_key
                         obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
-                                                                                       defaults={'did': did, 'api_key': api_key})
+                                                                                       defaults={'did': did,
+                                                                                                 'api_key': api_key})
                         obj.save()
                         populate_session_vars_from_database(request, did)
                         output['get_api_key'] = True
@@ -58,7 +58,8 @@ def generate_key(request):
                     if response.status:
                         api_key = response.api_key
                         obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
-                                                                                       defaults={'did': did, 'api_key': api_key})
+                                                                                       defaults={'did': did,
+                                                                                                 'api_key': api_key})
                         obj.save()
                         populate_session_vars_from_database(request, did)
                         output['generate_api_key'] = True
@@ -72,24 +73,28 @@ def generate_key(request):
                     return redirect(reverse('service:generate_key'))
                 else:
                     request.session['api_key'] = api_key
-                    return render(request, "service/generate_key.html", {'output': output, 'api_key': api_key , 'sample_code': sample_code, 'recent_services':recent_services})
+                    return render(request, "service/generate_key.html",
+                                  {'output': output, 'api_key': api_key, 'sample_code': sample_code,
+                                   'recent_services': recent_services})
             except Exception as e:
+                logging.debug(f"did: {did} Method: generate_key Error: {e}")
                 messages.success(request, "Could not generate an API key. Please try again")
                 return redirect(reverse('service:generate_key'))
             finally:
                 common.close()
     else:
         form = GenerateAPIKeyForm(initial={'did': did})
-        return render(request, "service/generate_key.html", {'form': form, 'sample_code': sample_code ,'recent_services':recent_services})
+        return render(request, "service/generate_key.html",
+                      {'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
 
 
 @login_required
 def upload_and_sign(request):
     did = request.session['did']
-    track_page_visit(did , 'Upload And Sign' , 'upload_and_sign' , 'service:upload_and_sign')
-    recent_services = TrackUserPageVists.objects.filter(did=did).order_by('-last_visited')[:5]
+    track_page_visit(did, 'Upload And Sign', 'service:upload_and_sign', True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/upload_and_sign.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/upload_and_sign.go'), 'r') as myfile:
@@ -118,27 +123,31 @@ def upload_and_sign(request):
                     file_hash = data['result']['hash']
                     return render(request, "service/upload_and_sign.html",
                                   {"message_hash": message_hash, "public_key": public_key, "signature": signature,
-                                   "file_hash": file_hash, 'output': True, 'sample_code': sample_code , 'recent_services':recent_services})
+                                   "file_hash": file_hash, 'output': True, 'sample_code': sample_code,
+                                   'recent_services': recent_services})
                 else:
                     messages.success(request, response.status_message)
                     return redirect(reverse('service:upload_and_sign'))
             except Exception as e:
+                logging.debug(f"did: {did} Method: upload_and_sign Error: {e}")
                 messages.success(request, "File could not be uploaded. Please try again")
                 return redirect(reverse('service:upload_and_sign'))
             finally:
                 hive.close()
     else:
-        form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'], 'private_key': request.session['private_key_mainchain']})
-        return render(request, "service/upload_and_sign.html", {'form': form, 'output': False, 'sample_code': sample_code , 'recent_services':recent_services})
+        form = UploadAndSignForm(initial={'did': did, 'api_key': request.session['api_key'],
+                                          'private_key': request.session['private_key_mainchain']})
+        return render(request, "service/upload_and_sign.html",
+                      {'form': form, 'output': False, 'sample_code': sample_code, 'recent_services': recent_services})
 
 
 @login_required
 def verify_and_show(request):
     did = request.session['did']
-    track_page_visit(did , 'Verify And Show' , 'verify_and_show' , 'service:verify_and_show')
-    recent_services = TrackUserPageVists.objects.filter(did=did).order_by('-last_visited')[:5]
+    track_page_visit(did, 'Verify And Show', 'service:verify_and_show', True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/verify_and_show.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/verify_and_show.go'), 'r') as myfile:
@@ -160,27 +169,33 @@ def verify_and_show(request):
                 response = hive.verify_and_show(api_key, request_input)
                 if response.status:
                     content = response.output
-                    return render(request, 'service/verify_and_show.html', {'output': True, 'content': content, 'sample_code': sample_code , 'recent_services':recent_services})
+                    return render(request, 'service/verify_and_show.html',
+                                  {'output': True, 'content': content, 'sample_code': sample_code,
+                                   'recent_services': recent_services})
                 else:
                     messages.success(request, response.status_message)
                     return redirect(reverse('service:verify_and_show'))
             except Exception as e:
+                logging.debug(f"did: {did} Method: verify_and_show Error: {e}")
                 messages.success(request, "File could not be verified nor shown. Please try again")
                 return redirect(reverse('service:verify_and_show'))
             finally:
                 hive.close()
     else:
-        form = VerifyAndShowForm(initial={'api_key': request.session['api_key'], 'private_key': request.session['private_key_mainchain'], 'public_key': request.session['public_key_mainchain']})
-        return render(request, 'service/verify_and_show.html', {'output': False, 'form': form, 'sample_code': sample_code ,'recent_services': recent_services})
+        form = VerifyAndShowForm(
+            initial={'api_key': request.session['api_key'], 'private_key': request.session['private_key_mainchain'],
+                     'public_key': request.session['public_key_mainchain']})
+        return render(request, 'service/verify_and_show.html',
+                      {'output': False, 'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
 
 
 @login_required
 def create_wallet(request):
     did = request.session['did']
-    track_page_visit(did , 'Create Wallet','create_wallet', 'service:create_wallet')
-    recent_services = TrackUserPageVists.objects.filter(did=did).order_by('-last_visited')[:5]
+    track_page_visit(did, 'Create Wallet', 'service:create_wallet', True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/create_wallet.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/create_wallet.go'), 'r') as myfile:
@@ -202,49 +217,74 @@ def create_wallet(request):
                     obj, created = UserServiceSessionVars.objects.update_or_create(did=did,
                                                                                    defaults={'did': did,
                                                                                              'api_key': api_key,
-                                                                                             'mnemonic_mainchain': wallet_mainchain['mnemonic'],
-                                                                                             'public_key_mainchain': wallet_mainchain['public_key'],
-                                                                                             'private_key_mainchain': wallet_mainchain['private_key'],
-                                                                                             'address_mainchain': wallet_mainchain['address'],
-                                                                                             'private_key_did': wallet_did['private_key'],
-                                                                                             'public_key_did': wallet_did['public_key'],
-                                                                                             'address_did': wallet_did['address'],
-                                                                                             'did_did': wallet_did['did'],
-                                                                                             'address_eth': wallet_eth['address'],
-                                                                                             'private_key_eth': wallet_eth['private_key']})
+                                                                                             'mnemonic_mainchain':
+                                                                                                 wallet_mainchain[
+                                                                                                     'mnemonic'],
+                                                                                             'public_key_mainchain':
+                                                                                                 wallet_mainchain[
+                                                                                                     'public_key'],
+                                                                                             'private_key_mainchain':
+                                                                                                 wallet_mainchain[
+                                                                                                     'private_key'],
+                                                                                             'address_mainchain':
+                                                                                                 wallet_mainchain[
+                                                                                                     'address'],
+                                                                                             'private_key_did':
+                                                                                                 wallet_did[
+                                                                                                     'private_key'],
+                                                                                             'public_key_did':
+                                                                                                 wallet_did[
+                                                                                                     'public_key'],
+                                                                                             'address_did': wallet_did[
+                                                                                                 'address'],
+                                                                                             'did_did': wallet_did[
+                                                                                                 'did'],
+                                                                                             'address_eth': wallet_eth[
+                                                                                                 'address'],
+                                                                                             'private_key_eth':
+                                                                                                 wallet_eth[
+                                                                                                     'private_key']})
                     obj.save()
                     populate_session_vars_from_database(request, did)
-                    return render(request, "service/create_wallet.html", { 'output': True, 'wallet_mainchain': wallet_mainchain,
-                        'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth, 'sample_code': sample_code , 'recent_services':recent_services})
+                    return render(request, "service/create_wallet.html",
+                                  {'output': True, 'wallet_mainchain': wallet_mainchain,
+                                   'wallet_did': wallet_did, 'wallet_token': wallet_token, 'wallet_eth': wallet_eth,
+                                   'sample_code': sample_code, 'recent_services': recent_services})
                 else:
                     messages.success(request, response.status_message)
                     return redirect(reverse('service:create_wallet'))
             except Exception as e:
+                logging.debug(f"did: {did} Method: create_wallet Error: {e}")
                 messages.success(request, "Could not create wallet at this time. Please try again")
                 return redirect(reverse('service:create_wallet'))
             finally:
                 wallet.close()
     else:
         form = CreateWalletForm(initial={'api_key': request.session['api_key']})
-        return render(request, 'service/create_wallet.html', {'output': False, 'form': form, 'sample_code': sample_code , 'recent_services':recent_services})
+        return render(request, 'service/create_wallet.html',
+                      {'output': False, 'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
 
 
 @login_required
 def view_wallet(request):
     did = request.session['did']
-    track_page_visit(did , 'View Wallet' , 'view_wallet' , 'service:view_wallet')
-    recent_services = TrackUserPageVists.objects.filter(did=did).order_by('-last_visited')[:5]
+    track_page_visit(did, 'View Wallet', 'service:view_wallet', True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/view_wallet.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/view_wallet.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     form_to_display = {
-        'mainchain': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'mainchain', 'address': request.session['address_mainchain']}),
-        'did': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'did', 'address': request.session['address_did']}),
-        'token': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'token', 'address': request.session['address_mainchain']}),
-        'eth': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'eth', 'address': request.session['address_eth']})
+        'mainchain': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'mainchain',
+                                             'address': request.session['address_mainchain']}),
+        'did': ViewWalletForm(
+            initial={'api_key': request.session['api_key'], 'chain': 'did', 'address': request.session['address_did']}),
+        'token': ViewWalletForm(initial={'api_key': request.session['api_key'], 'chain': 'token',
+                                         'address': request.session['address_mainchain']}),
+        'eth': ViewWalletForm(
+            initial={'api_key': request.session['api_key'], 'chain': 'eth', 'address': request.session['address_eth']})
     }
     output = {
         'mainchain': False,
@@ -281,7 +321,7 @@ def view_wallet(request):
         if form.is_valid():
             network = form.cleaned_data.get('network')
             api_key = form.cleaned_data.get('api_key')
-            addr = form.cleaned_data.get('address')   
+            addr = form.cleaned_data.get('address')
             try:
                 wallet = Wallet()
                 response = wallet.view_wallet(api_key, chain, addr)
@@ -290,36 +330,45 @@ def view_wallet(request):
                     content = json.loads(response.output)['result']
                     address[chain] = content['address']
                     balance[chain] = content['balance']
-                    return render(request, "service/view_wallet.html", { 'output': output, 'form': form_to_display,
-                        'address': address, 'balance': balance, 'sample_code': sample_code  , 'recent_services':recent_services})
+                    return render(request, "service/view_wallet.html", {'output': output, 'form': form_to_display,
+                                                                        'address': address, 'balance': balance,
+                                                                        'sample_code': sample_code,
+                                                                        'recent_services': recent_services})
                 else:
                     messages.success(request, response.status_message)
                     return redirect(reverse('service:view_wallet'))
             except Exception as e:
+                logging.debug(f"did: {did} Method: view_wallet Error: {e}")
                 messages.success(request, "Could not view wallet at this time. Please try again")
                 return redirect(reverse('service:view_wallet'))
             finally:
                 wallet.close()
     else:
-        return render(request, 'service/view_wallet.html', {'output': output, 'form': form_to_display, 'sample_code': sample_code , 'recent_services':recent_services})
-        
+        return render(request, 'service/view_wallet.html',
+                      {'output': output, 'form': form_to_display, 'sample_code': sample_code,
+                       'recent_services': recent_services})
+
 
 @login_required
 def request_ela(request):
     did = request.session['did']
-    track_page_visit(did , 'Request ELA' , 'request_ela' , 'service:request')
-    recent_services = TrackUserPageVists.objects.filter(did=did).order_by('-last_visited')[:5]
+    track_page_visit(did, 'Request ELA', 'service:request_ela', True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/request_ela.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/request_ela.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
     form_to_display = {
-        'mainchain': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'mainchain', 'address': request.session['address_mainchain']}),
-        'did': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'did', 'address': request.session['address_did']}),
-        'token': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'token', 'address': request.session['address_mainchain']}),
-        'eth': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'eth', 'address': request.session['address_eth']})
+        'mainchain': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'mainchain',
+                                             'address': request.session['address_mainchain']}),
+        'did': RequestELAForm(
+            initial={'api_key': request.session['api_key'], 'chain': 'did', 'address': request.session['address_did']}),
+        'token': RequestELAForm(initial={'api_key': request.session['api_key'], 'chain': 'token',
+                                         'address': request.session['address_mainchain']}),
+        'eth': RequestELAForm(
+            initial={'api_key': request.session['api_key'], 'chain': 'eth', 'address': request.session['address_eth']})
     }
     output = {
         'mainchain': False,
@@ -356,7 +405,7 @@ def request_ela(request):
         if form.is_valid():
             network = form.cleaned_data.get('network')
             api_key = form.cleaned_data.get('api_key')
-            addr = form.cleaned_data.get('address')   
+            addr = form.cleaned_data.get('address')
             try:
                 wallet = Wallet()
                 response = wallet.request_ela(api_key, chain, addr)
@@ -365,27 +414,33 @@ def request_ela(request):
                     content = json.loads(response.output)['result']
                     address[chain] = content['address']
                     deposit_amount[chain] = content['deposit_amount']
-                    return render(request, "service/request_ela.html", { 'output': output, 'form': form_to_display,
-                        'address': address, 'deposit_amount': deposit_amount, 'sample_code': sample_code ,'recent_services':recent_services })
+                    return render(request, "service/request_ela.html", {'output': output, 'form': form_to_display,
+                                                                        'address': address,
+                                                                        'deposit_amount': deposit_amount,
+                                                                        'sample_code': sample_code,
+                                                                        'recent_services': recent_services})
                 else:
                     messages.success(request, response.status_message)
                     return redirect(reverse('service:request_ela'))
             except Exception as e:
+                logging.debug(f"did: {did} Method: request_ela Error: {e}")
                 messages.success(request, "Could not view wallet at this time. Please try again")
                 return redirect(reverse('service:request_ela'))
             finally:
                 wallet.close()
     else:
-        return render(request, 'service/request_ela.html', {'output': output, 'form': form_to_display, 'sample_code': sample_code , 'recent_services':recent_services})
+        return render(request, 'service/request_ela.html',
+                      {'output': output, 'form': form_to_display, 'sample_code': sample_code,
+                       'recent_services': recent_services})
 
 
 @login_required
 def deploy_eth_contract(request):
     did = request.session['did']
-    track_page_visit(did , 'Deploy ETH Contract', 'deploy_eth_contract' , 'service:deploy_eth_contract')
-    recent_services = TrackUserPageVists.objects.filter(did=did).order_by('-last_visited')[:5]
+    track_page_visit(did, 'Deploy ETH Contract', 'service:deploy_eth_contract', True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/deploy_eth_contract.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/deploy_eth_contract.go'), 'r') as myfile:
@@ -407,7 +462,8 @@ def deploy_eth_contract(request):
             file_path = temp_file.uploaded_file.path
             try:
                 sidechain_eth = SidechainEth()
-                response = sidechain_eth.deploy_eth_contract(api_key, eth_account_address, eth_private_key, eth_gas, file_path)
+                response = sidechain_eth.deploy_eth_contract(api_key, eth_account_address, eth_private_key, eth_gas,
+                                                             file_path)
                 data = json.loads(response.output)
                 if response.status:
                     temp_file.delete()
@@ -416,27 +472,33 @@ def deploy_eth_contract(request):
                     contract_code_hash = data['result']['contract_code_hash']
                     return render(request, "service/deploy_eth_contract.html",
                                   {"contract_address": contract_address, "contract_name": contract_name,
-                                   "contract_code_hash": contract_code_hash, 'output': True, 'sample_code': sample_code, 'recent_services':recent_services})
+                                   "contract_code_hash": contract_code_hash, 'output': True, 'sample_code': sample_code,
+                                   'recent_services': recent_services})
                 else:
                     messages.success(request, response.status_message)
                     return redirect(reverse('service:deploy_eth_contract'))
             except Exception as e:
+                logging.debug(f"did: {did} Method: deploy_eth_contract Error: {e}")
                 messages.success(request, "Could not deploy smart contract to Eth sidechain. Please try again")
                 return redirect(reverse('service:deploy_eth_contract'))
             finally:
                 sidechain_eth.close()
     else:
-        form = DeployETHContractForm(initial={'did': did, 'api_key': request.session['api_key'], 'eth_account_address': request.session['address_eth'], 'eth_private_key': request.session['private_key_eth'], 'eth_gas': 2000000})
-        return render(request, "service/deploy_eth_contract.html", {'form': form, 'output': False, 'sample_code': sample_code, 'recent_services':recent_services})
+        form = DeployETHContractForm(initial={'did': did, 'api_key': request.session['api_key'],
+                                              'eth_account_address': request.session['address_eth'],
+                                              'eth_private_key': request.session['private_key_eth'],
+                                              'eth_gas': 2000000})
+        return render(request, "service/deploy_eth_contract.html",
+                      {'form': form, 'output': False, 'sample_code': sample_code, 'recent_services': recent_services})
 
 
 @login_required
 def watch_eth_contract(request):
     did = request.session['did']
-    track_page_visit(did , 'Watch ETH Contract' , 'watch_eth_contract' , 'service:watch_eth_contract')
-    recent_services = TrackUserPageVists.objects.filter(did=did).order_by('-last_visited')[:5]
+    track_page_visit(did, 'Watch ETH Contract', 'service:watch_eth_contract', True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/watch_eth_contract.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/watch_eth_contract.go'), 'r') as myfile:
@@ -451,57 +513,52 @@ def watch_eth_contract(request):
             contract_code_hash = form.cleaned_data.get('contract_code_hash')
             try:
                 sidechain_eth = SidechainEth()
-                response = sidechain_eth.watch_eth_contract(api_key, contract_address, contract_name, contract_code_hash)
+                response = sidechain_eth.watch_eth_contract(api_key, contract_address, contract_name,
+                                                            contract_code_hash)
                 data = json.loads(response.output)
                 if response.status:
                     contract_address = data['result']['contract_address']
                     contract_functions = data['result']['contract_functions']
                     contract_source = data['result']['contract_source']
-                    return render(request, "service/watch_eth_contract.html", {'output': True, 'contract_address': contract_address, 'contract_name': contract_name,
-                                                                               'contract_functions': contract_functions, 'contract_source': contract_source, 'sample_code': sample_code , 'recent_services':recent_services})
+                    return render(request, "service/watch_eth_contract.html",
+                                  {'output': True, 'contract_address': contract_address, 'contract_name': contract_name,
+                                   'contract_functions': contract_functions, 'contract_source': contract_source,
+                                   'sample_code': sample_code,
+                                   'recent_services': recent_services})
                 else:
                     messages.success(request, response.status_message)
                     return redirect(reverse('service:watch_eth_contract'))
             except Exception as e:
+                logging.debug(f"did={did} Method: watch_eth_contract Error: {e}")
                 messages.success(request, "Could not view smart contract code at this time. Please try again")
                 return redirect(reverse('service:watch_eth_contract'))
             finally:
                 sidechain_eth.close()
     else:
         form = WatchETHContractForm(initial={'api_key': request.session['api_key']})
-        return render(request, 'service/watch_eth_contract.html', {'output': False, 'form': form, 'sample_code': sample_code , 'recent_services':recent_services})
+        return render(request, 'service/watch_eth_contract.html',
+                      {'output': False, 'form': form, 'sample_code': sample_code, 'recent_services': recent_services})
 
 
 @login_required
 def run_eth_contract(request):
-    recent_services = recent_queryset(request.session['did'])
+    did = request.session['did']
+    track_page_visit(did, 'Run ETH Contract', 'service:watch_eth_contract', True)
+    recent_services = get_recent_services(did)
     sample_code = {}
-    module_dir = os.path.dirname(__file__)  
+    module_dir = os.path.dirname(__file__)
     with open(os.path.join(module_dir, 'sample_code/python/run_eth_contract.py'), 'r') as myfile:
         sample_code['python'] = myfile.read()
     with open(os.path.join(module_dir, 'sample_code/go/run_eth_contract.go'), 'r') as myfile:
         sample_code['go'] = myfile.read()
-    return render(request, "service/run_eth_contract.html", {'sample_code': sample_code , 'recent_services':recent_services})
+    return render(request, "service/run_eth_contract.html",
+                  {'sample_code': sample_code, 'recent_services': recent_services})
 
 
 @login_required
 def suggest_service(request):
-    recent_services = recent_queryset(request.session['did'])
-    return render(request, "service/suggest_service.html" , {'recent_services':recent_services})
+    did = request.session['did']
+    track_page_visit(did, 'Suggest a new service', 'service:suggest_service', True)
+    recent_services = get_recent_services(did)
+    return render(request, "service/suggest_service.html", {'recent_services': recent_services})
 
-
-def track_page_visit(did , name , service , url ):
-    try:
-        track_obj = TrackUserPageVists.objects.get(did=did, page=service)
-        track_obj.last_visited = timezone.now()
-        track_obj.number_visits = F('number_visits') + 1
-        track_obj.save()
-    except models.ObjectDoesNotExist:
-        track_obj = TrackUserPageVists.objects.create(did=did, name=name, page=service,
-                                                    url=url, number_visits=1 , is_service=True)
-        track_obj.save()
-    except Exception as e:
-        print(e)
-
-def recent_queryset(did):
-    return TrackUserPageVists.objects.filter(did=did , is_service=True).order_by('-last_visited')[:5]

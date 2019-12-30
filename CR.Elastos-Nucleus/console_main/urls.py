@@ -19,6 +19,8 @@ from django.conf.urls import url
 from qr_code import urls as qr_code_urls
 from . import views
 
+app_name = "console_main"
+
 urlpatterns = [
     url('admin/', admin.site.urls),
     url(r'^at/', include('admin_tools.urls')),
