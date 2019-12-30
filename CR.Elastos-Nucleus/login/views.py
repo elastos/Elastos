@@ -61,7 +61,7 @@ def check_ela_auth(request):
                 messages.success(request,
                                  "The email '%s' needs to be verified. Please check your email for confirmation link" % user.email)
             else:
-                redirect_url = "/login/home"
+                redirect_url = "/login/feed"
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 request.session['logged_in'] = True
                 populate_session_vars_from_database(request, request.session['did'])
