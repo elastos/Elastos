@@ -264,6 +264,12 @@ func (s *Settings) initNetSetting() (err error) {
 		pact.MaxBlockHeaderSize = 1000
 	}
 
+	if s.conf.MaxTxPerBlock > 0 {
+		pact.MaxTxPerBlock = s.conf.MaxTxPerBlock
+	} else {
+		pact.MaxTxPerBlock = 10000
+	}
+
 	config.Parameters = s.conf
 	instantBlock := s.conf.PowConfiguration.InstantBlock
 	if s.context.IsSet(GetFullCommandName(cmdcom.InstantBlockFlag)) {
